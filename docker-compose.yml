@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mentalix
+      POSTGRES_PASSWORD: mentalix
+      POSTGRES_DB: mentalix
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  bot:
+    build: ./bot
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - db
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:
