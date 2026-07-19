@@ -42,4 +42,15 @@ export const api = {
   analytics: {
     get: (userId, days = 14) => request(`/analytics?user_id=${userId}&days=${days}`),
   },
+  mentalix: {
+    history: (userId) => request(`/mentalix/messages?user_id=${userId}`),
+    send: (userId, content) =>
+      request('/mentalix/messages', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, content }),
+      }),
+  },
+  profile: {
+    get: (userId) => request(`/profile?user_id=${userId}`),
+  },
 }
