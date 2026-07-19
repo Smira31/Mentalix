@@ -1,24 +1,23 @@
+/** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./index.html", "./src/**/*.{js,jsx}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx}",
+  ],
   theme: {
     extend: {
       colors: {
-        emerald: {
-          deep: "#0E211D",
-          DEFAULT: "#16332E",
-          light: "#274B43",
-        },
-        cognac: {
-          DEFAULT: "#A85C32",
-          light: "#C97E4E",
-        },
-        cream: "#F3E9DD",
-        gold: "#C9A227",
+        'emerald-deep': '#0E211D',
+        'emerald': '#16332E',
+        'emerald-light': '#274B43',
+        'cognac': '#A85C32',
+        'gold': '#C9A227',
+        'cream': '#F3E9DD',
       },
       fontFamily: {
-        display: ["Fraunces", "serif"],
-        body: ["Manrope", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        display: ['Fraunces', 'serif'],
+        body: ['Manrope', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
     },
   },
