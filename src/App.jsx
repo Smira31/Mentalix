@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import Today from './screens/Today'
 import Path from './screens/Path'
+import Analytics from './screens/Analytics'
 import Placeholder from './screens/Placeholder'
 
 const TABS = [
@@ -48,7 +49,7 @@ export default function App() {
 
         {user && tab === 'today' && <Today user={user} />}
         {user && tab === 'path' && <Path user={user} />}
-        {user && tab === 'analytics' && <Placeholder title="Аналитика" hint="Связь состояния, привычек и целей" />}
+        {user && tab === 'analytics' && <Analytics user={user} />}
         {user && tab === 'mentalix' && <Placeholder title="Mentalix" hint="Проактивный ассистент скоро начнёт замечать паттерны" />}
         {user && tab === 'profile' && <Placeholder title="Профиль" hint={`Привет, ${user.first_name}`} />}
       </div>
