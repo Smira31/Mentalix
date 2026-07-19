@@ -1,4 +1,3 @@
-
 const BASE = '/api'
 
 async function request(path, options = {}) {
@@ -13,10 +12,13 @@ async function request(path, options = {}) {
 export const api = {
   habits: {
     list: (userId) => request(`/habits?user_id=${userId}`),
-    create: (userId, name) =>
-      request('/habits', { method: 'POST', body: JSON.stringify({ user_id: userId, name }) }),
-    toggle: (habitId, userId) =>
-      request(`/habits/${habitId}/toggle?user_id=${userId}`, { method: 'POST' }),
+    create: (userId, habit) =>
+      request('/habits', { method: 'POST', body: JSON.stringify({ user_id: userId, ...habit }) }),
+    log: (habitId, userId, level) =>
+      request(`/habits/${habitId}/log`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, level }),
+      }),
   },
   checkin: {
     today: (userId) => request(`/checkin/today?user_id=${userId}`),
