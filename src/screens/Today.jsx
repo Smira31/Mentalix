@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 
 const SCALE = [1, 2, 3, 4, 5]
@@ -9,6 +10,14 @@ const LABELS = {
   focus: 'Фокус',
 }
 
+function haptic(style = 'light') {
+  WebApp.HapticFeedback?.impactOccurred(style)
+}
+
+function hapticNotify(type = 'success') {
+  WebApp.HapticFeedback?.notificationOccurred(type)
+}
+
 function Scale({ label, value, onChange }) {
   return (
     <div className="mb-3">
@@ -17,8 +26,11 @@ function Scale({ label, value, onChange }) {
         {SCALE.map((n) => (
           <button
             key={n}
-            onClick={() => onChange(n)}
-            className={`flex-1 h-9 rounded-lg border text-sm transition-colors ${
+            onClick={() => {
+              haptic('light')
+              onChange(n)
+            }}
+            className={`flex-1 h-9 rounded-lg border text-sm transition-all duration-150 active:scale-90 ${
               value === n
                 ? 'bg-cognac border-cognac text-cream'
                 : 'bg-emerald-light/20 border-cream/15 text-cream/50'
@@ -62,48 +74,49 @@ function HabitForm({ goals, onCreate, onCancel }) {
 
   function submit() {
     if (!draft.name.trim()) return
+    haptic('medium')
     onCreate({ ...draft, goal_id: draft.goal_id ? Number(draft.goal_id) : null })
     setDraft(EMPTY_DRAFT)
   }
 
   return (
-    <div className="rounded-xl border border-gold/30 bg-emerald-light/20 p-4 mb-4 space-y-2">
+    <div className="rounded-xl border border-gold/30 bg-emerald-light/20 p-4 mb-4 space-y-2 animate-fade-in">
       <input
         value={draft.name}
         onChange={set('name')}
         placeholder="Название привычки"
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold"
+        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
       />
       <input
         value={draft.goal}
         onChange={set('goal')}
         placeholder="Зачем она нужна (цель)"
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold"
+        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
       />
       <input
         value={draft.min_version}
         onChange={set('min_version')}
         placeholder="Минимум (напр. «1 отжимание»)"
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold"
+        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
       />
       <input
         value={draft.optimal_version}
         onChange={set('optimal_version')}
         placeholder="Оптимум (напр. «20 минут спорта»)"
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold"
+        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
       />
       <input
         value={draft.skip_consequence}
         onChange={set('skip_consequence')}
         placeholder="Что теряется при пропуске"
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold"
+        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
       />
 
       {goals.length > 0 && (
         <select
           value={draft.goal_id}
           onChange={set('goal_id')}
-          className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream outline-none focus:border-gold"
+          className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream outline-none focus:border-gold transition-colors"
         >
           <option value="">Без привязки к цели</option>
           {goals.map((g) => (
@@ -113,10 +126,16 @@ function HabitForm({ goals, onCreate, onCancel }) {
       )}
 
       <div className="flex gap-2 pt-1">
-        <button onClick={submit} className="flex-1 py-2 rounded-lg bg-cognac text-cream text-sm">
+        <button
+          onClick={submit}
+          className="flex-1 py-2 rounded-lg bg-cognac text-cream text-sm transition-transform active:scale-95"
+        >
           Сохранить привычку
         </button>
-        <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-cream/20 text-cream/60 text-sm">
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 rounded-lg border border-cream/20 text-cream/60 text-sm transition-transform active:scale-95"
+        >
           Отмена
         </button>
       </div>
@@ -127,12 +146,21 @@ function HabitForm({ goals, onCreate, onCancel }) {
 function HabitCard({ habit, onLog, onDelete }) {
   const level = habit.today_level
   const [confirming, setConfirming] = useState(false)
+  const [pulsing, setPulsing] = useState(false)
+
+  function handleLog(lvl) {
+    haptic('medium')
+    if (!level) hapticNotify('success')
+    setPulsing(true)
+    setTimeout(() => setPulsing(false), 320)
+    onLog(habit.id, lvl)
+  }
 
   return (
     <div
-      className={`rounded-xl border px-4 py-3 mb-2 ${
-        level ? 'bg-cognac/15 border-cognac/60' : 'bg-emerald-light/30 border-cream/15'
-      }`}
+      className={`rounded-xl border px-4 py-3 mb-2 transition-colors duration-300 ${
+        pulsing ? 'animate-pulse-once' : ''
+      } ${level ? 'bg-cognac/15 border-cognac/60' : 'bg-emerald-light/30 border-cream/15'}`}
     >
       <div className="flex items-center justify-between mb-1">
         <span className="text-sm text-cream">{habit.name}</span>
@@ -141,14 +169,14 @@ function HabitCard({ habit, onLog, onDelete }) {
           {confirming ? (
             <span className="flex items-center gap-1">
               <button
-                onClick={() => onDelete(habit.id)}
-                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90"
+                onClick={() => { haptic('rigid'); onDelete(habit.id) }}
+                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 transition-transform active:scale-90"
               >
                 Удалить
               </button>
               <button
                 onClick={() => setConfirming(false)}
-                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50"
+                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 transition-transform active:scale-90"
               >
                 Отмена
               </button>
@@ -156,7 +184,7 @@ function HabitCard({ habit, onLog, onDelete }) {
           ) : (
             <button
               onClick={() => setConfirming(true)}
-              className="text-cream/30 text-sm leading-none px-1"
+              className="text-cream/30 text-sm leading-none px-1 transition-transform active:scale-90"
               aria-label="Удалить привычку"
             >
               ×
@@ -170,8 +198,8 @@ function HabitCard({ habit, onLog, onDelete }) {
       <div className="flex gap-2">
         {habit.min_version && (
           <button
-            onClick={() => onLog(habit.id, 'min')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs ${
+            onClick={() => handleLog('min')}
+            className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
               level === 'min'
                 ? 'bg-cognac border-cognac text-cream'
                 : 'border-cream/20 text-cream/50'
@@ -182,8 +210,8 @@ function HabitCard({ habit, onLog, onDelete }) {
         )}
         {habit.optimal_version && (
           <button
-            onClick={() => onLog(habit.id, 'optimal')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs ${
+            onClick={() => handleLog('optimal')}
+            className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
               level === 'optimal'
                 ? 'bg-gold border-gold text-emerald-deep'
                 : 'border-cream/20 text-cream/50'
@@ -194,8 +222,8 @@ function HabitCard({ habit, onLog, onDelete }) {
         )}
         {!habit.min_version && !habit.optimal_version && (
           <button
-            onClick={() => onLog(habit.id, 'optimal')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs ${
+            onClick={() => handleLog('optimal')}
+            className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
               level ? 'bg-cognac border-cognac text-cream' : 'border-cream/20 text-cream/50'
             }`}
           >
@@ -249,8 +277,10 @@ export default function Today({ user }) {
     try {
       const updated = await api.checkin.save(user.id, draft)
       setCheckin(updated)
+      hapticNotify('success')
     } catch (e) {
       console.error(e)
+      hapticNotify('error')
     } finally {
       setSaving(false)
     }
@@ -296,7 +326,7 @@ export default function Today({ user }) {
 
   return (
     <div className="w-full max-w-sm px-6 pb-24">
-      <div className="rounded-xl border border-gold/40 bg-emerald-light/20 px-4 py-3 mb-6">
+      <div className="rounded-xl border border-gold/40 bg-emerald-light/20 px-4 py-3 mb-6 animate-fade-in">
         <div className="text-xs text-gold mb-1 font-mono">Сейчас важнее всего</div>
         <p className="text-sm text-cream/90">{priorityAction}</p>
       </div>
@@ -310,7 +340,7 @@ export default function Today({ user }) {
       <button
         onClick={saveCheckin}
         disabled={saving}
-        className="w-full mb-8 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50"
+        className="w-full mb-8 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50 transition-transform active:scale-95"
       >
         {checkin ? 'Обновить отметку' : 'Сохранить отметку'}
       </button>
@@ -323,7 +353,7 @@ export default function Today({ user }) {
           </div>
           <div className="h-1.5 rounded-full bg-emerald-light/30 overflow-hidden">
             <div
-              className="h-full bg-gold"
+              className="h-full bg-gold transition-all duration-500 ease-out"
               style={{ width: total ? `${(doneCount / total) * 100}%` : '0%' }}
             />
           </div>
@@ -344,8 +374,8 @@ export default function Today({ user }) {
         <HabitForm goals={goals} onCreate={createHabit} onCancel={() => setShowForm(false)} />
       ) : (
         <button
-          onClick={() => setShowForm(true)}
-          className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2"
+          onClick={() => { haptic('light'); setShowForm(true) }}
+          className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 transition-transform active:scale-95"
         >
           + Новая привычка
         </button>
