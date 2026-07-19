@@ -19,6 +19,12 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, level }),
       }),
+    assignGoal: (habitId, userId, goalId) =>
+      request(`/habits/${habitId}/goal`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, goal_id: goalId }),
+      }),
+    remove: (habitId) => request(`/habits/${habitId}`, { method: 'DELETE' }),
   },
   checkin: {
     today: (userId) => request(`/checkin/today?user_id=${userId}`),
@@ -27,5 +33,10 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, mood, energy, anxiety, focus, note }),
       }),
+  },
+  goals: {
+    list: (userId) => request(`/goals?user_id=${userId}`),
+    create: (userId, goal) =>
+      request('/goals', { method: 'POST', body: JSON.stringify({ user_id: userId, ...goal }) }),
   },
 }
