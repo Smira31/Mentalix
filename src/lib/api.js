@@ -39,4 +39,7 @@ export const api = {
     create: (userId, goal) =>
       request('/goals', { method: 'POST', body: JSON.stringify({ user_id: userId, ...goal }) }),
   },
+  analytics: {
+    get: (userId, days = 14) => request(`/analytics?user_id=${userId}&days=${days}`),
+  },
 }
