@@ -1,9 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
+import { Send } from 'lucide-react'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
+}
+
+function Monogram({ size = 'w-6 h-6', textSize = 'text-[10px]' }) {
+  return (
+    <div className={`flex items-center justify-center rounded-full border border-gold text-gold shrink-0 ${size}`}>
+      <span className={`font-display ${textSize}`}>M</span>
+    </div>
+  )
 }
 
 export default function Mentalix({ user }) {
@@ -47,53 +56,69 @@ export default function Mentalix({ user }) {
 
   return (
     <div className="w-full max-w-sm px-6 pb-28 flex flex-col animate-fade-in">
-      <h2 className="font-display text-lg mb-1 text-cream/90">Mentalix</h2>
-      <p className="text-[11px] text-cream/40 mb-4">твой стратегический ассистент</p>
+      <div className="flex items-center gap-3 mb-1">
+        <Monogram size="w-9 h-9" textSize="text-sm" />
+        <div>
+          <h2 className="font-display text-lg text-cream/90 leading-tight">Mentalix</h2>
+          <p className="text-[11px] text-cream/40">твой стратегический ассистент</p>
+        </div>
+      </div>
 
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 mt-4 mb-4">
         {messages.length === 0 && (
-          <p className="text-cream/40 text-sm">
-            Спроси что угодно о своём состоянии, привычках или целях — Mentalix видит твои данные и отвечает честно
-          </p>
+          <div className="rounded-2xl bg-emerald-light/15 border border-gold/20 px-4 py-3">
+            <p className="text-cream/70 text-sm">
+              Спроси что угодно о своём состоянии, привычках или целях — Mentalix видит твои данные и отвечает честно
+            </p>
+          </div>
         )}
 
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`rounded-xl px-4 py-2.5 text-sm max-w-[85%] ${
-              m.role === 'user'
-                ? 'bg-cognac text-cream ml-auto'
-                : 'bg-emerald-light/25 border border-cream/10 text-cream/90'
-            }`}
+            className={`flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            {m.content}
+            {m.role !== 'user' && <Monogram />}
+            <div
+              className={`rounded-2xl px-4 py-2.5 text-sm max-w-[80%] ${
+                m.role === 'user'
+                  ? 'bg-cognac text-cream rounded-br-md'
+                  : 'bg-emerald-light/25 border border-cream/10 text-cream/90 rounded-bl-md'
+              }`}
+            >
+              {m.content}
+            </div>
           </div>
         ))}
 
         {sending && (
-          <div className="rounded-xl px-4 py-2.5 text-sm bg-emerald-light/25 border border-cream/10 text-cream/40 w-fit">
-            печатает...
+          <div className="flex items-end gap-2 justify-start">
+            <Monogram />
+            <div className="rounded-2xl rounded-bl-md px-4 py-2.5 text-sm bg-emerald-light/25 border border-cream/10 text-cream/40 w-fit">
+              печатает...
+            </div>
           </div>
         )}
-
         <div ref={bottomRef} />
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 px-6 max-w-sm mx-auto w-full flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && send()}
-          placeholder="Написать Mentalix..."
-          className="flex-1 bg-emerald-light/30 border border-cream/15 rounded-xl px-3 py-2.5 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
-        />
-        <button
-          onClick={send}
-          disabled={sending}
-          className="px-4 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50 transition-transform active:scale-95"
-        >
-          →
-        </button>
+      <div className="fixed bottom-16 left-0 right-0 px-6 max-w-sm mx-auto w-full">
+        <div className="flex items-center gap-2 rounded-full bg-emerald-light/30 border border-cream/15 pl-4 pr-1.5 py-1.5 focus-within:border-gold transition-colors">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && send()}
+            placeholder="Написать Mentalix..."
+            className="flex-1 bg-transparent text-sm text-cream placeholder-cream/30 outline-none"
+          />
+          <button
+            onClick={send}
+            disabled={sending}
+            className="w-9 h-9 shrink-0 rounded-full bg-gold flex items-center justify-center disabled:opacity-50 transition-transform active:scale-95"
+          >
+            <Send size={15} className="text-emerald-deep" />
+          </button>
+        </div>
       </div>
     </div>
   )
