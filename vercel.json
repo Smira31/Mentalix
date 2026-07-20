@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "http://45.129.128.152:8000/api/:path*" }
+    { "source": "/api/:path*", "destination": "https://mentalix-bot-production.up.railway.app/api/:path*" }
   ]
 }
