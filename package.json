@@ -12,7 +12,8 @@
     "@twa-dev/sdk": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "lucide-react": "latest"
+    "lucide-react": "latest",
+    "recharts": "latest"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "latest",
