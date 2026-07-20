@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const LABELS = {
@@ -143,10 +144,31 @@ function HabitForm({ goals, onCreate, onCancel }) {
   )
 }
 
+// Подбирает иконку по названию привычки
+function getHabitIcon(name = '') {
+  const n = name.toLowerCase()
+  if (n.includes('сон') || n.includes('спать') || n.includes('лож')) return Moon
+  if (n.includes('спорт') || n.includes('трениров') || n.includes('зал')) return Dumbbell
+  if (n.includes('вод') || n.includes('пить')) return Droplet
+  if (n.includes('книг') || n.includes('чтен') || n.includes('читат')) return BookOpen
+  if (n.includes('медита') || n.includes('дыхан')) return Brain
+  return Sparkles
+}
+
+// Круглая монограмма — фирменный знак бренда
+function Monogram({ size = 'w-6 h-6' }) {
+  return (
+    <div className={`flex items-center justify-center rounded-full border border-gold text-gold shrink-0 ${size}`}>
+      <span className="font-display text-[10px]">M</span>
+    </div>
+  )
+}
+
 function HabitCard({ habit, onLog, onDelete }) {
   const level = habit.today_level
   const [confirming, setConfirming] = useState(false)
   const [pulsing, setPulsing] = useState(false)
+  const Icon = getHabitIcon(habit.name)
 
   function handleLog(lvl) {
     haptic('medium')
@@ -158,14 +180,28 @@ function HabitCard({ habit, onLog, onDelete }) {
 
   return (
     <div
-      className={`rounded-xl border px-4 py-3 mb-2 transition-colors duration-300 ${
+      className={`rounded-xl border overflow-hidden mb-2 transition-colors duration-300 ${
         pulsing ? 'animate-pulse-once' : ''
       } ${level ? 'bg-cognac/15 border-cognac/60' : 'bg-emerald-light/30 border-cream/15'}`}
     >
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-sm text-cream">{habit.name}</span>
+      <div
+        className={`flex items-center justify-between px-4 pt-3 pb-2 bg-gradient-to-br ${
+          level === 'optimal'
+            ? 'from-gold/20 to-transparent'
+            : level === 'min'
+            ? 'from-cognac/20 to-transparent'
+            : 'from-cream/5 to-transparent'
+        }`}
+      >
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-black/20">
+            <Icon size={16} className="text-cream" strokeWidth={1.75} />
+          </div>
+          <span className="text-sm text-cream">{habit.name}</span>
+        </div>
         <span className="flex items-center gap-2">
           <span className="font-mono text-xs text-gold whitespace-nowrap">🔥 {habit.streak}</span>
+          <Monogram />
           {confirming ? (
             <span className="flex items-center gap-1">
               <button
@@ -193,48 +229,50 @@ function HabitCard({ habit, onLog, onDelete }) {
         </span>
       </div>
 
-      {habit.goal && <p className="text-xs text-cream/45 mb-2">{habit.goal}</p>}
+      <div className="px-4 pb-3">
+        {habit.goal && <p className="text-xs text-cream/45 mb-2">{habit.goal}</p>}
 
-      <div className="flex gap-2">
-        {habit.min_version && (
-          <button
-            onClick={() => handleLog('min')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
-              level === 'min'
-                ? 'bg-cognac border-cognac text-cream'
-                : 'border-cream/20 text-cream/50'
-            }`}
-          >
-            Минимум{habit.min_version ? `: ${habit.min_version}` : ''}
-          </button>
-        )}
-        {habit.optimal_version && (
-          <button
-            onClick={() => handleLog('optimal')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
-              level === 'optimal'
-                ? 'bg-gold border-gold text-emerald-deep'
-                : 'border-cream/20 text-cream/50'
-            }`}
-          >
-            Оптимум{habit.optimal_version ? `: ${habit.optimal_version}` : ''}
-          </button>
-        )}
-        {!habit.min_version && !habit.optimal_version && (
-          <button
-            onClick={() => handleLog('optimal')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
-              level ? 'bg-cognac border-cognac text-cream' : 'border-cream/20 text-cream/50'
-            }`}
-          >
-            {level ? 'Сделано' : 'Отметить'}
-          </button>
+        <div className="flex gap-2">
+          {habit.min_version && (
+            <button
+              onClick={() => handleLog('min')}
+              className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
+                level === 'min'
+                  ? 'bg-cognac border-cognac text-cream'
+                  : 'border-cream/20 text-cream/50'
+              }`}
+            >
+              Минимум{habit.min_version ? `: ${habit.min_version}` : ''}
+            </button>
+          )}
+          {habit.optimal_version && (
+            <button
+              onClick={() => handleLog('optimal')}
+              className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
+                level === 'optimal'
+                  ? 'bg-gold border-gold text-emerald-deep'
+                  : 'border-cream/20 text-cream/50'
+              }`}
+            >
+              Оптимум{habit.optimal_version ? `: ${habit.optimal_version}` : ''}
+            </button>
+          )}
+          {!habit.min_version && !habit.optimal_version && (
+            <button
+              onClick={() => handleLog('optimal')}
+              className={`flex-1 py-1.5 rounded-lg border text-xs transition-all duration-150 active:scale-95 ${
+                level ? 'bg-cognac border-cognac text-cream' : 'border-cream/20 text-cream/50'
+              }`}
+            >
+              {level ? 'Сделано' : 'Отметить'}
+            </button>
+          )}
+        </div>
+
+        {!level && habit.skip_consequence && (
+          <p className="text-xs text-cream/35 mt-2 italic">При пропуске: {habit.skip_consequence}</p>
         )}
       </div>
-
-      {!level && habit.skip_consequence && (
-        <p className="text-xs text-cream/35 mt-2 italic">При пропуске: {habit.skip_consequence}</p>
-      )}
     </div>
   )
 }
