@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { Target, ArrowUp } from 'lucide-react'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
@@ -48,40 +49,98 @@ function GoalForm({ onCreate, onCancel }) {
   )
 }
 
+// Декоративный фон-гора со светящимися хребтами — фирменный визуальный приём
+function WireframeMountain() {
+  const rows = 5
+  return (
+    <svg viewBox="0 0 400 160" className="absolute inset-0 w-full h-full opacity-70" preserveAspectRatio="none">
+      <defs>
+        <filter id="mtn-glow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      {Array.from({ length: rows }).map((_, r) => {
+        const baseY = 40 + r * 22
+        const amp = 22 - r * 2.5
+        const points = Array.from({ length: 18 })
+          .map((_, i) => {
+            const x = (i / 17) * 400
+            const y = baseY - Math.sin(i * 0.7 + r) * amp - Math.sin(i * 0.25 + r * 2) * (amp / 2)
+            return `${x},${y}`
+          })
+          .join(' ')
+        return (
+          <polyline
+            key={r}
+            points={points}
+            fill="none"
+            stroke="#C9A227"
+            strokeOpacity={0.3 + r * 0.08}
+            strokeWidth={1}
+            filter="url(#mtn-glow)"
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
 function GoalCard({ goal }) {
   return (
-    <div className="rounded-xl border border-cream/15 bg-emerald-light/20 p-4 mb-3">
-      <div className="flex items-start justify-between mb-1">
-        <h3 className="text-sm font-medium text-cream">{goal.title}</h3>
-        <span className="font-mono text-xs text-gold whitespace-nowrap ml-2">{goal.progress}%</span>
-      </div>
-
-      {goal.description && <p className="text-xs text-cream/45 mb-2">{goal.description}</p>}
-
-      <div className="h-1.5 rounded-full bg-emerald-deep overflow-hidden mb-3">
-        <div className="h-full bg-gold" style={{ width: `${goal.progress}%` }} />
-      </div>
-
-      {goal.target_date && (
-        <p className="text-[11px] text-cream/35 mb-2">Срок: {goal.target_date}</p>
-      )}
-
-      {goal.habits.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5">
-          {goal.habits.map((h) => (
-            <span
-              key={h.id}
-              className="text-[11px] px-2 py-1 rounded-md bg-emerald-deep border border-cream/10 text-cream/60"
-            >
-              {h.name}
-            </span>
-          ))}
+    <div className="rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-5">
+      {/* Верх — wireframe-гора, название и прогресс поверх */}
+      <div className="relative h-32">
+        <WireframeMountain />
+        <div className="absolute top-3 left-3">
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
+            <Target size={12} /> Цель
+          </span>
         </div>
-      ) : (
-        <p className="text-[11px] text-cream/30 italic">
-          Пока нет привязанных привычек — привяжи их на экране «Сегодня» при создании
-        </p>
-      )}
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+          <h3 className="font-display text-lg text-cream leading-snug">{goal.title}</h3>
+        </div>
+      </div>
+
+      {/* Низ — прогресс, описание, срок, привычки */}
+      <div className="p-4 bg-emerald-light/10">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-mono text-xs text-gold">{goal.progress}% пройдено</span>
+          <div className="w-7 h-7 rounded-full bg-gold flex items-center justify-center">
+            <ArrowUp size={14} className="text-emerald-deep" />
+          </div>
+        </div>
+
+        <div className="h-1.5 rounded-full bg-emerald-deep overflow-hidden mb-3">
+          <div className="h-full bg-gold transition-all duration-500" style={{ width: `${goal.progress}%` }} />
+        </div>
+
+        {goal.description && <p className="text-xs text-cream/45 mb-2">{goal.description}</p>}
+
+        {goal.target_date && (
+          <p className="text-[11px] text-cream/35 mb-2">Срок: {goal.target_date}</p>
+        )}
+
+        {goal.habits.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {goal.habits.map((h) => (
+              <span
+                key={h.id}
+                className="text-[11px] px-2 py-1 rounded-md bg-emerald-deep border border-cream/10 text-cream/60"
+              >
+                {h.name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <p className="text-[11px] text-cream/30 italic">
+            Пока нет привязанных привычек — привяжи их на экране «Сегодня» при создании
+          </p>
+        )}
+      </div>
     </div>
   )
 }
