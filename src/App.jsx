@@ -1,17 +1,42 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
+import { ArrowUpRight, AlignJustify, User } from 'lucide-react'
 import Today from './screens/Today'
 import Path from './screens/Path'
 import Analytics from './screens/Analytics'
 import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
 
+function ContrastIcon({ active }) {
+  return (
+    <div
+      className="w-6 h-6 rounded-full border-2"
+      style={{
+        borderColor: active ? '#C9A227' : 'rgba(243,233,221,0.45)',
+        background: `linear-gradient(90deg, ${active ? '#C9A227' : 'rgba(243,233,221,0.45)'} 50%, transparent 50%)`,
+      }}
+    />
+  )
+}
+
+function MonogramIcon({ active }) {
+  return (
+    <div
+      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+        active ? 'border-gold' : 'border-cream/45'
+      }`}
+    >
+      <span className={`font-display text-xs ${active ? 'text-gold' : 'text-cream/45'}`}>M</span>
+    </div>
+  )
+}
+
 const TABS = [
-  { key: 'today', label: 'Сегодня', icon: '◐' },
-  { key: 'path', label: 'Мой путь', icon: '↗' },
-  { key: 'analytics', label: 'Аналитика', icon: '▤' },
-  { key: 'mentalix', label: 'Mentalix', icon: 'M' },
-  { key: 'profile', label: 'Профиль', icon: '●' },
+  { key: 'today', label: 'Сегодня', icon: 'contrast' },
+  { key: 'path', label: 'Мой путь', icon: ArrowUpRight },
+  { key: 'analytics', label: 'Аналитика', icon: AlignJustify },
+  { key: 'mentalix', label: 'Mentalix', icon: 'monogram' },
+  { key: 'profile', label: 'Профиль', icon: User },
 ]
 
 export default function App() {
@@ -47,7 +72,6 @@ export default function App() {
             Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
           </p>
         )}
-
         {user && tab === 'today' && <Today user={user} />}
         {user && tab === 'path' && <Path user={user} />}
         {user && tab === 'analytics' && <Analytics user={user} />}
@@ -56,22 +80,28 @@ export default function App() {
       </div>
 
       {user && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-emerald-deep/95 backdrop-blur border-t border-cream/10 flex justify-around py-2 max-w-md mx-auto w-full">
-          {TABS.map((t) => {
-            const active = tab === t.key
-            return (
-              <button
-                key={t.key}
-                onClick={() => switchTab(t.key)}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-full text-[10px] transition-all duration-200 active:scale-90 ${
-                  active ? 'bg-cognac/25 text-gold' : 'text-cream/40'
-                }`}
-              >
-                <span className="text-base leading-none">{t.icon}</span>
-                {t.label}
-              </button>
-            )
-          })}
+        <nav className="fixed bottom-0 left-0 right-0 px-3 pb-6 pt-2 max-w-md mx-auto w-full">
+          <div className="flex justify-around items-center bg-emerald-light/40 backdrop-blur-md border border-cream/10 rounded-[28px] px-2 py-2.5 shadow-lg">
+            {TABS.map((t) => {
+              const active = tab === t.key
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => switchTab(t.key)}
+                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl text-[11px] transition-all duration-200 active:scale-90 ${
+                    active ? 'bg-cognac/30 text-gold' : 'text-cream/45'
+                  }`}
+                >
+                  {t.icon === 'contrast' && <ContrastIcon active={active} />}
+                  {t.icon === 'monogram' && <MonogramIcon active={active} />}
+                  {typeof t.icon !== 'string' && (
+                    <t.icon size={22} strokeWidth={1.75} className={active ? 'text-gold' : 'text-cream/45'} />
+                  )}
+                  <span className={active ? 'text-gold' : 'text-cream/45'}>{t.label}</span>
+                </button>
+              )
+            })}
+          </div>
         </nav>
       )}
     </div>
