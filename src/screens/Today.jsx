@@ -84,6 +84,26 @@ function Monogram({ size = 'w-6 h-6', textSize = 'text-[10px]' }) {
   )
 }
 
+function EmptyHabits({ onCreate }) {
+  return (
+    <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 p-6 text-center mb-4 animate-fade-in">
+      <div className="w-12 h-12 rounded-2xl bg-emerald-light/40 flex items-center justify-center mx-auto mb-3">
+        <Sparkles size={22} className="text-gold" strokeWidth={1.5} />
+      </div>
+      <h3 className="font-display text-lg text-cream mb-1">Пока нет ни одной привычки</h3>
+      <p className="font-body text-sm text-cream/50 mb-4 leading-relaxed">
+        Начни с одной маленькой — система работает через регулярность, а не размах
+      </p>
+      <button
+        onClick={onCreate}
+        className="px-5 py-2.5 rounded-xl bg-gold text-emerald-deep text-sm font-medium transition-transform active:scale-95"
+      >
+        Создать привычку
+      </button>
+    </div>
+  )
+}
+
 function HabitCreateScreen({ goals, onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
@@ -579,26 +599,27 @@ export default function Today({ user }) {
 
       <h2 className="font-display text-lg mb-3 text-cream/90">Привычки</h2>
 
-      {habits.length === 0 && (
-        <p className="text-cream/40 text-sm mb-4">Пока нет ни одной привычки</p>
+      {habits.length === 0 ? (
+        <EmptyHabits onCreate={() => setShowCreate(true)} />
+      ) : (
+        <>
+          {habits.map((h) => (
+            <HabitCard
+              key={h.id}
+              habit={h}
+              onLog={logHabit}
+              onDelete={deleteHabit}
+              onOpenDetail={setSelectedHabit}
+            />
+          ))}
+          <button
+            onClick={() => { haptic('light'); setShowCreate(true) }}
+            className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 transition-transform active:scale-95"
+          >
+            + Новая привычка
+          </button>
+        </>
       )}
-
-      {habits.map((h) => (
-        <HabitCard
-          key={h.id}
-          habit={h}
-          onLog={logHabit}
-          onDelete={deleteHabit}
-          onOpenDetail={setSelectedHabit}
-        />
-      ))}
-
-      <button
-        onClick={() => { haptic('light'); setShowCreate(true) }}
-        className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 transition-transform active:scale-95"
-      >
-        + Новая привычка
-      </button>
     </div>
   )
 }
