@@ -12,8 +12,8 @@ function ContrastIcon({ active }) {
     <div
       className="w-6 h-6 rounded-full border-2"
       style={{
-        borderColor: active ? '#C9A227' : 'rgba(243,233,221,0.45)',
-        background: `linear-gradient(90deg, ${active ? '#C9A227' : 'rgba(243,233,221,0.45)'} 50%, transparent 50%)`,
+        borderColor: active ? '#0E211D' : 'rgba(150,205,176,0.7)',
+        background: `linear-gradient(90deg, ${active ? '#0E211D' : 'rgba(150,205,176,0.7)'} 50%, transparent 50%)`,
       }}
     />
   )
@@ -23,10 +23,10 @@ function MonogramIcon({ active }) {
   return (
     <div
       className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-        active ? 'border-gold' : 'border-cream/45'
+        active ? 'border-emerald-deep' : 'border-mint/70'
       }`}
     >
-      <span className={`font-display text-xs ${active ? 'text-gold' : 'text-cream/45'}`}>M</span>
+      <span className={`font-display text-xs ${active ? 'text-emerald-deep' : 'text-mint/70'}`}>M</span>
     </div>
   )
 }
@@ -69,7 +69,7 @@ export default function App() {
         <p className="text-cream/50 text-xs">система, а не мотивация</p>
       </div>
 
-      <div key={tab} className="flex-1 w-full flex flex-col items-center animate-fade-in">
+      <div key={tab} className="flex-1 w-full flex flex-col items-center animate-fade-in pb-28">
         {!user && (
           <p className="text-cream/40 text-sm px-6 text-center pt-8">
             Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
@@ -83,24 +83,44 @@ export default function App() {
       </div>
 
       {user && (
-        <nav className="fixed bottom-0 left-0 right-0 px-3 pb-6 pt-2 max-w-md mx-auto w-full">
-          <div className="flex justify-around items-center bg-emerald-light/40 backdrop-blur-md border border-cream/10 rounded-[28px] px-2 py-2.5 shadow-lg">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2 max-w-md mx-auto w-full">
+          <div className="flex justify-around items-center bg-emerald/90 backdrop-blur-md border border-emerald-light/30 rounded-[28px] px-2 py-2 shadow-lg shadow-black/30">
             {TABS.map((t) => {
               const active = tab === t.key
               return (
                 <button
                   key={t.key}
                   onClick={() => switchTab(t.key)}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl text-[11px] transition-all duration-200 active:scale-90 ${
-                    active ? 'bg-cognac/30 text-gold' : 'text-cream/45'
-                  }`}
+                  aria-label={t.label}
+                  aria-current={active ? 'page' : undefined}
+                  className="flex flex-col items-center gap-1 transition-all duration-300 ease-out active:scale-90"
                 >
-                  {t.icon === 'contrast' && <ContrastIcon active={active} />}
-                  {t.icon === 'monogram' && <MonogramIcon active={active} />}
-                  {typeof t.icon !== 'string' && (
-                    <t.icon size={22} strokeWidth={1.75} className={active ? 'text-gold' : 'text-cream/45'} />
-                  )}
-                  <span className={active ? 'text-gold' : 'text-cream/45'}>{t.label}</span>
+                  <span
+                    className={[
+                      'flex items-center justify-center rounded-full transition-all duration-300 ease-out',
+                      active
+                        ? 'w-11 h-11 bg-gold -translate-y-1 shadow-lg shadow-gold/25'
+                        : 'w-10 h-10 bg-emerald-light/50',
+                    ].join(' ')}
+                  >
+                    {t.icon === 'contrast' && <ContrastIcon active={active} />}
+                    {t.icon === 'monogram' && <MonogramIcon active={active} />}
+                    {typeof t.icon !== 'string' && (
+                      <t.icon
+                        size={20}
+                        strokeWidth={2}
+                        className={active ? 'text-emerald-deep' : 'text-mint/70'}
+                      />
+                    )}
+                  </span>
+                  <span
+                    className={[
+                      'text-[10px] font-medium transition-all duration-300',
+                      active ? 'text-gold opacity-100' : 'text-mint/50 opacity-0 h-0',
+                    ].join(' ')}
+                  >
+                    {t.label}
+                  </span>
                 </button>
               )
             })}
