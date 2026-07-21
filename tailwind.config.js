@@ -19,6 +19,21 @@ export default {
         body: ['Manrope', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        pulseOnce: {
+          '0%': { transform: 'scale(1)' },
+          '40%': { transform: 'scale(1.015)' },
+          '100%': { transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.28s ease-out',
+        'pulse-once': 'pulseOnce 0.32s ease-out',
+      },
     },
   },
   plugins: [],
