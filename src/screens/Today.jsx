@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles } from 'lucide-react'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const LABELS = {
@@ -144,7 +144,6 @@ function HabitForm({ goals, onCreate, onCancel }) {
   )
 }
 
-// Подбирает иконку по названию привычки
 function getHabitIcon(name = '') {
   const n = name.toLowerCase()
   if (n.includes('сон') || n.includes('спать') || n.includes('лож')) return Moon
@@ -155,16 +154,128 @@ function getHabitIcon(name = '') {
   return Sparkles
 }
 
-// Круглая монограмма — фирменный знак бренда
-function Monogram({ size = 'w-6 h-6' }) {
+function Monogram({ size = 'w-6 h-6', textSize = 'text-[10px]' }) {
   return (
     <div className={`flex items-center justify-center rounded-full border border-gold text-gold shrink-0 ${size}`}>
-      <span className="font-display text-[10px]">M</span>
+      <span className={`font-display ${textSize}`}>M</span>
     </div>
   )
 }
 
-function HabitCard({ habit, onLog, onDelete }) {
+function StreakGauge({ streak, size = 160 }) {
+  const target = 21
+  const percent = Math.max(0, Math.min(1, streak / target))
+  const totalTicks = 40
+  const filledTicks = Math.round(percent * totalTicks)
+  return (
+    <div className="relative mx-auto flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 200 200" className="absolute inset-0">
+        {Array.from({ length: totalTicks }).map((_, i) => {
+          const angle = (i / totalTicks) * 360
+          const isFilled = i < filledTicks
+          const rad = ((angle - 90) * Math.PI) / 180
+          const x1 = 100 + 80 * Math.cos(rad)
+          const y1 = 100 + 80 * Math.sin(rad)
+          const x2 = 100 + 92 * Math.cos(rad)
+          const y2 = 100 + 92 * Math.sin(rad)
+          return (
+            <line
+              key={i}
+              x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={isFilled ? '#C9A227' : 'rgba(243,233,221,0.12)'}
+              strokeWidth={3}
+              strokeLinecap="round"
+            />
+          )
+        })}
+      </svg>
+      <div className="text-center">
+        <div className="font-display text-3xl text-cream flex items-center gap-1 justify-center">
+          <Flame size={20} className="text-gold" /> {streak}
+        </div>
+        <div className="font-body text-xs text-cream/50 mt-1">
+          {streak >= target ? 'привычка сформирована' : `до устойчивой: ${Math.max(0, target - streak)} дн.`}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HabitDetail({ habit, onBack, onLog }) {
+  const Icon = getHabitIcon(habit.name)
+  const level = habit.today_level
+
+  function handleLog(lvl) {
+    haptic('medium')
+    if (!level) hapticNotify('success')
+    onLog(habit.id, lvl)
+  }
+
+  return (
+    <div className="w-full max-w-sm px-6 pb-24">
+      <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
+        <ArrowLeft size={16} /> Назад
+      </button>
+
+      <div className="rounded-[28px] bg-emerald-light/20 border border-cream/10 p-6 mb-5 flex flex-col items-center text-center">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-11 h-11 rounded-xl bg-black/20 flex items-center justify-center">
+            <Icon size={22} className="text-cream" strokeWidth={1.75} />
+          </div>
+          <Monogram />
+        </div>
+        <h2 className="font-display text-2xl text-cream mb-1">{habit.name}</h2>
+        {habit.goal && <p className="font-body text-sm text-cream/50">{habit.goal}</p>}
+      </div>
+
+      <div className="rounded-[28px] bg-emerald-light/20 border border-cream/10 p-6 mb-5 flex justify-center">
+        <StreakGauge streak={habit.streak} />
+      </div>
+
+      <div className="flex gap-2 mb-5">
+        {habit.min_version && (
+          <button
+            onClick={() => handleLog('min')}
+            className={`flex-1 py-3 rounded-xl border text-sm transition-all active:scale-95 ${
+              level === 'min' ? 'bg-cognac border-cognac text-cream' : 'border-cream/20 text-cream/60'
+            }`}
+          >
+            Минимум{habit.min_version ? `: ${habit.min_version}` : ''}
+          </button>
+        )}
+        {habit.optimal_version && (
+          <button
+            onClick={() => handleLog('optimal')}
+            className={`flex-1 py-3 rounded-xl border text-sm transition-all active:scale-95 ${
+              level === 'optimal' ? 'bg-gold border-gold text-emerald-deep' : 'border-cream/20 text-cream/60'
+            }`}
+          >
+            Оптимум{habit.optimal_version ? `: ${habit.optimal_version}` : ''}
+          </button>
+        )}
+        {!habit.min_version && !habit.optimal_version && (
+          <button
+            onClick={() => handleLog('optimal')}
+            className={`flex-1 py-3 rounded-xl border text-sm transition-all active:scale-95 ${
+              level ? 'bg-cognac border-cognac text-cream' : 'border-cream/20 text-cream/60'
+            }`}
+          >
+            {level ? 'Сделано сегодня' : 'Отметить'}
+          </button>
+        )}
+      </div>
+
+      {habit.skip_consequence && (
+        <div className="rounded-2xl bg-emerald-light/15 border border-cream/10 p-4">
+          <p className="font-body text-xs text-cream/40 mb-1">При пропуске</p>
+          <p className="font-body text-sm text-cream/75 leading-relaxed">{habit.skip_consequence}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function HabitCard({ habit, onLog, onDelete, onOpenDetail }) {
   const level = habit.today_level
   const [confirming, setConfirming] = useState(false)
   const [pulsing, setPulsing] = useState(false)
@@ -184,8 +295,9 @@ function HabitCard({ habit, onLog, onDelete }) {
         pulsing ? 'animate-pulse-once' : ''
       } ${level ? 'bg-cognac/15 border-cognac/60' : 'bg-emerald-light/30 border-cream/15'}`}
     >
-      <div
-        className={`flex items-center justify-between px-4 pt-3 pb-2 bg-gradient-to-br ${
+      <button
+        onClick={() => onOpenDetail(habit)}
+        className={`w-full flex items-center justify-between px-4 pt-3 pb-2 bg-gradient-to-br ${
           level === 'optimal'
             ? 'from-gold/20 to-transparent'
             : level === 'min'
@@ -203,7 +315,7 @@ function HabitCard({ habit, onLog, onDelete }) {
           <span className="font-mono text-xs text-gold whitespace-nowrap">🔥 {habit.streak}</span>
           <Monogram />
           {confirming ? (
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => { haptic('rigid'); onDelete(habit.id) }}
                 className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 transition-transform active:scale-90"
@@ -218,16 +330,16 @@ function HabitCard({ habit, onLog, onDelete }) {
               </button>
             </span>
           ) : (
-            <button
-              onClick={() => setConfirming(true)}
+            <span
+              onClick={(e) => { e.stopPropagation(); setConfirming(true) }}
               className="text-cream/30 text-sm leading-none px-1 transition-transform active:scale-90"
               aria-label="Удалить привычку"
             >
               ×
-            </button>
+            </span>
           )}
         </span>
-      </div>
+      </button>
 
       <div className="px-4 pb-3">
         {habit.goal && <p className="text-xs text-cream/45 mb-2">{habit.goal}</p>}
@@ -285,6 +397,7 @@ export default function Today({ user }) {
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [selectedHabit, setSelectedHabit] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -332,6 +445,11 @@ export default function Today({ user }) {
           h.id === habitId ? { ...h, streak: updated.streak, today_level: updated.today_level } : h
         )
       )
+      setSelectedHabit((prev) =>
+        prev && prev.id === habitId
+          ? { ...prev, streak: updated.streak, today_level: updated.today_level }
+          : prev
+      )
     } catch (e) {
       console.error(e)
     }
@@ -357,6 +475,16 @@ export default function Today({ user }) {
   }
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
+
+  if (selectedHabit) {
+    return (
+      <HabitDetail
+        habit={selectedHabit}
+        onBack={() => setSelectedHabit(null)}
+        onLog={logHabit}
+      />
+    )
+  }
 
   const doneCount = habits.filter((h) => h.today_level).length
   const total = habits.length
@@ -405,7 +533,13 @@ export default function Today({ user }) {
       )}
 
       {habits.map((h) => (
-        <HabitCard key={h.id} habit={h} onLog={logHabit} onDelete={deleteHabit} />
+        <HabitCard
+          key={h.id}
+          habit={h}
+          onLog={logHabit}
+          onDelete={deleteHabit}
+          onOpenDetail={setSelectedHabit}
+        />
       ))}
 
       {showForm ? (
