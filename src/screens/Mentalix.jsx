@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { Send } from 'lucide-react'
+import { Send, Mic } from 'lucide-react'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -20,7 +20,9 @@ export default function Mentalix({ user }) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const bottomRef = useRef(null)
+  const recognitionRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
@@ -33,6 +35,36 @@ export default function Mentalix({ user }) {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  function toggleVoiceInput() {
+    if (isListening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      WebApp.showAlert?.('Голосовой ввод не поддерживается в этом браузере. Попробуйте открыть Mini App в Chrome.')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'ru-RU'
+    recognition.interimResults = false
+    recognition.maxAlternatives = 1
+
+    recognition.onstart = () => setIsListening(true)
+    recognition.onend = () => setIsListening(false)
+    recognition.onerror = () => setIsListening(false)
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript
+      setInput((prev) => (prev ? `${prev} ${transcript}` : transcript))
+    }
+
+    recognitionRef.current = recognition
+    haptic('light')
+    recognition.start()
+  }
 
   async function send() {
     const content = input.trim()
@@ -55,7 +87,7 @@ export default function Mentalix({ user }) {
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
 
   return (
-    <div className="w-full max-w-sm px-6 pb-28 flex flex-col animate-fade-in">
+    <div className="w-full max-w-sm px-6 pb-40 flex flex-col animate-fade-in">
       <div className="flex items-center gap-3 mb-1">
         <Monogram size="w-9 h-9" textSize="text-sm" />
         <div>
@@ -102,15 +134,24 @@ export default function Mentalix({ user }) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 px-6 max-w-sm mx-auto w-full">
+      {/* Поднято выше плавающей нижней навигации, чтобы поле было полностью видно */}
+      <div className="fixed bottom-32 left-0 right-0 px-6 max-w-sm mx-auto w-full z-30">
         <div className="flex items-center gap-2 rounded-full bg-emerald-light/30 border border-cream/15 pl-4 pr-1.5 py-1.5 focus-within:border-gold transition-colors">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send()}
-            placeholder="Написать Mentalix..."
+            placeholder={isListening ? 'Слушаю...' : 'Написать Mentalix...'}
             className="flex-1 bg-transparent text-sm text-cream placeholder-cream/30 outline-none"
           />
+          <button
+            onClick={toggleVoiceInput}
+            className={`w-9 h-9 shrink-0 rounded-full flex items-center justify-center transition-all ${
+              isListening ? 'bg-red-500/80 animate-pulse' : 'bg-emerald-light/50'
+            }`}
+          >
+            <Mic size={15} className="text-cream" />
+          </button>
           <button
             onClick={send}
             disabled={sending}
