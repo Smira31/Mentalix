@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import { Target, ArrowUp, ArrowLeft, Flame, TrendingUp } from 'lucide-react'
+import { Target, ArrowUp, ArrowLeft, Flame, TrendingUp, Trash2 } from 'lucide-react'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
-// Декоративный фон-гора со светящимися хребтами
 function WireframeMountain() {
   const rows = 5
   return (
@@ -44,7 +43,6 @@ function WireframeMountain() {
   )
 }
 
-// Кольцевая шкала с делениями — единый визуальный приём приложения
 function TickGauge({ value, max, sublabel, size = 160 }) {
   const percent = Math.max(0, Math.min(1, value / max))
   const totalTicks = 40
@@ -79,7 +77,6 @@ function TickGauge({ value, max, sublabel, size = 160 }) {
   )
 }
 
-// Иллюстративное пустое состояние
 function EmptyGoals({ onCreate }) {
   return (
     <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-4 animate-fade-in">
@@ -105,7 +102,6 @@ function EmptyGoals({ onCreate }) {
   )
 }
 
-// Полноэкранное создание цели с живым превью карточки
 function GoalCreateScreen({ onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
@@ -182,7 +178,6 @@ function GoalCreateScreen({ onCreate, onCancel }) {
   )
 }
 
-// Компактная карточка в списке — тап открывает детальный экран
 function GoalCard({ goal, onOpen }) {
   return (
     <button
@@ -208,13 +203,49 @@ function GoalCard({ goal, onOpen }) {
   )
 }
 
-// Полноэкранный детальный вид цели
-function GoalDetail({ goal, onBack }) {
+function GoalDetail({ goal, onBack, onDelete }) {
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  async function handleDelete() {
+    setDeleting(true)
+    await onDelete(goal.id)
+    setDeleting(false)
+  }
+
   return (
     <div className="w-full max-w-sm px-6 pb-10">
-      <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
-        <ArrowLeft size={16} /> Назад
-      </button>
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm">
+          <ArrowLeft size={16} /> Назад
+        </button>
+
+        {confirming ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 text-cream/90 transition-transform active:scale-95 disabled:opacity-50"
+            >
+              {deleting ? 'Удаляю...' : 'Удалить'}
+            </button>
+            <button
+              onClick={() => setConfirming(false)}
+              className="text-xs px-3 py-1.5 rounded-lg border border-cream/20 text-cream/50 transition-transform active:scale-95"
+            >
+              Отмена
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setConfirming(true)}
+            className="text-cream/40 p-1.5 transition-transform active:scale-90"
+            aria-label="Удалить цель"
+          >
+            <Trash2 size={16} />
+          </button>
+        )}
+      </div>
 
       <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep h-44 mb-5">
         <WireframeMountain />
@@ -298,6 +329,16 @@ export default function Path({ user }) {
     }
   }
 
+  async function deleteGoal(goalId) {
+    try {
+      await api.goals.remove(goalId)
+      setGoals((prev) => prev.filter((g) => g.id !== goalId))
+      setSelectedGoal(null)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
 
   if (showCreate) {
@@ -305,7 +346,13 @@ export default function Path({ user }) {
   }
 
   if (selectedGoal) {
-    return <GoalDetail goal={selectedGoal} onBack={() => setSelectedGoal(null)} />
+    return (
+      <GoalDetail
+        goal={selectedGoal}
+        onBack={() => setSelectedGoal(null)}
+        onDelete={deleteGoal}
+      />
+    )
   }
 
   return (
