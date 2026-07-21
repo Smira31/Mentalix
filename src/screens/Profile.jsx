@@ -1,121 +1,149 @@
-import { useEffect, useState, Component } from 'react'
-import WebApp from '@twa-dev/sdk'
-import { ArrowUpRight, AlignJustify, User } from 'lucide-react'
-import Today from './screens/Today'
-import Path from './screens/Path'
-import Analytics from './screens/Analytics'
-import MentalixChat from './screens/Mentalix'
-import Profile from './screens/Profile'
+import { useEffect, useState } from 'react'
+import { api } from '../lib/api'
+import { Flame, CalendarDays, Target, ListChecks, Info, Bell } from 'lucide-react'
 
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { error: null }
-  }
-  static getDerivedStateFromError(error) {
-    return { error }
-  }
-  render() {
-    if (this.state.error) {
-      return (
-        <div className="px-6 pt-10 text-cream">
-          <p className="text-red-400 text-sm mb-2 font-mono">Ошибка на экране:</p>
-          <p className="text-cream/70 text-xs break-words">{String(this.state.error?.message || this.state.error)}</p>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
-
-function ContrastIcon({ active }) {
+function StatCard({ icon: Icon, value, label }) {
   return (
-    <div
-      className="w-6 h-6 rounded-full border-2"
-      style={{
-        borderColor: active ? '#C9A227' : 'rgba(243,233,221,0.45)',
-        background: `linear-gradient(90deg, ${active ? '#C9A227' : 'rgba(243,233,221,0.45)'} 50%, transparent 50%)`,
-      }}
-    />
-  )
-}
-
-function MonogramIcon({ active }) {
-  return (
-    <div
-      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-        active ? 'border-gold' : 'border-cream/45'
-      }`}
-    >
-      <span className={`font-display text-xs ${active ? 'text-gold' : 'text-cream/45'}`}>M</span>
+    <div className="rounded-2xl border border-cream/10 bg-emerald-light/20 px-4 py-4">
+      <Icon size={18} className="text-gold mb-2" strokeWidth={1.75} />
+      <div className="font-mono text-xl text-cream">{value}</div>
+      <div className="text-[11px] text-cream/50 mt-0.5">{label}</div>
     </div>
   )
 }
 
-const TABS = [
-  { key: 'today', label: 'Сегодня', icon: 'contrast' },
-  { key: 'path', label: 'Мой путь', icon: ArrowUpRight },
-  { key: 'analytics', label: 'Аналитика', icon: AlignJustify },
-  { key: 'mentalix', label: 'Mentalix', icon: 'monogram' },
-  { key: 'profile', label: 'Профиль', icon: User },
-]
+function Toggle({ checked, onChange }) {
+  return (
+    <button
+      onClick={() => onChange(!checked)}
+      className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
+        checked ? 'bg-gold justify-end' : 'bg-emerald-light/50 justify-start'
+      }`}
+    >
+      <div className="w-5 h-5 rounded-full bg-emerald-deep" />
+    </button>
+  )
+}
 
-export default function App() {
-  const [user, setUser] = useState(null)
+const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
-  const initialTab = new URLSearchParams(window.location.search).get('tab')
-  const validTabs = ['today', 'path', 'analytics', 'mentalix', 'profile']
-  const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : 'today')
+function ReminderSettings({ user }) {
+  const [settings, setSettings] = useState(null)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    WebApp.ready()
-    WebApp.expand()
-    const tgUser = WebApp.initDataUnsafe?.user
-    if (tgUser) setUser(tgUser)
-  }, [])
+    if (!user) return
+    api.profile.getSettings(user.id).then(setSettings).catch((e) => console.error(e))
+  }, [user])
 
-  function switchTab(key) {
-    if (key === tab) return
-    WebApp.HapticFeedback?.impactOccurred('light')
-    setTab(key)
+  async function update(patch) {
+    const next = { ...settings, ...patch }
+    setSettings(next)
+    setSaving(true)
+    try {
+      await api.profile.updateSettings(user.id, next)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSaving(false)
+    }
   }
 
+  if (!settings) return null
+
+  const moscowHour = (settings.reminder_hour + 3) % 24
+
   return (
-    <div className="min-h-screen bg-emerald-deep text-cream flex flex-col items-center font-body">
-      <div className="pt-10 pb-4 flex flex-col items-center">
-        <div className="w-14 h-14 rounded-full border border-gold flex items-center justify-center mb-3">
-          <span className="font-display text-xl text-gold">M</span>
+    <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-4 mb-6">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-9 h-9 rounded-xl bg-emerald-light/40 flex items-center justify-center shrink-0">
+          <Bell size={16} className="text-gold" strokeWidth={1.75} />
         </div>
-        <h1 className="font-display text-xl">Менталикс</h1>
-        <p className="text-cream/50 text-xs">система, а не мотивация</p>
+        <div className="flex-1">
+          <div className="text-sm text-cream">Напоминание</div>
+          <div className="text-xs text-cream/45">Если не отметился к этому часу</div>
+        </div>
+        <Toggle
+          checked={settings.reminder_enabled}
+          onChange={(v) => update({ reminder_enabled: v })}
+        />
       </div>
 
-      <div key={tab} className="flex-1 w-full flex flex-col items-center animate-fade-in">
-        {!user && (
-          <p className="text-cream/40 text-sm px-6 text-center pt-8">
-            Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
+      {settings.reminder_enabled && (
+        <div className="flex items-center justify-between pt-3 border-t border-cream/10">
+          <span className="text-xs text-cream/50">Время (по Мск {moscowHour}:00)</span>
+          <select
+            value={settings.reminder_hour}
+            onChange={(e) => update({ reminder_hour: Number(e.target.value) })}
+            disabled={saving}
+            className="bg-emerald-deep border border-cream/15 rounded-lg px-2 py-1 text-sm text-cream outline-none focus:border-gold"
+          >
+            {HOURS.map((h) => (
+              <option key={h} value={h}>
+                {String(h).padStart(2, '0')}:00 UTC
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function Profile({ user }) {
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    api.profile.get(user.id)
+      .then(setStats)
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false))
+  }, [user])
+
+  return (
+    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+      <div className="flex flex-col items-center mb-6 pt-2">
+        <div className="w-24 h-24 rounded-full border border-gold bg-emerald-light/20 flex items-center justify-center mb-4">
+          <span className="font-display text-3xl text-gold">
+            {user.first_name?.[0]?.toUpperCase() || '?'}
+          </span>
+        </div>
+        <h2 className="font-display text-2xl text-cream/90">{user.first_name}</h2>
+        {user.username && <p className="text-xs text-cream/40 mt-1">@{user.username}</p>}
+      </div>
+
+      {loading && <p className="text-cream/40 text-sm text-center">Загрузка статистики...</p>}
+
+      {!loading && stats && (
+        <>
+          <h3 className="text-sm text-cream/80 mb-2">Статистика</h3>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <StatCard icon={CalendarDays} value={stats.days_active} label="дней в системе" />
+            <StatCard icon={Flame} value={stats.best_streak} label="лучшая серия" />
+            <StatCard icon={ListChecks} value={stats.total_habits} label="активных привычек" />
+            <StatCard icon={Target} value={stats.total_goals} label="активных целей" />
+          </div>
+          <p className="text-[11px] text-cream/35 text-center mb-6">
+            {stats.total_checkins} чек-инов сохранено всего
           </p>
-        )}
-        <ErrorBoundary>
-          {user && tab === 'today' && <Today user={user} />}
-          {user && tab === 'path' && <Path user={user} />}
-          {user && tab === 'analytics' && <Analytics user={user} />}
-          {user && tab === 'mentalix' && <MentalixChat user={user} />}
-          {user && tab === 'profile' && <Profile user={user} />}
-        </ErrorBoundary>
-      </div>
+        </>
+      )}
 
-      {user && (
-        <nav className="fixed bottom-0 left-0 right-0 px-3 pb-6 pt-2 max-w-md mx-auto w-full">
-          <div className="flex justify-around items-center bg-emerald-light/40 backdrop-blur-md border border-cream/10 rounded-[28px] px-2 py-2.5 shadow-lg">
-            {TABS.map((t) => {
-              const active = tab === t.key
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => switchTab(t.key)}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl text-[11px] transition-all duration-200 active:scale-90 ${
-                    active ? 'bg-cognac/30 text-gold' : 'text-cream/45'
-                  }`}
-                >
-                  {t.icon === 'contrast' && 
+      <h3 className="text-sm text-cream/80 mb-2">Настройки</h3>
+      <ReminderSettings user={user} />
+
+      <h3 className="text-sm text-cream/80 mb-2">О системе</h3>
+      <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-4 flex gap-3">
+        <div className="w-9 h-9 rounded-xl bg-emerald-light/40 flex items-center justify-center shrink-0">
+          <Info size={16} className="text-gold" strokeWidth={1.75} />
+        </div>
+        <p className="text-xs text-cream/50 leading-relaxed">
+          Менталикс — система, а не мотивация. Все данные хранятся на твоём собственном сервере
+          и никуда не передаются, кроме запросов к Mentalix при общении в чате.
+        </p>
+      </div>
+    </div>
+  )
+}
