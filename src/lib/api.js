@@ -1,5 +1,4 @@
 const BASE = '/api'
-
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -8,7 +7,6 @@ async function request(path, options = {}) {
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`)
   return res.json()
 }
-
 export const api = {
   habits: {
     list: (userId) => request(`/habits?user_id=${userId}`),
@@ -38,6 +36,7 @@ export const api = {
     list: (userId) => request(`/goals?user_id=${userId}`),
     create: (userId, goal) =>
       request('/goals', { method: 'POST', body: JSON.stringify({ user_id: userId, ...goal }) }),
+    remove: (goalId) => request(`/goals/${goalId}`, { method: 'DELETE' }),
   },
   analytics: {
     get: (userId, days = 14) => request(`/analytics?user_id=${userId}&days=${days}`),
