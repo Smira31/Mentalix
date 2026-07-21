@@ -79,6 +79,32 @@ function TickGauge({ value, max, sublabel, size = 160 }) {
   )
 }
 
+// Иллюстративное пустое состояние
+function EmptyGoals({ onCreate }) {
+  return (
+    <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-4 animate-fade-in">
+      <div className="relative h-32">
+        <WireframeMountain />
+      </div>
+      <div className="px-6 pb-6 pt-2 text-center">
+        <div className="w-12 h-12 rounded-2xl bg-emerald-light/30 flex items-center justify-center mx-auto mb-3 -mt-8 relative">
+          <Target size={22} className="text-gold" strokeWidth={1.5} />
+        </div>
+        <h3 className="font-display text-lg text-cream mb-1">Пока нет ни одной цели</h3>
+        <p className="font-body text-sm text-cream/50 mb-4 leading-relaxed">
+          Создай первую — и увидишь путь к ней прямо здесь, на карте
+        </p>
+        <button
+          onClick={onCreate}
+          className="px-5 py-2.5 rounded-xl bg-gold text-emerald-deep text-sm font-medium transition-transform active:scale-95"
+        >
+          Создать цель
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // Полноэкранное создание цели с живым превью карточки
 function GoalCreateScreen({ onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
@@ -103,7 +129,6 @@ function GoalCreateScreen({ onCreate, onCancel }) {
 
       <h2 className="font-display text-lg mb-4 text-cream/90">Новая цель</h2>
 
-      {/* Живое превью — точно та карточка, что появится в списке */}
       <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
         <WireframeMountain />
         <div className="absolute top-3 left-3">
@@ -287,20 +312,21 @@ export default function Path({ user }) {
     <div className="w-full max-w-sm px-6 pb-24">
       <h2 className="font-display text-lg mb-4 text-cream/90">Мой путь</h2>
 
-      {goals.length === 0 && (
-        <p className="text-cream/40 text-sm mb-4">Пока нет ни одной цели</p>
+      {goals.length === 0 ? (
+        <EmptyGoals onCreate={() => setShowCreate(true)} />
+      ) : (
+        <>
+          {goals.map((g) => (
+            <GoalCard key={g.id} goal={g} onOpen={setSelectedGoal} />
+          ))}
+          <button
+            onClick={() => setShowCreate(true)}
+            className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2"
+          >
+            + Новая цель
+          </button>
+        </>
       )}
-
-      {goals.map((g) => (
-        <GoalCard key={g.id} goal={g} onOpen={setSelectedGoal} />
-      ))}
-
-      <button
-        onClick={() => setShowCreate(true)}
-        className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2"
-      >
-        + Новая цель
-      </button>
     </div>
   )
 }
