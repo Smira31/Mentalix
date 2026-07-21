@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import {
-  AreaChart, Area, XAxis, ResponsiveContainer, Tooltip,
+  AreaChart, Area, XAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Cell,
 } from 'recharts'
 
-// Кольцевая шкала с делениями — единый визуальный приём для всего приложения
+const WEEKDAY_LABELS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+
 function TickGauge({ value, max, sublabel, size = 150 }) {
   const percent = Math.max(0, Math.min(1, value / max))
   const totalTicks = 40
@@ -108,6 +109,57 @@ function MoodAnxietyChart({ checkins }) {
   )
 }
 
+function WeekActivityChart({ dailyActivity }) {
+  const last7 = dailyActivity.slice(-7)
+  const todayIso = new Date().toISOString().slice(0, 10)
+
+  const chartData = last7.map((d) => {
+    const jsDate = new Date(d.date + 'T00:00:00')
+    return {
+      ...d,
+      label: WEEKDAY_LABELS[jsDate.getDay()],
+      isToday: d.date === todayIso,
+    }
+  })
+
+  return (
+    <div className="rounded-[24px] bg-emerald-light/15 border border-cream/15 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-[11px] text-cream/60">Активность за неделю</h4>
+        <span className="text-[11px] text-cream/40">Привычки</span>
+      </div>
+      <div className="h-32">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} barCategoryGap={16}>
+            <XAxis
+              dataKey="label"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: 'rgba(243,233,221,0.4)', fontSize: 11, fontFamily: 'Manrope' }}
+            />
+            <Tooltip
+              contentStyle={{
+                background: '#16332E',
+                border: '1px solid rgba(243,233,221,0.15)',
+                borderRadius: 12,
+                fontFamily: 'Manrope',
+                fontSize: 12,
+              }}
+              labelStyle={{ color: '#F3E9DD' }}
+              formatter={(value) => [`${value} привычек`, '']}
+            />
+            <Bar dataKey="count" radius={[6, 6, 6, 6]}>
+              {chartData.map((d, i) => (
+                <Cell key={i} fill={d.isToday ? '#C9A227' : 'rgba(243,233,221,0.15)'} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+}
+
 function HabitBar({ habit }) {
   return (
     <div className="mb-3">
@@ -166,6 +218,12 @@ export default function Analytics({ user }) {
           </div>
         ))}
       </div>
+
+      {data.daily_activity && data.daily_activity.length > 0 && (
+        <div className="mb-6">
+          <WeekActivityChart dailyActivity={data.daily_activity} />
+        </div>
+      )}
 
       {data.checkins.length > 0 && (
         <>
