@@ -10,8 +10,10 @@ export default {
         'emerald-deep': '#0E211D',
         'emerald': '#16332E',
         'emerald-light': '#274B43',
-        'cognac': '#A85C32',
-        'gold': '#C9A227',
+        'sage': '#5A8F76',
+        'mint': '#96CDB0',
+        'cognac': '#C18D52',
+        'gold': '#B8952E',
         'cream': '#F3E9DD',
       },
       fontFamily: {
