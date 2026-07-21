@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import { Flame, CalendarDays, Target, ListChecks, Info, Bell } from 'lucide-react'
+import { Flame, CalendarDays, Target, ListChecks, Info } from 'lucide-react'
 
 function StatCard({ icon: Icon, value, label }) {
   return (
@@ -8,84 +8,6 @@ function StatCard({ icon: Icon, value, label }) {
       <Icon size={18} className="text-gold mb-2" strokeWidth={1.75} />
       <div className="font-mono text-xl text-cream">{value}</div>
       <div className="text-[11px] text-cream/50 mt-0.5">{label}</div>
-    </div>
-  )
-}
-
-function Toggle({ checked, onChange }) {
-  return (
-    <button
-      onClick={() => onChange(!checked)}
-      className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${
-        checked ? 'bg-gold justify-end' : 'bg-emerald-light/50 justify-start'
-      }`}
-    >
-      <div className="w-5 h-5 rounded-full bg-emerald-deep" />
-    </button>
-  )
-}
-
-const HOURS = Array.from({ length: 24 }, (_, i) => i)
-
-function ReminderSettings({ user }) {
-  const [settings, setSettings] = useState(null)
-  const [saving, setSaving] = useState(false)
-
-  useEffect(() => {
-    if (!user) return
-    api.profile.getSettings(user.id).then(setSettings).catch((e) => console.error(e))
-  }, [user])
-
-  async function update(patch) {
-    const next = { ...settings, ...patch }
-    setSettings(next)
-    setSaving(true)
-    try {
-      await api.profile.updateSettings(user.id, next)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (!settings) return null
-
-  const moscowHour = (settings.reminder_hour + 3) % 24
-
-  return (
-    <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-4 mb-6">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-9 h-9 rounded-xl bg-emerald-light/40 flex items-center justify-center shrink-0">
-          <Bell size={16} className="text-gold" strokeWidth={1.75} />
-        </div>
-        <div className="flex-1">
-          <div className="text-sm text-cream">Напоминание</div>
-          <div className="text-xs text-cream/45">Если не отметился к этому часу</div>
-        </div>
-        <Toggle
-          checked={settings.reminder_enabled}
-          onChange={(v) => update({ reminder_enabled: v })}
-        />
-      </div>
-
-      {settings.reminder_enabled && (
-        <div className="flex items-center justify-between pt-3 border-t border-cream/10">
-          <span className="text-xs text-cream/50">Время (по Мск {moscowHour}:00)</span>
-          <select
-            value={settings.reminder_hour}
-            onChange={(e) => update({ reminder_hour: Number(e.target.value) })}
-            disabled={saving}
-            className="bg-emerald-deep border border-cream/15 rounded-lg px-2 py-1 text-sm text-cream outline-none focus:border-gold"
-          >
-            {HOURS.map((h) => (
-              <option key={h} value={h}>
-                {String(h).padStart(2, '0')}:00 UTC
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
     </div>
   )
 }
@@ -130,9 +52,6 @@ export default function Profile({ user }) {
           </p>
         </>
       )}
-
-      <h3 className="text-sm text-cream/80 mb-2">Настройки</h3>
-      <ReminderSettings user={user} />
 
       <h3 className="text-sm text-cream/80 mb-2">О системе</h3>
       <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-4 flex gap-3">
