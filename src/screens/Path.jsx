@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import { Target, ArrowUp } from 'lucide-react'
+import { Target, ArrowUp, ArrowLeft, Flame, TrendingUp } from 'lucide-react'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
@@ -49,7 +49,6 @@ function GoalForm({ onCreate, onCancel }) {
   )
 }
 
-// Декоративный фон-гора со светящимися хребтами — фирменный визуальный приём
 function WireframeMountain() {
   const rows = 5
   return (
@@ -89,58 +88,117 @@ function WireframeMountain() {
   )
 }
 
-function GoalCard({ goal }) {
+function TickGauge({ value, max, sublabel, size = 160 }) {
+  const percent = Math.max(0, Math.min(1, value / max))
+  const totalTicks = 40
+  const filledTicks = Math.round(percent * totalTicks)
   return (
-    <div className="rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-5">
-      {/* Верх — wireframe-гора, название и прогресс поверх */}
-      <div className="relative h-32">
-        <WireframeMountain />
-        <div className="absolute top-3 left-3">
-          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
-            <Target size={12} /> Цель
-          </span>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/50 to-transparent">
+    <div className="relative mx-auto flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 200 200" className="absolute inset-0">
+        {Array.from({ length: totalTicks }).map((_, i) => {
+          const angle = (i / totalTicks) * 360
+          const isFilled = i < filledTicks
+          const rad = ((angle - 90) * Math.PI) / 180
+          const x1 = 100 + 80 * Math.cos(rad)
+          const y1 = 100 + 80 * Math.sin(rad)
+          const x2 = 100 + 92 * Math.cos(rad)
+          const y2 = 100 + 92 * Math.sin(rad)
+          return (
+            <line
+              key={i}
+              x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={isFilled ? '#C9A227' : 'rgba(243,233,221,0.12)'}
+              strokeWidth={3}
+              strokeLinecap="round"
+            />
+          )
+        })}
+      </svg>
+      <div className="text-center">
+        <div className="font-display text-3xl text-cream">{value}%</div>
+        <div className="font-body text-xs text-cream/50 mt-1">{sublabel}</div>
+      </div>
+    </div>
+  )
+}
+
+function GoalCard({ goal, onOpen }) {
+  return (
+    <button
+      onClick={() => onOpen(goal)}
+      className="relative w-full text-left rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-4 h-40"
+    >
+      <WireframeMountain />
+      <div className="absolute top-3 left-3">
+        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
+          <Target size={12} /> Цель
+        </span>
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between">
+        <div>
           <h3 className="font-display text-lg text-cream leading-snug">{goal.title}</h3>
+          <p className="font-mono text-xs text-gold mt-0.5">{goal.progress}% пройдено</p>
+        </div>
+        <div className="w-9 h-9 rounded-full bg-gold flex items-center justify-center shrink-0">
+          <ArrowUp size={16} className="text-emerald-deep" />
+        </div>
+      </div>
+    </button>
+  )
+}
+
+function GoalDetail({ goal, onBack }) {
+  return (
+    <div className="w-full max-w-sm px-6 pb-10">
+      <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
+        <ArrowLeft size={16} /> Назад
+      </button>
+
+      <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep h-44 mb-5">
+        <WireframeMountain />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+          <div className="w-14 h-14 rounded-2xl bg-black/30 flex items-center justify-center mb-3">
+            <Target size={26} className="text-gold" strokeWidth={1.5} />
+          </div>
+          <h2 className="font-display text-2xl text-cream">{goal.title}</h2>
         </div>
       </div>
 
-      {/* Низ — прогресс, описание, срок, привычки */}
-      <div className="p-4 bg-emerald-light/10">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-mono text-xs text-gold">{goal.progress}% пройдено</span>
-          <div className="w-7 h-7 rounded-full bg-gold flex items-center justify-center">
-            <ArrowUp size={14} className="text-emerald-deep" />
-          </div>
-        </div>
+      {goal.description && (
+        <p className="text-sm text-cream/60 text-center mb-5 leading-relaxed">{goal.description}</p>
+      )}
 
-        <div className="h-1.5 rounded-full bg-emerald-deep overflow-hidden mb-3">
-          <div className="h-full bg-gold transition-all duration-500" style={{ width: `${goal.progress}%` }} />
-        </div>
-
-        {goal.description && <p className="text-xs text-cream/45 mb-2">{goal.description}</p>}
-
-        {goal.target_date && (
-          <p className="text-[11px] text-cream/35 mb-2">Срок: {goal.target_date}</p>
-        )}
-
-        {goal.habits.length > 0 ? (
-          <div className="flex flex-wrap gap-1.5">
-            {goal.habits.map((h) => (
-              <span
-                key={h.id}
-                className="text-[11px] px-2 py-1 rounded-md bg-emerald-deep border border-cream/10 text-cream/60"
-              >
-                {h.name}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[11px] text-cream/30 italic">
-            Пока нет привязанных привычек — привяжи их на экране «Сегодня» при создании
-          </p>
-        )}
+      <div className="rounded-[28px] bg-emerald-light/20 border border-cream/10 p-6 mb-5 flex justify-center">
+        <TickGauge value={goal.progress} max={100} sublabel="прогресс к цели" />
       </div>
+
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="rounded-2xl bg-emerald-light/20 p-4">
+          <Flame size={18} className="text-gold mb-2" strokeWidth={1.75} />
+          <div className="font-body text-sm text-cream">{goal.habits.length}</div>
+          <div className="font-body text-xs text-cream/50">связанных привычек</div>
+        </div>
+        <div className="rounded-2xl bg-emerald-light/20 p-4">
+          <TrendingUp size={18} className="text-gold mb-2" strokeWidth={1.75} />
+          <div className="font-body text-sm text-cream">{goal.target_date || '—'}</div>
+          <div className="font-body text-xs text-cream/50">срок</div>
+        </div>
+      </div>
+
+      <h3 className="text-sm text-cream/80 mb-2">Привычки</h3>
+      {goal.habits.length > 0 ? (
+        <div className="rounded-2xl bg-emerald-light/20 border border-cream/10 divide-y divide-cream/10">
+          {goal.habits.map((h) => (
+            <div key={h.id} className="px-4 py-3 text-sm text-cream/80">
+              {h.name}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-xs text-cream/30 italic">
+          Пока нет привязанных привычек — привяжи их на экране «Сегодня» при создании
+        </p>
+      )}
     </div>
   )
 }
@@ -149,6 +207,7 @@ export default function Path({ user }) {
   const [goals, setGoals] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [selectedGoal, setSelectedGoal] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -179,6 +238,10 @@ export default function Path({ user }) {
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
 
+  if (selectedGoal) {
+    return <GoalDetail goal={selectedGoal} onBack={() => setSelectedGoal(null)} />
+  }
+
   return (
     <div className="w-full max-w-sm px-6 pb-24">
       <h2 className="font-display text-lg mb-4 text-cream/90">Мой путь</h2>
@@ -188,7 +251,7 @@ export default function Path({ user }) {
       )}
 
       {goals.map((g) => (
-        <GoalCard key={g.id} goal={g} />
+        <GoalCard key={g.id} goal={g} onOpen={setSelectedGoal} />
       ))}
 
       {showForm ? (
