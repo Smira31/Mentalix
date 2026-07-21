@@ -426,4 +426,179 @@ function HabitCard({ habit, onLog, onDelete, onOpenDetail }) {
           <p className="text-xs text-cream/35 mt-2 italic">При пропуске: {habit.skip_consequence}</p>
         )}
       </div>
-    
+    </div>
+  )
+}
+
+export default function Today({ user }) {
+  const [checkin, setCheckin] = useState(null)
+  const [habits, setHabits] = useState([])
+  const [goals, setGoals] = useState([])
+  const [draft, setDraft] = useState({ mood: 3, energy: 3, anxiety: 3, focus: 3 })
+  const [showCreate, setShowCreate] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [selectedHabit, setSelectedHabit] = useState(null)
+
+  useEffect(() => {
+    if (!user) return
+    load()
+  }, [user])
+
+  async function load() {
+    setLoading(true)
+    try {
+      const [c, h, g] = await Promise.all([
+        api.checkin.today(user.id),
+        api.habits.list(user.id),
+        api.goals.list(user.id),
+      ])
+      setCheckin(c)
+      if (c) setDraft({ mood: c.mood, energy: c.energy, anxiety: c.anxiety, focus: c.focus })
+      setHabits(h)
+      setGoals(g)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function saveCheckin() {
+    setSaving(true)
+    try {
+      const updated = await api.checkin.save(user.id, draft)
+      setCheckin(updated)
+      hapticNotify('success')
+    } catch (e) {
+      console.error(e)
+      hapticNotify('error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function logHabit(habitId, level) {
+    try {
+      const updated = await api.habits.log(habitId, user.id, level)
+      setHabits((prev) =>
+        prev.map((h) =>
+          h.id === habitId ? { ...h, streak: updated.streak, today_level: updated.today_level } : h
+        )
+      )
+      setSelectedHabit((prev) =>
+        prev && prev.id === habitId
+          ? { ...prev, streak: updated.streak, today_level: updated.today_level }
+          : prev
+      )
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  async function createHabit(draftHabit) {
+    try {
+      const habit = await api.habits.create(user.id, draftHabit)
+      setHabits((prev) => [...prev, habit])
+      setShowCreate(false)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  async function deleteHabit(habitId) {
+    try {
+      await api.habits.remove(habitId)
+      setHabits((prev) => prev.filter((h) => h.id !== habitId))
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
+
+  if (showCreate) {
+    return (
+      <HabitCreateScreen
+        goals={goals}
+        onCreate={createHabit}
+        onCancel={() => setShowCreate(false)}
+      />
+    )
+  }
+
+  if (selectedHabit) {
+    return (
+      <HabitDetail
+        habit={selectedHabit}
+        onBack={() => setSelectedHabit(null)}
+        onLog={logHabit}
+      />
+    )
+  }
+
+  const doneCount = habits.filter((h) => h.today_level).length
+  const total = habits.length
+  const priorityAction = derivePriorityAction({ checkin, habits })
+
+  return (
+    <div className="w-full max-w-sm px-6 pb-24">
+      <div className="rounded-xl border border-gold/40 bg-emerald-light/20 px-4 py-3 mb-6 animate-fade-in">
+        <div className="text-xs text-gold mb-1 font-mono">Сейчас важнее всего</div>
+        <p className="text-sm text-cream/90">{priorityAction}</p>
+      </div>
+
+      <h2 className="font-display text-lg mb-3 text-cream/90">Как ты сейчас</h2>
+      <Scale label={LABELS.mood} value={draft.mood} onChange={(v) => setDraft({ ...draft, mood: v })} />
+      <Scale label={LABELS.energy} value={draft.energy} onChange={(v) => setDraft({ ...draft, energy: v })} />
+      <Scale label={LABELS.anxiety} value={draft.anxiety} onChange={(v) => setDraft({ ...draft, anxiety: v })} />
+      <Scale label={LABELS.focus} value={draft.focus} onChange={(v) => setDraft({ ...draft, focus: v })} />
+
+      <button
+        onClick={saveCheckin}
+        disabled={saving}
+        className="w-full mb-8 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50 transition-transform active:scale-95"
+      >
+        {checkin ? 'Обновить отметку' : 'Сохранить отметку'}
+      </button>
+
+      {total > 0 && (
+        <div className="mb-4">
+          <div className="flex justify-between text-xs text-cream/50 mb-1">
+            <span>Привычки сегодня</span>
+            <span>{doneCount}/{total}</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-emerald-light/30 overflow-hidden">
+            <div
+              className="h-full bg-gold transition-all duration-500 ease-out"
+              style={{ width: total ? `${(doneCount / total) * 100}%` : '0%' }}
+            />
+          </div>
+        </div>
+      )}
+
+      <h2 className="font-display text-lg mb-3 text-cream/90">Привычки</h2>
+
+      {habits.length === 0 && (
+        <p className="text-cream/40 text-sm mb-4">Пока нет ни одной привычки</p>
+      )}
+
+      {habits.map((h) => (
+        <HabitCard
+          key={h.id}
+          habit={h}
+          onLog={logHabit}
+          onDelete={deleteHabit}
+          onOpenDetail={setSelectedHabit}
+        />
+      ))}
+
+      <button
+        onClick={() => { haptic('light'); setShowCreate(true) }}
+        className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 transition-transform active:scale-95"
+      >
+        + Новая привычка
+      </button>
+    </div>
+  )
+}
