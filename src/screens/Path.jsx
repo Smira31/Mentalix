@@ -4,51 +4,7 @@ import { Target, ArrowUp, ArrowLeft, Flame, TrendingUp } from 'lucide-react'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
-function GoalForm({ onCreate, onCancel }) {
-  const [draft, setDraft] = useState(EMPTY_DRAFT)
-
-  function set(field) {
-    return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
-  }
-
-  function submit() {
-    if (!draft.title.trim()) return
-    onCreate({ ...draft, target_date: draft.target_date || null })
-    setDraft(EMPTY_DRAFT)
-  }
-
-  return (
-    <div className="rounded-xl border border-gold/30 bg-emerald-light/20 p-4 mb-4 space-y-2">
-      <input
-        value={draft.title}
-        onChange={set('title')}
-        placeholder="Название цели"
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold"
-      />
-      <input
-        value={draft.description}
-        onChange={set('description')}
-        placeholder="Описание (необязательно)"
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold"
-      />
-      <input
-        type="date"
-        value={draft.target_date}
-        onChange={set('target_date')}
-        className="w-full bg-emerald-deep border border-cream/15 rounded-lg px-3 py-2 text-sm text-cream outline-none focus:border-gold"
-      />
-      <div className="flex gap-2 pt-1">
-        <button onClick={submit} className="flex-1 py-2 rounded-lg bg-cognac text-cream text-sm">
-          Сохранить цель
-        </button>
-        <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-cream/20 text-cream/60 text-sm">
-          Отмена
-        </button>
-      </div>
-    </div>
-  )
-}
-
+// Декоративный фон-гора со светящимися хребтами
 function WireframeMountain() {
   const rows = 5
   return (
@@ -88,6 +44,7 @@ function WireframeMountain() {
   )
 }
 
+// Кольцевая шкала с делениями — единый визуальный приём приложения
 function TickGauge({ value, max, sublabel, size = 160 }) {
   const percent = Math.max(0, Math.min(1, value / max))
   const totalTicks = 40
@@ -122,6 +79,85 @@ function TickGauge({ value, max, sublabel, size = 160 }) {
   )
 }
 
+// Полноэкранное создание цели с живым превью карточки
+function GoalCreateScreen({ onCreate, onCancel }) {
+  const [draft, setDraft] = useState(EMPTY_DRAFT)
+  const [saving, setSaving] = useState(false)
+
+  function set(field) {
+    return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
+  }
+
+  async function submit() {
+    if (!draft.title.trim() || saving) return
+    setSaving(true)
+    await onCreate({ ...draft, target_date: draft.target_date || null })
+    setSaving(false)
+  }
+
+  return (
+    <div className="w-full max-w-sm px-6 pb-10">
+      <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
+        <ArrowLeft size={16} /> Отмена
+      </button>
+
+      <h2 className="font-display text-lg mb-4 text-cream/90">Новая цель</h2>
+
+      {/* Живое превью — точно та карточка, что появится в списке */}
+      <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
+        <WireframeMountain />
+        <div className="absolute top-3 left-3">
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
+            <Target size={12} /> Цель
+          </span>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between">
+          <div>
+            <h3 className="font-display text-lg text-cream leading-snug">
+              {draft.title || 'Название появится здесь'}
+            </h3>
+            <p className="font-mono text-xs text-gold mt-0.5">0% пройдено</p>
+          </div>
+          <div className="w-9 h-9 rounded-full bg-gold flex items-center justify-center shrink-0">
+            <ArrowUp size={16} className="text-emerald-deep" />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2 mb-6">
+        <input
+          value={draft.title}
+          onChange={set('title')}
+          placeholder="Название цели"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+        />
+        <textarea
+          value={draft.description}
+          onChange={set('description')}
+          placeholder="Описание (необязательно)"
+          rows={3}
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors resize-none"
+        />
+        <input
+          type="date"
+          value={draft.target_date}
+          onChange={set('target_date')}
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream outline-none focus:border-gold transition-colors"
+        />
+      </div>
+
+      <button
+        onClick={submit}
+        disabled={!draft.title.trim() || saving}
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 transition-transform active:scale-95"
+      >
+        {saving ? 'Сохраняю...' : 'Создать цель'}
+      </button>
+    </div>
+  )
+}
+
+// Компактная карточка в списке — тап открывает детальный экран
 function GoalCard({ goal, onOpen }) {
   return (
     <button
@@ -147,6 +183,7 @@ function GoalCard({ goal, onOpen }) {
   )
 }
 
+// Полноэкранный детальный вид цели
 function GoalDetail({ goal, onBack }) {
   return (
     <div className="w-full max-w-sm px-6 pb-10">
@@ -205,7 +242,7 @@ function GoalDetail({ goal, onBack }) {
 
 export default function Path({ user }) {
   const [goals, setGoals] = useState([])
-  const [showForm, setShowForm] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
   const [selectedGoal, setSelectedGoal] = useState(null)
 
@@ -230,13 +267,17 @@ export default function Path({ user }) {
     try {
       const goal = await api.goals.create(user.id, draft)
       setGoals((prev) => [...prev, goal])
-      setShowForm(false)
+      setShowCreate(false)
     } catch (e) {
       console.error(e)
     }
   }
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
+
+  if (showCreate) {
+    return <GoalCreateScreen onCreate={createGoal} onCancel={() => setShowCreate(false)} />
+  }
 
   if (selectedGoal) {
     return <GoalDetail goal={selectedGoal} onBack={() => setSelectedGoal(null)} />
@@ -254,16 +295,12 @@ export default function Path({ user }) {
         <GoalCard key={g.id} goal={g} onOpen={setSelectedGoal} />
       ))}
 
-      {showForm ? (
-        <GoalForm onCreate={createGoal} onCancel={() => setShowForm(false)} />
-      ) : (
-        <button
-          onClick={() => setShowForm(true)}
-          className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2"
-        >
-          + Новая цель
-        </button>
-      )}
+      <button
+        onClick={() => setShowCreate(true)}
+        className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2"
+      >
+        + Новая цель
+      </button>
     </div>
   )
 }
