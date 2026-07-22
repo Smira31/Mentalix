@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import Onboarding from './Onboarding'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine } from 'lucide-react'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
+const EMOJI = ['😔', '😕', '😐', '🙂', '😄']
 const LABELS = {
   mood: 'Настроение',
   energy: 'Энергия',
@@ -96,6 +97,74 @@ function StreakBadge({ streak, freezes }) {
   )
 }
 
+function EmojiScale({ label, value, onChange }) {
+  return (
+    <div className="mb-3">
+      <div className="text-xs text-cream/50 mb-1.5">{label}</div>
+      <div className="flex gap-1.5">
+        {SCALE.map((n, i) => (
+          <button
+            key={n}
+            onClick={() => { haptic('light'); onChange(n) }}
+            className={`flex-1 h-11 rounded-xl border text-xl transition-all duration-150 active:scale-90 ${
+              value === n
+                ? 'bg-cognac/30 border-cognac scale-105'
+                : 'bg-emerald-light/15 border-cream/10 opacity-50'
+            }`}
+          >
+            {EMOJI[i]}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function MoodCard({ checkin, draft, setDraft, onSave, saving }) {
+  const [editing, setEditing] = useState(!checkin)
+
+  const filled = checkin && !editing
+
+  if (filled) {
+    return (
+      <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-4 mb-6 animate-fade-in">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 flex-wrap">
+            {Object.entries(LABELS).map(([key, label]) => (
+              <span key={key} className="flex items-center gap-1 text-xs text-cream/70">
+                {label} <span className="text-base">{EMOJI[(checkin[key] || 1) - 1]}</span>
+              </span>
+            ))}
+          </div>
+          <button
+            onClick={() => { haptic('light'); setEditing(true) }}
+            className="flex items-center gap-1 text-cream/40 text-xs shrink-0 ml-2"
+          >
+            <Pencil size={13} /> изменить
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-5 mb-6 animate-fade-in">
+      <h2 className="font-display text-lg mb-4 text-cream/90">Как ты себя чувствуешь</h2>
+      <EmojiScale label={LABELS.mood} value={draft.mood} onChange={(v) => setDraft({ ...draft, mood: v })} />
+      <EmojiScale label={LABELS.energy} value={draft.energy} onChange={(v) => setDraft({ ...draft, energy: v })} />
+      <EmojiScale label={LABELS.anxiety} value={draft.anxiety} onChange={(v) => setDraft({ ...draft, anxiety: v })} />
+      <EmojiScale label={LABELS.focus} value={draft.focus} onChange={(v) => setDraft({ ...draft, focus: v })} />
+      <button
+        onClick={async () => { await onSave(); setEditing(false) }}
+        disabled={saving}
+        className="w-full mt-2 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50 transition-transform active:scale-95"
+      >
+        {saving ? 'Сохраняю...' : checkin ? 'Обновить отметку' : 'Сохранить отметку'}
+      </button>
+    </div>
+  )
+}
+
 function Scale({ label, value, onChange }) {
   return (
     <div className="mb-3">
@@ -104,10 +173,7 @@ function Scale({ label, value, onChange }) {
         {SCALE.map((n) => (
           <button
             key={n}
-            onClick={() => {
-              haptic('light')
-              onChange(n)
-            }}
+            onClick={() => { haptic('light'); onChange(n) }}
             className={`flex-1 h-9 rounded-lg border text-sm transition-all duration-150 active:scale-90 ${
               value === n
                 ? 'bg-cognac border-cognac text-cream'
@@ -693,19 +759,13 @@ export default function Today({ user }) {
         <p className="text-sm text-cream/90">{priorityAction}</p>
       </div>
 
-      <h2 className="font-display text-lg mb-3 text-cream/90">Как ты сейчас</h2>
-      <Scale label={LABELS.mood} value={draft.mood} onChange={(v) => setDraft({ ...draft, mood: v })} />
-      <Scale label={LABELS.energy} value={draft.energy} onChange={(v) => setDraft({ ...draft, energy: v })} />
-      <Scale label={LABELS.anxiety} value={draft.anxiety} onChange={(v) => setDraft({ ...draft, anxiety: v })} />
-      <Scale label={LABELS.focus} value={draft.focus} onChange={(v) => setDraft({ ...draft, focus: v })} />
-
-      <button
-        onClick={saveCheckin}
-        disabled={saving}
-        className="w-full mb-8 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50 transition-transform active:scale-95"
-      >
-        {checkin ? 'Обновить отметку' : 'Сохранить отметку'}
-      </button>
+      <MoodCard
+        checkin={checkin}
+        draft={draft}
+        setDraft={setDraft}
+        onSave={saveCheckin}
+        saving={saving}
+      />
 
       {total > 0 && (
         <div className="mb-4">
