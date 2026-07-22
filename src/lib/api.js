@@ -1,4 +1,5 @@
 const BASE = '/api'
+
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -7,6 +8,7 @@ async function request(path, options = {}) {
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`)
   return res.json()
 }
+
 export const api = {
   habits: {
     list: (userId) => request(`/habits?user_id=${userId}`),
@@ -51,5 +53,11 @@ export const api = {
   },
   profile: {
     get: (userId) => request(`/profile?user_id=${userId}`),
+    getSettings: (userId) => request(`/profile/settings?user_id=${userId}`),
+    saveSettings: (userId, { reminder_enabled, reminder_hour }) =>
+      request('/profile/settings', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour }),
+      }),
   },
 }
