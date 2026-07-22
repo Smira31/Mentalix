@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { BarChart3 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Cell,
 } from 'recharts'
@@ -35,6 +36,26 @@ function TickGauge({ value, max, sublabel, size = 150 }) {
       <div className="text-center">
         <div className="font-display text-3xl text-cream">{value}%</div>
         <div className="font-body text-xs text-cream/50 mt-1">{sublabel}</div>
+      </div>
+    </div>
+  )
+}
+
+function EmptyAnalytics() {
+  return (
+    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+      <h2 className="font-display text-lg mb-1 text-cream/90">Аналитика</h2>
+      <p className="text-[11px] text-cream/40 mb-8">за последние дни</p>
+
+      <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 p-8 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-light/40 flex items-center justify-center mx-auto mb-4">
+          <BarChart3 size={26} className="text-gold" strokeWidth={1.5} />
+        </div>
+        <h3 className="font-display text-lg text-cream mb-2">Пока нечего показать</h3>
+        <p className="font-body text-sm text-cream/50 leading-relaxed">
+          Отмечай чек-ины и привычки хотя бы несколько дней — и здесь появятся графики
+          настроения, серий и динамики. Система начнёт видеть закономерности вместе с тобой.
+        </p>
       </div>
     </div>
   )
@@ -191,6 +212,13 @@ export default function Analytics({ user }) {
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
   if (!data) return <p className="text-cream/40 text-sm px-6">Не удалось загрузить аналитику</p>
+
+  const hasData =
+    data.habits.length > 0 ||
+    data.checkins.length > 0 ||
+    (data.daily_activity && data.daily_activity.some((d) => d.count > 0))
+
+  if (!hasData) return <EmptyAnalytics />
 
   const avgCompletion = data.habits.length
     ? Math.round(data.habits.reduce((sum, h) => sum + h.completion_rate, 0) / data.habits.length)
