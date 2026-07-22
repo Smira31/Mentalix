@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import Onboarding from './Onboarding'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil } from 'lucide-react'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil, Footprints, GraduationCap, Languages } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const EMOJI = ['🪫', '😕', '😐', '🙂', '🔋']
@@ -79,6 +79,36 @@ const HABIT_PRESETS = [
       min_version: '1 предложение',
       optimal_version: '5 минут письма',
       skip_consequence: 'Мысли остаются спутанными',
+    },
+  },
+  {
+    key: 'walk', label: 'Прогулка', Icon: Footprints,
+    data: {
+      name: 'Прогулка',
+      goal: 'Движение и свежая голова',
+      min_version: '5 минут на воздухе',
+      optimal_version: '30 минут пешком',
+      skip_consequence: 'День проходит взаперти, тело застаивается',
+    },
+  },
+  {
+    key: 'study', label: 'Учёба', Icon: GraduationCap,
+    data: {
+      name: 'Учёба',
+      goal: 'Расти в навыке и знаниях',
+      min_version: '10 минут занятия',
+      optimal_version: '45 минут фокусной учёбы',
+      skip_consequence: 'Прогресс останавливается',
+    },
+  },
+  {
+    key: 'english', label: 'Английский', Icon: Languages,
+    data: {
+      name: 'Английский',
+      goal: 'Свободно владеть языком',
+      min_version: '5 новых слов',
+      optimal_version: '20 минут практики',
+      skip_consequence: 'Язык забывается без практики',
     },
   },
 ]
@@ -196,11 +226,14 @@ const EMPTY_DRAFT = {
 function getHabitIcon(name = '') {
   const n = name.toLowerCase()
   if (n.includes('сон') || n.includes('спать') || n.includes('лож')) return Moon
-  if (n.includes('спорт') || n.includes('трениров') || n.includes('зал')) return Dumbbell
-  if (n.includes('вод') || n.includes('пить')) return Droplet
+  if (n.includes('спорт') || n.includes('трениров') || n.includes('зал') || n.includes('бег') || n.includes('отжим') || n.includes('йога') || n.includes('зарядк')) return Dumbbell
+  if (n.includes('вод') || n.includes('пить') || n.includes('стакан')) return Droplet
   if (n.includes('книг') || n.includes('чтен') || n.includes('читат')) return BookOpen
-  if (n.includes('медита') || n.includes('дыхан')) return Brain
-  if (n.includes('дневник') || n.includes('пис')) return PenLine
+  if (n.includes('медита') || n.includes('дыхан') || n.includes('осознан')) return Brain
+  if (n.includes('дневник') || n.includes('пис') || n.includes('запис')) return PenLine
+  if (n.includes('прогул') || n.includes('ходьб') || n.includes('шаг') || n.includes('улиц') || n.includes('воздух')) return Footprints
+  if (n.includes('учёб') || n.includes('учеб') || n.includes('курс') || n.includes('занят')) return GraduationCap
+  if (n.includes('англ') || n.includes('язык') || n.includes('слов')) return Languages
   return Sparkles
 }
 
