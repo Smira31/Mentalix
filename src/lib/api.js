@@ -1,5 +1,4 @@
 const BASE = '/api'
-
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -8,7 +7,6 @@ async function request(path, options = {}) {
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`)
   return res.json()
 }
-
 export const api = {
   habits: {
     list: (userId) => request(`/habits?user_id=${userId}`),
@@ -25,6 +23,22 @@ export const api = {
         body: JSON.stringify({ user_id: userId, goal_id: goalId }),
       }),
     remove: (habitId) => request(`/habits/${habitId}`, { method: 'DELETE' }),
+  },
+  rituals: {
+    list: (userId) => request(`/rituals?user_id=${userId}`),
+    create: (userId, ritual) =>
+      request('/rituals', { method: 'POST', body: JSON.stringify({ user_id: userId, ...ritual }) }),
+    log: (ritualId, userId, level) =>
+      request(`/rituals/${ritualId}/log`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, level }),
+      }),
+    remove: (ritualId) => request(`/rituals/${ritualId}`, { method: 'DELETE' }),
+    reorder: (userId, order) =>
+      request('/rituals/reorder', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, order }),
+      }),
   },
   checkin: {
     today: (userId) => request(`/checkin/today?user_id=${userId}`),

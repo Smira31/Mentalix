@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import Onboarding from './Onboarding'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil, Footprints, GraduationCap, Languages, Check, Sun } from 'lucide-react'
+import Rituals from './Rituals'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil, Footprints, GraduationCap, Languages, Check, ChevronRight } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const EMOJI = ['🪫', '😕', '😐', '🙂', '🔋']
@@ -19,12 +20,6 @@ const EMOJI_BY_KEY = {
   anxiety: EMOJI_ANXIETY,
   focus: EMOJI,
 }
-
-const TIME_OPTIONS = [
-  { key: 'morning', label: 'Утро', Icon: Sun },
-  { key: 'evening', label: 'Вечер', Icon: Moon },
-  { key: 'any', label: 'Любое', Icon: Sparkles },
-]
 
 const HABIT_PRESETS = [
   {
@@ -207,6 +202,24 @@ function MoodCard({ checkin, draft, setDraft, onSave, saving }) {
   )
 }
 
+function RitualsEntry({ onOpen }) {
+  return (
+    <button
+      onClick={() => { haptic('light'); onOpen() }}
+      className="w-full rounded-[24px] border border-gold/30 bg-gradient-to-br from-gold/15 to-emerald-light/20 p-4 mb-6 flex items-center gap-3 transition-transform active:scale-[0.98]"
+    >
+      <div className="w-11 h-11 rounded-2xl bg-gold/20 flex items-center justify-center shrink-0">
+        <Sparkles size={22} className="text-gold" strokeWidth={1.75} />
+      </div>
+      <div className="flex-1 text-left">
+        <div className="font-display text-lg text-cream">Ритуалы</div>
+        <div className="text-xs text-cream/50">обряды, что держат твой день</div>
+      </div>
+      <ChevronRight size={20} className="text-cream/40" />
+    </button>
+  )
+}
+
 function derivePriorityAction({ checkin, habits }) {
   if (!checkin) {
     return 'Начни с чек-ина — отметь, как ты сейчас, это займёт 20 секунд'
@@ -225,7 +238,7 @@ function derivePriorityAction({ checkin, habits }) {
 }
 
 const EMPTY_DRAFT = {
-  name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '', goal_id: '', time_of_day: 'any',
+  name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '', goal_id: '',
 }
 
 function getHabitIcon(name = '') {
@@ -317,30 +330,6 @@ function HabitCreateScreen({ goals, onCreate, onCancel }) {
               >
                 <PIcon size={20} strokeWidth={1.75} />
                 <span className="text-[11px]">{p.label}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      <div className="mb-5">
-        <p className="text-xs text-cream/50 mb-2">Когда выполнять</p>
-        <div className="grid grid-cols-3 gap-2">
-          {TIME_OPTIONS.map((t) => {
-            const TIcon = t.Icon
-            const active = draft.time_of_day === t.key
-            return (
-              <button
-                key={t.key}
-                onClick={() => { haptic('light'); setDraft((d) => ({ ...d, time_of_day: t.key })) }}
-                className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all active:scale-95 ${
-                  active
-                    ? 'bg-gold/15 border-gold text-gold'
-                    : 'bg-emerald-light/20 border-cream/15 text-cream/60'
-                }`}
-              >
-                <TIcon size={20} strokeWidth={1.75} />
-                <span className="text-[11px]">{t.label}</span>
               </button>
             )
           })}
@@ -694,26 +683,6 @@ function HabitCard({ habit, onLog, onDelete, onOpenDetail }) {
   )
 }
 
-function HabitGroup({ title, icon, habits, onLog, onDelete, onOpenDetail }) {
-  if (habits.length === 0) return null
-  return (
-    <div className="mb-5">
-      <h3 className="font-display text-base mb-2 text-cream/85 flex items-center gap-2">
-        <span>{icon}</span> {title}
-      </h3>
-      {habits.map((h) => (
-        <HabitCard
-          key={h.id}
-          habit={h}
-          onLog={onLog}
-          onDelete={onDelete}
-          onOpenDetail={onOpenDetail}
-        />
-      ))}
-    </div>
-  )
-}
-
 export default function Today({ user }) {
   const [checkin, setCheckin] = useState(null)
   const [habits, setHabits] = useState([])
@@ -724,6 +693,7 @@ export default function Today({ user }) {
   const [saving, setSaving] = useState(false)
   const [selectedHabit, setSelectedHabit] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showRituals, setShowRituals] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -805,6 +775,10 @@ export default function Today({ user }) {
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
 
+  if (showRituals) {
+    return <Rituals user={user} onBack={() => setShowRituals(false)} />
+  }
+
   if (habits.length === 0 && showOnboarding) {
     return <Onboarding onFinish={() => { setShowOnboarding(false); setShowCreate(true) }} />
   }
@@ -833,10 +807,6 @@ export default function Today({ user }) {
   const total = habits.length
   const priorityAction = derivePriorityAction({ checkin, habits })
 
-  const morning = habits.filter((h) => h.time_of_day === 'morning')
-  const evening = habits.filter((h) => h.time_of_day === 'evening')
-  const anytime = habits.filter((h) => h.time_of_day !== 'morning' && h.time_of_day !== 'evening')
-
   return (
     <div className="w-full max-w-sm px-6 pb-24">
       <div className="rounded-xl border border-gold/40 bg-emerald-light/20 px-4 py-3 mb-6 animate-fade-in">
@@ -852,8 +822,10 @@ export default function Today({ user }) {
         saving={saving}
       />
 
+      <RitualsEntry onOpen={() => setShowRituals(true)} />
+
       {total > 0 && (
-        <div className="mb-5">
+        <div className="mb-4">
           <div className="flex justify-between text-xs text-cream/50 mb-1">
             <span>Привычки сегодня</span>
             <span>{doneCount}/{total}</span>
@@ -867,17 +839,21 @@ export default function Today({ user }) {
         </div>
       )}
 
+      <h2 className="font-display text-lg mb-3 text-cream/90">Привычки</h2>
+
       {habits.length === 0 ? (
-        <>
-          <h2 className="font-display text-lg mb-3 text-cream/90">Привычки</h2>
-          <EmptyHabits onCreate={() => setShowCreate(true)} />
-        </>
+        <EmptyHabits onCreate={() => setShowCreate(true)} />
       ) : (
         <>
-          <HabitGroup title="Утренние ритуалы" icon="☀️" habits={morning} onLog={logHabit} onDelete={deleteHabit} onOpenDetail={setSelectedHabit} />
-          <HabitGroup title="Вечерние ритуалы" icon="🌙" habits={evening} onLog={logHabit} onDelete={deleteHabit} onOpenDetail={setSelectedHabit} />
-          <HabitGroup title="В любое время" icon="✨" habits={anytime} onLog={logHabit} onDelete={deleteHabit} onOpenDetail={setSelectedHabit} />
-
+          {habits.map((h) => (
+            <HabitCard
+              key={h.id}
+              habit={h}
+              onLog={logHabit}
+              onDelete={deleteHabit}
+              onOpenDetail={setSelectedHabit}
+            />
+          ))}
           <button
             onClick={() => { haptic('light'); setShowCreate(true) }}
             className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 transition-transform active:scale-95"
