@@ -5,12 +5,19 @@ import Onboarding from './Onboarding'
 import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
-const EMOJI = ['😔', '😕', '😐', '🙂', '😄']
+const EMOJI = ['🪫', '😕', '😐', '🙂', '🔋']
+const EMOJI_ANXIETY = ['😌', '🙂', '😐', '😰', '😱']
 const LABELS = {
   mood: 'Настроение',
   energy: 'Энергия',
   anxiety: 'Тревога',
   focus: 'Фокус',
+}
+const EMOJI_BY_KEY = {
+  mood: EMOJI,
+  energy: EMOJI,
+  anxiety: EMOJI_ANXIETY,
+  focus: EMOJI,
 }
 
 const HABIT_PRESETS = [
@@ -97,7 +104,7 @@ function StreakBadge({ streak, freezes }) {
   )
 }
 
-function EmojiScale({ label, value, onChange }) {
+function EmojiScale({ label, value, emojis, onChange }) {
   return (
     <div className="mb-3">
       <div className="text-xs text-cream/50 mb-1.5">{label}</div>
@@ -112,7 +119,7 @@ function EmojiScale({ label, value, onChange }) {
                 : 'bg-emerald-light/15 border-cream/10 opacity-50'
             }`}
           >
-            {EMOJI[i]}
+            {emojis[i]}
           </button>
         ))}
       </div>
@@ -132,7 +139,7 @@ function MoodCard({ checkin, draft, setDraft, onSave, saving }) {
           <div className="flex items-center gap-3 flex-wrap">
             {Object.entries(LABELS).map(([key, label]) => (
               <span key={key} className="flex items-center gap-1 text-xs text-cream/70">
-                {label} <span className="text-base">{EMOJI[(checkin[key] || 1) - 1]}</span>
+                {label} <span className="text-base">{EMOJI_BY_KEY[key][(checkin[key] || 1) - 1]}</span>
               </span>
             ))}
           </div>
@@ -150,10 +157,10 @@ function MoodCard({ checkin, draft, setDraft, onSave, saving }) {
   return (
     <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-5 mb-6 animate-fade-in">
       <h2 className="font-display text-lg mb-4 text-cream/90">Как ты себя чувствуешь</h2>
-      <EmojiScale label={LABELS.mood} value={draft.mood} onChange={(v) => setDraft({ ...draft, mood: v })} />
-      <EmojiScale label={LABELS.energy} value={draft.energy} onChange={(v) => setDraft({ ...draft, energy: v })} />
-      <EmojiScale label={LABELS.anxiety} value={draft.anxiety} onChange={(v) => setDraft({ ...draft, anxiety: v })} />
-      <EmojiScale label={LABELS.focus} value={draft.focus} onChange={(v) => setDraft({ ...draft, focus: v })} />
+      <EmojiScale label={LABELS.mood} value={draft.mood} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, mood: v })} />
+      <EmojiScale label={LABELS.energy} value={draft.energy} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, energy: v })} />
+      <EmojiScale label={LABELS.anxiety} value={draft.anxiety} emojis={EMOJI_ANXIETY} onChange={(v) => setDraft({ ...draft, anxiety: v })} />
+      <EmojiScale label={LABELS.focus} value={draft.focus} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, focus: v })} />
       <button
         onClick={async () => { await onSave(); setEditing(false) }}
         disabled={saving}
@@ -161,29 +168,6 @@ function MoodCard({ checkin, draft, setDraft, onSave, saving }) {
       >
         {saving ? 'Сохраняю...' : checkin ? 'Обновить отметку' : 'Сохранить отметку'}
       </button>
-    </div>
-  )
-}
-
-function Scale({ label, value, onChange }) {
-  return (
-    <div className="mb-3">
-      <div className="text-xs text-cream/50 mb-1">{label}</div>
-      <div className="flex gap-2">
-        {SCALE.map((n) => (
-          <button
-            key={n}
-            onClick={() => { haptic('light'); onChange(n) }}
-            className={`flex-1 h-9 rounded-lg border text-sm transition-all duration-150 active:scale-90 ${
-              value === n
-                ? 'bg-cognac border-cognac text-cream'
-                : 'bg-emerald-light/20 border-cream/15 text-cream/50'
-            }`}
-          >
-            {n}
-          </button>
-        ))}
-      </div>
     </div>
   )
 }
