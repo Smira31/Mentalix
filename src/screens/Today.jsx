@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake } from 'lucide-react'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const LABELS = {
@@ -10,6 +10,69 @@ const LABELS = {
   anxiety: 'Тревога',
   focus: 'Фокус',
 }
+
+const HABIT_PRESETS = [
+  {
+    key: 'sport', label: 'Спорт', Icon: Dumbbell,
+    data: {
+      name: 'Спорт',
+      goal: 'Больше энергии и здоровое тело',
+      min_version: '1 подход',
+      optimal_version: '20 минут тренировки',
+      skip_consequence: 'Тело теряет тонус, энергия падает',
+    },
+  },
+  {
+    key: 'read', label: 'Чтение', Icon: BookOpen,
+    data: {
+      name: 'Чтение',
+      goal: 'Развивать мышление и насмотренность',
+      min_version: '1 страница',
+      optimal_version: '15 минут чтения',
+      skip_consequence: 'Ум остаётся без пищи',
+    },
+  },
+  {
+    key: 'water', label: 'Вода', Icon: Droplet,
+    data: {
+      name: 'Вода',
+      goal: 'Держать тело в тонусе и ясную голову',
+      min_version: '1 стакан',
+      optimal_version: '2 литра за день',
+      skip_consequence: 'Обезвоживание, вялость, туман в голове',
+    },
+  },
+  {
+    key: 'meditation', label: 'Медитация', Icon: Brain,
+    data: {
+      name: 'Медитация',
+      goal: 'Спокойствие и контроль над вниманием',
+      min_version: '1 минута дыхания',
+      optimal_version: '10 минут практики',
+      skip_consequence: 'Тревога копится, фокус рассеивается',
+    },
+  },
+  {
+    key: 'sleep', label: 'Сон', Icon: Moon,
+    data: {
+      name: 'Ранний сон',
+      goal: 'Высыпаться и восстанавливаться',
+      min_version: 'Лечь до полуночи',
+      optimal_version: 'Лечь до 23:00',
+      skip_consequence: 'Завтра меньше сил и хуже фокус',
+    },
+  },
+  {
+    key: 'journal', label: 'Дневник', Icon: PenLine,
+    data: {
+      name: 'Дневник',
+      goal: 'Осознанность и разгрузка головы',
+      min_version: '1 предложение',
+      optimal_version: '5 минут письма',
+      skip_consequence: 'Мысли остаются спутанными',
+    },
+  },
+]
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -86,6 +149,7 @@ function getHabitIcon(name = '') {
   if (n.includes('вод') || n.includes('пить')) return Droplet
   if (n.includes('книг') || n.includes('чтен') || n.includes('читат')) return BookOpen
   if (n.includes('медита') || n.includes('дыхан')) return Brain
+  if (n.includes('дневник') || n.includes('пис')) return PenLine
   return Sparkles
 }
 
@@ -126,6 +190,11 @@ function HabitCreateScreen({ goals, onCreate, onCancel }) {
     return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
   }
 
+  function applyPreset(preset) {
+    haptic('light')
+    setDraft((d) => ({ ...d, ...preset.data }))
+  }
+
   async function submit() {
     if (!draft.name.trim() || saving) return
     setSaving(true)
@@ -140,6 +209,30 @@ function HabitCreateScreen({ goals, onCreate, onCancel }) {
       </button>
 
       <h2 className="font-display text-lg mb-4 text-cream/90">Новая привычка</h2>
+
+      <div className="mb-5">
+        <p className="text-xs text-cream/50 mb-2">Быстрый старт — выбери шаблон</p>
+        <div className="grid grid-cols-3 gap-2">
+          {HABIT_PRESETS.map((p) => {
+            const PIcon = p.Icon
+            const active = draft.name === p.data.name
+            return (
+              <button
+                key={p.key}
+                onClick={() => applyPreset(p)}
+                className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border transition-all active:scale-95 ${
+                  active
+                    ? 'bg-gold/15 border-gold text-gold'
+                    : 'bg-emerald-light/20 border-cream/15 text-cream/60'
+                }`}
+              >
+                <PIcon size={20} strokeWidth={1.75} />
+                <span className="text-[11px]">{p.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       <div className="rounded-xl border overflow-hidden mb-6 bg-emerald-light/30 border-cream/15">
         <div className="w-full flex items-center justify-between px-4 pt-3 pb-2 bg-gradient-to-br from-cream/5 to-transparent">
