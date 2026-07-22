@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
+import Onboarding from './Onboarding'
 import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
@@ -575,6 +576,7 @@ export default function Today({ user }) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [selectedHabit, setSelectedHabit] = useState(null)
+  const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -592,6 +594,7 @@ export default function Today({ user }) {
       setCheckin(c)
       if (c) setDraft({ mood: c.mood, energy: c.energy, anxiety: c.anxiety, focus: c.focus })
       setHabits(h)
+      if (h.length === 0) setShowOnboarding(true)
       setGoals(g)
     } catch (e) {
       console.error(e)
@@ -654,6 +657,10 @@ export default function Today({ user }) {
   }
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
+
+  if (habits.length === 0 && showOnboarding) {
+    return <Onboarding onFinish={() => { setShowOnboarding(false); setShowCreate(true) }} />
+  }
 
   if (showCreate) {
     return (
