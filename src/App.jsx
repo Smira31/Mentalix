@@ -31,6 +31,14 @@ function MonogramIcon({ active }) {
   )
 }
 
+function greeting() {
+  const h = new Date().getHours()
+  if (h >= 5 && h <= 11) return 'Доброе утро'
+  if (h >= 12 && h <= 17) return 'Добрый день'
+  if (h >= 18 && h <= 22) return 'Добрый вечер'
+  return 'Доброй ночи'
+}
+
 const TABS = [
   { key: 'today', label: 'Сегодня', icon: 'contrast' },
   { key: 'path', label: 'Мой путь', icon: ArrowUpRight },
@@ -65,8 +73,19 @@ export default function App() {
         <div className="w-14 h-14 rounded-full border border-gold flex items-center justify-center mb-3">
           <span className="font-display text-xl text-gold">M</span>
         </div>
-        <h1 className="font-display text-xl">Менталикс</h1>
-        <p className="text-cream/50 text-xs">система, а не мотивация</p>
+        {user && tab === 'today' ? (
+          <>
+            <h1 className="font-display text-xl">
+              {greeting()}{user.first_name ? `, ${user.first_name}` : ''}
+            </h1>
+            <p className="text-cream/50 text-xs">система, а не мотивация</p>
+          </>
+        ) : (
+          <>
+            <h1 className="font-display text-xl">Менталикс</h1>
+            <p className="text-cream/50 text-xs">система, а не мотивация</p>
+          </>
+        )}
       </div>
 
       <div key={tab} className="flex-1 w-full flex flex-col items-center animate-fade-in pb-28">
