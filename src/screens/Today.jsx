@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame } from 'lucide-react'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const LABELS = {
@@ -17,6 +17,19 @@ function haptic(style = 'light') {
 
 function hapticNotify(type = 'success') {
   WebApp.HapticFeedback?.notificationOccurred(type)
+}
+
+function StreakBadge({ streak, freezes }) {
+  return (
+    <span className="flex items-center gap-1.5 whitespace-nowrap">
+      <span className="font-mono text-xs text-gold">🔥 {streak}</span>
+      {freezes > 0 && (
+        <span className="flex items-center gap-0.5 font-mono text-xs text-mint">
+          <Snowflake size={12} strokeWidth={2} /> {freezes}
+        </span>
+      )}
+    </span>
+  )
 }
 
 function Scale({ label, value, onChange }) {
@@ -223,41 +236,51 @@ function HabitCreateScreen({ goals, onCreate, onCancel }) {
   )
 }
 
-function StreakGauge({ streak, size = 160 }) {
+function StreakGauge({ streak, freezes = 0, size = 160 }) {
   const target = 21
   const percent = Math.max(0, Math.min(1, streak / target))
   const totalTicks = 40
   const filledTicks = Math.round(percent * totalTicks)
   return (
-    <div className="relative mx-auto flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg viewBox="0 0 200 200" className="absolute inset-0">
-        {Array.from({ length: totalTicks }).map((_, i) => {
-          const angle = (i / totalTicks) * 360
-          const isFilled = i < filledTicks
-          const rad = ((angle - 90) * Math.PI) / 180
-          const x1 = 100 + 80 * Math.cos(rad)
-          const y1 = 100 + 80 * Math.sin(rad)
-          const x2 = 100 + 92 * Math.cos(rad)
-          const y2 = 100 + 92 * Math.sin(rad)
-          return (
-            <line
-              key={i}
-              x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke={isFilled ? '#C9A227' : 'rgba(243,233,221,0.12)'}
-              strokeWidth={3}
-              strokeLinecap="round"
-            />
-          )
-        })}
-      </svg>
-      <div className="text-center">
-        <div className="font-display text-3xl text-cream flex items-center gap-1 justify-center">
-          <Flame size={20} className="text-gold" /> {streak}
-        </div>
-        <div className="font-body text-xs text-cream/50 mt-1">
-          {streak >= target ? 'привычка сформирована' : `до устойчивой: ${Math.max(0, target - streak)} дн.`}
+    <div className="flex flex-col items-center">
+      <div className="relative mx-auto flex items-center justify-center" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 200 200" className="absolute inset-0">
+          {Array.from({ length: totalTicks }).map((_, i) => {
+            const angle = (i / totalTicks) * 360
+            const isFilled = i < filledTicks
+            const rad = ((angle - 90) * Math.PI) / 180
+            const x1 = 100 + 80 * Math.cos(rad)
+            const y1 = 100 + 80 * Math.sin(rad)
+            const x2 = 100 + 92 * Math.cos(rad)
+            const y2 = 100 + 92 * Math.sin(rad)
+            return (
+              <line
+                key={i}
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke={isFilled ? '#C9A227' : 'rgba(243,233,221,0.12)'}
+                strokeWidth={3}
+                strokeLinecap="round"
+              />
+            )
+          })}
+        </svg>
+        <div className="text-center">
+          <div className="font-display text-3xl text-cream flex items-center gap-1 justify-center">
+            <Flame size={20} className="text-gold" /> {streak}
+          </div>
+          <div className="font-body text-xs text-cream/50 mt-1">
+            {streak >= target ? 'привычка сформирована' : `до устойчивой: ${Math.max(0, target - streak)} дн.`}
+          </div>
         </div>
       </div>
+      {freezes > 0 && (
+        <div className="flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full bg-mint/10 border border-mint/25">
+          <Snowflake size={14} className="text-mint" strokeWidth={2} />
+          <span className="font-mono text-xs text-mint">
+            {freezes} {freezes === 1 ? 'заморозка' : 'заморозки'} в запасе
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -290,7 +313,7 @@ function HabitDetail({ habit, onBack, onLog }) {
       </div>
 
       <div className="rounded-[28px] bg-emerald-light/20 border border-cream/10 p-6 mb-5 flex justify-center">
-        <StreakGauge streak={habit.streak} />
+        <StreakGauge streak={habit.streak} freezes={habit.freezes} />
       </div>
 
       <div className="flex gap-2 mb-5">
@@ -373,7 +396,7 @@ function HabitCard({ habit, onLog, onDelete, onOpenDetail }) {
           <span className="text-sm text-cream">{habit.name}</span>
         </div>
         <span className="flex items-center gap-2">
-          <span className="font-mono text-xs text-gold whitespace-nowrap">🔥 {habit.streak}</span>
+          <StreakBadge streak={habit.streak} freezes={habit.freezes} />
           <Monogram />
           {confirming ? (
             <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
@@ -503,12 +526,14 @@ export default function Today({ user }) {
       const updated = await api.habits.log(habitId, user.id, level)
       setHabits((prev) =>
         prev.map((h) =>
-          h.id === habitId ? { ...h, streak: updated.streak, today_level: updated.today_level } : h
+          h.id === habitId
+            ? { ...h, streak: updated.streak, freezes: updated.freezes, today_level: updated.today_level }
+            : h
         )
       )
       setSelectedHabit((prev) =>
         prev && prev.id === habitId
-          ? { ...prev, streak: updated.streak, today_level: updated.today_level }
+          ? { ...prev, streak: updated.streak, freezes: updated.freezes, today_level: updated.today_level }
           : prev
       )
     } catch (e) {
