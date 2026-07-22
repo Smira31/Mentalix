@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import Onboarding from './Onboarding'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil, Footprints, GraduationCap, Languages } from 'lucide-react'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil, Footprints, GraduationCap, Languages, Check } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const EMOJI = ['🪫', '😕', '😐', '🙂', '🔋']
@@ -121,10 +121,10 @@ function hapticNotify(type = 'success') {
   WebApp.HapticFeedback?.notificationOccurred(type)
 }
 
-function StreakBadge({ streak, freezes }) {
+function StreakBadge({ streak, freezes, bump }) {
   return (
     <span className="flex items-center gap-1.5 whitespace-nowrap">
-      <span className="font-mono text-xs text-gold">🔥 {streak}</span>
+      <span className={`font-mono text-xs text-gold inline-block ${bump ? 'animate-streak-bounce' : ''}`}>🔥 {streak}</span>
       {freezes > 0 && (
         <span className="flex items-center gap-0.5 font-mono text-xs text-mint">
           <Snowflake size={12} strokeWidth={2} /> {freezes}
@@ -539,21 +539,33 @@ function HabitDetail({ habit, onBack, onLog }) {
 function HabitCard({ habit, onLog, onDelete, onOpenDetail }) {
   const level = habit.today_level
   const [confirming, setConfirming] = useState(false)
-  const [pulsing, setPulsing] = useState(false)
+  const [celebrate, setCelebrate] = useState(false)
+  const [streakBump, setStreakBump] = useState(false)
   const Icon = getHabitIcon(habit.name)
 
   function handleLog(lvl) {
+    const wasUnset = !level
+    const prevStreak = habit.streak
     haptic('medium')
-    if (!level) hapticNotify('success')
-    setPulsing(true)
-    setTimeout(() => setPulsing(false), 320)
+    if (wasUnset) {
+      hapticNotify('success')
+      setCelebrate(true)
+      setTimeout(() => setCelebrate(false), 700)
+    }
     onLog(habit.id, lvl)
+    // подскок серии, если она выросла
+    setTimeout(() => {
+      if (wasUnset) {
+        setStreakBump(true)
+        setTimeout(() => setStreakBump(false), 500)
+      }
+    }, 150)
   }
 
   return (
     <div
       className={`rounded-xl border overflow-hidden mb-2 transition-colors duration-300 ${
-        pulsing ? 'animate-pulse-once' : ''
+        celebrate ? 'animate-glow-pulse' : ''
       } ${level ? 'bg-cognac/15 border-cognac/60' : 'bg-emerald-light/30 border-cream/15'}`}
     >
       <button
@@ -567,13 +579,18 @@ function HabitCard({ habit, onLog, onDelete, onOpenDetail }) {
         }`}
       >
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-black/20">
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-black/20">
             <Icon size={16} className="text-cream" strokeWidth={1.75} />
+            {celebrate && (
+              <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-gold animate-celebrate-pop">
+                <Check size={16} className="text-emerald-deep" strokeWidth={3} />
+              </span>
+            )}
           </div>
           <span className="text-sm text-cream">{habit.name}</span>
         </div>
         <span className="flex items-center gap-2">
-          <StreakBadge streak={habit.streak} freezes={habit.freezes} />
+          <StreakBadge streak={habit.streak} freezes={habit.freezes} bump={streakBump} />
           <Monogram />
           {confirming ? (
             <span className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

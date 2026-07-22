@@ -31,10 +31,28 @@ export default {
           '40%': { transform: 'scale(1.015)' },
           '100%': { transform: 'scale(1)' },
         },
+        celebratePop: {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '60%': { transform: 'scale(1.3)', opacity: '1' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        glowPulse: {
+          '0%': { boxShadow: '0 0 0 0 rgba(184,149,46,0)' },
+          '40%': { boxShadow: '0 0 20px 4px rgba(184,149,46,0.35)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(184,149,46,0)' },
+        },
+        streakBounce: {
+          '0%': { transform: 'scale(1)' },
+          '35%': { transform: 'scale(1.5)' },
+          '100%': { transform: 'scale(1)' },
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.28s ease-out',
         'pulse-once': 'pulseOnce 0.32s ease-out',
+        'celebrate-pop': 'celebratePop 0.4s ease-out',
+        'glow-pulse': 'glowPulse 0.7s ease-out',
+        'streak-bounce': 'streakBounce 0.5s ease-out',
       },
     },
   },
