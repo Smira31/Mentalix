@@ -57,10 +57,40 @@ export default function App() {
   useEffect(() => {
     WebApp.ready()
     WebApp.expand()
-    // отключаем вертикальные свайпы, чтобы перетаскивание не сворачивало приложение
+    // отключаем вертикальные свайпы — чтобы перетаскивание не сворачивало приложение
     WebApp.disableVerticalSwipes?.()
     const tgUser = WebApp.initDataUnsafe?.user
     if (tgUser) setUser(tgUser)
+  }, [])
+
+  // запрещаем масштабирование пальцами — единый вид приложения
+  useEffect(() => {
+    const stopGesture = (e) => e.preventDefault()
+    const stopMultiTouch = (e) => {
+      if (e.touches && e.touches.length > 1) e.preventDefault()
+    }
+    let lastTouch = 0
+    const stopDoubleTapZoom = (e) => {
+      const now = Date.now()
+      if (now - lastTouch <= 300) e.preventDefault()
+      lastTouch = now
+    }
+
+    document.addEventListener('gesturestart', stopGesture, { passive: false })
+    document.addEventListener('gesturechange', stopGesture, { passive: false })
+    document.addEventListener('gestureend', stopGesture, { passive: false })
+    document.addEventListener('touchstart', stopMultiTouch, { passive: false })
+    document.addEventListener('touchmove', stopMultiTouch, { passive: false })
+    document.addEventListener('touchend', stopDoubleTapZoom, { passive: false })
+
+    return () => {
+      document.removeEventListener('gesturestart', stopGesture)
+      document.removeEventListener('gesturechange', stopGesture)
+      document.removeEventListener('gestureend', stopGesture)
+      document.removeEventListener('touchstart', stopMultiTouch)
+      document.removeEventListener('touchmove', stopMultiTouch)
+      document.removeEventListener('touchend', stopDoubleTapZoom)
+    }
   }, [])
 
   function switchTab(key) {
@@ -71,22 +101,16 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-emerald-deep text-cream flex flex-col items-center font-body">
-      <div className="pt-10 pb-4 flex flex-col items-center">
-        <div className="w-14 h-14 rounded-full border border-gold flex items-center justify-center mb-3">
-          <span className="font-display text-xl text-gold">M</span>
+      <div className="pt-8 pb-3 flex flex-col items-center">
+        <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center mb-3">
+          <span className="font-display text-lg text-gold">M</span>
         </div>
         {user && tab === 'today' ? (
-          <>
-            <h1 className="font-display text-xl">
-              {greeting()}{user.first_name ? `, ${user.first_name}` : ''}
-            </h1>
-            <p className="text-cream/50 text-xs">система, а не мотивация</p>
-          </>
+          <h1 className="font-display text-2xl text-cream text-center leading-tight">
+            {greeting()}{user.first_name ? `, ${user.first_name}` : ''}
+          </h1>
         ) : (
-          <>
-            <h1 className="font-display text-xl">Менталикс</h1>
-            <p className="text-cream/50 text-xs">система, а не мотивация</p>
-          </>
+          <h1 className="font-display text-2xl text-cream">Менталикс</h1>
         )}
       </div>
 
