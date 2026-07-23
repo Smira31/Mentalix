@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+\import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { BarChart3, Shield, Sparkles } from 'lucide-react'
 import {
@@ -66,10 +66,26 @@ function WeekChart({ dailyActivity }) {
                   dataKey="label"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: 'rgba(243,233,221,0.4)', fontSize: 11, fontFamily: 'Manrope' }}
+                  tick={(props) => {
+                    const { x, y, payload, index } = props
+                    const isToday = chartData[index]?.isToday
+                    return (
+                      <text
+                        x={x}
+                        y={y + 12}
+                        textAnchor="middle"
+                        fill={isToday ? '#96CDB0' : 'rgba(243,233,221,0.4)'}
+                        fontSize={11}
+                        fontFamily="Manrope"
+                        fontWeight={isToday ? 600 : 400}
+                      >
+                        {payload.value}
+                      </text>
+                    )
+                  }}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgba(243,233,221,0.04)' }}
+                  cursor={{ fill: 'rgba(150,205,176,0.06)' }}
                   contentStyle={{
                     background: '#16332E',
                     border: '1px solid rgba(243,233,221,0.15)',
@@ -80,12 +96,19 @@ function WeekChart({ dailyActivity }) {
                   labelStyle={{ color: '#F3E9DD' }}
                   formatter={(value, name) => [value, name === 'count' ? 'ритуалов' : 'срывов']}
                 />
-                <Bar dataKey="count" radius={[5, 5, 5, 5]} fill="#B8952E" />
+                <Bar dataKey="count" radius={[5, 5, 5, 5]}>
+                  {chartData.map((d, i) => (
+                    <Cell key={i} fill={d.isToday ? '#96CDB0' : '#B8952E'} />
+                  ))}
+                </Bar>
                 <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="#C18D52" />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex items-center gap-4 mt-2">
+          <div className="flex items-center gap-4 mt-2 flex-wrap">
+            <span className="flex items-center gap-1.5 text-[11px] text-cream/50">
+              <span className="w-2 h-2 rounded-full bg-mint" /> сегодня
+            </span>
             <span className="flex items-center gap-1.5 text-[11px] text-cream/50">
               <span className="w-2 h-2 rounded-full bg-gold" /> ритуалы
             </span>
