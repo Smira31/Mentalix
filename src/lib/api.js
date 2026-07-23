@@ -40,6 +40,22 @@ export const api = {
         body: JSON.stringify({ user_id: userId, order }),
       }),
   },
+  ascezas: {
+    list: (userId) => request(`/ascezas?user_id=${userId}`),
+    create: (userId, asceza) =>
+      request('/ascezas', { method: 'POST', body: JSON.stringify({ user_id: userId, ...asceza }) }),
+    log: (ascezaId, userId, status) =>
+      request(`/ascezas/${ascezaId}/log`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, status }),
+      }),
+    remove: (ascezaId) => request(`/ascezas/${ascezaId}`, { method: 'DELETE' }),
+    reorder: (userId, order) =>
+      request('/ascezas/reorder', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, order }),
+      }),
+  },
   checkin: {
     today: (userId) => request(`/checkin/today?user_id=${userId}`),
     save: (userId, { mood, energy, anxiety, focus, note }) =>
