@@ -3,7 +3,7 @@ import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import Onboarding from './Onboarding'
 import Rituals from './Rituals'
-import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Pencil, Footprints, GraduationCap, Languages, Check, ChevronRight } from 'lucide-react'
+import { Moon, Dumbbell, Droplet, BookOpen, Brain, Sparkles, ArrowLeft, Flame, Snowflake, PenLine, Footprints, GraduationCap, Languages, Check, ChevronRight, HeartPulse, ListChecks } from 'lucide-react'
 
 const SCALE = [1, 2, 3, 4, 5]
 const EMOJI = ['🪫', '😕', '😐', '🙂', '🔋']
@@ -135,6 +135,31 @@ function StreakBadge({ streak, freezes, bump }) {
   )
 }
 
+function EntryCard({ Icon, title, subtitle, right, onOpen, accent = 'gold' }) {
+  const tone = {
+    gold: { bg: 'bg-gold/20', text: 'text-gold', border: 'border-gold/30', grad: 'from-gold/15' },
+    mint: { bg: 'bg-mint/20', text: 'text-mint', border: 'border-mint/30', grad: 'from-mint/15' },
+    cognac: { bg: 'bg-cognac/20', text: 'text-cognac', border: 'border-cognac/30', grad: 'from-cognac/15' },
+  }[accent]
+
+  return (
+    <button
+      onClick={() => { haptic('light'); onOpen() }}
+      className={`w-full rounded-[24px] border ${tone.border} bg-gradient-to-br ${tone.grad} to-emerald-light/20 p-4 mb-3 flex items-center gap-3 transition-transform active:scale-[0.98]`}
+    >
+      <div className={`w-11 h-11 rounded-2xl ${tone.bg} flex items-center justify-center shrink-0`}>
+        <Icon size={22} className={tone.text} strokeWidth={1.75} />
+      </div>
+      <div className="flex-1 text-left">
+        <div className="font-display text-lg text-cream">{title}</div>
+        <div className="text-xs text-cream/50">{subtitle}</div>
+      </div>
+      {right && <div className="shrink-0 mr-1">{right}</div>}
+      <ChevronRight size={20} className="text-cream/40 shrink-0" />
+    </button>
+  )
+}
+
 function EmojiScale({ label, value, emojis, onChange }) {
   return (
     <div className="mb-3">
@@ -158,65 +183,30 @@ function EmojiScale({ label, value, emojis, onChange }) {
   )
 }
 
-function MoodCard({ checkin, draft, setDraft, onSave, saving }) {
-  const [editing, setEditing] = useState(!checkin)
-  const filled = checkin && !editing
-
-  if (filled) {
-    return (
-      <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-4 mb-6 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-wrap">
-            {Object.entries(LABELS).map(([key, label]) => (
-              <span key={key} className="flex items-center gap-1 text-xs text-cream/70">
-                {label} <span className="text-base">{EMOJI_BY_KEY[key][(checkin[key] || 1) - 1]}</span>
-              </span>
-            ))}
-          </div>
-          <button
-            onClick={() => { haptic('light'); setEditing(true) }}
-            className="flex items-center gap-1 text-cream/40 text-xs shrink-0 ml-2"
-          >
-            <Pencil size={13} /> изменить
-          </button>
-        </div>
-      </div>
-    )
-  }
-
+function MoodScreen({ checkin, draft, setDraft, onSave, saving, onBack }) {
   return (
-    <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-5 mb-6 animate-fade-in">
-      <h2 className="font-display text-lg mb-4 text-cream/90">Как ты себя чувствуешь</h2>
-      <EmojiScale label={LABELS.mood} value={draft.mood} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, mood: v })} />
-      <EmojiScale label={LABELS.energy} value={draft.energy} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, energy: v })} />
-      <EmojiScale label={LABELS.anxiety} value={draft.anxiety} emojis={EMOJI_ANXIETY} onChange={(v) => setDraft({ ...draft, anxiety: v })} />
-      <EmojiScale label={LABELS.focus} value={draft.focus} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, focus: v })} />
-      <button
-        onClick={async () => { await onSave(); setEditing(false) }}
-        disabled={saving}
-        className="w-full mt-2 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50 transition-transform active:scale-95"
-      >
-        {saving ? 'Сохраняю...' : checkin ? 'Обновить отметку' : 'Сохранить отметку'}
+    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+      <button onClick={() => { haptic('light'); onBack() }} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
+        <ArrowLeft size={16} /> Назад
       </button>
-    </div>
-  )
-}
 
-function RitualsEntry({ onOpen }) {
-  return (
-    <button
-      onClick={() => { haptic('light'); onOpen() }}
-      className="w-full rounded-[24px] border border-gold/30 bg-gradient-to-br from-gold/15 to-emerald-light/20 p-4 mb-6 flex items-center gap-3 transition-transform active:scale-[0.98]"
-    >
-      <div className="w-11 h-11 rounded-2xl bg-gold/20 flex items-center justify-center shrink-0">
-        <Sparkles size={22} className="text-gold" strokeWidth={1.75} />
+      <h2 className="font-display text-2xl text-cream mb-1">Как ты себя чувствуешь</h2>
+      <p className="text-xs text-cream/40 mb-5">отметь состояние — это займёт 20 секунд</p>
+
+      <div className="rounded-[24px] border border-cream/10 bg-emerald-light/15 p-5">
+        <EmojiScale label={LABELS.mood} value={draft.mood} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, mood: v })} />
+        <EmojiScale label={LABELS.energy} value={draft.energy} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, energy: v })} />
+        <EmojiScale label={LABELS.anxiety} value={draft.anxiety} emojis={EMOJI_ANXIETY} onChange={(v) => setDraft({ ...draft, anxiety: v })} />
+        <EmojiScale label={LABELS.focus} value={draft.focus} emojis={EMOJI} onChange={(v) => setDraft({ ...draft, focus: v })} />
+        <button
+          onClick={async () => { await onSave(); onBack() }}
+          disabled={saving}
+          className="w-full mt-2 py-2.5 rounded-xl bg-cognac text-cream text-sm disabled:opacity-50 transition-transform active:scale-95"
+        >
+          {saving ? 'Сохраняю...' : checkin ? 'Обновить отметку' : 'Сохранить отметку'}
+        </button>
       </div>
-      <div className="flex-1 text-left">
-        <div className="font-display text-lg text-cream">Ритуалы</div>
-        <div className="text-xs text-cream/50">обряды, что держат твой день</div>
-      </div>
-      <ChevronRight size={20} className="text-cream/40" />
-    </button>
+    </div>
   )
 }
 
@@ -683,6 +673,59 @@ function HabitCard({ habit, onLog, onDelete, onOpenDetail }) {
   )
 }
 
+function HabitsScreen({ habits, onLog, onDelete, onOpenDetail, onCreate, onBack }) {
+  const doneCount = habits.filter((h) => h.today_level).length
+  const total = habits.length
+
+  return (
+    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+      <button onClick={() => { haptic('light'); onBack() }} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
+        <ArrowLeft size={16} /> Назад
+      </button>
+
+      <h2 className="font-display text-2xl text-cream mb-1">Привычки</h2>
+      <p className="text-xs text-cream/40 mb-5">регулярность важнее размаха</p>
+
+      {total > 0 && (
+        <div className="mb-4">
+          <div className="flex justify-between text-xs text-cream/50 mb-1">
+            <span>Сегодня закрыто</span>
+            <span>{doneCount}/{total}</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-emerald-light/30 overflow-hidden">
+            <div
+              className="h-full bg-gold transition-all duration-500 ease-out"
+              style={{ width: total ? `${(doneCount / total) * 100}%` : '0%' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {habits.length === 0 ? (
+        <EmptyHabits onCreate={onCreate} />
+      ) : (
+        <>
+          {habits.map((h) => (
+            <HabitCard
+              key={h.id}
+              habit={h}
+              onLog={onLog}
+              onDelete={onDelete}
+              onOpenDetail={onOpenDetail}
+            />
+          ))}
+          <button
+            onClick={() => { haptic('light'); onCreate() }}
+            className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 transition-transform active:scale-95"
+          >
+            + Новая привычка
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function Today({ user }) {
   const [checkin, setCheckin] = useState(null)
   const [habits, setHabits] = useState([])
@@ -693,7 +736,7 @@ export default function Today({ user }) {
   const [saving, setSaving] = useState(false)
   const [selectedHabit, setSelectedHabit] = useState(null)
   const [showOnboarding, setShowOnboarding] = useState(false)
-  const [showRituals, setShowRituals] = useState(false)
+  const [screen, setScreen] = useState(null) // null | 'mood' | 'habits' | 'rituals'
 
   useEffect(() => {
     if (!user) return
@@ -775,12 +818,25 @@ export default function Today({ user }) {
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
 
-  if (showRituals) {
-    return <Rituals user={user} onBack={() => setShowRituals(false)} />
+  if (habits.length === 0 && showOnboarding) {
+    return <Onboarding onFinish={() => { setShowOnboarding(false); setScreen('habits'); setShowCreate(true) }} />
   }
 
-  if (habits.length === 0 && showOnboarding) {
-    return <Onboarding onFinish={() => { setShowOnboarding(false); setShowCreate(true) }} />
+  if (screen === 'rituals') {
+    return <Rituals user={user} onBack={() => setScreen(null)} />
+  }
+
+  if (screen === 'mood') {
+    return (
+      <MoodScreen
+        checkin={checkin}
+        draft={draft}
+        setDraft={setDraft}
+        onSave={saveCheckin}
+        saving={saving}
+        onBack={() => setScreen(null)}
+      />
+    )
   }
 
   if (showCreate) {
@@ -803,9 +859,26 @@ export default function Today({ user }) {
     )
   }
 
+  if (screen === 'habits') {
+    return (
+      <HabitsScreen
+        habits={habits}
+        onLog={logHabit}
+        onDelete={deleteHabit}
+        onOpenDetail={setSelectedHabit}
+        onCreate={() => setShowCreate(true)}
+        onBack={() => setScreen(null)}
+      />
+    )
+  }
+
   const doneCount = habits.filter((h) => h.today_level).length
   const total = habits.length
   const priorityAction = derivePriorityAction({ checkin, habits })
+
+  const moodSummary = checkin
+    ? `${EMOJI_BY_KEY.mood[(checkin.mood || 1) - 1]} ${EMOJI_BY_KEY.energy[(checkin.energy || 1) - 1]} ${EMOJI_BY_KEY.anxiety[(checkin.anxiety || 1) - 1]} ${EMOJI_BY_KEY.focus[(checkin.focus || 1) - 1]}`
+    : null
 
   return (
     <div className="w-full max-w-sm px-6 pb-24">
@@ -814,54 +887,31 @@ export default function Today({ user }) {
         <p className="text-sm text-cream/90">{priorityAction}</p>
       </div>
 
-      <MoodCard
-        checkin={checkin}
-        draft={draft}
-        setDraft={setDraft}
-        onSave={saveCheckin}
-        saving={saving}
+      <EntryCard
+        Icon={HeartPulse}
+        title="Состояние"
+        subtitle={checkin ? 'отмечено сегодня' : 'ещё не отмечено'}
+        right={moodSummary ? <span className="text-base">{moodSummary}</span> : null}
+        onOpen={() => setScreen('mood')}
+        accent="cognac"
       />
 
-      <RitualsEntry onOpen={() => setShowRituals(true)} />
+      <EntryCard
+        Icon={Sparkles}
+        title="Ритуалы"
+        subtitle="обряды, что держат твой день"
+        onOpen={() => setScreen('rituals')}
+        accent="gold"
+      />
 
-      {total > 0 && (
-        <div className="mb-4">
-          <div className="flex justify-between text-xs text-cream/50 mb-1">
-            <span>Привычки сегодня</span>
-            <span>{doneCount}/{total}</span>
-          </div>
-          <div className="h-1.5 rounded-full bg-emerald-light/30 overflow-hidden">
-            <div
-              className="h-full bg-gold transition-all duration-500 ease-out"
-              style={{ width: total ? `${(doneCount / total) * 100}%` : '0%' }}
-            />
-          </div>
-        </div>
-      )}
-
-      <h2 className="font-display text-lg mb-3 text-cream/90">Привычки</h2>
-
-      {habits.length === 0 ? (
-        <EmptyHabits onCreate={() => setShowCreate(true)} />
-      ) : (
-        <>
-          {habits.map((h) => (
-            <HabitCard
-              key={h.id}
-              habit={h}
-              onLog={logHabit}
-              onDelete={deleteHabit}
-              onOpenDetail={setSelectedHabit}
-            />
-          ))}
-          <button
-            onClick={() => { haptic('light'); setShowCreate(true) }}
-            className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 transition-transform active:scale-95"
-          >
-            + Новая привычка
-          </button>
-        </>
-      )}
+      <EntryCard
+        Icon={ListChecks}
+        title="Привычки"
+        subtitle="регулярность важнее размаха"
+        right={total > 0 ? <span className="font-mono text-xs text-mint">{doneCount}/{total}</span> : null}
+        onOpen={() => setScreen('habits')}
+        accent="mint"
+      />
     </div>
   )
 }
