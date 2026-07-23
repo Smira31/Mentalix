@@ -57,6 +57,8 @@ export default function App() {
   useEffect(() => {
     WebApp.ready()
     WebApp.expand()
+    // отключаем вертикальные свайпы, чтобы перетаскивание не сворачивало приложение
+    WebApp.disableVerticalSwipes?.()
     const tgUser = WebApp.initDataUnsafe?.user
     if (tgUser) setUser(tgUser)
   }, [])

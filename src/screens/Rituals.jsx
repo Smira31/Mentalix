@@ -173,26 +173,31 @@ function CreateRitualScreen({ onCreate, onCancel }) {
     setSaving(false)
   }
 
+  const inputCls =
+    'w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-3.5 py-2.5 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors'
+
   return (
-    <div className="w-full max-w-sm px-6 pb-10">
-      <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
-        <ArrowLeft size={16} /> Отмена
-      </button>
-      <h2 className="font-display text-lg mb-4 text-cream/90">Новый ритуал</h2>
-      <div className="space-y-2 mb-6">
-        <input value={draft.name} onChange={set('name')} placeholder="Название ритуала"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold" />
-        <input value={draft.goal} onChange={set('goal')} placeholder="Зачем он нужен"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold" />
-        <input value={draft.min_version} onChange={set('min_version')} placeholder="Минимум"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold" />
-        <input value={draft.optimal_version} onChange={set('optimal_version')} placeholder="Оптимум"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold" />
-        <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Что теряется при пропуске"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold" />
+    <div className="w-full max-w-sm px-5 pb-6 -mt-6">
+      <div className="flex items-center justify-between mb-3">
+        <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm">
+          <ArrowLeft size={16} /> Отмена
+        </button>
+        <h2 className="font-display text-base text-cream/90">Новый ритуал</h2>
       </div>
-      <button onClick={submit} disabled={!draft.name.trim() || saving}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95">
+
+      <div className="space-y-1.5 mb-4">
+        <input value={draft.name} onChange={set('name')} placeholder="Название ритуала" className={inputCls} />
+        <input value={draft.goal} onChange={set('goal')} placeholder="Зачем он нужен" className={inputCls} />
+        <input value={draft.min_version} onChange={set('min_version')} placeholder="Минимум" className={inputCls} />
+        <input value={draft.optimal_version} onChange={set('optimal_version')} placeholder="Оптимум" className={inputCls} />
+        <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Что теряется при пропуске" className={inputCls} />
+      </div>
+
+      <button
+        onClick={submit}
+        disabled={!draft.name.trim() || saving}
+        className="w-full py-3 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95"
+      >
         {saving ? 'Сохраняю...' : 'Создать ритуал'}
       </button>
     </div>
