@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { ArrowLeft, Sparkles, Flame, Snowflake, Check } from 'lucide-react'
+import { ArrowLeft, Sparkles, Snowflake, Check, GripVertical } from 'lucide-react'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -35,7 +35,7 @@ function Monogram() {
   )
 }
 
-function RitualCard({ ritual, onLog, onDelete }) {
+function RitualCard({ ritual, onLog, onDelete, dragHandlers, isDragging, isOver }) {
   const level = ritual.today_level
   const [confirming, setConfirming] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
@@ -60,12 +60,17 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   return (
     <div
-      className={`rounded-xl border overflow-hidden mb-2 transition-colors duration-300 ${
+      {...dragHandlers}
+      className={`rounded-xl border overflow-hidden mb-2 transition-all duration-200 ${
         celebrate ? 'animate-glow-pulse' : ''
+      } ${
+        isDragging ? 'opacity-60 scale-[1.03] shadow-lg shadow-black/40 z-10 relative' : ''
+      } ${
+        isOver ? 'border-gold border-dashed' : ''
       } ${level ? 'bg-cognac/15 border-cognac/60' : 'bg-emerald-light/30 border-cream/15'}`}
     >
       <div
-        className={`w-full flex items-center justify-between px-4 pt-3 pb-2 bg-gradient-to-br ${
+        className={`w-full flex items-center justify-between px-3 pt-3 pb-2 bg-gradient-to-br ${
           level === 'optimal'
             ? 'from-gold/20 to-transparent'
             : level === 'min'
@@ -73,8 +78,9 @@ function RitualCard({ ritual, onLog, onDelete }) {
             : 'from-cream/5 to-transparent'
         }`}
       >
-        <div className="flex items-center gap-2">
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-black/20">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <GripVertical size={16} className="text-cream/25 shrink-0" />
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-black/20 shrink-0">
             <Sparkles size={16} className="text-cream" strokeWidth={1.75} />
             {celebrate && (
               <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-gold animate-celebrate-pop">
@@ -82,9 +88,9 @@ function RitualCard({ ritual, onLog, onDelete }) {
               </span>
             )}
           </div>
-          <span className="text-sm text-cream">{ritual.name}</span>
+          <span className="text-sm text-cream truncate">{ritual.name}</span>
         </div>
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 shrink-0">
           <StreakBadge streak={ritual.streak} freezes={ritual.freezes} bump={streakBump} />
           <Monogram />
           {confirming ? (
@@ -197,6 +203,10 @@ export default function Rituals({ user, onBack }) {
   const [rituals, setRituals] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
+  const [dragIndex, setDragIndex] = useState(null)
+  const [overIndex, setOverIndex] = useState(null)
+  const longPressTimer = useRef(null)
+  const listRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
@@ -205,6 +215,21 @@ export default function Rituals({ user, onBack }) {
       .catch((e) => console.error(e))
       .finally(() => setLoading(false))
   }, [user])
+
+  // блокируем скролл страницы, пока тащим
+  useEffect(() => {
+    if (dragIndex !== null) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+  }, [dragIndex])
 
   async function logRitual(ritualId, level) {
     try {
@@ -232,6 +257,51 @@ export default function Rituals({ user, onBack }) {
     } catch (e) { console.error(e) }
   }
 
+  async function saveOrder(list) {
+    try {
+      await api.rituals.reorder(user.id, list.map((r) => r.id))
+    } catch (e) { console.error(e) }
+  }
+
+  function startLongPress(index) {
+    longPressTimer.current = setTimeout(() => {
+      haptic('medium')
+      setDragIndex(index)
+    }, 400)
+  }
+
+  function cancelLongPress() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
+
+  function handleTouchMove(e) {
+    if (dragIndex === null) return
+    const touch = e.touches[0]
+    const el = document.elementFromPoint(touch.clientX, touch.clientY)
+    const card = el?.closest('[data-ritual-index]')
+    if (card) {
+      const idx = Number(card.getAttribute('data-ritual-index'))
+      if (idx !== overIndex) setOverIndex(idx)
+    }
+  }
+
+  function handleTouchEnd() {
+    cancelLongPress()
+    if (dragIndex !== null && overIndex !== null && dragIndex !== overIndex) {
+      const next = [...rituals]
+      const [moved] = next.splice(dragIndex, 1)
+      next.splice(overIndex, 0, moved)
+      setRituals(next)
+      saveOrder(next)
+      hapticNotify('success')
+    }
+    setDragIndex(null)
+    setOverIndex(null)
+  }
+
   if (showCreate) {
     return <CreateRitualScreen onCreate={createRitual} onCancel={() => setShowCreate(false)} />
   }
@@ -243,7 +313,9 @@ export default function Rituals({ user, onBack }) {
       </button>
 
       <h2 className="font-display text-2xl text-cream mb-1">Ритуалы</h2>
-      <p className="text-xs text-cream/40 mb-5">твои ежедневные обряды</p>
+      <p className="text-xs text-cream/40 mb-5">
+        {rituals.length > 1 ? 'зажми карточку, чтобы поменять порядок' : 'обряды, что держат твой день'}
+      </p>
 
       {loading ? (
         <p className="text-cream/40 text-sm">Загрузка...</p>
@@ -263,9 +335,25 @@ export default function Rituals({ user, onBack }) {
         </div>
       ) : (
         <>
-          {rituals.map((r) => (
-            <RitualCard key={r.id} ritual={r} onLog={logRitual} onDelete={deleteRitual} />
-          ))}
+          <div ref={listRef}>
+            {rituals.map((r, i) => (
+              <div key={r.id} data-ritual-index={i}>
+                <RitualCard
+                  ritual={r}
+                  onLog={logRitual}
+                  onDelete={deleteRitual}
+                  isDragging={dragIndex === i}
+                  isOver={dragIndex !== null && overIndex === i && dragIndex !== i}
+                  dragHandlers={{
+                    onTouchStart: () => startLongPress(i),
+                    onTouchMove: handleTouchMove,
+                    onTouchEnd: handleTouchEnd,
+                    onTouchCancel: handleTouchEnd,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
           <button onClick={() => { haptic('light'); setShowCreate(true) }}
             className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 active:scale-95">
             + Новый ритуал
