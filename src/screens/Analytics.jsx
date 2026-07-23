@@ -15,40 +15,6 @@ const CATEGORY_LABELS = {
   food: 'пищевое',
 }
 
-function TickGauge({ value, sublabel, size = 150, color = '#B8952E' }) {
-  const percent = Math.max(0, Math.min(1, value / 100))
-  const totalTicks = 40
-  const filledTicks = Math.round(percent * totalTicks)
-  return (
-    <div className="relative mx-auto flex items-center justify-center" style={{ width: size, height: size }}>
-      <svg viewBox="0 0 200 200" className="absolute inset-0">
-        {Array.from({ length: totalTicks }).map((_, i) => {
-          const angle = (i / totalTicks) * 360
-          const isFilled = i < filledTicks
-          const rad = ((angle - 90) * Math.PI) / 180
-          const x1 = 100 + 80 * Math.cos(rad)
-          const y1 = 100 + 80 * Math.sin(rad)
-          const x2 = 100 + 92 * Math.cos(rad)
-          const y2 = 100 + 92 * Math.sin(rad)
-          return (
-            <line
-              key={i}
-              x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke={isFilled ? color : 'rgba(243,233,221,0.12)'}
-              strokeWidth={3}
-              strokeLinecap="round"
-            />
-          )
-        })}
-      </svg>
-      <div className="text-center">
-        <div className="font-display text-3xl text-cream">{value}%</div>
-        <div className="font-body text-xs text-cream/50 mt-1">{sublabel}</div>
-      </div>
-    </div>
-  )
-}
-
 function EmptyAnalytics() {
   return (
     <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
@@ -82,53 +48,57 @@ function WeekChart({ dailyActivity }) {
     }
   })
 
+  const hasAny = chartData.some((d) => d.count > 0 || d.breaks > 0)
+
   return (
     <div className="rounded-[24px] bg-emerald-light/15 border border-cream/15 p-4">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[11px] text-cream/60">Ритуалы за неделю</h4>
-        <span className="text-[11px] text-cream/40">выполнено в день</span>
+        <h4 className="text-[11px] text-cream/60">За неделю</h4>
+        <span className="text-[11px] text-cream/40">по дням</span>
       </div>
-      <div className="h-32">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} barCategoryGap={16}>
-            <XAxis
-              dataKey="label"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: 'rgba(243,233,221,0.4)', fontSize: 11, fontFamily: 'Manrope' }}
-            />
-            <Tooltip
-              contentStyle={{
-                background: '#16332E',
-                border: '1px solid rgba(243,233,221,0.15)',
-                borderRadius: 12,
-                fontFamily: 'Manrope',
-                fontSize: 12,
-              }}
-              labelStyle={{ color: '#F3E9DD' }}
-              formatter={(value, name) => [value, name === 'count' ? 'ритуалов' : 'срывов']}
-            />
-            <Bar dataKey="count" radius={[6, 6, 6, 6]}>
-              {chartData.map((d, i) => (
-                <Cell key={i} fill={d.isToday ? '#B8952E' : 'rgba(243,233,221,0.15)'} />
-              ))}
-            </Bar>
-            <Bar dataKey="breaks" radius={[6, 6, 6, 6]}>
-              {chartData.map((d, i) => (
-                <Cell key={i} fill="#C18D52" />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="flex items-center gap-4 mt-2">
-        <span className="flex items-center gap-1.5 text-[11px] text-cream/50">
-          <span className="w-2 h-2 rounded-full bg-gold" /> ритуалы
-        </span>
-        <span className="flex items-center gap-1.5 text-[11px] text-cream/50">
-          <span className="w-2 h-2 rounded-full bg-cognac" /> срывы
-        </span>
-      </div>
+
+      {hasAny ? (
+        <>
+          <div className="h-32">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} barCategoryGap={14} barGap={3}>
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgba(243,233,221,0.4)', fontSize: 11, fontFamily: 'Manrope' }}
+                />
+                <Tooltip
+                  cursor={{ fill: 'rgba(243,233,221,0.04)' }}
+                  contentStyle={{
+                    background: '#16332E',
+                    border: '1px solid rgba(243,233,221,0.15)',
+                    borderRadius: 12,
+                    fontFamily: 'Manrope',
+                    fontSize: 12,
+                  }}
+                  labelStyle={{ color: '#F3E9DD' }}
+                  formatter={(value, name) => [value, name === 'count' ? 'ритуалов' : 'срывов']}
+                />
+                <Bar dataKey="count" radius={[5, 5, 5, 5]} fill="#B8952E" />
+                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="#C18D52" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="flex items-center gap-4 mt-2">
+            <span className="flex items-center gap-1.5 text-[11px] text-cream/50">
+              <span className="w-2 h-2 rounded-full bg-gold" /> ритуалы
+            </span>
+            <span className="flex items-center gap-1.5 text-[11px] text-cream/50">
+              <span className="w-2 h-2 rounded-full bg-cognac" /> срывы
+            </span>
+          </div>
+        </>
+      ) : (
+        <p className="text-xs text-cream/35 py-8 text-center leading-relaxed">
+          За эту неделю пока нет отметок.<br />Начни отмечаться — здесь появится картина дней.
+        </p>
+      )}
     </div>
   )
 }
