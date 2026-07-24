@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
-import { ArrowUpRight, AlignJustify, User } from 'lucide-react'
+import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon } from 'lucide-react'
 import Today from './screens/Today'
 import Path from './screens/Path'
 import Analytics from './screens/Analytics'
@@ -65,8 +65,6 @@ export default function App() {
     WebApp.disableVerticalSwipes?.()
     const tgUser = WebApp.initDataUnsafe?.user
     if (tgUser) setUser(tgUser)
-    WebApp.SettingsButton.show()
-    WebApp.SettingsButton.onClick(() => setShowSettings(true))
   }, [])
 
   // запрещаем масштабирование пальцами — единый вид приложения
@@ -107,10 +105,17 @@ export default function App() {
 
   return (
     <div
-  className="min-h-screen text-cream flex flex-col items-center font-body bg-cover bg-center bg-fixed"
-  style={{ backgroundImage: "url('/bg.jpg')" }}
->
-      <div className="pt-8 pb-3 flex flex-col items-center">
+      className="min-h-screen text-cream flex flex-col items-center font-body bg-cover bg-center bg-fixed"
+      style={{ backgroundImage: "url('/bg.jpg')" }}
+    >
+      <div className="pt-8 pb-3 w-full relative flex flex-col items-center">
+        <button
+          onClick={() => setShowSettings(true)}
+          aria-label="Настройки"
+          className="absolute right-5 top-8 w-10 h-10 rounded-full border border-gold/50 flex items-center justify-center active:opacity-60 active:scale-95 transition-all"
+        >
+          <SettingsIcon size={18} className="text-gold" />
+        </button>
         <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center mb-3">
           <span className="font-display text-lg text-gold">M</span>
         </div>
@@ -144,9 +149,10 @@ export default function App() {
 
       {user && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2 max-w-md mx-auto w-full">
-          <div className="flex justify-around items-center bg-emerald/90 backdrop-blur-md border border-emerald-light/30 rounded-[28px] px-2 py-2 shadow-lg shadow-black/30">
-            {TABS.map((t) => {
+          <div className="flex justify-around items-center px-2 py-2">
+            {TABS.map((t, i) => {
               const active = tab === t.key
+              const isCenter = i === Math.floor(TABS.length / 2)
               return (
                 <button
                   key={t.key}
@@ -158,18 +164,20 @@ export default function App() {
                   <span
                     className={[
                       'flex items-center justify-center rounded-full transition-all duration-300 ease-out',
-                      active
-                        ? 'w-11 h-11 bg-gold -translate-y-1 shadow-lg shadow-gold/25'
-                        : 'w-10 h-10 bg-emerald-light/50',
+                      isCenter
+                        ? 'w-16 h-16 bg-gold -translate-y-3 shadow-xl shadow-gold/40'
+                        : active
+                          ? 'w-11 h-11 bg-gold/90 -translate-y-1 shadow-lg shadow-gold/25'
+                          : 'w-10 h-10 bg-emerald-light/40',
                     ].join(' ')}
                   >
-                    {t.icon === 'contrast' && <ContrastIcon active={active} />}
-                    {t.icon === 'monogram' && <MonogramIcon active={active} />}
+                    {t.icon === 'contrast' && <ContrastIcon active={active || isCenter} />}
+                    {t.icon === 'monogram' && <MonogramIcon active={active || isCenter} />}
                     {typeof t.icon !== 'string' && (
                       <t.icon
-                        size={20}
+                        size={isCenter ? 26 : 20}
                         strokeWidth={2}
-                        className={active ? 'text-emerald-deep' : 'text-mint/70'}
+                        className={active || isCenter ? 'text-emerald-deep' : 'text-mint/70'}
                       />
                     )}
                   </span>
