@@ -4,15 +4,20 @@ export const telegramAdapter = {
   name: 'telegram',
 
   init() {
-    WebApp.ready()
-    WebApp.expand()
-    WebApp.disableVerticalSwipes?.()
+    try {
+      WebApp.ready?.()
+      WebApp.expand?.()
+      WebApp.disableVerticalSwipes?.()
+    } catch {}
   },
 
-  // шапка и фон Telegram синхронизируются с темой приложения (день/ночь)
+  // шапка и фон Telegram синхронизируются с темой приложения (день/ночь).
+  // Все вызовы защищены: в старых клиентах/версиях SDK методов может не быть
   setThemeColors(bgHex) {
-    WebApp.setHeaderColor(bgHex)
-    WebApp.setBackgroundColor(bgHex)
+    try {
+      WebApp.setHeaderColor?.(bgHex)
+      WebApp.setBackgroundColor?.(bgHex)
+    } catch {}
   },
 
   getUser() {
