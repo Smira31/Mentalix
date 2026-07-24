@@ -106,7 +106,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-emerald-deep text-cream flex flex-col items-center font-body">
+    <div
+  className="min-h-screen text-cream flex flex-col items-center font-body bg-cover bg-center bg-fixed"
+  style={{ backgroundImage: "url('/bg.jpg')" }}
+>
       <div className="pt-8 pb-3 flex flex-col items-center">
         <div className="w-12 h-12 rounded-full border border-gold flex items-center justify-center mb-3">
           <span className="font-display text-lg text-gold">M</span>
