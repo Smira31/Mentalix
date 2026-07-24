@@ -6,9 +6,13 @@ export const telegramAdapter = {
   init() {
     WebApp.ready()
     WebApp.expand()
-    WebApp.setHeaderColor('#0E211D')
-    WebApp.setBackgroundColor('#0E211D')
     WebApp.disableVerticalSwipes?.()
+  },
+
+  // шапка и фон Telegram синхронизируются с темой приложения (день/ночь)
+  setThemeColors(bgHex) {
+    WebApp.setHeaderColor(bgHex)
+    WebApp.setBackgroundColor(bgHex)
   },
 
   getUser() {

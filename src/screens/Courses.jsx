@@ -83,13 +83,13 @@ function CourseCreateScreen({ onCreate, onCancel }) {
         <ArrowLeft size={16} /> Отмена
       </button>
 
-      <h2 className="font-display text-lg mb-4 text-cream/90">Новый курс</h2>
+      <h2 className="font-display text-lg mb-4 text-cream/90">Новый материал</h2>
 
       <div className="space-y-2 mb-6">
         <input
           value={draft.title}
           onChange={set('title')}
-          placeholder="Название курса"
+          placeholder="Название"
           className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
         />
         <input
@@ -112,7 +112,7 @@ function CourseCreateScreen({ onCreate, onCancel }) {
         disabled={!draft.title.trim() || saving}
         className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 transition-transform active:scale-95"
       >
-        {saving ? 'Сохраняю...' : 'Добавить курс'}
+        {saving ? 'Сохраняю...' : 'Добавить в библиотеку'}
       </button>
     </div>
   )
@@ -157,7 +157,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
             </button>
           </div>
         ) : (
-          <button onClick={() => setConfirming(true)} className="text-cream/40 p-1.5" aria-label="Удалить курс">
+          <button onClick={() => setConfirming(true)} className="text-cream/40 p-1.5" aria-label="Удалить материал">
             <Trash2 size={16} />
           </button>
         )}
@@ -200,7 +200,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
         <input
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
-          placeholder="Что вынес из курса..."
+          placeholder="Что вынес из материала..."
           className="flex-1 bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-2.5 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
         />
         <button
@@ -220,7 +220,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
           ))}
         </div>
       ) : (
-        <p className="text-xs text-cream/30 italic">Пока нет заметок по этому курсу</p>
+        <p className="text-xs text-cream/30 italic">Пока нет заметок по этому материалу</p>
       )}
     </div>
   )
@@ -303,7 +303,7 @@ export default function Courses({ user }) {
   return (
     <div className="w-full max-w-sm px-6 pb-24">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-lg text-cream/90">Курсы</h2>
+        <h2 className="font-display text-lg text-cream/90">Библиотека</h2>
         <button
           onClick={() => setShowCreate(true)}
           className="w-8 h-8 rounded-full bg-gold flex items-center justify-center"
@@ -328,7 +328,7 @@ export default function Courses({ user }) {
 
       {filtered.length === 0 ? (
         <p className="text-cream/30 text-sm text-center py-10">
-          {courses.length === 0 ? 'Пока нет ни одного курса — добавь первый' : 'Ничего не найдено'}
+          {courses.length === 0 ? 'Библиотека пуста — добавь первый материал' : 'Ничего не найдено'}
         </p>
       ) : (
         filtered.map((c) => <CourseCard key={c.id} course={c} onOpen={setSelected} />)

@@ -1,38 +1,38 @@
 import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { Send, ArrowLeft, Waves, Compass, NotebookPen } from 'lucide-react'
+import { Send, ArrowLeft, MessageCircle, Mountain, Footprints } from 'lucide-react'
 
 const PERSONAS = [
   {
     key: 'mayak',
-    name: 'Маяк',
-    tagline: 'выслушает и поддержит',
-    desc: 'Тёплый друг-психолог. Поможет разобраться в чувствах, когда непросто.',
-    Icon: Waves,
-    accent: 'text-mint',
-    ring: 'border-mint/40',
-    glow: 'bg-mint/10',
+    name: 'Собеседник',
+    tagline: 'выслушает без оценки',
+    desc: 'Тёплый и внимательный. Поможет разобраться в чувствах, когда непросто.',
+    Icon: MessageCircle,
+    accent: 'text-gold',
+    ring: 'border-cream/15',
+    glow: 'bg-gold/10',
   },
   {
     key: 'kompas',
-    name: 'Компас',
+    name: 'Наставник',
     tagline: 'вернёт к действию',
-    desc: 'Наставник по дисциплине. Разложит цель на шаги и не даст себя жалеть.',
-    Icon: Compass,
+    desc: 'Строгий и честный. Разложит цель на шаги и не даст себя жалеть.',
+    Icon: Mountain,
     accent: 'text-gold',
-    ring: 'border-gold/40',
+    ring: 'border-cream/15',
     glow: 'bg-gold/10',
   },
   {
     key: 'dnevnik',
-    name: 'Дневник',
-    tagline: 'поможет услышать себя',
-    desc: 'Помощник по рефлексии. Подведёт итоги дня и задаст вопросы для самоанализа.',
-    Icon: NotebookPen,
-    accent: 'text-cognac',
-    ring: 'border-cognac/40',
-    glow: 'bg-cognac/10',
+    name: 'Следопыт',
+    tagline: 'видит твои паттерны',
+    desc: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
+    Icon: Footprints,
+    accent: 'text-gold',
+    ring: 'border-cream/15',
+    glow: 'bg-gold/10',
   },
 ]
 
