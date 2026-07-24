@@ -4,6 +4,8 @@ import { api } from '../lib/api'
 import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react'
 import Path from './Path'
 import CheckIn from './CheckIn'
+import History from './History'
+import QuoteView from './QuoteView'
 
 // ── лента недели, как у stoic. ──
 function WeekStrip() {
@@ -69,7 +71,8 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
   const [loading, setLoading] = useState(true)
   const [dailyQuote, setDailyQuote] = useState(null)
   const [checkin, setCheckin] = useState(null)
-  const [sub, setSub] = useState(null) // null | 'path' | 'checkin'
+  const [sub, setSub] = useState(null) // null | 'path' | 'checkin' | 'quote'
+  const [pathTab, setPathTab] = useState('path') // 'path' | 'history'
 
   useEffect(() => {
     if (!user || sub !== null) return
@@ -98,11 +101,16 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
     return <CheckIn user={user} onDone={() => setSub(null)} />
   }
 
-  // ── Путь открывается прямо из «Сегодня» ──
+  // ── полноэкранные цитаты ──
+  if (sub === 'quote') {
+    return <QuoteView user={user} todayQuote={dailyQuote} onClose={() => setSub(null)} />
+  }
+
+  // ── Путь и История ──
   if (sub === 'path') {
     return (
       <div className="w-full flex flex-col items-center animate-fade-in">
-        <div className="w-full max-w-md px-5 pb-2 flex items-center gap-3">
+        <div className="w-full max-w-md px-5 pb-3 flex items-center gap-3">
           <button
             onClick={() => { platform.haptic('light'); setSub(null) }}
             aria-label="Назад"
@@ -110,9 +118,28 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           >
             <ChevronLeft size={20} className="text-cream/60" />
           </button>
-          <span className="font-display text-lg text-cream lowercase">путь.</span>
+          <div className="flex-1 flex bg-emerald rounded-full p-1">
+            {[['path', 'Путь'], ['history', 'История']].map(([k, label]) => (
+              <button
+                key={k}
+                onClick={() => { platform.haptic('light'); setPathTab(k) }}
+                className={[
+                  'flex-1 py-2 rounded-full text-[13px] font-bold border-0 transition-colors',
+                  pathTab === k ? 'bg-cream/10 text-cream' : 'bg-transparent text-cream/40',
+                ].join(' ')}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-        <Path user={user} />
+        {pathTab === 'path' ? (
+          <Path user={user} />
+        ) : (
+          <div className="w-full max-w-md px-5 pb-40">
+            <History user={user} />
+          </div>
+        )}
       </div>
     )
   }
@@ -287,12 +314,16 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
         ))}
       </div>
 
-      {/* ── мысль дня ── */}
+      {/* ── мысль дня: тап — полноэкранный режим со свайпами ── */}
       {dailyQuote && (
-        <div className="rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in">
-          <div className="text-[12px] text-cream/40 font-semibold mb-3">Мысль дня</div>
-          <p className="font-display text-[19px] text-cream leading-snug">{dailyQuote}</p>
-        </div>
+        <button
+          onClick={() => { platform.haptic('light'); setSub('quote') }}
+          className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+        >
+          <span className="block text-[12px] text-cream/40 font-semibold mb-3">Мысль дня</span>
+          <span className="block font-display text-[19px] text-cream leading-snug">{dailyQuote}</span>
+          <span className="block text-[11px] text-cream/30 font-semibold mt-4">открыть все →</span>
+        </button>
       )}
     </div>
   )

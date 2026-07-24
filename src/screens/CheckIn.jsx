@@ -54,14 +54,25 @@ const SCALE_STEPS = [
   },
 ]
 
+// вечером заметка превращается в короткую рефлексию: три вопроса о дне
+const EVENING_PROMPTS = [
+  { key: 'good', title: 'Что сегодня получилось?', hint: 'Даже маленькое считается', prefix: 'Получилось' },
+  { key: 'hard', title: 'Что было трудно?', hint: 'Трудность — тоже часть пути', prefix: 'Трудно' },
+  { key: 'takeaway', title: 'Какой вывод забираешь?', hint: 'Одна мысль, которую стоит запомнить', prefix: 'Вывод' },
+]
+
 export default function CheckIn({ user, onDone }) {
-  const [step, setStep] = useState(0) // 0..3 шкалы, 4 заметка, 5 празднование
+  const isEvening = new Date().getHours() >= 18
+  const noteSteps = isEvening ? EVENING_PROMPTS.length : 1
+  const [step, setStep] = useState(0) // шкалы → заметка/рефлексия → празднование
   const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
   const [note, setNote] = useState('')
+  const [answers, setAnswers] = useState({})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(false)
 
-  const totalSteps = SCALE_STEPS.length + 1 // + заметка
+  const totalSteps = SCALE_STEPS.length + noteSteps
+  const doneStep = totalSteps // индекс экрана празднования
 
   function pick(key, level) {
     platform.haptic('light')
@@ -73,10 +84,16 @@ export default function CheckIn({ user, onDone }) {
   async function submit() {
     setSaving(true)
     setError(false)
+    const finalNote = isEvening
+      ? EVENING_PROMPTS
+          .map((pr) => (answers[pr.key] || '').trim() && `${pr.prefix}: ${answers[pr.key].trim()}`)
+          .filter(Boolean)
+          .join('\n') || null
+      : note.trim() || null
     try {
-      await api.checkin.save(user.id, { ...values, note: note.trim() || null })
+      await api.checkin.save(user.id, { ...values, note: finalNote })
       platform.haptic('success')
-      setStep(5)
+      setStep(doneStep)
     } catch (e) {
       console.error(e)
       setError(true)
@@ -86,7 +103,7 @@ export default function CheckIn({ user, onDone }) {
   }
 
   // ── празднование ──
-  if (step === 5) {
+  if (step === doneStep) {
     return (
       <div className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col items-center justify-center px-8 text-center animate-fade-in">
         <div className="animate-celebrate-pop mb-8">
@@ -108,8 +125,11 @@ export default function CheckIn({ user, onDone }) {
     )
   }
 
-  const isNoteStep = step === SCALE_STEPS.length
+  const isNoteStep = step >= SCALE_STEPS.length
   const scale = SCALE_STEPS[step]
+  const promptIdx = step - SCALE_STEPS.length
+  const prompt = isEvening ? EVENING_PROMPTS[promptIdx] : null
+  const isLastNote = promptIdx === noteSteps - 1
 
   return (
     <div className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col animate-fade-in">
@@ -179,21 +199,27 @@ export default function CheckIn({ user, onDone }) {
         </div>
       )}
 
-      {/* ── заметка ── */}
+      {/* ── заметка (день) / рефлексия (вечер) ── */}
       {isNoteStep && (
-        <div className="flex-1 flex flex-col px-6 pt-10 animate-fade-in">
+        <div key={step} className="flex-1 flex flex-col px-6 pt-10 animate-fade-in">
           <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
-            Чек-ин дня · {totalSteps} из {totalSteps}
+            {isEvening ? 'Вечерняя рефлексия' : 'Чек-ин дня'} · {step + 1} из {totalSteps}
           </div>
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">Что на уме?</h2>
+          <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+            {prompt ? prompt.title : 'Что на уме?'}
+          </h2>
           <p className="text-[14px] text-cream/45 mt-2 mb-6 text-center">
-            Пара слов — уже разговор с собой. Можно пропустить.
+            {prompt ? prompt.hint : 'Пара слов — уже разговор с собой. Можно пропустить.'}
           </p>
           <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
+            value={prompt ? (answers[prompt.key] || '') : note}
+            onChange={(e) =>
+              prompt
+                ? setAnswers((a) => ({ ...a, [prompt.key]: e.target.value }))
+                : setNote(e.target.value)
+            }
             placeholder="Начни писать..."
-            rows={6}
+            rows={5}
             className="w-full max-w-md mx-auto rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[15px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body"
           />
           {error && (
@@ -202,19 +228,31 @@ export default function CheckIn({ user, onDone }) {
             </p>
           )}
           <div className="flex flex-col items-center gap-3 mt-8 pb-10">
-            <button
-              onClick={submit}
-              disabled={saving}
-              className="cta-pill text-[16px] px-12 py-4 disabled:opacity-50"
-            >
-              {saving ? 'Сохраняю...' : 'Завершить'}
-            </button>
-            {!note.trim() && !saving && (
+            {prompt && !isLastNote ? (
+              <button
+                onClick={() => { platform.haptic('light'); setStep(step + 1) }}
+                className="cta-pill text-[16px] px-12 py-4"
+              >
+                Дальше
+              </button>
+            ) : (
               <button
                 onClick={submit}
+                disabled={saving}
+                className="cta-pill text-[16px] px-12 py-4 disabled:opacity-50"
+              >
+                {saving ? 'Сохраняю...' : 'Завершить'}
+              </button>
+            )}
+            {!saving && (
+              <button
+                onClick={() => {
+                  platform.haptic('light')
+                  prompt && !isLastNote ? setStep(step + 1) : submit()
+                }}
                 className="text-[13px] font-semibold text-cream/40 bg-transparent border-0"
               >
-                Пропустить и завершить
+                Пропустить
               </button>
             )}
           </div>
