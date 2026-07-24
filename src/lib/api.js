@@ -135,4 +135,12 @@ export const api = {
         }),
       }),
   },
+  subscription: {
+    get: (userId) => request(`/subscription?user_id=${userId}`),
+    donate: (userId, amount, currency = 'RUB') =>
+      request('/subscription/donate', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, amount, currency }),
+      }),
+  },
 }

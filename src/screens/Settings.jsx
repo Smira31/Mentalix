@@ -3,7 +3,7 @@
 // Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Основные
 //         4. Поддержка      5. Документы    6. Версия  7. Аккаунт
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,7 +16,10 @@ import {
   Trash2,
   Heart,
 } from 'lucide-react'
+import { api } from '../lib/api'
 import QuotesManager from './QuotesManager'
+import SubscriptionManager from './SubscriptionManager'
+import DonateScreen from './DonateScreen'
 
 function SectionLabel({ children }) {
   return (
@@ -69,13 +72,28 @@ function Toggle({ checked, onChange }) {
 
 export default function Settings({ user, onBack, onNavigate }) {
   const [telegramNotifs, setTelegramNotifs] = useState(false)
-  const [screen, setScreen] = useState(null) // null | 'quotes'
-  const tierLabel = user?.tier === 'pro' ? 'Про' : 'Базовый'
+  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate'
+  const [tier, setTier] = useState('base')
   const go = (key) => onNavigate?.(key)
+
+  useEffect(() => {
+    if (!user) return
+    api.subscription.get(user.id).then((s) => setTier(s.tier)).catch(console.error)
+  }, [user, screen])
 
   if (screen === 'quotes') {
     return <QuotesManager user={user} onBack={() => setScreen(null)} />
   }
+
+  if (screen === 'subscription') {
+    return <SubscriptionManager user={user} tier={tier} onBack={() => setScreen(null)} />
+  }
+
+  if (screen === 'donate') {
+    return <DonateScreen user={user} onBack={() => setScreen(null)} />
+  }
+
+  const tierLabel = tier === 'pro' ? 'Про' : 'Базовый'
 
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
@@ -87,8 +105,18 @@ export default function Settings({ user, onBack, onNavigate }) {
       </div>
 
       <Card>
-        <Row icon={User} title={user?.first_name ?? 'Профиль'} subtitle={`Тариф: ${tierLabel}`} onClick={() => go('profile-edit')} />
-        <Row title="Управлять подпиской" onClick={() => go('subscription')} divider={false} />
+        <Row
+          icon={User}
+          title={user?.first_name ?? 'Профиль'}
+          subtitle={`Тариф: ${tierLabel}`}
+          right={
+            <span className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-sage/70'}`}>
+              {tierLabel}
+            </span>
+          }
+          onClick={() => go('profile-edit')}
+        />
+        <Row title="Управлять подпиской" onClick={() => setScreen('subscription')} divider={false} />
       </Card>
 
       <SectionLabel>Уведомления</SectionLabel>
@@ -107,7 +135,7 @@ export default function Settings({ user, onBack, onNavigate }) {
       <SectionLabel>Поддержка</SectionLabel>
       <Card>
         <Row icon={LifeBuoy} title="Написать в поддержку" subtitle="@mentalix_support_bot" onClick={() => window.open('https://t.me/mentalix_support_bot', '_blank')} />
-        <Row icon={Heart} title="Поддержать проект" onClick={() => go('donate')} divider={false} />
+        <Row icon={Heart} title="Поддержать проект" onClick={() => setScreen('donate')} divider={false} />
       </Card>
 
       <SectionLabel>Документы</SectionLabel>
