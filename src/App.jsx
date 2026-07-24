@@ -165,7 +165,7 @@ export default function App() {
                     className={[
                       'flex items-center justify-center rounded-full transition-all duration-300 ease-out',
                       isCenter
-                        ? 'w-16 h-16 bg-gold -translate-y-3 shadow-xl shadow-gold/40'
+                        ? 'w-16 h-16 bg-gold -translate-y-6 shadow-xl shadow-gold/40 ring-4 ring-cream/15'
                         : active
                           ? 'w-11 h-11 bg-gold/90 -translate-y-1 shadow-lg shadow-gold/25'
                           : 'w-10 h-10 bg-emerald-light/40',
