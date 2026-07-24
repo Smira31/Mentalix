@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import Achievements from './Achievements'
 import { Flame, CalendarDays, Target, ListChecks, Info, Bell } from 'lucide-react'
 
 function StatCard({ icon: Icon, value, label }) {
@@ -172,6 +173,8 @@ export default function Profile({ user }) {
           </p>
         </>
       )}
+
+      <Achievements user={user} />
 
       <h3 className="text-sm text-cream/80 mb-2">Настройки</h3>
       <ReminderSettings user={user} />
