@@ -148,5 +148,9 @@ export const api = {
       request('/auth/email/request-code', { method: 'POST', body: JSON.stringify({ email }) }),
     verify: (email, code) =>
       request('/auth/email/verify', { method: 'POST', body: JSON.stringify({ email, code }) }),
+    generateLinkCode: (telegramUserId) =>
+      request('/auth/link/generate', { method: 'POST', body: JSON.stringify({ user_id: telegramUserId }) }),
+    confirmLink: (webUserId, code) =>
+      request('/auth/link/confirm', { method: 'POST', body: JSON.stringify({ web_user_id: webUserId, code }) }),
   },
 }

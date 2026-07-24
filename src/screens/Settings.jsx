@@ -20,6 +20,7 @@ import { api } from '../lib/api'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
+import LinkWebAccount from './LinkWebAccount'
 
 function SectionLabel({ children }) {
   return (
@@ -72,7 +73,7 @@ function Toggle({ checked, onChange }) {
 
 export default function Settings({ user, onBack, onNavigate }) {
   const [telegramNotifs, setTelegramNotifs] = useState(false)
-  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate'
+  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web'
   const [tier, setTier] = useState('base')
   const go = (key) => onNavigate?.(key)
 
@@ -91,6 +92,10 @@ export default function Settings({ user, onBack, onNavigate }) {
 
   if (screen === 'donate') {
     return <DonateScreen user={user} onBack={() => setScreen(null)} />
+  }
+
+  if (screen === 'link-web') {
+    return <LinkWebAccount user={user} onBack={() => setScreen(null)} />
   }
 
   const tierLabel = tier === 'pro' ? 'Про' : 'Базовый'
@@ -129,7 +134,8 @@ export default function Settings({ user, onBack, onNavigate }) {
       <SectionLabel>Основные</SectionLabel>
       <Card>
         <Row title="Имя" subtitle={user?.first_name} onClick={() => go('name')} />
-        <Row icon={Globe} title="Язык" subtitle="Русский" onClick={() => go('language')} divider={false} />
+        <Row icon={Globe} title="Язык" subtitle="Русский" onClick={() => go('language')} />
+        <Row icon={Globe} title="Связать с сайтом" subtitle="Использовать те же данные в браузере" onClick={() => setScreen('link-web')} divider={false} />
       </Card>
 
       <SectionLabel>Поддержка</SectionLabel>
