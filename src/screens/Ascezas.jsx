@@ -48,31 +48,31 @@ function AscezaCard({ asceza, onLog, onDelete, dragHandlers, isDragging, isOver 
   return (
     <div
       {...dragHandlers}
-      className={`rounded-xl border overflow-hidden mb-2 transition-all duration-200 ${
+      className={`rounded-3xl overflow-hidden mb-3 transition-all duration-200 ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${isDragging ? 'opacity-60 scale-[1.03] shadow-lg shadow-black/40 z-10 relative' : ''} ${
-        isOver ? 'border-gold border-dashed' : ''
+        isOver ? 'ring-1 ring-gold/60' : ''
       } ${
         status === 'held'
-          ? 'bg-mint/10 border-mint/50'
+          ? 'bg-gold/10'
           : status === 'broke'
-          ? 'bg-cognac/15 border-cognac/50'
-          : 'bg-emerald-light/30 border-cream/15'
+          ? 'bg-emerald-light/40'
+          : 'bg-emerald'
       }`}
     >
-      <div className="w-full flex items-center justify-between px-3 pt-3 pb-2">
+      <div className="w-full flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <GripVertical size={16} className="text-cream/25 shrink-0" />
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-black/20 shrink-0">
-            <Icon size={16} className="text-cream" strokeWidth={1.75} />
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gold/10 shrink-0">
+            <Icon size={16} className="text-gold" strokeWidth={1.75} />
             {celebrate && (
-              <span className="absolute inset-0 flex items-center justify-center rounded-lg bg-mint animate-celebrate-pop">
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-gold animate-celebrate-pop">
                 <Check size={16} className="text-emerald-deep" strokeWidth={3} />
               </span>
             )}
           </div>
           <div className="min-w-0">
-            <div className="text-sm text-cream truncate">{asceza.name}</div>
+            <div className="text-[15px] font-bold text-cream truncate">{asceza.name}</div>
             <div className="text-[10px] text-cream/40">{meta.label}</div>
           </div>
         </div>
@@ -104,21 +104,21 @@ function AscezaCard({ asceza, onLog, onDelete, dragHandlers, isDragging, isOver 
         </span>
       </div>
 
-      <div className="px-4 pb-3">
+      <div className="px-4 pb-4">
         {asceza.reason && <p className="text-xs text-cream/45 mb-2">{asceza.reason}</p>}
         <div className="flex gap-2">
           <button
             onClick={() => handleLog('held')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              status === 'held' ? 'bg-mint border-mint text-emerald-deep' : 'border-cream/20 text-cream/50'
+            className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+              status === 'held' ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
             }`}
           >
             <Shield size={13} /> Удержался
           </button>
           <button
             onClick={() => handleLog('broke')}
-            className={`flex-1 py-1.5 rounded-lg border text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              status === 'broke' ? 'bg-cognac border-cognac text-cream' : 'border-cream/20 text-cream/50'
+            className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+              status === 'broke' ? 'bg-cream/15 text-cream' : 'bg-cream/5 text-cream/50'
             }`}
           >
             <ShieldOff size={13} /> Сорвался
@@ -152,17 +152,18 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
   }
 
   const inputCls =
-    'w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-3.5 py-2.5 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors'
+    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
 
   const activeCat = categoryMeta(draft.category)
 
   return (
     <div className="w-full max-w-sm px-5 pb-6 -mt-4">
-      <div className="flex items-center justify-between mb-3">
-        <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm">
-          <ArrowLeft size={16} /> Отмена
+      <div className="flex items-center gap-3 mb-5 pt-2">
+        <button onClick={onCancel} aria-label="Отмена"
+          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
+          <ArrowLeft size={18} className="text-cream/60" />
         </button>
-        <h2 className="font-display text-base text-cream/90">Новая аскеза</h2>
+        <h2 className="font-display text-[20px] text-cream lowercase">новая аскеза.</h2>
       </div>
 
       <div className="mb-3">
@@ -175,8 +176,8 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
               <button
                 key={c.key}
                 onClick={() => { haptic('light'); setDraft((d) => ({ ...d, category: c.key })) }}
-                className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all active:scale-95 ${
-                  active ? 'bg-gold/15 border-gold text-gold' : 'bg-emerald-light/20 border-cream/15 text-cream/50'
+                className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-0 transition-all active:scale-95 ${
+                  active ? 'bg-gold/15 text-gold' : 'bg-emerald text-cream/40'
                 }`}
               >
                 <CIcon size={17} strokeWidth={1.75} />
@@ -188,7 +189,7 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
         <p className="text-[11px] text-cream/35 mt-1.5">{activeCat.hint}</p>
       </div>
 
-      <div className="space-y-1.5 mb-4">
+      <div className="space-y-2 mb-5">
         <input value={draft.name} onChange={set('name')} placeholder="От чего отказываешься" className={inputCls} />
         <input value={draft.reason} onChange={set('reason')} placeholder="Зачем — что получишь взамен" className={inputCls} />
         <input value={draft.trigger} onChange={set('trigger')} placeholder="Что провоцирует (триггер)" className={inputCls} />
@@ -198,7 +199,7 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
       <button
         onClick={submit}
         disabled={!draft.name.trim() || saving}
-        className="w-full py-3 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95"
+        className="cta-pill w-full py-4 text-[16px] disabled:opacity-40"
       >
         {saving ? 'Сохраняю...' : 'Принять аскезу'}
       </button>
@@ -316,12 +317,14 @@ export default function Ascezas({ user, onBack }) {
 
   return (
     <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
-      <button onClick={() => { haptic('light'); onBack() }} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
-        <ArrowLeft size={16} /> Назад
-      </button>
-
-      <h2 className="font-display text-2xl text-cream mb-1">Аскезы</h2>
-      <p className="text-xs text-cream/40 mb-5">
+      <div className="flex items-center gap-3 mb-2">
+        <button onClick={() => { haptic('light'); onBack() }} aria-label="Назад"
+          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
+          <ArrowLeft size={18} className="text-cream/60" />
+        </button>
+        <h2 className="font-display text-[22px] text-cream lowercase">аскезы.</h2>
+      </div>
+      <p className="text-[12px] text-cream/40 mb-5 px-1">
         {total > 1 ? 'зажми карточку, чтобы поменять порядок' : 'от чего ты отказываешься'}
       </p>
 
@@ -331,9 +334,9 @@ export default function Ascezas({ user, onBack }) {
             <span>Удержано сегодня</span>
             <span>{heldToday}/{total}</span>
           </div>
-          <div className="h-1.5 rounded-full bg-emerald-light/30 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-cream/10 overflow-hidden">
             <div
-              className="h-full bg-mint transition-all duration-500 ease-out"
+              className="h-full bg-gold transition-all duration-500 ease-out"
               style={{ width: total ? `${(heldToday / total) * 100}%` : '0%' }}
             />
           </div>
@@ -343,16 +346,15 @@ export default function Ascezas({ user, onBack }) {
       {loading ? (
         <p className="text-cream/40 text-sm">Загрузка...</p>
       ) : ascezas.length === 0 ? (
-        <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 p-6 text-center mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-light/40 flex items-center justify-center mx-auto mb-3">
-            <Shield size={22} className="text-mint" strokeWidth={1.5} />
+        <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
+          <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
+            <Shield size={24} className="text-gold" strokeWidth={1.5} />
           </div>
           <h3 className="font-display text-lg text-cream mb-1">Аскез пока нет</h3>
           <p className="text-sm text-cream/50 mb-4 leading-relaxed">
             Аскеза — сознательный отказ. Выбери одну вредную привычку и назови её честно.
           </p>
-          <button onClick={() => setShowCreate(true)}
-            className="px-5 py-2.5 rounded-xl bg-gold text-emerald-deep text-sm font-medium active:scale-95">
+          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
             Принять аскезу
           </button>
         </div>
@@ -378,7 +380,7 @@ export default function Ascezas({ user, onBack }) {
             ))}
           </div>
           <button onClick={() => { haptic('light'); setShowCreate(true) }}
-            className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2 active:scale-95">
+            className="w-full py-3.5 rounded-full bg-emerald text-cream/60 text-[14px] font-semibold mt-2 active:scale-[0.98] border-0 transition-transform">
             + Новая аскеза
           </button>
         </>
