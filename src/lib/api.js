@@ -93,6 +93,13 @@ export const api = {
         body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour }),
       }),
   },
+quotes: {
+    list: (userId) => request(`/quotes?user_id=${userId}`),
+    create: (userId, text, tag) =>
+      request('/quotes', { method: 'POST', body: JSON.stringify({ user_id: userId, text, tag }) }),
+    remove: (quoteId) => request(`/quotes/${quoteId}`, { method: 'DELETE' }),
+    today: (userId) => request(`/quotes/today?user_id=${userId}`),
+  },
   courses: {
     list: (userId) => request(`/courses?user_id=${userId}`),
     create: (userId, course) =>

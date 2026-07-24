@@ -3,7 +3,7 @@ import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
-import { Sparkles, Shield, ChevronRight } from 'lucide-react'
+import { Sparkles, Shield, ChevronRight, Compass } from 'lucide-react'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -58,6 +58,7 @@ export default function Today({ user }) {
   const [ascezas, setAscezas] = useState([])
   const [loading, setLoading] = useState(true)
   const [screen, setScreen] = useState(null) // null | 'rituals' | 'ascezas'
+  const [dailyQuote, setDailyQuote] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -66,12 +67,14 @@ export default function Today({ user }) {
 
   async function load() {
     try {
-      const [r, a] = await Promise.all([
+      const [r, a, q] = await Promise.all([
         api.rituals.list(user.id),
         api.ascezas.list(user.id),
+        api.quotes.today(user.id),
       ])
       setRituals(r)
       setAscezas(a)
+      setDailyQuote(q.text)
     } catch (e) {
       console.error(e)
     } finally {
@@ -99,6 +102,16 @@ export default function Today({ user }) {
         <div className="text-[11px] text-gold mb-1.5 font-mono uppercase tracking-wide">Сейчас важнее всего</div>
         <p className="text-base text-cream leading-snug">{priorityAction}</p>
       </div>
+
+      {dailyQuote && (
+        <div className="rounded-[24px] border border-mint/30 bg-gradient-to-br from-mint/10 to-emerald-light/20 px-5 py-4 mb-6 animate-fade-in flex items-start gap-3">
+          <Compass size={18} className="text-mint shrink-0 mt-0.5" strokeWidth={1.75} />
+          <div>
+            <div className="text-[11px] text-mint mb-1.5 font-mono uppercase tracking-wide">Считка дня</div>
+            <p className="text-base text-cream/90 leading-snug italic">{dailyQuote}</p>
+          </div>
+        </div>
+      )}
 
       <EntryCard
         Icon={Sparkles}
