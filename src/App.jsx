@@ -149,7 +149,7 @@ export default function App() {
 
       {user && (
         <nav className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-2 max-w-md mx-auto w-full">
-          <div className="flex justify-around items-center px-2 py-2">
+          <div className="flex justify-around items-center px-2 py-2 rounded-[28px] border border-cream/10 bg-white/[0.03] backdrop-blur-sm">
             {TABS.map((t, i) => {
               const active = tab === t.key
               const isCenter = i === Math.floor(TABS.length / 2)
