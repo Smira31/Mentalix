@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { ArrowLeft, Brain, Zap, Shuffle, Wind, Check, X } from 'lucide-react'
+import { ArrowLeft, Brain, Zap, Shuffle, Wind, Check } from 'lucide-react'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -47,7 +47,7 @@ const COLORS = [
   { name: 'Синий', hex: '#5C8FE8' },
   { name: 'Жёлтый', hex: '#E8D65C' },
 ]
-const TOTAL_ROUNDS_ATTENTION = 12
+const TOTAL_ROUNDS_ATTENTION = 10
 
 function AttentionGame({ onFinish }) {
   const [round, setRound] = useState(0)
@@ -56,26 +56,30 @@ function AttentionGame({ onFinish }) {
   const [colorHex, setColorHex] = useState(null)
   const [isMatch, setIsMatch] = useState(false)
 
-  function nextRound() {
+  function makeRound() {
     const wordColor = COLORS[Math.floor(Math.random() * COLORS.length)]
     const match = Math.random() < 0.5
-    const displayColor = match ? wordColor : COLORS.filter((c) => c.name !== wordColor.name)[Math.floor(Math.random() * 3)]
+    const displayColor = match
+      ? wordColor
+      : COLORS.filter((c) => c.name !== wordColor.name)[Math.floor(Math.random() * 3)]
     setWord(wordColor.name)
     setColorHex(displayColor.hex)
     setIsMatch(match)
   }
 
-  useEffect(() => { nextRound() }, [])
+  useEffect(() => { makeRound() }, [])
 
   function answer(userSaysMatch) {
     haptic('light')
-    if (userSaysMatch === isMatch) setCorrect((c) => c + 1)
+    const wasCorrect = userSaysMatch === isMatch
+    const newCorrect = correct + (wasCorrect ? 1 : 0)
     const next = round + 1
     if (next >= TOTAL_ROUNDS_ATTENTION) {
-      onFinish(correct + (userSaysMatch === isMatch ? 1 : 0))
+      onFinish(newCorrect)
     } else {
+      setCorrect(newCorrect)
       setRound(next)
-      nextRound()
+      makeRound()
     }
   }
 
@@ -105,13 +109,14 @@ function AttentionGame({ onFinish }) {
 
 // ---------- 2. Память — последовательности ----------
 const TILE_COLORS = ['#B8952E', '#96CDB0', '#C18D52', '#5A8F76']
+const MEMORY_ROUNDS = 4 // после 4-го успешного уровня — завершение
 
 function MemoryGame({ onFinish }) {
+  const [level, setLevel] = useState(1)
   const [sequence, setSequence] = useState([])
   const [userInput, setUserInput] = useState([])
   const [showing, setShowing] = useState(true)
   const [activeTile, setActiveTile] = useState(null)
-  const [level, setLevel] = useState(1)
 
   useEffect(() => {
     const seq = Array.from({ length: level + 2 }, () => Math.floor(Math.random() * 4))
@@ -132,16 +137,18 @@ function MemoryGame({ onFinish }) {
   function tapTile(i) {
     if (showing) return
     haptic('light')
+    const idx = userInput.length
     const next = [...userInput, i]
     setUserInput(next)
-    const idx = next.length - 1
+
     if (sequence[idx] !== i) {
-      onFinish(level)
+      haptic('error')
+      onFinish(level - 1)
       return
     }
     if (next.length === sequence.length) {
-      if (level >= 6) {
-        onFinish(level + 1)
+      if (level >= MEMORY_ROUNDS) {
+        onFinish(level)
       } else {
         setTimeout(() => setLevel((l) => l + 1), 500)
       }
@@ -151,7 +158,7 @@ function MemoryGame({ onFinish }) {
   return (
     <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
       <p className="text-xs text-cream/40 mb-8">
-        {showing ? 'Запоминай порядок...' : 'Повтори последовательность'} · Уровень {level}
+        {showing ? 'Запоминай порядок...' : 'Повтори последовательность'} · Уровень {level}/{MEMORY_ROUNDS}
       </p>
       <div className="grid grid-cols-2 gap-4 w-full max-w-[240px]">
         {TILE_COLORS.map((color, i) => (
@@ -173,35 +180,37 @@ function MemoryGame({ onFinish }) {
 }
 
 // ---------- 3. Реакция ----------
+const REACTION_ROUNDS = 5
+
 function ReactionGame({ onFinish }) {
-  const [phase, setPhase] = useState('wait') // wait | ready | tooSoon | done
+  const [phase, setPhase] = useState('waiting') // waiting | ready | tooSoon
   const [round, setRound] = useState(0)
   const [times, setTimes] = useState([])
+  const [attemptKey, setAttemptKey] = useState(0)
   const startRef = useRef(0)
   const timeoutRef = useRef(null)
 
   useEffect(() => {
-    if (round >= 5) {
-      const avg = times.reduce((a, b) => a + b, 0) / times.length
+    if (round >= REACTION_ROUNDS) {
+      const avg = times.length ? times.reduce((a, b) => a + b, 0) / times.length : 1000
       onFinish(Math.max(0, Math.round(2000 - avg)))
       return
     }
-    setPhase('wait')
-    const delay = 1200 + Math.random() * 2000
+    setPhase('waiting')
+    const delay = 1000 + Math.random() * 1800
     timeoutRef.current = setTimeout(() => {
       startRef.current = Date.now()
       setPhase('ready')
     }, delay)
     return () => clearTimeout(timeoutRef.current)
-  }, [round])
+  }, [round, attemptKey])
 
   function tap() {
-    if (phase === 'wait') {
+    if (phase === 'waiting') {
       clearTimeout(timeoutRef.current)
+      haptic('light')
       setPhase('tooSoon')
-      setTimeout(() => setRound((r) => r), 800)
-      // повторяем этот же раунд заново
-      setTimeout(() => setPhase('wait2'), 800)
+      setTimeout(() => setAttemptKey((k) => k + 1), 900)
       return
     }
     if (phase === 'ready') {
@@ -214,18 +223,18 @@ function ReactionGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
-      <p className="text-xs text-cream/40 mb-6">Раунд {Math.min(round + 1, 5)} / 5</p>
+      <p className="text-xs text-cream/40 mb-6">Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}</p>
       <button
         onClick={tap}
         className="w-full aspect-square rounded-[32px] flex items-center justify-center transition-colors"
         style={{
-          backgroundColor: phase === 'ready' ? '#B8952E' : phase === 'tooSoon' ? '#E85C5C33' : 'rgba(150,205,176,0.12)',
+          backgroundColor: phase === 'ready' ? '#B8952E' : phase === 'tooSoon' ? 'rgba(232,92,92,0.25)' : 'rgba(150,205,176,0.12)',
         }}
       >
         <span className="text-center text-cream/80 text-sm px-8">
-          {phase === 'wait' && 'Жди зелёного сигнала...'}
+          {phase === 'waiting' && 'Жди золотого сигнала...'}
           {phase === 'ready' && 'Тапни сейчас!'}
-          {phase === 'tooSoon' && 'Рано! Жди сигнала'}
+          {phase === 'tooSoon' && 'Рано! Сейчас повторим'}
         </span>
       </button>
     </div>
@@ -245,8 +254,8 @@ function PlasticityGame({ onFinish }) {
   function submit() {
     haptic('light')
     const isRight = input.trim().toUpperCase() === reversed
-    const next = round + 1
     const newCorrect = correct + (isRight ? 1 : 0)
+    const next = round + 1
     if (next >= PLASTICITY_WORDS.length) {
       onFinish(newCorrect)
     } else {
@@ -283,12 +292,13 @@ const BREATH_PHASES = [
   { label: 'Выдох', duration: 4 },
   { label: 'Задержка', duration: 4 },
 ]
-const BREATH_CYCLES = 4
+const BREATH_CYCLES = 3
 
 function GymnasticsGame({ onFinish }) {
   const [phaseIndex, setPhaseIndex] = useState(0)
   const [cycle, setCycle] = useState(0)
   const [secondsLeft, setSecondsLeft] = useState(BREATH_PHASES[0].duration)
+  const finishedRef = useRef(false)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -298,8 +308,11 @@ function GymnasticsGame({ onFinish }) {
           if (nextPhase === 0) {
             const nextCycle = cycle + 1
             if (nextCycle >= BREATH_CYCLES) {
-              clearInterval(timer)
-              onFinish(1)
+              if (!finishedRef.current) {
+                finishedRef.current = true
+                clearInterval(timer)
+                onFinish(1)
+              }
               return 0
             }
             setCycle(nextCycle)
@@ -366,14 +379,15 @@ export default function BrainTrainer({ user, onBack }) {
   }
 
   async function finish(score) {
-    const duration = Math.round((Date.now() - startTimeRef.current) / 1000)
+    const duration = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000))
     haptic('success')
+    const finishedKey = active
     try {
-      await api.brain.logSession(user.id, active, score, duration)
+      await api.brain.logSession(user.id, finishedKey, score, duration)
     } catch (e) {
       console.error(e)
     }
-    setResult({ key: active, score })
+    setResult({ key: finishedKey, score })
     setActive(null)
     loadSummary()
   }
