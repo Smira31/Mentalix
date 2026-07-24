@@ -1,7 +1,6 @@
 // src/screens/Settings.jsx
 //
-// Экран настроек Mentalix. Открывается поверх текущей вкладки.
-// Секции: 1. Профиль+тариф  2. Уведомления  3. Основные
+// Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Основные
 //         4. Поддержка      5. Документы    6. Версия  7. Аккаунт
 
 import { useState } from 'react'
@@ -17,6 +16,7 @@ import {
   Trash2,
   Heart,
 } from 'lucide-react'
+import QuotesManager from './QuotesManager'
 
 function SectionLabel({ children }) {
   return (
@@ -69,8 +69,13 @@ function Toggle({ checked, onChange }) {
 
 export default function Settings({ user, onBack, onNavigate }) {
   const [telegramNotifs, setTelegramNotifs] = useState(false)
+  const [screen, setScreen] = useState(null) // null | 'quotes'
   const tierLabel = user?.tier === 'pro' ? 'Про' : 'Базовый'
   const go = (key) => onNavigate?.(key)
+
+  if (screen === 'quotes') {
+    return <QuotesManager user={user} onBack={() => setScreen(null)} />
+  }
 
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
@@ -89,7 +94,7 @@ export default function Settings({ user, onBack, onNavigate }) {
       <SectionLabel>Уведомления</SectionLabel>
       <Card>
         <Row icon={Bell} title="Уведомления в Telegram" right={<Toggle checked={telegramNotifs} onChange={setTelegramNotifs} />} />
-        <Row title="Считка дня" subtitle="Источник: ИИ / мои фразы / чередовать" onClick={() => go('daily-insight')} />
+        <Row title="Считка дня" subtitle="Мои фразы" onClick={() => setScreen('quotes')} />
         <Row title="Напоминания о ритуалах и аскезах" onClick={() => go('reminders')} divider={false} />
       </Card>
 
