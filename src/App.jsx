@@ -60,7 +60,9 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [overlay, setOverlay] = useState(null) // null | 'profile' | 'settings'
-  const [themeMode, setThemeMode] = useState(() => localStorage.getItem(THEME_KEY) || 'auto')
+  const [themeMode, setThemeMode] = useState(() => {
+    try { return localStorage.getItem(THEME_KEY) || 'auto' } catch { return 'auto' }
+  })
 
   const initialTab = new URLSearchParams(window.location.search).get('tab')
   const validTabs = TABS.map((t) => t.key)
@@ -70,7 +72,7 @@ export default function App() {
   // тема при старте и при смене режима; авто-режим перепроверяется раз в минуту
   useEffect(() => {
     applyTheme(resolveLight(themeMode))
-    localStorage.setItem(THEME_KEY, themeMode)
+    try { localStorage.setItem(THEME_KEY, themeMode) } catch {}
     if (themeMode !== 'auto') return
     const id = setInterval(() => applyTheme(resolveLight('auto')), 60_000)
     return () => clearInterval(id)
