@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
-import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon, House, BookOpen } from 'lucide-react'
+import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon, House, BookOpen, Timer as Focus_ } from 'lucide-react'
 import Today from './screens/Today'
 import Path from './screens/Path'
 import Analytics from './screens/Analytics'
@@ -8,6 +8,7 @@ import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
 import Settings from './screens/Settings'
 import Courses from './screens/Courses'
+import Focus from './screens/Focus'
 
 function MonogramIcon({ active }) {
   return (
@@ -32,6 +33,7 @@ function greeting() {
 const TABS = [
   { key: 'today', label: 'Сегодня', icon: House },
   { key: 'path', label: 'Мой путь', icon: ArrowUpRight },
+  { key: 'focus', label: 'Фокус', icon: Focus_ },
   { key: 'analytics', label: 'Аналитика', icon: AlignJustify },
   { key: 'courses', label: 'Курсы', icon: BookOpen },
   { key: 'mentalix', label: 'Mentalix', icon: 'monogram' },
@@ -43,7 +45,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false)
 
   const initialTab = new URLSearchParams(window.location.search).get('tab')
-  const validTabs = ['today', 'path', 'analytics', 'mentalix', 'profile']
+  const validTabs = ['today', 'path', 'focus', 'analytics', 'courses', 'mentalix', 'profile']
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : 'today')
 
   useEffect(() => {
@@ -130,6 +132,7 @@ export default function App() {
           <>
             {user && tab === 'today' && <Today user={user} />}
             {user && tab === 'path' && <Path user={user} />}
+            {user && tab === 'focus' && <Focus user={user} />}
             {user && tab === 'analytics' && <Analytics user={user} />}
             {user && tab === 'courses' && <Courses user={user} />}
             {user && tab === 'mentalix' && <MentalixChat user={user} />}

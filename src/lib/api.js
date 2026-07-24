@@ -93,7 +93,7 @@ export const api = {
         body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour }),
       }),
   },
-quotes: {
+  quotes: {
     list: (userId) => request(`/quotes?user_id=${userId}`),
     create: (userId, text, tag) =>
       request('/quotes', { method: 'POST', body: JSON.stringify({ user_id: userId, text, tag }) }),
@@ -116,5 +116,10 @@ quotes: {
         body: JSON.stringify({ text }),
       }),
     remove: (courseId) => request(`/courses/${courseId}`, { method: 'DELETE' }),
+  },
+  focus: {
+    progress: (userId) => request(`/focus/progress?user_id=${userId}`),
+    logSession: (userId, durationMin) =>
+      request('/focus', { method: 'POST', body: JSON.stringify({ user_id: userId, duration_min: durationMin }) }),
   },
 }
