@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform, platformName } from './platform'
 import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon, House, BookOpen, Timer as Focus_ } from 'lucide-react'
 import Today from './screens/Today'
 import Path from './screens/Path'
@@ -9,6 +9,7 @@ import Profile from './screens/Profile'
 import Settings from './screens/Settings'
 import Courses from './screens/Courses'
 import Focus from './screens/Focus'
+import WebAuthScreen from './screens/WebAuthScreen'
 
 function MonogramIcon({ active }) {
   return (
@@ -42,6 +43,7 @@ const TABS = [
 
 export default function App() {
   const [user, setUser] = useState(null)
+  const [authChecked, setAuthChecked] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
 
   const initialTab = new URLSearchParams(window.location.search).get('tab')
@@ -49,18 +51,19 @@ export default function App() {
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : 'today')
 
   useEffect(() => {
-    WebApp.ready()
-    WebApp.expand()
-    WebApp.setHeaderColor('#0E211D')
-    WebApp.setBackgroundColor('#0E211D')
-    // отключаем вертикальные свайпы — чтобы перетаскивание не сворачивало приложение
-    WebApp.disableVerticalSwipes?.()
-    const tgUser = WebApp.initDataUnsafe?.user
-    if (tgUser) setUser(tgUser)
+    platform.init()
+    ;(async () => {
+      const existing = await platform.requestAuth()
+      if (existing) setUser(existing)
+      setAuthChecked(true)
+    })()
   }, [])
 
-  // запрещаем масштабирование пальцами — единый вид приложения
+  // запрещаем масштабирование пальцами внутри Telegram — единый вид мини-аппа.
+  // в браузере (веб-версия) это отключено, чтобы не ломать привычные жесты
   useEffect(() => {
+    if (platformName !== 'telegram') return
+
     const stopGesture = (e) => e.preventDefault()
     const stopMultiTouch = (e) => {
       if (e.touches && e.touches.length > 1) e.preventDefault()
@@ -91,8 +94,30 @@ export default function App() {
 
   function switchTab(key) {
     if (key === tab) return
-    WebApp.HapticFeedback?.impactOccurred('light')
+    platform.haptic('light')
     setTab(key)
+  }
+
+  if (!authChecked) {
+    return (
+      <div
+        className="min-h-screen text-cream flex items-center justify-center font-body bg-cover bg-center bg-fixed"
+        style={{ backgroundImage: "url('/bg.jpg')" }}
+      >
+        <p className="text-cream/40 text-sm">Загрузка...</p>
+      </div>
+    )
+  }
+
+  if (!user && platformName === 'web') {
+    return (
+      <div
+        className="min-h-screen text-cream flex flex-col items-center font-body bg-cover bg-center bg-fixed"
+        style={{ backgroundImage: "url('/bg.jpg')" }}
+      >
+        <WebAuthScreen onAuthed={setUser} />
+      </div>
+    )
   }
 
   return (

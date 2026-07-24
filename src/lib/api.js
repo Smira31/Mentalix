@@ -143,4 +143,10 @@ export const api = {
         body: JSON.stringify({ user_id: userId, amount, currency }),
       }),
   },
+  auth: {
+    requestCode: (email) =>
+      request('/auth/email/request-code', { method: 'POST', body: JSON.stringify({ email }) }),
+    verify: (email, code) =>
+      request('/auth/email/verify', { method: 'POST', body: JSON.stringify({ email, code }) }),
+  },
 }
