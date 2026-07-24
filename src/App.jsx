@@ -1,24 +1,12 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
-import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon } from 'lucide-react'
+import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon, House } from 'lucide-react'
 import Today from './screens/Today'
 import Path from './screens/Path'
 import Analytics from './screens/Analytics'
 import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
 import Settings from './screens/Settings'
-
-function ContrastIcon({ active }) {
-  return (
-    <div
-      className="w-6 h-6 rounded-full border-2"
-      style={{
-        borderColor: active ? '#0E211D' : 'rgba(150,205,176,0.7)',
-        background: `linear-gradient(90deg, ${active ? '#0E211D' : 'rgba(150,205,176,0.7)'} 50%, transparent 50%)`,
-      }}
-    />
-  )
-}
 
 function MonogramIcon({ active }) {
   return (
@@ -41,7 +29,7 @@ function greeting() {
 }
 
 const TABS = [
-  { key: 'today', label: 'Сегодня', icon: 'contrast' },
+  { key: 'today', label: 'Сегодня', icon: House },
   { key: 'path', label: 'Мой путь', icon: ArrowUpRight },
   { key: 'analytics', label: 'Аналитика', icon: AlignJustify },
   { key: 'mentalix', label: 'Mentalix', icon: 'monogram' },
@@ -163,21 +151,17 @@ export default function App() {
                 >
                   <span
                     className={[
-                      'flex items-center justify-center rounded-full transition-all duration-300 ease-out',
-                      isCenter
-                        ? 'w-16 h-16 bg-gold -translate-y-6 shadow-xl shadow-gold/40 ring-4 ring-cream/15'
-                        : active
-                          ? 'w-11 h-11 bg-gold/90 -translate-y-1 shadow-lg shadow-gold/25'
-                          : 'w-10 h-10 bg-emerald-light/40',
+                      'flex items-center justify-center transition-all duration-300 ease-out',
+                      isCenter ? 'w-12 h-12 rounded-2xl' : 'w-11 h-11 rounded-full',
+                      active ? 'bg-gold' : 'bg-emerald-light/30',
                     ].join(' ')}
                   >
-                    {t.icon === 'contrast' && <ContrastIcon active={active || isCenter} />}
-                    {t.icon === 'monogram' && <MonogramIcon active={active || isCenter} />}
+                    {t.icon === 'monogram' && <MonogramIcon active={active} />}
                     {typeof t.icon !== 'string' && (
                       <t.icon
-                        size={isCenter ? 26 : 20}
+                        size={20}
                         strokeWidth={2}
-                        className={active || isCenter ? 'text-emerald-deep' : 'text-mint/70'}
+                        className={active ? 'text-emerald-deep' : 'text-mint/70'}
                       />
                     )}
                   </span>
