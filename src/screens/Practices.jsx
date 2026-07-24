@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Sparkles, Shield, Brain, Timer, BookOpen, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Sparkles, Shield, Brain, Timer, BookOpen, Wind, ChevronRight, ChevronLeft } from 'lucide-react'
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
+import Breathing from './Breathing'
 import Courses from './Courses'
 
 // Хаб «Практики»: ритуалы + аскезы + тренировка ума в одном месте.
@@ -78,6 +79,7 @@ export default function Practices({ user, initialSub = null }) {
   if (sub === 'rituals') return <Rituals user={user} onBack={() => setSub(null)} />
   if (sub === 'ascezas') return <Ascezas user={user} onBack={() => setSub(null)} />
   if (sub === 'brain') return <BrainTrainer user={user} onBack={() => setSub(null)} />
+  if (sub === 'breathing') return <Breathing user={user} onBack={() => setSub(null)} />
   if (sub === 'focus') {
     return (
       <div className="w-full flex flex-col items-center">
@@ -99,7 +101,7 @@ export default function Practices({ user, initialSub = null }) {
   const ascezasHeld = ascezas.filter((a) => a.today_status === 'held').length
 
   return (
-    <div className="w-full max-w-md px-5 pb-24">
+    <div className="w-full max-w-md px-5 pb-40">
       <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-6">практики.</h2>
 
       <BigCard
@@ -121,6 +123,12 @@ export default function Practices({ user, initialSub = null }) {
         title="Нейротренажёр"
         subtitle="внимание, память, реакция"
         onOpen={() => setSub('brain')}
+      />
+      <BigCard
+        Icon={Wind}
+        title="Дыхание"
+        subtitle="успокоить систему за минуту"
+        onOpen={() => setSub('breathing')}
       />
 
       <div className="text-[12px] text-cream/35 font-semibold mt-7 mb-3 px-1">Ещё</div>

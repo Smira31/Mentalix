@@ -298,6 +298,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           { sub: 'rituals', icon: '✦', name: 'Ритуалы', st: `${rituals.filter((r) => r.today_level).length} / ${rituals.length || 0} сегодня` },
           { sub: 'ascezas', icon: '◈', name: 'Аскезы', st: `${ascezas.filter((a) => a.today_status === 'held').length} / ${ascezas.length || 0} держишь` },
           { sub: 'focus', icon: '◉', name: 'Фокус', st: 'глубокая работа' },
+          { sub: 'breathing', icon: '❋', name: 'Дыхание', st: 'минута покоя' },
           { sub: 'brain', icon: '◎', name: 'Нейротренажёр', st: 'внимание · память' },
         ].map((c) => (
           <button
