@@ -1,4 +1,5 @@
 const BASE = '/api'
+
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
@@ -7,6 +8,7 @@ async function request(path, options = {}) {
   if (!res.ok) throw new Error(`API ${path} failed: ${res.status}`)
   return res.json()
 }
+
 export const api = {
   habits: {
     list: (userId) => request(`/habits?user_id=${userId}`),
@@ -90,5 +92,22 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour }),
       }),
+  },
+  courses: {
+    list: (userId) => request(`/courses?user_id=${userId}`),
+    create: (userId, course) =>
+      request('/courses', { method: 'POST', body: JSON.stringify({ user_id: userId, ...course }) }),
+    updateStatus: (courseId, status) =>
+      request(`/courses/${courseId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }),
+    notes: (courseId) => request(`/courses/${courseId}/notes`),
+    addNote: (courseId, text) =>
+      request(`/courses/${courseId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+      }),
+    remove: (courseId) => request(`/courses/${courseId}`, { method: 'DELETE' }),
   },
 }

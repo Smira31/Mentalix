@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
-import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon, House } from 'lucide-react'
+import { ArrowUpRight, AlignJustify, User, Settings as SettingsIcon, House, BookOpen } from 'lucide-react'
 import Today from './screens/Today'
 import Path from './screens/Path'
 import Analytics from './screens/Analytics'
 import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
 import Settings from './screens/Settings'
+import Courses from './screens/Courses'
 
 function MonogramIcon({ active }) {
   return (
@@ -32,6 +33,7 @@ const TABS = [
   { key: 'today', label: 'Сегодня', icon: House },
   { key: 'path', label: 'Мой путь', icon: ArrowUpRight },
   { key: 'analytics', label: 'Аналитика', icon: AlignJustify },
+  { key: 'courses', label: 'Курсы', icon: BookOpen },
   { key: 'mentalix', label: 'Mentalix', icon: 'monogram' },
   { key: 'profile', label: 'Профиль', icon: User },
 ]
@@ -129,6 +131,7 @@ export default function App() {
             {user && tab === 'today' && <Today user={user} />}
             {user && tab === 'path' && <Path user={user} />}
             {user && tab === 'analytics' && <Analytics user={user} />}
+            {user && tab === 'courses' && <Courses user={user} />}
             {user && tab === 'mentalix' && <MentalixChat user={user} />}
             {user && tab === 'profile' && <Profile user={user} />}
           </>
