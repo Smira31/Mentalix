@@ -3,6 +3,7 @@ import { api } from '../lib/api'
 import { BarChart3, Shield, Sparkles } from 'lucide-react'
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell,
+  LineChart, Line, YAxis,
 } from 'recharts'
 
 const WEEKDAY_LABELS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
@@ -167,14 +168,79 @@ function AscezaRow({ asceza }) {
   )
 }
 
-export default function Analytics({ user }) {
+const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
+
+// ── настроение по чек-инам: линия за 14 дней ──
+function MoodTrend({ checkins, onGoCheckin }) {
+  if (!checkins || checkins.length === 0) {
+    return (
+      <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-6 text-center mb-6">
+        <h3 className="font-display text-[17px] text-cream mb-1.5">Как ты сейчас?</h3>
+        <p className="text-[13px] text-cream/45 leading-snug mb-4">
+          Пройди первый чек-ин — и здесь появится
+          <br />линия твоего настроения
+        </p>
+        <button
+          onClick={onGoCheckin}
+          className="cta-pill text-[14px] px-8 py-3"
+        >
+          Пройти чек-ин
+        </button>
+      </div>
+    )
+  }
+
+  const chartData = checkins.map((c) => {
+    const d = new Date(c.date + 'T00:00:00')
+    return { label: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`, mood: c.mood, energy: c.energy }
+  })
+  const last = checkins[checkins.length - 1]
+  const avgMood = (checkins.reduce((s, c) => s + c.mood, 0) / checkins.length).toFixed(1)
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-baseline justify-between mb-2">
+        <h3 className="text-sm text-cream/80">Настроение</h3>
+        <span className="text-[11px] text-cream/40">в среднем {avgMood}/5</span>
+      </div>
+      <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-4">
+        {checkins.length >= 2 ? (
+          <ResponsiveContainer width="100%" height={140}>
+            <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -28 }}>
+              <XAxis dataKey="label" tick={{ fill: 'rgba(245,245,245,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis domain={[1, 5]} ticks={[1, 3, 5]} tick={{ fill: 'rgba(245,245,245,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{ background: 'rgb(25,25,27)', border: '1px solid rgba(245,245,245,0.1)', borderRadius: 12, fontSize: 12 }}
+                labelStyle={{ color: 'rgba(245,245,245,0.5)' }}
+                formatter={(v, name) => [v + '/5', name === 'mood' ? 'настроение' : 'энергия']}
+              />
+              <Line type="monotone" dataKey="mood" stroke="rgb(217,180,91)" strokeWidth={2.5} dot={{ r: 3, fill: 'rgb(217,180,91)' }} />
+              <Line type="monotone" dataKey="energy" stroke="rgba(245,245,245,0.3)" strokeWidth={1.5} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-[13px] text-cream/45 text-center py-4">
+            Первая точка есть — сегодня: {MOOD_WORDS[(last.mood || 3) - 1]}.
+            <br />Ещё пара дней, и появится линия.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function Analytics({ user, onGoCheckin }) {
   const [data, setData] = useState(null)
+  const [checkins, setCheckins] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) return
-    api.analytics.get(user.id, 14)
-      .then(setData)
+    Promise.all([
+      api.analytics.get(user.id, 14),
+      api.checkin.history(user.id, 14).catch(() => []),
+    ])
+      .then(([d, c]) => { setData(d); setCheckins(c || []) })
       .catch((e) => console.error(e))
       .finally(() => setLoading(false))
   }, [user])
@@ -186,7 +252,14 @@ export default function Analytics({ user }) {
   const ascezas = data.ascezas || []
   const hasData = rituals.length > 0 || ascezas.length > 0
 
-  if (!hasData) return <EmptyAnalytics />
+  if (!hasData && checkins.length === 0) {
+    return (
+      <div className="w-full max-w-sm px-6 pb-40">
+        <MoodTrend checkins={[]} onGoCheckin={onGoCheckin} />
+        <EmptyAnalytics />
+      </div>
+    )
+  }
 
   const avgRituals = rituals.length
     ? Math.round(rituals.reduce((s, r) => s + r.completion_rate, 0) / rituals.length)
@@ -199,6 +272,8 @@ export default function Analytics({ user }) {
     <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
       <p className="text-[11px] text-cream/40 mb-5">за последние {data.period_days} дней</p>
+
+      <MoodTrend checkins={checkins} onGoCheckin={onGoCheckin} />
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         {rituals.length > 0 && (

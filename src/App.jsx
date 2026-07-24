@@ -29,6 +29,15 @@ function applyTheme(light) {
   platform.setThemeColors?.(bg)
 }
 
+// имя показываем, только если это человеческое имя, а не технический ник
+function displayName(user) {
+  const raw = (user?.first_name || '').trim().split(/\s+/)[0]
+  if (!raw) return null
+  if (/[0-9_]/.test(raw)) return null   // smiraandre2, user_123 — прячем
+  if (raw.length > 14) return null
+  return raw
+}
+
 function greeting() {
   const h = new Date().getHours()
   if (h >= 5 && h <= 11) return 'доброе утро.'
@@ -169,7 +178,7 @@ export default function App() {
           ◐
         </button>
         <h1 className="font-display text-xl text-cream lowercase">
-          {user && user.first_name ? `${greeting().slice(0, -1)}, ${user.first_name}.` : greeting()}
+          {displayName(user) ? `${greeting().slice(0, -1)}, ${displayName(user)}.` : greeting()}
         </h1>
         <button
           onClick={() => { platform.haptic('light'); setOverlay('profile') }}
@@ -226,7 +235,9 @@ export default function App() {
               <Practices user={user} initialSub={practicesSub} />
             )}
             {user && tab === 'mentor' && <MentalixChat user={user} />}
-            {user && tab === 'trends' && <Analytics user={user} />}
+            {user && tab === 'trends' && (
+              <Analytics user={user} onGoCheckin={() => { platform.haptic('light'); setTab('today') }} />
+            )}
           </>
         )}
       </div>

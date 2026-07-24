@@ -60,6 +60,7 @@ export const api = {
   },
   checkin: {
     today: (userId) => request(`/checkin/today?user_id=${userId}`),
+    history: (userId, days = 14) => request(`/checkin/history?user_id=${userId}&days=${days}`),
     save: (userId, { mood, energy, anxiety, focus, note }) =>
       request('/checkin', {
         method: 'POST',

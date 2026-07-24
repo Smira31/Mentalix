@@ -3,6 +3,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react'
 import Path from './Path'
+import CheckIn from './CheckIn'
 
 // ── лента недели, как у stoic. ──
 function WeekStrip() {
@@ -67,20 +68,23 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
   const [ascezas, setAscezas] = useState([])
   const [loading, setLoading] = useState(true)
   const [dailyQuote, setDailyQuote] = useState(null)
-  const [sub, setSub] = useState(null) // null | 'path'
+  const [checkin, setCheckin] = useState(null)
+  const [sub, setSub] = useState(null) // null | 'path' | 'checkin'
 
   useEffect(() => {
     if (!user || sub !== null) return
     ;(async () => {
       try {
-        const [r, a, q] = await Promise.all([
+        const [r, a, q, c] = await Promise.all([
           api.rituals.list(user.id),
           api.ascezas.list(user.id),
           api.quotes.today(user.id),
+          api.checkin.today(user.id).catch(() => null),
         ])
         setRituals(r)
         setAscezas(a)
         setDailyQuote(q.text)
+        setCheckin(c)
       } catch (e) {
         console.error(e)
       } finally {
@@ -88,6 +92,11 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
       }
     })()
   }, [user, sub])
+
+  // ── чек-ин поверх всего ──
+  if (sub === 'checkin') {
+    return <CheckIn user={user} onDone={() => setSub(null)} />
+  }
 
   // ── Путь открывается прямо из «Сегодня» ──
   if (sub === 'path') {
@@ -118,20 +127,41 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
 
   const next = deriveNextAction({ rituals, ascezas })
   const isEmpty = total === 0
+  const hourNow = new Date().getHours()
+  const checkinDone = !!checkin
+  const checkinAsHero = !checkinDone && (hourNow >= 18 || (isEmpty && hourNow >= 12))
+  const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 
   const remainRituals = rituals.filter((r) => !r.today_level).length
   const remainAscezas = ascezas.filter((a) => !a.today_status).length
   const remainAfter = Math.max(0, remainRituals + remainAscezas - 1)
 
   return (
-    <div className="w-full max-w-md px-5 pb-24">
+    <div className="w-full max-w-md px-5 pb-40">
       <WeekStrip />
 
       {/* ── герой-карточка: One Next Action ── */}
       <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-10 text-center flex flex-col justify-center min-h-[54vh] animate-fade-in">
         <MountainArt />
 
-        {isEmpty && (
+        {checkinAsHero && (
+          <>
+            <div className="text-[13px] text-cream/40 font-semibold mb-2">Вечерний чек-ин</div>
+            <h2 className="font-display text-[28px] text-cream leading-tight">Как прошёл день?</h2>
+            <p className="text-[14px] text-cream/50 mt-2">Минута честности с собой</p>
+            <button
+              onClick={() => { platform.haptic('medium'); setSub('checkin') }}
+              className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+            >
+              Начать
+            </button>
+            {next && (
+              <p className="text-[12px] text-cream/35 mt-5">Дальше: {next.title}</p>
+            )}
+          </>
+        )}
+
+        {!checkinAsHero && isEmpty && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">Твой путь ждёт</div>
             <h2 className="font-display text-[26px] text-cream leading-tight">Добавь первый ритуал</h2>
@@ -145,7 +175,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           </>
         )}
 
-        {!isEmpty && next && (
+        {!checkinAsHero && !isEmpty && next && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">Самое важное</div>
             <h2 className="font-display text-[28px] text-cream leading-tight">{next.title}</h2>
@@ -162,7 +192,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           </>
         )}
 
-        {!isEmpty && !next && (
+        {!checkinAsHero && !isEmpty && !next && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">Путь продолжается</div>
             <h2 className="font-display text-[26px] text-cream leading-tight">Сегодня ты выше, чем вчера</h2>
@@ -176,6 +206,36 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           </>
         )}
       </div>
+
+      {/* ── чек-ин: вторая карточка или итог ── */}
+      {!checkinAsHero && !checkinDone && (
+        <button
+          onClick={() => { platform.haptic('light'); setSub('checkin') }}
+          className="w-full rounded-3xl bg-emerald px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+        >
+          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-lg shrink-0">☺</span>
+          <span className="flex-1 text-left">
+            <span className="block text-[14px] font-bold text-cream">Как ты?</span>
+            <span className="block text-[12px] text-cream/40 font-medium">чек-ин дня · 1 минута</span>
+          </span>
+          <ChevronRight size={18} className="text-cream/30 shrink-0" />
+        </button>
+      )}
+      {checkinDone && (
+        <button
+          onClick={() => { platform.haptic('light'); setSub('checkin') }}
+          className="w-full rounded-3xl bg-emerald/60 px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+        >
+          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-sm font-bold shrink-0">✓</span>
+          <span className="flex-1 text-left">
+            <span className="block text-[14px] font-bold text-cream">Чек-ин выполнен</span>
+            <span className="block text-[12px] text-cream/40 font-medium">
+              настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]} · энергия {checkin.energy}/5
+            </span>
+          </span>
+          <span className="text-[12px] font-semibold text-cream/35 shrink-0">изменить</span>
+        </button>
+      )}
 
       {/* ── карточка Пути: прогресс дня + вход в экран «Путь» ── */}
       {!isEmpty && (
