@@ -59,6 +59,8 @@ export default function App() {
   useEffect(() => {
     WebApp.ready()
     WebApp.expand()
+    WebApp.setHeaderColor('#0E211D')
+    WebApp.setBackgroundColor('#0E211D')
     // отключаем вертикальные свайпы — чтобы перетаскивание не сворачивало приложение
     WebApp.disableVerticalSwipes?.()
     const tgUser = WebApp.initDataUnsafe?.user
