@@ -1,0 +1,30 @@
+{
+  "name": "Mentalix",
+  "short_name": "Mentalix",
+  "description": "Личная система развития: ритуалы, аскезы, ИИ-собеседники",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#0E211D",
+  "theme_color": "#0E211D",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
