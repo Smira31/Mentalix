@@ -6,6 +6,7 @@ import Path from './screens/Path'
 import Analytics from './screens/Analytics'
 import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
+import Settings from './screens/Settings'
 
 function ContrastIcon({ active }) {
   return (
@@ -49,6 +50,7 @@ const TABS = [
 
 export default function App() {
   const [user, setUser] = useState(null)
+  const [showSettings, setShowSettings] = useState(false)
 
   const initialTab = new URLSearchParams(window.location.search).get('tab')
   const validTabs = ['today', 'path', 'analytics', 'mentalix', 'profile']
@@ -61,6 +63,8 @@ export default function App() {
     WebApp.disableVerticalSwipes?.()
     const tgUser = WebApp.initDataUnsafe?.user
     if (tgUser) setUser(tgUser)
+    WebApp.SettingsButton.show()
+    WebApp.SettingsButton.onClick(() => setShowSettings(true))
   }, [])
 
   // запрещаем масштабирование пальцами — единый вид приложения
@@ -120,11 +124,17 @@ export default function App() {
             Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
           </p>
         )}
-        {user && tab === 'today' && <Today user={user} />}
-        {user && tab === 'path' && <Path user={user} />}
-        {user && tab === 'analytics' && <Analytics user={user} />}
-        {user && tab === 'mentalix' && <MentalixChat user={user} />}
-        {user && tab === 'profile' && <Profile user={user} />}
+        {showSettings ? (
+          <Settings user={user} onBack={() => setShowSettings(false)} onNavigate={(key) => console.log('переход:', key)} />
+        ) : (
+          <>
+            {user && tab === 'today' && <Today user={user} />}
+            {user && tab === 'path' && <Path user={user} />}
+            {user && tab === 'analytics' && <Analytics user={user} />}
+            {user && tab === 'mentalix' && <MentalixChat user={user} />}
+            {user && tab === 'profile' && <Profile user={user} />}
+          </>
+        )}
       </div>
 
       {user && (
