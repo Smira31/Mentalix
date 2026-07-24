@@ -8,9 +8,27 @@ import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
 import Settings from './screens/Settings'
 import WebAuthScreen from './screens/WebAuthScreen'
+import Onboarding from './screens/Onboarding'
 
 // ── Тема: тёмная вечером, светлая днём. Ручной режим хранится в localStorage ──
 const THEME_KEY = 'mx-theme' // 'auto' | 'light' | 'dark'
+const ONBOARDED_KEY = 'mx-onboarded'
+
+// фирменный сплэш вместо серого «Загрузка...»
+function Splash() {
+  return (
+    <div className="min-h-screen bg-emerald-deep text-cream flex flex-col items-center justify-center font-body">
+      <svg viewBox="0 0 200 120" fill="none" className="w-[180px] animate-pulse-once">
+        <path d="M10 104 L70 34 L104 68 L134 22 L190 104" stroke="currentColor" strokeWidth="2.5"
+          strokeLinecap="round" strokeLinejoin="round" className="text-cream/40" />
+        <path d="M10 104 H190" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-cream/40" />
+        <circle cx="104" cy="68" r="5" className="fill-gold" />
+      </svg>
+      <div className="font-display text-xl text-cream mt-6 lowercase">mentalix.</div>
+      <div className="text-[12px] text-cream/35 font-semibold mt-1">путь продолжается</div>
+    </div>
+  )
+}
 
 function isDayNow() {
   const h = new Date().getHours()
@@ -69,6 +87,9 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [overlay, setOverlay] = useState(null) // null | 'profile' | 'settings'
+  const [onboarded, setOnboarded] = useState(() => {
+    try { return localStorage.getItem(ONBOARDED_KEY) === '1' } catch { return true }
+  })
   const [themeMode, setThemeMode] = useState(() => {
     try { return localStorage.getItem(THEME_KEY) || 'auto' } catch { return 'auto' }
   })
@@ -151,10 +172,17 @@ export default function App() {
   }, [])
 
   if (!authChecked) {
+    return <Splash />
+  }
+
+  if (user && !onboarded) {
     return (
-      <div className="min-h-screen bg-emerald-deep text-cream flex items-center justify-center font-body">
-        <p className="text-cream/40 text-sm">Загрузка...</p>
-      </div>
+      <Onboarding
+        onFinish={() => {
+          try { localStorage.setItem(ONBOARDED_KEY, '1') } catch {}
+          setOnboarded(true)
+        }}
+      />
     )
   }
 
