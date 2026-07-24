@@ -3,7 +3,8 @@ import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
-import { Sparkles, Shield, ChevronRight, Compass } from 'lucide-react'
+import BrainTrainer from './BrainTrainer'
+import { Sparkles, Shield, ChevronRight, Compass, Brain } from 'lucide-react'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -57,7 +58,7 @@ export default function Today({ user }) {
   const [rituals, setRituals] = useState([])
   const [ascezas, setAscezas] = useState([])
   const [loading, setLoading] = useState(true)
-  const [screen, setScreen] = useState(null) // null | 'rituals' | 'ascezas'
+  const [screen, setScreen] = useState(null) // null | 'rituals' | 'ascezas' | 'brain'
   const [dailyQuote, setDailyQuote] = useState(null)
 
   useEffect(() => {
@@ -88,6 +89,10 @@ export default function Today({ user }) {
 
   if (screen === 'ascezas') {
     return <Ascezas user={user} onBack={() => setScreen(null)} />
+  }
+
+  if (screen === 'brain') {
+    return <BrainTrainer user={user} onBack={() => setScreen(null)} />
   }
 
   if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
@@ -129,6 +134,14 @@ export default function Today({ user }) {
         right={ascezas.length > 0 ? <span className="font-mono text-xs text-mint">{ascezasHeld}/{ascezas.length}</span> : null}
         onOpen={() => setScreen('ascezas')}
         accent="mint"
+      />
+
+      <EntryCard
+        Icon={Brain}
+        title="Нейротренажёр"
+        subtitle="внимание, память, реакция"
+        onOpen={() => setScreen('brain')}
+        accent="cognac"
       />
     </div>
   )

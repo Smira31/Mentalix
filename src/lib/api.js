@@ -122,4 +122,17 @@ export const api = {
     logSession: (userId, durationMin) =>
       request('/focus', { method: 'POST', body: JSON.stringify({ user_id: userId, duration_min: durationMin }) }),
   },
+  brain: {
+    summary: (userId) => request(`/brain/summary?user_id=${userId}`),
+    logSession: (userId, exerciseType, score, durationSec) =>
+      request('/brain/sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          exercise_type: exerciseType,
+          score,
+          duration_sec: durationSec,
+        }),
+      }),
+  },
 }
