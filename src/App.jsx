@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { platform, platformName } from './platform'
-import { AlignJustify, House, Sparkles, ChevronLeft, Settings as SettingsIcon } from 'lucide-react'
+import { AlignJustify, House, Sparkles, BookOpen, ChevronLeft, Settings as SettingsIcon } from 'lucide-react'
 import Today from './screens/Today'
 import Practices from './screens/Practices'
 import Analytics from './screens/Analytics'
@@ -8,6 +8,7 @@ import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
 import Settings from './screens/Settings'
 import WebAuthScreen from './screens/WebAuthScreen'
+import Courses from './screens/Courses'
 import Onboarding from './screens/Onboarding'
 
 // ── Тема: тёмная вечером, светлая днём. Ручной режим хранится в localStorage ──
@@ -80,6 +81,7 @@ const TABS = [
   { key: 'today', label: 'Сегодня', icon: House },
   { key: 'practices', label: 'Практики', icon: Sparkles },
   { key: 'mentor', label: 'Наставник', icon: 'monogram' },
+  { key: 'library', label: 'Библиотека', icon: BookOpen },
   { key: 'trends', label: 'Тренды', icon: AlignJustify },
 ]
 
@@ -263,6 +265,7 @@ export default function App() {
               <Practices user={user} initialSub={practicesSub} />
             )}
             {user && tab === 'mentor' && <MentalixChat user={user} />}
+            {user && tab === 'library' && <Courses user={user} />}
             {user && tab === 'trends' && (
               <Analytics user={user} onGoCheckin={() => { platform.haptic('light'); setTab('today') }} />
             )}

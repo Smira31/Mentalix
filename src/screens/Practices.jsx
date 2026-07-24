@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Sparkles, Shield, Brain, Timer, BookOpen, Wind, ChevronRight, ChevronLeft } from 'lucide-react'
+import { Sparkles, Shield, Brain, Timer, Wind, ChevronRight, ChevronLeft } from 'lucide-react'
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
 import Breathing from './Breathing'
-import Courses from './Courses'
 
 // Хаб «Практики»: ритуалы + аскезы + тренировка ума в одном месте.
 // Сюда же переехали Фокус и Курсы, чтобы освободить таб-бар до 5 вкладок.
@@ -88,15 +87,6 @@ export default function Practices({ user, initialSub = null }) {
       </div>
     )
   }
-  if (sub === 'courses') {
-    return (
-      <div className="w-full flex flex-col items-center">
-        <SubHeader title="библиотека." onBack={() => setSub(null)} />
-        <Courses user={user} />
-      </div>
-    )
-  }
-
   const ritualsDone = rituals.filter((r) => r.today_level).length
   const ascezasHeld = ascezas.filter((a) => a.today_status === 'held').length
 
@@ -133,7 +123,6 @@ export default function Practices({ user, initialSub = null }) {
 
       <div className="text-[12px] text-cream/35 font-semibold mt-7 mb-3 px-1">Ещё</div>
       <SmallRow Icon={Timer} title="Фокус" subtitle="таймер глубокой работы" onOpen={() => setSub('focus')} />
-      <SmallRow Icon={BookOpen} title="Библиотека" subtitle="материалы, что стоит сохранить" onOpen={() => setSub('courses')} />
     </div>
   )
 }
