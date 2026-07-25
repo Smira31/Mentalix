@@ -178,6 +178,7 @@ export default function App() {
   if (user && !onboarded) {
     return (
       <Onboarding
+        user={user}
         onFinish={() => {
           try { localStorage.setItem(ONBOARDED_KEY, '1') } catch {}
           setOnboarded(true)

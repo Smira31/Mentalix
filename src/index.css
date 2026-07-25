@@ -30,7 +30,7 @@ body.light {
   --btn-text:#F5F0E8;
 }
 
-:root { font-family: 'Manrope', system-ui, sans-serif; }
+:root { font-family: 'Onest', 'Manrope', system-ui, sans-serif; }
 
 * { box-sizing: border-box; }
 

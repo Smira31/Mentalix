@@ -19,8 +19,8 @@ export default {
         'cognac':        'rgb(var(--c-gold) / <alpha-value>)',  // → золото
       },
       fontFamily: {
-        display: ['Manrope', 'sans-serif'],
-        body: ['Manrope', 'sans-serif'],
+        display: ['Onest', 'Manrope', 'sans-serif'],
+        body: ['Onest', 'Manrope', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       keyframes: {
