@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
+import { ArtSprout } from '../components/Art'
 import { ArrowLeft, Sparkles, Snowflake, Check, GripVertical } from 'lucide-react'
 
 function haptic(style = 'light') {
@@ -323,9 +324,7 @@ export default function Rituals({ user, onBack }) {
         <p className="text-cream/40 text-sm">Загрузка...</p>
       ) : rituals.length === 0 ? (
         <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-          <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-            <Sparkles size={24} className="text-gold" strokeWidth={1.5} />
-          </div>
+          <ArtSprout size={120} className="mx-auto mb-3" />
           <h3 className="font-display text-lg text-cream mb-1">Ритуалов пока нет</h3>
           <p className="text-sm text-cream/50 mb-4 leading-relaxed">
             Ритуал — это обряд, который держит твой день. Создай первый.

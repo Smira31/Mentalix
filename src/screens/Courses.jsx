@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { ArtBook } from '../components/Art'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
 
 const EMPTY_DRAFT = { title: '', source: '', duration_estimate_min: '', cover_url: '' }
@@ -327,9 +328,17 @@ export default function Courses({ user }) {
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-cream/30 text-sm text-center py-10">
-          {courses.length === 0 ? 'Библиотека пуста — добавь первый материал' : 'Ничего не найдено'}
-        </p>
+        <div className="text-center py-8">
+          {courses.length === 0 ? (
+            <>
+              <ArtBook size={120} className="mx-auto mb-3" />
+              <ArtBook size={116} className="mx-auto mb-3" />
+              <p className="text-cream/45 text-sm">Библиотека пуста — добавь первый материал</p>
+            </>
+          ) : (
+            <p className="text-cream/30 text-sm py-6">Ничего не найдено</p>
+          )}
+        </div>
       ) : (
         filtered.map((c) => <CourseCard key={c.id} course={c} onOpen={setSelected} />)
       )}

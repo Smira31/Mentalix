@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
+import { ArtDoor } from '../components/Art'
 
 // ── Ежедневный чек-ин в стиле stoic.: один вопрос на экран ──
 // Шаги: настроение → энергия → тревога → фокус → заметка → празднование
@@ -106,8 +107,9 @@ export default function CheckIn({ user, onDone }) {
   if (step === doneStep) {
     return (
       <div className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col items-center justify-center px-8 text-center animate-fade-in">
-        <div className="animate-celebrate-pop mb-8">
-          <Face level={values.mood || 4} active size={88} />
+        <ArtDoor size={140} className="mb-4" />
+        <div className="animate-celebrate-pop mb-6">
+          <Face level={values.mood || 4} active size={64} />
         </div>
         <h2 className="font-display text-[26px] text-cream leading-tight">Чек-ин записан</h2>
         <p className="text-[15px] text-cream/50 mt-3 leading-relaxed">

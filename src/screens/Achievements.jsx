@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { ArtFootprint, ArtFeather, ArtSun, ArtKnot, ArtFlame, ArtMoonMark } from '../components/Art'
 
 // ── Вехи Пути: достижения без давления — фиксация пройденного, не гонка ──
 // Считаются на лету из существующих данных, бэкенд не нужен.
@@ -23,7 +24,7 @@ function buildBadges({ stats, rituals, ascezas }) {
   return [
     {
       id: 'first-step',
-      icon: '⛰',
+      Art: ArtFootprint,
       title: 'Первый шаг',
       desc: 'Первый чек-ин пройден',
       done: checkins >= 1,
@@ -32,7 +33,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'voice-heard',
-      icon: '✎',
+      Art: ArtFeather,
       title: 'Голос услышан',
       desc: '5 чек-инов — привычка слышать себя',
       done: checkins >= 5,
@@ -41,7 +42,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'week-on-path',
-      icon: '☀',
+      Art: ArtSun,
       title: 'Неделя пути',
       desc: '7 дней в системе',
       done: days >= 7,
@@ -50,7 +51,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'ritual-holds',
-      icon: '✦',
+      Art: ArtKnot,
       title: 'Ритуал держит',
       desc: 'Серия ритуала — 7 дней',
       done: bestRitual >= 7,
@@ -59,7 +60,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'asceza-power',
-      icon: '◈',
+      Art: ArtFlame,
       title: 'Аскеза — сила',
       desc: '7 чистых дней отказа',
       done: bestAsceza >= 7,
@@ -68,7 +69,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'month-on-path',
-      icon: '✧',
+      Art: ArtMoonMark,
       title: 'Месяц пути',
       desc: '30 дней в системе',
       done: days >= 30,
@@ -113,7 +114,7 @@ export default function Achievements({ user }) {
         <h3 className="text-sm text-cream/80">Вехи Пути</h3>
         <span className="text-[11px] text-cream/40">{unlockedCount} из {badges.length}</span>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2 mx-stagger">
         {badges.map((b) => (
           <div
             key={b.id}
@@ -125,9 +126,7 @@ export default function Achievements({ user }) {
             {freshIds.includes(b.id) && (
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold animate-celebrate-pop" />
             )}
-            <span className={`text-[22px] leading-none mb-2 ${b.done ? 'text-gold' : 'text-cream/25'}`}>
-              {b.icon}
-            </span>
+            <b.Art size={54} className={b.done ? 'mb-1' : 'mb-1 opacity-35 saturate-0'} />
             <span className={`text-[11px] font-bold leading-tight ${b.done ? 'text-cream' : 'text-cream/40'}`}>
               {b.title}
             </span>

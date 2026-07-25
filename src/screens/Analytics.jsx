@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { ArtSteps } from '../components/Art'
 import { BarChart3, Shield, Sparkles } from 'lucide-react'
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell,
@@ -22,10 +23,8 @@ function EmptyAnalytics() {
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
       <p className="text-[11px] text-cream/40 mb-8">за последние дни</p>
 
-      <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 p-8 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-light/40 flex items-center justify-center mx-auto mb-4">
-          <BarChart3 size={26} className="text-gold" strokeWidth={1.5} />
-        </div>
+      <div className="rounded-[24px] bg-emerald p-8 text-center">
+        <ArtSteps size={120} className="mx-auto mb-3" />
         <h3 className="font-display text-lg text-cream mb-2">Пока нечего показать</h3>
         <p className="font-body text-sm text-cream/50 leading-relaxed">
           Отмечай ритуалы и аскезы хотя бы несколько дней — и здесь появятся закономерности,

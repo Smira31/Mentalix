@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowUpRight, Sparkles, Shield, Timer, Wind, Brain } from 'lucide-react'
 import Path from './Path'
 import CheckIn from './CheckIn'
 import MazeLogo from '../components/MazeLogo'
+import { ArtThread } from '../components/Art'
 import History from './History'
 import QuoteView from './QuoteView'
 
@@ -157,7 +158,11 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
 
       {/* ── герой-карточка: One Next Action ── */}
       <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-10 text-center flex flex-col justify-center min-h-[54vh] animate-fade-in">
-        <MazeLogo size={168} progress={total > 0 ? done / total : 0} className="mx-auto mb-7" />
+        {isEmpty ? (
+          <ArtThread size={150} className="mx-auto mb-7" />
+        ) : (
+          <MazeLogo size={168} progress={total > 0 ? done / total : 0} className="mx-auto mb-7" />
+        )}
 
         {checkinAsHero && (
           <>
@@ -228,7 +233,9 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           onClick={() => { platform.haptic('light'); setSub('checkin') }}
           className="w-full rounded-3xl bg-emerald px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
-          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-lg shrink-0">☺</span>
+          <span className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+            <Sparkles size={16} className="text-gold" strokeWidth={1.75} />
+          </span>
           <span className="flex-1 text-left">
             <span className="block text-[14px] font-bold text-cream">Как ты?</span>
             <span className="block text-[12px] text-cream/40 font-medium">чек-ин дня · 1 минута</span>
@@ -281,21 +288,21 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           Все
         </button>
       </div>
-      <div className="flex gap-3 overflow-x-auto -mx-5 px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mx-stagger flex gap-3 overflow-x-auto -mx-5 px-5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {[
-          { sub: 'rituals', icon: '✦', name: 'Ритуалы', st: `${rituals.filter((r) => r.today_level).length} / ${rituals.length || 0} сегодня` },
-          { sub: 'ascezas', icon: '◈', name: 'Аскезы', st: `${ascezas.filter((a) => a.today_status === 'held').length} / ${ascezas.length || 0} держишь` },
-          { sub: 'focus', icon: '◉', name: 'Фокус', st: 'глубокая работа' },
-          { sub: 'breathing', icon: '❋', name: 'Дыхание', st: 'минута покоя' },
-          { sub: 'brain', icon: '◎', name: 'Нейротренажёр', st: 'внимание · память' },
+          { sub: 'rituals', Icon: Sparkles, name: 'Ритуалы', st: `${rituals.filter((r) => r.today_level).length} / ${rituals.length || 0} сегодня` },
+          { sub: 'ascezas', Icon: Shield, name: 'Аскезы', st: `${ascezas.filter((a) => a.today_status === 'held').length} / ${ascezas.length || 0} держишь` },
+          { sub: 'focus', Icon: Timer, name: 'Фокус', st: 'глубокая работа' },
+          { sub: 'breathing', Icon: Wind, name: 'Дыхание', st: 'минута покоя' },
+          { sub: 'brain', Icon: Brain, name: 'Нейротренажёр', st: 'внимание · память' },
         ].map((c) => (
           <button
             key={c.sub}
             onClick={() => { platform.haptic('light'); onOpenPractice(c.sub) }}
             className="min-w-[142px] rounded-3xl bg-emerald p-5 flex flex-col items-center gap-3 text-center active:scale-[0.97] transition-transform border-0"
           >
-            <span className="w-12 h-12 rounded-full bg-gold/15 text-gold text-xl flex items-center justify-center">
-              {c.icon}
+            <span className="w-12 h-12 rounded-full bg-gold/15 flex items-center justify-center">
+              <c.Icon size={20} className="text-gold" strokeWidth={1.75} />
             </span>
             <span className="text-[14px] font-bold text-cream leading-tight">{c.name}</span>
             <span className="text-[11px] font-semibold text-cream/40">{c.st}</span>

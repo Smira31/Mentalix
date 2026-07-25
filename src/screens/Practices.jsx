@@ -93,6 +93,7 @@ export default function Practices({ user, initialSub = null }) {
   return (
     <div className="w-full max-w-md px-5 pb-40">
       <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-6">практики.</h2>
+      <div className="mx-stagger">
 
       <BigCard
         Icon={Sparkles}
@@ -123,6 +124,7 @@ export default function Practices({ user, initialSub = null }) {
 
       <div className="text-[12px] text-cream/35 font-semibold mt-7 mb-3 px-1">Ещё</div>
       <SmallRow Icon={Timer} title="Фокус" subtitle="таймер глубокой работы" onOpen={() => setSub('focus')} />
+      </div>
     </div>
   )
 }

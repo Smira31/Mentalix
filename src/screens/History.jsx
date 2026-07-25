@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { ArtCairn } from '../components/Art'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 
@@ -45,6 +46,7 @@ export default function History({ user }) {
   if (days.length === 0) {
     return (
       <div className="rounded-[24px] bg-emerald px-6 py-10 text-center mt-2">
+        <ArtCairn size={110} className="mx-auto mb-4" />
         <h3 className="font-display text-[18px] text-cream mb-2">Пока пусто</h3>
         <p className="text-[14px] text-cream/45 leading-snug">
           Пройди чек-ин или закрой ритуал —

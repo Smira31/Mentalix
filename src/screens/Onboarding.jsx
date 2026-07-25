@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { platform } from '../platform'
 import MazeLogo from '../components/MazeLogo'
+import { ArtThread, ArtSteps, ArtDoor } from '../components/Art'
 
 // ── Онбординг: три слайда в стиле stoic. — гора, суть, первый шаг ──
 
@@ -10,21 +11,21 @@ const SLIDES = [
     title: 'Система, а не мотивация',
     text: 'Мотивация кончается. Система — нет. Mentalix держит твой день на ритуалах, аскезах и честном чек-ине, даже когда сил нет.',
     cta: 'Дальше',
-    art: 0.15,
+    Art: ArtThread,
   },
   {
     eyebrow: 'Как это работает',
     title: 'Один шаг за раз',
     text: 'Никаких списков из десяти дел. Приложение показывает одно действие — самое важное сейчас. Сделал — идёшь дальше. Путь складывается из шагов.',
     cta: 'Дальше',
-    art: 0.45,
+    Art: ArtSteps,
   },
   {
     eyebrow: 'Твой путь начинается',
     title: 'Срыв — не конец',
     text: 'Пропустил день — Путь не сгорает. Возвращаешься и делаешь один маленький шаг. Здесь не осуждают. Здесь продолжают.',
     cta: 'Начать путь',
-    art: 0.75,
+    Art: ArtDoor,
   },
 ]
 
@@ -54,7 +55,7 @@ export default function Onboarding({ onFinish }) {
 
       <div key={index} className="flex-1 flex flex-col items-center justify-center px-8 text-center animate-fade-in">
         <div className="mb-10">
-          <MazeLogo size={190} progress={slide.art} />
+          <slide.Art size={175} />
         </div>
         <div className="text-[13px] text-cream/40 font-semibold mb-2">{slide.eyebrow}</div>
         <h2 className="font-display text-[28px] text-cream leading-tight max-w-sm">{slide.title}</h2>
