@@ -292,34 +292,6 @@ export default function App() {
           <div className="flex justify-around items-center px-2 py-2 rounded-full border border-cream/10 bg-emerald/90 backdrop-blur-md">
             {TABS.map((t) => {
               const active = tab === t.key
-              // центральная кнопка — крупная, с символом-лабиринтом
-              if (t.icon === 'monogram') {
-                return (
-                  <button
-                    key={t.key}
-                    onClick={() => switchTab(t.key)}
-                    aria-label={t.label}
-                    aria-current={active ? 'page' : undefined}
-                    className="flex-1 flex justify-center items-center py-2 border-0 bg-transparent active:scale-90 transition-transform"
-                  >
-                    <span
-                      className={[
-                        'w-[60px] h-[60px] rounded-full flex items-center justify-center border transition-colors',
-                        active ? 'bg-gold/15 border-gold/50' : 'bg-emerald border-cream/10',
-                      ].join(' ')}
-                      style={{ transform: 'translateY(-16px)', boxShadow: '0 10px 28px rgba(0,0,0,0.4)' }}
-                    >
-                      <MazeLogo
-                        size={32}
-                        progress={1}
-                        baseClass={active ? 'text-gold/25' : 'text-cream/10'}
-                        trailClass={active ? 'text-gold' : 'text-cream/45'}
-                        dotClass={active ? 'fill-gold' : 'fill-cream/45'}
-                      />
-                    </span>
-                  </button>
-                )
-              }
               return (
                 <button
                   key={t.key}
@@ -332,15 +304,26 @@ export default function App() {
                     active ? 'bg-cream/10' : '',
                   ].join(' ')}
                 >
-                  <t.icon
-                    size={21}
-                    strokeWidth={1.9}
-                    className={active ? 'text-cream' : 'text-cream/40'}
-                  />
+                  {t.icon === 'monogram' ? (
+                    // символ Mentalix: в активном состоянии — золотой
+                    <MazeLogo
+                      size={22}
+                      progress={1}
+                      showDot={false}
+                      baseClass="text-transparent"
+                      trailClass={active ? 'text-gold' : 'text-cream/40'}
+                    />
+                  ) : (
+                    <t.icon
+                      size={21}
+                      strokeWidth={1.9}
+                      className={active ? 'text-cream' : 'text-cream/40'}
+                    />
+                  )}
                   <span
                     className={[
                       'text-[10px] font-semibold transition-colors duration-300',
-                      active ? 'text-cream' : 'text-cream/40',
+                      active ? (t.icon === 'monogram' ? 'text-gold' : 'text-cream') : 'text-cream/40',
                     ].join(' ')}
                   >
                     {t.label}
