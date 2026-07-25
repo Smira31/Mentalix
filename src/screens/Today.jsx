@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { ChevronLeft, ChevronRight, ArrowUpRight } from 'lucide-react'
 import Path from './Path'
 import CheckIn from './CheckIn'
+import MazeLogo from '../components/MazeLogo'
 import History from './History'
 import QuoteView from './QuoteView'
 
@@ -36,19 +37,6 @@ function WeekStrip() {
         )
       })}
     </div>
-  )
-}
-
-// ── line-art гора: визуальный знак Пути ──
-function MountainArt() {
-  return (
-    <svg viewBox="0 0 200 110" fill="none" className="w-[190px] mx-auto mb-6 opacity-80">
-      <path d="M10 96 L70 30 L104 62 L134 20 L190 96" stroke="currentColor" strokeWidth="2.5"
-        strokeLinecap="round" strokeLinejoin="round" className="text-cream/50" />
-      <path d="M10 96 H190" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-cream/50" />
-      <circle cx="104" cy="62" r="5" className="fill-gold" />
-      <path d="M126 14 a8 8 0 1 1 16 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-cream/50" />
-    </svg>
   )
 }
 
@@ -169,7 +157,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
 
       {/* ── герой-карточка: One Next Action ── */}
       <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-10 text-center flex flex-col justify-center min-h-[54vh] animate-fade-in">
-        <MountainArt />
+        <MazeLogo size={168} progress={total > 0 ? done / total : 0} className="mx-auto mb-7" />
 
         {checkinAsHero && (
           <>

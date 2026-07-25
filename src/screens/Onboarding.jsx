@@ -1,19 +1,8 @@
 import { useState } from 'react'
 import { platform } from '../platform'
+import MazeLogo from '../components/MazeLogo'
 
 // ── Онбординг: три слайда в стиле stoic. — гора, суть, первый шаг ──
-
-function MountainArt({ progress = 0.4 }) {
-  return (
-    <svg viewBox="0 0 200 120" fill="none" className="w-[220px] mx-auto">
-      <path d="M10 104 L70 34 L104 68 L134 22 L190 104" stroke="currentColor" strokeWidth="2.5"
-        strokeLinecap="round" strokeLinejoin="round" className="text-cream/50" />
-      <path d="M10 104 H190" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-cream/50" />
-      <circle cx={70 + progress * 60} cy={64 - progress * 30} r="5" className="fill-gold" />
-      <path d="M126 16 a8 8 0 1 1 16 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-cream/50" />
-    </svg>
-  )
-}
 
 const SLIDES = [
   {
@@ -65,7 +54,7 @@ export default function Onboarding({ onFinish }) {
 
       <div key={index} className="flex-1 flex flex-col items-center justify-center px-8 text-center animate-fade-in">
         <div className="mb-10">
-          <MountainArt progress={slide.art} />
+          <MazeLogo size={190} progress={slide.art} />
         </div>
         <div className="text-[13px] text-cream/40 font-semibold mb-2">{slide.eyebrow}</div>
         <h2 className="font-display text-[28px] text-cream leading-tight max-w-sm">{slide.title}</h2>

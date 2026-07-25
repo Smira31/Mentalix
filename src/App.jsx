@@ -8,6 +8,8 @@ import MentalixChat from './screens/Mentalix'
 import Profile from './screens/Profile'
 import Settings from './screens/Settings'
 import WebAuthScreen from './screens/WebAuthScreen'
+import MazeLogo from './components/MazeLogo'
+import { initFullscreen } from './lib/tgFullscreen'
 import Courses from './screens/Courses'
 import Onboarding from './screens/Onboarding'
 
@@ -19,16 +21,20 @@ const ONBOARDED_KEY = 'mx-onboarded'
 function Splash() {
   return (
     <div className="min-h-screen bg-emerald-deep text-cream flex flex-col items-center justify-center font-body">
-      <svg viewBox="0 0 200 120" fill="none" className="w-[180px] animate-pulse-once">
-        <path d="M10 104 L70 34 L104 68 L134 22 L190 104" stroke="currentColor" strokeWidth="2.5"
-          strokeLinecap="round" strokeLinejoin="round" className="text-cream/40" />
-        <path d="M10 104 H190" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-cream/40" />
-        <circle cx="104" cy="68" r="5" className="fill-gold" />
-      </svg>
-      <div className="font-display text-xl text-cream mt-6 lowercase">mentalix.</div>
-      <div className="text-[12px] text-cream/35 font-semibold mt-1">путь продолжается</div>
+      <MazeLogo size={132} progress={0.55} className="animate-pulse-once" />
+      <div className="font-display text-[15px] tracking-[0.4em] text-cream/50 mt-7">MENTALIX</div>
+      <div className="text-[12px] text-cream/30 font-semibold mt-2">выход находится шагами</div>
     </div>
   )
+}
+
+// короткая мысль под приветствием — заполняет пустоту смыслом
+function tagline() {
+  const h = new Date().getHours()
+  if (h >= 5 && h <= 11) return 'день начинается с одного шага'
+  if (h >= 12 && h <= 17) return 'шаг за шагом — выход находится'
+  if (h >= 18 && h <= 22) return 'день закрывают, а не бросают'
+  return 'тишина — тоже часть пути'
 }
 
 function isDayNow() {
@@ -65,18 +71,6 @@ function greeting() {
   return 'тихой ночи.'
 }
 
-function MonogramIcon({ active }) {
-  return (
-    <div
-      className={`w-[22px] h-[22px] rounded-full border-2 flex items-center justify-center ${
-        active ? 'border-cream' : 'border-cream/40'
-      }`}
-    >
-      <span className={`font-display text-[11px] ${active ? 'text-cream' : 'text-cream/40'}`}>M</span>
-    </div>
-  )
-}
-
 const TABS = [
   { key: 'today', label: 'Сегодня', icon: House },
   { key: 'practices', label: 'Практики', icon: Sparkles },
@@ -89,6 +83,7 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [authChecked, setAuthChecked] = useState(false)
   const [overlay, setOverlay] = useState(null) // null | 'profile' | 'settings'
+  const [fullscreen, setFullscreen] = useState(false)
   const [onboarded, setOnboarded] = useState(() => {
     try { return localStorage.getItem(ONBOARDED_KEY) === '1' } catch { return true }
   })
@@ -114,6 +109,9 @@ export default function App() {
     platform.haptic('light')
     setThemeMode((m) => (m === 'auto' ? (isDayNow() ? 'dark' : 'light') : m === 'dark' ? 'light' : 'dark'))
   }
+
+  // полноэкранный режим Telegram + безопасные зоны
+  useEffect(() => initFullscreen(({ fullscreen: fs }) => setFullscreen(fs)), [])
 
   useEffect(() => {
     platform.init()
@@ -197,9 +195,22 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-emerald-deep text-cream flex flex-col items-center font-body">
+    <div
+      className="min-h-screen bg-emerald-deep text-cream flex flex-col items-center font-body"
+      style={{ paddingTop: 'var(--tg-top, 0px)' }}
+    >
+      {/* ── в полноэкранном режиме: вордмарк между кнопками Telegram ── */}
+      {fullscreen && (
+        <div
+          className="fixed top-0 left-0 right-0 z-40 flex items-end justify-center pointer-events-none pb-2"
+          style={{ height: 'var(--tg-top, 0px)' }}
+        >
+          <span className="font-display text-[13px] tracking-[0.4em] text-cream/35">MENTALIX</span>
+        </div>
+      )}
+
       {/* ── верхняя панель: тема · приветствие · профиль ── */}
-      <div className="w-full max-w-md px-5 pt-5 pb-1 flex items-center justify-between">
+      <div className="w-full max-w-md px-5 pt-4 pb-0 flex items-center justify-between">
         <button
           onClick={cycleTheme}
           aria-label="Переключить тему"
@@ -220,6 +231,8 @@ export default function App() {
           </span>
         </button>
       </div>
+
+      <p className="text-[11px] text-cream/30 font-medium mb-1">{tagline()}</p>
 
       {/* ── контент ── */}
       <div key={overlay || tab} className="flex-1 w-full flex flex-col items-center animate-fade-in pb-28">
@@ -279,6 +292,34 @@ export default function App() {
           <div className="flex justify-around items-center px-2 py-2 rounded-full border border-cream/10 bg-emerald/90 backdrop-blur-md">
             {TABS.map((t) => {
               const active = tab === t.key
+              // центральная кнопка — крупная, с символом-лабиринтом
+              if (t.icon === 'monogram') {
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => switchTab(t.key)}
+                    aria-label={t.label}
+                    aria-current={active ? 'page' : undefined}
+                    className="flex-1 flex justify-center items-center py-2 border-0 bg-transparent active:scale-90 transition-transform"
+                  >
+                    <span
+                      className={[
+                        'w-[60px] h-[60px] rounded-full flex items-center justify-center border transition-colors',
+                        active ? 'bg-gold/15 border-gold/50' : 'bg-emerald border-cream/10',
+                      ].join(' ')}
+                      style={{ transform: 'translateY(-16px)', boxShadow: '0 10px 28px rgba(0,0,0,0.4)' }}
+                    >
+                      <MazeLogo
+                        size={32}
+                        progress={1}
+                        baseClass={active ? 'text-gold/25' : 'text-cream/10'}
+                        trailClass={active ? 'text-gold' : 'text-cream/45'}
+                        dotClass={active ? 'fill-gold' : 'fill-cream/45'}
+                      />
+                    </span>
+                  </button>
+                )
+              }
               return (
                 <button
                   key={t.key}
@@ -291,15 +332,11 @@ export default function App() {
                     active ? 'bg-cream/10' : '',
                   ].join(' ')}
                 >
-                  {t.icon === 'monogram' ? (
-                    <MonogramIcon active={active} />
-                  ) : (
-                    <t.icon
-                      size={21}
-                      strokeWidth={1.9}
-                      className={active ? 'text-cream' : 'text-cream/40'}
-                    />
-                  )}
+                  <t.icon
+                    size={21}
+                    strokeWidth={1.9}
+                    className={active ? 'text-cream' : 'text-cream/40'}
+                  />
                   <span
                     className={[
                       'text-[10px] font-semibold transition-colors duration-300',
