@@ -15,7 +15,7 @@ import Onboarding from './screens/Onboarding'
 
 // ── Тема: тёмная вечером, светлая днём. Ручной режим хранится в localStorage ──
 const THEME_KEY = 'mx-theme' // 'auto' | 'light' | 'dark'
-const ONBOARDED_KEY = 'mx-onboarded'
+const ONBOARDED_KEY = 'mx-onboarded-v2'
 
 // фирменный сплэш вместо серого «Загрузка...»
 function Splash() {

@@ -154,6 +154,15 @@ export default function Settings({ user, onBack, onNavigate }) {
       <SectionLabel>Обновление приложения</SectionLabel>
       <Card>
         <Row icon={RefreshCw} title="Текущая версия" right={<span className="text-sage/70 text-sm font-body">v1.0.0</span>} />
+        <Row
+          title="Пройти знакомство заново"
+          subtitle="Показать первые экраны и заново собрать план"
+          onClick={() => {
+            try { localStorage.removeItem('mx-onboarded-v2') } catch {}
+            window.location.reload()
+          }}
+          divider={false}
+        />
       </Card>
 
       <SectionLabel>Аккаунт</SectionLabel>
