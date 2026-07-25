@@ -1,237 +1,389 @@
-# Редизайн Mentalix в стиле stoic. — что изменилось
+import { useEffect, useState, useRef } from 'react'
+import WebApp from '@twa-dev/sdk'
+import { api } from '../lib/api'
+import { ArtShield } from '../components/Art'
+import { ArrowLeft, Shield, ShieldOff, Cigarette, Brain, Users, Smartphone, Cookie, GripVertical, Check } from 'lucide-react'
 
-## Дизайн-система
-- `src/index.css` — две темы через CSS-переменные: тёмная (#0A0A0A + золото #D9B45B)
-  и светлая (#F5F0E8 + золото #8B6914). Светлая включается автоматически с 6:00 до 18:00.
-- `tailwind.config.js` — старые имена цветов (cream, emerald, mint, gold, cognac)
-  перепривязаны к переменным темы. Благодаря этому ВСЕ существующие экраны
-  (Rituals, Ascezas, BrainTrainer, Path, Analytics и т.д.) автоматически
-  перекрасились в монохром + один золотой акцент, без правки их кода.
-  mint и cognac теперь равны нейтральному тексту и золоту — трёхцветность ушла.
-- Шрифт: только Manrope (гротеск, как у stoic.). Serif Fraunces убран.
-  `.font-display` = Manrope 800 с плотным трекингом.
+function haptic(style = 'light') {
+  WebApp.HapticFeedback?.impactOccurred(style)
+}
+function hapticNotify(type = 'success') {
+  WebApp.HapticFeedback?.notificationOccurred(type)
+}
 
-## Экраны
-- `src/App.jsx` — новый шелл:
-  - таб-бар 5 вкладок: Сегодня / Практики / Наставник / Путь / Тренды
-  - Профиль → аватарка справа сверху (как у stoic.), Настройки — внутри профиля
-  - переключатель темы ◐ слева сверху (авто / светлая / тёмная, хранится в localStorage)
-  - приветствие lowercase: «добрый вечер, Андрей.»
-  - фоновая картинка bg.jpg больше не используется
-- `src/screens/Today.jsx` — Home по принципу One Next Action:
-  - лента недели, как у stoic.
-  - одна доминирующая карточка (~54vh): line-art гора + первый незакрытый
-    ритуал/аскеза + одна кнопка «Начать» + «После этого останется: N»
-  - состояния: пусто («Добавь первый ритуал»), всё закрыто
-    («Сегодня ты выше, чем вчера» → кнопка к наставнику)
-  - прогресс дня тонкой золотой полосой
-  - горизонтальная лента «Практики» и карточка «Мысль дня»
-- `src/screens/Practices.jsx` — НОВЫЙ хаб (2-я вкладка):
-  Ритуалы + Аскезы + Нейротренажёр как большие карточки,
-  Фокус и Курсы — во вторичной секции «Ещё». Все старые экраны подключены как были.
-- `src/platform/telegram.adapter.js` — цвет шапки/фона Telegram теперь
-  синхронизируется с темой (setThemeColors), а не захардкожен.
+const CATEGORIES = [
+  { key: 'physio', label: 'Физиология', short: 'Тело', Icon: Cigarette, hint: 'курение, алкоголь, вещества' },
+  { key: 'psycho', label: 'Психология', short: 'Психика', Icon: Brain, hint: 'грызть ногти, шопоголизм, жалобы' },
+  { key: 'social', label: 'Поведение', short: 'Общение', Icon: Users, hint: 'перебивать, материться, опаздывать' },
+  { key: 'digital', label: 'Цифровые', short: 'Экран', Icon: Smartphone, hint: 'думскроллинг, игры, телефон' },
+  { key: 'food', label: 'Пищевые', short: 'Еда', Icon: Cookie, hint: 'заедание стресса, сладкое, еда у ТВ' },
+]
 
-## Рекомендуется сделать вручную
-- Удалить `public/bg.jpg` (219 КБ, больше не используется) — минус вес бандла.
-- `golden_tritone.jpg` в корне — тоже можно удалить.
-- Оригиналы App.jsx и Today.jsx лежат в `_backup_original/` на случай отката.
+function categoryMeta(key) {
+  return CATEGORIES.find((c) => c.key === key) || CATEGORIES[1]
+}
 
-## Проверка
-`npm install && npm run dev` — как раньше. Прод-сборка `npm run build` проходит чисто.
+const EMPTY_DRAFT = {
+  name: '', category: 'psycho', reason: '', trigger: '', replacement: '',
+}
 
----
+function AscezaCard({ asceza, onLog, onDelete, dragHandlers, isDragging, isOver }) {
+  const status = asceza.today_status
+  const [confirming, setConfirming] = useState(false)
+  const [celebrate, setCelebrate] = useState(false)
+  const meta = categoryMeta(asceza.category)
+  const Icon = meta.Icon
 
-# Обновление 2
+  function handleLog(next) {
+    const wasUnset = !status
+    haptic('medium')
+    if (next === 'held' && wasUnset) {
+      hapticNotify('success')
+      setCelebrate(true)
+      setTimeout(() => setCelebrate(false), 700)
+    }
+    if (next === 'broke') hapticNotify('warning')
+    onLog(asceza.id, next)
+  }
 
-## Таб-бар: 5 → 4 вкладки (как в Product Vision)
-Сегодня / Практики / Наставник / Тренды.
-- «Путь» переехал на главную: карточка с золотой полосой прогресса под
-  герой-карточкой. Тап — открывает полный экран Пути (с кнопкой «назад»).
-- «Фокус» переехал на главную: четвёртая карточка в ленте «Практики»
-  (Ритуалы · Аскезы · Фокус · Нейротренажёр).
+  return (
+    <div
+      {...dragHandlers}
+      className={`rounded-3xl overflow-hidden mb-3 transition-all duration-200 ${
+        celebrate ? 'animate-glow-pulse' : ''
+      } ${isDragging ? 'opacity-60 scale-[1.03] shadow-lg shadow-black/40 z-10 relative' : ''} ${
+        isOver ? 'ring-1 ring-gold/60' : ''
+      } ${
+        status === 'held'
+          ? 'bg-gold/10'
+          : status === 'broke'
+          ? 'bg-emerald-light/40'
+          : 'bg-emerald'
+      }`}
+    >
+      <div className="w-full flex items-center justify-between px-4 pt-4 pb-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <GripVertical size={16} className="text-cream/25 shrink-0" />
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gold/10 shrink-0">
+            <Icon size={16} className="text-gold" strokeWidth={1.75} />
+            {celebrate && (
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-gold animate-celebrate-pop">
+                <Check size={16} className="text-emerald-deep" strokeWidth={3} />
+              </span>
+            )}
+          </div>
+          <div className="min-w-0">
+            <div className="text-[15px] font-bold text-cream truncate">{asceza.name}</div>
+            <div className="text-[10px] text-cream/40">{meta.label}</div>
+          </div>
+        </div>
+        <span className="flex items-center gap-2 shrink-0">
+          <span className="font-mono text-xs text-mint whitespace-nowrap">🛡 {asceza.streak}</span>
+          {confirming ? (
+            <span className="flex items-center gap-1">
+              <button
+                onClick={() => { haptic('rigid'); onDelete(asceza.id) }}
+                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
+              >
+                Удалить
+              </button>
+              <button
+                onClick={() => setConfirming(false)}
+                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 active:scale-90"
+              >
+                Отмена
+              </button>
+            </span>
+          ) : (
+            <span
+              onClick={() => setConfirming(true)}
+              className="text-cream/30 text-sm leading-none px-1 active:scale-90"
+            >
+              ×
+            </span>
+          )}
+        </span>
+      </div>
 
-## Курсы → Библиотека
-- Переименовано везде в интерфейсе: вкладка в Практиках («материалы, что
-  стоит сохранить»), заголовки, кнопки, пустые состояния Courses.jsx.
-- Платный доступ (см. план в переписке): нужно поле is_paid на бэкенде
-  + Telegram Stars через platform.openInvoice — каркас для этого уже есть.
+      <div className="px-4 pb-4">
+        {asceza.reason && <p className="text-xs text-cream/45 mb-2">{asceza.reason}</p>}
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleLog('held')}
+            className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+              status === 'held' ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
+            }`}
+          >
+            <Shield size={13} /> Удержался
+          </button>
+          <button
+            onClick={() => handleLog('broke')}
+            className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+              status === 'broke' ? 'bg-cream/15 text-cream' : 'bg-cream/5 text-cream/50'
+            }`}
+          >
+            <ShieldOff size={13} /> Сорвался
+          </button>
+        </div>
 
-## ИИ-наставники: новые имена
-Маяк / Компас / Дневник → Собеседник / Наставник / Следопыт
-(роли из Product Vision, раздел 4.4). API-ключи персон (mayak/kompas/dnevnik)
-НЕ менялись — бэкенд продолжает работать без изменений, поменялись только
-отображаемые имена, описания и иконки (MessageCircle / Mountain / Footprints).
-Акценты приведены к одному золотому.
+        {status === 'broke' && asceza.replacement && (
+          <p className="text-xs text-mint/70 mt-2">Замена: {asceza.replacement}</p>
+        )}
+        {!status && asceza.trigger && (
+          <p className="text-xs text-cream/35 mt-2 italic">Триггер: {asceza.trigger}</p>
+        )}
+      </div>
+    </div>
+  )
+}
 
----
+function CreateAscezaScreen({ onCreate, onCancel }) {
+  const [draft, setDraft] = useState(EMPTY_DRAFT)
+  const [saving, setSaving] = useState(false)
 
-# Обновление 3 — Этап 1 из STOIC_FEATURES: ежедневный чек-ин
+  function set(field) {
+    return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
+  }
 
-## Новое
-- `src/screens/CheckIn.jsx` — многошаговый чек-ин в стиле stoic.:
-  настроение (5 рисованных лиц) → энергия → тревога → фокус (шкалы 1–5
-  с авто-переходом и хаптикой) → заметка «Что на уме?» (можно пропустить)
-  → экран празднования. Работает на существующем API /api/checkin.
-- Главная: вечером (после 18:00), если чек-ин не пройден, он становится
-  герой-карточкой «Как прошёл день?»; днём — вторая карточка «Как ты?»
-  под One Next Action. После прохождения — карточка-итог
-  («настроение: хорошо · энергия 4/5», тап — изменить).
-- Тренды: линия настроения за 14 дней (золотая) + линия энергии (серая),
-  средний балл. Пустое состояние активное: кнопка «Пройти чек-ин»
-  ведёт на главную. Одна точка — подпись «ещё пара дней, и появится линия».
-- `api.checkin.history` добавлен в клиент API.
-- `STOIC_FEATURES.md` — полный каталог функций stoic. с приоритетами.
+  async function submit() {
+    if (!draft.name.trim() || saving) return
+    setSaving(true)
+    await onCreate(draft)
+    setSaving(false)
+  }
 
-## Файлы
-src/screens/CheckIn.jsx (новый), src/screens/Today.jsx,
-src/screens/Analytics.jsx, src/App.jsx, src/lib/api.js, STOIC_FEATURES.md
+  const inputCls =
+    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
 
----
+  const activeCat = categoryMeta(draft.category)
 
-# Обновление 4 — Этап 2 из STOIC_FEATURES
+  return (
+    <div className="w-full max-w-sm px-5 pb-6 -mt-4">
+      <div className="flex items-center gap-3 mb-5 pt-2">
+        <button onClick={onCancel} aria-label="Отмена"
+          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
+          <ArrowLeft size={18} className="text-cream/60" />
+        </button>
+        <h2 className="font-display text-[20px] text-cream lowercase">новая аскеза.</h2>
+      </div>
 
-## Вечерняя рефлексия (внутри чек-ина)
-После 18:00 последний шаг чек-ина превращается в три вопроса по одному
-на экран: «Что сегодня получилось?» → «Что было трудно?» → «Какой вывод
-забираешь?». Каждый можно пропустить. Ответы склеиваются в заметку
-чек-ина (Получилось: … / Трудно: … / Вывод: …) — без изменений бэкенда.
+      <div className="mb-3">
+        <p className="text-xs text-cream/50 mb-2">Категория</p>
+        <div className="grid grid-cols-5 gap-1.5">
+          {CATEGORIES.map((c) => {
+            const CIcon = c.Icon
+            const active = draft.category === c.key
+            return (
+              <button
+                key={c.key}
+                onClick={() => { haptic('light'); setDraft((d) => ({ ...d, category: c.key })) }}
+                className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-0 transition-all active:scale-95 ${
+                  active ? 'bg-gold/15 text-gold' : 'bg-emerald text-cream/40'
+                }`}
+              >
+                <CIcon size={17} strokeWidth={1.75} />
+                <span className="text-[9px] leading-none">{c.short}</span>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-[11px] text-cream/35 mt-1.5">{activeCat.hint}</p>
+      </div>
 
-## История (внутри Пути)
-Экран Пути получил переключатель «Путь | История». История — лента дней
-за 30 дней: чек-ин (настроение/энергия/фокус чипами + текст заметки),
-закрытые ритуалы, срывы аскез. Собирается из /checkin/history и
-/analytics. Пустое состояние приглашает к первому действию.
+      <div className="space-y-2 mb-5">
+        <input value={draft.name} onChange={set('name')} placeholder="От чего отказываешься" className={inputCls} />
+        <input value={draft.reason} onChange={set('reason')} placeholder="Зачем — что получишь взамен" className={inputCls} />
+        <input value={draft.trigger} onChange={set('trigger')} placeholder="Что провоцирует (триггер)" className={inputCls} />
+        <input value={draft.replacement} onChange={set('replacement')} placeholder="Чем заменить в момент тяги" className={inputCls} />
+      </div>
 
-## Полноэкранные цитаты
-Тап по «Мысли дня» на главной открывает полноэкранный режим: цитата дня
-+ вся твоя коллекция, свайп вверх/вниз или стрелки, счётчик, кнопка
-«Поделиться» — открывает шеринг Telegram с текстом цитаты и ссылкой
-на миниапп (бесплатный маркетинг).
+      <button
+        onClick={submit}
+        disabled={!draft.name.trim() || saving}
+        className="cta-pill w-full py-4 text-[16px] disabled:opacity-40"
+      >
+        {saving ? 'Сохраняю...' : 'Принять аскезу'}
+      </button>
+    </div>
+  )
+}
 
-## Файлы
-src/screens/CheckIn.jsx, src/screens/History.jsx (новый),
-src/screens/QuoteView.jsx (новый), src/screens/Today.jsx, STOIC_FEATURES.md
+export default function Ascezas({ user, onBack }) {
+  const [ascezas, setAscezas] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showCreate, setShowCreate] = useState(false)
+  const [dragIndex, setDragIndex] = useState(null)
+  const [overIndex, setOverIndex] = useState(null)
+  const longPressTimer = useRef(null)
 
----
+  useEffect(() => {
+    if (!user) return
+    api.ascezas.list(user.id)
+      .then(setAscezas)
+      .catch((e) => console.error(e))
+      .finally(() => setLoading(false))
+  }, [user])
 
-# Обновление 5 — Этап 3, часть 1: Дыхание
+  useEffect(() => {
+    if (dragIndex !== null) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+  }, [dragIndex])
 
-- `src/screens/Breathing.jsx` (новый) — дыхательная практика 4-7-8:
-  выбор длительности (1/2/4 мин) → «Устройся удобно» (3 сек) →
-  анимированный круг: растёт на вдохе (4с), держится (7с), сжимается
-  на выдохе (8с), хаптика на смене фаз, золотой прогресс сверху,
-  «Завершить раньше», экран завершения.
-- Карточка «Дыхание» добавлена в хаб Практик и в ленту на главной.
-- STOIC_FEATURES.md: в бэклог добавлена задача про тон текстов
-  под аудиторию (25–35 ядро, 18–24 второй круг) с правилами и табу.
+  async function logAsceza(ascezaId, status) {
+    try {
+      const updated = await api.ascezas.log(ascezaId, user.id, status)
+      setAscezas((prev) => prev.map((a) =>
+        a.id === ascezaId
+          ? { ...a, streak: updated.streak, total_days: updated.total_days, breaks: updated.breaks, today_status: updated.today_status }
+          : a
+      ))
+    } catch (e) { console.error(e) }
+  }
 
----
+  async function createAsceza(draft) {
+    try {
+      const asceza = await api.ascezas.create(user.id, draft)
+      setAscezas((prev) => [...prev, asceza])
+      setShowCreate(false)
+    } catch (e) { console.error(e) }
+  }
 
-# Обновление 6 — Этап 3, часть 2: Вехи Пути
+  async function deleteAsceza(ascezaId) {
+    try {
+      await api.ascezas.remove(ascezaId)
+      setAscezas((prev) => prev.filter((a) => a.id !== ascezaId))
+    } catch (e) { console.error(e) }
+  }
 
-- `src/screens/Achievements.jsx` (новый) — достижения по вехам Пути,
-  считаются на лету из существующих данных (профиль, серии ритуалов
-  и аскез), бэкенд не нужен. Шесть вех: Первый шаг, Голос услышан,
-  Неделя пути, Ритуал держит, Аскеза — сила, Месяц пути.
-  Закрытые — золотые, будущие — приглушённые с прогрессом (3/7).
-  Новая веха подсвечивается точкой + хаптика. Живут в Профиле.
-- По вижину: это фиксация пройденного, не гонка — нет «потеряешь
-  серию», прогресс не сбрасывается.
+  async function saveOrder(list) {
+    try {
+      await api.ascezas.reorder(user.id, list.map((a) => a.id))
+    } catch (e) { console.error(e) }
+  }
 
-## План оплаты Библиотеки (зафиксировано)
-- Цифровой контент в мини-аппе по правилам Telegram — только Stars.
-- Схема «как Netflix»: карта через ЮKassa на веб-версии
-  (mentalix.vercel.app в браузере) → бэкенд помечает аккаунт →
-  в Telegram контент открыт. Позже Stars внутри миниаппа вторым способом.
-- Ждём подтверждения регистрации ЮMoney → затем: поле is_paid у
-  материалов, эндпоинты инвойса/вебхука ЮKassa, экран покупки на вебе.
+  function startLongPress(index) {
+    longPressTimer.current = setTimeout(() => {
+      haptic('medium')
+      setDragIndex(index)
+    }, 400)
+  }
 
----
+  function cancelLongPress() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }
 
-# Обновление 7 — Сплэш и онбординг
+  function handleTouchMove(e) {
+    if (dragIndex === null) return
+    const touch = e.touches[0]
+    const el = document.elementFromPoint(touch.clientX, touch.clientY)
+    const card = el?.closest('[data-asceza-index]')
+    if (card) {
+      const idx = Number(card.getAttribute('data-asceza-index'))
+      if (idx !== overIndex) setOverIndex(idx)
+    }
+  }
 
-- Сплэш: вместо серого «Загрузка...» — фирменный экран: line-art гора
-  с золотой точкой, «mentalix.» lowercase, «путь продолжается».
-- Онбординг переписан в стиле stoic. и ПОДКЛЮЧЁН (раньше файл лежал
-  мёртвым грузом): три слайда с горой, по которой точка поднимается
-  от слайда к слайду. Тексты в тоне аудитории: «Система, а не мотивация»,
-  «Один шаг за раз», «Срыв — не конец». Кнопка «Пропустить»,
-  показывается один раз (флаг в localStorage).
+  function handleTouchEnd() {
+    cancelLongPress()
+    if (dragIndex !== null && overIndex !== null && dragIndex !== overIndex) {
+      const next = [...ascezas]
+      const [moved] = next.splice(dragIndex, 1)
+      next.splice(overIndex, 0, moved)
+      setAscezas(next)
+      saveOrder(next)
+      hapticNotify('success')
+    }
+    setDragIndex(null)
+    setOverIndex(null)
+  }
 
----
+  if (showCreate) {
+    return <CreateAscezaScreen onCreate={createAsceza} onCancel={() => setShowCreate(false)} />
+  }
 
-# Обновление 8 — Рестайл Ритуалов и Аскез (вариант А)
+  const heldToday = ascezas.filter((a) => a.today_status === 'held').length
+  const total = ascezas.length
 
-Вся логика нетронута: серии, заморозки, min/optimal, «удержался/сорвался»,
-перетаскивание долгим нажатием, категории, триггеры и замены работают
-как раньше. Изменена только оболочка:
+  return (
+    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+      <div className="flex items-center gap-3 mb-2">
+        <button onClick={() => { haptic('light'); onBack() }} aria-label="Назад"
+          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
+          <ArrowLeft size={18} className="text-cream/60" />
+        </button>
+        <h2 className="font-display text-[22px] text-cream lowercase">аскезы.</h2>
+      </div>
+      <p className="text-[12px] text-cream/40 mb-5 px-1">
+        {total > 1 ? 'зажми карточку, чтобы поменять порядок' : 'от чего ты отказываешься'}
+      </p>
 
-- Карточки: rounded-3xl без рамок, чистый фон вместо градиентных полос.
-  Выполненный ритуал / удержанная аскеза — мягкая золотая подсветка.
-  Срыв — нейтральное затемнение, без красного (по вижину: срыв — часть
-  пути, не ошибка).
-- Кнопки уровней («Минимум/Оптимум», «Удержался/Сорвался») — капсулы;
-  активный оптимум/удержался — золотой, активный минимум/сорвался —
-  спокойный светлый, без осуждающих цветов.
-- Иконки карточек — круглые золотые, момент выполнения (галочка-«поп»)
-  сохранён и стал круглым.
-- Шапки экранов: круглая кнопка назад + lowercase-заголовки
-  «ритуалы.» / «аскезы.» / «новый ритуал.» / «новая аскеза.»
-- Формы создания: крупные поля rounded-2xl, CTA-капсула в фирменном стиле.
-- Пустые состояния: крупные rounded-3xl карточки с золотой иконкой.
-- Прогресс «удержано сегодня» у аскез — золотая полоса.
-- Категории аскез — чипы без рамок, активная — золотая.
+      {total > 0 && (
+        <div className="mb-4">
+          <div className="flex justify-between text-xs text-cream/50 mb-1">
+            <span>Удержано сегодня</span>
+            <span>{heldToday}/{total}</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-cream/10 overflow-hidden">
+            <div
+              className="h-full bg-gold transition-all duration-500 ease-out"
+              style={{ width: total ? `${(heldToday / total) * 100}%` : '0%' }}
+            />
+          </div>
+        </div>
+      )}
 
----
-
-# Обновление 9 — Библиотека как вкладка
-
-Таб-бар: 5 вкладок — Сегодня / Практики / Наставник / Библиотека / Тренды.
-Библиотека переехала из «Практик» в собственную вкладку (4-я позиция,
-после Наставника) — витрина будущего платного контента заслуживает
-видного места. Из «Практик» убрана строка Библиотеки, «Ещё» остался
-с Фокусом. Осознанное отступление от правила «4 вкладки» из вижина.
-
----
-
-# Обновление 10 — Лабиринт как символ + полный экран
-
-## Символ Mentalix — лабиринт
-- `src/components/MazeLogo.jsx` (новый) — фирменный знак: спираль-лабиринт,
-  по которой ЗОЛОТОМ заполняется пройденный путь (prop progress 0..1),
-  в центре — золотая точка «ты здесь». Метафора: человек в лабиринте
-  ищет выход, и выход находится шагами.
-- Гора заменена лабиринтом везде: сплэш, онбординг (лабиринт заполняется
-  от слайда к слайду), герой-карточка «Сегодня» (заполняется по мере
-  закрытия практик за день — живая визуализация прогресса).
-
-## Центральная кнопка таб-бара
-Средняя вкладка (Наставник) — крупная круглая кнопка Ø60, приподнята
-над полосой, с символом-лабиринтом внутри, тенью и золотой обводкой
-в активном состоянии. Монограмма M удалена.
-
-## Полноэкранный режим Telegram
-- `src/lib/tgFullscreen.js` (новый) — включает fullscreen (Bot API 8.0)
-  через универсальную шину window.Telegram.WebView, поэтому не зависит
-  от версии SDK; следит за safe_area_changed / content_safe_area_changed
-  и выставляет CSS-переменную --tg-top. На старых клиентах — тихо
-  ничего не делает, вёрстка не ломается.
-- Приложение растянуто на весь экран; сверху появляются нативные
-  «⌄» (свернуть) и «···» Telegram вместо полосы «Закрыть · Mentalix».
-- В зоне кнопок Telegram по центру — вордмарк MENTALIX (как у Муны).
-
-## Пустота заполнена смыслом
-Под приветствием — короткая мысль, меняется по времени суток:
-«день начинается с одного шага» / «шаг за шагом — выход находится» /
-«день закрывают, а не бросают» / «тишина — тоже часть пути».
-На сплэше — «выход находится шагами».
-
----
-
-# Обновление 11 — Центральная вкладка
-
-Крупная приподнятая кнопка убрана: вкладка «Наставник» снова обычного
-размера, в один ряд с остальными. Отличается только цветом — символ
-Mentalix (лабиринт) и подпись становятся ЗОЛОТЫМИ, когда вкладка
-активна, тогда как остальные — светлые. Размер иконки 22px, как у всех.
+      {loading ? (
+        <p className="text-cream/40 text-sm">Загрузка...</p>
+      ) : ascezas.length === 0 ? (
+        <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
+          <ArtShield size={120} className="mx-auto mb-3" />
+          <h3 className="font-display text-lg text-cream mb-1">Аскез пока нет</h3>
+          <p className="text-sm text-cream/50 mb-4 leading-relaxed">
+            Аскеза — сознательный отказ. Выбери одну вредную привычку и назови её честно.
+          </p>
+          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
+            Принять аскезу
+          </button>
+        </div>
+      ) : (
+        <>
+          <div>
+            {ascezas.map((a, i) => (
+              <div key={a.id} data-asceza-index={i}>
+                <AscezaCard
+                  asceza={a}
+                  onLog={logAsceza}
+                  onDelete={deleteAsceza}
+                  isDragging={dragIndex === i}
+                  isOver={dragIndex !== null && overIndex === i && dragIndex !== i}
+                  dragHandlers={{
+                    onTouchStart: () => startLongPress(i),
+                    onTouchMove: handleTouchMove,
+                    onTouchEnd: handleTouchEnd,
+                    onTouchCancel: handleTouchEnd,
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+          <button onClick={() => { haptic('light'); setShowCreate(true) }}
+            className="w-full py-3.5 rounded-full bg-emerald text-cream/60 text-[14px] font-semibold mt-2 active:scale-[0.98] border-0 transition-transform">
+            + Новая аскеза
+          </button>
+        </>
+      )}
+    </div>
+  )
+}

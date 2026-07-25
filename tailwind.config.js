@@ -1,62 +1,77 @@
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,jsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        // Семантика темы. Старые имена сохранены, чтобы не переписывать
-        // все экраны: они автоматически перекрашиваются в монохром + золото.
-        'emerald-deep':  'rgb(var(--c-bg) / <alpha-value>)',    // фон
-        'emerald':       'rgb(var(--c-card) / <alpha-value>)',  // карточка
-        'emerald-light': 'rgb(var(--c-card2) / <alpha-value>)', // карточка-2
-        'cream':         'rgb(var(--c-text) / <alpha-value>)',  // текст
-        'sage':          'rgb(var(--c-text) / <alpha-value>)',  // → монохром
-        'mint':          'rgb(var(--c-text) / <alpha-value>)',  // → монохром
-        'gold':          'rgb(var(--c-gold) / <alpha-value>)',  // акцент
-        'cognac':        'rgb(var(--c-gold) / <alpha-value>)',  // → золото
-      },
-      fontFamily: {
-        display: ['Manrope', 'sans-serif'],
-        body: ['Manrope', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0', transform: 'translateY(6px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        pulseOnce: {
-          '0%': { transform: 'scale(1)' },
-          '40%': { transform: 'scale(1.015)' },
-          '100%': { transform: 'scale(1)' },
-        },
-        celebratePop: {
-          '0%': { transform: 'scale(0)', opacity: '0' },
-          '60%': { transform: 'scale(1.3)', opacity: '1' },
-          '100%': { transform: 'scale(1)', opacity: '1' },
-        },
-        glowPulse: {
-          '0%': { boxShadow: '0 0 0 0 rgba(217,180,91,0)' },
-          '40%': { boxShadow: '0 0 20px 4px rgba(217,180,91,0.3)' },
-          '100%': { boxShadow: '0 0 0 0 rgba(217,180,91,0)' },
-        },
-        streakBounce: {
-          '0%': { transform: 'scale(1)' },
-          '35%': { transform: 'scale(1.5)' },
-          '100%': { transform: 'scale(1)' },
-        },
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.28s ease-out',
-        'pulse-once': 'pulseOnce 0.32s ease-out',
-        'celebrate-pop': 'celebratePop 0.4s ease-out',
-        'glow-pulse': 'glowPulse 0.7s ease-out',
-        'streak-bounce': 'streakBounce 0.5s ease-out',
-      },
-    },
+import { useState } from 'react'
+import { platform } from '../platform'
+import MazeLogo from '../components/MazeLogo'
+import { ArtThread, ArtSteps, ArtDoor } from '../components/Art'
+
+// ── Онбординг: три слайда в стиле stoic. — гора, суть, первый шаг ──
+
+const SLIDES = [
+  {
+    eyebrow: 'Mentalix',
+    title: 'Система, а не мотивация',
+    text: 'Мотивация кончается. Система — нет. Mentalix держит твой день на ритуалах, аскезах и честном чек-ине, даже когда сил нет.',
+    cta: 'Дальше',
+    Art: ArtThread,
   },
-  plugins: [],
+  {
+    eyebrow: 'Как это работает',
+    title: 'Один шаг за раз',
+    text: 'Никаких списков из десяти дел. Приложение показывает одно действие — самое важное сейчас. Сделал — идёшь дальше. Путь складывается из шагов.',
+    cta: 'Дальше',
+    Art: ArtSteps,
+  },
+  {
+    eyebrow: 'Твой путь начинается',
+    title: 'Срыв — не конец',
+    text: 'Пропустил день — Путь не сгорает. Возвращаешься и делаешь один маленький шаг. Здесь не осуждают. Здесь продолжают.',
+    cta: 'Начать путь',
+    Art: ArtDoor,
+  },
+]
+
+export default function Onboarding({ onFinish }) {
+  const [index, setIndex] = useState(0)
+  const isLast = index === SLIDES.length - 1
+  const slide = SLIDES[index]
+
+  function next() {
+    platform.haptic(isLast ? 'medium' : 'light')
+    if (isLast) onFinish()
+    else setIndex((i) => i + 1)
+  }
+
+  return (
+    <div className="fixed inset-0 z-[70] bg-emerald-deep flex flex-col animate-fade-in">
+      <div className="flex justify-end px-5 pt-5">
+        {!isLast && (
+          <button
+            onClick={() => { platform.haptic('light'); onFinish() }}
+            className="text-[13px] font-semibold text-cream/35 bg-transparent border-0 px-2 py-1"
+          >
+            Пропустить
+          </button>
+        )}
+      </div>
+
+      <div key={index} className="flex-1 flex flex-col items-center justify-center px-8 text-center animate-fade-in">
+        <div className="mb-10">
+          <slide.Art size={175} />
+        </div>
+        <div className="text-[13px] text-cream/40 font-semibold mb-2">{slide.eyebrow}</div>
+        <h2 className="font-display text-[28px] text-cream leading-tight max-w-sm">{slide.title}</h2>
+        <p className="text-[15px] text-cream/50 mt-4 leading-relaxed max-w-sm">{slide.text}</p>
+      </div>
+
+      <div className="flex flex-col items-center gap-5 pb-[calc(env(safe-area-inset-bottom)+32px)]">
+        <div className="flex gap-1.5">
+          {SLIDES.map((_, i) => (
+            <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === index ? 'bg-gold' : 'bg-cream/15'}`} />
+          ))}
+        </div>
+        <button onClick={next} className="cta-pill text-[16px] px-14 py-4">
+          {slide.cta}
+        </button>
+      </div>
+    </div>
+  )
 }

@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Тема Mentalix в стиле stoic.
+   Тёмная — вечер/ночь, светлая — утро/день (класс .light на body)
+   Цвета заданы RGB-триплетами, чтобы работали tailwind-альфы
+   (text-cream/40 и т.п.)
+   ============================================================ */
+:root {
+  --c-bg:    10 10 10;      /* фон #0A0A0A */
+  --c-card:  25 25 27;      /* карточка #19191B */
+  --c-card2: 35 35 38;      /* карточка-2 #232326 */
+  --c-text:  245 245 245;   /* текст #F5F5F5 */
+  --c-gold:  217 180 91;    /* золото приглушённое #D9B45B */
+  --btn-bg:  #EDEDED;       /* CTA как у stoic. — светлая капсула */
+  --btn-text:#111111;
+}
+
+body.light {
+  --c-bg:    245 240 232;   /* тёплый белый #F5F0E8 */
+  --c-card:  255 255 255;
+  --c-card2: 239 233 222;
+  --c-text:  26 26 26;
+  --c-gold:  139 105 20;    /* тёмное золото #8B6914 */
+  --btn-bg:  #1A1A1A;
+  --btn-text:#F5F0E8;
+}
+
+:root { font-family: 'Manrope', system-ui, sans-serif; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+  transition: background 0.4s ease, color 0.4s ease;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  /* единый отклик на нажатие для всех кнопок */
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+              background-color 0.25s ease,
+              color 0.25s ease,
+              opacity 0.25s ease;
+}
+
+/* заголовки: один гротеск, жирный, плотный — как у stoic. */
+.font-display {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* Ступенчатое появление списков: карточки всплывают одна за другой */
+.mx-stagger > * {
+  opacity: 0;
+  animation: mx-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.mx-stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.mx-stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.mx-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.mx-stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.mx-stagger > *:nth-child(5) { animation-delay: 0.22s; }
+.mx-stagger > *:nth-child(n+6) { animation-delay: 0.27s; }
+
+@keyframes mx-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* CTA-капсула */
+.cta-pill {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  border-radius: 999px;
+  font-weight: 800;
+  transition: transform 0.15s ease;
+}
+.cta-pill:active { transform: scale(0.96); }
+
+/* ── Анимации иллюстраций ──
+   Медленные, «дышащие» — фон, а не аттракцион. */
+@keyframes mx-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes mx-sway {
+  0%, 100% { transform: translateX(0) scaleY(1); opacity: 0.75; }
+  50%      { transform: translateX(2px) scaleY(1.08); opacity: 1; }
+}
+@keyframes mx-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes mx-glow {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+
+.mx-float { animation: mx-float 4.5s ease-in-out infinite; }
+.mx-sway  { animation: mx-sway 3.2s ease-in-out infinite; transform-origin: center bottom; }
+.mx-glow  { animation: mx-glow 3s ease-in-out infinite; }
+.mx-draw  { stroke-dasharray: 1; stroke-dashoffset: 1; animation: mx-draw 1.4s ease-out forwards; }
+.mx-delay { animation-delay: 0.8s; }
+
+/* Лесенка: карточки списка появляются одна за другой */
+.mx-stagger > * {
+  animation: fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.mx-stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.mx-stagger > *:nth-child(2) { animation-delay: 0.07s; }
+.mx-stagger > *:nth-child(3) { animation-delay: 0.12s; }
+.mx-stagger > *:nth-child(4) { animation-delay: 0.17s; }
+.mx-stagger > *:nth-child(5) { animation-delay: 0.22s; }
+.mx-stagger > *:nth-child(6) { animation-delay: 0.27s; }
+.mx-stagger > *:nth-child(n + 7) { animation-delay: 0.3s; }
+
+@keyframes fadeIn {
+  0%   { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
