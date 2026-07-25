@@ -53,7 +53,7 @@ function Head({ step, total, onBack, onSkip }) {
       {onSkip ? (
         <button
           onClick={() => { platform.haptic('light'); onSkip() }}
-          className="text-[13px] font-bold text-cream/35 bg-transparent border-0 px-2 py-1 w-10 text-right"
+          className="text-[13px] font-bold text-cream/35 bg-transparent border-0 py-1 w-14 text-right"
         >
           Далее
         </button>
@@ -127,7 +127,10 @@ export default function Onboarding({ user, onFinish }) {
   const chosenFocusLabels = FOCUS_OPTIONS.filter((f) => focuses.includes(f.key)).map((f) => f.label.toLowerCase())
 
   return (
-    <div className="fixed inset-0 z-[70] bg-emerald-deep flex flex-col items-center animate-fade-in overflow-y-auto">
+    <div
+      className="fixed inset-0 z-[70] bg-emerald-deep flex flex-col items-center animate-fade-in overflow-y-auto"
+      style={{ paddingTop: 'var(--tg-top, 0px)' }}
+    >
       {step > 0 && step < 4 && (
         <Head step={step} total={TOTAL} onBack={() => setStep(step - 1)} onSkip={next} />
       )}
@@ -152,7 +155,7 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 1. Фокусы ── */}
       {step === 1 && (
-        <div key="s1" className="flex-1 w-full max-w-md flex flex-col px-6 pt-8 pb-10 animate-fade-in">
+        <div key="s1" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">Что сейчас важнее всего?</h2>
           <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
             Ответы соберут приложение под твои задачи. Можно выбрать несколько.
@@ -186,7 +189,7 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 2. Возраст ── */}
       {step === 2 && (
-        <div key="s2" className="flex-1 w-full max-w-md flex flex-col px-6 pt-8 pb-10 animate-fade-in">
+        <div key="s2" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">Сколько тебе лет?</h2>
           <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
             Чтобы говорить с тобой на одном языке.
@@ -207,7 +210,7 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 3. Напоминание ── */}
       {step === 3 && (
-        <div key="s3" className="flex-1 w-full max-w-md flex flex-col px-6 pt-8 pb-10 animate-fade-in">
+        <div key="s3" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">
             Когда напомнить о себе?
           </h2>
@@ -253,7 +256,7 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 4. План готов ── */}
       {step === 4 && (
-        <div key="s4" className="flex-1 w-full max-w-md flex flex-col px-6 pt-10 pb-10 animate-fade-in">
+        <div key="s4" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
           <h2 className="font-display text-[28px] text-cream text-center leading-tight">
             Готово. Путь размечен.
           </h2>
