@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, ArrowUpRight, Sparkles, Shield, Timer, Wind,
 import Path from './Path'
 import CheckIn from './CheckIn'
 import MazeLogo from '../components/MazeLogo'
+import QuickAdd from '../components/QuickAdd'
 import { ArtThread } from '../components/Art'
 import History from './History'
 import QuoteView from './QuoteView'
@@ -309,6 +310,12 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           </button>
         ))}
       </div>
+
+      <QuickAdd
+        onCheckin={() => setSub('checkin')}
+        onPractice={onOpenPractice}
+        onMentor={onGoMentor}
+      />
 
       {/* ── мысль дня: тап — полноэкранный режим со свайпами ── */}
       {dailyQuote && (

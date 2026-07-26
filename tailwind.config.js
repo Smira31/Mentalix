@@ -54,10 +54,10 @@ export default {
         },
       },
       animation: {
-        'fade-in': 'fadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both',
+        'fade-in': 'fadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both',
         'pulse-once': 'pulseOnce 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
-        'celebrate-pop': 'bloom 0.55s cubic-bezier(0.22, 1, 0.36, 1) both',
-        'glow-pulse': 'glowPulse 1.1s cubic-bezier(0.22, 1, 0.36, 1)',
+        'celebrate-pop': 'bloom 0.52s cubic-bezier(0.32, 0.72, 0, 1) both',
+        'glow-pulse': 'glowPulse 1.1s cubic-bezier(0.32, 0.72, 0, 1)',
         'streak-bounce': 'streakBounce 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
       },
     },
