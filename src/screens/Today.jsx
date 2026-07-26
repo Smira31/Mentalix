@@ -6,6 +6,7 @@ import Path from './Path'
 import CheckIn from './CheckIn'
 import MazeLogo from '../components/MazeLogo'
 import QuickAdd from '../components/QuickAdd'
+import ThemeScreen from './ThemeScreen'
 import { ArtThread } from '../components/Art'
 import History from './History'
 import QuoteView from './QuoteView'
@@ -61,6 +62,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
   const [loading, setLoading] = useState(true)
   const [dailyQuote, setDailyQuote] = useState(null)
   const [checkin, setCheckin] = useState(null)
+  const [theme, setTheme] = useState(null)
   const [sub, setSub] = useState(null) // null | 'path' | 'checkin' | 'quote'
   const [pathTab, setPathTab] = useState('path') // 'path' | 'history'
 
@@ -68,12 +70,14 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
     if (!user || sub !== null) return
     ;(async () => {
       try {
-        const [r, a, q, c] = await Promise.all([
+        const [r, a, q, c, th] = await Promise.all([
           api.rituals.list(user.id),
           api.ascezas.list(user.id),
           api.quotes.today(user.id),
           api.checkin.today(user.id).catch(() => null),
+          api.themes.list(user.id).catch(() => []),
         ])
+        setTheme((th || [])[0] || null)
         setRituals(r)
         setAscezas(a)
         setDailyQuote(q.text)
@@ -89,6 +93,11 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
   // ── чек-ин поверх всего ──
   if (sub === 'checkin') {
     return <CheckIn user={user} onDone={() => setSub(null)} />
+  }
+
+  // ── тема недели ──
+  if (sub === 'theme' && theme) {
+    return <ThemeScreen user={user} themeId={theme.id} onBack={() => setSub(null)} />
   }
 
   // ── полноэкранные цитаты ──
@@ -310,6 +319,34 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           </button>
         ))}
       </div>
+
+      {theme && (
+        <button
+          onClick={() => { platform.haptic('light'); setSub('theme') }}
+          className="w-full rounded-[28px] bg-emerald px-6 py-7 mt-4 text-center border-0 active:scale-[0.99] transition-transform animate-fade-in"
+        >
+          <span className="block text-[11px] text-cream/35 font-bold uppercase tracking-wider mb-2">
+            Тема недели
+          </span>
+          <span className="block font-display text-[22px] text-cream lowercase leading-tight">
+            {theme.title}
+          </span>
+          <span className="block text-[13px] text-cream/45 mt-2 leading-snug">{theme.subtitle}</span>
+          <span className="flex items-center justify-center gap-1.5 mt-4">
+            {Array.from({ length: theme.total_days }).map((_, i) => (
+              <span
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full ${i < theme.reflected_days ? 'bg-gold' : 'bg-cream/15'}`}
+              />
+            ))}
+          </span>
+          <span className="block text-[12px] text-cream/35 font-semibold mt-3">
+            {theme.reflected_days > 0
+              ? `Пройдено дней: ${theme.reflected_days} из ${theme.total_days}`
+              : 'Начать неделю'}
+          </span>
+        </button>
+      )}
 
       <QuickAdd
         onCheckin={() => setSub('checkin')}
