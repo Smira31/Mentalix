@@ -13,6 +13,7 @@ const PERSONAS = [
     accent: 'text-gold',
     ring: 'border-cream/15',
     glow: 'bg-gold/10',
+    starters: ['Сегодня было тяжело', 'Не могу выключить голову'],
   },
   {
     key: 'kompas',
@@ -23,6 +24,7 @@ const PERSONAS = [
     accent: 'text-gold',
     ring: 'border-cream/15',
     glow: 'bg-gold/10',
+    starters: ['Разложи цель на шаги', 'Я топчусь на месте'],
   },
   {
     key: 'dnevnik',
@@ -33,6 +35,7 @@ const PERSONAS = [
     accent: 'text-gold',
     ring: 'border-cream/15',
     glow: 'bg-gold/10',
+    starters: ['Подведи итоги дня', 'Что я упускаю?'],
   },
 ]
 
@@ -40,7 +43,40 @@ function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
 }
 
-function PersonaPicker({ onPick }) {
+function trim(text, max = 90) {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim()
+  return clean.length > max ? clean.slice(0, max).trimEnd() + '…' : clean
+}
+
+// ── Выбор собеседника ──
+// Карточка занимает всю ширину и показывает состояние разговора:
+// либо последнюю реплику, либо две подсказки, с чего начать.
+function PersonaPicker({ user, onPick }) {
+  const [previews, setPreviews] = useState({})
+
+  useEffect(() => {
+    if (!user) return
+    let alive = true
+
+    Promise.all(
+      PERSONAS.map((p) =>
+        api.mentalix
+          .history(user.id, p.key)
+          .then((msgs) => [p.key, Array.isArray(msgs) ? msgs[msgs.length - 1] : null])
+          .catch(() => [p.key, null])
+      )
+    ).then((pairs) => {
+      if (!alive) return
+      const next = {}
+      pairs.forEach(([key, last]) => {
+        if (last?.content) next[key] = last
+      })
+      setPreviews(next)
+    })
+
+    return () => { alive = false }
+  }, [user])
+
   return (
     <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
       <h2 className="font-display text-lg mb-1 text-cream/90">С кем поговорим</h2>
@@ -49,34 +85,72 @@ function PersonaPicker({ onPick }) {
       <div className="space-y-3">
         {PERSONAS.map((p) => {
           const Icon = p.Icon
+          const last = previews[p.key]
+
           return (
-            <button
+            <div
               key={p.key}
-              onClick={() => { haptic('light'); onPick(p.key) }}
-              className={`w-full text-left rounded-[24px] border ${p.ring} bg-emerald-light/15 p-4 flex items-center gap-4 transition-transform active:scale-[0.98]`}
+              className={`rounded-[24px] border ${p.ring} bg-emerald-light/15 overflow-hidden`}
             >
-              <div className={`w-12 h-12 rounded-2xl ${p.glow} flex items-center justify-center shrink-0`}>
-                <Icon size={24} className={p.accent} strokeWidth={1.75} />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-baseline gap-2">
-                  <span className="font-display text-lg text-cream">{p.name}</span>
-                  <span className={`text-[11px] ${p.accent}`}>{p.tagline}</span>
+              <button
+                onClick={() => { haptic('light'); onPick(p.key, '') }}
+                className="w-full text-left p-4 flex items-start gap-4 transition-transform active:scale-[0.99] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+              >
+                <div className={`w-12 h-12 rounded-2xl ${p.glow} flex items-center justify-center shrink-0`}>
+                  <Icon size={24} className={p.accent} strokeWidth={1.75} />
                 </div>
-                <p className="text-xs text-cream/50 leading-snug mt-0.5">{p.desc}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="font-display text-lg text-cream">{p.name}</span>
+                    <span className={`text-[11px] ${p.accent}`}>{p.tagline}</span>
+                  </div>
+                  <p className="text-xs text-cream/50 leading-snug mt-1">{p.desc}</p>
+                </div>
+              </button>
+
+              <div className="px-4 pb-4 pt-0">
+                {last ? (
+                  <button
+                    onClick={() => { haptic('light'); onPick(p.key, '') }}
+                    className="w-full text-left rounded-2xl bg-emerald-light/25 border border-cream/10 px-3.5 py-3 transition-transform active:scale-[0.99] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                  >
+                    <div className={`text-[10px] uppercase tracking-wide ${p.accent} mb-1`}>
+                      Продолжить разговор
+                    </div>
+                    <p className="text-xs text-cream/55 leading-snug">
+                      {last.role === 'user' ? 'Ты: ' : ''}{trim(last.content)}
+                    </p>
+                  </button>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {p.starters.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => { haptic('light'); onPick(p.key, s) }}
+                        className="rounded-full border border-cream/15 bg-emerald-light/25 px-3.5 py-2 text-xs text-cream/70 transition-transform active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-            </button>
+            </div>
           )
         })}
       </div>
+
+      <p className="text-[11px] text-cream/30 leading-snug mt-5 px-1">
+        У каждого своя история — разговоры не смешиваются.
+      </p>
     </div>
   )
 }
 
-function Chat({ user, persona, onBack }) {
+function Chat({ user, persona, initialText = '', onBack }) {
   const meta = PERSONAS.find((p) => p.key === persona)
   const [messages, setMessages] = useState([])
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(initialText)
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const endRef = useRef(null)
@@ -180,10 +254,23 @@ function Chat({ user, persona, onBack }) {
 
 export default function MentalixChat({ user }) {
   const [persona, setPersona] = useState(null)
+  const [draft, setDraft] = useState('')
 
   if (!persona) {
-    return <PersonaPicker onPick={setPersona} />
+    return (
+      <PersonaPicker
+        user={user}
+        onPick={(key, text) => { setDraft(text || ''); setPersona(key) }}
+      />
+    )
   }
 
-  return <Chat user={user} persona={persona} onBack={() => setPersona(null)} />
+  return (
+    <Chat
+      user={user}
+      persona={persona}
+      initialText={draft}
+      onBack={() => { setDraft(''); setPersona(null) }}
+    />
+  )
 }
