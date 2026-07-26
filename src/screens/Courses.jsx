@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import ThemeScreen from './ThemeScreen'
 import { ArtBook } from '../components/Art'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
 
@@ -228,6 +229,14 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
 }
 
 export default function Courses({ user }) {
+  const [themes, setThemes] = useState([])
+  const [openTheme, setOpenTheme] = useState(null)
+
+  useEffect(() => {
+    if (!user || openTheme) return
+    api.themes.list(user.id).then(setThemes).catch(() => {})
+  }, [user, openTheme])
+
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
@@ -301,10 +310,48 @@ export default function Courses({ user }) {
 
   const filtered = courses.filter((c) => filter === 'all' || c.status === filter)
 
+  if (openTheme) {
+    return <ThemeScreen user={user} themeId={openTheme} onBack={() => setOpenTheme(null)} />
+  }
+
   return (
     <div className="w-full max-w-sm px-6 pb-24">
+      {/* ── витрина тем недели ── */}
+      {themes.length > 0 && (
+        <div className="mb-7">
+          <h2 className="font-display text-lg text-cream/90 mb-3">Темы недели</h2>
+          <div className="mx-stagger space-y-2.5">
+            {themes.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setOpenTheme(t.id)}
+                className="w-full rounded-[26px] bg-emerald px-5 py-4 text-left border-0 active:scale-[0.98] transition-transform"
+              >
+                <span className="block font-display text-[17px] text-cream lowercase leading-tight">
+                  {t.title}
+                </span>
+                <span className="block text-[12.5px] text-cream/45 mt-1 leading-snug">{t.subtitle}</span>
+                <span className="flex items-center gap-1.5 mt-3">
+                  {Array.from({ length: t.total_days }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={`h-1 flex-1 rounded-full ${i < t.reflected_days ? 'bg-gold' : 'bg-cream/12'}`}
+                    />
+                  ))}
+                </span>
+                <span className="block text-[11px] text-cream/35 font-semibold mt-2">
+                  {t.reflected_days > 0
+                    ? `${t.reflected_days} из ${t.total_days} дней`
+                    : `${t.free_days} дня бесплатно · ${t.total_days} дней всего`}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-lg text-cream/90">Библиотека</h2>
+        <h2 className="font-display text-lg text-cream/90">Мои материалы</h2>
         <button
           onClick={() => setShowCreate(true)}
           className="w-8 h-8 rounded-full bg-gold flex items-center justify-center"

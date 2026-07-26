@@ -63,6 +63,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
   const [dailyQuote, setDailyQuote] = useState(null)
   const [checkin, setCheckin] = useState(null)
   const [theme, setTheme] = useState(null)
+  const [activeToday, setActiveToday] = useState(null)
   const [sub, setSub] = useState(null) // null | 'path' | 'checkin' | 'quote'
   const [pathTab, setPathTab] = useState('path') // 'path' | 'history'
 
@@ -78,6 +79,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           api.themes.list(user.id).catch(() => []),
         ])
         setTheme((th || [])[0] || null)
+        api.pulse.today().then((p) => setActiveToday(p.active_today)).catch(() => {})
         setRituals(r)
         setAscezas(a)
         setDailyQuote(q.text)
@@ -236,6 +238,15 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           </>
         )}
       </div>
+
+      {/* ── честный пульс: сколько людей сегодня в пути ── */}
+      {activeToday !== null && activeToday > 1 && (
+        <p className="text-center text-[12px] text-cream/30 font-semibold mt-4">
+          {activeToday < 20
+            ? `Сегодня в пути вместе с тобой: ${activeToday}`
+            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+        </p>
+      )}
 
       {/* ── чек-ин: вторая карточка или итог ── */}
       {!checkinAsHero && !checkinDone && (

@@ -94,6 +94,10 @@ export const api = {
         body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour }),
       }),
   },
+  pulse: {
+    today: () => request('/analytics/pulse'),
+  },
+
   themes: {
     list: (userId) => request(`/themes?user_id=${userId}`),
     get: (themeId, userId) => request(`/themes/${themeId}?user_id=${userId}`),
