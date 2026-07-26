@@ -10,7 +10,7 @@ import Settings from './screens/Settings'
 import WebAuthScreen from './screens/WebAuthScreen'
 import MazeLogo from './components/MazeLogo'
 import { initFullscreen } from './lib/tgFullscreen'
-import Courses from './screens/Courses'
+import Library from './screens/Library'
 import Onboarding from './screens/Onboarding'
 
 // ── Тема: тёмная вечером, светлая днём. Ручной режим хранится в localStorage ──
@@ -279,7 +279,7 @@ export default function App() {
               <Practices user={user} initialSub={practicesSub} />
             )}
             {user && tab === 'mentor' && <MentalixChat user={user} />}
-            {user && tab === 'library' && <Courses user={user} />}
+            <Library user={user} />
             {user && tab === 'trends' && (
               <Analytics user={user} onGoCheckin={() => { platform.haptic('light'); setTab('today') }} />
             )}
