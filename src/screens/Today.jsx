@@ -280,7 +280,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
           <span className="flex-1 text-left">
             <span className="block text-[14px] font-bold text-cream">Чек-ин выполнен</span>
             <span className="block text-[12px] text-cream/40 font-medium">
-              настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]} · энергия {checkin.energy}/5
+              {checkin.emotion ? `${checkin.emotion} · ` : ''}настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
             </span>
           </span>
           <span className="text-[12px] font-semibold text-cream/35 shrink-0">изменить</span>

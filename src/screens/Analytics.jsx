@@ -228,6 +228,41 @@ function MoodTrend({ checkins, onGoCheckin }) {
   )
 }
 
+// ── частые эмоции: что ты называл чаще всего ──
+function EmotionCloud({ checkins }) {
+  const counts = {}
+  for (const c of checkins || []) {
+    if (c.emotion) counts[c.emotion] = (counts[c.emotion] || 0) + 1
+  }
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6)
+  if (top.length === 0) return null
+  const max = top[0][1]
+
+  return (
+    <div className="mb-6">
+      <div className="flex items-baseline justify-between mb-2">
+        <h3 className="text-sm text-cream/80">Частые чувства</h3>
+        <span className="text-[11px] text-cream/40">за 14 дней</span>
+      </div>
+      <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-4 flex flex-wrap gap-2">
+        {top.map(([name, n]) => (
+          <span
+            key={name}
+            className={[
+              'px-3.5 py-2 rounded-full font-semibold',
+              n === max ? 'bg-gold/20 text-gold' : 'bg-cream/5 text-cream/60',
+            ].join(' ')}
+            style={{ fontSize: `${12 + (n / max) * 4}px` }}
+          >
+            {name}
+            <span className="opacity-50 ml-1.5 text-[11px]">{n}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function Analytics({ user, onGoCheckin }) {
   const [data, setData] = useState(null)
   const [checkins, setCheckins] = useState([])
@@ -273,6 +308,8 @@ export default function Analytics({ user, onGoCheckin }) {
       <p className="text-[11px] text-cream/40 mb-5">за последние {data.period_days} дней</p>
 
       <MoodTrend checkins={checkins} onGoCheckin={onGoCheckin} />
+
+      <EmotionCloud checkins={checkins} />
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         {rituals.length > 0 && (

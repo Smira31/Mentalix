@@ -61,10 +61,10 @@ export const api = {
   checkin: {
     today: (userId) => request(`/checkin/today?user_id=${userId}`),
     history: (userId, days = 14) => request(`/checkin/history?user_id=${userId}&days=${days}`),
-    save: (userId, { mood, energy, anxiety, focus, note }) =>
+    save: (userId, { mood, energy, anxiety, focus, note, emotion }) =>
       request('/checkin', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId, mood, energy, anxiety, focus, note }),
+        body: JSON.stringify({ user_id: userId, mood, energy, anxiety, focus, note, emotion }),
       }),
   },
   goals: {

@@ -45,6 +45,15 @@ const LESSON_FIELDS = [
   { key: 'lesson', label: 'Какой вывод забираешь?', placeholder: 'Одна мысль, которую стоит запомнить' },
 ]
 
+// колесо эмоций: набор зависит от того, как человек оценил состояние
+const EMOTIONS = {
+  1: ['подавлен', 'вымотан', 'тревожно', 'злюсь', 'пусто', 'одиноко', 'обидно', 'страшно'],
+  2: ['устал', 'раздражён', 'рассеян', 'вяло', 'скучно', 'неспокойно', 'недоволен', 'растерян'],
+  3: ['ровно', 'спокойно', 'задумчиво', 'нейтрально', 'собранно', 'терпимо', 'буднично'],
+  4: ['бодро', 'доволен', 'тепло', 'включён', 'благодарен', 'уверенно', 'легко', 'спокойная сила'],
+  5: ['воодушевлён', 'счастлив', 'свободен', 'горжусь', 'вдохновлён', 'силён', 'радостно', 'ясно'],
+}
+
 const PROUD_HINTS = [
   'Что сделал, хотя не хотелось?',
   'Где повёл себя так, как хочешь вести всегда?',
@@ -61,6 +70,7 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
     anxiety: existing?.anxiety ?? null,
     focus: existing?.focus ?? null,
   })
+  const [emotion, setEmotion] = useState(existing?.emotion || null)
   const [lessons, setLessons] = useState({})
   const [proud, setProud] = useState(['', '', ''])
   const [note, setNote] = useState('')
@@ -69,7 +79,8 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
 
   const scaleCount = skipScales ? 0 : SCALE_STEPS.length
   const cardCount = isEvening ? 2 : 1
-  const totalSteps = scaleCount + cardCount
+  const emotionStep = scaleCount            // шаг с эмоциями идёт сразу после шкал
+  const totalSteps = scaleCount + 1 + cardCount
   const doneStep = totalSteps
 
   const [step, setStep] = useState(0)
@@ -100,6 +111,7 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
         anxiety: values.anxiety ?? 3,
         focus: values.focus ?? 3,
         note: composeNote(),
+        emotion,
       })
       platform.haptic('success')
       setStep(doneStep)
@@ -133,9 +145,11 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
     )
   }
 
-  const isCard = step >= scaleCount
-  const cardIdx = step - scaleCount
+  const isEmotionStep = step === emotionStep
+  const isCard = step > emotionStep
+  const cardIdx = step - emotionStep - 1
   const scale = SCALE_STEPS[step]
+  const moodLevel = values.mood || existing?.mood || 3
 
   return (
     <div className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col animate-fade-in overflow-y-auto"
@@ -190,6 +204,54 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
                 </button>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ── эмоции ── */}
+      {isEmotionStep && (
+        <div key="emo" className="flex-1 flex flex-col justify-center px-6 py-8 animate-fade-in">
+          <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
+            {isEvening ? 'Анализ дня' : 'Чек-ин'} · {step + 1} из {totalSteps}
+          </div>
+          <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+            Что ближе всего?
+          </h2>
+          <p className="text-[14px] text-cream/45 mt-2 mb-7 text-center">
+            Назвать чувство — половина работы с ним.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
+            {(EMOTIONS[moodLevel] || EMOTIONS[3]).map((e) => {
+              const on = emotion === e
+              return (
+                <button
+                  key={e}
+                  onClick={() => { platform.haptic('light'); setEmotion(on ? null : e) }}
+                  className={[
+                    'px-4 py-2.5 rounded-full text-[14px] font-semibold border-0 transition-colors',
+                    on ? 'bg-gold text-emerald-deep' : 'bg-emerald text-cream/70',
+                  ].join(' ')}
+                >
+                  {e}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="flex flex-col items-center gap-3 mt-8">
+            <button
+              onClick={() => { platform.haptic('light'); setStep(step + 1) }}
+              className="cta-pill text-[16px] px-12 py-4"
+            >
+              Дальше
+            </button>
+            <button
+              onClick={() => { platform.haptic('light'); setEmotion(null); setStep(step + 1) }}
+              className="text-[13px] font-semibold text-cream/40 bg-transparent border-0"
+            >
+              Пропустить
+            </button>
           </div>
         </div>
       )}
