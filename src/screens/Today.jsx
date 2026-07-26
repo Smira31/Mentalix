@@ -94,7 +94,14 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
 
   // ── чек-ин поверх всего ──
   if (sub === 'checkin') {
-    return <CheckIn user={user} onDone={() => setSub(null)} />
+    return (
+      <CheckIn
+        user={user}
+        existing={checkin}
+        mode={new Date().getHours() >= 18 ? 'evening' : 'auto'}
+        onDone={() => setSub(null)}
+      />
+    )
   }
 
   // ── тема недели ──
@@ -178,9 +185,9 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
 
         {checkinAsHero && (
           <>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2">Вечерний чек-ин</div>
-            <h2 className="font-display text-[28px] text-cream leading-tight">Как прошёл день?</h2>
-            <p className="text-[14px] text-cream/50 mt-2">Минута честности с собой</p>
+            <div className="text-[13px] text-cream/40 font-semibold mb-2">Анализ дня</div>
+            <h2 className="font-display text-[28px] text-cream leading-tight">Разобрать день?</h2>
+            <p className="text-[14px] text-cream/50 mt-2">Уроки и то, чем стоит гордиться</p>
             <button
               onClick={() => { platform.haptic('medium'); setSub('checkin') }}
               className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"

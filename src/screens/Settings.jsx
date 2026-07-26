@@ -71,7 +71,31 @@ function Toggle({ checked, onChange }) {
   )
 }
 
+const REMINDER_TIMES = [
+  { label: 'Утро', hour: 8 },
+  { label: 'День', hour: 14 },
+  { label: 'Вечер', hour: 19 },
+  { label: 'Ночь', hour: 22 },
+]
+
 export default function Settings({ user, onBack, onNavigate }) {
+  const [reminderHour, setReminderHour] = useState(null)
+  const [reminderOn, setReminderOn] = useState(false)
+
+  useEffect(() => {
+    if (!user) return
+    api.profile.getSettings(user.id)
+      .then((s) => { setReminderHour(s?.reminder_hour ?? 19); setReminderOn(!!s?.reminder_enabled) })
+      .catch(() => { setReminderHour(19) })
+  }, [user])
+
+  async function saveReminder(hour, enabled) {
+    setReminderHour(hour)
+    setReminderOn(enabled)
+    try { await api.profile.saveSettings(user.id, { reminder_enabled: enabled, reminder_hour: hour }) }
+    catch (e) { console.error(e) }
+  }
+
   const [telegramNotifs, setTelegramNotifs] = useState(false)
   const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web'
   const [tier, setTier] = useState('base')
@@ -150,6 +174,41 @@ export default function Settings({ user, onBack, onNavigate }) {
         <Row icon={FileText} title="Политика конфиденциальности" onClick={() => go('privacy')} />
         <Row icon={FileText} title="Политика возврата" onClick={() => go('refund')} divider={false} />
       </Card>
+
+      <SectionLabel>Когда напоминать</SectionLabel>
+      <Card>
+        <Row
+          icon={Bell}
+          title="Напоминание от бота"
+          subtitle={reminderOn ? `Каждый день в ${String(reminderHour).padStart(2, '0')}:00` : 'Выключено'}
+          right={
+            <Toggle
+              checked={reminderOn}
+              onChange={() => saveReminder(reminderHour ?? 19, !reminderOn)}
+            />
+          }
+          divider={false}
+        />
+      </Card>
+      {reminderOn && (
+        <div className="flex gap-2 mb-8 w-full">
+          {REMINDER_TIMES.map((t) => (
+            <button
+              key={t.hour}
+              onClick={() => saveReminder(t.hour, true)}
+              className={[
+                'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
+                reminderHour === t.hour ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-cream/50',
+              ].join(' ')}
+            >
+              {t.label}
+              <span className="block text-[11px] font-semibold opacity-60 mt-0.5">
+                {String(t.hour).padStart(2, '0')}:00
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <SectionLabel>Обновление приложения</SectionLabel>
       <Card>

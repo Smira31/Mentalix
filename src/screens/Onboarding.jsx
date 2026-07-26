@@ -21,7 +21,7 @@ const AGE_OPTIONS = ['До 18', '18–24', '25–34', '35–44', '45+']
 const REMINDER_OPTIONS = [
   { key: 'morning', label: 'Утро', time: '08:00', hour: 8, note: 'задать курс на день' },
   { key: 'day', label: 'День', time: '14:00', hour: 14, note: 'вернуться к себе в середине дня' },
-  { key: 'evening', label: 'Вечер', time: '21:00', hour: 21, note: 'закрыть день честно' },
+  { key: 'evening', label: 'Вечер', time: '19:00', hour: 19, note: 'разобрать день, пока свежий' },
 ]
 
 const PLAN_CARDS = [
