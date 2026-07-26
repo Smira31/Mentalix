@@ -94,6 +94,16 @@ export const api = {
         body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour }),
       }),
   },
+  themes: {
+    list: (userId) => request(`/themes?user_id=${userId}`),
+    get: (themeId, userId) => request(`/themes/${themeId}?user_id=${userId}`),
+    reflect: (themeId, userId, day, text) =>
+      request(`/themes/${themeId}/reflect`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, day, text }),
+      }),
+  },
+
   quotes: {
     list: (userId) => request(`/quotes?user_id=${userId}`),
     create: (userId, text, tag) =>
