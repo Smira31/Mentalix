@@ -62,6 +62,8 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
   const [loading, setLoading] = useState(true)
   const [dailyQuote, setDailyQuote] = useState(null)
   const [checkin, setCheckin] = useState(null)
+  // Час, с которого «Сегодня» предлагает разбор дня. Берётся из настроек.
+  const [reviewHour, setReviewHour] = useState(19)
   const [theme, setTheme] = useState(null)
   const [activeToday, setActiveToday] = useState(null)
   const [sub, setSub] = useState(null) // null | 'path' | 'checkin' | 'quote'
@@ -71,12 +73,13 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
     if (!user || sub !== null) return
     ;(async () => {
       try {
-        const [r, a, q, c, th] = await Promise.all([
+        const [r, a, q, c, th, st] = await Promise.all([
           api.rituals.list(user.id),
           api.ascezas.list(user.id),
           api.quotes.today(user.id),
           api.checkin.today(user.id).catch(() => null),
           api.themes.list(user.id).catch(() => []),
+          api.profile.getSettings(user.id).catch(() => null),
         ])
         setTheme((th || [])[0] || null)
         api.pulse.today().then((p) => setActiveToday(p.active_today)).catch(() => {})
@@ -84,6 +87,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
         setAscezas(a)
         setDailyQuote(q.text)
         setCheckin(c)
+        setReviewHour(st?.review_hour ?? 19)
       } catch (e) {
         console.error(e)
       } finally {
@@ -98,7 +102,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
       <CheckIn
         user={user}
         existing={checkin}
-        mode={new Date().getHours() >= 18 ? 'evening' : 'auto'}
+        mode={new Date().getHours() >= reviewHour ? 'evening' : 'auto'}
         onDone={() => setSub(null)}
       />
     )
@@ -164,7 +168,7 @@ export default function Today({ user, onOpenPractice, onGoMentor }) {
   const isEmpty = total === 0
   const hourNow = new Date().getHours()
   const checkinDone = !!checkin
-  const checkinAsHero = !checkinDone && (hourNow >= 18 || (isEmpty && hourNow >= 12))
+  const checkinAsHero = !checkinDone && (hourNow >= reviewHour || (isEmpty && hourNow >= 12))
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 
   const remainRituals = rituals.filter((r) => !r.today_level).length
