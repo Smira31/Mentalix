@@ -1,7 +1,7 @@
 // src/screens/Settings.jsx
 //
-// Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Основные
-//         4. Поддержка      5. Документы    6. Версия  7. Аккаунт
+// Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Разбор дня
+//         4. Основные  5. Поддержка  6. Документы  7. Версия  8. Аккаунт
 
 import { useEffect, useState } from 'react'
 import {
@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Trash2,
   Heart,
+  Moon,
 } from 'lucide-react'
 import { api } from '../lib/api'
 import QuotesManager from './QuotesManager'
@@ -78,14 +79,23 @@ const REMINDER_TIMES = [
   { label: 'Ночь', hour: 22 },
 ]
 
+// Часы, с которых «Сегодня» переключается на разбор дня.
+// Это не рассылка: приложение ничего не присылает, просто меняет экран.
+const REVIEW_HOURS = [18, 19, 20, 21, 22]
+
 export default function Settings({ user, onBack, onNavigate }) {
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
+  const [reviewHour, setReviewHour] = useState(19)
 
   useEffect(() => {
     if (!user) return
     api.profile.getSettings(user.id)
-      .then((s) => { setReminderHour(s?.reminder_hour ?? 19); setReminderOn(!!s?.reminder_enabled) })
+      .then((s) => {
+        setReminderHour(s?.reminder_hour ?? 19)
+        setReminderOn(!!s?.reminder_enabled)
+        setReviewHour(s?.review_hour ?? 19)
+      })
       .catch(() => { setReminderHour(19) })
   }, [user])
 
@@ -94,6 +104,13 @@ export default function Settings({ user, onBack, onNavigate }) {
     setReminderOn(enabled)
     try { await api.profile.saveSettings(user.id, { reminder_enabled: enabled, reminder_hour: hour }) }
     catch (e) { console.error(e) }
+  }
+
+  async function saveReviewHour(hour) {
+    const prev = reviewHour
+    setReviewHour(hour)
+    try { await api.profile.saveSettings(user.id, { review_hour: hour }) }
+    catch (e) { console.error(e); setReviewHour(prev) }
   }
 
   const [telegramNotifs, setTelegramNotifs] = useState(false)
@@ -151,9 +168,38 @@ export default function Settings({ user, onBack, onNavigate }) {
       <SectionLabel>Уведомления</SectionLabel>
       <Card>
         <Row icon={Bell} title="Уведомления в Telegram" right={<Toggle checked={telegramNotifs} onChange={setTelegramNotifs} />} />
-        <Row title="Считка дня" subtitle="Мои фразы" onClick={() => setScreen('quotes')} />
+        <Row title="Мысль дня" subtitle="Мои фразы" onClick={() => setScreen('quotes')} />
         <Row title="Напоминания о ритуалах и аскезах" onClick={() => go('reminders')} divider={false} />
       </Card>
+
+      <SectionLabel>Разбор дня</SectionLabel>
+      <Card>
+        <Row
+          icon={Moon}
+          title="Когда показывать разбор"
+          subtitle="«Сегодня» сам предложит подвести итоги"
+          right={
+            <span className="text-[11px] font-mono text-gold bg-gold/10 rounded-full px-2.5 py-1 shrink-0">
+              {String(reviewHour).padStart(2, '0')}:00
+            </span>
+          }
+          divider={false}
+        />
+      </Card>
+      <div className="flex gap-2 mb-8 w-full">
+        {REVIEW_HOURS.map((h) => (
+          <button
+            key={h}
+            onClick={() => saveReviewHour(h)}
+            className={[
+              'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
+              reviewHour === h ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-cream/50',
+            ].join(' ')}
+          >
+            {String(h).padStart(2, '0')}
+          </button>
+        ))}
+      </div>
 
       <SectionLabel>Основные</SectionLabel>
       <Card>
