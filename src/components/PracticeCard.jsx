@@ -1,5 +1,6 @@
 import { platform } from '../platform'
 
+
 export default function PracticeCard({
   title,
   subtitle,
@@ -12,13 +13,14 @@ export default function PracticeCard({
       type="button"
       onClick={() => {
         platform.haptic('light')
-        onOpen()
+
+        onOpen?.()
       }}
       className="
         relative
         w-full
-        min-h-[226px]
-        rounded-[16px]
+        h-[174px]
+        rounded-[18px]
         bg-emerald
         overflow-hidden
         text-left
@@ -30,27 +32,31 @@ export default function PracticeCard({
         flex-col
       "
     >
-      {/* Прогресс: 4/4, 1/1 */}
+
+      {/* ========================================================
+          PROGRESS
+         ======================================================== */}
+
       {right && (
         <span
           className="
             absolute
-            top-[10px]
-            right-[10px]
+            top-[9px]
+            right-[9px]
             z-10
-            h-[30px]
-            min-w-[44px]
-            px-[10px]
+            h-[28px]
+            min-w-[42px]
+            px-[9px]
             rounded-full
             flex
             items-center
             justify-center
             font-mono
-            text-[12px]
+            text-[11px]
             font-medium
             leading-none
             text-gold
-            bg-gold/[0.03]
+            bg-gold/[0.025]
             border
             border-gold/[0.42]
           "
@@ -59,13 +65,17 @@ export default function PracticeCard({
         </span>
       )}
 
-      {/* Иллюстрация */}
+
+      {/* ========================================================
+          ART
+         ======================================================== */}
+
       <div
         className="
           w-full
-          h-[132px]
-          px-[12px]
-          pt-[8px]
+          h-[99px]
+          px-[9px]
+          pt-[7px]
           flex
           items-center
           justify-center
@@ -85,14 +95,17 @@ export default function PracticeCard({
         </div>
       </div>
 
-      {/* Текст */}
+
+      {/* ========================================================
+          COPY
+         ======================================================== */}
+
       <div
         className="
           flex-1
           w-full
-          px-[14px]
-          pb-[16px]
-          pt-[5px]
+          px-[13px]
+          pb-[12px]
           flex
           flex-col
           justify-end
@@ -101,23 +114,24 @@ export default function PracticeCard({
         <div
           className="
             font-display
-            text-[17px]
+            text-[15px]
             font-bold
             text-cream
-            leading-[1.15]
+            leading-[1.08]
             tracking-[-0.025em]
           "
         >
           {title}
         </div>
 
+
         <div
           className="
-            text-[13px]
-            text-cream/[0.52]
+            text-[11px]
+            text-cream/[0.48]
             font-normal
-            mt-[7px]
-            leading-[1.35]
+            mt-[5px]
+            leading-[1.25]
             tracking-[-0.01em]
           "
         >
