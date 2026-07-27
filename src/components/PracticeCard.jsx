@@ -17,52 +17,110 @@ export default function PracticeCard({
       className="
         relative
         w-full
-        min-h-[250px]
-        rounded-[28px]
+        min-h-[226px]
+        rounded-[16px]
         bg-emerald
         overflow-hidden
         text-left
         border
-        border-cream/[0.04]
-        active:scale-[0.98]
+        border-white/[0.16]
+        active:scale-[0.985]
         transition-transform
+        flex
+        flex-col
       "
     >
+      {/* Прогресс: 4/4, 1/1 */}
       {right && (
         <span
           className="
             absolute
-            top-4
-            right-4
+            top-[10px]
+            right-[10px]
             z-10
+            h-[30px]
+            min-w-[44px]
+            px-[10px]
+            rounded-full
+            flex
+            items-center
+            justify-center
             font-mono
-            text-[11px]
+            text-[12px]
+            font-medium
             leading-none
             text-gold
-            bg-gold/[0.08]
+            bg-gold/[0.03]
             border
-            border-gold/20
-            rounded-full
-            px-2.5
-            py-2
+            border-gold/[0.42]
           "
         >
           {right}
         </span>
       )}
 
-      <div className="h-[158px] px-5 pt-4 flex items-center justify-center">
-        <div className="w-full max-w-[154px] h-[150px]">
+      {/* Иллюстрация */}
+      <div
+        className="
+          w-full
+          h-[132px]
+          px-[12px]
+          pt-[8px]
+          flex
+          items-center
+          justify-center
+          shrink-0
+        "
+      >
+        <div
+          className="
+            w-full
+            h-full
+            flex
+            items-center
+            justify-center
+          "
+        >
           {artwork}
         </div>
       </div>
 
-      <div className="px-5 pb-5">
-        <div className="font-display text-[20px] text-cream leading-[1.15]">
+      {/* Текст */}
+      <div
+        className="
+          flex-1
+          w-full
+          px-[14px]
+          pb-[16px]
+          pt-[5px]
+          flex
+          flex-col
+          justify-end
+        "
+      >
+        <div
+          className="
+            font-display
+            text-[17px]
+            font-bold
+            text-cream
+            leading-[1.15]
+            tracking-[-0.025em]
+          "
+        >
           {title}
         </div>
 
-        <div className="text-[13px] text-cream/45 font-medium mt-1.5 leading-[1.4]">
+        <div
+          className="
+            text-[13px]
+            text-cream/[0.52]
+            font-normal
+            mt-[7px]
+            leading-[1.35]
+            tracking-[-0.01em]
+          "
+        >
           {subtitle}
         </div>
       </div>
