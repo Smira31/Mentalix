@@ -18,54 +18,54 @@ export default function PracticeCard({
       className="
         relative
         w-full
-        h-[158px]
-        rounded-[18px]
+        h-[238px]
+        rounded-[26px]
         bg-emerald
         overflow-hidden
         text-left
         border
-        border-white/[0.16]
+        border-white/[0.10]
         active:scale-[0.985]
         transition-transform
         flex
         flex-col
       "
     >
-      {/* Progress */}
+      {/* Прогресс */}
       {right && (
         <span
           className="
             absolute
-            top-[8px]
-            right-[8px]
+            top-[12px]
+            right-[12px]
             z-20
-            h-[26px]
-            min-w-[40px]
-            px-[8px]
+            h-[30px]
+            min-w-[48px]
+            px-[10px]
             rounded-full
             flex
             items-center
             justify-center
             font-mono
-            text-[11px]
+            text-[12px]
             font-medium
             leading-none
             text-gold
-            bg-black/30
+            bg-black/25
             border
-            border-gold/[0.42]
+            border-gold/[0.38]
           "
         >
           {right}
         </span>
       )}
 
-      {/* Illustration */}
+      {/* Иллюстрация */}
       <div
         className="
           relative
           w-full
-          h-[94px]
+          h-[150px]
           shrink-0
           overflow-hidden
           flex
@@ -76,7 +76,7 @@ export default function PracticeCard({
         <div
           className="
             absolute
-            inset-0
+            inset-[8px]
             flex
             items-center
             justify-center
@@ -90,28 +90,27 @@ export default function PracticeCard({
         </div>
       </div>
 
-      {/* Text */}
+      {/* Текст */}
       <div
         className="
           flex-1
           w-full
-          px-[12px]
-          pb-[10px]
+          px-[18px]
+          pb-[17px]
           flex
           flex-col
-          justify-end
+          justify-start
           min-h-0
         "
       >
         <div
           className="
             font-display
-            text-[15px]
+            text-[17px]
             font-bold
             text-cream
-            leading-[1.05]
+            leading-[1.12]
             tracking-[-0.025em]
-            whitespace-nowrap
           "
         >
           {title}
@@ -119,13 +118,12 @@ export default function PracticeCard({
 
         <div
           className="
-            text-[11px]
-            text-cream/[0.48]
+            text-[13px]
+            text-cream/[0.46]
             font-normal
-            mt-[4px]
-            leading-[1.2]
+            mt-[8px]
+            leading-[1.35]
             tracking-[-0.01em]
-            min-h-[26px]
           "
         >
           {subtitle}
