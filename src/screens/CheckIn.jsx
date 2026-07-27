@@ -5,9 +5,13 @@ import { X, ChevronLeft } from 'lucide-react'
 import { ArtDoor } from '../components/Art'
 
 // ── Чек-ин и вечерний «Анализ дня» ──
-// Утром: четыре шкалы + короткая мысль.
+// Утром: четыре шкалы + короткая мысль → note.
 // Вечером: шкалы (если ещё не отмечался) + две карточки —
-// «Уроки дня» и «Чем горжусь».
+// «Уроки дня» → lessons и «Чем горжусь» → wins.
+//
+// Утро и вечер пишут в одну строку за день, но в разные поля.
+// Поле, которому нечего сказать, не отправляется вовсе: бэкенд
+// сохраняет прежнее значение, и вечер не затирает утро.
 
 function Face({ level, active, size = 56 }) {
   const mouths = [
@@ -91,14 +95,29 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
     setTimeout(() => setStep((s) => s + 1), 280)
   }
 
-  function composeNote() {
-    if (!isEvening) return note.trim() || null
-    const parts = []
-    const l = LESSON_FIELDS.map((f) => (lessons[f.key] || '').trim() && `${f.label} ${lessons[f.key].trim()}`).filter(Boolean)
-    if (l.length) parts.push('Уроки дня\n' + l.join('\n'))
-    const p = proud.map((t) => t.trim()).filter(Boolean)
-    if (p.length) parts.push('Горжусь\n' + p.map((t, i) => `${i + 1}. ${t}`).join('\n'))
-    return parts.join('\n\n') || null
+  // Ниже три сборщика. Каждый возвращает undefined, если человеку
+  // нечего было сказать: undefined выпадает из JSON.stringify, поле
+  // не доезжает до бэкенда, и прежнее значение остаётся нетронутым.
+  // Пустая строка или null такого эффекта не дают — они бы стёрли.
+
+  function buildNote() {
+    if (isEvening) return undefined   // вечер не ведёт заметку
+    return note.trim() || undefined
+  }
+
+  function buildLessons() {
+    if (!isEvening) return undefined
+    const filled = LESSON_FIELDS
+      .map((f) => [f.label, (lessons[f.key] || '').trim()])
+      .filter(([, text]) => text)
+      .map(([label, text]) => `${label} ${text}`)
+    return filled.length ? filled.join('\n') : undefined
+  }
+
+  function buildWins() {
+    if (!isEvening) return undefined
+    const filled = proud.map((t) => t.trim()).filter(Boolean)
+    return filled.length ? filled : undefined
   }
 
   async function submit() {
@@ -110,8 +129,10 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
         energy: values.energy ?? 3,
         anxiety: values.anxiety ?? 3,
         focus: values.focus ?? 3,
-        note: composeNote(),
+        note: buildNote(),
         emotion,
+        lessons: buildLessons(),
+        wins: buildWins(),
       })
       platform.haptic('success')
       setStep(doneStep)
@@ -272,7 +293,7 @@ export default function CheckIn({ user, onDone, mode = 'auto', existing = null }
           {isEvening ? (
             <div className="space-y-3 max-w-md mx-auto w-full">
               {LESSON_FIELDS.map((f) => (
-                <div key={f.key} className="rounded-[26px] bg-emerald p-4">
+                <div key={f.key} className="rounded-3xl bg-emerald p-4">
                   <div className="text-[13px] font-bold text-cream mb-2">{f.label}</div>
                   <textarea
                     value={lessons[f.key] || ''}
