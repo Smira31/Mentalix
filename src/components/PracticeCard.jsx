@@ -5,6 +5,7 @@ export default function PracticeCard({
   subtitle,
   right,
   artwork,
+  artworkScale = 1,
   onOpen,
 }) {
   return (
@@ -75,13 +76,15 @@ export default function PracticeCard({
         <div
           className="
             absolute
-            inset-[-5px]
+            inset-0
             flex
             items-center
             justify-center
-            scale-[1.14]
             origin-center
           "
+          style={{
+            transform: `scale(${artworkScale})`,
+          }}
         >
           {artwork}
         </div>
