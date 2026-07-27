@@ -69,7 +69,7 @@ function Option({ label, proof, selected, onClick }) {
       onClick={onClick}
       className={[
         'w-full text-center transition-all duration-300 border-0',
-        proof && selected ? 'rounded-[26px] px-5 py-4' : 'rounded-full px-5 py-4',
+        proof && selected ? 'rounded-3xl px-5 py-4' : 'rounded-full px-5 py-4',
         selected ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
       ].join(' ')}
     >
@@ -226,7 +226,7 @@ export default function Onboarding({ user, onFinish }) {
                   key={r.key}
                   onClick={() => { platform.haptic('light'); setReminder(r.key) }}
                   className={[
-                    'w-full rounded-[26px] px-5 py-4 flex items-center gap-4 border-0 transition-colors text-left',
+                    'w-full rounded-3xl px-5 py-4 flex items-center gap-4 border-0 transition-colors text-left',
                     on ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
                   ].join(' ')}
                 >
@@ -273,7 +273,7 @@ export default function Onboarding({ user, onFinish }) {
                 <div
                   key={i}
                   className={[
-                    'rounded-[26px] bg-emerald px-5 py-4 flex items-center gap-4 transition-all duration-500',
+                    'rounded-3xl bg-emerald px-5 py-4 flex items-center gap-4 transition-all duration-500',
                     shown ? 'opacity-100 translate-y-0' : 'opacity-25 translate-y-1',
                   ].join(' ')}
                 >
