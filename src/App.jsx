@@ -1,13 +1,16 @@
-import { useEffect, useState, useCallback } from 'react'
-import { platform, platformName } from './platform'
 import {
-  AlignJustify,
-  House,
-  Sparkles,
-  BookOpen,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+
+import {
   ChevronLeft,
   Settings as SettingsIcon,
 } from 'lucide-react'
+
+import { platform, platformName } from './platform'
 
 import Today from './screens/Today'
 import Practices from './screens/Practices'
@@ -20,17 +23,22 @@ import Library from './screens/Library'
 import Onboarding from './screens/Onboarding'
 
 import MazeLogo from './components/MazeLogo'
+import BottomNavigation from './components/BottomNavigation'
 
 import { initFullscreen } from './lib/tgFullscreen'
 
 
 /* ============================================================
-   THEME
+   STORAGE
    ============================================================ */
 
 const THEME_KEY = 'mx-theme'
 const ONBOARDED_KEY = 'mx-onboarded-v2'
 
+
+/* ============================================================
+   SPLASH
+   ============================================================ */
 
 function Splash() {
   return (
@@ -80,7 +88,7 @@ function Splash() {
 
 
 /* ============================================================
-   TODAY HEADER TEXT
+   TODAY TEXT
    ============================================================ */
 
 function tagline() {
@@ -99,60 +107,6 @@ function tagline() {
   }
 
   return 'тишина — тоже часть пути'
-}
-
-
-function isDayNow() {
-  const h = new Date().getHours()
-
-  return h >= 6 && h < 18
-}
-
-
-function resolveLight(mode) {
-  if (mode === 'light') {
-    return true
-  }
-
-  if (mode === 'dark') {
-    return false
-  }
-
-  return isDayNow()
-}
-
-
-function applyTheme(light) {
-  document.body.classList.toggle('light', light)
-
-  const bg = light ? '#F5F0E8' : '#000000'
-
-  platform.setThemeColors?.(bg)
-}
-
-
-/* ============================================================
-   USER
-   ============================================================ */
-
-function displayName(user) {
-  const raw = (user?.first_name || '')
-    .trim()
-    .split(/\s+/)[0]
-
-  if (!raw) {
-    return null
-  }
-
-  if (/[0-9_]/.test(raw)) {
-    return null
-  }
-
-  if (raw.length > 14) {
-    return null
-  }
-
-  return raw
 }
 
 
@@ -176,40 +130,66 @@ function greeting() {
 
 
 /* ============================================================
-   NAVIGATION
+   THEME
    ============================================================ */
 
-const TABS = [
-  {
-    key: 'today',
-    label: 'Сегодня',
-    icon: House,
-  },
+function isDayNow() {
+  const h = new Date().getHours()
 
-  {
-    key: 'practices',
-    label: 'Практики',
-    icon: Sparkles,
-  },
+  return h >= 6 && h < 18
+}
 
-  {
-    key: 'mentor',
-    label: 'Наставник',
-    icon: 'monogram',
-  },
 
-  {
-    key: 'library',
-    label: 'Библиотека',
-    icon: BookOpen,
-  },
+function resolveLight(mode) {
+  if (mode === 'light') {
+    return true
+  }
 
-  {
-    key: 'trends',
-    label: 'Тренды',
-    icon: AlignJustify,
-  },
-]
+  if (mode === 'dark') {
+    return false
+  }
+
+  return isDayNow()
+}
+
+
+function applyTheme(light) {
+  document.body.classList.toggle(
+    'light',
+    light
+  )
+
+  const background = light
+    ? '#F5F0E8'
+    : '#000000'
+
+  platform.setThemeColors?.(background)
+}
+
+
+/* ============================================================
+   USER NAME
+   ============================================================ */
+
+function displayName(user) {
+  const raw = (user?.first_name || '')
+    .trim()
+    .split(/\s+/)[0]
+
+  if (!raw) {
+    return null
+  }
+
+  if (/[0-9_]/.test(raw)) {
+    return null
+  }
+
+  if (raw.length > 14) {
+    return null
+  }
+
+  return raw
+}
 
 
 /* ============================================================
@@ -217,47 +197,85 @@ const TABS = [
    ============================================================ */
 
 export default function App() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] =
+    useState(null)
 
-  const [authChecked, setAuthChecked] = useState(false)
+  const [authChecked, setAuthChecked] =
+    useState(false)
 
-  const [overlay, setOverlay] = useState(null)
+  const [overlay, setOverlay] =
+    useState(null)
 
-  const [fullscreen, setFullscreen] = useState(false)
+  const [fullscreen, setFullscreen] =
+    useState(false)
 
-  const [onboarded, setOnboarded] = useState(() => {
-    try {
-      return localStorage.getItem(ONBOARDED_KEY) === '1'
-    } catch {
-      return true
-    }
-  })
-
-  const [themeMode, setThemeMode] = useState(() => {
-    try {
-      return localStorage.getItem(THEME_KEY) || 'auto'
-    } catch {
-      return 'auto'
-    }
-  })
+  const [navCollapsed, setNavCollapsed] =
+    useState(false)
 
 
-  const initialTab = new URLSearchParams(
-    window.location.search
-  ).get('tab')
+  /*
+   * Храним последнюю позицию скролла.
+   * Это позволяет отличать скролл вниз
+   * от скролла вверх.
+   */
+  const lastScrollY = useRef(0)
 
 
-  const validTabs = TABS.map((tab) => tab.key)
+  const [onboarded, setOnboarded] =
+    useState(() => {
+      try {
+        return (
+          localStorage.getItem(
+            ONBOARDED_KEY
+          ) === '1'
+        )
+      } catch {
+        return true
+      }
+    })
 
 
-  const [tab, setTab] = useState(
-    validTabs.includes(initialTab)
-      ? initialTab
-      : 'today'
-  )
+  const [themeMode, setThemeMode] =
+    useState(() => {
+      try {
+        return (
+          localStorage.getItem(
+            THEME_KEY
+          ) || 'auto'
+        )
+      } catch {
+        return 'auto'
+      }
+    })
 
 
-  const [practicesSub, setPracticesSub] = useState(null)
+  const initialTab =
+    new URLSearchParams(
+      window.location.search
+    ).get('tab')
+
+
+  const validTabs = [
+    'today',
+    'practices',
+    'mentor',
+    'library',
+    'trends',
+  ]
+
+
+  const [tab, setTab] =
+    useState(
+      validTabs.includes(initialTab)
+        ? initialTab
+        : 'today'
+    )
+
+
+  const [
+    practicesSub,
+    setPracticesSub,
+  ] = useState(null)
 
 
   /* ============================================================
@@ -265,21 +283,33 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
-    applyTheme(resolveLight(themeMode))
+    applyTheme(
+      resolveLight(themeMode)
+    )
 
     try {
-      localStorage.setItem(THEME_KEY, themeMode)
+      localStorage.setItem(
+        THEME_KEY,
+        themeMode
+      )
     } catch {}
+
 
     if (themeMode !== 'auto') {
       return
     }
 
+
     const id = setInterval(() => {
-      applyTheme(resolveLight('auto'))
+      applyTheme(
+        resolveLight('auto')
+      )
     }, 60_000)
 
-    return () => clearInterval(id)
+
+    return () => {
+      clearInterval(id)
+    }
   }, [themeMode])
 
 
@@ -307,9 +337,11 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
-    initFullscreen(({ fullscreen: fs }) => {
-      setFullscreen(fs)
-    })
+    initFullscreen(
+      ({ fullscreen: fs }) => {
+        setFullscreen(fs)
+      }
+    )
   }, [])
 
 
@@ -338,7 +370,9 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
-    if (platformName !== 'telegram') {
+    if (
+      platformName !== 'telegram'
+    ) {
       return
     }
 
@@ -361,10 +395,14 @@ export default function App() {
     let lastTouch = 0
 
 
-    const stopDoubleTapZoom = (event) => {
+    const stopDoubleTapZoom = (
+      event
+    ) => {
       const now = Date.now()
 
-      if (now - lastTouch <= 300) {
+      if (
+        now - lastTouch <= 300
+      ) {
         event.preventDefault()
       }
 
@@ -444,13 +482,114 @@ export default function App() {
 
 
   /* ============================================================
-     NAVIGATION ACTIONS
+     COLLAPSIBLE NAVIGATION
+
+     Скролл вниз:
+     полный bar → круглая кнопка.
+
+     Скролл вверх:
+     круглая кнопка → полный bar.
+     ============================================================ */
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY =
+        Math.max(
+          window.scrollY || 0,
+          0
+        )
+
+      const previousY =
+        lastScrollY.current
+
+      const difference =
+        currentY - previousY
+
+
+      /*
+       * В самом верху всегда показываем
+       * полный navbar.
+       */
+      if (currentY < 24) {
+        setNavCollapsed(false)
+
+        lastScrollY.current =
+          currentY
+
+        return
+      }
+
+
+      /*
+       * Скроллим вниз.
+       *
+       * Небольшой порог 7px нужен,
+       * чтобы bar не дёргался
+       * от микродвижений пальца.
+       */
+      if (
+        difference > 7 &&
+        currentY > 70
+      ) {
+        setNavCollapsed(true)
+      }
+
+
+      /*
+       * Скроллим вверх.
+       */
+      if (difference < -7) {
+        setNavCollapsed(false)
+      }
+
+
+      lastScrollY.current =
+        currentY
+    }
+
+
+    lastScrollY.current =
+      window.scrollY || 0
+
+
+    window.addEventListener(
+      'scroll',
+      handleScroll,
+      { passive: true }
+    )
+
+
+    return () => {
+      window.removeEventListener(
+        'scroll',
+        handleScroll
+      )
+    }
+  }, [])
+
+
+  /* ============================================================
+     NAVIGATION
      ============================================================ */
 
   function switchTab(key) {
     if (key === tab) {
+      /*
+       * Если пользователь нажал
+       * активную вкладку —
+       * поднимаемся наверх.
+       */
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: 'smooth',
+      })
+
+      setNavCollapsed(false)
+
       return
     }
+
 
     platform.haptic('light')
 
@@ -458,27 +597,51 @@ export default function App() {
 
     setTab(key)
 
+    setNavCollapsed(false)
+
+    lastScrollY.current = 0
+
+
     window.scrollTo({
       top: 0,
       left: 0,
+      behavior: 'instant',
     })
   }
 
 
-  const openPractice = useCallback((sub) => {
-    platform.haptic('light')
+  const openPractice =
+    useCallback((sub) => {
+      platform.haptic('light')
 
-    setPracticesSub(sub || null)
+      setPracticesSub(
+        sub || null
+      )
 
-    setTab('practices')
-  }, [])
+      setTab('practices')
+
+      setNavCollapsed(false)
+
+      window.scrollTo({
+        top: 0,
+        left: 0,
+      })
+    }, [])
 
 
-  const goMentor = useCallback(() => {
-    platform.haptic('light')
+  const goMentor =
+    useCallback(() => {
+      platform.haptic('light')
 
-    setTab('mentor')
-  }, [])
+      setTab('mentor')
+
+      setNavCollapsed(false)
+
+      window.scrollTo({
+        top: 0,
+        left: 0,
+      })
+    }, [])
 
 
   /* ============================================================
@@ -517,7 +680,10 @@ export default function App() {
      WEB AUTH
      ============================================================ */
 
-  if (!user && platformName === 'web') {
+  if (
+    !user &&
+    platformName === 'web'
+  ) {
     return (
       <div
         className="
@@ -539,13 +705,17 @@ export default function App() {
 
 
   /* ============================================================
-     APP UI
+     HEADER VISIBILITY
      ============================================================ */
 
   const showTodayHeader =
     !overlay &&
     tab === 'today'
 
+
+  /* ============================================================
+     UI
+     ============================================================ */
 
   return (
     <div
@@ -559,53 +729,56 @@ export default function App() {
         font-body
       "
       style={{
-        paddingTop: 'var(--tg-top, 0px)',
+        paddingTop:
+          'var(--tg-top, 0px)',
       }}
     >
 
       {/* ========================================================
           MENTALIX WORDMARK
 
-          Показывается только на вкладке Сегодня.
+          Только Сегодня.
          ======================================================== */}
 
-      {fullscreen && showTodayHeader && (
-        <div
-          className="
-            fixed
-            top-0
-            left-0
-            right-0
-            z-40
-            flex
-            items-end
-            justify-center
-            pointer-events-none
-            pb-2
-          "
-          style={{
-            height: 'var(--tg-top, 0px)',
-          }}
-        >
-          <span
+      {fullscreen &&
+        showTodayHeader && (
+          <div
             className="
-              font-display
-              text-[13px]
-              tracking-[0.4em]
-              text-cream/35
+              fixed
+              top-0
+              left-0
+              right-0
+              z-40
+
+              flex
+              items-end
+              justify-center
+
+              pointer-events-none
+
+              pb-2
             "
+            style={{
+              height:
+                'var(--tg-top, 0px)',
+            }}
           >
-            MENTALIX
-          </span>
-        </div>
-      )}
+            <span
+              className="
+                font-display
+                text-[13px]
+                tracking-[0.4em]
+                text-cream/35
+              "
+            >
+              MENTALIX
+            </span>
+          </div>
+        )}
 
 
       {/* ========================================================
           TODAY HEADER
-
-          ВАЖНО:
-          эта шапка существует только на экране Сегодня.
          ======================================================== */}
 
       {showTodayHeader && (
@@ -614,9 +787,11 @@ export default function App() {
             className="
               w-full
               max-w-md
+
               px-5
               pt-4
               pb-0
+
               flex
               items-center
               justify-between
@@ -624,20 +799,25 @@ export default function App() {
           >
             {/* Theme */}
             <button
+              type="button"
               onClick={cycleTheme}
               aria-label="Переключить тему"
               className="
                 w-10
                 h-10
+
                 rounded-full
+
                 bg-emerald
+
                 flex
                 items-center
                 justify-center
+
                 text-cream/50
                 text-base
+
                 active:scale-95
-                transition-transform
               "
             >
               ◐
@@ -657,31 +837,42 @@ export default function App() {
                 ? `${greeting().slice(
                     0,
                     -1
-                  )}, ${displayName(user)}.`
+                  )}, ${displayName(
+                    user
+                  )}.`
                 : greeting()}
             </h1>
 
 
             {/* Profile */}
             <button
+              type="button"
               onClick={() => {
-                platform.haptic('light')
+                platform.haptic(
+                  'light'
+                )
 
-                setOverlay('profile')
+                setOverlay(
+                  'profile'
+                )
               }}
               aria-label="Профиль"
               className="
                 w-10
                 h-10
+
                 rounded-full
+
                 bg-emerald
+
                 border
                 border-cream/10
+
                 flex
                 items-center
                 justify-center
+
                 active:scale-95
-                transition-transform
               "
             >
               <span
@@ -722,14 +913,16 @@ export default function App() {
         className="
           flex-1
           w-full
+
           flex
           flex-col
           items-center
+
           animate-fade-in
-          pb-28
+
+          pb-[100px]
         "
       >
-
         {!user && (
           <p
             className="
@@ -740,18 +933,22 @@ export default function App() {
               pt-8
             "
           >
-            Открой приложение через кнопку в боте,
-            чтобы Менталикс увидел тебя
+            Открой приложение через
+            кнопку в боте, чтобы
+            Менталикс увидел тебя
           </p>
         )}
 
 
         {/* Settings */}
-        {overlay === 'settings' && (
+        {overlay ===
+          'settings' && (
           <Settings
             user={user}
             onBack={() => {
-              setOverlay('profile')
+              setOverlay(
+                'profile'
+              )
             }}
             onNavigate={() => {}}
           />
@@ -759,7 +956,8 @@ export default function App() {
 
 
         {/* Profile */}
-        {overlay === 'profile' && (
+        {overlay ===
+          'profile' && (
           <div
             className="
               w-full
@@ -772,16 +970,21 @@ export default function App() {
               className="
                 w-full
                 max-w-md
+
                 px-5
                 pb-2
+
                 flex
                 items-center
                 justify-between
               "
             >
               <button
+                type="button"
                 onClick={() => {
-                  platform.haptic('light')
+                  platform.haptic(
+                    'light'
+                  )
 
                   setOverlay(null)
                 }}
@@ -789,13 +992,16 @@ export default function App() {
                 className="
                   w-10
                   h-10
+
                   rounded-full
+
                   bg-emerald
+
                   flex
                   items-center
                   justify-center
+
                   active:scale-95
-                  transition-transform
                 "
               >
                 <ChevronLeft
@@ -818,22 +1024,30 @@ export default function App() {
 
 
               <button
+                type="button"
                 onClick={() => {
-                  platform.haptic('light')
+                  platform.haptic(
+                    'light'
+                  )
 
-                  setOverlay('settings')
+                  setOverlay(
+                    'settings'
+                  )
                 }}
                 aria-label="Настройки"
                 className="
                   w-10
                   h-10
+
                   rounded-full
+
                   bg-emerald
+
                   flex
                   items-center
                   justify-center
+
                   active:scale-95
-                  transition-transform
                 "
               >
                 <SettingsIcon
@@ -849,153 +1063,97 @@ export default function App() {
         )}
 
 
-        {/* Main tabs */}
+        {/* ======================================================
+            MAIN TABS
+           ====================================================== */}
+
         {!overlay && (
           <>
-            {user && tab === 'today' && (
-              <Today
-                user={user}
-                onOpenPractice={openPractice}
-                onGoMentor={goMentor}
-              />
-            )}
+            {user &&
+              tab === 'today' && (
+                <Today
+                  user={user}
+                  onOpenPractice={
+                    openPractice
+                  }
+                  onGoMentor={
+                    goMentor
+                  }
+                />
+              )}
 
 
-            {user && tab === 'practices' && (
-              <Practices
-                user={user}
-                initialSub={practicesSub}
-              />
-            )}
+            {user &&
+              tab ===
+                'practices' && (
+                <Practices
+                  user={user}
+                  initialSub={
+                    practicesSub
+                  }
+                />
+              )}
 
 
-            {user && tab === 'mentor' && (
-              <MentalixChat user={user} />
-            )}
+            {user &&
+              tab === 'mentor' && (
+                <MentalixChat
+                  user={user}
+                />
+              )}
 
 
-            {user && tab === 'library' && (
-              <Library user={user} />
-            )}
+            {user &&
+              tab === 'library' && (
+                <Library
+                  user={user}
+                />
+              )}
 
 
-            {user && tab === 'trends' && (
-              <Analytics
-                user={user}
-                onGoCheckin={() => {
-                  platform.haptic('light')
+            {user &&
+              tab === 'trends' && (
+                <Analytics
+                  user={user}
+                  onGoCheckin={() => {
+                    platform.haptic(
+                      'light'
+                    )
 
-                  setTab('today')
-                }}
-              />
-            )}
+                    setTab('today')
+
+                    setNavCollapsed(
+                      false
+                    )
+
+                    window.scrollTo({
+                      top: 0,
+                    })
+                  }}
+                />
+              )}
           </>
         )}
       </div>
 
 
       {/* ========================================================
-          BOTTOM NAVIGATION
+          NEW COLLAPSIBLE NAVIGATION
          ======================================================== */}
 
       {user && !overlay && (
-        <nav
-          className="
-            fixed
-            bottom-0
-            left-0
-            right-0
-            z-50
-            px-3
-            pb-[calc(env(safe-area-inset-bottom)+12px)]
-            pt-2
-            max-w-md
-            mx-auto
-            w-full
-          "
-        >
-          <div
-            className="
-              flex
-              justify-around
-              items-center
-              px-2
-              py-2
-              rounded-full
-              border
-              border-cream/10
-              bg-emerald/90
-              backdrop-blur-md
-            "
-          >
-            {TABS.map((item) => {
-              const active =
-                tab === item.key
-
-
-              return (
-                <button
-                  key={item.key}
-                  onClick={() => {
-                    switchTab(item.key)
-                  }}
-                  aria-label={item.label}
-                  aria-current={
-                    active
-                      ? 'page'
-                      : undefined
-                  }
-                  className={[
-                    'flex flex-col items-center gap-0.5 flex-1 py-2 rounded-full',
-                    'transition-all duration-300 ease-out active:scale-90',
-                    active
-                      ? 'bg-cream/10'
-                      : '',
-                  ].join(' ')}
-                >
-
-                  {item.icon === 'monogram' ? (
-                    <MazeLogo
-                      size={22}
-                      progress={1}
-                      showDot={false}
-                      baseClass="text-transparent"
-                      trailClass={
-                        active
-                          ? 'text-gold'
-                          : 'text-cream/40'
-                      }
-                    />
-                  ) : (
-                    <item.icon
-                      size={21}
-                      strokeWidth={1.9}
-                      className={
-                        active
-                          ? 'text-cream'
-                          : 'text-cream/40'
-                      }
-                    />
-                  )}
-
-
-                  <span
-                    className={[
-                      'text-[10px] font-semibold transition-colors duration-300',
-                      active
-                        ? item.icon === 'monogram'
-                          ? 'text-gold'
-                          : 'text-cream'
-                        : 'text-cream/40',
-                    ].join(' ')}
-                  >
-                    {item.label}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        </nav>
+        <BottomNavigation
+          tab={tab}
+          collapsed={
+            navCollapsed
+          }
+          onCollapseChange={
+            setNavCollapsed
+          }
+          onTabChange={
+            switchTab
+          }
+        />
       )}
     </div>
   )
