@@ -15,17 +15,6 @@ import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
 import Breathing from './Breathing'
 
-// Хаб «Практики»:
-// ритуалы, аскезы, нейротренажёр, дыхание и фокус.
-//
-// Основные четыре карточки используют единую Visual Card System Mentalix.
-// Фокус пока остаётся компактной широкой карточкой.
-//
-// Радиусы:
-// 28px — основные карточки практик
-// 24px — компактная карточка Фокуса
-// круг — кнопки, иконки и счётчики
-
 function WideTile({ Icon, title, subtitle, onOpen }) {
   return (
     <button
@@ -132,6 +121,15 @@ export default function Practices({ user, initialSub = null }) {
   useEffect(() => {
     setSub(initialSub)
   }, [initialSub])
+
+  // При открытии Практик всегда возвращаем экран наверх
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
+    })
+  }, [])
 
   useEffect(() => {
     if (!user || sub !== null) return
