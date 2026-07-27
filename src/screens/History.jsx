@@ -72,6 +72,11 @@ export default function History({ user }) {
                     <span className="text-[12px] font-bold text-gold bg-gold/10 rounded-full px-3 py-1">
                       настроение: {MOOD_WORDS[(d.checkin.mood || 3) - 1]}
                     </span>
+                    {d.checkin.emotion && (
+                      <span className="text-[12px] font-semibold text-cream/70 bg-cream/5 rounded-full px-3 py-1">
+                        {d.checkin.emotion}
+                      </span>
+                    )}
                     <span className="text-[12px] font-semibold text-cream/50 bg-cream/5 rounded-full px-3 py-1">
                       энергия {d.checkin.energy}/5
                     </span>
