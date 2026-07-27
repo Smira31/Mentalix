@@ -3,6 +3,8 @@ import { api } from '../lib/api'
 import { ArtCairn } from '../components/Art'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
+// Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
+// Каждый блок показывается, только если в нём что-то есть.
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
@@ -58,41 +60,75 @@ export default function History({ user }) {
 
   return (
     <div className="space-y-5 mt-1">
-      {days.map((d) => (
-        <div key={d.date}>
-          <div className="text-[13px] text-cream/40 font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
-          <div className="rounded-3xl bg-emerald p-5 space-y-3">
-            {d.checkin && (
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[12px] font-bold text-gold bg-gold/10 rounded-full px-3 py-1">
-                    настроение: {MOOD_WORDS[(d.checkin.mood || 3) - 1]}
-                  </span>
-                  <span className="text-[12px] font-semibold text-cream/50 bg-cream/5 rounded-full px-3 py-1">
-                    энергия {d.checkin.energy}/5
-                  </span>
-                  <span className="text-[12px] font-semibold text-cream/50 bg-cream/5 rounded-full px-3 py-1">
-                    фокус {d.checkin.focus}/5
-                  </span>
+      {days.map((d) => {
+        const wins = d.checkin?.wins || []
+        return (
+          <div key={d.date}>
+            <div className="text-[13px] text-cream/40 font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            <div className="rounded-3xl bg-emerald p-5 space-y-3">
+              {d.checkin && (
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[12px] font-bold text-gold bg-gold/10 rounded-full px-3 py-1">
+                      настроение: {MOOD_WORDS[(d.checkin.mood || 3) - 1]}
+                    </span>
+                    <span className="text-[12px] font-semibold text-cream/50 bg-cream/5 rounded-full px-3 py-1">
+                      энергия {d.checkin.energy}/5
+                    </span>
+                    <span className="text-[12px] font-semibold text-cream/50 bg-cream/5 rounded-full px-3 py-1">
+                      фокус {d.checkin.focus}/5
+                    </span>
+                  </div>
+
+                  {d.checkin.note && (
+                    <p className="text-[14px] text-cream/70 leading-snug mt-3 whitespace-pre-line">
+                      {d.checkin.note.length > 220 ? d.checkin.note.slice(0, 220) + '…' : d.checkin.note}
+                    </p>
+                  )}
+
+                  {d.checkin.lessons && (
+                    <div className="rounded-2xl bg-emerald-light p-4 mt-3">
+                      <div className="text-[12px] font-bold text-cream/45 uppercase tracking-wide mb-2">
+                        Уроки дня
+                      </div>
+                      <p className="text-[14px] text-cream/75 leading-relaxed whitespace-pre-line">
+                        {d.checkin.lessons}
+                      </p>
+                    </div>
+                  )}
+
+                  {wins.length > 0 && (
+                    <div className="rounded-2xl bg-emerald-light p-4 mt-2.5">
+                      <div className="text-[12px] font-bold text-cream/45 uppercase tracking-wide mb-2.5">
+                        Чем горжусь
+                      </div>
+                      <ul className="space-y-2">
+                        {wins.map((w, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <span className="w-5 h-5 rounded-full bg-gold/15 text-gold text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                              {i + 1}
+                            </span>
+                            <span className="text-[14px] text-cream/75 leading-snug">{w}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
-                {d.checkin.note && (
-                  <p className="text-[14px] text-cream/70 leading-snug mt-3 whitespace-pre-line">
-                    {d.checkin.note.length > 220 ? d.checkin.note.slice(0, 220) + '…' : d.checkin.note}
-                  </p>
-                )}
-              </div>
-            )}
-            {d.activity && d.activity.count > 0 && (
-              <div className="text-[13px] font-semibold text-cream/45">
-                ✦ ритуалов закрыто: {d.activity.count}
-                {d.activity.breaks > 0 && (
-                  <span className="text-cream/35"> · срывов аскез: {d.activity.breaks}</span>
-                )}
-              </div>
-            )}
+              )}
+
+              {d.activity && d.activity.count > 0 && (
+                <div className="text-[13px] font-semibold text-cream/45">
+                  ✦ ритуалов закрыто: {d.activity.count}
+                  {d.activity.breaks > 0 && (
+                    <span className="text-cream/35"> · срывов аскез: {d.activity.breaks}</span>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
