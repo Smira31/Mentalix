@@ -220,19 +220,16 @@ export default function App() {
 
   /*
    * Направление текущего жеста.
-   * down / up / null
    */
   const scrollDirection = useRef(null)
 
   /*
-   * Сколько пикселей пользователь
-   * накопил в одном направлении.
+   * Накопленная дистанция движения.
    */
   const scrollDistance = useRef(0)
 
   /*
-   * Не запускаем вычисления чаще,
-   * чем один раз за animation frame.
+   * requestAnimationFrame скролла.
    */
   const scrollFrame = useRef(null)
 
@@ -492,41 +489,12 @@ export default function App() {
 
   /* ============================================================
      COLLAPSIBLE NAVIGATION
-
-     Логика специально отделена
-     от визуальной анимации.
-
-     BottomNavigation отвечает
-     за плавное превращение панели
-     в круг.
-
-     App только решает,
-     КОГДА это должно произойти.
      ============================================================ */
 
   useEffect(() => {
-    /*
-     * Порог сворачивания немного выше,
-     * чем порог раскрытия.
-     *
-     * Это создаёт hysteresis:
-     * маленькие движения пальцем
-     * не заставляют navbar менять
-     * состояние туда-сюда.
-     */
     const COLLAPSE_DISTANCE = 20
     const EXPAND_DISTANCE = 14
-
-    /*
-     * До этой позиции navbar
-     * вообще не сворачиваем.
-     */
     const COLLAPSE_AFTER_Y = 96
-
-    /*
-     * В верхней зоне navbar
-     * всегда открыт.
-     */
     const TOP_ZONE = 32
 
 
@@ -556,8 +524,8 @@ export default function App() {
 
 
       /*
-       * Наверху страницы полный navbar
-       * должен быть всегда виден.
+       * Наверху страницы navbar
+       * всегда раскрыт.
        */
       if (currentY <= TOP_ZONE) {
         resetGesture()
@@ -569,11 +537,7 @@ export default function App() {
 
 
       /*
-       * 0–1px часто появляется
-       * из-за инерции и округления
-       * scroll position.
-       *
-       * Такое движение игнорируем.
+       * Игнорируем микродвижения.
        */
       if (Math.abs(difference) < 1) {
         return
@@ -587,11 +551,8 @@ export default function App() {
 
 
       /*
-       * Пользователь поменял
-       * направление движения.
-       *
-       * Старую накопленную дистанцию
-       * нельзя переносить в новый жест.
+       * При смене направления
+       * начинаем считать дистанцию заново.
        */
       if (
         scrollDirection.current !==
@@ -609,13 +570,7 @@ export default function App() {
 
 
       /*
-       * СКРОЛЛ ВНИЗ
-       *
-       * Navbar схлопывается только:
-       * 1. когда ушли достаточно далеко
-       *    от начала страницы;
-       * 2. когда накоплено уверенное
-       *    движение вниз.
+       * Сворачивание.
        */
       if (
         direction === 'down' &&
@@ -632,15 +587,7 @@ export default function App() {
 
 
       /*
-       * СКРОЛЛ ВВЕРХ
-       *
-       * Раскрываем немного быстрее,
-       * чем сворачиваем.
-       *
-       * Так интерфейс ощущается
-       * отзывчивее: пользователь начал
-       * возвращаться к навигации —
-       * она появляется почти сразу.
+       * Раскрытие.
        */
       if (
         direction === 'up' &&
@@ -655,14 +602,6 @@ export default function App() {
 
 
     const handleScroll = () => {
-      /*
-       * Scroll event на телефоне
-       * может прилетать много раз
-       * за один кадр.
-       *
-       * Нам нужен только один
-       * расчёт на animation frame.
-       */
       if (
         scrollFrame.current !== null
       ) {
@@ -715,13 +654,20 @@ export default function App() {
      NAVIGATION
      ============================================================ */
 
+  function resetNavigationGesture() {
+    lastScrollY.current =
+      Math.max(
+        window.scrollY || 0,
+        0
+      )
+
+    scrollDirection.current = null
+    scrollDistance.current = 0
+  }
+
+
   function switchTab(key) {
     if (key === tab) {
-      /*
-       * Если пользователь нажал
-       * активную вкладку —
-       * поднимаемся наверх.
-       */
       window.scrollTo({
         top: 0,
         left: 0,
@@ -745,11 +691,6 @@ export default function App() {
 
     setNavCollapsed(false)
 
-    /*
-     * Сбрасываем состояние жеста,
-     * чтобы скролл предыдущего экрана
-     * не влиял на новый.
-     */
     lastScrollY.current = 0
     scrollDirection.current = null
     scrollDistance.current = 0
@@ -775,6 +716,7 @@ export default function App() {
 
       setNavCollapsed(false)
 
+      lastScrollY.current = 0
       scrollDirection.current = null
       scrollDistance.current = 0
 
@@ -793,6 +735,7 @@ export default function App() {
 
       setNavCollapsed(false)
 
+      lastScrollY.current = 0
       scrollDirection.current = null
       scrollDistance.current = 0
 
@@ -895,7 +838,6 @@ export default function App() {
 
       {/* ========================================================
           MENTALIX WORDMARK
-
           Только Сегодня.
          ======================================================== */}
 
@@ -1169,4 +1111,165 @@ export default function App() {
                 "
               >
                 <ChevronLeft
-                 
+                  size={20}
+                  className="text-cream/60"
+                />
+              </button>
+
+
+              <span
+                className="
+                  font-display
+                  text-lg
+                  text-cream
+                  lowercase
+                "
+              >
+                профиль.
+              </span>
+
+
+              <button
+                type="button"
+                onClick={() => {
+                  platform.haptic(
+                    'light'
+                  )
+
+                  setOverlay(
+                    'settings'
+                  )
+                }}
+                aria-label="Настройки"
+                className="
+                  w-10
+                  h-10
+
+                  rounded-full
+
+                  bg-emerald
+
+                  flex
+                  items-center
+                  justify-center
+
+                  active:scale-95
+                "
+              >
+                <SettingsIcon
+                  size={18}
+                  className="text-cream/60"
+                />
+              </button>
+            </div>
+
+
+            <Profile
+              user={user}
+            />
+          </div>
+        )}
+
+
+        {/* ======================================================
+            MAIN TABS
+           ====================================================== */}
+
+        {!overlay && (
+          <>
+            {user &&
+              tab === 'today' && (
+                <Today
+                  user={user}
+                  onOpenPractice={
+                    openPractice
+                  }
+                  onGoMentor={
+                    goMentor
+                  }
+                />
+              )}
+
+
+            {user &&
+              tab ===
+                'practices' && (
+                <Practices
+                  user={user}
+                  initialSub={
+                    practicesSub
+                  }
+                />
+              )}
+
+
+            {user &&
+              tab === 'mentor' && (
+                <MentalixChat
+                  user={user}
+                />
+              )}
+
+
+            {user &&
+              tab === 'library' && (
+                <Library
+                  user={user}
+                />
+              )}
+
+
+            {user &&
+              tab === 'trends' && (
+                <Analytics
+                  user={user}
+                  onGoCheckin={() => {
+                    platform.haptic(
+                      'light'
+                    )
+
+                    setTab('today')
+
+                    setPracticesSub(
+                      null
+                    )
+
+                    setNavCollapsed(
+                      false
+                    )
+
+                    resetNavigationGesture()
+
+                    window.scrollTo({
+                      top: 0,
+                      left: 0,
+                    })
+                  }}
+                />
+              )}
+          </>
+        )}
+      </div>
+
+
+      {/* ========================================================
+          COLLAPSIBLE NAVIGATION
+         ======================================================== */}
+
+      {user && !overlay && (
+        <BottomNavigation
+          tab={tab}
+          collapsed={
+            navCollapsed
+          }
+          onCollapseChange={
+            setNavCollapsed
+          }
+          onTabChange={
+            switchTab
+          }
+        />
+      )}
+    </div>
+  )
+}
