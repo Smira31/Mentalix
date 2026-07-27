@@ -61,10 +61,10 @@ export const api = {
   checkin: {
     today: (userId) => request(`/checkin/today?user_id=${userId}`),
     history: (userId, days = 14) => request(`/checkin/history?user_id=${userId}&days=${days}`),
-    save: (userId, { mood, energy, anxiety, focus, note, emotion }) =>
+    save: (userId, { mood, energy, anxiety, focus, note, emotion, lessons, wins }) =>
       request('/checkin', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId, mood, energy, anxiety, focus, note, emotion }),
+        body: JSON.stringify({ user_id: userId, mood, energy, anxiety, focus, note, emotion, lessons, wins }),
       }),
   },
   goals: {
@@ -88,10 +88,10 @@ export const api = {
   profile: {
     get: (userId) => request(`/profile?user_id=${userId}`),
     getSettings: (userId) => request(`/profile/settings?user_id=${userId}`),
-    saveSettings: (userId, { reminder_enabled, reminder_hour }) =>
+    saveSettings: (userId, { reminder_enabled, reminder_hour,review hour  }) =>
       request('/profile/settings', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour }),
+        body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour, reciew hour }),
       }),
   },
   pulse: {
