@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Sparkles, Shield, Brain, Timer, Wind, ChevronRight, ChevronLeft } from 'lucide-react'
+import { ChevronRight, ChevronLeft } from 'lucide-react'
+import { IconKnot, IconShield, IconBrain, IconWind, IconHourglass } from '../components/Icons'
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'
@@ -107,33 +108,33 @@ export default function Practices({ user, initialSub = null }) {
 
       <div className="grid grid-cols-2 gap-3 mx-stagger">
         <Tile
-          Icon={Sparkles}
+          Icon={IconKnot}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
           right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
           onOpen={() => setSub('rituals')}
         />
         <Tile
-          Icon={Shield}
+          Icon={IconShield}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
           right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
           onOpen={() => setSub('ascezas')}
         />
         <Tile
-          Icon={Brain}
+          Icon={IconBrain}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
         />
         <Tile
-          Icon={Wind}
+          Icon={IconWind}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
           onOpen={() => setSub('breathing')}
         />
         <WideTile
-          Icon={Timer}
+          Icon={IconHourglass}
           title="Фокус"
           subtitle="таймер глубокой работы"
           onOpen={() => setSub('focus')}
