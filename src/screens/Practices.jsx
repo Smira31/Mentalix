@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { ChevronRight, ChevronLeft } from 'lucide-react'
-import { IconKnot, IconShield, IconBrain, IconWind, IconHourglass } from '../components/Icons'
+import { Sparkles, Shield, Brain, Timer, Wind, ChevronRight, ChevronLeft } from 'lucide-react'
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'
@@ -19,7 +18,7 @@ function Tile({ Icon, title, subtitle, right, onOpen }) {
   return (
     <button
       onClick={() => { platform.haptic('light'); onOpen() }}
-      className="w-full min-h-[158px] rounded-3xl bg-emerald p-4 flex flex-col justify-between text-left border-0 transition-transform active:scale-[0.98]"
+      className="w-full min-h-[226px] rounded-3xl bg-emerald p-4 flex flex-col justify-between text-left border-0 transition-transform active:scale-[0.98]"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="w-11 h-11 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
@@ -108,33 +107,33 @@ export default function Practices({ user, initialSub = null }) {
 
       <div className="grid grid-cols-2 gap-3 mx-stagger">
         <Tile
-          Icon={IconKnot}
+          Icon={Sparkles}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
           right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
           onOpen={() => setSub('rituals')}
         />
         <Tile
-          Icon={IconShield}
+          Icon={Shield}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
           right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
           onOpen={() => setSub('ascezas')}
         />
         <Tile
-          Icon={IconBrain}
+          Icon={Brain}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
         />
         <Tile
-          Icon={IconWind}
+          Icon={Wind}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
           onOpen={() => setSub('breathing')}
         />
         <WideTile
-          Icon={IconHourglass}
+          Icon={Timer}
           title="Фокус"
           subtitle="таймер глубокой работы"
           onOpen={() => setSub('focus')}
