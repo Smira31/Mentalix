@@ -38,6 +38,10 @@ const TABS = [
 ]
 
 
+const MOTION =
+  'cubic-bezier(0.22, 1, 0.36, 1)'
+
+
 function TabIcon({
   item,
   active,
@@ -86,156 +90,274 @@ export default function BottomNavigation({
     TABS[0]
 
 
-  /* ============================================================
-     COLLAPSED
-
-     Один кружок слева снизу,
-     как в референсе.
-     ============================================================ */
-
-  if (collapsed) {
-    return (
-      <button
-        type="button"
-        aria-label="Открыть навигацию"
-        onClick={() => {
-          platform.haptic('light')
-          onCollapseChange(false)
-        }}
-        className="
-          fixed
-          left-[24px]
-          bottom-[calc(env(safe-area-inset-bottom)+18px)]
-          z-50
-
-          w-[58px]
-          h-[58px]
-
-          rounded-full
-
-          flex
-          items-center
-          justify-center
-
-          bg-[#3A3A3A]/90
-          backdrop-blur-xl
-
-          border
-          border-white/[0.20]
-
-          shadow-[0_6px_26px_rgba(0,0,0,0.45)]
-
-          active:scale-95
-          transition-all
-          duration-300
-        "
-      >
-        <TabIcon
-          item={activeItem}
-          active
-          size={25}
-        />
-      </button>
-    )
-  }
-
-
-  /* ============================================================
-     EXPANDED
-     ============================================================ */
-
   return (
-    <nav
+    <div
       className="
         fixed
-        bottom-0
-        left-0
-        right-0
+        left-[24px]
+        right-[16px]
+        bottom-[calc(env(safe-area-inset-bottom)+12px)]
         z-50
 
-        px-[16px]
-        pb-[calc(env(safe-area-inset-bottom)+12px)]
+        max-w-[416px]
 
-        max-w-md
-        mx-auto
-        w-full
-
-        transition-all
-        duration-300
+        pointer-events-none
       "
     >
+      {/* ==========================================================
+          ЕДИНЫЙ АНИМИРУЕМЫЙ КОНТЕЙНЕР
+
+          Панель больше не исчезает из DOM.
+
+          Expanded:
+          почти вся ширина, 68px.
+
+          Collapsed:
+          58 × 58px.
+
+          Благодаря этому браузер плавно
+          интерполирует геометрию контейнера.
+         ========================================================== */}
+
       <div
         className="
-          h-[68px]
+          relative
 
-          flex
-          items-center
-          justify-around
-
-          px-[6px]
-
-          rounded-full
+          overflow-hidden
 
           border
-          border-white/[0.16]
-
-          bg-[#242424]/92
           backdrop-blur-xl
 
           shadow-[0_8px_32px_rgba(0,0,0,0.35)]
+
+          pointer-events-auto
+
+          will-change-[width,height,border-radius,transform]
         "
+        style={{
+          width: collapsed
+            ? '58px'
+            : 'calc(100vw - 40px)',
+
+          maxWidth: collapsed
+            ? '58px'
+            : '400px',
+
+          height: collapsed
+            ? '58px'
+            : '68px',
+
+          borderRadius: collapsed
+            ? '9999px'
+            : '34px',
+
+          backgroundColor: collapsed
+            ? 'rgba(58, 58, 58, 0.90)'
+            : 'rgba(36, 36, 36, 0.92)',
+
+          borderColor: collapsed
+            ? 'rgba(255, 255, 255, 0.20)'
+            : 'rgba(255, 255, 255, 0.16)',
+
+          boxShadow: collapsed
+            ? '0 6px 26px rgba(0, 0, 0, 0.45)'
+            : '0 8px 32px rgba(0, 0, 0, 0.35)',
+
+          transition: [
+            `width 420ms ${MOTION}`,
+            `max-width 420ms ${MOTION}`,
+            `height 420ms ${MOTION}`,
+            `border-radius 420ms ${MOTION}`,
+            `background-color 420ms ${MOTION}`,
+            `border-color 420ms ${MOTION}`,
+            `box-shadow 420ms ${MOTION}`,
+          ].join(', '),
+        }}
       >
-        {TABS.map((item) => {
-          const active = tab === item.key
+        {/* ========================================================
+            ПОЛНАЯ НАВИГАЦИЯ
 
-          return (
-            <button
-              key={item.key}
-              type="button"
-              aria-label={item.label}
-              aria-current={
-                active ? 'page' : undefined
-              }
-              onClick={() => {
-                platform.haptic('light')
-                onTabChange(item.key)
-              }}
-              className={[
-                'h-[56px]',
-                'flex-1',
-                'rounded-full',
-                'flex',
-                'flex-col',
-                'items-center',
-                'justify-center',
-                'gap-[2px]',
-                'transition-all',
-                'duration-300',
-                'active:scale-95',
-                active ? 'bg-white/[0.12]' : '',
-              ].join(' ')}
-            >
-              <TabIcon
-                item={item}
-                active={active}
-                size={21}
-              />
+            Она всегда остаётся внутри контейнера.
+            При сворачивании:
+            - слегка уходит вниз;
+            - уменьшается;
+            - становится прозрачной;
+            - перестаёт принимать нажатия.
+           ======================================================== */}
 
-              <span
-                className={[
-                  'text-[10px]',
-                  'font-semibold',
+        <nav
+          aria-hidden={collapsed}
+          className="
+            absolute
+            inset-0
+
+            flex
+            items-center
+
+            px-[6px]
+
+            origin-left
+          "
+          style={{
+            opacity: collapsed ? 0 : 1,
+
+            transform: collapsed
+              ? 'translate3d(-8px, 5px, 0) scale(0.94)'
+              : 'translate3d(0, 0, 0) scale(1)',
+
+            pointerEvents: collapsed
+              ? 'none'
+              : 'auto',
+
+            transition: [
+              `opacity 220ms ${MOTION}`,
+              `transform 420ms ${MOTION}`,
+            ].join(', '),
+          }}
+        >
+          {TABS.map((item) => {
+            const active = tab === item.key
+
+            return (
+              <button
+                key={item.key}
+                type="button"
+                aria-label={item.label}
+                aria-current={
                   active
-                    ? 'text-cream'
-                    : 'text-cream/50',
+                    ? 'page'
+                    : undefined
+                }
+                tabIndex={
+                  collapsed ? -1 : 0
+                }
+                onClick={() => {
+                  platform.haptic('light')
+                  onTabChange(item.key)
+                }}
+                className={[
+                  'h-[56px]',
+                  'flex-1',
+                  'min-w-0',
+                  'rounded-full',
+                  'flex',
+                  'flex-col',
+                  'items-center',
+                  'justify-center',
+                  'gap-[2px]',
+                  'active:scale-95',
+                  active
+                    ? 'bg-white/[0.12]'
+                    : '',
                 ].join(' ')}
+                style={{
+                  transition: [
+                    `background-color 260ms ${MOTION}`,
+                    `transform 220ms ${MOTION}`,
+                  ].join(', '),
+                }}
               >
-                {item.label}
-              </span>
-            </button>
-          )
-        })}
+                <TabIcon
+                  item={item}
+                  active={active}
+                  size={21}
+                />
+
+                <span
+                  className={[
+                    'text-[10px]',
+                    'font-semibold',
+                    'whitespace-nowrap',
+                    active
+                      ? 'text-cream'
+                      : 'text-cream/50',
+                  ].join(' ')}
+                >
+                  {item.label}
+                </span>
+              </button>
+            )
+          })}
+        </nav>
+
+
+        {/* ========================================================
+            COLLAPSED STATE
+
+            Круглая кнопка тоже всегда существует.
+
+            Пока navbar открыт:
+            opacity 0 + scale.
+
+            При схлопывании появляется внутри того же
+            физического контейнера.
+           ======================================================== */}
+
+        <button
+          type="button"
+          aria-label="Открыть навигацию"
+          aria-hidden={!collapsed}
+          tabIndex={collapsed ? 0 : -1}
+          onClick={() => {
+            if (!collapsed) {
+              return
+            }
+
+            platform.haptic('light')
+            onCollapseChange(false)
+          }}
+          className="
+            absolute
+            inset-0
+
+            w-[58px]
+            h-[58px]
+
+            rounded-full
+
+            flex
+            items-center
+            justify-center
+
+            origin-center
+          "
+          style={{
+            opacity: collapsed ? 1 : 0,
+
+            transform: collapsed
+              ? 'translate3d(0, 0, 0) scale(1)'
+              : 'translate3d(-5px, 0, 0) scale(0.72)',
+
+            pointerEvents: collapsed
+              ? 'auto'
+              : 'none',
+
+            transition: [
+              `opacity 280ms ${MOTION} ${
+                collapsed ? '100ms' : '0ms'
+              }`,
+              `transform 420ms ${MOTION}`,
+            ].join(', '),
+          }}
+        >
+          <span
+            style={{
+              transform: collapsed
+                ? 'scale(1)'
+                : 'scale(0.82)',
+
+              transition:
+                `transform 420ms ${MOTION}`,
+            }}
+          >
+            <TabIcon
+              item={activeItem}
+              active
+              size={25}
+            />
+          </span>
+        </button>
       </div>
-    </nav>
+    </div>
   )
 }
