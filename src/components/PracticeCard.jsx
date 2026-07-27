@@ -30,13 +30,14 @@ export default function PracticeCard({
         flex-col
       "
     >
+      {/* Progress */}
       {right && (
         <span
           className="
             absolute
             top-[8px]
             right-[8px]
-            z-10
+            z-20
             h-[26px]
             min-w-[40px]
             px-[8px]
@@ -49,7 +50,7 @@ export default function PracticeCard({
             font-medium
             leading-none
             text-gold
-            bg-gold/[0.025]
+            bg-black/30
             border
             border-gold/[0.42]
           "
@@ -58,32 +59,35 @@ export default function PracticeCard({
         </span>
       )}
 
+      {/* Illustration */}
       <div
         className="
+          relative
           w-full
-          h-[88px]
-          px-[6px]
-          pt-[4px]
+          h-[94px]
+          shrink-0
+          overflow-hidden
           flex
           items-center
           justify-center
-          shrink-0
         "
       >
         <div
           className="
-            w-full
-            h-full
+            absolute
+            inset-[-5px]
             flex
             items-center
             justify-center
-            scale-[1.08]
+            scale-[1.14]
+            origin-center
           "
         >
           {artwork}
         </div>
       </div>
 
+      {/* Text */}
       <div
         className="
           flex-1
@@ -93,6 +97,7 @@ export default function PracticeCard({
           flex
           flex-col
           justify-end
+          min-h-0
         "
       >
         <div
@@ -103,6 +108,7 @@ export default function PracticeCard({
             text-cream
             leading-[1.05]
             tracking-[-0.025em]
+            whitespace-nowrap
           "
         >
           {title}
@@ -116,6 +122,7 @@ export default function PracticeCard({
             mt-[4px]
             leading-[1.2]
             tracking-[-0.01em]
+            min-h-[26px]
           "
         >
           {subtitle}
