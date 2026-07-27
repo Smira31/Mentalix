@@ -325,7 +325,7 @@ export default function Courses({ user }) {
               <button
                 key={t.id}
                 onClick={() => setOpenTheme(t.id)}
-                className="w-full rounded-[26px] bg-emerald px-5 py-4 text-left border-0 active:scale-[0.98] transition-transform"
+                className="w-full rounded-3xl bg-emerald px-5 py-4 text-left border-0 active:scale-[0.98] transition-transform"
               >
                 <span className="block font-display text-[17px] text-cream lowercase leading-tight">
                   {t.title}
@@ -379,7 +379,6 @@ export default function Courses({ user }) {
           {courses.length === 0 ? (
             <>
               <ArtBook size={120} className="mx-auto mb-3" />
-              <ArtBook size={116} className="mx-auto mb-3" />
               <p className="text-cream/45 text-sm">Библиотека пуста — добавь первый материал</p>
             </>
           ) : (
