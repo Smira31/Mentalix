@@ -5,9 +5,7 @@ import { api } from '../lib/api'
 
 import { ChevronLeft } from 'lucide-react'
 
-
 import PracticeCard from '../components/PracticeCard'
-
 
 import RitualsArt from '../components/practice-art/RitualsArt'
 import AskesisArt from '../components/practice-art/AskesisArt'
@@ -16,17 +14,12 @@ import BreathingArt from '../components/practice-art/BreathingArt'
 import FocusArt from '../components/practice-art/FocusArt'
 import MeditationArt from '../components/practice-art/MeditationArt'
 
-
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
 import Breathing from './Breathing'
 
-
-/* ============================================================
-   SUB HEADER
-   ============================================================ */
 
 function SubHeader({
   title,
@@ -37,24 +30,23 @@ function SubHeader({
       className="
         w-full
         max-w-md
-        px-[16px]
-        pb-2
+        px-[14px]
+        pb-[6px]
         flex
         items-center
-        gap-3
+        gap-[10px]
       "
     >
       <button
         type="button"
         onClick={() => {
           platform.haptic('light')
-
           onBack()
         }}
         aria-label="Назад"
         className="
-          w-10
-          h-10
+          w-9
+          h-9
           rounded-full
           bg-emerald
           border
@@ -67,17 +59,16 @@ function SubHeader({
         "
       >
         <ChevronLeft
-          size={20}
+          size={18}
           strokeWidth={1.7}
           className="text-cream/60"
         />
       </button>
 
-
       <span
         className="
           font-display
-          text-lg
+          text-[17px]
           text-cream
           lowercase
         "
@@ -89,38 +80,20 @@ function SubHeader({
 }
 
 
-/* ============================================================
-   PRACTICES
-   ============================================================ */
-
 export default function Practices({
   user,
   initialSub = null,
 }) {
-  const [sub, setSub] =
-    useState(initialSub)
+  const [sub, setSub] = useState(initialSub)
 
+  const [rituals, setRituals] = useState([])
+  const [ascezas, setAscezas] = useState([])
 
-  const [rituals, setRituals] =
-    useState([])
-
-
-  const [ascezas, setAscezas] =
-    useState([])
-
-
-  /* ------------------------------------------------------------
-     Sync
-     ------------------------------------------------------------ */
 
   useEffect(() => {
     setSub(initialSub)
   }, [initialSub])
 
-
-  /* ------------------------------------------------------------
-     Scroll top
-     ------------------------------------------------------------ */
 
   useEffect(() => {
     window.scrollTo({
@@ -131,18 +104,10 @@ export default function Practices({
   }, [])
 
 
-  /* ------------------------------------------------------------
-     Data
-     ------------------------------------------------------------ */
-
   useEffect(() => {
-    if (
-      !user ||
-      sub !== null
-    ) {
+    if (!user || sub !== null) {
       return
     }
-
 
     Promise.all([
       api.rituals.list(user.id),
@@ -153,16 +118,11 @@ export default function Practices({
         ascezasData,
       ]) => {
         setRituals(ritualsData)
-
         setAscezas(ascezasData)
       })
       .catch(console.error)
   }, [user, sub])
 
-
-  /* ============================================================
-     SUB SCREENS
-     ============================================================ */
 
   if (sub === 'rituals') {
     return (
@@ -235,14 +195,9 @@ export default function Practices({
   }
 
 
-  /* ============================================================
-     PROGRESS
-     ============================================================ */
-
   const ritualsDone =
     rituals.filter(
-      (ritual) =>
-        ritual.today_level
+      (ritual) => ritual.today_level
     ).length
 
 
@@ -253,52 +208,42 @@ export default function Practices({
     ).length
 
 
-  /* ============================================================
-     MAIN SCREEN
-     ============================================================ */
-
   return (
     <div
       className="
         w-full
         max-w-md
-        px-[16px]
-        pb-[105px]
+        px-[14px]
+        pb-[96px]
       "
     >
-
-      {/* Title */}
       <h2
         className="
           font-display
           text-[34px]
-          leading-[0.95]
+          leading-[0.92]
           tracking-[-0.04em]
           text-cream
           lowercase
-          mt-[18px]
-          mb-[18px]
+          mt-[8px]
+          mb-[14px]
         "
       >
         практики.
       </h2>
 
 
-      {/* 2 × 3 GRID */}
       <div
         className="
           grid
           grid-cols-2
-          gap-[10px]
+          gap-x-[10px]
+          gap-y-[8px]
           mx-stagger
         "
       >
-
-        {/* Rituals */}
         <PracticeCard
-          artwork={
-            <RitualsArt />
-          }
+          artwork={<RitualsArt />}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
           right={
@@ -312,11 +257,8 @@ export default function Practices({
         />
 
 
-        {/* Askesis */}
         <PracticeCard
-          artwork={
-            <AskesisArt />
-          }
+          artwork={<AskesisArt />}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
           right={
@@ -330,11 +272,8 @@ export default function Practices({
         />
 
 
-        {/* Neuro */}
         <PracticeCard
-          artwork={
-            <NeuroArt />
-          }
+          artwork={<NeuroArt />}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
           onOpen={() => {
@@ -343,11 +282,8 @@ export default function Practices({
         />
 
 
-        {/* Breathing */}
         <PracticeCard
-          artwork={
-            <BreathingArt />
-          }
+          artwork={<BreathingArt />}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
           onOpen={() => {
@@ -356,11 +292,8 @@ export default function Practices({
         />
 
 
-        {/* Focus */}
         <PracticeCard
-          artwork={
-            <FocusArt />
-          }
+          artwork={<FocusArt />}
           title="Фокус"
           subtitle="таймер глубокой работы"
           onOpen={() => {
@@ -369,18 +302,14 @@ export default function Practices({
         />
 
 
-        {/* Meditation */}
         <PracticeCard
-          artwork={
-            <MeditationArt />
-          }
+          artwork={<MeditationArt />}
           title="Медитации"
           subtitle="тишина для ума и тела"
           onOpen={() => {
             platform.haptic('light')
           }}
         />
-
       </div>
     </div>
   )
