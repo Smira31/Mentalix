@@ -279,7 +279,7 @@ export default function App() {
               <Practices user={user} initialSub={practicesSub} />
             )}
             {user && tab === 'mentor' && <MentalixChat user={user} />}
-            <Library user={user} />
+            {user && tab === 'library' && <Library user={user} />}
             {user && tab === 'trends' && (
               <Analytics user={user} onGoCheckin={() => { platform.haptic('light'); setTab('today') }} />
             )}
