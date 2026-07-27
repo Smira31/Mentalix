@@ -88,10 +88,11 @@ export const api = {
   profile: {
     get: (userId) => request(`/profile?user_id=${userId}`),
     getSettings: (userId) => request(`/profile/settings?user_id=${userId}`),
-    saveSettings: (userId, { reminder_enabled, reminder_hour,review hour  }) =>
+        saveSettings: (userId, { reminder_enabled, reminder_hour, review_hour }) =>
       request('/profile/settings', {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour, reciew hour }),
+        body: JSON.stringify({ user_id: userId, reminder_enabled, reminder_hour, review_hour }),
+
       }),
   },
   pulse: {
