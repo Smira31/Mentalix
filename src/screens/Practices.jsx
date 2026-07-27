@@ -244,6 +244,7 @@ export default function Practices({
       >
         <PracticeCard
           artwork={<RitualsArt />}
+          artworkScale={0.90}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
           right={
@@ -259,6 +260,7 @@ export default function Practices({
 
         <PracticeCard
           artwork={<AskesisArt />}
+          artworkScale={0.96}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
           right={
@@ -274,6 +276,7 @@ export default function Practices({
 
         <PracticeCard
           artwork={<NeuroArt />}
+          artworkScale={0.91}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
           onOpen={() => {
@@ -284,6 +287,7 @@ export default function Practices({
 
         <PracticeCard
           artwork={<BreathingArt />}
+          artworkScale={0.88}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
           onOpen={() => {
@@ -294,6 +298,7 @@ export default function Practices({
 
         <PracticeCard
           artwork={<FocusArt />}
+          artworkScale={0.90}
           title="Фокус"
           subtitle="таймер глубокой работы"
           onOpen={() => {
@@ -304,6 +309,7 @@ export default function Practices({
 
         <PracticeCard
           artwork={<MeditationArt />}
+          artworkScale={0.96}
           title="Медитации"
           subtitle="тишина для ума и тела"
           onOpen={() => {
