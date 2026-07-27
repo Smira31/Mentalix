@@ -1,6 +1,5 @@
 import { platform } from '../platform'
 
-
 export default function PracticeCard({
   title,
   subtitle,
@@ -13,13 +12,12 @@ export default function PracticeCard({
       type="button"
       onClick={() => {
         platform.haptic('light')
-
         onOpen?.()
       }}
       className="
         relative
         w-full
-        h-[174px]
+        h-[158px]
         rounded-[18px]
         bg-emerald
         overflow-hidden
@@ -32,21 +30,16 @@ export default function PracticeCard({
         flex-col
       "
     >
-
-      {/* ========================================================
-          PROGRESS
-         ======================================================== */}
-
       {right && (
         <span
           className="
             absolute
-            top-[9px]
-            right-[9px]
+            top-[8px]
+            right-[8px]
             z-10
-            h-[28px]
-            min-w-[42px]
-            px-[9px]
+            h-[26px]
+            min-w-[40px]
+            px-[8px]
             rounded-full
             flex
             items-center
@@ -65,17 +58,12 @@ export default function PracticeCard({
         </span>
       )}
 
-
-      {/* ========================================================
-          ART
-         ======================================================== */}
-
       <div
         className="
           w-full
-          h-[99px]
-          px-[9px]
-          pt-[7px]
+          h-[88px]
+          px-[6px]
+          pt-[4px]
           flex
           items-center
           justify-center
@@ -89,23 +77,19 @@ export default function PracticeCard({
             flex
             items-center
             justify-center
+            scale-[1.08]
           "
         >
           {artwork}
         </div>
       </div>
 
-
-      {/* ========================================================
-          COPY
-         ======================================================== */}
-
       <div
         className="
           flex-1
           w-full
-          px-[13px]
-          pb-[12px]
+          px-[12px]
+          pb-[10px]
           flex
           flex-col
           justify-end
@@ -117,21 +101,20 @@ export default function PracticeCard({
             text-[15px]
             font-bold
             text-cream
-            leading-[1.08]
+            leading-[1.05]
             tracking-[-0.025em]
           "
         >
           {title}
         </div>
 
-
         <div
           className="
             text-[11px]
             text-cream/[0.48]
             font-normal
-            mt-[5px]
-            leading-[1.25]
+            mt-[4px]
+            leading-[1.2]
             tracking-[-0.01em]
           "
         >
