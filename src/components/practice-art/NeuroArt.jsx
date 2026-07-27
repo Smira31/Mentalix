@@ -1,4 +1,4 @@
-export default function NeuroArt() {
+export default function BreathingArt() {
   return (
     <svg
       viewBox="0 0 200 200"
@@ -7,114 +7,75 @@ export default function NeuroArt() {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* Профиль головы и шеи */}
-      <path
-        d="
-          M67 169
-          C54 155 47 135 48 112
-          C49 82 62 58 84 47
-          C103 38 126 39 143 50
-          C159 61 166 78 163 94
-          C161 104 156 112 150 118
-          L157 126
-          C160 130 158 134 152 135
-          L143 136
-          C141 148 134 158 123 164
-          C113 170 103 171 94 168
-          C84 165 76 166 67 169
-        "
-        stroke="rgba(245,245,245,0.82)"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Линия шеи */}
-      <path
-        d="
-          M94 168
-          C93 178 91 184 87 189
-        "
-        stroke="rgba(245,245,245,0.46)"
-        strokeWidth="1.1"
-        strokeLinecap="round"
-      />
-
-      {/* Нейросеть */}
-      <path
-        d="
-          M69 87
-          L86 67
-          L108 65
-          L129 76
-          L140 96
-          L134 116
-          L116 130
-          L93 128
-          L75 112
-          Z
-        "
-        stroke="rgba(245,245,245,0.34)"
-        strokeWidth="1.1"
-      />
-
-      <path
-        d="M86 67L116 130"
-        stroke="rgba(245,245,245,0.22)"
-        strokeWidth="1"
-      />
-
-      <path
-        d="M108 65L75 112"
-        stroke="rgba(245,245,245,0.22)"
-        strokeWidth="1"
-      />
-
-      <path
-        d="M129 76L93 128"
-        stroke="rgba(245,245,245,0.22)"
-        strokeWidth="1"
-      />
-
-      <path
-        d="M69 87L134 116"
-        stroke="rgba(245,245,245,0.22)"
-        strokeWidth="1"
-      />
-
-      <path
-        d="M140 96L75 112"
-        stroke="rgba(245,245,245,0.18)"
-        strokeWidth="1"
-      />
-
-      {/* Внешний контур активности */}
+      {/* Верхний цикл */}
       <circle
-        cx="104"
-        cy="98"
-        r="48"
-        stroke="rgba(245,245,245,0.14)"
+        cx="100"
+        cy="75"
+        r="42"
+        stroke="rgba(245,245,245,0.72)"
+        strokeWidth="1.6"
+      />
+
+      {/* Нижний цикл */}
+      <circle
+        cx="100"
+        cy="125"
+        r="42"
+        stroke="rgba(245,245,245,0.42)"
+        strokeWidth="1.35"
+      />
+
+      {/* Внешний ритм */}
+      <ellipse
+        cx="100"
+        cy="100"
+        rx="50"
+        ry="74"
+        stroke="rgba(245,245,245,0.16)"
         strokeWidth="1"
         strokeDasharray="3 5"
       />
 
-      {/* Узлы */}
-      <circle cx="69" cy="87" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="86" cy="67" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="108" cy="65" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="129" cy="76" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="140" cy="96" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="134" cy="116" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="116" cy="130" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="93" cy="128" r="2.8" fill="rgba(245,245,245,0.52)" />
-      <circle cx="75" cy="112" r="2.8" fill="rgba(245,245,245,0.52)" />
+      {/* Внутренний поток */}
+      <path
+        d="
+          M100 40
+          C87 58 87 73 100 88
+          C113 103 113 118 100 136
+          C91 148 90 158 94 168
+        "
+        stroke="rgba(245,245,245,0.28)"
+        strokeWidth="1.1"
+        strokeLinecap="round"
+      />
 
-      {/* Центральный активный узел */}
-      <circle cx="104" cy="98" r="6.5" fill="#D9B45B" />
+      {/* Боковые траектории */}
+      <path
+        d="M64 73C78 82 87 90 100 100"
+        stroke="rgba(245,245,245,0.20)"
+        strokeWidth="1"
+        strokeDasharray="2 5"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M136 127C122 118 113 110 100 100"
+        stroke="rgba(245,245,245,0.20)"
+        strokeWidth="1"
+        strokeDasharray="2 5"
+        strokeLinecap="round"
+      />
+
+      {/* Узлы */}
+      <circle cx="100" cy="75" r="2.7" fill="rgba(245,245,245,0.50)" />
+      <circle cx="100" cy="125" r="2.7" fill="rgba(245,245,245,0.36)" />
+
+      {/* Центр дыхательного цикла */}
+      <circle cx="100" cy="100" r="6.5" fill="#D9B45B" />
 
       <circle
-        cx="104"
-        cy="98"
+        cx="100"
+        cy="100"
         r="11"
         stroke="rgba(217,180,91,0.16)"
         strokeWidth="1"
