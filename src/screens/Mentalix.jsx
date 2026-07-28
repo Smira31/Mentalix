@@ -447,47 +447,50 @@ function Chat({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 space-y-3">
-        {loading && (
-          <p className="text-cream/40 text-sm text-center pt-4">
-            Загрузка...
-          </p>
-        )}
+      <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-3">
+  {loading && (
+    <p className="text-cream/40 text-[15px] text-center pt-4">
+      Загрузка...
+    </p>
+  )}
 
-        {!loading &&
-          messages.length === 0 && (
-            <p className="text-cream/40 text-sm text-center pt-8 leading-relaxed">
-              {meta.desc}
-              <br />
-              <br />
-              Напиши первым —{' '}
-              {meta.name} ответит.
-            </p>
-          )}
+  {!loading &&
+    messages.length === 0 && (
+      <p className="text-cream/40 text-[15px] text-center pt-10 leading-[1.6]">
+        {meta.desc}
+        <br />
+        <br />
+        Напиши первым — {meta.name} ответит.
+      </p>
+    )}
 
-        {messages.map(
-          (message, index) => (
-            <div
-              key={index}
-              className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                message.role === 'user'
-                  ? 'ml-auto bg-cognac text-cream'
-                  : 'mr-auto bg-emerald-light/40 text-cream/90'
-              }`}
-            >
-              {message.content}
-            </div>
-          ),
-        )}
+  {messages.map((message, index) => {
+    const isUser = message.role === 'user'
 
-        {sending && (
-          <div className="mr-auto bg-emerald-light/40 text-cream/50 rounded-2xl px-4 py-2.5 text-sm">
-            {meta.name} печатает…
-          </div>
-        )}
-
-        <div ref={endRef} />
+    return (
+      <div
+        key={index}
+        className={[
+          'w-fit max-w-[88%] rounded-[24px] px-[18px] py-4',
+          'text-[17px] leading-[1.58] font-normal break-words',
+          isUser
+            ? 'ml-auto bg-cognac text-cream'
+            : 'mr-auto bg-emerald-light/40 text-cream/90',
+        ].join(' ')}
+      >
+        {message.content}
       </div>
+    )
+  })}
+
+  {sending && (
+    <div className="mr-auto w-fit max-w-[88%] rounded-[24px] bg-emerald-light/40 px-[18px] py-4 text-[15px] leading-[1.5] text-cream/50">
+      {meta.name} печатает…
+    </div>
+  )}
+
+  <div ref={endRef} />
+</div>
 
       <div className="flex items-center gap-2 px-2 pt-3">
         <input
