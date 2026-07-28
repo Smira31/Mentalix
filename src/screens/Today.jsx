@@ -18,31 +18,69 @@ import History from './History'
 import QuoteView from './QuoteView'
 
 
+// ============================================================
+// ВРЕМЕННО ДЛЯ ТЕСТА
+// После проверки вечернего сценария поменяем на false.
+// ============================================================
+
+const FORCE_EVENING_REVIEW = true
+
+
 // ── лента недели, как у stoic. ──
+
 function WeekStrip() {
-  const names = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+  const names = [
+    'Вс',
+    'Пн',
+    'Вт',
+    'Ср',
+    'Чт',
+    'Пт',
+    'Сб',
+  ]
+
   const now = new Date()
   const monday = new Date(now)
 
   monday.setDate(
-    now.getDate() - ((now.getDay() + 6) % 7)
+    now.getDate()
+      - (
+        (now.getDay() + 6)
+        % 7
+      )
   )
 
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday)
-    d.setDate(monday.getDate() + i)
-    return d
-  })
+  const days =
+    Array.from(
+      {
+        length: 7,
+      },
+      (_, index) => {
+        const day =
+          new Date(monday)
+
+        day.setDate(
+          monday.getDate()
+            + index
+        )
+
+        return day
+      },
+    )
+
 
   return (
     <div className="flex justify-between w-full mb-4">
-      {days.map((d) => {
+      {days.map((day) => {
         const isToday =
-          d.toDateString() === now.toDateString()
+          day.toDateString()
+          === now.toDateString()
 
         return (
           <div
-            key={d.getDate()}
+            key={
+              day.getTime()
+            }
             className={[
               'flex flex-col items-center gap-1 w-11 py-2 rounded-2xl text-[12px] font-semibold',
               isToday
@@ -50,10 +88,12 @@ function WeekStrip() {
                 : 'text-cream/35',
             ].join(' ')}
           >
-            {names[d.getDay()]}
+            {names[
+              day.getDay()
+            ]}
 
             <b className="text-[16px] font-bold">
-              {d.getDate()}
+              {day.getDate()}
             </b>
           </div>
         )
@@ -63,42 +103,60 @@ function WeekStrip() {
 }
 
 
-// один следующий шаг по принципу One Next Action
+// ============================================================
+// ONE NEXT ACTION
+// ============================================================
+
 function deriveNextAction({
   rituals,
   ascezas,
 }) {
   const undoneRituals =
     rituals.filter(
-      (r) => !r.today_level
+      (ritual) =>
+        !ritual.today_level,
     )
 
-  if (undoneRituals.length > 0) {
+  if (
+    undoneRituals.length > 0
+  ) {
     return {
       kind: 'ritual',
-      title: undoneRituals[0].name,
+      title:
+        undoneRituals[0].name,
       meta: 'ритуал',
       sub: 'rituals',
     }
   }
 
+
   const unmarkedAscezas =
     ascezas.filter(
-      (a) => !a.today_status
+      (asceza) =>
+        !asceza.today_status,
     )
 
-  if (unmarkedAscezas.length > 0) {
+  if (
+    unmarkedAscezas.length > 0
+  ) {
     return {
       kind: 'asceza',
-      title: unmarkedAscezas[0].name,
-      meta: 'аскеза · отметься честно',
+      title:
+        unmarkedAscezas[0].name,
+      meta:
+        'аскеза · отметься честно',
       sub: 'ascezas',
     }
   }
 
+
   return null
 }
 
+
+// ============================================================
+// TODAY
+// ============================================================
 
 export default function Today({
   user,
@@ -142,10 +200,25 @@ export default function Today({
     useState('path')
 
 
+  async function refreshCheckin() {
+    if (!user) return
+
+    try {
+      const current =
+        await api.checkin
+          .today(user.id)
+
+      setCheckin(current)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+
   useEffect(() => {
     if (
-      !user ||
-      sub !== null
+      !user
+      || sub !== null
     ) {
       return
     }
@@ -153,94 +226,148 @@ export default function Today({
     ;(async () => {
       try {
         const [
-          r,
-          a,
-          q,
-          c,
-          th,
-          st,
+          ritualsData,
+          ascezasData,
+          quoteData,
+          checkinData,
+          themesData,
+          settingsData,
         ] =
           await Promise.all([
             api.rituals.list(
-              user.id
+              user.id,
             ),
 
             api.ascezas.list(
-              user.id
+              user.id,
             ),
 
             api.quotes.today(
-              user.id
+              user.id,
             ),
 
             api.checkin
               .today(user.id)
-              .catch(() => null),
+              .catch(
+                () => null,
+              ),
 
             api.themes
               .list(user.id)
-              .catch(() => []),
+              .catch(
+                () => [],
+              ),
 
             api.profile
               .getSettings(
-                user.id
+                user.id,
               )
-              .catch(() => null),
+              .catch(
+                () => null,
+              ),
           ])
 
+
         setTheme(
-          (th || [])[0] || null
+          (
+            themesData
+            || []
+          )[0]
+          || null,
         )
+
 
         api.pulse
           .today()
-          .then((p) =>
-            setActiveToday(
-              p.active_today
-            )
+          .then(
+            (pulse) =>
+              setActiveToday(
+                pulse.active_today,
+              ),
           )
-          .catch(() => {})
+          .catch(
+            () => {},
+          )
 
-        setRituals(r)
-        setAscezas(a)
-        setDailyQuote(q.text)
-        setCheckin(c)
+
+        setRituals(
+          ritualsData,
+        )
+
+        setAscezas(
+          ascezasData,
+        )
+
+        setDailyQuote(
+          quoteData?.text
+          || null,
+        )
+
+        setCheckin(
+          checkinData,
+        )
 
         setReviewHour(
-          st?.review_hour ?? 19
+          settingsData
+            ?.review_hour
+          ?? 19,
         )
-      } catch (e) {
-        console.error(e)
+      } catch (error) {
+        console.error(error)
       } finally {
         setLoading(false)
       }
     })()
-  }, [user, sub])
+  }, [
+    user,
+    sub,
+  ])
 
 
-  // ── чек-ин поверх всего ──
-  if (sub === 'checkin') {
+  const hourNow =
+    new Date()
+      .getHours()
+
+
+  const isReviewTime =
+    FORCE_EVENING_REVIEW
+    || hourNow
+      >= reviewHour
+
+
+  // ============================================================
+  // ЧЕК-ИН / АНАЛИЗ ДНЯ
+  // ============================================================
+
+  if (
+    sub === 'checkin'
+  ) {
     return (
       <CheckIn
         user={user}
         existing={checkin}
         mode={
-          new Date().getHours() >= reviewHour
+          isReviewTime
             ? 'evening'
             : 'auto'
         }
-        onDone={() =>
+        onDone={async () => {
+          await refreshCheckin()
+
           setSub(null)
-        }
+        }}
       />
     )
   }
 
 
-  // ── тема недели ──
+  // ============================================================
+  // ТЕМА НЕДЕЛИ
+  // ============================================================
+
   if (
-    sub === 'theme' &&
-    theme
+    sub === 'theme'
+    && theme
   ) {
     return (
       <ThemeScreen
@@ -254,8 +381,13 @@ export default function Today({
   }
 
 
-  // ── полноэкранные цитаты ──
-  if (sub === 'quote') {
+  // ============================================================
+  // ЦИТАТЫ
+  // ============================================================
+
+  if (
+    sub === 'quote'
+  ) {
     return (
       <QuoteView
         user={user}
@@ -270,15 +402,20 @@ export default function Today({
   }
 
 
-  // ── Путь и История ──
-  if (sub === 'path') {
+  // ============================================================
+  // ПУТЬ / ИСТОРИЯ
+  // ============================================================
+
+  if (
+    sub === 'path'
+  ) {
     return (
       <div className="w-full flex flex-col items-center animate-fade-in">
         <div className="w-full max-w-md px-5 pb-3 flex items-center gap-3">
           <button
             onClick={() => {
               platform.haptic(
-                'light'
+                'light',
               )
 
               setSub(null)
@@ -292,35 +429,56 @@ export default function Today({
             />
           </button>
 
+
           <div className="flex-1 flex bg-emerald rounded-full p-1">
             {[
-              ['path', 'Путь'],
-              ['history', 'История'],
-            ].map(([k, label]) => (
-              <button
-                key={k}
-                onClick={() => {
-                  platform.haptic(
-                    'light'
-                  )
+              [
+                'path',
+                'Путь',
+              ],
+              [
+                'history',
+                'История',
+              ],
+            ].map(
+              ([
+                key,
+                label,
+              ]) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    platform.haptic(
+                      'light',
+                    )
 
-                  setPathTab(k)
-                }}
-                className={[
-                  'flex-1 py-2 rounded-full text-[13px] font-bold border-0 transition-colors',
-                  pathTab === k
-                    ? 'bg-cream/10 text-cream'
-                    : 'bg-transparent text-cream/40',
-                ].join(' ')}
-              >
-                {label}
-              </button>
-            ))}
+                    setPathTab(
+                      key,
+                    )
+                  }}
+                  className={[
+                    'flex-1 py-2 rounded-full text-[13px] font-bold border-0 transition-colors',
+                    pathTab
+                      === key
+                      ? 'bg-cream/10 text-cream'
+                      : 'bg-transparent text-cream/40',
+                  ].join(
+                    ' ',
+                  )}
+                >
+                  {label}
+                </button>
+              ),
+            )}
           </div>
         </div>
 
-        {pathTab === 'path' ? (
-          <Path user={user} />
+
+        {pathTab
+          === 'path' ? (
+          <Path
+            user={user}
+          />
         ) : (
           <div className="w-full max-w-md px-5 pb-40">
             <History
@@ -333,6 +491,10 @@ export default function Today({
   }
 
 
+  // ============================================================
+  // LOADING
+  // ============================================================
+
   if (loading) {
     return (
       <p className="text-cream/40 text-sm px-6 pt-8">
@@ -342,22 +504,33 @@ export default function Today({
   }
 
 
+  // ============================================================
+  // ДАННЫЕ ДНЯ
+  // ============================================================
+
   const total =
-    rituals.length +
-    ascezas.length
+    rituals.length
+    + ascezas.length
+
 
   const done =
     rituals.filter(
-      (r) => r.today_level
-    ).length +
-    ascezas.filter(
-      (a) => a.today_status
+      (ritual) =>
+        ritual.today_level,
     ).length
+    +
+    ascezas.filter(
+      (asceza) =>
+        asceza.today_status,
+    ).length
+
 
   const pct =
     total > 0
       ? Math.round(
-          (done / total) * 100
+          (
+            done / total
+          ) * 100,
         )
       : 0
 
@@ -368,24 +541,46 @@ export default function Today({
       ascezas,
     })
 
+
   const isEmpty =
     total === 0
 
-  const hourNow =
-    new Date().getHours()
 
   const checkinDone =
     !!checkin
 
-  const checkinAsHero =
-    !checkinDone &&
-    (
-      hourNow >= reviewHour ||
-      (
-        isEmpty &&
-        hourNow >= 12
+
+  const eveningReviewDone =
+    !!(
+      checkin?.lessons
+      || (
+        Array.isArray(
+          checkin?.wins,
+        )
+        && checkin.wins.length
+          > 0
       )
     )
+
+
+  // Важное исправление:
+  // утренний чек-ин больше НЕ блокирует вечерний разбор.
+  //
+  // После наступления reviewHour показываем анализ дня,
+  // пока пользователь реально не сохранил lessons или wins.
+
+  const checkinAsHero =
+    (
+      isReviewTime
+      && !eveningReviewDone
+    )
+    ||
+    (
+      !checkinDone
+      && isEmpty
+      && hourNow >= 12
+    )
+
 
   const MOOD_WORDS = [
     'тяжко',
@@ -398,20 +593,24 @@ export default function Today({
 
   const remainRituals =
     rituals.filter(
-      (r) => !r.today_level
+      (ritual) =>
+        !ritual.today_level,
     ).length
+
 
   const remainAscezas =
     ascezas.filter(
-      (a) => !a.today_status
+      (asceza) =>
+        !asceza.today_status,
     ).length
+
 
   const remainAfter =
     Math.max(
       0,
-      remainRituals +
-        remainAscezas -
-        1
+      remainRituals
+      + remainAscezas
+      - 1,
     )
 
 
@@ -420,7 +619,9 @@ export default function Today({
       <WeekStrip />
 
 
-      {/* ── герой-карточка: One Next Action ── */}
+      {/* ======================================================
+          ГЕРОЙ-КАРТОЧКА
+          ====================================================== */}
 
       <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-10 text-center flex flex-col justify-center min-h-[54vh] animate-fade-in">
         {isEmpty ? (
@@ -447,22 +648,25 @@ export default function Today({
               Анализ дня
             </div>
 
+
             <h2 className="font-display text-[28px] text-cream leading-tight">
               Разобрать день?
             </h2>
+
 
             <p className="text-[14px] text-cream/50 mt-2">
               Уроки и то, чем стоит гордиться
             </p>
 
+
             <button
               onClick={() => {
                 platform.haptic(
-                  'medium'
+                  'medium',
                 )
 
                 setSub(
-                  'checkin'
+                  'checkin',
                 )
               }}
               className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
@@ -470,147 +674,163 @@ export default function Today({
               Начать
             </button>
 
+
             {next && (
               <p className="text-[12px] text-cream/35 mt-5">
-                Дальше: {next.title}
+                Дальше:{' '}
+                {next.title}
               </p>
             )}
           </>
         )}
 
 
-        {!checkinAsHero &&
-          isEmpty && (
-            <>
-              <div className="text-[13px] text-cream/40 font-semibold mb-2">
-                Твой путь ждёт
-              </div>
-
-              <h2 className="font-display text-[26px] text-cream leading-tight">
-                Добавь первый ритуал
-              </h2>
-
-              <p className="text-[14px] text-cream/50 mt-2">
-                Система работает через регулярность — начни с одного
-              </p>
-
-              <button
-                onClick={() => {
-                  platform.haptic(
-                    'medium'
-                  )
-
-                  onOpenPractice(
-                    'rituals'
-                  )
-                }}
-                className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
-              >
-                Начать
-              </button>
-            </>
-          )}
+        {!checkinAsHero
+          && isEmpty && (
+          <>
+            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+              Твой путь ждёт
+            </div>
 
 
-        {!checkinAsHero &&
-          !isEmpty &&
-          next && (
-            <>
-              <div className="text-[13px] text-cream/40 font-semibold mb-2">
-                Самое важное
-              </div>
-
-              <h2 className="font-display text-[28px] text-cream leading-tight">
-                {next.title}
-              </h2>
-
-              <p className="text-[14px] text-cream/50 mt-2">
-                {next.meta}
-              </p>
-
-              <button
-                onClick={() => {
-                  platform.haptic(
-                    'medium'
-                  )
-
-                  onOpenPractice(
-                    next.sub
-                  )
-                }}
-                className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
-              >
-                Начать
-              </button>
-
-              <p className="text-[12px] text-cream/35 mt-5">
-                {remainAfter > 0
-                  ? `После этого останется: ${remainAfter}`
-                  : 'Это последнее на сегодня'}
-              </p>
-            </>
-          )}
+            <h2 className="font-display text-[26px] text-cream leading-tight">
+              Добавь первый ритуал
+            </h2>
 
 
-        {!checkinAsHero &&
-          !isEmpty &&
-          !next && (
-            <>
-              <div className="text-[13px] text-cream/40 font-semibold mb-2">
-                Путь продолжается
-              </div>
+            <p className="text-[14px] text-cream/50 mt-2">
+              Система работает через регулярность — начни с одного
+            </p>
 
-              <h2 className="font-display text-[26px] text-cream leading-tight">
-                Сегодня ты выше, чем вчера
-              </h2>
 
-              <p className="text-[14px] text-cream/50 mt-2">
-                Все практики закрыты
-              </p>
+            <button
+              onClick={() => {
+                platform.haptic(
+                  'medium',
+                )
 
-              <button
-                onClick={() => {
-                  platform.haptic(
-                    'medium'
-                  )
+                onOpenPractice(
+                  'rituals',
+                )
+              }}
+              className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+            >
+              Начать
+            </button>
+          </>
+        )}
 
-                  onGoMentor()
-                }}
-                className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
-              >
-                Поговорить с наставником
-              </button>
-            </>
-          )}
+
+        {!checkinAsHero
+          && !isEmpty
+          && next && (
+          <>
+            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+              Самое важное
+            </div>
+
+
+            <h2 className="font-display text-[28px] text-cream leading-tight">
+              {next.title}
+            </h2>
+
+
+            <p className="text-[14px] text-cream/50 mt-2">
+              {next.meta}
+            </p>
+
+
+            <button
+              onClick={() => {
+                platform.haptic(
+                  'medium',
+                )
+
+                onOpenPractice(
+                  next.sub,
+                )
+              }}
+              className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+            >
+              Начать
+            </button>
+
+
+            <p className="text-[12px] text-cream/35 mt-5">
+              {remainAfter > 0
+                ? `После этого останется: ${remainAfter}`
+                : 'Это последнее на сегодня'}
+            </p>
+          </>
+        )}
+
+
+        {!checkinAsHero
+          && !isEmpty
+          && !next && (
+          <>
+            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+              Путь продолжается
+            </div>
+
+
+            <h2 className="font-display text-[26px] text-cream leading-tight">
+              Сегодня ты выше, чем вчера
+            </h2>
+
+
+            <p className="text-[14px] text-cream/50 mt-2">
+              Все практики закрыты
+            </p>
+
+
+            <button
+              onClick={() => {
+                platform.haptic(
+                  'medium',
+                )
+
+                onGoMentor()
+              }}
+              className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
+            >
+              Поговорить с наставником
+            </button>
+          </>
+        )}
       </div>
 
 
-      {/* ── честный пульс: сколько людей сегодня в пути ── */}
+      {/* ======================================================
+          ПУЛЬС
+          ====================================================== */}
 
-      {activeToday !== null &&
-        activeToday > 1 && (
+      {activeToday !== null
+        && activeToday > 1 && (
           <p className="text-center text-[12px] text-cream/30 font-semibold mt-4">
             {activeToday < 20
               ? `Сегодня в пути вместе с тобой: ${activeToday}`
               : `Сегодня свой путь продолжили ${activeToday.toLocaleString(
-                  'ru-RU'
+                  'ru-RU',
                 )} человек`}
           </p>
         )}
 
 
-      {/* ── чек-ин: вторая карточка или итог ── */}
+      {/* ======================================================
+          УТРЕННИЙ ЧЕК-ИН
+          ====================================================== */}
 
-      {!checkinAsHero &&
-        !checkinDone && (
+      {!checkinAsHero
+        && !checkinDone && (
           <button
             onClick={() => {
               platform.haptic(
-                'light'
+                'light',
               )
 
               setSub(
-                'checkin'
+                'checkin',
               )
             }}
             className="w-full rounded-3xl bg-emerald px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
@@ -623,15 +843,18 @@ export default function Today({
               />
             </span>
 
+
             <span className="flex-1 text-left">
               <span className="block text-[14px] font-bold text-cream">
                 Как ты?
               </span>
 
+
               <span className="block text-[12px] text-cream/40 font-medium">
                 Короткий чек-ин состояния
               </span>
             </span>
+
 
             <ChevronRight
               size={18}
@@ -645,11 +868,11 @@ export default function Today({
         <button
           onClick={() => {
             platform.haptic(
-              'light'
+              'light',
             )
 
             setSub(
-              'checkin'
+              'checkin',
             )
           }}
           className="w-full rounded-3xl bg-emerald/60 px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
@@ -658,10 +881,14 @@ export default function Today({
             ✓
           </span>
 
+
           <span className="flex-1 text-left">
             <span className="block text-[14px] font-bold text-cream">
-              Чек-ин выполнен
+              {eveningReviewDone
+                ? 'День разобран'
+                : 'Чек-ин выполнен'}
             </span>
+
 
             <span className="block text-[12px] text-cream/40 font-medium">
               {checkin.emotion
@@ -670,11 +897,15 @@ export default function Today({
               настроение:{' '}
               {
                 MOOD_WORDS[
-                  (checkin.mood || 3) - 1
+                  (
+                    checkin.mood
+                    || 3
+                  ) - 1
                 ]
               }
             </span>
           </span>
+
 
           <span className="text-[12px] font-semibold text-cream/35 shrink-0">
             изменить
@@ -683,13 +914,15 @@ export default function Today({
       )}
 
 
-      {/* ── карточка Пути: прогресс дня + вход в экран «Путь» ── */}
+      {/* ======================================================
+          ПУТЬ
+          ====================================================== */}
 
       {!isEmpty && (
         <button
           onClick={() => {
             platform.haptic(
-              'light'
+              'light',
             )
 
             setSub('path')
@@ -702,22 +935,27 @@ export default function Today({
             strokeWidth={2}
           />
 
+
           <span className="text-[14px] font-bold text-cream whitespace-nowrap">
             Путь
           </span>
+
 
           <div className="flex-1 h-[5px] rounded-full bg-cream/10 overflow-hidden">
             <div
               className="h-full rounded-full bg-gold transition-all duration-500"
               style={{
-                width: `${pct}%`,
+                width:
+                  `${pct}%`,
               }}
             />
           </div>
 
+
           <span className="text-[13px] font-bold text-gold">
             {pct}%
           </span>
+
 
           <ChevronRight
             size={18}
@@ -727,16 +965,20 @@ export default function Today({
       )}
 
 
-      {/* ── тема недели ── */}
+      {/* ======================================================
+          ТЕМА НЕДЕЛИ
+          ====================================================== */}
 
       {theme && (
         <button
           onClick={() => {
             platform.haptic(
-              'light'
+              'light',
             )
 
-            setSub('theme')
+            setSub(
+              'theme',
+            )
           }}
           className="w-full rounded-[28px] bg-emerald px-6 py-7 mt-4 text-center border-0 active:scale-[0.99] transition-transform animate-fade-in"
         >
@@ -744,29 +986,36 @@ export default function Today({
             Тема недели
           </span>
 
+
           <span className="block font-display text-[22px] text-cream lowercase leading-tight">
             {theme.title}
           </span>
+
 
           <span className="block text-[13px] text-cream/45 mt-2 leading-snug">
             {theme.subtitle}
           </span>
 
+
           <span className="flex items-center justify-center gap-1.5 mt-4">
             {Array.from({
               length:
                 theme.total_days,
-            }).map((_, i) => (
-              <span
-                key={i}
-                className={`w-1.5 h-1.5 rounded-full ${
-                  i < theme.reflected_days
-                    ? 'bg-gold'
-                    : 'bg-cream/15'
-                }`}
-              />
-            ))}
+            }).map(
+              (_, index) => (
+                <span
+                  key={index}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    index
+                    < theme.reflected_days
+                      ? 'bg-gold'
+                      : 'bg-cream/15'
+                  }`}
+                />
+              ),
+            )}
           </span>
+
 
           <span className="block text-[12px] text-cream/35 font-semibold mt-3">
             {theme.reflected_days > 0
@@ -779,7 +1028,9 @@ export default function Today({
 
       <QuickAdd
         onCheckin={() =>
-          setSub('checkin')
+          setSub(
+            'checkin',
+          )
         }
         onPractice={
           onOpenPractice
@@ -790,16 +1041,20 @@ export default function Today({
       />
 
 
-      {/* ── мысль дня: тап — полноэкранный режим со свайпами ── */}
+      {/* ======================================================
+          МЫСЛЬ ДНЯ
+          ====================================================== */}
 
       {dailyQuote && (
         <button
           onClick={() => {
             platform.haptic(
-              'light'
+              'light',
             )
 
-            setSub('quote')
+            setSub(
+              'quote',
+            )
           }}
           className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
@@ -807,9 +1062,11 @@ export default function Today({
             Мысль дня
           </span>
 
+
           <span className="block font-display text-[19px] text-cream leading-snug">
             {dailyQuote}
           </span>
+
 
           <span className="block text-[11px] text-cream/30 font-semibold mt-4">
             открыть все →
