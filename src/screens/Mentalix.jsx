@@ -1,15 +1,14 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import {
-  Send,
   ArrowLeft,
   ArrowRight,
+  Footprints,
   MessageCircle,
   Mountain,
-  Footprints,
-  Plus,
   MoreHorizontal,
+  Plus,
   X,
 } from 'lucide-react'
 
@@ -25,40 +24,57 @@ const PERSONAS = [
     tagline: 'выслушает без оценки',
     desc:
       'Тёплый и внимательный. Поможет разобраться в чувствах, когда непросто.',
+    question:
+      'Что сейчас\nу тебя на душе?',
+    intro:
+      'Расскажи всё, что чувствуешь. Я рядом, чтобы выслушать.',
+    asking:
+      'Собеседник спрашивает',
+    typing:
+      'слушает тебя…',
     Icon: MessageCircle,
-    accent: 'text-gold',
-    ring: 'border-cream/15',
-    glow: 'bg-gold/10',
     starters: [
       'Сегодня было тяжело',
       'Не могу выключить голову',
     ],
   },
+
   {
     key: 'kompas',
     name: 'Наставник',
     tagline: 'вернёт к действию',
     desc:
       'Строгий и честный. Разложит цель на шаги и не даст себя жалеть.',
+    question:
+      'Какой шаг\nты сделаешь сегодня?',
+    intro:
+      'Сфокусируйся на главном. Я помогу не сбиться с пути.',
+    asking:
+      'Наставник спрашивает',
+    typing:
+      'ищет следующий шаг…',
     Icon: Mountain,
-    accent: 'text-gold',
-    ring: 'border-cream/15',
-    glow: 'bg-gold/10',
     starters: [
       'Разложи цель на шаги',
       'Я топчусь на месте',
     ],
   },
+
   {
     key: 'dnevnik',
     name: 'Следопыт',
     tagline: 'видит твои паттерны',
     desc:
       'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
+    question:
+      'Что сегодня\nосталось с тобой?',
+    intro:
+      'Отвечай свободно. Я разберу твой день и помогу заметить то, что легко пропустить.',
+    asking:
+      'Следопыт спрашивает',
+    typing:
+      'разбирает твой день…',
     Icon: Footprints,
-    accent: 'text-gold',
-    ring: 'border-cream/15',
-    glow: 'bg-gold/10',
     starters: [
       'Подведи итоги дня',
       'Что я упускаю?',
@@ -104,7 +120,8 @@ function readPendingMentor() {
     )
 
     const valid = PERSONAS.some(
-      (item) => item.key === persona,
+      (item) =>
+        item.key === persona,
     )
 
     if (!valid) {
@@ -128,94 +145,320 @@ function readPendingMentor() {
 
 
 // ============================================================
-// АРТ СЛЕДОПЫТА
+// АРТ: СОБЕСЕДНИК
 // ============================================================
 
-function PathfinderSunrise() {
+function ListenerArt() {
   return (
     <svg
-      viewBox="0 0 360 180"
-      className="w-full max-w-[300px] h-auto"
+      viewBox="0 0 360 210"
+      className="w-full h-auto"
       fill="none"
       aria-hidden="true"
     >
       <g
         stroke="currentColor"
         className="text-gold"
-        strokeWidth="1.3"
+        strokeWidth="1.45"
         strokeLinecap="round"
+        strokeLinejoin="round"
       >
+        {/* кресло */}
+
         <path
-          d="M18 119H342"
-          opacity="0.34"
+          d="M56 108V75C56 62 64 56 78 56H118C131 56 139 63 139 77V110"
+          opacity="0.95"
         />
 
         <path
-          d="M91 119C91 70 131 30 180 30C229 30 269 70 269 119"
+          d="M56 102C61 94 68 91 78 91H116C127 91 134 96 139 104"
+          opacity="0.68"
+        />
+
+        <path
+          d="M56 105V143C56 153 61 158 70 158H134C144 158 149 153 149 143V118C149 107 143 102 132 102H118"
           opacity="0.9"
         />
 
         <path
-          d="M112 119C112 81 142 51 180 51C218 51 248 81 248 119"
-          opacity="0.28"
+          d="M70 158L66 181"
+          opacity="0.65"
         />
 
-        <path d="M180 13V0" />
-        <path d="M153 17L146 2" />
-        <path d="M128 27L115 10" />
-        <path d="M106 43L87 28" />
-        <path d="M89 64L65 52" />
-        <path d="M77 89L49 82" />
+        <path
+          d="M137 158L141 181"
+          opacity="0.65"
+        />
 
-        <path d="M207 17L214 2" />
-        <path d="M232 27L245 10" />
-        <path d="M254 43L273 28" />
-        <path d="M271 64L295 52" />
-        <path d="M283 89L311 82" />
+        <path
+          d="M149 129H166"
+          opacity="0.72"
+        />
+
+        {/* стол */}
+
+        <path
+          d="M190 132H254"
+          opacity="0.85"
+        />
+
+        <path
+          d="M222 132V174"
+          opacity="0.65"
+        />
+
+        <path
+          d="M204 174H240"
+          opacity="0.55"
+        />
+
+        {/* чашка */}
+
+        <path
+          d="M211 118H229V128H211Z"
+          opacity="0.9"
+        />
+
+        <path
+          d="M229 120C237 120 238 127 230 127"
+          opacity="0.7"
+        />
+
+        <path
+          d="M216 112C215 108 219 106 218 102"
+          opacity="0.45"
+        />
+
+        {/* лампа */}
+
+        <path
+          d="M288 167V59"
+          opacity="0.7"
+        />
+
+        <path
+          d="M288 61L263 38"
+          opacity="0.85"
+        />
+
+        <path
+          d="M262 38L247 51"
+          opacity="0.88"
+        />
+
+        <path
+          d="M242 53H270L264 68H247L242 53Z"
+          opacity="0.95"
+        />
+
+        <path
+          d="M270 167H306"
+          opacity="0.65"
+        />
       </g>
 
-      <path
-        d="M132 119C135 94 156 76 180 76C204 76 225 94 228 119H132Z"
-        className="fill-gold"
-        opacity="0.13"
-      />
+      {/* свет лампы */}
 
       <path
-        d="M145 119C148 101 162 88 180 88C198 88 212 101 215 119H145Z"
+        d="M248 67L206 143H284L262 67H248Z"
         className="fill-gold"
-        opacity="0.24"
+        opacity="0.055"
       />
 
-      <path
-        d="M158 119C160 107 169 99 180 99C191 99 200 107 202 119H158Z"
-        className="fill-gold"
-        opacity="0.9"
-      />
+      {/* маленькие искры */}
 
       <g
-        stroke="currentColor"
         className="text-gold"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity="0.55"
       >
-        <path
-          d="M83 136C110 131 122 133 140 141C156 148 169 152 183 151"
-          opacity="0.62"
-        />
+        <path d="M96 80V88" />
+        <path d="M92 84H100" />
 
-        <path
-          d="M183 151C168 157 157 166 151 176"
-          opacity="0.62"
-        />
-
-        <path
-          d="M165 151C172 145 181 141 191 141"
-          opacity="0.48"
-        />
+        <path d="M116 72V78" />
+        <path d="M113 75H119" />
       </g>
     </svg>
   )
+}
+
+
+// ============================================================
+// АРТ: НАСТАВНИК
+// ============================================================
+
+function MentorArt() {
+  return (
+    <svg
+      viewBox="0 0 360 210"
+      className="w-full h-auto"
+      fill="none"
+      aria-hidden="true"
+    >
+      <g
+        stroke="currentColor"
+        className="text-gold"
+        strokeWidth="1.45"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* горы */}
+
+        <path
+          d="M30 167L99 96L127 121L183 51L236 111L267 86L330 167"
+          opacity="0.88"
+        />
+
+        <path
+          d="M64 167L124 112"
+          opacity="0.34"
+        />
+
+        <path
+          d="M129 122L180 69L213 109"
+          opacity="0.32"
+        />
+
+        <path
+          d="M238 113L267 94L301 133"
+          opacity="0.32"
+        />
+
+        {/* путь */}
+
+        <path
+          d="M151 190C182 179 203 166 195 151C188 139 161 142 167 128C173 113 206 111 194 96C184 84 176 82 183 65"
+          strokeWidth="2"
+          opacity="0.95"
+        />
+
+        {/* флаг */}
+
+        <path
+          d="M183 67V29"
+          opacity="0.9"
+        />
+
+        <path
+          d="M184 31L212 37L184 48"
+          opacity="0.95"
+        />
+
+        {/* облака */}
+
+        <path
+          d="M41 82C50 72 63 72 71 82C79 78 88 82 91 89H31C33 85 36 83 41 82Z"
+          opacity="0.36"
+        />
+
+        <path
+          d="M250 61C258 50 274 50 281 61C290 58 299 62 302 69H240C242 65 246 62 250 61Z"
+          opacity="0.36"
+        />
+      </g>
+
+      <path
+        d="M183 51L130 121L166 100L183 68L200 92L224 97L183 51Z"
+        className="fill-gold"
+        opacity="0.055"
+      />
+    </svg>
+  )
+}
+
+
+// ============================================================
+// АРТ: СЛЕДОПЫТ
+// ============================================================
+
+function PathfinderArt() {
+  return (
+    <svg
+      viewBox="0 0 360 210"
+      className="w-full h-auto"
+      fill="none"
+      aria-hidden="true"
+    >
+      <g
+        stroke="currentColor"
+        className="text-gold"
+        strokeWidth="1.25"
+        strokeLinecap="round"
+      >
+        <path
+          d="M16 145H344"
+          opacity="0.3"
+        />
+
+        <path
+          d="M118 145C118 111 146 83 180 83C214 83 242 111 242 145"
+          opacity="0.92"
+        />
+
+        <path
+          d="M180 69V20"
+        />
+
+        <path d="M165 72L153 29" />
+        <path d="M150 78L126 38" />
+        <path d="M137 89L101 54" />
+        <path d="M127 103L81 79" />
+        <path d="M121 120L68 109" />
+
+        <path d="M195 72L207 29" />
+        <path d="M210 78L234 38" />
+        <path d="M223 89L259 54" />
+        <path d="M233 103L279 79" />
+        <path d="M239 120L292 109" />
+
+        <path
+          d="M98 145L63 145"
+          opacity="0.48"
+        />
+
+        <path
+          d="M262 145L297 145"
+          opacity="0.48"
+        />
+
+        {/* дорожка */}
+
+        <path
+          d="M181 146C188 153 187 159 178 164C166 171 167 179 181 184C190 188 190 194 181 201"
+          strokeWidth="1.6"
+          opacity="0.7"
+        />
+      </g>
+
+      <path
+        d="M121 145C124 112 149 86 180 86C211 86 236 112 239 145H121Z"
+        className="fill-gold"
+        opacity="0.08"
+      />
+
+      <path
+        d="M151 145C153 128 165 116 180 116C195 116 207 128 209 145H151Z"
+        className="fill-gold"
+        opacity="0.6"
+      />
+    </svg>
+  )
+}
+
+
+function PersonaArt({
+  persona,
+}) {
+  if (persona === 'mayak') {
+    return <ListenerArt />
+  }
+
+  if (persona === 'kompas') {
+    return <MentorArt />
+  }
+
+  return <PathfinderArt />
 }
 
 
@@ -288,6 +531,7 @@ function PersonaPicker({
         три собеседника, три разговора
       </p>
 
+
       <div className="space-y-3">
         {PERSONAS.map((persona) => {
           const Icon = persona.Icon
@@ -298,7 +542,7 @@ function PersonaPicker({
           return (
             <div
               key={persona.key}
-              className={`rounded-[24px] border ${persona.ring} bg-emerald-light/15 overflow-hidden`}
+              className="rounded-[24px] border border-cream/15 bg-emerald-light/15 overflow-hidden"
             >
               <button
                 onClick={() => {
@@ -309,16 +553,12 @@ function PersonaPicker({
                     '',
                   )
                 }}
-                className="w-full text-left p-4 flex items-start gap-4 transition-transform active:scale-[0.99] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                className="w-full text-left p-4 flex items-start gap-4 transition-transform active:scale-[0.99]"
               >
-                <div
-                  className={`w-12 h-12 rounded-2xl ${persona.glow} flex items-center justify-center shrink-0`}
-                >
+                <div className="w-12 h-12 rounded-2xl bg-gold/10 flex items-center justify-center shrink-0">
                   <Icon
                     size={24}
-                    className={
-                      persona.accent
-                    }
+                    className="text-gold"
                     strokeWidth={1.75}
                   />
                 </div>
@@ -329,9 +569,7 @@ function PersonaPicker({
                       {persona.name}
                     </span>
 
-                    <span
-                      className={`text-[11px] ${persona.accent}`}
-                    >
+                    <span className="text-[11px] text-gold">
                       {persona.tagline}
                     </span>
                   </div>
@@ -342,7 +580,8 @@ function PersonaPicker({
                 </div>
               </button>
 
-              <div className="px-4 pb-4 pt-0">
+
+              <div className="px-4 pb-4">
                 {last ? (
                   <button
                     onClick={() => {
@@ -353,11 +592,9 @@ function PersonaPicker({
                         '',
                       )
                     }}
-                    className="w-full text-left rounded-2xl bg-emerald-light/25 border border-cream/10 px-3.5 py-3 transition-transform active:scale-[0.99] focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                    className="w-full text-left rounded-2xl bg-emerald-light/25 border border-cream/10 px-3.5 py-3 active:scale-[0.99]"
                   >
-                    <div
-                      className={`text-[10px] uppercase tracking-wide ${persona.accent} mb-1`}
-                    >
+                    <div className="text-[10px] uppercase tracking-wide text-gold mb-1">
                       Продолжить разговор
                     </div>
 
@@ -383,7 +620,7 @@ function PersonaPicker({
                               starter,
                             )
                           }}
-                          className="rounded-full border border-cream/15 bg-emerald-light/25 px-3.5 py-2 text-xs text-cream/70 transition-transform active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-gold/60"
+                          className="rounded-full border border-cream/15 bg-emerald-light/25 px-3.5 py-2 text-xs text-cream/70 active:scale-95"
                         >
                           {starter}
                         </button>
@@ -397,6 +634,7 @@ function PersonaPicker({
         })}
       </div>
 
+
       <p className="text-[11px] text-cream/30 leading-snug mt-5 px-1">
         У каждого своя история —
         разговоры не смешиваются.
@@ -407,10 +645,11 @@ function PersonaPicker({
 
 
 // ============================================================
-// ЖУРНАЛЬНЫЙ ВХОД СЛЕДОПЫТА
+// ЖУРНАЛЬНЫЙ СТАРТОВЫЙ ЭКРАН
 // ============================================================
 
-function PathfinderJournal({
+function JournalStart({
+  persona,
   input,
   setInput,
   onSend,
@@ -418,10 +657,17 @@ function PathfinderJournal({
   onOpenHistory,
   sending,
 }) {
+  const meta = PERSONAS.find(
+    (item) =>
+      item.key === persona,
+  )
+
+  const Icon = meta.Icon
+
+
   return (
-    <div
-      className="w-full max-w-sm mx-auto px-5 pb-24 flex flex-col min-h-[calc(100vh-160px)] animate-fade-in"
-    >
+    <div className="w-full max-w-sm mx-auto px-5 pb-24 flex flex-col min-h-[calc(100vh-160px)] animate-fade-in">
+
       {/* шапка */}
 
       <div className="flex items-center pt-1">
@@ -439,25 +685,28 @@ function PathfinderJournal({
           />
         </button>
 
+
         <div className="ml-4 flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
-            <Footprints
+          <div className="w-10 h-10 rounded-xl border border-gold/25 bg-gold/[0.04] flex items-center justify-center shrink-0">
+            <Icon
               size={22}
               className="text-gold"
               strokeWidth={1.7}
             />
           </div>
 
+
           <div className="min-w-0">
             <div className="font-display text-[18px] text-cream leading-none">
-              Следопыт
+              {meta.name}
             </div>
 
             <div className="text-[10px] text-gold mt-1 uppercase tracking-[0.05em]">
-              видит твои паттерны
+              {meta.tagline}
             </div>
           </div>
         </div>
+
 
         <button
           onClick={() => {
@@ -477,20 +726,20 @@ function PathfinderJournal({
 
       {/* арт */}
 
-      <div className="mt-6 -mx-5">
-        <div className="h-px bg-cream/[0.07]" />
-
-        <div className="flex justify-start pl-1 pt-4">
-          <PathfinderSunrise />
+      <div className="mt-4 -mx-1">
+        <div className="h-[245px] flex items-center justify-center">
+          <PersonaArt
+            persona={persona}
+          />
         </div>
       </div>
 
 
-      {/* подпись */}
+      {/* разделитель */}
 
-      <div className="flex items-center gap-3 mt-[-4px]">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.13em] text-gold whitespace-nowrap">
-          Следопыт спрашивает
+      <div className="flex items-center gap-3 mt-1">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold whitespace-nowrap">
+          {meta.asking}
         </span>
 
         <div className="flex-1 h-px bg-gold/35" />
@@ -503,35 +752,33 @@ function PathfinderJournal({
 
       <div className="pt-8">
         <h1
-          className="text-[35px] leading-[1.14] text-cream font-normal tracking-[-0.025em]"
+          className="text-[35px] leading-[1.14] text-cream font-normal tracking-[-0.025em] whitespace-pre-line"
           style={{
             fontFamily:
               'Georgia, "Times New Roman", serif',
           }}
         >
-          Что сегодня
-          <br />
-          осталось с тобой?
+          {meta.question}
         </h1>
+
 
         <div className="w-8 h-px bg-gold mt-7 mb-5" />
 
+
         <p className="text-[15px] leading-[1.62] text-cream/50 max-w-[300px]">
-          Отвечай свободно. Я разберу твой день
-          и помогу заметить то, что легко пропустить.
+          {meta.intro}
         </p>
       </div>
 
 
-      {/* воздух */}
-
-      <div className="flex-1 min-h-[72px]" />
+      <div className="flex-1 min-h-[70px]" />
 
 
       {/* поле */}
 
       <div className="pb-3">
         <div className="min-h-[62px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center px-2 gap-2">
+
           <button
             type="button"
             onClick={() => {
@@ -545,6 +792,7 @@ function PathfinderJournal({
               strokeWidth={1.5}
             />
           </button>
+
 
           <input
             value={input}
@@ -563,6 +811,7 @@ function PathfinderJournal({
             placeholder="Начни писать..."
             className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[16px] text-cream placeholder:text-cream/28 px-1"
           />
+
 
           <button
             onClick={onSend}
@@ -600,6 +849,7 @@ function Chat({
       item.key === persona,
   )
 
+
   const [messages, setMessages] =
     useState([])
 
@@ -613,10 +863,7 @@ function Chat({
     useState(false)
 
   const [journalOpen, setJournalOpen] =
-    useState(
-      persona === 'dnevnik' &&
-      !initialText,
-    )
+    useState(!initialText)
 
   const endRef = useRef(null)
 
@@ -636,7 +883,10 @@ function Chat({
       .finally(() => {
         setLoading(false)
       })
-  }, [user, persona])
+  }, [
+    user,
+    persona,
+  ])
 
 
   useEffect(() => {
@@ -655,11 +905,17 @@ function Chat({
   async function send() {
     const text = input.trim()
 
-    if (!text || sending) return
+    if (
+      !text ||
+      sending
+    ) {
+      return
+    }
+
 
     setInput('')
-
     setJournalOpen(false)
+
 
     setMessages((previous) => [
       ...previous,
@@ -669,8 +925,10 @@ function Chat({
       },
     ])
 
+
     setSending(true)
     haptic('light')
+
 
     try {
       const reply =
@@ -679,6 +937,7 @@ function Chat({
           text,
           persona,
         )
+
 
       setMessages((previous) => [
         ...previous,
@@ -704,12 +963,10 @@ function Chat({
   const Icon = meta.Icon
 
 
-  if (
-    persona === 'dnevnik' &&
-    journalOpen
-  ) {
+  if (journalOpen) {
     return (
-      <PathfinderJournal
+      <JournalStart
+        persona={persona}
         input={input}
         setInput={setInput}
         onSend={send}
@@ -729,64 +986,56 @@ function Chat({
       {/* шапка */}
 
       <div className="flex items-center gap-3 px-2 pb-3 mb-2 border-b border-cream/10">
+
         <button
           onClick={() => {
             haptic('light')
-
-            if (
-              persona === 'dnevnik'
-            ) {
-              setJournalOpen(true)
-              return
-            }
-
-            onBack()
+            setJournalOpen(true)
           }}
           className="text-cream/60 shrink-0"
           aria-label="Назад"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft
+            size={20}
+          />
         </button>
 
-        <div
-          className={`w-9 h-9 rounded-xl ${meta.glow} flex items-center justify-center shrink-0`}
-        >
+
+        <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
           <Icon
             size={18}
-            className={meta.accent}
+            className="text-gold"
             strokeWidth={1.75}
           />
         </div>
+
 
         <div>
           <div className="font-display text-base text-cream leading-tight">
             {meta.name}
           </div>
 
-          <div
-            className={`text-[10px] ${meta.accent}`}
-          >
+          <div className="text-[10px] text-gold">
             {meta.tagline}
           </div>
         </div>
 
-        {persona === 'dnevnik' && (
-          <button
-            onClick={() => {
-              haptic('light')
-              setJournalOpen(true)
-            }}
-            className="ml-auto text-[11px] text-gold/70"
-          >
-            новый разбор
-          </button>
-        )}
+
+        <button
+          onClick={() => {
+            haptic('light')
+            setJournalOpen(true)
+          }}
+          className="ml-auto text-[11px] text-gold/70"
+        >
+          новый разговор
+        </button>
       </div>
 
 
       {/* сообщения */}
 
-      <div className="flex-1 overflow-y-auto px-4 space-y-4 pb-3">
+      <div className="flex-1 overflow-y-auto px-3 space-y-4 pb-3">
 
         {loading && (
           <p className="text-cream/40 text-[15px] text-center pt-4">
@@ -794,46 +1043,49 @@ function Chat({
           </p>
         )}
 
+
         {!loading &&
           messages.length === 0 && (
             <p className="text-cream/40 text-[15px] text-center pt-10 leading-[1.6]">
               {meta.desc}
+
               <br />
               <br />
+
               Напиши первым — {meta.name} ответит.
             </p>
           )}
 
+
         {messages.map(
-          (message, index) => {
+          (
+            message,
+            index,
+          ) => {
             const isUser =
               message.role === 'user'
 
 
-            if (
-              persona === 'dnevnik' &&
-              !isUser
-            ) {
+            if (!isUser) {
               return (
                 <div
                   key={index}
                   className="mr-auto w-full py-5 border-b border-cream/[0.07]"
                 >
                   <div className="flex items-center gap-2 mb-4">
-                    <Footprints
+                    <Icon
                       size={15}
                       className="text-gold"
                       strokeWidth={1.7}
                     />
 
                     <span className="text-[10px] uppercase tracking-[0.12em] text-gold/80 font-semibold">
-                      Следопыт
+                      {meta.name}
                     </span>
                   </div>
 
-                  <div
-                    className="text-[18px] leading-[1.62] text-cream/88 font-normal break-words whitespace-pre-wrap"
-                  >
+
+                  <div className="text-[17px] leading-[1.62] text-cream/90 font-normal break-words whitespace-pre-wrap">
                     {message.content}
                   </div>
                 </div>
@@ -844,13 +1096,7 @@ function Chat({
             return (
               <div
                 key={index}
-                className={[
-                  'w-fit max-w-[88%] rounded-[24px] px-[18px] py-4',
-                  'text-[17px] leading-[1.58] font-normal break-words whitespace-pre-wrap',
-                  isUser
-                    ? 'ml-auto bg-cognac text-cream'
-                    : 'mr-auto bg-emerald-light/40 text-cream/90',
-                ].join(' ')}
+                className="w-fit max-w-[88%] rounded-[24px] px-[18px] py-4 text-[16px] leading-[1.58] font-normal break-words whitespace-pre-wrap ml-auto bg-cognac text-cream"
               >
                 {message.content}
               </div>
@@ -860,30 +1106,25 @@ function Chat({
 
 
         {sending && (
-          persona === 'dnevnik' ? (
-            <div className="mr-auto w-full py-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Footprints
-                  size={15}
-                  className="text-gold"
-                  strokeWidth={1.7}
-                />
+          <div className="mr-auto w-full py-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Icon
+                size={15}
+                className="text-gold"
+                strokeWidth={1.7}
+              />
 
-                <span className="text-[10px] uppercase tracking-[0.12em] text-gold/70">
-                  Следопыт
-                </span>
-              </div>
+              <span className="text-[10px] uppercase tracking-[0.12em] text-gold/70">
+                {meta.name}
+              </span>
+            </div>
 
-              <p className="text-[15px] text-cream/35">
-                разбирает твой день…
-              </p>
-            </div>
-          ) : (
-            <div className="mr-auto w-fit max-w-[88%] rounded-[24px] bg-emerald-light/40 px-[18px] py-4 text-[15px] leading-[1.5] text-cream/50">
-              {meta.name} печатает…
-            </div>
-          )
+            <p className="text-[15px] text-cream/35">
+              {meta.typing}
+            </p>
+          </div>
         )}
+
 
         <div ref={endRef} />
       </div>
@@ -891,59 +1132,24 @@ function Chat({
 
       {/* поле ввода */}
 
-      {persona === 'dnevnik' ? (
-        <div className="px-2 pt-3">
-          <div className="min-h-[56px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center gap-2 px-2">
-            <button
-              type="button"
-              onClick={() => {
-                haptic('light')
-              }}
-              className="w-10 h-10 rounded-full bg-cream/[0.04] flex items-center justify-center text-cream/45 shrink-0"
-              aria-label="Добавить"
-            >
-              <Plus
-                size={20}
-                strokeWidth={1.5}
-              />
-            </button>
+      <div className="px-2 pt-3">
+        <div className="min-h-[56px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center gap-2 px-2">
 
-            <input
-              value={input}
-              onChange={(event) =>
-                setInput(
-                  event.target.value,
-                )
-              }
-              onKeyDown={(event) => {
-                if (
-                  event.key === 'Enter'
-                ) {
-                  send()
-                }
-              }}
-              placeholder="Продолжить размышление..."
-              className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[15px] text-cream placeholder:text-cream/25"
+          <button
+            type="button"
+            onClick={() => {
+              haptic('light')
+            }}
+            className="w-10 h-10 rounded-full bg-cream/[0.04] flex items-center justify-center text-cream/45 shrink-0"
+            aria-label="Добавить"
+          >
+            <Plus
+              size={20}
+              strokeWidth={1.5}
             />
+          </button>
 
-            <button
-              onClick={send}
-              disabled={
-                sending ||
-                !input.trim()
-              }
-              className="w-11 h-11 rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 transition-transform active:scale-90"
-              aria-label="Отправить"
-            >
-              <ArrowRight
-                size={21}
-                strokeWidth={1.9}
-              />
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 px-2 pt-3">
+
           <input
             value={input}
             onChange={(event) =>
@@ -959,8 +1165,9 @@ function Chat({
               }
             }}
             placeholder={`Написать ${meta.name}…`}
-            className="flex-1 bg-emerald-light/25 border border-cream/15 rounded-full px-4 py-2.5 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[15px] text-cream placeholder:text-cream/25"
           />
+
 
           <button
             onClick={send}
@@ -968,13 +1175,16 @@ function Chat({
               sending ||
               !input.trim()
             }
-            className="w-10 h-10 rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-40 transition-transform active:scale-90"
+            className="w-11 h-11 rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 transition-transform active:scale-90"
             aria-label="Отправить"
           >
-            <Send size={18} />
+            <ArrowRight
+              size={21}
+              strokeWidth={1.9}
+            />
           </button>
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -992,10 +1202,14 @@ export default function MentalixChat({
   )
 
   const [persona, setPersona] =
-    useState(pending.persona)
+    useState(
+      pending.persona,
+    )
 
   const [draft, setDraft] =
-    useState(pending.draft)
+    useState(
+      pending.draft,
+    )
 
 
   if (!persona) {
@@ -1006,7 +1220,10 @@ export default function MentalixChat({
           key,
           text,
         ) => {
-          setDraft(text || '')
+          setDraft(
+            text || '',
+          )
+
           setPersona(key)
         }}
       />
