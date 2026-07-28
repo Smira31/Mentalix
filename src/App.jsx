@@ -153,17 +153,51 @@ function resolveLight(mode) {
 }
 
 
+function getThemeBackground() {
+  const channels = getComputedStyle(
+    document.documentElement
+  )
+    .getPropertyValue('--c-bg')
+    .trim()
+    .split(/\s+/)
+    .map(Number)
+
+  if (
+    channels.length !== 3 ||
+    channels.some(
+      (channel) =>
+        !Number.isFinite(channel) ||
+        channel < 0 ||
+        channel > 255
+    )
+  ) {
+    return null
+  }
+
+  return `#${channels
+    .map((channel) =>
+      channel
+        .toString(16)
+        .padStart(2, '0')
+    )
+    .join('')}`
+}
+
+
 function applyTheme(light) {
   document.body.classList.toggle(
     'light',
     light
   )
 
-  const background = light
-    ? '#F5F0E8'
-    : '#000000'
+  const background =
+    getThemeBackground()
 
-  platform.setThemeColors?.(background)
+  if (background) {
+    platform.setThemeColors?.(
+      background
+    )
+  }
 }
 
 
@@ -832,7 +866,11 @@ export default function App() {
       "
       style={{
         paddingTop:
-          'var(--tg-top, 0px)',
+          'var(--app-safe-top)',
+        paddingRight:
+          'var(--app-safe-right)',
+        paddingLeft:
+          'var(--app-safe-left)',
       }}
     >
 
@@ -861,7 +899,7 @@ export default function App() {
             "
             style={{
               height:
-                'var(--tg-top, 0px)',
+                'var(--app-safe-top)',
             }}
           >
             <span
@@ -1023,9 +1061,11 @@ export default function App() {
           items-center
 
           animate-fade-in
-
-          pb-[100px]
         "
+        style={{
+          paddingBottom:
+            'calc(100px + var(--app-safe-bottom))',
+        }}
       >
         {!user && (
           <p

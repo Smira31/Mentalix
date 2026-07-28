@@ -1,71 +1,308 @@
-// ── Полноэкранный режим Telegram (Bot API 8.0) ──
-// Работает через универсальную шину window.Telegram.WebView, поэтому
-// не зависит от версии @twa-dev/sdk: старый SDK всё равно доносит события.
-// Если клиент старый — просто ничего не происходит, вёрстка не ломается.
+const INSET_NAMES = ['top', 'right', 'bottom', 'left']
 
-function bus() {
-  return typeof window !== 'undefined' ? window.Telegram?.WebView : null
+function getTelegram() {
+  if (typeof window === 'undefined') {
+    return {
+      webApp: null,
+      webView: null,
+    }
+  }
+
+  return {
+    webApp: window.Telegram?.WebApp ?? null,
+    webView: window.Telegram?.WebView ?? null,
+  }
 }
 
-function post(event, data = {}) {
+function toPixels(value) {
+  const number = Number(value)
+
+  return Number.isFinite(number) && number > 0
+    ? `${number}px`
+    : '0px'
+}
+
+function writeInsets(prefix, insets) {
+  for (const name of INSET_NAMES) {
+    document.documentElement.style.setProperty(
+      `${prefix}-${name}`,
+      toPixels(insets?.[name]),
+    )
+  }
+}
+
+function safelyRun(action, label) {
   try {
-    bus()?.postEvent?.(event, false, data)
-  } catch {}
+    return action()
+  } catch (error) {
+    console.info(
+      `Telegram WebApp ${label} is unavailable.`,
+      error,
+    )
+
+    return undefined
+  }
 }
 
-/**
- * Включает полноэкранный режим и следит за безопасными зонами.
- * Выставляет CSS-переменную --tg-top: сколько сверху занимают
- * статус-бар и плавающие кнопки Telegram.
- * @param {(state: {fullscreen: boolean, top: number}) => void} onChange
- * @returns {() => void} функция отписки
- */
+function postWebViewEvent(
+  webView,
+  event,
+  data = {},
+) {
+  safelyRun(
+    () =>
+      webView?.postEvent?.(
+        event,
+        false,
+        data,
+      ),
+    event,
+  )
+}
+
 export function initFullscreen(onChange) {
-  const b = bus()
-  if (!b?.onEvent) return () => {}
+  const {
+    webApp,
+    webView,
+  } = getTelegram()
 
-  const state = { fullscreen: false, safeTop: 0, contentTop: 0 }
+  const isTelegram =
+    Boolean(webApp?.initData) ||
+    Boolean(webView?.postEvent)
 
-  function apply() {
-    // в полноэкранном режиме резервируем место под кнопки Telegram
-    const measured = state.safeTop + state.contentTop
-    const top = state.fullscreen ? measured || 56 : 0
-    document.documentElement.style.setProperty('--tg-top', `${top}px`)
-    onChange?.({ fullscreen: state.fullscreen, top })
+  if (!isTelegram) {
+    return () => {}
   }
 
-  const onFullscreen = (_e, data) => {
-    state.fullscreen = !!(data?.is_fullscreen ?? data?.isFullscreen)
+  const state = {
+    fullscreen: Boolean(
+      webApp?.isFullscreen
+    ),
+    safeArea:
+      webApp?.safeAreaInset ?? {},
+    contentSafeArea:
+      webApp?.contentSafeAreaInset ?? {},
+  }
+
+  const apply = () => {
+    writeInsets(
+      '--tg-safe-area',
+      state.safeArea,
+    )
+
+    writeInsets(
+      '--tg-content-safe-area',
+      state.contentSafeArea,
+    )
+
+    onChange?.({
+      fullscreen:
+        state.fullscreen,
+    })
+  }
+
+  const onWebAppFullscreen = (event) => {
+    state.fullscreen = Boolean(
+      event?.isFullscreen ??
+      event?.is_fullscreen ??
+      webApp?.isFullscreen
+    )
+
     apply()
   }
-  const onSafeArea = (_e, data) => {
-    state.safeTop = Number(data?.top) || 0
+
+  const onWebViewFullscreen = (
+    _event,
+    data,
+  ) => {
+    onWebAppFullscreen(data)
+  }
+
+  const onWebAppSafeArea = (event) => {
+    state.safeArea =
+      event ??
+      webApp?.safeAreaInset ??
+      {}
+
     apply()
   }
-  const onContentSafeArea = (_e, data) => {
-    state.contentTop = Number(data?.top) || 0
+
+  const onWebViewSafeArea = (
+    _event,
+    data,
+  ) => {
+    onWebAppSafeArea(data)
+  }
+
+  const onWebAppContentSafeArea = (
+    event,
+  ) => {
+    state.contentSafeArea =
+      event ??
+      webApp?.contentSafeAreaInset ??
+      {}
+
     apply()
   }
-  const onFailed = () => {
+
+  const onWebViewContentSafeArea = (
+    _event,
+    data,
+  ) => {
+    onWebAppContentSafeArea(data)
+  }
+
+  const onFullscreenFailed = (event) => {
     state.fullscreen = false
     apply()
+
+    console.info(
+      'Telegram fullscreen request was rejected. Expanded mode remains active.',
+      event,
+    )
   }
 
-  b.onEvent('fullscreen_changed', onFullscreen)
-  b.onEvent('fullscreen_failed', onFailed)
-  b.onEvent('safe_area_changed', onSafeArea)
-  b.onEvent('content_safe_area_changed', onContentSafeArea)
+  safelyRun(
+    () => webApp?.ready?.(),
+    'ready()',
+  )
 
-  post('web_app_request_fullscreen')
-  post('web_app_request_safe_area')
-  post('web_app_request_content_safe_area')
+  safelyRun(
+    () => webApp?.expand?.(),
+    'expand()',
+  )
+
+  apply()
+
+  safelyRun(
+    () => {
+      webApp?.onEvent?.(
+        'fullscreenChanged',
+        onWebAppFullscreen,
+      )
+
+      webApp?.onEvent?.(
+        'fullscreenFailed',
+        onFullscreenFailed,
+      )
+
+      webApp?.onEvent?.(
+        'safeAreaChanged',
+        onWebAppSafeArea,
+      )
+
+      webApp?.onEvent?.(
+        'contentSafeAreaChanged',
+        onWebAppContentSafeArea,
+      )
+    },
+    'WebApp event subscription',
+  )
+
+  safelyRun(
+    () => {
+      webView?.onEvent?.(
+        'fullscreen_changed',
+        onWebViewFullscreen,
+      )
+
+      webView?.onEvent?.(
+        'fullscreen_failed',
+        onFullscreenFailed,
+      )
+
+      webView?.onEvent?.(
+        'safe_area_changed',
+        onWebViewSafeArea,
+      )
+
+      webView?.onEvent?.(
+        'content_safe_area_changed',
+        onWebViewContentSafeArea,
+      )
+    },
+    'WebView event subscription',
+  )
+
+  if (
+    typeof webApp?.requestFullscreen ===
+    'function'
+  ) {
+    const result = safelyRun(
+      () =>
+        webApp.requestFullscreen(),
+      'requestFullscreen()',
+    )
+
+    if (
+      result &&
+      typeof result.catch === 'function'
+    ) {
+      result.catch(
+        onFullscreenFailed,
+      )
+    }
+  } else {
+    postWebViewEvent(
+      webView,
+      'web_app_request_fullscreen',
+    )
+  }
+
+  postWebViewEvent(
+    webView,
+    'web_app_request_safe_area',
+  )
+
+  postWebViewEvent(
+    webView,
+    'web_app_request_content_safe_area',
+  )
 
   return () => {
-    try {
-      b.offEvent?.('fullscreen_changed', onFullscreen)
-      b.offEvent?.('fullscreen_failed', onFailed)
-      b.offEvent?.('safe_area_changed', onSafeArea)
-      b.offEvent?.('content_safe_area_changed', onContentSafeArea)
-    } catch {}
+    safelyRun(
+      () => {
+        webApp?.offEvent?.(
+          'fullscreenChanged',
+          onWebAppFullscreen,
+        )
+
+        webApp?.offEvent?.(
+          'fullscreenFailed',
+          onFullscreenFailed,
+        )
+
+        webApp?.offEvent?.(
+          'safeAreaChanged',
+          onWebAppSafeArea,
+        )
+
+        webApp?.offEvent?.(
+          'contentSafeAreaChanged',
+          onWebAppContentSafeArea,
+        )
+
+        webView?.offEvent?.(
+          'fullscreen_changed',
+          onWebViewFullscreen,
+        )
+
+        webView?.offEvent?.(
+          'fullscreen_failed',
+          onFullscreenFailed,
+        )
+
+        webView?.offEvent?.(
+          'safe_area_changed',
+          onWebViewSafeArea,
+        )
+
+        webView?.offEvent?.(
+          'content_safe_area_changed',
+          onWebViewContentSafeArea,
+        )
+      },
+      'event cleanup',
+    )
   }
 }

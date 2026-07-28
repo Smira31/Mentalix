@@ -94,15 +94,20 @@ export default function BottomNavigation({
     <div
       className="
         fixed
-        left-[24px]
-        right-[16px]
-        bottom-[calc(env(safe-area-inset-bottom)+12px)]
         z-50
 
         max-w-[416px]
 
         pointer-events-none
       "
+      style={{
+        left:
+          'max(24px, var(--app-safe-left))',
+        right:
+          'max(16px, var(--app-safe-right))',
+        bottom:
+          'calc(var(--app-safe-bottom) + 12px)',
+      }}
     >
       {/* ==========================================================
           ЕДИНЫЙ АНИМИРУЕМЫЙ КОНТЕЙНЕР
