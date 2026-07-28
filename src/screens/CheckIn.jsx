@@ -651,7 +651,7 @@ export default function CheckIn({
 
       {/* ── шкалы ── */}
 
-      {!isCard && (
+      {!isCard && !isEmotionStep && (
         <div
           key={step}
           className="flex-1 flex flex-col items-center justify-center px-6 py-8 animate-fade-in"
