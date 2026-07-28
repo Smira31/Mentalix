@@ -1,389 +1,483 @@
-import { useEffect, useState, useRef } from 'react'
-import WebApp from '@twa-dev/sdk'
-import { api } from '../lib/api'
-import { ArtShield } from '../components/Art'
-import { ArrowLeft, Shield, ShieldOff, Cigarette, Brain, Users, Smartphone, Cookie, GripVertical, Check } from 'lucide-react'
+const BASE = '/api'
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
-function hapticNotify(type = 'success') {
-  WebApp.HapticFeedback?.notificationOccurred(type)
-}
+async function request(path, options = {}) {
+  const res = await fetch(`${BASE}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  })
 
-const CATEGORIES = [
-  { key: 'physio', label: 'Физиология', short: 'Тело', Icon: Cigarette, hint: 'курение, алкоголь, вещества' },
-  { key: 'psycho', label: 'Психология', short: 'Психика', Icon: Brain, hint: 'грызть ногти, шопоголизм, жалобы' },
-  { key: 'social', label: 'Поведение', short: 'Общение', Icon: Users, hint: 'перебивать, материться, опаздывать' },
-  { key: 'digital', label: 'Цифровые', short: 'Экран', Icon: Smartphone, hint: 'думскроллинг, игры, телефон' },
-  { key: 'food', label: 'Пищевые', short: 'Еда', Icon: Cookie, hint: 'заедание стресса, сладкое, еда у ТВ' },
-]
+  if (!res.ok) {
+    throw new Error(`API ${path} failed: ${res.status}`)
+  }
 
-function categoryMeta(key) {
-  return CATEGORIES.find((c) => c.key === key) || CATEGORIES[1]
+  return res.json()
 }
 
-const EMPTY_DRAFT = {
-  name: '', category: 'psycho', reason: '', trigger: '', replacement: '',
-}
+export const api = {
+  habits: {
+    list: (userId) => request(`/habits?user_id=${userId}`),
 
-function AscezaCard({ asceza, onLog, onDelete, dragHandlers, isDragging, isOver }) {
-  const status = asceza.today_status
-  const [confirming, setConfirming] = useState(false)
-  const [celebrate, setCelebrate] = useState(false)
-  const meta = categoryMeta(asceza.category)
-  const Icon = meta.Icon
+    create: (userId, habit) =>
+      request('/habits', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          ...habit,
+        }),
+      }),
 
-  function handleLog(next) {
-    const wasUnset = !status
-    haptic('medium')
-    if (next === 'held' && wasUnset) {
-      hapticNotify('success')
-      setCelebrate(true)
-      setTimeout(() => setCelebrate(false), 700)
-    }
-    if (next === 'broke') hapticNotify('warning')
-    onLog(asceza.id, next)
-  }
+    log: (habitId, userId, level) =>
+      request(`/habits/${habitId}/log`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          level,
+        }),
+      }),
 
-  return (
-    <div
-      {...dragHandlers}
-      className={`rounded-3xl overflow-hidden mb-3 transition-all duration-200 ${
-        celebrate ? 'animate-glow-pulse' : ''
-      } ${isDragging ? 'opacity-60 scale-[1.03] shadow-lg shadow-black/40 z-10 relative' : ''} ${
-        isOver ? 'ring-1 ring-gold/60' : ''
-      } ${
-        status === 'held'
-          ? 'bg-gold/10'
-          : status === 'broke'
-          ? 'bg-emerald-light/40'
-          : 'bg-emerald'
-      }`}
-    >
-      <div className="w-full flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <GripVertical size={16} className="text-cream/25 shrink-0" />
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gold/10 shrink-0">
-            <Icon size={16} className="text-gold" strokeWidth={1.75} />
-            {celebrate && (
-              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-gold animate-celebrate-pop">
-                <Check size={16} className="text-emerald-deep" strokeWidth={3} />
-              </span>
-            )}
-          </div>
-          <div className="min-w-0">
-            <div className="text-[15px] font-bold text-cream truncate">{asceza.name}</div>
-            <div className="text-[10px] text-cream/40">{meta.label}</div>
-          </div>
-        </div>
-        <span className="flex items-center gap-2 shrink-0">
-          <span className="font-mono text-xs text-mint whitespace-nowrap">🛡 {asceza.streak}</span>
-          {confirming ? (
-            <span className="flex items-center gap-1">
-              <button
-                onClick={() => { haptic('rigid'); onDelete(asceza.id) }}
-                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
-              >
-                Удалить
-              </button>
-              <button
-                onClick={() => setConfirming(false)}
-                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 active:scale-90"
-              >
-                Отмена
-              </button>
-            </span>
-          ) : (
-            <span
-              onClick={() => setConfirming(true)}
-              className="text-cream/30 text-sm leading-none px-1 active:scale-90"
-            >
-              ×
-            </span>
-          )}
-        </span>
-      </div>
+    assignGoal: (habitId, userId, goalId) =>
+      request(`/habits/${habitId}/goal`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          goal_id: goalId,
+        }),
+      }),
 
-      <div className="px-4 pb-4">
-        {asceza.reason && <p className="text-xs text-cream/45 mb-2">{asceza.reason}</p>}
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleLog('held')}
-            className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              status === 'held' ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
-            }`}
-          >
-            <Shield size={13} /> Удержался
-          </button>
-          <button
-            onClick={() => handleLog('broke')}
-            className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              status === 'broke' ? 'bg-cream/15 text-cream' : 'bg-cream/5 text-cream/50'
-            }`}
-          >
-            <ShieldOff size={13} /> Сорвался
-          </button>
-        </div>
+    remove: (habitId) =>
+      request(`/habits/${habitId}`, {
+        method: 'DELETE',
+      }),
+  },
 
-        {status === 'broke' && asceza.replacement && (
-          <p className="text-xs text-mint/70 mt-2">Замена: {asceza.replacement}</p>
-        )}
-        {!status && asceza.trigger && (
-          <p className="text-xs text-cream/35 mt-2 italic">Триггер: {asceza.trigger}</p>
-        )}
-      </div>
-    </div>
-  )
-}
+  rituals: {
+    list: (userId) =>
+      request(`/rituals?user_id=${userId}`),
 
-function CreateAscezaScreen({ onCreate, onCancel }) {
-  const [draft, setDraft] = useState(EMPTY_DRAFT)
-  const [saving, setSaving] = useState(false)
+    create: (userId, ritual) =>
+      request('/rituals', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          ...ritual,
+        }),
+      }),
 
-  function set(field) {
-    return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
-  }
+    log: (ritualId, userId, level) =>
+      request(`/rituals/${ritualId}/log`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          level,
+        }),
+      }),
 
-  async function submit() {
-    if (!draft.name.trim() || saving) return
-    setSaving(true)
-    await onCreate(draft)
-    setSaving(false)
-  }
+    remove: (ritualId) =>
+      request(`/rituals/${ritualId}`, {
+        method: 'DELETE',
+      }),
 
-  const inputCls =
-    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
+    reorder: (userId, order) =>
+      request('/rituals/reorder', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          order,
+        }),
+      }),
+  },
 
-  const activeCat = categoryMeta(draft.category)
+  ascezas: {
+    list: (userId) =>
+      request(`/ascezas?user_id=${userId}`),
 
-  return (
-    <div className="w-full max-w-sm px-5 pb-6 -mt-4">
-      <div className="flex items-center gap-3 mb-5 pt-2">
-        <button onClick={onCancel} aria-label="Отмена"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
-          <ArrowLeft size={18} className="text-cream/60" />
-        </button>
-        <h2 className="font-display text-[20px] text-cream lowercase">новая аскеза.</h2>
-      </div>
+    create: (userId, asceza) =>
+      request('/ascezas', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          ...asceza,
+        }),
+      }),
 
-      <div className="mb-3">
-        <p className="text-xs text-cream/50 mb-2">Категория</p>
-        <div className="grid grid-cols-5 gap-1.5">
-          {CATEGORIES.map((c) => {
-            const CIcon = c.Icon
-            const active = draft.category === c.key
-            return (
-              <button
-                key={c.key}
-                onClick={() => { haptic('light'); setDraft((d) => ({ ...d, category: c.key })) }}
-                className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-0 transition-all active:scale-95 ${
-                  active ? 'bg-gold/15 text-gold' : 'bg-emerald text-cream/40'
-                }`}
-              >
-                <CIcon size={17} strokeWidth={1.75} />
-                <span className="text-[9px] leading-none">{c.short}</span>
-              </button>
-            )
-          })}
-        </div>
-        <p className="text-[11px] text-cream/35 mt-1.5">{activeCat.hint}</p>
-      </div>
+    log: (
+      ascezaId,
+      userId,
+      status,
+      breakTrigger = null,
+      breakNote = null,
+    ) =>
+      request(`/ascezas/${ascezaId}/log`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          status,
+          break_trigger: breakTrigger,
+          break_note: breakNote,
+        }),
+      }),
 
-      <div className="space-y-2 mb-5">
-        <input value={draft.name} onChange={set('name')} placeholder="От чего отказываешься" className={inputCls} />
-        <input value={draft.reason} onChange={set('reason')} placeholder="Зачем — что получишь взамен" className={inputCls} />
-        <input value={draft.trigger} onChange={set('trigger')} placeholder="Что провоцирует (триггер)" className={inputCls} />
-        <input value={draft.replacement} onChange={set('replacement')} placeholder="Чем заменить в момент тяги" className={inputCls} />
-      </div>
+    remove: (ascezaId) =>
+      request(`/ascezas/${ascezaId}`, {
+        method: 'DELETE',
+      }),
 
-      <button
-        onClick={submit}
-        disabled={!draft.name.trim() || saving}
-        className="cta-pill w-full py-4 text-[16px] disabled:opacity-40"
-      >
-        {saving ? 'Сохраняю...' : 'Принять аскезу'}
-      </button>
-    </div>
-  )
-}
+    reorder: (userId, order) =>
+      request('/ascezas/reorder', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          order,
+        }),
+      }),
+  },
 
-export default function Ascezas({ user, onBack }) {
-  const [ascezas, setAscezas] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showCreate, setShowCreate] = useState(false)
-  const [dragIndex, setDragIndex] = useState(null)
-  const [overIndex, setOverIndex] = useState(null)
-  const longPressTimer = useRef(null)
+  checkin: {
+    today: (userId) =>
+      request(`/checkin/today?user_id=${userId}`),
 
-  useEffect(() => {
-    if (!user) return
-    api.ascezas.list(user.id)
-      .then(setAscezas)
-      .catch((e) => console.error(e))
-      .finally(() => setLoading(false))
-  }, [user])
+    history: (userId, days = 14) =>
+      request(
+        `/checkin/history?user_id=${userId}&days=${days}`,
+      ),
 
-  useEffect(() => {
-    if (dragIndex !== null) {
-      document.body.style.overflow = 'hidden'
-      document.body.style.touchAction = 'none'
-    } else {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-  }, [dragIndex])
+    save: (
+      userId,
+      {
+        mood,
+        energy,
+        anxiety,
+        focus,
+        note,
+        emotion,
+        lessons,
+        wins,
+      },
+    ) =>
+      request('/checkin', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          mood,
+          energy,
+          anxiety,
+          focus,
+          note,
+          emotion,
+          lessons,
+          wins,
+        }),
+      }),
+  },
 
-  async function logAsceza(ascezaId, status) {
-    try {
-      const updated = await api.ascezas.log(ascezaId, user.id, status)
-      setAscezas((prev) => prev.map((a) =>
-        a.id === ascezaId
-          ? { ...a, streak: updated.streak, total_days: updated.total_days, breaks: updated.breaks, today_status: updated.today_status }
-          : a
-      ))
-    } catch (e) { console.error(e) }
-  }
+  goals: {
+    list: (userId) =>
+      request(`/goals?user_id=${userId}`),
 
-  async function createAsceza(draft) {
-    try {
-      const asceza = await api.ascezas.create(user.id, draft)
-      setAscezas((prev) => [...prev, asceza])
-      setShowCreate(false)
-    } catch (e) { console.error(e) }
-  }
+    create: (userId, goal) =>
+      request('/goals', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          ...goal,
+        }),
+      }),
 
-  async function deleteAsceza(ascezaId) {
-    try {
-      await api.ascezas.remove(ascezaId)
-      setAscezas((prev) => prev.filter((a) => a.id !== ascezaId))
-    } catch (e) { console.error(e) }
-  }
+    remove: (goalId) =>
+      request(`/goals/${goalId}`, {
+        method: 'DELETE',
+      }),
+  },
 
-  async function saveOrder(list) {
-    try {
-      await api.ascezas.reorder(user.id, list.map((a) => a.id))
-    } catch (e) { console.error(e) }
-  }
+  analytics: {
+    get: (userId, days = 14) =>
+      request(
+        `/analytics?user_id=${userId}&days=${days}`,
+      ),
+  },
 
-  function startLongPress(index) {
-    longPressTimer.current = setTimeout(() => {
-      haptic('medium')
-      setDragIndex(index)
-    }, 400)
-  }
+  mentalix: {
+    history: (
+      userId,
+      persona = 'mayak',
+    ) =>
+      request(
+        `/mentalix/messages?user_id=${userId}&persona=${persona}`,
+      ),
 
-  function cancelLongPress() {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-  }
+    send: (
+      userId,
+      content,
+      persona = 'mayak',
+    ) =>
+      request('/mentalix/messages', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          content,
+          persona,
+        }),
+      }),
+  },
 
-  function handleTouchMove(e) {
-    if (dragIndex === null) return
-    const touch = e.touches[0]
-    const el = document.elementFromPoint(touch.clientX, touch.clientY)
-    const card = el?.closest('[data-asceza-index]')
-    if (card) {
-      const idx = Number(card.getAttribute('data-asceza-index'))
-      if (idx !== overIndex) setOverIndex(idx)
-    }
-  }
+  profile: {
+    get: (userId) =>
+      request(`/profile?user_id=${userId}`),
 
-  function handleTouchEnd() {
-    cancelLongPress()
-    if (dragIndex !== null && overIndex !== null && dragIndex !== overIndex) {
-      const next = [...ascezas]
-      const [moved] = next.splice(dragIndex, 1)
-      next.splice(overIndex, 0, moved)
-      setAscezas(next)
-      saveOrder(next)
-      hapticNotify('success')
-    }
-    setDragIndex(null)
-    setOverIndex(null)
-  }
+    getSettings: (userId) =>
+      request(
+        `/profile/settings?user_id=${userId}`,
+      ),
 
-  if (showCreate) {
-    return <CreateAscezaScreen onCreate={createAsceza} onCancel={() => setShowCreate(false)} />
-  }
+    saveSettings: (
+      userId,
+      {
+        reminder_enabled,
+        reminder_hour,
+        review_hour,
+      },
+    ) =>
+      request('/profile/settings', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          reminder_enabled,
+          reminder_hour,
+          review_hour,
+        }),
+      }),
+  },
 
-  const heldToday = ascezas.filter((a) => a.today_status === 'held').length
-  const total = ascezas.length
+  pulse: {
+    today: () =>
+      request('/analytics/pulse'),
+  },
 
-  return (
-    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
-      <div className="flex items-center gap-3 mb-2">
-        <button onClick={() => { haptic('light'); onBack() }} aria-label="Назад"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
-          <ArrowLeft size={18} className="text-cream/60" />
-        </button>
-        <h2 className="font-display text-[22px] text-cream lowercase">аскезы.</h2>
-      </div>
-      <p className="text-[12px] text-cream/40 mb-5 px-1">
-        {total > 1 ? 'зажми карточку, чтобы поменять порядок' : 'от чего ты отказываешься'}
-      </p>
+  themes: {
+    list: (userId) =>
+      request(`/themes?user_id=${userId}`),
 
-      {total > 0 && (
-        <div className="mb-4">
-          <div className="flex justify-between text-xs text-cream/50 mb-1">
-            <span>Удержано сегодня</span>
-            <span>{heldToday}/{total}</span>
-          </div>
-          <div className="h-1.5 rounded-full bg-cream/10 overflow-hidden">
-            <div
-              className="h-full bg-gold transition-all duration-500 ease-out"
-              style={{ width: total ? `${(heldToday / total) * 100}%` : '0%' }}
-            />
-          </div>
-        </div>
-      )}
+    get: (themeId, userId) =>
+      request(
+        `/themes/${themeId}?user_id=${userId}`,
+      ),
 
-      {loading ? (
-        <p className="text-cream/40 text-sm">Загрузка...</p>
-      ) : ascezas.length === 0 ? (
-        <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-          <ArtShield size={120} className="mx-auto mb-3" />
-          <h3 className="font-display text-lg text-cream mb-1">Аскез пока нет</h3>
-          <p className="text-sm text-cream/50 mb-4 leading-relaxed">
-            Аскеза — сознательный отказ. Выбери одну вредную привычку и назови её честно.
-          </p>
-          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
-            Принять аскезу
-          </button>
-        </div>
-      ) : (
-        <>
-          <div>
-            {ascezas.map((a, i) => (
-              <div key={a.id} data-asceza-index={i}>
-                <AscezaCard
-                  asceza={a}
-                  onLog={logAsceza}
-                  onDelete={deleteAsceza}
-                  isDragging={dragIndex === i}
-                  isOver={dragIndex !== null && overIndex === i && dragIndex !== i}
-                  dragHandlers={{
-                    onTouchStart: () => startLongPress(i),
-                    onTouchMove: handleTouchMove,
-                    onTouchEnd: handleTouchEnd,
-                    onTouchCancel: handleTouchEnd,
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-          <button onClick={() => { haptic('light'); setShowCreate(true) }}
-            className="w-full py-3.5 rounded-full bg-emerald text-cream/60 text-[14px] font-semibold mt-2 active:scale-[0.98] border-0 transition-transform">
-            + Новая аскеза
-          </button>
-        </>
-      )}
-    </div>
-  )
+    reflect: (
+      themeId,
+      userId,
+      day,
+      text,
+    ) =>
+      request(
+        `/themes/${themeId}/reflect`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            user_id: userId,
+            day,
+            text,
+          }),
+        },
+      ),
+  },
+
+  quotes: {
+    list: (userId) =>
+      request(`/quotes?user_id=${userId}`),
+
+    create: (
+      userId,
+      text,
+      tag,
+    ) =>
+      request('/quotes', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          text,
+          tag,
+        }),
+      }),
+
+    remove: (quoteId) =>
+      request(`/quotes/${quoteId}`, {
+        method: 'DELETE',
+      }),
+
+    today: (userId) =>
+      request(
+        `/quotes/today?user_id=${userId}`,
+      ),
+  },
+
+  courses: {
+    list: (userId) =>
+      request(`/courses?user_id=${userId}`),
+
+    create: (userId, course) =>
+      request('/courses', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          ...course,
+        }),
+      }),
+
+    updateStatus: (
+      courseId,
+      status,
+    ) =>
+      request(
+        `/courses/${courseId}/status`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            status,
+          }),
+        },
+      ),
+
+    notes: (courseId) =>
+      request(
+        `/courses/${courseId}/notes`,
+      ),
+
+    addNote: (
+      courseId,
+      text,
+    ) =>
+      request(
+        `/courses/${courseId}/notes`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            text,
+          }),
+        },
+      ),
+
+    remove: (courseId) =>
+      request(`/courses/${courseId}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  focus: {
+    progress: (userId) =>
+      request(
+        `/focus/progress?user_id=${userId}`,
+      ),
+
+    logSession: (
+      userId,
+      durationMin,
+    ) =>
+      request('/focus', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          duration_min: durationMin,
+        }),
+      }),
+  },
+
+  brain: {
+    summary: (userId) =>
+      request(
+        `/brain/summary?user_id=${userId}`,
+      ),
+
+    logSession: (
+      userId,
+      exerciseType,
+      score,
+      durationSec,
+    ) =>
+      request('/brain/sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          exercise_type: exerciseType,
+          score,
+          duration_sec: durationSec,
+        }),
+      }),
+  },
+
+  subscription: {
+    get: (userId) =>
+      request(
+        `/subscription?user_id=${userId}`,
+      ),
+
+    donate: (
+      userId,
+      amount,
+      currency = 'RUB',
+    ) =>
+      request('/subscription/donate', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          amount,
+          currency,
+        }),
+      }),
+  },
+
+  auth: {
+    requestCode: (email) =>
+      request(
+        '/auth/email/request-code',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            email,
+          }),
+        },
+      ),
+
+    verify: (
+      email,
+      code,
+    ) =>
+      request(
+        '/auth/email/verify',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            email,
+            code,
+          }),
+        },
+      ),
+
+    generateLinkCode: (
+      telegramUserId,
+    ) =>
+      request(
+        '/auth/link/generate',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            user_id: telegramUserId,
+          }),
+        },
+      ),
+
+    confirmLink: (
+      webUserId,
+      code,
+    ) =>
+      request(
+        '/auth/link/confirm',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            web_user_id: webUserId,
+            code,
+          }),
+        },
+      ),
+  },
 }
