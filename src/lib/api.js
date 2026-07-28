@@ -2,15 +2,34 @@ const BASE = '/api'
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
     ...options,
   })
 
+  const raw = await res.text()
+
   if (!res.ok) {
-    throw new Error(`API ${path} failed: ${res.status}`)
+    throw new Error(
+      `API ${path} failed: ${res.status}. Ответ: ${raw.slice(0, 300)}`
+    )
   }
 
-  return res.json()
+  if (!raw) {
+    throw new Error(
+      `API ${path} вернул пустой ответ при статусе ${res.status}`
+    )
+  }
+
+  try {
+    return JSON.parse(raw)
+  } catch {
+    throw new Error(
+      `API ${path} вернул не JSON: ${raw.slice(0, 300)}`
+    )
+  }
 }
 
 export const api = {
