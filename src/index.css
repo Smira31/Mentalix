@@ -19,7 +19,7 @@
    ============================================================ */
 
 :root {
-    --tg-safe-area-top: 0px;
+  --tg-safe-area-top: 0px;
   --tg-safe-area-right: 0px;
   --tg-safe-area-bottom: 0px;
   --tg-safe-area-left: 0px;
@@ -31,23 +31,32 @@
 
   --app-safe-top: max(
     env(safe-area-inset-top, 0px),
+    var(--tg-safe-area-inset-top, 0px),
+    var(--tg-content-safe-area-inset-top, 0px),
     var(--tg-safe-area-top),
     var(--tg-content-safe-area-top)
   );
 
   --app-safe-bottom: max(
     env(safe-area-inset-bottom, 0px),
+    var(--tg-safe-area-inset-bottom, 0px),
+    var(--tg-content-safe-area-inset-bottom, 0px),
     var(--tg-safe-area-bottom),
     var(--tg-content-safe-area-bottom)
   );
-    --app-safe-left: max(
+
+  --app-safe-left: max(
     env(safe-area-inset-left, 0px),
+    var(--tg-safe-area-inset-left, 0px),
+    var(--tg-content-safe-area-inset-left, 0px),
     var(--tg-safe-area-left),
     var(--tg-content-safe-area-left)
   );
 
   --app-safe-right: max(
     env(safe-area-inset-right, 0px),
+    var(--tg-safe-area-inset-right, 0px),
+    var(--tg-content-safe-area-inset-right, 0px),
     var(--tg-safe-area-right),
     var(--tg-content-safe-area-right)
   );
