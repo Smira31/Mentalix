@@ -143,7 +143,7 @@ export default function Conversation({
     className="absolute left-5 w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
     style={{
       top:
-        'calc(var(--app-safe-top) + 82px)',
+        'calc(var(--app-safe-top) + 62px)',
     }}
     aria-label="Назад"
   >
