@@ -107,35 +107,34 @@ export default function Conversation({
 
       {/* ── верхняя бренд-зона ── */}
 
-      <div className="relative shrink-0 h-[118px] px-5">
+      <div className="relative shrink-0 h-[72px] px-5">
 
-        <button
-          type="button"
-          onClick={() => {
-            haptic('light')
-            onNewConversation()
-          }}
-          className="absolute left-5 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
-          aria-label="Назад"
-        >
-          <ArrowLeft
-            size={25}
-            strokeWidth={1.7}
-          />
-        </button>
+  <button
+    type="button"
+    onClick={() => {
+      haptic('light')
+      onNewConversation()
+    }}
+    className="absolute left-5 top-1 w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
+    aria-label="Назад"
+  >
+    <ArrowLeft
+      size={25}
+      strokeWidth={1.7}
+    />
+  </button>
 
+  <div className="absolute left-1/2 top-0 -translate-x-1/2 text-center whitespace-nowrap">
+    <div className="text-[15px] font-semibold tracking-[0.04em] text-cream/95 uppercase leading-none">
+      {meta.name}
+    </div>
 
-        <div className="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 text-center whitespace-nowrap">
-          <div className="text-[15px] font-semibold tracking-[0.04em] text-cream/95 uppercase leading-none">
-            {meta.name}
-          </div>
+    <div className="text-[11px] font-medium tracking-[0.04em] text-gold uppercase mt-2 leading-none">
+      {meta.tagline}
+    </div>
+  </div>
 
-          <div className="text-[11px] font-medium tracking-[0.04em] text-gold uppercase mt-2 leading-none">
-            {meta.tagline}
-          </div>
-        </div>
-
-      </div>
+</div>
 
 
       {/* ── история сообщений ── */}
