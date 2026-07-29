@@ -110,7 +110,7 @@ export default function Conversation({
   className="relative shrink-0 px-5"
   style={{
     height:
-      'calc(var(--app-safe-top) + 60px)',
+      'calc(var(--app-safe-top) + 135px)',
   }}
 >
   {/* Следопыт — между Telegram-пинбарами */}
@@ -143,7 +143,7 @@ export default function Conversation({
     className="absolute left-5 w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
     style={{
       top:
-        'calc(var(--app-safe-top) + 105px)',
+        'calc(var(--app-safe-top) + 82px)',
     }}
     aria-label="Назад"
   >
