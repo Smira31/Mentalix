@@ -14,6 +14,10 @@ Telegram Mini App — операционная система личного р�
 | Файл | О чём |
 |---|---|
 | [`PRODUCT.md`](PRODUCT.md) | Зачем продукт и для кого. Принципы, что не делаем, открытые решения |
+| [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) | Фактические дизайн-токены, типографика и UI-правила |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Устройство frontend, platform layer и API-контракты |
+| [`AI_RULES.md`](AI_RULES.md) | Обязательный процесс работы AI с Mentalix |
+| [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md) | Как переводить референсы в Mentalix без копирования |
 | [`CONTEXT.md`](CONTEXT.md) | Как работать с проектом в чате: шаблон запроса, правила |
 | [`ROADMAP.md`](ROADMAP.md) | Что построено, что в работе |
 | [`TASKS.md`](TASKS.md) | Задачи на сейчас |
