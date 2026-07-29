@@ -97,8 +97,7 @@ export default function Conversation({
           ? `${viewportHeight}px`
           : '100dvh',
 
-        paddingTop:
-          'max(8px, env(safe-area-inset-top))',
+        paddingTop: '0px',
 
         paddingBottom:
           'max(14px, env(safe-area-inset-bottom))',
@@ -107,7 +106,12 @@ export default function Conversation({
 
       {/* ── верхняя бренд-зона ── */}
 
-      <div className="relative shrink-0 h-[72px] px-5">
+      <div
+  className="relative shrink-0 h-[190px] px-5"
+  style={{
+    paddingTop: '108px',
+  }}
+>
 
   <button
     type="button"
@@ -115,7 +119,7 @@ export default function Conversation({
       haptic('light')
       onNewConversation()
     }}
-    className="absolute left-5 top-1 w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
+    className="absolute left-5 top-[108px] w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
     aria-label="Назад"
   >
     <ArrowLeft
@@ -124,7 +128,7 @@ export default function Conversation({
     />
   </button>
 
-  <div className="absolute left-1/2 top-0 -translate-x-1/2 text-center whitespace-nowrap">
+className="absolute left-1/2 top-[104px] -translate-x-1/2 text-center whitespace-nowrap"
     <div className="text-[15px] font-semibold tracking-[0.04em] text-cream/95 uppercase leading-none">
       {meta.name}
     </div>
