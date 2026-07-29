@@ -850,7 +850,7 @@ export default function App() {
 
   const topSafeArea =
     fullscreen
-      ? 'calc(var(--app-safe-top) + 12px)'
+      ? 'calc(var(--app-safe-top) + 56px)'
       : 'var(--app-safe-top)'
 
 
