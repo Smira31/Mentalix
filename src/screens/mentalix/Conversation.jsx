@@ -38,13 +38,18 @@ export default function Conversation({
   const [viewportHeight, setViewportHeight] =
   useState(null)
 
+const [viewportTop, setViewportTop] =
+  useState(0)
+
 useEffect(() => {
   const viewport = window.visualViewport
 
   if (!viewport) return
 
   const updateViewport = () => {
-    setViewportHeight(viewport.height)
+  setViewportHeight(viewport.height)
+  setViewportTop(viewport.offsetTop || 0)
+}
   }
 
   updateViewport()
@@ -74,18 +79,19 @@ useEffect(() => {
 
   return (
 <div
-  className="w-full max-w-sm mx-auto px-4 flex flex-col overflow-hidden animate-fade-in"
+  className="fixed left-0 right-0 z-[70] w-full bg-emerald-deep flex flex-col overflow-hidden animate-fade-in"
   style={{
-  height: viewportHeight
-    ? `${viewportHeight}px`
-    : '100dvh',
-  paddingTop:
-    'max(8px, env(safe-area-inset-top))',
-  paddingBottom:
-    'max(8px, env(safe-area-inset-bottom))',
-}}
+    top: `${viewportTop}px`,
+    height: viewportHeight
+      ? `${viewportHeight}px`
+      : '100dvh',
+    paddingTop:
+      'max(8px, env(safe-area-inset-top))',
+    paddingBottom:
+      'max(8px, env(safe-area-inset-bottom))',
+  }}
 >
-      <div className="flex items-center gap-3 px-2 pb-3 mb-2 border-b border-cream/10">
+<div className="shrink-0 flex items-center gap-3 px-5 pb-3 border-b border-cream/10">
         <button
           onClick={() => {
             haptic('light')
@@ -116,17 +122,21 @@ useEffect(() => {
         </div>
 
         <button
-          onClick={() => {
-            haptic('light')
-            onNewConversation()
-          }}
-          className="ml-auto text-[11px] text-gold/70"
-        >
-          новый разговор
-        </button>
-      </div>
+  type="button"
+  onClick={() => {
+    haptic('light')
+    onNewConversation()
+  }}
+  className="w-11 h-11 rounded-full flex items-center justify-center text-cream/60 shrink-0 active:scale-90 transition-transform"
+  aria-label="Назад"
+>
+  <ArrowLeft
+    size={22}
+    strokeWidth={1.8}
+  />
+</button>
 
-<div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 space-y-4 pb-3">
+<div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 space-y-4 py-4">
         {loading && (
           <p className="text-cream/40 text-[15px] text-center pt-4">
             Загрузка...
@@ -209,7 +219,7 @@ useEffect(() => {
         <div ref={endRef} />
       </div>
 
-<div className="shrink-0 px-2 pt-3">
+<div className="shrink-0 px-5 pt-3">
         <div className="min-h-[56px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center gap-2 px-2">
           <button
             type="button"
