@@ -110,7 +110,7 @@ export default function Conversation({
   className="relative shrink-0 px-5"
   style={{
     height:
-      'calc(var(--app-safe-top) + 150px)',
+      'calc(var(--app-safe-top) + 110px)',
   }}
 >
   {/* Следопыт — между Telegram-пинбарами */}
@@ -119,7 +119,7 @@ export default function Conversation({
     className="absolute left-1/2 -translate-x-1/2 text-center whitespace-nowrap"
     style={{
       top:
-        'calc(var(--app-safe-top) + 54px)',
+        'calc(var(--app-safe-top) - 18px)',
     }}
   >
     <div className="text-[15px] font-semibold tracking-[0.04em] text-cream/95 uppercase leading-none">
