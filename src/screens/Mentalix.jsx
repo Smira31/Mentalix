@@ -3,19 +3,16 @@ import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 
 import {
-  ArrowLeft,
-  ArrowRight,
-  MoreHorizontal,
-  Plus,
-  X,
-} from 'lucide-react'
-
-import {
   PERSONAS,
   readPendingMentor,
 } from './mentalix/personas'
+
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
+
+import ListenerArt from './mentalix/art/ListenerArt'
+import MentorArt from './mentalix/art/MentorArt'
+import PathfinderArt from './mentalix/art/PathfinderArt'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
