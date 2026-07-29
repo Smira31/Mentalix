@@ -23,7 +23,7 @@ import QuoteView from './QuoteView'
 // После проверки вечернего сценария поменяем на false.
 // ============================================================
 
-const FORCE_EVENING_REVIEW = true
+const FORCE_EVENING_REVIEW = false
 
 
 // ── лента недели, как у stoic. ──
