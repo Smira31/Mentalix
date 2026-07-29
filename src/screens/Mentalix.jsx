@@ -15,6 +15,7 @@ import {
   readPendingMentor,
 } from './mentalix/personas'
 import PersonaPicker from './mentalix/PersonaPicker'
+import Conversation from './mentalix/Conversation'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -633,21 +634,21 @@ function Chat({
   const Icon = meta.Icon
 
 
-  if (journalOpen) {
-    return (
-      <JournalStart
-        persona={persona}
-        input={input}
-        setInput={setInput}
-        onSend={send}
-        onBack={onBack}
-        sending={sending}
-        onOpenHistory={() => {
-          setJournalOpen(false)
-        }}
-      />
-    )
-  }
+  return (
+  <Conversation
+    persona={persona}
+    messages={messages}
+    input={input}
+    setInput={setInput}
+    loading={loading}
+    sending={sending}
+    onSend={send}
+    onNewConversation={() => {
+      setJournalOpen(true)
+    }}
+    endRef={endRef}
+  />
+)
 
 
   return (
