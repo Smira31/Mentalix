@@ -119,7 +119,7 @@ export default function Conversation({
     className="absolute left-1/2 -translate-x-1/2 text-center whitespace-nowrap"
     style={{
       top:
-        'calc(var(--app-safe-top) + 18px)',
+        'calc(var(--app-safe-top) + 42px)',
     }}
   >
     <div className="text-[15px] font-semibold tracking-[0.04em] text-cream/95 uppercase leading-none">
