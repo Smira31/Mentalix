@@ -9,6 +9,8 @@ import {
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
+import JournalStart from './mentalix/JournalStart'
+import PersonaArt from './mentalix/art/PersonaArt'
 
 
 function haptic(style = 'light') {
@@ -181,22 +183,41 @@ function Chat({
   }
 
 
+  if (
+  persona === 'dnevnik' &&
+  journalOpen
+) {
   return (
-    <Conversation
+    <JournalStart
       persona={persona}
-      messages={messages}
       input={input}
       setInput={setInput}
-      loading={loading}
-      sending={sending}
       onSend={send}
-      onNewConversation={() => {
-        setJournalOpen(true)
+      onBack={onBack}
+      onOpenHistory={() => {
+        setJournalOpen(false)
       }}
-      endRef={endRef}
+      sending={sending}
+      PersonaArt={PersonaArt}
     />
   )
 }
+
+return (
+  <Conversation
+    persona={persona}
+    messages={messages}
+    input={input}
+    setInput={setInput}
+    loading={loading}
+    sending={sending}
+    onSend={send}
+    onNewConversation={() => {
+      setJournalOpen(true)
+    }}
+    endRef={endRef}
+  />
+)
 
 
 // ============================================================
