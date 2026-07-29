@@ -35,78 +35,94 @@ export default function Conversation({
   )
 
   const Icon = meta.Icon
-  const [viewportHeight, setViewportHeight] =
-  useState(null)
 
-const [viewportTop, setViewportTop] =
-  useState(0)
+  const [
+    viewportHeight,
+    setViewportHeight,
+  ] = useState(null)
 
-useEffect(() => {
-  const viewport = window.visualViewport
+  const [
+    viewportTop,
+    setViewportTop,
+  ] = useState(0)
 
-  if (!viewport) return
 
-  const updateViewport = () => {
-  setViewportHeight(viewport.height)
-  setViewportTop(viewport.offsetTop || 0)
-}
+  useEffect(() => {
+    const viewport =
+      window.visualViewport
 
-updateViewport()
+    if (!viewport) return
 
-  updateViewport()
+    const updateViewport = () => {
+      setViewportHeight(
+        viewport.height,
+      )
 
-  viewport.addEventListener(
-    'resize',
-    updateViewport,
-  )
+      setViewportTop(
+        viewport.offsetTop || 0,
+      )
+    }
 
-  viewport.addEventListener(
-    'scroll',
-    updateViewport,
-  )
+    updateViewport()
 
-  return () => {
-    viewport.removeEventListener(
+    viewport.addEventListener(
       'resize',
       updateViewport,
     )
 
-    viewport.removeEventListener(
+    viewport.addEventListener(
       'scroll',
       updateViewport,
     )
-  }
-}, [])
+
+    return () => {
+      viewport.removeEventListener(
+        'resize',
+        updateViewport,
+      )
+
+      viewport.removeEventListener(
+        'scroll',
+        updateViewport,
+      )
+    }
+  }, [])
+
 
   return (
-<div
-  className="fixed left-0 right-0 z-[70] w-full bg-emerald-deep flex flex-col overflow-hidden animate-fade-in"
-  style={{
-    top: `${viewportTop}px`,
-    height: viewportHeight
-      ? `${viewportHeight}px`
-      : '100dvh',
-    paddingTop:
-      'max(8px, env(safe-area-inset-top))',
-    paddingBottom:
-      'max(8px, env(safe-area-inset-bottom))',
-  }}
->
-<div className="shrink-0 flex items-center gap-3 px-5 pb-3 border-b border-cream/10">
+    <div
+      className="fixed left-0 right-0 z-[70] w-full bg-emerald-deep flex flex-col overflow-hidden animate-fade-in"
+      style={{
+        top: `${viewportTop}px`,
+        height: viewportHeight
+          ? `${viewportHeight}px`
+          : '100dvh',
+
+        paddingTop:
+          'max(8px, env(safe-area-inset-top))',
+
+        paddingBottom:
+          'max(8px, env(safe-area-inset-bottom))',
+      }}
+    >
+
+      {/* ── Шапка ── */}
+
+      <div className="shrink-0 flex items-center gap-3 px-5 pb-3 border-b border-cream/10">
         <button
-  type="button"
-  onClick={() => {
-    haptic('light')
-    onNewConversation()
-  }}
-  className="w-11 h-11 rounded-full flex items-center justify-center text-cream/60 shrink-0 active:scale-90 transition-transform"
-  aria-label="Назад"
->
-  <ArrowLeft
-    size={22}
-    strokeWidth={1.8}
-  />
-</button>
+          type="button"
+          onClick={() => {
+            haptic('light')
+            onNewConversation()
+          }}
+          className="w-11 h-11 rounded-full flex items-center justify-center text-cream/60 shrink-0 active:scale-90 transition-transform"
+          aria-label="Назад"
+        >
+          <ArrowLeft
+            size={22}
+            strokeWidth={1.8}
+          />
+        </button>
 
         <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
           <Icon
@@ -116,7 +132,7 @@ updateViewport()
           />
         </div>
 
-        <div>
+        <div className="min-w-0">
           <div className="font-display text-base text-cream leading-tight">
             {meta.name}
           </div>
@@ -127,21 +143,21 @@ updateViewport()
         </div>
 
         <button
-  type="button"
-  onClick={() => {
-    haptic('light')
-    onNewConversation()
-  }}
-  className="w-11 h-11 rounded-full flex items-center justify-center text-cream/60 shrink-0 active:scale-90 transition-transform"
-  aria-label="Назад"
->
-  <ArrowLeft
-    size={22}
-    strokeWidth={1.8}
-  />
-</button>
+          type="button"
+          onClick={() => {
+            haptic('light')
+            onNewConversation()
+          }}
+          className="ml-auto shrink-0 text-[11px] text-gold/70 active:opacity-60"
+        >
+          новый разговор
+        </button>
+      </div>
 
-<div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 space-y-4 py-4">
+
+      {/* ── История сообщений ── */}
+
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 space-y-4 py-4">
         {loading && (
           <p className="text-cream/40 text-[15px] text-center pt-4">
             Загрузка...
@@ -156,7 +172,8 @@ updateViewport()
               <br />
               <br />
 
-              Напиши первым — {meta.name} ответит.
+              Напиши первым —{' '}
+              {meta.name} ответит.
             </p>
           )}
 
@@ -224,7 +241,10 @@ updateViewport()
         <div ref={endRef} />
       </div>
 
-<div className="shrink-0 px-5 pt-3">
+
+      {/* ── Поле ввода ── */}
+
+      <div className="shrink-0 px-5 pt-3">
         <div className="min-h-[56px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center gap-2 px-2">
           <button
             type="button"
@@ -259,6 +279,7 @@ updateViewport()
           />
 
           <button
+            type="button"
             onClick={onSend}
             disabled={
               sending ||
