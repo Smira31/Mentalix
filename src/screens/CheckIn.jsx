@@ -230,15 +230,11 @@ const PROUD_HINTS = [
 export default function CheckIn({
   user,
   onDone,
-  mode = 'auto',
+  mode = 'checkin',
   existing = null,
 }) {
   const isEvening =
     mode === 'evening'
-    || (
-      mode === 'auto'
-      && new Date().getHours() >= 18
-    )
 
   const skipScales =
     isEvening && !!existing
@@ -394,7 +390,8 @@ export default function CheckIn({
     setError(false)
 
     try {
-      await api.checkin.save(
+      const savedCheckin =
+        await api.checkin.save(
         user.id,
         {
           mood:
@@ -419,8 +416,25 @@ export default function CheckIn({
 
           wins:
             buildWins(),
+
+          ...(isEvening
+            ? {
+                review_completed:
+                  true,
+              }
+            : {}),
         },
       )
+
+      if (
+        isEvening
+        && !savedCheckin
+          ?.review_completed_at
+      ) {
+        throw new Error(
+          'Backend не подтвердил закрытие дня',
+        )
+      }
 
       platform.haptic(
         'success',

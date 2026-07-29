@@ -171,6 +171,7 @@ export const api = {
         emotion,
         lessons,
         wins,
+        review_completed,
       },
     ) =>
       request('/checkin', {
@@ -185,6 +186,9 @@ export const api = {
           emotion,
           lessons,
           wins,
+          ...(typeof review_completed === 'boolean'
+            ? { review_completed }
+            : {}),
         }),
       }),
   },

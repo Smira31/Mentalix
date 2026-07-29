@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpRight,
-  Sparkles,
 } from 'lucide-react'
 
 import Path from './Path'
@@ -16,14 +15,6 @@ import ThemeScreen from './ThemeScreen'
 import { ArtThread } from '../components/Art'
 import History from './History'
 import QuoteView from './QuoteView'
-
-
-// ============================================================
-// ВРЕМЕННО ДЛЯ ТЕСТА
-// После проверки вечернего сценария поменяем на false.
-// ============================================================
-
-const FORCE_EVENING_REVIEW = false
 
 
 // ── лента недели, как у stoic. ──
@@ -330,9 +321,18 @@ export default function Today({
 
 
   const isReviewTime =
-    FORCE_EVENING_REVIEW
-    || hourNow
-      >= reviewHour
+    hourNow >= reviewHour
+
+
+  const todayState =
+    checkin
+      ?.review_completed_at
+      ? 'dayClosed'
+      : isReviewTime
+        ? 'reviewPending'
+        : checkin
+          ? 'dayInProgress'
+          : 'checkinPending'
 
 
   // ============================================================
@@ -347,9 +347,12 @@ export default function Today({
         user={user}
         existing={checkin}
         mode={
-          isReviewTime
+          todayState
+            === 'reviewPending'
+          || todayState
+            === 'dayClosed'
             ? 'evening'
-            : 'auto'
+            : 'checkin'
         }
         onDone={async () => {
           await refreshCheckin()
@@ -550,36 +553,11 @@ export default function Today({
     !!checkin
 
 
-  const eveningReviewDone =
-    !!(
-      checkin?.lessons
-      || (
-        Array.isArray(
-          checkin?.wins,
-        )
-        && checkin.wins.length
-          > 0
-      )
-    )
-
-
-  // Важное исправление:
-  // утренний чек-ин больше НЕ блокирует вечерний разбор.
-  //
-  // После наступления reviewHour показываем анализ дня,
-  // пока пользователь реально не сохранил lessons или wins.
-
   const checkinAsHero =
-    (
-      isReviewTime
-      && !eveningReviewDone
-    )
-    ||
-    (
-      !checkinDone
-      && isEmpty
-      && hourNow >= 12
-    )
+    todayState
+      === 'checkinPending'
+    || todayState
+      === 'reviewPending'
 
 
   const MOOD_WORDS = [
@@ -645,17 +623,26 @@ export default function Today({
         {checkinAsHero && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">
-              Анализ дня
+              {todayState
+                === 'reviewPending'
+                ? 'Анализ дня'
+                : 'Состояние'}
             </div>
 
 
             <h2 className="font-display text-[28px] text-cream leading-tight">
-              Разобрать день?
+              {todayState
+                === 'reviewPending'
+                ? 'Разобрать день?'
+                : 'Как ты?'}
             </h2>
 
 
             <p className="text-[14px] text-cream/50 mt-2">
-              Уроки и то, чем стоит гордиться
+              {todayState
+                === 'reviewPending'
+                ? 'Уроки и то, чем стоит гордиться'
+                : 'Короткий чек-ин состояния'}
             </p>
 
 
@@ -671,7 +658,10 @@ export default function Today({
               }}
               className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
             >
-              Начать
+              {todayState
+                === 'reviewPending'
+                ? 'Разобрать день'
+                : 'Пройти чек-ин'}
             </button>
 
 
@@ -685,7 +675,29 @@ export default function Today({
         )}
 
 
+        {todayState
+          === 'dayClosed' && (
+          <>
+            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+              Сегодня
+            </div>
+
+
+            <h2 className="font-display text-[28px] text-cream leading-tight">
+              День закрыт
+            </h2>
+
+
+            <p className="text-[14px] text-cream/50 mt-2">
+              Вечерний разбор завершён
+            </p>
+          </>
+        )}
+
+
         {!checkinAsHero
+          && todayState
+            !== 'dayClosed'
           && isEmpty && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">
@@ -722,6 +734,8 @@ export default function Today({
 
 
         {!checkinAsHero
+          && todayState
+            !== 'dayClosed'
           && !isEmpty
           && next && (
           <>
@@ -766,6 +780,8 @@ export default function Today({
 
 
         {!checkinAsHero
+          && todayState
+            !== 'dayClosed'
           && !isEmpty
           && !next && (
           <>
@@ -821,49 +837,6 @@ export default function Today({
           УТРЕННИЙ ЧЕК-ИН
           ====================================================== */}
 
-      {!checkinAsHero
-        && !checkinDone && (
-          <button
-            onClick={() => {
-              platform.haptic(
-                'light',
-              )
-
-              setSub(
-                'checkin',
-              )
-            }}
-            className="w-full rounded-3xl bg-emerald px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
-          >
-            <span className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
-              <Sparkles
-                size={16}
-                className="text-gold"
-                strokeWidth={1.75}
-              />
-            </span>
-
-
-            <span className="flex-1 text-left">
-              <span className="block text-[14px] font-bold text-cream">
-                Как ты?
-              </span>
-
-
-              <span className="block text-[12px] text-cream/40 font-medium">
-                Короткий чек-ин состояния
-              </span>
-            </span>
-
-
-            <ChevronRight
-              size={18}
-              className="text-cream/30 shrink-0"
-            />
-          </button>
-        )}
-
-
       {checkinDone && (
         <button
           onClick={() => {
@@ -884,7 +857,8 @@ export default function Today({
 
           <span className="flex-1 text-left">
             <span className="block text-[14px] font-bold text-cream">
-              {eveningReviewDone
+              {todayState
+                === 'dayClosed'
                 ? 'День разобран'
                 : 'Чек-ин выполнен'}
             </span>
