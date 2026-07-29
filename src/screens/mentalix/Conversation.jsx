@@ -1,4 +1,9 @@
 import {
+  useEffect,
+  useState,
+} from 'react'
+
+import {
   ArrowLeft,
   ArrowRight,
   Plus,
@@ -30,17 +35,55 @@ export default function Conversation({
   )
 
   const Icon = meta.Icon
+  const [viewportHeight, setViewportHeight] =
+  useState(null)
+
+useEffect(() => {
+  const viewport = window.visualViewport
+
+  if (!viewport) return
+
+  const updateViewport = () => {
+    setViewportHeight(viewport.height)
+  }
+
+  updateViewport()
+
+  viewport.addEventListener(
+    'resize',
+    updateViewport,
+  )
+
+  viewport.addEventListener(
+    'scroll',
+    updateViewport,
+  )
+
+  return () => {
+    viewport.removeEventListener(
+      'resize',
+      updateViewport,
+    )
+
+    viewport.removeEventListener(
+      'scroll',
+      updateViewport,
+    )
+  }
+}, [])
 
   return (
 <div
   className="w-full max-w-sm mx-auto px-4 flex flex-col overflow-hidden animate-fade-in"
   style={{
-    height: '100dvh',
-    paddingTop:
-      'max(8px, env(safe-area-inset-top))',
-    paddingBottom:
-      'max(8px, env(safe-area-inset-bottom))',
-  }}
+  height: viewportHeight
+    ? `${viewportHeight}px`
+    : '100dvh',
+  paddingTop:
+    'max(8px, env(safe-area-inset-top))',
+  paddingBottom:
+    'max(8px, env(safe-area-inset-bottom))',
+}}
 >
       <div className="flex items-center gap-3 px-2 pb-3 mb-2 border-b border-cream/10">
         <button
