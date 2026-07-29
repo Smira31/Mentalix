@@ -163,8 +163,6 @@ function ListenerArt() {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* кресло */}
-
         <path
           d="M56 108V75C56 62 64 56 78 56H118C131 56 139 63 139 77V110"
           opacity="0.95"
@@ -195,8 +193,6 @@ function ListenerArt() {
           opacity="0.72"
         />
 
-        {/* стол */}
-
         <path
           d="M190 132H254"
           opacity="0.85"
@@ -212,8 +208,6 @@ function ListenerArt() {
           opacity="0.55"
         />
 
-        {/* чашка */}
-
         <path
           d="M211 118H229V128H211Z"
           opacity="0.9"
@@ -228,8 +222,6 @@ function ListenerArt() {
           d="M216 112C215 108 219 106 218 102"
           opacity="0.45"
         />
-
-        {/* лампа */}
 
         <path
           d="M288 167V59"
@@ -257,15 +249,11 @@ function ListenerArt() {
         />
       </g>
 
-      {/* свет лампы */}
-
       <path
         d="M248 67L206 143H284L262 67H248Z"
         className="fill-gold"
         opacity="0.055"
       />
-
-      {/* маленькие искры */}
 
       <g
         className="text-gold"
@@ -275,7 +263,6 @@ function ListenerArt() {
       >
         <path d="M96 80V88" />
         <path d="M92 84H100" />
-
         <path d="M116 72V78" />
         <path d="M113 75H119" />
       </g>
@@ -303,8 +290,6 @@ function MentorArt() {
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        {/* горы */}
-
         <path
           d="M30 167L99 96L127 121L183 51L236 111L267 86L330 167"
           opacity="0.88"
@@ -325,15 +310,11 @@ function MentorArt() {
           opacity="0.32"
         />
 
-        {/* путь */}
-
         <path
           d="M151 190C182 179 203 166 195 151C188 139 161 142 167 128C173 113 206 111 194 96C184 84 176 82 183 65"
           strokeWidth="2"
           opacity="0.95"
         />
-
-        {/* флаг */}
 
         <path
           d="M183 67V29"
@@ -344,8 +325,6 @@ function MentorArt() {
           d="M184 31L212 37L184 48"
           opacity="0.95"
         />
-
-        {/* облака */}
 
         <path
           d="M41 82C50 72 63 72 71 82C79 78 88 82 91 89H31C33 85 36 83 41 82Z"
@@ -396,9 +375,7 @@ function PathfinderArt() {
           opacity="0.92"
         />
 
-        <path
-          d="M180 69V20"
-        />
+        <path d="M180 69V20" />
 
         <path d="M165 72L153 29" />
         <path d="M150 78L126 38" />
@@ -421,8 +398,6 @@ function PathfinderArt() {
           d="M262 145L297 145"
           opacity="0.48"
         />
-
-        {/* дорожка */}
 
         <path
           d="M181 146C188 153 187 159 178 164C166 171 167 179 181 184C190 188 190 194 181 201"
@@ -668,8 +643,6 @@ function JournalStart({
   return (
     <div className="w-full max-w-sm mx-auto px-5 pb-24 flex flex-col min-h-[calc(100vh-160px)] animate-fade-in">
 
-      {/* шапка */}
-
       <div className="flex items-center pt-1">
         <button
           onClick={() => {
@@ -724,8 +697,6 @@ function JournalStart({
       </div>
 
 
-      {/* арт */}
-
       <div className="mt-4 -mx-1">
         <div className="h-[245px] flex items-center justify-center">
           <PersonaArt
@@ -734,8 +705,6 @@ function JournalStart({
         </div>
       </div>
 
-
-      {/* разделитель */}
 
       <div className="flex items-center gap-3 mt-1">
         <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold whitespace-nowrap">
@@ -747,8 +716,6 @@ function JournalStart({
         <span className="w-2.5 h-2.5 border border-gold/70 rotate-45 shrink-0" />
       </div>
 
-
-      {/* вопрос */}
 
       <div className="pt-8">
         <h1
@@ -773,8 +740,6 @@ function JournalStart({
 
       <div className="flex-1 min-h-[70px]" />
 
-
-      {/* поле */}
 
       <div className="pb-3">
         <div className="min-h-[62px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center px-2 gap-2">
@@ -983,8 +948,6 @@ function Chat({
   return (
     <div className="w-full max-w-sm px-4 pb-24 flex flex-col h-[calc(100vh-180px)] animate-fade-in">
 
-      {/* шапка */}
-
       <div className="flex items-center gap-3 px-2 pb-3 mb-2 border-b border-cream/10">
 
         <button
@@ -1032,8 +995,6 @@ function Chat({
         </button>
       </div>
 
-
-      {/* сообщения */}
 
       <div className="flex-1 overflow-y-auto px-3 space-y-4 pb-3">
 
@@ -1130,8 +1091,6 @@ function Chat({
       </div>
 
 
-      {/* поле ввода */}
-
       <div className="px-2 pt-3">
         <div className="min-h-[56px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center gap-2 px-2">
 
@@ -1196,6 +1155,7 @@ function Chat({
 
 export default function MentalixChat({
   user,
+  onPersonaChange,
 }) {
   const [pending] = useState(
     () => readPendingMentor(),
@@ -1210,6 +1170,35 @@ export default function MentalixChat({
     useState(
       pending.draft,
     )
+
+
+  /*
+   * Сообщаем App.jsx,
+   * открыта ли конкретная персона.
+   *
+   * Благодаря этому App сам решает,
+   * показывать BottomNavigation или нет.
+   */
+  useEffect(() => {
+    onPersonaChange?.(
+      Boolean(persona)
+    )
+  }, [
+    persona,
+    onPersonaChange,
+  ])
+
+
+  /*
+   * Если пользователь уйдёт с вкладки
+   * каким-либо внешним способом,
+   * navbar не должен остаться скрытым.
+   */
+  useEffect(() => {
+    return () => {
+      onPersonaChange?.(false)
+    }
+  }, [onPersonaChange])
 
 
   if (!persona) {
