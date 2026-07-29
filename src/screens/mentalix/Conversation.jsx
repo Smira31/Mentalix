@@ -32,7 +32,16 @@ export default function Conversation({
   const Icon = meta.Icon
 
   return (
-    <div className="w-full max-w-sm px-4 pb-24 flex flex-col h-[calc(100vh-180px)] animate-fade-in">
+<div
+  className="w-full max-w-sm mx-auto px-4 flex flex-col overflow-hidden animate-fade-in"
+  style={{
+    height: '100dvh',
+    paddingTop:
+      'max(8px, env(safe-area-inset-top))',
+    paddingBottom:
+      'max(8px, env(safe-area-inset-bottom))',
+  }}
+>
       <div className="flex items-center gap-3 px-2 pb-3 mb-2 border-b border-cream/10">
         <button
           onClick={() => {
