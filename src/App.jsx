@@ -246,6 +246,22 @@ export default function App() {
   const [navCollapsed, setNavCollapsed] =
     useState(false)
 
+  /*
+   * Отдельное состояние:
+   * открыта ли конкретная AI-персона.
+   *
+   * false — экран выбора трёх персон,
+   *         navbar виден.
+   *
+   * true  — Собеседник / Наставник /
+   *         Следопыт открыт,
+   *         navbar полностью скрыт.
+   */
+  const [
+    mentorPersonaOpen,
+    setMentorPersonaOpen,
+  ] = useState(false)
+
 
   /*
    * Последняя реальная позиция скролла.
@@ -541,6 +557,16 @@ export default function App() {
     const processScroll = () => {
       scrollFrame.current = null
 
+      /*
+       * Пока открыта AI-персона,
+       * BottomNavigation вообще не рендерится,
+       * поэтому скролл не должен пытаться
+       * управлять его состоянием.
+       */
+      if (mentorPersonaOpen) {
+        return
+      }
+
       const currentY =
         Math.max(
           window.scrollY || 0,
@@ -681,7 +707,7 @@ export default function App() {
         scrollFrame.current = null
       }
     }
-  }, [])
+  }, [mentorPersonaOpen])
 
 
   /* ============================================================
@@ -701,6 +727,15 @@ export default function App() {
 
 
   function switchTab(key) {
+    /*
+     * При уходе с вкладки Наставник
+     * всегда сбрасываем состояние
+     * открытой персоны.
+     */
+    if (key !== 'mentor') {
+      setMentorPersonaOpen(false)
+    }
+
     if (key === tab) {
       window.scrollTo({
         top: 0,
@@ -742,6 +777,8 @@ export default function App() {
     useCallback((sub) => {
       platform.haptic('light')
 
+      setMentorPersonaOpen(false)
+
       setPracticesSub(
         sub || null
       )
@@ -764,6 +801,8 @@ export default function App() {
   const goMentor =
     useCallback(() => {
       platform.haptic('light')
+
+      setMentorPersonaOpen(false)
 
       setTab('mentor')
 
@@ -852,6 +891,17 @@ export default function App() {
     fullscreen
       ? 'calc(var(--app-safe-top) + 56px)'
       : 'var(--app-safe-top)'
+
+  /*
+   * На AI-персоне больше нет
+   * нижнего navbar, поэтому не оставляем
+   * под него искусственные 100px.
+   */
+  const contentBottomPadding =
+    tab === 'mentor' &&
+    mentorPersonaOpen
+      ? 'var(--app-safe-bottom)'
+      : 'calc(100px + var(--app-safe-bottom))'
 
 
   /* ============================================================
@@ -1069,7 +1119,7 @@ export default function App() {
         "
         style={{
           paddingBottom:
-            'calc(100px + var(--app-safe-bottom))',
+            contentBottomPadding,
         }}
       >
         {!user && (
@@ -1252,6 +1302,9 @@ export default function App() {
               tab === 'mentor' && (
                 <MentalixChat
                   user={user}
+                  onPersonaChange={
+                    setMentorPersonaOpen
+                  }
                 />
               )}
 
@@ -1271,6 +1324,10 @@ export default function App() {
                   onGoCheckin={() => {
                     platform.haptic(
                       'light'
+                    )
+
+                    setMentorPersonaOpen(
+                      false
                     )
 
                     setTab('today')
@@ -1301,20 +1358,25 @@ export default function App() {
           COLLAPSIBLE NAVIGATION
          ======================================================== */}
 
-      {user && !overlay && (
-        <BottomNavigation
-          tab={tab}
-          collapsed={
-            navCollapsed
-          }
-          onCollapseChange={
-            setNavCollapsed
-          }
-          onTabChange={
-            switchTab
-          }
-        />
-      )}
+      {user &&
+        !overlay &&
+        !(
+          tab === 'mentor' &&
+          mentorPersonaOpen
+        ) && (
+          <BottomNavigation
+            tab={tab}
+            collapsed={
+              navCollapsed
+            }
+            onCollapseChange={
+              setNavCollapsed
+            }
+            onTabChange={
+              switchTab
+            }
+          />
+        )}
     </div>
   )
 }
