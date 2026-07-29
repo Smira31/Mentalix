@@ -208,13 +208,13 @@ export default function Conversation({
                   key={index}
                   className="w-full"
                 >
-                  <div className="text-[11px] uppercase tracking-[0.16em] text-gold font-semibold mb-4">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-4">
                     {meta.name}
                   </div>
 
-                  <div className="text-[17px] leading-[1.66] text-cream/90 font-normal break-words whitespace-pre-wrap">
-                    {message.content}
-                  </div>
+                  <div className="text-[16px] leading-[1.72] tracking-[-0.01em] text-cream/90 font-normal break-words whitespace-pre-wrap">
+  {message.content}
+</div>
                 </div>
               )
             },
