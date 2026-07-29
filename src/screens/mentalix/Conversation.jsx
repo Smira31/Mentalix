@@ -106,29 +106,22 @@ export default function Conversation({
 
       {/* ── верхняя бренд-зона ── */}
 
-      <div
-  className="relative shrink-0 h-[190px] px-5"
+<div
+  className="relative shrink-0 px-5"
   style={{
-    paddingTop: '108px',
+    height:
+      'calc(var(--app-safe-top) + 150px)',
   }}
 >
+  {/* Следопыт — между Telegram-пинбарами */}
 
-  <button
-    type="button"
-    onClick={() => {
-      haptic('light')
-      onNewConversation()
+  <div
+    className="absolute left-1/2 -translate-x-1/2 text-center whitespace-nowrap"
+    style={{
+      top:
+        'calc(var(--app-safe-top) + 54px)',
     }}
-    className="absolute left-5 top-[108px] w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
-    aria-label="Назад"
   >
-    <ArrowLeft
-      size={25}
-      strokeWidth={1.7}
-    />
-  </button>
-
-className="absolute left-1/2 top-[104px] -translate-x-1/2 text-center whitespace-nowrap"
     <div className="text-[15px] font-semibold tracking-[0.04em] text-cream/95 uppercase leading-none">
       {meta.name}
     </div>
@@ -138,7 +131,31 @@ className="absolute left-1/2 top-[104px] -translate-x-1/2 text-center whitespace
     </div>
   </div>
 
+
+  {/* Назад — под кнопкой Telegram «Закрыть» */}
+
+  <button
+    type="button"
+    onClick={() => {
+      haptic('light')
+      onNewConversation()
+    }}
+    className="absolute left-5 w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
+    style={{
+      top:
+        'calc(var(--app-safe-top) + 105px)',
+    }}
+    aria-label="Назад"
+  >
+    <ArrowLeft
+      size={25}
+      strokeWidth={1.7}
+    />
+  </button>
 </div>
+
+
+{/* ── история сообщений ── */}
 
 
       {/* ── история сообщений ── */}
