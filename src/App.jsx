@@ -1106,17 +1106,13 @@ export default function App() {
          ======================================================== */}
 
       <div
-        key={overlay || tab}
-        className="
-          flex-1
-          w-full
-
-          flex
-          flex-col
-          items-center
-
-          animate-fade-in
-        "
+  key={overlay || tab}
+  className={[
+    'flex-1 w-full flex flex-col items-center',
+    mentorPersonaOpen
+      ? ''
+      : 'animate-fade-in',
+  ].join(' ')}
         style={{
           paddingBottom:
             contentBottomPadding,
