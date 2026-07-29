@@ -241,15 +241,27 @@ export default function Conversation({
 
       {/* ── composer ── */}
 
-      <div className="shrink-0 px-4 pt-2 pb-1">
-        <div className="min-h-[68px] rounded-[34px] bg-emerald-light/25 border border-cream/10 flex items-center gap-2 px-2.5">
+      <div
+
+  className="shrink-0 px-4 pt-3"
+
+  style={{
+
+    paddingBottom:
+
+      'max(10px, env(safe-area-inset-bottom))',
+
+  }}
+
+>
+        <div className="min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
 
           <button
             type="button"
             onClick={() => {
               haptic('light')
             }}
-            className="w-[52px] h-[52px] rounded-full border border-cream/15 bg-cream/[0.025] flex items-center justify-center text-cream/85 shrink-0 active:scale-90 transition-transform"
+            className="w-[54px] h-[54px] rounded-full border border-cream/15 bg-cream/[0.025] flex items-center justify-center text-cream/85 shrink-0 active:scale-90 transition-transform"
             aria-label="Добавить"
           >
             <Plus
