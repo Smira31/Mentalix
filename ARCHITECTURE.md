@@ -1,6 +1,9 @@
 # Mentalix — Architecture v1
 
-Статус: аудит публичного frontend-репозитория `Smira31/Mentalix`, ветка `main`, commit `6a0b4a70e57d38192ae4f95a04e5c886605b704b`. Приватный backend не проверялся.
+Статус: описание публичного frontend-репозитория `Smira31/Mentalix`,
+проверяемый baseline — ветка `main`, HEAD `2b731d4`. Предыдущий audit baseline:
+`6a0b4a70e57d38192ae4f95a04e5c886605b704b`. Приватный backend не
+проверялся.
 
 ## 1. Граница системы
 
