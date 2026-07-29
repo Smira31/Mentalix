@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import {
@@ -19,24 +19,24 @@ import QuoteView from './QuoteView'
 
 
 // ============================================================
-// Р’Р Р•РњР•РќРќРћ Р”Р›РЇ РўР•РЎРўРђ
-// РџРѕСЃР»Рµ РїСЂРѕРІРµСЂРєРё РІРµС‡РµСЂРЅРµРіРѕ СЃС†РµРЅР°СЂРёСЏ РїРѕРјРµРЅСЏРµРј РЅР° false.
+// ВРЕМЕННО ДЛЯ ТЕСТА
+// После проверки вечернего сценария поменяем на false.
 // ============================================================
 
 const FORCE_EVENING_REVIEW = false
 
 
-// в”Ђв”Ђ Р»РµРЅС‚Р° РЅРµРґРµР»Рё, РєР°Рє Сѓ stoic. в”Ђв”Ђ
+// ── лента недели, как у stoic. ──
 
 function WeekStrip() {
   const names = [
-    'Р’СЃ',
-    'РџРЅ',
-    'Р’С‚',
-    'РЎСЂ',
-    'Р§С‚',
-    'РџС‚',
-    'РЎР±',
+    'Вс',
+    'Пн',
+    'Вт',
+    'Ср',
+    'Чт',
+    'Пт',
+    'Сб',
   ]
 
   const now = new Date()
@@ -124,7 +124,7 @@ function deriveNextAction({
       kind: 'ritual',
       title:
         undoneRituals[0].name,
-      meta: 'СЂРёС‚СѓР°Р»',
+      meta: 'ритуал',
       sub: 'rituals',
     }
   }
@@ -144,7 +144,7 @@ function deriveNextAction({
       title:
         unmarkedAscezas[0].name,
       meta:
-        'Р°СЃРєРµР·Р° В· РѕС‚РјРµС‚СЊСЃСЏ С‡РµСЃС‚РЅРѕ',
+        'аскеза · отметься честно',
       sub: 'ascezas',
     }
   }
@@ -336,7 +336,7 @@ export default function Today({
 
 
   // ============================================================
-  // Р§Р•Рљ-РРќ / РђРќРђР›РР— Р”РќРЇ
+  // ЧЕК-ИН / АНАЛИЗ ДНЯ
   // ============================================================
 
   if (
@@ -362,7 +362,7 @@ export default function Today({
 
 
   // ============================================================
-  // РўР•РњРђ РќР•Р”Р•Р›Р
+  // ТЕМА НЕДЕЛИ
   // ============================================================
 
   if (
@@ -382,7 +382,7 @@ export default function Today({
 
 
   // ============================================================
-  // Р¦РРўРђРўР«
+  // ЦИТАТЫ
   // ============================================================
 
   if (
@@ -403,7 +403,7 @@ export default function Today({
 
 
   // ============================================================
-  // РџРЈРўР¬ / РРЎРўРћР РРЇ
+  // ПУТЬ / ИСТОРИЯ
   // ============================================================
 
   if (
@@ -420,7 +420,7 @@ export default function Today({
 
               setSub(null)
             }}
-            aria-label="РќР°Р·Р°Рґ"
+            aria-label="Назад"
             className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
           >
             <ChevronLeft
@@ -434,11 +434,11 @@ export default function Today({
             {[
               [
                 'path',
-                'РџСѓС‚СЊ',
+                'Путь',
               ],
               [
                 'history',
-                'РСЃС‚РѕСЂРёСЏ',
+                'История',
               ],
             ].map(
               ([
@@ -498,14 +498,14 @@ export default function Today({
   if (loading) {
     return (
       <p className="text-cream/40 text-sm px-6 pt-8">
-        Р—Р°РіСЂСѓР·РєР°...
+        Загрузка...
       </p>
     )
   }
 
 
   // ============================================================
-  // Р”РђРќРќР«Р• Р”РќРЇ
+  // ДАННЫЕ ДНЯ
   // ============================================================
 
   const total =
@@ -563,11 +563,11 @@ export default function Today({
     )
 
 
-  // Р’Р°Р¶РЅРѕРµ РёСЃРїСЂР°РІР»РµРЅРёРµ:
-  // СѓС‚СЂРµРЅРЅРёР№ С‡РµРє-РёРЅ Р±РѕР»СЊС€Рµ РќР• Р±Р»РѕРєРёСЂСѓРµС‚ РІРµС‡РµСЂРЅРёР№ СЂР°Р·Р±РѕСЂ.
+  // Важное исправление:
+  // утренний чек-ин больше НЕ блокирует вечерний разбор.
   //
-  // РџРѕСЃР»Рµ РЅР°СЃС‚СѓРїР»РµРЅРёСЏ reviewHour РїРѕРєР°Р·С‹РІР°РµРј Р°РЅР°Р»РёР· РґРЅСЏ,
-  // РїРѕРєР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ СЂРµР°Р»СЊРЅРѕ РЅРµ СЃРѕС…СЂР°РЅРёР» lessons РёР»Рё wins.
+  // После наступления reviewHour показываем анализ дня,
+  // пока пользователь реально не сохранил lessons или wins.
 
   const checkinAsHero =
     (
@@ -583,11 +583,11 @@ export default function Today({
 
 
   const MOOD_WORDS = [
-    'С‚СЏР¶РєРѕ',
-    'С‚Р°Рє СЃРµР±Рµ',
-    'РЅРѕСЂРјР°Р»СЊРЅРѕ',
-    'С…РѕСЂРѕС€Рѕ',
-    'РѕС‚Р»РёС‡РЅРѕ',
+    'тяжко',
+    'так себе',
+    'нормально',
+    'хорошо',
+    'отлично',
   ]
 
 
@@ -620,7 +620,7 @@ export default function Today({
 
 
       {/* ======================================================
-          Р“Р•Р РћР™-РљРђР РўРћР§РљРђ
+          ГЕРОЙ-КАРТОЧКА
           ====================================================== */}
 
       <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-10 text-center flex flex-col justify-center min-h-[54vh] animate-fade-in">
@@ -645,17 +645,17 @@ export default function Today({
         {checkinAsHero && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">
-              РђРЅР°Р»РёР· РґРЅСЏ
+              Анализ дня
             </div>
 
 
             <h2 className="font-display text-[28px] text-cream leading-tight">
-              Р Р°Р·РѕР±СЂР°С‚СЊ РґРµРЅСЊ?
+              Разобрать день?
             </h2>
 
 
             <p className="text-[14px] text-cream/50 mt-2">
-              РЈСЂРѕРєРё Рё С‚Рѕ, С‡РµРј СЃС‚РѕРёС‚ РіРѕСЂРґРёС‚СЊСЃСЏ
+              Уроки и то, чем стоит гордиться
             </p>
 
 
@@ -671,13 +671,13 @@ export default function Today({
               }}
               className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
             >
-              РќР°С‡Р°С‚СЊ
+              Начать
             </button>
 
 
             {next && (
               <p className="text-[12px] text-cream/35 mt-5">
-                Р”Р°Р»СЊС€Рµ:{' '}
+                Дальше:{' '}
                 {next.title}
               </p>
             )}
@@ -689,17 +689,17 @@ export default function Today({
           && isEmpty && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">
-              РўРІРѕР№ РїСѓС‚СЊ Р¶РґС‘С‚
+              Твой путь ждёт
             </div>
 
 
             <h2 className="font-display text-[26px] text-cream leading-tight">
-              Р”РѕР±Р°РІСЊ РїРµСЂРІС‹Р№ СЂРёС‚СѓР°Р»
+              Добавь первый ритуал
             </h2>
 
 
             <p className="text-[14px] text-cream/50 mt-2">
-              РЎРёСЃС‚РµРјР° СЂР°Р±РѕС‚Р°РµС‚ С‡РµСЂРµР· СЂРµРіСѓР»СЏСЂРЅРѕСЃС‚СЊ вЂ” РЅР°С‡РЅРё СЃ РѕРґРЅРѕРіРѕ
+              Система работает через регулярность — начни с одного
             </p>
 
 
@@ -715,7 +715,7 @@ export default function Today({
               }}
               className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
             >
-              РќР°С‡Р°С‚СЊ
+              Начать
             </button>
           </>
         )}
@@ -726,7 +726,7 @@ export default function Today({
           && next && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">
-              РЎР°РјРѕРµ РІР°Р¶РЅРѕРµ
+              Самое важное
             </div>
 
 
@@ -752,14 +752,14 @@ export default function Today({
               }}
               className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
             >
-              РќР°С‡Р°С‚СЊ
+              Начать
             </button>
 
 
             <p className="text-[12px] text-cream/35 mt-5">
               {remainAfter > 0
-                ? `РџРѕСЃР»Рµ СЌС‚РѕРіРѕ РѕСЃС‚Р°РЅРµС‚СЃСЏ: ${remainAfter}`
-                : 'Р­С‚Рѕ РїРѕСЃР»РµРґРЅРµРµ РЅР° СЃРµРіРѕРґРЅСЏ'}
+                ? `После этого останется: ${remainAfter}`
+                : 'Это последнее на сегодня'}
             </p>
           </>
         )}
@@ -770,17 +770,17 @@ export default function Today({
           && !next && (
           <>
             <div className="text-[13px] text-cream/40 font-semibold mb-2">
-              РџСѓС‚СЊ РїСЂРѕРґРѕР»Р¶Р°РµС‚СЃСЏ
+              Путь продолжается
             </div>
 
 
             <h2 className="font-display text-[26px] text-cream leading-tight">
-              РЎРµРіРѕРґРЅСЏ С‚С‹ РІС‹С€Рµ, С‡РµРј РІС‡РµСЂР°
+              Сегодня ты выше, чем вчера
             </h2>
 
 
             <p className="text-[14px] text-cream/50 mt-2">
-              Р’СЃРµ РїСЂР°РєС‚РёРєРё Р·Р°РєСЂС‹С‚С‹
+              Все практики закрыты
             </p>
 
 
@@ -794,7 +794,7 @@ export default function Today({
               }}
               className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
             >
-              РџРѕРіРѕРІРѕСЂРёС‚СЊ СЃ РЅР°СЃС‚Р°РІРЅРёРєРѕРј
+              Поговорить с наставником
             </button>
           </>
         )}
@@ -802,23 +802,23 @@ export default function Today({
 
 
       {/* ======================================================
-          РџРЈР›Р¬РЎ
+          ПУЛЬС
           ====================================================== */}
 
       {activeToday !== null
         && activeToday > 1 && (
           <p className="text-center text-[12px] text-cream/30 font-semibold mt-4">
             {activeToday < 20
-              ? `РЎРµРіРѕРґРЅСЏ РІ РїСѓС‚Рё РІРјРµСЃС‚Рµ СЃ С‚РѕР±РѕР№: ${activeToday}`
-              : `РЎРµРіРѕРґРЅСЏ СЃРІРѕР№ РїСѓС‚СЊ РїСЂРѕРґРѕР»Р¶РёР»Рё ${activeToday.toLocaleString(
+              ? `Сегодня в пути вместе с тобой: ${activeToday}`
+              : `Сегодня свой путь продолжили ${activeToday.toLocaleString(
                   'ru-RU',
-                )} С‡РµР»РѕРІРµРє`}
+                )} человек`}
           </p>
         )}
 
 
       {/* ======================================================
-          РЈРўР Р•РќРќРР™ Р§Р•Рљ-РРќ
+          УТРЕННИЙ ЧЕК-ИН
           ====================================================== */}
 
       {!checkinAsHero
@@ -846,12 +846,12 @@ export default function Today({
 
             <span className="flex-1 text-left">
               <span className="block text-[14px] font-bold text-cream">
-                РљР°Рє С‚С‹?
+                Как ты?
               </span>
 
 
               <span className="block text-[12px] text-cream/40 font-medium">
-                РљРѕСЂРѕС‚РєРёР№ С‡РµРє-РёРЅ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+                Короткий чек-ин состояния
               </span>
             </span>
 
@@ -878,23 +878,23 @@ export default function Today({
           className="w-full rounded-3xl bg-emerald/60 px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-sm font-bold shrink-0">
-            вњ“
+            ✓
           </span>
 
 
           <span className="flex-1 text-left">
             <span className="block text-[14px] font-bold text-cream">
               {eveningReviewDone
-                ? 'Р”РµРЅСЊ СЂР°Р·РѕР±СЂР°РЅ'
-                : 'Р§РµРє-РёРЅ РІС‹РїРѕР»РЅРµРЅ'}
+                ? 'День разобран'
+                : 'Чек-ин выполнен'}
             </span>
 
 
             <span className="block text-[12px] text-cream/40 font-medium">
               {checkin.emotion
-                ? `${checkin.emotion} В· `
+                ? `${checkin.emotion} · `
                 : ''}
-              РЅР°СЃС‚СЂРѕРµРЅРёРµ:{' '}
+              настроение:{' '}
               {
                 MOOD_WORDS[
                   (
@@ -908,14 +908,14 @@ export default function Today({
 
 
           <span className="text-[12px] font-semibold text-cream/35 shrink-0">
-            РёР·РјРµРЅРёС‚СЊ
+            изменить
           </span>
         </button>
       )}
 
 
       {/* ======================================================
-          РџРЈРўР¬
+          ПУТЬ
           ====================================================== */}
 
       {!isEmpty && (
@@ -937,7 +937,7 @@ export default function Today({
 
 
           <span className="text-[14px] font-bold text-cream whitespace-nowrap">
-            РџСѓС‚СЊ
+            Путь
           </span>
 
 
@@ -966,7 +966,7 @@ export default function Today({
 
 
       {/* ======================================================
-          РўР•РњРђ РќР•Р”Р•Р›Р
+          ТЕМА НЕДЕЛИ
           ====================================================== */}
 
       {theme && (
@@ -983,7 +983,7 @@ export default function Today({
           className="w-full rounded-[28px] bg-emerald px-6 py-7 mt-4 text-center border-0 active:scale-[0.99] transition-transform animate-fade-in"
         >
           <span className="block text-[11px] text-cream/35 font-bold uppercase tracking-wider mb-2">
-            РўРµРјР° РЅРµРґРµР»Рё
+            Тема недели
           </span>
 
 
@@ -1019,8 +1019,8 @@ export default function Today({
 
           <span className="block text-[12px] text-cream/35 font-semibold mt-3">
             {theme.reflected_days > 0
-              ? `РџСЂРѕР№РґРµРЅРѕ РґРЅРµР№: ${theme.reflected_days} РёР· ${theme.total_days}`
-              : 'РќР°С‡Р°С‚СЊ РЅРµРґРµР»СЋ'}
+              ? `Пройдено дней: ${theme.reflected_days} из ${theme.total_days}`
+              : 'Начать неделю'}
           </span>
         </button>
       )}
@@ -1042,7 +1042,7 @@ export default function Today({
 
 
       {/* ======================================================
-          РњР«РЎР›Р¬ Р”РќРЇ
+          МЫСЛЬ ДНЯ
           ====================================================== */}
 
       {dailyQuote && (
@@ -1059,7 +1059,7 @@ export default function Today({
           className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block text-[12px] text-cream/40 font-semibold mb-3">
-            РњС‹СЃР»СЊ РґРЅСЏ
+            Мысль дня
           </span>
 
 
@@ -1069,7 +1069,7 @@ export default function Today({
 
 
           <span className="block text-[11px] text-cream/30 font-semibold mt-4">
-            РѕС‚РєСЂС‹С‚СЊ РІСЃРµ в†’
+            открыть все →
           </span>
         </button>
       )}
