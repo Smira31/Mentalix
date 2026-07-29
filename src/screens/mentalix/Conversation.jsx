@@ -126,7 +126,7 @@ useEffect(() => {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-3 space-y-4 pb-3">
+<div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 space-y-4 pb-3">
         {loading && (
           <p className="text-cream/40 text-[15px] text-center pt-4">
             Загрузка...
@@ -209,7 +209,7 @@ useEffect(() => {
         <div ref={endRef} />
       </div>
 
-      <div className="px-2 pt-3">
+<div className="shrink-0 px-2 pt-3">
         <div className="min-h-[56px] rounded-full border border-cream/15 bg-emerald-light/15 flex items-center gap-2 px-2">
           <button
             type="button"
