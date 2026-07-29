@@ -848,6 +848,11 @@ export default function App() {
     !overlay &&
     tab === 'today'
 
+  const topSafeArea =
+    fullscreen
+      ? 'calc(var(--app-safe-top) + 12px)'
+      : 'var(--app-safe-top)'
+
 
   /* ============================================================
      UI
@@ -866,7 +871,7 @@ export default function App() {
       "
       style={{
         paddingTop:
-          'var(--app-safe-top)',
+          topSafeArea,
         paddingRight:
           'var(--app-safe-right)',
         paddingLeft:
@@ -899,7 +904,7 @@ export default function App() {
             "
             style={{
               height:
-                'var(--app-safe-top)',
+                topSafeArea,
             }}
           >
             <span
