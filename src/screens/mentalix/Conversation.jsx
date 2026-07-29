@@ -50,7 +50,8 @@ useEffect(() => {
   setViewportHeight(viewport.height)
   setViewportTop(viewport.offsetTop || 0)
 }
-  }
+
+updateViewport()
 
   updateViewport()
 
@@ -93,15 +94,19 @@ useEffect(() => {
 >
 <div className="shrink-0 flex items-center gap-3 px-5 pb-3 border-b border-cream/10">
         <button
-          onClick={() => {
-            haptic('light')
-            onNewConversation()
-          }}
-          className="text-cream/60 shrink-0"
-          aria-label="Назад"
-        >
-          <ArrowLeft size={20} />
-        </button>
+  type="button"
+  onClick={() => {
+    haptic('light')
+    onNewConversation()
+  }}
+  className="w-11 h-11 rounded-full flex items-center justify-center text-cream/60 shrink-0 active:scale-90 transition-transform"
+  aria-label="Назад"
+>
+  <ArrowLeft
+    size={22}
+    strokeWidth={1.8}
+  />
+</button>
 
         <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
           <Icon
