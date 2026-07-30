@@ -212,9 +212,7 @@ return (
     loading={loading}
     sending={sending}
     onSend={send}
-    onNewConversation={() => {
-      setJournalOpen(true)
-    }}
+    onBack={onBack}
     endRef={endRef}
   />
 )

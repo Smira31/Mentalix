@@ -40,6 +40,26 @@ function ScoreScreen({ label, score, sub, onDone }) {
   )
 }
 
+function ActiveGameFrame({ onExit, children }) {
+  return (
+    <div className="w-full flex flex-col items-center">
+      <div className="w-full max-w-sm px-6">
+        <button
+          type="button"
+          onClick={onExit}
+          className="p-2 -ml-2 text-cream/60 active:opacity-60 flex items-center gap-2"
+          aria-label="Вернуться в Практики"
+        >
+          <ArrowLeft size={18} />
+          <span className="text-sm">Практики</span>
+        </button>
+      </div>
+
+      {children}
+    </div>
+  )
+}
+
 // ---------- 1. Внимание — Струп-тест ----------
 const COLORS = [
   { name: 'Красный', hex: '#E85C5C' },
@@ -351,11 +371,35 @@ function GymnasticsGame({ onFinish }) {
 }
 
 // ---------- Основной экран ----------
-export default function BrainTrainer({ user, onBack }) {
+export default function BrainTrainer({
+  user,
+  onBack,
+  onActiveChange,
+}) {
   const [summary, setSummary] = useState(null)
   const [active, setActive] = useState(null)
   const [result, setResult] = useState(null)
   const startTimeRef = useRef(null)
+
+  const gameOpen =
+    active !== null
+    || result !== null
+
+
+  useEffect(() => {
+    onActiveChange?.(gameOpen)
+  }, [
+    gameOpen,
+    onActiveChange,
+  ])
+
+
+  useEffect(() => {
+    return () => {
+      onActiveChange?.(false)
+    }
+  }, [onActiveChange])
+
 
   useEffect(() => {
     if (!user) return
@@ -392,11 +436,35 @@ export default function BrainTrainer({ user, onBack }) {
     loadSummary()
   }
 
-  if (active === 'attention') return <AttentionGame onFinish={finish} />
-  if (active === 'memory') return <MemoryGame onFinish={finish} />
-  if (active === 'reaction') return <ReactionGame onFinish={finish} />
-  if (active === 'plasticity') return <PlasticityGame onFinish={finish} />
-  if (active === 'gymnastics') return <GymnasticsGame onFinish={finish} />
+  let activeGame = null
+
+  if (active === 'attention') {
+    activeGame = <AttentionGame onFinish={finish} />
+  }
+
+  if (active === 'memory') {
+    activeGame = <MemoryGame onFinish={finish} />
+  }
+
+  if (active === 'reaction') {
+    activeGame = <ReactionGame onFinish={finish} />
+  }
+
+  if (active === 'plasticity') {
+    activeGame = <PlasticityGame onFinish={finish} />
+  }
+
+  if (active === 'gymnastics') {
+    activeGame = <GymnasticsGame onFinish={finish} />
+  }
+
+  if (activeGame) {
+    return (
+      <ActiveGameFrame onExit={onBack}>
+        {activeGame}
+      </ActiveGameFrame>
+    )
+  }
 
   if (result) {
     const ex = EXERCISES.find((e) => e.key === result.key)
@@ -405,7 +473,7 @@ export default function BrainTrainer({ user, onBack }) {
         label={ex.title}
         sub="Сессия завершена"
         score={result.score}
-        onDone={() => setResult(null)}
+        onDone={onBack}
       />
     )
   }

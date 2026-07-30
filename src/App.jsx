@@ -262,6 +262,21 @@ export default function App() {
     setMentorPersonaOpen,
   ] = useState(false)
 
+  const [
+    todayFlowOpen,
+    setTodayFlowOpen,
+  ] = useState(false)
+
+  const [
+    practiceGameOpen,
+    setPracticeGameOpen,
+  ] = useState(false)
+
+  const bottomNavigationHidden =
+    mentorPersonaOpen
+    || todayFlowOpen
+    || practiceGameOpen
+
 
   /*
    * Последняя реальная позиция скролла.
@@ -563,7 +578,7 @@ export default function App() {
        * поэтому скролл не должен пытаться
        * управлять его состоянием.
        */
-      if (mentorPersonaOpen) {
+      if (bottomNavigationHidden) {
         return
       }
 
@@ -707,7 +722,7 @@ export default function App() {
         scrollFrame.current = null
       }
     }
-  }, [mentorPersonaOpen])
+  }, [bottomNavigationHidden])
 
 
   /* ============================================================
@@ -1278,6 +1293,9 @@ export default function App() {
                   onGoMentor={
                     goMentor
                   }
+                  onFlowChange={
+                    setTodayFlowOpen
+                  }
                 />
               )}
 
@@ -1289,6 +1307,9 @@ export default function App() {
                   user={user}
                   initialSub={
                     practicesSub
+                  }
+                  onGameChange={
+                    setPracticeGameOpen
                   }
                 />
               )}
@@ -1356,10 +1377,7 @@ export default function App() {
 
       {user &&
         !overlay &&
-        !(
-          tab === 'mentor' &&
-          mentorPersonaOpen
-        ) && (
+        !bottomNavigationHidden && (
           <BottomNavigation
             tab={tab}
             collapsed={

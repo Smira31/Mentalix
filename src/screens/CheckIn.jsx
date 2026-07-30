@@ -11,6 +11,17 @@ const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
 const DAY_REVIEW_PROMPT =
   'Разбери мой сегодняшний день. Опирайся только на реальные данные Mentalix: моё состояние, ритуалы, аскезы, срывы, их причины, вечерние выводы и то, чем я горжусь. Дай один главный вывод, максимум две закономерности и один конкретный эксперимент на завтра. Если данных для вывода недостаточно — скажи об этом прямо.'
 
+const CHECKIN_VIEWPORT_STYLE = {
+  paddingTop: 'var(--app-safe-top)',
+  paddingBottom: 'var(--app-safe-bottom)',
+}
+
+const CHECKIN_HEADER_SLOT_CLASS =
+  'h-[52px] shrink-0'
+
+const CHECKIN_CONTENT_CLASS =
+  'w-full shrink-0 flex flex-col items-center px-6 pt-6 pb-8 animate-fade-in'
+
 
 // ── Чек-ин и вечерний «Анализ дня» ──
 // Утром: четыре шкалы + короткая мысль → note.
@@ -490,58 +501,79 @@ export default function CheckIn({
   if (step >= doneStep) {
     return (
       <div
-        className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col items-center justify-center px-8 text-center animate-fade-in"
-        style={{
-          paddingTop:
-            'var(--tg-top, 0px)',
-        }}
+        className="fixed inset-0 z-[60] bg-emerald-deep overflow-y-auto animate-fade-in"
+        style={CHECKIN_VIEWPORT_STYLE}
       >
-        {isEvening ? (
-          <ArtDoor
-            size={140}
-            className="mb-4"
-          />
-        ) : null}
+        <div
+          className={
+            CHECKIN_HEADER_SLOT_CLASS
+          }
+          aria-hidden="true"
+        />
+
+        <div
+          className={`${CHECKIN_CONTENT_CLASS} text-center`}
+        >
+          {isEvening ? (
+            <ArtDoor
+              size={140}
+              className="mb-4"
+            />
+          ) : null}
 
 
-        <div className="animate-celebrate-pop mb-6">
-          <Face
-            level={
-              values.mood || 4
-            }
-            active
-            size={
-              isEvening
-                ? 64
-                : 88
-            }
-          />
-        </div>
+          <div className="animate-celebrate-pop mb-6">
+            <Face
+              level={
+                values.mood || 4
+              }
+              active
+              size={
+                isEvening
+                  ? 64
+                  : 88
+              }
+            />
+          </div>
 
 
-        <h2 className="font-display text-[26px] text-cream leading-tight">
-          {isEvening
-            ? 'День закрыт'
-            : 'Чек-ин записан'}
-        </h2>
+          <h2 className="font-display text-[26px] text-cream leading-tight">
+            {isEvening
+              ? 'День закрыт'
+              : 'Чек-ин записан'}
+          </h2>
 
 
-        <p className="text-[15px] text-cream/50 mt-3 leading-relaxed max-w-sm">
-          {isEvening
-            ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
-            : 'Ты услышал себя — это тоже шаг.'}
-        </p>
+          <p className="text-[15px] text-cream/50 mt-3 leading-relaxed max-w-sm">
+            {isEvening
+              ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
+              : 'Ты услышал себя — это тоже шаг.'}
+          </p>
 
 
-        {isEvening ? (
-          <div className="w-full max-w-xs mt-9 flex flex-col gap-3">
-            <button
-              onClick={openScout}
-              className="cta-pill w-full text-[16px] px-6 py-4"
-            >
-              Разобрать со Следопытом
-            </button>
+          {isEvening ? (
+            <div className="w-full max-w-xs mt-9 flex flex-col gap-3">
+              <button
+                onClick={openScout}
+                className="cta-pill w-full text-[16px] px-6 py-4"
+              >
+                Разобрать со Следопытом
+              </button>
 
+              <button
+                onClick={() => {
+                  platform.haptic(
+                    'light',
+                  )
+
+                  onDone()
+                }}
+                className="w-full text-[14px] font-semibold text-cream/40 bg-transparent border-0 py-3"
+              >
+                Ко сну
+              </button>
+            </div>
+          ) : (
             <button
               onClick={() => {
                 platform.haptic(
@@ -550,25 +582,12 @@ export default function CheckIn({
 
                 onDone()
               }}
-              className="w-full text-[14px] font-semibold text-cream/40 bg-transparent border-0 py-3"
+              className="cta-pill text-[16px] px-12 py-4 mt-10"
             >
-              Ко сну
+              К дню
             </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => {
-              platform.haptic(
-                'light',
-              )
-
-              onDone()
-            }}
-            className="cta-pill text-[16px] px-12 py-4 mt-10"
-          >
-            К дню
-          </button>
-        )}
+          )}
+        </div>
       </div>
     )
   }
@@ -596,13 +615,12 @@ export default function CheckIn({
 
   return (
     <div
-      className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col animate-fade-in overflow-y-auto"
-      style={{
-        paddingTop:
-          'var(--tg-top, 0px)',
-      }}
+      className="fixed inset-0 z-[60] bg-emerald-deep animate-fade-in overflow-y-auto"
+      style={CHECKIN_VIEWPORT_STYLE}
     >
-      <div className="flex items-center justify-between px-5 pt-5">
+      <div
+        className={`${CHECKIN_HEADER_SLOT_CLASS} flex items-end justify-between px-5`}
+      >
         <button
           onClick={() => {
             platform.haptic(
@@ -668,7 +686,9 @@ export default function CheckIn({
       {!isCard && !isEmotionStep && (
         <div
           key={step}
-          className="flex-1 flex flex-col items-center justify-center px-6 py-8 animate-fade-in"
+          className={
+            CHECKIN_CONTENT_CLASS
+          }
         >
           <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide">
             {isEvening
@@ -757,7 +777,9 @@ export default function CheckIn({
       {isEmotionStep && (
         <div
           key="emo"
-          className="flex-1 flex flex-col justify-center px-6 py-8 animate-fade-in"
+          className={
+            CHECKIN_CONTENT_CLASS
+          }
         >
           <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
             {isEvening
@@ -862,7 +884,9 @@ export default function CheckIn({
       {isCard && cardIdx === 0 && (
         <div
           key="c1"
-          className="flex-1 flex flex-col justify-center px-6 py-8 animate-fade-in"
+          className={
+            CHECKIN_CONTENT_CLASS
+          }
         >
           <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
             {isEvening
@@ -1014,7 +1038,9 @@ export default function CheckIn({
       {isCard && cardIdx === 1 && (
         <div
           key="c2"
-          className="flex-1 flex flex-col justify-center px-6 py-8 animate-fade-in"
+          className={
+            CHECKIN_CONTENT_CLASS
+          }
         >
           <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
             Анализ дня ·{' '}

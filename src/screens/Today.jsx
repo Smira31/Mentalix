@@ -153,6 +153,7 @@ export default function Today({
   user,
   onOpenPractice,
   onGoMentor,
+  onFlowChange,
 }) {
   const [rituals, setRituals] =
     useState([])
@@ -189,6 +190,23 @@ export default function Today({
 
   const [pathTab, setPathTab] =
     useState('path')
+
+
+  function changeSub(nextSub) {
+    onFlowChange?.(
+      nextSub === 'checkin'
+      || nextSub === 'theme',
+    )
+
+    setSub(nextSub)
+  }
+
+
+  useEffect(() => {
+    return () => {
+      onFlowChange?.(false)
+    }
+  }, [onFlowChange])
 
 
   async function refreshCheckin() {
@@ -357,7 +375,7 @@ export default function Today({
         onDone={async () => {
           await refreshCheckin()
 
-          setSub(null)
+          changeSub(null)
         }}
       />
     )
@@ -377,7 +395,7 @@ export default function Today({
         user={user}
         themeId={theme.id}
         onBack={() =>
-          setSub(null)
+          changeSub(null)
         }
       />
     )
@@ -398,7 +416,7 @@ export default function Today({
           dailyQuote
         }
         onClose={() =>
-          setSub(null)
+          changeSub(null)
         }
       />
     )
@@ -421,7 +439,7 @@ export default function Today({
                 'light',
               )
 
-              setSub(null)
+              changeSub(null)
             }}
             aria-label="Назад"
             className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
@@ -652,7 +670,7 @@ export default function Today({
                   'medium',
                 )
 
-                setSub(
+                changeSub(
                   'checkin',
                 )
               }}
@@ -844,7 +862,7 @@ export default function Today({
               'light',
             )
 
-            setSub(
+            changeSub(
               'checkin',
             )
           }}
@@ -899,7 +917,7 @@ export default function Today({
               'light',
             )
 
-            setSub('path')
+            changeSub('path')
           }}
           className="w-full rounded-3xl bg-emerald px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
@@ -950,7 +968,7 @@ export default function Today({
               'light',
             )
 
-            setSub(
+            changeSub(
               'theme',
             )
           }}
@@ -1002,7 +1020,7 @@ export default function Today({
 
       <QuickAdd
         onCheckin={() =>
-          setSub(
+          changeSub(
             'checkin',
           )
         }
@@ -1026,7 +1044,7 @@ export default function Today({
               'light',
             )
 
-            setSub(
+            changeSub(
               'quote',
             )
           }}

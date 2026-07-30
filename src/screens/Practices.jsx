@@ -71,6 +71,7 @@ function SubHeader({ title, onBack }) {
 export default function Practices({
   user,
   initialSub = null,
+  onGameChange,
 }) {
   const [sub, setSub] = useState(initialSub)
   const [rituals, setRituals] = useState([])
@@ -126,6 +127,7 @@ export default function Practices({
       <BrainTrainer
         user={user}
         onBack={() => setSub(null)}
+        onActiveChange={onGameChange}
       />
     )
   }
