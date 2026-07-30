@@ -6,6 +6,34 @@ import { Plus, X, Sparkles, Shield, Wind, MessageCircle } from 'lucide-react'
 // Сложность спрятана, пока она не нужна: на главной одна кнопка,
 // по тапу — короткий список того, что можно сделать прямо сейчас.
 
+/*
+ * ГЕОМЕТРИЯ ОТНОСИТЕЛЬНО НИЖНЕЙ НАВИГАЦИИ
+ *
+ * Раньше здесь стояли env(safe-area-inset-bottom) + 88px и + 152px —
+ * числа, взятые на глаз. Проблема была не в числах, а в базе: навбар
+ * считает свою позицию от --app-safe-bottom, то есть от максимума
+ * системного inset и отступов, которые сообщает Telegram. В Telegram
+ * эти значения расходятся, и кнопка наезжала на навигацию.
+ *
+ * Теперь всё выводится из одного контракта навбара:
+ *   навбар:      bottom = --app-safe-bottom + 12
+ *   высота:      68px в развёрнутом виде
+ *   зазор:       8px
+ *
+ * Отсюда: кнопка = 12 + 68 + 8 = 88, стопка = 88 + 56 + 8 = 152.
+ */
+
+const NAV_OFFSET = 12
+const NAV_HEIGHT = 68
+const GAP = 8
+const FAB_SIZE = 56
+
+const FAB_BOTTOM =
+  `calc(var(--app-safe-bottom) + ${NAV_OFFSET + NAV_HEIGHT + GAP}px)`
+
+const ACTIONS_BOTTOM =
+  `calc(var(--app-safe-bottom) + ${NAV_OFFSET + NAV_HEIGHT + GAP + FAB_SIZE + GAP}px)`
+
 function Item({ Icon, label, hint, onClick, delay, open }) {
   return (
     <button
@@ -67,7 +95,7 @@ export default function QuickAdd({ onCheckin, onPractice, onMentor }) {
       {/* стопка действий */}
       <div
         className="fixed left-0 right-0 z-[56] px-8 max-w-md mx-auto flex flex-col gap-2.5"
-        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 152px)', pointerEvents: open ? 'auto' : 'none' }}
+        style={{ bottom: ACTIONS_BOTTOM, pointerEvents: open ? 'auto' : 'none' }}
       >
         {items.map((it, i) => (
           <Item key={it.label} {...it} open={open} delay={open ? i * 40 : (items.length - i) * 25} />
@@ -80,7 +108,7 @@ export default function QuickAdd({ onCheckin, onPractice, onMentor }) {
         aria-label={open ? 'Закрыть' : 'Быстрое действие'}
         className="fixed left-1/2 z-[57] w-14 h-14 rounded-full bg-cream text-emerald-deep flex items-center justify-center border-0 active:scale-90 transition-transform"
         style={{
-          bottom: 'calc(env(safe-area-inset-bottom) + 88px)',
+          bottom: FAB_BOTTOM,
           transform: `translateX(-50%) rotate(${open ? 135 : 0}deg)`,
           transition: 'transform 320ms cubic-bezier(0.22,1,0.36,1)',
           boxShadow: '0 10px 30px rgba(0,0,0,0.45)',
