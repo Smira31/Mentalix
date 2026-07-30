@@ -15,10 +15,16 @@ const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
 const DAY_REVIEW_PROMPT =
   'Разбери мой сегодняшний день. Опирайся только на реальные данные Mentalix: моё состояние, ритуалы, аскезы, срывы, их причины, вечерние выводы и то, чем я горжусь. Дай один главный вывод, максимум две закономерности и один конкретный эксперимент на завтра. Если данных для вывода недостаточно — скажи об этом прямо.'
 
-const CHECKIN_VIEWPORT_STYLE = {
-  paddingTop: 'var(--app-safe-top)',
-  paddingBottom: 'var(--app-safe-bottom)',
-}
+/*
+ * Telegram в fullscreen рисует свои
+ * контролы («Закрыть», меню) поверх
+ * веб-вью. App.jsx компенсирует их теми
+ * же 56px — CheckIn обязан совпадать,
+ * иначе его собственные «назад» и
+ * «крестик» уезжают под контролы
+ * Telegram и перестают нажиматься.
+ */
+const TG_CONTROLS_HEIGHT = 56
 
 const CHECKIN_HEADER_SLOT_CLASS =
   'h-[52px] shrink-0'
@@ -26,14 +32,29 @@ const CHECKIN_HEADER_SLOT_CLASS =
 const CHECKIN_SHELL_CLASS =
   'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden animate-fade-in'
 
+/*
+ * Одна прокручиваемая область на весь
+ * остаток экрана; содержимое внутри
+ * центрируется по вертикали через
+ * m-auto. Пока контент ниже экрана —
+ * он стоит по центру, как только выше
+ * (клавиатура) — область скроллится и
+ * ничего не обрезается.
+ */
+const CHECKIN_SCROLL_CLASS =
+  'w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
+
+const CHECKIN_CENTER_CLASS =
+  'w-full m-auto px-6 py-6 flex flex-col items-center'
+
 const CHECKIN_QUESTION_CLASS =
-  'w-full shrink-0 px-6 pt-6 text-center'
+  'w-full text-center'
 
 const CHECKIN_INTERACTIVE_CLASS =
-  'w-full flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-6 px-6 pt-6 pb-8'
+  'w-full pt-7'
 
 const CHECKIN_SUCCESS_CLASS =
-  'w-full flex flex-col items-center px-6 pt-6 pb-8 text-center'
+  'w-full flex flex-col items-center text-center'
 
 
 // ── Чек-ин и вечерний «Анализ дня» ──
@@ -386,8 +407,60 @@ export default function CheckIn({
   }, [])
 
 
+  /*
+   * Тот же признак fullscreen, что и в
+   * App.jsx: если Telegram развернул
+   * приложение на весь экран, сверху
+   * нужно оставить место под его
+   * собственные контролы.
+   */
+  const [tgFullscreen, setTgFullscreen] =
+    useState(() =>
+      Boolean(
+        window.Telegram
+          ?.WebApp
+          ?.isFullscreen,
+      ),
+    )
+
+
+  useEffect(() => {
+    const webApp =
+      window.Telegram?.WebApp
+
+    if (!webApp?.onEvent) return
+
+    const sync = () => {
+      setTgFullscreen(
+        Boolean(
+          webApp.isFullscreen,
+        ),
+      )
+    }
+
+    sync()
+
+    webApp.onEvent(
+      'fullscreenChanged',
+      sync,
+    )
+
+    return () => {
+      webApp.offEvent?.(
+        'fullscreenChanged',
+        sync,
+      )
+    }
+  }, [])
+
+
   const viewportStyle = {
-    ...CHECKIN_VIEWPORT_STYLE,
+    paddingTop: tgFullscreen
+      ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
+      : 'var(--app-safe-top)',
+
+    paddingBottom:
+      'var(--app-safe-bottom)',
 
     height: viewportHeight
       ? `${viewportHeight}px`
@@ -593,7 +666,16 @@ export default function CheckIn({
           aria-hidden="true"
         />
 
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+        <div
+          className={
+            CHECKIN_SCROLL_CLASS
+          }
+        >
+          <div
+            className={
+              CHECKIN_CENTER_CLASS
+            }
+          >
           <div
             className={
               CHECKIN_SUCCESS_CLASS
@@ -672,6 +754,7 @@ export default function CheckIn({
                 К дню
               </button>
             )}
+          </div>
           </div>
         </div>
       </div>,
@@ -815,6 +898,18 @@ export default function CheckIn({
         </button>
       </div>
 
+      <div
+        className={
+          CHECKIN_SCROLL_CLASS
+        }
+        style={interactiveStyle}
+      >
+      <div
+        className={
+          CHECKIN_CENTER_CLASS
+        }
+      >
+
       <section
         className={
           CHECKIN_QUESTION_CLASS
@@ -837,7 +932,6 @@ export default function CheckIn({
         className={
           CHECKIN_INTERACTIVE_CLASS
         }
-        style={interactiveStyle}
       >
 
       {/* ── шкалы ── */}
@@ -1214,6 +1308,8 @@ export default function CheckIn({
           </div>
         </div>
       )}
+      </div>
+      </div>
       </div>
     </div>,
     document.body,
