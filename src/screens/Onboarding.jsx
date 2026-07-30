@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { ChevronLeft, Check } from 'lucide-react'
 import MazeLogo from '../components/MazeLogo'
 import { ArtThread, ArtSteps, ArtDoor, ArtShield, ArtLantern } from '../components/Art'
+import { useFullscreenSurface } from '../lib/fullscreenSurface'
 
 // ── Онбординг по схеме stoic.: приветствие → вопросы о себе →
 // напоминания → «план готов» с зеркалом ответов ──
@@ -88,6 +89,15 @@ export default function Onboarding({ user, onFinish }) {
   const [reminder, setReminder] = useState('morning')
   const [revealed, setRevealed] = useState(0)
 
+  /*
+   * Раньше отступ сверху запрашивался как var(--tg-top, 0px),
+   * но такой переменной в проекте нет — она нигде не объявлена.
+   * Значит фактически применялся 0px, и в fullscreen онбординг
+   * лез под контролы Telegram. Теперь экран живёт по тому же
+   * контракту, что CheckIn и «Тема недели».
+   */
+  const { style: surfaceStyle } = useFullscreenSurface()
+
   const TOTAL = 5
 
   // на финальном экране карточки проявляются одна за другой
@@ -128,8 +138,8 @@ export default function Onboarding({ user, onFinish }) {
 
   return (
     <div
-      className="fixed inset-0 z-[70] bg-emerald-deep flex flex-col items-center animate-fade-in overflow-y-auto"
-      style={{ paddingTop: 'var(--tg-top, 0px)' }}
+      className="fixed top-0 left-0 right-0 z-[70] bg-emerald-deep flex flex-col items-center animate-fade-in overflow-y-auto"
+      style={surfaceStyle}
     >
       {step > 0 && step < 4 && (
         <Head step={step} total={TOTAL} onBack={() => setStep(step - 1)} onSkip={next} />
