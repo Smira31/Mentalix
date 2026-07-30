@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import {
+  useEffect,
+  useState,
+} from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
@@ -19,8 +22,17 @@ const CHECKIN_VIEWPORT_STYLE = {
 const CHECKIN_HEADER_SLOT_CLASS =
   'h-[52px] shrink-0'
 
-const CHECKIN_CONTENT_CLASS =
-  'w-full shrink-0 flex flex-col items-center px-6 pt-6 pb-8 animate-fade-in'
+const CHECKIN_SHELL_CLASS =
+  'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden animate-fade-in'
+
+const CHECKIN_QUESTION_CLASS =
+  'w-full shrink-0 px-6 pt-6 text-center'
+
+const CHECKIN_INTERACTIVE_CLASS =
+  'w-full flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-6 px-6 pt-6 pb-8'
+
+const CHECKIN_SUCCESS_CLASS =
+  'w-full flex flex-col items-center px-6 pt-6 pb-8 text-center'
 
 
 // ── Чек-ин и вечерний «Анализ дня» ──
@@ -314,6 +326,50 @@ export default function CheckIn({
   const [step, setStep] =
     useState(0)
 
+  const [
+    viewportHeight,
+    setViewportHeight,
+  ] = useState(null)
+
+
+  useEffect(() => {
+    const viewport =
+      window.visualViewport
+
+    if (!viewport) return
+
+    const updateViewportHeight = () => {
+      setViewportHeight(
+        Math.round(
+          viewport.height,
+        ),
+      )
+    }
+
+    updateViewportHeight()
+
+    viewport.addEventListener(
+      'resize',
+      updateViewportHeight,
+    )
+
+    return () => {
+      viewport.removeEventListener(
+        'resize',
+        updateViewportHeight,
+      )
+    }
+  }, [])
+
+
+  const viewportStyle = {
+    ...CHECKIN_VIEWPORT_STYLE,
+
+    height: viewportHeight
+      ? `${viewportHeight}px`
+      : '100dvh',
+  }
+
 
   function pick(
     key,
@@ -501,8 +557,10 @@ export default function CheckIn({
   if (step >= doneStep) {
     return (
       <div
-        className="fixed inset-0 z-[60] bg-emerald-deep overflow-y-auto animate-fade-in"
-        style={CHECKIN_VIEWPORT_STYLE}
+        className={
+          CHECKIN_SHELL_CLASS
+        }
+        style={viewportStyle}
       >
         <div
           className={
@@ -511,55 +569,72 @@ export default function CheckIn({
           aria-hidden="true"
         />
 
-        <div
-          className={`${CHECKIN_CONTENT_CLASS} text-center`}
-        >
-          {isEvening ? (
-            <ArtDoor
-              size={140}
-              className="mb-4"
-            />
-          ) : null}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+          <div
+            className={
+              CHECKIN_SUCCESS_CLASS
+            }
+          >
+            {isEvening ? (
+              <ArtDoor
+                size={140}
+                className="mb-4"
+              />
+            ) : null}
 
 
-          <div className="animate-celebrate-pop mb-6">
-            <Face
-              level={
-                values.mood || 4
-              }
-              active
-              size={
-                isEvening
-                  ? 64
-                  : 88
-              }
-            />
-          </div>
+            <div className="animate-celebrate-pop mb-6">
+              <Face
+                level={
+                  values.mood || 4
+                }
+                active
+                size={
+                  isEvening
+                    ? 64
+                    : 88
+                }
+              />
+            </div>
 
 
-          <h2 className="font-display text-[26px] text-cream leading-tight">
-            {isEvening
-              ? 'День закрыт'
-              : 'Чек-ин записан'}
-          </h2>
+            <h2 className="font-display text-[26px] text-cream leading-tight">
+              {isEvening
+                ? 'День закрыт'
+                : 'Чек-ин записан'}
+            </h2>
 
 
-          <p className="text-[15px] text-cream/50 mt-3 leading-relaxed max-w-sm">
-            {isEvening
-              ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
-              : 'Ты услышал себя — это тоже шаг.'}
-          </p>
+            <p className="text-[15px] text-cream/50 mt-3 leading-relaxed max-w-sm">
+              {isEvening
+                ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
+                : 'Ты услышал себя — это тоже шаг.'}
+            </p>
 
 
-          {isEvening ? (
-            <div className="w-full max-w-xs mt-9 flex flex-col gap-3">
-              <button
-                onClick={openScout}
-                className="cta-pill w-full text-[16px] px-6 py-4"
-              >
-                Разобрать со Следопытом
-              </button>
+            {isEvening ? (
+              <div className="w-full max-w-xs mt-9 flex flex-col gap-3">
+                <button
+                  onClick={openScout}
+                  className="cta-pill w-full text-[16px] px-6 py-4"
+                >
+                  Разобрать со Следопытом
+                </button>
 
+                <button
+                  onClick={() => {
+                    platform.haptic(
+                      'light',
+                    )
+
+                    onDone()
+                  }}
+                  className="w-full text-[14px] font-semibold text-cream/40 bg-transparent border-0 py-3"
+                >
+                  Ко сну
+                </button>
+              </div>
+            ) : (
               <button
                 onClick={() => {
                   platform.haptic(
@@ -568,25 +643,12 @@ export default function CheckIn({
 
                   onDone()
                 }}
-                className="w-full text-[14px] font-semibold text-cream/40 bg-transparent border-0 py-3"
+                className="cta-pill text-[16px] px-12 py-4 mt-10"
               >
-                Ко сну
+                К дню
               </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                platform.haptic(
-                  'light',
-                )
-
-                onDone()
-              }}
-              className="cta-pill text-[16px] px-12 py-4 mt-10"
-            >
-              К дню
-            </button>
-          )}
+            )}
+          </div>
         </div>
       </div>
     )
@@ -612,11 +674,44 @@ export default function CheckIn({
     || existing?.mood
     || 3
 
+  const stepLabel =
+    `${isEvening
+      ? 'Анализ дня'
+      : 'Чек-ин'} · ${step + 1} из ${totalSteps}`
+
+  const questionTitle =
+    scale
+      ?.title
+    || (
+      isEmotionStep
+        ? 'Что ближе всего?'
+        : cardIdx === 0
+          ? isEvening
+            ? 'Уроки дня'
+            : 'Что на уме?'
+          : 'Чем горжусь'
+    )
+
+  const questionSubtitle =
+    scale
+      ?.hint
+    || (
+      isEmotionStep
+        ? 'Назвать чувство — половина работы с ним.'
+        : cardIdx === 0
+          ? isEvening
+            ? 'Разбери день, пока он ещё свежий. Любое поле можно пропустить.'
+            : 'Пара слов — уже разговор с собой.'
+          : 'Три пункта. Мелочи считаются — из них и состоит день.'
+    )
+
 
   return (
     <div
-      className="fixed inset-0 z-[60] bg-emerald-deep animate-fade-in overflow-y-auto"
-      style={CHECKIN_VIEWPORT_STYLE}
+      className={
+        CHECKIN_SHELL_CLASS
+      }
+      style={viewportStyle}
     >
       <div
         className={`${CHECKIN_HEADER_SLOT_CLASS} flex items-end justify-between px-5`}
@@ -680,35 +775,37 @@ export default function CheckIn({
         </button>
       </div>
 
+      <section
+        className={
+          CHECKIN_QUESTION_CLASS
+        }
+      >
+        <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide">
+          {stepLabel}
+        </div>
+
+        <h2 className="font-display text-[26px] text-cream leading-tight">
+          {questionTitle}
+        </h2>
+
+        <p className="text-[14px] text-cream/45 mt-2">
+          {questionSubtitle}
+        </p>
+      </section>
+
+      <div
+        className={
+          CHECKIN_INTERACTIVE_CLASS
+        }
+      >
 
       {/* ── шкалы ── */}
 
       {!isCard && !isEmotionStep && (
         <div
           key={step}
-          className={
-            CHECKIN_CONTENT_CLASS
-          }
+          className="w-full flex flex-col items-center"
         >
-          <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide">
-            {isEvening
-              ? 'Анализ дня'
-              : 'Чек-ин'}{' '}
-            · {step + 1} из{' '}
-            {totalSteps}
-          </div>
-
-
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">
-            {scale.title}
-          </h2>
-
-
-          <p className="text-[14px] text-cream/45 mt-2 mb-10">
-            {scale.hint}
-          </p>
-
-
           <div className="flex items-end justify-center gap-3 w-full max-w-sm">
             {[1, 2, 3, 4, 5].map(
               (level) => {
@@ -777,30 +874,8 @@ export default function CheckIn({
       {isEmotionStep && (
         <div
           key="emo"
-          className={
-            CHECKIN_CONTENT_CLASS
-          }
+          className="w-full flex flex-col items-center"
         >
-          <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
-            {isEvening
-              ? 'Анализ дня'
-              : 'Чек-ин'}{' '}
-            · {step + 1} из{' '}
-            {totalSteps}
-          </div>
-
-
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">
-            Что ближе всего?
-          </h2>
-
-
-          <p className="text-[14px] text-cream/45 mt-2 mb-7 text-center">
-            Назвать чувство —
-            половина работы с ним.
-          </p>
-
-
           <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
             {(
               EMOTIONS[
@@ -884,31 +959,8 @@ export default function CheckIn({
       {isCard && cardIdx === 0 && (
         <div
           key="c1"
-          className={
-            CHECKIN_CONTENT_CLASS
-          }
+          className="w-full flex flex-col items-center"
         >
-          <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
-            {isEvening
-              ? `Анализ дня · ${step + 1} из ${totalSteps}`
-              : `Чек-ин · ${totalSteps} из ${totalSteps}`}
-          </div>
-
-
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">
-            {isEvening
-              ? 'Уроки дня'
-              : 'Что на уме?'}
-          </h2>
-
-
-          <p className="text-[14px] text-cream/45 mt-2 mb-6 text-center">
-            {isEvening
-              ? 'Разбери день, пока он ещё свежий. Любое поле можно пропустить.'
-              : 'Пара слов — уже разговор с собой.'}
-          </p>
-
-
           {isEvening ? (
             <div className="space-y-3 max-w-md mx-auto w-full">
               {LESSON_FIELDS.map(
@@ -1038,29 +1090,8 @@ export default function CheckIn({
       {isCard && cardIdx === 1 && (
         <div
           key="c2"
-          className={
-            CHECKIN_CONTENT_CLASS
-          }
+          className="w-full flex flex-col items-center"
         >
-          <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide text-center">
-            Анализ дня ·{' '}
-            {totalSteps} из{' '}
-            {totalSteps}
-          </div>
-
-
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">
-            Чем горжусь
-          </h2>
-
-
-          <p className="text-[14px] text-cream/45 mt-2 mb-6 text-center">
-            Три пункта. Мелочи
-            считаются — из них и
-            состоит день.
-          </p>
-
-
           <div className="space-y-2.5 max-w-md mx-auto w-full">
             {proud.map(
               (
@@ -1142,6 +1173,7 @@ export default function CheckIn({
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
