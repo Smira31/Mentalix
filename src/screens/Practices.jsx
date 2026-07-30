@@ -169,8 +169,7 @@ export default function Practices({
       className="
         w-full
         max-w-md
-        px-[14px]
-        pb-[120px]
+        px-5
       "
     >
       <h2
@@ -229,6 +228,7 @@ export default function Practices({
           artworkScale={0.88}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
+          soon
           onOpen={() => setSub('brain')}
         />
 
@@ -237,6 +237,7 @@ export default function Practices({
           artworkScale={0.90}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
+          soon
           onOpen={() => setSub('breathing')}
         />
 
@@ -245,6 +246,7 @@ export default function Practices({
           artworkScale={0.90}
           title="Фокус"
           subtitle="таймер глубокой работы"
+          soon
           onOpen={() => setSub('focus')}
         />
 
@@ -253,6 +255,7 @@ export default function Practices({
           artworkScale={0.94}
           title="Медитации"
           subtitle="тишина для ума и тела"
+          soon
           onOpen={() => {
             platform.haptic('light')
           }}
