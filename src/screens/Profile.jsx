@@ -146,7 +146,7 @@ export default function Profile({ user }) {
   }, [user])
 
   return (
-    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+    <div className="w-full max-w-md px-5 animate-fade-in">
       <div className="flex flex-col items-center mb-6 pt-2">
         <div className="w-24 h-24 rounded-full border border-gold bg-emerald-light/20 flex items-center justify-center mb-4">
           <span className="font-display text-3xl text-gold">

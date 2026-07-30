@@ -39,7 +39,7 @@ function Reader({ article, onBack }) {
   const paragraphs = String(article.body || '').split(/\n\s*\n/).filter(Boolean)
 
   return (
-    <div className="w-full max-w-md px-5 pb-40 animate-fade-in">
+    <div className="w-full max-w-md px-5 animate-fade-in">
       <button
         onClick={() => { platform.haptic('light'); onBack() }}
         aria-label="Назад"

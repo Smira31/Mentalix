@@ -142,7 +142,7 @@ export default function Settings({ user, onBack, onNavigate }) {
   const tierLabel = tier === 'pro' ? 'Про' : 'Базовый'
 
   return (
-    <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
+    <div className="w-full max-w-md px-5 flex flex-col items-center">
       <div className="w-full flex items-center gap-2 mb-6">
         <button onClick={onBack} className="p-2 -ml-2 text-cream active:opacity-60">
           <ChevronLeft size={22} />

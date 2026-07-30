@@ -501,7 +501,7 @@ export default function Today({
             user={user}
           />
         ) : (
-          <div className="w-full max-w-md px-5 pb-40">
+          <div className="w-full max-w-md px-5">
             <History
               user={user}
             />
@@ -611,7 +611,7 @@ export default function Today({
 
 
   return (
-    <div className="w-full max-w-md px-5 pb-40">
+    <div className="w-full max-w-md px-5">
       <WeekStrip />
 
 

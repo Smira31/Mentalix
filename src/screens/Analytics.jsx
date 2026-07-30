@@ -19,7 +19,7 @@ const CATEGORY_LABELS = {
 
 function EmptyAnalytics() {
   return (
-    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+    <div className="w-full max-w-md px-5 animate-fade-in">
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
       <p className="text-[11px] text-cream/40 mb-8">за последние дни</p>
 
@@ -288,7 +288,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
   if (!hasData && checkins.length === 0) {
     return (
-      <div className="w-full max-w-sm px-6 pb-40">
+      <div className="w-full max-w-md px-5">
         <MoodTrend checkins={[]} onGoCheckin={onGoCheckin} />
         <EmptyAnalytics />
       </div>
@@ -303,7 +303,7 @@ export default function Analytics({ user, onGoCheckin }) {
     : 0
 
   return (
-    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+    <div className="w-full max-w-md px-5 animate-fade-in">
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
       <p className="text-[11px] text-cream/40 mb-5">за последние {data.period_days} дней</p>
 
