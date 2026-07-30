@@ -107,6 +107,14 @@
 
   --btn-bg: #EDEDED;
   --btn-text: #111111;
+
+
+  /* Плавающие поверхности: нижняя навигация, Quick Add.
+     Тень задаётся токеном, потому что чёрная тень нужной
+     глубины в тёмной теме выглядит грязным пятном в светлой. */
+
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --shadow-float-compact: 0 6px 26px rgba(0, 0, 0, 0.45);
 }
 
 
@@ -141,6 +149,10 @@ body.light {
   --btn-bg: #1A1A1A;
 
   --btn-text: #F5F0E8;
+
+  --shadow-float: 0 8px 28px rgba(60, 50, 35, 0.14);
+
+  --shadow-float-compact: 0 6px 22px rgba(60, 50, 35, 0.18);
 }
 
 

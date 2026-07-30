@@ -133,8 +133,6 @@ export default function BottomNavigation({
           border
           backdrop-blur-xl
 
-          shadow-[0_8px_32px_rgba(0,0,0,0.35)]
-
           pointer-events-auto
 
           will-change-[width,height,border-radius,transform]
@@ -156,17 +154,24 @@ export default function BottomNavigation({
             ? '9999px'
             : '34px',
 
+          /*
+           * Цвета берутся из токенов темы,
+           * а не задаются вручную: раньше
+           * навбар оставался почти чёрным
+           * в светлой теме и выглядел
+           * чужим элементом.
+           */
           backgroundColor: collapsed
-            ? 'rgba(58, 58, 58, 0.90)'
-            : 'rgba(36, 36, 36, 0.92)',
+            ? 'rgb(var(--c-card2) / 0.90)'
+            : 'rgb(var(--c-card2) / 0.92)',
 
           borderColor: collapsed
-            ? 'rgba(255, 255, 255, 0.20)'
-            : 'rgba(255, 255, 255, 0.16)',
+            ? 'rgb(var(--c-border) / 0.9)'
+            : 'rgb(var(--c-border) / 0.75)',
 
           boxShadow: collapsed
-            ? '0 6px 26px rgba(0, 0, 0, 0.45)'
-            : '0 8px 32px rgba(0, 0, 0, 0.35)',
+            ? 'var(--shadow-float-compact)'
+            : 'var(--shadow-float)',
 
           transition: [
             `width 420ms ${MOTION}`,
