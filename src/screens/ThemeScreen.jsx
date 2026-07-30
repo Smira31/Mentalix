@@ -122,7 +122,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             onChange={(e) => setText(e.target.value)}
             placeholder="Записать мысль..."
             rows={4}
-            className="w-full rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[15px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3"
+            className="w-full rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3"
           />
           <button
             onClick={save}
