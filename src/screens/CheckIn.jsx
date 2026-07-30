@@ -666,6 +666,21 @@ export default function CheckIn({
     - emotionStep
     - 1
 
+  const isMorningNoteStep =
+    !isEvening
+    && isCard
+    && cardIdx === 0
+
+  const interactiveStyle =
+    isMorningNoteStep
+      ? {
+          overflowY: 'scroll',
+          WebkitOverflowScrolling:
+            'touch',
+          touchAction: 'pan-y',
+        }
+      : undefined
+
   const scale =
     SCALE_STEPS[step]
 
@@ -797,6 +812,7 @@ export default function CheckIn({
         className={
           CHECKIN_INTERACTIVE_CLASS
         }
+        style={interactiveStyle}
       >
 
       {/* ── шкалы ── */}
