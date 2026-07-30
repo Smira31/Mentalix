@@ -2,6 +2,7 @@ import {
   useEffect,
   useState,
 } from 'react'
+import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
@@ -362,6 +363,29 @@ export default function CheckIn({
   }, [])
 
 
+  /*
+   * CheckIn живёт порталом в body и
+   * перекрывает весь экран. Пока он
+   * открыт, страница под ним не должна
+   * скроллиться: иначе iOS двигает
+   * layout viewport при появлении
+   * клавиатуры и якорь уезжает.
+   */
+  useEffect(() => {
+    const body = document.body
+
+    const previousOverflow =
+      body.style.overflow
+
+    body.style.overflow = 'hidden'
+
+    return () => {
+      body.style.overflow =
+        previousOverflow
+    }
+  }, [])
+
+
   const viewportStyle = {
     ...CHECKIN_VIEWPORT_STYLE,
 
@@ -555,7 +579,7 @@ export default function CheckIn({
   // ============================================================
 
   if (step >= doneStep) {
-    return (
+    return createPortal(
       <div
         className={
           CHECKIN_SHELL_CLASS
@@ -650,7 +674,8 @@ export default function CheckIn({
             )}
           </div>
         </div>
-      </div>
+      </div>,
+      document.body,
     )
   }
 
@@ -721,7 +746,7 @@ export default function CheckIn({
     )
 
 
-  return (
+  return createPortal(
     <div
       className={
         CHECKIN_SHELL_CLASS
@@ -1190,6 +1215,7 @@ export default function CheckIn({
         </div>
       )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
