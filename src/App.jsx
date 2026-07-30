@@ -441,115 +441,28 @@ export default function App() {
 
 
   /* ============================================================
-     DISABLE TELEGRAM ZOOM
+     ZOOM
+
+     Здесь раньше жил блок, который на
+     уровне документа подавлял pinch,
+     multi-touch и double tap. Он лечил
+     один симптом — iOS увеличивал
+     страницу при фокусе в поле мельче
+     16px — но ценой того, что человек
+     вообще не мог увеличить экран
+     пальцами. Для приложения про
+     внимание к себе это плохой обмен.
+
+     Причина устранена по месту: все
+     поля ввода теперь 16px и фокус сам
+     по себе масштаб не меняет. Поэтому
+     системный зум больше не глушим.
+
+     Если понадобится вернуть какое-то
+     ограничение — делать это точечно на
+     конкретном элементе, а не на
+     document, и не трогая доступность.
      ============================================================ */
-
-  useEffect(() => {
-    if (
-      platformName !== 'telegram'
-    ) {
-      return
-    }
-
-    const stopGesture = (event) => {
-      event.preventDefault()
-    }
-
-    const stopMultiTouch = (event) => {
-      if (
-        event.touches &&
-        event.touches.length > 1
-      ) {
-        event.preventDefault()
-      }
-    }
-
-    let lastTouch = 0
-
-    const stopDoubleTapZoom = (
-      event
-    ) => {
-      const now = Date.now()
-
-      if (
-        now - lastTouch <= 300
-      ) {
-        event.preventDefault()
-      }
-
-      lastTouch = now
-    }
-
-
-    document.addEventListener(
-      'gesturestart',
-      stopGesture,
-      { passive: false }
-    )
-
-    document.addEventListener(
-      'gesturechange',
-      stopGesture,
-      { passive: false }
-    )
-
-    document.addEventListener(
-      'gestureend',
-      stopGesture,
-      { passive: false }
-    )
-
-    document.addEventListener(
-      'touchstart',
-      stopMultiTouch,
-      { passive: false }
-    )
-
-    document.addEventListener(
-      'touchmove',
-      stopMultiTouch,
-      { passive: false }
-    )
-
-    document.addEventListener(
-      'touchend',
-      stopDoubleTapZoom,
-      { passive: false }
-    )
-
-
-    return () => {
-      document.removeEventListener(
-        'gesturestart',
-        stopGesture
-      )
-
-      document.removeEventListener(
-        'gesturechange',
-        stopGesture
-      )
-
-      document.removeEventListener(
-        'gestureend',
-        stopGesture
-      )
-
-      document.removeEventListener(
-        'touchstart',
-        stopMultiTouch
-      )
-
-      document.removeEventListener(
-        'touchmove',
-        stopMultiTouch
-      )
-
-      document.removeEventListener(
-        'touchend',
-        stopDoubleTapZoom
-      )
-    }
-  }, [])
 
 
   /* ============================================================
