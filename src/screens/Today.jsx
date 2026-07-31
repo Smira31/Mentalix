@@ -12,7 +12,7 @@ import CheckIn from './CheckIn'
 import MazeLogo from '../components/MazeLogo'
 import QuickAdd from '../components/QuickAdd'
 import ThemeScreen from './ThemeScreen'
-import { ArtThread } from '../components/Art'
+import { ArtThread, ArtDoor } from '../components/Art'
 import History from './History'
 import QuoteView from './QuoteView'
 
@@ -578,6 +578,53 @@ export default function Today({
       === 'reviewPending'
 
 
+  /*
+   * ГЕРОЙ-ИЛЛЮСТРАЦИЯ ПО СОСТОЯНИЮ ДНЯ
+   *
+   * Раньше картинка выбиралась по признаку
+   * «есть ли вообще ритуалы и аскезы»: пусто —
+   * нить, не пусто — лабиринт. Отсюда и разные
+   * картинки на разных аккаунтах: дело было не
+   * в состоянии дня, а в наполненности профиля.
+   *
+   * Теперь иллюстрация говорит о самом дне:
+   *
+   *   пусто          — нить: путь ещё не начат
+   *   checkinPending — нить: день не начат
+   *   dayInProgress  — лабиринт с прогрессом
+   *   reviewPending  — лабиринт: день прожит,
+   *                    ждёт разбора
+   *   dayClosed      — дверь: день закрыт
+   */
+  const heroArt =
+    isEmpty
+    || todayState === 'checkinPending'
+      ? (
+        <ArtThread
+          size={150}
+          className="mx-auto mb-7"
+        />
+      )
+      : todayState === 'dayClosed'
+        ? (
+          <ArtDoor
+            size={150}
+            className="mx-auto mb-7"
+          />
+        )
+        : (
+          <MazeLogo
+            size={168}
+            progress={
+              total > 0
+                ? done / total
+                : 0
+            }
+            className="mx-auto mb-7"
+          />
+        )
+
+
   const MOOD_WORDS = [
     'тяжко',
     'так себе',
@@ -620,22 +667,7 @@ export default function Today({
           ====================================================== */}
 
       <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-10 text-center flex flex-col justify-center min-h-[54vh] animate-fade-in">
-        {isEmpty ? (
-          <ArtThread
-            size={150}
-            className="mx-auto mb-7"
-          />
-        ) : (
-          <MazeLogo
-            size={168}
-            progress={
-              total > 0
-                ? done / total
-                : 0
-            }
-            className="mx-auto mb-7"
-          />
-        )}
+        {heroArt}
 
 
         {checkinAsHero && (
