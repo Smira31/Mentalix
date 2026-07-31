@@ -263,6 +263,242 @@ function EmotionCloud({ checkins }) {
   )
 }
 
+
+// ============================================================
+// ВЫВОДЫ
+//
+// Аналитика Mentalix отвечает на вопрос «что со мной
+// происходит», а не «вот твои данные». Поэтому закономерности
+// считаются здесь, на клиенте, по явным правилам — без сети
+// и без модели, которая может придумать связь, которой нет.
+//
+// Каждое правило обязано выполнить три условия:
+//   1. в обеих сравниваемых группах достаточно дней;
+//   2. разница превышает порог, а не тонет в шуме;
+//   3. формулировка говорит о наблюдении, а не о причине.
+//
+// Если ни одно правило не сработало — мы прямо говорим, что
+// данных мало. Придумывать вывод, чтобы заполнить экран, хуже,
+// чем честно промолчать.
+// ============================================================
+
+const MIN_GROUP = 3
+const MIN_CHECKINS = 5
+
+
+function average(values) {
+  if (!values.length) return null
+
+  const sum = values.reduce(
+    (acc, value) => acc + value,
+    0,
+  )
+
+  return sum / values.length
+}
+
+
+function pick(list, field) {
+  return list
+    .map((item) => item?.[field])
+    .filter(
+      (value) =>
+        typeof value === 'number',
+    )
+}
+
+
+// Сравнение среднего значения поля в двух группах дней.
+function compareGroups({
+  withGroup,
+  withoutGroup,
+  field,
+  threshold,
+  build,
+}) {
+  if (
+    withGroup.length < MIN_GROUP
+    || withoutGroup.length < MIN_GROUP
+  ) {
+    return null
+  }
+
+  const a = average(pick(withGroup, field))
+  const b = average(pick(withoutGroup, field))
+
+  if (a === null || b === null) return null
+
+  const delta = a - b
+
+  if (Math.abs(delta) < threshold) return null
+
+  return {
+    text: build(delta, a, b),
+    weight: Math.abs(delta),
+  }
+}
+
+
+function currentStreak(checkins) {
+  let streak = 0
+
+  for (let i = checkins.length - 1; i >= 0; i -= 1) {
+    if (!checkins[i]?.review_completed_at) break
+
+    streak += 1
+  }
+
+  return streak
+}
+
+
+function deriveConclusions(checkins, data) {
+  const list = Array.isArray(checkins) ? checkins : []
+  const found = []
+
+  const closed = list.filter((c) => c.review_completed_at)
+  const notClosed = list.filter((c) => !c.review_completed_at)
+
+  // 1. Вечерний разбор и тревога
+  const anxiety = compareGroups({
+    withGroup: notClosed,
+    withoutGroup: closed,
+    field: 'anxiety',
+    threshold: 0.6,
+    build: (delta) =>
+      delta > 0
+        ? 'Тревога выше в дни, которые ты не закрываешь вечерним разбором.'
+        : 'Тревога выше в дни, которые ты разбираешь вечером — возможно, разбор попадает именно на тяжёлые дни.',
+  })
+
+  if (anxiety) found.push(anxiety)
+
+
+  // 2. Вечерний разбор и настроение следующего дня
+  const mood = compareGroups({
+    withGroup: closed,
+    withoutGroup: notClosed,
+    field: 'mood',
+    threshold: 0.5,
+    build: (delta) =>
+      delta > 0
+        ? 'В закрытые дни настроение держится заметно выше, чем в брошенные.'
+        : 'Настроение в закрытые дни ниже — ты чаще доводишь до разбора трудные дни.',
+  })
+
+  if (mood) found.push(mood)
+
+
+  // 3. Энергия и собранность
+  const energetic = list.filter((c) => c.energy >= 4)
+  const tired = list.filter((c) => c.energy <= 2)
+
+  const focus = compareGroups({
+    withGroup: energetic,
+    withoutGroup: tired,
+    field: 'focus',
+    threshold: 0.7,
+    build: (delta) =>
+      delta > 0
+        ? 'Собранность идёт следом за энергией: в дни с силами ты заметно собраннее.'
+        : 'Собранность не зависит от энергии — в уставшие дни ты собран не меньше.',
+  })
+
+  if (focus) found.push(focus)
+
+
+  // 4. Тренд настроения внутри периода
+  if (list.length >= MIN_CHECKINS * 2) {
+    const half = Math.floor(list.length / 2)
+
+    const early = average(pick(list.slice(0, half), 'mood'))
+    const late = average(pick(list.slice(half), 'mood'))
+
+    if (
+      early !== null
+      && late !== null
+      && Math.abs(late - early) >= 0.5
+    ) {
+      found.push({
+        text:
+          late > early
+            ? 'Во второй половине периода настроение выше, чем в первой.'
+            : 'Во второй половине периода настроение ниже, чем в первой.',
+        weight: Math.abs(late - early),
+      })
+    }
+  }
+
+
+  // 5. Срывы аскез и день недели
+  const activity = data?.daily_activity || []
+  const breakDays = activity.filter((d) => d.breaks > 0)
+
+  if (breakDays.length >= 3) {
+    const byWeekday = {}
+
+    for (const day of breakDays) {
+      const index = new Date(day.date + 'T00:00:00').getDay()
+
+      byWeekday[index] = (byWeekday[index] || 0) + 1
+    }
+
+    const [topIndex, topCount] =
+      Object.entries(byWeekday)
+        .sort((a, b) => b[1] - a[1])[0]
+
+    if (topCount / breakDays.length >= 0.5) {
+      found.push({
+        text: `Больше половины срывов приходится на один день недели — ${WEEKDAY_FULL[topIndex]}.`,
+        weight: 0.9,
+      })
+    }
+  }
+
+
+  // 6. Серия закрытых дней
+  const streak = currentStreak(list)
+
+  if (streak >= 3) {
+    found.push({
+      text: `${streak} закрытых дня подряд — серия держится прямо сейчас.`,
+      weight: 0.8,
+    })
+  }
+
+
+  found.sort((a, b) => b.weight - a.weight)
+
+  return found
+}
+
+
+const WEEKDAY_FULL = [
+  'воскресенье',
+  'понедельник',
+  'вторник',
+  'среду',
+  'четверг',
+  'пятницу',
+  'субботу',
+]
+
+
+function Metric({ label, value }) {
+  return (
+    <div className="flex-1 rounded-[18px] bg-emerald border border-cream/10 px-3 py-3">
+      <div className="text-[10px] text-cream/35 leading-none mb-1.5">
+        {label}
+      </div>
+
+      <div className="font-display text-[18px] font-bold text-gold leading-none">
+        {value}
+      </div>
+    </div>
+  )
+}
+
+
 export default function Analytics({ user, onGoCheckin }) {
   const [data, setData] = useState(null)
   const [checkins, setCheckins] = useState([])
@@ -302,43 +538,120 @@ export default function Analytics({ user, onGoCheckin }) {
     ? Math.round(ascezas.reduce((s, a) => s + a.clean_rate, 0) / ascezas.length)
     : 0
 
+  const conclusions = deriveConclusions(checkins, data)
+  const [lead, ...rest] = conclusions
+
+  const enough = checkins.length >= MIN_CHECKINS
+
+  const round = (values) => {
+    const value = average(pick(checkins, values))
+
+    return value === null ? '—' : value.toFixed(1)
+  }
+
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
-      <p className="text-[11px] text-cream/40 mb-5">за последние {data.period_days} дней</p>
+      <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-1">
+        аналитика.
+      </h2>
+
+      <p className="text-[12px] text-cream/35 mb-7">
+        за последние {data.period_days} дней
+      </p>
+
+
+      {/* ── Главный вывод ── */}
+
+      <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+        Главное
+      </div>
+
+      {lead ? (
+        <p className="font-display text-[21px] text-cream leading-[1.3] mb-6">
+          {lead.text}
+        </p>
+      ) : (
+        <p className="font-display text-[19px] text-cream/70 leading-[1.35] mb-6">
+          {enough
+            ? 'Устойчивых закономерностей пока не видно. Это нормально: они проявляются на большем отрезке.'
+            : `Данных пока мало. Нужно хотя бы ${MIN_CHECKINS} чек-инов, чтобы говорить о закономерностях, а не о совпадениях.`}
+        </p>
+      )}
+
+
+      {/* ── Остальные закономерности ── */}
+
+      {rest.length > 0 && (
+        <div className="space-y-2 mb-7">
+          {rest.map((item, index) => (
+            <div
+              key={index}
+              className="rounded-[20px] bg-emerald border border-cream/10 px-4 py-3.5"
+            >
+              <p className="text-[14px] text-cream/70 leading-snug">
+                {item.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+
+      {/* ── Инсайты бэкенда ── */}
+
+      {data.insights?.length > 0 && (
+        <>
+          <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+            Замечено системой
+          </div>
+
+          <div className="space-y-2 mb-7">
+            {data.insights.map((text, i) => (
+              <div
+                key={i}
+                className="rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5 text-[14px] text-cream/80 leading-snug"
+              >
+                {text}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+
+      {/* ── Цифры ── */}
+
+      <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+        Цифры
+      </div>
+
+      <div className="flex gap-2 mb-3">
+        <Metric label="настроение" value={round('mood')} />
+        <Metric label="энергия" value={round('energy')} />
+        <Metric label="тревога" value={round('anxiety')} />
+        <Metric label="фокус" value={round('focus')} />
+      </div>
+
+      <div className="flex gap-2 mb-8">
+        {rituals.length > 0 && (
+          <Metric label="ритуалы выполнены" value={`${avgRituals}%`} />
+        )}
+
+        {ascezas.length > 0 && (
+          <Metric label="аскезы удержаны" value={`${avgClean}%`} />
+        )}
+      </div>
+
+
+      {/* ── Данные ── */}
+
+      <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+        Данные
+      </div>
 
       <MoodTrend checkins={checkins} onGoCheckin={onGoCheckin} />
 
       <EmotionCloud checkins={checkins} />
-
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {rituals.length > 0 && (
-          <div className="rounded-[24px] bg-emerald-light/20 border border-gold/25 p-4 flex flex-col items-center">
-            <Sparkles size={16} className="text-gold mb-1" strokeWidth={1.75} />
-            <div className="font-display text-2xl text-cream">{avgRituals}%</div>
-            <div className="text-[10px] text-cream/50 text-center mt-0.5">ритуалы выполнены</div>
-          </div>
-        )}
-        {ascezas.length > 0 && (
-          <div className="rounded-[24px] bg-emerald-light/20 border border-mint/25 p-4 flex flex-col items-center">
-            <Shield size={16} className="text-mint mb-1" strokeWidth={1.75} />
-            <div className="font-display text-2xl text-cream">{avgClean}%</div>
-            <div className="text-[10px] text-cream/50 text-center mt-0.5">аскезы удержаны</div>
-          </div>
-        )}
-      </div>
-
-      <h3 className="text-sm text-cream/80 mb-2">Инсайты</h3>
-      <div className="space-y-2 mb-6">
-        {data.insights.map((text, i) => (
-          <div
-            key={i}
-            className="rounded-xl border border-gold/30 bg-emerald-light/20 px-4 py-3 text-sm text-cream/90 leading-snug"
-          >
-            {text}
-          </div>
-        ))}
-      </div>
 
       {data.daily_activity && data.daily_activity.length > 0 && (
         <div className="mb-6">
