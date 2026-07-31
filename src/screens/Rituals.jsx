@@ -1,6 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
+import { createPortal } from 'react-dom'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+} from '../lib/fullscreenSurface'
 import { ArtSprout } from '../components/Art'
 import { ArrowLeft, Sparkles, Snowflake, Check } from 'lucide-react'
 
@@ -73,13 +80,13 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   return (
     <div
-      className={`rounded-[28px] overflow-hidden border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${
+      className={`rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col justify-center shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
       style={CARD_HEIGHT}
     >
       {/* шапка */}
-      <div className="flex items-start justify-between gap-3 shrink-0">
+      <div className="flex items-start justify-between gap-3">
         <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-gold/10 shrink-0">
           <Sparkles size={18} className="text-gold" strokeWidth={1.6} />
           {celebrate && (
@@ -119,7 +126,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
       </div>
 
       {/* название и смысл */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain mt-4">
+      <div className="mt-4">
         <h3 className="font-display text-[20px] text-cream leading-tight">
           {ritual.name}
         </h3>
@@ -132,7 +139,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
       </div>
 
       {/* уровни */}
-      <div className="shrink-0 flex flex-col gap-2 pt-4">
+      <div className="flex flex-col gap-2 pt-5">
         {ritual.min_version && (
           <button
             onClick={() => handleLog('min')}
@@ -190,6 +197,8 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
 
 function CreateRitualScreen({ onCreate, onCancel }) {
+  const { style: surfaceStyle } = useFullscreenSurface()
+
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
 
@@ -207,8 +216,16 @@ function CreateRitualScreen({ onCreate, onCancel }) {
   const inputCls =
     'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
 
-  return (
-    <div className="w-full max-w-sm px-5 pb-6 -mt-6">
+  /*
+   * Создание ритуала — форма с клавиатурой, поэтому живёт по
+   * общему fullscreen-контракту: занимает весь экран целиком.
+   */
+  return createPortal(
+    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
+
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div className="w-full max-w-md mx-auto px-5 pb-8">
       <div className="flex items-center gap-3 mb-5 pt-2">
         <button onClick={onCancel} aria-label="Отмена"
           className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
@@ -232,7 +249,10 @@ function CreateRitualScreen({ onCreate, onCancel }) {
       >
         {saving ? 'Сохраняю...' : 'Создать ритуал'}
       </button>
-    </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -267,21 +287,6 @@ export default function Rituals({ user, onBack }) {
       .catch((e) => console.error(e))
       .finally(() => setLoading(false))
   }, [user])
-
-  // блокируем скролл страницы, пока тащим
-  useEffect(() => {
-    if (dragIndex !== null) {
-      document.body.style.overflow = 'hidden'
-      document.body.style.touchAction = 'none'
-    } else {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-    return () => {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-  }, [dragIndex])
 
   async function logRitual(ritualId, level) {
     try {

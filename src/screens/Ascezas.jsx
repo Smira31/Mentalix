@@ -1,6 +1,13 @@
 import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
+import { createPortal } from 'react-dom'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+} from '../lib/fullscreenSurface'
 import { ArtShield } from '../components/Art'
 import {
   ArrowLeft,
@@ -431,6 +438,9 @@ function CreateAscezaScreen({
     }
   }
 
+  const { style: surfaceStyle } = useFullscreenSurface()
+
+
   async function submit() {
     if (!draft.name.trim() || saving) return
 
@@ -448,8 +458,17 @@ function CreateAscezaScreen({
 
   const activeCat = categoryMeta(draft.category)
 
-  return (
-    <div className="w-full max-w-sm px-5 pb-6 -mt-4">
+  /*
+   * Создание аскезы — сфокусированный сценарий с формой и
+   * клавиатурой, поэтому живёт по общему fullscreen-контракту:
+   * занимает весь экран и не борется с нижней навигацией.
+   */
+  return createPortal(
+    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
+
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div className="w-full max-w-md mx-auto px-5 pb-8">
       <div className="flex items-center gap-3 mb-5 pt-2">
         <button
           onClick={onCancel}
@@ -551,7 +570,10 @@ function CreateAscezaScreen({
           ? 'Сохраняю...'
           : 'Принять аскезу'}
       </button>
-    </div>
+        </div>
+      </div>
+    </div>,
+    document.body,
   )
 }
 
