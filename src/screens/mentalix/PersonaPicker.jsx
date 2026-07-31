@@ -30,6 +30,19 @@ import { PERSONAS } from './personas'
  */
 
 
+/*
+ * Карточка тянется до нижней навигации, а не живёт фиксированной
+ * высотой. Вычитаем из высоты видимой области всё, что занято
+ * не карточкой: контролы Telegram, заголовок экрана, точки и
+ * подпись снизу, зарезервированное место под навигацию.
+ */
+const CARD_HEIGHT = {
+  height:
+    'calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 331px)',
+  minHeight: '360px',
+}
+
+
 function haptic(
   style = 'light',
 ) {
@@ -193,7 +206,6 @@ export default function PersonaPicker({
                   snap-center
                   shrink-0
                   w-[82%]
-                  min-h-[430px]
                   rounded-[28px]
                   border
                   border-cream/12
@@ -202,6 +214,7 @@ export default function PersonaPicker({
                   flex
                   flex-col
                 "
+                style={CARD_HEIGHT}
               >
                 <div className="w-full h-[118px] flex items-center justify-center shrink-0">
                   <div className="w-[92px] h-[92px] rounded-full border border-gold/35 flex items-center justify-center">
