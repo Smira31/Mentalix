@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
 } from 'react'
 
@@ -7,6 +8,26 @@ import WebApp from '@twa-dev/sdk'
 
 import { api } from '../../lib/api'
 import { PERSONAS } from './personas'
+
+
+/*
+ * ВЫБОР СОБЕСЕДНИКА
+ *
+ * Раньше это был вертикальный список из трёх узких карточек:
+ * персоны отличались только названием и выглядели как пункты
+ * меню. Теперь каждая занимает почти весь экран и листается
+ * вбок — одна персона за раз, с характером и своим местом.
+ *
+ * Листание сделано нативным горизонтальным скроллом со
+ * snap-точками, а не самописной обработкой касаний. Причина
+ * практическая: внутри Telegram Mini App собственные обработчики
+ * жестов конфликтуют с жестами самого Telegram, и мы это уже
+ * проходили с блокировкой зума. Нативный скролл ведёт себя
+ * предсказуемо, работает с инерцией и ничего не перехватывает.
+ *
+ * overscroll-x-contain нужен, чтобы свайп в конце ленты не
+ * уходил дальше — в жест закрытия окна.
+ */
 
 
 function haptic(
@@ -44,6 +65,11 @@ export default function PersonaPicker({
     previews,
     setPreviews,
   ] = useState({})
+
+  const [active, setActive] =
+    useState(0)
+
+  const trackRef = useRef(null)
 
 
   useEffect(() => {
@@ -99,18 +125,57 @@ export default function PersonaPicker({
   }, [user])
 
 
+  function syncActive() {
+    const track = trackRef.current
+
+    if (!track) return
+
+    const card =
+      track.firstElementChild
+
+    if (!card) return
+
+    const step =
+      card.offsetWidth + 12
+
+    setActive(
+      Math.round(
+        track.scrollLeft / step,
+      ),
+    )
+  }
+
+
   return (
-    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
-      <h2 className="font-display text-lg mb-1 text-cream/90">
-        С кем поговорим
+    <div className="w-full max-w-md px-5 animate-fade-in">
+      <h2 className="font-display text-[30px] text-cream lowercase mt-4 mb-1">
+        с кем говорим.
       </h2>
 
-      <p className="text-[11px] text-cream/40 mb-5">
-        три собеседника, три разговора
+      <p className="text-[12px] text-cream/35 mb-6">
+        три собеседника, три отдельных разговора
       </p>
 
 
-      <div className="space-y-3">
+      <div
+        ref={trackRef}
+        onScroll={syncActive}
+        className="
+          flex
+          gap-3
+          -mx-5
+          px-5
+          pb-2
+          overflow-x-auto
+          overscroll-x-contain
+          snap-x
+          snap-mandatory
+          [&::-webkit-scrollbar]:hidden
+        "
+        style={{
+          scrollbarWidth: 'none',
+        }}
+      >
         {PERSONAS.map(
           (persona) => {
             const Icon =
@@ -123,118 +188,107 @@ export default function PersonaPicker({
 
             return (
               <div
-                key={
-                  persona.key
-                }
-                className="rounded-[24px] border border-cream/15 bg-emerald-light/15 overflow-hidden"
+                key={persona.key}
+                className="
+                  snap-center
+                  shrink-0
+                  w-[82%]
+                  min-h-[430px]
+                  rounded-[28px]
+                  border
+                  border-cream/12
+                  bg-emerald
+                  p-6
+                  flex
+                  flex-col
+                "
               >
-                <button
-                  onClick={() => {
-                    haptic(
-                      'light',
-                    )
-
-                    onPick(
-                      persona.key,
-                      '',
-                    )
-                  }}
-                  className="w-full text-left p-4 flex items-start gap-4 transition-transform active:scale-[0.99]"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-gold/10 flex items-center justify-center shrink-0">
+                <div className="w-full h-[118px] flex items-center justify-center shrink-0">
+                  <div className="w-[92px] h-[92px] rounded-full border border-gold/35 flex items-center justify-center">
                     <Icon
-                      size={24}
+                      size={40}
                       className="text-gold"
-                      strokeWidth={
-                        1.75
-                      }
+                      strokeWidth={1.4}
                     />
                   </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="font-display text-lg text-cream">
-                        {
-                          persona.name
-                        }
-                      </span>
-
-                      <span className="text-[11px] text-gold">
-                        {
-                          persona.tagline
-                        }
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-cream/50 leading-snug mt-1">
-                      {
-                        persona.desc
-                      }
-                    </p>
-                  </div>
-                </button>
+                </div>
 
 
-                <div className="px-4 pb-4">
+                <div className="font-display text-[22px] text-cream leading-tight mt-4">
+                  {persona.name}
+                </div>
+
+                <div className="text-[12px] text-gold mt-1.5">
+                  {persona.tagline}
+                </div>
+
+                <p className="text-[14px] text-cream/50 leading-snug mt-3">
+                  {persona.desc}
+                </p>
+
+
+                <div className="mt-auto pt-6">
                   {last ? (
                     <button
                       onClick={() => {
-                        haptic(
-                          'light',
-                        )
+                        haptic('light')
 
                         onPick(
                           persona.key,
                           '',
                         )
                       }}
-                      className="w-full text-left rounded-2xl bg-emerald-light/25 border border-cream/10 px-3.5 py-3 active:scale-[0.99]"
+                      className="w-full text-left rounded-[20px] bg-emerald-light border border-cream/10 px-4 py-3.5 active:scale-[0.99] transition-transform"
                     >
-                      <div className="text-[10px] uppercase tracking-wide text-gold mb-1">
-                        Продолжить
-                        разговор
+                      <div className="text-[10px] uppercase tracking-wider text-gold mb-1">
+                        Продолжить разговор
                       </div>
 
-                      <p className="text-xs text-cream/55 leading-snug">
-                        {last.role ===
-                        'user'
+                      <p className="text-[13px] text-cream/55 leading-snug">
+                        {last.role === 'user'
                           ? 'Ты: '
                           : ''}
 
-                        {trim(
-                          last.content,
-                        )}
+                        {trim(last.content)}
                       </p>
                     </button>
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {persona.starters.map(
-                        (
-                          starter,
-                        ) => (
-                          <button
-                            key={
-                              starter
-                            }
-                            onClick={() => {
-                              haptic(
-                                'light',
-                              )
+                    <>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {persona.starters.map(
+                          (starter) => (
+                            <button
+                              key={starter}
+                              onClick={() => {
+                                haptic('light')
 
-                              onPick(
-                                persona.key,
-                                starter,
-                              )
-                            }}
-                            className="rounded-full border border-cream/15 bg-emerald-light/25 px-3.5 py-2 text-xs text-cream/70 active:scale-95"
-                          >
-                            {
-                              starter
-                            }
-                          </button>
-                        ),
-                      )}
-                    </div>
+                                onPick(
+                                  persona.key,
+                                  starter,
+                                )
+                              }}
+                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-cream/70 active:scale-95 transition-transform"
+                            >
+                              {starter}
+                            </button>
+                          ),
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          haptic('light')
+
+                          onPick(
+                            persona.key,
+                            '',
+                          )
+                        }}
+                        className="cta-pill w-full py-3.5 text-[15px]"
+                      >
+                        Говорить
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -244,9 +298,27 @@ export default function PersonaPicker({
       </div>
 
 
-      <p className="text-[11px] text-cream/30 leading-snug mt-5 px-1">
-        У каждого своя история —
-        разговоры не смешиваются.
+      {/* ── точки ── */}
+
+      <div className="flex justify-center gap-1.5 mt-4">
+        {PERSONAS.map(
+          (persona, index) => (
+            <span
+              key={persona.key}
+              className={[
+                'h-[3px] rounded-full transition-all duration-200',
+                index === active
+                  ? 'w-5 bg-gold'
+                  : 'w-4 bg-cream/15',
+              ].join(' ')}
+            />
+          ),
+        )}
+      </div>
+
+
+      <p className="text-[11px] text-cream/30 leading-snug mt-6 text-center">
+        У каждого своя история — разговоры не смешиваются.
       </p>
     </div>
   )
