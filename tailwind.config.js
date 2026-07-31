@@ -19,8 +19,11 @@ export default {
         'cognac':        'rgb(var(--c-gold) / <alpha-value>)',  // → золото
       },
       fontFamily: {
-        display: ['Manrope', 'sans-serif'],
-        body: ['Manrope', 'sans-serif'],
+        // Onest — шрифт из дизайн-системы Mentalix.
+        // До этого в коде стоял Manrope, расхождение
+        // тянулось с самого начала проекта.
+        display: ['Onest', 'sans-serif'],
+        body: ['Onest', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       keyframes: {
