@@ -2,7 +2,19 @@ import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import { ArtSprout } from '../components/Art'
-import { ArrowLeft, Sparkles, Snowflake, Check, GripVertical } from 'lucide-react'
+import { ArrowLeft, Sparkles, Snowflake, Check } from 'lucide-react'
+
+/*
+ * Карточка занимает всё, что осталось между шапкой экрана и
+ * нижней навигацией. Вычитаем: контролы Telegram, шапку с
+ * кнопкой назад и подписью, точки под лентой, место под меню.
+ */
+const CARD_HEIGHT = {
+  height:
+    'calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 290px)',
+  minHeight: '380px',
+}
+
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -36,7 +48,7 @@ function Monogram() {
   )
 }
 
-function RitualCard({ ritual, onLog, onDelete, dragHandlers, isDragging, isOver }) {
+function RitualCard({ ritual, onLog, onDelete }) {
   const level = ritual.today_level
   const [confirming, setConfirming] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
@@ -61,30 +73,22 @@ function RitualCard({ ritual, onLog, onDelete, dragHandlers, isDragging, isOver 
 
   return (
     <div
-      {...dragHandlers}
-      className={`rounded-3xl overflow-hidden mb-3 transition-all duration-200 ${
+      className={`rounded-[28px] overflow-hidden border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${
         celebrate ? 'animate-glow-pulse' : ''
-      } ${
-        isDragging ? 'opacity-60 scale-[1.03] shadow-lg shadow-black/40 z-10 relative' : ''
-      } ${
-        isOver ? 'ring-1 ring-gold/60' : ''
-      } ${level ? 'bg-gold/10' : 'bg-emerald'}`}
+      } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
+      style={CARD_HEIGHT}
     >
-      <div
-        className="w-full flex items-center justify-between px-4 pt-4 pb-2"
-      >
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <GripVertical size={16} className="text-cream/25 shrink-0" />
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gold/10 shrink-0">
-            <Sparkles size={16} className="text-gold" strokeWidth={1.75} />
-            {celebrate && (
-              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-gold animate-celebrate-pop">
-                <Check size={16} className="text-emerald-deep" strokeWidth={3} />
-              </span>
-            )}
-          </div>
-          <span className="text-[15px] font-bold text-cream truncate">{ritual.name}</span>
+      {/* шапка */}
+      <div className="flex items-start justify-between gap-3 shrink-0">
+        <div className="relative flex items-center justify-center w-11 h-11 rounded-full bg-gold/10 shrink-0">
+          <Sparkles size={18} className="text-gold" strokeWidth={1.6} />
+          {celebrate && (
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-gold animate-celebrate-pop">
+              <Check size={18} className="text-emerald-deep" strokeWidth={3} />
+            </span>
+          )}
         </div>
+
         <span className="flex items-center gap-2 shrink-0">
           <StreakBadge streak={ritual.streak} freezes={ritual.freezes} bump={streakBump} />
           <Monogram />
@@ -106,7 +110,7 @@ function RitualCard({ ritual, onLog, onDelete, dragHandlers, isDragging, isOver 
           ) : (
             <span
               onClick={() => setConfirming(true)}
-              className="text-cream/30 text-sm leading-none px-1 active:scale-90"
+              className="text-cream/30 text-base leading-none px-1 active:scale-90"
             >
               ×
             </span>
@@ -114,44 +118,76 @@ function RitualCard({ ritual, onLog, onDelete, dragHandlers, isDragging, isOver 
         </span>
       </div>
 
-      <div className="px-4 pb-4">
-        {ritual.goal && <p className="text-xs text-cream/45 mb-2">{ritual.goal}</p>}
-        <div className="flex gap-2">
-          {ritual.min_version && (
-            <button
-              onClick={() => handleLog('min')}
-              className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 transition-all duration-150 active:scale-95 ${
-                level === 'min' ? 'bg-cream/15 text-cream' : 'bg-cream/5 text-cream/50'
-              }`}
-            >
-              Минимум{ritual.min_version ? `: ${ritual.min_version}` : ''}
-            </button>
-          )}
-          {ritual.optimal_version && (
-            <button
-              onClick={() => handleLog('optimal')}
-              className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 transition-all duration-150 active:scale-95 ${
-                level === 'optimal' ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
-              }`}
-            >
-              Оптимум{ritual.optimal_version ? `: ${ritual.optimal_version}` : ''}
-            </button>
-          )}
-          {!ritual.min_version && !ritual.optimal_version && (
-            <button
-              onClick={() => handleLog('optimal')}
-              className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 transition-all duration-150 active:scale-95 ${
-                level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
-              }`}
-            >
-              {level ? 'Сделано' : 'Отметить'}
-            </button>
-          )}
-        </div>
+      {/* название и смысл */}
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain mt-4">
+        <h3 className="font-display text-[20px] text-cream leading-tight">
+          {ritual.name}
+        </h3>
+
+        {ritual.goal && (
+          <p className="text-[14px] text-cream/45 leading-relaxed mt-3">
+            {ritual.goal}
+          </p>
+        )}
+      </div>
+
+      {/* уровни */}
+      <div className="shrink-0 flex flex-col gap-2 pt-4">
+        {ritual.min_version && (
+          <button
+            onClick={() => handleLog('min')}
+            className={`w-full text-left rounded-[20px] px-4 py-3 border-0 transition-all duration-150 active:scale-[0.98] ${
+              level === 'min' ? 'bg-cream/15' : 'bg-cream/5'
+            }`}
+          >
+            <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+              level === 'min' ? 'text-cream' : 'text-cream/40'
+            }`}>
+              Минимум
+            </div>
+            <div className={`text-[13px] leading-snug ${
+              level === 'min' ? 'text-cream/85' : 'text-cream/55'
+            }`}>
+              {ritual.min_version}
+            </div>
+          </button>
+        )}
+
+        {ritual.optimal_version && (
+          <button
+            onClick={() => handleLog('optimal')}
+            className={`w-full text-left rounded-[20px] px-4 py-3 border-0 transition-all duration-150 active:scale-[0.98] ${
+              level === 'optimal' ? 'bg-gold' : 'bg-cream/5'
+            }`}
+          >
+            <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+              level === 'optimal' ? 'text-emerald-deep/70' : 'text-cream/40'
+            }`}>
+              Оптимум
+            </div>
+            <div className={`text-[13px] leading-snug ${
+              level === 'optimal' ? 'text-emerald-deep' : 'text-cream/55'
+            }`}>
+              {ritual.optimal_version}
+            </div>
+          </button>
+        )}
+
+        {!ritual.min_version && !ritual.optimal_version && (
+          <button
+            onClick={() => handleLog('optimal')}
+            className={`w-full py-3.5 rounded-full text-[14px] font-bold border-0 transition-all duration-150 active:scale-95 ${
+              level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
+            }`}
+          >
+            {level ? 'Сделано' : 'Отметить'}
+          </button>
+        )}
       </div>
     </div>
   )
 }
+
 
 function CreateRitualScreen({ onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
@@ -204,10 +240,25 @@ export default function Rituals({ user, onBack }) {
   const [rituals, setRituals] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
-  const [dragIndex, setDragIndex] = useState(null)
-  const [overIndex, setOverIndex] = useState(null)
-  const longPressTimer = useRef(null)
-  const listRef = useRef(null)
+  const [active, setActive] = useState(0)
+  const trackRef = useRef(null)
+
+
+  /*
+   * Перетаскивание карточек для смены порядка убрано вместе с
+   * переходом на горизонтальную ленту: удержание с последующим
+   * движением пальца конфликтует с самим листанием. Функция
+   * api.rituals.reorder на бэкенде осталась — вернуть порядок
+   * можно явными кнопками, когда это понадобится.
+   */
+  function syncActive() {
+    const track = trackRef.current
+    if (!track) return
+    const card = track.firstElementChild
+    if (!card) return
+    const step = card.offsetWidth + 12
+    setActive(Math.round(track.scrollLeft / step))
+  }
 
   useEffect(() => {
     if (!user) return
@@ -258,57 +309,14 @@ export default function Rituals({ user, onBack }) {
     } catch (e) { console.error(e) }
   }
 
-  async function saveOrder(list) {
-    try {
-      await api.rituals.reorder(user.id, list.map((r) => r.id))
-    } catch (e) { console.error(e) }
-  }
-
-  function startLongPress(index) {
-    longPressTimer.current = setTimeout(() => {
-      haptic('medium')
-      setDragIndex(index)
-    }, 400)
-  }
-
-  function cancelLongPress() {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-  }
-
-  function handleTouchMove(e) {
-    if (dragIndex === null) return
-    const touch = e.touches[0]
-    const el = document.elementFromPoint(touch.clientX, touch.clientY)
-    const card = el?.closest('[data-ritual-index]')
-    if (card) {
-      const idx = Number(card.getAttribute('data-ritual-index'))
-      if (idx !== overIndex) setOverIndex(idx)
-    }
-  }
-
-  function handleTouchEnd() {
-    cancelLongPress()
-    if (dragIndex !== null && overIndex !== null && dragIndex !== overIndex) {
-      const next = [...rituals]
-      const [moved] = next.splice(dragIndex, 1)
-      next.splice(overIndex, 0, moved)
-      setRituals(next)
-      saveOrder(next)
-      hapticNotify('success')
-    }
-    setDragIndex(null)
-    setOverIndex(null)
-  }
+  const doneCount = rituals.filter((r) => r.today_level).length
 
   if (showCreate) {
     return <CreateRitualScreen onCreate={createRitual} onCancel={() => setShowCreate(false)} />
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+    <div className="w-full max-w-md px-5 animate-fade-in">
       <div className="flex items-center gap-3 mb-2">
         <button onClick={() => { haptic('light'); onBack() }} aria-label="Назад"
           className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
@@ -316,8 +324,11 @@ export default function Rituals({ user, onBack }) {
         </button>
         <h2 className="font-display text-[22px] text-cream lowercase">ритуалы.</h2>
       </div>
-      <p className="text-[12px] text-cream/40 mb-5 px-1">
-        {rituals.length > 1 ? 'зажми карточку, чтобы поменять порядок' : 'обряды, что держат твой день'}
+
+      <p className="text-[12px] text-cream/40 mb-4 px-1">
+        {rituals.length > 0
+          ? `${doneCount} из ${rituals.length} закрыто сегодня`
+          : 'обряды, что держат твой день'}
       </p>
 
       {loading ? (
@@ -335,29 +346,43 @@ export default function Rituals({ user, onBack }) {
         </div>
       ) : (
         <>
-          <div ref={listRef}>
-            {rituals.map((r, i) => (
-              <div key={r.id} data-ritual-index={i}>
-                <RitualCard
-                  ritual={r}
-                  onLog={logRitual}
-                  onDelete={deleteRitual}
-                  isDragging={dragIndex === i}
-                  isOver={dragIndex !== null && overIndex === i && dragIndex !== i}
-                  dragHandlers={{
-                    onTouchStart: () => startLongPress(i),
-                    onTouchMove: handleTouchMove,
-                    onTouchEnd: handleTouchEnd,
-                    onTouchCancel: handleTouchEnd,
-                  }}
-                />
-              </div>
+          <div
+            ref={trackRef}
+            onScroll={syncActive}
+            className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+            style={{ scrollbarWidth: 'none' }}
+          >
+            {rituals.map((r) => (
+              <RitualCard
+                key={r.id}
+                ritual={r}
+                onLog={logRitual}
+                onDelete={deleteRitual}
+              />
+            ))}
+
+            {/* последней карточкой — создание нового */}
+            <button
+              onClick={() => { haptic('light'); setShowCreate(true) }}
+              style={CARD_HEIGHT}
+              className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+            >
+              <span className="text-[26px] text-cream/25 leading-none">+</span>
+              <span className="text-[14px] text-cream/45 font-semibold">Новый ритуал</span>
+            </button>
+          </div>
+
+          <div className="flex justify-center gap-1.5 mt-3">
+            {[...rituals, null].map((_, index) => (
+              <span
+                key={index}
+                className={[
+                  'h-[3px] rounded-full transition-all duration-200',
+                  index === active ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
+                ].join(' ')}
+              />
             ))}
           </div>
-          <button onClick={() => { haptic('light'); setShowCreate(true) }}
-            className="w-full py-3.5 rounded-full bg-emerald text-cream/60 text-[14px] font-semibold mt-2 active:scale-[0.98] border-0 transition-transform">
-            + Новый ритуал
-          </button>
         </>
       )}
     </div>
