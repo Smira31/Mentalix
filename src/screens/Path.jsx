@@ -118,7 +118,7 @@ function GoalCreateScreen({ onCreate, onCancel }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10">
+    <div className="w-full max-w-md px-5">
       <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
         <ArrowLeft size={16} /> Отмена
       </button>
@@ -214,7 +214,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10">
+    <div className="w-full max-w-md px-5">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm">
           <ArrowLeft size={16} /> Назад
@@ -356,7 +356,7 @@ export default function Path({ user }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-24">
+    <div className="w-full max-w-md px-5 pb-24">
       <h2 className="font-display text-lg mb-4 text-cream/90">Мой путь</h2>
 
       {goals.length === 0 ? (
