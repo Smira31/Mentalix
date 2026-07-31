@@ -60,18 +60,24 @@ export default function ThemeScreen({ user, themeId, onBack }) {
     }
   }
 
-  // Шапка одна и та же для загрузки и для контента,
-  // чтобы кнопка «назад» была доступна всегда.
+  /*
+   * Кнопка «назад» раньше сидела в узком слоте под контролами
+   * Telegram и была почти чёрной на чёрном — её не было видно и
+   * нельзя было нажать. Теперь она стоит первым элементом
+   * содержимого, с видимой границей и подписью.
+   */
   const header = (
-    <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-end px-5`}>
-      <button
-        onClick={() => { platform.haptic('light'); onBack() }}
-        aria-label="Назад"
-        className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
-      >
-        <ChevronLeft size={20} className="text-cream/60" />
-      </button>
-    </div>
+    <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-end px-5`} aria-hidden="true" />
+  )
+
+  const backButton = (
+    <button
+      onClick={() => { platform.haptic('light'); onBack() }}
+      className="flex items-center gap-2 rounded-full border border-cream/15 bg-emerald pl-2.5 pr-4 py-2 active:scale-95 transition-transform"
+    >
+      <ChevronLeft size={17} className="text-cream/70" />
+      <span className="text-[13px] font-semibold text-cream/70">Назад</span>
+    </button>
   )
 
   if (!data) {
@@ -79,6 +85,10 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <div className={FULLSCREEN_SHELL_CLASS} style={style}>
         {header}
         <div className={FULLSCREEN_SCROLL_CLASS}>
+          <div className="w-full max-w-md mx-auto px-5 pt-2">
+            {backButton}
+          </div>
+
           <p className="w-full m-auto px-6 text-center text-cream/40 text-sm">
             Загрузка...
           </p>
@@ -97,7 +107,11 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       {header}
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md m-auto px-5 py-6">
+        <div className="w-full max-w-md mx-auto px-5 pt-2 pb-6 flex flex-col min-h-full">
+
+          <div className="mb-5">
+            {backButton}
+          </div>
 
           <div className="text-center mb-6">
             <div className="text-[12px] text-cream/35 font-semibold uppercase tracking-wide mb-2">
@@ -127,7 +141,8 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             })}
           </div>
 
-          {/* карточка дня */}
+          {/* карточка дня — остаётся по центру оставшегося места */}
+          <div className="flex-1 flex flex-col justify-center">
           <div className="rounded-[28px] bg-emerald px-6 py-8 text-center">
             {current?.locked ? (
               <>
@@ -152,6 +167,8 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 )}
               </>
             )}
+          </div>
+
           </div>
 
           {/* размышление */}
