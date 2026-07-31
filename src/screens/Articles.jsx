@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { platform } from '../platform'
+import ArticleCover from '../components/ArticleCover'
 import { Search, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import { ARTICLES } from '../data/articles'
 
@@ -15,12 +16,16 @@ function ArticleCard({ article, onOpen }) {
   return (
     <button
       onClick={() => { platform.haptic('light'); onOpen(article) }}
-      className="w-full rounded-3xl bg-emerald p-4 mb-3 text-left border-0 transition-transform active:scale-[0.99]"
+      className="w-full rounded-3xl bg-emerald p-3 mb-3 text-left border border-cream/10 transition-transform active:scale-[0.99]"
     >
-      <div className="font-display text-[17px] text-cream leading-tight">{article.title}</div>
-      <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-2">{article.excerpt}</p>
+      <ArticleCover article={article} />
 
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-cream/8">
+      <div className="px-1">
+        <div className="font-display text-[17px] text-cream leading-tight mt-3">{article.title}</div>
+        <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-2">{article.excerpt}</p>
+      </div>
+
+      <div className="flex items-center gap-2 mt-3 pt-3 px-1 border-t border-cream/8">
         <span className="text-[11px] text-gold">{article.minutes} мин чтения</span>
         <span className="text-[11px] text-cream/25">·</span>
         <span className="text-[11px] text-cream/35">{formatDate(article.date)}</span>
