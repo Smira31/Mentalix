@@ -10,7 +10,6 @@ import {
 import Path from './Path'
 import CheckIn from './CheckIn'
 import MazeLogo from '../components/MazeLogo'
-import QuickAdd from '../components/QuickAdd'
 import ThemeScreen from './ThemeScreen'
 import { ArtThread, ArtDoor } from '../components/Art'
 import History from './History'
@@ -1050,19 +1049,12 @@ export default function Today({
       )}
 
 
-      <QuickAdd
-        onCheckin={() =>
-          changeSub(
-            'checkin',
-          )
-        }
-        onPractice={
-          onOpenPractice
-        }
-        onMentor={
-          onGoMentor
-        }
-      />
+      {/*
+        Кнопка «+» убрана с экрана: те же действия уже
+        доступны из карточек Today и нижней навигации, а
+        плавающая кнопка добавляла третий способ сделать
+        то же самое. Компонент QuickAdd оставлен в коде.
+      */}
 
 
       {/* ======================================================
