@@ -74,7 +74,7 @@ function WeekChart({ dailyActivity }) {
                         x={x}
                         y={y + 12}
                         textAnchor="middle"
-                        fill={isToday ? '#96CDB0' : 'rgba(243,233,221,0.4)'}
+                        fill={isToday ? 'rgb(var(--c-text))' : 'rgb(var(--c-text) / 0.4)'}
                         fontSize={11}
                         fontFamily="Manrope"
                         fontWeight={isToday ? 600 : 400}
@@ -85,23 +85,25 @@ function WeekChart({ dailyActivity }) {
                   }}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgba(150,205,176,0.06)' }}
+                  cursor={{ fill: 'rgb(var(--c-text) / 0.05)' }}
                   contentStyle={{
-                    background: '#16332E',
-                    border: '1px solid rgba(243,233,221,0.15)',
+                    background: 'rgb(var(--c-card2))',
+                    border: '1px solid rgb(var(--c-border))',
                     borderRadius: 12,
-                    fontFamily: 'Manrope',
+                    fontFamily: 'Onest',
                     fontSize: 12,
+                    color: 'rgb(var(--c-text))',
                   }}
-                  labelStyle={{ color: '#F3E9DD' }}
+                  itemStyle={{ color: 'rgb(var(--c-text) / 0.7)' }}
+                  labelStyle={{ color: 'rgb(var(--c-text))' }}
                   formatter={(value, name) => [value, name === 'count' ? 'ритуалов' : 'срывов']}
                 />
                 <Bar dataKey="count" radius={[5, 5, 5, 5]}>
                   {chartData.map((d, i) => (
-                    <Cell key={i} fill={d.isToday ? '#96CDB0' : '#B8952E'} />
+                    <Cell key={i} fill={d.isToday ? 'rgb(var(--c-text))' : 'rgb(var(--c-gold))'} />
                   ))}
                 </Bar>
-                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="#C18D52" />
+                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="rgb(var(--c-text) / 0.3)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -113,7 +115,7 @@ function WeekChart({ dailyActivity }) {
               <span className="w-2 h-2 rounded-full bg-gold" /> ритуалы
             </span>
             <span className="flex items-center gap-1.5 text-[11px] text-cream/50">
-              <span className="w-2 h-2 rounded-full bg-cognac" /> срывы
+              <span className="w-2 h-2 rounded-full bg-cream/30" /> срывы
             </span>
           </div>
         </>
@@ -206,15 +208,15 @@ function MoodTrend({ checkins, onGoCheckin }) {
         {checkins.length >= 2 ? (
           <ResponsiveContainer width="100%" height={140}>
             <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -28 }}>
-              <XAxis dataKey="label" tick={{ fill: 'rgba(245,245,245,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis domain={[1, 5]} ticks={[1, 3, 5]} tick={{ fill: 'rgba(245,245,245,0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="label" tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <YAxis domain={[1, 5]} ticks={[1, 3, 5]} tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ background: 'rgb(25,25,27)', border: '1px solid rgba(245,245,245,0.1)', borderRadius: 12, fontSize: 12 }}
-                labelStyle={{ color: 'rgba(245,245,245,0.5)' }}
+                contentStyle={{ background: 'rgb(var(--c-card2))', border: '1px solid rgb(var(--c-border))', borderRadius: 12, fontSize: 12, color: 'rgb(var(--c-text))' }}
+                labelStyle={{ color: 'rgb(var(--c-text) / 0.6)' }}
                 formatter={(v, name) => [v + '/5', name === 'mood' ? 'настроение' : 'энергия']}
               />
               <Line type="monotone" dataKey="mood" stroke="rgb(217,180,91)" strokeWidth={2.5} dot={{ r: 3, fill: 'rgb(217,180,91)' }} />
-              <Line type="monotone" dataKey="energy" stroke="rgba(245,245,245,0.3)" strokeWidth={1.5} dot={false} />
+              <Line type="monotone" dataKey="energy" stroke="rgb(var(--c-text) / 0.3)" strokeWidth={1.5} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         ) : (
