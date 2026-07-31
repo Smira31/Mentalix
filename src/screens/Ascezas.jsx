@@ -11,10 +11,19 @@ import {
   Users,
   Smartphone,
   Cookie,
-  GripVertical,
   Check,
   X,
 } from 'lucide-react'
+
+
+/*
+ * Карточка занимает всё между шапкой экрана и нижней навигацией.
+ */
+const CARD_HEIGHT = {
+  height:
+    'calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 290px)',
+  minHeight: '380px',
+}
 
 
 function haptic(style = 'light') {
@@ -230,9 +239,6 @@ function AscezaCard({
   onLog,
   onBreak,
   onDelete,
-  dragHandlers,
-  isDragging,
-  isOver,
 }) {
   const status = asceza.today_status
   const [confirming, setConfirming] = useState(false)
@@ -270,32 +276,19 @@ function AscezaCard({
 
   return (
     <div
-      {...dragHandlers}
-      className={`rounded-3xl overflow-hidden mb-3 transition-all duration-200 ${
+      style={CARD_HEIGHT}
+      className={`rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col justify-center transition-all duration-200 ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${
-        isDragging
-          ? 'opacity-60 scale-[1.03] shadow-lg shadow-black/40 z-10 relative'
-          : ''
-      } ${
-        isOver
-          ? 'ring-1 ring-gold/60'
-          : ''
-      } ${
         status === 'held'
-          ? 'bg-gold/10'
+          ? 'bg-gold/10 border-gold/30'
           : status === 'broke'
-            ? 'bg-emerald-light/40'
-            : 'bg-emerald'
+            ? 'bg-emerald-light/40 border-cream/12'
+            : 'bg-emerald border-cream/12'
       }`}
     >
-      <div className="w-full flex items-center justify-between px-4 pt-4 pb-2">
+      <div className="w-full flex items-start justify-between gap-3 pb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <GripVertical
-            size={16}
-            className="text-cream/25 shrink-0"
-          />
-
           <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gold/10 shrink-0">
             <Icon
               size={16}
@@ -315,7 +308,7 @@ function AscezaCard({
           </div>
 
           <div className="min-w-0">
-            <div className="text-[15px] font-bold text-cream truncate">
+            <div className="font-display text-[19px] text-cream leading-tight">
               {asceza.name}
             </div>
 
@@ -360,7 +353,7 @@ function AscezaCard({
         </span>
       </div>
 
-      <div className="px-4 pb-4">
+      <div>
         {asceza.reason && (
           <p className="text-xs text-cream/45 mb-2">
             {asceza.reason}
@@ -573,10 +566,8 @@ export default function Ascezas({
 
   const [breakTarget, setBreakTarget] = useState(null)
 
-  const [dragIndex, setDragIndex] = useState(null)
-  const [overIndex, setOverIndex] = useState(null)
-
-  const longPressTimer = useRef(null)
+  const [active, setActive] = useState(0)
+  const trackRef = useRef(null)
 
 
   useEffect(() => {
@@ -594,24 +585,16 @@ export default function Ascezas({
   }, [user])
 
 
+  /*
+   * Пока открыт разбор срыва, страница под ним не скроллится.
+   */
   useEffect(() => {
-    if (dragIndex !== null || breakTarget) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
-
-    if (dragIndex !== null) {
-      document.body.style.touchAction = 'none'
-    } else {
-      document.body.style.touchAction = ''
-    }
+    document.body.style.overflow = breakTarget ? 'hidden' : ''
 
     return () => {
       document.body.style.overflow = ''
-      document.body.style.touchAction = ''
     }
-  }, [dragIndex, breakTarget])
+  }, [breakTarget])
 
 
   async function logAsceza(
@@ -687,88 +670,18 @@ export default function Ascezas({
   }
 
 
-  async function saveOrder(list) {
-    try {
-      await api.ascezas.reorder(
-        user.id,
-        list.map((asceza) => asceza.id),
-      )
-    } catch (error) {
-      console.error(error)
-    }
-  }
 
 
-  function startLongPress(index) {
-    longPressTimer.current = setTimeout(() => {
-      haptic('medium')
-      setDragIndex(index)
-    }, 400)
-  }
 
 
-  function cancelLongPress() {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-  }
 
-
-  function handleTouchMove(event) {
-    if (dragIndex === null) return
-
-    const touch = event.touches[0]
-
-    const element = document.elementFromPoint(
-      touch.clientX,
-      touch.clientY,
-    )
-
-    const card = element?.closest(
-      '[data-asceza-index]',
-    )
-
+  function syncActive() {
+    const track = trackRef.current
+    if (!track) return
+    const card = track.firstElementChild
     if (!card) return
-
-    const index = Number(
-      card.getAttribute('data-asceza-index'),
-    )
-
-    if (index !== overIndex) {
-      setOverIndex(index)
-    }
-  }
-
-
-  function handleTouchEnd() {
-    cancelLongPress()
-
-    if (
-      dragIndex !== null
-      && overIndex !== null
-      && dragIndex !== overIndex
-    ) {
-      const next = [...ascezas]
-
-      const [moved] = next.splice(
-        dragIndex,
-        1,
-      )
-
-      next.splice(
-        overIndex,
-        0,
-        moved,
-      )
-
-      setAscezas(next)
-      saveOrder(next)
-      hapticNotify('success')
-    }
-
-    setDragIndex(null)
-    setOverIndex(null)
+    const step = card.offsetWidth + 12
+    setActive(Math.round(track.scrollLeft / step))
   }
 
 
@@ -792,7 +705,7 @@ export default function Ascezas({
 
   return (
     <>
-      <div className="w-full max-w-sm px-6 pb-24 animate-fade-in">
+      <div className="w-full max-w-md px-5 animate-fade-in">
         <div className="flex items-center gap-3 mb-2">
           <button
             onClick={() => {
@@ -814,8 +727,8 @@ export default function Ascezas({
         </div>
 
         <p className="text-[12px] text-cream/40 mb-5 px-1">
-          {total > 1
-            ? 'зажми карточку, чтобы поменять порядок'
+          {total > 0
+            ? `${heldToday} из ${total} удержано сегодня`
             : 'от чего ты отказываешься'}
         </p>
 
@@ -874,49 +787,46 @@ export default function Ascezas({
           </div>
         ) : (
           <>
-            <div>
-              {ascezas.map((asceza, index) => (
-                <div
+            <div
+              ref={trackRef}
+              onScroll={syncActive}
+              className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: 'none' }}
+            >
+              {ascezas.map((asceza) => (
+                <AscezaCard
                   key={asceza.id}
-                  data-asceza-index={index}
-                >
-                  <AscezaCard
-                    asceza={asceza}
-                    onLog={logAsceza}
-                    onBreak={setBreakTarget}
-                    onDelete={deleteAsceza}
-                    isDragging={
-                      dragIndex === index
-                    }
-                    isOver={
-                      dragIndex !== null
-                      && overIndex === index
-                      && dragIndex !== index
-                    }
-                    dragHandlers={{
-                      onTouchStart: () =>
-                        startLongPress(index),
-                      onTouchMove:
-                        handleTouchMove,
-                      onTouchEnd:
-                        handleTouchEnd,
-                      onTouchCancel:
-                        handleTouchEnd,
-                    }}
-                  />
-                </div>
+                  asceza={asceza}
+                  onLog={logAsceza}
+                  onBreak={setBreakTarget}
+                  onDelete={deleteAsceza}
+                />
               ))}
+
+              <button
+                onClick={() => {
+                  haptic('light')
+                  setShowCreate(true)
+                }}
+                style={CARD_HEIGHT}
+                className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+              >
+                <span className="text-[26px] text-cream/25 leading-none">+</span>
+                <span className="text-[14px] text-cream/45 font-semibold">Новая аскеза</span>
+              </button>
             </div>
 
-            <button
-              onClick={() => {
-                haptic('light')
-                setShowCreate(true)
-              }}
-              className="w-full py-3.5 rounded-full bg-emerald text-cream/60 text-[14px] font-semibold mt-2 active:scale-[0.98] border-0 transition-transform"
-            >
-              + Новая аскеза
-            </button>
+            <div className="flex justify-center gap-1.5 mt-3">
+              {[...ascezas, null].map((_, index) => (
+                <span
+                  key={index}
+                  className={[
+                    'h-[3px] rounded-full transition-all duration-200',
+                    index === active ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
+                  ].join(' ')}
+                />
+              ))}
+            </div>
           </>
         )}
       </div>
