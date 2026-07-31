@@ -177,25 +177,36 @@ export function pickArchetype(article) {
 }
 
 
+/*
+ * fill — обложка становится полосой во всю высоту карточки:
+ * без собственной высоты и скруглений, растягивается по
+ * родителю. Рисунок уходит в край карточки и читается жёстче,
+ * ближе к языку «Практик».
+ */
 export default function ArticleCover({
   article,
   className = '',
   height = 100,
+  fill = false,
 }) {
   const Archetype =
     ARCHETYPES[pickArchetype(article)]
 
   return (
     <div
-      className={`w-full rounded-2xl bg-emerald-light overflow-hidden ${className}`}
-      style={{ height }}
+      className={[
+        'bg-emerald-light overflow-hidden',
+        fill ? 'h-full' : 'w-full rounded-2xl',
+        className,
+      ].join(' ')}
+      style={fill ? undefined : { height }}
       aria-hidden="true"
     >
       <svg
-        viewBox="0 0 240 112"
-        preserveAspectRatio="xMidYMid meet"
+        viewBox={fill ? '60 0 120 112' : '0 0 240 112'}
+        preserveAspectRatio="xMidYMid slice"
         fill="none"
-        strokeWidth="1.3"
+        strokeWidth={fill ? '2.2' : '1.3'}
         strokeLinecap="round"
         className="w-full h-full"
       >

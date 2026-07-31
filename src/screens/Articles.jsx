@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
-import { Search, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
+import { Search, ChevronLeft, ExternalLink } from 'lucide-react'
 import { ARTICLES } from '../data/articles'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
@@ -16,25 +16,24 @@ function ArticleCard({ article, onOpen }) {
   return (
     <button
       onClick={() => { platform.haptic('light'); onOpen(article) }}
-      className="w-full rounded-3xl bg-emerald p-3 mb-3 text-left border border-cream/10 transition-transform active:scale-[0.99]"
+      className="w-full rounded-3xl bg-emerald mb-3 text-left border border-cream/10 overflow-hidden flex items-stretch transition-transform active:scale-[0.99]"
     >
-      <ArticleCover article={article} />
+      <ArticleCover article={article} fill className="w-[86px] shrink-0" />
 
-      <div className="px-1">
-        <div className="font-display text-[17px] text-cream leading-tight mt-3">{article.title}</div>
-        <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-2">{article.excerpt}</p>
-      </div>
+      <div className="flex-1 min-w-0 px-4 py-4">
+        <div className="font-display text-[17px] text-cream leading-tight">{article.title}</div>
+        <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-3">{article.excerpt}</p>
 
-      <div className="flex items-center gap-2 mt-3 pt-3 px-1 border-t border-cream/8">
-        <span className="text-[11px] text-gold">{article.minutes} мин чтения</span>
-        <span className="text-[11px] text-cream/25">·</span>
-        <span className="text-[11px] text-cream/35">{formatDate(article.date)}</span>
-        {article.tag && (
-          <span className="text-[10px] text-cream/40 bg-cream/5 rounded-full px-2 py-0.5 ml-auto">
-            {article.tag}
-          </span>
-        )}
-        <ChevronRight size={16} className={`text-cream/25 shrink-0 ${article.tag ? '' : 'ml-auto'}`} />
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-cream/8">
+          <span className="text-[11px] text-gold whitespace-nowrap">{article.minutes} мин</span>
+          <span className="text-[11px] text-cream/25">·</span>
+          <span className="text-[11px] text-cream/35 whitespace-nowrap">{formatDate(article.date)}</span>
+          {article.tag && (
+            <span className="text-[10px] text-cream/40 bg-cream/5 rounded-full px-2 py-0.5 ml-auto whitespace-nowrap">
+              {article.tag}
+            </span>
+          )}
+        </div>
       </div>
     </button>
   )
