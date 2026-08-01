@@ -140,6 +140,48 @@ export function useBackButton(
  * иначе внизу появится синяя кнопка Telegram, не имеющая
  * отношения к Mentalix.
  */
+/*
+ * Токены цвета хранятся RGB-триплетами («0 0 0»), а Telegram
+ * ждёт hex. Переводим здесь, чтобы экраны об этом не знали.
+ */
+function tokenHex(name) {
+  if (typeof window === 'undefined') return null
+
+  const raw = getComputedStyle(
+    document.documentElement,
+  )
+    .getPropertyValue(name)
+    .trim()
+
+  if (!raw) return null
+
+  if (raw.startsWith('#')) return raw
+
+  const channels = raw.split(/\s+/).map(Number)
+
+  if (
+    channels.length !== 3
+    || channels.some(
+      (channel) =>
+        !Number.isFinite(channel),
+    )
+  ) {
+    return null
+  }
+
+  return (
+    '#'
+    + channels
+      .map((channel) =>
+        channel
+          .toString(16)
+          .padStart(2, '0'),
+      )
+      .join('')
+  )
+}
+
+
 function ctaColors() {
   if (typeof window === 'undefined') return null
 
@@ -251,10 +293,26 @@ export function useSecondaryButton({
 
     const handler = () => ref.current?.()
 
+    /*
+     * Без явных цветов Telegram рисует вторую кнопку синей —
+     * цветом своей темы, к Mentalix отношения не имеющим.
+     * «Пропустить» должно читаться как тихое действие, а не
+     * как второй призыв: фон совпадает с полосой, текст
+     * приглушённый.
+     */
+    const background = tokenHex('--c-bg')
+    const label = tokenHex('--c-muted')
+
     safely(() => {
       button.setParams({
         text,
         position: 'bottom',
+        ...(background && label
+          ? {
+              color: background,
+              text_color: label,
+            }
+          : {}),
       })
 
       button.onClick(handler)
