@@ -91,12 +91,22 @@ export default function BottomNavigation({
 
 
   return (
+    /*
+     * mx-auto здесь не украшение, а лечение конкретного бага.
+     * У элемента заданы одновременно left, right и max-width —
+     * для позиционированного бокса это переопределённая система.
+     * CSS в таком случае оставляет left и игнорирует right, и на
+     * широком экране (Telegram Desktop) панель прижималась к
+     * левому нижнему углу. `margin-inline: auto` разрешает
+     * конфликт в пользу центра.
+     */
     <div
       className="
         fixed
         z-50
 
         max-w-[416px]
+        mx-auto
 
         pointer-events-none
       "
