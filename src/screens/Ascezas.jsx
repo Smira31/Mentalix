@@ -11,6 +11,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { ArtShield } from '../components/Art'
+import Motif, { motifForAsceza } from '../components/Motif'
 import {
   Shield,
   ShieldOff,
@@ -19,7 +20,6 @@ import {
   Users,
   Smartphone,
   Cookie,
-  Check,
   X,
 } from 'lucide-react'
 
@@ -253,7 +253,6 @@ function AscezaCard({
   const [celebrate, setCelebrate] = useState(false)
 
   const meta = categoryMeta(asceza.category)
-  const Icon = meta.Icon
 
   function handleHeld() {
     const wasUnset = !status
@@ -285,7 +284,7 @@ function AscezaCard({
   return (
     <div
       style={CARD_HEIGHT}
-      className={`rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col justify-center transition-all duration-200 ${
+      className={`relative rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col transition-all duration-200 ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${
         status === 'held'
@@ -295,42 +294,34 @@ function AscezaCard({
             : 'bg-emerald border-cream/12'
       }`}
     >
-      <div className="w-full flex items-start justify-between gap-3 pb-3">
-        <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-gold/10 shrink-0">
-            <Icon
-              size={16}
-              className="text-gold"
-              strokeWidth={1.75}
-            />
+      {/*
+        * Верхняя треть — рисунок своей категории. Общий жест у
+        * всех пяти один: коридор из двух прямых, внутри порядок,
+        * снаружи тот же материал в беспорядке.
+        */}
+      <div
+        className={`w-full basis-1/3 shrink-0 min-h-0 flex items-center justify-center ${
+          status === 'held' ? 'text-gold' : 'text-gold/60'
+        }`}
+      >
+        <Motif
+          name={motifForAsceza(asceza.category)}
+          className="h-full w-auto max-w-full"
+        />
+      </div>
 
-            {celebrate && (
-              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-gold animate-celebrate-pop">
-                <Check
-                  size={16}
-                  className="text-emerald-deep"
-                  strokeWidth={3}
-                />
-              </span>
-            )}
+      <div className="w-full flex items-start justify-between gap-3 mt-4 pb-3">
+        <div className="min-w-0 flex-1">
+          <div className="font-display text-[19px] text-cream leading-tight">
+            {asceza.name}
           </div>
 
-          <div className="min-w-0">
-            <div className="font-display text-[19px] text-cream leading-tight">
-              {asceza.name}
-            </div>
-
-            <div className="text-[10px] text-cream/40">
-              {meta.label}
-            </div>
+          <div className="text-[10px] text-cream/40">
+            {meta.label}
           </div>
         </div>
 
         <span className="flex items-center gap-2 shrink-0">
-          <span className="font-mono text-xs text-mint whitespace-nowrap">
-            🛡 {asceza.streak}
-          </span>
-
           {confirming ? (
             <span className="flex items-center gap-1">
               <button
@@ -417,6 +408,13 @@ function AscezaCard({
             Триггер: {asceza.trigger}
           </p>
         )}
+      </div>
+
+      {/* стрик внизу — итог, а не украшение шапки */}
+      <div className="mt-auto pt-5">
+        <span className="font-mono text-xs text-mint whitespace-nowrap">
+          🛡 {asceza.streak}
+        </span>
       </div>
     </div>
   )
