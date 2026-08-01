@@ -133,6 +133,89 @@ const ARCHETYPES = [
 ]
 
 
+
+/*
+ * ВЕРТИКАЛЬНЫЕ ВАРИАНТЫ
+ *
+ * Горизонтальный рисунок, обрезанный до узкой колонки, всегда
+ * выглядит случайным куском — что бы ни делать с масштабом.
+ * Поэтому у каждого архетипа есть отдельная вертикальная
+ * композиция, нарисованная под полосу, а не подогнанная под неё.
+ *
+ * Система координат 90 × 200, тот же язык: одна толщина линии,
+ * золото на смысловом акценте, приглушённая линия как фон.
+ */
+
+function MazeTall() {
+  return (
+    <>
+      <path d="M22 186 V150 H50 V116 H26 V82 H60 V46 H34 V16" stroke={MUTED} />
+      <path d="M22 186 V150 H50 V116 H26 V82" stroke={GOLD} />
+      <circle cx="26" cy="82" r="4" fill={GOLD} stroke="none" />
+    </>
+  )
+}
+
+function WaveTall() {
+  return (
+    <>
+      <path d="M20 12 Q58 52 26 92 T44 172 T22 196" stroke={MUTED} />
+      <path d="M54 12 Q22 56 56 96 T30 176 T52 196" stroke={GOLD} />
+    </>
+  )
+}
+
+function StepsTall() {
+  return (
+    <>
+      <path d="M14 190 H38 V158 H62 V126 H38 V94 H62 V62 H38 V26" stroke={MUTED} />
+      <path d="M14 190 H38 V158 H62 V126 H38 V94" stroke={GOLD} />
+      <circle cx="38" cy="94" r="4" fill={GOLD} stroke="none" />
+    </>
+  )
+}
+
+function ThreadTall() {
+  return (
+    <>
+      <path d="M44 14 C14 34 14 66 44 86 C74 106 74 138 44 158 C22 172 20 186 30 194" stroke={MUTED} />
+      <path d="M44 14 C14 34 14 66 44 86 C74 106 74 138 44 158" stroke={GOLD} />
+      <circle cx="44" cy="14" r="4" fill={GOLD} stroke="none" />
+    </>
+  )
+}
+
+function CycleTall() {
+  return (
+    <>
+      <ellipse cx="45" cy="100" rx="26" ry="76" stroke={MUTED} />
+      <circle cx="45" cy="100" r="26" stroke={GOLD} />
+      <circle cx="45" cy="24" r="4" fill={GOLD} stroke="none" />
+    </>
+  )
+}
+
+function EdgeTall() {
+  return (
+    <>
+      <path d="M45 18 L74 34 V104 C74 142 62 166 45 182 C28 166 16 142 16 104 V34 Z" stroke={MUTED} />
+      <path d="M45 18 L74 34 V104 C74 132 62 156 45 172" stroke={GOLD} />
+    </>
+  )
+}
+
+
+const ARCHETYPES_TALL = [
+  MazeTall,
+  WaveTall,
+  StepsTall,
+  ThreadTall,
+  CycleTall,
+  EdgeTall,
+]
+
+
+
 /*
  * Словарь смыслов. Ключи — корни слов, чтобы падежи и формы
  * попадали без отдельных правил.
@@ -189,8 +272,11 @@ export default function ArticleCover({
   height = 100,
   fill = false,
 }) {
-  const Archetype =
-    ARCHETYPES[pickArchetype(article)]
+  const index = pickArchetype(article)
+
+  const Archetype = fill
+    ? ARCHETYPES_TALL[index]
+    : ARCHETYPES[index]
 
   return (
     <div
@@ -203,11 +289,12 @@ export default function ArticleCover({
       aria-hidden="true"
     >
       <svg
-        viewBox={fill ? '60 0 120 112' : '0 0 240 112'}
-        preserveAspectRatio="xMidYMid slice"
+        viewBox={fill ? '0 0 90 200' : '0 0 240 112'}
+        preserveAspectRatio="xMidYMid meet"
         fill="none"
-        strokeWidth={fill ? '2.2' : '1.3'}
+        strokeWidth={fill ? '1.8' : '1.3'}
         strokeLinecap="round"
+        strokeLinejoin="round"
         className="w-full h-full"
       >
         <Archetype />
