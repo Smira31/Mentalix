@@ -130,12 +130,46 @@ function scatter(seed, count, build) {
   return out
 }
 
+/*
+ * Кадр обрезан по самому рисунку, а не по условному полю 200×200.
+ * Иначе мотив выходит маленьким: он занимал бы середину квадрата,
+ * а квадрат — середину широкой полосы карточки, и потери
+ * складывались бы дважды. Значения посчитаны getBBox по реальной
+ * отрисовке с полем 6 единиц; менять руками не нужно — если
+ * геометрия мотива изменилась, пересчитать заново.
+ */
+const VIEWBOX = {
+  ryad: [18, 40, 164, 114],
+  voshod: [12, 52, 176, 132],
+  lestnica: [28, 26, 172, 148],
+  shozhdenie: [12, 12, 176, 176],
+  noch: [14, 14, 172, 162],
+  fizio: [4, 18, 190, 164],
+  psiho: [2, 2, 196, 196],
+  povedenie: [2, 14, 196, 182],
+  cifra: [4, 18, 192, 168],
+  pishevoe: [3, 9, 194, 183],
+  sobesednik: [24, 66, 152, 68],
+  nastavnik: [18, 6, 176, 176],
+  sledopyt: [12, 43, 176, 139],
+}
+
 const STARS = {}
 
+// Звёзды раскладываются внутри обрезанного кадра, иначе часть их
+// оказалась бы за его пределами и просто не отрисовалась.
 function stars(key, seed, count = 14) {
   if (!STARS[key]) {
+    const [vx, vy, vw, vh] = VIEWBOX[key] || [0, 0, 200, 200]
+
     STARS[key] = scatter(seed, count, (random, i) =>
-      pt(`s${i}`, 12 + random() * 176, 12 + random() * 176, 0.7 + random() * 0.6, 0.07 + random() * 0.13),
+      pt(
+        `s${i}`,
+        vx + vw * 0.04 + random() * vw * 0.92,
+        vy + vh * 0.04 + random() * vh * 0.92,
+        0.7 + random() * 0.6,
+        0.07 + random() * 0.13,
+      ),
     )
   }
 
@@ -224,14 +258,14 @@ function shozhdenie(gid) {
 // Завершение. Свет стоит высоко, а внизу — ровные слои.
 function noch(gid) {
   return [
-    ln('w1', 20, 140, 180, 140, 0.3),
-    ln('w2', 30, 151, 170, 151, 0.22),
-    ln('w3', 42, 161, 158, 161, 0.15),
-    ln('w4', 56, 170, 144, 170, 0.09),
-    ln('col', 100, 74, 100, 168, 0.32, 1, dot0),
-    ln('r1', 90, 140, 110, 140, 0.5),
-    ln('r2', 93, 151, 107, 151, 0.34),
-    ln('r3', 95, 161, 105, 161, 0.2),
+    ln('w1', 20, 140, 180, 140, 0.45, 1.1),
+    ln('w2', 30, 151, 170, 151, 0.34, 1.1),
+    ln('w3', 42, 161, 158, 161, 0.24, 1.1),
+    ln('w4', 56, 170, 144, 170, 0.15, 1.1),
+    ln('col', 100, 74, 100, 168, 0.4, 1, dot0),
+    ln('r1', 88, 140, 112, 140, 0.75, 1.3),
+    ln('r2', 92, 151, 108, 151, 0.5, 1.2),
+    ln('r3', 95, 161, 105, 161, 0.3, 1.1),
     pt('s1', 52, 48, 1.8, 0.45),
     pt('s2', 150, 68, 1.5, 0.35),
     pt('s3', 132, 34, 1.2, 0.28),
@@ -310,12 +344,14 @@ function psiho(gid) {
   ]
 }
 
+const clamp = (v) => Math.max(8, Math.min(192, v))
+
 const NOISE_SOCIAL = scatter(37, 20, (random, i) => {
-  const x0 = i % 2 === 0 ? 12 + random() * 44 : 144 + random() * 44
-  const y0 = 18 + random() * 164
+  const x0 = i % 2 === 0 ? 14 + random() * 40 : 146 + random() * 40
+  const y0 = 20 + random() * 160
   const [x1, y1] = polar(x0, y0, 10 + random() * 16, random() * 360)
 
-  return ln(`t${i}`, x0, y0, x1, y1, 0.14 + random() * 0.18, 0.9)
+  return ln(`t${i}`, x0, y0, clamp(x1), clamp(y1), 0.14 + random() * 0.18, 0.9)
 })
 
 // Снаружи — случайные штрихи. Внутри — ровный шаг.
@@ -354,8 +390,8 @@ function cifra(gid) {
 const NOISE_FOOD = scatter(53, 60, (random, i) =>
   pt(
     `f${i}`,
-    i % 2 === 0 ? 8 + random() * 50 : 142 + random() * 50,
-    12 + random() * 176,
+    i % 2 === 0 ? 11 + random() * 46 : 143 + random() * 46,
+    15 + random() * 170,
     0.9 + random() * 1.5,
     0.1 + random() * 0.3,
   ),
@@ -552,11 +588,12 @@ export default function Motif({ name, className = '' }) {
   const uid = useId()
   const gid = `mx-glow-${uid.replace(/:/g, '')}`
 
-  const draw = MOTIFS[name] || MOTIFS.ryad
+  const key = MOTIFS[name] ? name : 'ryad'
+  const draw = MOTIFS[key]
 
   return (
     <svg
-      viewBox="0 0 200 200"
+      viewBox={VIEWBOX[key].join(' ')}
       className={className}
       preserveAspectRatio="xMidYMid meet"
       fill="none"
@@ -570,9 +607,9 @@ export default function Motif({ name, className = '' }) {
         </radialGradient>
       </defs>
 
-      {stars(name, name.length * 977 + name.charCodeAt(0) * 131)}
+      {stars(key, key.length * 977 + key.charCodeAt(0) * 131)}
 
-      {draw(gid)}
+      <g className="mx-ink">{draw(gid)}</g>
     </svg>
   )
 }

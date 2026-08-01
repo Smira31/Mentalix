@@ -10,9 +10,9 @@ import {
 } from '../lib/fullscreenSurface'
 import { ArtSprout } from '../components/Art'
 import Motif, { motifForRitual } from '../components/Motif'
+import StreakBar from '../components/StreakBar'
 import BackButton from '../components/BackButton'
 import { useMainButton } from '../lib/telegram'
-import { Snowflake } from 'lucide-react'
 
 /*
  * Карточка занимает всё, что осталось между шапкой экрана и
@@ -35,19 +35,6 @@ function hapticNotify(type = 'success') {
 
 const EMPTY_DRAFT = {
   name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '',
-}
-
-function StreakBadge({ streak, freezes, bump }) {
-  return (
-    <span className="flex items-center gap-1.5 whitespace-nowrap">
-      <span className={`font-mono text-xs text-gold inline-block ${bump ? 'animate-streak-bounce' : ''}`}>🔥 {streak}</span>
-      {freezes > 0 && (
-        <span className="flex items-center gap-0.5 font-mono text-xs text-mint">
-          <Snowflake size={12} strokeWidth={2} /> {freezes}
-        </span>
-      )}
-    </span>
-  )
 }
 
 function Monogram() {
@@ -88,32 +75,38 @@ function RitualCard({ ritual, onLog, onDelete }) {
       } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
       style={CARD_HEIGHT}
     >
-      {/* удаление — поверх рисунка, чтобы не занимать строку */}
-      <span className="absolute top-4 right-5 z-10">
-        {confirming ? (
-          <span className="flex items-center gap-1">
-            <button
-              onClick={() => { haptic('rigid'); onDelete(ritual.id) }}
-              className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
+      {/* серия — вверху, там её ищут глазами первой */}
+      <div className="flex items-center justify-between gap-3 shrink-0">
+        <StreakBar streak={ritual.streak} freezes={ritual.freezes} bump={streakBump} />
+
+        <span className="flex items-center gap-2 shrink-0">
+          <Monogram />
+
+          {confirming ? (
+            <span className="flex items-center gap-1">
+              <button
+                onClick={() => { haptic('rigid'); onDelete(ritual.id) }}
+                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
+              >
+                Удалить
+              </button>
+              <button
+                onClick={() => setConfirming(false)}
+                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 active:scale-90"
+              >
+                Отмена
+              </button>
+            </span>
+          ) : (
+            <span
+              onClick={() => setConfirming(true)}
+              className="text-cream/30 text-base leading-none px-1 active:scale-90"
             >
-              Удалить
-            </button>
-            <button
-              onClick={() => setConfirming(false)}
-              className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 active:scale-90"
-            >
-              Отмена
-            </button>
-          </span>
-        ) : (
-          <span
-            onClick={() => setConfirming(true)}
-            className="text-cream/30 text-base leading-none px-1 active:scale-90"
-          >
-            ×
-          </span>
-        )}
-      </span>
+              ×
+            </span>
+          )}
+        </span>
+      </div>
 
       {/*
         * Верхняя треть — рисунок. Мотив угадывается по названию
@@ -121,11 +114,11 @@ function RitualCard({ ritual, onLog, onDelete }) {
         * сразу, без правок в базе.
         */}
       <div
-        className={`w-full basis-1/3 shrink-0 min-h-0 flex items-center justify-center ${
+        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-1 ${
           level ? 'text-gold' : 'text-gold/60'
         }`}
       >
-        <Motif name={motifForRitual(ritual.name)} className="h-full w-auto max-w-full" />
+        <Motif name={motifForRitual(ritual.name)} className="w-full h-full" />
       </div>
 
       {/* название и смысл */}
@@ -193,12 +186,6 @@ function RitualCard({ ritual, onLog, onDelete }) {
             {level ? 'Сделано' : 'Отметить'}
           </button>
         )}
-      </div>
-
-      {/* стрик внизу — итог, а не украшение шапки */}
-      <div className="mt-auto pt-5 flex items-center justify-between">
-        <StreakBadge streak={ritual.streak} freezes={ritual.freezes} bump={streakBump} />
-        <Monogram />
       </div>
     </div>
   )

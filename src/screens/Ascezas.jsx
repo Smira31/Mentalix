@@ -12,6 +12,7 @@ import {
 } from '../lib/fullscreenSurface'
 import { ArtShield } from '../components/Art'
 import Motif, { motifForAsceza } from '../components/Motif'
+import StreakBar from '../components/StreakBar'
 import {
   Shield,
   ShieldOff,
@@ -294,32 +295,9 @@ function AscezaCard({
             : 'bg-emerald border-cream/12'
       }`}
     >
-      {/*
-        * Верхняя треть — рисунок своей категории. Общий жест у
-        * всех пяти один: коридор из двух прямых, внутри порядок,
-        * снаружи тот же материал в беспорядке.
-        */}
-      <div
-        className={`w-full basis-1/3 shrink-0 min-h-0 flex items-center justify-center ${
-          status === 'held' ? 'text-gold' : 'text-gold/60'
-        }`}
-      >
-        <Motif
-          name={motifForAsceza(asceza.category)}
-          className="h-full w-auto max-w-full"
-        />
-      </div>
-
-      <div className="w-full flex items-start justify-between gap-3 mt-4 pb-3">
-        <div className="min-w-0 flex-1">
-          <div className="font-display text-[19px] text-cream leading-tight">
-            {asceza.name}
-          </div>
-
-          <div className="text-[10px] text-cream/40">
-            {meta.label}
-          </div>
-        </div>
+      {/* серия — вверху, там её ищут глазами первой */}
+      <div className="flex items-center justify-between gap-3 shrink-0">
+        <StreakBar streak={asceza.streak} tone="mint" />
 
         <span className="flex items-center gap-2 shrink-0">
           {confirming ? (
@@ -352,7 +330,28 @@ function AscezaCard({
         </span>
       </div>
 
-      <div>
+      {/*
+        * Верхняя треть — рисунок своей категории. Общий жест у
+        * всех пяти один: коридор из двух прямых, внутри порядок,
+        * снаружи тот же материал в беспорядке.
+        */}
+      <div
+        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-1 ${
+          status === 'held' ? 'text-gold' : 'text-gold/60'
+        }`}
+      >
+        <Motif name={motifForAsceza(asceza.category)} className="w-full h-full" />
+      </div>
+
+      <div className="mt-4">
+        <div className="font-display text-[19px] text-cream leading-tight">
+          {asceza.name}
+        </div>
+
+        <div className="text-[10px] text-cream/40 mb-3">
+          {meta.label}
+        </div>
+
         {asceza.reason && (
           <p className="text-xs text-cream/45 mb-2">
             {asceza.reason}
@@ -408,13 +407,6 @@ function AscezaCard({
             Триггер: {asceza.trigger}
           </p>
         )}
-      </div>
-
-      {/* стрик внизу — итог, а не украшение шапки */}
-      <div className="mt-auto pt-5">
-        <span className="font-mono text-xs text-mint whitespace-nowrap">
-          🛡 {asceza.streak}
-        </span>
       </div>
     </div>
   )
