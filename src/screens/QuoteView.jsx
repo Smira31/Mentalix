@@ -1,12 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
-import { X, ChevronLeft, ChevronRight, Share2 } from 'lucide-react'
+import BackButton from '../components/BackButton'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+} from '../lib/fullscreenSurface'
+import { ChevronLeft, ChevronRight, Share2 } from 'lucide-react'
 
-// ── Полноэкранные цитаты, как quotes. у stoic.: свайп/стрелки, поделиться ──
+/*
+ * Полноэкранные цитаты: свайп вверх-вниз, стрелки, «поделиться».
+ *
+ * Экран живёт по общему fullscreen-контракту — портал в body и
+ * высота из visualViewport. Своё `position: fixed` здесь не
+ * работало: Today рендерит этот экран внутри контейнера App, у
+ * которого от анимации остался transform, и «во весь экран»
+ * означало «во весь контейнер».
+ *
+ * Своей кнопки закрытия больше нет: её роль исполняет системная
+ * «Назад» Telegram, как и на всех остальных экранах.
+ */
 
 export default function QuoteView({ user, todayQuote, onClose }) {
+  const { style: surfaceStyle } = useFullscreenSurface()
+
   const [quotes, setQuotes] = useState(todayQuote ? [{ id: 'today', text: todayQuote }] : [])
   const [idx, setIdx] = useState(0)
   const touchY = useRef(null)
@@ -59,26 +80,22 @@ export default function QuoteView({ user, todayQuote, onClose }) {
 
   const current = quotes[idx]
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col animate-fade-in"
+      className={FULLSCREEN_SHELL_CLASS}
+      style={surfaceStyle}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className="flex items-center justify-between px-5 pt-5">
-        <span className="text-[12px] text-cream/35 font-semibold">
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-5`}>
+        <BackButton onClick={onClose} />
+
+        <span className="text-[12px] text-cream/35 font-semibold ml-auto">
           {quotes.length > 0 ? `${idx + 1} / ${quotes.length}` : ''}
         </span>
-        <button
-          onClick={() => { platform.haptic('light'); onClose() }}
-          aria-label="Закрыть"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
-        >
-          <X size={18} className="text-cream/60" />
-        </button>
       </div>
 
-      <div key={idx} className="flex-1 flex flex-col items-center justify-center px-8 text-center animate-fade-in">
+      <div key={idx} className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-8 text-center animate-fade-in`}>
         {current ? (
           <>
             <span className="font-display text-[40px] text-gold leading-none mb-6">«</span>
@@ -98,7 +115,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         )}
       </div>
 
-      <div className="flex items-center justify-center gap-4 pb-[calc(env(safe-area-inset-bottom)+28px)]">
+      <div className="flex items-center justify-center gap-4 shrink-0 pt-4 pb-7">
         <button
           onClick={() => go(-1)}
           aria-label="Предыдущая"
@@ -120,6 +137,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
           <ChevronRight size={20} className="text-cream/60" />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

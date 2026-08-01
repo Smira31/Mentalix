@@ -26,7 +26,7 @@ function SubHeader({ title, onBack }) {
       className="
         w-full
         max-w-md
-        px-[16px]
+        px-5
         pb-[8px]
         flex
         items-center

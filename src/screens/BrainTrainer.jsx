@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
-import { ArrowLeft, Brain, Zap, Shuffle, Wind, Check } from 'lucide-react'
+import { Brain, Zap, Shuffle, Wind, Check } from 'lucide-react'
+import BackButton from '../components/BackButton'
 
 function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
@@ -23,7 +24,7 @@ const TONE = {
 
 function ScoreScreen({ label, score, sub, onDone }) {
   return (
-    <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
+    <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
       <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-4">
         <Check size={28} className="text-gold" />
       </div>
@@ -43,16 +44,8 @@ function ScoreScreen({ label, score, sub, onDone }) {
 function ActiveGameFrame({ onExit, children }) {
   return (
     <div className="w-full flex flex-col items-center">
-      <div className="w-full max-w-sm px-6">
-        <button
-          type="button"
-          onClick={onExit}
-          className="p-2 -ml-2 text-cream/60 active:opacity-60 flex items-center gap-2"
-          aria-label="Вернуться в Практики"
-        >
-          <ArrowLeft size={18} />
-          <span className="text-sm">Практики</span>
-        </button>
+      <div className="w-full max-w-md px-5">
+        <BackButton onClick={onExit} label="Практики" />
       </div>
 
       {children}
@@ -106,7 +99,7 @@ function AttentionGame({ onFinish }) {
   if (!word) return null
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
+    <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
       <p className="text-xs text-cream/40 mb-8">{round + 1} / {TOTAL_ROUNDS_ATTENTION} · Слово и цвет совпадают?</p>
       <div className="font-display text-4xl mb-12" style={{ color: colorHex }}>{word}</div>
       <div className="flex gap-4 w-full">
@@ -176,7 +169,7 @@ function MemoryGame({ onFinish }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
+    <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
       <p className="text-xs text-cream/40 mb-8">
         {showing ? 'Запоминай порядок...' : 'Повтори последовательность'} · Уровень {level}/{MEMORY_ROUNDS}
       </p>
@@ -242,7 +235,7 @@ function ReactionGame({ onFinish }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
+    <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
       <p className="text-xs text-cream/40 mb-6">Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}</p>
       <button
         onClick={tap}
@@ -286,7 +279,7 @@ function PlasticityGame({ onFinish }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
+    <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
       <p className="text-xs text-cream/40 mb-6">{round + 1} / {PLASTICITY_WORDS.length} · Напиши слово наоборот</p>
       <div className="font-display text-3xl text-cream mb-8 tracking-widest">{word}</div>
       <input
@@ -351,7 +344,7 @@ function GymnasticsGame({ onFinish }) {
   const isContract = phase.label === 'Выдох'
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-10">
+    <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
       <p className="text-xs text-cream/40 mb-8">Цикл {cycle + 1} / {BREATH_CYCLES}</p>
       <div
         className="rounded-full bg-mint/20 border-2 border-mint/50 flex items-center justify-center transition-all ease-linear"
@@ -481,11 +474,9 @@ export default function BrainTrainer({
   const todayCompleted = summary?.today_completed ?? []
 
   return (
-    <div className="w-full max-w-sm px-6 pb-24">
+    <div className="w-full max-w-md px-5">
       <div className="w-full flex items-center gap-2 mb-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-cream/60 active:opacity-60">
-          <ArrowLeft size={18} />
-        </button>
+        <BackButton onClick={onBack} />
         <h2 className="font-display text-lg text-cream/90">Нейротренажёр</h2>
       </div>
 

@@ -43,7 +43,7 @@ export default function History({ user }) {
     })
   }, [user])
 
-  if (days === null) return <p className="text-cream/40 text-sm px-6 pt-6">Загрузка...</p>
+  if (days === null) return <p className="text-cream/40 text-sm px-5 pt-6">Загрузка...</p>
 
   if (days.length === 0) {
     return (

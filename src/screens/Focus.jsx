@@ -108,7 +108,7 @@ export default function Focus({ user }) {
   const constellationIndex = progress ? progress.constellation_index : 0
 
   return (
-    <div className="w-full max-w-sm px-6 pb-24 flex flex-col items-center">
+    <div className="w-full max-w-md px-5 flex flex-col items-center">
       <h2 className="font-display text-lg mb-6 text-cream/90 self-start">Фокус</h2>
 
       <div className="w-48 h-48 mb-6">

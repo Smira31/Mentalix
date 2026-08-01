@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { platform } from '../platform'
-import { ChevronLeft } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
+import BackButton from '../components/BackButton'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+} from '../lib/fullscreenSurface'
 
 // ── Дыхание: анимированный круг, техника 4-7-8, как breathing. у stoic. ──
 // Вдох 4с (круг растёт) → задержка 7с (держится) → выдох 8с (сжимается)
@@ -12,6 +17,25 @@ const PHASES = [
   { key: 'exhale', label: 'Выдох', secs: 8, scale: 0.55 },
 ]
 const CYCLE = PHASES.reduce((s, p) => s + p.secs, 0) // 19с
+
+
+/*
+ * Полноэкранная часть вынесена в отдельный компонент намеренно.
+ * `useFullscreenSurface` при монтировании блокирует скролл body,
+ * а экран дыхания начинается с обычной страницы выбора
+ * длительности — там блокировать нечего. Хук нельзя вызвать
+ * условно, поэтому условным становится сам компонент.
+ */
+function FullscreenStage({ className = '', children }) {
+  const { style } = useFullscreenSurface()
+
+  return createPortal(
+    <div className={`${FULLSCREEN_SHELL_CLASS} ${className}`} style={style}>
+      {children}
+    </div>,
+    document.body,
+  )
+}
 
 const DURATIONS = [
   { label: '1 мин', secs: 60 },
@@ -80,15 +104,9 @@ export default function Breathing({ user, onBack }) {
   // ── выбор длительности ──
   if (stage === 'intro') {
     return (
-      <div className="w-full max-w-md px-5 pb-40 flex flex-col items-center animate-fade-in">
+      <div className="w-full max-w-md px-5 flex flex-col items-center animate-fade-in">
         <div className="w-full flex items-center gap-3 pb-6">
-          <button
-            onClick={() => { platform.haptic('light'); onBack() }}
-            aria-label="Назад"
-            className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
-          >
-            <ChevronLeft size={20} className="text-cream/60" />
-          </button>
+          <BackButton onClick={onBack} />
           <span className="font-display text-lg text-cream lowercase">дыхание.</span>
         </div>
 
@@ -130,7 +148,7 @@ export default function Breathing({ user, onBack }) {
   // ── завершение ──
   if (stage === 'done') {
     return (
-      <div className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col items-center justify-center px-8 text-center animate-fade-in">
+      <FullscreenStage className="items-center justify-center px-8 text-center">
         <MotifArt name="fizio" size={140} className="mb-6" />
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
         <p className="text-[15px] text-cream/50 mt-3">Возвращайся к этому кругу, когда штормит.</p>
@@ -140,14 +158,14 @@ export default function Breathing({ user, onBack }) {
         >
           Готово
         </button>
-      </div>
+      </FullscreenStage>
     )
   }
 
   // ── подготовка и дыхание ──
   const isPrepare = stage === 'prepare'
   return (
-    <div className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col animate-fade-in">
+    <FullscreenStage>
       {/* прогресс */}
       <div className="h-[3px] bg-cream/10">
         <div className="h-full bg-gold transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }} />
@@ -170,7 +188,7 @@ export default function Breathing({ user, onBack }) {
         </p>
       </div>
 
-      <div className="flex justify-center pb-[calc(env(safe-area-inset-bottom)+28px)]">
+      <div className="flex justify-center shrink-0 pb-7">
         <button
           onClick={finish}
           className="px-7 py-3 rounded-full bg-emerald text-cream/60 text-[14px] font-bold border-0 active:scale-95 transition-transform"
@@ -178,6 +196,6 @@ export default function Breathing({ user, onBack }) {
           Завершить раньше
         </button>
       </div>
-    </div>
+    </FullscreenStage>
   )
 }
