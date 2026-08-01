@@ -12,6 +12,7 @@ import CheckIn from './CheckIn'
 import MazeLogo from '../components/MazeLogo'
 import ThemeScreen from './ThemeScreen'
 import { ArtThread, ArtDoor } from '../components/Art'
+import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
 
@@ -191,11 +192,14 @@ export default function Today({
     useState('path')
 
 
+  /*
+   * Любой вложенный экран Today — это отдельный сценарий, а не
+   * продолжение главной. Шапка с приветствием, переключателем
+   * темы и аватаром там не нужна: человек уже внутри и знает,
+   * где он. Возврат даёт системная кнопка Telegram.
+   */
   function changeSub(nextSub) {
-    onFlowChange?.(
-      nextSub === 'checkin'
-      || nextSub === 'theme',
-    )
+    onFlowChange?.(Boolean(nextSub))
 
     setSub(nextSub)
   }
@@ -431,24 +435,8 @@ export default function Today({
   ) {
     return (
       <div className="w-full flex flex-col items-center animate-fade-in">
-        <div className="w-full max-w-md px-5 pb-3 flex items-center gap-3">
-          <button
-            onClick={() => {
-              platform.haptic(
-                'light',
-              )
-
-              changeSub(null)
-            }}
-            aria-label="Назад"
-            className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
-          >
-            <ChevronLeft
-              size={20}
-              className="text-cream/60"
-            />
-          </button>
-
+        <div className="w-full max-w-md px-5 pt-4 pb-3 flex items-center gap-3">
+          <BackButton onClick={() => changeSub(null)} />
 
           <div className="flex-1 flex bg-emerald rounded-full p-1">
             {[

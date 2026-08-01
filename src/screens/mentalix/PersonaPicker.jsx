@@ -200,8 +200,20 @@ export default function PersonaPicker({
               ]
 
             return (
+              /*
+               * Вся карточка — это вход в разговор. Раньше
+               * открыть персону можно было только через
+               * нижнюю кнопку, хотя нажать хочется на саму
+               * карточку: она и есть выбор.
+               */
               <div
                 key={persona.key}
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  haptic('light')
+                  onPick(persona.key, '')
+                }}
                 className="
                   snap-center
                   shrink-0
@@ -213,6 +225,9 @@ export default function PersonaPicker({
                   p-6
                   flex
                   flex-col
+                  cursor-pointer
+                  active:scale-[0.99]
+                  transition-transform
                 "
                 style={CARD_HEIGHT}
               >
@@ -243,7 +258,9 @@ export default function PersonaPicker({
                 <div className="mt-auto pt-6">
                   {last ? (
                     <button
-                      onClick={() => {
+                      onClick={(event) => {
+                        event.stopPropagation()
+
                         haptic('light')
 
                         onPick(
@@ -272,7 +289,9 @@ export default function PersonaPicker({
                           (starter) => (
                             <button
                               key={starter}
-                              onClick={() => {
+                              onClick={(event) => {
+                                event.stopPropagation()
+
                                 haptic('light')
 
                                 onPick(
