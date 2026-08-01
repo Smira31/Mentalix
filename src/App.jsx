@@ -940,9 +940,9 @@ export default function App() {
             <span
               className="
                 font-display
-                text-[13px]
-                tracking-[0.4em]
-                text-cream/35
+                text-[16px]
+                tracking-[0.42em]
+                text-cream/40
               "
             >
               MENTALIX

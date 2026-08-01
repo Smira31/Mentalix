@@ -4,8 +4,8 @@
 //         4. Основные  5. Поддержка  6. Документы  7. Версия  8. Аккаунт
 
 import { useEffect, useState } from 'react'
+import BackButton from '../components/BackButton'
 import {
-  ChevronLeft,
   ChevronRight,
   User,
   Bell,
@@ -144,9 +144,7 @@ export default function Settings({ user, onBack, onNavigate }) {
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
       <div className="w-full flex items-center gap-2 mb-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-cream active:opacity-60">
-          <ChevronLeft size={22} />
-        </button>
+        <BackButton onClick={onBack} />
         <h1 className="font-display text-xl text-cream">Настройки</h1>
       </div>
 
