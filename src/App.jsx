@@ -145,7 +145,35 @@ function isDayNow() {
 }
 
 
+/*
+ * Telegram Desktop — всегда тёмная тема.
+ *
+ * Решение пользователя, и у него есть основание: весь визуальный
+ * язык Mentalix построен на свете в темноте. В светлой теме
+ * золото становится тёмно-оливковым, а свечение вокруг точки —
+ * мутным пятном на кремовом фоне: метафора разваливается. На
+ * телефоне светлая тема остаётся, там экран часто смотрят при
+ * дневном свете; на большом экране такой нужды нет.
+ *
+ * Платформу спрашиваем у Telegram, а не у ширины окна: узкое окно
+ * на десктопе — это всё ещё десктоп.
+ */
+const DESKTOP_PLATFORMS = ['tdesktop', 'macos', 'weba', 'web', 'webk']
+
+function isDesktop() {
+  if (typeof window === 'undefined') return false
+
+  const platform = window.Telegram?.WebApp?.platform
+
+  return Boolean(platform) && DESKTOP_PLATFORMS.includes(platform)
+}
+
+
 function resolveLight(mode) {
+  if (isDesktop()) {
+    return false
+  }
+
   if (mode === 'light') {
     return true
   }
@@ -950,32 +978,43 @@ export default function App() {
               justify-between
             "
           >
-            {/* Theme */}
+            {/*
+              Theme
 
-            <button
-              type="button"
-              onClick={cycleTheme}
-              aria-label="Переключить тему"
-              className="
-                w-10
-                h-10
+              На десктопе кнопки нет: тема там всегда тёмная, и
+              переключатель, который ничего не переключает, хуже
+              отсутствующего. Место сохраняем, чтобы приветствие
+              осталось по центру.
+            */}
 
-                rounded-full
+            {isDesktop() ? (
+              <span className="w-10 h-10 shrink-0" aria-hidden="true" />
+            ) : (
+              <button
+                type="button"
+                onClick={cycleTheme}
+                aria-label="Переключить тему"
+                className="
+                  w-10
+                  h-10
 
-                bg-emerald
+                  rounded-full
 
-                flex
-                items-center
-                justify-center
+                  bg-emerald
 
-                text-cream/50
-                text-base
+                  flex
+                  items-center
+                  justify-center
 
-                active:scale-95
-              "
-            >
-              ◐
-            </button>
+                  text-cream/50
+                  text-base
+
+                  active:scale-95
+                "
+              >
+                ◐
+              </button>
+            )}
 
 
             {/* Greeting */}
