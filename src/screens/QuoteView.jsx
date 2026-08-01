@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { ArtLantern } from '../components/Art'
+import { MotifArt } from '../components/Motif'
 import { X, ChevronLeft, ChevronRight, Share2 } from 'lucide-react'
 
 // ── Полноэкранные цитаты, как quotes. у stoic.: свайп/стрелки, поделиться ──
@@ -89,7 +89,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
           </>
         ) : (
           <>
-          <ArtLantern size={130} className="mx-auto mb-6" />
+          <MotifArt name="shozhdenie" size={130} className="mx-auto mb-6" />
           <p className="text-[15px] text-cream/45 leading-relaxed">
             Здесь будут твои цитаты.
             <br />Добавляй мысли, которые держат, — в настройках считки дня.

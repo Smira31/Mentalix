@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { ChevronLeft } from 'lucide-react'
-import { ArtNight } from '../components/Art'
+import { MotifArt } from '../components/Motif'
 
 // ── Дыхание: анимированный круг, техника 4-7-8, как breathing. у stoic. ──
 // Вдох 4с (круг растёт) → задержка 7с (держится) → выдох 8с (сжимается)
@@ -131,7 +131,7 @@ export default function Breathing({ user, onBack }) {
   if (stage === 'done') {
     return (
       <div className="fixed inset-0 z-[60] bg-emerald-deep flex flex-col items-center justify-center px-8 text-center animate-fade-in">
-        <ArtNight size={140} className="mb-6" />
+        <MotifArt name="fizio" size={140} className="mb-6" />
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
         <p className="text-[15px] text-cream/50 mt-3">Возвращайся к этому кругу, когда штормит.</p>
         <button

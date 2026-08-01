@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { ArtFootprint, ArtFeather, ArtSun, ArtKnot, ArtFlame, ArtMoonMark } from '../components/Art'
+import { MotifArt } from '../components/Motif'
 
 // ── Вехи Пути: достижения без давления — фиксация пройденного, не гонка ──
 // Считаются на лету из существующих данных, бэкенд не нужен.
@@ -24,7 +24,7 @@ function buildBadges({ stats, rituals, ascezas }) {
   return [
     {
       id: 'first-step',
-      Art: ArtFootprint,
+      motif: 'voshod',
       title: 'Первый шаг',
       desc: 'Первый чек-ин пройден',
       done: checkins >= 1,
@@ -33,7 +33,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'voice-heard',
-      Art: ArtFeather,
+      motif: 'sobesednik',
       title: 'Голос услышан',
       desc: '5 чек-инов — привычка слышать себя',
       done: checkins >= 5,
@@ -42,7 +42,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'week-on-path',
-      Art: ArtSun,
+      motif: 'ryad',
       title: 'Неделя пути',
       desc: '7 дней в системе',
       done: days >= 7,
@@ -51,7 +51,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'ritual-holds',
-      Art: ArtKnot,
+      motif: 'lestnica',
       title: 'Ритуал держит',
       desc: 'Серия ритуала — 7 дней',
       done: bestRitual >= 7,
@@ -60,7 +60,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'asceza-power',
-      Art: ArtFlame,
+      motif: 'povedenie',
       title: 'Аскеза — сила',
       desc: '7 чистых дней отказа',
       done: bestAsceza >= 7,
@@ -69,7 +69,7 @@ function buildBadges({ stats, rituals, ascezas }) {
     },
     {
       id: 'month-on-path',
-      Art: ArtMoonMark,
+      motif: 'noch',
       title: 'Месяц пути',
       desc: '30 дней в системе',
       done: days >= 30,
@@ -126,7 +126,7 @@ export default function Achievements({ user }) {
             {freshIds.includes(b.id) && (
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold animate-celebrate-pop" />
             )}
-            <b.Art size={54} className={b.done ? 'mb-1' : 'mb-1 opacity-35 saturate-0'} />
+            <MotifArt name={b.motif} size={54} className={b.done ? 'mb-1' : 'mb-1 opacity-35'} />
             <span className={`text-[11px] font-bold leading-tight ${b.done ? 'text-cream' : 'text-cream/40'}`}>
               {b.title}
             </span>
