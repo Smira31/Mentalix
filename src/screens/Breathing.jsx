@@ -16,7 +16,6 @@ const PHASES = [
   { key: 'hold', label: 'Задержи', secs: 7, scale: 1 },
   { key: 'exhale', label: 'Выдох', secs: 8, scale: 0.55 },
 ]
-const CYCLE = PHASES.reduce((s, p) => s + p.secs, 0) // 19с
 
 
 /*

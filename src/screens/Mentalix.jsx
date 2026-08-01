@@ -2,10 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 
-import {
-  PERSONAS,
-  readPendingMentor,
-} from './mentalix/personas'
+import { readPendingMentor } from './mentalix/personas'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
@@ -17,17 +14,6 @@ function haptic(style = 'light') {
   WebApp.HapticFeedback?.impactOccurred(style)
 }
 
-function trim(text, max = 90) {
-  const clean = String(text || '')
-    .replace(/\s+/g, ' ')
-    .trim()
-
-  return clean.length > max
-    ? `${clean.slice(0, max).trimEnd()}…`
-    : clean
-}
-
-
 // ============================================================
 // ЧАТ
 // ============================================================
@@ -38,11 +24,6 @@ function Chat({
   initialText = '',
   onBack,
 }) {
-  const meta = PERSONAS.find(
-    (item) =>
-      item.key === persona,
-  )
-
   const [messages, setMessages] =
     useState([])
 

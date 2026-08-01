@@ -13,7 +13,7 @@ export default function LinkWebAccount({ user, onBack }) {
     try {
       const res = await api.auth.generateLinkCode(user.id)
       setCode(res.code)
-    } catch (e) {
+    } catch {
       setError('Не получилось создать код, попробуй ещё раз')
     } finally {
       setLoading(false)

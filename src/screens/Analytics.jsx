@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
-import { BarChart3, Shield, Sparkles } from 'lucide-react'
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell,
   LineChart, Line, YAxis,

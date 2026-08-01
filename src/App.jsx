@@ -217,27 +217,6 @@ function applyTheme(light) {
    USER NAME
    ============================================================ */
 
-function displayName(user) {
-  const raw = (user?.first_name || '')
-    .trim()
-    .split(/\s+/)[0]
-
-  if (!raw) {
-    return null
-  }
-
-  if (/[0-9_]/.test(raw)) {
-    return null
-  }
-
-  if (raw.length > 14) {
-    return null
-  }
-
-  return raw
-}
-
-
 /* ============================================================
    APP
    ============================================================ */

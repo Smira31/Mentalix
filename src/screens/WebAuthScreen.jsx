@@ -26,7 +26,7 @@ export default function WebAuthScreen({ onAuthed }) {
       // ВАЖНО: dev_code приходит только пока не подключён реальный email-сервис
       setDevCode(res.dev_code)
       setStep('code')
-    } catch (e) {
+    } catch {
       setError('Не получилось отправить код, попробуй ещё раз')
     } finally {
       setLoading(false)
@@ -56,7 +56,7 @@ export default function WebAuthScreen({ onAuthed }) {
         setWebUser(user)
         setStep('link')
       }
-    } catch (e) {
+    } catch {
       setError('Не получилось войти, попробуй ещё раз')
     } finally {
       setLoading(false)
@@ -80,7 +80,7 @@ export default function WebAuthScreen({ onAuthed }) {
         email: res.user.email,
         linked: res.user.linked,
       })
-    } catch (e) {
+    } catch {
       setError('Не получилось связать аккаунты, попробуй ещё раз')
     } finally {
       setLoading(false)

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import {
-  ChevronLeft,
   ChevronRight,
   ArrowUpRight,
 } from 'lucide-react'
