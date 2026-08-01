@@ -10,6 +10,7 @@ import {
 } from '../lib/fullscreenSurface'
 import { ArtSprout } from '../components/Art'
 import BackButton from '../components/BackButton'
+import { useMainButton } from '../lib/telegram'
 import { Sparkles, Snowflake, Check } from 'lucide-react'
 
 /*
@@ -218,6 +219,17 @@ function CreateRitualScreen({ onCreate, onCancel }) {
     'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
 
   /*
+   * Действие живёт в системной кнопке: она остаётся над
+   * клавиатурой, а форма здесь целиком из полей ввода.
+   */
+  useMainButton({
+    text: saving ? 'Сохраняю...' : 'Создать ритуал',
+    onClick: submit,
+    enabled: Boolean(draft.name.trim()) && !saving,
+    loading: saving,
+  })
+
+  /*
    * Создание ритуала — форма с клавиатурой, поэтому живёт по
    * общему fullscreen-контракту: занимает весь экран целиком.
    */
@@ -240,13 +252,6 @@ function CreateRitualScreen({ onCreate, onCancel }) {
         <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Что теряется при пропуске" className={inputCls} />
       </div>
 
-      <button
-        onClick={submit}
-        disabled={!draft.name.trim() || saving}
-        className="cta-pill w-full py-4 text-[16px] disabled:opacity-40"
-      >
-        {saving ? 'Сохраняю...' : 'Создать ритуал'}
-      </button>
         </div>
       </div>
     </div>,

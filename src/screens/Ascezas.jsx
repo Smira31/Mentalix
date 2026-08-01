@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
+import { useMainButton } from '../lib/telegram'
 import { createPortal } from 'react-dom'
 import {
   useFullscreenSurface,
@@ -440,6 +441,17 @@ function CreateAscezaScreen({
 
   const { style: surfaceStyle } = useFullscreenSurface()
 
+  /*
+   * Действие живёт в системной кнопке: она остаётся над
+   * клавиатурой, а форма здесь целиком из полей ввода.
+   */
+  useMainButton({
+    text: saving ? 'Сохраняю...' : 'Принять аскезу',
+    onClick: submit,
+    enabled: Boolean(draft.name.trim()) && !saving,
+    loading: saving,
+  })
+
 
   async function submit() {
     if (!draft.name.trim() || saving) return
@@ -552,15 +564,6 @@ function CreateAscezaScreen({
         />
       </div>
 
-      <button
-        onClick={submit}
-        disabled={!draft.name.trim() || saving}
-        className="cta-pill w-full py-4 text-[16px] disabled:opacity-40"
-      >
-        {saving
-          ? 'Сохраняю...'
-          : 'Принять аскезу'}
-      </button>
         </div>
       </div>
     </div>,

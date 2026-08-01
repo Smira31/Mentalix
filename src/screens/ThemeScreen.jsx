@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { Lock, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import { ArtLantern, ArtDoor } from '../components/Art'
+import { useMainButton } from '../lib/telegram'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -72,6 +73,27 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   )
 
   const backButton = <BackButton onClick={onBack} />
+
+  const currentDay = data?.days?.find((x) => x.day === day)
+
+  const canSave = Boolean(text.trim()) && !currentDay?.locked
+
+  /*
+   * Действие уехало в системную кнопку внизу: она живёт вне
+   * веб-вью и остаётся над клавиатурой. Именно из-за этой
+   * особенности кнопка «Обдумал» раньше пряталась под ней.
+   */
+  useMainButton({
+    text: saving
+      ? 'Сохраняю...'
+      : currentDay?.reflection
+        ? 'Обновить мысль'
+        : 'Обдумал',
+    onClick: save,
+    visible: Boolean(data) && !currentDay?.locked,
+    enabled: canSave && !saving,
+    loading: saving,
+  })
 
   if (!data) {
     return createPortal(
@@ -174,13 +196,6 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 rows={4}
                 className="w-full rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3"
               />
-              <button
-                onClick={save}
-                disabled={saving || !text.trim()}
-                className="cta-pill w-full py-4 text-[16px] mt-3 disabled:opacity-30"
-              >
-                {saving ? 'Сохраняю...' : current?.reflection ? 'Обновить мысль' : 'Обдумал'}
-              </button>
             </>
           )}
 

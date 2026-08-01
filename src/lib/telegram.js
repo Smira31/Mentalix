@@ -135,6 +135,32 @@ export function useBackButton(
    мучений с чек-ином была про кнопку, уезжающую под клавиатуру.
    ============================================================ */
 
+/*
+ * Цвета берутся из тех же токенов, что и наша CTA-кнопка,
+ * иначе внизу появится синяя кнопка Telegram, не имеющая
+ * отношения к Mentalix.
+ */
+function ctaColors() {
+  if (typeof window === 'undefined') return null
+
+  const style = getComputedStyle(
+    document.documentElement,
+  )
+
+  const background = style
+    .getPropertyValue('--btn-bg')
+    .trim()
+
+  const text = style
+    .getPropertyValue('--btn-text')
+    .trim()
+
+  if (!background || !text) return null
+
+  return { background, text }
+}
+
+
 export function useMainButton({
   text,
   onClick,
@@ -153,8 +179,19 @@ export function useMainButton({
 
     const handler = () => ref.current?.()
 
+    const colors = ctaColors()
+
     safely(() => {
-      button.setText(text)
+      if (colors) {
+        button.setParams({
+          text,
+          color: colors.background,
+          text_color: colors.text,
+        })
+      } else {
+        button.setText(text)
+      }
+
       button.onClick(handler)
       button.show()
     }, 'MainButton')
