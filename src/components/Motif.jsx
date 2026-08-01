@@ -33,7 +33,7 @@ const polar = (cx, cy, r, deg) => [
   r2(cy + r * Math.sin((deg * Math.PI) / 180)),
 ]
 
-function ln(key, x1, y1, x2, y2, o = 0.35, w = 1, dash) {
+function ln(key, x1, y1, x2, y2, o = 0.35, w = 1, dash, style) {
   return (
     <line
       key={key}
@@ -46,6 +46,7 @@ function ln(key, x1, y1, x2, y2, o = 0.35, w = 1, dash) {
       strokeWidth={w}
       strokeLinecap="round"
       strokeDasharray={dash}
+      style={style}
     />
   )
 }
@@ -638,12 +639,38 @@ const DAY_PROGRESS = {
   dayClosed: 1,
 }
 
+/*
+ * Движение здесь одно и оно смысловое: свет переезжает на новую
+ * точку дуги, когда практика закрыта. Не «оживление интерфейса»,
+ * а ответ на действие — человек видит, что день сдвинулся.
+ *
+ * Анимируется CSS-переходом по transform у группы света, а не
+ * пересчётом координат покадрово: браузер делает это на
+ * композиторе, без работы на каждом кадре в JS.
+ *
+ * Засечки меняют только прозрачность — высоту анимировать нечем,
+ * атрибуты SVG переходами не управляются.
+ */
+const EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)'
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== 'undefined'
+    && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)
+  )
+}
+
 export function DayArc({ state = 'empty', done = 0, total = 0, className = '' }) {
   const uid = useId()
   const gid = `mx-day-${uid.replace(/:/g, '')}`
 
   const closed = state === 'dayClosed'
   const risen = state !== 'empty'
+
+  const calm = prefersReducedMotion()
+
+  const move = calm ? undefined : { transition: `transform 900ms ${EASE}` }
+  const fade = calm ? undefined : { transition: `stroke-opacity 500ms ${EASE}` }
 
   const t =
     state === 'dayInProgress'
@@ -662,7 +689,7 @@ export function DayArc({ state = 'empty', done = 0, total = 0, className = '' })
     const x = ARC_LEFT + step * (i + 0.5)
     const filled = i < done
 
-    out.push(ln(`m${i}`, x, HORIZON, x, HORIZON - (filled ? 14 : 7), filled ? 0.7 : 0.22, filled ? 1.3 : 1))
+    out.push(ln(`m${i}`, x, HORIZON, x, HORIZON - (filled ? 14 : 7), filled ? 0.7 : 0.22, filled ? 1.3 : 1, undefined, fade))
   }
 
   if (closed) {
@@ -670,12 +697,8 @@ export function DayArc({ state = 'empty', done = 0, total = 0, className = '' })
       ln('n1', 26, 97, 174, 97, 0.3, 1.1),
       ln('n2', 38, 105, 162, 105, 0.2, 1.1),
       ln('n3', 52, 112, 148, 112, 0.11, 1.1),
-      ln('rf1', lx - 9, 97, lx + 9, 97, 0.5, 1.2),
-      ln('rf2', lx - 6, 105, lx + 6, 105, 0.3, 1.1),
     )
   }
-
-  out.push(glow('gl', gid, lx, ly, risen ? 40 : 22), pt('light', lx, ly, risen ? 4.6 : 3, risen ? 1 : 0.45))
 
   return (
     <svg
@@ -694,6 +717,23 @@ export function DayArc({ state = 'empty', done = 0, total = 0, className = '' })
       </defs>
 
       {out}
+
+      {/*
+        * Свет и его отражение едут вместе: одна группа, один
+        * переход. Круги внутри стоят в нуле, позицию задаёт
+        * transform — только его и умеет анимировать браузер.
+        */}
+      <g style={{ ...move, transform: `translate(${r2(lx)}px, ${r2(ly)}px)` }}>
+        <circle cx="0" cy="0" r={risen ? 40 : 22} fill={`url(#${gid})`} />
+        <circle cx="0" cy="0" r={risen ? 4.6 : 3} fill={C} fillOpacity={risen ? 1 : 0.45} />
+      </g>
+
+      {closed && (
+        <g style={{ ...move, transform: `translate(${r2(lx)}px, 0px)` }}>
+          <line x1="-9" y1="97" x2="9" y2="97" stroke={C} strokeOpacity="0.5" strokeWidth="1.2" strokeLinecap="round" />
+          <line x1="-6" y1="105" x2="6" y2="105" stroke={C} strokeOpacity="0.3" strokeWidth="1.1" strokeLinecap="round" />
+        </g>
+      )}
     </svg>
   )
 }
