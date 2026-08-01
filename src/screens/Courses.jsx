@@ -80,7 +80,7 @@ function CourseCreateScreen({ onCreate, onCancel }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10">
+    <div className="w-full max-w-md px-5">
       <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
         <ArrowLeft size={16} /> Отмена
       </button>
@@ -138,7 +138,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10">
+    <div className="w-full max-w-md px-5">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm">
           <ArrowLeft size={16} /> Назад
@@ -315,7 +315,7 @@ export default function Courses({ user }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-24">
+    <div className="w-full max-w-md px-5">
       {/* ── витрина тем недели ── */}
       {themes.length > 0 && (
         <div className="mb-7">

@@ -4,12 +4,12 @@ import {
 } from 'react'
 
 import {
-  ArrowLeft,
   ArrowRight,
   Plus,
 } from 'lucide-react'
 
 import WebApp from '@twa-dev/sdk'
+import BackButton from '../../components/BackButton'
 
 import { PERSONAS } from './personas'
 
@@ -134,24 +134,15 @@ export default function Conversation({
 
   {/* Назад — под кнопкой Telegram «Закрыть» */}
 
-  <button
-    type="button"
-    onClick={() => {
-      haptic('light')
-      onBack()
-    }}
-    className="absolute left-5 w-11 h-11 rounded-full flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
+  <div
+    className="absolute left-5"
     style={{
       top:
         'calc(var(--app-safe-top) + 62px)',
     }}
-    aria-label="Назад"
   >
-    <ArrowLeft
-      size={25}
-      strokeWidth={1.7}
-    />
-  </button>
+    <BackButton onClick={onBack} />
+  </div>
 </div>
 
 

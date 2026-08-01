@@ -2,10 +2,10 @@ import {
   ArrowRight,
   MoreHorizontal,
   Plus,
-  X,
 } from 'lucide-react'
 
 import WebApp from '@twa-dev/sdk'
+import BackButton from '../../components/BackButton'
 
 import { PERSONAS } from './personas'
 
@@ -34,25 +34,12 @@ export default function JournalStart({
 
 
   return (
-    <div className="w-full max-w-sm mx-auto px-5 pb-24 flex flex-col min-h-[calc(100vh-160px)] animate-fade-in">
+    <div className="w-full max-w-md mx-auto px-5 flex flex-col min-h-[calc(100vh-160px)] animate-fade-in">
 
       {/* ── шапка ── */}
 
       <div className="flex items-center pt-1">
-        <button
-          type="button"
-          onClick={() => {
-            haptic('light')
-            onBack()
-          }}
-          aria-label="Закрыть"
-          className="w-10 h-10 flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
-        >
-          <X
-            size={25}
-            strokeWidth={1.6}
-          />
-        </button>
+        <BackButton onClick={onBack} />
 
 
         <div className="ml-4 flex items-center gap-3 min-w-0">

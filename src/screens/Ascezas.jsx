@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
-import { useMainButton } from '../lib/telegram'
+import { useMainButton, useBackButton } from '../lib/telegram'
 import { createPortal } from 'react-dom'
 import {
   useFullscreenSurface,
@@ -117,6 +117,13 @@ function BreakContextSheet({
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
 
+  /*
+   * Системная «Назад» должна закрывать шторку, а не весь экран
+   * аскез: стек в telegram.js держит верхний обработчик, поэтому
+   * пока шторка открыта — «назад» принадлежит ей.
+   */
+  useBackButton(onClose)
+
   async function submit() {
     if (!trigger || saving) return
 
@@ -137,7 +144,13 @@ function BreakContextSheet({
     }
   }
 
-  return (
+  /*
+   * Портал в body обязателен: контейнер контента в App.jsx несёт
+   * остаточный transform от анимации, и `fixed` внутри него
+   * якорится к контейнеру, а не к экрану. Шторка вылезала не там,
+   * где должна.
+   */
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex items-end justify-center">
       <button
         aria-label="Закрыть"
@@ -237,7 +250,8 @@ function BreakContextSheet({
           Срыв — это данные, а не провал.
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 

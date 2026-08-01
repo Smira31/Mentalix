@@ -92,7 +92,7 @@ export default function WebAuthScreen({ onAuthed }) {
   }
 
   return (
-    <div className="w-full max-w-sm px-6 pb-10 flex flex-col items-center pt-16">
+    <div className="w-full max-w-md px-5 flex flex-col items-center pt-16">
       <div className="w-14 h-14 rounded-full border border-gold flex items-center justify-center mb-6">
         <span className="font-display text-xl text-gold">M</span>
       </div>
