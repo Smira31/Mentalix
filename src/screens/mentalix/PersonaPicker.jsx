@@ -7,6 +7,7 @@ import {
 import WebApp from '@twa-dev/sdk'
 
 import { api } from '../../lib/api'
+import Motif, { motifForPersona } from '../../components/Motif'
 import { PERSONAS } from './personas'
 
 
@@ -191,9 +192,6 @@ export default function PersonaPicker({
       >
         {PERSONAS.map(
           (persona) => {
-            const Icon =
-              persona.Icon
-
             const last =
               previews[
                 persona.key
@@ -231,14 +229,17 @@ export default function PersonaPicker({
                 "
                 style={CARD_HEIGHT}
               >
-                <div className="w-full h-[118px] flex items-center justify-center shrink-0">
-                  <div className="w-[92px] h-[92px] rounded-full border border-gold/35 flex items-center justify-center">
-                    <Icon
-                      size={40}
-                      className="text-gold"
-                      strokeWidth={1.4}
-                    />
-                  </div>
+                {/*
+                  * Верхняя треть карточки — рисунок. Он занимает
+                  * долю высоты, а не фиксированные пиксели: карточка
+                  * тянется до нижнего меню и на разных экранах имеет
+                  * разную высоту.
+                  */}
+                <div className="w-full basis-1/3 shrink-0 min-h-0 flex items-center justify-center text-gold">
+                  <Motif
+                    name={motifForPersona(persona.key)}
+                    className="h-full w-auto max-w-full"
+                  />
                 </div>
 
 
