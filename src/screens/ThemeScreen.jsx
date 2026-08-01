@@ -5,7 +5,7 @@ import { api } from '../lib/api'
 import { Lock, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import Motif, { MotifArt } from '../components/Motif'
-import { useMainButton } from '../lib/telegram'
+import { useMainButton, offerHomeScreen, cloud } from '../lib/telegram'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -34,6 +34,8 @@ import {
  * visualViewport, отступ под контролы Telegram. Без этого кнопка
  * «Обдумал» уезжала под клавиатуру.
  */
+
+const HOME_OFFERED_KEY = 'mx-home-offered'
 
 function Shell({ style, children }) {
   return (
@@ -155,6 +157,37 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   const current = data?.days?.find((x) => x.day === day)
   const answered = data ? data.days.filter((x) => x.reflection).length : 0
   const finished = Boolean(data) && answered === data.days.length
+
+  /*
+   * Иконка на домашний экран предлагается один раз в жизни и
+   * только здесь — в минуту, когда человек закрыл семидневную
+   * тему.
+   *
+   * Момент выбран не случайно. Предложение «добавьте нас на
+   * главный экран» на второй минуте знакомства читается как
+   * попрошайничество: приложение ещё ничего не дало. После
+   * недели собственных записей оно уже дало, и вопрос звучит
+   * как продолжение, а не как реклама.
+   *
+   * Отметка живёт в облаке: предложить второй раз, да ещё и на
+   * другом устройстве, — это уже назойливость.
+   */
+  useEffect(() => {
+    if (!finished) return
+
+    let alive = true
+
+    cloud.get(HOME_OFFERED_KEY).then((already) => {
+      if (!alive || already) return
+
+      cloud.set(HOME_OFFERED_KEY, '1')
+      offerHomeScreen()
+    })
+
+    return () => {
+      alive = false
+    }
+  }, [finished])
   const canSave = Boolean(text.trim()) && !current?.locked
 
   /*

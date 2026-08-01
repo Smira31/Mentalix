@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { readLocal, writeLocal } from '../lib/store'
+import { cloud } from '../lib/telegram'
 import { MotifArt } from '../components/Motif'
 
 // ── Вехи Пути: достижения без давления — фиксация пройденного, не гонка ──
@@ -8,11 +10,41 @@ import { MotifArt } from '../components/Motif'
 
 const SEEN_KEY = 'mx-badges-seen'
 
-function readSeen() {
-  try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]') } catch { return [] }
+/*
+ * Какие вехи человеку уже показывали. Хранится и локально, и в
+ * облаке: иначе на втором устройстве все прошлые достижения
+ * «откроются» заново и вместе с ними придёт вибрация — праздник
+ * по поводу того, что случилось месяц назад.
+ *
+ * При расхождении списки объединяются, а не заменяют друг друга:
+ * веху, показанную хоть где-то, второй раз показывать не нужно.
+ */
+function parseIds(raw) {
+  try {
+    const list = JSON.parse(raw || '[]')
+
+    return Array.isArray(list) ? list : []
+  } catch {
+    return []
+  }
 }
+
+function readSeen() {
+  return parseIds(readLocal(SEEN_KEY))
+}
+
+async function readSeenEverywhere() {
+  const local = readSeen()
+  const remote = parseIds(await cloud.get(SEEN_KEY))
+
+  return Array.from(new Set([...local, ...remote]))
+}
+
 function writeSeen(ids) {
-  try { localStorage.setItem(SEEN_KEY, JSON.stringify(ids)) } catch {}
+  const raw = JSON.stringify(ids)
+
+  writeLocal(SEEN_KEY, raw)
+  cloud.set(SEEN_KEY, raw)
 }
 
 function buildBadges({ stats, rituals, ascezas }) {
@@ -93,14 +125,17 @@ export default function Achievements({ user }) {
       const list = buildBadges({ stats, rituals, ascezas })
       setBadges(list)
       // отмечаем новые открытые вехи
-      const seen = readSeen()
-      const unlocked = list.filter((b) => b.done).map((b) => b.id)
-      const fresh = unlocked.filter((id) => !seen.includes(id))
-      if (fresh.length > 0) {
-        setFreshIds(fresh)
-        platform.haptic('success')
-        writeSeen(unlocked)
-      }
+      readSeenEverywhere().then((seen) => {
+        const unlocked = list.filter((b) => b.done).map((b) => b.id)
+        const fresh = unlocked.filter((id) => !seen.includes(id))
+
+        if (fresh.length > 0) {
+          setFreshIds(fresh)
+          platform.haptic('success')
+        }
+
+        writeSeen(Array.from(new Set([...seen, ...unlocked])))
+      })
     })
   }, [user])
 

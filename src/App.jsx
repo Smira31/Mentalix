@@ -29,6 +29,7 @@ import Onboarding from './screens/Onboarding'
 
 import MazeLogo from './components/MazeLogo'
 import BottomNavigation from './components/BottomNavigation'
+import { useSynced } from './lib/store'
 
 import { initFullscreen } from './lib/tgFullscreen'
 
@@ -318,32 +319,24 @@ export default function App() {
   const scrollFrame = useRef(null)
 
 
-  const [onboarded, setOnboarded] =
-    useState(() => {
-      try {
-        return (
-          localStorage.getItem(
-            ONBOARDED_KEY
-          ) === '1'
-        )
-      } catch {
-        return true
-      }
-    })
+  /*
+   * Оба значения принадлежат человеку, а не устройству: знакомство
+   * пройдено один раз, тема выбрана один раз. Поэтому они живут в
+   * облаке Telegram и переезжают на другой телефон или десктоп.
+   * Локальная копия остаётся, чтобы первый кадр не мигал, — см.
+   * src/lib/store.js.
+   */
+  /*
+   * Значение по умолчанию — «не пройдено». Прежний код читал
+   * `getItem(...) === '1'`, то есть отсутствие ключа означало
+   * нового человека, и знакомство показывалось. Поставить здесь
+   * '1' значило бы навсегда спрятать онбординг от всех новых.
+   */
+  const [onboardedFlag, setOnboardedFlag] = useSynced(ONBOARDED_KEY, '0')
 
+  const onboarded = onboardedFlag === '1'
 
-  const [themeMode, setThemeMode] =
-    useState(() => {
-      try {
-        return (
-          localStorage.getItem(
-            THEME_KEY
-          ) || 'auto'
-        )
-      } catch {
-        return 'auto'
-      }
-    })
+  const [themeMode, setThemeMode] = useSynced(THEME_KEY, 'auto')
 
 
   const initialTab =
@@ -383,13 +376,6 @@ export default function App() {
     applyTheme(
       resolveLight(themeMode)
     )
-
-    try {
-      localStorage.setItem(
-        THEME_KEY,
-        themeMode
-      )
-    } catch {}
 
     if (themeMode !== 'auto') {
       return
@@ -807,14 +793,7 @@ export default function App() {
       <Onboarding
         user={user}
         onFinish={() => {
-          try {
-            localStorage.setItem(
-              ONBOARDED_KEY,
-              '1'
-            )
-          } catch {}
-
-          setOnboarded(true)
+          setOnboardedFlag('1')
         }}
       />
     )

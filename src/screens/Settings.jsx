@@ -18,6 +18,8 @@ import {
   Moon,
 } from 'lucide-react'
 import { api } from '../lib/api'
+import { forget } from '../lib/store'
+import { requestMessages } from '../lib/telegram'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -100,8 +102,27 @@ export default function Settings({ user, onBack, onNavigate }) {
   }, [user])
 
   async function saveReminder(hour, enabled) {
+    /*
+     * Право писать спрашиваем ровно здесь и больше нигде.
+     *
+     * Telegram позволяет запросить его в любой момент, и соблазн
+     * сделать это на старте велик. Но человек, которого просят о
+     * разрешении до того, как он о чём-то попросил сам, почти
+     * всегда отказывает — и второй раз спросить будет уже нельзя.
+     * Здесь он сам включает напоминание, то есть сам просит бота
+     * ему написать: вопрос очевиден и уместен.
+     *
+     * Отказ не блокирует настройку. Напоминание останется
+     * включённым, просто не придёт, — а человек сможет разрешить
+     * позже, написав боту.
+     */
+    if (enabled && !reminderOn) {
+      await requestMessages()
+    }
+
     setReminderHour(hour)
     setReminderOn(enabled)
+
     try { await api.profile.saveSettings(user.id, { reminder_enabled: enabled, reminder_hour: hour }) }
     catch (e) { console.error(e) }
   }
@@ -260,8 +281,14 @@ export default function Settings({ user, onBack, onNavigate }) {
         <Row
           title="Пройти знакомство заново"
           subtitle="Показать первые экраны и заново собрать план"
-          onClick={() => {
-            try { localStorage.removeItem('mx-onboarded-v2') } catch {}
+          onClick={async () => {
+            /*
+             * Стираем отметку и локально, и в облаке. Иначе после
+             * перезагрузки облако вернёт её обратно, и знакомство
+             * не начнётся — кнопка будет молча не работать.
+             */
+            await forget('mx-onboarded-v2')
+
             window.location.reload()
           }}
           divider={false}
