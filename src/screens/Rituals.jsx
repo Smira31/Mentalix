@@ -9,7 +9,8 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { ArtSprout } from '../components/Art'
-import { ArrowLeft, Sparkles, Snowflake, Check } from 'lucide-react'
+import BackButton from '../components/BackButton'
+import { Sparkles, Snowflake, Check } from 'lucide-react'
 
 /*
  * Карточка занимает всё, что осталось между шапкой экрана и
@@ -225,12 +226,9 @@ function CreateRitualScreen({ onCreate, onCancel }) {
       <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-5 pb-8">
+        <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col min-h-full justify-center">
       <div className="flex items-center gap-3 mb-5 pt-2">
-        <button onClick={onCancel} aria-label="Отмена"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
-          <ArrowLeft size={18} className="text-cream/60" />
-        </button>
+        <BackButton onClick={onCancel} />
         <h2 className="font-display text-[20px] text-cream lowercase">новый ритуал.</h2>
       </div>
 
@@ -322,11 +320,8 @@ export default function Rituals({ user, onBack }) {
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <div className="flex items-center gap-3 mb-2">
-        <button onClick={() => { haptic('light'); onBack() }} aria-label="Назад"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0">
-          <ArrowLeft size={18} className="text-cream/60" />
-        </button>
+      <div className="flex items-center gap-3 mb-3">
+        <BackButton onClick={onBack} />
         <h2 className="font-display text-[22px] text-cream lowercase">ритуалы.</h2>
       </div>
 

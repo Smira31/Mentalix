@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
-import { Search, ChevronLeft, ExternalLink } from 'lucide-react'
+import BackButton from '../components/BackButton'
+import { Search, ExternalLink } from 'lucide-react'
 import { ARTICLES } from '../data/articles'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
@@ -44,13 +45,9 @@ function Reader({ article, onBack }) {
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <button
-        onClick={() => { platform.haptic('light'); onBack() }}
-        aria-label="Назад"
-        className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center mt-4 mb-5 border-0 active:scale-95 transition-transform"
-      >
-        <ChevronLeft size={20} className="text-cream/60" />
-      </button>
+      <div className="mt-4 mb-5">
+        <BackButton onClick={onBack} />
+      </div>
 
       <h1 className="font-display text-[26px] text-cream leading-tight">{article.title}</h1>
 

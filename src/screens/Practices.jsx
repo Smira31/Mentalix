@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft } from 'lucide-react'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
 
 import PracticeCard from '../components/PracticeCard'
+import BackButton from '../components/BackButton'
 
 import RitualsArt from '../components/practice-art/RitualsArt'
 import AskesisArt from '../components/practice-art/AskesisArt'
@@ -33,32 +33,7 @@ function SubHeader({ title, onBack }) {
         gap-[10px]
       "
     >
-      <button
-        type="button"
-        onClick={() => {
-          platform.haptic('light')
-          onBack()
-        }}
-        aria-label="Назад"
-        className="
-          w-10
-          h-10
-          rounded-full
-          bg-emerald
-          border
-          border-white/[0.10]
-          flex
-          items-center
-          justify-center
-          active:scale-95
-        "
-      >
-        <ChevronLeft
-          size={19}
-          strokeWidth={1.7}
-          className="text-cream/60"
-        />
-      </button>
+      <BackButton onClick={onBack} />
 
       <span className="font-display text-[18px] text-cream lowercase">
         {title}
