@@ -7,6 +7,10 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
 import { ArtDoor } from '../components/Art'
+import {
+  useMainButton,
+  useSecondaryButton,
+} from '../lib/telegram'
 
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -651,6 +655,118 @@ export default function CheckIn({
   // ФИНАЛ
   // ============================================================
 
+  const isEmotionStep =
+    step === emotionStep
+
+  const isCard =
+    step > emotionStep
+
+  const cardIdx =
+    step
+    - emotionStep
+    - 1
+
+  const isMorningNoteStep =
+    !isEvening
+    && isCard
+    && cardIdx === 0
+
+  const interactiveStyle =
+    isMorningNoteStep
+      ? {
+          overflowY: 'scroll',
+          WebkitOverflowScrolling:
+            'touch',
+          touchAction: 'pan-y',
+        }
+      : undefined
+
+  const isFinal = step >= doneStep
+
+
+  /*
+   * ДЕЙСТВИЯ ЖИВУТ В СИСТЕМНОЙ КНОПКЕ
+   *
+   * Она отрисована вне веб-вью и всегда остаётся над
+   * клавиатурой. Именно из-за отсутствия этого свойства у
+   * обычной кнопки чек-ин когда-то и потребовал портала,
+   * пересчёта высоты и отдельной прокрутки.
+   *
+   * Здесь одно место, которое решает, что делает главная
+   * кнопка на текущем шаге, — вместо четырёх разных кнопок,
+   * разбросанных по разметке.
+   */
+  const mainAction = isFinal
+    ? isEvening
+      ? { text: 'Разобрать со Следопытом', run: openScout }
+      : { text: 'К дню', run: onDone }
+    : isEmotionStep
+      ? {
+          text: 'Дальше',
+          run: () => setStep(step + 1),
+        }
+      : isCard
+        ? {
+            text: saving
+              ? 'Сохраняю...'
+              : isEvening
+                ? cardIdx === 0
+                  ? 'Дальше'
+                  : 'Закрыть день'
+                : 'Завершить',
+            run: () =>
+              isEvening && cardIdx === 0
+                ? setStep(step + 1)
+                : submit(),
+          }
+        : null
+
+
+  const skipAction = isFinal
+    ? isEvening
+      ? { text: 'Ко сну', run: onDone }
+      : null
+    : isEmotionStep
+      ? {
+          text: 'Пропустить',
+          run: () => {
+            setEmotion(null)
+            setStep(step + 1)
+          },
+        }
+      : isCard
+        ? {
+            text: 'Пропустить',
+            run: () =>
+              isEvening && cardIdx === 0
+                ? setStep(step + 1)
+                : submit(),
+          }
+        : null
+
+
+  useMainButton({
+    text: mainAction?.text || '',
+    onClick: () => {
+      platform.haptic('light')
+      mainAction?.run()
+    },
+    visible: Boolean(mainAction),
+    enabled: !saving,
+    loading: saving,
+  })
+
+
+  useSecondaryButton({
+    text: skipAction?.text || '',
+    onClick: () => {
+      platform.haptic('light')
+      skipAction?.run()
+    },
+    visible: Boolean(skipAction) && !saving,
+  })
+
+
   if (step >= doneStep) {
     return createPortal(
       <div
@@ -718,42 +834,6 @@ export default function CheckIn({
             </p>
 
 
-            {isEvening ? (
-              <div className="w-full max-w-xs mt-9 flex flex-col gap-3">
-                <button
-                  onClick={openScout}
-                  className="cta-pill w-full text-[16px] px-6 py-4"
-                >
-                  Разобрать со Следопытом
-                </button>
-
-                <button
-                  onClick={() => {
-                    platform.haptic(
-                      'light',
-                    )
-
-                    onDone()
-                  }}
-                  className="w-full text-[14px] font-semibold text-cream/40 bg-transparent border-0 py-3"
-                >
-                  Ко сну
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  platform.haptic(
-                    'light',
-                  )
-
-                  onDone()
-                }}
-                className="cta-pill text-[16px] px-12 py-4 mt-10"
-              >
-                К дню
-              </button>
-            )}
           </div>
           </div>
         </div>
@@ -762,32 +842,6 @@ export default function CheckIn({
     )
   }
 
-
-  const isEmotionStep =
-    step === emotionStep
-
-  const isCard =
-    step > emotionStep
-
-  const cardIdx =
-    step
-    - emotionStep
-    - 1
-
-  const isMorningNoteStep =
-    !isEvening
-    && isCard
-    && cardIdx === 0
-
-  const interactiveStyle =
-    isMorningNoteStep
-      ? {
-          overflowY: 'scroll',
-          WebkitOverflowScrolling:
-            'touch',
-          touchAction: 'pan-y',
-        }
-      : undefined
 
   const scale =
     SCALE_STEPS[step]
@@ -1051,40 +1105,6 @@ export default function CheckIn({
           </div>
 
 
-          <div className="flex flex-col items-center gap-3 mt-8">
-            <button
-              onClick={() => {
-                platform.haptic(
-                  'light',
-                )
-
-                setStep(
-                  step + 1,
-                )
-              }}
-              className="cta-pill text-[16px] px-12 py-4"
-            >
-              Дальше
-            </button>
-
-
-            <button
-              onClick={() => {
-                platform.haptic(
-                  'light',
-                )
-
-                setEmotion(null)
-
-                setStep(
-                  step + 1,
-                )
-              }}
-              className="text-[13px] font-semibold text-cream/40 bg-transparent border-0"
-            >
-              Пропустить
-            </button>
-          </div>
         </div>
       )}
 
@@ -1169,53 +1189,6 @@ export default function CheckIn({
           )}
 
 
-          <div className="flex flex-col items-center gap-3 mt-7">
-            <button
-              onClick={() => {
-                platform.haptic(
-                  'light',
-                )
-
-                if (isEvening) {
-                  setStep(
-                    step + 1,
-                  )
-                } else {
-                  submit()
-                }
-              }}
-              disabled={saving}
-              className="cta-pill text-[16px] px-12 py-4 disabled:opacity-50"
-            >
-              {isEvening
-                ? 'Дальше'
-                : saving
-                  ? 'Сохраняю...'
-                  : 'Завершить'}
-            </button>
-
-
-            {!saving && (
-              <button
-                onClick={() => {
-                  platform.haptic(
-                    'light',
-                  )
-
-                  if (isEvening) {
-                    setStep(
-                      step + 1,
-                    )
-                  } else {
-                    submit()
-                  }
-                }}
-                className="text-[13px] font-semibold text-cream/40 bg-transparent border-0"
-              >
-                Пропустить
-              </button>
-            )}
-          </div>
         </div>
       )}
 
@@ -1286,26 +1259,6 @@ export default function CheckIn({
           )}
 
 
-          <div className="flex flex-col items-center gap-3 mt-7">
-            <button
-              onClick={submit}
-              disabled={saving}
-              className="cta-pill text-[16px] px-12 py-4 disabled:opacity-50"
-            >
-              {saving
-                ? 'Сохраняю...'
-                : 'Закрыть день'}
-            </button>
-
-            {!saving && (
-              <button
-                onClick={submit}
-                className="text-[13px] font-semibold text-cream/40 bg-transparent border-0"
-              >
-                Пропустить
-              </button>
-            )}
-          </div>
         </div>
       )}
       </div>
