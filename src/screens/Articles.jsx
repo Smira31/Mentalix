@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
 import BackButton from '../components/BackButton'
-import { Search, ExternalLink } from 'lucide-react'
+import { Search, ExternalLink, ArrowRight } from 'lucide-react'
 import { ARTICLES } from '../data/articles'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
@@ -13,28 +13,48 @@ function formatDate(iso) {
   return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
 }
 
+/*
+ * Карточка статьи — широкая, во всю ширину экрана. Раньше
+ * обложка была узкой полосой в 86 пикселей и работала как
+ * цветная засечка сбоку; теперь это блок, который видно, а
+ * текст занимает остальное. Строка «Читать статью» внизу —
+ * потому что вся карточка нажимается, но об этом надо сказать
+ * словами, иначе непонятно, где кончается список и начинается
+ * действие.
+ */
 function ArticleCard({ article, onOpen }) {
   return (
     <button
       onClick={() => { platform.haptic('light'); onOpen(article) }}
-      className="w-full rounded-3xl bg-emerald mb-3 text-left border border-cream/10 overflow-hidden flex items-stretch transition-transform active:scale-[0.99]"
+      className="w-full rounded-3xl bg-emerald mb-3 text-left border border-cream/10 p-4 transition-transform active:scale-[0.99]"
     >
-      <ArticleCover article={article} fill className="w-[86px] shrink-0" />
+      <div className="flex items-start gap-4">
+        <ArticleCover article={article} className="w-[112px] h-[132px] shrink-0" />
 
-      <div className="flex-1 min-w-0 px-4 py-4">
-        <div className="font-display text-[17px] text-cream leading-tight">{article.title}</div>
-        <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-3">{article.excerpt}</p>
-
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-cream/8">
-          <span className="text-[11px] text-gold whitespace-nowrap">{article.minutes} мин</span>
-          <span className="text-[11px] text-cream/25">·</span>
-          <span className="text-[11px] text-cream/35 whitespace-nowrap">{formatDate(article.date)}</span>
+        <div className="flex-1 min-w-0 py-0.5">
           {article.tag && (
-            <span className="text-[10px] text-cream/40 bg-cream/5 rounded-full px-2 py-0.5 ml-auto whitespace-nowrap">
+            <span className="inline-block text-[10px] text-gold/80 border border-gold/25 rounded-full px-2.5 py-0.5 mb-2 whitespace-nowrap">
               {article.tag}
             </span>
           )}
+
+          <div className="font-display text-[17px] text-cream leading-tight">
+            {article.title}
+          </div>
+
+          <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-3">
+            {article.excerpt}
+          </p>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 mt-4 pt-3.5 border-t border-cream/8">
+        <span className="text-[13px] text-gold">Читать статью</span>
+        <ArrowRight size={14} className="text-gold shrink-0" strokeWidth={2} />
+
+        <span className="text-[11px] text-cream/35 ml-auto whitespace-nowrap">
+          {article.minutes} мин · {formatDate(article.date)}
+        </span>
       </div>
     </button>
   )
@@ -48,6 +68,9 @@ function Reader({ article, onBack }) {
       <div className="mt-4 mb-5">
         <BackButton onClick={onBack} />
       </div>
+
+      {/* тот же мотив, что и в списке, — статья узнаётся при открытии */}
+      <ArticleCover article={article} variant="banner" className="mb-5" />
 
       <h1 className="font-display text-[26px] text-cream leading-tight">{article.title}</h1>
 
