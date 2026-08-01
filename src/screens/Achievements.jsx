@@ -161,7 +161,7 @@ export default function Achievements({ user }) {
             {freshIds.includes(b.id) && (
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold animate-celebrate-pop" />
             )}
-            <MotifArt name={b.motif} size={54} className={b.done ? 'mb-1' : 'mb-1 opacity-35'} />
+            <MotifArt name={b.motif} size={72} className={b.done ? 'mb-2' : 'mb-2 opacity-40'} />
             <span className={`text-[11px] font-bold leading-tight ${b.done ? 'text-cream' : 'text-cream/40'}`}>
               {b.title}
             </span>

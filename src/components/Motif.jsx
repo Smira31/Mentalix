@@ -916,10 +916,24 @@ export default function Motif({ name, className = '' }) {
  * заводить не нужно, хватает общего реестра.
  */
 export function MotifArt({ name, size = 120, className = '' }) {
+  /*
+   * Поле и скругление считаются от размера, а не заданы намертво.
+   * Фиксированные 12px на плитке в 120px — десятая часть, на
+   * плитке в 54px — почти четверть с каждой стороны, и от рисунка
+   * остаётся половина поля. Именно поэтому вехи выглядели кашей.
+   */
+  const pad = Math.max(3, Math.round(size * 0.07))
+  const radius = Math.max(10, Math.round(size * 0.22))
+
   return (
     <div
-      className={`shrink-0 bg-artbed rounded-[26px] p-3 text-gold/55 ${className}`}
-      style={{ width: size, height: size }}
+      className={`shrink-0 bg-artbed text-gold/55 ${className}`}
+      style={{
+        width: size,
+        height: size,
+        padding: pad,
+        borderRadius: radius,
+      }}
     >
       <Motif name={name} className="w-full h-full" />
     </div>
