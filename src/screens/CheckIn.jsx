@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
-import { ArtDoor } from '../components/Art'
+import { MotifArt } from '../components/Motif'
 import {
   useMainButton,
   useSecondaryButton,
@@ -798,7 +798,8 @@ export default function CheckIn({
             }
           >
             {isEvening ? (
-              <ArtDoor
+              <MotifArt
+                name="noch"
                 size={140}
                 className="mb-4"
               />

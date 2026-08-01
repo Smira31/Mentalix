@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import ThemeScreen from './ThemeScreen'
-import { ArtBook } from '../components/Art'
+import { MotifArt } from '../components/Motif'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
 
 const EMPTY_DRAFT = { title: '', source: '', duration_estimate_min: '', cover_url: '' }
@@ -378,7 +378,7 @@ export default function Courses({ user }) {
         <div className="text-center py-8">
           {courses.length === 0 ? (
             <>
-              <ArtBook size={120} className="mx-auto mb-3" />
+              <MotifArt name="set" size={120} className="mx-auto mb-3" />
               <p className="text-cream/45 text-sm">Библиотека пуста — добавь первый материал</p>
             </>
           ) : (

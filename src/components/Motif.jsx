@@ -596,6 +596,108 @@ function razvilka(gid) {
   ]
 }
 
+/* ── дуга дня ────────────────────────────────────────────── */
+
+/*
+ * Единственный рисунок в приложении, который не называет вещь,
+ * а показывает «сейчас».
+ *
+ * На главной раньше стояли три разные картинки — нить, лабиринт
+ * с прогрессом и дверь, — и человек за день видел три несвязанных
+ * образа. Здесь один: горизонт, засечки по числу сегодняшних
+ * практик и свет, который идёт по дуге. Утром он на левом краю,
+ * днём в зените, к ночи садится, и под ним ложатся ровные слои.
+ *
+ * Это не новый язык, а сборка из уже принятого: горизонт взят у
+ * «Восхода», засечки у «Ряда», слои у «Ночи».
+ */
+
+const ARC_LEFT = 14
+const ARC_RIGHT = 186
+const HORIZON = 86
+const ARC_HEIGHT = 54
+
+function arcPoint(t) {
+  const u = Math.max(0, Math.min(1, t))
+
+  return [ARC_LEFT + u * (ARC_RIGHT - ARC_LEFT), HORIZON - Math.sin(Math.PI * u) * ARC_HEIGHT]
+}
+
+const ARC_PATH = (() => {
+  const pts = []
+
+  for (let i = 0; i <= 40; i++) pts.push(arcPoint(i / 40))
+
+  return pts
+})()
+
+const DAY_PROGRESS = {
+  empty: 0,
+  checkinPending: 0,
+  reviewPending: 0.9,
+  dayClosed: 1,
+}
+
+export function DayArc({ state = 'empty', done = 0, total = 0, className = '' }) {
+  const uid = useId()
+  const gid = `mx-day-${uid.replace(/:/g, '')}`
+
+  const closed = state === 'dayClosed'
+  const risen = state !== 'empty'
+
+  const t =
+    state === 'dayInProgress'
+      ? Math.max(0.08, Math.min(0.8, total > 0 ? done / total : 0.3))
+      : DAY_PROGRESS[state] ?? 0
+
+  const [lx, ly] = risen ? arcPoint(t) : [ARC_LEFT + 16, HORIZON + 8]
+
+  const out = [pl('arc', ARC_PATH, 0.12, 1, dot0), ln('horizon', ARC_LEFT, HORIZON, ARC_RIGHT, HORIZON, 0.42)]
+
+  // засечки по числу сегодняшних практик
+  const marks = Math.min(total, 9)
+  const step = (ARC_RIGHT - ARC_LEFT) / (marks || 1)
+
+  for (let i = 0; i < marks; i++) {
+    const x = ARC_LEFT + step * (i + 0.5)
+    const filled = i < done
+
+    out.push(ln(`m${i}`, x, HORIZON, x, HORIZON - (filled ? 14 : 7), filled ? 0.7 : 0.22, filled ? 1.3 : 1))
+  }
+
+  if (closed) {
+    out.push(
+      ln('n1', 26, 97, 174, 97, 0.3, 1.1),
+      ln('n2', 38, 105, 162, 105, 0.2, 1.1),
+      ln('n3', 52, 112, 148, 112, 0.11, 1.1),
+      ln('rf1', lx - 9, 97, lx + 9, 97, 0.5, 1.2),
+      ln('rf2', lx - 6, 105, lx + 6, 105, 0.3, 1.1),
+    )
+  }
+
+  out.push(glow('gl', gid, lx, ly, risen ? 40 : 22), pt('light', lx, ly, risen ? 4.6 : 3, risen ? 1 : 0.45))
+
+  return (
+    <svg
+      viewBox="0 0 200 120"
+      className={className}
+      preserveAspectRatio="xMidYMid meet"
+      fill="none"
+      aria-hidden="true"
+    >
+      <defs>
+        <radialGradient id={gid}>
+          <stop offset="0%" stopColor={C} stopOpacity="0.5" />
+          <stop offset="40%" stopColor={C} stopOpacity="0.14" />
+          <stop offset="100%" stopColor={C} stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {out}
+    </svg>
+  )
+}
+
 /* ── реестр ──────────────────────────────────────────────── */
 
 const MOTIFS = {
@@ -764,5 +866,22 @@ export default function Motif({ name, className = '' }) {
 
       <g className="mx-ink">{draw(gid)}</g>
     </svg>
+  )
+}
+
+/*
+ * Рисунок для пустого экрана: фиксированный квадрат и
+ * приглушённый тон. Пустое состояние показывает мотив того,
+ * чего пока нет, — поэтому отдельных «иллюстраций пустоты»
+ * заводить не нужно, хватает общего реестра.
+ */
+export function MotifArt({ name, size = 120, className = '' }) {
+  return (
+    <div
+      className={`shrink-0 text-gold/45 ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <Motif name={name} className="w-full h-full" />
+    </div>
   )
 }

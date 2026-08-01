@@ -10,8 +10,7 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
-import { ArtShield } from '../components/Art'
-import Motif, { motifForAsceza } from '../components/Motif'
+import Motif, { MotifArt, motifForAsceza } from '../components/Motif'
 import StreakBar from '../components/StreakBar'
 import {
   Shield,
@@ -757,7 +756,8 @@ export default function Ascezas({
           </p>
         ) : ascezas.length === 0 ? (
           <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-            <ArtShield
+            <MotifArt
+              name="povedenie"
               size={120}
               className="mx-auto mb-3"
             />

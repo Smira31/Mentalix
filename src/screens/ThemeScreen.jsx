@@ -4,7 +4,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Lock, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
-import { ArtLantern, ArtDoor } from '../components/Art'
+import { MotifArt } from '../components/Motif'
 import { useMainButton } from '../lib/telegram'
 import {
   useFullscreenSurface,
@@ -161,7 +161,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           <div className="rounded-[28px] bg-emerald px-6 py-8 text-center">
             {current?.locked ? (
               <>
-                <ArtLantern size={110} className="mx-auto mb-4" />
+                <MotifArt name="povedenie" size={110} className="mx-auto mb-4" />
                 <h3 className="font-display text-[20px] text-cream leading-tight">День {day} под замком</h3>
                 <p className="text-[14px] text-cream/50 mt-3 leading-relaxed">
                   Первые {data.free_days} дня открыты всем. Остальные пять — часть Библиотеки.
@@ -201,7 +201,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
           {finished && (
             <div className="rounded-[28px] bg-emerald px-6 py-8 text-center mt-4 animate-fade-in">
-              <ArtDoor size={120} className="mx-auto mb-4" />
+              <MotifArt name="ryad" size={120} className="mx-auto mb-4" />
               <h3 className="font-display text-[20px] text-cream leading-tight">Тема пройдена</h3>
               <p className="text-[14px] text-cream/50 mt-2">Семь дней размышлений — это уже практика.</p>
             </div>

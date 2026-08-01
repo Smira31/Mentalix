@@ -9,9 +9,8 @@ import {
 
 import Path from './Path'
 import CheckIn from './CheckIn'
-import MazeLogo from '../components/MazeLogo'
 import ThemeScreen from './ThemeScreen'
-import { ArtThread, ArtDoor } from '../components/Art'
+import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
@@ -574,42 +573,26 @@ export default function Today({
    * картинки на разных аккаунтах: дело было не
    * в состоянии дня, а в наполненности профиля.
    *
-   * Теперь иллюстрация говорит о самом дне:
+   * Теперь это один рисунок с состоянием, а не
+   * три разные картинки. Раньше за день человек
+   * видел нить, потом лабиринт, потом дверь — и
+   * ни один образ не отвечал на вопрос «где я
+   * сейчас». «Дуга дня» отвечает: свет выходит
+   * на горизонт утром, поднимается ровно на
+   * долю сделанного и садится к ночи.
    *
-   *   пусто          — нить: путь ещё не начат
-   *   checkinPending — нить: день не начат
-   *   dayInProgress  — лабиринт с прогрессом
-   *   reviewPending  — лабиринт: день прожит,
-   *                    ждёт разбора
-   *   dayClosed      — дверь: день закрыт
+   * Лабиринт остался там, где он логотип, — в
+   * шапке, в нижнем меню и на первом экране
+   * знакомства.
    */
-  const heroArt =
-    isEmpty
-    || todayState === 'checkinPending'
-      ? (
-        <ArtThread
-          size={150}
-          className="mx-auto mb-7"
-        />
-      )
-      : todayState === 'dayClosed'
-        ? (
-          <ArtDoor
-            size={150}
-            className="mx-auto mb-7"
-          />
-        )
-        : (
-          <MazeLogo
-            size={168}
-            progress={
-              total > 0
-                ? done / total
-                : 0
-            }
-            className="mx-auto mb-7"
-          />
-        )
+  const heroArt = (
+    <DayArc
+      state={isEmpty ? 'empty' : todayState}
+      done={done}
+      total={total}
+      className="w-full max-w-[280px] h-[150px] mx-auto mb-7 text-gold"
+    />
+  )
 
 
   const MOOD_WORDS = [

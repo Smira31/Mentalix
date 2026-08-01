@@ -3,7 +3,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { ChevronLeft, Check } from 'lucide-react'
 import MazeLogo from '../components/MazeLogo'
-import { ArtThread, ArtSteps, ArtDoor, ArtShield, ArtLantern } from '../components/Art'
+import { MotifArt } from '../components/Motif'
 import { useFullscreenSurface } from '../lib/fullscreenSurface'
 
 // ── Онбординг по схеме stoic.: приветствие → вопросы о себе →
@@ -26,9 +26,9 @@ const REMINDER_OPTIONS = [
 ]
 
 const PLAN_CARDS = [
-  { Art: ArtShield, text: 'Всё, что ты пишешь, остаётся только твоим' },
-  { Art: ArtLantern, text: 'Наставник, Собеседник и Следопыт готовы к разговору' },
-  { Art: ArtThread, text: 'Первый шаг уже ждёт тебя на главной' },
+  { motif: 'povedenie', text: 'Всё, что ты пишешь, остаётся только твоим' },
+  { motif: 'sobesednik', text: 'Наставник, Собеседник и Следопыт готовы к разговору' },
+  { motif: 'lestnica', text: 'Первый шаг уже ждёт тебя на главной' },
 ]
 
 // ── шапка: назад · прогресс · пропустить ──
@@ -287,7 +287,7 @@ export default function Onboarding({ user, onFinish }) {
                     shown ? 'opacity-100 translate-y-0' : 'opacity-25 translate-y-1',
                   ].join(' ')}
                 >
-                  <c.Art size={44} className="shrink-0" />
+                  <MotifArt name={c.motif} size={44} className="shrink-0" />
                   <span className="flex-1 text-[14px] font-semibold text-cream leading-snug">{c.text}</span>
                   <span
                     className={[
