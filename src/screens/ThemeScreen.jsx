@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { ChevronLeft, Lock, Check } from 'lucide-react'
+import { Lock, Check } from 'lucide-react'
+import BackButton from '../components/BackButton'
 import { ArtLantern, ArtDoor } from '../components/Art'
 import {
   useFullscreenSurface,
@@ -70,15 +71,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
     <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-end px-5`} aria-hidden="true" />
   )
 
-  const backButton = (
-    <button
-      onClick={() => { platform.haptic('light'); onBack() }}
-      className="flex items-center gap-2 rounded-full border border-cream/15 bg-emerald pl-2.5 pr-4 py-2 active:scale-95 transition-transform"
-    >
-      <ChevronLeft size={17} className="text-cream/70" />
-      <span className="text-[13px] font-semibold text-cream/70">Назад</span>
-    </button>
-  )
+  const backButton = <BackButton onClick={onBack} />
 
   if (!data) {
     return createPortal(

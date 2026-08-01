@@ -11,6 +11,11 @@ import {
 } from 'lucide-react'
 
 import { platform, platformName } from './platform'
+import {
+  paintChrome,
+  lockVerticalSwipes,
+  useSettingsButton,
+} from './lib/telegram'
 
 import Today from './screens/Today'
 import Practices from './screens/Practices'
@@ -197,6 +202,13 @@ function applyTheme(light) {
     platform.setThemeColors?.(
       background
     )
+
+    /*
+     * Шапка и нижняя полоса Telegram красятся в цвет
+     * приложения: без этого на стыке видна граница из
+     * двух разных чёрных.
+     */
+    paintChrome(background)
   }
 }
 
@@ -438,6 +450,29 @@ export default function App() {
       setAuthChecked(true)
     })()
   }, [])
+
+
+  /* ============================================================
+     ПЛАТФОРМА
+
+     Шапка и нижняя полоса Telegram красятся в цвет приложения:
+     без этого на стыке видна граница из двух разных чёрных.
+     Вертикальный свайп закрывает Mini App — на длинных
+     прокручиваемых экранах это срабатывает случайно.
+     ============================================================ */
+
+  useEffect(() => {
+    lockVerticalSwipes()
+  }, [])
+
+
+  /*
+   * Настройки уезжают в системное меню «⋯»: они нужны редко,
+   * а место на экране занимали каждый день.
+   */
+  useSettingsButton(() => {
+    setOverlay('settings')
+  })
 
 
   /* ============================================================
