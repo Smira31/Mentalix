@@ -242,7 +242,7 @@ export default function PersonaPicker({
                   * тянется до нижнего меню и на разных экранах имеет
                   * разную высоту.
                   */}
-                <div className="-mx-6 basis-1/3 shrink-0 min-h-0 text-gold">
+                <div className="-mx-6 -mt-6 mb-1 basis-1/3 shrink-0 min-h-0 bg-artbed text-gold rounded-t-[28px] overflow-hidden">
                   <Motif
                     name={motifForPersona(persona.key)}
                     className="w-full h-full"

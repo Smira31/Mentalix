@@ -120,7 +120,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
         * сразу, без правок в базе.
         */}
       <div
-        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-1 ${
+        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed ${
           level ? 'text-gold' : 'text-gold/60'
         }`}
       >

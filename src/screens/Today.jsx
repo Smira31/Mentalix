@@ -585,12 +585,14 @@ export default function Today({
    * знакомства.
    */
   const heroArt = (
-    <DayArc
-      state={isEmpty ? 'empty' : todayState}
-      done={done}
-      total={total}
-      className="w-full max-w-[280px] h-[150px] mx-auto mb-7 text-gold"
-    />
+    <div className="w-full rounded-[28px] bg-artbed overflow-hidden mb-7 py-2">
+      <DayArc
+        state={isEmpty ? 'empty' : todayState}
+        done={done}
+        total={total}
+        className="w-full max-w-[300px] h-[150px] mx-auto text-gold"
+      />
+    </div>
   )
 
 

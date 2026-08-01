@@ -918,7 +918,7 @@ export default function Motif({ name, className = '' }) {
 export function MotifArt({ name, size = 120, className = '' }) {
   return (
     <div
-      className={`shrink-0 text-gold/45 ${className}`}
+      className={`shrink-0 bg-artbed rounded-[26px] p-3 text-gold/55 ${className}`}
       style={{ width: size, height: size }}
     >
       <Motif name={name} className="w-full h-full" />

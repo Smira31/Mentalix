@@ -17,6 +17,10 @@ export default {
         'mint':          'rgb(var(--c-text) / <alpha-value>)',  // → монохром
         'gold':          'rgb(var(--c-gold) / <alpha-value>)',  // акцент
         'cognac':        'rgb(var(--c-gold) / <alpha-value>)',  // → золото
+
+        // Подложка под иллюстрации. Тёмная в обеих темах —
+        // см. комментарий у --c-artbed в index.css.
+        'artbed':        'rgb(var(--c-artbed) / <alpha-value>)',
       },
       fontFamily: {
         // Onest — шрифт из дизайн-системы Mentalix.

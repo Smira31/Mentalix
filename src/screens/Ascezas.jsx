@@ -356,7 +356,7 @@ function AscezaCard({
         * снаружи тот же материал в беспорядке.
         */}
       <div
-        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-1 ${
+        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed ${
           status === 'held' ? 'text-gold' : 'text-gold/60'
         }`}
       >
