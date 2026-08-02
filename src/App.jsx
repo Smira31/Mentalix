@@ -815,7 +815,7 @@ export default function App() {
         showTodayHeader && (
           <div
             className="
-              fixed
+              absolute
               left-0
               right-0
               z-40
