@@ -256,7 +256,7 @@ export const api = {
         'audio',
         audio,
         audio.type.includes('mp4')
-          ? 'voice.m4a'
+          ? 'voice.mp4'
           : 'voice.webm',
       )
 
