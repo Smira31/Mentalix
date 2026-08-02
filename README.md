@@ -24,7 +24,8 @@ Telegram Mini App — операционная система личного р�
 | [`docs/core/CORE_PRINCIPLES.md`](docs/core/CORE_PRINCIPLES.md) | Правила мышления, проверки и безопасности Core |
 | [`docs/core/MENTALIX_LAWS.md`](docs/core/MENTALIX_LAWS.md) | Каталог первичных законов-гипотез |
 | [`docs/problems/PROBLEMS.md`](docs/problems/PROBLEMS.md) | Кластеры, первичная карта и приоритеты 15 проблем пользователя |
-| [`docs/problems/ne-mogu-nachat.md`](docs/problems/ne-mogu-nachat.md) | Первая вертикаль «Не могу начать», готовая к малому тесту |
+| [`docs/problems/ne-mogu-nachat.md`](docs/problems/ne-mogu-nachat.md) | Первая вертикаль «Не могу начать», готовая к проблемным интервью |
+| [`docs/research/ne-mogu-nachat-interviews.md`](docs/research/ne-mogu-nachat-interviews.md) | Протокол пяти проблемных интервью перед тестом практики |
 | [`docs/methodology/books/README.md`](docs/methodology/books/README.md) | Реестр сверенных книжных источников и разборов |
 
 ### История и архив
