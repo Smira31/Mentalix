@@ -31,10 +31,10 @@ export default {
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       keyframes: {
-        // появление: подъём + едва заметный масштаб
+        // Появление без сдвига layout: движение целого экрана дёргается в WKWebView.
         fadeIn: {
-          '0%': { opacity: '0', transform: 'translateY(10px) scale(0.994)' },
-          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
         // мягкое «раскрытие» вместо резкого щелчка
         bloom: {
@@ -61,7 +61,7 @@ export default {
         },
       },
       animation: {
-        'fade-in': 'fadeIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both',
+        'fade-in': 'fadeIn 0.22s ease-out both',
         'pulse-once': 'pulseOnce 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
         'celebrate-pop': 'bloom 0.52s cubic-bezier(0.32, 0.72, 0, 1) both',
         'glow-pulse': 'glowPulse 1.1s cubic-bezier(0.32, 0.72, 0, 1)',

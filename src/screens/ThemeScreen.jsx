@@ -489,8 +489,8 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         })}
       </div>
 
-      {/* карточка дня — остаётся по центру оставшегося места */}
-      <div className="flex-1 flex flex-col justify-center">
+      {/* Стабильная карточка: клавиатура уменьшает scroll-zone, но не центрирует её заново. */}
+      <div className="shrink-0">
         <div className="rounded-[28px] bg-emerald px-6 py-8 text-center">
           {current?.locked ? (
             <>
@@ -537,7 +537,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           onChange={(e) => setText(e.target.value)}
           placeholder="Записать мысль..."
           rows={4}
-          className="w-full rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3"
+          className="w-full shrink-0 rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3 mb-[76px]"
         />
       )}
     </Shell>,

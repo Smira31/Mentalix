@@ -11,9 +11,7 @@ import {
   Bell,
   Globe,
   LifeBuoy,
-  FileText,
   RefreshCw,
-  Trash2,
   Heart,
   Moon,
 } from 'lucide-react'
@@ -42,9 +40,15 @@ function Card({ children }) {
 }
 
 function Row({ icon: Icon, title, subtitle, onClick, danger = false, right = null, divider = true }) {
+  const Component = onClick
+    ? 'button'
+    : 'div'
+
   return (
-    <button
-      onClick={onClick}
+    <Component
+      {...(onClick
+        ? { type: 'button', onClick }
+        : {})}
       className={`w-full flex items-center gap-3 px-4 py-4 text-left ${
         divider ? 'border-b border-white/[0.06]' : ''
       } active:bg-white/[0.04] transition-colors`}
@@ -55,7 +59,7 @@ function Row({ icon: Icon, title, subtitle, onClick, danger = false, right = nul
         {subtitle && <div className="font-body text-[13px] text-sage/70 mt-0.5 truncate">{subtitle}</div>}
       </div>
       {right ?? <ChevronRight size={18} className="text-sage/50 shrink-0" />}
-    </button>
+    </Component>
   )
 }
 
@@ -134,7 +138,6 @@ export default function Settings({ user, onBack, onNavigate }) {
     catch (e) { console.error(e); setReviewHour(prev) }
   }
 
-  const [telegramNotifs, setTelegramNotifs] = useState(false)
   const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web'
   const [tier, setTier] = useState('base')
   const go = (key) => onNavigate?.(key)
@@ -192,10 +195,40 @@ export default function Settings({ user, onBack, onNavigate }) {
 
       <SectionLabel>Уведомления</SectionLabel>
       <Card>
-        <Row icon={Bell} title="Уведомления в Telegram" right={<Toggle checked={telegramNotifs} onChange={setTelegramNotifs} />} />
         <Row title="Мысль дня" subtitle="Мои фразы" onClick={() => setScreen('quotes')} />
-        <Row title="Напоминания о ритуалах и аскезах" onClick={() => go('reminders')} divider={false} />
+        <Row
+          icon={Bell}
+          title="Напоминание от бота"
+          subtitle={reminderOn ? `Каждый день в ${String(reminderHour).padStart(2, '0')}:00` : 'Выключено'}
+          right={
+            <Toggle
+              checked={reminderOn}
+              onChange={() => saveReminder(reminderHour ?? 19, !reminderOn)}
+            />
+          }
+          divider={false}
+        />
       </Card>
+
+      {reminderOn && (
+        <div className="flex gap-2 mb-8 w-full">
+          {REMINDER_TIMES.map((t) => (
+            <button
+              key={t.hour}
+              onClick={() => saveReminder(t.hour, true)}
+              className={[
+                'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
+                reminderHour === t.hour ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-cream/50',
+              ].join(' ')}
+            >
+              {t.label}
+              <span className="block text-[11px] font-semibold opacity-60 mt-0.5">
+                {String(t.hour).padStart(2, '0')}:00
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <SectionLabel>Разбор дня</SectionLabel>
       <Card>
@@ -228,8 +261,6 @@ export default function Settings({ user, onBack, onNavigate }) {
 
       <SectionLabel>Основные</SectionLabel>
       <Card>
-        <Row title="Имя" subtitle={user?.first_name} onClick={() => go('name')} />
-        <Row icon={Globe} title="Язык" subtitle="Русский" onClick={() => go('language')} />
         <Row icon={Globe} title="Связать с сайтом" subtitle="Использовать те же данные в браузере" onClick={() => setScreen('link-web')} divider={false} />
       </Card>
 
@@ -239,51 +270,13 @@ export default function Settings({ user, onBack, onNavigate }) {
         <Row icon={Heart} title="Поддержать проект" onClick={() => setScreen('donate')} divider={false} />
       </Card>
 
-      <SectionLabel>Документы</SectionLabel>
-      <Card>
-        <Row icon={FileText} title="Пользовательское соглашение" onClick={() => go('terms')} />
-        <Row icon={FileText} title="Политика конфиденциальности" onClick={() => go('privacy')} />
-        <Row icon={FileText} title="Политика возврата" onClick={() => go('refund')} divider={false} />
-      </Card>
-
-      <SectionLabel>Когда напоминать</SectionLabel>
-      <Card>
-        <Row
-          icon={Bell}
-          title="Напоминание от бота"
-          subtitle={reminderOn ? `Каждый день в ${String(reminderHour).padStart(2, '0')}:00` : 'Выключено'}
-          right={
-            <Toggle
-              checked={reminderOn}
-              onChange={() => saveReminder(reminderHour ?? 19, !reminderOn)}
-            />
-          }
-          divider={false}
-        />
-      </Card>
-      {reminderOn && (
-        <div className="flex gap-2 mb-8 w-full">
-          {REMINDER_TIMES.map((t) => (
-            <button
-              key={t.hour}
-              onClick={() => saveReminder(t.hour, true)}
-              className={[
-                'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
-                reminderHour === t.hour ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-cream/50',
-              ].join(' ')}
-            >
-              {t.label}
-              <span className="block text-[11px] font-semibold opacity-60 mt-0.5">
-                {String(t.hour).padStart(2, '0')}:00
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
       <SectionLabel>Обновление приложения</SectionLabel>
       <Card>
-        <Row icon={RefreshCw} title="Текущая версия" right={<span className="text-sage/70 text-sm font-body">v1.0.0</span>} />
+        <div className="w-full flex items-center gap-3 px-4 py-4 border-b border-white/[0.06]">
+          <RefreshCw size={18} className="text-gold shrink-0" />
+          <span className="flex-1 font-body text-[15px] text-cream">Текущая версия</span>
+          <span className="text-sage/70 text-sm font-body">v1.0.0</span>
+        </div>
         <Row
           title="Пройти знакомство заново"
           subtitle="Показать первые экраны и заново собрать план"
@@ -301,11 +294,6 @@ export default function Settings({ user, onBack, onNavigate }) {
         />
       </Card>
 
-      <SectionLabel>Аккаунт</SectionLabel>
-      <Card>
-        <Row title="Очистить историю" subtitle="Удалить все записи собеседников" onClick={() => go('clear-history')} />
-        <Row icon={Trash2} title="Удалить аккаунт" subtitle="Все данные будут удалены" danger onClick={() => go('delete-account')} divider={false} />
-      </Card>
     </div>
   )
 }

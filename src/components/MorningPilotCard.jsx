@@ -57,6 +57,10 @@ export default function MorningPilotCard({
       currentDate,
     )
 
+  const pilotVisible =
+    isMorning
+    || Boolean(dayState?.viewed_at)
+
   const visibleRituals =
     morningRituals(rituals)
 
@@ -97,7 +101,7 @@ export default function MorningPilotCard({
   ])
 
 
-  if (!isMorning) {
+  if (!pilotVisible) {
     return null
   }
 

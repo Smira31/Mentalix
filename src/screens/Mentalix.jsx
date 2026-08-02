@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import WebApp from '@twa-dev/sdk'
 import { api } from '../lib/api'
 
@@ -6,8 +6,6 @@ import { readPendingMentor } from './mentalix/personas'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-import JournalStart from './mentalix/JournalStart'
-import PersonaArt from './mentalix/art/PersonaArt'
 
 
 function haptic(style = 'light') {
@@ -36,15 +34,6 @@ function Chat({
   const [sending, setSending] =
     useState(false)
 
-  const [journalOpen, setJournalOpen] =
-    useState(!initialText)
-
-  const endRef = useRef(null)
-
-  const previousMessageCount =
-    useRef(0)
-
-
   useEffect(() => {
     if (!user) return
 
@@ -56,8 +45,6 @@ function Chat({
       .then((history) => {
         setMessages(history)
 
-        previousMessageCount.current =
-          history.length
       })
       .catch((error) => {
         console.error(error)
@@ -68,46 +55,6 @@ function Chat({
   }, [
     user,
     persona,
-  ])
-
-
-  useEffect(() => {
-    if (journalOpen) return
-
-    const previousCount =
-      previousMessageCount.current
-
-    const currentCount =
-      messages.length
-
-    previousMessageCount.current =
-      currentCount
-
-    if (
-      currentCount <=
-      previousCount
-    ) {
-      return
-    }
-
-    const lastMessage =
-      messages[
-        currentCount - 1
-      ]
-
-    if (!lastMessage) return
-
-    if (
-      lastMessage.role === 'user'
-    ) {
-      endRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end',
-      })
-    }
-  }, [
-    messages,
-    journalOpen,
   ])
 
 
@@ -122,8 +69,6 @@ function Chat({
     }
 
     setInput('')
-    setJournalOpen(false)
-
     setMessages((previous) => [
       ...previous,
       {
@@ -164,26 +109,6 @@ function Chat({
   }
 
 
-  if (
-  persona === 'dnevnik' &&
-  journalOpen
-) {
-  return (
-    <JournalStart
-      persona={persona}
-      input={input}
-      setInput={setInput}
-      onSend={send}
-      onBack={onBack}
-      onOpenHistory={() => {
-        setJournalOpen(false)
-      }}
-      sending={sending}
-      PersonaArt={PersonaArt}
-    />
-  )
-}
-
 return (
   <Conversation
     persona={persona}
@@ -194,7 +119,6 @@ return (
     sending={sending}
     onSend={send}
     onBack={onBack}
-    endRef={endRef}
   />
 )
 }

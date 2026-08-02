@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef,
   useState,
 } from 'react'
 
@@ -28,7 +29,6 @@ export default function Conversation({
   sending,
   onSend,
   onBack,
-  endRef,
 }) {
   const meta = PERSONAS.find(
     (item) => item.key === persona,
@@ -43,6 +43,23 @@ export default function Conversation({
     viewportTop,
     setViewportTop,
   ] = useState(0)
+
+  const scrollRef = useRef(null)
+  const previousMessageCount = useRef(0)
+
+
+  function scrollToEnd(
+    behavior = 'smooth',
+  ) {
+    const scroll = scrollRef.current
+
+    if (!scroll) return
+
+    scroll.scrollTo({
+      top: scroll.scrollHeight,
+      behavior,
+    })
+  }
 
 
   useEffect(() => {
@@ -85,6 +102,34 @@ export default function Conversation({
       )
     }
   }, [])
+
+
+  useEffect(() => {
+    if (loading) return
+
+    const firstPosition =
+      previousMessageCount.current === 0
+
+    previousMessageCount.current =
+      messages.length
+
+    const frame =
+      window.requestAnimationFrame(() => {
+        scrollToEnd(
+          firstPosition
+            ? 'auto'
+            : 'smooth',
+        )
+      })
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+    }
+  }, [
+    loading,
+    messages.length,
+    sending,
+  ])
 
 
   return (
@@ -151,7 +196,10 @@ export default function Conversation({
 
       {/* ── история сообщений ── */}
 
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 pb-5">
+      <div
+        ref={scrollRef}
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-6 px-5 pb-6"
+      >
 
         {loading && (
           <p className="text-cream/40 text-[15px] text-center pt-4">
@@ -174,7 +222,7 @@ export default function Conversation({
           )}
 
 
-        <div className="space-y-7">
+        <div className="w-full max-w-md mx-auto space-y-5">
           {messages.map(
             (message, index) => {
               const isUser =
@@ -186,7 +234,7 @@ export default function Conversation({
                     key={index}
                     className="flex justify-end"
                   >
-                    <div className="w-fit max-w-[86%] rounded-[28px] bg-cognac px-6 py-[18px] text-[17px] leading-[1.5] font-normal text-cream break-words whitespace-pre-wrap">
+                    <div className="w-fit max-w-[82%] rounded-[24px] bg-cognac px-5 py-4 text-[16px] leading-[1.5] font-normal text-cream break-words whitespace-pre-wrap">
                       {message.content}
                     </div>
                   </div>
@@ -199,11 +247,11 @@ export default function Conversation({
                   key={index}
                   className="w-full"
                 >
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-4">
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-2.5">
                     {meta.name}
                   </div>
 
-                  <div className="text-[16px] leading-[1.72] tracking-[-0.01em] text-cream/90 font-normal break-words whitespace-pre-wrap">
+                  <div className="text-[16px] leading-[1.62] tracking-[-0.01em] text-cream/90 font-normal break-words whitespace-pre-wrap">
   {message.content}
 </div>
                 </div>
@@ -224,8 +272,6 @@ export default function Conversation({
             </div>
           )}
 
-
-          <div ref={endRef} />
         </div>
       </div>
 
@@ -245,7 +291,7 @@ export default function Conversation({
   }}
 
 >
-        <div className="min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
+        <div className="w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
 
           <button
             type="button"
@@ -273,10 +319,7 @@ export default function Conversation({
 
             onFocus={() => {
               setTimeout(() => {
-                endRef.current?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'end',
-                })
+                scrollToEnd('smooth')
               }, 180)
             }}
 
