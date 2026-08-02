@@ -164,22 +164,28 @@ export default function Settings({ user, onBack, onNavigate }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
-      <div className="w-full flex items-center gap-2 mb-6">
-        <BackButton onClick={onBack} />
-        <h1 className="font-display text-xl text-cream">Настройки</h1>
+      <div className="relative w-full flex items-center justify-center min-h-[42px] mb-6">
+        <div className="absolute left-0">
+          <BackButton onClick={onBack} />
+        </div>
+        <h1 className="font-display text-xl text-cream lowercase">настройки.</h1>
       </div>
 
+      <SectionLabel>Профиль</SectionLabel>
       <Card>
         <Row
           icon={User}
           title={user?.first_name ?? 'Профиль'}
-          subtitle={`Тариф: ${tierLabel}`}
+          subtitle="Профиль и мой путь"
           right={
-            <span className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-sage/70'}`}>
-              {tierLabel}
+            <span className="flex items-center gap-2">
+              <span className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-sage/70'}`}>
+                {tierLabel}
+              </span>
+              <ChevronRight size={18} className="text-sage/50 shrink-0" />
             </span>
           }
-          onClick={() => go('profile-edit')}
+          onClick={() => go('profile')}
         />
         <Row title="Управлять подпиской" onClick={() => setScreen('subscription')} divider={false} />
       </Card>

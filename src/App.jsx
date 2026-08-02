@@ -6,7 +6,6 @@ import {
 } from 'react'
 
 import {
-  ChevronLeft,
   Settings as SettingsIcon,
 } from 'lucide-react'
 
@@ -28,6 +27,7 @@ import Library from './screens/Library'
 import Onboarding from './screens/Onboarding'
 
 import MazeLogo from './components/MazeLogo'
+import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import { useSynced } from './lib/store'
 
@@ -816,22 +816,19 @@ export default function App() {
           <div
             className="
               fixed
-              top-0
               left-0
               right-0
               z-40
 
               flex
-              items-end
+              items-center
               justify-center
 
               pointer-events-none
-
-              pb-2
             "
             style={{
-              height:
-                topSafeArea,
+              top: 'var(--app-safe-top)',
+              height: '56px',
             }}
           >
             <span
@@ -860,7 +857,7 @@ export default function App() {
               max-w-md
 
               px-5
-              pt-4
+              pt-0
               pb-0
 
               flex
@@ -893,7 +890,7 @@ export default function App() {
             </h1>
 
 
-            {/* Profile */}
+            {/* Settings */}
 
             <button
               type="button"
@@ -903,10 +900,10 @@ export default function App() {
                 )
 
                 setOverlay(
-                  'profile'
+                  'settings'
                 )
               }}
-              aria-label="Профиль"
+              aria-label="Настройки"
               className="
                 w-10
                 h-10
@@ -925,17 +922,11 @@ export default function App() {
                 active:scale-95
               "
             >
-              <span
-                className="
-                  font-display
-                  text-sm
-                  text-cream/60
-                "
-              >
-                {user?.first_name
-                  ? user.first_name[0].toUpperCase()
-                  : 'M'}
-              </span>
+              <SettingsIcon
+                size={19}
+                strokeWidth={1.7}
+                className="text-cream/60"
+              />
             </button>
           </div>
 
@@ -995,11 +986,13 @@ export default function App() {
           <Settings
             user={user}
             onBack={() => {
-              setOverlay(
-                'profile'
-              )
+              setOverlay(null)
             }}
-            onNavigate={() => {}}
+            onNavigate={(destination) => {
+              if (destination === 'profile') {
+                setOverlay('profile')
+              }
+            }}
           />
         )}
 
@@ -1024,41 +1017,19 @@ export default function App() {
                 px-5
                 pb-2
 
-                flex
+                relative
+                grid
+                grid-cols-[1fr_auto_1fr]
                 items-center
-                justify-between
               "
             >
-              <button
-                type="button"
-                onClick={() => {
-                  platform.haptic(
-                    'light'
-                  )
-
-                  setOverlay(null)
-                }}
-                aria-label="Назад"
-                className="
-                  w-10
-                  h-10
-
-                  rounded-full
-
-                  bg-emerald
-
-                  flex
-                  items-center
-                  justify-center
-
-                  active:scale-95
-                "
-              >
-                <ChevronLeft
-                  size={20}
-                  className="text-cream/60"
+              <div className="justify-self-start">
+                <BackButton
+                  onClick={() => {
+                    setOverlay('settings')
+                  }}
                 />
-              </button>
+              </div>
 
 
               <span
@@ -1073,38 +1044,7 @@ export default function App() {
               </span>
 
 
-              <button
-                type="button"
-                onClick={() => {
-                  platform.haptic(
-                    'light'
-                  )
-
-                  setOverlay(
-                    'settings'
-                  )
-                }}
-                aria-label="Настройки"
-                className="
-                  w-10
-                  h-10
-
-                  rounded-full
-
-                  bg-emerald
-
-                  flex
-                  items-center
-                  justify-center
-
-                  active:scale-95
-                "
-              >
-                <SettingsIcon
-                  size={18}
-                  className="text-cream/60"
-                />
-              </button>
+              <span aria-hidden="true" />
             </div>
 
 
