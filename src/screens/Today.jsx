@@ -13,6 +13,7 @@ import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
+import MorningPilotCard from '../components/MorningPilotCard'
 
 
 // ── лента недели, как у stoic. ──
@@ -631,6 +632,17 @@ export default function Today({
   return (
     <div className="w-full max-w-md px-5">
       <WeekStrip />
+
+
+      <MorningPilotCard
+        userId={user.id}
+        rituals={rituals}
+        onOpenRituals={() =>
+          onOpenPractice(
+            'rituals',
+          )
+        }
+      />
 
 
       {/* ======================================================
