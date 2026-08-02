@@ -679,6 +679,29 @@ export default function Today({
             </p>
 
 
+            {todayState
+              === 'reviewPending' && (
+              <div className="w-full max-w-sm mx-auto mt-5 space-y-2 text-left">
+                {[
+                  'Что получилось?',
+                  'Что было трудно?',
+                  'Какой вывод забираешь?',
+                ].map((question) => (
+                  <div
+                    key={question}
+                    className="rounded-2xl bg-cream/5 px-4 py-2.5 text-[12px] text-cream/60"
+                  >
+                    {question}
+                  </div>
+                ))}
+
+                <div className="text-[11px] text-gold/70 font-semibold px-1 pt-1">
+                  + три вещи, которыми гордишься
+                </div>
+              </div>
+            )}
+
+
             <button
               onClick={() => {
                 platform.haptic(
@@ -724,6 +747,22 @@ export default function Today({
             <p className="text-[14px] text-cream/50 mt-2">
               Вечерний разбор завершён
             </p>
+
+
+            <button
+              onClick={() => {
+                platform.haptic(
+                  'medium',
+                )
+
+                changeSub(
+                  'checkin',
+                )
+              }}
+              className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
+            >
+              Открыть разбор снова
+            </button>
           </>
         )}
 

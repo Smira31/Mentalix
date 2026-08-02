@@ -276,6 +276,64 @@ const PROUD_HINTS = [
 ]
 
 
+function existingLessons(value) {
+  if (typeof value !== 'string') {
+    return {}
+  }
+
+  return Object.fromEntries(
+    LESSON_FIELDS.flatMap(
+      (field) => {
+        const prefix =
+          `${field.label} `
+
+        const line = value
+          .split('\n')
+          .find((item) =>
+            item.startsWith(prefix),
+          )
+
+        return line
+          ? [[
+              field.key,
+              line.slice(prefix.length),
+            ]]
+          : []
+      },
+    ),
+  )
+}
+
+
+function existingProud(value) {
+  let items = []
+
+  if (Array.isArray(value)) {
+    items = value
+  } else if (
+    typeof value === 'string'
+    && value.trim()
+  ) {
+    try {
+      const parsed = JSON.parse(value)
+
+      items = Array.isArray(parsed)
+        ? parsed
+        : [value]
+    } catch {
+      items = value.split('\n')
+    }
+  }
+
+  return [
+    ...items.slice(0, 3),
+    '',
+    '',
+    '',
+  ].slice(0, 3)
+}
+
+
 export default function CheckIn({
   user,
   onDone,
@@ -308,14 +366,22 @@ export default function CheckIn({
     )
 
   const [lessons, setLessons] =
-    useState({})
+    useState(() =>
+      isEvening
+        ? existingLessons(
+            existing?.lessons,
+          )
+        : {},
+    )
 
   const [proud, setProud] =
-    useState([
-      '',
-      '',
-      '',
-    ])
+    useState(() =>
+      isEvening
+        ? existingProud(
+            existing?.wins,
+          )
+        : ['', '', ''],
+    )
 
   const [note, setNote] =
     useState('')
@@ -350,7 +416,13 @@ export default function CheckIn({
 
 
   const [step, setStep] =
-    useState(0)
+    useState(() =>
+      isEvening
+      && existing
+        ?.review_completed_at
+        ? 1
+        : 0,
+    )
 
   const [
     viewportHeight,
