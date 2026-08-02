@@ -25,7 +25,7 @@
 ```text
 src/
   main.jsx                 точка входа React
-  App.jsx                  shell, auth, тема, навигация, overlays
+  App.jsx                  shell, auth, Telegram chrome, навигация, overlays
   index.css                глобальные токены, safe areas, motion
   components/              общие UI-компоненты и иллюстрации
   data/                    локальный контент
@@ -46,7 +46,7 @@ src/
 main.jsx
 → App
 → определить platform
-→ инициализировать fullscreen/theme
+→ инициализировать fullscreen и тёмный Telegram chrome
 → requestAuth()
 → onboarding или web auth
 → одна из пяти вкладок
@@ -59,7 +59,7 @@ main.jsx
 
 ## 4. Ответственность ключевых слоёв
 
-- `App.jsx`: composition root, theme, auth, Telegram behavior, основная навигация, profile/settings overlays.
+- `App.jsx`: composition root, auth, Telegram behavior, основная навигация, profile/settings overlays.
 - `screens/*`: данные и UI конкретного сценария; многие экраны сами вызывают API.
 - `lib/api.js`: централизованные HTTP-контракты для habits, rituals, ascezas, check-in, analytics, AI, profile, themes, quotes, courses, focus, brain, subscription и auth.
 - `platform/*`: абстракция различий Telegram/web.
@@ -69,7 +69,7 @@ main.jsx
 
 - серверные данные запрашиваются напрямую из экранов через `useEffect`;
 - глобального state/query слоя нет;
-- тема, onboarding и web user сохраняются в `localStorage`;
+- onboarding и web user сохраняются в `localStorage`;
 - идентификатор пользователя проходит в API как `user_id`;
 - ошибки преимущественно пишутся в console, единого error state нет.
 
@@ -137,4 +137,3 @@ block, и любой `position: fixed` внутри якорится к этом
 - Не добавлять экрану собственные вертикальные отступы: ими владеет `App.jsx`.
 - Жесты внутри Telegram Mini App реализовывать нативными средствами CSS, а не document-level обработчиками касаний: свои обработчики конфликтуют с жестами Telegram.
 - Перед merge: build, целевой сценарий, smoke web, реальный Telegram для mobile-sensitive изменений.
-

@@ -38,7 +38,6 @@ import { initFullscreen } from './lib/tgFullscreen'
    STORAGE
    ============================================================ */
 
-const THEME_KEY = 'mx-theme'
 const ONBOARDED_KEY = 'mx-onboarded-v2'
 
 
@@ -139,54 +138,6 @@ function greeting() {
    THEME
    ============================================================ */
 
-function isDayNow() {
-  const h = new Date().getHours()
-
-  return h >= 6 && h < 18
-}
-
-
-/*
- * Telegram Desktop — всегда тёмная тема.
- *
- * Решение пользователя, и у него есть основание: весь визуальный
- * язык Mentalix построен на свете в темноте. В светлой теме
- * золото становится тёмно-оливковым, а свечение вокруг точки —
- * мутным пятном на кремовом фоне: метафора разваливается. На
- * телефоне светлая тема остаётся, там экран часто смотрят при
- * дневном свете; на большом экране такой нужды нет.
- *
- * Платформу спрашиваем у Telegram, а не у ширины окна: узкое окно
- * на десктопе — это всё ещё десктоп.
- */
-const DESKTOP_PLATFORMS = ['tdesktop', 'macos', 'weba', 'web', 'webk']
-
-function isDesktop() {
-  if (typeof window === 'undefined') return false
-
-  const platform = window.Telegram?.WebApp?.platform
-
-  return Boolean(platform) && DESKTOP_PLATFORMS.includes(platform)
-}
-
-
-function resolveLight(mode) {
-  if (isDesktop()) {
-    return false
-  }
-
-  if (mode === 'light') {
-    return true
-  }
-
-  if (mode === 'dark') {
-    return false
-  }
-
-  return isDayNow()
-}
-
-
 function getThemeBackground() {
   const channels = getComputedStyle(
     document.documentElement
@@ -218,11 +169,9 @@ function getThemeBackground() {
 }
 
 
-function applyTheme(light) {
-  document.body.classList.toggle(
-    'light',
-    light
-  )
+function applyDarkTheme() {
+  // Снимаем legacy-класс и при HMR, и после старой открытой сессии.
+  document.body.classList.remove('light')
 
   const background =
     getThemeBackground()
@@ -336,9 +285,6 @@ export default function App() {
 
   const onboarded = onboardedFlag === '1'
 
-  const [themeMode, setThemeMode] = useSynced(THEME_KEY, 'auto')
-
-
   const initialTab =
     new URLSearchParams(
       window.location.search
@@ -373,43 +319,8 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
-    applyTheme(
-      resolveLight(themeMode)
-    )
-
-    if (themeMode !== 'auto') {
-      return
-    }
-
-    const id = setInterval(() => {
-      applyTheme(
-        resolveLight('auto')
-      )
-    }, 60_000)
-
-    return () => {
-      clearInterval(id)
-    }
-  }, [themeMode])
-
-
-  function cycleTheme() {
-    platform.haptic('light')
-
-    setThemeMode((mode) => {
-      if (mode === 'auto') {
-        return isDayNow()
-          ? 'dark'
-          : 'light'
-      }
-
-      if (mode === 'dark') {
-        return 'light'
-      }
-
-      return 'dark'
-    })
-  }
+    applyDarkTheme()
+  }, [])
 
 
   /* ============================================================
@@ -957,43 +868,8 @@ export default function App() {
               justify-between
             "
           >
-            {/*
-              Theme
-
-              На десктопе кнопки нет: тема там всегда тёмная, и
-              переключатель, который ничего не переключает, хуже
-              отсутствующего. Место сохраняем, чтобы приветствие
-              осталось по центру.
-            */}
-
-            {isDesktop() ? (
-              <span className="w-10 h-10 shrink-0" aria-hidden="true" />
-            ) : (
-              <button
-                type="button"
-                onClick={cycleTheme}
-                aria-label="Переключить тему"
-                className="
-                  w-10
-                  h-10
-
-                  rounded-full
-
-                  bg-emerald
-
-                  flex
-                  items-center
-                  justify-center
-
-                  text-cream/50
-                  text-base
-
-                  active:scale-95
-                "
-              >
-                ◐
-              </button>
-            )}
+            {/* Сохраняет приветствие по центру относительно аватара. */}
+            <span className="w-10 h-10 shrink-0" aria-hidden="true" />
 
 
             {/* Greeting */}
