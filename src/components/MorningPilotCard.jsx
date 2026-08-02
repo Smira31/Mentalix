@@ -150,14 +150,6 @@ export default function MorningPilotCard({
   }
 
 
-  if (
-    dayState?.outcome
-    === 'opened_rituals'
-  ) {
-    return null
-  }
-
-
   function chooseOutcome(outcome) {
     platform.haptic('light')
 
