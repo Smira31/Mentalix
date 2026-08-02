@@ -111,6 +111,7 @@ function Chat({
 
 return (
   <Conversation
+    userId={user.id}
     persona={persona}
     messages={messages}
     input={input}

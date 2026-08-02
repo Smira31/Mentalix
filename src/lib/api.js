@@ -1,9 +1,15 @@
 const BASE = '/api'
 
 async function request(path, options = {}) {
+  const isFormData =
+    typeof FormData !== 'undefined'
+    && options.body instanceof FormData
+
   const res = await fetch(`${BASE}${path}`, {
     headers: {
-      'Content-Type': 'application/json',
+      ...(!isFormData
+        ? { 'Content-Type': 'application/json' }
+        : {}),
       ...options.headers,
     },
     ...options,
@@ -241,6 +247,24 @@ export const api = {
           persona,
         }),
       }),
+
+    transcribe: (userId, audio) => {
+      const form = new FormData()
+
+      form.append('user_id', String(userId))
+      form.append(
+        'audio',
+        audio,
+        audio.type.includes('mp4')
+          ? 'voice.mp4'
+          : 'voice.webm',
+      )
+
+      return request('/mentalix/transcribe', {
+        method: 'POST',
+        body: form,
+      })
+    },
   },
 
   profile: {

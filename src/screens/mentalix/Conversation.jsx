@@ -6,11 +6,14 @@ import {
 
 import {
   ArrowRight,
-  Plus,
+  LoaderCircle,
+  Mic,
+  Square,
 } from 'lucide-react'
 
 import WebApp from '@twa-dev/sdk'
 import BackButton from '../../components/BackButton'
+import { api } from '../../lib/api'
 
 import { PERSONAS } from './personas'
 
@@ -21,6 +24,7 @@ function haptic(style = 'light') {
 
 
 export default function Conversation({
+  userId,
   persona,
   messages,
   input,
@@ -46,6 +50,23 @@ export default function Conversation({
 
   const scrollRef = useRef(null)
   const previousMessageCount = useRef(0)
+  const recorderRef = useRef(null)
+  const streamRef = useRef(null)
+  const chunksRef = useRef([])
+  const stopTimerRef = useRef(null)
+  const secondsTimerRef = useRef(null)
+
+  const [voiceState, setVoiceState] =
+    useState('idle')
+  const [voiceSeconds, setVoiceSeconds] =
+    useState(0)
+  const [voiceError, setVoiceError] =
+    useState('')
+
+  const voiceSupported =
+    typeof navigator !== 'undefined'
+    && Boolean(navigator.mediaDevices?.getUserMedia)
+    && typeof MediaRecorder !== 'undefined'
 
 
   function scrollToEnd(
@@ -102,6 +123,163 @@ export default function Conversation({
       )
     }
   }, [])
+
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(stopTimerRef.current)
+      clearInterval(secondsTimerRef.current)
+
+      const recorder = recorderRef.current
+      if (recorder?.state === 'recording') {
+        recorder.onstop = null
+        recorder.stop()
+      }
+
+      streamRef.current
+        ?.getTracks()
+        .forEach((track) => track.stop())
+    }
+  }, [])
+
+
+  function stopVoiceRecording() {
+    const recorder = recorderRef.current
+
+    if (recorder?.state === 'recording') {
+      recorder.stop()
+    }
+  }
+
+
+  async function startVoiceRecording() {
+    setVoiceError('')
+
+    if (!voiceSupported) {
+      setVoiceError(
+        'Запись голоса недоступна в этой версии Telegram.',
+      )
+      return
+    }
+
+    try {
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        })
+
+      const mimeType = [
+        'audio/mp4',
+        'audio/webm;codecs=opus',
+        'audio/webm',
+      ].find((type) =>
+        MediaRecorder.isTypeSupported(type),
+      )
+
+      const recorder = new MediaRecorder(
+        stream,
+        mimeType ? { mimeType } : undefined,
+      )
+
+      streamRef.current = stream
+      recorderRef.current = recorder
+      chunksRef.current = []
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data)
+        }
+      }
+
+      recorder.onerror = () => {
+        setVoiceError('Не удалось записать голос. Попробуй ещё раз.')
+        setVoiceState('idle')
+      }
+
+      recorder.onstop = async () => {
+        clearTimeout(stopTimerRef.current)
+        clearInterval(secondsTimerRef.current)
+
+        stream.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+        recorderRef.current = null
+
+        const audio = new Blob(
+          chunksRef.current,
+          { type: recorder.mimeType || 'audio/webm' },
+        )
+
+        chunksRef.current = []
+
+        if (!audio.size) {
+          setVoiceError('Голос не записался. Попробуй ещё раз.')
+          setVoiceState('idle')
+          return
+        }
+
+        setVoiceState('transcribing')
+
+        try {
+          const result =
+            await api.mentalix.transcribe(userId, audio)
+
+          const transcript = String(result?.text || '').trim()
+
+          if (!transcript) {
+            throw new Error('empty transcript')
+          }
+
+          setInput((current) =>
+            [current.trim(), transcript]
+              .filter(Boolean)
+              .join(' '),
+          )
+
+          haptic('medium')
+        } catch (error) {
+          console.error(error)
+          const message = String(error?.message || '')
+          const voiceCode =
+            message.match(/VOICE_[A-Z0-9_]+/)?.[0]
+          const httpStatus =
+            message.match(/failed: (\d{3})/)?.[1]
+          const diagnosticCode =
+            voiceCode
+            || (httpStatus ? `HTTP_${httpStatus}` : 'NETWORK')
+
+          setVoiceError(
+            `Не удалось распознать голос. Код: ${diagnosticCode}.`,
+          )
+        } finally {
+          setVoiceState('idle')
+          setVoiceSeconds(0)
+        }
+      }
+
+      recorder.start(250)
+      setVoiceSeconds(0)
+      setVoiceState('recording')
+      haptic('medium')
+
+      secondsTimerRef.current = setInterval(() => {
+        setVoiceSeconds((seconds) => seconds + 1)
+      }, 1000)
+
+      stopTimerRef.current = setTimeout(() => {
+        stopVoiceRecording()
+      }, 60000)
+    } catch (error) {
+      console.error(error)
+      setVoiceError(
+        'Разреши Mentalix доступ к микрофону и попробуй ещё раз.',
+      )
+      setVoiceState('idle')
+    }
+  }
 
 
   useEffect(() => {
@@ -291,20 +469,50 @@ export default function Conversation({
   }}
 
 >
+        {(voiceState !== 'idle' || voiceError) && (
+          <div className="w-full max-w-md mx-auto px-3 pb-2 text-center text-[12px]">
+            {voiceState === 'recording' && (
+              <span className="text-gold">
+                Запись · 0:{String(voiceSeconds).padStart(2, '0')} · нажми квадрат, чтобы закончить
+              </span>
+            )}
+
+            {voiceState === 'transcribing' && (
+              <span className="text-cream/45">Распознаю голос…</span>
+            )}
+
+            {voiceError && voiceState === 'idle' && (
+              <span className="text-red-400">{voiceError}</span>
+            )}
+          </div>
+        )}
+
         <div className="w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
 
           <button
             type="button"
             onClick={() => {
-              haptic('light')
+              if (voiceState === 'recording') {
+                stopVoiceRecording()
+              } else if (voiceState === 'idle') {
+                startVoiceRecording()
+              }
             }}
+            disabled={voiceState === 'transcribing'}
             className="w-[54px] h-[54px] rounded-full border border-cream/15 bg-cream/[0.025] flex items-center justify-center text-cream/85 shrink-0 active:scale-90 transition-transform"
-            aria-label="Добавить"
+            aria-label={
+              voiceState === 'recording'
+                ? 'Остановить запись'
+                : 'Записать голос'
+            }
           >
-            <Plus
-              size={27}
-              strokeWidth={1.5}
-            />
+            {voiceState === 'recording' ? (
+              <Square size={20} fill="currentColor" />
+            ) : voiceState === 'transcribing' ? (
+              <LoaderCircle size={24} className="animate-spin" />
+            ) : (
+              <Mic size={25} strokeWidth={1.7} />
+            )}
           </button>
 
 
