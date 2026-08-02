@@ -1,0 +1,26 @@
+/* Dev-only showcase ?showcase=archetypes. */
+
+@keyframes mx-archetype-travel {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+
+
+.mx-archetype-travel {
+  stroke-dasharray: 0.19 0.81;
+  stroke-dashoffset: 0;
+  animation: mx-archetype-travel 9s linear infinite;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-archetype-travel {
+    animation: none !important;
+    transition: none !important;
+  }
+}

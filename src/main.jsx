@@ -1,7 +1,48 @@
-import { StrictMode, Component } from 'react'
+import {
+  StrictMode,
+  Component,
+  Suspense,
+  lazy,
+} from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
+
+
+const showcaseRequested =
+  import.meta.env.DEV
+  && new URLSearchParams(
+    window.location.search,
+  ).get('showcase') === 'archetypes'
+
+
+const ArchetypeShowcase = import.meta.env.DEV
+  ? lazy(() =>
+      import(
+        './components/archetype-art/ArchetypeShowcase'
+      ),
+    )
+  : null
+
+
+function RootScreen() {
+  if (
+    showcaseRequested
+    && ArchetypeShowcase
+  ) {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-[100dvh] bg-emerald-deep" />
+        }
+      >
+        <ArchetypeShowcase />
+      </Suspense>
+    )
+  }
+
+  return <App />
+}
 
 // Ловушка ошибок: вместо чёрного экрана показываем текст ошибки,
 // чтобы её можно было сфотографировать и починить
@@ -38,7 +79,7 @@ window.addEventListener('error', (e) => {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <App />
+      <RootScreen />
     </ErrorBoundary>
   </StrictMode>,
 )
