@@ -20,6 +20,9 @@ Telegram Mini App — операционная система личного р�
 | [`AI_RULES.md`](AI_RULES.md) | Обязательный процесс работы AI с Mentalix |
 | [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md) | Как переводить референсы в Mentalix без копирования |
 | [`TASKS.md`](TASKS.md) | Задачи на сейчас |
+| [`docs/core/README.md`](docs/core/README.md) | Mentalix Core: связь проблем, законов, методов и продукта |
+| [`docs/core/CORE_PRINCIPLES.md`](docs/core/CORE_PRINCIPLES.md) | Правила мышления, проверки и безопасности Core |
+| [`docs/core/MENTALIX_LAWS.md`](docs/core/MENTALIX_LAWS.md) | Каталог первичных законов-гипотез |
 
 ### История и архив
 
