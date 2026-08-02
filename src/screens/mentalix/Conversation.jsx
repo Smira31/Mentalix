@@ -242,7 +242,18 @@ export default function Conversation({
           haptic('medium')
         } catch (error) {
           console.error(error)
-          setVoiceError('Не удалось распознать голос. Попробуй ещё раз.')
+          const message = String(error?.message || '')
+          const voiceCode =
+            message.match(/VOICE_[A-Z0-9_]+/)?.[0]
+          const httpStatus =
+            message.match(/failed: (\d{3})/)?.[1]
+          const diagnosticCode =
+            voiceCode
+            || (httpStatus ? `HTTP_${httpStatus}` : 'NETWORK')
+
+          setVoiceError(
+            `Не удалось распознать голос. Код: ${diagnosticCode}.`,
+          )
         } finally {
           setVoiceState('idle')
           setVoiceSeconds(0)
