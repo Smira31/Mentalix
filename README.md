@@ -23,6 +23,7 @@ Telegram Mini App — операционная система личного р�
 | [`docs/core/README.md`](docs/core/README.md) | Mentalix Core: связь проблем, законов, методов и продукта |
 | [`docs/core/CORE_PRINCIPLES.md`](docs/core/CORE_PRINCIPLES.md) | Правила мышления, проверки и безопасности Core |
 | [`docs/core/MENTALIX_LAWS.md`](docs/core/MENTALIX_LAWS.md) | Каталог первичных законов-гипотез |
+| [`docs/methodology/books/README.md`](docs/methodology/books/README.md) | Реестр сверенных книжных источников и разборов |
 
 ### История и архив
 

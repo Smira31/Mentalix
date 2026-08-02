@@ -47,6 +47,7 @@ Core должен отвечать на вопросы:
 | [`BOOK_METHODOLOGY.md`](BOOK_METHODOLOGY.md) | Единый конвейер обработки книг и других книжных материалов |
 | [`KNOWLEDGE_GRAPH.md`](KNOWLEDGE_GRAPH.md) | Спецификация сущностей и связей знания |
 | [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) | Журнал архитектурных решений методологии в формате ADR-lite |
+| [`../methodology/books/README.md`](../methodology/books/README.md) | Реестр сверенных книжных источников и разборов v0.1 |
 
 Существующая папка [`../methodology/`](../methodology/) хранит Конституцию методологии, развиваемые принципы и разборы источников. `docs/core/` связывает их с проблемами, законами, методами и продуктовым уровнем.
 
