@@ -30,7 +30,7 @@ export default function ArticleCover({
   return (
     <div
       className={[
-        'bg-artbed overflow-hidden text-gold/70 flex items-center justify-center',
+        'bg-artbed overflow-hidden border border-cream/[0.07] flex items-center justify-center',
         banner ? 'w-full h-[150px] rounded-3xl' : 'rounded-2xl',
         className,
       ].join(' ')}

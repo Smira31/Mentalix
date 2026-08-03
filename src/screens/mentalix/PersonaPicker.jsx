@@ -7,7 +7,7 @@ import {
 import WebApp from '@twa-dev/sdk'
 
 import { api } from '../../lib/api'
-import Motif, { motifForPersona } from '../../components/Motif'
+import PersonaCardArt from './art/PersonaCardArt'
 import { PERSONAS } from './personas'
 
 
@@ -242,10 +242,9 @@ export default function PersonaPicker({
                   * тянется до нижнего меню и на разных экранах имеет
                   * разную высоту.
                   */}
-                <div className="-mx-6 -mt-6 mb-1 basis-1/3 shrink-0 min-h-0 bg-artbed text-gold rounded-t-[28px] overflow-hidden">
-                  <Motif
-                    name={motifForPersona(persona.key)}
-                    className="w-full h-full"
+                <div className="-mx-6 -mt-6 mb-1 basis-1/3 shrink-0 min-h-0 bg-emerald rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden">
+                  <PersonaCardArt
+                    persona={persona.key}
                   />
                 </div>
 

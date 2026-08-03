@@ -120,8 +120,8 @@ function RitualCard({ ritual, onLog, onDelete }) {
         * сразу, без правок в базе.
         */}
       <div
-        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed ${
-          level ? 'text-gold' : 'text-gold/60'
+        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] ${
+          level ? 'opacity-100' : 'opacity-70'
         }`}
       >
         <Motif name={motifForRitual(ritual.name)} className="w-full h-full" />

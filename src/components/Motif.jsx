@@ -21,7 +21,8 @@ import { useId } from 'react'
  * про его реквизит.
  */
 
-const C = 'currentColor'
+const C = 'rgb(var(--c-line))'
+const GOLD = 'rgb(var(--c-gold))'
 
 /* ── примитивы ───────────────────────────────────────────── */
 
@@ -56,6 +57,10 @@ function pt(key, x, y, r, o = 1) {
   return <circle key={key} cx={r2(x)} cy={r2(y)} r={r2(r)} fill={C} fillOpacity={r2(o)} />
 }
 
+function goldPt(key, x, y, r, o = 1) {
+  return <circle key={key} cx={r2(x)} cy={r2(y)} r={r2(r)} fill={GOLD} fillOpacity={r2(o)} />
+}
+
 function pl(key, points, o = 0.4, w = 1, dash) {
   const d = points.map((p, i) => (i ? 'L' : 'M') + r2(p[0]) + ' ' + r2(p[1])).join('')
 
@@ -79,7 +84,7 @@ function glow(key, gid, x, y, r) {
 }
 
 function core(gid, x, y, r = 4.2, g = 34) {
-  return [glow('gl', gid, x, y, g), pt('cr', x, y, r)]
+  return [glow('gl', gid, x, y, g), goldPt('cr', x, y, r)]
 }
 
 function fan(prefix, cx, cy, from, to, count, r0, r1, o = 0.5, w = 0.8) {
@@ -709,9 +714,9 @@ export function DayArc({ state = 'empty', done = 0, total = 0, className = '' })
     >
       <defs>
         <radialGradient id={gid}>
-          <stop offset="0%" stopColor={C} stopOpacity="0.5" />
-          <stop offset="40%" stopColor={C} stopOpacity="0.14" />
-          <stop offset="100%" stopColor={C} stopOpacity="0" />
+          <stop offset="0%" stopColor={GOLD} stopOpacity="0.28" />
+          <stop offset="40%" stopColor={GOLD} stopOpacity="0.08" />
+          <stop offset="100%" stopColor={GOLD} stopOpacity="0" />
         </radialGradient>
       </defs>
 
@@ -926,7 +931,7 @@ export function MotifArt({ name, size = 120, className = '' }) {
 
   return (
     <div
-      className={`shrink-0 bg-artbed text-gold/55 ${className}`}
+      className={`shrink-0 bg-artbed border border-cream/[0.07] ${className}`}
       style={{
         width: size,
         height: size,

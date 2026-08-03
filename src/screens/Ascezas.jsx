@@ -356,8 +356,8 @@ function AscezaCard({
         * снаружи тот же материал в беспорядке.
         */}
       <div
-        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed ${
-          status === 'held' ? 'text-gold' : 'text-gold/60'
+        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] ${
+          status === 'held' ? 'opacity-100' : 'opacity-70'
         }`}
       >
         <Motif name={motifForAsceza(asceza.category)} className="w-full h-full" />
