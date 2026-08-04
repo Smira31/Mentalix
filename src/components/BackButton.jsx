@@ -1,6 +1,6 @@
 import { ChevronLeft } from 'lucide-react'
 import { platform } from '../platform'
-import { useBackButton } from '../lib/telegram'
+import { useBackButton } from '../platform/telegram.hooks'
 
 /*
  * КНОПКА «НАЗАД»
