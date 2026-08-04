@@ -304,37 +304,58 @@ const BREATH_PHASES = [
 ]
 const BREATH_CYCLES = 3
 
+const PHASE_ENDS = BREATH_PHASES.reduce((acc, p) => {
+  acc.push((acc[acc.length - 1] || 0) + p.duration)
+  return acc
+}, [])
+const CYCLE_SECONDS = PHASE_ENDS[PHASE_ENDS.length - 1]
+const TOTAL_SECONDS = CYCLE_SECONDS * BREATH_CYCLES
+
 function GymnasticsGame({ onFinish }) {
-  const [phaseIndex, setPhaseIndex] = useState(0)
-  const [cycle, setCycle] = useState(0)
-  const [secondsLeft, setSecondsLeft] = useState(BREATH_PHASES[0].duration)
+  const [elapsed, setElapsed] = useState(0)
   const finishedRef = useRef(false)
 
+  /*
+   * Время считается по часам, а не сложением тиков: вебвью Telegram
+   * душит таймеры, и цепочка setInterval разъезжается с реальностью.
+   * Но пока экран скрыт, время СТОИТ — упражнение дыхательное, и
+   * заблокированный телефон не должен «проходить» его за человека.
+   */
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          const nextPhase = (phaseIndex + 1) % BREATH_PHASES.length
-          if (nextPhase === 0) {
-            const nextCycle = cycle + 1
-            if (nextCycle >= BREATH_CYCLES) {
-              if (!finishedRef.current) {
-                finishedRef.current = true
-                clearInterval(timer)
-                onFinish(1)
-              }
-              return 0
-            }
-            setCycle(nextCycle)
-          }
-          setPhaseIndex(nextPhase)
-          return BREATH_PHASES[nextPhase].duration
-        }
-        return s - 1
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [phaseIndex, cycle])
+    const accumulated = { seconds: 0 }
+    let last = Date.now()
+
+    const tick = () => {
+      const now = Date.now()
+      if (document.visibilityState === 'visible') {
+        accumulated.seconds += (now - last) / 1000
+      }
+      last = now
+      setElapsed(Math.min(TOTAL_SECONDS, accumulated.seconds))
+    }
+
+    const id = setInterval(tick, 200)
+    const onVisible = () => {
+      last = Date.now()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (elapsed < TOTAL_SECONDS || finishedRef.current) return
+    finishedRef.current = true
+    onFinish(1)
+  }, [elapsed, onFinish])
+
+  const cycle = Math.min(BREATH_CYCLES - 1, Math.floor(elapsed / CYCLE_SECONDS))
+  const intoCycle = elapsed % CYCLE_SECONDS
+  const phaseIndex = PHASE_ENDS.findIndex((end) => intoCycle < end)
+  const secondsLeft = Math.max(1, Math.ceil(PHASE_ENDS[phaseIndex] - intoCycle))
 
   const phase = BREATH_PHASES[phaseIndex]
   const isExpand = phase.label === 'Вдох'
