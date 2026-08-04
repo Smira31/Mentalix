@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
-import { useMainButton, useBackButton } from '../lib/telegram'
+import { useMainButton, useBackButton } from '../platform/telegram.hooks'
 import { createPortal } from 'react-dom'
 import {
   useFullscreenSurface,

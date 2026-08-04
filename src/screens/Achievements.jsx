@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { readLocal, writeLocal } from '../lib/store'
-import { cloud } from '../lib/telegram'
+import { cloud } from '../platform/telegram.hooks'
 import { MotifArt } from '../components/Motif'
 
 // ── Вехи Пути: достижения без давления — фиксация пройденного, не гонка ──

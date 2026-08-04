@@ -5,7 +5,7 @@ import { api } from '../lib/api'
 import { Lock, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import Motif, { MotifArt } from '../components/Motif'
-import { useMainButton, offerHomeScreen, cloud } from '../lib/telegram'
+import { useMainButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,

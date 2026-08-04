@@ -10,7 +10,7 @@ import { MotifArt } from '../components/Motif'
 import {
   useMainButton,
   useSecondaryButton,
-} from '../lib/telegram'
+} from '../platform/telegram.hooks'
 
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'

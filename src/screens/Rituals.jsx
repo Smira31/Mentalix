@@ -11,7 +11,7 @@ import {
 import Motif, { MotifArt, motifForRitual } from '../components/Motif'
 import StreakBar from '../components/StreakBar'
 import BackButton from '../components/BackButton'
-import { useMainButton } from '../lib/telegram'
+import { useMainButton } from '../platform/telegram.hooks'
 
 /*
  * Карточка занимает всё, что осталось между шапкой экрана и

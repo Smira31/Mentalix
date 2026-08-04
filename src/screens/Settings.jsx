@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { forget } from '../lib/store'
-import { requestMessages } from '../lib/telegram'
+import { requestMessages } from '../platform/telegram.hooks'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
