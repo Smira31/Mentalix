@@ -3,8 +3,6 @@ import {
   useRef,
 } from 'react'
 
-import WebApp from '@twa-dev/sdk'
-
 
 /*
  * ПЛАТФОРМЕННЫЙ СЛОЙ TELEGRAM
@@ -550,5 +548,3 @@ export function offerHomeScreen() {
   )
 }
 
-
-export { WebApp }
