@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { cloud } from './telegram'
+import { cloud } from '../platform/telegram.hooks'
 
 /*
  * ХРАНИЛИЩЕ НАСТРОЕК: ДВА УРОВНЯ
