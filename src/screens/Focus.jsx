@@ -127,7 +127,7 @@ export default function Focus({ user }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
-      <h2 className="font-display text-lg mb-6 text-cream/90 self-start">Фокус</h2>
+      <h2 className="font-display text-lg mb-6 text-cream self-start">Фокус</h2>
 
       <div className="w-48 h-48 mb-6">
         <Constellation pointsUnlocked={pointsUnlocked} />
@@ -136,7 +136,7 @@ export default function Focus({ user }) {
       {/* Пока прогресс не загружен — пусто, а не «0/5»: подставная цифра
           меняется на глазах и читается как сбой. Высота держится, чтобы
           макет не дёргался. */}
-      <p className="text-xs text-sage/60 mb-8 text-center min-h-[1rem]">
+      <p className="text-xs text-muted mb-8 text-center min-h-[1rem]">
         {progress
           ? `Созвездие №${progress.constellation_index + 1} — ${progress.points_unlocked}/${POINTS_PER_CONSTELLATION} сессий`
           : ''}
@@ -153,7 +153,7 @@ export default function Focus({ user }) {
             onClick={() => selectDuration(d)}
             disabled={running}
             className={`px-4 py-2 rounded-full text-sm transition-colors disabled:opacity-40 ${
-              selectedDuration === d ? 'bg-gold text-emerald-deep' : 'bg-emerald-light/20 text-cream/60'
+              selectedDuration === d ? 'bg-gold text-emerald-deep' : 'bg-emerald-light/20 text-muted'
             }`}
           >
             {d} мин
@@ -167,7 +167,7 @@ export default function Focus({ user }) {
           className="w-12 h-12 rounded-full bg-emerald-light/20 flex items-center justify-center active:scale-90 transition-transform"
           aria-label="Сбросить"
         >
-          <RotateCcw size={18} className="text-cream/60" />
+          <RotateCcw size={18} className="text-muted" />
         </button>
         <button
           onClick={toggleRun}
