@@ -14,7 +14,7 @@ import {
   paintChrome,
   lockVerticalSwipes,
   useSettingsButton,
-} from './lib/telegram'
+} from './platform/telegram.hooks'
 
 import Today from './screens/Today'
 import Practices from './screens/Practices'
