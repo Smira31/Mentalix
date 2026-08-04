@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Brain, Zap, Shuffle, Wind, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 const EXERCISES = [
   { key: 'attention', title: 'Внимание', subtitle: 'Струп-тест', icon: Brain, accent: 'gold' },
@@ -83,7 +80,7 @@ function AttentionGame({ onFinish }) {
   useEffect(() => { makeRound() }, [])
 
   function answer(userSaysMatch) {
-    haptic('light')
+    platform.haptic('light')
     const wasCorrect = userSaysMatch === isMatch
     const newCorrect = correct + (wasCorrect ? 1 : 0)
     const next = round + 1
@@ -149,13 +146,13 @@ function MemoryGame({ onFinish }) {
 
   function tapTile(i) {
     if (showing) return
-    haptic('light')
+    platform.haptic('light')
     const idx = userInput.length
     const next = [...userInput, i]
     setUserInput(next)
 
     if (sequence[idx] !== i) {
-      haptic('error')
+      platform.haptic('error')
       onFinish(level - 1)
       return
     }
@@ -221,13 +218,13 @@ function ReactionGame({ onFinish }) {
   function tap() {
     if (phase === 'waiting') {
       clearTimeout(timeoutRef.current)
-      haptic('light')
+      platform.haptic('light')
       setPhase('tooSoon')
       setTimeout(() => setAttemptKey((k) => k + 1), 900)
       return
     }
     if (phase === 'ready') {
-      haptic('success')
+      platform.haptic('success')
       const ms = Date.now() - startRef.current
       setTimes((t) => [...t, ms])
       setRound((r) => r + 1)
@@ -265,7 +262,7 @@ function PlasticityGame({ onFinish }) {
   const reversed = word.split('').reverse().join('')
 
   function submit() {
-    haptic('light')
+    platform.haptic('light')
     const isRight = input.trim().toUpperCase() === reversed
     const newCorrect = correct + (isRight ? 1 : 0)
     const next = round + 1
@@ -409,7 +406,7 @@ export default function BrainTrainer({
   }
 
   function start(key) {
-    haptic('light')
+    platform.haptic('light')
     startTimeRef.current = Date.now()
     setActive(key)
     setResult(null)
@@ -417,7 +414,7 @@ export default function BrainTrainer({
 
   async function finish(score) {
     const duration = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000))
-    haptic('success')
+    platform.haptic('success')
     const finishedKey = active
     try {
       await api.brain.logSession(user.id, finishedKey, score, duration)

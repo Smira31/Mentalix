@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
 import { useMainButton, useBackButton } from '../lib/telegram'
@@ -41,14 +41,8 @@ const CARD_HEIGHT = {
 }
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 
-function hapticNotify(type = 'success') {
-  WebApp.HapticFeedback?.notificationOccurred(type)
-}
 
 
 const CATEGORIES = [
@@ -144,7 +138,7 @@ function BreakContextSheet({
         note.trim() || null,
       )
 
-      hapticNotify('warning')
+      platform.haptic('warning')
       onClose()
     } finally {
       setSaving(false)
@@ -205,7 +199,7 @@ function BreakContextSheet({
               <button
                 key={item}
                 onClick={() => {
-                  haptic('light')
+                  platform.haptic('light')
                   setTrigger(item)
                 }}
                 className={`py-3 px-3 rounded-2xl border text-[13px] font-semibold transition-all active:scale-[0.97] ${
@@ -278,10 +272,10 @@ function AscezaCard({
   function handleHeld() {
     const wasUnset = !status
 
-    haptic('medium')
+    platform.haptic('medium')
 
     if (wasUnset) {
-      hapticNotify('success')
+      platform.haptic('success')
       setCelebrate(true)
       setTimeout(() => setCelebrate(false), 700)
     }
@@ -290,7 +284,7 @@ function AscezaCard({
   }
 
   function handleBroke() {
-    haptic('medium')
+    platform.haptic('medium')
 
     // Если срыв уже отмечен, повторное нажатие снимает отметку,
     // сохраняя прежнее поведение API.
@@ -324,7 +318,7 @@ function AscezaCard({
             <span className="flex items-center gap-1">
               <button
                 onClick={() => {
-                  haptic('rigid')
+                  platform.haptic('rigid')
                   onDelete(asceza.id)
                 }}
                 className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
@@ -513,7 +507,7 @@ function CreateAscezaScreen({
               <button
                 key={category.key}
                 onClick={() => {
-                  haptic('light')
+                  platform.haptic('light')
 
                   setDraft((current) => ({
                     ...current,
@@ -820,7 +814,7 @@ export default function Ascezas({
 
               <button
                 onClick={() => {
-                  haptic('light')
+                  platform.haptic('light')
                   setShowCreate(true)
                 }}
                 style={CARD_HEIGHT}

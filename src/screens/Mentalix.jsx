@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 
 import { readPendingMentor } from './mentalix/personas'
@@ -8,9 +8,6 @@ import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 // ============================================================
 // ЧАТ
@@ -78,7 +75,7 @@ function Chat({
     ])
 
     setSending(true)
-    haptic('light')
+    platform.haptic('light')
 
     try {
       const reply =

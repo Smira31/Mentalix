@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 import { createPortal } from 'react-dom'
 import {
@@ -32,12 +32,6 @@ const CARD_HEIGHT = {
 }
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
-function hapticNotify(type = 'success') {
-  WebApp.HapticFeedback?.notificationOccurred(type)
-}
 
 const EMPTY_DRAFT = {
   name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '',
@@ -59,9 +53,9 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   function handleLog(lvl) {
     const wasUnset = !level
-    haptic('medium')
+    platform.haptic('medium')
     if (wasUnset) {
-      hapticNotify('success')
+      platform.haptic('success')
       setCelebrate(true)
       setTimeout(() => setCelebrate(false), 700)
     }
@@ -91,7 +85,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
           {confirming ? (
             <span className="flex items-center gap-1">
               <button
-                onClick={() => { haptic('rigid'); onDelete(ritual.id) }}
+                onClick={() => { platform.haptic('rigid'); onDelete(ritual.id) }}
                 className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
               >
                 Удалить
@@ -368,7 +362,7 @@ export default function Rituals({ user, onBack }) {
 
             {/* последней карточкой — создание нового */}
             <button
-              onClick={() => { haptic('light'); setShowCreate(true) }}
+              onClick={() => { platform.haptic('light'); setShowCreate(true) }}
               style={CARD_HEIGHT}
               className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
             >
