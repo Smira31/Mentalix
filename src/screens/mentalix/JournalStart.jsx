@@ -4,15 +4,12 @@ import {
   Plus,
 } from 'lucide-react'
 
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
 
 import { PERSONAS } from './personas'
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 
 export default function JournalStart({
@@ -66,7 +63,7 @@ export default function JournalStart({
         <button
           type="button"
           onClick={() => {
-            haptic('light')
+            platform.haptic('light')
             onOpenHistory()
           }}
           aria-label="История разговора"
@@ -136,7 +133,7 @@ export default function JournalStart({
           <button
             type="button"
             onClick={() => {
-              haptic('light')
+              platform.haptic('light')
             }}
             aria-label="Добавить"
             className="w-11 h-11 rounded-full bg-cream/[0.05] flex items-center justify-center text-cream/55 shrink-0 active:scale-90 transition-transform"

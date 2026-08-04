@@ -11,16 +11,13 @@ import {
   Square,
 } from 'lucide-react'
 
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
 import { api } from '../../lib/api'
 
 import { PERSONAS } from './personas'
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 
 export default function Conversation({
@@ -239,7 +236,7 @@ export default function Conversation({
               .join(' '),
           )
 
-          haptic('medium')
+          platform.haptic('medium')
         } catch (error) {
           console.error(error)
           const message = String(error?.message || '')
@@ -263,7 +260,7 @@ export default function Conversation({
       recorder.start(250)
       setVoiceSeconds(0)
       setVoiceState('recording')
-      haptic('medium')
+      platform.haptic('medium')
 
       secondsTimerRef.current = setInterval(() => {
         setVoiceSeconds((seconds) => seconds + 1)

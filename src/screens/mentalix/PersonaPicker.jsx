@@ -4,7 +4,7 @@ import {
   useState,
 } from 'react'
 
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../../platform'
 
 import { api } from '../../lib/api'
 import PersonaCardArt from './art/PersonaCardArt'
@@ -51,13 +51,6 @@ const CARD_HEIGHT = {
 }
 
 
-function haptic(
-  style = 'light',
-) {
-  WebApp.HapticFeedback?.impactOccurred(
-    style,
-  )
-}
 
 
 function trim(
@@ -216,7 +209,7 @@ export default function PersonaPicker({
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  haptic('light')
+                  platform.haptic('light')
                   onPick(persona.key, '')
                 }}
                 className="
@@ -268,7 +261,7 @@ export default function PersonaPicker({
                       onClick={(event) => {
                         event.stopPropagation()
 
-                        haptic('light')
+                        platform.haptic('light')
 
                         onPick(
                           persona.key,
@@ -299,7 +292,7 @@ export default function PersonaPicker({
                               onClick={(event) => {
                                 event.stopPropagation()
 
-                                haptic('light')
+                                platform.haptic('light')
 
                                 onPick(
                                   persona.key,
@@ -316,7 +309,7 @@ export default function PersonaPicker({
 
                       <button
                         onClick={() => {
-                          haptic('light')
+                          platform.haptic('light')
 
                           onPick(
                             persona.key,
