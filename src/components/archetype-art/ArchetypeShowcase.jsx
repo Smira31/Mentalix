@@ -31,7 +31,7 @@ function Preview({
         />
       </div>
 
-      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-cream/30">
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
         {label}
       </div>
     </div>
@@ -100,7 +100,7 @@ export default function ArchetypeShowcase() {
           ))}
         </section>
 
-        <p className="mt-8 font-mono text-[10px] leading-relaxed uppercase tracking-[0.12em] text-cream/25">
+        <p className="mt-8 font-mono text-[10px] leading-relaxed uppercase tracking-[0.12em] text-faint">
           Системная настройка reduced motion автоматически оставляет каждый символ в читаемом финальном состоянии.
         </p>
       </div>
