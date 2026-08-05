@@ -441,7 +441,7 @@ export default function Conversation({
                 {meta.name}
               </div>
 
-              <p className="text-[15px] text-cream/35">
+              <p className="text-[15px] text-faint">
                 {meta.typing}
               </p>
             </div>
@@ -538,7 +538,7 @@ export default function Conversation({
 
             placeholder={`Написать ${meta.name}…`}
 
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none px-2 text-[17px] text-cream placeholder:text-cream/30"
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none px-2 text-[17px] text-cream placeholder:text-faint"
           />
 
 

@@ -166,7 +166,7 @@ export default function PersonaPicker({
         с кем говорим.
       </h2>
 
-      <p className="text-[12px] text-cream/35 mb-6">
+      <p className="text-[12px] text-faint mb-6">
         три собеседника, три отдельных разговора
       </p>
 
@@ -349,7 +349,7 @@ export default function PersonaPicker({
       </div>
 
 
-      <p className="text-[11px] text-cream/30 leading-snug mt-6 text-center">
+      <p className="text-[11px] text-faint leading-snug mt-6 text-center">
         У каждого своя история — разговоры не смешиваются.
       </p>
     </div>

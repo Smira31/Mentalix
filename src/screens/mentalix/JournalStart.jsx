@@ -164,7 +164,7 @@ export default function JournalStart({
 
             placeholder="Начни писать..."
 
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[16px] text-cream placeholder:text-cream/28 px-1"
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[16px] text-cream placeholder:text-faint px-1"
           />
 
 
