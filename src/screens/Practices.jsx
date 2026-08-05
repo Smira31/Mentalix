@@ -203,7 +203,6 @@ export default function Practices({
           artworkScale={0.88}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
-          soon
           onOpen={() => setSub('brain')}
         />
 
@@ -212,7 +211,6 @@ export default function Practices({
           artworkScale={0.90}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
-          soon
           onOpen={() => setSub('breathing')}
         />
 
@@ -221,7 +219,6 @@ export default function Practices({
           artworkScale={0.90}
           title="Фокус"
           subtitle="таймер глубокой работы"
-          soon
           onOpen={() => setSub('focus')}
         />
 
