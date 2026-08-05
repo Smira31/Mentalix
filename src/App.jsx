@@ -80,7 +80,7 @@ function Splash() {
       <div
         className="
           text-[12px]
-          text-cream/30
+          text-faint
           font-semibold
           mt-2
         "
@@ -934,7 +934,7 @@ export default function App() {
           <p
             className="
               text-[11px]
-              text-cream/30
+              text-faint
               font-medium
               mb-1
             "
