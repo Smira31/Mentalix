@@ -28,7 +28,7 @@ export default function MazeLogo({
   size = 64,
   progress = 1,
   className = '',
-  baseClass = 'text-cream/15',
+  baseClass = 'text-faint',
   trailClass = 'text-gold',
   dotClass = 'fill-gold',
   showDot = true,
