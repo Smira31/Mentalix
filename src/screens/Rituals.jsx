@@ -100,7 +100,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
           ) : (
             <span
               onClick={() => setConfirming(true)}
-              className="text-cream/30 text-base leading-none px-1 active:scale-90"
+              className="text-faint text-base leading-none px-1 active:scale-90"
             >
               ×
             </span>
@@ -366,7 +366,7 @@ export default function Rituals({ user, onBack }) {
               style={CARD_HEIGHT}
               className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
             >
-              <span className="text-[26px] text-cream/25 leading-none">+</span>
+              <span className="text-[26px] text-faint leading-none">+</span>
               <span className="text-[14px] text-cream/45 font-semibold">Новый ритуал</span>
             </button>
           </div>

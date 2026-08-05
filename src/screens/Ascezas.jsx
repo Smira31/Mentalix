@@ -247,7 +247,7 @@ function BreakContextSheet({
           {saving ? 'Сохраняю...' : 'Сохранить'}
         </button>
 
-        <p className="text-[11px] text-center text-cream/30 mt-3">
+        <p className="text-[11px] text-center text-faint mt-3">
           Срыв — это данные, а не провал.
         </p>
       </div>
@@ -336,7 +336,7 @@ function AscezaCard({
           ) : (
             <span
               onClick={() => setConfirming(true)}
-              className="text-cream/30 text-sm leading-none px-1 active:scale-90"
+              className="text-faint text-sm leading-none px-1 active:scale-90"
             >
               ×
             </span>
@@ -417,7 +417,7 @@ function AscezaCard({
         )}
 
         {!status && asceza.trigger && (
-          <p className="text-xs text-cream/35 mt-2 italic">
+          <p className="text-xs text-faint mt-2 italic">
             Триггер: {asceza.trigger}
           </p>
         )}
@@ -533,7 +533,7 @@ function CreateAscezaScreen({
           })}
         </div>
 
-        <p className="text-[11px] text-cream/35 mt-1.5">
+        <p className="text-[11px] text-faint mt-1.5">
           {activeCat.hint}
         </p>
       </div>
@@ -820,7 +820,7 @@ export default function Ascezas({
                 style={CARD_HEIGHT}
                 className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
               >
-                <span className="text-[26px] text-cream/25 leading-none">+</span>
+                <span className="text-[26px] text-faint leading-none">+</span>
                 <span className="text-[14px] text-cream/45 font-semibold">Новая аскеза</span>
               </button>
             </div>

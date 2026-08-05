@@ -222,7 +222,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
           ))}
         </div>
       ) : (
-        <p className="text-xs text-cream/30 italic">Пока нет заметок по этому материалу</p>
+        <p className="text-xs text-faint italic">Пока нет заметок по этому материалу</p>
       )}
     </div>
   )
@@ -339,7 +339,7 @@ export default function Courses({ user }) {
                     />
                   ))}
                 </span>
-                <span className="block text-[11px] text-cream/35 font-semibold mt-2">
+                <span className="block text-[11px] text-faint font-semibold mt-2">
                   {t.reflected_days > 0
                     ? `${t.reflected_days} из ${t.total_days} дней`
                     : `${t.free_days} дня бесплатно · ${t.total_days} дней всего`}
@@ -382,7 +382,7 @@ export default function Courses({ user }) {
               <p className="text-cream/45 text-sm">Библиотека пуста — добавь первый материал</p>
             </>
           ) : (
-            <p className="text-cream/30 text-sm py-6">Ничего не найдено</p>
+            <p className="text-faint text-sm py-6">Ничего не найдено</p>
           )}
         </div>
       ) : (

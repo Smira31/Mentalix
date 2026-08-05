@@ -119,7 +119,7 @@ function WeekChart({ dailyActivity }) {
           </div>
         </>
       ) : (
-        <p className="text-xs text-cream/35 py-8 text-center leading-relaxed">
+        <p className="text-xs text-faint py-8 text-center leading-relaxed">
           За эту неделю пока нет отметок.<br />Начни отмечаться — здесь появится картина дней.
         </p>
       )}
@@ -150,7 +150,7 @@ function AscezaRow({ asceza }) {
       <div className="flex justify-between items-baseline text-xs mb-1">
         <span className="text-cream/80">
           {asceza.name}
-          <span className="text-cream/35 ml-1.5">{CATEGORY_LABELS[asceza.category] || ''}</span>
+          <span className="text-faint ml-1.5">{CATEGORY_LABELS[asceza.category] || ''}</span>
         </span>
         <span className="font-mono text-mint whitespace-nowrap">🛡 {asceza.streak}</span>
       </div>
@@ -160,7 +160,7 @@ function AscezaRow({ asceza }) {
           style={{ width: `${asceza.clean_rate}%` }}
         />
       </div>
-      <div className="flex justify-between text-[10px] text-cream/35 mt-1">
+      <div className="flex justify-between text-[10px] text-faint mt-1">
         <span>чистых дней: {asceza.held_days}</span>
         {asceza.breaks > 0 && <span className="text-cognac/70">срывов: {asceza.breaks}</span>}
       </div>
@@ -488,7 +488,7 @@ const WEEKDAY_FULL = [
 function Metric({ label, value }) {
   return (
     <div className="flex-1 rounded-[18px] bg-emerald border border-cream/10 px-3 py-3">
-      <div className="text-[10px] text-cream/35 leading-none mb-1.5">
+      <div className="text-[10px] text-faint leading-none mb-1.5">
         {label}
       </div>
 
@@ -556,14 +556,14 @@ export default function Analytics({ user, onGoCheckin }) {
         аналитика.
       </h2>
 
-      <p className="text-[12px] text-cream/35 mb-7">
+      <p className="text-[12px] text-faint mb-7">
         за последние {data.period_days} дней
       </p>
 
 
       {/* ── Главный вывод ── */}
 
-      <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
         Главное
       </div>
 
@@ -602,7 +602,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {data.insights?.length > 0 && (
         <>
-          <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+          <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
             Замечено системой
           </div>
 
@@ -622,7 +622,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {/* ── Цифры ── */}
 
-      <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
         Цифры
       </div>
 
@@ -646,7 +646,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {/* ── Данные ── */}
 
-      <div className="text-[11px] text-cream/30 font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
         Данные
       </div>
 

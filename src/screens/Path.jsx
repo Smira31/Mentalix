@@ -288,7 +288,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
           ))}
         </div>
       ) : (
-        <p className="text-xs text-cream/30 italic">
+        <p className="text-xs text-faint italic">
           Пока нет привязанных привычек — привяжи их на экране «Сегодня» при создании
         </p>
       )}

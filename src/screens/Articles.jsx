@@ -52,7 +52,7 @@ function ArticleCard({ article, onOpen }) {
         <span className="text-[13px] text-gold">Читать статью</span>
         <ArrowRight size={14} className="text-gold shrink-0" strokeWidth={2} />
 
-        <span className="text-[11px] text-cream/35 ml-auto whitespace-nowrap">
+        <span className="text-[11px] text-faint ml-auto whitespace-nowrap">
           {article.minutes} мин · {formatDate(article.date)}
         </span>
       </div>
@@ -76,8 +76,8 @@ function Reader({ article, onBack }) {
 
       <div className="flex items-center gap-2 mt-3 mb-6">
         <span className="text-[11px] text-gold">{article.minutes} мин чтения</span>
-        <span className="text-[11px] text-cream/25">·</span>
-        <span className="text-[11px] text-cream/35">{formatDate(article.date)}</span>
+        <span className="text-[11px] text-faint">·</span>
+        <span className="text-[11px] text-faint">{formatDate(article.date)}</span>
       </div>
 
       <div className="space-y-4">
@@ -119,7 +119,7 @@ export default function Articles() {
   return (
     <div className="animate-fade-in">
       <div className="relative mb-4">
-        <Search size={16} className="text-cream/30 absolute left-4 top-1/2 -translate-y-1/2" />
+        <Search size={16} className="text-faint absolute left-4 top-1/2 -translate-y-1/2" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -129,7 +129,7 @@ export default function Articles() {
       </div>
 
       {list.length === 0 ? (
-        <p className="text-cream/35 text-sm text-center py-10">
+        <p className="text-faint text-sm text-center py-10">
           {ARTICLES.length === 0
             ? 'Статей пока нет — первая появится здесь'
             : 'Ничего не найдено'}

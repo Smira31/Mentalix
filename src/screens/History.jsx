@@ -121,7 +121,7 @@ export default function History({ user }) {
                 <div className="text-[13px] font-semibold text-cream/45">
                   ✦ ритуалов закрыто: {d.activity.count}
                   {d.activity.breaks > 0 && (
-                    <span className="text-cream/35"> · срывов аскез: {d.activity.breaks}</span>
+                    <span className="text-faint"> · срывов аскез: {d.activity.breaks}</span>
                   )}
                 </div>
               )}

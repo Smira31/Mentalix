@@ -90,7 +90,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-5`}>
         <BackButton onClick={onClose} />
 
-        <span className="text-[12px] text-cream/35 font-semibold ml-auto">
+        <span className="text-[12px] text-faint font-semibold ml-auto">
           {quotes.length > 0 ? `${idx + 1} / ${quotes.length}` : ''}
         </span>
       </div>
@@ -101,7 +101,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
             <span className="font-display text-[40px] text-gold leading-none mb-6">«</span>
             <p className="font-display text-[24px] text-cream leading-snug max-w-md">{current.text}</p>
             {current.tag && (
-              <span className="text-[12px] font-semibold text-cream/35 mt-5">{current.tag}</span>
+              <span className="text-[12px] font-semibold text-faint mt-5">{current.tag}</span>
             )}
           </>
         ) : (

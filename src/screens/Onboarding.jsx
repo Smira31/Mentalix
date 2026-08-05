@@ -54,7 +54,7 @@ function Head({ step, total, onBack, onSkip }) {
       {onSkip ? (
         <button
           onClick={() => { platform.haptic('light'); onSkip() }}
-          className="text-[13px] font-bold text-cream/35 bg-transparent border-0 py-1 w-14 text-right"
+          className="text-[13px] font-bold text-faint bg-transparent border-0 py-1 w-14 text-right"
         >
           Далее
         </button>
@@ -184,7 +184,7 @@ export default function Onboarding({ user, onFinish }) {
               />
             ))}
           </div>
-          <p className="text-[12px] text-cream/30 text-center mt-6 leading-snug">
+          <p className="text-[12px] text-faint text-center mt-6 leading-snug">
             Выбор ничего не ограничивает — все функции остаются доступными.
           </p>
           <button
@@ -214,7 +214,7 @@ export default function Onboarding({ user, onFinish }) {
               />
             ))}
           </div>
-          <p className="text-[12px] text-cream/30 text-center mt-6">Это остаётся только у тебя.</p>
+          <p className="text-[12px] text-faint text-center mt-6">Это остаётся только у тебя.</p>
         </div>
       )}
 
@@ -243,7 +243,7 @@ export default function Onboarding({ user, onFinish }) {
                   <span className="flex-1">
                     <span className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-cream/45'}`}>{r.label}</span>
                     <span className="block font-display text-[24px] leading-tight">{r.time}</span>
-                    <span className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-cream/35'}`}>{r.note}</span>
+                    <span className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-faint'}`}>{r.note}</span>
                   </span>
                   <span
                     className={[

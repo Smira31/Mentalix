@@ -248,7 +248,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             <Motif name="ryad" className="w-full h-full" />
           </div>
 
-          <div className="text-[12px] text-cream/35 font-semibold uppercase tracking-wide text-center mb-2">
+          <div className="text-[12px] text-faint font-semibold uppercase tracking-wide text-center mb-2">
             Тема недели
           </div>
 
@@ -298,7 +298,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         <BackButton onClick={back} />
 
         <div className="text-center mt-4 mb-7">
-          <div className="text-[12px] text-cream/35 font-semibold uppercase tracking-wide mb-2">
+          <div className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
             {finished ? 'Неделя пройдена' : 'Что уже написано'}
           </div>
 
@@ -330,7 +330,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
               <button
                 onClick={() => { platform.haptic('light'); setDay(d.day); setView('day') }}
-                className="text-[12px] text-cream/35 mt-3 bg-transparent border-0 p-0 active:opacity-60"
+                className="text-[12px] text-faint mt-3 bg-transparent border-0 p-0 active:opacity-60"
               >
                 Изменить
               </button>
@@ -368,7 +368,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           все темы.
         </h2>
 
-        <p className="text-[12px] text-cream/35 mb-6">
+        <p className="text-[12px] text-faint mb-6">
           пройденные остаются с тобой — их можно перечитать
         </p>
 
@@ -455,7 +455,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <div className="text-center mb-6">
         <button
           onClick={() => { platform.haptic('light'); setView('intro') }}
-          className="text-[12px] text-cream/35 font-semibold uppercase tracking-wide mb-2 bg-transparent border-0 p-0 active:opacity-60"
+          className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2 bg-transparent border-0 p-0 active:opacity-60"
         >
           Тема недели
         </button>
@@ -513,7 +513,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             </>
           ) : (
             <>
-              <div className="text-[12px] text-cream/35 font-bold mb-3">
+              <div className="text-[12px] text-faint font-bold mb-3">
                 День {day} из {data.days.length}
               </div>
 

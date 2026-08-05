@@ -152,8 +152,10 @@ export default function Focus({ user }) {
             key={d}
             onClick={() => selectDuration(d)}
             disabled={running}
-            className={`px-4 py-2 rounded-full text-sm transition-colors disabled:opacity-40 ${
-              selectedDuration === d ? 'bg-gold text-emerald-deep' : 'bg-emerald-light/20 text-muted'
+            className={`px-4 py-2 rounded-full text-sm transition-colors ${
+              selectedDuration === d
+                ? 'bg-gold text-emerald-deep'
+                : `bg-emerald-light/20 text-muted ${running ? 'opacity-40' : ''}`
             }`}
           >
             {d} мин

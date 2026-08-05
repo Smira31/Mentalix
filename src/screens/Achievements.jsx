@@ -165,9 +165,9 @@ export default function Achievements({ user }) {
             <span className={`text-[11px] font-bold leading-tight ${b.done ? 'text-cream' : 'text-cream/40'}`}>
               {b.title}
             </span>
-            <span className="text-[9px] text-cream/35 leading-tight mt-1">{b.desc}</span>
+            <span className="text-[9px] text-faint leading-tight mt-1">{b.desc}</span>
             {!b.done && (
-              <span className="text-[9px] font-mono text-cream/30 mt-1.5">
+              <span className="text-[9px] font-mono text-faint mt-1.5">
                 {b.progress}/{b.goal}
               </span>
             )}

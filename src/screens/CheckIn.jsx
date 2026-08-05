@@ -1042,7 +1042,7 @@ export default function CheckIn({
           CHECKIN_QUESTION_CLASS
         }
       >
-        <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide">
+        <div className="text-[12px] text-faint font-semibold mb-2 uppercase tracking-wide">
           {stepLabel}
         </div>
 
@@ -1113,7 +1113,7 @@ export default function CheckIn({
                       className={`text-[10px] font-semibold leading-tight text-center ${
                         active
                           ? 'text-gold'
-                          : 'text-cream/35'
+                          : 'text-faint'
                       }`}
                     >
                       {

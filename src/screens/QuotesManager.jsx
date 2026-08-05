@@ -90,7 +90,7 @@ export default function QuotesManager({ user, onBack }) {
               <p className="flex-1 text-sm text-cream/90 leading-snug">{q.text}</p>
               <button
                 onClick={() => removeQuote(q.id)}
-                className="text-cream/30 shrink-0 active:text-red-400 transition-colors"
+                className="text-faint shrink-0 active:text-red-400 transition-colors"
                 aria-label="Удалить фразу"
               >
                 <Trash2 size={16} />

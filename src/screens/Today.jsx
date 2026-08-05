@@ -75,7 +75,7 @@ function WeekStrip() {
               'flex flex-col items-center gap-1 w-11 py-2 rounded-2xl text-[12px] font-semibold',
               isToday
                 ? 'text-cream border border-cream/15'
-                : 'text-cream/35',
+                : 'text-faint',
             ].join(' ')}
           >
             {names[
@@ -722,7 +722,7 @@ export default function Today({
 
 
             {next && (
-              <p className="text-[12px] text-cream/35 mt-5">
+              <p className="text-[12px] text-faint mt-5">
                 Дальше:{' '}
                 {next.title}
               </p>
@@ -842,7 +842,7 @@ export default function Today({
             </button>
 
 
-            <p className="text-[12px] text-cream/35 mt-5">
+            <p className="text-[12px] text-faint mt-5">
               {remainAfter > 0
                 ? `После этого останется: ${remainAfter}`
                 : 'Это последнее на сегодня'}
@@ -895,7 +895,7 @@ export default function Today({
 
       {activeToday !== null
         && activeToday > 1 && (
-          <p className="text-center text-[12px] text-cream/30 font-semibold mt-4">
+          <p className="text-center text-[12px] text-faint font-semibold mt-4">
             {activeToday < 20
               ? `Сегодня в пути вместе с тобой: ${activeToday}`
               : `Сегодня свой путь продолжили ${activeToday.toLocaleString(
@@ -953,7 +953,7 @@ export default function Today({
           </span>
 
 
-          <span className="text-[12px] font-semibold text-cream/35 shrink-0">
+          <span className="text-[12px] font-semibold text-faint shrink-0">
             изменить
           </span>
         </button>
@@ -1005,7 +1005,7 @@ export default function Today({
 
           <ChevronRight
             size={18}
-            className="text-cream/30 shrink-0"
+            className="text-faint shrink-0"
           />
         </button>
       )}
@@ -1028,7 +1028,7 @@ export default function Today({
           }}
           className="w-full rounded-[28px] bg-emerald px-6 py-7 mt-4 text-center border-0 active:scale-[0.99] transition-transform animate-fade-in"
         >
-          <span className="block text-[11px] text-cream/35 font-bold uppercase tracking-wider mb-2">
+          <span className="block text-[11px] text-faint font-bold uppercase tracking-wider mb-2">
             Тема недели
           </span>
 
@@ -1063,7 +1063,7 @@ export default function Today({
           </span>
 
 
-          <span className="block text-[12px] text-cream/35 font-semibold mt-3">
+          <span className="block text-[12px] text-faint font-semibold mt-3">
             {theme.reflected_days > 0
               ? `Пройдено дней: ${theme.reflected_days} из ${theme.total_days}`
               : 'Начать неделю'}
@@ -1107,7 +1107,7 @@ export default function Today({
           </span>
 
 
-          <span className="block text-[11px] text-cream/30 font-semibold mt-4">
+          <span className="block text-[11px] text-faint font-semibold mt-4">
             открыть все →
           </span>
         </button>
