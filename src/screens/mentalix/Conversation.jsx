@@ -262,9 +262,20 @@ export default function Conversation({
       setVoiceState('recording')
       platform.haptic('medium')
 
+      /*
+       * Инвариант «Время»: вебвью душит таймеры в
+       * фоне, поэтому счётчик считается от отметки
+       * старта, а не сложением тиков.
+       */
+      const startedAt = Date.now()
+
       secondsTimerRef.current = setInterval(() => {
-        setVoiceSeconds((seconds) => seconds + 1)
-      }, 1000)
+        setVoiceSeconds(
+          Math.floor(
+            (Date.now() - startedAt) / 1000,
+          ),
+        )
+      }, 250)
 
       stopTimerRef.current = setTimeout(() => {
         stopVoiceRecording()
