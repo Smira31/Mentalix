@@ -57,12 +57,27 @@ export default function MorningPilotCard({
       currentDate,
     )
 
-  const pilotVisible =
-    isMorning
-    || Boolean(dayState?.viewed_at)
+  /*
+   * Карточка живёт только внутри утреннего окна.
+   * Раньше показ держался на записи viewed_at, и
+   * однажды открытое утро оставалось на экране до
+   * ночи — вечером человек первым делом видел план
+   * на утро, которое уже прошло.
+   */
+  const pilotVisible = isMorning
 
   const visibleRituals =
     morningRituals(rituals)
+
+  /*
+   * Пустой список значит две разные вещи: ритуалов
+   * нет вовсе — или все уже отмечены. Раньше оба
+   * случая давали «Добавь один ритуал», и карточка
+   * просила начать при полностью закрытом дне.
+   */
+  const allDone =
+    rituals.length > 0
+    && visibleRituals.length === 0
 
 
   useEffect(() => {
@@ -239,7 +254,9 @@ export default function MorningPilotCard({
       ) : (
         <div className="rounded-2xl bg-cream/5 px-4 py-4 mt-4">
           <p className="text-[13px] text-cream/55 leading-relaxed">
-            Добавь один ритуал, который важно увидеть утром.
+            {allDone
+              ? 'Утро закрыто — все ритуалы отмечены.'
+              : 'Добавь один ритуал, который важно увидеть утром.'}
           </p>
         </div>
       )}
@@ -251,7 +268,9 @@ export default function MorningPilotCard({
       >
         {visibleRituals.length > 0
           ? 'Открыть первый шаг'
-          : 'Добавить ритуал'}
+          : allDone
+            ? 'Открыть ритуалы'
+            : 'Добавить ритуал'}
 
         <ChevronRight
           size={16}
@@ -259,6 +278,7 @@ export default function MorningPilotCard({
         />
       </button>
 
+      {!allDone && (
       <div className="grid grid-cols-2 gap-2 mt-2">
         <button
           type="button"
@@ -286,6 +306,7 @@ export default function MorningPilotCard({
           Нет сил
         </button>
       </div>
+      )}
     </section>
   )
 }
