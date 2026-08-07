@@ -1240,7 +1240,7 @@ export default function CheckIn({
                         field.placeholder
                       }
                       rows={2}
-                      className="w-full bg-transparent text-cream placeholder-cream/25 text-[16px] leading-relaxed outline-none resize-none font-body"
+                      className="w-full bg-transparent text-cream placeholder-muted text-[16px] leading-relaxed outline-none resize-none font-body"
                     />
                   </div>
                 ),
@@ -1256,7 +1256,7 @@ export default function CheckIn({
               }
               placeholder="Начни писать..."
               rows={5}
-              className="w-full max-w-md mx-auto rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body"
+              className="w-full max-w-md mx-auto rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body"
             />
           )}
 
@@ -1323,7 +1323,7 @@ export default function CheckIn({
                         index
                       ]
                     }
-                    className="flex-1 bg-transparent text-cream placeholder-cream/25 text-[16px] outline-none font-body"
+                    className="flex-1 bg-transparent text-cream placeholder-muted text-[16px] outline-none font-body"
                   />
                 </div>
               ),

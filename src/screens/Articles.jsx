@@ -124,7 +124,7 @@ export default function Articles() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Поиск статей"
-          className="w-full bg-emerald/60 rounded-full pl-11 pr-4 py-3 text-sm text-cream placeholder-cream/30 outline-none border border-transparent focus:border-gold/40 transition-colors"
+          className="w-full bg-emerald/60 rounded-full pl-11 pr-4 py-3 text-sm text-cream placeholder-muted outline-none border border-transparent focus:border-gold/40 transition-colors"
         />
       </div>
 

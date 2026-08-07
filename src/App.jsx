@@ -843,7 +843,7 @@ export default function App() {
                 font-display
                 text-[16px]
                 tracking-[0.42em]
-                text-cream/40
+                text-muted
               "
             >
               MENTALIX
@@ -972,7 +972,7 @@ export default function App() {
         {!user && (
           <p
             className="
-              text-cream/40
+              text-muted
               text-sm
               px-6
               text-center

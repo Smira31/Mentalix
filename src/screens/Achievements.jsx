@@ -147,7 +147,7 @@ export default function Achievements({ user }) {
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
         <h3 className="text-sm text-cream/80">Вехи Пути</h3>
-        <span className="text-[11px] text-cream/40">{unlockedCount} из {badges.length}</span>
+        <span className="text-[11px] text-muted">{unlockedCount} из {badges.length}</span>
       </div>
       <div className="grid grid-cols-3 gap-2 mx-stagger">
         {badges.map((b) => (
@@ -162,7 +162,7 @@ export default function Achievements({ user }) {
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-gold animate-celebrate-pop" />
             )}
             <MotifArt name={b.motif} size={72} className={b.done ? 'mb-2' : 'mb-2 opacity-40'} />
-            <span className={`text-[11px] font-bold leading-tight ${b.done ? 'text-cream' : 'text-cream/40'}`}>
+            <span className={`text-[11px] font-bold leading-tight ${b.done ? 'text-cream' : 'text-muted'}`}>
               {b.title}
             </span>
             <span className="text-[9px] text-faint leading-tight mt-1">{b.desc}</span>

@@ -150,14 +150,14 @@ function GoalCreateScreen({ onCreate, onCancel }) {
           value={draft.title}
           onChange={set('title')}
           placeholder="Название цели"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <textarea
           value={draft.description}
           onChange={set('description')}
           placeholder="Описание (необязательно)"
           rows={3}
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors resize-none"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none"
         />
         <input
           type="date"
@@ -239,7 +239,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="text-cream/40 p-1.5 transition-transform active:scale-90"
+            className="text-muted p-1.5 transition-transform active:scale-90"
             aria-label="Удалить цель"
           >
             <Trash2 size={16} />
@@ -339,7 +339,7 @@ export default function Path({ user }) {
     }
   }
 
-  if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
+  if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
 
   if (showCreate) {
     return <GoalCreateScreen onCreate={createGoal} onCancel={() => setShowCreate(false)} />

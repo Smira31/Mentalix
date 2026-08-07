@@ -222,7 +222,7 @@ export default function Profile({ user }) {
       </h3>
 
       {loading && (
-        <p className="text-cream/40 text-sm mb-8">Собираю историю...</p>
+        <p className="text-muted text-sm mb-8">Собираю историю...</p>
       )}
 
       {!loading && path.length === 0 && (

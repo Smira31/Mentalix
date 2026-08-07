@@ -45,7 +45,7 @@ function CourseCard({ course, onOpen }) {
       <div className="p-4">
         <h3 className="font-display text-base text-cream leading-snug mb-1">{course.title}</h3>
         {course.source && (
-          <p className="text-xs text-cream/40 mb-2">{course.source}</p>
+          <p className="text-xs text-muted mb-2">{course.source}</p>
         )}
         <div className="flex items-center gap-3 text-xs text-cream/50">
           {duration && (
@@ -92,20 +92,20 @@ function CourseCreateScreen({ onCreate, onCancel }) {
           value={draft.title}
           onChange={set('title')}
           placeholder="Название"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <input
           value={draft.source}
           onChange={set('source')}
           placeholder="Источник / автор (необязательно)"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <input
           value={draft.duration_estimate_min}
           onChange={set('duration_estimate_min')}
           type="number"
           placeholder="Время прохождения, минут (необязательно)"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
       </div>
 
@@ -159,7 +159,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
             </button>
           </div>
         ) : (
-          <button onClick={() => setConfirming(true)} className="text-cream/40 p-1.5" aria-label="Удалить материал">
+          <button onClick={() => setConfirming(true)} className="text-muted p-1.5" aria-label="Удалить материал">
             <Trash2 size={16} />
           </button>
         )}
@@ -175,7 +175,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
         </div>
         <div className="p-5">
           <h2 className="font-display text-xl text-cream mb-1">{course.title}</h2>
-          {course.source && <p className="text-xs text-cream/40 mb-3">{course.source}</p>}
+          {course.source && <p className="text-xs text-muted mb-3">{course.source}</p>}
           <div className="flex items-center gap-3 text-xs text-cream/50 mb-4">
             {duration && (
               <span className="flex items-center gap-1">
@@ -203,7 +203,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           placeholder="Что вынес из материала..."
-          className="flex-1 bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-2.5 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+          className="flex-1 bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-2.5 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <button
           onClick={addNote}
@@ -291,7 +291,7 @@ export default function Courses({ user }) {
     }
   }
 
-  if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
+  if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
 
   if (showCreate) {
     return <CourseCreateScreen onCreate={createCourse} onCancel={() => setShowCreate(false)} />

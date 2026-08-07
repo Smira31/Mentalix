@@ -388,7 +388,7 @@ export default function Conversation({
       >
 
         {loading && (
-          <p className="text-cream/40 text-[15px] text-center pt-4">
+          <p className="text-muted text-[15px] text-center pt-4">
             Загрузка...
           </p>
         )}
@@ -396,7 +396,7 @@ export default function Conversation({
 
         {!loading &&
           messages.length === 0 && (
-            <p className="text-cream/40 text-[15px] text-center pt-10 leading-[1.6]">
+            <p className="text-muted text-[15px] text-center pt-10 leading-[1.6]">
               {meta.desc}
 
               <br />

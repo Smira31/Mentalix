@@ -241,7 +241,7 @@ export default function MorningPilotCard({
                   </span>
 
                   {ritual.min_version && (
-                    <span className="block text-[11px] text-cream/40 truncate mt-0.5">
+                    <span className="block text-[11px] text-muted truncate mt-0.5">
                       минимум:{' '}
                       {ritual.min_version}
                     </span>

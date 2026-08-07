@@ -144,7 +144,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
             }`}
           >
             <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
-              level === 'min' ? 'text-cream' : 'text-cream/40'
+              level === 'min' ? 'text-cream' : 'text-muted'
             }`}>
               Минимум
             </div>
@@ -164,7 +164,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
             }`}
           >
             <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
-              level === 'optimal' ? 'text-emerald-deep/70' : 'text-cream/40'
+              level === 'optimal' ? 'text-emerald-deep/70' : 'text-muted'
             }`}>
               Оптимум
             </div>
@@ -210,7 +210,7 @@ function CreateRitualScreen({ onCreate, onCancel }) {
   }
 
   const inputCls =
-    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
+    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
 
   /*
    * Действие живёт в системной кнопке: она остаётся над
@@ -324,14 +324,14 @@ export default function Rituals({ user, onBack }) {
         <h2 className="font-display text-[22px] text-cream lowercase">ритуалы.</h2>
       </div>
 
-      <p className="text-[12px] text-cream/40 mb-4 px-1">
+      <p className="text-[12px] text-muted mb-4 px-1">
         {rituals.length > 0
           ? `${doneCount} из ${rituals.length} закрыто сегодня`
           : 'обряды, что держат твой день'}
       </p>
 
       {loading ? (
-        <p className="text-cream/40 text-sm">Загрузка...</p>
+        <p className="text-muted text-sm">Загрузка...</p>
       ) : rituals.length === 0 ? (
         <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
           <MotifArt name="ryad" size={120} className="mx-auto mb-3" />

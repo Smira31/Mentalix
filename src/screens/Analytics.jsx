@@ -20,7 +20,7 @@ function EmptyAnalytics() {
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
-      <p className="text-[11px] text-cream/40 mb-8">за последние дни</p>
+      <p className="text-[11px] text-muted mb-8">за последние дни</p>
 
       <div className="rounded-[24px] bg-emerald p-8 text-center">
         <MotifArt name="lestnica" size={120} className="mx-auto mb-3" />
@@ -53,7 +53,7 @@ function WeekChart({ dailyActivity }) {
     <div className="rounded-[24px] bg-emerald-light/15 border border-cream/15 p-4">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-[11px] text-cream/60">За неделю</h4>
-        <span className="text-[11px] text-cream/40">по дням</span>
+        <span className="text-[11px] text-muted">по дням</span>
       </div>
 
       {hasAny ? (
@@ -201,7 +201,7 @@ function MoodTrend({ checkins, onGoCheckin }) {
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
         <h3 className="text-sm text-cream/80">Настроение</h3>
-        <span className="text-[11px] text-cream/40">в среднем {avgMood}/5</span>
+        <span className="text-[11px] text-muted">в среднем {avgMood}/5</span>
       </div>
       <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-4">
         {checkins.length >= 2 ? (
@@ -243,7 +243,7 @@ function EmotionCloud({ checkins }) {
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
         <h3 className="text-sm text-cream/80">Частые чувства</h3>
-        <span className="text-[11px] text-cream/40">за 14 дней</span>
+        <span className="text-[11px] text-muted">за 14 дней</span>
       </div>
       <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-4 flex flex-wrap gap-2">
         {top.map(([name, n]) => (
@@ -516,8 +516,8 @@ export default function Analytics({ user, onGoCheckin }) {
       .finally(() => setLoading(false))
   }, [user])
 
-  if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
-  if (!data) return <p className="text-cream/40 text-sm px-6">Не удалось загрузить аналитику</p>
+  if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
+  if (!data) return <p className="text-muted text-sm px-6">Не удалось загрузить аналитику</p>
 
   const rituals = data.rituals || []
   const ascezas = data.ascezas || []

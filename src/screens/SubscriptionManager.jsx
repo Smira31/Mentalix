@@ -67,7 +67,7 @@ export default function SubscriptionManager({ user, tier, onBack }) {
             {t.key === 'pro' && !isCurrent && (
               <button
                 disabled
-                className="w-full py-3 rounded-xl bg-white/10 text-cream/40 text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                className="w-full py-3 rounded-xl bg-white/10 text-muted text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
               >
                 <Lock size={14} /> Оплата скоро появится
               </button>

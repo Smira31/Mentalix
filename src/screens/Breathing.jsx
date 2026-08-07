@@ -143,7 +143,7 @@ export default function Breathing({ onBack }) {
         </div>
 
         <svg viewBox="0 0 100 100" className="w-28 h-28 mb-6 opacity-70">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2" className="text-cream/40" />
+          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted" />
           <circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold" />
         </svg>
 
@@ -162,7 +162,7 @@ export default function Breathing({ onBack }) {
               onClick={() => { platform.haptic('light'); setDuration(d.secs) }}
               className={[
                 'px-6 py-3 rounded-full text-[14px] font-bold border-0 transition-colors',
-                duration === d.secs ? 'bg-cream/10 text-cream' : 'bg-emerald text-cream/40',
+                duration === d.secs ? 'bg-cream/10 text-cream' : 'bg-emerald text-muted',
               ].join(' ')}
             >
               {d.label}

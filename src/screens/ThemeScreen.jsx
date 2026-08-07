@@ -221,7 +221,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <Shell style={style}>
         <BackButton onClick={onBack} />
 
-        <p className="w-full m-auto px-6 text-center text-cream/40 text-sm">
+        <p className="w-full m-auto px-6 text-center text-muted text-sm">
           Загрузка...
         </p>
       </Shell>,
@@ -306,7 +306,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             {data.title}
           </h2>
 
-          <p className="text-[13px] text-cream/40 mt-3">
+          <p className="text-[13px] text-muted mt-3">
             {written.length} из {data.days.length} дней
           </p>
         </div>
@@ -444,7 +444,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           {themes.length > 1 && (
             <button
               onClick={() => { platform.haptic('light'); setView('list') }}
-              className="text-[12px] text-cream/40 bg-transparent border-0 p-0 active:opacity-60"
+              className="text-[12px] text-muted bg-transparent border-0 p-0 active:opacity-60"
             >
               Все темы
             </button>
@@ -480,7 +480,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                   ? 'bg-cream text-emerald-deep'
                   : d.reflection
                     ? 'bg-gold/20 text-gold'
-                    : 'bg-emerald text-cream/40',
+                    : 'bg-emerald text-muted',
               ].join(' ')}
             >
               {d.locked ? <Lock size={12} /> : d.reflection && !active ? <Check size={13} strokeWidth={3} /> : d.day}
@@ -537,7 +537,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           onChange={(e) => setText(e.target.value)}
           placeholder="Записать мысль..."
           rows={4}
-          className="w-full shrink-0 rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3 mb-[76px]"
+          className="w-full shrink-0 rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3 mb-[76px]"
         />
       )}
     </Shell>,

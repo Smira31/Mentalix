@@ -43,7 +43,7 @@ export default function History({ user }) {
     })
   }, [user])
 
-  if (days === null) return <p className="text-cream/40 text-sm px-5 pt-6">Загрузка...</p>
+  if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
 
   if (days.length === 0) {
     return (
@@ -64,7 +64,7 @@ export default function History({ user }) {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
             <div className="rounded-3xl bg-emerald p-5 space-y-3">
               {d.checkin && (
                 <div>

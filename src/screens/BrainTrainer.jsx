@@ -97,7 +97,7 @@ function AttentionGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-8">{round + 1} / {TOTAL_ROUNDS_ATTENTION} · Слово и цвет совпадают?</p>
+      <p className="text-xs text-muted mb-8">{round + 1} / {TOTAL_ROUNDS_ATTENTION} · Слово и цвет совпадают?</p>
       <div className="font-display text-4xl mb-12" style={{ color: colorHex }}>{word}</div>
       <div className="flex gap-4 w-full">
         <button
@@ -167,7 +167,7 @@ function MemoryGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-8">
+      <p className="text-xs text-muted mb-8">
         {showing ? 'Запоминай порядок...' : 'Повтори последовательность'} · Уровень {level}/{MEMORY_ROUNDS}
       </p>
       <div className="grid grid-cols-2 gap-4 w-full max-w-[240px]">
@@ -233,7 +233,7 @@ function ReactionGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-6">Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}</p>
+      <p className="text-xs text-muted mb-6">Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}</p>
       <button
         onClick={tap}
         className="w-full aspect-square rounded-[32px] flex items-center justify-center transition-colors"
@@ -277,7 +277,7 @@ function PlasticityGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-6">{round + 1} / {PLASTICITY_WORDS.length} · Напиши слово наоборот</p>
+      <p className="text-xs text-muted mb-6">{round + 1} / {PLASTICITY_WORDS.length} · Напиши слово наоборот</p>
       <div className="font-display text-3xl text-cream mb-8 tracking-widest">{word}</div>
       <input
         value={input}
@@ -363,7 +363,7 @@ function GymnasticsGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-8">Цикл {cycle + 1} / {BREATH_CYCLES}</p>
+      <p className="text-xs text-muted mb-8">Цикл {cycle + 1} / {BREATH_CYCLES}</p>
       <div
         className="rounded-full bg-mint/20 border-2 border-mint/50 flex items-center justify-center transition-all ease-linear"
         style={{
@@ -521,7 +521,7 @@ export default function BrainTrainer({
               </span>
             )}
             {best !== undefined && best > 0 && (
-              <span className="font-mono text-xs text-cream/40 shrink-0">{best}</span>
+              <span className="font-mono text-xs text-muted shrink-0">{best}</span>
             )}
           </button>
         )

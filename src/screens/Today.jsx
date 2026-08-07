@@ -468,7 +468,7 @@ export default function Today({
                     pathTab
                       === key
                       ? 'bg-cream/10 text-cream'
-                      : 'bg-transparent text-cream/40',
+                      : 'bg-transparent text-muted',
                   ].join(
                     ' ',
                   )}
@@ -504,7 +504,7 @@ export default function Today({
 
   if (loading) {
     return (
-      <p className="text-cream/40 text-sm px-6 pt-8">
+      <p className="text-muted text-sm px-6 pt-8">
         Загрузка...
       </p>
     )
@@ -655,7 +655,7 @@ export default function Today({
 
         {checkinAsHero && (
           <>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+            <div className="text-[13px] text-muted font-semibold mb-2">
               {todayState
                 === 'reviewPending'
                 ? 'Анализ дня'
@@ -734,7 +734,7 @@ export default function Today({
         {todayState
           === 'dayClosed' && (
           <>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+            <div className="text-[13px] text-muted font-semibold mb-2">
               Сегодня
             </div>
 
@@ -772,7 +772,7 @@ export default function Today({
             !== 'dayClosed'
           && isEmpty && (
           <>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+            <div className="text-[13px] text-muted font-semibold mb-2">
               Твой путь ждёт
             </div>
 
@@ -811,7 +811,7 @@ export default function Today({
           && !isEmpty
           && next && (
           <>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+            <div className="text-[13px] text-muted font-semibold mb-2">
               Самое важное
             </div>
 
@@ -857,7 +857,7 @@ export default function Today({
           && !isEmpty
           && !next && (
           <>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2">
+            <div className="text-[13px] text-muted font-semibold mb-2">
               Путь продолжается
             </div>
 
@@ -936,7 +936,7 @@ export default function Today({
             </span>
 
 
-            <span className="block text-[12px] text-cream/40 font-medium">
+            <span className="block text-[12px] text-muted font-medium">
               {checkin.emotion
                 ? `${checkin.emotion} · `
                 : ''}
@@ -1097,7 +1097,7 @@ export default function Today({
           }}
           className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
-          <span className="block text-[12px] text-cream/40 font-semibold mb-3">
+          <span className="block text-[12px] text-muted font-semibold mb-3">
             Мысль дня
           </span>
 

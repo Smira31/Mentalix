@@ -224,7 +224,7 @@ function BreakContextSheet({
           maxLength={1000}
           rows={4}
           placeholder="Например: вернулся после тяжёлого дня и автоматически открыл Reels"
-          className="w-full resize-none bg-black/20 border border-cream/10 rounded-2xl px-4 py-3 text-[14px] leading-relaxed text-cream placeholder-cream/25 outline-none focus:border-gold/50 transition-colors"
+          className="w-full resize-none bg-black/20 border border-cream/10 rounded-2xl px-4 py-3 text-[14px] leading-relaxed text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors"
         />
 
         {asceza.replacement && (
@@ -362,7 +362,7 @@ function AscezaCard({
           {asceza.name}
         </div>
 
-        <div className="text-[10px] text-cream/40 mb-3">
+        <div className="text-[10px] text-muted mb-3">
           {meta.label}
         </div>
 
@@ -405,7 +405,7 @@ function AscezaCard({
         )}
 
         {status === 'broke' && asceza.today_break_note && (
-          <p className="text-xs text-cream/40 mt-1 leading-relaxed">
+          <p className="text-xs text-muted mt-1 leading-relaxed">
             {asceza.today_break_note}
           </p>
         )}
@@ -470,7 +470,7 @@ function CreateAscezaScreen({
   }
 
   const inputCls =
-    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
+    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
 
   const activeCat = categoryMeta(draft.category)
 
@@ -517,7 +517,7 @@ function CreateAscezaScreen({
                 className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-0 transition-all active:scale-95 ${
                   active
                     ? 'bg-gold/15 text-gold'
-                    : 'bg-emerald text-cream/40'
+                    : 'bg-emerald text-muted'
                 }`}
               >
                 <CategoryIcon
@@ -734,7 +734,7 @@ export default function Ascezas({
           </h2>
         </div>
 
-        <p className="text-[12px] text-cream/40 mb-5 px-1">
+        <p className="text-[12px] text-muted mb-5 px-1">
           {total > 0
             ? `${heldToday} из ${total} удержано сегодня`
             : 'от чего ты отказываешься'}
@@ -766,7 +766,7 @@ export default function Ascezas({
         )}
 
         {loading ? (
-          <p className="text-cream/40 text-sm">
+          <p className="text-muted text-sm">
             Загрузка...
           </p>
         ) : ascezas.length === 0 ? (
