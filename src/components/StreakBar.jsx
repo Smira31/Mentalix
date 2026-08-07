@@ -33,7 +33,7 @@ export default function StreakBar({
   const filled = Math.min(Math.max(streak, 0), 7)
 
   const mark = tone === 'mint' ? 'bg-mint' : 'bg-gold'
-  const label = tone === 'mint' ? 'text-mint/85' : 'text-gold/85'
+  const label = tone === 'mint' ? 'text-cream' : 'text-gold'
 
   return (
     <span className="flex items-center gap-2.5 min-w-0">
@@ -56,7 +56,7 @@ export default function StreakBar({
       </span>
 
       {freezes > 0 && (
-        <span className="flex items-center gap-0.5 text-[11px] text-mint/60 shrink-0">
+        <span className="flex items-center gap-0.5 text-[11px] text-muted shrink-0">
           <Snowflake size={11} strokeWidth={2} />
           {freezes}
         </span>

@@ -164,7 +164,7 @@ function BreakContextSheet({
 
         <div className="flex items-start justify-between gap-4 mb-2">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-gold/70 mb-2">
+            <p className="text-[11px] uppercase tracking-[0.18em] text-gold mb-2">
               Аскеза
             </p>
 
@@ -178,16 +178,16 @@ function BreakContextSheet({
             aria-label="Закрыть"
             className="w-10 h-10 rounded-full bg-cream/5 border-0 flex items-center justify-center shrink-0 active:scale-95"
           >
-            <X size={18} className="text-cream/60" />
+            <X size={18} className="text-muted" />
           </button>
         </div>
 
-        <p className="text-[13px] text-cream/45 leading-relaxed mb-5">
+        <p className="text-[13px] text-muted leading-relaxed mb-5">
           Ты сорвался с «{asceza.name}». Не ругаем себя — фиксируем контекст,
           чтобы Mentalix смог увидеть закономерность.
         </p>
 
-        <p className="text-xs text-cream/55 mb-2">
+        <p className="text-xs text-muted mb-2">
           Что сильнее всего повлияло?
         </p>
 
@@ -205,7 +205,7 @@ function BreakContextSheet({
                 className={`py-3 px-3 rounded-2xl border text-[13px] font-semibold transition-all active:scale-[0.97] ${
                   active
                     ? 'bg-gold text-emerald-deep border-gold'
-                    : 'bg-cream/5 text-cream/60 border-cream/10'
+                    : 'bg-cream/5 text-muted border-cream/10'
                 }`}
               >
                 {item}
@@ -214,7 +214,7 @@ function BreakContextSheet({
           })}
         </div>
 
-        <label className="block text-xs text-cream/55 mb-2">
+        <label className="block text-xs text-muted mb-2">
           Хочешь добавить пару слов?
         </label>
 
@@ -229,11 +229,11 @@ function BreakContextSheet({
 
         {asceza.replacement && (
           <div className="mt-4 rounded-2xl bg-mint/5 border border-mint/10 px-4 py-3">
-            <p className="text-[11px] text-mint/50 mb-1">
+            <p className="text-[11px] text-muted mb-1">
               Ты заранее выбрал замену
             </p>
 
-            <p className="text-[14px] text-mint/85">
+            <p className="text-[14px] text-cream">
               {asceza.replacement}
             </p>
           </div>
@@ -321,14 +321,14 @@ function AscezaCard({
                   platform.haptic('rigid')
                   onDelete(asceza.id)
                 }}
-                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
+                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream active:scale-90"
               >
                 Удалить
               </button>
 
               <button
                 onClick={() => setConfirming(false)}
-                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 active:scale-90"
+                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-muted active:scale-90"
               >
                 Отмена
               </button>
@@ -367,7 +367,7 @@ function AscezaCard({
         </div>
 
         {asceza.reason && (
-          <p className="text-xs text-cream/45 mb-2">
+          <p className="text-xs text-muted mb-2">
             {asceza.reason}
           </p>
         )}
@@ -378,7 +378,7 @@ function AscezaCard({
             className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
               status === 'held'
                 ? 'bg-gold text-emerald-deep'
-                : 'bg-cream/5 text-cream/50'
+                : 'bg-cream/5 text-muted'
             }`}
           >
             <Shield size={13} />
@@ -390,7 +390,7 @@ function AscezaCard({
             className={`flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
               status === 'broke'
                 ? 'bg-cream/15 text-cream'
-                : 'bg-cream/5 text-cream/50'
+                : 'bg-cream/5 text-muted'
             }`}
           >
             <ShieldOff size={13} />
@@ -399,7 +399,7 @@ function AscezaCard({
         </div>
 
         {status === 'broke' && asceza.today_break_trigger && (
-          <p className="text-xs text-cream/55 mt-3">
+          <p className="text-xs text-muted mt-3">
             Причина: {asceza.today_break_trigger}
           </p>
         )}
@@ -411,7 +411,7 @@ function AscezaCard({
         )}
 
         {status === 'broke' && asceza.replacement && (
-          <p className="text-xs text-mint/70 mt-2">
+          <p className="text-xs text-muted mt-2">
             Замена: {asceza.replacement}
           </p>
         )}
@@ -494,7 +494,7 @@ function CreateAscezaScreen({
       </div>
 
       <div className="mb-3">
-        <p className="text-xs text-cream/50 mb-2">
+        <p className="text-xs text-muted mb-2">
           Категория
         </p>
 
@@ -742,7 +742,7 @@ export default function Ascezas({
 
         {total > 0 && (
           <div className="mb-4">
-            <div className="flex justify-between text-xs text-cream/50 mb-1">
+            <div className="flex justify-between text-xs text-muted mb-1">
               <span>
                 Удержано сегодня
               </span>
@@ -781,7 +781,7 @@ export default function Ascezas({
               Аскез пока нет
             </h3>
 
-            <p className="text-sm text-cream/50 mb-4 leading-relaxed">
+            <p className="text-sm text-muted mb-4 leading-relaxed">
               Аскеза — сознательный отказ.
               Выбери одну вредную привычку
               и назови её честно.
@@ -821,7 +821,7 @@ export default function Ascezas({
                 className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
               >
                 <span className="text-[26px] text-faint leading-none">+</span>
-                <span className="text-[14px] text-cream/45 font-semibold">Новая аскеза</span>
+                <span className="text-[14px] text-muted font-semibold">Новая аскеза</span>
               </button>
             </div>
 

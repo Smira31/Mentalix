@@ -152,7 +152,7 @@ function PathEvent({ event, isLast }) {
           {event.mark}
         </div>
 
-        <p className="text-[14px] text-cream/75 leading-snug">
+        <p className="text-[14px] text-cream leading-snug">
           {event.text}
         </p>
       </div>
@@ -226,7 +226,7 @@ export default function Profile({ user }) {
       )}
 
       {!loading && path.length === 0 && (
-        <p className="text-[14px] text-cream/45 leading-relaxed mb-8">
+        <p className="text-[14px] text-muted leading-relaxed mb-8">
           Путь начнётся с первого чек-ина. Здесь появятся серии,
           удержанные аскезы и пройденные темы — всё, что было на
           самом деле.
@@ -249,7 +249,7 @@ export default function Profile({ user }) {
         <div className="rounded-[22px] border border-gold/25 bg-emerald px-5 py-4 mb-8">
           <div className="text-[11px] text-faint mb-1">личный максимум</div>
 
-          <p className="text-[15px] text-cream/80 leading-snug">
+          <p className="text-[15px] text-cream leading-snug">
             Лучшая серия — {stats.best_streak} дней подряд.
           </p>
         </div>

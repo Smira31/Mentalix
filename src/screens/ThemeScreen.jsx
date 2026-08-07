@@ -53,7 +53,7 @@ function Shell({ style, children }) {
 
 function Fact({ children }) {
   return (
-    <li className="flex gap-3 text-[14px] text-cream/60 leading-snug">
+    <li className="flex gap-3 text-[14px] text-muted leading-snug">
       <span className="text-gold shrink-0 mt-[7px] w-[14px] h-px bg-gold/70" aria-hidden="true" />
       <span>{children}</span>
     </li>
@@ -257,7 +257,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           </h2>
 
           {data.subtitle && (
-            <p className="text-[15px] text-cream/50 leading-relaxed text-center mt-4">
+            <p className="text-[15px] text-muted leading-relaxed text-center mt-4">
               {data.subtitle}
             </p>
           )}
@@ -319,7 +319,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               </div>
 
               {d.prompt && (
-                <p className="text-[14px] text-cream/45 leading-snug mb-3">
+                <p className="text-[14px] text-muted leading-snug mb-3">
                   {d.prompt}
                 </p>
               )}
@@ -346,7 +346,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               Семь дней — семь мыслей
             </h3>
 
-            <p className="text-[14px] text-cream/50 mt-3 leading-relaxed">
+            <p className="text-[14px] text-muted mt-3 leading-relaxed">
               Это уже не чтение, а практика. Перечитай написанное через месяц —
               увидишь, что изменилось не в теме, а в тебе.
             </p>
@@ -396,7 +396,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                     </div>
 
                     {item.subtitle && (
-                      <p className="text-[13px] text-cream/45 leading-snug mt-1.5">
+                      <p className="text-[13px] text-muted leading-snug mt-1.5">
                         {item.subtitle}
                       </p>
                     )}
@@ -500,7 +500,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 День {day} под замком
               </h3>
 
-              <p className="text-[14px] text-cream/50 mt-3 leading-relaxed">
+              <p className="text-[14px] text-muted mt-3 leading-relaxed">
                 Первые {data.free_days} дня открыты всем. Остальные — часть Библиотеки.
               </p>
 
@@ -522,7 +522,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               </p>
 
               {current?.prompt && (
-                <p className="text-[14px] text-gold/80 font-semibold mt-5 leading-snug">
+                <p className="text-[14px] text-gold font-semibold mt-5 leading-snug">
                   {current.prompt}
                 </p>
               )}

@@ -48,10 +48,10 @@ export default function BackButton({
     >
       <ChevronLeft
         size={17}
-        className="text-cream/70"
+        className="text-muted"
       />
 
-      <span className="text-[13px] font-semibold text-cream/70">
+      <span className="text-[13px] font-semibold text-muted">
         {label}
       </span>
     </button>

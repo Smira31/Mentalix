@@ -57,7 +57,7 @@ function TabIcon({
         trailClass={
           active
             ? 'text-gold'
-            : 'text-cream/55'
+            : 'text-muted'
         }
       />
     )
@@ -72,7 +72,7 @@ function TabIcon({
       className={
         active
           ? 'text-cream'
-          : 'text-cream/55'
+          : 'text-muted'
       }
     />
   )
@@ -284,7 +284,7 @@ export default function BottomNavigation({
                     'whitespace-nowrap',
                     active
                       ? 'text-cream'
-                      : 'text-cream/50',
+                      : 'text-muted',
                   ].join(' ')}
                 >
                   {item.label}

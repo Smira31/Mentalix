@@ -57,7 +57,7 @@ export default function QuotesManager({ user, onBack }) {
         <h1 className="font-display text-xl text-cream">Мои фразы</h1>
       </div>
 
-      <p className="w-full text-sm text-sage/70 mb-4 leading-relaxed">
+      <p className="w-full text-sm text-muted mb-4 leading-relaxed">
         Эти фразы будут появляться в карточке «Считка дня» на главном экране — одна фраза в день, по кругу.
       </p>
 
@@ -78,16 +78,16 @@ export default function QuotesManager({ user, onBack }) {
       </div>
 
       {loading ? (
-        <p className="text-sage/50 text-sm">Загрузка...</p>
+        <p className="text-muted text-sm">Загрузка...</p>
       ) : quotes.length === 0 ? (
-        <p className="text-sage/40 text-sm italic text-center py-8">
+        <p className="text-muted text-sm italic text-center py-8">
           Пока нет ни одной фразы — добавь первую
         </p>
       ) : (
         <div className="w-full bg-white/[0.03] border border-white/[0.08] rounded-2xl divide-y divide-white/[0.06]">
           {quotes.map((q) => (
             <div key={q.id} className="flex items-center gap-3 px-4 py-3">
-              <p className="flex-1 text-sm text-cream/90 leading-snug">{q.text}</p>
+              <p className="flex-1 text-sm text-cream leading-snug">{q.text}</p>
               <button
                 onClick={() => removeQuote(q.id)}
                 className="text-faint shrink-0 active:text-red-400 transition-colors"

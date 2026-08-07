@@ -107,7 +107,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         ) : (
           <>
           <MotifArt name="shozhdenie" size={130} className="mx-auto mb-6" />
-          <p className="text-[15px] text-cream/45 leading-relaxed">
+          <p className="text-[15px] text-muted leading-relaxed">
             Здесь будут твои цитаты.
             <br />Добавляй мысли, которые держат, — в настройках считки дня.
           </p>
@@ -121,7 +121,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
           aria-label="Предыдущая"
           className="w-12 h-12 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
         >
-          <ChevronLeft size={20} className="text-cream/60" />
+          <ChevronLeft size={20} className="text-muted" />
         </button>
         <button
           onClick={share}
@@ -134,7 +134,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
           aria-label="Следующая"
           className="w-12 h-12 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
         >
-          <ChevronRight size={20} className="text-cream/60" />
+          <ChevronRight size={20} className="text-muted" />
         </button>
       </div>
     </div>,

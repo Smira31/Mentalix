@@ -680,7 +680,7 @@ export default function Today({
             </h2>
 
 
-            <p className="text-[14px] text-cream/50 mt-2">
+            <p className="text-[14px] text-muted mt-2">
               {todayState
                 === 'reviewPending'
                 ? 'Уроки и то, чем стоит гордиться'
@@ -698,13 +698,13 @@ export default function Today({
                 ].map((question) => (
                   <div
                     key={question}
-                    className="rounded-2xl bg-cream/5 px-4 py-2.5 text-[12px] text-cream/60"
+                    className="rounded-2xl bg-cream/5 px-4 py-2.5 text-[12px] text-muted"
                   >
                     {question}
                   </div>
                 ))}
 
-                <div className="text-[11px] text-gold/70 font-semibold px-1 pt-1">
+                <div className="text-[11px] text-gold font-semibold px-1 pt-1">
                   + три вещи, которыми гордишься
                 </div>
               </div>
@@ -753,7 +753,7 @@ export default function Today({
             </h2>
 
 
-            <p className="text-[14px] text-cream/50 mt-2">
+            <p className="text-[14px] text-muted mt-2">
               Вечерний разбор завершён
             </p>
 
@@ -791,7 +791,7 @@ export default function Today({
             </h2>
 
 
-            <p className="text-[14px] text-cream/50 mt-2">
+            <p className="text-[14px] text-muted mt-2">
               Система работает через регулярность — начни с одного
             </p>
 
@@ -830,7 +830,7 @@ export default function Today({
             </h2>
 
 
-            <p className="text-[14px] text-cream/50 mt-2">
+            <p className="text-[14px] text-muted mt-2">
               {next.meta}
             </p>
 
@@ -876,7 +876,7 @@ export default function Today({
             </h2>
 
 
-            <p className="text-[14px] text-cream/50 mt-2">
+            <p className="text-[14px] text-muted mt-2">
               Все практики закрыты
             </p>
 
@@ -1059,7 +1059,7 @@ export default function Today({
           </span>
 
 
-          <span className="block text-[13px] text-cream/45 mt-2 leading-snug">
+          <span className="block text-[13px] text-muted mt-2 leading-snug">
             {theme.subtitle}
           </span>
 

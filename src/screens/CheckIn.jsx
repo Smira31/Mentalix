@@ -900,7 +900,7 @@ export default function CheckIn({
             </h2>
 
 
-            <p className="text-[15px] text-cream/50 mt-3 leading-relaxed max-w-sm">
+            <p className="text-[15px] text-muted mt-3 leading-relaxed max-w-sm">
               {isEvening
                 ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
                 : 'Ты услышал себя — это тоже шаг.'}
@@ -993,7 +993,7 @@ export default function CheckIn({
         >
           <ChevronLeft
             size={20}
-            className="text-cream/60"
+            className="text-muted"
           />
         </button>
 
@@ -1028,7 +1028,7 @@ export default function CheckIn({
         >
           <X
             size={18}
-            className="text-cream/60"
+            className="text-muted"
           />
         </button>
       </div>
@@ -1058,7 +1058,7 @@ export default function CheckIn({
           {questionTitle}
         </h2>
 
-        <p className="text-[14px] text-cream/45 mt-2">
+        <p className="text-[14px] text-muted mt-2">
           {questionSubtitle}
         </p>
       </section>
@@ -1108,7 +1108,7 @@ export default function CheckIn({
                           'w-12 h-12 rounded-full flex items-center justify-center text-[16px] font-bold transition-colors',
                           active
                             ? 'bg-gold text-emerald-deep'
-                            : 'bg-emerald text-cream/50',
+                            : 'bg-emerald text-muted',
                         ].join(
                           ' ',
                         )}
@@ -1174,7 +1174,7 @@ export default function CheckIn({
                     'px-4 py-2.5 rounded-full text-[14px] font-semibold border-0 transition-colors',
                     active
                       ? 'bg-gold text-emerald-deep'
-                      : 'bg-emerald text-cream/70',
+                      : 'bg-emerald text-muted',
                   ].join(
                     ' ',
                   )}
@@ -1262,7 +1262,7 @@ export default function CheckIn({
 
 
           {error && (
-            <p className="text-[13px] text-cream/60 text-center mt-4">
+            <p className="text-[13px] text-muted text-center mt-4">
               Не получилось
               сохранить — проверь
               связь
@@ -1332,7 +1332,7 @@ export default function CheckIn({
 
 
           {error && (
-            <p className="text-[13px] text-cream/60 text-center mt-4">
+            <p className="text-[13px] text-muted text-center mt-4">
               Не получилось
               сохранить — проверь
               связь

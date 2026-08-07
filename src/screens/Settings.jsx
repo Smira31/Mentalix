@@ -25,7 +25,7 @@ import LinkWebAccount from './LinkWebAccount'
 
 function SectionLabel({ children }) {
   return (
-    <div className="px-1 mb-2 text-xs font-body uppercase tracking-wider text-sage/70">
+    <div className="px-1 mb-2 text-xs font-body uppercase tracking-wider text-muted">
       {children}
     </div>
   )
@@ -56,9 +56,9 @@ function Row({ icon: Icon, title, subtitle, onClick, danger = false, right = nul
       {Icon && <Icon size={18} className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
       <div className="flex-1 min-w-0">
         <div className={`font-body text-[15px] ${danger ? 'text-red-400' : 'text-cream'}`}>{title}</div>
-        {subtitle && <div className="font-body text-[13px] text-sage/70 mt-0.5 truncate">{subtitle}</div>}
+        {subtitle && <div className="font-body text-[13px] text-muted mt-0.5 truncate">{subtitle}</div>}
       </div>
-      {right ?? <ChevronRight size={18} className="text-sage/50 shrink-0" />}
+      {right ?? <ChevronRight size={18} className="text-muted shrink-0" />}
     </Component>
   )
 }
@@ -182,10 +182,10 @@ export default function Settings({ user, onBack, onNavigate }) {
           subtitle="Профиль и мой путь"
           right={
             <span className="flex items-center gap-2">
-              <span className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-sage/70'}`}>
+              <span className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-muted'}`}>
                 {tierLabel}
               </span>
-              <ChevronRight size={18} className="text-sage/50 shrink-0" />
+              <ChevronRight size={18} className="text-muted shrink-0" />
             </span>
           }
           onClick={() => go('profile')}
@@ -218,7 +218,7 @@ export default function Settings({ user, onBack, onNavigate }) {
               onClick={() => saveReminder(t.hour, true)}
               className={[
                 'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
-                reminderHour === t.hour ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-cream/50',
+                reminderHour === t.hour ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-muted',
               ].join(' ')}
             >
               {t.label}
@@ -251,7 +251,7 @@ export default function Settings({ user, onBack, onNavigate }) {
             onClick={() => saveReviewHour(h)}
             className={[
               'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
-              reviewHour === h ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-cream/50',
+              reviewHour === h ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-muted',
             ].join(' ')}
           >
             {String(h).padStart(2, '0')}
@@ -275,7 +275,7 @@ export default function Settings({ user, onBack, onNavigate }) {
         <div className="w-full flex items-center gap-3 px-4 py-4 border-b border-white/[0.06]">
           <RefreshCw size={18} className="text-gold shrink-0" />
           <span className="flex-1 font-body text-[15px] text-cream">Текущая версия</span>
-          <span className="text-sage/70 text-sm font-body">v1.0.0</span>
+          <span className="text-muted text-sm font-body">v1.0.0</span>
         </div>
         <Row
           title="Пройти знакомство заново"

@@ -250,7 +250,7 @@ export default function PersonaPicker({
                   {persona.tagline}
                 </div>
 
-                <p className="text-[14px] text-cream/50 leading-snug mt-3">
+                <p className="text-[14px] text-muted leading-snug mt-3">
                   {persona.desc}
                 </p>
 
@@ -274,7 +274,7 @@ export default function PersonaPicker({
                         Продолжить разговор
                       </div>
 
-                      <p className="text-[13px] text-cream/55 leading-snug">
+                      <p className="text-[13px] text-muted leading-snug">
                         {last.role === 'user'
                           ? 'Ты: '
                           : ''}
@@ -299,7 +299,7 @@ export default function PersonaPicker({
                                   starter,
                                 )
                               }}
-                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-cream/70 active:scale-95 transition-transform"
+                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform"
                             >
                               {starter}
                             </button>

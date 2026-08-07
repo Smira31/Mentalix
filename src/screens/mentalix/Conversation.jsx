@@ -353,7 +353,7 @@ export default function Conversation({
         'calc(var(--app-safe-top) + 42px)',
     }}
   >
-    <div className="text-[15px] font-semibold tracking-[0.04em] text-cream/95 uppercase leading-none">
+    <div className="text-[15px] font-semibold tracking-[0.04em] text-cream uppercase leading-none">
       {meta.name}
     </div>
 
@@ -437,7 +437,7 @@ export default function Conversation({
                     {meta.name}
                   </div>
 
-                  <div className="text-[16px] leading-[1.62] tracking-[-0.01em] text-cream/90 font-normal break-words whitespace-pre-wrap">
+                  <div className="text-[16px] leading-[1.62] tracking-[-0.01em] text-cream font-normal break-words whitespace-pre-wrap">
   {message.content}
 </div>
                 </div>
@@ -486,7 +486,7 @@ export default function Conversation({
             )}
 
             {voiceState === 'transcribing' && (
-              <span className="text-cream/45">Распознаю голос…</span>
+              <span className="text-muted">Распознаю голос…</span>
             )}
 
             {voiceError && voiceState === 'idle' && (
@@ -507,7 +507,7 @@ export default function Conversation({
               }
             }}
             disabled={voiceState === 'transcribing'}
-            className="w-[54px] h-[54px] rounded-full border border-cream/15 bg-cream/[0.025] flex items-center justify-center text-cream/85 shrink-0 active:scale-90 transition-transform"
+            className="w-[54px] h-[54px] rounded-full border border-cream/15 bg-cream/[0.025] flex items-center justify-center text-cream shrink-0 active:scale-90 transition-transform"
             aria-label={
               voiceState === 'recording'
                 ? 'Остановить запись'

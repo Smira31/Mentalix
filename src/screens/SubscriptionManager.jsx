@@ -55,10 +55,10 @@ export default function SubscriptionManager({ user, tier, onBack }) {
                 </span>
               )}
             </div>
-            <p className="text-sm text-sage/70 mb-4">{t.price}</p>
+            <p className="text-sm text-muted mb-4">{t.price}</p>
             <ul className="space-y-2 mb-4">
               {t.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-cream/80">
+                <li key={f} className="flex items-start gap-2 text-sm text-cream">
                   <Check size={15} className="text-gold shrink-0 mt-0.5" />
                   {f}
                 </li>
@@ -76,7 +76,7 @@ export default function SubscriptionManager({ user, tier, onBack }) {
         )
       })}
 
-      <p className="text-xs text-sage/50 text-center px-4">
+      <p className="text-xs text-muted text-center px-4">
         Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем обновлении.
       </p>
     </div>

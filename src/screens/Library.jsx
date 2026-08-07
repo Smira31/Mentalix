@@ -47,7 +47,7 @@ export default function Library({ user }) {
                   ? 'bg-gold text-emerald-deep'
                   : t.soon
                     ? 'text-faint cursor-default'
-                    : 'text-cream/50'
+                    : 'text-muted'
               }`}
             >
               {t.label}

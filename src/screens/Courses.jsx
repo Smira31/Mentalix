@@ -30,13 +30,13 @@ function CourseCard({ course, onOpen }) {
         {course.cover_url ? (
           <img src={course.cover_url} alt="" className="w-full h-full object-cover" />
         ) : (
-          <BookOpen size={28} className="text-gold/60" strokeWidth={1.5} />
+          <BookOpen size={28} className="text-gold" strokeWidth={1.5} />
         )}
         <span
           className={`absolute top-3 right-3 text-[10px] font-medium px-2.5 py-1 rounded-full ${
             course.status === 'completed'
               ? 'bg-gold text-emerald-deep'
-              : 'bg-black/40 text-cream/80'
+              : 'bg-black/40 text-cream'
           }`}
         >
           {course.status === 'completed' ? 'Пройден' : 'В процессе'}
@@ -47,7 +47,7 @@ function CourseCard({ course, onOpen }) {
         {course.source && (
           <p className="text-xs text-muted mb-2">{course.source}</p>
         )}
-        <div className="flex items-center gap-3 text-xs text-cream/50">
+        <div className="flex items-center gap-3 text-xs text-muted">
           {duration && (
             <span className="flex items-center gap-1">
               <Clock size={12} /> {duration}
@@ -81,11 +81,11 @@ function CourseCreateScreen({ onCreate, onCancel }) {
 
   return (
     <div className="w-full max-w-md px-5">
-      <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
+      <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-sm mb-4">
         <ArrowLeft size={16} /> Отмена
       </button>
 
-      <h2 className="font-display text-lg mb-4 text-cream/90">Новый материал</h2>
+      <h2 className="font-display text-lg mb-4 text-cream">Новый материал</h2>
 
       <div className="space-y-2 mb-6">
         <input
@@ -140,20 +140,20 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
   return (
     <div className="w-full max-w-md px-5">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-sm">
           <ArrowLeft size={16} /> Назад
         </button>
         {confirming ? (
           <div className="flex items-center gap-2">
             <button
               onClick={() => onDelete(course.id)}
-              className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 text-cream/90"
+              className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 text-cream"
             >
               Удалить
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="text-xs px-3 py-1.5 rounded-lg border border-cream/20 text-cream/50"
+              className="text-xs px-3 py-1.5 rounded-lg border border-cream/20 text-muted"
             >
               Отмена
             </button>
@@ -170,13 +170,13 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
           {course.cover_url ? (
             <img src={course.cover_url} alt="" className="w-full h-full object-cover" />
           ) : (
-            <BookOpen size={32} className="text-gold/60" strokeWidth={1.5} />
+            <BookOpen size={32} className="text-gold" strokeWidth={1.5} />
           )}
         </div>
         <div className="p-5">
           <h2 className="font-display text-xl text-cream mb-1">{course.title}</h2>
           {course.source && <p className="text-xs text-muted mb-3">{course.source}</p>}
-          <div className="flex items-center gap-3 text-xs text-cream/50 mb-4">
+          <div className="flex items-center gap-3 text-xs text-muted mb-4">
             {duration && (
               <span className="flex items-center gap-1">
                 <Clock size={12} /> {duration}
@@ -187,7 +187,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
             onClick={() => onToggleStatus(course)}
             className={`w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
               course.status === 'completed'
-                ? 'bg-emerald-light/30 text-cream/70'
+                ? 'bg-emerald-light/30 text-muted'
                 : 'bg-gold text-emerald-deep'
             }`}
           >
@@ -197,7 +197,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
         </div>
       </div>
 
-      <h3 className="text-sm text-cream/80 mb-2">Заметки</h3>
+      <h3 className="text-sm text-cream mb-2">Заметки</h3>
       <div className="flex gap-2 mb-4">
         <input
           value={noteText}
@@ -216,7 +216,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
       {notes.length > 0 ? (
         <div className="rounded-2xl bg-emerald-light/20 border border-cream/10 divide-y divide-cream/10">
           {notes.map((n) => (
-            <div key={n.id} className="px-4 py-3 text-sm text-cream/80">
+            <div key={n.id} className="px-4 py-3 text-sm text-cream">
               {n.text}
             </div>
           ))}
@@ -319,7 +319,7 @@ export default function Courses({ user }) {
       {/* ── витрина тем недели ── */}
       {themes.length > 0 && (
         <div className="mb-7">
-          <h2 className="font-display text-lg text-cream/90 mb-3">Темы недели</h2>
+          <h2 className="font-display text-lg text-cream mb-3">Темы недели</h2>
           <div className="mx-stagger space-y-2.5">
             {themes.map((t) => (
               <button
@@ -330,7 +330,7 @@ export default function Courses({ user }) {
                 <span className="block font-display text-[17px] text-cream lowercase leading-tight">
                   {t.title}
                 </span>
-                <span className="block text-[12.5px] text-cream/45 mt-1 leading-snug">{t.subtitle}</span>
+                <span className="block text-[12.5px] text-muted mt-1 leading-snug">{t.subtitle}</span>
                 <span className="flex items-center gap-1.5 mt-3">
                   {Array.from({ length: t.total_days }).map((_, i) => (
                     <span
@@ -351,7 +351,7 @@ export default function Courses({ user }) {
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-lg text-cream/90">Мои материалы</h2>
+        <h2 className="font-display text-lg text-cream">Мои материалы</h2>
         <button
           onClick={() => setShowCreate(true)}
           className="w-8 h-8 rounded-full bg-gold flex items-center justify-center"
@@ -366,7 +366,7 @@ export default function Courses({ user }) {
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={`px-3 py-1.5 rounded-full text-xs transition-colors ${
-              filter === f.key ? 'bg-gold text-emerald-deep' : 'bg-emerald-light/20 text-cream/50'
+              filter === f.key ? 'bg-gold text-emerald-deep' : 'bg-emerald-light/20 text-muted'
             }`}
           >
             {f.label}
@@ -379,7 +379,7 @@ export default function Courses({ user }) {
           {courses.length === 0 ? (
             <>
               <MotifArt name="set" size={120} className="mx-auto mb-3" />
-              <p className="text-cream/45 text-sm">Библиотека пуста — добавь первый материал</p>
+              <p className="text-muted text-sm">Библиотека пуста — добавь первый материал</p>
             </>
           ) : (
             <p className="text-faint text-sm py-6">Ничего не найдено</p>

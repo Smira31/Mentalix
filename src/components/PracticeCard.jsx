@@ -53,7 +53,7 @@ export default function PracticeCard({
             uppercase
             tracking-wider
             leading-none
-            text-cream/45
+            text-muted
             bg-black/25
             border
             border-cream/[0.14]
@@ -132,7 +132,7 @@ export default function PracticeCard({
         <div
           className={[
             'font-display text-[17px] font-bold leading-[1.12] tracking-[-0.025em]',
-            soon ? 'text-cream/45' : 'text-cream',
+            soon ? 'text-muted' : 'text-cream',
           ].join(' ')}
         >
           {title}
@@ -141,7 +141,7 @@ export default function PracticeCard({
         <div
           className={[
             'text-[13px] font-normal mt-[8px] leading-[1.35] tracking-[-0.01em]',
-            soon ? 'text-cream/[0.28]' : 'text-cream/[0.46]',
+            soon ? 'text-muted' : 'text-muted',
           ].join(' ')}
         >
           {subtitle}

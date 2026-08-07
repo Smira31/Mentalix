@@ -86,13 +86,13 @@ function RitualCard({ ritual, onLog, onDelete }) {
             <span className="flex items-center gap-1">
               <button
                 onClick={() => { platform.haptic('rigid'); onDelete(ritual.id) }}
-                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
+                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream active:scale-90"
               >
                 Удалить
               </button>
               <button
                 onClick={() => setConfirming(false)}
-                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 active:scale-90"
+                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-muted active:scale-90"
               >
                 Отмена
               </button>
@@ -128,7 +128,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
         </h3>
 
         {ritual.goal && (
-          <p className="text-[14px] text-cream/45 leading-relaxed mt-3">
+          <p className="text-[14px] text-muted leading-relaxed mt-3">
             {ritual.goal}
           </p>
         )}
@@ -149,7 +149,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
               Минимум
             </div>
             <div className={`text-[13px] leading-snug ${
-              level === 'min' ? 'text-cream/85' : 'text-cream/55'
+              level === 'min' ? 'text-cream' : 'text-muted'
             }`}>
               {ritual.min_version}
             </div>
@@ -169,7 +169,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
               Оптимум
             </div>
             <div className={`text-[13px] leading-snug ${
-              level === 'optimal' ? 'text-emerald-deep' : 'text-cream/55'
+              level === 'optimal' ? 'text-emerald-deep' : 'text-muted'
             }`}>
               {ritual.optimal_version}
             </div>
@@ -180,7 +180,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
           <button
             onClick={() => handleLog('optimal')}
             className={`w-full py-3.5 rounded-full text-[14px] font-bold border-0 transition-all duration-150 active:scale-95 ${
-              level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
+              level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'
             }`}
           >
             {level ? 'Сделано' : 'Отметить'}
@@ -336,7 +336,7 @@ export default function Rituals({ user, onBack }) {
         <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
           <MotifArt name="ryad" size={120} className="mx-auto mb-3" />
           <h3 className="font-display text-lg text-cream mb-1">Ритуалов пока нет</h3>
-          <p className="text-sm text-cream/50 mb-4 leading-relaxed">
+          <p className="text-sm text-muted mb-4 leading-relaxed">
             Ритуал — это обряд, который держит твой день. Создай первый.
           </p>
           <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
@@ -367,7 +367,7 @@ export default function Rituals({ user, onBack }) {
               className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
             >
               <span className="text-[26px] text-faint leading-none">+</span>
-              <span className="text-[14px] text-cream/45 font-semibold">Новый ритуал</span>
+              <span className="text-[14px] text-muted font-semibold">Новый ритуал</span>
             </button>
           </div>
 

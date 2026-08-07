@@ -33,7 +33,7 @@ function ArticleCard({ article, onOpen }) {
 
         <div className="flex-1 min-w-0 py-0.5">
           {article.tag && (
-            <span className="inline-block text-[10px] text-gold/80 border border-gold/25 rounded-full px-2.5 py-0.5 mb-2 whitespace-nowrap">
+            <span className="inline-block text-[10px] text-gold border border-gold/25 rounded-full px-2.5 py-0.5 mb-2 whitespace-nowrap">
               {article.tag}
             </span>
           )}
@@ -42,7 +42,7 @@ function ArticleCard({ article, onOpen }) {
             {article.title}
           </div>
 
-          <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-3">
+          <p className="text-[13px] text-muted leading-snug mt-2 line-clamp-3">
             {article.excerpt}
           </p>
         </div>
@@ -82,7 +82,7 @@ function Reader({ article, onBack }) {
 
       <div className="space-y-4">
         {paragraphs.map((p, i) => (
-          <p key={i} className="text-[15px] text-cream/75 leading-relaxed">{p}</p>
+          <p key={i} className="text-[15px] text-cream leading-relaxed">{p}</p>
         ))}
       </div>
 
@@ -94,7 +94,7 @@ function Reader({ article, onBack }) {
           className="flex items-center gap-2 mt-8 rounded-3xl bg-emerald/60 px-4 py-3.5"
         >
           <ExternalLink size={16} className="text-gold shrink-0" />
-          <span className="text-[13px] text-cream/60">Первоисточник</span>
+          <span className="text-[13px] text-muted">Первоисточник</span>
         </a>
       )}
     </div>

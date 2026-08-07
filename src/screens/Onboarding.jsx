@@ -41,7 +41,7 @@ function Head({ step, total, onBack, onSkip }) {
           aria-label="Назад"
           className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
         >
-          <ChevronLeft size={20} className="text-cream/60" />
+          <ChevronLeft size={20} className="text-muted" />
         </button>
       ) : <span className="w-10" />}
 
@@ -154,7 +154,7 @@ export default function Onboarding({ user, onFinish }) {
             <br />
             твоя система, а не мотивация
           </h2>
-          <p className="text-[15px] text-cream/50 mt-4 leading-relaxed max-w-xs">
+          <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
             Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
           </p>
           <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
@@ -167,7 +167,7 @@ export default function Onboarding({ user, onFinish }) {
       {step === 1 && (
         <div key="s1" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">Что сейчас важнее всего?</h2>
-          <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
+          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
             Ответы соберут приложение под твои задачи. Можно выбрать несколько.
           </p>
           <div className="space-y-2.5">
@@ -201,7 +201,7 @@ export default function Onboarding({ user, onFinish }) {
       {step === 2 && (
         <div key="s2" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">Сколько тебе лет?</h2>
-          <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
+          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
             Чтобы говорить с тобой на одном языке.
           </p>
           <div className="space-y-2.5">
@@ -224,7 +224,7 @@ export default function Onboarding({ user, onFinish }) {
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">
             Когда напомнить о себе?
           </h2>
-          <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
+          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
             Привычка держится на одном постоянном времени. Бот пришлёт короткое сообщение — не спам.
           </p>
 
@@ -241,7 +241,7 @@ export default function Onboarding({ user, onFinish }) {
                   ].join(' ')}
                 >
                   <span className="flex-1">
-                    <span className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-cream/45'}`}>{r.label}</span>
+                    <span className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-muted'}`}>{r.label}</span>
                     <span className="block font-display text-[24px] leading-tight">{r.time}</span>
                     <span className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-faint'}`}>{r.note}</span>
                   </span>
@@ -271,7 +271,7 @@ export default function Onboarding({ user, onFinish }) {
             Готово. Путь размечен.
           </h2>
           {chosenFocusLabels.length > 0 && (
-            <p className="text-[14px] text-cream/55 mt-3 text-center leading-snug">
+            <p className="text-[14px] text-muted mt-3 text-center leading-snug">
               Фокус: <span className="text-cream font-bold">{chosenFocusLabels.join(', ')}</span>
             </p>
           )}

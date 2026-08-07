@@ -26,7 +26,7 @@ function ScoreScreen({ label, score, sub, onDone }) {
         <Check size={28} className="text-gold" />
       </div>
       <h2 className="font-display text-xl text-cream mb-1">{label}</h2>
-      <p className="text-sm text-cream/50 mb-6">{sub}</p>
+      <p className="text-sm text-muted mb-6">{sub}</p>
       <div className="font-display text-4xl text-gold mb-8">{score}</div>
       <button
         onClick={onDone}
@@ -241,7 +241,7 @@ function ReactionGame({ onFinish }) {
           backgroundColor: phase === 'ready' ? '#B8952E' : phase === 'tooSoon' ? 'rgba(232,92,92,0.25)' : 'rgba(150,205,176,0.12)',
         }}
       >
-        <span className="text-center text-cream/80 text-sm px-8">
+        <span className="text-center text-cream text-sm px-8">
           {phase === 'waiting' && 'Жди золотого сигнала...'}
           {phase === 'ready' && 'Тапни сейчас!'}
           {phase === 'tooSoon' && 'Рано! Сейчас повторим'}
@@ -495,7 +495,7 @@ export default function BrainTrainer({
     <div className="w-full max-w-md px-5">
       <div className="w-full flex items-center gap-2 mb-6">
         <BackButton onClick={onBack} />
-        <h2 className="font-display text-lg text-cream/90">Нейротренажёр</h2>
+        <h2 className="font-display text-lg text-cream">Нейротренажёр</h2>
       </div>
 
       {EXERCISES.map((ex) => {
@@ -513,7 +513,7 @@ export default function BrainTrainer({
             </div>
             <div className="flex-1 text-left">
               <div className="font-display text-base text-cream">{ex.title}</div>
-              <div className="text-xs text-cream/50">{ex.subtitle}</div>
+              <div className="text-xs text-muted">{ex.subtitle}</div>
             </div>
             {doneToday && (
               <span className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center shrink-0">

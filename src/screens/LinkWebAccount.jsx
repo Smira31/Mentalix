@@ -33,14 +33,14 @@ export default function LinkWebAccount({ user, onBack }) {
         <Globe size={26} className="text-mint" />
       </div>
 
-      <p className="text-sm text-sage/70 text-center mb-8 px-4 leading-relaxed">
+      <p className="text-sm text-muted text-center mb-8 px-4 leading-relaxed">
         Открой mentalix.vercel.app в браузере, войди по email, и когда попросят код — введи тот, что появится здесь.
       </p>
 
       {code ? (
         <div className="w-full text-center mb-6">
           <div className="font-display text-4xl text-gold tracking-widest mb-2">{code}</div>
-          <p className="text-xs text-sage/50">Код активен 10 минут</p>
+          <p className="text-xs text-muted">Код активен 10 минут</p>
         </div>
       ) : (
         <button

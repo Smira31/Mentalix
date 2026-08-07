@@ -70,7 +70,7 @@ function Splash() {
           font-display
           text-[15px]
           tracking-[0.4em]
-          text-cream/50
+          text-muted
           mt-7
         "
       >
@@ -932,7 +932,7 @@ export default function App() {
               <SettingsIcon
                 size={19}
                 strokeWidth={1.7}
-                className="text-cream/60"
+                className="text-muted"
               />
             </button>
           </div>

@@ -150,7 +150,7 @@ export default function Breathing({ onBack }) {
         <h2 className="font-display text-[24px] text-cream text-center leading-tight">
           Успокоить систему
         </h2>
-        <p className="text-[14px] text-cream/50 text-center mt-3 leading-relaxed max-w-xs">
+        <p className="text-[14px] text-muted text-center mt-3 leading-relaxed max-w-xs">
           Техника 4-7-8: вдох носом на 4, задержка на 7, длинный выдох на 8.
           Несколько циклов — и шум в голове тише.
         </p>
@@ -183,7 +183,7 @@ export default function Breathing({ onBack }) {
       <FullscreenStage className="items-center justify-center px-8 text-center">
         <MotifArt name="fizio" size={140} className="mb-6" />
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
-        <p className="text-[15px] text-cream/50 mt-3">Возвращайся к этому кругу, когда штормит.</p>
+        <p className="text-[15px] text-muted mt-3">Возвращайся к этому кругу, когда штормит.</p>
         <button
           onClick={() => { platform.haptic('light'); onBack() }}
           className="cta-pill text-[16px] px-12 py-4 mt-10"
@@ -215,7 +215,7 @@ export default function Breathing({ onBack }) {
         <h2 className="font-display text-[24px] text-cream mt-14">
           {isPrepare ? 'Устройся удобно' : phase.label}
         </h2>
-        <p className="text-[14px] text-cream/45 mt-2 text-center">
+        <p className="text-[14px] text-muted mt-2 text-center">
           {isPrepare ? 'Сядь или ляг так, чтобы дышалось свободно' : `${phase.secs} секунд`}
         </p>
       </div>
@@ -223,7 +223,7 @@ export default function Breathing({ onBack }) {
       <div className="flex justify-center shrink-0 pb-7">
         <button
           onClick={finish}
-          className="px-7 py-3 rounded-full bg-emerald text-cream/60 text-[14px] font-bold border-0 active:scale-95 transition-transform"
+          className="px-7 py-3 rounded-full bg-emerald text-muted text-[14px] font-bold border-0 active:scale-95 transition-transform"
         >
           Завершить раньше
         </button>

@@ -130,7 +130,7 @@ export default function MorningPilotCard({
   if (resolution) {
     return (
       <div className="rounded-[24px] bg-emerald px-5 py-4 mb-4 border border-cream/10 animate-fade-in">
-        <span className="block text-[11px] font-bold uppercase tracking-wider text-gold/70 mb-1">
+        <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
           Утро учтено
         </span>
 
@@ -140,7 +140,7 @@ export default function MorningPilotCard({
               {resolution.title}
             </h2>
 
-            <p className="text-[12px] text-cream/45 mt-1 leading-relaxed">
+            <p className="text-[12px] text-muted mt-1 leading-relaxed">
               {resolution.body}
             </p>
           </div>
@@ -159,7 +159,7 @@ export default function MorningPilotCard({
                 ),
               )
             }}
-            className="shrink-0 text-[12px] font-semibold text-cream/45 bg-transparent border-0 px-2 py-2"
+            className="shrink-0 text-[12px] font-semibold text-muted bg-transparent border-0 px-2 py-2"
           >
             вернуть
           </button>
@@ -199,7 +199,7 @@ export default function MorningPilotCard({
 
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
-      <span className="block text-[11px] font-bold uppercase tracking-wider text-gold/70 mb-2">
+      <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
         Пилот · утро
       </span>
 
@@ -207,7 +207,7 @@ export default function MorningPilotCard({
         До других дел
       </h2>
 
-      <p className="text-[13px] text-cream/45 mt-1 leading-relaxed">
+      <p className="text-[13px] text-muted mt-1 leading-relaxed">
         Один ближайший шаг — не весь день.
       </p>
 
@@ -229,7 +229,7 @@ export default function MorningPilotCard({
                     'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0',
                     index === 0
                       ? 'bg-gold text-emerald-deep'
-                      : 'bg-cream/10 text-cream/45',
+                      : 'bg-cream/10 text-muted',
                   ].join(' ')}
                 >
                   {index + 1}
@@ -253,7 +253,7 @@ export default function MorningPilotCard({
         </div>
       ) : (
         <div className="rounded-2xl bg-cream/5 px-4 py-4 mt-4">
-          <p className="text-[13px] text-cream/55 leading-relaxed">
+          <p className="text-[13px] text-muted leading-relaxed">
             {allDone
               ? 'Утро закрыто — все ритуалы отмечены.'
               : 'Добавь один ритуал, который важно увидеть утром.'}
@@ -287,7 +287,7 @@ export default function MorningPilotCard({
               'no_time',
             )
           }
-          className="rounded-full bg-cream/5 border-0 text-cream/45 text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+          className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
         >
           <Clock3 size={14} />
           Не успеваю
@@ -300,7 +300,7 @@ export default function MorningPilotCard({
               'low_energy',
             )
           }
-          className="rounded-full bg-cream/5 border-0 text-cream/45 text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+          className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
         >
           <BatteryLow size={14} />
           Нет сил
