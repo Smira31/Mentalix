@@ -649,7 +649,16 @@ export default function Today({
           ГЕРОЙ-КАРТОЧКА
           ====================================================== */}
 
-      <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-7 text-center flex flex-col justify-center animate-fade-in">
+      {/*
+        Плоская поверхность карточки, а не градиент.
+        Градиента нет в таблице токенов, и именно из-за
+        него подложка под иллюстрацией читалась как
+        отдельная плашка: она плоская, карточка была с
+        переходом. На одном цвете подложка сливается с
+        карточкой и остаётся тем, чем задумана, — окном
+        в ночь, тёмным в обеих темах.
+      */}
+      <div className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in">
         {heroArt}
 
 
@@ -961,7 +970,17 @@ export default function Today({
 
 
       {/* ======================================================
-          ПУТЬ
+          ДЕНЬ
+
+          Полоса измеряет сегодняшние практики, а не
+          движение к целям. Раньше она называлась
+          «Путь» и вела на экран целей: человек видел
+          «100%», нажимал и попадал на «0% пройдено».
+          Одно слово стояло над двумя разными метриками.
+
+          Теперь имя совпадает с тем, что считается, а
+          переход ведёт в Историю — ленту закрытых
+          дней. Цели остались там же, соседней вкладкой.
           ====================================================== */}
 
       {!isEmpty && (
@@ -970,6 +989,8 @@ export default function Today({
             platform.haptic(
               'light',
             )
+
+            setPathTab('history')
 
             changeSub('path')
           }}
@@ -983,7 +1004,7 @@ export default function Today({
 
 
           <span className="text-[14px] font-bold text-cream whitespace-nowrap">
-            Путь
+            День
           </span>
 
 
@@ -998,8 +1019,8 @@ export default function Today({
           </div>
 
 
-          <span className="text-[13px] font-bold text-gold">
-            {pct}%
+          <span className="text-[13px] font-bold text-gold whitespace-nowrap">
+            {done} из {total}
           </span>
 
 
