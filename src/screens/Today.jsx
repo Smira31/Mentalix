@@ -586,7 +586,7 @@ export default function Today({
    * знакомства.
    */
   const heroArt = (
-    <div className="w-full rounded-[28px] bg-artbed overflow-hidden mb-7 py-2">
+    <div className="w-full rounded-[28px] bg-artbed overflow-hidden mb-5 py-2">
       <DayArc
         state={isEmpty ? 'empty' : todayState}
         done={done}
@@ -649,7 +649,7 @@ export default function Today({
           ГЕРОЙ-КАРТОЧКА
           ====================================================== */}
 
-      <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-10 text-center flex flex-col justify-center min-h-[54vh] animate-fade-in">
+      <div className="rounded-[32px] bg-gradient-to-b from-emerald to-emerald-light/60 px-6 py-7 text-center flex flex-col justify-center animate-fade-in">
         {heroArt}
 
 
