@@ -743,9 +743,16 @@ export default function App() {
      HEADER VISIBILITY
      ============================================================ */
 
+  /*
+   * Вложенный экран Today — отдельный сценарий, и
+   * приветствие с шестерёнкой там чужие. Today уже
+   * сообщает об этом через onFlowChange; раньше флаг
+   * гасил только нижнюю навигацию.
+   */
   const showTodayHeader =
     !overlay &&
-    tab === 'today'
+    tab === 'today' &&
+    !todayFlowOpen
 
   const topSafeArea =
     fullscreen
