@@ -3,10 +3,11 @@ import {
   useState,
 } from 'react'
 import { createPortal } from 'react-dom'
-import { platform, platformName } from '../platform'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
+import WebActionBar from '../components/WebActionBar'
 import {
   useMainButton,
   useSecondaryButton,
@@ -839,49 +840,14 @@ export default function CheckIn({
   })
 
 
-  /*
-   * У Telegram-кнопок (выше) нет веб-эквивалента — MainButton и
-   * SecondaryButton рисуются вне веб-вью и в браузере молча ничего
-   * не делают (см. telegram.hooks.js). В вебе то же самое действие
-   * должно быть обычной DOM-кнопкой, иначе шаг check-in нечем
-   * подтвердить. Кнопка — последний shrink-0 дочерний элемент
-   * flex-колонки CHECKIN_SHELL_CLASS, поэтому остаётся над
-   * виртуальной клавиатурой по той же логике, что уже сузила
-   * высоту шелла под visualViewport.
-   */
-  const isWeb = platformName !== 'telegram'
+  const webAction = mainAction
+    ? { text: mainAction.text, onClick: mainAction.run, disabled: saving }
+    : null
 
-  const webActionBar =
-    isWeb && (mainAction || skipAction) ? (
-      <div className="shrink-0 w-full max-w-md mx-auto px-5 pb-4 pt-3 flex flex-col items-center gap-2">
-        {mainAction && (
-          <button
-            type="button"
-            onClick={() => {
-              platform.haptic('light')
-              mainAction.run()
-            }}
-            disabled={saving}
-            className="cta-pill w-full py-4 text-[16px] disabled:opacity-40"
-          >
-            {mainAction.text}
-          </button>
-        )}
-
-        {skipAction && !saving && (
-          <button
-            type="button"
-            onClick={() => {
-              platform.haptic('light')
-              skipAction.run()
-            }}
-            className="py-2 text-[14px] font-semibold text-muted border-0 bg-transparent"
-          >
-            {skipAction.text}
-          </button>
-        )}
-      </div>
-    ) : null
+  const webSecondaryAction =
+    skipAction && !saving
+      ? { text: skipAction.text, onClick: skipAction.run }
+      : null
 
 
   if (step >= doneStep) {
@@ -956,7 +922,7 @@ export default function CheckIn({
           </div>
         </div>
 
-        {webActionBar}
+        <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
       </div>,
       document.body,
     )
@@ -1393,7 +1359,7 @@ export default function CheckIn({
       </div>
       </div>
 
-      {webActionBar}
+      <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
     </div>,
     document.body,
   )

@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { Lock, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import Motif, { MotifArt } from '../components/Motif'
+import WebActionBar from '../components/WebActionBar'
 import { useMainButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
 import {
   useFullscreenSurface,
@@ -37,7 +38,7 @@ import {
 
 const HOME_OFFERED_KEY = 'mx-home-offered'
 
-function Shell({ style, children }) {
+function Shell({ style, footer, children }) {
   return (
     <div className={FULLSCREEN_SHELL_CLASS} style={style}>
       <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
@@ -47,6 +48,8 @@ function Shell({ style, children }) {
           {children}
         </div>
       </div>
+
+      {footer}
     </div>
   )
 }
@@ -190,31 +193,42 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   }, [finished])
   const canSave = Boolean(text.trim()) && !current?.locked
 
+  const mainText =
+    view === 'intro'
+      ? 'Начать'
+      : view === 'review'
+        ? 'Закрыть тему'
+        : saving
+          ? 'Сохраняю...'
+          : current?.reflection
+            ? 'Обновить мысль'
+            : 'Обдумал'
+
+  const mainOnClick =
+    view === 'intro'
+      ? () => { platform.haptic('light'); setView('day') }
+      : view === 'review'
+        ? onBack
+        : save
+
+  const mainVisible = Boolean(data) && view !== 'list' && (view !== 'day' || !current?.locked)
+  const mainEnabled = view === 'day' ? canSave && !saving : true
+
   /*
    * Хук вызывается всегда, а видимостью и текстом управляет вид.
    * Условный вызов сломал бы порядок хуков.
    */
   useMainButton({
-    text:
-      view === 'intro'
-        ? 'Начать'
-        : view === 'review'
-          ? 'Закрыть тему'
-          : saving
-            ? 'Сохраняю...'
-            : current?.reflection
-              ? 'Обновить мысль'
-              : 'Обдумал',
-    onClick:
-      view === 'intro'
-        ? () => { platform.haptic('light'); setView('day') }
-        : view === 'review'
-          ? onBack
-          : save,
-    visible: Boolean(data) && view !== 'list' && (view !== 'day' || !current?.locked),
-    enabled: view === 'day' ? canSave && !saving : true,
+    text: mainText,
+    onClick: mainOnClick,
+    visible: mainVisible,
+    enabled: mainEnabled,
     loading: saving,
   })
+
+  const webAction = mainVisible
+    ? { text: mainText, onClick: mainOnClick, disabled: !mainEnabled }
+    : null
 
   if (!data) {
     return createPortal(
@@ -240,7 +254,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
   if (view === 'intro') {
     return createPortal(
-      <Shell style={style}>
+      <Shell style={style} footer={<WebActionBar action={webAction} />}>
         <BackButton onClick={onBack} />
 
         <div className="flex-1 flex flex-col justify-center py-4">
@@ -294,7 +308,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
     const written = data.days.filter((x) => x.reflection)
 
     return createPortal(
-      <Shell style={style}>
+      <Shell style={style} footer={<WebActionBar action={webAction} />}>
         <BackButton onClick={back} />
 
         <div className="text-center mt-4 mb-7">
@@ -427,7 +441,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   /* ── день ──────────────────────────────────────────────── */
 
   return createPortal(
-    <Shell style={style}>
+    <Shell style={style} footer={<WebActionBar action={webAction} />}>
       <div className="flex items-center justify-between gap-3 mb-5">
         <BackButton onClick={onBack} />
 
