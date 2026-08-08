@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Mentalix: лабиринт, тот же символ, что в src/components/MazeLogo.jsx -->
+  <circle cx="100" cy="100" r="97" fill="#000000" />
+  <path
+    d="M 100 184
+       A 84 84 0 1 1 100 16
+       A 84 84 0 1 1 100 184
+       L 100 168
+       A 68 68 0 1 0 100 32
+       A 68 68 0 1 0 100 168
+       L 100 152
+       A 52 52 0 1 1 100 48
+       A 52 52 0 1 1 100 152
+       L 100 136
+       A 36 36 0 1 0 100 64
+       A 36 36 0 1 0 100 136
+       L 100 120
+       A 20 20 0 1 1 100 80
+       A 20 20 0 1 1 100 120
+       L 100 100"
+    fill="none"
+    stroke="#EDBD60"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="100" cy="184" r="9" fill="#EDBD60" />
+</svg>

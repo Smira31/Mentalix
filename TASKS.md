@@ -45,6 +45,10 @@
 - [x] **Добавить токен --c-faint в таблицу DESIGN_SYSTEM.md**
   - В таблице «Тёмная тема» (раздел 2) не хватало строки для `--c-faint`, хотя токен используется в `src/index.css` и упомянут в разделе «Шкала текста».
   - Commit: `9398951`.
+- [x] **Починить favicon.ico (отдавал 404)**
+  - В `public/` не было файла иконки, в `index.html` не было `<link rel="icon">`.
+  - Добавлены `public/favicon.ico` и `public/favicon.svg` (упрощённый символ лабиринта из `MazeLogo.jsx`, существующие токены `--c-gold`/`--c-bg`, новых цветов не вводилось), ссылки прописаны в `index.html`.
+  - `npm run build` подтверждён; `dist/favicon.ico` и `dist/favicon.svg` отданы 200 из `vite preview`.
 
 ## Сейчас
 
@@ -71,6 +75,9 @@
 - [ ] **MXL-EVENTS — Добавить продуктовые события core loop без записи личных текстов**
 - [ ] **MXL-WEB-HAPTIC — Убрать предупреждения Telegram HapticFeedback в web**
 - [ ] **MXL-USERS — Провести семидневный тест на 5–10 пользователях**
+- [ ] **MXL-PWA-ICONS — Добавить недостающие PWA-иконки**
+  - Обнаружено при починке favicon.ico: `public/manifest.json` ссылается на `public/icons/icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, но `public/icons/` пуста — все три отдают 404 (добавление на домашний экран/PWA-манифест сейчас без иконки).
+  - Нужны растровые иконки нескольких размеров плюс maskable-вариант с safe zone — вне scope точечного фикса favicon, отдельная задача.
 
 ## Бэклог: AI-экраны
 
