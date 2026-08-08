@@ -55,25 +55,18 @@
   - Фикс: в `CheckIn.jsx` добавлена веб-версия кнопки (`webActionBar`, `cta-pill`), рендерится только при `platformName !== 'telegram'`, использует уже вычисленные `mainAction`/`skipAction`. Telegram-путь не менялся.
   - `npm run build` подтверждён; ручная проверка в браузере пройдена (desktop) — кнопка видна и работает.
   - PR #13 (`fix/checkin-web-finish-button`) смёржен в `main` (squash, `97b59fb`), ветка удалена.
-
-## Сейчас
-
-- [ ] **MXL-WEB-BACKBTN — Проверить кнопку «Назад» в браузере на 13 экранах**
+- [x] **MXL-WEB-BACKBTN — Починить кнопку «Назад» в браузере на 13 экранах**
   - Причина бага: `BackButton.jsx` решал, рисовать ли DOM-кнопку, по `Boolean(window.Telegram?.WebApp?.BackButton)` — этот объект есть всегда (создаётся `@twa-dev/sdk` безусловно), проверка была true и в вебе тоже, поэтому кнопка нигде не рисовалась в браузере.
   - Нативный Telegram `BackButton` (через `useBackButton`) в реальном Telegram работает исправно — это подтверждено версионной проверкой внутри SDK, баг был только в веб-фолбэке.
   - Фикс: условие заменено на `platformName === 'telegram'` (тот же признак, что и у `WebActionBar`). `useBackButton`/Telegram-путь не менялись.
-  - `npm run build` подтверждён. Живая проверка в браузере (`claude-in-chrome`, без backend): подтверждено на **Rituals** (список и «Создать ритуал») — кнопка видна, клик возвращает на предыдущий экран.
-  - Осталось — ручная проверка в реальном браузере (desktop и мобильный viewport) и в самом Telegram (чтобы убедиться, что нативная кнопка по-прежнему работает без регрессии) для всех 13 экранов: `Today.jsx`, `App.jsx`, `ThemeScreen.jsx`, `Ascezas.jsx` (список и создание), `mentalix/Conversation.jsx`, `mentalix/JournalStart.jsx`, `Settings.jsx`, `QuoteView.jsx`, `BrainTrainer.jsx`, `Breathing.jsx`, `Articles.jsx`, `Practices.jsx`.
-
-- [ ] **MXL-WEB-ACTIONBAR — Проверить веб-кнопки на 4 экранах после рефакторинга WebActionBar**
+  - `npm run build` подтверждён. Ручная проверка пройдена на всех 13 экранах (`Today.jsx`, `App.jsx`, `ThemeScreen.jsx`, `Rituals.jsx`, `Ascezas.jsx`, `mentalix/Conversation.jsx`, `mentalix/JournalStart.jsx`, `Settings.jsx`, `QuoteView.jsx`, `BrainTrainer.jsx`, `Breathing.jsx`, `Articles.jsx`, `Practices.jsx`) в браузере (desktop и мобильный viewport) и в самом Telegram — регрессии нативной кнопки нет, багов не найдено.
+  - PR #15 (`fix/backbutton-web`) смёржен в `main` (squash, `d6929da`), ветка удалена.
+- [x] **MXL-WEB-ACTIONBAR — Проверить веб-кнопки на 4 экранах после рефакторинга WebActionBar**
   - Логика веб-кнопки из `CheckIn.jsx` (`MXL-WEB-CHECKIN-BTN`) вынесена в переиспользуемый `src/components/WebActionBar.jsx` и применена на трёх экранах с той же причиной бага (`useMainButton`/`useSecondaryButton` без веб-эквивалента): `Rituals.jsx` (`CreateRitualScreen`), `Ascezas.jsx` (`CreateAscezaScreen`), `ThemeScreen.jsx` (все три состояния — `intro`/`day`/`review`).
   - `npm run build` подтверждён.
-  - Живая проверка в браузере (`claude-in-chrome`, без backend): подтверждены **Rituals** (кнопка «Создать ритуал» видна, `disabled` до ввода названия, активируется после) и **Ascezas** (кнопка «Принять аскезу», то же поведение). Подтверждён **CheckIn** после перехода на `WebActionBar` — полный морнинг-флоу до «Завершить» без регрессии.
-  - Осталось — ручная проверка в реальном браузере (desktop и мобильный viewport) для каждого из 4 экранов, доведённая до реального backend (текущая проверка шла без него):
-    - [ ] `Rituals.jsx` — создание ритуала с реальным сохранением через API.
-    - [ ] `Ascezas.jsx` — принятие аскезы с реальным сохранением через API.
-    - [ ] `ThemeScreen.jsx` — не проверено вовсе в этой сессии (нужны реальные данные темы недели с backend, которых не было в dev-окружении без сети); проверить все три состояния — «Начать», «Обдумал»/«Обновить мысль», «Закрыть тему».
-    - [ ] `CheckIn.jsx` — переиспользование `WebActionBar` после рефакторинга: повторно пройти check-in и вечерний анализ целиком с реальным сохранением (регрессия после смены реализации кнопки, а не новая функциональность).
+  - Ручная проверка пройдена вживую на реальном backend: `ThemeScreen.jsx` (все три состояния — «Начать», «Обдумал»/«Обновить мысль», «Закрыть тему»), `Rituals.jsx` (создание ритуала с реальным сохранением через API), `Ascezas.jsx` (принятие аскезы с реальным сохранением через API), `CheckIn.jsx` (check-in и вечерний анализ целиком после рефакторинга на `WebActionBar`) — багов не найдено.
+
+## Сейчас
 
 - [x] **MXL-RSCH-001 — Провести первое проблемное интервью владельца «Не могу начать»**
   - `P01` завершено, согласие получено, результат обезличен.

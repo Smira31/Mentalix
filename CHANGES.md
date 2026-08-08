@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 08.08.2026 — MXL-WEB-BACKBTN и MXL-WEB-ACTIONBAR: ручная проверка пройдена
+
+- `MXL-WEB-BACKBTN` (кнопка «Назад» в вебе, PR #15/`d6929da`): ручная проверка пройдена на всех 13 экранах (`Today.jsx`, `App.jsx`, `ThemeScreen.jsx`, `Rituals.jsx`, `Ascezas.jsx`, `mentalix/Conversation.jsx`, `mentalix/JournalStart.jsx`, `Settings.jsx`, `QuoteView.jsx`, `BrainTrainer.jsx`, `Breathing.jsx`, `Articles.jsx`, `Practices.jsx`) в браузере (desktop и мобильный viewport) и в самом Telegram — регрессии нативной кнопки нет, багов не найдено. Пункт закрыт.
+- `MXL-WEB-ACTIONBAR` (веб-кнопки после рефакторинга `WebActionBar`, PR #14/`0a6ad64`): ручная проверка пройдена вживую на реальном backend — `ThemeScreen.jsx` (все три состояния: «Начать», «Обдумал»/«Обновить мысль», «Закрыть тему»), `Rituals.jsx` (создание ритуала с реальным сохранением), `Ascezas.jsx` (принятие аскезы с реальным сохранением), `CheckIn.jsx` (check-in и вечерний анализ целиком после перехода на `WebActionBar`) — багов не найдено. Пункт закрыт.
+- `TASKS.md`: оба пункта перенесены из «Сейчас» в «Завершено 08.08.2026 — техническая уборка репозитория», отмечены `[x]`.
+- Код не менялся — обе задачи были кодовыми фиксами предыдущих сессий (PR #14, PR #15), в этой записи закрывается только их верификация.
+
 ## Исправлено 08.08.2026 — кнопка «Назад» не появлялась в вебе на 13 экранах
 
 - Причина: `src/components/BackButton.jsx` решал, рисовать ли свою DOM-кнопку, по `Boolean(window.Telegram?.WebApp?.BackButton)`. Этот объект существует всегда — его безусловно создаёт `@twa-dev/sdk` (`Object.defineProperty(WebApp, 'BackButton', ...)` в `node_modules/@twa-dev/sdk/dist/telegram-web-apps.js`), даже вне Telegram. Проверка не отличала «мы в Telegram» от «SDK загружен» и была true всегда — компонент возвращал `null` в вебе на всех экранах, которые его используют.
