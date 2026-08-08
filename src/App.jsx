@@ -873,7 +873,10 @@ export default function App() {
             "
           >
             {/* Сохраняет приветствие по центру относительно аватара. */}
-            <span className="w-10 h-10 shrink-0" aria-hidden="true" />
+            <span
+              id="mx-today-header-leading"
+              className="relative w-10 h-10 shrink-0"
+            />
 
 
             {/* Greeting */}

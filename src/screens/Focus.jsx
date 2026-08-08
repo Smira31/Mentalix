@@ -2,61 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Play, Pause, RotateCcw } from 'lucide-react'
+import SemanticGlyph from '../components/SemanticGlyph'
 
 const DURATIONS = [10, 25, 45]
 const POINTS_PER_CONSTELLATION = 5
-
-const CONSTELLATION_POINTS = [
-  { x: 20, y: 75 },
-  { x: 32, y: 30 },
-  { x: 50, y: 55 },
-  { x: 68, y: 30 },
-  { x: 80, y: 75 },
-]
-
-function Constellation({ pointsUnlocked }) {
-  const lit = CONSTELLATION_POINTS.slice(0, pointsUnlocked)
-
-  return (
-    <svg viewBox="0 0 100 100" className="w-full h-full">
-      {/* Связи между зажжёнными точками — тонкая серая графика.
-          Золото приберегается для одной смысловой точки (DESIGN_SYSTEM §5). */}
-      {lit.slice(1).map((p, i) => {
-        const prev = lit[i]
-        return (
-          <line
-            key={`line-${i}`}
-            x1={prev.x} y1={prev.y} x2={p.x} y2={p.y}
-            stroke="rgb(var(--c-line-secondary))"
-            strokeWidth="0.6"
-          />
-        )
-      })}
-
-      {/* Незажжённые точки видны с самого начала: иначе при нуле сессий
-          экран показывает пустой квадрат вместо цели. */}
-      {CONSTELLATION_POINTS.map((p, i) => {
-        const isLit = i < pointsUnlocked
-        const isLatest = i === pointsUnlocked - 1
-        return (
-          <circle
-            key={`point-${i}`}
-            cx={p.x} cy={p.y}
-            r={isLatest ? 3 : 1.8}
-            fill={
-              isLatest
-                ? 'rgb(var(--c-gold))'
-                : isLit
-                  ? 'rgb(var(--c-text))'
-                  : 'rgb(var(--c-faint))'
-            }
-            className={isLatest ? 'animate-celebrate-pop' : ''}
-          />
-        )
-      })}
-    </svg>
-  )
-}
 
 export default function Focus({ user }) {
   const [progress, setProgress] = useState(null)
@@ -139,12 +88,10 @@ export default function Focus({ user }) {
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
   const ss = String(secondsLeft % 60).padStart(2, '0')
-  const pointsUnlocked = progress ? progress.points_unlocked : 0
-
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
-      <div className="w-48 h-48 mb-6">
-        <Constellation pointsUnlocked={pointsUnlocked} />
+      <div className="w-[240px] h-[168px] mb-3">
+        <SemanticGlyph kind="focus" className="w-full h-full" />
       </div>
 
       {/* Пока прогресс не загружен — пусто, а не «0/5»: подставная цифра

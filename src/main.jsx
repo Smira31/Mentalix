@@ -16,6 +16,20 @@ const showcaseRequested =
   ).get('showcase') === 'archetypes'
 
 
+const uiLabRequested =
+  import.meta.env.DEV
+  && new URLSearchParams(
+    window.location.search,
+  ).get('ui_lab') === '1'
+
+
+const onboardingPreviewRequested =
+  import.meta.env.DEV
+  && new URLSearchParams(
+    window.location.search,
+  ).get('onboarding_preview') === '1'
+
+
 const ArchetypeShowcase = import.meta.env.DEV
   ? lazy(() =>
       import(
@@ -25,7 +39,56 @@ const ArchetypeShowcase = import.meta.env.DEV
   : null
 
 
+const UiExperiments = import.meta.env.DEV
+  ? lazy(() =>
+      import(
+        './components/ui-lab/UiExperiments'
+      ),
+    )
+  : null
+
+
+const OnboardingPreview = import.meta.env.DEV
+  ? lazy(() =>
+      import('./screens/Onboarding'),
+    )
+  : null
+
+
 function RootScreen() {
+  if (
+    onboardingPreviewRequested
+    && OnboardingPreview
+  ) {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-[100dvh] bg-emerald-deep" />
+        }
+      >
+        <OnboardingPreview
+          user={null}
+          onFinish={() => window.location.reload()}
+        />
+      </Suspense>
+    )
+  }
+
+  if (
+    uiLabRequested
+    && UiExperiments
+  ) {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-[100dvh] bg-emerald-deep" />
+        }
+      >
+        <UiExperiments />
+      </Suspense>
+    )
+  }
+
   if (
     showcaseRequested
     && ArchetypeShowcase

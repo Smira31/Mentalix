@@ -7,7 +7,9 @@ import {
 import { platform } from '../../platform'
 
 import { api } from '../../lib/api'
-import PersonaCardArt from './art/PersonaCardArt'
+import SemanticGlyph, {
+  semanticKindForPersona,
+} from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
 
 
@@ -191,7 +193,7 @@ export default function PersonaPicker({
         }}
       >
         {PERSONAS.map(
-          (persona) => {
+          (persona, index) => {
             const last =
               previews[
                 persona.key
@@ -235,9 +237,12 @@ export default function PersonaPicker({
                   * тянется до нижнего меню и на разных экранах имеет
                   * разную высоту.
                   */}
-                <div className="-mx-6 -mt-6 mb-1 basis-1/3 shrink-0 min-h-0 bg-emerald rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden">
-                  <PersonaCardArt
-                    persona={persona.key}
+                <div className="-mx-6 -mt-6 mb-1 basis-1/3 shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-3">
+                  <SemanticGlyph
+                    kind={semanticKindForPersona(persona.key)}
+                    animated={active === index}
+                    highlighted={active === index}
+                    className="w-full h-full"
                   />
                 </div>
 

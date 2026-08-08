@@ -906,7 +906,7 @@ export default function Motif({ name, className = '' }) {
         </radialGradient>
       </defs>
 
-      {stars(key, key.length * 977 + key.charCodeAt(0) * 131)}
+      {stars(key, key.length * 977 + key.charCodeAt(0) * 131, 0)}
 
       <g className="mx-ink">{draw(gid)}</g>
     </svg>

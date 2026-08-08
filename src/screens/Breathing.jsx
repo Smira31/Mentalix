@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
-import { MotifArt } from '../components/Motif'
+import SemanticGlyph from '../components/SemanticGlyph'
 import BackButton from '../components/BackButton'
 import {
   useFullscreenSurface,
@@ -142,10 +142,9 @@ export default function Breathing({ onBack }) {
           <span className="font-display text-lg text-cream lowercase">дыхание.</span>
         </div>
 
-        <svg viewBox="0 0 100 100" className="w-28 h-28 mb-6 opacity-70">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted" />
-          <circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold" />
-        </svg>
+        <div className="w-[220px] h-[154px] mb-4">
+          <SemanticGlyph kind="breath" className="w-full h-full" />
+        </div>
 
         <h2 className="font-display text-[24px] text-cream text-center leading-tight">
           Успокоить систему
@@ -181,7 +180,9 @@ export default function Breathing({ onBack }) {
   if (stage === 'done') {
     return (
       <FullscreenStage className="items-center justify-center px-8 text-center">
-        <MotifArt name="fizio" size={140} className="mb-6" />
+        <div className="w-[240px] h-[168px] mb-5">
+          <SemanticGlyph kind="breath" className="w-full h-full" />
+        </div>
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
         <p className="text-[15px] text-muted mt-3">Возвращайся к этому кругу, когда штормит.</p>
         <button

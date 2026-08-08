@@ -11,7 +11,9 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
-import Motif, { MotifArt, motifForAsceza } from '../components/Motif'
+import SemanticGlyph, {
+  semanticKindForAsceza,
+} from '../components/SemanticGlyph'
 import StreakBar from '../components/StreakBar'
 import {
   Shield,
@@ -355,7 +357,10 @@ function AscezaCard({
           status === 'held' ? 'opacity-100' : 'opacity-70'
         }`}
       >
-        <Motif name={motifForAsceza(asceza.category)} className="w-full h-full" />
+        <SemanticGlyph
+          kind={semanticKindForAsceza(asceza)}
+          className="w-full h-full"
+        />
       </div>
 
       <div className="mt-4">
@@ -780,11 +785,9 @@ export default function Ascezas({
           </p>
         ) : ascezas.length === 0 ? (
           <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-            <MotifArt
-              name="povedenie"
-              size={120}
-              className="mx-auto mb-3"
-            />
+            <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
+              <SemanticGlyph kind="asceza" className="w-full h-full" />
+            </div>
 
             <h3 className="font-display text-lg text-cream mb-1">
               Аскез пока нет
