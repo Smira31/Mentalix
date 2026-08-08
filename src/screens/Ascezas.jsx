@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
+import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
 import { createPortal } from 'react-dom'
 import {
@@ -456,6 +457,12 @@ function CreateAscezaScreen({
     loading: saving,
   })
 
+  const webAction = {
+    text: saving ? 'Сохраняю...' : 'Принять аскезу',
+    onClick: submit,
+    disabled: !draft.name.trim() || saving,
+  }
+
 
   async function submit() {
     if (!draft.name.trim() || saving) return
@@ -570,6 +577,8 @@ function CreateAscezaScreen({
 
         </div>
       </div>
+
+      <WebActionBar action={webAction} />
     </div>,
     document.body,
   )

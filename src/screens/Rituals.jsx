@@ -11,6 +11,7 @@ import {
 import Motif, { MotifArt, motifForRitual } from '../components/Motif'
 import StreakBar from '../components/StreakBar'
 import BackButton from '../components/BackButton'
+import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
 
 /*
@@ -223,6 +224,12 @@ function CreateRitualScreen({ onCreate, onCancel }) {
     loading: saving,
   })
 
+  const webAction = {
+    text: saving ? 'Сохраняю...' : 'Создать ритуал',
+    onClick: submit,
+    disabled: !draft.name.trim() || saving,
+  }
+
   /*
    * Создание ритуала — форма с клавиатурой, поэтому живёт по
    * общему fullscreen-контракту: занимает весь экран целиком.
@@ -248,6 +255,8 @@ function CreateRitualScreen({ onCreate, onCancel }) {
 
         </div>
       </div>
+
+      <WebActionBar action={webAction} />
     </div>,
     document.body,
   )
