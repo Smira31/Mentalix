@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react'
-import { platform } from '../platform'
+import { platform, platformName } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 
 /*
@@ -14,6 +14,17 @@ import { useBackButton } from '../platform/telegram.hooks'
  * кнопки не существует, и тогда рисуется своя. Поэтому экраны
  * продолжают вставлять этот компонент как обычно и ни о чём не
  * думают: он сам решает, показаться или промолчать.
+ *
+ * Раньше решение принималось по Boolean(window.Telegram?.WebApp
+ * ?.BackButton) — но этот объект существует всегда: его создаёт
+ * сам @twa-dev/sdk (node_modules/@twa-dev/sdk/dist/telegram-web-
+ * apps.js), даже вне Telegram, просто у него нет версии клиента
+ * (`versionAtLeast('6.1')`), поэтому show()/onClick() внутри
+ * молча предупреждают в консоль и ничего не делают. Проверка
+ * всегда была true — кнопка не рисовалась нигде в вебе. Решение
+ * должно опираться на platformName (реальный признак запуска
+ * внутри Telegram, `telegram.adapter.js`), как и остальной
+ * платформенный слой.
  */
 export default function BackButton({
   onClick,
@@ -25,13 +36,7 @@ export default function BackButton({
     onClick?.()
   })
 
-  const systemAvailable =
-    typeof window !== 'undefined'
-    && Boolean(
-      window.Telegram?.WebApp?.BackButton,
-    )
-
-  if (systemAvailable) return null
+  if (platformName === 'telegram') return null
 
   return (
     <button

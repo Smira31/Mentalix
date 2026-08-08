@@ -1,5 +1,29 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Исправлено 08.08.2026 — кнопка «Назад» не появлялась в вебе на 13 экранах
+
+- Причина: `src/components/BackButton.jsx` решал, рисовать ли свою DOM-кнопку, по `Boolean(window.Telegram?.WebApp?.BackButton)`. Этот объект существует всегда — его безусловно создаёт `@twa-dev/sdk` (`Object.defineProperty(WebApp, 'BackButton', ...)` в `node_modules/@twa-dev/sdk/dist/telegram-web-apps.js`), даже вне Telegram. Проверка не отличала «мы в Telegram» от «SDK загружен» и была true всегда — компонент возвращал `null` в вебе на всех экранах, которые его используют.
+- Уточнение по п.1 задачи: нативный Telegram `BackButton` (через `useBackButton` из `telegram.hooks.js`) в реальном Telegram работает исправно — внутри SDK есть версионная проверка `versionAtLeast('6.1')`, и настоящий клиент всегда репортует версию выше; предупреждение `BackButton is not supported in version 6.0` в консоли браузера — это как раз SDK-заглушка вне Telegram (`webAppVersion` по умолчанию `6.0`), не баг самого Telegram-пути.
+- Фикс (минимальный, без изменения Telegram-пути): условие заменено на `platformName === 'telegram'` из `src/platform/index.js` — тот же признак, которым уже руководствуются `WebActionBar.jsx` и остальной платформенный слой. `useBackButton` (регистрация с нативной кнопкой) не менялась.
+- Затронутые экраны (используют `<BackButton>`): `Today.jsx`, `App.jsx`, `ThemeScreen.jsx`, `Rituals.jsx` (список и `CreateRitualScreen`), `Ascezas.jsx` (список и `CreateAscezaScreen`), `mentalix/Conversation.jsx`, `mentalix/JournalStart.jsx`, `Settings.jsx`, `QuoteView.jsx`, `BrainTrainer.jsx`, `Breathing.jsx`, `Articles.jsx`, `Practices.jsx` — 13 файлов.
+- Проверено: `npm run build` проходит. Живая проверка в браузере (`claude-in-chrome`, без backend): экраны «Ритуалы» (список) и «Создать ритуал» — кнопка «Назад» появилась в шапке, клик по ней возвращает на предыдущий экран (`onCancel`/навигация сработали).
+- Backend, API и продуктовая логика не менялись.
+
+## Исправлено 08.08.2026 — дубль заголовка «## Сейчас» в TASKS.md
+
+- Причина: при более раннем редактировании `TASKS.md` (вставка блока `MXL-WEB-ACTIONBAR`) в замену случайно попал второй `## Сейчас` вместо одного — секции `MXL-WEB-ACTIONBAR` и `MXL-UI-LAB-001` оказались каждая под своим заголовком одного уровня вместо одного общего списка.
+- Фикс: убран второй заголовок и пустая строка перед ним; обе секции (`MXL-WEB-ACTIONBAR` и `MXL-UI-LAB-001`) остались на месте, содержимое не потеряно — проверено построчным сравнением (файл короче ровно на 2 строки: заголовок + пустая строка).
+- Документация, backend, API и продуктовая логика не менялись.
+
+## Подготовлено 08.08.2026 — аудит MXL-PWA-ICONS: спецификация недостающих иконок
+
+- По задаче `MXL-PWA-ICONS`: `public/manifest.json` ссылается на `public/icons/icon-192.png`, `icon-512.png`, `icon-maskable-512.png` — папка `public/icons/` пуста, все три 404. Файлы не генерировались (по явной просьбе) — только описана нужная спецификация.
+- Дополнительно обнаружено: кроме самого `manifest.json`, папку `public/icons/` больше никто не упоминает, а на сам `manifest.json` не ссылается ничто — в `index.html` нет `<link rel="manifest">` вовсе, поэтому браузер сейчас не подключает манифест, даже если иконки появятся.
+- Минимальный набор под текущий состав `manifest.json`: `icon-192.png` (192×192, PNG, `any`), `icon-512.png` (512×512, PNG, `any`), `icon-maskable-512.png` (512×512, PNG, `maskable`, рисунок в безопасной зоне ~80% холста, фон — сплошная заливка до края).
+- Чтобы «Добавить на экран» реально заработало на iOS (manifest.json там не читается вовсе), дополнительно нужны `apple-touch-icon.png` (180×180, PNG, без прозрачности) и `<link rel="apple-touch-icon">` в `index.html`, а также сам `<link rel="manifest">`.
+- Замечена несостыковка цвета: `manifest.json` (`background_color`/`theme_color: #0E211D`) не совпадает с актуальным фоном приложения `--c-bg: 0 0 0` (`#000000`) из `DESIGN_SYSTEM.md`/`src/index.css` — стоит сверить перед подготовкой самих иконок/сплэша.
+- `TASKS.md` (`MXL-PWA-ICONS`) актуализирован этой спецификацией. Реальные экраны, backend, API и продуктовая логика не менялись.
+
 ## Исправлено 08.08.2026 — WebActionBar: та же проблема была ещё на 3 экранах
 
 - По аналогии с check-in найдены три экрана с той же причиной бага: `useMainButton`/`useSecondaryButton` (`telegram.hooks.js`) управляют только нативной Telegram-кнопкой, а веб-эквивалента у них нет — в браузере после заполнения формы было нечем подтвердить действие.
