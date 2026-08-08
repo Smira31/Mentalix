@@ -41,6 +41,10 @@ Read before making non-trivial changes, in this order: `PRODUCT.md` (why/for who
 `ARCHITECTURE.md` (frontend structure and technical boundaries), `ROADMAP.md`, `TASKS.md`
 (current work), `AI_RULES.md` (mandatory process for AI agents working in this repo).
 
+Перед началом любой работы прочитай секцию "Передача между агентами" в конце
+`TASKS.md` — там рабочая папка, ветка, статус незакоммиченных изменений и что
+нельзя менять без согласования.
+
 `docs/archive/CONTEXT.md` and `STOIC_FEATURES.md` are historical/legacy — context only,
 never source of truth. On conflict, priority is, in order:
 

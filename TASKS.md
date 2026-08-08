@@ -297,3 +297,92 @@
 3. добавить номер commit;
 4. зафиксировать новые задачи и блокеры;
 5. не хранить параллельный статус только в чатах.
+
+## Передача между агентами
+
+Обновлять после каждой значимой сессии.
+`AGENTS.md` — постоянные правила проекта.
+`TASKS.md` — текущее состояние и передача работы.
+
+Рабочая папка: `work/frontend-deploy`
+Последнее обновление: `2026-08-08 17:27`
+Последний агент: Claude Code
+Текущая ветка: `main`
+Последний подтверждённый commit: `7cd416e` — «Добавить MENTALIX_SEMANTIC_MOTION.md — визуальный язык SemanticGlyph» (#17, смёржен squash), `npm run build` пройден после мёрджа.
+Незакоммиченные изменения: есть — `git status --short` см. ниже.
+
+**Кто что делает**
+- Claude (чат/Cowork) — планирование, анализ, сверка Git-статуса и ревью.
+- Claude Code — изменение production-кода, Git-операции, сборка, коммиты и PR; строго из `work/frontend-deploy`.
+- Codex — дизайн и UI-эксперименты в `?ui_lab=1`; перенос экспериментов в production только после согласования.
+
+**Сделано** (эта сессия, Claude Code)
+- Починен `favicon.ico`/`favicon.svg` (404 в проде) — PR #12.
+- Починена кнопка завершения check-in в вебе (`WebActionBar` в `CheckIn.jsx`) — PR #13.
+- `WebActionBar` вынесен в переиспользуемый компонент, применён на `Rituals.jsx`/`Ascezas.jsx`/`ThemeScreen.jsx` — PR #14.
+- Починена кнопка «Назад» в вебе на 13 экранах (`BackButton.jsx`, неверная проверка платформы) — PR #15.
+- `MXL-WEB-BACKBTN` и `MXL-WEB-ACTIONBAR` закрыты — ручная проверка пройдена (со слов пользователя: 13 экранов + Telegram-регрессия; ThemeScreen/Rituals/Ascezas/CheckIn на реальном backend) — PR #16.
+- Добавлен `MENTALIX_SEMANTIC_MOTION.md`, сверен с `DESIGN_SYSTEM.md` (расхождений в токенах нет; уточнена область действия правил анимации §4) — PR #17.
+- Аудит `MXL-PWA-ICONS`: описана минимальная спецификация недостающих иконок манифеста (файлы не генерировались).
+- Найден и исправлен дубль заголовка `## Сейчас` в `TASKS.md`.
+- Временно (не коммит) добавлен прокси `/api` → прод-backend в `vite.config.js` для локальной визуальной проверки формы веб-логина.
+
+**Изменённые файлы** (закоммичено этой сессией)
+- `public/favicon.ico`, `public/favicon.svg`, `index.html`
+- `src/screens/CheckIn.jsx`, `src/components/WebActionBar.jsx`
+- `src/screens/Rituals.jsx`, `src/screens/Ascezas.jsx`, `src/screens/ThemeScreen.jsx`
+- `src/components/BackButton.jsx`
+- `MENTALIX_SEMANTIC_MOTION.md`
+- `CHANGES.md`, `TASKS.md` (документация по ходу сессии)
+
+Незакоммиченное сейчас в рабочем дереве (не моё, кроме `vite.config.js`):
+```
+ M CHANGES.md
+ M DESIGN_SYSTEM.md
+ M MENTALIX_SEMANTIC_MOTION.md
+ M TASKS.md
+ M src/App.jsx
+ M src/components/ArticleCover.jsx
+ M src/components/Motif.jsx
+ M src/components/practice-art/AskesisArt.jsx
+ M src/components/practice-art/BreathingArt.jsx
+ M src/components/practice-art/FocusArt.jsx
+ M src/components/practice-art/MeditationArt.jsx
+ M src/components/practice-art/NeuroArt.jsx
+ M src/components/practice-art/RitualsArt.jsx
+ M src/main.jsx
+ M src/screens/Ascezas.jsx
+ M src/screens/Rituals.jsx
+ M src/screens/Today.jsx
+ M src/screens/mentalix/art/PersonaArt.jsx
+ M vite.config.js                          ← временный, не коммитить (см. ниже)
+?? CLAUDE_UI_HANDOFF.md
+?? src/components/SemanticGlyph.css
+?? src/components/SemanticGlyph.jsx
+?? src/components/TodayMotionExperiment.css
+?? src/components/TodayMotionExperiment.jsx
+?? src/components/ui-lab/
+```
+`vite.config.js` — временная правка (прокси `/api` на `https://mentalix-bot-production.up.railway.app`, тот же адрес, что в `vercel.json`) только для локальной визуальной проверки формы логина; пользователь попросит откатить после проверки, коммитить нельзя. Остальное — незакоммиченная работа другого агента (SemanticGlyph, UI Lab, Today motion-эксперимент), не трогать без согласования.
+
+**Проверено**
+- `npm run lint`: не запускался — локальная установка сломана (`Cannot find package '@eslint/js'`), не связано с правками этой сессии.
+- `npm run build`: пройден (последний раз после мёрджа PR #17, коммит `7cd416e`).
+- Визуальная проверка (`claude-in-chrome`, локальный dev-сервер, без реального backend, кроме отмеченного): CheckIn — полный морнинг-флоу до «Завершить»; Rituals — список, кнопка «Назад», создание ритуала с `WebActionBar`; Ascezas — форма создания. `MXL-WEB-BACKBTN` (13 экранов + Telegram) и `MXL-WEB-ACTIONBAR` (ThemeScreen/Rituals/Ascezas/CheckIn на реальном backend) — по заявлению пользователя, не перепроверялись мной напрямую в этой сессии.
+
+**Не проверено / открыто**
+- `SemanticGlyph.jsx`/`.css` и экраны, которые его подключают (`Rituals.jsx`, `Ascezas.jsx`, `practice-art/*`, `ArticleCover.jsx`, `PersonaArt.jsx`) — не в git, не проверялись мной; факт использования в продуктовых экранах подтверждён чтением кода.
+- `TodayMotionExperiment.jsx`/`.css`, `src/components/ui-lab/`, `CLAUDE_UI_HANDOFF.md` — не в git, не читались/не проверялись в этой сессии.
+- `MXL-PWA-ICONS` — сами файлы иконок не созданы, только спецификация.
+- Форма веб-логина (email OTP) на `localhost` без прод-прокси не работает «из коробки» — нет `.env`, нет dev-прокси по умолчанию в `vite.config.js`; временный прокси решает это только локально и не для коммита.
+
+**Следующий шаг**
+- Откатить временный прокси в `vite.config.js` после того, как пользователь закончит визуальную проверку логина.
+- Решить судьбу незакоммиченной работы (`SemanticGlyph`, UI Lab, Today motion-эксперимент, `CLAUDE_UI_HANDOFF.md`) — коммитить, продолжать или откатывать.
+- Следующий исполнитель: уточняется пользователем.
+
+**Нельзя менять без согласования**
+- Карточки статей — эталон визуального стиля.
+- Реальные экраны нельзя менять на основании одного лабораторного эксперимента.
+- Backend не менять без необходимости.
+- Не выполнять commit, push, merge или stash без прямого согласования.
