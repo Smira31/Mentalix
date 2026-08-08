@@ -8,7 +8,9 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
-import Motif, { MotifArt, motifForRitual } from '../components/Motif'
+import SemanticGlyph, {
+  semanticKindForRitual,
+} from '../components/SemanticGlyph'
 import StreakBar from '../components/StreakBar'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
@@ -119,7 +121,10 @@ function RitualCard({ ritual, onLog, onDelete }) {
           level ? 'opacity-100' : 'opacity-70'
         }`}
       >
-        <Motif name={motifForRitual(ritual.name)} className="w-full h-full" />
+        <SemanticGlyph
+          kind={semanticKindForRitual(ritual.name)}
+          className="w-full h-full"
+        />
       </div>
 
       {/* название и смысл */}
@@ -343,7 +348,9 @@ export default function Rituals({ user, onBack }) {
         <p className="text-muted text-sm">Загрузка...</p>
       ) : rituals.length === 0 ? (
         <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-          <MotifArt name="ryad" size={120} className="mx-auto mb-3" />
+          <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
+            <SemanticGlyph kind="ritual" className="w-full h-full" />
+          </div>
           <h3 className="font-display text-lg text-cream mb-1">Ритуалов пока нет</h3>
           <p className="text-sm text-muted mb-4 leading-relaxed">
             Ритуал — это обряд, который держит твой день. Создай первый.

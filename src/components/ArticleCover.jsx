@@ -1,4 +1,6 @@
-import Motif, { motifForArticle } from './Motif'
+import SemanticGlyph, {
+  semanticKindForArticle,
+} from './SemanticGlyph'
 
 /*
  * ОБЛОЖКИ СТАТЕЙ
@@ -36,9 +38,9 @@ export default function ArticleCover({
       ].join(' ')}
       aria-hidden="true"
     >
-      <Motif
-        name={motifForArticle(article)}
-        className={banner ? 'w-full h-full p-5' : 'w-full h-full p-3.5'}
+      <SemanticGlyph
+        kind={semanticKindForArticle(article)}
+        className={banner ? 'w-full h-full p-3' : 'w-full h-full p-1.5'}
       />
     </div>
   )

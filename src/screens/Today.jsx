@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import {
@@ -14,6 +15,28 @@ import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
+import {
+  DayThread,
+  DayThreadTrigger,
+  FocusMark,
+  NextActionReveal,
+  TodayCompareControl,
+} from '../components/TodayMotionExperiment'
+
+
+const TODAY_COMPARE_REQUESTED =
+  import.meta.env.DEV
+  && new URLSearchParams(
+    window.location.search,
+  ).get('today_compare') === '1'
+
+
+const INITIAL_TODAY_VARIANT =
+  new URLSearchParams(
+    window.location.search,
+  ).get('today_variant') === 'before'
+    ? 'before'
+    : 'after'
 
 
 // ── лента недели, как у stoic. ──
@@ -189,6 +212,32 @@ export default function Today({
 
   const [pathTab, setPathTab] =
     useState('path')
+
+  const [todayVariant, setTodayVariant] =
+    useState(INITIAL_TODAY_VARIANT)
+
+  const [dayThreadOpen, setDayThreadOpen] =
+    useState(false)
+
+  const [todayHeaderLeading, setTodayHeaderLeading] =
+    useState(null)
+
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(
+      () => {
+        setTodayHeaderLeading(
+          document.getElementById(
+            'mx-today-header-leading',
+          ),
+        )
+      },
+    )
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+    }
+  }, [sub])
 
 
   /*
@@ -629,9 +678,66 @@ export default function Today({
     )
 
 
+  const motionExperimentEnabled =
+    !TODAY_COMPARE_REQUESTED
+    || todayVariant === 'after'
+
+
+  function changeTodayVariant(nextVariant) {
+    setTodayVariant(nextVariant)
+
+    if (nextVariant === 'before') {
+      setDayThreadOpen(false)
+    }
+
+    const url = new URL(window.location.href)
+
+    url.searchParams.set(
+      'today_variant',
+      nextVariant,
+    )
+
+    window.history.replaceState(
+      null,
+      '',
+      url,
+    )
+  }
+
+
   return (
     <div className="w-full max-w-md px-5">
+      {motionExperimentEnabled
+        && todayHeaderLeading
+        && createPortal(
+          <DayThreadTrigger
+            open={dayThreadOpen}
+            onToggle={() => setDayThreadOpen((value) => !value)}
+          />,
+          todayHeaderLeading,
+        )}
+
       <WeekStrip />
+
+
+      {TODAY_COMPARE_REQUESTED && (
+        <TodayCompareControl
+          mode={todayVariant}
+          onChange={changeTodayVariant}
+        />
+      )}
+
+
+      {motionExperimentEnabled && dayThreadOpen && (
+        <DayThread
+          checkinDone={checkinDone}
+          done={done}
+          open={dayThreadOpen}
+          onOpenChange={setDayThreadOpen}
+          total={total}
+          todayState={todayState}
+        />
+      )}
 
 
       <MorningPilotCard
@@ -659,7 +765,9 @@ export default function Today({
         в ночь, тёмным в обеих темах.
       */}
       <div className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in">
-        {heroArt}
+        {motionExperimentEnabled
+          ? <FocusMark />
+          : heroArt}
 
 
         {checkinAsHero && (
@@ -819,6 +927,21 @@ export default function Today({
             !== 'dayClosed'
           && !isEmpty
           && next && (
+          motionExperimentEnabled ? (
+            <NextActionReveal
+              next={next}
+              remainAfter={remainAfter}
+              onStart={() => {
+                platform.haptic(
+                  'medium',
+                )
+
+                onOpenPractice(
+                  next.sub,
+                )
+              }}
+            />
+          ) : (
           <>
             <div className="text-[13px] text-muted font-semibold mb-2">
               Самое важное
@@ -857,6 +980,7 @@ export default function Today({
                 : 'Это последнее на сегодня'}
             </p>
           </>
+          )
         )}
 
 

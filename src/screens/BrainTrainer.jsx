@@ -3,6 +3,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Brain, Zap, Shuffle, Wind, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import SemanticGlyph from '../components/SemanticGlyph'
 
 
 const EXERCISES = [
@@ -496,6 +497,10 @@ export default function BrainTrainer({
       <div className="w-full flex items-center gap-2 mb-6">
         <BackButton onClick={onBack} />
         <h2 className="font-display text-lg text-cream">Нейротренажёр</h2>
+      </div>
+
+      <div className="w-full h-[116px] rounded-[24px] bg-artbed border border-cream/[0.06] overflow-hidden px-4 mb-4">
+        <SemanticGlyph kind="neuro" className="w-full h-full" />
       </div>
 
       {EXERCISES.map((ex) => {
