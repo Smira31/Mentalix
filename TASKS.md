@@ -49,6 +49,7 @@
   - В `public/` не было файла иконки, в `index.html` не было `<link rel="icon">`.
   - Добавлены `public/favicon.ico` и `public/favicon.svg` (упрощённый символ лабиринта из `MazeLogo.jsx`, существующие токены `--c-gold`/`--c-bg`, новых цветов не вводилось), ссылки прописаны в `index.html`.
   - `npm run build` подтверждён; `dist/favicon.ico` и `dist/favicon.svg` отданы 200 из `vite preview`.
+  - PR #12 (`fix/favicon-404`) смёржен в `main` (squash, `b192a21`), ветка удалена.
 
 ## Сейчас
 

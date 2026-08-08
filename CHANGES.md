@@ -8,6 +8,7 @@
 - Проверено: `npm run build` проходит, `dist/favicon.ico` и `dist/favicon.svg` отдаются со статусом 200 из `vite preview`. `npm run lint` в этой рабочей копии не запускается (`ESLint: Cannot find package '@eslint/js'` — сломанная локальная установка зависимостей, не связано с этой правкой; смены `public/`-ассетов и статичного `<head>` под ESLint не подпадают).
 - Не тронуто: `public/manifest.json` по-прежнему ссылается на `public/icons/icon-192.png`, `icon-512.png`, `icon-maskable-512.png` — этих файлов в репозитории нет (директория `public/icons/` пуста), PWA-иконки тоже вернут 404. Это отдельная, более крупная задача (нужны растровые иконки под несколько размеров/maskable-safe-zone) — вне scope текущей задачи «почини favicon.ico», заведена в `TASKS.md`.
 - Продуктовая логика, backend и API не менялись.
+- PR #12 (`fix/favicon-404`) смёржен в `main` через `gh pr merge --squash --delete-branch` (коммит `b192a21`), рабочая ветка удалена локально и на GitHub.
 
 ## Исправлено 08.08.2026 — дёрганые переходы между вкладками
 
