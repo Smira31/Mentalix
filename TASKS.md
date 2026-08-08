@@ -325,7 +325,7 @@
 - Добавлен `MENTALIX_SEMANTIC_MOTION.md`, сверен с `DESIGN_SYSTEM.md` (расхождений в токенах нет; уточнена область действия правил анимации §4) — PR #17.
 - Аудит `MXL-PWA-ICONS`: описана минимальная спецификация недостающих иконок манифеста (файлы не генерировались).
 - Найден и исправлен дубль заголовка `## Сейчас` в `TASKS.md`.
-- Временно (не коммит) добавлен прокси `/api` → прод-backend в `vite.config.js` для локальной визуальной проверки формы веб-логина.
+- Временный локальный прокси `/api` → prod-backend использован для визуальной проверки формы веб-логина и затем откачен; `vite.config.js` в PR не входит.
 
 **Изменённые файлы** (закоммичено этой сессией)
 - `public/favicon.ico`, `public/favicon.svg`, `index.html`
@@ -335,7 +335,7 @@
 - `MENTALIX_SEMANTIC_MOTION.md`
 - `CHANGES.md`, `TASKS.md` (документация по ходу сессии)
 
-Незакоммиченное сейчас в рабочем дереве (не моё, кроме `vite.config.js`):
+Незакоммиченное сейчас в рабочем дереве — работа Codex над SemanticGlyph, UI Lab и Today motion-экспериментом; не трогать без согласования:
 ```
  M CHANGES.md
  M DESIGN_SYSTEM.md
@@ -355,7 +355,6 @@
  M src/screens/Rituals.jsx
  M src/screens/Today.jsx
  M src/screens/mentalix/art/PersonaArt.jsx
- M vite.config.js                          ← временный, не коммитить (см. ниже)
 ?? CLAUDE_UI_HANDOFF.md
 ?? src/components/SemanticGlyph.css
 ?? src/components/SemanticGlyph.jsx
@@ -363,7 +362,7 @@
 ?? src/components/TodayMotionExperiment.jsx
 ?? src/components/ui-lab/
 ```
-`vite.config.js` — временная правка (прокси `/api` на `https://mentalix-bot-production.up.railway.app`, тот же адрес, что в `vercel.json`) только для локальной визуальной проверки формы логина; пользователь попросит откатить после проверки, коммитить нельзя. Остальное — незакоммиченная работа другого агента (SemanticGlyph, UI Lab, Today motion-эксперимент), не трогать без согласования.
+Временный прокси `/api` откачен после локальной проверки; `vite.config.js` отсутствует и в незакоммиченном наборе, и в PR #18. Остальное — незакоммиченная работа Codex (SemanticGlyph, UI Lab, Today motion-эксперимент), не трогать без согласования.
 
 **Проверено**
 - `npm run lint`: не запускался — локальная установка сломана (`Cannot find package '@eslint/js'`), не связано с правками этой сессии.
@@ -374,10 +373,9 @@
 - `SemanticGlyph.jsx`/`.css` и экраны, которые его подключают (`Rituals.jsx`, `Ascezas.jsx`, `practice-art/*`, `ArticleCover.jsx`, `PersonaArt.jsx`) — не в git, не проверялись мной; факт использования в продуктовых экранах подтверждён чтением кода.
 - `TodayMotionExperiment.jsx`/`.css`, `src/components/ui-lab/`, `CLAUDE_UI_HANDOFF.md` — не в git, не читались/не проверялись в этой сессии.
 - `MXL-PWA-ICONS` — сами файлы иконок не созданы, только спецификация.
-- Форма веб-логина (email OTP) на `localhost` без прод-прокси не работает «из коробки» — нет `.env`, нет dev-прокси по умолчанию в `vite.config.js`; временный прокси решает это только локально и не для коммита.
+- Форма веб-логина (email OTP) на `localhost` без prod-прокси не работает «из коробки»: нет `.env` и dev-прокси по умолчанию. Для локальной проверки использовался временный прокси, который уже откачен.
 
 **Следующий шаг**
-- Откатить временный прокси в `vite.config.js` после того, как пользователь закончит визуальную проверку логина.
 - Решить судьбу незакоммиченной работы (`SemanticGlyph`, UI Lab, Today motion-эксперимент, `CLAUDE_UI_HANDOFF.md`) — коммитить, продолжать или откатывать.
 - Следующий исполнитель: уточняется пользователем.
 
