@@ -33,7 +33,7 @@ Telegram Mini App — операционная система личного р�
 | Файл | О чём |
 |---|---|
 | [`CHANGES.md`](CHANGES.md) | История изменений |
-| [`CONTEXT.md`](CONTEXT.md) | Legacy-контекст и старый шаблон работы |
+| [`CONTEXT.md`](docs/archive/CONTEXT.md) | Legacy-контекст и старый шаблон работы |
 | [`STOIC_FEATURES.md`](STOIC_FEATURES.md) | Историческое исследование референса stoic. |
 
 При конфликте приоритет такой:
