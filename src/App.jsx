@@ -957,7 +957,7 @@ export default function App() {
          ======================================================== */}
 
       <div
-  key={overlay || tab}
+  key={overlay || 'main'}
   className={[
     'flex-1 w-full flex flex-col items-center',
     mentorPersonaOpen
