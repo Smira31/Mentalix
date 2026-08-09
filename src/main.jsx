@@ -23,8 +23,13 @@ const uiLabRequested =
   ).get('ui_lab') === '1'
 
 
-const motionKitRequested =
+const motionKitEnabled =
   import.meta.env.DEV
+  || import.meta.env.VERCEL_ENV === 'preview'
+
+
+const motionKitRequested =
+  motionKitEnabled
   && new URLSearchParams(
     window.location.search,
   ).get('motion_kit') === '1'
@@ -55,7 +60,7 @@ const UiExperiments = import.meta.env.DEV
   : null
 
 
-const PracticeMotionKit = import.meta.env.DEV
+const PracticeMotionKit = motionKitEnabled
   ? lazy(() =>
       import(
         './components/ui-lab/PracticeMotionKit'
