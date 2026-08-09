@@ -883,8 +883,9 @@ export default function CheckIn({
             {isEvening ? (
               <MotifArt
                 name="noch"
-                size={140}
-                className="mb-4"
+                size={184}
+                artScale={1.08}
+                className="mb-5"
               />
             ) : null}
 

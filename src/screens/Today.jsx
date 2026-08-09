@@ -1171,7 +1171,7 @@ export default function Today({
               'theme',
             )
           }}
-          className="w-full rounded-[28px] bg-emerald px-6 py-7 mt-4 text-center border-0 active:scale-[0.99] transition-transform animate-fade-in"
+          className="mx-today-theme-card w-full px-6 py-7 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
           <span className="block text-[11px] text-faint font-bold uppercase tracking-wider mb-2">
             Тема недели

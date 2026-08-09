@@ -76,6 +76,74 @@ function Drawing({ kind }) {
         </>
       )
 
+    case 'brain-attention':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__exercise">
+            <circle cx="80" cy="56" r="29" />
+            <circle cx="80" cy="56" r="15" />
+            <path d="M80 18V34M80 78V94M42 56H58M102 56H118" />
+          </g>
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+        </>
+      )
+
+    case 'brain-memory':
+      return (
+        <>
+          <Guide />
+          <path
+            className="mx-semantic-glyph__exercise"
+            d="M28 72L50 48L73 65L96 34L128 55"
+          />
+          <g className="mx-semantic-glyph__exercise-nodes">
+            <circle cx="28" cy="72" r="3" />
+            <circle cx="50" cy="48" r="3" />
+            <circle cx="73" cy="65" r="3" />
+            <circle cx="96" cy="34" r="3" />
+          </g>
+          <circle className="mx-semantic-glyph__point" cx="128" cy="55" r="4" />
+        </>
+      )
+
+    case 'brain-reaction':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__exercise">
+            <path d="M32 56H61L72 34L88 78L100 56H128" />
+            <path d="M42 38L32 56L42 74M118 38L128 56L118 74" />
+          </g>
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+        </>
+      )
+
+    case 'brain-plasticity':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__exercise">
+            <path d="M28 36C56 36 61 76 88 76C106 76 117 64 132 52" />
+            <path d="M28 76C56 76 61 36 88 36C106 36 117 48 132 60" />
+            <path d="M124 47L132 52L127 60M124 65L132 60L127 52" />
+          </g>
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+        </>
+      )
+
+    case 'brain-gymnastics':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__exercise">
+            <path d="M28 64C39 45 50 45 61 64C72 83 83 83 94 64C105 45 116 45 132 64" />
+            <path d="M38 45C48 31 58 31 68 45M92 45C102 31 112 31 122 45" />
+          </g>
+          <circle className="mx-semantic-glyph__point" cx="80" cy="64" r="4" />
+        </>
+      )
+
     case 'breath':
       return (
         <>

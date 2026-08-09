@@ -237,17 +237,17 @@ export default function PersonaPicker({
                   * тянется до нижнего меню и на разных экранах имеет
                   * разную высоту.
                   */}
-                <div className="-mx-6 -mt-6 mb-1 basis-1/3 shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-3">
+                <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1">
                   <SemanticGlyph
                     kind={semanticKindForPersona(persona.key)}
                     animated={active === index}
                     highlighted={active === index}
-                    className="w-full h-full"
+                    className="w-full h-full scale-[1.06]"
                   />
                 </div>
 
 
-                <div className="font-display text-[22px] text-cream leading-tight mt-4">
+                <div className="font-display text-[22px] text-cream leading-tight mt-3">
                   {persona.name}
                 </div>
 
@@ -255,12 +255,12 @@ export default function PersonaPicker({
                   {persona.tagline}
                 </div>
 
-                <p className="text-[14px] text-muted leading-snug mt-3">
+                <p className="text-[14px] text-muted leading-snug mt-2.5">
                   {persona.desc}
                 </p>
 
 
-                <div className="mt-auto pt-6">
+                <div className="mt-auto pt-3">
                   {last ? (
                     <button
                       onClick={(event) => {

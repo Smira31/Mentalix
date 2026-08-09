@@ -153,19 +153,29 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 0. Приветствие ── */}
       {step === 0 && (
-        <div className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center">
-          <MazeLogo size={190} progress={0.35} className="mb-10" />
-          <h2 className="font-display text-[30px] text-cream leading-tight">
-            это Mentalix.
-            <br />
-            твоя система, а не мотивация
-          </h2>
-          <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
-            Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
-          </p>
-          <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
-            Начать
-          </button>
+        <div className="mx-onboarding-step mx-onboarding-intro flex-1 w-full max-w-md flex flex-col items-center px-8 text-center">
+          <div className="mx-onboarding-intro-art" aria-hidden="true">
+            <MazeLogo
+              size={266}
+              progress={0.35}
+              animateOnMount
+              motionDuration={1600}
+              className="mx-onboarding-intro-maze"
+            />
+          </div>
+          <div className="mx-onboarding-intro-copy flex flex-col items-center">
+            <h2 className="font-display text-[30px] text-cream leading-tight">
+              это Mentalix.
+              <br />
+              твоя система, а не мотивация
+            </h2>
+            <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
+              Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
+            </p>
+            <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
+              Начать
+            </button>
+          </div>
         </div>
       )}
 
