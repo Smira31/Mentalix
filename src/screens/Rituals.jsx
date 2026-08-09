@@ -11,6 +11,7 @@ import {
 import SemanticGlyph, {
   semanticKindForRitual,
 } from '../components/SemanticGlyph'
+import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import StreakBar from '../components/StreakBar'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
@@ -74,6 +75,8 @@ function RitualCard({ ritual, onLog, onDelete }) {
   return (
     <div
       className={`relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${
+        cardSystemPreviewEnabled ? 'mx-card-system-detail-card' : ''
+      } ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
       style={CARD_HEIGHT}
@@ -118,6 +121,8 @@ function RitualCard({ ritual, onLog, onDelete }) {
         */}
       <div
         className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] ${
+          cardSystemPreviewEnabled ? 'mx-card-system-detail-art' : ''
+        } ${
           level ? 'opacity-100' : 'opacity-70'
         }`}
       >
