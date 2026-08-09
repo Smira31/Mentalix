@@ -1,6 +1,5 @@
 import {
   ArrowRight,
-  Check,
   ChevronDown,
 } from 'lucide-react'
 
@@ -13,6 +12,16 @@ const THREAD_LABELS = [
   'Практики',
   'Разбор',
 ]
+
+const THREAD_POINTS = [
+  [22, 28],
+  [108, 12],
+  [205, 30],
+  [298, 15],
+]
+
+const THREAD_PATH =
+  'M22 28C52 3 78 4 108 12S165 38 205 30S260 5 298 15'
 
 
 function threadState({
@@ -183,56 +192,57 @@ export function DayThread({
           <ChevronDown size={18} aria-hidden="true" />
         </span>
 
-        <span className="mx-day-thread__rail" role="list">
-          <span className="mx-day-thread__track" aria-hidden="true">
-            <span />
-          </span>
+        <svg
+          className="mx-day-thread__path"
+          viewBox="0 0 320 40"
+          role="img"
+          aria-label={`Путь дня: ${THREAD_LABELS[current]}`}
+        >
+          <path
+            className="mx-day-thread__path-base"
+            d={THREAD_PATH}
+            pathLength="1"
+          />
+          <path
+            className="mx-day-thread__path-progress"
+            d={THREAD_PATH}
+            pathLength="1"
+            style={{
+              strokeDashoffset: 1 - progress,
+            }}
+          />
 
-          {THREAD_LABELS.map((label, index) => {
+          {THREAD_POINTS.map(([x, y], index) => {
             const completed = index <= completedThrough
             const active = index === current && !completed
-            const state = completed
-              ? 'завершено'
-              : active
-                ? 'сейчас'
-                : 'впереди'
 
             return (
-              <span
-                key={label}
-                role="listitem"
-                aria-label={`${label}: ${state}`}
-                className="mx-day-thread__step"
+              <g
+                key={THREAD_LABELS[index]}
+                className="mx-day-thread__path-node"
                 data-completed={completed}
                 data-active={active}
+                transform={`translate(${x} ${y})`}
               >
-                <span className="mx-day-thread__node" aria-hidden="true">
-                  {completed && <Check size={11} strokeWidth={2.4} />}
-                </span>
-              </span>
+                <circle r="8" />
+                {completed && (
+                  <path d="M-3 0L-1 2.5L3.5-3" />
+                )}
+                {active && <circle className="mx-day-thread__path-dot" r="2.5" />}
+              </g>
             )
           })}
-        </span>
+        </svg>
 
-        <span className="mx-day-thread__details" aria-hidden={!open}>
-          <span className="mx-day-thread__details-inner">
-            <span className="mx-day-thread__labels">
-              {THREAD_LABELS.map((label, index) => (
-                <span
-                  key={label}
-                  data-active={index === current}
-                >
-                  {label}
-                </span>
-              ))}
+        <span className="mx-day-thread__labels">
+          {THREAD_LABELS.map((label, index) => (
+            <span
+              key={label}
+              data-active={index === current}
+            >
+              {label}
             </span>
-
-            <small>
-              {todayState === 'dayClosed'
-                ? 'Все этапы дня пройдены'
-                : `${done} из ${total} практик`}
-            </small>
-          </span>
+          ))}
         </span>
       </button>
     </section>

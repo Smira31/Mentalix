@@ -1,24 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Brain, Zap, Shuffle, Wind, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import SemanticGlyph from '../components/SemanticGlyph'
 
 
 const EXERCISES = [
-  { key: 'attention', title: 'Внимание', subtitle: 'Струп-тест', icon: Brain, accent: 'gold' },
-  { key: 'memory', title: 'Память', subtitle: 'последовательности', icon: Shuffle, accent: 'mint' },
-  { key: 'reaction', title: 'Реакция', subtitle: 'на время', icon: Zap, accent: 'cognac' },
-  { key: 'plasticity', title: 'Нейропластичность', subtitle: 'переключение', icon: Shuffle, accent: 'gold' },
-  { key: 'gymnastics', title: 'Гимнастика для мозга', subtitle: 'дыхание', icon: Wind, accent: 'mint' },
+  { key: 'attention', title: 'Внимание', subtitle: 'Струп-тест', kind: 'brain-attention' },
+  { key: 'memory', title: 'Память', subtitle: 'последовательности', kind: 'brain-memory' },
+  { key: 'reaction', title: 'Реакция', subtitle: 'на время', kind: 'brain-reaction' },
+  { key: 'plasticity', title: 'Нейропластичность', subtitle: 'переключение', kind: 'brain-plasticity' },
+  { key: 'gymnastics', title: 'Гимнастика для мозга', subtitle: 'дыхание', kind: 'brain-gymnastics' },
 ]
-
-const TONE = {
-  gold: { bg: 'bg-gold/20', text: 'text-gold', border: 'border-gold/30' },
-  mint: { bg: 'bg-mint/20', text: 'text-mint', border: 'border-mint/30' },
-  cognac: { bg: 'bg-cognac/20', text: 'text-cognac', border: 'border-cognac/30' },
-}
 
 function ScoreScreen({ label, score, sub, onDone }) {
   return (
@@ -504,30 +498,46 @@ export default function BrainTrainer({
       </div>
 
       {EXERCISES.map((ex) => {
-        const tone = TONE[ex.accent]
         const doneToday = todayCompleted.includes(ex.key)
         const best = summary?.per_type?.[ex.key]?.best_score
         return (
           <button
             key={ex.key}
             onClick={() => start(ex.key)}
-            className={`w-full rounded-[24px] border ${tone.border} bg-emerald-light/10 p-4 mb-3 flex items-center gap-3 transition-transform active:scale-[0.98]`}
+            className="w-full min-h-[112px] rounded-[24px] border border-cream/[0.10] bg-emerald overflow-hidden mb-3 grid grid-cols-[124px_minmax(0,1fr)] text-left transition-transform active:scale-[0.985]"
           >
-            <div className={`w-11 h-11 rounded-2xl ${tone.bg} flex items-center justify-center shrink-0`}>
-              <ex.icon size={22} className={tone.text} strokeWidth={1.75} />
-            </div>
-            <div className="flex-1 text-left">
-              <div className="font-display text-base text-cream">{ex.title}</div>
-              <div className="text-xs text-muted">{ex.subtitle}</div>
-            </div>
-            {doneToday && (
-              <span className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center shrink-0">
-                <Check size={14} className="text-gold" />
+            <span className="h-full min-h-[112px] bg-artbed border-r border-cream/[0.06] overflow-hidden px-1">
+              <SemanticGlyph
+                kind={ex.kind}
+                animated={false}
+                highlighted={doneToday}
+                className="w-full h-full scale-[1.04]"
+              />
+            </span>
+
+            <span className="min-w-0 px-4 py-4 flex flex-col justify-center">
+              <span className="flex items-start justify-between gap-2">
+                <span className="font-display text-[16px] text-cream leading-[1.12]">
+                  {ex.title}
+                </span>
+
+                {doneToday && (
+                  <span className="w-6 h-6 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+                    <Check size={14} className="text-gold" />
+                  </span>
+                )}
               </span>
-            )}
-            {best !== undefined && best > 0 && (
-              <span className="font-mono text-xs text-muted shrink-0">{best}</span>
-            )}
+
+              <span className="text-[12px] text-muted mt-2 leading-tight">
+                {ex.subtitle}
+              </span>
+
+              {best !== undefined && best > 0 && (
+                <span className="font-mono text-[11px] text-muted mt-2">
+                  Лучший результат: {best}
+                </span>
+              )}
+            </span>
           </button>
         )
       })}

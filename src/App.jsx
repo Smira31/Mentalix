@@ -96,25 +96,6 @@ function Splash() {
    TODAY TEXT
    ============================================================ */
 
-function tagline() {
-  const h = new Date().getHours()
-
-  if (h >= 5 && h <= 11) {
-    return 'день начинается с одного шага'
-  }
-
-  if (h >= 12 && h <= 17) {
-    return 'шаг за шагом — выход находится'
-  }
-
-  if (h >= 18 && h <= 22) {
-    return 'день закрывают, а не бросают'
-  }
-
-  return 'тишина — тоже часть пути'
-}
-
-
 function greeting() {
   const h = new Date().getHours()
 
@@ -941,16 +922,6 @@ export default function App() {
           </div>
 
 
-          <p
-            className="
-              text-[11px]
-              text-faint
-              font-medium
-              mb-1
-            "
-          >
-            {tagline()}
-          </p>
         </>
       )}
 

@@ -152,8 +152,8 @@
 .mx-day-thread__toggle {
   display: grid;
   width: 100%;
-  gap: 15px;
-  padding: 16px 18px;
+  gap: 6px;
+  padding: 12px 16px 11px;
   border: 0;
   border-radius: inherit;
   background: transparent;
@@ -200,104 +200,75 @@
   transform: rotate(180deg);
 }
 
-.mx-day-thread__rail {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  align-items: center;
-  padding: 2px 0;
+.mx-day-thread__path {
+  display: block;
+  width: 100%;
+  height: 32px;
+  overflow: visible;
 }
 
-.mx-day-thread__track {
-  position: absolute;
-  top: 50%;
-  right: 12.5%;
-  left: 12.5%;
-  height: 1px;
-  overflow: hidden;
-  background: rgb(var(--c-border));
-  transform: translateY(-50%);
-}
-
-.mx-day-thread__track > span {
-  position: absolute;
-  inset: 0;
-  background: rgb(var(--c-gold));
-  transform: scaleX(var(--mx-thread-progress));
-  transform-origin: left;
-  transition: transform 240ms cubic-bezier(0.77, 0, 0.175, 1);
-}
-
-.mx-day-thread__step {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-}
-
-.mx-day-thread__node {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: 20px;
-  height: 20px;
-  place-items: center;
-  border: 1px solid rgb(var(--c-line-secondary));
-  border-radius: 50%;
+.mx-today-theme-card {
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 24px;
   background: rgb(var(--c-card));
-  color: rgb(var(--c-bg));
-  transition:
-    transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 180ms ease,
-    border-color 180ms ease;
 }
 
-.mx-day-thread__step[data-completed='true'] .mx-day-thread__node {
-  border-color: rgb(var(--c-line));
-  background: rgb(var(--c-line));
+.mx-day-thread__path-base,
+.mx-day-thread__path-progress {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
 }
 
-.mx-day-thread__step[data-active='true'] .mx-day-thread__node {
-  border-color: rgb(var(--c-gold));
-  transform: scale(1.08);
+.mx-day-thread__path-base {
+  stroke: rgb(var(--c-border));
 }
 
-.mx-day-thread__step[data-active='true'] .mx-day-thread__node::after {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgb(var(--c-gold));
-  content: '';
+.mx-day-thread__path-progress {
+  stroke: rgb(var(--c-gold));
+  stroke-dasharray: 1;
+  transition: stroke-dashoffset 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.mx-day-thread__details {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition:
-    grid-template-rows 220ms cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 140ms ease-out;
+.mx-day-thread__path-node circle:first-child {
+  fill: rgb(var(--c-card));
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
 }
 
-.mx-day-thread[data-open='true'] .mx-day-thread__details {
-  grid-template-rows: 1fr;
-  opacity: 1;
+.mx-day-thread__path-node > path {
+  fill: none;
+  stroke: rgb(var(--c-bg));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
 }
 
-.mx-day-thread__details > * {
-  overflow: hidden;
+.mx-day-thread__path-node[data-completed='true'] circle:first-child {
+  fill: rgb(var(--c-line));
+  stroke: rgb(var(--c-line));
 }
 
-.mx-day-thread__details-inner {
-  display: grid;
+.mx-day-thread__path-node[data-active='true'] circle:first-child {
+  stroke: rgb(var(--c-gold));
+}
+
+.mx-day-thread__path-dot {
+  fill: rgb(var(--c-gold));
+  stroke: none;
 }
 
 .mx-day-thread__labels {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px;
+  gap: 3px;
+  margin-top: -1px;
   color: rgb(var(--c-muted));
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
   line-height: 1.2;
   text-align: center;
@@ -305,16 +276,6 @@
 
 .mx-day-thread__labels > span[data-active='true'] {
   color: rgb(var(--c-gold));
-}
-
-.mx-day-thread__details-inner > small {
-  margin-top: 12px;
-  padding-top: 11px;
-  border-top: 1px solid rgb(var(--c-border));
-  color: rgb(var(--c-muted));
-  font-size: 10px;
-  font-weight: 600;
-  text-align: center;
 }
 
 .mx-today-focus-mark {
@@ -451,10 +412,8 @@
 @media (prefers-reduced-motion: reduce) {
   .mx-today-compare__indicator,
   .mx-day-thread-launcher,
-  .mx-day-thread__track > span,
-  .mx-day-thread__node,
+  .mx-day-thread__path-progress,
   .mx-day-thread__heading > svg,
-  .mx-day-thread__details,
   .mx-today-priority__start {
     transition: none;
   }

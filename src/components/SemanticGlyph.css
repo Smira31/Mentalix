@@ -14,6 +14,7 @@
 .mx-semantic-glyph__neuro-branches,
 .mx-semantic-glyph__neuro-bridge,
 .mx-semantic-glyph__neuro-nodes,
+.mx-semantic-glyph__exercise,
 .mx-semantic-glyph__breath-left,
 .mx-semantic-glyph__breath-right,
 .mx-semantic-glyph__axis,
@@ -54,6 +55,10 @@
   stroke-width: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.mx-semantic-glyph__exercise-nodes circle {
+  fill: rgb(var(--c-line-secondary));
 }
 
 .mx-semantic-glyph__guide {
