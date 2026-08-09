@@ -17,6 +17,9 @@ import History from './History'
 import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
 import CardSystemGlyph from '../components/CardSystemGlyph'
+import TodayFocusCard from '../components/TodayFocusCard'
+import TodayFocusFlow from './TodayFocusFlow'
+import { readTodayFocusDay } from '../lib/todayFocus'
 import {
   DayThread,
   DayThreadTrigger,
@@ -212,6 +215,9 @@ export default function Today({
   const [sub, setSub] =
     useState(null)
 
+  const [todayFocus, setTodayFocus] =
+    useState(null)
+
   const [pathTab, setPathTab] =
     useState('path')
 
@@ -260,6 +266,15 @@ export default function Today({
       onFlowChange?.(false)
     }
   }, [onFlowChange])
+
+
+  useEffect(() => {
+    if (!user) return
+
+    setTodayFocus(
+      readTodayFocusDay(user.id),
+    )
+  }, [user])
 
 
   async function refreshCheckin() {
@@ -450,6 +465,36 @@ export default function Today({
         onBack={() =>
           changeSub(null)
         }
+      />
+    )
+  }
+
+
+  // ============================================================
+  // РАЗГРУЗИТЬ ГОЛОВУ
+  // ============================================================
+
+  if (
+    sub === 'todayFocus'
+  ) {
+    return (
+      <TodayFocusFlow
+        userId={user.id}
+        initialItems={
+          todayFocus?.items || []
+        }
+        initialStep={
+          todayFocus?.picked
+            ? 'pick'
+            : 'input'
+        }
+        onClose={() =>
+          changeSub(null)
+        }
+        onPicked={(entry) => {
+          setTodayFocus(entry)
+          changeSub(null)
+        }}
       />
     )
   }
@@ -742,6 +787,14 @@ export default function Today({
       )}
 
 
+      <TodayFocusCard
+        focus={todayFocus}
+        onOpenFlow={() =>
+          changeSub('todayFocus')
+        }
+      />
+
+
       <MorningPilotCard
         userId={user.id}
         rituals={rituals}
@@ -750,6 +803,9 @@ export default function Today({
             'rituals',
           )
         }
+        todayFocusPicked={Boolean(
+          todayFocus?.picked,
+        )}
       />
 
 

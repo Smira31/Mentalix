@@ -1,0 +1,163 @@
+import { useState } from 'react'
+import { createPortal } from 'react-dom'
+
+import { platform } from '../platform'
+import BackButton from '../components/BackButton'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+} from '../lib/fullscreenSurface'
+import { saveTodayFocusPick } from '../lib/todayFocus'
+
+/*
+ * «Разгрузить голову»: два шага без сохранения черновика —
+ * запись фиксируется в хранилище только после выбора одного
+ * дела (см. lib/todayFocus.js), поэтому промежуточный список
+ * не переживает закрытие экрана без выбора.
+ */
+
+export default function TodayFocusFlow({
+  userId,
+  initialItems = [],
+  initialStep = 'input',
+  onClose,
+  onPicked,
+}) {
+  const { style: surfaceStyle } =
+    useFullscreenSurface()
+
+  const [step, setStep] =
+    useState(initialStep)
+
+  const [text, setText] =
+    useState(
+      initialItems.join('\n'),
+    )
+
+  const [items, setItems] =
+    useState(initialItems)
+
+
+  function goToPick() {
+    const parsed = text
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+
+    if (parsed.length === 0) return
+
+    platform.haptic('light')
+
+    setItems(parsed)
+    setStep('pick')
+  }
+
+
+  function pick(item) {
+    platform.haptic('medium')
+
+    const entry = saveTodayFocusPick(
+      userId,
+      items,
+      item,
+    )
+
+    onPicked(entry)
+  }
+
+
+  return createPortal(
+    <div
+      className={FULLSCREEN_SHELL_CLASS}
+      style={surfaceStyle}
+    >
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-5`}
+      >
+        <BackButton onClick={onClose} />
+      </div>
+
+      <div
+        className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}
+      >
+        {step === 'input' && (
+          <div className="w-full max-w-md mx-auto animate-fade-in">
+            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+              Разгрузить голову
+            </span>
+
+            <h2 className="font-display text-[24px] text-cream leading-tight">
+              Что тянет внимание?
+            </h2>
+
+            <p className="text-[13px] text-muted mt-2 leading-relaxed">
+              Выпиши все дела, которые конкурируют за сегодня — по одному на строку. Ничего не потеряется.
+            </p>
+
+            <textarea
+              autoFocus
+              rows={7}
+              value={text}
+              onChange={(event) =>
+                setText(event.target.value)
+              }
+              placeholder={
+                'Например:\nНаписать отчёт\nРазобрать почту\nПозвонить в поликлинику'
+              }
+              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[15px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+            />
+
+            <button
+              type="button"
+              onClick={goToPick}
+              disabled={!text.trim()}
+              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
+            >
+              Продолжить
+            </button>
+          </div>
+        )}
+
+        {step === 'pick' && (
+          <div className="w-full max-w-md mx-auto animate-fade-in">
+            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+              Разгрузить голову
+            </span>
+
+            <h2 className="font-display text-[24px] text-cream leading-tight">
+              Выбери одно
+            </h2>
+
+            <p className="text-[13px] text-muted mt-2 leading-relaxed">
+              Остальное никуда не денется — просто не сегодня.
+            </p>
+
+            <div className="mt-5 space-y-2">
+              {items.map((item, index) => (
+                <button
+                  key={`${item}-${index}`}
+                  type="button"
+                  onClick={() => pick(item)}
+                  className="w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[15px] font-semibold text-cream active:scale-[0.98] transition-transform"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setStep('input')}
+              className="text-[12px] font-semibold text-muted mt-5 active:opacity-60"
+            >
+              Изменить список
+            </button>
+          </div>
+        )}
+      </div>
+    </div>,
+    document.body,
+  )
+}

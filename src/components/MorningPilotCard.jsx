@@ -38,6 +38,7 @@ export default function MorningPilotCard({
   rituals,
   onOpenRituals,
   now = null,
+  todayFocusPicked = false,
 }) {
   const [currentDate] =
     useState(() =>
@@ -118,6 +119,30 @@ export default function MorningPilotCard({
 
   if (!pilotVisible) {
     return null
+  }
+
+
+  /*
+   * «Разгрузить голову» уже дала точку внимания дня — утренний
+   * список ритуалов уступает место, тем же приёмом, что и
+   * собственные исходы «Не успеваю»/«Нет сил» ниже.
+   */
+  if (todayFocusPicked) {
+    return (
+      <div className="rounded-[24px] bg-emerald px-5 py-4 mb-4 border border-cream/10 animate-fade-in">
+        <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
+          Утро учтено
+        </span>
+
+        <h2 className="font-display text-[18px] text-cream">
+          Фокус дня уже выбран
+        </h2>
+
+        <p className="text-[12px] text-muted mt-1 leading-relaxed">
+          Ритуалы остаются доступны в «Практики», когда будет время.
+        </p>
+      </div>
+    )
   }
 
 
