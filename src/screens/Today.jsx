@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import {
   ChevronRight,
   ArrowUpRight,
@@ -15,6 +16,7 @@ import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
+import CardSystemGlyph from '../components/CardSystemGlyph'
 import {
   DayThread,
   DayThreadTrigger,
@@ -764,9 +766,18 @@ export default function Today({
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in">
+      <div className={`rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in ${
+        cardSystemPreviewEnabled ? 'mx-card-system-today-hero' : ''
+      }`}>
         {motionExperimentEnabled
-          ? <FocusMark />
+          ? cardSystemPreviewEnabled
+            ? (
+              <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
+                <CardSystemGlyph kind="path-corridor" />
+                <span>один следующий шаг</span>
+              </div>
+            )
+            : <FocusMark />
           : heroArt}
 
 
