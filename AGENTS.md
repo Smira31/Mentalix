@@ -45,6 +45,12 @@ Read before making non-trivial changes, in this order: `PRODUCT.md` (why/for who
 `TASKS.md` — там рабочая папка, ветка, статус незакоммиченных изменений и что
 нельзя менять без согласования.
 
+Before asking the owner to repeat prior Mentalix context, inspect the current
+`TASKS.md` handoff, `CHANGES.md`, the relevant normative document, and the existing
+UI Lab/Motion Kit implementation. Chat history is secondary evidence and never
+overrides current code or normative docs. Ask only when the choice is genuinely new
+or the sources conflict.
+
 `docs/archive/CONTEXT.md` and `STOIC_FEATURES.md` are historical/legacy — context only,
 never source of truth. On conflict, priority is, in order:
 
