@@ -23,6 +23,13 @@ const uiLabRequested =
   ).get('ui_lab') === '1'
 
 
+const motionKitRequested =
+  import.meta.env.DEV
+  && new URLSearchParams(
+    window.location.search,
+  ).get('motion_kit') === '1'
+
+
 const onboardingPreviewRequested =
   import.meta.env.DEV
   && new URLSearchParams(
@@ -48,6 +55,15 @@ const UiExperiments = import.meta.env.DEV
   : null
 
 
+const PracticeMotionKit = import.meta.env.DEV
+  ? lazy(() =>
+      import(
+        './components/ui-lab/PracticeMotionKit'
+      ),
+    )
+  : null
+
+
 const OnboardingPreview = import.meta.env.DEV
   ? lazy(() =>
       import('./screens/Onboarding'),
@@ -56,6 +72,21 @@ const OnboardingPreview = import.meta.env.DEV
 
 
 function RootScreen() {
+  if (
+    motionKitRequested
+    && PracticeMotionKit
+  ) {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-[100dvh] bg-emerald-deep" />
+        }
+      >
+        <PracticeMotionKit />
+      </Suspense>
+    )
+  }
+
   if (
     onboardingPreviewRequested
     && OnboardingPreview
