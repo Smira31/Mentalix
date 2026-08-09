@@ -1,6 +1,8 @@
 import js from '@eslint/js'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
+import prettierPlugin from 'eslint-plugin-prettier'
+import prettierConfig from 'eslint-config-prettier'
 
 export default [
   { ignores: ['dist', 'node_modules'] },
@@ -17,15 +19,27 @@ export default [
     },
     plugins: {
       'react-hooks': reactHooks,
+      prettier: prettierPlugin,
     },
     rules: {
       ...js.configs.recommended.rules,
+      ...prettierConfig.rules,
+
+      // Существующий код местами намеренно бьёт выражения на несколько
+      // строк (одна деструктурируемая переменная на строку и т.п.) —
+      // Prettier так не умеет и переписал бы это в одну строку. Включать
+      // 'prettier/prettier' как активное правило значит утопить реальные
+      // предупреждения (хуки, unused-vars) в тысячах чисто форматных
+      // разногласий. Плагин подключён ради интеграции с eslint (`lint:fix`
+      // не конфликтует с `format`), само правило выключено до отдельного
+      // решения о едином стиле форматирования по всему проекту.
+      'prettier/prettier': 'off',
 
       // Правила хуков пока предупреждения, а не ошибки: в коде 25 находок,
       // и разбирать их надо осознанно, экран за экраном. Когда счётчик
       // дойдёт до нуля — поднять до 'error'.
       ...Object.fromEntries(
-        Object.keys(reactHooks.configs.recommended.rules).map((r) => [r, 'warn']),
+        Object.keys(reactHooks.configs.recommended.rules).map(r => [r, 'warn'])
       ),
 
       'no-empty': 'warn',
@@ -48,10 +62,7 @@ export default [
 
       // Неиспользуемые переменные — предупреждение, чтобы не блокировать
       // работу. Аргументы с подчёркиванием игнорируются намеренно.
-      'no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^[A-Z_]' },
-      ],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^[A-Z_]' }],
     },
   },
 

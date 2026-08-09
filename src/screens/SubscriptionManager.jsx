@@ -28,7 +28,7 @@ const TIERS = [
   },
 ]
 
-export default function SubscriptionManager({ user, tier, onBack }) {
+export default function SubscriptionManager({ user: _user, tier, onBack }) {
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
       <div className="w-full flex items-center gap-2 mb-6">
@@ -38,7 +38,7 @@ export default function SubscriptionManager({ user, tier, onBack }) {
         <h1 className="font-display text-xl text-cream">Подписка</h1>
       </div>
 
-      {TIERS.map((t) => {
+      {TIERS.map(t => {
         const isCurrent = tier === t.key
         return (
           <div
@@ -57,7 +57,7 @@ export default function SubscriptionManager({ user, tier, onBack }) {
             </div>
             <p className="text-sm text-muted mb-4">{t.price}</p>
             <ul className="space-y-2 mb-4">
-              {t.features.map((f) => (
+              {t.features.map(f => (
                 <li key={f} className="flex items-start gap-2 text-sm text-cream">
                   <Check size={15} className="text-gold shrink-0 mt-0.5" />
                   {f}
@@ -77,7 +77,8 @@ export default function SubscriptionManager({ user, tier, onBack }) {
       })}
 
       <p className="text-xs text-muted text-center px-4">
-        Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем обновлении.
+        Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем
+        обновлении.
       </p>
     </div>
   )
