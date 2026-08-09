@@ -3,6 +3,11 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'import.meta.env.VERCEL_ENV': JSON.stringify(
+      globalThis.process?.env?.VERCEL_ENV || '',
+    ),
+  },
   server: {
     host: true,
     port: 5173,
