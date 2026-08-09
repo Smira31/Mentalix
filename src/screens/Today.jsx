@@ -496,7 +496,6 @@ export default function Today({
         }
         onPicked={(entry) => {
           setTodayFocus(entry)
-          changeSub(null)
         }}
       />
     )
