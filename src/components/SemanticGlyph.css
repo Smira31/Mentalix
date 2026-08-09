@@ -111,6 +111,19 @@
   opacity: 0.24;
 }
 
+.mx-semantic-glyph__ritual-runner {
+  transform-box: view-box;
+  transform-origin: 110px 78px;
+}
+
+.mx-semantic-glyph__asceza-direction,
+.mx-semantic-glyph__asceza-memory,
+.mx-semantic-glyph__asceza-ring,
+.mx-semantic-glyph__asceza-point {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
 .mx-semantic-glyph__exercise-nodes circle {
   fill: rgb(var(--c-line-secondary));
 }
@@ -247,6 +260,23 @@
   animation: mx-semantic-sleep-lower 6.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-runner {
+  animation: mx-semantic-orbit 9s linear infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__asceza-memory {
+  animation: mx-semantic-release-loop 6.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__asceza-direction {
+  animation: mx-semantic-find-exit 6.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__asceza-ring,
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__asceza-point {
+  animation: mx-semantic-choice-pulse 6.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
 @keyframes mx-semantic-connect {
   0%, 20%, 100% { opacity: 0.16; stroke-dashoffset: 72; }
   48%, 72% { opacity: 1; stroke-dashoffset: 0; stroke: rgb(var(--c-line)); }
@@ -334,6 +364,25 @@
 @keyframes mx-semantic-sleep-lower {
   0%, 24%, 100% { transform: translateY(0) scaleY(1); }
   58%, 78% { transform: translateY(-7px) scaleY(0.78); stroke: rgb(var(--c-line)); }
+}
+
+@keyframes mx-semantic-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes mx-semantic-release-loop {
+  0%, 18%, 100% { opacity: 0.34; transform: scale(1); }
+  52%, 78% { opacity: 0.12; transform: scale(0.97); }
+}
+
+@keyframes mx-semantic-find-exit {
+  0%, 18%, 100% { opacity: 0.34; transform: translate(-5px, -3px); }
+  52%, 78% { opacity: 1; transform: translate(0, 0); }
+}
+
+@keyframes mx-semantic-choice-pulse {
+  0%, 22%, 100% { transform: scale(0.94); }
+  48%, 74% { transform: scale(1.06); }
 }
 
 @media (prefers-reduced-motion: reduce) {

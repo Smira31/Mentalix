@@ -331,12 +331,14 @@ function Drawing({ kind }) {
             <path className="mx-semantic-glyph__asceza-memory" d="M31 80C31 43 68 25 104 43C132 57 132 103 104 117C72 133 43 113 43 84C43 60 61 45 84 45" />
             <path d="M34 81C34 52 58 32 87 38C105 42 115 57 115 72" />
             <path className="mx-semantic-glyph__asceza-return" d="M115 88C115 106 99 120 80 120C54 120 35 104 34 81" />
-            <path className="mx-semantic-glyph__asceza-faded-exit" d="M126 72C142 63 160 58 184 60" />
-            <path className="mx-semantic-glyph__asceza-exit" d="M126 88C143 96 162 99 188 96" />
-            <path className="mx-semantic-glyph__asceza-arrow" d="M178 88L188 96L177 103" />
+            <g className="mx-semantic-glyph__asceza-direction">
+              <path className="mx-semantic-glyph__asceza-faded-exit" d="M126 72C142 63 160 58 184 60" />
+              <path className="mx-semantic-glyph__asceza-exit" d="M126 88C143 96 162 99 188 96" />
+              <path className="mx-semantic-glyph__asceza-arrow" d="M178 88L188 96L177 103" />
+            </g>
             <circle className="mx-semantic-glyph__asceza-node" cx="62" cy="43" r="2.2" />
-            <circle className="mx-semantic-glyph__focus-ring" cx="120" cy="80" r="11" />
-            <circle className="mx-semantic-glyph__point" cx="120" cy="80" r="5.5" />
+            <circle className="mx-semantic-glyph__focus-ring mx-semantic-glyph__asceza-ring" cx="120" cy="80" r="11" />
+            <circle className="mx-semantic-glyph__point mx-semantic-glyph__asceza-point" cx="120" cy="80" r="5.5" />
           </g>
         </>
       )
@@ -363,7 +365,9 @@ function Drawing({ kind }) {
             </g>
             <circle className="mx-semantic-glyph__focus-ring" cx="110" cy="78" r="10" />
             <circle className="mx-semantic-glyph__point" cx="110" cy="78" r="6" />
-            <circle className="mx-semantic-glyph__point" cx="169" cy="77" r="5" />
+            <g className="mx-semantic-glyph__ritual-runner">
+              <circle className="mx-semantic-glyph__point" cx="169" cy="77" r="5" />
+            </g>
           </g>
         </>
       )
