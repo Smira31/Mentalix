@@ -57,6 +57,59 @@
   stroke-linejoin: round;
 }
 
+.mx-semantic-glyph__ritual-orbits ellipse {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mx-semantic-glyph__ritual-orbit-main {
+  stroke: rgb(var(--c-line));
+  stroke-width: 1.35;
+}
+
+.mx-semantic-glyph__ritual-orbit-faint {
+  opacity: 0.34;
+}
+
+.mx-semantic-glyph__ritual-orbit-soft {
+  opacity: 0.48;
+}
+
+.mx-semantic-glyph__ritual-orbit-dashed {
+  opacity: 0.34;
+  stroke-dasharray: 2 4;
+}
+
+.mx-semantic-glyph__ritual-orbit-faint:first-child {
+  stroke-dasharray: 3 5;
+}
+
+.mx-semantic-glyph__ritual-nodes circle {
+  fill: rgb(var(--c-line-secondary));
+}
+
+.mx-semantic-glyph__ritual-nodes circle:nth-child(2),
+.mx-semantic-glyph__ritual-nodes circle:nth-child(5) {
+  opacity: 0.68;
+}
+
+.mx-semantic-glyph__focus-ring {
+  fill: none;
+  stroke: rgb(var(--c-gold));
+  stroke-width: 1;
+  opacity: 0.24;
+}
+
+.mx-semantic-glyph__ritual-runner,
+.mx-semantic-glyph__ritual-orbit-layer {
+  transform-box: view-box;
+  transform-origin: 110px 78px;
+}
+
 .mx-semantic-glyph__exercise-nodes circle {
   fill: rgb(var(--c-line-secondary));
 }
@@ -198,6 +251,22 @@
   animation: mx-semantic-sleep-lower 6.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-runner {
+  animation: mx-semantic-orbit 9s linear infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-layer--outer {
+  animation: mx-semantic-orbit-layer 36s linear infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-layer--middle {
+  animation: mx-semantic-orbit-layer 48s linear infinite reverse;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-layer--cross {
+  animation: mx-semantic-orbit-layer 64s linear infinite;
+}
+
 @keyframes mx-semantic-connect {
   0%, 20%, 100% { opacity: 0.16; stroke-dashoffset: 72; }
   48%, 72% { opacity: 1; stroke-dashoffset: 0; stroke: rgb(var(--c-line)); }
@@ -290,6 +359,14 @@
 @keyframes mx-semantic-sleep-lower {
   0%, 24%, 100% { transform: translateY(0) scaleY(1); }
   58%, 78% { transform: translateY(-7px) scaleY(0.78); stroke: rgb(var(--c-line)); }
+}
+
+@keyframes mx-semantic-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes mx-semantic-orbit-layer {
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {

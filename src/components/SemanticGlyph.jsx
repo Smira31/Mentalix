@@ -341,10 +341,35 @@ function Drawing({ kind }) {
     case 'ritual':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__ritual-marks"><path d="M34 76V52M52 76V44M70 76V36M88 76V48M106 76V40M124 76V56" /></g>
-          <path className="mx-semantic-glyph__horizon" d="M26 76H134" />
-          <circle className="mx-semantic-glyph__point" cx="70" cy="36" r="4" />
+          <g transform="translate(3 0) scale(.7)">
+            <g className="mx-semantic-glyph__ritual-orbits">
+              <g className="mx-semantic-glyph__ritual-orbit-layer mx-semantic-glyph__ritual-orbit-layer--outer">
+                <ellipse className="mx-semantic-glyph__ritual-orbit-faint" cx="110" cy="78" rx="76" ry="45" transform="rotate(-8 110 78)" />
+                <ellipse className="mx-semantic-glyph__ritual-orbit-main" cx="110" cy="78" rx="69" ry="42" transform="rotate(10 110 78)" />
+              </g>
+              <g className="mx-semantic-glyph__ritual-orbit-layer mx-semantic-glyph__ritual-orbit-layer--middle">
+                <ellipse cx="110" cy="78" rx="58" ry="33" transform="rotate(-18 110 78)" />
+                <ellipse className="mx-semantic-glyph__ritual-orbit-soft" cx="110" cy="78" rx="43" ry="25" transform="rotate(7 110 78)" />
+                <ellipse className="mx-semantic-glyph__ritual-orbit-dashed" cx="110" cy="78" rx="29" ry="17" transform="rotate(-12 110 78)" />
+              </g>
+              <g className="mx-semantic-glyph__ritual-orbit-layer mx-semantic-glyph__ritual-orbit-layer--cross">
+                <ellipse className="mx-semantic-glyph__ritual-orbit-soft" cx="110" cy="78" rx="31" ry="67" transform="rotate(58 110 78)" />
+                <ellipse className="mx-semantic-glyph__ritual-orbit-faint" cx="110" cy="78" rx="37" ry="70" transform="rotate(73 110 78)" />
+              </g>
+            </g>
+            <g className="mx-semantic-glyph__ritual-nodes">
+              <circle cx="48" cy="76" r="2.4" />
+              <circle cx="78" cy="43" r="2.2" />
+              <circle cx="144" cy="47" r="2.5" />
+              <circle cx="139" cy="111" r="2.4" />
+              <circle cx="81" cy="111" r="2.1" />
+            </g>
+            <circle className="mx-semantic-glyph__focus-ring" cx="110" cy="78" r="10" />
+            <circle className="mx-semantic-glyph__point" cx="110" cy="78" r="6" />
+            <g className="mx-semantic-glyph__ritual-runner">
+              <circle className="mx-semantic-glyph__point" cx="169" cy="77" r="5" />
+            </g>
+          </g>
         </>
       )
 
