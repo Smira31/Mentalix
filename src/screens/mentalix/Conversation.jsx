@@ -18,6 +18,7 @@ import { api } from '../../lib/api'
 import { useSynced } from '../../lib/store'
 
 import { PERSONAS } from './personas'
+import './Conversation.css'
 
 
 const VOICE_HINT_KEY = 'mx-voice-hint-v1'
@@ -75,6 +76,18 @@ export default function Conversation({
   }, [sending])
 
   const hasText = Boolean(input.trim())
+
+  const iconKey =
+    voiceState === 'recording'
+      ? 'recording'
+      : voiceState === 'transcribing'
+        ? 'transcribing'
+        : hasText
+          ? 'send'
+          : 'mic'
+
+  const [voicePressed, setVoicePressed] =
+    useState(false)
 
   const [voiceHintSeen, setVoiceHintSeen] =
     useSynced(VOICE_HINT_KEY, '0')
@@ -473,7 +486,7 @@ export default function Conversation({
               return (
                 <div
                   key={index}
-                  className="w-full"
+                  className="w-full mx-msg-in"
                 >
                   <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-2.5">
                     {meta.name}
@@ -607,10 +620,16 @@ export default function Conversation({
               {...(hasText && voiceState === 'idle'
                 ? {
                     onClick: onSend,
+                    onPointerDown: () => setVoicePressed(true),
+                    onPointerUp: () => setVoicePressed(false),
+                    onPointerLeave: () => setVoicePressed(false),
+                    onPointerCancel: () => setVoicePressed(false),
                   }
                 : {
                     onPointerDown: (event) => {
                       event.preventDefault()
+
+                      setVoicePressed(true)
 
                       if (voiceState === 'idle') {
                         startVoiceRecording()
@@ -618,18 +637,24 @@ export default function Conversation({
                     },
 
                     onPointerUp: () => {
+                      setVoicePressed(false)
+
                       if (voiceState === 'recording') {
                         stopVoiceRecording()
                       }
                     },
 
                     onPointerLeave: () => {
+                      setVoicePressed(false)
+
                       if (voiceState === 'recording') {
                         stopVoiceRecording()
                       }
                     },
 
                     onPointerCancel: () => {
+                      setVoicePressed(false)
+
                       if (voiceState === 'recording') {
                         stopVoiceRecording()
                       }
@@ -653,7 +678,10 @@ export default function Conversation({
                   : sending || voiceState === 'transcribing'
               }
 
-              className="w-[54px] h-[54px] rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 transition-transform active:scale-90"
+              className={[
+                'w-[54px] h-[54px] rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 mx-voice-btn',
+                voicePressed ? 'mx-voice-btn-pressed' : '',
+              ].join(' ')}
 
               aria-label={
                 hasText && voiceState === 'idle'
@@ -665,15 +693,20 @@ export default function Conversation({
                       : 'Нажми и удерживай, чтобы записать голосовое'
               }
             >
-              {voiceState === 'recording' ? (
-                <Square size={20} fill="currentColor" />
-              ) : voiceState === 'transcribing' ? (
-                <LoaderCircle size={24} className="animate-spin" />
-              ) : hasText ? (
-                <ArrowRight size={25} strokeWidth={1.9} />
-              ) : (
-                <Mic size={25} strokeWidth={1.7} />
-              )}
+              <span
+                key={iconKey}
+                className="mx-voice-icon"
+              >
+                {voiceState === 'recording' ? (
+                  <Square size={20} fill="currentColor" />
+                ) : voiceState === 'transcribing' ? (
+                  <LoaderCircle size={24} className="animate-spin" />
+                ) : hasText ? (
+                  <ArrowRight size={25} strokeWidth={1.9} />
+                ) : (
+                  <Mic size={25} strokeWidth={1.7} />
+                )}
+              </span>
             </button>
           </div>
 

@@ -1,0 +1,83 @@
+/*
+ * Микро-анимации composer'а и появления сообщений.
+ * Кривые и диапазон тактильного масштаба — тот же принцип,
+ * что в SemanticGlyph.css и MENTALIX_SEMANTIC_MOTION.md §4:
+ * быстрый интерактивный отклик — cubic-bezier(0.23, 1, 0.32, 1),
+ * 140–240ms; тактильный масштаб нажатия — 0.97–0.985.
+ * Анимируются только transform и opacity.
+ */
+
+.mx-voice-icon {
+  display: flex;
+  animation: mx-voice-icon-in 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes mx-voice-icon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mx-voice-btn {
+  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mx-voice-btn.mx-voice-btn-pressed {
+  transform: scale(0.975);
+}
+
+.mx-msg-in {
+  animation: mx-msg-in 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes mx-msg-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-voice-icon {
+    animation: mx-voice-icon-in-reduced 200ms ease both;
+  }
+
+  .mx-voice-btn.mx-voice-btn-pressed {
+    transform: none;
+  }
+
+  .mx-msg-in {
+    animation: mx-msg-in-reduced 360ms ease both;
+  }
+}
+
+@keyframes mx-voice-icon-in-reduced {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes mx-msg-in-reduced {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
