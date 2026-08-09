@@ -1,4 +1,8 @@
-import { useState } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
@@ -39,6 +43,27 @@ export default function TodayFocusFlow({
   const [items, setItems] =
     useState(initialItems)
 
+  const textareaRef = useRef(null)
+  const scrollRef = useRef(null)
+
+
+  /*
+   * После шага input клавиатура закрыта явным blur (а не
+   * оставлена браузеру), а прокручиваемая область шага pick
+   * возвращается к началу — иначе на iPhone под закрывающейся
+   * клавиатурой остаётся прежний скролл, и шапка «pick» уходит
+   * за край экрана. Синхронизировано с рендером через эффект от
+   * step, без произвольных таймеров.
+   */
+  useEffect(() => {
+    if (
+      step === 'pick'
+      && scrollRef.current
+    ) {
+      scrollRef.current.scrollTop = 0
+    }
+  }, [step])
+
 
   function goToPick() {
     const parsed = text
@@ -49,6 +74,8 @@ export default function TodayFocusFlow({
     if (parsed.length === 0) return
 
     platform.haptic('light')
+
+    textareaRef.current?.blur()
 
     setItems(parsed)
     setStep('pick')
@@ -80,6 +107,7 @@ export default function TodayFocusFlow({
       </div>
 
       <div
+        ref={scrollRef}
         className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}
       >
         {step === 'input' && (
@@ -97,6 +125,7 @@ export default function TodayFocusFlow({
             </p>
 
             <textarea
+              ref={textareaRef}
               autoFocus
               rows={7}
               value={text}
@@ -106,7 +135,7 @@ export default function TodayFocusFlow({
               placeholder={
                 'Например:\nНаписать отчёт\nРазобрать почту\nПозвонить в поликлинику'
               }
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[15px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
             />
 
             <button
@@ -147,13 +176,15 @@ export default function TodayFocusFlow({
               ))}
             </div>
 
-            <button
-              type="button"
-              onClick={() => setStep('input')}
-              className="text-[12px] font-semibold text-muted mt-5 active:opacity-60"
-            >
-              Изменить список
-            </button>
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => setStep('input')}
+                className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+              >
+                Изменить список
+              </button>
+            </div>
           </div>
         )}
       </div>
