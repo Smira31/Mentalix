@@ -38,6 +38,8 @@ There is no test suite, no typecheck script (project is JS despite a couple of s
 
 Read before making non-trivial changes, in this order: `PRODUCT.md` (why/for whom),
 `DESIGN_SYSTEM.md` (actual tokens/UI rules — code + this doc are the source of truth),
+`MENTALIX_SEMANTIC_MOTION.md` (semantic illustrations, motion language and the
+`MX-UI-XX` catalog),
 `ARCHITECTURE.md` (frontend structure and technical boundaries), `ROADMAP.md`, `TASKS.md`
 (current work), `AI_RULES.md` (mandatory process for AI agents working in this repo).
 
@@ -59,6 +61,23 @@ brand text, AI persona, API contracts, payments/security/age-gating, or new
 dependency/architectural layer), the required verification checklist per change (build +
 scenario + loading/error/empty + mobile viewport + Telegram/web if platform layer
 touched), and the required after-work updates to `CHANGES.md`/`TASKS.md`/`ROADMAP.md`.
+
+### Semantic UI routing
+
+For every request involving UI cards, illustrations, SVG, semantic geometry, animation,
+motion, orbits, circles, arcs, lines, the Day Thread (`Нить дня`), UI Lab, or phrases such
+as «сделай в том же стиле», first read `MENTALIX_SEMANTIC_MOTION.md` and then inspect the
+live source files referenced there. This rule applies even when the user does not name
+the document explicitly.
+
+- Use stable IDs `MX-UI-01`–`MX-UI-24` in specifications, handoffs and comparisons.
+- Treat `?ui_lab=1` and its source code as the exact interactive visual reference; the
+  documentation is the index of meaning, trigger, status and reuse rules.
+- Reuse or extend `SemanticGlyph` instead of creating a disconnected SVG copy.
+- A liked or named laboratory reference does not authorize a production-screen change.
+  Moving it into a real screen still requires explicit owner approval.
+- `REFERENCE_WORKFLOW.md` governs analysis of external references; it must not replace or
+  duplicate the internal Mentalix catalog.
 
 ## Architecture
 
