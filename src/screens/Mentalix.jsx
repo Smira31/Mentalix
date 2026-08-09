@@ -55,8 +55,15 @@ function Chat({
   ])
 
 
-  async function send() {
-    const text = input.trim()
+  async function send(overrideText) {
+    const isVoiceMessage =
+      typeof overrideText === 'string'
+
+    const text = (
+      isVoiceMessage
+        ? overrideText
+        : input
+    ).trim()
 
     if (
       !text ||
@@ -65,7 +72,10 @@ function Chat({
       return
     }
 
-    setInput('')
+    if (!isVoiceMessage) {
+      setInput('')
+    }
+
     setMessages((previous) => [
       ...previous,
       {

@@ -52,6 +52,7 @@ export default function Conversation({
   const chunksRef = useRef([])
   const stopTimerRef = useRef(null)
   const secondsTimerRef = useRef(null)
+  const sendingRef = useRef(sending)
 
   const [voiceState, setVoiceState] =
     useState('idle')
@@ -64,6 +65,10 @@ export default function Conversation({
     typeof navigator !== 'undefined'
     && Boolean(navigator.mediaDevices?.getUserMedia)
     && typeof MediaRecorder !== 'undefined'
+
+  useEffect(() => {
+    sendingRef.current = sending
+  }, [sending])
 
 
   function scrollToEnd(
@@ -230,13 +235,16 @@ export default function Conversation({
             throw new Error('empty transcript')
           }
 
-          setInput((current) =>
-            [current.trim(), transcript]
-              .filter(Boolean)
-              .join(' '),
-          )
+          if (sendingRef.current) {
+            setVoiceError(
+              'Не удалось отправить голосовое сообщение, дождитесь отправки текущего.',
+            )
+            return
+          }
 
           platform.haptic('medium')
+
+          onSend(transcript)
         } catch (error) {
           console.error(error)
           const message = String(error?.message || '')
