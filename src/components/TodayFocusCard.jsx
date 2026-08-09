@@ -46,13 +46,21 @@ export default function TodayFocusCard({
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
       <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
-        Точка внимания · сегодня
+        {focus.firstStep
+          ? 'Первый шаг · до 5 минут'
+          : 'Точка внимания · сегодня'}
       </span>
 
-      <div className="rounded-2xl px-4 py-3.5 flex items-center gap-3 bg-gold/10 border border-gold/25">
-        <span className="flex-1 min-w-0 text-left text-[15px] font-bold text-cream truncate">
-          {focus.picked}
+      <div className="rounded-2xl px-4 py-3.5 bg-gold/10 border border-gold/25">
+        <span className="block text-left text-[15px] font-bold text-cream leading-snug">
+          {focus.firstStep || focus.picked}
         </span>
+
+        {focus.firstStep && (
+          <span className="block text-left text-[12px] text-muted mt-1.5 truncate">
+            {focus.picked}
+          </span>
+        )}
       </div>
 
       {rest.length > 0 && (

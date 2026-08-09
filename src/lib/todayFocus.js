@@ -93,6 +93,52 @@ export function saveTodayFocusPick(
 
 
 /*
+ * Пишет первый шаг отдельным патчем той же записи дня — тот
+ * же приём, что и у clearTodayFocusPick: не переписывает
+ * items/picked, меняет только одно поле.
+ */
+export function saveTodayFocusFirstStep(
+  userId,
+  firstStep,
+  date = new Date(),
+) {
+  if (!userId) return null
+
+  const key = storageKey(userId)
+  const day = localDayId(date)
+  const log = parseLog(
+    readLocal(key),
+  )
+
+  const previous = log.find(
+    (entry) => entry.day === day,
+  )
+
+  if (!previous) return null
+
+  const nextEntry = {
+    ...previous,
+    firstStep,
+  }
+
+  const nextLog = [
+    ...log.filter(
+      (entry) =>
+        entry.day !== day,
+    ),
+    nextEntry,
+  ]
+
+  writeLocal(
+    key,
+    JSON.stringify(nextLog),
+  )
+
+  return nextEntry
+}
+
+
+/*
  * Снимает выбор, но не список: пользователь передумал по
  * поводу фокуса дня, а не решил стереть введённые дела.
  */
