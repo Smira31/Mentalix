@@ -276,13 +276,24 @@
 
 .mx-motion-glyph__guide,
 .mx-motion-glyph__lines,
-.mx-motion-glyph__network,
-.mx-motion-glyph__network-bridge,
+.mx-motion-glyph__boundary,
+.mx-motion-glyph__threshold,
+.mx-motion-glyph__synapse-network,
+.mx-motion-glyph__synapse-route,
+.mx-motion-glyph__breath-aperture,
+.mx-motion-glyph__focus-beams,
+.mx-motion-glyph__focus-guides,
+.mx-motion-glyph__focus-axis,
+.mx-motion-glyph__focus-plane,
+.mx-motion-glyph__contours,
 .mx-motion-glyph__morning-body,
 .mx-motion-glyph__morning-radiance,
 .mx-motion-glyph__gate-left,
 .mx-motion-glyph__gate-right,
-.mx-motion-glyph__energy {
+.mx-motion-glyph__path-wall,
+.mx-motion-glyph__path-route,
+.mx-motion-glyph__energy-field,
+.mx-motion-glyph__energy-axis {
   fill: none;
   stroke: rgb(var(--c-line-secondary));
   stroke-width: 1;
@@ -294,58 +305,131 @@
   opacity: 0.16;
 }
 
-.mx-motion-glyph__soft,
 .mx-motion-glyph__morning-radiance,
-.mx-motion-glyph__energy--outer {
+.mx-motion-glyph__focus-guides,
+.mx-motion-glyph__energy-field--outer {
   opacity: 0.42;
 }
 
-.mx-motion-glyph__network circle,
+.mx-motion-glyph__synapse-network circle,
 .mx-motion-glyph__morning-body circle {
   fill: rgb(var(--c-line-secondary));
   stroke: none;
 }
 
-.mx-motion-glyph__network-bridge {
+.mx-motion-glyph__synapse-route,
+.mx-motion-glyph__path-route,
+.mx-motion-glyph__focus-axis,
+.mx-motion-glyph__energy-axis {
   stroke: rgb(var(--c-line));
-  stroke-dasharray: 80;
+}
+
+.mx-motion-glyph__synapse-route {
+  opacity: 0.28;
+  stroke-dasharray: 5 8;
+}
+
+.mx-motion-glyph__path-route {
+  opacity: 0.36;
+  stroke-dasharray: 4 7;
+}
+
+.mx-motion-glyph__focus-axis {
+  opacity: 0.78;
+  stroke-dasharray: 58;
+}
+
+.mx-motion-glyph__focus-plane {
+  opacity: 0.3;
+}
+
+.mx-motion-glyph__energy-axis {
+  opacity: 0.32;
 }
 
 .mx-motion-glyph__point {
   fill: rgb(var(--c-gold));
 }
 
-.mx-motion-glyph__lens-left,
-.mx-motion-glyph__lens-right,
-.mx-motion-glyph__network,
-.mx-motion-glyph__network-bridge,
+.mx-motion-glyph__boundary,
+.mx-motion-glyph__threshold,
+.mx-motion-glyph__synapse-network,
+.mx-motion-glyph__synapse-route,
+.mx-motion-glyph__breath-aperture,
+.mx-motion-glyph__focus-beams,
+.mx-motion-glyph__focus-guides,
+.mx-motion-glyph__focus-axis,
+.mx-motion-glyph__focus-plane,
+.mx-motion-glyph__contours,
 .mx-motion-glyph__morning-body,
 .mx-motion-glyph__morning-radiance,
 .mx-motion-glyph__gate-left,
 .mx-motion-glyph__gate-right,
-.mx-motion-glyph__energy {
+.mx-motion-glyph__path-wall,
+.mx-motion-glyph__path-route,
+.mx-motion-glyph__energy-field,
+.mx-motion-glyph__energy-axis,
+.mx-motion-glyph__synapse-signal,
+.mx-motion-glyph__path-signal,
+.mx-motion-glyph__energy-signal {
   transform-box: view-box;
   transform-origin: 80px 56px;
 }
 
-.mx-motion-glyph[data-animated='true'].mx-motion-glyph--asceza-lens .mx-motion-glyph__lens-left {
-  animation: mx-motion-lens-left 11.5s ease-in-out infinite;
+.mx-motion-glyph__breath-diagonal {
+  opacity: 0.18;
 }
 
-.mx-motion-glyph[data-animated='true'].mx-motion-glyph--asceza-lens .mx-motion-glyph__lens-right {
-  animation: mx-motion-lens-right 11.5s ease-in-out infinite;
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--asceza-boundary .mx-motion-glyph__boundary--outer {
+  animation: mx-motion-boundary-outer 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-motion-glyph[data-animated='true'].mx-motion-glyph--neuro-network .mx-motion-glyph__network--left {
-  animation: mx-motion-network-left 14s ease-in-out infinite;
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--asceza-boundary .mx-motion-glyph__boundary--inner {
+  animation: mx-motion-boundary-inner 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-motion-glyph[data-animated='true'].mx-motion-glyph--neuro-network .mx-motion-glyph__network--right {
-  animation: mx-motion-network-right 14s ease-in-out infinite;
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--asceza-boundary .mx-motion-glyph__threshold {
+  animation: mx-motion-threshold 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-motion-glyph[data-animated='true'].mx-motion-glyph--neuro-network .mx-motion-glyph__network-bridge {
-  animation: mx-motion-network-signal 9s ease-in-out infinite;
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--neuro-synapse .mx-motion-glyph__synapse-network {
+  animation: mx-motion-synapse-network 13.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--neuro-synapse .mx-motion-glyph__synapse-signal {
+  animation: mx-motion-synapse-signal 13.5s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--breath-aperture .mx-motion-glyph__breath-aperture {
+  animation: mx-motion-breath-aperture 9.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--focus-convergence .mx-motion-glyph__focus-beams {
+  animation: mx-motion-focus-beams 10.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--focus-convergence .mx-motion-glyph__focus-guides {
+  animation: mx-motion-focus-guides 10.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--focus-convergence .mx-motion-glyph__focus-axis {
+  animation: mx-motion-focus-axis 10.8s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--focus-convergence .mx-motion-glyph__focus-plane {
+  animation: mx-motion-focus-plane 10.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--meditation-contours .mx-motion-glyph__contours--outer {
+  animation: mx-motion-contour-outer 14s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--meditation-contours .mx-motion-glyph__contours--middle {
+  animation: mx-motion-contour-middle 14s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--meditation-contours .mx-motion-glyph__contours--inner {
+  animation: mx-motion-contour-inner 14s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 .mx-motion-glyph[data-animated='true'].mx-motion-glyph--morning-exercise .mx-motion-glyph__morning-body {
@@ -364,12 +448,28 @@
   animation: mx-motion-gate-right 10.5s ease-in-out infinite;
 }
 
-.mx-motion-glyph[data-animated='true'].mx-motion-glyph--energy-wave .mx-motion-glyph__energy--outer {
-  animation: mx-motion-energy-outer 12s ease-in-out infinite;
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--path-corridor .mx-motion-glyph__path-wall--left {
+  animation: mx-motion-path-left 11.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-motion-glyph[data-animated='true'].mx-motion-glyph--energy-wave .mx-motion-glyph__energy--inner {
-  animation: mx-motion-energy-inner 12s ease-in-out infinite;
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--path-corridor .mx-motion-glyph__path-wall--right {
+  animation: mx-motion-path-right 11.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--path-corridor .mx-motion-glyph__path-signal {
+  animation: mx-motion-path-signal 11.8s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--energy-field .mx-motion-glyph__energy-field--outer {
+  animation: mx-motion-energy-field-outer 10.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--energy-field .mx-motion-glyph__energy-field--inner {
+  animation: mx-motion-energy-field-inner 10.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-motion-glyph[data-animated='true'].mx-motion-glyph--energy-field .mx-motion-glyph__energy-signal {
+  animation: mx-motion-energy-signal 10.4s cubic-bezier(0.23, 1, 0.32, 1) infinite;
 }
 
 .mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-runner {
@@ -388,19 +488,11 @@
   animation-duration: 84s;
 }
 
-.mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-left,
-.mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-right {
-  animation-duration: 9s;
-}
-
-.mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--focus .mx-semantic-glyph__lens-inner,
-.mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__meditation-waves,
 .mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--prayer .mx-semantic-glyph__prayer,
 .mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--purpose .mx-semantic-glyph__purpose-arcs,
 .mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--alcohol .mx-semantic-glyph__decision,
 .mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--smoking .mx-semantic-glyph__decision,
-.mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--smoking .mx-semantic-glyph__smoke,
-.mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--pathfinder .mx-semantic-glyph__path-point {
+.mx-motion-kit__semantic-glyph[data-animated='true'].mx-semantic-glyph--smoking .mx-semantic-glyph__smoke {
   animation-duration: 11s;
 }
 
@@ -496,29 +588,76 @@
   }
 }
 
-@keyframes mx-motion-lens-left {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(7px); stroke: rgb(var(--c-line)); }
+@keyframes mx-motion-boundary-outer {
+  0%, 18%, 100% { opacity: 0.38; transform: scaleX(1); }
+  48%, 72% { opacity: 0.82; transform: scaleX(0.84); stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-motion-lens-right {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(-7px); stroke: rgb(var(--c-line)); }
+@keyframes mx-motion-boundary-inner {
+  0%, 18%, 100% { opacity: 0.48; transform: scaleX(1); }
+  48%, 72% { opacity: 1; transform: scaleX(0.9); }
 }
 
-@keyframes mx-motion-network-left {
-  0%, 100% { transform: translate(-1px, 1px) rotate(-0.8deg); }
-  50% { transform: translate(2px, -1px) rotate(0.8deg); }
+@keyframes mx-motion-threshold {
+  0%, 24%, 100% { opacity: 0.22; transform: scaleY(0.72); }
+  52%, 76% { opacity: 1; transform: scaleY(1); stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-motion-network-right {
-  0%, 100% { transform: translate(1px, -1px) rotate(0.8deg); }
-  50% { transform: translate(-2px, 1px) rotate(-0.8deg); }
+@keyframes mx-motion-synapse-network {
+  0%, 12%, 100% { opacity: 0.38; transform: scale(0.98); }
+  48%, 82% { opacity: 0.86; transform: scale(1); stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-motion-network-signal {
-  0%, 100% { opacity: 0.18; stroke-dashoffset: 80; }
-  46%, 64% { opacity: 1; stroke-dashoffset: 0; }
+@keyframes mx-motion-synapse-signal {
+  0%, 8% { opacity: 0; transform: translate(0, 0); }
+  14% { opacity: 1; transform: translate(0, 0); }
+  27% { transform: translate(18px, -26px); }
+  40% { transform: translate(36px, -12px); }
+  53% { transform: translate(56px, -34px); }
+  66% { transform: translate(76px, -18px); }
+  79% { transform: translate(96px, -40px); }
+  92% { opacity: 1; transform: translate(118px, -22px); }
+  100% { opacity: 0; transform: translate(118px, -22px); }
+}
+
+@keyframes mx-motion-breath-aperture {
+  0%, 16%, 100% { opacity: 0.5; transform: scale(0.76) rotate(-5deg); }
+  48%, 68% { opacity: 1; transform: scale(1.02) rotate(0deg); stroke: rgb(var(--c-line)); }
+}
+
+@keyframes mx-motion-focus-beams {
+  0%, 14%, 100% { opacity: 0.28; transform: scale(1.04); stroke-dasharray: 1 10; stroke-dashoffset: 42; }
+  48%, 72% { opacity: 1; transform: scale(0.94); stroke: rgb(var(--c-line)); stroke-dasharray: 100 0; stroke-dashoffset: 0; }
+}
+
+@keyframes mx-motion-focus-guides {
+  0%, 16%, 100% { opacity: 0.12; transform: translateX(-4px); }
+  48%, 72% { opacity: 0.56; transform: translateX(2px); }
+}
+
+@keyframes mx-motion-focus-axis {
+  0%, 38%, 100% { opacity: 0.16; stroke-dashoffset: 58; }
+  56%, 78% { opacity: 0.92; stroke-dashoffset: 0; stroke: rgb(var(--c-line)); }
+}
+
+@keyframes mx-motion-focus-plane {
+  0%, 20%, 100% { opacity: 0.12; transform: scaleY(0.5); }
+  50%, 76% { opacity: 0.64; transform: scaleY(1); }
+}
+
+@keyframes mx-motion-contour-outer {
+  0%, 100% { opacity: 0.28; transform: translate(-2px, 1px) rotate(-2.2deg) scale(1.02); }
+  46%, 72% { opacity: 0.68; transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+
+@keyframes mx-motion-contour-middle {
+  0%, 100% { opacity: 0.34; transform: translate(2px, -1px) rotate(2deg) scale(0.97); }
+  46%, 72% { opacity: 0.84; transform: translate(0, 0) rotate(0deg) scale(1); stroke: rgb(var(--c-line)); }
+}
+
+@keyframes mx-motion-contour-inner {
+  0%, 100% { opacity: 0.46; transform: translate(-1px, -2px) rotate(-1.4deg) scale(1.05); }
+  46%, 72% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
 }
 
 @keyframes mx-motion-morning-body {
@@ -541,12 +680,38 @@
   50% { transform: translateX(-6px); stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-motion-energy-outer {
-  0%, 100% { opacity: 0.28; transform: scaleX(0.94); }
-  50% { opacity: 0.68; transform: scaleX(1.03); }
+@keyframes mx-motion-path-left {
+  0%, 14%, 100% { opacity: 0.34; transform: translate(-5px, 3px); }
+  42%, 78% { opacity: 0.9; transform: translate(2px, -1px); stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-motion-energy-inner {
-  0%, 100% { opacity: 0.88; transform: scaleX(1.02); }
-  50% { opacity: 0.54; transform: scaleX(0.92); stroke: rgb(var(--c-line)); }
+@keyframes mx-motion-path-right {
+  0%, 14%, 100% { opacity: 0.34; transform: translate(5px, -3px); }
+  42%, 78% { opacity: 0.9; transform: translate(-2px, 1px); stroke: rgb(var(--c-line)); }
+}
+
+@keyframes mx-motion-path-signal {
+  0%, 12% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; transform: translate(0, 0); }
+  48% { transform: translate(54px, -32px); }
+  74% { transform: translate(82px, -58px); }
+  92% { opacity: 1; transform: translate(108px, -66px); }
+  100% { opacity: 0; transform: translate(108px, -66px); }
+}
+
+@keyframes mx-motion-energy-field-outer {
+  0%, 12%, 100% { opacity: 0.32; transform: scaleY(0.74); }
+  46%, 76% { opacity: 0.68; transform: scaleY(1); }
+}
+
+@keyframes mx-motion-energy-field-inner {
+  0%, 12%, 100% { opacity: 0.5; transform: scaleY(0.82); }
+  46%, 76% { opacity: 0.94; transform: scaleY(1.08); stroke: rgb(var(--c-line)); }
+}
+
+@keyframes mx-motion-energy-signal {
+  0%, 6% { opacity: 0; transform: translateX(0); }
+  12% { opacity: 1; transform: translateX(0); }
+  92% { opacity: 1; transform: translateX(128px); }
+  100% { opacity: 0; transform: translateX(128px); }
 }

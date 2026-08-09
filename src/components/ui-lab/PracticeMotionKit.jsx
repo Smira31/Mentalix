@@ -23,42 +23,42 @@ const SECTIONS = [
       {
         id: 'ascezas',
         title: 'Аскезы',
-        subtitle: 'выбор сужается до границы',
-        kind: 'asceza-lens',
-        reference: 'MX-UI-09',
-        state: 'Граница удерживается',
+        subtitle: 'коридор сужается до принятой границы',
+        kind: 'asceza-boundary',
+        reference: 'Вариант 2',
+        state: 'Выбор удержан внутри границы',
       },
       {
         id: 'neuro',
         title: 'Нейротренажёр',
-        subtitle: 'связи собираются в сеть',
-        kind: 'neuro-network',
-        reference: 'MX-UI-22',
-        state: 'Сигнал проходит по сети',
+        subtitle: 'один сигнал пробуждает целую сеть',
+        kind: 'neuro-synapse',
+        reference: 'Вариант 2',
+        state: 'Связи работают вместе',
       },
       {
         id: 'breath',
         title: 'Дыхание',
-        subtitle: 'форма раскрывается и возвращается',
-        kind: 'breath',
-        reference: 'MX-UI-11',
-        state: 'Дыхание выровнялось',
+        subtitle: 'апертура раскрывается вместе со вдохом',
+        kind: 'breath-aperture',
+        reference: 'Вариант 2',
+        state: 'Дыхание стало просторнее',
       },
       {
         id: 'focus',
         title: 'Фокус',
-        subtitle: 'линза удерживает одну точку',
-        kind: 'focus',
-        reference: 'MX-UI-12',
-        state: 'Область внимания собрана',
+        subtitle: 'рассеянные лучи сходятся в одно место',
+        kind: 'focus-convergence',
+        reference: 'Вариант 2',
+        state: 'Внимание сошлось в точке',
       },
       {
         id: 'meditation',
         title: 'Медитации',
-        subtitle: 'волны постепенно оседают',
-        kind: 'meditation',
-        reference: 'MX-UI-14',
-        state: 'Внутри стало тише',
+        subtitle: 'контуры выравниваются вокруг тишины',
+        kind: 'meditation-contours',
+        reference: 'Вариант 2',
+        state: 'Движение внутри утихло',
       },
     ],
   },
@@ -79,18 +79,18 @@ const SECTIONS = [
       {
         id: 'path',
         title: 'Путь',
-        subtitle: 'точка следует по живой траектории',
-        kind: 'pathfinder',
-        reference: 'MX-UI-17',
-        state: 'Направление найдено',
+        subtitle: 'две стороны собирают направление',
+        kind: 'path-corridor',
+        reference: 'Вариант 2',
+        state: 'Маршрут открылся',
       },
       {
         id: 'energy',
         title: 'Энергия',
-        subtitle: 'импульс проходит через всю форму',
-        kind: 'energy-wave',
-        reference: 'MX-UI-18',
-        state: 'Импульс восстановлен',
+        subtitle: 'импульс проходит через всё поле',
+        kind: 'energy-field',
+        reference: 'Вариант 2',
+        state: 'Поток снова движется',
       },
     ],
   },
@@ -167,10 +167,10 @@ const SECTIONS = [
       {
         id: 'conscious-choice',
         title: 'Осознанный отказ',
-        subtitle: 'лишнее отступает от центра',
-        kind: 'asceza-lens',
-        reference: 'MX-UI-09',
-        state: 'Главное осталось в центре',
+        subtitle: 'коридор сужается до принятой границы',
+        kind: 'asceza-boundary',
+        reference: 'Вариант 2',
+        state: 'Выбор удержан внутри границы',
       },
     ],
   },
@@ -188,39 +188,97 @@ function MotionKitGuide() {
 
 
 function MotionKitDrawing({ kind }) {
-  if (kind === 'asceza-lens') {
+  if (kind === 'asceza-boundary') {
     return (
       <>
         <MotionKitGuide />
-        <g className="mx-motion-glyph__lines">
-          <path className="mx-motion-glyph__lens-left" d="M24 56C42 28 62 30 76 56C62 82 42 84 24 56Z" />
-          <path className="mx-motion-glyph__lens-right" d="M136 56C118 28 98 30 84 56C98 82 118 84 136 56Z" />
-          <path d="M80 24V88" />
-          <path className="mx-motion-glyph__soft" d="M52 56C62 42 70 42 76 56C70 70 62 70 52 56ZM108 56C98 42 90 42 84 56C90 70 98 70 108 56Z" />
+        <g className="mx-motion-glyph__boundary mx-motion-glyph__boundary--outer">
+          <path d="M20 22L58 40L72 56L58 72L20 90" />
+          <path d="M140 22L102 40L88 56L102 72L140 90" />
+        </g>
+        <g className="mx-motion-glyph__boundary mx-motion-glyph__boundary--inner">
+          <path d="M38 30L66 44L76 56L66 68L38 82" />
+          <path d="M122 30L94 44L84 56L94 68L122 82" />
+        </g>
+        <path className="mx-motion-glyph__threshold" d="M80 24V88" />
+        <circle className="mx-motion-glyph__point" cx="80" cy="56" r="4" />
+      </>
+    )
+  }
+
+  if (kind === 'neuro-synapse') {
+    return (
+      <>
+        <MotionKitGuide />
+        <g className="mx-motion-glyph__synapse-network">
+          <path d="M22 74L40 48L58 62L78 40L98 56L118 34L140 52" />
+          <path d="M40 48L30 26M40 48L54 28M58 62L46 86M58 62L78 82M78 40L74 18M78 40L98 24M98 56L92 86M98 56L118 78M118 34L136 22M118 34L140 52" />
+          <circle cx="22" cy="74" r="2.2" /><circle cx="40" cy="48" r="2.8" />
+          <circle cx="58" cy="62" r="2.5" /><circle cx="78" cy="40" r="3" />
+          <circle cx="98" cy="56" r="2.6" /><circle cx="118" cy="34" r="2.8" />
+          <circle cx="140" cy="52" r="2.2" /><circle cx="30" cy="26" r="2" />
+          <circle cx="54" cy="28" r="2.1" /><circle cx="46" cy="86" r="2.2" />
+          <circle cx="78" cy="82" r="2.4" /><circle cx="74" cy="18" r="2" />
+          <circle cx="98" cy="24" r="2.2" /><circle cx="92" cy="86" r="2.1" />
+          <circle cx="118" cy="78" r="2.4" /><circle cx="136" cy="22" r="2" />
+        </g>
+        <path className="mx-motion-glyph__synapse-route" d="M22 74L40 48L58 62L78 40L98 56L118 34L140 52" />
+        <circle className="mx-motion-glyph__point mx-motion-glyph__synapse-signal" cx="22" cy="74" r="4" />
+      </>
+    )
+  }
+
+  if (kind === 'breath-aperture') {
+    return (
+      <>
+        <MotionKitGuide />
+        <g className="mx-motion-glyph__breath-aperture">
+          <path d="M80 56C54 50 46 31 52 18C68 19 78 34 80 56Z" />
+          <path d="M80 56C86 30 105 22 118 28C117 44 102 54 80 56Z" />
+          <path d="M80 56C106 62 114 81 108 94C92 93 82 78 80 56Z" />
+          <path d="M80 56C74 82 55 90 42 84C43 68 58 58 80 56Z" />
+          <path className="mx-motion-glyph__breath-diagonal" d="M50 26L110 86M110 26L50 86" />
         </g>
         <circle className="mx-motion-glyph__point" cx="80" cy="56" r="4" />
       </>
     )
   }
 
-  if (kind === 'neuro-network') {
+  if (kind === 'focus-convergence') {
     return (
       <>
         <MotionKitGuide />
-        <g className="mx-motion-glyph__network mx-motion-glyph__network--left">
-          <path d="M22 70L42 42L62 54L74 28M42 42L30 24M62 54L50 82M42 42L50 82" />
-          <circle cx="22" cy="70" r="2.6" /><circle cx="42" cy="42" r="3" />
-          <circle cx="62" cy="54" r="2.4" /><circle cx="74" cy="28" r="2.6" />
-          <circle cx="30" cy="24" r="2.2" /><circle cx="50" cy="82" r="2.8" />
+        <g className="mx-motion-glyph__focus-beams">
+          <path d="M18 22C42 28 58 40 80 56" />
+          <path d="M18 39C46 42 62 48 80 56" />
+          <path d="M18 56H80" />
+          <path d="M18 73C46 70 62 64 80 56" />
+          <path d="M18 90C42 84 58 72 80 56" />
         </g>
-        <g className="mx-motion-glyph__network mx-motion-glyph__network--right">
-          <path d="M138 72L118 40L98 52L88 84M118 40L130 24M98 52L112 78M118 40L112 78" />
-          <circle cx="138" cy="72" r="2.6" /><circle cx="118" cy="40" r="3" />
-          <circle cx="98" cy="52" r="2.4" /><circle cx="88" cy="84" r="2.6" />
-          <circle cx="130" cy="24" r="2.2" /><circle cx="112" cy="78" r="2.8" />
+        <g className="mx-motion-glyph__focus-guides">
+          <path d="M36 30L52 36M36 82L52 76" />
         </g>
-        <path className="mx-motion-glyph__network-bridge" d="M62 54C70 44 74 48 80 56C86 64 92 62 98 52" />
+        <path className="mx-motion-glyph__focus-axis" d="M84 56H142" />
+        <path className="mx-motion-glyph__focus-plane" d="M80 42V70" />
         <circle className="mx-motion-glyph__point" cx="80" cy="56" r="4.5" />
+      </>
+    )
+  }
+
+  if (kind === 'meditation-contours') {
+    return (
+      <>
+        <MotionKitGuide />
+        <g className="mx-motion-glyph__contours mx-motion-glyph__contours--outer">
+          <path d="M28 56C28 31 49 16 78 19C108 15 134 32 132 58C135 84 108 97 80 93C50 98 25 82 28 56Z" />
+        </g>
+        <g className="mx-motion-glyph__contours mx-motion-glyph__contours--middle">
+          <path d="M43 57C41 39 58 29 79 31C100 28 119 41 117 59C118 77 100 85 80 82C58 86 42 74 43 57Z" />
+        </g>
+        <g className="mx-motion-glyph__contours mx-motion-glyph__contours--inner">
+          <path d="M59 56C59 46 67 40 80 42C93 40 102 47 101 57C102 68 92 73 80 71C67 73 58 67 59 56Z" />
+        </g>
+        <circle className="mx-motion-glyph__point" cx="80" cy="56" r="4" />
       </>
     )
   }
@@ -260,20 +318,43 @@ function MotionKitDrawing({ kind }) {
     )
   }
 
-  return (
-    <>
-      <MotionKitGuide />
-      <g className="mx-motion-glyph__energy mx-motion-glyph__energy--outer">
-        <path d="M18 56C34 20 58 20 80 56C102 92 126 92 142 56" />
-        <path d="M18 56C34 92 58 92 80 56C102 20 126 20 142 56" />
-      </g>
-      <g className="mx-motion-glyph__energy mx-motion-glyph__energy--inner">
-        <path d="M38 56C50 34 66 34 80 56C94 78 110 78 122 56" />
-        <path d="M38 56C50 78 66 78 80 56C94 34 110 34 122 56" />
-      </g>
-      <circle className="mx-motion-glyph__point" cx="80" cy="56" r="4.5" />
-    </>
-  )
+  if (kind === 'path-corridor') {
+    return (
+      <>
+        <MotionKitGuide />
+        <g className="mx-motion-glyph__path-wall mx-motion-glyph__path-wall--left">
+          <path d="M18 92C42 84 52 68 64 56C76 44 80 32 84 16" />
+          <path d="M34 94C52 82 60 68 70 58C82 46 88 34 92 18" />
+        </g>
+        <g className="mx-motion-glyph__path-wall mx-motion-glyph__path-wall--right">
+          <path d="M142 20C118 28 108 42 96 54C84 66 80 78 76 96" />
+          <path d="M126 18C108 30 100 44 90 54C78 66 72 78 68 94" />
+        </g>
+        <path className="mx-motion-glyph__path-route" d="M26 88C52 80 60 66 80 56C100 46 108 30 134 22" />
+        <circle className="mx-motion-glyph__point mx-motion-glyph__path-signal" cx="26" cy="88" r="4" />
+      </>
+    )
+  }
+
+  if (kind === 'energy-field') {
+    return (
+      <>
+        <MotionKitGuide />
+        <g className="mx-motion-glyph__energy-field mx-motion-glyph__energy-field--outer">
+          <path d="M16 28C44 28 53 42 80 56C107 70 116 84 144 84" />
+          <path d="M16 84C44 84 53 70 80 56C107 42 116 28 144 28" />
+        </g>
+        <g className="mx-motion-glyph__energy-field mx-motion-glyph__energy-field--inner">
+          <path d="M16 42C45 42 58 49 80 56C102 63 115 70 144 70" />
+          <path d="M16 70C45 70 58 63 80 56C102 49 115 42 144 42" />
+        </g>
+        <path className="mx-motion-glyph__energy-axis" d="M16 56H144" />
+        <circle className="mx-motion-glyph__point mx-motion-glyph__energy-signal" cx="16" cy="56" r="4.5" />
+      </>
+    )
+  }
+
+  return null
 }
 
 
@@ -295,11 +376,15 @@ function MotionKitGlyph({ kind, paused }) {
 
 function MotionCard({ item, selected, paused, onSelect }) {
   const isKitOnly = [
-    'asceza-lens',
-    'neuro-network',
+    'asceza-boundary',
+    'neuro-synapse',
+    'breath-aperture',
+    'focus-convergence',
+    'meditation-contours',
     'morning-exercise',
     'practice-gate',
-    'energy-wave',
+    'path-corridor',
+    'energy-field',
   ].includes(item.kind)
 
   return (
