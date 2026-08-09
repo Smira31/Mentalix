@@ -358,7 +358,7 @@ function MotionKitDrawing({ kind }) {
 }
 
 
-function MotionKitGlyph({ kind, paused }) {
+export function MotionKitGlyph({ kind, paused }) {
   return (
     <svg
       viewBox="0 0 160 112"
