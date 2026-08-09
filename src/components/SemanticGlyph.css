@@ -44,10 +44,8 @@
 .mx-semantic-glyph__sleep-upper,
 .mx-semantic-glyph__sleep-lower,
 .mx-semantic-glyph__sleep-drop,
-.mx-semantic-glyph__choice-boundary,
-.mx-semantic-glyph__choice-path,
-.mx-semantic-glyph__temptation-path,
-.mx-semantic-glyph__ritual-marks,
+.mx-semantic-glyph__asceza-loop,
+.mx-semantic-glyph__ritual-orbits,
 .mx-semantic-glyph__brackets,
 .mx-semantic-glyph__template-axis {
   fill: none;
@@ -55,6 +53,62 @@
   stroke-width: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.mx-semantic-glyph__asceza-loop path,
+.mx-semantic-glyph__ritual-orbits ellipse {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mx-semantic-glyph__asceza-loop > path:not(.mx-semantic-glyph__asceza-memory):not(.mx-semantic-glyph__asceza-return):not(.mx-semantic-glyph__asceza-faded-exit):not(.mx-semantic-glyph__asceza-arrow),
+.mx-semantic-glyph__asceza-exit,
+.mx-semantic-glyph__ritual-orbit-main {
+  stroke: rgb(var(--c-line));
+  stroke-width: 1.35;
+}
+
+.mx-semantic-glyph__asceza-memory,
+.mx-semantic-glyph__ritual-orbit-faint {
+  opacity: 0.34;
+}
+
+.mx-semantic-glyph__asceza-faded-exit {
+  opacity: 0.42;
+}
+
+.mx-semantic-glyph__ritual-orbit-soft {
+  opacity: 0.48;
+}
+
+.mx-semantic-glyph__ritual-orbit-dashed {
+  opacity: 0.34;
+  stroke-dasharray: 2 4;
+}
+
+.mx-semantic-glyph__ritual-orbit-faint:first-child {
+  stroke-dasharray: 3 5;
+}
+
+.mx-semantic-glyph__asceza-node,
+.mx-semantic-glyph__ritual-nodes circle {
+  fill: rgb(var(--c-line-secondary));
+}
+
+.mx-semantic-glyph__ritual-nodes circle:nth-child(2),
+.mx-semantic-glyph__ritual-nodes circle:nth-child(5) {
+  opacity: 0.68;
+}
+
+.mx-semantic-glyph__focus-ring {
+  fill: none;
+  stroke: rgb(var(--c-gold));
+  stroke-width: 1;
+  opacity: 0.24;
 }
 
 .mx-semantic-glyph__exercise-nodes circle {
@@ -79,7 +133,6 @@
 }
 
 .mx-semantic-glyph__neuro-bridge,
-.mx-semantic-glyph__temptation-path,
 .mx-semantic-glyph__breath-left,
 .mx-semantic-glyph__breath-right,
 .mx-semantic-glyph__lens-outer,
@@ -166,10 +219,6 @@
   animation: mx-semantic-clear-smoke 5.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__temptation-path {
-  animation: mx-semantic-decline 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
-}
-
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--pathfinder .mx-semantic-glyph__path-point {
   animation: mx-semantic-follow 5.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
@@ -246,11 +295,6 @@
 @keyframes mx-semantic-clear-smoke {
   0%, 20%, 100% { opacity: 0.82; transform: translateY(0); }
   50%, 76% { opacity: 0.08; transform: translateY(-8px); }
-}
-
-@keyframes mx-semantic-decline {
-  0%, 20%, 100% { opacity: 0.82; transform: translate(0, 0); }
-  50%, 76% { opacity: 0.12; transform: translate(-5px, -3px); }
 }
 
 @keyframes mx-semantic-follow {
