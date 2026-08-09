@@ -125,6 +125,12 @@ but renders at 2.8:1 contrast). Several Tailwind color names in the codebase are
 aliases (`emerald-deep` = bg, `cream`/`sage`/`mint` = text, `gold`/`cognac` = the accent)
 — don't introduce new legacy-style aliases in new components.
 
+For every new or changed card, practice illustration, semantic SVG, or persona card,
+the `Mentalix Card System` section in `DESIGN_SYSTEM.md` is mandatory. Reuse or extend
+`CardSystemGlyph`/`SemanticGlyph`; do not create a parallel visual language. Prototype
+new visual directions in the existing lab or a separate Preview before changing real
+screens, and keep article cards unchanged unless the owner explicitly approves them.
+
 ### Other invariants (from `AI_RULES.md` §9)
 
 - Timers count from a `Date.now()` timestamp, not accumulated `setInterval` ticks —
