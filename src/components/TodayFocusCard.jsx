@@ -14,6 +14,7 @@ import { platform } from '../platform'
 export default function TodayFocusCard({
   focus,
   onOpenFlow,
+  onClearFocus,
 }) {
   const [expanded, setExpanded] =
     useState(false)
@@ -83,13 +84,27 @@ export default function TodayFocusCard({
         </>
       )}
 
-      <button
-        type="button"
-        onClick={onOpenFlow}
-        className="block text-[12px] font-semibold text-muted mt-3 active:opacity-60"
-      >
-        выбрать другое
-      </button>
+      <div className="flex items-center gap-4 mt-3">
+        <button
+          type="button"
+          onClick={onOpenFlow}
+          className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+        >
+          выбрать другое
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            platform.haptic('light')
+
+            onClearFocus?.()
+          }}
+          className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+        >
+          убрать фокус
+        </button>
+      </div>
     </section>
   )
 }

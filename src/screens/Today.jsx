@@ -19,7 +19,10 @@ import MorningPilotCard from '../components/MorningPilotCard'
 import CardSystemGlyph from '../components/CardSystemGlyph'
 import TodayFocusCard from '../components/TodayFocusCard'
 import TodayFocusFlow from './TodayFocusFlow'
-import { readTodayFocusDay } from '../lib/todayFocus'
+import {
+  readTodayFocusDay,
+  clearTodayFocusPick,
+} from '../lib/todayFocus'
 import {
   DayThread,
   DayThreadTrigger,
@@ -484,7 +487,7 @@ export default function Today({
           todayFocus?.items || []
         }
         initialStep={
-          todayFocus?.picked
+          todayFocus?.items?.length
             ? 'pick'
             : 'input'
         }
@@ -792,6 +795,14 @@ export default function Today({
         onOpenFlow={() =>
           changeSub('todayFocus')
         }
+        onClearFocus={() => {
+          const entry =
+            clearTodayFocusPick(
+              user.id,
+            )
+
+          setTodayFocus(entry)
+        }}
       />
 
 

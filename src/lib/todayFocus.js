@@ -92,11 +92,15 @@ export function saveTodayFocusPick(
 }
 
 
+/*
+ * Снимает выбор, но не список: пользователь передумал по
+ * поводу фокуса дня, а не решил стереть введённые дела.
+ */
 export function clearTodayFocusPick(
   userId,
   date = new Date(),
 ) {
-  if (!userId) return
+  if (!userId) return null
 
   const key = storageKey(userId)
   const day = localDayId(date)
@@ -104,13 +108,31 @@ export function clearTodayFocusPick(
     readLocal(key),
   )
 
+  const previous = log.find(
+    (entry) => entry.day === day,
+  )
+
+  if (!previous) return null
+
+  const nextEntry = {
+    ...previous,
+  }
+
+  delete nextEntry.picked
+  delete nextEntry.picked_at
+
+  const nextLog = [
+    ...log.filter(
+      (entry) =>
+        entry.day !== day,
+    ),
+    nextEntry,
+  ]
+
   writeLocal(
     key,
-    JSON.stringify(
-      log.filter(
-        (entry) =>
-          entry.day !== day,
-      ),
-    ),
+    JSON.stringify(nextLog),
   )
+
+  return nextEntry
 }
