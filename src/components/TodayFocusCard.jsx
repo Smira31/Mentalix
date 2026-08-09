@@ -11,13 +11,8 @@ import { platform } from '../platform'
  * остальные), а не изобретает новый.
  */
 
-export default function TodayFocusCard({
-  focus,
-  onOpenFlow,
-  onClearFocus,
-}) {
-  const [expanded, setExpanded] =
-    useState(false)
+export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOnly = false }) {
+  const [expanded, setExpanded] = useState(false)
 
   if (!focus?.picked) {
     return (
@@ -30,25 +25,18 @@ export default function TodayFocusCard({
         }}
         className="w-full rounded-full bg-cream/5 border border-cream/10 text-cream text-[13px] font-semibold py-3 px-5 mb-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
-        <ListChecks
-          size={16}
-          className="text-gold"
-        />
+        <ListChecks size={16} className="text-gold" />
         Разгрузить голову
       </button>
     )
   }
 
-  const rest = (focus.items || []).filter(
-    (item) => item !== focus.picked,
-  )
+  const rest = (focus.items || []).filter(item => item !== focus.picked)
 
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
       <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
-        {focus.firstStep
-          ? 'Первый шаг · до 5 минут'
-          : 'Точка внимания · сегодня'}
+        {focus.firstStep ? 'Первый шаг · до 5 минут' : 'Точка внимания · сегодня'}
       </span>
 
       <div className="rounded-2xl px-4 py-3.5 bg-gold/10 border border-gold/25">
@@ -67,14 +55,10 @@ export default function TodayFocusCard({
         <>
           <button
             type="button"
-            onClick={() =>
-              setExpanded((value) => !value)
-            }
+            onClick={() => setExpanded(value => !value)}
             className="text-[12px] font-semibold text-muted mt-3 active:opacity-60"
           >
-            {expanded
-              ? 'Свернуть'
-              : `Остальное (${rest.length})`}
+            {expanded ? 'Свернуть' : `Остальное (${rest.length})`}
           </button>
 
           {expanded && (
@@ -92,27 +76,29 @@ export default function TodayFocusCard({
         </>
       )}
 
-      <div className="flex items-center gap-4 mt-3">
-        <button
-          type="button"
-          onClick={onOpenFlow}
-          className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
-        >
-          выбрать другое
-        </button>
+      {!readOnly && (
+        <div className="flex items-center gap-4 mt-3">
+          <button
+            type="button"
+            onClick={onOpenFlow}
+            className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+          >
+            выбрать другое
+          </button>
 
-        <button
-          type="button"
-          onClick={() => {
-            platform.haptic('light')
+          <button
+            type="button"
+            onClick={() => {
+              platform.haptic('light')
 
-            onClearFocus?.()
-          }}
-          className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
-        >
-          убрать фокус
-        </button>
-      </div>
+              onClearFocus?.()
+            }}
+            className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+          >
+            убрать фокус
+          </button>
+        </div>
+      )}
     </section>
   )
 }
