@@ -35,6 +35,18 @@ const motionKitRequested =
   ).get('motion_kit') === '1'
 
 
+const cardLabEnabled =
+  import.meta.env.DEV
+  || import.meta.env.VERCEL_ENV === 'preview'
+
+
+const cardLabRequested =
+  cardLabEnabled
+  && new URLSearchParams(
+    window.location.search,
+  ).get('card_lab') === '1'
+
+
 const onboardingPreviewRequested =
   import.meta.env.DEV
   && new URLSearchParams(
@@ -69,6 +81,15 @@ const PracticeMotionKit = motionKitEnabled
   : null
 
 
+const CardDirectionsLab = cardLabEnabled
+  ? lazy(() =>
+      import(
+        './components/ui-lab/CardDirectionsLab'
+      ),
+    )
+  : null
+
+
 const OnboardingPreview = import.meta.env.DEV
   ? lazy(() =>
       import('./screens/Onboarding'),
@@ -77,6 +98,21 @@ const OnboardingPreview = import.meta.env.DEV
 
 
 function RootScreen() {
+  if (
+    cardLabRequested
+    && CardDirectionsLab
+  ) {
+    return (
+      <Suspense
+        fallback={
+          <div className="min-h-[100dvh] bg-emerald-deep" />
+        }
+      >
+        <CardDirectionsLab />
+      </Suspense>
+    )
+  }
+
   if (
     motionKitRequested
     && PracticeMotionKit

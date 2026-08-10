@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -14,10 +15,14 @@ import {
 import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
 import { api } from '../../lib/api'
+import { useSynced } from '../../lib/store'
 
 import { PERSONAS } from './personas'
+import './Conversation.css'
 
 
+const VOICE_HINT_KEY = 'mx-voice-hint-v1'
+const VOICE_HINT_TIMEOUT = 4500
 
 
 export default function Conversation({
@@ -69,6 +74,48 @@ export default function Conversation({
   useEffect(() => {
     sendingRef.current = sending
   }, [sending])
+
+  const hasText = Boolean(input.trim())
+
+  const iconKey =
+    voiceState === 'recording'
+      ? 'recording'
+      : voiceState === 'transcribing'
+        ? 'transcribing'
+        : hasText
+          ? 'send'
+          : 'mic'
+
+  const [voicePressed, setVoicePressed] =
+    useState(false)
+
+  const [voiceHintSeen, setVoiceHintSeen] =
+    useSynced(VOICE_HINT_KEY, '0')
+  const [voiceHintDismissed, setVoiceHintDismissed] =
+    useState(false)
+
+  const showVoiceHint =
+    voiceSupported
+    && voiceHintSeen !== '1'
+    && !voiceHintDismissed
+    && !hasText
+    && voiceState === 'idle'
+
+  const dismissVoiceHint = useCallback(() => {
+    setVoiceHintDismissed(true)
+    setVoiceHintSeen('1')
+  }, [setVoiceHintSeen])
+
+  useEffect(() => {
+    if (!showVoiceHint) return
+
+    const timer = setTimeout(
+      dismissVoiceHint,
+      VOICE_HINT_TIMEOUT,
+    )
+
+    return () => clearTimeout(timer)
+  }, [showVoiceHint, dismissVoiceHint])
 
 
   function scrollToEnd(
@@ -439,7 +486,7 @@ export default function Conversation({
               return (
                 <div
                   key={index}
-                  className="w-full"
+                  className="w-full mx-msg-in"
                 >
                   <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-2.5">
                     {meta.name}
@@ -489,7 +536,7 @@ export default function Conversation({
           <div className="w-full max-w-md mx-auto px-3 pb-2 text-center text-[12px]">
             {voiceState === 'recording' && (
               <span className="text-gold">
-                Запись · 0:{String(voiceSeconds).padStart(2, '0')} · нажми квадрат, чтобы закончить
+                Запись · 0:{String(voiceSeconds).padStart(2, '0')} · отпусти кнопку, чтобы закончить
               </span>
             )}
 
@@ -505,41 +552,22 @@ export default function Conversation({
 
         <div className="w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
 
-          <button
-            type="button"
-            onClick={() => {
-              if (voiceState === 'recording') {
-                stopVoiceRecording()
-              } else if (voiceState === 'idle') {
-                startVoiceRecording()
-              }
-            }}
-            disabled={voiceState === 'transcribing'}
-            className="w-[54px] h-[54px] rounded-full border border-cream/15 bg-cream/[0.025] flex items-center justify-center text-cream shrink-0 active:scale-90 transition-transform"
-            aria-label={
-              voiceState === 'recording'
-                ? 'Остановить запись'
-                : 'Записать голос'
-            }
-          >
-            {voiceState === 'recording' ? (
-              <Square size={20} fill="currentColor" />
-            ) : voiceState === 'transcribing' ? (
-              <LoaderCircle size={24} className="animate-spin" />
-            ) : (
-              <Mic size={25} strokeWidth={1.7} />
-            )}
-          </button>
-
-
           <input
             value={input}
 
-            onChange={(event) =>
-              setInput(
-                event.target.value,
-              )
-            }
+            onChange={(event) => {
+              const value = event.target.value
+
+              setInput(value)
+
+              /*
+               * Стоит человеку найти поле ввода и начать печатать,
+               * подсказку про голос повторно показывать незачем.
+               */
+              if (value.trim() && voiceHintSeen !== '1') {
+                dismissVoiceHint()
+              }
+            }}
 
             onFocus={() => {
               setTimeout(() => {
@@ -557,27 +585,130 @@ export default function Conversation({
 
             placeholder={`Написать ${meta.name}…`}
 
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none px-2 text-[17px] text-cream placeholder:text-faint"
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-[17px] text-cream placeholder:text-faint"
           />
 
 
-          <button
-            type="button"
-            onClick={onSend}
+          <div className="relative shrink-0">
+            {showVoiceHint && (
+              <>
+                {/*
+                 * Полноэкранный невидимый слой — тап в любом месте
+                 * экрана гасит подсказку и не даёт её больше
+                 * показывать. Сама подсказка decorative-only
+                 * (pointer-events-none), чтобы тап по ней тоже
+                 * попадал на этот слой.
+                 */}
+                <div
+                  className="fixed inset-0 z-[75]"
+                  onClick={dismissVoiceHint}
+                />
 
-            disabled={
-              sending ||
-              !input.trim()
-            }
+                <div className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in">
+                  <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[13px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
+                    Нажми и удерживай, чтобы записать голосовое
+                  </div>
 
-            className="w-[52px] h-[52px] rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 transition-transform active:scale-90"
-            aria-label="Отправить"
-          >
-            <ArrowRight
-              size={25}
-              strokeWidth={1.9}
-            />
-          </button>
+                  <div className="absolute -bottom-[5px] right-6 w-3 h-3 bg-cream rotate-45" />
+                </div>
+              </>
+            )}
+
+            <button
+              type="button"
+
+              {...(hasText && voiceState === 'idle'
+                ? {
+                    onClick: onSend,
+                    onPointerDown: () => setVoicePressed(true),
+                    onPointerUp: () => setVoicePressed(false),
+                    onPointerLeave: () => setVoicePressed(false),
+                    onPointerCancel: () => setVoicePressed(false),
+                  }
+                : {
+                    onPointerDown: (event) => {
+                      event.preventDefault()
+
+                      setVoicePressed(true)
+
+                      if (voiceState === 'idle') {
+                        startVoiceRecording()
+                      }
+                    },
+
+                    onPointerUp: () => {
+                      setVoicePressed(false)
+
+                      if (voiceState === 'recording') {
+                        stopVoiceRecording()
+                      }
+                    },
+
+                    onPointerLeave: () => {
+                      setVoicePressed(false)
+
+                      if (voiceState === 'recording') {
+                        stopVoiceRecording()
+                      }
+                    },
+
+                    onPointerCancel: () => {
+                      setVoicePressed(false)
+
+                      if (voiceState === 'recording') {
+                        stopVoiceRecording()
+                      }
+                    },
+
+                    onContextMenu: (event) => {
+                      event.preventDefault()
+                    },
+
+                    style: {
+                      touchAction: 'none',
+                      WebkitTouchCallout: 'none',
+                      WebkitUserSelect: 'none',
+                      userSelect: 'none',
+                    },
+                  })}
+
+              disabled={
+                hasText && voiceState === 'idle'
+                  ? sending || !hasText
+                  : sending || voiceState === 'transcribing'
+              }
+
+              className={[
+                'w-[54px] h-[54px] rounded-full bg-gold text-emerald-deep flex items-center justify-center shrink-0 disabled:opacity-35 mx-voice-btn',
+                voicePressed ? 'mx-voice-btn-pressed' : '',
+              ].join(' ')}
+
+              aria-label={
+                hasText && voiceState === 'idle'
+                  ? 'Отправить'
+                  : voiceState === 'recording'
+                    ? 'Идёт запись — отпусти, чтобы закончить'
+                    : voiceState === 'transcribing'
+                      ? 'Распознаю голос'
+                      : 'Нажми и удерживай, чтобы записать голосовое'
+              }
+            >
+              <span
+                key={iconKey}
+                className="mx-voice-icon"
+              >
+                {voiceState === 'recording' ? (
+                  <Square size={20} fill="currentColor" />
+                ) : voiceState === 'transcribing' ? (
+                  <LoaderCircle size={24} className="animate-spin" />
+                ) : hasText ? (
+                  <ArrowRight size={25} strokeWidth={1.9} />
+                ) : (
+                  <Mic size={25} strokeWidth={1.7} />
+                )}
+              </span>
+            </button>
+          </div>
 
         </div>
       </div>

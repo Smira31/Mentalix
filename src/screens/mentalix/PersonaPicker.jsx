@@ -7,6 +7,7 @@ import {
 import { platform } from '../../platform'
 
 import { api } from '../../lib/api'
+import { cardSystemPreviewEnabled } from '../../lib/cardSystem'
 import SemanticGlyph, {
   semanticKindForPersona,
 } from '../../components/SemanticGlyph'
@@ -214,7 +215,7 @@ export default function PersonaPicker({
                   platform.haptic('light')
                   onPick(persona.key, '')
                 }}
-                className="
+                className={`
                   snap-center
                   shrink-0
                   w-[82%]
@@ -228,7 +229,8 @@ export default function PersonaPicker({
                   cursor-pointer
                   active:scale-[0.99]
                   transition-transform
-                "
+                  ${cardSystemPreviewEnabled ? 'mx-card-system-persona-card' : ''}
+                `}
                 style={CARD_HEIGHT}
               >
                 {/*
@@ -237,7 +239,9 @@ export default function PersonaPicker({
                   * тянется до нижнего меню и на разных экранах имеет
                   * разную высоту.
                   */}
-                <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1">
+                <div className={`-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 ${
+                  cardSystemPreviewEnabled ? 'mx-card-system-persona-art' : ''
+                }`}>
                   <SemanticGlyph
                     kind={semanticKindForPersona(persona.key)}
                     animated={active === index}

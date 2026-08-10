@@ -1,5 +1,7 @@
 import { platform } from '../platform'
 
+import './CardSystem.css'
+
 /*
  * soon — практика существует в коде, но ещё не готова
  * к продукту. Карточка остаётся на месте и остаётся
@@ -15,6 +17,7 @@ export default function PracticeCard({
   artworkScale = 1,
   onOpen,
   soon = false,
+  systemPreview = false,
 }) {
   return (
     <button
@@ -29,6 +32,7 @@ export default function PracticeCard({
       }}
       className={[
         'relative w-full h-[238px] rounded-[26px] bg-emerald overflow-hidden text-left border flex flex-col transition-transform',
+        systemPreview ? 'mx-card-system-practice-card' : '',
         soon
           ? 'border-white/[0.06] cursor-default'
           : 'border-white/[0.10] active:scale-[0.985]',
@@ -96,6 +100,7 @@ export default function PracticeCard({
       <div
         className={[
           'relative w-full h-[150px] shrink-0 overflow-hidden flex items-center justify-center',
+          systemPreview ? 'mx-card-system-practice-card__art' : '',
           soon ? 'opacity-35' : '',
         ].join(' ')}
       >
