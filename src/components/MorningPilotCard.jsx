@@ -1,13 +1,6 @@
-import {
-  useEffect,
-  useState,
-} from 'react'
+import { useEffect, useState } from 'react'
 
-import {
-  BatteryLow,
-  ChevronRight,
-  Clock3,
-} from 'lucide-react'
+import { BatteryLow, ChevronRight, Clock3 } from 'lucide-react'
 
 import { platform } from '../platform'
 import {
@@ -18,44 +11,29 @@ import {
   recordMorningPilotEvent,
 } from '../lib/morningPilot'
 
-
 const RESOLUTION_COPY = {
   no_time: {
     title: 'Сохрани время',
-    body:
-      'План останется в ритуалах. Сегодня без долга.',
+    body: 'План останется в ритуалах. Сегодня без долга.',
   },
   low_energy: {
     title: 'Сначала ресурс',
-    body:
-      'Не дави на себя. Верни план, если состояние изменится.',
+    body: 'Не дави на себя. Верни план, если состояние изменится.',
   },
 }
-
 
 export default function MorningPilotCard({
   userId,
   rituals,
   onOpenRituals,
   now = null,
+  todayFocusPicked = false,
 }) {
-  const [currentDate] =
-    useState(() =>
-      now || new Date(),
-    )
+  const [currentDate] = useState(() => now || new Date())
 
-  const [dayState, setDayState] =
-    useState(() =>
-      readMorningPilotDay(
-        userId,
-        currentDate,
-      ),
-    )
+  const [dayState, setDayState] = useState(() => readMorningPilotDay(userId, currentDate))
 
-  const isMorning =
-    isMorningPilotTime(
-      currentDate,
-    )
+  const isMorning = isMorningPilotTime(currentDate)
 
   /*
    * Карточка живёт только внутри утреннего окна.
@@ -66,8 +44,7 @@ export default function MorningPilotCard({
    */
   const pilotVisible = isMorning
 
-  const visibleRituals =
-    morningRituals(rituals)
+  const visibleRituals = morningRituals(rituals)
 
   /*
    * Пустой список значит две разные вещи: ритуалов
@@ -75,57 +52,44 @@ export default function MorningPilotCard({
    * случая давали «Добавь один ритуал», и карточка
    * просила начать при полностью закрытом дне.
    */
-  const allDone =
-    rituals.length > 0
-    && visibleRituals.length === 0
-
+  const allDone = rituals.length > 0 && visibleRituals.length === 0
 
   useEffect(() => {
-    setDayState(
-      readMorningPilotDay(
-        userId,
-        currentDate,
-      ),
-    )
-  }, [
-    currentDate,
-    userId,
-  ])
-
+    setDayState(readMorningPilotDay(userId, currentDate))
+  }, [currentDate, userId])
 
   useEffect(() => {
-    if (
-      !isMorning
-      || dayState?.viewed_at
-    ) {
+    if (!isMorning || dayState?.viewed_at) {
       return
     }
 
-    setDayState(
-      recordMorningPilotEvent(
-        userId,
-        'viewed',
-        currentDate,
-      ),
-    )
-  }, [
-    dayState?.viewed_at,
-    isMorning,
-    currentDate,
-    userId,
-  ])
-
+    setDayState(recordMorningPilotEvent(userId, 'viewed', currentDate))
+  }, [dayState?.viewed_at, isMorning, currentDate, userId])
 
   if (!pilotVisible) {
     return null
   }
 
+  /*
+   * «Разгрузить голову» уже дала точку внимания дня — утренний
+   * список ритуалов уступает место, тем же приёмом, что и
+   * собственные исходы «Не успеваю»/«Нет сил» ниже.
+   */
+  if (todayFocusPicked) {
+    return (
+      <div className="rounded-[24px] bg-emerald px-5 py-4 mb-4 border border-cream/10 animate-fade-in">
+        <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
+          Утро учтено
+        </span>
 
-  const resolution =
-    RESOLUTION_COPY[
-      dayState?.outcome
-    ]
+        <p className="text-[12px] text-muted mt-1 leading-relaxed">
+          Ритуалы остаются доступны в «Практики», когда будет время.
+        </p>
+      </div>
+    )
+  }
 
+  const resolution = RESOLUTION_COPY[dayState?.outcome]
 
   if (resolution) {
     return (
@@ -136,28 +100,17 @@ export default function MorningPilotCard({
 
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
-            <h2 className="font-display text-[18px] text-cream">
-              {resolution.title}
-            </h2>
+            <h2 className="font-display text-[18px] text-cream">{resolution.title}</h2>
 
-            <p className="text-[12px] text-muted mt-1 leading-relaxed">
-              {resolution.body}
-            </p>
+            <p className="text-[12px] text-muted mt-1 leading-relaxed">{resolution.body}</p>
           </div>
 
           <button
             type="button"
             onClick={() => {
-              platform.haptic(
-                'light',
-              )
+              platform.haptic('light')
 
-              setDayState(
-                clearMorningPilotDecision(
-                  userId,
-                  currentDate,
-                ),
-              )
+              setDayState(clearMorningPilotDecision(userId, currentDate))
             }}
             className="shrink-0 text-[12px] font-semibold text-muted bg-transparent border-0 px-2 py-2"
           >
@@ -168,34 +121,19 @@ export default function MorningPilotCard({
     )
   }
 
-
   function chooseOutcome(outcome) {
     platform.haptic('light')
 
-    setDayState(
-      recordMorningPilotEvent(
-        userId,
-        outcome,
-        currentDate,
-      ),
-    )
+    setDayState(recordMorningPilotEvent(userId, outcome, currentDate))
   }
-
 
   function openRituals() {
     platform.haptic('medium')
 
-    setDayState(
-      recordMorningPilotEvent(
-        userId,
-        'opened_rituals',
-        currentDate,
-      ),
-    )
+    setDayState(recordMorningPilotEvent(userId, 'opened_rituals', currentDate))
 
     onOpenRituals()
   }
-
 
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
@@ -203,9 +141,7 @@ export default function MorningPilotCard({
         Пилот · утро
       </span>
 
-      <h2 className="font-display text-[22px] text-cream leading-tight">
-        До других дел
-      </h2>
+      <h2 className="font-display text-[22px] text-cream leading-tight">До других дел</h2>
 
       <p className="text-[13px] text-muted mt-1 leading-relaxed">
         Один ближайший шаг — не весь день.
@@ -213,43 +149,38 @@ export default function MorningPilotCard({
 
       {visibleRituals.length > 0 ? (
         <div className="mt-4 space-y-2">
-          {visibleRituals.map(
-            (ritual, index) => (
-              <div
-                key={ritual.id}
+          {visibleRituals.map((ritual, index) => (
+            <div
+              key={ritual.id}
+              className={[
+                'rounded-2xl px-4 py-3 flex items-center gap-3',
+                index === 0
+                  ? 'bg-gold/10 border border-gold/25'
+                  : 'bg-cream/5 border border-transparent',
+              ].join(' ')}
+            >
+              <span
                 className={[
-                  'rounded-2xl px-4 py-3 flex items-center gap-3',
-                  index === 0
-                    ? 'bg-gold/10 border border-gold/25'
-                    : 'bg-cream/5 border border-transparent',
+                  'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0',
+                  index === 0 ? 'bg-gold text-emerald-deep' : 'bg-cream/10 text-muted',
                 ].join(' ')}
               >
-                <span
-                  className={[
-                    'w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold shrink-0',
-                    index === 0
-                      ? 'bg-gold text-emerald-deep'
-                      : 'bg-cream/10 text-muted',
-                  ].join(' ')}
-                >
-                  {index + 1}
+                {index + 1}
+              </span>
+
+              <span className="flex-1 min-w-0 text-left">
+                <span className="block text-[14px] font-bold text-cream truncate">
+                  {ritual.name}
                 </span>
 
-                <span className="flex-1 min-w-0 text-left">
-                  <span className="block text-[14px] font-bold text-cream truncate">
-                    {ritual.name}
+                {ritual.min_version && (
+                  <span className="block text-[11px] text-muted truncate mt-0.5">
+                    минимум: {ritual.min_version}
                   </span>
-
-                  {ritual.min_version && (
-                    <span className="block text-[11px] text-muted truncate mt-0.5">
-                      минимум:{' '}
-                      {ritual.min_version}
-                    </span>
-                  )}
-                </span>
-              </div>
-            ),
-          )}
+                )}
+              </span>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="rounded-2xl bg-cream/5 px-4 py-4 mt-4">
@@ -272,40 +203,29 @@ export default function MorningPilotCard({
             ? 'Открыть ритуалы'
             : 'Добавить ритуал'}
 
-        <ChevronRight
-          size={16}
-          strokeWidth={2.2}
-        />
+        <ChevronRight size={16} strokeWidth={2.2} />
       </button>
 
       {!allDone && (
-      <div className="grid grid-cols-2 gap-2 mt-2">
-        <button
-          type="button"
-          onClick={() =>
-            chooseOutcome(
-              'no_time',
-            )
-          }
-          className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
-        >
-          <Clock3 size={14} />
-          Не успеваю
-        </button>
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => chooseOutcome('no_time')}
+            className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+          >
+            <Clock3 size={14} />
+            Не успеваю
+          </button>
 
-        <button
-          type="button"
-          onClick={() =>
-            chooseOutcome(
-              'low_energy',
-            )
-          }
-          className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
-        >
-          <BatteryLow size={14} />
-          Нет сил
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => chooseOutcome('low_energy')}
+            className="rounded-full bg-cream/5 border-0 text-muted text-[12px] font-semibold py-2.5 flex items-center justify-center gap-1.5 active:scale-[0.98]"
+          >
+            <BatteryLow size={14} />
+            Нет сил
+          </button>
+        </div>
       )}
     </section>
   )
