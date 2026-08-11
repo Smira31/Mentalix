@@ -111,6 +111,7 @@ const EMPTY_DRAFT = {
   reason: '',
   trigger: '',
   replacement: '',
+  relapse_cost: '',
 }
 
 
@@ -495,8 +496,6 @@ function CreateAscezaScreen({
   const inputCls =
     'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
 
-  const activeCat = categoryMeta(draft.category)
-
   /*
    * Создание аскезы — сфокусированный сценарий с формой и
    * клавиатурой, поэтому живёт по общему fullscreen-контракту:
@@ -514,51 +513,6 @@ function CreateAscezaScreen({
         <h2 className="font-display text-[20px] text-cream lowercase">
           новая аскеза.
         </h2>
-      </div>
-
-      <div className="mb-3">
-        <p className="text-xs text-muted mb-2">
-          Категория
-        </p>
-
-        <div className="grid grid-cols-5 gap-1.5">
-          {CATEGORIES.map((category) => {
-            const CategoryIcon = category.Icon
-            const active = draft.category === category.key
-
-            return (
-              <button
-                key={category.key}
-                onClick={() => {
-                  platform.haptic('light')
-
-                  setDraft((current) => ({
-                    ...current,
-                    category: category.key,
-                  }))
-                }}
-                className={`flex flex-col items-center gap-1 py-3 rounded-2xl border-0 transition-all active:scale-95 ${
-                  active
-                    ? 'bg-gold/15 text-gold'
-                    : 'bg-emerald text-muted'
-                }`}
-              >
-                <CategoryIcon
-                  size={17}
-                  strokeWidth={1.75}
-                />
-
-                <span className="text-[9px] leading-none">
-                  {category.short}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        <p className="text-[11px] text-faint mt-1.5">
-          {activeCat.hint}
-        </p>
       </div>
 
       <div className="space-y-2 mb-5">
@@ -587,6 +541,13 @@ function CreateAscezaScreen({
           value={draft.replacement}
           onChange={set('replacement')}
           placeholder="Чем заменить в момент тяги"
+          className={inputCls}
+        />
+
+        <input
+          value={draft.relapse_cost}
+          onChange={set('relapse_cost')}
+          placeholder="Цена срыва"
           className={inputCls}
         />
       </div>
