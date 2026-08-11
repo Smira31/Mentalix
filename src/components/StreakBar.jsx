@@ -24,6 +24,26 @@ function plural(n) {
   return 'дней'
 }
 
+const ROMAN_VALUES = [
+  [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+  [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+  [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+]
+
+function toRoman(n) {
+  let remainder = n
+  let result = ''
+
+  for (const [value, symbol] of ROMAN_VALUES) {
+    while (remainder >= value) {
+      result += symbol
+      remainder -= value
+    }
+  }
+
+  return result
+}
+
 export default function StreakBar({
   streak = 0,
   freezes = 0,
@@ -52,7 +72,7 @@ export default function StreakBar({
       </span>
 
       <span className={`text-[11px] tracking-wide truncate ${label}`}>
-        {streak > 0 ? `${streak} ${plural(streak)} подряд` : 'первый день'}
+        {streak > 0 ? `${toRoman(streak)} ${plural(streak)} подряд` : 'первый день'}
       </span>
 
       {freezes > 0 && (

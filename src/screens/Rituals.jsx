@@ -19,34 +19,21 @@ import { useMainButton } from '../platform/telegram.hooks'
 
 /*
  * Карточка занимает всё, что осталось между шапкой экрана и
- * нижней навигацией. Вычитаем: контролы Telegram, шапку с
- * кнопкой назад и подписью, точки под лентой, место под меню.
+ * нижней навигацией — через flex (RITUALS_ROOT_CLASS/TRACK_CLASS
+ * ниже), а не подсчётом пикселей: App.jsx уже владеет верхним и
+ * нижним отступом экрана (см. контракт в App.jsx), пересчитывать
+ * их здесь через 100dvh было хрупко и разъезжалось на реальных
+ * устройствах — та же природа бага, что была в CreateRitualScreen.
+ * min/max оставлены как есть: нижний предел — чтобы карточка не
+ * сжималась в тесноте, верхний — чтобы на широком экране Telegram
+ * Desktop она не растягивалась до нечитаемых пропорций.
  */
-/*
- * Верхний предел обязателен. Высота считается от 100dvh, и на
- * телефоне это даёт ~470px — то, подо что карточка рисовалась.
- * На широком экране Telegram Desktop то же выражение даёт под
- * семьсот, карточка растягивается и рисунок с текстом расползаются.
- * На телефоне min() ничего не меняет: там всегда выигрывает calc.
- */
-const CARD_HEIGHT = {
-  height:
-    'min(560px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 290px))',
-  minHeight: '380px',
-}
+const CARD_HEIGHT_CLASS = 'h-full min-h-[380px] max-h-[560px]'
 
 
 
 const EMPTY_DRAFT = {
   name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '',
-}
-
-function Monogram() {
-  return (
-    <div className="flex items-center justify-center rounded-full border border-gold text-gold shrink-0 w-6 h-6">
-      <span className="font-display text-[10px]">M</span>
-    </div>
-  )
 }
 
 function RitualCard({ ritual, onLog, onDelete }) {
@@ -74,25 +61,22 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   return (
     <div
-      className={`relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${
+      className={`relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${CARD_HEIGHT_CLASS} ${
         cardSystemPreviewEnabled ? 'mx-card-system-detail-card' : ''
       } ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
-      style={CARD_HEIGHT}
     >
       {/* серия — вверху, там её ищут глазами первой */}
       <div className="flex items-center justify-between gap-3 shrink-0">
         <StreakBar streak={ritual.streak} freezes={ritual.freezes} bump={streakBump} />
 
         <span className="flex items-center gap-2 shrink-0">
-          <Monogram />
-
           {confirming ? (
             <span className="flex items-center gap-1">
               <button
                 onClick={() => { platform.haptic('rigid'); onDelete(ritual.id) }}
-                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream active:scale-90"
+                className="text-[10px] px-2 py-0.5 rounded bg-cream/15 text-cream active:scale-90"
               >
                 Удалить
               </button>
@@ -250,12 +234,12 @@ function CreateRitualScreen({ onCreate, onCancel }) {
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col">
-      <div className="flex items-center gap-3 mb-5 pt-2">
+      <div className="flex items-center gap-3 mb-8 pt-4">
         <BackButton onClick={onCancel} />
         <h2 className="font-display text-[20px] text-cream lowercase">новый ритуал.</h2>
       </div>
 
-      <div className="space-y-2 mb-5">
+      <div className="space-y-4 mb-5">
         <input value={draft.name} onChange={set('name')} placeholder="Название ритуала" className={inputCls} />
         <input value={draft.goal} onChange={set('goal')} placeholder="Зачем он нужен" className={inputCls} />
         <input value={draft.min_version} onChange={set('min_version')} placeholder="Минимум" className={inputCls} />
@@ -337,13 +321,13 @@ export default function Rituals({ user, onBack }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in">
-      <div className="flex items-center gap-3 mb-3">
+    <div className="w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0">
+      <div className="flex items-center gap-3 mb-3 shrink-0">
         <BackButton onClick={onBack} />
         <h2 className="font-display text-[22px] text-cream lowercase">ритуалы.</h2>
       </div>
 
-      <p className="text-[12px] text-muted mb-4 px-1">
+      <p className="text-[12px] text-muted mb-4 px-1 shrink-0">
         {rituals.length > 0
           ? `${doneCount} из ${rituals.length} закрыто сегодня`
           : 'обряды, что держат твой день'}
@@ -369,7 +353,7 @@ export default function Rituals({ user, onBack }) {
           <div
             ref={trackRef}
             onScroll={syncActive}
-            className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+            className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
             style={{ scrollbarWidth: 'none' }}
           >
             {rituals.map((r) => (
@@ -384,15 +368,14 @@ export default function Rituals({ user, onBack }) {
             {/* последней карточкой — создание нового */}
             <button
               onClick={() => { platform.haptic('light'); setShowCreate(true) }}
-              style={CARD_HEIGHT}
-              className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+              className={`shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform ${CARD_HEIGHT_CLASS}`}
             >
               <span className="text-[26px] text-faint leading-none">+</span>
               <span className="text-[14px] text-muted font-semibold">Новый ритуал</span>
             </button>
           </div>
 
-          <div className="flex justify-center gap-1.5 mt-3">
+          <div className="flex justify-center gap-1.5 mt-3 shrink-0">
             {[...rituals, null].map((_, index) => (
               <span
                 key={index}
