@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import prettierPlugin from 'eslint-plugin-prettier'
 import prettierConfig from 'eslint-config-prettier'
@@ -18,12 +19,19 @@ export default [
       },
     },
     plugins: {
+      react,
       'react-hooks': reactHooks,
       prettier: prettierPlugin,
     },
     rules: {
       ...js.configs.recommended.rules,
       ...prettierConfig.rules,
+
+      // Компоненты вида `<Icon />`, где Icon пришёл как проп/деструктурированный
+      // параметр, а не top-level переменная — core no-unused-vars не видит их
+      // использование в JSXOpeningElement и ложно ругается. Правило помечает
+      // такие идентификаторы использованными.
+      'react/jsx-uses-vars': 'error',
 
       // Существующий код местами намеренно бьёт выражения на несколько
       // строк (одна деструктурируемая переменная на строку и т.п.) —

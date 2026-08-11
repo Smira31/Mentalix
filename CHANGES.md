@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Зафиксировано 11.08.2026 — MXL-LINT-002: eslint-plugin-react + react/jsx-uses-vars
+
+- Закрывает пункт, отложенный в `MXL-LINT-001` («Три похожих предупреждения (`Icon`/`Art`/`PersonaArt`) не тронуты — чинится только через `eslint-plugin-react`, который не входит в согласованный список зависимостей для этой задачи») — владелец явно запросил установку сейчас.
+- Установлен `eslint-plugin-react` (`devDependencies`). В `eslint.config.js` подключён плагин `react` и включено правило `'react/jsx-uses-vars': 'error'` — оно помечает использованными идентификаторы, встречающиеся только как имя JSX-компонента (`<Icon />`), которые core `no-unused-vars` не видит как использование.
+- Причина, почему это были ложные срабатывания: во всех трёх случаях (`src/components/QuickAdd.jsx:37` — `Icon`, `src/components/archetype-art/ArchetypeShowcase.jsx:15` — `Art`, `src/screens/mentalix/JournalStart.jsx:23` — `PersonaArt`) переменная — деструктурированный параметр функции-компонента, реально используемый ниже как `<Icon .../>` и т.п.; `argsIgnorePattern: '^_'` в существующей настройке `no-unused-vars` на такие параметры не распространяется.
+- `npm run lint`: было 34 предупреждения (0 ошибок) → стало 31 (0 ошибок) — ушли ровно эти три `no-unused-vars`, остальные 31 предупреждение (`react-hooks/*`, `no-empty`) не тронуты. `npm run build` проходит без изменений в выводе.
+- Продуктовый код и поведение приложения не менялись — изменение только в конфигурации ESLint и составе `devDependencies`.
+- Ветка `feature/eslint-plugin-react-jsx-uses-vars`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+
 ## Завершено 10.08.2026 — почистить ветки GitHub с Ahead 0
 
 - Собран полный список веток `origin` с ahead/behind относительно `main` (`git rev-list --left-right --count` по каждой) и сверен со статусами PR (`gh pr list --state all`) — 21 ветка на `origin`, из них 5 с Ahead 0 (содержимое полностью в `main`, PR смёржены, без открытых PR, без локального checkout).
