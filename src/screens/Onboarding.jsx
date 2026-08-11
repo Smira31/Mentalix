@@ -159,7 +159,7 @@ export default function Onboarding({ user, onFinish }) {
               size={266}
               progress={0.35}
               animateOnMount
-              motionDuration={1600}
+              motionDuration={2400}
               className="mx-onboarding-intro-maze"
             />
           </div>
