@@ -60,6 +60,13 @@ dependency/architectural layer), the required verification checklist per change 
 scenario + loading/error/empty + mobile viewport + Telegram/web if platform layer
 touched), and the required after-work updates to `CHANGES.md`/`TASKS.md`/`ROADMAP.md`.
 
+## Pre-mortem before big changes
+
+Перед стартом крупной задачи (новая фича, продуктовое решение, архитектурное
+изменение) — провести pre-mortem: заранее предвидеть возможные ошибки, а не чинить
+их постфактум. Не применять к мелким правкам, багфиксам и задачам с уже принятым
+решением.
+
 ## Architecture
 
 ```
