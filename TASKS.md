@@ -13,6 +13,15 @@
 - `Частично` — основа существует, требуется доводка;
 - `Блокер` — работа зависит от внешнего решения или материала.
 
+## Завершено 10.08.2026 — почистить ветки GitHub с Ahead 0
+
+- [x] **Почистить ветки GitHub с Ahead 0**
+  - Примечание: этот пункт не был ранее формально заведён отдельной строкой в `TASKS.md` (проверено — по «Ahead»/«почистить ветки» совпадений в истории файла не найдено); фиксируется здесь как выполненный по прямому запросу владельца.
+  - Составлен полный список веток `origin` с ahead/behind относительно `main` (`git rev-list --left-right --count`) и сверен со статусами PR (`gh pr list --state all`).
+  - Удалены 6 веток с `origin`, чьё содержимое уже полностью в `main` или сознательно устарело: `agent/disable-forced-evening-review` (PR #2, merged), `agent/fix-mentalix-build` (PR #3, merged), `agent/mentalix-development-system-v1` (PR #1, merged), `agent/update-project-status-2026-07-29` (PR #4, merged), `docs/methodology-v0.1` (PR #5, merged) — все пять Ahead 0; `agent/grover-methodology` (PR #6, closed без слияния владельцем — содержимое (`docs/methodology/PRINCIPLES.md`, `docs/methodology/books/tim-grover.md`) уже присутствует в `main` в более полной версии, подтверждено по комментарию владельца в PR и сверкой файлов).
+  - Не тронуты: ветки с открытыми PR (`agent/update-mentalix-core-philosophy` #11, `codex/ui-reference-catalog` #21, `codex/card-directions-lab` #26), активные worktree (`codex/card-system-docs`, `codex/practice-motion-kit` — обе с реальными ahead-коммитами) и ветки без ahead=0 без открытого PR (`codex/problem-led-methodology`, `codex/rituals-asceza-art`) — решение по ним не запрашивалось и не принималось.
+  - Squash-мёрженные ветки с формально ненулевым ahead (например `agent/mentalix-core-v0-1`, `codex/mentalix-ui-motion`) не тронуты — вне периметра этой задачи (критерий был именно Ahead 0).
+
 ## Выпущено 09.08.2026 — орбитальная карточка ритуалов
 
 - [x] **MXL-RITUAL-ORBITS — Вернуть прежний орбитальный знак и оживить его**

@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Завершено 10.08.2026 — почистить ветки GitHub с Ahead 0
+
+- Собран полный список веток `origin` с ahead/behind относительно `main` (`git rev-list --left-right --count` по каждой) и сверен со статусами PR (`gh pr list --state all`) — 21 ветка на `origin`, из них 5 с Ahead 0 (содержимое полностью в `main`, PR смёржены, без открытых PR, без локального checkout).
+- Владелец подтвердил список; удалены на `origin` (`git push origin --delete`): `agent/disable-forced-evening-review`, `agent/fix-mentalix-build`, `agent/mentalix-development-system-v1`, `agent/update-project-status-2026-07-29`, `docs/methodology-v0.1`. Удаление подтверждено `git ls-remote --heads origin`.
+- Дополнительно проверена (без удаления, по отдельному запросу) ветка `agent/grover-methodology` (ahead 1, PR #6 закрыт без слияния 02.08.2026): diff, коммит `4c5c453`, комментарии PR через `gh pr view --comments`. Владелец в PR указал причину закрытия — содержимое (`docs/methodology/PRINCIPLES.md`, `docs/methodology/books/tim-grover.md`) уже присутствует в `main` в более полной версии после последующих методологических обновлений; отдельное слияние старой версии откатило бы актуальные статусы и связи с Core. Подтверждено сверкой файлов в `main`. После подтверждения владельцем ветка также удалена на `origin`.
+- Не тронуты: ветки с открытыми PR, активные worktree (`codex/card-system-docs`, `codex/practice-motion-kit`) и squash-мёрженные ветки с формально ненулевым ahead — вне периметра задачи (критерий был именно Ahead 0).
+- Локальные ветки, код, продуктовая логика не менялись — изменение только в составе удалённых веток `origin` и документации (`TASKS.md`).
+
 ## Исправлено 10.08.2026 — устаревшая заметка про .tsx-дубликаты в AGENTS.md
 
 - По задаче «удалить мёртвые .tsx-двойники Today.jsx и MorningPilotCard.jsx» проверено: `src/screens/Today.tsx` и `src/components/MorningPilotCard.tsx` на диске отсутствуют — они уже были удалены коммитом `b70c612` (08.08.2026), это же зафиксировано в `TASKS.md` («Завершено 08.08.2026 — техническая уборка репозитория»). Удалять было нечего.
