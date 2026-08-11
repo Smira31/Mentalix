@@ -4,7 +4,6 @@ import { api } from '../lib/api'
 import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import SemanticGlyph from '../components/SemanticGlyph'
-import CardSystemGlyph from '../components/CardSystemGlyph'
 import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 
 
@@ -499,11 +498,7 @@ export default function BrainTrainer({
         cardSystemPreviewEnabled
           ? 'h-[164px] bg-transparent border [border-color:rgb(var(--c-border))]'
           : 'h-[116px] bg-artbed border border-cream/[0.06]'
-      }`}>
-        {cardSystemPreviewEnabled
-          ? <CardSystemGlyph kind="neuro-synapse" />
-          : <SemanticGlyph kind="neuro" className="w-full h-full" />}
-      </div>
+      }`} />
 
       {EXERCISES.map((ex) => {
         const doneToday = todayCompleted.includes(ex.key)
