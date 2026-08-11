@@ -92,20 +92,20 @@ function CourseCreateScreen({ onCreate, onCancel }) {
           value={draft.title}
           onChange={set('title')}
           placeholder="Название"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <input
           value={draft.source}
           onChange={set('source')}
           placeholder="Источник / автор (необязательно)"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <input
           value={draft.duration_estimate_min}
           onChange={set('duration_estimate_min')}
           type="number"
           placeholder="Время прохождения, минут (необязательно)"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
       </div>
 
@@ -203,7 +203,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
           value={noteText}
           onChange={(e) => setNoteText(e.target.value)}
           placeholder="Что вынес из материала..."
-          className="flex-1 bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-2.5 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
+          className="flex-1 bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-2.5 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <button
           onClick={addNote}

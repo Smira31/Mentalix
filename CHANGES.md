@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Исправлено 11.08.2026 — MXL-IOS-AUTOZOOM-001: убран iOS auto-zoom на полях ввода
+
+- Проверена гипотеза владельца: поля форм с `font-size < 16px` вызывают автозум iOS Safari/Telegram WebView при фокусе — возможная сопричина бага «двойной текст» из `MXL-RITUAL-CARD-001`.
+- Тег viewport (`index.html`) проверен: `width=device-width, initial-scale=1, viewport-fit=cover` — без `maximum-scale`/`user-scalable`, зум им никогда не запрещался, противоречия с гипотезой нет.
+- Полный аудит 32 `<input>`/`<textarea>` в 13 файлах. Исправлено 9 полей (`text-sm`/`text-[13-15px]` → `text-[16px]`): `inputCls` в `Rituals.jsx` и `Ascezas.jsx` (по 5 полей формы), `BreakContextSheet` textarea в `Ascezas.jsx`, поиск статей (`Articles.jsx`), 4 поля создания/заметок курса (`Courses.jsx`), 3 поля создания цели (`Path.jsx`), поле добавления цитаты (`QuotesManager.jsx`), email на web-входе (`WebAuthScreen.jsx`). Остальные 23 поля уже были ≥16px — не трогались.
+- Диагностический код (`ghostDebug`/`start_param=ritualghost`) в `Rituals.jsx` не тронут — остаётся для проверки на устройстве, `MXL-RITUAL-CARD-001` (второй симптом) отдельно открыта.
+- Проверка: `npx eslint` по изменённым файлам и полный `npm run lint` — 0 ошибок, 31 предупреждение (прежний базовый уровень); `npm run build` проходит.
+- Ветка `fix/ios-input-autozoom`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+
 ## Зафиксировано 11.08.2026 — диагностика «двойного текста» задеплоена (PR #45, временно)
 
 - PR #45 смёржен squash-коммитом `a30c533` в `main` по прямому запросу владельца; ветка `debug/ritual-ghost-startparam` удалена (remote и локально). Деплой на `mentalix.vercel.app` подтверждён (`Vercel: success`, строка-триггер `ritualghost` найдена в продакшен-бандле).

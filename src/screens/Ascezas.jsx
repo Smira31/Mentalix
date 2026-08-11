@@ -230,7 +230,7 @@ function BreakContextSheet({
           maxLength={1000}
           rows={4}
           placeholder="Например: вернулся после тяжёлого дня и автоматически открыл Reels"
-          className="w-full resize-none bg-black/20 border border-cream/10 rounded-2xl px-4 py-3 text-[14px] leading-relaxed text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors"
+          className="w-full resize-none bg-black/20 border border-cream/10 rounded-2xl px-4 py-3 text-[16px] leading-relaxed text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors"
         />
 
         {asceza.replacement && (
@@ -494,7 +494,7 @@ function CreateAscezaScreen({
   }
 
   const inputCls =
-    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
+    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[16px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
 
   /*
    * Создание аскезы — сфокусированный сценарий с формой и

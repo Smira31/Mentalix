@@ -274,7 +274,7 @@ function CreateRitualScreen({ onCreate, onCancel }) {
   }
 
   const inputCls =
-    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
+    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[16px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
 
   /*
    * Действие живёт в системной кнопке: она остаётся над
