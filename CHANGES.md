@@ -6,7 +6,7 @@
 - Диагностический код удалён полностью из `src/screens/Rituals.jsx`: `isRitualGhostDebugEnabled()`, `DebugLabel`, `RitualDebugOverlay`, все применения `ghostDebug`/`dbg(...)` (условные рамки, оверлей, суффиксы `[MAIN]`/`[WEB]`/`[LIST-EMPTY]`).
 - Из `src/lib/fullscreenSurface.js` убран временный `export` у `TG_CONTROLS_HEIGHT` (проверено — нигде больше не импортировался) и временное поле `viewportHeight` в возврате `useFullscreenSurface()` (проверено — только `Rituals.jsx` его использовал; `CheckIn.jsx`/`Conversation.jsx` держат свой независимый `viewportHeight`, эту функцию не вызывают). Файл побайтово совпадает с состоянием до PR #45.
 - Проверка: `npx eslint` по обоим файлам и полный `npm run lint` — 0 ошибок, 31 предупреждение (прежний базовый уровень); `npm run build` проходит.
-- Ветка `chore/remove-ritual-ghost-debug`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+- **Закрыто:** PR #47 смёржен squash-коммитом `b3f0a9c` в `main` по прямому запросу владельца 11.08.2026; ветка `chore/remove-ritual-ghost-debug` удалена (remote и локально). Деплой на `mentalix.vercel.app` подтверждён: `Vercel — success`, строка `ritualghost` в продакшен-бандле отсутствует.
 
 ## Исправлено 11.08.2026 — MXL-IOS-AUTOZOOM-001: убран iOS auto-zoom на полях ввода
 
