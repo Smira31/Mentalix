@@ -6,7 +6,7 @@
 - `src/screens/BrainTrainer.jsx:498-506`: убран рендер `<CardSystemGlyph kind="neuro-synapse" />` и ветка `<SemanticGlyph kind="neuro" .../>` (обе висели на одном флаге `cardSystemPreviewEnabled` — контента не осталось ни в одной из веток). Обёртка и её className-тернарник размеров/фона (по `cardSystemPreviewEnabled`) не тронуты — убирали только анимацию, не логику размеров.
 - Удалён более не используемый в файле импорт `CardSystemGlyph`; импорт `SemanticGlyph` остался — нужен отдельно для карточек самих упражнений (`kind={ex.kind}`), не менялся.
 - Проверка: `npx eslint src/screens/BrainTrainer.jsx` — 0 ошибок, 6 предупреждений (все прежние, не относятся к изменённому блоку); полный `npm run lint` — 0 ошибок, 31 предупреждение (прежний базовый уровень, новых нет). `npm run build` проходит.
-- Ветка `fix/neuro-detail-remove-animation`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+- **Закрыто:** PR #39 смёржен squash-коммитом `60a2852` в `main` по прямому запросу владельца 11.08.2026; ветка `fix/neuro-detail-remove-animation` удалена (remote и локально).
 
 ## Зафиксировано 11.08.2026 — добавлена в бэклог MXL-NEURO-DETAIL-ANIM-001
 
