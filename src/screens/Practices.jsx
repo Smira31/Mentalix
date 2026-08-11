@@ -214,6 +214,7 @@ export default function Practices({
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
           systemPreview={cardSystemPreviewEnabled}
+          soon
         />
 
         <PracticeCard
@@ -225,6 +226,7 @@ export default function Practices({
           subtitle="успокоить систему за минуту"
           onOpen={() => setSub('breathing')}
           systemPreview={cardSystemPreviewEnabled}
+          soon
         />
 
         <PracticeCard
@@ -236,6 +238,7 @@ export default function Practices({
           subtitle="таймер глубокой работы"
           onOpen={() => setSub('focus')}
           systemPreview={cardSystemPreviewEnabled}
+          soon
         />
 
         <PracticeCard
