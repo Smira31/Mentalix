@@ -45,9 +45,7 @@ import {
  */
 
 
-// TEMP DEBUG (диагностика "двойного текста", ветка debug/ritual-ghost-startparam) —
-// export нужен только для диагностической панели в CreateRitualScreen, снять вместе с ней.
-export const TG_CONTROLS_HEIGHT = 56
+const TG_CONTROLS_HEIGHT = 56
 
 
 export const FULLSCREEN_SHELL_CLASS =
@@ -180,7 +178,5 @@ export function useFullscreenSurface() {
   return {
     style,
     tgFullscreen,
-    // TEMP DEBUG (диагностика "двойного текста") — только для панели, снять вместе с ней.
-    viewportHeight,
   }
 }
