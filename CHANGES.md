@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 11.08.2026 — MXL-WEB-HAPTIC: живая проверка, изменений не потребовалось
+
+- По коду: `platform.haptic(style)` — единственная точка вызова (~100 мест), маршрутизируется через `src/platform/index.js` по `window.Telegram?.WebApp?.initData`. `web.adapter.js` — честный no-op без консольного вывода; `telegram.adapter.js` вызывает `WebApp.HapticFeedback` из `@twa-dev/sdk`, у которой найден версионный гейт (`HapticFeedback is not supported in version 6.0`, дефолт `webAppVersion='6.0'` до получения `tgWebAppVersion` от реального Telegram) — гипотетический источник предупреждения «в web».
+- Владелец подтвердил вживую: `mentalix.vercel.app` открыт через Menu Button настоящего Telegram-бота на iPhone — вибрация при действии с ритуалом ощущается, предупреждений не обнаружено.
+- Код не менялся, PR не создавался (без изменений в проекте). Задача закрыта по результату живой проверки; `TASKS.md` (`MXL-WEB-HAPTIC`) актуализирован.
+
 ## Реализовано 11.08.2026 — MXL-PWA-ICONS: сгенерированы недостающие PWA-иконки
 
 - Спецификация из аудита 08.08.2026 сверена на актуальность перед генерацией: `public/icons/` по-прежнему не существовала, все три PNG из `manifest.json` отдавали 404, `<link rel="manifest">` в `index.html` отсутствовал — факты не устарели.
