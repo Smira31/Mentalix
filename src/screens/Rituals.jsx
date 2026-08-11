@@ -7,6 +7,7 @@ import {
   FULLSCREEN_SHELL_CLASS,
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
+  TG_CONTROLS_HEIGHT, // TEMP DEBUG (диагностика "двойного текста") — снять вместе с DebugOverlay
 } from '../lib/fullscreenSurface'
 import SemanticGlyph, {
   semanticKindForRitual,
@@ -34,6 +35,70 @@ const CARD_HEIGHT_CLASS = 'h-full min-h-[380px] max-h-[560px]'
 
 const EMPTY_DRAFT = {
   name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '',
+}
+
+/*
+ * TEMP DEBUG — диагностика бага «дублирующийся текст "Создать ритуал"
+ * над заголовком» + пустые зоны формы. Включается только по секретному
+ * start_param (переход по t.me/<bot>?startapp=ritualghost), в обычном
+ * пути (Menu Button, без start_param) ничего не меняется — функция
+ * возвращает false, весь блок ниже не рендерится вообще. Снять целиком
+ * вместе с DebugLabel/RitualDebugOverlay и импортом TG_CONTROLS_HEIGHT
+ * после разбора — не для прода на постоянной основе.
+ */
+function isRitualGhostDebugEnabled() {
+  return (
+    typeof window !== 'undefined'
+    && window.Telegram?.WebApp?.initDataUnsafe?.start_param === 'ritualghost'
+  )
+}
+
+function DebugLabel({ text }) {
+  return (
+    <span
+      className="absolute -top-[1px] left-0 z-[999] px-1 text-[9px] font-mono leading-tight text-black pointer-events-none"
+      style={{ background: '#ff3b30' }}
+    >
+      {text}
+    </span>
+  )
+}
+
+function RitualDebugOverlay({ surfaceStyle, tgFullscreen, viewportHeight }) {
+  const webApp = typeof window !== 'undefined' ? window.Telegram?.WebApp : null
+  const root = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null
+
+  const rows = [
+    ['visualViewport.height (hook)', viewportHeight ?? 'null → 100dvh фолбэк'],
+    ['TG_CONTROLS_HEIGHT (const)', `${TG_CONTROLS_HEIGHT}px`],
+    ['tgFullscreen (hook)', String(tgFullscreen)],
+    ['style.paddingTop (computed)', surfaceStyle.paddingTop],
+    ['style.paddingBottom (computed)', surfaceStyle.paddingBottom],
+    ['style.height (computed)', surfaceStyle.height],
+    ['--app-safe-top (CSS var)', root?.getPropertyValue('--app-safe-top')?.trim() || '—'],
+    ['--app-safe-bottom (CSS var)', root?.getPropertyValue('--app-safe-bottom')?.trim() || '—'],
+    ['window.innerHeight', typeof window !== 'undefined' ? `${window.innerHeight}px` : '—'],
+    ['WebApp.viewportHeight', webApp ? `${webApp.viewportHeight}px` : 'нет window.Telegram.WebApp'],
+    ['WebApp.viewportStableHeight', webApp ? `${webApp.viewportStableHeight}px` : '—'],
+    ['WebApp.isExpanded', webApp ? String(webApp.isExpanded) : '—'],
+    ['WebApp.isFullscreen', webApp ? String(webApp.isFullscreen) : '—'],
+    ['WebApp.safeAreaInset.top/bottom', webApp?.safeAreaInset ? `${webApp.safeAreaInset.top}/${webApp.safeAreaInset.bottom}` : '—'],
+    ['WebApp.contentSafeAreaInset.top/bottom', webApp?.contentSafeAreaInset ? `${webApp.contentSafeAreaInset.top}/${webApp.contentSafeAreaInset.bottom}` : '—'],
+    ['start_param', webApp?.initDataUnsafe?.start_param || '—'],
+  ]
+
+  return (
+    <div
+      className="fixed top-1 right-1 z-[999] max-w-[220px] rounded-lg px-2 py-1.5 font-mono text-[9px] leading-[1.4] text-lime-300"
+      style={{ background: 'rgba(0,0,0,0.82)', border: '1px solid #ff3b30' }}
+    >
+      {rows.map(([k, v]) => (
+        <div key={k}>
+          <span className="text-red-400">{k}:</span> {v}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 function RitualCard({ ritual, onLog, onDelete }) {
@@ -188,10 +253,14 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
 
 function CreateRitualScreen({ onCreate, onCancel }) {
-  const { style: surfaceStyle } = useFullscreenSurface()
+  const { style: surfaceStyle, tgFullscreen, viewportHeight } = useFullscreenSurface()
 
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
+
+  // TEMP DEBUG — см. isRitualGhostDebugEnabled выше.
+  const ghostDebug = isRitualGhostDebugEnabled()
+  const dbg = (cls) => (ghostDebug ? cls : '')
 
   function set(field) {
     return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
@@ -212,14 +281,18 @@ function CreateRitualScreen({ onCreate, onCancel }) {
    * клавиатурой, а форма здесь целиком из полей ввода.
    */
   useMainButton({
-    text: saving ? 'Сохраняю...' : 'Создать ритуал',
+    text: saving
+      ? `Сохраняю...${ghostDebug ? ' [MAIN]' : ''}`
+      : `Создать ритуал${ghostDebug ? ' [MAIN]' : ''}`,
     onClick: submit,
     enabled: Boolean(draft.name.trim()) && !saving,
     loading: saving,
   })
 
   const webAction = {
-    text: saving ? 'Сохраняю...' : 'Создать ритуал',
+    text: saving
+      ? `Сохраняю...${ghostDebug ? ' [WEB]' : ''}`
+      : `Создать ритуал${ghostDebug ? ' [WEB]' : ''}`,
     onClick: submit,
     disabled: !draft.name.trim() || saving,
   }
@@ -229,12 +302,25 @@ function CreateRitualScreen({ onCreate, onCancel }) {
    * общему fullscreen-контракту: занимает весь экран целиком.
    */
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
+    <div className={`${FULLSCREEN_SHELL_CLASS} ${dbg('border-2 border-red-500')}`} style={surfaceStyle}>
+      {ghostDebug && (
+        <RitualDebugOverlay
+          surfaceStyle={surfaceStyle}
+          tgFullscreen={tgFullscreen}
+          viewportHeight={viewportHeight}
+        />
+      )}
 
-      <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col">
-      <div className="flex items-center gap-3 mb-8 pt-4">
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} ${dbg('relative border-2 border-red-500')}`} aria-hidden="true">
+        {ghostDebug && <DebugLabel text="HEADER_SLOT 52px" />}
+      </div>
+
+      <div className={`${FULLSCREEN_SCROLL_CLASS} ${dbg('relative border-2 border-red-500')}`}>
+        {ghostDebug && <DebugLabel text="SCROLL (FULLSCREEN_SCROLL_CLASS)" />}
+        <div className={`w-full max-w-md mx-auto px-5 pb-8 flex flex-col ${dbg('relative border-2 border-red-500')}`}>
+          {ghostDebug && <DebugLabel text="FORM WRAPPER" />}
+      <div className={`flex items-center gap-3 mb-8 pt-4 ${dbg('relative border-2 border-red-500')}`}>
+        {ghostDebug && <DebugLabel text="HEADER ROW" />}
         <BackButton onClick={onCancel} />
         <h2 className="font-display text-[20px] text-cream lowercase">новый ритуал.</h2>
       </div>
@@ -345,7 +431,8 @@ export default function Rituals({ user, onBack }) {
             Ритуал — это обряд, который держит твой день. Создай первый.
           </p>
           <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
-            Создать ритуал
+            {/* TEMP DEBUG: суффикс [LIST-EMPTY] только при активной диагностике */}
+            Создать ритуал{isRitualGhostDebugEnabled() ? ' [LIST-EMPTY]' : ''}
           </button>
         </div>
       ) : (
