@@ -1,5 +1,15 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Реализовано 11.08.2026 — MXL-ASCEZA-CARD-001: убраны категории, добавлено поле «Цена срыва» (+ фикс backend)
+
+- По прямому запросу владельца принято и реализовано решение «безопасный компромисс»: секция выбора категории (кнопки-иконки `CATEGORIES`) убрана из UI формы создания аскезы (`src/screens/Ascezas.jsx`, `CreateAscezaScreen`). Поле `category` в `draft`/state оставлено со значением по умолчанию `'psycho'` и продолжает отправляться на backend без изменений — ничего не сломано на стороне API. `CATEGORIES`/`categoryMeta` не удалены — используются для отображения категории на карточках уже существующих аскез.
+- Добавлено пятое поле `relapse_cost` («Цена срыва») после `replacement`, тот же `inputCls`/layout, что у остальных четырёх полей.
+- **Backend-контракт проверен до правки кода:** прямым POST на прод (`user_id=-999999001`, фейковый) подтверждено, что `relapse_cost` принимался (200), но молча терялся — не возвращался ни в ответе на создание, ни в `GET`-списке. Тестовая запись сразу удалена, очистка подтверждена повторным `GET`.
+- **Backend-фикс в отдельном репозитории `mentalix-bot`:** обе локальные копии-кандидаты (`work/backend-original-audit`, `work/backend-prod-sync`) оказались статичными снимками без `.git` с устаревшим `ascezas.py`; локальный git-клон `mentalix-bot-git-sync` разошёлся с `origin/main` (3/40 коммитов) и завален незакоммиченными правками — не использовался. Работа велась в свежем клоне `origin/main`. Добавлено: колонка `Asceza.relapse_cost` (`Text, nullable=True`, тот же тип/nullable, что у `reason`/`trigger`/`replacement`) в `models.py`; idempotent `ALTER TABLE ascezas ADD COLUMN IF NOT EXISTS relapse_cost TEXT` в существующий startup-блок self-миграций `main.py` (Alembic в репозитории не используется); поле в `CreateAscezaPayload`, `_serialize()` и конструкторе `Asceza` в `ascezas.py`. В `mentalix-bot` нет ни одного `.md`-файла — правило документации по аналогии с `AI_RULES.md` там не существует, отдельный журнал не ведётся.
+- PR [`Smira31/mentalix-bot#1`](https://github.com/Smira31/mentalix-bot/pull/1) смёржен squash-коммитом `0afc3f0` по прямому запросу владельца 11.08.2026; ветка `feature/asceza-relapse-cost` удалена (remote и локально). Деплой на Railway (`mentalix-bot-production`) подтверждён (commit status `success`). Повторный живой curl-тест после деплоя: `relapse_cost` теперь возвращается и при создании, и в `GET`-списке; тестовая запись создана и сразу удалена, очистка подтверждена.
+- Проверка frontend: `npx eslint src/screens/Ascezas.jsx` — чисто; полный `npm run lint` — 0 ошибок, 31 предупреждение (прежний базовый уровень); `npm run build` проходит.
+- Ветка `feature/asceza-drop-categories-add-relapse-cost`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+
 ## Реализовано 11.08.2026 — MXL-RITUAL-CARD-001: обновлены плейсхолдеры формы создания ритуала
 
 - По прямому запросу владельца заменён текст `placeholder` у четырёх из пяти полей формы `CreateRitualScreen` (`src/screens/Rituals.jsx`) — только текст, поля/`state` keys/логика не менялись:
