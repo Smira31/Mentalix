@@ -249,7 +249,7 @@ function CreateRitualScreen({ onCreate, onCancel }) {
       <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col min-h-full justify-center">
+        <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col">
       <div className="flex items-center gap-3 mb-5 pt-2">
         <BackButton onClick={onCancel} />
         <h2 className="font-display text-[20px] text-cream lowercase">новый ритуал.</h2>
