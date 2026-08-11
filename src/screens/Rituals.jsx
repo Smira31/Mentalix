@@ -241,10 +241,10 @@ function CreateRitualScreen({ onCreate, onCancel }) {
 
       <div className="space-y-4 mb-5">
         <input value={draft.name} onChange={set('name')} placeholder="Название ритуала" className={inputCls} />
-        <input value={draft.goal} onChange={set('goal')} placeholder="Зачем он нужен" className={inputCls} />
-        <input value={draft.min_version} onChange={set('min_version')} placeholder="Минимум" className={inputCls} />
-        <input value={draft.optimal_version} onChange={set('optimal_version')} placeholder="Оптимум" className={inputCls} />
-        <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Что теряется при пропуске" className={inputCls} />
+        <input value={draft.goal} onChange={set('goal')} placeholder="Почему это важно для тебя" className={inputCls} />
+        <input value={draft.min_version} onChange={set('min_version')} placeholder="Меньше нельзя" className={inputCls} />
+        <input value={draft.optimal_version} onChange={set('optimal_version')} placeholder="На полную" className={inputCls} />
+        <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Цена пропуска" className={inputCls} />
       </div>
 
         </div>
