@@ -139,11 +139,14 @@ aliases (`emerald-deep` = bg, `cream`/`sage`/`mint` = text, `gold`/`cognac` = th
 
 ## Gotchas
 
-- `src/screens/Today.tsx` and `src/components/MorningPilotCard.tsx` are stale/unused —
-  Vite resolves the extensionless imports in `App.jsx` to the `.jsx` siblings
-  (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
-  TypeScript build configured (no tsconfig); don't assume the `.tsx` files are live or
-  extend them expecting them to compile/ship.
+- There's no TypeScript build configured (no tsconfig) despite a couple of stray
+  `.tsx` files having existed here in the past. `src/screens/Today.tsx` and
+  `src/components/MorningPilotCard.tsx` were dead duplicates left over from an
+  abandoned TypeScript migration attempt — Vite resolved the extensionless imports
+  in `App.jsx` to their `.jsx` siblings, so the `.tsx` files were never shipped, only
+  silently ignored. They were removed 08.08.2026 (commit `b70c612`). Don't reintroduce
+  a `.tsx`/`.jsx` duplicate pair for the same component name — Vite's extensionless
+  resolution will silently pick one and ignore the other.
 - `vercel.json` rewrites `/api/*` to the Railway backend; `src/lib/api.js` always calls
   the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
   beyond running against that same rewrite (or a local backend serving the same paths).
