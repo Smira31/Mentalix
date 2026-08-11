@@ -7,7 +7,7 @@
 - Полный аудит 32 `<input>`/`<textarea>` в 13 файлах. Исправлено 9 полей (`text-sm`/`text-[13-15px]` → `text-[16px]`): `inputCls` в `Rituals.jsx` и `Ascezas.jsx` (по 5 полей формы), `BreakContextSheet` textarea в `Ascezas.jsx`, поиск статей (`Articles.jsx`), 4 поля создания/заметок курса (`Courses.jsx`), 3 поля создания цели (`Path.jsx`), поле добавления цитаты (`QuotesManager.jsx`), email на web-входе (`WebAuthScreen.jsx`). Остальные 23 поля уже были ≥16px — не трогались.
 - Диагностический код (`ghostDebug`/`start_param=ritualghost`) в `Rituals.jsx` не тронут — остаётся для проверки на устройстве, `MXL-RITUAL-CARD-001` (второй симптом) отдельно открыта.
 - Проверка: `npx eslint` по изменённым файлам и полный `npm run lint` — 0 ошибок, 31 предупреждение (прежний базовый уровень); `npm run build` проходит.
-- Ветка `fix/ios-input-autozoom`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+- **Закрыто:** PR #46 смёржен squash-коммитом `8bf0191` в `main` по прямому запросу владельца 11.08.2026; ветка `fix/ios-input-autozoom` удалена (remote и локально). Деплой на `mentalix.vercel.app` подтверждён: `Vercel — success`.
 
 ## Зафиксировано 11.08.2026 — диагностика «двойного текста» задеплоена (PR #45, временно)
 

@@ -88,7 +88,7 @@
   - Проверен тег viewport (`index.html`): `width=device-width, initial-scale=1, viewport-fit=cover` — ни `maximum-scale`, ни `user-scalable` нет вообще; тег не пытается управлять зумом, противоречия с гипотезой нет.
   - Полный аудит: 32 `<input>`/`<textarea>` в 13 файлах. Найдено и исправлено 9 полей с `font-size < 16px` → `text-[16px]`: `inputCls` в `Rituals.jsx`/`Ascezas.jsx` (по 5 полей формы каждый), `BreakContextSheet` textarea в `Ascezas.jsx`, поиск в `Articles.jsx`, 4 поля в `Courses.jsx`, 3 поля в `Path.jsx`, поле в `QuotesManager.jsx`, email в `WebAuthScreen.jsx`. Остальные 23 поля уже были ≥16px, не трогались. Диагностический код (`ghostDebug`) в `Rituals.jsx` не тронут — задача `MXL-RITUAL-CARD-001` (второй симптом) остаётся отдельно открытой, ждёт разбора владельцем.
   - `npx eslint` по изменённым файлам и полный `npm run lint` — 0 ошибок, 31 предупреждение (прежний базовый уровень, новых нет); `npm run build` проходит.
-  - Ветка `fix/ios-input-autozoom`, PR открыт, **не смёржен** — squash merge только после подтверждения владельца (`AI_RULES.md` §6.1).
+  - **Закрыто:** PR #46 смёржен squash-коммитом `8bf0191` в `main` по прямому запросу владельца 11.08.2026; ветка `fix/ios-input-autozoom` удалена (remote и локально). Деплой на `mentalix.vercel.app` подтверждён (GitHub commit status `Vercel: success`).
 
 - [x] **MXL-PRACTICES-LOCK-001 — Временно заблокировать вход в Нейротренажёр/Дыхание/Фокус, пометка «Скоро»**
   - Запрос владельца: три карточки практик на экране «Практики» — Нейротренажёр, Дыхание, Фокус — заблокировать от захода внутрь (без удаления/изменения функционала и экранов внутри), показать пометку «Скоро»; карточки остаются на месте и видны.
