@@ -150,20 +150,20 @@ function GoalCreateScreen({ onCreate, onCancel }) {
           value={draft.title}
           onChange={set('title')}
           placeholder="Название цели"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <textarea
           value={draft.description}
           onChange={set('description')}
           placeholder="Описание (необязательно)"
           rows={3}
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none"
         />
         <input
           type="date"
           value={draft.target_date}
           onChange={set('target_date')}
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream outline-none focus:border-gold transition-colors"
         />
       </div>
 

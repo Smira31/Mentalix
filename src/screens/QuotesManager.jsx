@@ -66,7 +66,7 @@ export default function QuotesManager({ user, onBack }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Добавь свою фразу..."
-          className="flex-1 bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-cream placeholder-muted outline-none focus:border-gold transition-colors"
+          className="flex-1 bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <button
           onClick={addQuote}
