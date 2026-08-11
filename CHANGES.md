@@ -7,7 +7,7 @@
 - Причина, почему это были ложные срабатывания: во всех трёх случаях (`src/components/QuickAdd.jsx:37` — `Icon`, `src/components/archetype-art/ArchetypeShowcase.jsx:15` — `Art`, `src/screens/mentalix/JournalStart.jsx:23` — `PersonaArt`) переменная — деструктурированный параметр функции-компонента, реально используемый ниже как `<Icon .../>` и т.п.; `argsIgnorePattern: '^_'` в существующей настройке `no-unused-vars` на такие параметры не распространяется.
 - `npm run lint`: было 34 предупреждения (0 ошибок) → стало 31 (0 ошибок) — ушли ровно эти три `no-unused-vars`, остальные 31 предупреждение (`react-hooks/*`, `no-empty`) не тронуты. `npm run build` проходит без изменений в выводе.
 - Продуктовый код и поведение приложения не менялись — изменение только в конфигурации ESLint и составе `devDependencies`.
-- Ветка `feature/eslint-plugin-react-jsx-uses-vars`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+- **Закрыто:** PR #35 смёржен squash-коммитом `233f915` в `main` по прямому запросу владельца 11.08.2026; ветка `feature/eslint-plugin-react-jsx-uses-vars` удалена (remote и локально).
 
 ## Завершено 10.08.2026 — почистить ветки GitHub с Ahead 0
 

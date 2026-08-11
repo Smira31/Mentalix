@@ -87,7 +87,7 @@
   - Установлен `eslint-plugin-react` (`devDependencies`), в `eslint.config.js` подключён плагин и включено `'react/jsx-uses-vars': 'error'`.
   - Убраны ровно три ложных `no-unused-vars` (`Icon` в `QuickAdd.jsx`, `Art` в `ArchetypeShowcase.jsx`, `PersonaArt` в `JournalStart.jsx`) — деструктурированные параметры компонентов, используемые только внутри JSX, которые core-правило не засчитывало использованием.
   - `npm run lint`: 34 → 31 предупреждение (0 ошибок оба раза), остальные предупреждения не изменились. `npm run build` проходит.
-  - Ветка `feature/eslint-plugin-react-jsx-uses-vars`, PR открыт, **не смёржен** — squash merge только после подтверждения владельца (`AI_RULES.md` §6.1).
+  - **Закрыто:** PR #35 смёржен squash-коммитом `233f915` в `main` по прямому запросу владельца 11.08.2026; ветка `feature/eslint-plugin-react-jsx-uses-vars` удалена (remote и локально).
 
 - [x] **MXL-LINT-001 — Инструменты форматирования и линтинга фронтенда (по аналогии с бэкендом)**
   - Сверена фактическая структура репозитория: `package.json`/`src/`/`eslint.config.js` в корне `frontend-deploy`, вложенной `frontend/` нет.
