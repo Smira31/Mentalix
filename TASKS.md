@@ -90,7 +90,7 @@
   - Не тронуты: `## Language`, укороченный `## Project` (граница frontend/backend и запрет выдумывать API — нигде больше не сформулирован как инструкция агенту), `## Commands`, `## Documentation map` (сам механизм), `## Pre-mortem before big changes` (добавлено недавним прямым запросом владельца, явно исключено из сокращения), пункт про `vercel.json`/`/api`-rewrite в Gotchas (нигде не продублирован).
   - Итог: `AGENTS.md` 160 строк → 76 (−53%). Изменения только документационные, код и `npm run build` не затронуты.
   - План/diff был показан владельцу до коммита, подтверждён без правок.
-  - Ветка `docs/shrink-agents-md`, PR открыт, **не смёржен** — squash merge только после проверки владельцем (`AI_RULES.md` §6.1).
+  - **Закрыто:** PR #36 смёржен squash-коммитом `8edaff2` в `main` по прямому запросу владельца 11.08.2026; ветка `docs/shrink-agents-md` удалена (remote и локально).
 
 - [x] **MXL-LINT-002 — eslint-plugin-react + react/jsx-uses-vars (закрывает отложенный пункт MXL-LINT-001)**
   - Установлен `eslint-plugin-react` (`devDependencies`), в `eslint.config.js` подключён плагин и включено `'react/jsx-uses-vars': 'error'`.

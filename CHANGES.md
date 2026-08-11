@@ -8,7 +8,7 @@
 - Не тронуты: `Language`, `Commands`, механизм «Documentation map», раздел `Pre-mortem before big changes` (добавлен недавно отдельным запросом владельца, явно исключён из сокращения), пункт про `vercel.json`-rewrite в Gotchas.
 - `AGENTS.md`: 160 строк → 76 (−53%). Изменения только документационные — код, конфиги и `npm run build` не затронуты.
 - План/diff показан владельцу до коммита и подтверждён без правок.
-- Ветка `docs/shrink-agents-md`, PR не смёржен без подтверждения владельца (правило `AI_RULES.md` §6.1).
+- **Закрыто:** PR #36 смёржен squash-коммитом `8edaff2` в `main` по прямому запросу владельца 11.08.2026; ветка `docs/shrink-agents-md` удалена (remote и локально).
 
 ## Зафиксировано 11.08.2026 — MXL-LINT-002: eslint-plugin-react + react/jsx-uses-vars
 
