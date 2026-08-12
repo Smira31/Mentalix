@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 import { createPortal } from 'react-dom'
 import {
@@ -8,47 +8,32 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
-import Motif, { MotifArt, motifForRitual } from '../components/Motif'
+import SemanticGlyph, {
+  semanticKindForRitual,
+} from '../components/SemanticGlyph'
+import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import StreakBar from '../components/StreakBar'
 import BackButton from '../components/BackButton'
-import { useMainButton } from '../lib/telegram'
+import WebActionBar from '../components/WebActionBar'
+import { useMainButton } from '../platform/telegram.hooks'
 
 /*
  * Карточка занимает всё, что осталось между шапкой экрана и
- * нижней навигацией. Вычитаем: контролы Telegram, шапку с
- * кнопкой назад и подписью, точки под лентой, место под меню.
+ * нижней навигацией — через flex (RITUALS_ROOT_CLASS/TRACK_CLASS
+ * ниже), а не подсчётом пикселей: App.jsx уже владеет верхним и
+ * нижним отступом экрана (см. контракт в App.jsx), пересчитывать
+ * их здесь через 100dvh было хрупко и разъезжалось на реальных
+ * устройствах — та же природа бага, что была в CreateRitualScreen.
+ * min/max оставлены как есть: нижний предел — чтобы карточка не
+ * сжималась в тесноте, верхний — чтобы на широком экране Telegram
+ * Desktop она не растягивалась до нечитаемых пропорций.
  */
-/*
- * Верхний предел обязателен. Высота считается от 100dvh, и на
- * телефоне это даёт ~470px — то, подо что карточка рисовалась.
- * На широком экране Telegram Desktop то же выражение даёт под
- * семьсот, карточка растягивается и рисунок с текстом расползаются.
- * На телефоне min() ничего не меняет: там всегда выигрывает calc.
- */
-const CARD_HEIGHT = {
-  height:
-    'min(560px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 290px))',
-  minHeight: '380px',
-}
+const CARD_HEIGHT_CLASS = 'h-full min-h-[380px] max-h-[560px]'
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
-function hapticNotify(type = 'success') {
-  WebApp.HapticFeedback?.notificationOccurred(type)
-}
 
 const EMPTY_DRAFT = {
   name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '',
-}
-
-function Monogram() {
-  return (
-    <div className="flex items-center justify-center rounded-full border border-gold text-gold shrink-0 w-6 h-6">
-      <span className="font-display text-[10px]">M</span>
-    </div>
-  )
 }
 
 function RitualCard({ ritual, onLog, onDelete }) {
@@ -59,9 +44,9 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   function handleLog(lvl) {
     const wasUnset = !level
-    haptic('medium')
+    platform.haptic('medium')
     if (wasUnset) {
-      hapticNotify('success')
+      platform.haptic('success')
       setCelebrate(true)
       setTimeout(() => setCelebrate(false), 700)
     }
@@ -76,29 +61,28 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   return (
     <div
-      className={`relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${
+      className={`relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${CARD_HEIGHT_CLASS} ${
+        cardSystemPreviewEnabled ? 'mx-card-system-detail-card' : ''
+      } ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
-      style={CARD_HEIGHT}
     >
       {/* серия — вверху, там её ищут глазами первой */}
       <div className="flex items-center justify-between gap-3 shrink-0">
         <StreakBar streak={ritual.streak} freezes={ritual.freezes} bump={streakBump} />
 
         <span className="flex items-center gap-2 shrink-0">
-          <Monogram />
-
           {confirming ? (
             <span className="flex items-center gap-1">
               <button
-                onClick={() => { haptic('rigid'); onDelete(ritual.id) }}
-                className="text-[10px] px-2 py-0.5 rounded bg-red-900/60 text-cream/90 active:scale-90"
+                onClick={() => { platform.haptic('rigid'); onDelete(ritual.id) }}
+                className="text-[10px] px-2 py-0.5 rounded bg-cream/15 text-cream active:scale-90"
               >
                 Удалить
               </button>
               <button
                 onClick={() => setConfirming(false)}
-                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-cream/50 active:scale-90"
+                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-muted active:scale-90"
               >
                 Отмена
               </button>
@@ -106,7 +90,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
           ) : (
             <span
               onClick={() => setConfirming(true)}
-              className="text-cream/30 text-base leading-none px-1 active:scale-90"
+              className="text-faint text-base leading-none px-1 active:scale-90"
             >
               ×
             </span>
@@ -121,10 +105,15 @@ function RitualCard({ ritual, onLog, onDelete }) {
         */}
       <div
         className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] ${
+          cardSystemPreviewEnabled ? 'mx-card-system-detail-art' : ''
+        } ${
           level ? 'opacity-100' : 'opacity-70'
         }`}
       >
-        <Motif name={motifForRitual(ritual.name)} className="w-full h-full" />
+        <SemanticGlyph
+          kind={semanticKindForRitual(ritual.name)}
+          className="w-full h-full"
+        />
       </div>
 
       {/* название и смысл */}
@@ -134,7 +123,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
         </h3>
 
         {ritual.goal && (
-          <p className="text-[14px] text-cream/45 leading-relaxed mt-3">
+          <p className="text-[14px] text-muted leading-relaxed mt-3">
             {ritual.goal}
           </p>
         )}
@@ -150,12 +139,12 @@ function RitualCard({ ritual, onLog, onDelete }) {
             }`}
           >
             <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
-              level === 'min' ? 'text-cream' : 'text-cream/40'
+              level === 'min' ? 'text-cream' : 'text-muted'
             }`}>
               Минимум
             </div>
             <div className={`text-[13px] leading-snug ${
-              level === 'min' ? 'text-cream/85' : 'text-cream/55'
+              level === 'min' ? 'text-cream' : 'text-muted'
             }`}>
               {ritual.min_version}
             </div>
@@ -170,12 +159,12 @@ function RitualCard({ ritual, onLog, onDelete }) {
             }`}
           >
             <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
-              level === 'optimal' ? 'text-emerald-deep/70' : 'text-cream/40'
+              level === 'optimal' ? 'text-emerald-deep/70' : 'text-muted'
             }`}>
               Оптимум
             </div>
             <div className={`text-[13px] leading-snug ${
-              level === 'optimal' ? 'text-emerald-deep' : 'text-cream/55'
+              level === 'optimal' ? 'text-emerald-deep' : 'text-muted'
             }`}>
               {ritual.optimal_version}
             </div>
@@ -186,7 +175,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
           <button
             onClick={() => handleLog('optimal')}
             className={`w-full py-3.5 rounded-full text-[14px] font-bold border-0 transition-all duration-150 active:scale-95 ${
-              level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-cream/50'
+              level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'
             }`}
           >
             {level ? 'Сделано' : 'Отметить'}
@@ -216,7 +205,7 @@ function CreateRitualScreen({ onCreate, onCancel }) {
   }
 
   const inputCls =
-    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[15px] text-cream placeholder-cream/30 outline-none focus:border-gold/50 transition-colors'
+    'w-full bg-emerald border border-cream/10 rounded-2xl px-4 py-3.5 text-[16px] text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors'
 
   /*
    * Действие живёт в системной кнопке: она остаётся над
@@ -229,6 +218,12 @@ function CreateRitualScreen({ onCreate, onCancel }) {
     loading: saving,
   })
 
+  const webAction = {
+    text: saving ? 'Сохраняю...' : 'Создать ритуал',
+    onClick: submit,
+    disabled: !draft.name.trim() || saving,
+  }
+
   /*
    * Создание ритуала — форма с клавиатурой, поэтому живёт по
    * общему fullscreen-контракту: занимает весь экран целиком.
@@ -238,22 +233,24 @@ function CreateRitualScreen({ onCreate, onCancel }) {
       <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col min-h-full justify-center">
-      <div className="flex items-center gap-3 mb-5 pt-2">
+        <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col">
+      <div className="flex items-center gap-3 mb-8 pt-4">
         <BackButton onClick={onCancel} />
         <h2 className="font-display text-[20px] text-cream lowercase">новый ритуал.</h2>
       </div>
 
-      <div className="space-y-2 mb-5">
+      <div className="space-y-4 mb-5">
         <input value={draft.name} onChange={set('name')} placeholder="Название ритуала" className={inputCls} />
-        <input value={draft.goal} onChange={set('goal')} placeholder="Зачем он нужен" className={inputCls} />
-        <input value={draft.min_version} onChange={set('min_version')} placeholder="Минимум" className={inputCls} />
-        <input value={draft.optimal_version} onChange={set('optimal_version')} placeholder="Оптимум" className={inputCls} />
-        <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Что теряется при пропуске" className={inputCls} />
+        <input value={draft.goal} onChange={set('goal')} placeholder="Почему это важно для тебя" className={inputCls} />
+        <input value={draft.min_version} onChange={set('min_version')} placeholder="Меньше нельзя" className={inputCls} />
+        <input value={draft.optimal_version} onChange={set('optimal_version')} placeholder="На полную" className={inputCls} />
+        <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Цена пропуска" className={inputCls} />
       </div>
 
         </div>
       </div>
+
+      <WebActionBar action={webAction} />
     </div>,
     document.body,
   )
@@ -324,25 +321,27 @@ export default function Rituals({ user, onBack }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in">
-      <div className="flex items-center gap-3 mb-3">
+    <div className="w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0">
+      <div className="flex items-center gap-3 mb-3 shrink-0">
         <BackButton onClick={onBack} />
         <h2 className="font-display text-[22px] text-cream lowercase">ритуалы.</h2>
       </div>
 
-      <p className="text-[12px] text-cream/40 mb-4 px-1">
+      <p className="text-[12px] text-muted mb-4 px-1 shrink-0">
         {rituals.length > 0
           ? `${doneCount} из ${rituals.length} закрыто сегодня`
           : 'обряды, что держат твой день'}
       </p>
 
       {loading ? (
-        <p className="text-cream/40 text-sm">Загрузка...</p>
+        <p className="text-muted text-sm">Загрузка...</p>
       ) : rituals.length === 0 ? (
         <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-          <MotifArt name="ryad" size={120} className="mx-auto mb-3" />
+          <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
+            <SemanticGlyph kind="ritual" className="w-full h-full" />
+          </div>
           <h3 className="font-display text-lg text-cream mb-1">Ритуалов пока нет</h3>
-          <p className="text-sm text-cream/50 mb-4 leading-relaxed">
+          <p className="text-sm text-muted mb-4 leading-relaxed">
             Ритуал — это обряд, который держит твой день. Создай первый.
           </p>
           <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
@@ -354,7 +353,7 @@ export default function Rituals({ user, onBack }) {
           <div
             ref={trackRef}
             onScroll={syncActive}
-            className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+            className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
             style={{ scrollbarWidth: 'none' }}
           >
             {rituals.map((r) => (
@@ -368,16 +367,15 @@ export default function Rituals({ user, onBack }) {
 
             {/* последней карточкой — создание нового */}
             <button
-              onClick={() => { haptic('light'); setShowCreate(true) }}
-              style={CARD_HEIGHT}
-              className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
+              onClick={() => { platform.haptic('light'); setShowCreate(true) }}
+              className={`shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform ${CARD_HEIGHT_CLASS}`}
             >
-              <span className="text-[26px] text-cream/25 leading-none">+</span>
-              <span className="text-[14px] text-cream/45 font-semibold">Новый ритуал</span>
+              <span className="text-[26px] text-faint leading-none">+</span>
+              <span className="text-[14px] text-muted font-semibold">Новый ритуал</span>
             </button>
           </div>
 
-          <div className="flex justify-center gap-1.5 mt-3">
+          <div className="flex justify-center gap-1.5 mt-3 shrink-0">
             {[...rituals, null].map((_, index) => (
               <span
                 key={index}

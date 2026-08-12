@@ -879,7 +879,7 @@ export function motifForArticle(article) {
 
 /*
  * Рисунок наследует цвет от родителя через currentColor, поэтому
- * управлять им нужно классом текста: text-gold, text-cream/40 и
+ * управлять им нужно классом текста: text-gold, text-muted и
  * так далее. Так один и тот же мотив работает и активным, и
  * приглушённым.
  */
@@ -906,7 +906,7 @@ export default function Motif({ name, className = '' }) {
         </radialGradient>
       </defs>
 
-      {stars(key, key.length * 977 + key.charCodeAt(0) * 131)}
+      {stars(key, key.length * 977 + key.charCodeAt(0) * 131, 0)}
 
       <g className="mx-ink">{draw(gid)}</g>
     </svg>
@@ -919,7 +919,12 @@ export default function Motif({ name, className = '' }) {
  * чего пока нет, — поэтому отдельных «иллюстраций пустоты»
  * заводить не нужно, хватает общего реестра.
  */
-export function MotifArt({ name, size = 120, className = '' }) {
+export function MotifArt({
+  name,
+  size = 120,
+  artScale = 1,
+  className = '',
+}) {
   /*
    * Поле и скругление считаются от размера, а не заданы намертво.
    * Фиксированные 12px на плитке в 120px — десятая часть, на
@@ -931,7 +936,7 @@ export function MotifArt({ name, size = 120, className = '' }) {
 
   return (
     <div
-      className={`shrink-0 bg-artbed border border-cream/[0.07] ${className}`}
+      className={`shrink-0 overflow-hidden bg-artbed border border-cream/[0.07] ${className}`}
       style={{
         width: size,
         height: size,
@@ -939,7 +944,14 @@ export function MotifArt({ name, size = 120, className = '' }) {
         borderRadius: radius,
       }}
     >
-      <Motif name={name} className="w-full h-full" />
+      <div
+        className="w-full h-full origin-center"
+        style={{
+          transform: `scale(${artScale})`,
+        }}
+      >
+        <Motif name={name} className="w-full h-full" />
+      </div>
     </div>
   )
 }

@@ -43,14 +43,14 @@ export default function History({ user }) {
     })
   }, [user])
 
-  if (days === null) return <p className="text-cream/40 text-sm px-5 pt-6">Загрузка...</p>
+  if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
 
   if (days.length === 0) {
     return (
       <div className="rounded-[24px] bg-emerald px-6 py-10 text-center mt-2">
         <MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />
         <h3 className="font-display text-[18px] text-cream mb-2">Пока пусто</h3>
-        <p className="text-[14px] text-cream/45 leading-snug">
+        <p className="text-[14px] text-muted leading-snug">
           Пройди чек-ин или закрой ритуал —
           <br />и здесь появится первая запись пути.
         </p>
@@ -64,7 +64,7 @@ export default function History({ user }) {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[13px] text-cream/40 font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
             <div className="rounded-3xl bg-emerald p-5 space-y-3">
               {d.checkin && (
                 <div>
@@ -72,26 +72,26 @@ export default function History({ user }) {
                     <span className="text-[12px] font-bold text-gold bg-gold/10 rounded-full px-3 py-1">
                       настроение: {MOOD_WORDS[(d.checkin.mood || 3) - 1]}
                     </span>
-                    <span className="text-[12px] font-semibold text-cream/50 bg-cream/5 rounded-full px-3 py-1">
+                    <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
                       энергия {d.checkin.energy}/5
                     </span>
-                    <span className="text-[12px] font-semibold text-cream/50 bg-cream/5 rounded-full px-3 py-1">
+                    <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
                       фокус {d.checkin.focus}/5
                     </span>
                   </div>
 
                   {d.checkin.note && (
-                    <p className="text-[14px] text-cream/70 leading-snug mt-3 whitespace-pre-line">
+                    <p className="text-[14px] text-muted leading-snug mt-3 whitespace-pre-line">
                       {d.checkin.note.length > 220 ? d.checkin.note.slice(0, 220) + '…' : d.checkin.note}
                     </p>
                   )}
 
                   {d.checkin.lessons && (
                     <div className="rounded-2xl bg-emerald-light p-4 mt-3">
-                      <div className="text-[12px] font-bold text-cream/45 uppercase tracking-wide mb-2">
+                      <div className="text-[12px] font-bold text-muted uppercase tracking-wide mb-2">
                         Уроки дня
                       </div>
-                      <p className="text-[14px] text-cream/75 leading-relaxed whitespace-pre-line">
+                      <p className="text-[14px] text-cream leading-relaxed whitespace-pre-line">
                         {d.checkin.lessons}
                       </p>
                     </div>
@@ -99,7 +99,7 @@ export default function History({ user }) {
 
                   {wins.length > 0 && (
                     <div className="rounded-2xl bg-emerald-light p-4 mt-2.5">
-                      <div className="text-[12px] font-bold text-cream/45 uppercase tracking-wide mb-2.5">
+                      <div className="text-[12px] font-bold text-muted uppercase tracking-wide mb-2.5">
                         Чем горжусь
                       </div>
                       <ul className="space-y-2">
@@ -108,7 +108,7 @@ export default function History({ user }) {
                             <span className="w-5 h-5 rounded-full bg-gold/15 text-gold text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                               {i + 1}
                             </span>
-                            <span className="text-[14px] text-cream/75 leading-snug">{w}</span>
+                            <span className="text-[14px] text-cream leading-snug">{w}</span>
                           </li>
                         ))}
                       </ul>
@@ -118,10 +118,10 @@ export default function History({ user }) {
               )}
 
               {d.activity && d.activity.count > 0 && (
-                <div className="text-[13px] font-semibold text-cream/45">
+                <div className="text-[13px] font-semibold text-muted">
                   ✦ ритуалов закрыто: {d.activity.count}
                   {d.activity.breaks > 0 && (
-                    <span className="text-cream/35"> · срывов аскез: {d.activity.breaks}</span>
+                    <span className="text-faint"> · срывов аскез: {d.activity.breaks}</span>
                   )}
                 </div>
               )}

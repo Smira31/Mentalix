@@ -13,6 +13,12 @@ export default {
         'emerald':       'rgb(var(--c-card) / <alpha-value>)',  // карточка
         'emerald-light': 'rgb(var(--c-card2) / <alpha-value>)', // карточка-2
         'cream':         'rgb(var(--c-text) / <alpha-value>)',  // текст
+
+        // Шкала текста. Прозрачность больше не заменяет иерархию:
+        // cream 15.1:1 → muted 5.69:1 → faint 3.55:1 (только крупный).
+        'muted':         'rgb(var(--c-muted) / <alpha-value>)',
+        'faint':         'rgb(var(--c-faint) / <alpha-value>)',
+
         'sage':          'rgb(var(--c-text) / <alpha-value>)',  // → монохром
         'mint':          'rgb(var(--c-text) / <alpha-value>)',  // → монохром
         'gold':          'rgb(var(--c-gold) / <alpha-value>)',  // акцент

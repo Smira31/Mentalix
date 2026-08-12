@@ -31,7 +31,7 @@ export default function DonateScreen({ user, onBack }) {
           <Check size={28} className="text-gold" />
         </div>
         <h2 className="font-display text-xl text-cream mb-2">Спасибо!</h2>
-        <p className="text-sm text-sage/70 mb-8">
+        <p className="text-sm text-muted mb-8">
           Твоя поддержка помогает Mentalix развиваться дальше.
         </p>
         <button
@@ -57,7 +57,7 @@ export default function DonateScreen({ user, onBack }) {
         <Heart size={26} className="text-mint" />
       </div>
 
-      <p className="text-sm text-sage/70 text-center mb-8 px-4">
+      <p className="text-sm text-muted text-center mb-8 px-4">
         Донат не связан с тарифами — просто способ поддержать развитие Mentalix.
       </p>
 
@@ -67,7 +67,7 @@ export default function DonateScreen({ user, onBack }) {
             key={a}
             onClick={() => setSelected(a)}
             className={`py-4 rounded-2xl text-lg font-display transition-colors ${
-              selected === a ? 'bg-gold text-emerald-deep' : 'bg-white/[0.05] text-cream/70'
+              selected === a ? 'bg-gold text-emerald-deep' : 'bg-white/[0.05] text-muted'
             }`}
           >
             {a} ₽
@@ -83,7 +83,7 @@ export default function DonateScreen({ user, onBack }) {
         {sending ? 'Отправляю...' : `Поддержать на ${selected} ₽`}
       </button>
 
-      <p className="text-xs text-sage/40 text-center mt-4 px-4">
+      <p className="text-xs text-muted text-center mt-4 px-4">
         Оплата через Telegram Payments подключится в следующем обновлении — сейчас донат фиксируется без реального списания средств.
       </p>
     </div>

@@ -3,11 +3,17 @@ import {
   useRef,
 } from 'react'
 
-import WebApp from '@twa-dev/sdk'
-
 
 /*
- * ПЛАТФОРМЕННЫЙ СЛОЙ TELEGRAM
+ * TELEGRAM: REACT-ХУКИ НАД MINI APP API
+ *
+ * Часть платформенного слоя (`src/platform/`), рядом с адаптерами.
+ * Граница между файлами:
+ *   telegram.adapter.js / web.adapter.js — что умеет среда, вызывается
+ *     через `platform.*` и обязано иметь веб-аналог;
+ *   telegram.hooks.js (этот файл) — React-хуки над возможностями,
+ *     которых в браузере нет вовсе: системные кнопки Telegram,
+ *     CloudStorage, цвет шапки. Вне Telegram они молча ничего не делают.
  *
  * Всё общение с Mini App API живёт здесь и больше нигде. Причина
  * из опыта: разрозненные вызовы к платформе уже один раз довели
@@ -550,5 +556,3 @@ export function offerHomeScreen() {
   )
 }
 
-
-export { WebApp }

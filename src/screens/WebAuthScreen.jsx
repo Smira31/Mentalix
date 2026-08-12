@@ -100,14 +100,14 @@ export default function WebAuthScreen({ onAuthed }) {
 
       {step === 'email' && (
         <>
-          <p className="text-sm text-sage/60 mb-8 text-center">Введи email — пришлём одноразовый код</p>
+          <p className="text-sm text-muted mb-8 text-center">Введи email — пришлём одноразовый код</p>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
             placeholder="you@example.com"
             autoFocus
-            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-cream placeholder-sage/40 outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={requestCode}
@@ -121,9 +121,9 @@ export default function WebAuthScreen({ onAuthed }) {
 
       {step === 'code' && (
         <>
-          <p className="text-sm text-sage/60 mb-4 text-center">Код отправлен на {email}</p>
+          <p className="text-sm text-muted mb-4 text-center">Код отправлен на {email}</p>
           {devCode && (
-            <p className="text-xs text-mint/70 mb-3 text-center">
+            <p className="text-xs text-muted mb-3 text-center">
               Тестовый режим — код: <span className="font-mono text-mint">{devCode}</span>
             </p>
           )}
@@ -133,7 +133,7 @@ export default function WebAuthScreen({ onAuthed }) {
             placeholder="000000"
             autoFocus
             inputMode="numeric"
-            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-sage/30 outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={verifyCode}
@@ -142,7 +142,7 @@ export default function WebAuthScreen({ onAuthed }) {
           >
             {loading ? 'Проверяю...' : 'Войти'}
           </button>
-          <button onClick={() => setStep('email')} className="text-xs text-sage/50 active:opacity-60">
+          <button onClick={() => setStep('email')} className="text-xs text-muted active:opacity-60">
             Изменить email
           </button>
         </>
@@ -150,10 +150,10 @@ export default function WebAuthScreen({ onAuthed }) {
 
       {step === 'link' && (
         <>
-          <p className="text-sm text-sage/60 mb-2 text-center">
+          <p className="text-sm text-muted mb-2 text-center">
             Уже пользуешься Mentalix в Telegram?
           </p>
-          <p className="text-xs text-sage/40 mb-6 text-center leading-relaxed">
+          <p className="text-xs text-muted mb-6 text-center leading-relaxed">
             Открой мини-апп в Telegram → Настройки → «Связать с сайтом», введи код здесь — и все твои данные подтянутся сюда же.
           </p>
           <input
@@ -161,7 +161,7 @@ export default function WebAuthScreen({ onAuthed }) {
             onChange={(e) => setLinkCode(e.target.value)}
             placeholder="Код из Telegram"
             inputMode="numeric"
-            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-sage/30 outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={confirmLink}
@@ -170,7 +170,7 @@ export default function WebAuthScreen({ onAuthed }) {
           >
             {loading ? 'Связываю...' : 'Связать аккаунты'}
           </button>
-          <button onClick={skipLink} className="text-xs text-sage/50 active:opacity-60">
+          <button onClick={skipLink} className="text-xs text-muted active:opacity-60">
             Пропустить — начать с чистого аккаунта
           </button>
         </>

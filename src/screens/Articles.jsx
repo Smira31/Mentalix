@@ -33,7 +33,7 @@ function ArticleCard({ article, onOpen }) {
 
         <div className="flex-1 min-w-0 py-0.5">
           {article.tag && (
-            <span className="inline-block text-[10px] text-gold/80 border border-gold/25 rounded-full px-2.5 py-0.5 mb-2 whitespace-nowrap">
+            <span className="inline-block text-[10px] text-gold border border-gold/25 rounded-full px-2.5 py-0.5 mb-2 whitespace-nowrap">
               {article.tag}
             </span>
           )}
@@ -42,7 +42,7 @@ function ArticleCard({ article, onOpen }) {
             {article.title}
           </div>
 
-          <p className="text-[13px] text-cream/45 leading-snug mt-2 line-clamp-3">
+          <p className="text-[13px] text-muted leading-snug mt-2 line-clamp-3">
             {article.excerpt}
           </p>
         </div>
@@ -52,7 +52,7 @@ function ArticleCard({ article, onOpen }) {
         <span className="text-[13px] text-gold">Читать статью</span>
         <ArrowRight size={14} className="text-gold shrink-0" strokeWidth={2} />
 
-        <span className="text-[11px] text-cream/35 ml-auto whitespace-nowrap">
+        <span className="text-[11px] text-faint ml-auto whitespace-nowrap">
           {article.minutes} мин · {formatDate(article.date)}
         </span>
       </div>
@@ -76,13 +76,13 @@ function Reader({ article, onBack }) {
 
       <div className="flex items-center gap-2 mt-3 mb-6">
         <span className="text-[11px] text-gold">{article.minutes} мин чтения</span>
-        <span className="text-[11px] text-cream/25">·</span>
-        <span className="text-[11px] text-cream/35">{formatDate(article.date)}</span>
+        <span className="text-[11px] text-faint">·</span>
+        <span className="text-[11px] text-faint">{formatDate(article.date)}</span>
       </div>
 
       <div className="space-y-4">
         {paragraphs.map((p, i) => (
-          <p key={i} className="text-[15px] text-cream/75 leading-relaxed">{p}</p>
+          <p key={i} className="text-[15px] text-cream leading-relaxed">{p}</p>
         ))}
       </div>
 
@@ -94,7 +94,7 @@ function Reader({ article, onBack }) {
           className="flex items-center gap-2 mt-8 rounded-3xl bg-emerald/60 px-4 py-3.5"
         >
           <ExternalLink size={16} className="text-gold shrink-0" />
-          <span className="text-[13px] text-cream/60">Первоисточник</span>
+          <span className="text-[13px] text-muted">Первоисточник</span>
         </a>
       )}
     </div>
@@ -119,17 +119,17 @@ export default function Articles() {
   return (
     <div className="animate-fade-in">
       <div className="relative mb-4">
-        <Search size={16} className="text-cream/30 absolute left-4 top-1/2 -translate-y-1/2" />
+        <Search size={16} className="text-faint absolute left-4 top-1/2 -translate-y-1/2" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Поиск статей"
-          className="w-full bg-emerald/60 rounded-full pl-11 pr-4 py-3 text-sm text-cream placeholder-cream/30 outline-none border border-transparent focus:border-gold/40 transition-colors"
+          className="w-full bg-emerald/60 rounded-full pl-11 pr-4 py-3 text-[16px] text-cream placeholder-muted outline-none border border-transparent focus:border-gold/40 transition-colors"
         />
       </div>
 
       {list.length === 0 ? (
-        <p className="text-cream/35 text-sm text-center py-10">
+        <p className="text-faint text-sm text-center py-10">
           {ARTICLES.length === 0
             ? 'Статей пока нет — первая появится здесь'
             : 'Ничего не найдено'}

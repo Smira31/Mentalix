@@ -7,10 +7,11 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
+import WebActionBar from '../components/WebActionBar'
 import {
   useMainButton,
   useSecondaryButton,
-} from '../lib/telegram'
+} from '../platform/telegram.hooks'
 
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -271,7 +272,7 @@ const EMOTIONS = {
 
 const PROUD_HINTS = [
   'Что сделал, хотя не хотелось?',
-  'Где повёл себя так, как хочешь вести всегда?',
+  'Где повёл себя так, как хочешь?',
   'Что заметил в себе хорошего?',
 ]
 
@@ -839,6 +840,16 @@ export default function CheckIn({
   })
 
 
+  const webAction = mainAction
+    ? { text: mainAction.text, onClick: mainAction.run, disabled: saving }
+    : null
+
+  const webSecondaryAction =
+    skipAction && !saving
+      ? { text: skipAction.text, onClick: skipAction.run }
+      : null
+
+
   if (step >= doneStep) {
     return createPortal(
       <div
@@ -872,8 +883,9 @@ export default function CheckIn({
             {isEvening ? (
               <MotifArt
                 name="noch"
-                size={140}
-                className="mb-4"
+                size={184}
+                artScale={1.08}
+                className="mb-5"
               />
             ) : null}
 
@@ -900,7 +912,7 @@ export default function CheckIn({
             </h2>
 
 
-            <p className="text-[15px] text-cream/50 mt-3 leading-relaxed max-w-sm">
+            <p className="text-[15px] text-muted mt-3 leading-relaxed max-w-sm">
               {isEvening
                 ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
                 : 'Ты услышал себя — это тоже шаг.'}
@@ -910,14 +922,24 @@ export default function CheckIn({
           </div>
           </div>
         </div>
+
+        <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
       </div>,
       document.body,
     )
   }
 
 
+  /*
+   * Когда шкалы выключены (вечер поверх готового
+   * чек-ина), шага «энергия» и «шум в голове» нет,
+   * и брать их заголовки по индексу нельзя: подписи
+   * уезжали на карточки уроков и гордости.
+   */
   const scale =
-    SCALE_STEPS[step]
+    skipScales
+      ? null
+      : SCALE_STEPS[step]
 
   const moodLevel =
     values.mood
@@ -985,7 +1007,7 @@ export default function CheckIn({
         >
           <ChevronLeft
             size={20}
-            className="text-cream/60"
+            className="text-muted"
           />
         </button>
 
@@ -1020,7 +1042,7 @@ export default function CheckIn({
         >
           <X
             size={18}
-            className="text-cream/60"
+            className="text-muted"
           />
         </button>
       </div>
@@ -1042,7 +1064,7 @@ export default function CheckIn({
           CHECKIN_QUESTION_CLASS
         }
       >
-        <div className="text-[12px] text-cream/35 font-semibold mb-2 uppercase tracking-wide">
+        <div className="text-[12px] text-faint font-semibold mb-2 uppercase tracking-wide">
           {stepLabel}
         </div>
 
@@ -1050,7 +1072,7 @@ export default function CheckIn({
           {questionTitle}
         </h2>
 
-        <p className="text-[14px] text-cream/45 mt-2">
+        <p className="text-[14px] text-muted mt-2">
           {questionSubtitle}
         </p>
       </section>
@@ -1100,7 +1122,7 @@ export default function CheckIn({
                           'w-12 h-12 rounded-full flex items-center justify-center text-[16px] font-bold transition-colors',
                           active
                             ? 'bg-gold text-emerald-deep'
-                            : 'bg-emerald text-cream/50',
+                            : 'bg-emerald text-muted',
                         ].join(
                           ' ',
                         )}
@@ -1113,7 +1135,7 @@ export default function CheckIn({
                       className={`text-[10px] font-semibold leading-tight text-center ${
                         active
                           ? 'text-gold'
-                          : 'text-cream/35'
+                          : 'text-faint'
                       }`}
                     >
                       {
@@ -1166,7 +1188,7 @@ export default function CheckIn({
                     'px-4 py-2.5 rounded-full text-[14px] font-semibold border-0 transition-colors',
                     active
                       ? 'bg-gold text-emerald-deep'
-                      : 'bg-emerald text-cream/70',
+                      : 'bg-emerald text-muted',
                   ].join(
                     ' ',
                   )}
@@ -1232,7 +1254,7 @@ export default function CheckIn({
                         field.placeholder
                       }
                       rows={2}
-                      className="w-full bg-transparent text-cream placeholder-cream/25 text-[16px] leading-relaxed outline-none resize-none font-body"
+                      className="w-full bg-transparent text-cream placeholder-muted text-[16px] leading-relaxed outline-none resize-none font-body"
                     />
                   </div>
                 ),
@@ -1248,13 +1270,13 @@ export default function CheckIn({
               }
               placeholder="Начни писать..."
               rows={5}
-              className="w-full max-w-md mx-auto rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body"
+              className="w-full max-w-md mx-auto rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body"
             />
           )}
 
 
           {error && (
-            <p className="text-[13px] text-cream/60 text-center mt-4">
+            <p className="text-[13px] text-muted text-center mt-4">
               Не получилось
               сохранить — проверь
               связь
@@ -1315,7 +1337,7 @@ export default function CheckIn({
                         index
                       ]
                     }
-                    className="flex-1 bg-transparent text-cream placeholder-cream/25 text-[16px] outline-none font-body"
+                    className="flex-1 bg-transparent text-cream placeholder-muted text-[16px] outline-none font-body"
                   />
                 </div>
               ),
@@ -1324,7 +1346,7 @@ export default function CheckIn({
 
 
           {error && (
-            <p className="text-[13px] text-cream/60 text-center mt-4">
+            <p className="text-[13px] text-muted text-center mt-4">
               Не получилось
               сохранить — проверь
               связь
@@ -1337,6 +1359,8 @@ export default function CheckIn({
       </div>
       </div>
       </div>
+
+      <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
     </div>,
     document.body,
   )

@@ -87,7 +87,7 @@ main.jsx
 1. `App.jsx` совмещает слишком много обязанностей и содержит ручную state-навигацию.
 2. Экраны соединяют получение данных, бизнес-решения и presentation.
 3. Нет автоматических unit/integration/e2e тестов и test script.
-4. Нет lint/typecheck script; проект JavaScript без схем frontend-контрактов.
+4. Есть lint script (npm run lint, ESLint), но нет typecheck script; проект JavaScript без схем frontend-контрактов.
 5. API-клиент не содержит timeout, отмену запроса, retry, нормализованный тип ошибки или telemetry.
 6. Параметры query собираются строками; отсутствует единый слой сериализации.
 7. Состояния loading/error/empty реализуются неравномерно.
@@ -98,10 +98,13 @@ main.jsx
 
 ## 8. Fullscreen-поверхности и отступы
 
-Контейнер контента в `App.jsx` имеет класс `animate-fade-in`. Анимация объявлена
-с `fill-mode: both`, поэтому её финальный кадр — `transform: translateY(0) scale(1)` —
-остаётся на элементе навсегда. Ненулевой `transform` у предка создаёт containing
-block, и любой `position: fixed` внутри якорится к этому контейнеру, а не к viewport.
+Контейнер контента в `App.jsx` имеет класс `animate-fade-in`. До коммита `f2e9f65`
+(02.08.2026) анимация также двигала `transform` (`translateY` + `scale`), и при
+`fill-mode: both` её финальный кадр оставался на элементе навсегда — ненулевой
+`transform` у предка создаёт containing block, и любой `position: fixed` внутри
+якорится к этому контейнеру, а не к viewport. `f2e9f65` убрал `transform` из
+keyframes (жалобы на дёрганость в WKWebView) — сейчас `fadeIn` анимирует только
+`opacity` и сам по себе containing block не создаёт.
 
 Практические последствия, подтверждённые runtime-проверками на iPhone: экран,
 объявленный полноэкранным, начинается ниже реального верха, его низ уходит за

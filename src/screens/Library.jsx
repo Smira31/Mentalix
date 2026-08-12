@@ -46,14 +46,14 @@ export default function Library({ user }) {
                 active
                   ? 'bg-gold text-emerald-deep'
                   : t.soon
-                    ? 'text-cream/25 cursor-default'
-                    : 'text-cream/50'
+                    ? 'text-faint cursor-default'
+                    : 'text-muted'
               }`}
             >
               {t.label}
 
               {t.soon && (
-                <span className="text-[10px] font-bold uppercase tracking-wider text-cream/25">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-faint">
                   скоро
                 </span>
               )}

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
-import { MotifArt } from '../components/Motif'
+import SemanticGlyph from '../components/SemanticGlyph'
+import CardSystemGlyph from '../components/CardSystemGlyph'
 import BackButton from '../components/BackButton'
+import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -42,63 +44,96 @@ const DURATIONS = [
   { label: '4 мин', secs: 240 },
 ]
 
-export default function Breathing({ user, onBack }) {
+const PREPARE_SECONDS = 3
+const PHASE_ENDS = PHASES.reduce((acc, p) => {
+  acc.push((acc[acc.length - 1] || 0) + p.secs)
+  return acc
+}, [])
+const CYCLE_SECONDS = PHASE_ENDS[PHASE_ENDS.length - 1]
+
+export default function Breathing({ onBack }) {
   const [stage, setStage] = useState('intro') // intro | prepare | run | done
   const [duration, setDuration] = useState(DURATIONS[0].secs)
-  const [phaseIdx, setPhaseIdx] = useState(0)
   const [elapsed, setElapsed] = useState(0)
-  const timers = useRef([])
+  const finishedRef = useRef(false)
+  const phaseRef = useRef(-1)
 
-  function clearTimers() {
-    timers.current.forEach(clearTimeout)
-    timers.current = []
-  }
-  useEffect(() => clearTimers, [])
+  /*
+   * Одни часы на весь сеанс вместо цепочки setTimeout по фазам:
+   * цепочка накапливала ошибку и разъезжалась в фоне. Фаза и цикл
+   * теперь вычисляются из прошедшего времени, а не хранятся.
+   *
+   * Пока экран скрыт, время СТОИТ. Дыхание — участие, а не ожидание:
+   * заблокированный телефон не должен засчитывать сеанс.
+   */
+  const active = stage === 'prepare' || stage === 'run'
+
+  useEffect(() => {
+    if (!active) return
+
+    const accumulated = { seconds: 0 }
+    let last = Date.now()
+
+    const tick = () => {
+      const now = Date.now()
+      if (document.visibilityState === 'visible') {
+        accumulated.seconds += (now - last) / 1000
+      }
+      last = now
+      setElapsed(accumulated.seconds)
+    }
+
+    const id = setInterval(tick, 200)
+    const onVisible = () => {
+      last = Date.now()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [active])
+
+  const intoSession = Math.max(0, elapsed - PREPARE_SECONDS)
+  const intoCycle = intoSession % CYCLE_SECONDS
+  const phaseIdx = PHASE_ENDS.findIndex((end) => intoCycle < end)
+
+  // Переход в дыхание и вибрация на смене фазы — эффектами, а не
+  // изнутри апдейтера состояния: в StrictMode он вызывается дважды.
+  useEffect(() => {
+    if (stage === 'prepare' && elapsed >= PREPARE_SECONDS) setStage('run')
+  }, [stage, elapsed])
+
+  useEffect(() => {
+    if (stage !== 'run' || phaseRef.current === phaseIdx) return
+    phaseRef.current = phaseIdx
+    platform.haptic('light')
+  }, [stage, phaseIdx])
+
+  useEffect(() => {
+    if (stage !== 'run' || intoSession < duration || finishedRef.current) return
+    finishedRef.current = true
+    platform.haptic('success')
+    setStage('done')
+  }, [stage, intoSession, duration])
 
   function start() {
     platform.haptic('medium')
-    setStage('prepare')
+    finishedRef.current = false
+    phaseRef.current = -1
     setElapsed(0)
-    timers.current.push(setTimeout(runCycle, 3000))
-    // секундомер
-    const tick = setInterval(() => {
-      setElapsed((e) => {
-        if (e + 1 >= duration + 3) {
-          clearInterval(tick)
-        }
-        return e + 1
-      })
-    }, 1000)
-    timers.current.push(tick)
-  }
-
-  function runCycle() {
-    setStage('run')
-    let idx = 0
-    setPhaseIdx(0)
-    platform.haptic('light')
-    function nextPhase() {
-      idx = (idx + 1) % PHASES.length
-      setPhaseIdx(idx)
-      platform.haptic('light')
-      timers.current.push(setTimeout(nextPhase, PHASES[idx].secs * 1000))
-    }
-    timers.current.push(setTimeout(nextPhase, PHASES[0].secs * 1000))
+    setStage('prepare')
   }
 
   function finish() {
-    clearTimers()
+    finishedRef.current = true
     platform.haptic('success')
     setStage('done')
   }
 
-  // автозавершение по времени
-  useEffect(() => {
-    if (stage === 'run' && elapsed >= duration + 3) finish()
-  }, [elapsed, stage, duration])
-
   const phase = PHASES[phaseIdx]
-  const progress = stage === 'run' ? Math.min(100, ((elapsed - 3) / duration) * 100) : 0
+  const progress = stage === 'run' ? Math.min(100, (intoSession / duration) * 100) : 0
 
   // ── выбор длительности ──
   if (stage === 'intro') {
@@ -109,15 +144,18 @@ export default function Breathing({ user, onBack }) {
           <span className="font-display text-lg text-cream lowercase">дыхание.</span>
         </div>
 
-        <svg viewBox="0 0 100 100" className="w-28 h-28 mb-6 opacity-70">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="2" className="text-cream/40" />
-          <circle cx="50" cy="50" r="22" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold" />
-        </svg>
+        <div className={cardSystemPreviewEnabled
+          ? 'mx-card-system-breath-art mb-4'
+          : 'w-[220px] h-[154px] mb-4'}>
+          {cardSystemPreviewEnabled
+            ? <CardSystemGlyph kind="breath-flow" />
+            : <SemanticGlyph kind="breath" className="w-full h-full" />}
+        </div>
 
         <h2 className="font-display text-[24px] text-cream text-center leading-tight">
           Успокоить систему
         </h2>
-        <p className="text-[14px] text-cream/50 text-center mt-3 leading-relaxed max-w-xs">
+        <p className="text-[14px] text-muted text-center mt-3 leading-relaxed max-w-xs">
           Техника 4-7-8: вдох носом на 4, задержка на 7, длинный выдох на 8.
           Несколько циклов — и шум в голове тише.
         </p>
@@ -129,7 +167,7 @@ export default function Breathing({ user, onBack }) {
               onClick={() => { platform.haptic('light'); setDuration(d.secs) }}
               className={[
                 'px-6 py-3 rounded-full text-[14px] font-bold border-0 transition-colors',
-                duration === d.secs ? 'bg-cream/10 text-cream' : 'bg-emerald text-cream/40',
+                duration === d.secs ? 'bg-cream/10 text-cream' : 'bg-emerald text-muted',
               ].join(' ')}
             >
               {d.label}
@@ -148,9 +186,15 @@ export default function Breathing({ user, onBack }) {
   if (stage === 'done') {
     return (
       <FullscreenStage className="items-center justify-center px-8 text-center">
-        <MotifArt name="fizio" size={140} className="mb-6" />
+        <div className={cardSystemPreviewEnabled
+          ? 'mx-card-system-breath-art mb-5'
+          : 'w-[240px] h-[168px] mb-5'}>
+          {cardSystemPreviewEnabled
+            ? <CardSystemGlyph kind="breath-flow" />
+            : <SemanticGlyph kind="breath" className="w-full h-full" />}
+        </div>
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
-        <p className="text-[15px] text-cream/50 mt-3">Возвращайся к этому кругу, когда штормит.</p>
+        <p className="text-[15px] text-muted mt-3">Возвращайся к этому кругу, когда штормит.</p>
         <button
           onClick={() => { platform.haptic('light'); onBack() }}
           className="cta-pill text-[16px] px-12 py-4 mt-10"
@@ -182,7 +226,7 @@ export default function Breathing({ user, onBack }) {
         <h2 className="font-display text-[24px] text-cream mt-14">
           {isPrepare ? 'Устройся удобно' : phase.label}
         </h2>
-        <p className="text-[14px] text-cream/45 mt-2 text-center">
+        <p className="text-[14px] text-muted mt-2 text-center">
           {isPrepare ? 'Сядь или ляг так, чтобы дышалось свободно' : `${phase.secs} секунд`}
         </p>
       </div>
@@ -190,7 +234,7 @@ export default function Breathing({ user, onBack }) {
       <div className="flex justify-center shrink-0 pb-7">
         <button
           onClick={finish}
-          className="px-7 py-3 rounded-full bg-emerald text-cream/60 text-[14px] font-bold border-0 active:scale-95 transition-transform"
+          className="px-7 py-3 rounded-full bg-emerald text-muted text-[14px] font-bold border-0 active:scale-95 transition-transform"
         >
           Завершить раньше
         </button>

@@ -4,15 +4,12 @@ import {
   Plus,
 } from 'lucide-react'
 
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
 
 import { PERSONAS } from './personas'
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 
 export default function JournalStart({
@@ -66,11 +63,11 @@ export default function JournalStart({
         <button
           type="button"
           onClick={() => {
-            haptic('light')
+            platform.haptic('light')
             onOpenHistory()
           }}
           aria-label="История разговора"
-          className="ml-auto w-10 h-10 flex items-center justify-center text-cream/65 active:scale-90 transition-transform"
+          className="ml-auto w-10 h-10 flex items-center justify-center text-muted active:scale-90 transition-transform"
         >
           <MoreHorizontal
             size={24}
@@ -119,7 +116,7 @@ export default function JournalStart({
 
         <div className="w-8 h-px bg-gold mt-7 mb-5" />
 
-        <p className="text-[15px] leading-[1.62] text-cream/50 max-w-[300px]">
+        <p className="text-[15px] leading-[1.62] text-muted max-w-[300px]">
           {meta.intro}
         </p>
       </div>
@@ -136,10 +133,10 @@ export default function JournalStart({
           <button
             type="button"
             onClick={() => {
-              haptic('light')
+              platform.haptic('light')
             }}
             aria-label="Добавить"
-            className="w-11 h-11 rounded-full bg-cream/[0.05] flex items-center justify-center text-cream/55 shrink-0 active:scale-90 transition-transform"
+            className="w-11 h-11 rounded-full bg-cream/[0.05] flex items-center justify-center text-muted shrink-0 active:scale-90 transition-transform"
           >
             <Plus
               size={23}
@@ -167,7 +164,7 @@ export default function JournalStart({
 
             placeholder="Начни писать..."
 
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[16px] text-cream placeholder:text-cream/28 px-1"
+            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[16px] text-cream placeholder:text-faint px-1"
           />
 
 

@@ -14,7 +14,7 @@ import {
   paintChrome,
   lockVerticalSwipes,
   useSettingsButton,
-} from './lib/telegram'
+} from './platform/telegram.hooks'
 
 import Today from './screens/Today'
 import Practices from './screens/Practices'
@@ -70,7 +70,7 @@ function Splash() {
           font-display
           text-[15px]
           tracking-[0.4em]
-          text-cream/50
+          text-muted
           mt-7
         "
       >
@@ -80,7 +80,7 @@ function Splash() {
       <div
         className="
           text-[12px]
-          text-cream/30
+          text-faint
           font-semibold
           mt-2
         "
@@ -95,25 +95,6 @@ function Splash() {
 /* ============================================================
    TODAY TEXT
    ============================================================ */
-
-function tagline() {
-  const h = new Date().getHours()
-
-  if (h >= 5 && h <= 11) {
-    return 'день начинается с одного шага'
-  }
-
-  if (h >= 12 && h <= 17) {
-    return 'шаг за шагом — выход находится'
-  }
-
-  if (h >= 18 && h <= 22) {
-    return 'день закрывают, а не бросают'
-  }
-
-  return 'тишина — тоже часть пути'
-}
-
 
 function greeting() {
   const h = new Date().getHours()
@@ -743,9 +724,16 @@ export default function App() {
      HEADER VISIBILITY
      ============================================================ */
 
+  /*
+   * Вложенный экран Today — отдельный сценарий, и
+   * приветствие с шестерёнкой там чужие. Today уже
+   * сообщает об этом через onFlowChange; раньше флаг
+   * гасил только нижнюю навигацию.
+   */
   const showTodayHeader =
     !overlay &&
-    tab === 'today'
+    tab === 'today' &&
+    !todayFlowOpen
 
   const topSafeArea =
     fullscreen
@@ -836,7 +824,7 @@ export default function App() {
                 font-display
                 text-[16px]
                 tracking-[0.42em]
-                text-cream/40
+                text-muted
               "
             >
               MENTALIX
@@ -866,7 +854,10 @@ export default function App() {
             "
           >
             {/* Сохраняет приветствие по центру относительно аватара. */}
-            <span className="w-10 h-10 shrink-0" aria-hidden="true" />
+            <span
+              id="mx-today-header-leading"
+              className="relative w-10 h-10 shrink-0"
+            />
 
 
             {/* Greeting */}
@@ -925,22 +916,12 @@ export default function App() {
               <SettingsIcon
                 size={19}
                 strokeWidth={1.7}
-                className="text-cream/60"
+                className="text-muted"
               />
             </button>
           </div>
 
 
-          <p
-            className="
-              text-[11px]
-              text-cream/30
-              font-medium
-              mb-1
-            "
-          >
-            {tagline()}
-          </p>
         </>
       )}
 
@@ -950,7 +931,7 @@ export default function App() {
          ======================================================== */}
 
       <div
-  key={overlay || tab}
+  key={overlay || 'main'}
   className={[
     'flex-1 w-full flex flex-col items-center',
     mentorPersonaOpen
@@ -965,7 +946,7 @@ export default function App() {
         {!user && (
           <p
             className="
-              text-cream/40
+              text-muted
               text-sm
               px-6
               text-center

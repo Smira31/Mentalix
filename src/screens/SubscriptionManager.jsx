@@ -28,7 +28,7 @@ const TIERS = [
   },
 ]
 
-export default function SubscriptionManager({ user, tier, onBack }) {
+export default function SubscriptionManager({ user: _user, tier, onBack }) {
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
       <div className="w-full flex items-center gap-2 mb-6">
@@ -38,7 +38,7 @@ export default function SubscriptionManager({ user, tier, onBack }) {
         <h1 className="font-display text-xl text-cream">Подписка</h1>
       </div>
 
-      {TIERS.map((t) => {
+      {TIERS.map(t => {
         const isCurrent = tier === t.key
         return (
           <div
@@ -55,10 +55,10 @@ export default function SubscriptionManager({ user, tier, onBack }) {
                 </span>
               )}
             </div>
-            <p className="text-sm text-sage/70 mb-4">{t.price}</p>
+            <p className="text-sm text-muted mb-4">{t.price}</p>
             <ul className="space-y-2 mb-4">
-              {t.features.map((f) => (
-                <li key={f} className="flex items-start gap-2 text-sm text-cream/80">
+              {t.features.map(f => (
+                <li key={f} className="flex items-start gap-2 text-sm text-cream">
                   <Check size={15} className="text-gold shrink-0 mt-0.5" />
                   {f}
                 </li>
@@ -67,7 +67,7 @@ export default function SubscriptionManager({ user, tier, onBack }) {
             {t.key === 'pro' && !isCurrent && (
               <button
                 disabled
-                className="w-full py-3 rounded-xl bg-white/10 text-cream/40 text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                className="w-full py-3 rounded-xl bg-white/10 text-muted text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
               >
                 <Lock size={14} /> Оплата скоро появится
               </button>
@@ -76,8 +76,9 @@ export default function SubscriptionManager({ user, tier, onBack }) {
         )
       })}
 
-      <p className="text-xs text-sage/50 text-center px-4">
-        Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем обновлении.
+      <p className="text-xs text-muted text-center px-4">
+        Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем
+        обновлении.
       </p>
     </div>
   )

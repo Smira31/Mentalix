@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 
 import { readPendingMentor } from './mentalix/personas'
@@ -8,9 +8,6 @@ import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
 
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 // ============================================================
 // ЧАТ
@@ -58,8 +55,15 @@ function Chat({
   ])
 
 
-  async function send() {
-    const text = input.trim()
+  async function send(overrideText) {
+    const isVoiceMessage =
+      typeof overrideText === 'string'
+
+    const text = (
+      isVoiceMessage
+        ? overrideText
+        : input
+    ).trim()
 
     if (
       !text ||
@@ -68,7 +72,10 @@ function Chat({
       return
     }
 
-    setInput('')
+    if (!isVoiceMessage) {
+      setInput('')
+    }
+
     setMessages((previous) => [
       ...previous,
       {
@@ -78,7 +85,7 @@ function Chat({
     ])
 
     setSending(true)
-    haptic('light')
+    platform.haptic('light')
 
     try {
       const reply =

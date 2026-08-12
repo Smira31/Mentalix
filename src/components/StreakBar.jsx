@@ -24,6 +24,26 @@ function plural(n) {
   return 'дней'
 }
 
+const ROMAN_VALUES = [
+  [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+  [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+  [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I'],
+]
+
+function toRoman(n) {
+  let remainder = n
+  let result = ''
+
+  for (const [value, symbol] of ROMAN_VALUES) {
+    while (remainder >= value) {
+      result += symbol
+      remainder -= value
+    }
+  }
+
+  return result
+}
+
 export default function StreakBar({
   streak = 0,
   freezes = 0,
@@ -33,7 +53,7 @@ export default function StreakBar({
   const filled = Math.min(Math.max(streak, 0), 7)
 
   const mark = tone === 'mint' ? 'bg-mint' : 'bg-gold'
-  const label = tone === 'mint' ? 'text-mint/85' : 'text-gold/85'
+  const label = tone === 'mint' ? 'text-cream' : 'text-gold'
 
   return (
     <span className="flex items-center gap-2.5 min-w-0">
@@ -52,11 +72,11 @@ export default function StreakBar({
       </span>
 
       <span className={`text-[11px] tracking-wide truncate ${label}`}>
-        {streak > 0 ? `${streak} ${plural(streak)} подряд` : 'первый день'}
+        {streak > 0 ? `${toRoman(streak)} ${plural(streak)} подряд` : 'первый день'}
       </span>
 
       {freezes > 0 && (
-        <span className="flex items-center gap-0.5 text-[11px] text-mint/60 shrink-0">
+        <span className="flex items-center gap-0.5 text-[11px] text-muted shrink-0">
           <Snowflake size={11} strokeWidth={2} />
           {freezes}
         </span>

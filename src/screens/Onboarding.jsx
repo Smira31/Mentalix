@@ -5,6 +5,7 @@ import { ChevronLeft, Check } from 'lucide-react'
 import MazeLogo from '../components/MazeLogo'
 import { MotifArt } from '../components/Motif'
 import { useFullscreenSurface } from '../lib/fullscreenSurface'
+import './Onboarding.css'
 
 // ── Онбординг по схеме stoic.: приветствие → вопросы о себе →
 // напоминания → «план готов» с зеркалом ответов ──
@@ -41,20 +42,24 @@ function Head({ step, total, onBack, onSkip }) {
           aria-label="Назад"
           className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
         >
-          <ChevronLeft size={20} className="text-cream/60" />
+          <ChevronLeft size={20} className="text-muted" />
         </button>
       ) : <span className="w-10" />}
 
       <div className="flex gap-1.5">
         {Array.from({ length: total }).map((_, i) => (
-          <span key={i} className={`w-1.5 h-1.5 rounded-full ${i <= step ? 'bg-gold' : 'bg-cream/15'}`} />
+          <span
+            key={i}
+            className="mx-onboarding-progress-dot"
+            data-complete={i <= step}
+          />
         ))}
       </div>
 
       {onSkip ? (
         <button
           onClick={() => { platform.haptic('light'); onSkip() }}
-          className="text-[13px] font-bold text-cream/35 bg-transparent border-0 py-1 w-14 text-right"
+          className="text-[13px] font-bold text-faint bg-transparent border-0 py-1 w-14 text-right"
         >
           Далее
         </button>
@@ -68,15 +73,14 @@ function Option({ label, proof, selected, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={[
-        'w-full text-center transition-all duration-300 border-0',
-        proof && selected ? 'rounded-3xl px-5 py-4' : 'rounded-full px-5 py-4',
-        selected ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
-      ].join(' ')}
+      className="mx-onboarding-option w-full rounded-[22px] px-5 py-4 text-center border-0"
+      data-selected={selected}
     >
       <span className="block text-[15px] font-bold">{label}</span>
       {proof && selected && (
-        <span className="block text-[12.5px] leading-snug mt-2 opacity-70 animate-fade-in">{proof}</span>
+        <span className="mx-onboarding-proof block text-[12.5px] leading-snug mt-2 opacity-70">
+          {proof}
+        </span>
       )}
     </button>
   )
@@ -100,15 +104,17 @@ export default function Onboarding({ user, onFinish }) {
 
   const TOTAL = 5
 
-  // на финальном экране карточки проявляются одна за другой
+  // На финальном экране карточки уже занимают свои места и только
+  // набирают контраст. Так список не прыгает во время появления.
   useEffect(() => {
     if (step !== 4) return
-    setRevealed(0)
     const timers = PLAN_CARDS.map((_, i) =>
       setTimeout(() => {
         setRevealed(i + 1)
-        platform.haptic('light')
-      }, 700 + i * 900)
+        if (i === PLAN_CARDS.length - 1) {
+          platform.haptic('light')
+        }
+      }, 420 + i * 520)
     )
     return () => timers.forEach(clearTimeout)
   }, [step])
@@ -138,7 +144,7 @@ export default function Onboarding({ user, onFinish }) {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[70] bg-emerald-deep flex flex-col items-center animate-fade-in overflow-y-auto"
+      className="fixed top-0 left-0 right-0 z-[70] bg-emerald-deep flex flex-col items-center overflow-y-auto"
       style={surfaceStyle}
     >
       {step > 0 && step < 4 && (
@@ -147,27 +153,37 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 0. Приветствие ── */}
       {step === 0 && (
-        <div className="flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center animate-fade-in">
-          <MazeLogo size={190} progress={0.35} className="mb-10" />
-          <h2 className="font-display text-[30px] text-cream leading-tight">
-            это Mentalix.
-            <br />
-            твоя система, а не мотивация
-          </h2>
-          <p className="text-[15px] text-cream/50 mt-4 leading-relaxed max-w-xs">
-            Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
-          </p>
-          <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
-            Начать
-          </button>
+        <div className="mx-onboarding-step mx-onboarding-intro flex-1 w-full max-w-md flex flex-col items-center px-8 text-center">
+          <div className="mx-onboarding-intro-art" aria-hidden="true">
+            <MazeLogo
+              size={266}
+              progress={0.35}
+              animateOnMount
+              motionDuration={2400}
+              className="mx-onboarding-intro-maze"
+            />
+          </div>
+          <div className="mx-onboarding-intro-copy flex flex-col items-center">
+            <h2 className="font-display text-[30px] text-cream leading-tight">
+              это Mentalix.
+              <br />
+              твоя система, а не мотивация
+            </h2>
+            <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
+              Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
+            </p>
+            <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
+              Начать
+            </button>
+          </div>
         </div>
       )}
 
       {/* ── 1. Фокусы ── */}
       {step === 1 && (
-        <div key="s1" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
+        <div key="s1" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">Что сейчас важнее всего?</h2>
-          <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
+          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
             Ответы соберут приложение под твои задачи. Можно выбрать несколько.
           </p>
           <div className="space-y-2.5">
@@ -184,7 +200,7 @@ export default function Onboarding({ user, onFinish }) {
               />
             ))}
           </div>
-          <p className="text-[12px] text-cream/30 text-center mt-6 leading-snug">
+          <p className="text-[12px] text-faint text-center mt-6 leading-snug">
             Выбор ничего не ограничивает — все функции остаются доступными.
           </p>
           <button
@@ -199,9 +215,9 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 2. Возраст ── */}
       {step === 2 && (
-        <div key="s2" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
+        <div key="s2" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">Сколько тебе лет?</h2>
-          <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
+          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
             Чтобы говорить с тобой на одном языке.
           </p>
           <div className="space-y-2.5">
@@ -210,21 +226,28 @@ export default function Onboarding({ user, onFinish }) {
                 key={a}
                 label={a}
                 selected={age === a}
-                onClick={() => { platform.haptic('light'); setAge(a); setTimeout(next, 260) }}
+                onClick={() => { platform.haptic('light'); setAge(a) }}
               />
             ))}
           </div>
-          <p className="text-[12px] text-cream/30 text-center mt-6">Это остаётся только у тебя.</p>
+          <p className="text-[12px] text-faint text-center mt-6">Это остаётся только у тебя.</p>
+          <button
+            onClick={next}
+            disabled={!age}
+            className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
+          >
+            Дальше
+          </button>
         </div>
       )}
 
       {/* ── 3. Напоминание ── */}
       {step === 3 && (
-        <div key="s3" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
+        <div key="s3" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
           <h2 className="font-display text-[26px] text-cream text-center leading-tight">
             Когда напомнить о себе?
           </h2>
-          <p className="text-[14px] text-cream/45 mt-3 mb-7 text-center leading-snug">
+          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
             Привычка держится на одном постоянном времени. Бот пришлёт короткое сообщение — не спам.
           </p>
 
@@ -236,18 +259,18 @@ export default function Onboarding({ user, onFinish }) {
                   key={r.key}
                   onClick={() => { platform.haptic('light'); setReminder(r.key) }}
                   className={[
-                    'w-full rounded-3xl px-5 py-4 flex items-center gap-4 border-0 transition-colors text-left',
+                    'mx-onboarding-reminder w-full rounded-3xl px-5 py-4 flex items-center gap-4 border-0 text-left',
                     on ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
                   ].join(' ')}
                 >
                   <span className="flex-1">
-                    <span className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-cream/45'}`}>{r.label}</span>
+                    <span className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-muted'}`}>{r.label}</span>
                     <span className="block font-display text-[24px] leading-tight">{r.time}</span>
-                    <span className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-cream/35'}`}>{r.note}</span>
+                    <span className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-faint'}`}>{r.note}</span>
                   </span>
                   <span
                     className={[
-                      'w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors',
+                      'mx-onboarding-reminder-check w-6 h-6 rounded-full flex items-center justify-center shrink-0',
                       on ? 'bg-emerald-deep text-cream' : 'bg-cream/10 text-transparent',
                     ].join(' ')}
                   >
@@ -266,12 +289,12 @@ export default function Onboarding({ user, onFinish }) {
 
       {/* ── 4. План готов ── */}
       {step === 4 && (
-        <div key="s4" className="flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8 animate-fade-in">
+        <div key="s4" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
           <h2 className="font-display text-[28px] text-cream text-center leading-tight">
             Готово. Путь размечен.
           </h2>
           {chosenFocusLabels.length > 0 && (
-            <p className="text-[14px] text-cream/55 mt-3 text-center leading-snug">
+            <p className="text-[14px] text-muted mt-3 text-center leading-snug">
               Фокус: <span className="text-cream font-bold">{chosenFocusLabels.join(', ')}</span>
             </p>
           )}
@@ -282,18 +305,14 @@ export default function Onboarding({ user, onFinish }) {
               return (
                 <div
                   key={i}
-                  className={[
-                    'rounded-3xl bg-emerald px-5 py-4 flex items-center gap-4 transition-all duration-500',
-                    shown ? 'opacity-100 translate-y-0' : 'opacity-25 translate-y-1',
-                  ].join(' ')}
+                  className="mx-onboarding-plan-card rounded-3xl bg-emerald px-5 py-4 flex items-center gap-4"
+                  data-revealed={shown}
                 >
                   <MotifArt name={c.motif} size={44} className="shrink-0" />
                   <span className="flex-1 text-[14px] font-semibold text-cream leading-snug">{c.text}</span>
                   <span
-                    className={[
-                      'w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all',
-                      shown ? 'bg-gold/20 text-gold animate-celebrate-pop' : 'bg-cream/5 text-transparent',
-                    ].join(' ')}
+                    className="mx-onboarding-plan-check w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                    data-revealed={shown}
                   >
                     <Check size={14} strokeWidth={3} />
                   </span>

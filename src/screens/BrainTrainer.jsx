@@ -1,26 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Brain, Zap, Shuffle, Wind, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import SemanticGlyph from '../components/SemanticGlyph'
+import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
 
 const EXERCISES = [
-  { key: 'attention', title: 'Внимание', subtitle: 'Струп-тест', icon: Brain, accent: 'gold' },
-  { key: 'memory', title: 'Память', subtitle: 'последовательности', icon: Shuffle, accent: 'mint' },
-  { key: 'reaction', title: 'Реакция', subtitle: 'на время', icon: Zap, accent: 'cognac' },
-  { key: 'plasticity', title: 'Нейропластичность', subtitle: 'переключение', icon: Shuffle, accent: 'gold' },
-  { key: 'gymnastics', title: 'Гимнастика для мозга', subtitle: 'дыхание', icon: Wind, accent: 'mint' },
+  { key: 'attention', title: 'Внимание', subtitle: 'Струп-тест', kind: 'brain-attention' },
+  { key: 'memory', title: 'Память', subtitle: 'последовательности', kind: 'brain-memory' },
+  { key: 'reaction', title: 'Реакция', subtitle: 'на время', kind: 'brain-reaction' },
+  { key: 'plasticity', title: 'Нейропластичность', subtitle: 'переключение', kind: 'brain-plasticity' },
+  { key: 'gymnastics', title: 'Гимнастика для мозга', subtitle: 'дыхание', kind: 'brain-gymnastics' },
 ]
-
-const TONE = {
-  gold: { bg: 'bg-gold/20', text: 'text-gold', border: 'border-gold/30' },
-  mint: { bg: 'bg-mint/20', text: 'text-mint', border: 'border-mint/30' },
-  cognac: { bg: 'bg-cognac/20', text: 'text-cognac', border: 'border-cognac/30' },
-}
 
 function ScoreScreen({ label, score, sub, onDone }) {
   return (
@@ -29,7 +22,7 @@ function ScoreScreen({ label, score, sub, onDone }) {
         <Check size={28} className="text-gold" />
       </div>
       <h2 className="font-display text-xl text-cream mb-1">{label}</h2>
-      <p className="text-sm text-cream/50 mb-6">{sub}</p>
+      <p className="text-sm text-muted mb-6">{sub}</p>
       <div className="font-display text-4xl text-gold mb-8">{score}</div>
       <button
         onClick={onDone}
@@ -83,7 +76,7 @@ function AttentionGame({ onFinish }) {
   useEffect(() => { makeRound() }, [])
 
   function answer(userSaysMatch) {
-    haptic('light')
+    platform.haptic('light')
     const wasCorrect = userSaysMatch === isMatch
     const newCorrect = correct + (wasCorrect ? 1 : 0)
     const next = round + 1
@@ -100,7 +93,7 @@ function AttentionGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-8">{round + 1} / {TOTAL_ROUNDS_ATTENTION} · Слово и цвет совпадают?</p>
+      <p className="text-xs text-muted mb-8">{round + 1} / {TOTAL_ROUNDS_ATTENTION} · Слово и цвет совпадают?</p>
       <div className="font-display text-4xl mb-12" style={{ color: colorHex }}>{word}</div>
       <div className="flex gap-4 w-full">
         <button
@@ -149,13 +142,13 @@ function MemoryGame({ onFinish }) {
 
   function tapTile(i) {
     if (showing) return
-    haptic('light')
+    platform.haptic('light')
     const idx = userInput.length
     const next = [...userInput, i]
     setUserInput(next)
 
     if (sequence[idx] !== i) {
-      haptic('error')
+      platform.haptic('error')
       onFinish(level - 1)
       return
     }
@@ -170,7 +163,7 @@ function MemoryGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-8">
+      <p className="text-xs text-muted mb-8">
         {showing ? 'Запоминай порядок...' : 'Повтори последовательность'} · Уровень {level}/{MEMORY_ROUNDS}
       </p>
       <div className="grid grid-cols-2 gap-4 w-full max-w-[240px]">
@@ -221,13 +214,13 @@ function ReactionGame({ onFinish }) {
   function tap() {
     if (phase === 'waiting') {
       clearTimeout(timeoutRef.current)
-      haptic('light')
+      platform.haptic('light')
       setPhase('tooSoon')
       setTimeout(() => setAttemptKey((k) => k + 1), 900)
       return
     }
     if (phase === 'ready') {
-      haptic('success')
+      platform.haptic('success')
       const ms = Date.now() - startRef.current
       setTimes((t) => [...t, ms])
       setRound((r) => r + 1)
@@ -236,7 +229,7 @@ function ReactionGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-6">Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}</p>
+      <p className="text-xs text-muted mb-6">Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}</p>
       <button
         onClick={tap}
         className="w-full aspect-square rounded-[32px] flex items-center justify-center transition-colors"
@@ -244,7 +237,7 @@ function ReactionGame({ onFinish }) {
           backgroundColor: phase === 'ready' ? '#B8952E' : phase === 'tooSoon' ? 'rgba(232,92,92,0.25)' : 'rgba(150,205,176,0.12)',
         }}
       >
-        <span className="text-center text-cream/80 text-sm px-8">
+        <span className="text-center text-cream text-sm px-8">
           {phase === 'waiting' && 'Жди золотого сигнала...'}
           {phase === 'ready' && 'Тапни сейчас!'}
           {phase === 'tooSoon' && 'Рано! Сейчас повторим'}
@@ -265,7 +258,7 @@ function PlasticityGame({ onFinish }) {
   const reversed = word.split('').reverse().join('')
 
   function submit() {
-    haptic('light')
+    platform.haptic('light')
     const isRight = input.trim().toUpperCase() === reversed
     const newCorrect = correct + (isRight ? 1 : 0)
     const next = round + 1
@@ -280,7 +273,7 @@ function PlasticityGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-6">{round + 1} / {PLASTICITY_WORDS.length} · Напиши слово наоборот</p>
+      <p className="text-xs text-muted mb-6">{round + 1} / {PLASTICITY_WORDS.length} · Напиши слово наоборот</p>
       <div className="font-display text-3xl text-cream mb-8 tracking-widest">{word}</div>
       <input
         value={input}
@@ -307,37 +300,58 @@ const BREATH_PHASES = [
 ]
 const BREATH_CYCLES = 3
 
+const PHASE_ENDS = BREATH_PHASES.reduce((acc, p) => {
+  acc.push((acc[acc.length - 1] || 0) + p.duration)
+  return acc
+}, [])
+const CYCLE_SECONDS = PHASE_ENDS[PHASE_ENDS.length - 1]
+const TOTAL_SECONDS = CYCLE_SECONDS * BREATH_CYCLES
+
 function GymnasticsGame({ onFinish }) {
-  const [phaseIndex, setPhaseIndex] = useState(0)
-  const [cycle, setCycle] = useState(0)
-  const [secondsLeft, setSecondsLeft] = useState(BREATH_PHASES[0].duration)
+  const [elapsed, setElapsed] = useState(0)
   const finishedRef = useRef(false)
 
+  /*
+   * Время считается по часам, а не сложением тиков: вебвью Telegram
+   * душит таймеры, и цепочка setInterval разъезжается с реальностью.
+   * Но пока экран скрыт, время СТОИТ — упражнение дыхательное, и
+   * заблокированный телефон не должен «проходить» его за человека.
+   */
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          const nextPhase = (phaseIndex + 1) % BREATH_PHASES.length
-          if (nextPhase === 0) {
-            const nextCycle = cycle + 1
-            if (nextCycle >= BREATH_CYCLES) {
-              if (!finishedRef.current) {
-                finishedRef.current = true
-                clearInterval(timer)
-                onFinish(1)
-              }
-              return 0
-            }
-            setCycle(nextCycle)
-          }
-          setPhaseIndex(nextPhase)
-          return BREATH_PHASES[nextPhase].duration
-        }
-        return s - 1
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [phaseIndex, cycle])
+    const accumulated = { seconds: 0 }
+    let last = Date.now()
+
+    const tick = () => {
+      const now = Date.now()
+      if (document.visibilityState === 'visible') {
+        accumulated.seconds += (now - last) / 1000
+      }
+      last = now
+      setElapsed(Math.min(TOTAL_SECONDS, accumulated.seconds))
+    }
+
+    const id = setInterval(tick, 200)
+    const onVisible = () => {
+      last = Date.now()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (elapsed < TOTAL_SECONDS || finishedRef.current) return
+    finishedRef.current = true
+    onFinish(1)
+  }, [elapsed, onFinish])
+
+  const cycle = Math.min(BREATH_CYCLES - 1, Math.floor(elapsed / CYCLE_SECONDS))
+  const intoCycle = elapsed % CYCLE_SECONDS
+  const phaseIndex = PHASE_ENDS.findIndex((end) => intoCycle < end)
+  const secondsLeft = Math.max(1, Math.ceil(PHASE_ENDS[phaseIndex] - intoCycle))
 
   const phase = BREATH_PHASES[phaseIndex]
   const isExpand = phase.label === 'Вдох'
@@ -345,7 +359,7 @@ function GymnasticsGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-cream/40 mb-8">Цикл {cycle + 1} / {BREATH_CYCLES}</p>
+      <p className="text-xs text-muted mb-8">Цикл {cycle + 1} / {BREATH_CYCLES}</p>
       <div
         className="rounded-full bg-mint/20 border-2 border-mint/50 flex items-center justify-center transition-all ease-linear"
         style={{
@@ -409,7 +423,7 @@ export default function BrainTrainer({
   }
 
   function start(key) {
-    haptic('light')
+    platform.haptic('light')
     startTimeRef.current = Date.now()
     setActive(key)
     setResult(null)
@@ -417,7 +431,7 @@ export default function BrainTrainer({
 
   async function finish(score) {
     const duration = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000))
-    haptic('success')
+    platform.haptic('success')
     const finishedKey = active
     try {
       await api.brain.logSession(user.id, finishedKey, score, duration)
@@ -477,34 +491,56 @@ export default function BrainTrainer({
     <div className="w-full max-w-md px-5">
       <div className="w-full flex items-center gap-2 mb-6">
         <BackButton onClick={onBack} />
-        <h2 className="font-display text-lg text-cream/90">Нейротренажёр</h2>
+        <h2 className="font-display text-lg text-cream">Нейротренажёр</h2>
       </div>
 
+      <div className={`w-full rounded-[24px] overflow-hidden px-4 mb-4 ${
+        cardSystemPreviewEnabled
+          ? 'h-[164px] bg-transparent border [border-color:rgb(var(--c-border))]'
+          : 'h-[116px] bg-artbed border border-cream/[0.06]'
+      }`} />
+
       {EXERCISES.map((ex) => {
-        const tone = TONE[ex.accent]
         const doneToday = todayCompleted.includes(ex.key)
         const best = summary?.per_type?.[ex.key]?.best_score
         return (
           <button
             key={ex.key}
             onClick={() => start(ex.key)}
-            className={`w-full rounded-[24px] border ${tone.border} bg-emerald-light/10 p-4 mb-3 flex items-center gap-3 transition-transform active:scale-[0.98]`}
+            className="w-full min-h-[112px] rounded-[24px] border border-cream/[0.10] bg-emerald overflow-hidden mb-3 grid grid-cols-[124px_minmax(0,1fr)] text-left transition-transform active:scale-[0.985]"
           >
-            <div className={`w-11 h-11 rounded-2xl ${tone.bg} flex items-center justify-center shrink-0`}>
-              <ex.icon size={22} className={tone.text} strokeWidth={1.75} />
-            </div>
-            <div className="flex-1 text-left">
-              <div className="font-display text-base text-cream">{ex.title}</div>
-              <div className="text-xs text-cream/50">{ex.subtitle}</div>
-            </div>
-            {doneToday && (
-              <span className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center shrink-0">
-                <Check size={14} className="text-gold" />
+            <span className="h-full min-h-[112px] bg-artbed border-r border-cream/[0.06] overflow-hidden px-1">
+              <SemanticGlyph
+                kind={ex.kind}
+                animated={false}
+                highlighted={doneToday}
+                className="w-full h-full scale-[1.04]"
+              />
+            </span>
+
+            <span className="min-w-0 px-4 py-4 flex flex-col justify-center">
+              <span className="flex items-start justify-between gap-2">
+                <span className="font-display text-[16px] text-cream leading-[1.12]">
+                  {ex.title}
+                </span>
+
+                {doneToday && (
+                  <span className="w-6 h-6 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+                    <Check size={14} className="text-gold" />
+                  </span>
+                )}
               </span>
-            )}
-            {best !== undefined && best > 0 && (
-              <span className="font-mono text-xs text-cream/40 shrink-0">{best}</span>
-            )}
+
+              <span className="text-[12px] text-muted mt-2 leading-tight">
+                {ex.subtitle}
+              </span>
+
+              {best !== undefined && best > 0 && (
+                <span className="font-mono text-[11px] text-muted mt-2">
+                  Лучший результат: {best}
+                </span>
+              )}
+            </span>
           </button>
         )
       })}

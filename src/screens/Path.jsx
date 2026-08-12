@@ -71,7 +71,7 @@ function TickGauge({ value, max, sublabel, size = 160 }) {
       </svg>
       <div className="text-center">
         <div className="font-display text-3xl text-cream">{value}%</div>
-        <div className="font-body text-xs text-cream/50 mt-1">{sublabel}</div>
+        <div className="font-body text-xs text-muted mt-1">{sublabel}</div>
       </div>
     </div>
   )
@@ -88,7 +88,7 @@ function EmptyGoals({ onCreate }) {
           <Target size={22} className="text-gold" strokeWidth={1.5} />
         </div>
         <h3 className="font-display text-lg text-cream mb-1">Пока нет ни одной цели</h3>
-        <p className="font-body text-sm text-cream/50 mb-4 leading-relaxed">
+        <p className="font-body text-sm text-muted mb-4 leading-relaxed">
           Создай первую — и увидишь путь к ней прямо здесь, на карте
         </p>
         <button
@@ -119,11 +119,11 @@ function GoalCreateScreen({ onCreate, onCancel }) {
 
   return (
     <div className="w-full max-w-md px-5">
-      <button onClick={onCancel} className="flex items-center gap-1.5 text-cream/60 text-sm mb-4">
+      <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-sm mb-4">
         <ArrowLeft size={16} /> Отмена
       </button>
 
-      <h2 className="font-display text-lg mb-4 text-cream/90">Новая цель</h2>
+      <h2 className="font-display text-lg mb-4 text-cream">Новая цель</h2>
 
       <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
         <WireframeMountain />
@@ -150,20 +150,20 @@ function GoalCreateScreen({ onCreate, onCancel }) {
           value={draft.title}
           onChange={set('title')}
           placeholder="Название цели"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
         <textarea
           value={draft.description}
           onChange={set('description')}
           placeholder="Описание (необязательно)"
           rows={3}
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream placeholder-cream/30 outline-none focus:border-gold transition-colors resize-none"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none"
         />
         <input
           type="date"
           value={draft.target_date}
           onChange={set('target_date')}
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-sm text-cream outline-none focus:border-gold transition-colors"
+          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream outline-none focus:border-gold transition-colors"
         />
       </div>
 
@@ -216,7 +216,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
   return (
     <div className="w-full max-w-md px-5">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-cream/60 text-sm">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-sm">
           <ArrowLeft size={16} /> Назад
         </button>
 
@@ -225,13 +225,13 @@ function GoalDetail({ goal, onBack, onDelete }) {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 text-cream/90 transition-transform active:scale-95 disabled:opacity-50"
+              className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 text-cream transition-transform active:scale-95 disabled:opacity-50"
             >
               {deleting ? 'Удаляю...' : 'Удалить'}
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="text-xs px-3 py-1.5 rounded-lg border border-cream/20 text-cream/50 transition-transform active:scale-95"
+              className="text-xs px-3 py-1.5 rounded-lg border border-cream/20 text-muted transition-transform active:scale-95"
             >
               Отмена
             </button>
@@ -239,7 +239,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
         ) : (
           <button
             onClick={() => setConfirming(true)}
-            className="text-cream/40 p-1.5 transition-transform active:scale-90"
+            className="text-muted p-1.5 transition-transform active:scale-90"
             aria-label="Удалить цель"
           >
             <Trash2 size={16} />
@@ -258,7 +258,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
       </div>
 
       {goal.description && (
-        <p className="text-sm text-cream/60 text-center mb-5 leading-relaxed">{goal.description}</p>
+        <p className="text-sm text-muted text-center mb-5 leading-relaxed">{goal.description}</p>
       )}
 
       <div className="rounded-[28px] bg-emerald-light/20 border border-cream/10 p-6 mb-5 flex justify-center">
@@ -269,26 +269,26 @@ function GoalDetail({ goal, onBack, onDelete }) {
         <div className="rounded-2xl bg-emerald-light/20 p-4">
           <Flame size={18} className="text-gold mb-2" strokeWidth={1.75} />
           <div className="font-body text-sm text-cream">{goal.habits.length}</div>
-          <div className="font-body text-xs text-cream/50">связанных привычек</div>
+          <div className="font-body text-xs text-muted">связанных привычек</div>
         </div>
         <div className="rounded-2xl bg-emerald-light/20 p-4">
           <TrendingUp size={18} className="text-gold mb-2" strokeWidth={1.75} />
           <div className="font-body text-sm text-cream">{goal.target_date || '—'}</div>
-          <div className="font-body text-xs text-cream/50">срок</div>
+          <div className="font-body text-xs text-muted">срок</div>
         </div>
       </div>
 
-      <h3 className="text-sm text-cream/80 mb-2">Привычки</h3>
+      <h3 className="text-sm text-cream mb-2">Привычки</h3>
       {goal.habits.length > 0 ? (
         <div className="rounded-2xl bg-emerald-light/20 border border-cream/10 divide-y divide-cream/10">
           {goal.habits.map((h) => (
-            <div key={h.id} className="px-4 py-3 text-sm text-cream/80">
+            <div key={h.id} className="px-4 py-3 text-sm text-cream">
               {h.name}
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-xs text-cream/30 italic">
+        <p className="text-xs text-faint italic">
           Пока нет привязанных привычек — привяжи их на экране «Сегодня» при создании
         </p>
       )}
@@ -339,7 +339,7 @@ export default function Path({ user }) {
     }
   }
 
-  if (loading) return <p className="text-cream/40 text-sm px-6">Загрузка...</p>
+  if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
 
   if (showCreate) {
     return <GoalCreateScreen onCreate={createGoal} onCancel={() => setShowCreate(false)} />
@@ -357,7 +357,7 @@ export default function Path({ user }) {
 
   return (
     <div className="w-full max-w-md px-5 pb-24">
-      <h2 className="font-display text-lg mb-4 text-cream/90">Мой путь</h2>
+      <h2 className="font-display text-lg mb-4 text-cream">Мой путь</h2>
 
       {goals.length === 0 ? (
         <EmptyGoals onCreate={() => setShowCreate(true)} />
@@ -368,7 +368,7 @@ export default function Path({ user }) {
           ))}
           <button
             onClick={() => setShowCreate(true)}
-            className="w-full py-2.5 rounded-xl border border-cream/20 text-cream/60 text-sm mt-2"
+            className="w-full py-2.5 rounded-xl border border-cream/20 text-muted text-sm mt-2"
           >
             + Новая цель
           </button>

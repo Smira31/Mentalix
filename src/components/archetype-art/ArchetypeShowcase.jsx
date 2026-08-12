@@ -31,7 +31,7 @@ function Preview({
         />
       </div>
 
-      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-cream/30">
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-faint">
         {label}
       </div>
     </div>
@@ -54,7 +54,7 @@ function ArchetypeCard({ item }) {
         <h2 className="font-display text-[22px] leading-tight text-cream">
           {item.name}
         </h2>
-        <p className="mt-2 text-[14px] leading-relaxed text-cream/45">
+        <p className="mt-2 text-[14px] leading-relaxed text-muted">
           {item.meaning}
         </p>
       </div>
@@ -83,13 +83,13 @@ export default function ArchetypeShowcase() {
     <main className="min-h-[100dvh] bg-emerald-deep text-cream px-5 py-10 sm:py-14">
       <div className="w-full max-w-6xl mx-auto">
         <header className="max-w-xl mb-9 sm:mb-12">
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-gold/70 mb-4">
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-gold mb-4">
             Dev-only · visual approval
           </div>
           <h1 className="font-display text-[34px] sm:text-[42px] leading-[1.04] tracking-[-0.035em]">
             Архетипы Mentalix
           </h1>
-          <p className="mt-4 text-[15px] leading-relaxed text-cream/45">
+          <p className="mt-4 text-[15px] leading-relaxed text-muted">
             Один центр света. Всё остальное — то, как вокруг него устроено пространство.
           </p>
         </header>
@@ -100,7 +100,7 @@ export default function ArchetypeShowcase() {
           ))}
         </section>
 
-        <p className="mt-8 font-mono text-[10px] leading-relaxed uppercase tracking-[0.12em] text-cream/25">
+        <p className="mt-8 font-mono text-[10px] leading-relaxed uppercase tracking-[0.12em] text-faint">
           Системная настройка reduced motion автоматически оставляет каждый символ в читаемом финальном состоянии.
         </p>
       </div>

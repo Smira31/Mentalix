@@ -5,7 +5,8 @@ import { api } from '../lib/api'
 import { Lock, Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import Motif, { MotifArt } from '../components/Motif'
-import { useMainButton, offerHomeScreen, cloud } from '../lib/telegram'
+import WebActionBar from '../components/WebActionBar'
+import { useMainButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -37,7 +38,7 @@ import {
 
 const HOME_OFFERED_KEY = 'mx-home-offered'
 
-function Shell({ style, children }) {
+function Shell({ style, footer, children }) {
   return (
     <div className={FULLSCREEN_SHELL_CLASS} style={style}>
       <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
@@ -47,13 +48,15 @@ function Shell({ style, children }) {
           {children}
         </div>
       </div>
+
+      {footer}
     </div>
   )
 }
 
 function Fact({ children }) {
   return (
-    <li className="flex gap-3 text-[14px] text-cream/60 leading-snug">
+    <li className="flex gap-3 text-[14px] text-muted leading-snug">
       <span className="text-gold shrink-0 mt-[7px] w-[14px] h-px bg-gold/70" aria-hidden="true" />
       <span>{children}</span>
     </li>
@@ -190,38 +193,49 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   }, [finished])
   const canSave = Boolean(text.trim()) && !current?.locked
 
+  const mainText =
+    view === 'intro'
+      ? 'Начать'
+      : view === 'review'
+        ? 'Закрыть тему'
+        : saving
+          ? 'Сохраняю...'
+          : current?.reflection
+            ? 'Обновить мысль'
+            : 'Обдумал'
+
+  const mainOnClick =
+    view === 'intro'
+      ? () => { platform.haptic('light'); setView('day') }
+      : view === 'review'
+        ? onBack
+        : save
+
+  const mainVisible = Boolean(data) && view !== 'list' && (view !== 'day' || !current?.locked)
+  const mainEnabled = view === 'day' ? canSave && !saving : true
+
   /*
    * Хук вызывается всегда, а видимостью и текстом управляет вид.
    * Условный вызов сломал бы порядок хуков.
    */
   useMainButton({
-    text:
-      view === 'intro'
-        ? 'Начать'
-        : view === 'review'
-          ? 'Закрыть тему'
-          : saving
-            ? 'Сохраняю...'
-            : current?.reflection
-              ? 'Обновить мысль'
-              : 'Обдумал',
-    onClick:
-      view === 'intro'
-        ? () => { platform.haptic('light'); setView('day') }
-        : view === 'review'
-          ? onBack
-          : save,
-    visible: Boolean(data) && view !== 'list' && (view !== 'day' || !current?.locked),
-    enabled: view === 'day' ? canSave && !saving : true,
+    text: mainText,
+    onClick: mainOnClick,
+    visible: mainVisible,
+    enabled: mainEnabled,
     loading: saving,
   })
+
+  const webAction = mainVisible
+    ? { text: mainText, onClick: mainOnClick, disabled: !mainEnabled }
+    : null
 
   if (!data) {
     return createPortal(
       <Shell style={style}>
         <BackButton onClick={onBack} />
 
-        <p className="w-full m-auto px-6 text-center text-cream/40 text-sm">
+        <p className="w-full m-auto px-6 text-center text-muted text-sm">
           Загрузка...
         </p>
       </Shell>,
@@ -240,7 +254,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
   if (view === 'intro') {
     return createPortal(
-      <Shell style={style}>
+      <Shell style={style} footer={<WebActionBar action={webAction} />}>
         <BackButton onClick={onBack} />
 
         <div className="flex-1 flex flex-col justify-center py-4">
@@ -248,7 +262,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             <Motif name="ryad" className="w-full h-full" />
           </div>
 
-          <div className="text-[12px] text-cream/35 font-semibold uppercase tracking-wide text-center mb-2">
+          <div className="text-[12px] text-faint font-semibold uppercase tracking-wide text-center mb-2">
             Тема недели
           </div>
 
@@ -257,7 +271,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           </h2>
 
           {data.subtitle && (
-            <p className="text-[15px] text-cream/50 leading-relaxed text-center mt-4">
+            <p className="text-[15px] text-muted leading-relaxed text-center mt-4">
               {data.subtitle}
             </p>
           )}
@@ -294,11 +308,11 @@ export default function ThemeScreen({ user, themeId, onBack }) {
     const written = data.days.filter((x) => x.reflection)
 
     return createPortal(
-      <Shell style={style}>
+      <Shell style={style} footer={<WebActionBar action={webAction} />}>
         <BackButton onClick={back} />
 
         <div className="text-center mt-4 mb-7">
-          <div className="text-[12px] text-cream/35 font-semibold uppercase tracking-wide mb-2">
+          <div className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
             {finished ? 'Неделя пройдена' : 'Что уже написано'}
           </div>
 
@@ -306,7 +320,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             {data.title}
           </h2>
 
-          <p className="text-[13px] text-cream/40 mt-3">
+          <p className="text-[13px] text-muted mt-3">
             {written.length} из {data.days.length} дней
           </p>
         </div>
@@ -319,7 +333,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               </div>
 
               {d.prompt && (
-                <p className="text-[14px] text-cream/45 leading-snug mb-3">
+                <p className="text-[14px] text-muted leading-snug mb-3">
                   {d.prompt}
                 </p>
               )}
@@ -330,7 +344,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
               <button
                 onClick={() => { platform.haptic('light'); setDay(d.day); setView('day') }}
-                className="text-[12px] text-cream/35 mt-3 bg-transparent border-0 p-0 active:opacity-60"
+                className="text-[12px] text-faint mt-3 bg-transparent border-0 p-0 active:opacity-60"
               >
                 Изменить
               </button>
@@ -346,7 +360,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               Семь дней — семь мыслей
             </h3>
 
-            <p className="text-[14px] text-cream/50 mt-3 leading-relaxed">
+            <p className="text-[14px] text-muted mt-3 leading-relaxed">
               Это уже не чтение, а практика. Перечитай написанное через месяц —
               увидишь, что изменилось не в теме, а в тебе.
             </p>
@@ -368,7 +382,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           все темы.
         </h2>
 
-        <p className="text-[12px] text-cream/35 mb-6">
+        <p className="text-[12px] text-faint mb-6">
           пройденные остаются с тобой — их можно перечитать
         </p>
 
@@ -396,7 +410,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                     </div>
 
                     {item.subtitle && (
-                      <p className="text-[13px] text-cream/45 leading-snug mt-1.5">
+                      <p className="text-[13px] text-muted leading-snug mt-1.5">
                         {item.subtitle}
                       </p>
                     )}
@@ -427,7 +441,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   /* ── день ──────────────────────────────────────────────── */
 
   return createPortal(
-    <Shell style={style}>
+    <Shell style={style} footer={<WebActionBar action={webAction} />}>
       <div className="flex items-center justify-between gap-3 mb-5">
         <BackButton onClick={onBack} />
 
@@ -444,7 +458,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           {themes.length > 1 && (
             <button
               onClick={() => { platform.haptic('light'); setView('list') }}
-              className="text-[12px] text-cream/40 bg-transparent border-0 p-0 active:opacity-60"
+              className="text-[12px] text-muted bg-transparent border-0 p-0 active:opacity-60"
             >
               Все темы
             </button>
@@ -455,7 +469,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <div className="text-center mb-6">
         <button
           onClick={() => { platform.haptic('light'); setView('intro') }}
-          className="text-[12px] text-cream/35 font-semibold uppercase tracking-wide mb-2 bg-transparent border-0 p-0 active:opacity-60"
+          className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2 bg-transparent border-0 p-0 active:opacity-60"
         >
           Тема недели
         </button>
@@ -480,7 +494,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                   ? 'bg-cream text-emerald-deep'
                   : d.reflection
                     ? 'bg-gold/20 text-gold'
-                    : 'bg-emerald text-cream/40',
+                    : 'bg-emerald text-muted',
               ].join(' ')}
             >
               {d.locked ? <Lock size={12} /> : d.reflection && !active ? <Check size={13} strokeWidth={3} /> : d.day}
@@ -500,7 +514,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 День {day} под замком
               </h3>
 
-              <p className="text-[14px] text-cream/50 mt-3 leading-relaxed">
+              <p className="text-[14px] text-muted mt-3 leading-relaxed">
                 Первые {data.free_days} дня открыты всем. Остальные — часть Библиотеки.
               </p>
 
@@ -513,7 +527,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             </>
           ) : (
             <>
-              <div className="text-[12px] text-cream/35 font-bold mb-3">
+              <div className="text-[12px] text-faint font-bold mb-3">
                 День {day} из {data.days.length}
               </div>
 
@@ -522,7 +536,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               </p>
 
               {current?.prompt && (
-                <p className="text-[14px] text-gold/80 font-semibold mt-5 leading-snug">
+                <p className="text-[14px] text-gold font-semibold mt-5 leading-snug">
                   {current.prompt}
                 </p>
               )}
@@ -537,7 +551,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           onChange={(e) => setText(e.target.value)}
           placeholder="Записать мысль..."
           rows={4}
-          className="w-full shrink-0 rounded-3xl bg-emerald text-cream placeholder-cream/30 p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3 mb-[76px]"
+          className="w-full shrink-0 rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3 mb-[76px]"
         />
       )}
     </Shell>,

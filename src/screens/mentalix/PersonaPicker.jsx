@@ -4,10 +4,13 @@ import {
   useState,
 } from 'react'
 
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../../platform'
 
 import { api } from '../../lib/api'
-import PersonaCardArt from './art/PersonaCardArt'
+import { cardSystemPreviewEnabled } from '../../lib/cardSystem'
+import SemanticGlyph, {
+  semanticKindForPersona,
+} from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
 
 
@@ -51,13 +54,6 @@ const CARD_HEIGHT = {
 }
 
 
-function haptic(
-  style = 'light',
-) {
-  WebApp.HapticFeedback?.impactOccurred(
-    style,
-  )
-}
 
 
 function trim(
@@ -173,7 +169,7 @@ export default function PersonaPicker({
         с кем говорим.
       </h2>
 
-      <p className="text-[12px] text-cream/35 mb-6">
+      <p className="text-[12px] text-faint mb-6">
         три собеседника, три отдельных разговора
       </p>
 
@@ -198,7 +194,7 @@ export default function PersonaPicker({
         }}
       >
         {PERSONAS.map(
-          (persona) => {
+          (persona, index) => {
             const last =
               previews[
                 persona.key
@@ -216,10 +212,10 @@ export default function PersonaPicker({
                 role="button"
                 tabIndex={0}
                 onClick={() => {
-                  haptic('light')
+                  platform.haptic('light')
                   onPick(persona.key, '')
                 }}
-                className="
+                className={`
                   snap-center
                   shrink-0
                   w-[82%]
@@ -233,7 +229,8 @@ export default function PersonaPicker({
                   cursor-pointer
                   active:scale-[0.99]
                   transition-transform
-                "
+                  ${cardSystemPreviewEnabled ? 'mx-card-system-persona-card' : ''}
+                `}
                 style={CARD_HEIGHT}
               >
                 {/*
@@ -242,14 +239,19 @@ export default function PersonaPicker({
                   * тянется до нижнего меню и на разных экранах имеет
                   * разную высоту.
                   */}
-                <div className="-mx-6 -mt-6 mb-1 basis-1/3 shrink-0 min-h-0 bg-emerald rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden">
-                  <PersonaCardArt
-                    persona={persona.key}
+                <div className={`-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 ${
+                  cardSystemPreviewEnabled ? 'mx-card-system-persona-art' : ''
+                }`}>
+                  <SemanticGlyph
+                    kind={semanticKindForPersona(persona.key)}
+                    animated={active === index}
+                    highlighted={active === index}
+                    className="w-full h-full scale-[1.06]"
                   />
                 </div>
 
 
-                <div className="font-display text-[22px] text-cream leading-tight mt-4">
+                <div className="font-display text-[22px] text-cream leading-tight mt-3">
                   {persona.name}
                 </div>
 
@@ -257,18 +259,18 @@ export default function PersonaPicker({
                   {persona.tagline}
                 </div>
 
-                <p className="text-[14px] text-cream/50 leading-snug mt-3">
+                <p className="text-[14px] text-muted leading-snug mt-2.5">
                   {persona.desc}
                 </p>
 
 
-                <div className="mt-auto pt-6">
+                <div className="mt-auto pt-3">
                   {last ? (
                     <button
                       onClick={(event) => {
                         event.stopPropagation()
 
-                        haptic('light')
+                        platform.haptic('light')
 
                         onPick(
                           persona.key,
@@ -281,7 +283,7 @@ export default function PersonaPicker({
                         Продолжить разговор
                       </div>
 
-                      <p className="text-[13px] text-cream/55 leading-snug">
+                      <p className="text-[13px] text-muted leading-snug">
                         {last.role === 'user'
                           ? 'Ты: '
                           : ''}
@@ -299,14 +301,14 @@ export default function PersonaPicker({
                               onClick={(event) => {
                                 event.stopPropagation()
 
-                                haptic('light')
+                                platform.haptic('light')
 
                                 onPick(
                                   persona.key,
                                   starter,
                                 )
                               }}
-                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-cream/70 active:scale-95 transition-transform"
+                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform"
                             >
                               {starter}
                             </button>
@@ -316,7 +318,7 @@ export default function PersonaPicker({
 
                       <button
                         onClick={() => {
-                          haptic('light')
+                          platform.haptic('light')
 
                           onPick(
                             persona.key,
@@ -356,7 +358,7 @@ export default function PersonaPicker({
       </div>
 
 
-      <p className="text-[11px] text-cream/30 leading-snug mt-6 text-center">
+      <p className="text-[11px] text-faint leading-snug mt-6 text-center">
         У каждого своя история — разговоры не смешиваются.
       </p>
     </div>

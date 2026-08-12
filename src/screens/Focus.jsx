@@ -1,57 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
-import WebApp from '@twa-dev/sdk'
+import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Play, Pause, RotateCcw } from 'lucide-react'
+import SemanticGlyph from '../components/SemanticGlyph'
+import CardSystemGlyph from '../components/CardSystemGlyph'
+import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 
 const DURATIONS = [10, 25, 45]
 const POINTS_PER_CONSTELLATION = 5
-
-const CONSTELLATION_POINTS = [
-  { x: 20, y: 75 },
-  { x: 32, y: 30 },
-  { x: 50, y: 55 },
-  { x: 68, y: 30 },
-  { x: 80, y: 75 },
-]
-
-function haptic(style = 'light') {
-  WebApp.HapticFeedback?.impactOccurred(style)
-}
-
-function Constellation({ pointsUnlocked }) {
-  const visible = CONSTELLATION_POINTS.slice(0, pointsUnlocked)
-  return (
-    <svg viewBox="0 0 100 100" className="w-full h-full">
-      {visible.slice(1).map((p, i) => {
-        const prev = visible[i]
-        return (
-          <line
-            key={i}
-            x1={prev.x} y1={prev.y} x2={p.x} y2={p.y}
-            stroke="#B8952E"
-            strokeWidth="0.6"
-            strokeOpacity="0.6"
-          />
-        )
-      })}
-      {visible.map((p, i) => (
-        <circle
-          key={i}
-          cx={p.x} cy={p.y} r={i === visible.length - 1 ? 3 : 1.8}
-          fill={i === visible.length - 1 ? '#B8952E' : '#F3E9DD'}
-          className={i === visible.length - 1 ? 'animate-celebrate-pop' : ''}
-        />
-      ))}
-    </svg>
-  )
-}
 
 export default function Focus({ user }) {
   const [progress, setProgress] = useState(null)
   const [selectedDuration, setSelectedDuration] = useState(DURATIONS[1])
   const [running, setRunning] = useState(false)
   const [secondsLeft, setSecondsLeft] = useState(DURATIONS[1] * 60)
-  const intervalRef = useRef(null)
+
+  // Момент окончания сессии, а не счётчик тиков: вебвью Telegram душит
+  // таймеры в фоне, и setInterval отстаёт при блокировке экрана.
+  const [endsAt, setEndsAt] = useState(null)
+  const finishedRef = useRef(false)
 
   useEffect(() => {
     if (!user) return
@@ -59,19 +26,28 @@ export default function Focus({ user }) {
   }, [user])
 
   useEffect(() => {
-    if (!running) return
-    intervalRef.current = setInterval(() => {
-      setSecondsLeft((s) => {
-        if (s <= 1) {
-          clearInterval(intervalRef.current)
-          finishSession()
-          return 0
-        }
-        return s - 1
-      })
-    }, 1000)
-    return () => clearInterval(intervalRef.current)
-  }, [running])
+    if (!endsAt) return
+    const tick = () => setSecondsLeft(Math.max(0, Math.ceil((endsAt - Date.now()) / 1000)))
+    tick()
+    // 250 мс, чтобы секунда не «залипала» после возврата из фона
+    const id = setInterval(tick, 250)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') tick()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [endsAt])
+
+  // Завершение — отдельным эффектом, а не внутри апдейтера состояния:
+  // в StrictMode апдейтер вызывается дважды и logSession уходил дублем.
+  useEffect(() => {
+    if (!endsAt || secondsLeft > 0 || finishedRef.current) return
+    finishedRef.current = true
+    finishSession()
+  }, [secondsLeft, endsAt])
 
   function selectDuration(min) {
     if (running) return
@@ -80,19 +56,29 @@ export default function Focus({ user }) {
   }
 
   function toggleRun() {
-    haptic('light')
-    setRunning((r) => !r)
+    platform.haptic('light')
+    if (running) {
+      setRunning(false)
+      setEndsAt(null)
+      return
+    }
+    finishedRef.current = false
+    setEndsAt(Date.now() + secondsLeft * 1000)
+    setRunning(true)
   }
 
   function reset() {
-    haptic('light')
+    platform.haptic('light')
+    finishedRef.current = false
     setRunning(false)
+    setEndsAt(null)
     setSecondsLeft(selectedDuration * 60)
   }
 
   async function finishSession() {
     setRunning(false)
-    haptic('success')
+    setEndsAt(null)
+    platform.haptic('success')
     try {
       const updated = await api.focus.logSession(user.id, selectedDuration)
       setProgress(updated)
@@ -104,19 +90,23 @@ export default function Focus({ user }) {
 
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
   const ss = String(secondsLeft % 60).padStart(2, '0')
-  const pointsUnlocked = progress ? progress.points_unlocked : 0
-  const constellationIndex = progress ? progress.constellation_index : 0
-
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
-      <h2 className="font-display text-lg mb-6 text-cream/90 self-start">Фокус</h2>
-
-      <div className="w-48 h-48 mb-6">
-        <Constellation pointsUnlocked={pointsUnlocked} />
+      <div className={cardSystemPreviewEnabled
+        ? 'mx-card-system-focus-art mb-3'
+        : 'w-[240px] h-[168px] mb-3'}>
+        {cardSystemPreviewEnabled
+          ? <CardSystemGlyph kind="focus-convergence" />
+          : <SemanticGlyph kind="focus" className="w-full h-full" />}
       </div>
 
-      <p className="text-xs text-sage/60 mb-8 text-center">
-        Созвездие №{constellationIndex + 1} — {pointsUnlocked}/{POINTS_PER_CONSTELLATION} сессий
+      {/* Пока прогресс не загружен — пусто, а не «0/5»: подставная цифра
+          меняется на глазах и читается как сбой. Высота держится, чтобы
+          макет не дёргался. */}
+      <p className="text-xs text-muted mb-8 text-center min-h-[1rem]">
+        {progress
+          ? `Созвездие №${progress.constellation_index + 1} — ${progress.points_unlocked}/${POINTS_PER_CONSTELLATION} сессий`
+          : ''}
       </p>
 
       <div className="font-display text-5xl text-cream mb-6 tabular-nums">
@@ -129,8 +119,10 @@ export default function Focus({ user }) {
             key={d}
             onClick={() => selectDuration(d)}
             disabled={running}
-            className={`px-4 py-2 rounded-full text-sm transition-colors disabled:opacity-40 ${
-              selectedDuration === d ? 'bg-gold text-emerald-deep' : 'bg-emerald-light/20 text-cream/60'
+            className={`px-4 py-2 rounded-full text-sm transition-colors ${
+              selectedDuration === d
+                ? 'bg-gold text-emerald-deep'
+                : `bg-emerald-light/20 text-muted ${running ? 'opacity-40' : ''}`
             }`}
           >
             {d} мин
@@ -144,7 +136,7 @@ export default function Focus({ user }) {
           className="w-12 h-12 rounded-full bg-emerald-light/20 flex items-center justify-center active:scale-90 transition-transform"
           aria-label="Сбросить"
         >
-          <RotateCcw size={18} className="text-cream/60" />
+          <RotateCcw size={18} className="text-muted" />
         </button>
         <button
           onClick={toggleRun}
