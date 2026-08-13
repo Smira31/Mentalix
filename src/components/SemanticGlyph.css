@@ -15,9 +15,9 @@
 .mx-semantic-glyph__neuro-bridge,
 .mx-semantic-glyph__neuro-nodes,
 .mx-semantic-glyph__exercise,
-.mx-semantic-glyph__breath-left,
-.mx-semantic-glyph__breath-right,
-.mx-semantic-glyph__axis,
+.mx-semantic-glyph__breath-upper,
+.mx-semantic-glyph__breath-lower,
+.mx-semantic-glyph__breath-axis,
 .mx-semantic-glyph__lens-outer,
 .mx-semantic-glyph__lens-inner,
 .mx-semantic-glyph__meditation-waves,
@@ -132,8 +132,8 @@
 }
 
 .mx-semantic-glyph__neuro-bridge,
-.mx-semantic-glyph__breath-left,
-.mx-semantic-glyph__breath-right,
+.mx-semantic-glyph__breath-upper,
+.mx-semantic-glyph__breath-lower,
 .mx-semantic-glyph__lens-outer,
 .mx-semantic-glyph__lens-inner,
 .mx-semantic-glyph__meditation-waves,
@@ -186,16 +186,20 @@
   opacity: 0.38;
 }
 
+.mx-semantic-glyph__breath-axis {
+  opacity: 0.38;
+}
+
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--neuro .mx-semantic-glyph__neuro-bridge {
   animation: mx-semantic-connect 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-left {
-  animation: mx-semantic-breathe-left 5.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-upper {
+  animation: mx-semantic-breath-upper 8.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-right {
-  animation: mx-semantic-breathe-right 5.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-lower {
+  animation: mx-semantic-breath-lower 8.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--focus .mx-semantic-glyph__lens-inner {
@@ -297,14 +301,14 @@
   48%, 72% { opacity: 1; stroke-dashoffset: 0; stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-semantic-breathe-left {
-  0%, 100% { transform: translateX(0) scale(0.98); }
-  48%, 62% { transform: translateX(-5px) scale(1.04); }
+@keyframes mx-semantic-breath-upper {
+  0%, 18%, 100% { transform: translateY(5px) scaleX(0.92); opacity: 0.58; }
+  52%, 72% { transform: translateY(-4px) scaleX(1.04); opacity: 1; stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-semantic-breathe-right {
-  0%, 100% { transform: translateX(0) scale(0.98); }
-  48%, 62% { transform: translateX(5px) scale(1.04); }
+@keyframes mx-semantic-breath-lower {
+  0%, 18%, 100% { transform: translateY(-5px) scaleX(0.92); opacity: 0.58; }
+  52%, 72% { transform: translateY(4px) scaleX(1.04); opacity: 1; stroke: rgb(var(--c-line)); }
 }
 
 @keyframes mx-semantic-focus {

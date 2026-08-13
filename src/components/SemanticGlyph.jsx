@@ -148,10 +148,16 @@ function Drawing({ kind, debugSource }) {
       return (
         <>
           <Guide />
-          <path className="mx-semantic-glyph__breath-left" d="M78 30C52 28 34 44 38 68C42 88 66 86 78 64Z" />
-          <path className="mx-semantic-glyph__breath-right" d="M82 30C108 28 126 44 122 68C118 88 94 86 82 64Z" />
-          <path className="mx-semantic-glyph__axis" d="M80 24V82" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+          <g className="mx-semantic-glyph__breath-upper">
+            <path d="M24 56C37 31 55 19 80 19C105 19 123 31 136 56" />
+            <path d="M39 56C49 39 62 31 80 31C98 31 111 39 121 56" />
+          </g>
+          <g className="mx-semantic-glyph__breath-lower">
+            <path d="M24 56C37 81 55 93 80 93C105 93 123 81 136 56" />
+            <path d="M39 56C49 73 62 81 80 81C98 81 111 73 121 56" />
+          </g>
+          <path className="mx-semantic-glyph__breath-axis" d="M80 22V90" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
         </>
       )
 
