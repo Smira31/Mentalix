@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Проведён 13.08.2026 — системный UI-аудит MXL-UI
+
+- На baseline `b25c8e3` проведены статический аудит и bounded web-runtime проход на `320 × 568`; продуктовый код не менялся. P0 не найдено, зафиксированы пять P1 и безопасная очередь отдельных циклов. Pre-mortem, покрытие и доказательства — `docs/ui-audit-2026-08-13.md`; статус — `TASKS.md` → `MXL-UI`.
+
 ## Закрыто 13.08.2026 — Цикл 3 MXL-GLYPH-UNIFY-001
 
 - Оставшиеся глифы объединены в `SemanticGlyph`, старый `CardSystemGlyph` и preview-флаг удалены; production-layout и gating «Скоро» сохранены. Web/mobile QA и живая проверка владельцем на iPhone/Telegram пройдены, PR #50 смёржен. Подробности — `TASKS.md` → `MXL-GLYPH-UNIFY-001`.
