@@ -21,6 +21,16 @@ const DAY_REVIEW_PROMPT =
   'Разбери мой сегодняшний день. Опирайся только на реальные данные Mentalix: моё состояние, ритуалы, аскезы, срывы, их причины, вечерние выводы и то, чем я горжусь. Дай один главный вывод, максимум две закономерности и один конкретный эксперимент на завтра. Если данных для вывода недостаточно — скажи об этом прямо.'
 
 /*
+ * MXL-EMOTION-STEP-002 — эмоция → один микро-шаг (ROADMAP.md, пункт 2).
+ * Один универсальный драфт для тяжёлых эмоций, не зависящий от того, какая
+ * именно из трёх выбрана — Собеседник сам спросит, что происходит.
+ */
+const EMOTION_TALK_PROMPT =
+  'Сейчас тяжело — не хочу делать вид, что всё в порядке. Хочу просто сказать вслух, что чувствую.'
+
+const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно']
+
+/*
  * Telegram в fullscreen рисует свои
  * контролы («Закрыть», меню) поверх
  * веб-вью. App.jsx компенсирует их теми
@@ -724,6 +734,44 @@ export default function CheckIn({
   }
 
 
+  /*
+   * Тот же переход-хендофф, что openScout(), но к Собеседнику
+   * (mayak) с одним универсальным драфтом вместо разбора дня.
+   * Отдельная функция, а не параметризация openScout() — вечерний
+   * флоу к Следопыту (dnevnik) этим не затрагивается.
+   */
+  function openListener() {
+    platform.haptic('medium')
+
+    try {
+      sessionStorage.setItem(
+        MENTOR_PERSONA_KEY,
+        'mayak',
+      )
+
+      sessionStorage.setItem(
+        MENTOR_DRAFT_KEY,
+        EMOTION_TALK_PROMPT,
+      )
+    } catch (error) {
+      console.error(error)
+    }
+
+    const url =
+      new URL(
+        window.location.href,
+      )
+
+    url.searchParams.set(
+      'tab',
+      'mentor',
+    )
+
+    window.location.href =
+      url.toString()
+  }
+
+
   // ============================================================
   // ФИНАЛ
   // ============================================================
@@ -1199,6 +1247,14 @@ export default function CheckIn({
             })}
           </div>
 
+          {HEAVY_EMOTIONS.includes(emotion) && (
+            <button
+              onClick={openListener}
+              className="mt-6 text-[13px] font-semibold text-gold bg-transparent border-0"
+            >
+              Поговорить об этом с Собеседником →
+            </button>
+          )}
 
         </div>
       )}
