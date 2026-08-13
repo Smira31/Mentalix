@@ -392,6 +392,12 @@
   - Почистить вручную: удалить строки `id 15` и `id 16` из `rituals`.
   - Если будет время — рассмотреть добавление FK-ограничения `rituals.user_id → users.id` (сейчас в схеме `rituals` есть только PK и индекс по `user_id`, внешнего ключа на `users` нет — поэтому осиротевшая запись с несуществующим на тот момент `user_id` вообще смогла появиться молча, без ошибки на уровне БД).
 
+- [ ] **MXL-STRICTMODE-PERSONA-001 — `readPendingMentor()` теряет persona/draft в dev под React StrictMode (не чинить, зафиксировано)**
+  - Найдено при проверке `MXL-EMOTION-STEP-002` 13.08.2026. `readPendingMentor()` (`src/screens/mentalix/personas.js`) вызывает `sessionStorage.removeItem(...)` как побочный эффект прямо внутри функции, переданной в `useState(() => readPendingMentor())` (`src/screens/Mentalix.jsx`). В dev (`npm run dev`) `main.jsx` оборачивает приложение в `<StrictMode>`, который намеренно вызывает инициализатор `useState` дважды — второй вызов находит sessionStorage уже пустым (после первого) и возвращает `{persona: null}`, из-за чего вместо прямого перехода в диалог показывается `PersonaPicker`.
+  - Влияет одинаково на оба handoff-пути, использующих этот паттерн (`openScout()`/Следопыт из вечернего разбора и новый `openListener()`/Собеседник из `MXL-EMOTION-STEP-002`) — не специфично для новой задачи.
+  - **Не воспроизводится в проде** — `StrictMode` не активен вне dev-сборки; проверено вручную через `npm run build` + `npm run preview`: handoff отрабатывает штатно, персона открывается сразу с предзаполненным драфтом.
+  - Не исправлять сейчас (по прямому решению владельца) — только зафиксировано как ловушка для будущих dev/Playwright-проверок этого конкретного флоу: если тест на dev-сервере вдруг видит `PersonaPicker` вместо ожидаемой персоны, это не обязательно баг, а известная особенность StrictMode. Фикс при желании: убрать side-effect из тела инициализатора `useState`, перенести `sessionStorage.removeItem` в `useEffect`.
+
 ## Заблокировано
 
 - [ ] **MXL-019 — Заменить лабиринт**
@@ -453,6 +459,13 @@
   - **Закрыто полностью (frontend + backend):** PR #44 смёржен squash-коммитом `fb19809` в `main` по прямому запросу владельца 11.08.2026; ветка `feature/asceza-drop-categories-add-relapse-cost` удалена (remote и локально). Деплой на `mentalix.vercel.app` подтверждён (GitHub commit status `Vercel: success`; в отданном продакшен-бандле найден новый плейсхолдер «Цена срыва», класс сетки категорий `grid-cols-5 gap-1.5` отсутствует). Backend (`mentalix-bot#1`) смёржен и задеплоен на Railway ранее, живой curl-тест подтвердил сохранение `relapse_cost`. Задача `MXL-ASCEZA-CARD-001` полностью закрыта.
 
 ## Completed / Archived
+
+- [x] **MXL-EMOTION-STEP-002 — Эмоция → один микро-шаг (закрыто 13.08.2026)**
+  - Источник задачи: `ROADMAP.md` → «Идеи по итогам конкурентного анализа» (Stoic/Reflectly/Daylio/How We Feel), пункт 2.
+  - Реализация: `src/screens/CheckIn.jsx` — при выборе одной из трёх тяжёлых эмоций (`тревожно`/`подавлен`/`страшно`, константа `HEAVY_EMOTIONS`) на шаге эмоций (`isEmotionStep`) сразу под чипами появляется ссылка «Поговорить об этом с Собеседником →». Новая функция `openListener()` — тот же handoff-паттерн, что существующий `openScout()` (sessionStorage `MENTOR_PERSONA_KEY`/`MENTOR_DRAFT_KEY` → `tab=mentor`), но на персону `mayak` (Собеседник) с новым универсальным драфтом `EMOTION_TALK_PROMPT` вместо персоны `dnevnik`/`DAY_REVIEW_PROMPT`. `openScout()`/вечерний разбор не изменены — отдельная функция, не параметризация существующей.
+  - Текст драфта утверждён владельцем: «Сейчас тяжело — не хочу делать вид, что всё в порядке. Хочу просто сказать вслух, что чувствую.»
+  - Commit реализации: `49ab119` (ветка `feature/emotion-microstep`).
+  - Проверка: `npm run build` чисто; `npx eslint src/screens/CheckIn.jsx` — 0 ошибок, 0 warning; вживую через Playwright — нейтральная эмоция (ссылки нет) и тяжёлая эмоция (ссылка появляется, клик → `?tab=mentor`); сам handoff (персона + предзаполненный драфт) проверен на production-сборке (`npm run build` + `npm run preview`) — отработал корректно. Известная особенность dev-окружения (не баг) зафиксирована отдельно — `MXL-STRICTMODE-PERSONA-001` в «Позже».
 
 - [x] **MXL-PIN-001 — PIN/биометрия на приложение (закрыто 13.08.2026, живой тест на iPhone подтверждён)**
   - Источник задачи: `ROADMAP.md` → «Идеи по итогам конкурентного анализа» (Stoic/Reflectly/Daylio/How We Feel), пункт 1.
