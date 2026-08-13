@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import { ChevronRight, ArrowUpRight } from 'lucide-react'
 
 import Path from './Path'
@@ -20,7 +19,6 @@ import { readTodayFocusDay, clearTodayFocusPick } from '../lib/todayFocus'
 import {
   DayThread,
   DayThreadTrigger,
-  FocusMark,
   FocusNextAction,
   NextActionReveal,
   TodayCompareControl,
@@ -521,19 +519,13 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         в ночь, тёмным в обеих темах.
       */}
       <div
-        className={`rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in ${
-          cardSystemPreviewEnabled ? 'mx-card-system-today-hero' : ''
-        }`}
+        className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero"
       >
         {motionExperimentEnabled ? (
-          cardSystemPreviewEnabled ? (
-            <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
-              <SemanticGlyph kind="next-step" debugSource="Today.jsx" />
-              <span>один следующий шаг</span>
-            </div>
-          ) : (
-            <FocusMark />
-          )
+          <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
+            <SemanticGlyph kind="next-step" debugSource="Today.jsx" />
+            <span>один следующий шаг</span>
+          </div>
         ) : (
           heroArt
         )}
