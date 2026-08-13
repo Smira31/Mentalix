@@ -1,5 +1,18 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 13.08.2026 — Цикл 3 MXL-GLYPH-UNIFY-001
+
+- Оставшиеся глифы объединены в `SemanticGlyph`, старый `CardSystemGlyph` и preview-флаг удалены; production-layout и gating «Скоро» сохранены. Web/mobile QA и живая проверка владельцем на iPhone/Telegram пройдены, PR #50 смёржен. Подробности — `TASKS.md` → `MXL-GLYPH-UNIFY-001`.
+
+## Закрыто 13.08.2026 — checkpoint перед Циклом 3 MXL-GLYPH-UNIFY-001
+
+- Владелец явно разрешил закрыть checkpoint и переходить к Циклу 3. Актуализирован
+  план: Mentalix dark-only, поэтому light-проверка неприменима; hero-глиф
+  `BrainTrainer` ранее удалён и не должен возвращаться. Доступные поверхности проверены
+  в web fallback на `320×568` без горизонтального переполнения; скрытые экраны «Скоро»
+  вынесены в обязательный preview-gate перед merge. Оценка Цикла 3 — 8–12 часов.
+  Продуктовый код не менялся. Протокол — `docs/glyph-unify-checkpoint.md`.
+
 ## Закрыто 13.08.2026 — MXL-GLYPH-UNIFY-001: Цикл 2 (пилот) закрыт
 
 - Оба пилотных `kind` (`asceza-boundary`, `breath-flow`) перенесены из `CardSystemGlyph` в `SemanticGlyph` по плану (`docs/glyph-unify-plan.md`), три коммита в ветке `feature/glyph-unify-cycle2`, подтверждены живым тестом на iPhone 13.08.2026. `CardSystemGlyph.jsx` не удалён — это Цикл 3. Подробности — `TASKS.md` → `MXL-GLYPH-UNIFY-001`.

@@ -4,7 +4,6 @@ import { api } from '../lib/api'
 import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import SemanticGlyph from '../components/SemanticGlyph'
-import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 
 
 const EXERCISES = [
@@ -494,11 +493,7 @@ export default function BrainTrainer({
         <h2 className="font-display text-lg text-cream">Нейротренажёр</h2>
       </div>
 
-      <div className={`w-full rounded-[24px] overflow-hidden px-4 mb-4 ${
-        cardSystemPreviewEnabled
-          ? 'h-[164px] bg-transparent border [border-color:rgb(var(--c-border))]'
-          : 'h-[116px] bg-artbed border border-cream/[0.06]'
-      }`} />
+      <div className="w-full h-[164px] rounded-[24px] overflow-hidden px-4 mb-4 bg-transparent border [border-color:rgb(var(--c-border))]" />
 
       {EXERCISES.map((ex) => {
         const doneToday = todayCompleted.includes(ex.key)

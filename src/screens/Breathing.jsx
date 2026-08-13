@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import SemanticGlyph from '../components/SemanticGlyph'
 import BackButton from '../components/BackButton'
-import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -143,9 +142,7 @@ export default function Breathing({ onBack }) {
           <span className="font-display text-lg text-cream lowercase">дыхание.</span>
         </div>
 
-        <div className={cardSystemPreviewEnabled
-          ? 'mx-card-system-breath-art mb-4'
-          : 'w-[220px] h-[154px] mb-4'}>
+        <div className="mx-card-system-breath-art mb-4">
           <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
 
@@ -183,9 +180,7 @@ export default function Breathing({ onBack }) {
   if (stage === 'done') {
     return (
       <FullscreenStage className="items-center justify-center px-8 text-center">
-        <div className={cardSystemPreviewEnabled
-          ? 'mx-card-system-breath-art mb-5'
-          : 'w-[240px] h-[168px] mb-5'}>
+        <div className="mx-card-system-breath-art mb-5">
           <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>

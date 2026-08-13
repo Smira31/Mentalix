@@ -11,17 +11,16 @@
 }
 
 .mx-semantic-glyph__guide,
-.mx-semantic-glyph__neuro-branches,
-.mx-semantic-glyph__neuro-bridge,
-.mx-semantic-glyph__neuro-nodes,
+.mx-semantic-glyph__network,
+.mx-semantic-glyph__route,
 .mx-semantic-glyph__exercise,
 .mx-semantic-glyph__breath-upper,
 .mx-semantic-glyph__breath-lower,
 .mx-semantic-glyph__breath-axis,
-.mx-semantic-glyph__lens-outer,
-.mx-semantic-glyph__lens-inner,
-.mx-semantic-glyph__meditation-waves,
-.mx-semantic-glyph__horizon,
+.mx-semantic-glyph__focus-beams,
+.mx-semantic-glyph__focus-axis,
+.mx-semantic-glyph__focus-plane,
+.mx-semantic-glyph__contour,
 .mx-semantic-glyph__prayer,
 .mx-semantic-glyph__shower-arch,
 .mx-semantic-glyph__streams,
@@ -131,12 +130,14 @@
   fill: rgb(var(--c-gold));
 }
 
-.mx-semantic-glyph__neuro-bridge,
+.mx-semantic-glyph__network,
+.mx-semantic-glyph__signal,
 .mx-semantic-glyph__breath-upper,
 .mx-semantic-glyph__breath-lower,
-.mx-semantic-glyph__lens-outer,
-.mx-semantic-glyph__lens-inner,
-.mx-semantic-glyph__meditation-waves,
+.mx-semantic-glyph__focus-beams,
+.mx-semantic-glyph__focus-axis,
+.mx-semantic-glyph__focus-plane,
+.mx-semantic-glyph__contour,
 .mx-semantic-glyph__prayer,
 .mx-semantic-glyph__streams,
 .mx-semantic-glyph__purpose-arcs,
@@ -163,14 +164,19 @@
   opacity: 0.12;
 }
 
-.mx-semantic-glyph__neuro-bridge {
-  stroke-dasharray: 72;
-  stroke-dashoffset: 0;
-}
-
-.mx-semantic-glyph__neuro-nodes circle,
+.mx-semantic-glyph__network circle,
 .mx-semantic-glyph__pivot {
   fill: rgb(var(--c-line-secondary));
+}
+
+.mx-semantic-glyph__route,
+.mx-semantic-glyph__focus-axis {
+  stroke: rgb(var(--c-line));
+  opacity: 0.42;
+}
+
+.mx-semantic-glyph__focus-plane {
+  opacity: 0.38;
 }
 
 .mx-semantic-glyph__trail-guide {
@@ -190,8 +196,12 @@
   opacity: 0.38;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--neuro .mx-semantic-glyph__neuro-bridge {
-  animation: mx-semantic-connect 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--neuro .mx-semantic-glyph__network {
+  animation: mx-semantic-network 13.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--neuro .mx-semantic-glyph__signal {
+  animation: mx-semantic-signal 13.5s cubic-bezier(0.23, 1, 0.32, 1) infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-upper {
@@ -202,12 +212,20 @@
   animation: mx-semantic-breath-lower 8.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--focus .mx-semantic-glyph__lens-inner {
-  animation: mx-semantic-focus 4.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--focus .mx-semantic-glyph__focus-beams {
+  animation: mx-semantic-focus 10.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__meditation-waves {
-  animation: mx-semantic-settle 6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__contour--outer {
+  animation: mx-semantic-contour-outer 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__contour--middle {
+  animation: mx-semantic-contour-middle 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__contour--inner {
+  animation: mx-semantic-contour-inner 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--prayer .mx-semantic-glyph__prayer,
@@ -296,9 +314,16 @@
   animation: mx-semantic-path-signal 11.2s cubic-bezier(0.23, 1, 0.32, 1) infinite;
 }
 
-@keyframes mx-semantic-connect {
-  0%, 20%, 100% { opacity: 0.16; stroke-dashoffset: 72; }
-  48%, 72% { opacity: 1; stroke-dashoffset: 0; stroke: rgb(var(--c-line)); }
+@keyframes mx-semantic-network {
+  0%, 18%, 100% { opacity: 0.55; transform: scale(0.98); }
+  52%, 76% { opacity: 0.92; transform: scale(1.02); }
+}
+
+@keyframes mx-semantic-signal {
+  0%, 14% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  76%, 86% { opacity: 1; transform: translate(118px, -22px); }
+  100% { opacity: 0; transform: translate(118px, -22px); }
 }
 
 @keyframes mx-semantic-breath-upper {
@@ -312,13 +337,23 @@
 }
 
 @keyframes mx-semantic-focus {
-  0%, 18%, 100% { transform: scaleX(1); }
-  48%, 72% { transform: scaleX(0.68); stroke: rgb(var(--c-line)); }
+  0%, 18%, 100% { transform: scaleX(1); opacity: 0.58; }
+  52%, 74% { transform: scaleX(0.78); opacity: 1; stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-semantic-settle {
-  0%, 18%, 100% { transform: translateY(-3px) scale(1); opacity: 0.75; }
-  52%, 76% { transform: translateY(5px) scale(0.94); opacity: 1; }
+@keyframes mx-semantic-contour-outer {
+  0%, 20%, 100% { transform: scale(1.04); opacity: 0.42; }
+  54%, 76% { transform: scale(0.96); opacity: 0.78; }
+}
+
+@keyframes mx-semantic-contour-middle {
+  0%, 20%, 100% { transform: scale(0.96); opacity: 0.55; }
+  54%, 76% { transform: scale(1.03); opacity: 0.9; }
+}
+
+@keyframes mx-semantic-contour-inner {
+  0%, 20%, 100% { transform: scale(1.06); opacity: 0.72; }
+  54%, 76% { transform: scale(0.92); opacity: 1; stroke: rgb(var(--c-line)); }
 }
 
 @keyframes mx-semantic-rise {

@@ -60,19 +60,20 @@ function Drawing({ kind, debugSource }) {
       return (
         <>
           <Guide />
-          <g className="mx-semantic-glyph__neuro-branches">
-            <path d="M30 76L54 54L40 30" />
-            <path d="M54 54L68 38" />
-            <path d="M130 34L106 56L120 82" />
-            <path d="M106 56L92 74" />
+          <g className="mx-semantic-glyph__network">
+            <path d="M22 74L40 48L58 62L78 40L98 56L118 34L140 52" />
+            <path d="M40 48L30 26M40 48L54 28M58 62L46 86M58 62L78 82M78 40L74 18M78 40L98 24M98 56L92 86M98 56L118 78M118 34L136 22M118 34L140 52" />
+            <circle cx="22" cy="74" r="2.2" /><circle cx="40" cy="48" r="2.8" />
+            <circle cx="58" cy="62" r="2.5" /><circle cx="78" cy="40" r="3" />
+            <circle cx="98" cy="56" r="2.6" /><circle cx="118" cy="34" r="2.8" />
+            <circle cx="140" cy="52" r="2.2" /><circle cx="30" cy="26" r="2" />
+            <circle cx="54" cy="28" r="2.1" /><circle cx="46" cy="86" r="2.2" />
+            <circle cx="78" cy="82" r="2.4" /><circle cx="74" cy="18" r="2" />
+            <circle cx="98" cy="24" r="2.2" /><circle cx="92" cy="86" r="2.1" />
+            <circle cx="118" cy="78" r="2.4" /><circle cx="136" cy="22" r="2" />
           </g>
-          <g className="mx-semantic-glyph__neuro-nodes">
-            <circle cx="30" cy="76" r="3" /><circle cx="40" cy="30" r="3" />
-            <circle cx="68" cy="38" r="3" /><circle cx="130" cy="34" r="3" />
-            <circle cx="120" cy="82" r="3" /><circle cx="92" cy="74" r="3" />
-          </g>
-          <path className="mx-semantic-glyph__neuro-bridge" d="M54 54C64 44 70 52 80 56C90 60 96 66 106 56" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+          <path className="mx-semantic-glyph__route" d="M22 74L40 48L58 62L78 40L98 56L118 34L140 52" />
+          <circle className="mx-semantic-glyph__point mx-semantic-glyph__signal" cx="22" cy="74" r="4" />
         </>
       )
 
@@ -165,9 +166,16 @@ function Drawing({ kind, debugSource }) {
       return (
         <>
           <Guide />
-          <path className="mx-semantic-glyph__lens-outer" d="M24 56C48 24 112 24 136 56C112 88 48 88 24 56Z" />
-          <path className="mx-semantic-glyph__lens-inner" d="M54 56C66 40 94 40 106 56C94 72 66 72 54 56Z" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+          <g className="mx-semantic-glyph__focus-beams">
+            <path d="M18 22C42 28 58 40 80 56" />
+            <path d="M18 39C46 42 62 48 80 56" />
+            <path d="M18 56H80" />
+            <path d="M18 73C46 70 62 64 80 56" />
+            <path d="M18 90C42 84 58 72 80 56" />
+          </g>
+          <path className="mx-semantic-glyph__focus-axis" d="M84 56H142" />
+          <path className="mx-semantic-glyph__focus-plane" d="M80 42V70" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
         </>
       )
 
@@ -175,13 +183,16 @@ function Drawing({ kind, debugSource }) {
       return (
         <>
           <Guide />
-          <g className="mx-semantic-glyph__meditation-waves">
-            <path d="M28 72Q80 22 132 72" />
-            <path d="M46 72Q80 40 114 72" />
-            <path d="M62 72Q80 56 98 72" />
+          <g className="mx-semantic-glyph__contour mx-semantic-glyph__contour--outer">
+            <path d="M28 56C28 31 49 16 78 19C108 15 134 32 132 58C135 84 108 97 80 93C50 98 25 82 28 56Z" />
           </g>
-          <path className="mx-semantic-glyph__horizon" d="M38 78H122" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="72" r="4" />
+          <g className="mx-semantic-glyph__contour mx-semantic-glyph__contour--middle">
+            <path d="M43 57C41 39 58 29 79 31C100 28 119 41 117 59C118 77 100 85 80 82C58 86 42 74 43 57Z" />
+          </g>
+          <g className="mx-semantic-glyph__contour mx-semantic-glyph__contour--inner">
+            <path d="M59 56C59 46 67 40 80 42C93 40 102 47 101 57C102 68 92 73 80 71C67 73 58 67 59 56Z" />
+          </g>
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
         </>
       )
 
