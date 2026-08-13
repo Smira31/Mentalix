@@ -479,6 +479,100 @@ export const cloud = {
 
 
 /* ============================================================
+   БИОМЕТРИЯ
+
+   Face ID/Touch ID через собственный JS-мост Telegram
+   (`WebApp.BiometricManager`), а не через браузерный WebAuthn:
+   внутри embedded WebView Mini App браузерный Credential
+   Management ненадёжен и обычно недоступен. Вне Telegram
+   биометрии здесь нет — только PIN (см. `src/lib/appLock.js`).
+
+   Биометрия — способ разблокировки поверх уже заданного PIN,
+   не замена ему: PIN остаётся обязательной основой на случай,
+   если биометрия недоступна или человек её отклонил.
+   ============================================================ */
+
+function biometricManager() {
+  return api()?.BiometricManager ?? null
+}
+
+function ensureBiometricInited() {
+  return new Promise((resolve) => {
+    const manager = biometricManager()
+
+    if (!manager) {
+      resolve(null)
+
+      return
+    }
+
+    if (manager.isInited) {
+      resolve(manager)
+
+      return
+    }
+
+    safely(
+      () => manager.init(() => resolve(manager)),
+      'BiometricManager.init',
+    )
+  })
+}
+
+export const biometric = {
+  async isAvailable() {
+    const manager = await ensureBiometricInited()
+
+    return Boolean(manager?.isBiometricAvailable)
+  },
+
+  async type() {
+    const manager = await ensureBiometricInited()
+
+    return manager?.biometricType || null
+  },
+
+  authenticate(reason) {
+    return new Promise((resolve) => {
+      ensureBiometricInited().then((manager) => {
+        if (!manager?.isBiometricAvailable) {
+          resolve(false)
+
+          return
+        }
+
+        const proceed = () => {
+          safely(
+            () =>
+              manager.authenticate(
+                { reason },
+                (ok) => resolve(Boolean(ok)),
+              ),
+            'BiometricManager.authenticate',
+          )
+        }
+
+        if (manager.isAccessGranted) {
+          proceed()
+
+          return
+        }
+
+        safely(
+          () =>
+            manager.requestAccess(
+              { reason },
+              (granted) => (granted ? proceed() : resolve(false)),
+            ),
+          'BiometricManager.requestAccess',
+        )
+      })
+    })
+  },
+}
+
+
+/* ============================================================
    ЦВЕТ ШАПКИ И НИЖНЕЙ ПОЛОСЫ
 
    Без этого между шапкой Telegram и приложением видна граница:

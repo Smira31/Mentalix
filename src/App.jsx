@@ -25,11 +25,13 @@ import Settings from './screens/Settings'
 import WebAuthScreen from './screens/WebAuthScreen'
 import Library from './screens/Library'
 import Onboarding from './screens/Onboarding'
+import AppLock from './screens/AppLock'
 
 import MazeLogo from './components/MazeLogo'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import { useSynced } from './lib/store'
+import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 
 import { initFullscreen } from './lib/tgFullscreen'
 
@@ -266,6 +268,23 @@ export default function App() {
 
   const onboarded = onboardedFlag === '1'
 
+  /*
+   * Блокировка приложения (PIN/биометрия). Синхронизируется только факт
+   * «включена» — сам PIN живёт исключительно локально, см.
+   * src/lib/appLock.js. Экран блокировки живёт поверх остального UI:
+   * показывается на холодном старте и при каждом возврате из фона, но
+   * только если PIN действительно задан на этом устройстве — синхронный
+   * флаг «включено», пришедший с другого устройства, сам по себе экран
+   * не показывает (там нечего проверять).
+   */
+  const [appLockEnabledFlag] = useSynced(APP_LOCK_ENABLED_KEY, '0')
+
+  const appLockEnabled = appLockEnabledFlag === '1'
+
+  const [locked, setLocked] = useState(
+    () => appLockEnabled && hasPinRecord()
+  )
+
   const initialTab =
     new URLSearchParams(
       window.location.search
@@ -335,6 +354,32 @@ export default function App() {
       setAuthChecked(true)
     })()
   }, [])
+
+
+  /* ============================================================
+     БЛОКИРОВКА ПРИЛОЖЕНИЯ
+
+     Возврат из фона — единственный триггер повторной блокировки:
+     без таймера неактивности, каждое возвращение в приложение
+     показывает экран блокировки заново, если она включена и
+     настроена на этом устройстве.
+     ============================================================ */
+
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.hidden) return
+
+      if (appLockEnabled && hasPinRecord()) {
+        setLocked(true)
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [appLockEnabled])
 
 
   /* ============================================================
@@ -716,6 +761,24 @@ export default function App() {
           onAuthed={setUser}
         />
       </div>
+    )
+  }
+
+
+  /* ============================================================
+     БЛОКИРОВКА ПРИЛОЖЕНИЯ
+
+     После того, как личность уже подтверждена (Telegram или
+     web-логин), но до основного UI — экран-гейт поверх готового
+     приложения, не альтернативная авторизация.
+     ============================================================ */
+
+  if (user && locked) {
+    return (
+      <AppLock
+        mode="unlock"
+        onUnlock={() => setLocked(false)}
+      />
     )
   }
 

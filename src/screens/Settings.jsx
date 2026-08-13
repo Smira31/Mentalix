@@ -10,18 +10,22 @@ import {
   User,
   Bell,
   Globe,
+  Lock,
   LifeBuoy,
   RefreshCw,
   Heart,
   Moon,
 } from 'lucide-react'
 import { api } from '../lib/api'
-import { forget } from '../lib/store'
-import { requestMessages } from '../platform/telegram.hooks'
+import { forget, useSynced } from '../lib/store'
+import { requestMessages, biometric } from '../platform/telegram.hooks'
+import { platformName } from '../platform'
+import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
+import AppLock from './AppLock'
 
 function SectionLabel({ children }) {
   return (
@@ -138,7 +142,33 @@ export default function Settings({ user, onBack, onNavigate }) {
     catch (e) { console.error(e); setReviewHour(prev) }
   }
 
-  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web'
+  // ── Блокировка приложения: см. src/lib/appLock.js и App.jsx.
+  // Синхронизируется только флаг «включено», сам PIN — только локально,
+  // поэтому на новом устройстве флаг может быть «включено», а PIN ещё
+  // не задан здесь (lockConfiguredHere = false).
+  const [lockEnabledFlag, setLockEnabledFlag] = useSynced(APP_LOCK_ENABLED_KEY, '0')
+  const lockOn = lockEnabledFlag === '1'
+  const lockConfiguredHere = hasPinRecord()
+  const [biometricAvailable, setBiometricAvailable] = useState(false)
+
+  useEffect(() => {
+    if (platformName !== 'telegram') return
+    let alive = true
+    biometric.isAvailable().then((available) => { if (alive) setBiometricAvailable(available) })
+    return () => { alive = false }
+  }, [])
+
+  function handleLockPress() {
+    if (lockOn && lockConfiguredHere) {
+      clearPinRecord()
+      setLockEnabledFlag('0')
+      return
+    }
+
+    setScreen('app-lock-setup')
+  }
+
+  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'app-lock-setup'
   const [tier, setTier] = useState('base')
   const go = (key) => onNavigate?.(key)
 
@@ -161,6 +191,19 @@ export default function Settings({ user, onBack, onNavigate }) {
 
   if (screen === 'link-web') {
     return <LinkWebAccount user={user} onBack={() => setScreen(null)} />
+  }
+
+  if (screen === 'app-lock-setup') {
+    return (
+      <AppLock
+        mode="setup"
+        onCancel={() => setScreen(null)}
+        onSetupDone={() => {
+          setLockEnabledFlag('1')
+          setScreen(null)
+        }}
+      />
+    )
   }
 
   const tierLabel = tier === 'pro' ? 'Про' : 'Базовый'
@@ -261,7 +304,22 @@ export default function Settings({ user, onBack, onNavigate }) {
 
       <SectionLabel>Основные</SectionLabel>
       <Card>
-        <Row icon={Globe} title="Связать с сайтом" subtitle="Использовать те же данные в браузере" onClick={() => setScreen('link-web')} divider={false} />
+        <Row icon={Globe} title="Связать с сайтом" subtitle="Использовать те же данные в браузере" onClick={() => setScreen('link-web')} />
+        <Row
+          icon={Lock}
+          title="Блокировка приложения"
+          subtitle={
+            !lockOn
+              ? 'Код доступа при входе'
+              : !lockConfiguredHere
+                ? 'Включено, но не задано на этом устройстве'
+                : biometricAvailable
+                  ? 'Код + Face ID/Touch ID'
+                  : 'Код доступа'
+          }
+          right={<Toggle checked={lockOn} onChange={handleLockPress} />}
+          divider={false}
+        />
       </Card>
 
       <SectionLabel>Поддержка</SectionLabel>

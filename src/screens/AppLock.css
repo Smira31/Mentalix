@@ -1,0 +1,52 @@
+.mx-applock-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgb(var(--c-text) / 0.12);
+  transform: scale(0.9);
+  transition:
+    background-color 160ms ease-out,
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mx-applock-dot[data-filled='true'] {
+  background: rgb(var(--c-gold));
+  transform: scale(1);
+}
+
+.mx-applock-shake {
+  animation: mx-applock-shake 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes mx-applock-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-8px);
+  }
+
+  40% {
+    transform: translateX(7px);
+  }
+
+  60% {
+    transform: translateX(-5px);
+  }
+
+  80% {
+    transform: translateX(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-applock-shake {
+    animation: none !important;
+  }
+
+  .mx-applock-dot {
+    transition-duration: 60ms !important;
+  }
+}
