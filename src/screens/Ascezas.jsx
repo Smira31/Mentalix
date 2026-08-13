@@ -16,7 +16,6 @@ import SemanticGlyph, {
 } from '../components/SemanticGlyph'
 import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import StreakBar from '../components/StreakBar'
-import '../styles/carousel-card.css'
 import {
   Shield,
   ShieldOff,
@@ -31,14 +30,19 @@ import {
 
 /*
  * Карточка занимает всё между шапкой экрана и нижней навигацией.
- * Экран заверстан как колонка flex (шапка — фиксированной высоты,
- * лента карточек — flex-1), поэтому высота ленты сама равна
- * оставшемуся месту — без ручного вычитания констант из 100dvh и
- * без верхнего предела. min-height — страховка от вырожденного
- * случая, не потолок; реальная компактность на низких экранах —
- * через carousel-card.css (медиа-запрос по высоте).
  */
-const CARD_HEIGHT_CLASS = 'h-full min-h-[280px]'
+/*
+ * Верхний предел обязателен. Высота считается от 100dvh, и на
+ * телефоне это даёт ~470px — то, подо что карточка рисовалась.
+ * На широком экране Telegram Desktop то же выражение даёт под
+ * семьсот, карточка растягивается и рисунок с текстом расползаются.
+ * На телефоне min() ничего не меняет: там всегда выигрывает calc.
+ */
+const CARD_HEIGHT = {
+  height:
+    'min(560px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 290px))',
+  minHeight: '380px',
+}
 
 
 
@@ -263,8 +267,6 @@ function AscezaCard({
   onLog,
   onBreak,
   onDelete,
-  dotsCount,
-  activeIndex,
 }) {
   const status = asceza.today_status
   const [confirming, setConfirming] = useState(false)
@@ -301,7 +303,8 @@ function AscezaCard({
 
   return (
     <div
-      className={`mx-carousel-card mx-carousel-card--asceza relative rounded-[28px] overflow-hidden shrink-0 snap-center w-[84%] border flex flex-col transition-all duration-200 ${CARD_HEIGHT_CLASS} ${
+      style={CARD_HEIGHT}
+      className={`relative rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col transition-all duration-200 ${
         cardSystemPreviewEnabled ? 'mx-card-system-detail-card' : ''
       } ${
         celebrate ? 'animate-glow-pulse' : ''
@@ -354,7 +357,7 @@ function AscezaCard({
         * снаружи тот же материал в беспорядке.
         */}
       <div
-        className={`mx-carousel-card__art shrink-0 min-h-0 bg-artbed border-y border-cream/[0.06] ${
+        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] ${
           cardSystemPreviewEnabled ? 'mx-card-system-detail-art' : ''
         } ${
           status === 'held' ? 'opacity-100' : 'opacity-70'
@@ -366,7 +369,7 @@ function AscezaCard({
         />
       </div>
 
-      <div className="mx-carousel-card__title min-h-0">
+      <div className="mt-4">
         <div className="font-display text-[19px] text-cream leading-tight">
           {asceza.name}
         </div>
@@ -376,7 +379,7 @@ function AscezaCard({
         </div>
 
         {asceza.reason && (
-          <p className="text-xs text-muted mb-2 line-clamp-2">
+          <p className="text-xs text-muted mb-2">
             {asceza.reason}
           </p>
         )}
@@ -414,35 +417,22 @@ function AscezaCard({
         )}
 
         {status === 'broke' && asceza.today_break_note && (
-          <p className="text-xs text-muted mt-1 leading-relaxed line-clamp-2">
+          <p className="text-xs text-muted mt-1 leading-relaxed">
             {asceza.today_break_note}
           </p>
         )}
 
         {status === 'broke' && asceza.replacement && (
-          <p className="text-xs text-muted mt-2 line-clamp-1">
+          <p className="text-xs text-muted mt-2">
             Замена: {asceza.replacement}
           </p>
         )}
 
         {!status && asceza.trigger && (
-          <p className="text-xs text-faint mt-2 italic line-clamp-1">
+          <p className="text-xs text-faint mt-2 italic">
             Триггер: {asceza.trigger}
           </p>
         )}
-      </div>
-
-      {/* точки — внутри карточки, а не отдельным элементом под лентой */}
-      <div className="mx-carousel-card__dots mt-auto flex justify-center gap-1.5 shrink-0">
-        {Array.from({ length: dotsCount }).map((_, index) => (
-          <span
-            key={index}
-            className={[
-              'h-[3px] rounded-full transition-all duration-200',
-              index === activeIndex ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
-            ].join(' ')}
-          />
-        ))}
       </div>
     </div>
   )
@@ -595,26 +585,16 @@ export default function Ascezas({
   }, [user])
 
 
-  const showCarousel = !loading && ascezas.length > 0
-
   /*
-   * Пока открыт разбор срыва — страница под ним не скроллится. То же
-   * самое, пока показана сама лента карточек: это горизонтальная
-   * карусель, вертикальное движение экрана (в том числе резиновое
-   * оттягивание на iOS) здесь не нужно. Оба условия в одном эффекте,
-   * чтобы закрытие шторки не сбрасывало блокировку самой карусели.
+   * Пока открыт разбор срыва, страница под ним не скроллится.
    */
   useEffect(() => {
-    const lock = showCarousel || breakTarget
-
-    document.body.style.overflow = lock ? 'hidden' : ''
-    document.body.style.overscrollBehaviorY = lock ? 'none' : ''
+    document.body.style.overflow = breakTarget ? 'hidden' : ''
 
     return () => {
       document.body.style.overflow = ''
-      document.body.style.overscrollBehaviorY = ''
     }
-  }, [showCarousel, breakTarget])
+  }, [breakTarget])
 
 
   async function logAsceza(
@@ -725,8 +705,8 @@ export default function Ascezas({
 
   return (
     <>
-      <div className="w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0">
-        <div className="flex items-center gap-3 mb-3 shrink-0">
+      <div className="w-full max-w-md px-5 animate-fade-in">
+        <div className="flex items-center gap-3 mb-3">
           <BackButton onClick={onBack} />
 
           <h2 className="font-display text-[22px] text-cream lowercase">
@@ -734,15 +714,19 @@ export default function Ascezas({
           </h2>
         </div>
 
-        <p className="text-[12px] text-muted mb-5 px-1 shrink-0">
+        <p className="text-[12px] text-muted mb-5 px-1">
           {total > 0
             ? `${heldToday} из ${total} удержано сегодня`
             : 'от чего ты отказываешься'}
         </p>
 
         {total > 0 && (
-          <div className="mb-3 shrink-0">
-            <div className="flex justify-end text-xs text-muted mb-1">
+          <div className="mb-4">
+            <div className="flex justify-between text-xs text-muted mb-1">
+              <span>
+                Удержано сегодня
+              </span>
+
               <span>
                 {heldToday}/{total}
               </span>
@@ -793,8 +777,8 @@ export default function Ascezas({
             <div
               ref={trackRef}
               onScroll={syncActive}
-              className="flex gap-3 -mx-5 px-5 overflow-x-auto overscroll-x-contain overscroll-y-none snap-x snap-mandatory flex-1 min-h-0 [&::-webkit-scrollbar]:hidden"
-              style={{ scrollbarWidth: 'none', touchAction: 'pan-x' }}
+              className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+              style={{ scrollbarWidth: 'none' }}
             >
               {ascezas.map((asceza) => (
                 <AscezaCard
@@ -803,8 +787,6 @@ export default function Ascezas({
                   onLog={logAsceza}
                   onBreak={setBreakTarget}
                   onDelete={deleteAsceza}
-                  dotsCount={total + 1}
-                  activeIndex={active}
                 />
               ))}
 
@@ -813,25 +795,24 @@ export default function Ascezas({
                   platform.haptic('light')
                   setShowCreate(true)
                 }}
-                className={`mx-carousel-card mx-carousel-card--asceza shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col active:scale-[0.99] transition-transform ${CARD_HEIGHT_CLASS}`}
+                style={CARD_HEIGHT}
+                className="shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform"
               >
-                <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-2">
-                  <span className="text-[26px] text-faint leading-none">+</span>
-                  <span className="text-[14px] text-muted font-semibold">Новая аскеза</span>
-                </div>
-
-                <div className="mx-carousel-card__dots flex justify-center gap-1.5 shrink-0">
-                  {Array.from({ length: total + 1 }).map((_, index) => (
-                    <span
-                      key={index}
-                      className={[
-                        'h-[3px] rounded-full transition-all duration-200',
-                        index === active ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
-                      ].join(' ')}
-                    />
-                  ))}
-                </div>
+                <span className="text-[26px] text-faint leading-none">+</span>
+                <span className="text-[14px] text-muted font-semibold">Новая аскеза</span>
               </button>
+            </div>
+
+            <div className="flex justify-center gap-1.5 mt-3">
+              {[...ascezas, null].map((_, index) => (
+                <span
+                  key={index}
+                  className={[
+                    'h-[3px] rounded-full transition-all duration-200',
+                    index === active ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
+                  ].join(' ')}
+                />
+              ))}
             </div>
           </>
         )}

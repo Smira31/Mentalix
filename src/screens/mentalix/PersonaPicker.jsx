@@ -12,7 +12,6 @@ import SemanticGlyph, {
   semanticKindForPersona,
 } from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
-import '../../styles/carousel-card.css'
 
 
 /*
@@ -37,16 +36,22 @@ import '../../styles/carousel-card.css'
 
 /*
  * Карточка тянется до нижней навигации, а не живёт фиксированной
- * высотой. Экран заверстан как колонка flex (заголовок — фиксированной
- * высоты, лента карточек — flex-1), поэтому высота ленты сама равна
- * оставшемуся месту между заголовком и нижней навигацией — без ручного
- * вычитания констант из 100dvh и без верхнего предела: карточка
- * занимает ровно всё, что действительно доступно, на любом экране.
- * min-height — не потолок, а страховка от вырожденного случая
- * (клавиатура/крайне низкий viewport), реальная компактность на низких
- * экранах достигается через carousel-card.css (медиа-запрос по высоте).
+ * высотой. Вычитаем из высоты видимой области всё, что занято
+ * не карточкой: контролы Telegram, заголовок экрана, точки и
+ * подпись снизу, зарезервированное место под навигацию.
  */
-const CARD_HEIGHT_CLASS = 'h-full min-h-[260px]'
+/*
+ * Верхний предел обязателен. Высота считается от 100dvh, и на
+ * телефоне это даёт ~470px — то, подо что карточка рисовалась.
+ * На широком экране Telegram Desktop то же выражение даёт под
+ * семьсот, карточка растягивается и рисунок с текстом расползаются.
+ * На телефоне min() ничего не меняет: там всегда выигрывает calc.
+ */
+const CARD_HEIGHT = {
+  height:
+    'min(560px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 331px))',
+  minHeight: '360px',
+}
 
 
 
@@ -137,24 +142,6 @@ export default function PersonaPicker({
   }, [user])
 
 
-  /*
-   * Экран-карусель: только горизонтальное листание карточек, без
-   * вертикального скролла страницы (и без резинового оттягивания
-   * на iOS). Тот же приём, что у BreakContextSheet/AppLock — блокировка
-   * скроллится только пока этот экран смонтирован, глобально ничего
-   * не трогаем.
-   */
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    document.body.style.overscrollBehaviorY = 'none'
-
-    return () => {
-      document.body.style.overflow = ''
-      document.body.style.overscrollBehaviorY = ''
-    }
-  }, [])
-
-
   function syncActive() {
     const track = trackRef.current
 
@@ -177,12 +164,12 @@ export default function PersonaPicker({
 
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0">
-      <h2 className="font-display text-[30px] text-cream lowercase mt-4 mb-1 shrink-0">
+    <div className="w-full max-w-md px-5 animate-fade-in">
+      <h2 className="font-display text-[30px] text-cream lowercase mt-4 mb-1">
         с кем говорим.
       </h2>
 
-      <p className="text-[12px] text-faint mb-6 shrink-0">
+      <p className="text-[12px] text-faint mb-6">
         три собеседника, три отдельных разговора
       </p>
 
@@ -195,18 +182,15 @@ export default function PersonaPicker({
           gap-3
           -mx-5
           px-5
+          pb-2
           overflow-x-auto
           overscroll-x-contain
-          overscroll-y-none
           snap-x
           snap-mandatory
-          flex-1
-          min-h-0
           [&::-webkit-scrollbar]:hidden
         "
         style={{
           scrollbarWidth: 'none',
-          touchAction: 'pan-x',
         }}
       >
         {PERSONAS.map(
@@ -232,9 +216,6 @@ export default function PersonaPicker({
                   onPick(persona.key, '')
                 }}
                 className={`
-                  mx-carousel-card
-                  mx-carousel-card--persona
-                  relative
                   snap-center
                   shrink-0
                   w-[82%]
@@ -242,23 +223,23 @@ export default function PersonaPicker({
                   border
                   border-cream/12
                   bg-emerald
+                  p-6
                   flex
                   flex-col
                   cursor-pointer
                   active:scale-[0.99]
                   transition-transform
-                  ${CARD_HEIGHT_CLASS}
                   ${cardSystemPreviewEnabled ? 'mx-card-system-persona-card' : ''}
                 `}
+                style={CARD_HEIGHT}
               >
                 {/*
-                  * Верхняя треть карточки — рисунок. Доля высоты (не
-                  * фиксированные пиксели) и её отступы-«кровь» до края
-                  * карточки заданы в carousel-card.css переменными,
-                  * которые сжимаются вместе с паддингом на низких
-                  * экранах — см. .mx-carousel-card__art.
+                  * Верхняя треть карточки — рисунок. Он занимает
+                  * долю высоты, а не фиксированные пиксели: карточка
+                  * тянется до нижнего меню и на разных экранах имеет
+                  * разную высоту.
                   */}
-                <div className={`mx-carousel-card__art mb-1 shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 ${
+                <div className={`-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 ${
                   cardSystemPreviewEnabled ? 'mx-card-system-persona-art' : ''
                 }`}>
                   <SemanticGlyph
@@ -270,7 +251,7 @@ export default function PersonaPicker({
                 </div>
 
 
-                <div className="mx-carousel-card__title font-display text-[22px] text-cream leading-tight">
+                <div className="font-display text-[22px] text-cream leading-tight mt-3">
                   {persona.name}
                 </div>
 
@@ -278,7 +259,7 @@ export default function PersonaPicker({
                   {persona.tagline}
                 </div>
 
-                <p className="mx-carousel-card__desc text-[14px] text-muted leading-snug line-clamp-2">
+                <p className="text-[14px] text-muted leading-snug mt-2.5">
                   {persona.desc}
                 </p>
 
@@ -351,23 +332,6 @@ export default function PersonaPicker({
                     </>
                   )}
                 </div>
-
-                {/* точки — внутри карточки, а не отдельным элементом под лентой */}
-                <div className="mx-carousel-card__dots flex justify-center gap-1.5 shrink-0">
-                  {PERSONAS.map(
-                    (dotPersona, dotIndex) => (
-                      <span
-                        key={dotPersona.key}
-                        className={[
-                          'h-[3px] rounded-full transition-all duration-200',
-                          dotIndex === active
-                            ? 'w-5 bg-gold'
-                            : 'w-4 bg-cream/15',
-                        ].join(' ')}
-                      />
-                    ),
-                  )}
-                </div>
               </div>
             )
           },
@@ -375,7 +339,26 @@ export default function PersonaPicker({
       </div>
 
 
-      <p className="text-[11px] text-faint leading-snug mt-3 mb-1 text-center shrink-0">
+      {/* ── точки ── */}
+
+      <div className="flex justify-center gap-1.5 mt-4">
+        {PERSONAS.map(
+          (persona, index) => (
+            <span
+              key={persona.key}
+              className={[
+                'h-[3px] rounded-full transition-all duration-200',
+                index === active
+                  ? 'w-5 bg-gold'
+                  : 'w-4 bg-cream/15',
+              ].join(' ')}
+            />
+          ),
+        )}
+      </div>
+
+
+      <p className="text-[11px] text-faint leading-snug mt-6 text-center">
         У каждого своя история — разговоры не смешиваются.
       </p>
     </div>

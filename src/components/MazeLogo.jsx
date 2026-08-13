@@ -34,12 +34,6 @@ export default function MazeLogo({
   showDot = true,
   animateOnMount = false,
   motionDuration = 700,
-  // Опционально: единая толщина линии для стен и следа вместо
-  // встроенных 1 / 1.15 / 1.8 — нужно там, где лого используется
-  // как обычная иконка (нижняя навигация) и должно совпадать по
-  // визуальному весу с остальными strokeWidth={1.9} иконками.
-  // Не задан по умолчанию — все прежние места вызова не меняются.
-  strokeWidth,
 }) {
   const p = Math.max(0, Math.min(1, progress))
   const trailRef = useRef(null)
@@ -107,7 +101,7 @@ export default function MazeLogo({
         r="91"
         stroke="currentColor"
         className={baseClass}
-        strokeWidth={strokeWidth ?? '1'}
+        strokeWidth="1"
         strokeDasharray="2 7"
         vectorEffect="non-scaling-stroke"
       />
@@ -117,7 +111,7 @@ export default function MazeLogo({
         d={LABYRINTH_PATH}
         stroke="currentColor"
         className={baseClass}
-        strokeWidth={strokeWidth ?? '1.15'}
+        strokeWidth="1.15"
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
@@ -133,7 +127,7 @@ export default function MazeLogo({
         style={{
           transitionDuration: `${motionDuration}ms`,
         }}
-        strokeWidth={strokeWidth ?? '1.8'}
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
         strokeDasharray={`${displayProgress} 1`}
