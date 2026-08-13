@@ -56,19 +56,7 @@ function WeekStrip() {
   )
 
   return (
-    /*
-     * pr-[52px]: шапка (App.jsx) рисует кнопку настроек (40px) у
-     * правого края этого же контейнера строкой выше. Проблема была
-     * не в вертикальном отступе, а в том, что при полной ширине
-     * ленты воскресенье (последняя колонка) делило X-диапазон с
-     * кнопкой — тесно по горизонтали при любом зазоре по вертикали.
-     * Резервируем справа ширину кнопки + 12px зазора, а не
-     * компенсируем отступом сверху. Колонки — flex-1 (не
-     * фиксированная w-11), поэтому все семь дней остаются
-     * равномерно распределены на любой ширине экрана, просто внутри
-     * чуть более узкой ленты.
-     */
-    <div className="flex gap-1 w-full mb-4 pr-[52px]">
+    <div className="flex justify-between w-full mb-4">
       {days.map(day => {
         const isToday = day.toDateString() === now.toDateString()
 
@@ -76,7 +64,7 @@ function WeekStrip() {
           <div
             key={day.getTime()}
             className={[
-              'flex-1 min-w-0 flex flex-col items-center gap-1 py-2 rounded-2xl text-[12px] font-semibold',
+              'flex flex-col items-center gap-1 w-11 py-2 rounded-2xl text-[12px] font-semibold',
               isToday ? 'text-cream border border-cream/15' : 'text-faint',
             ].join(' ')}
           >
