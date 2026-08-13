@@ -14,7 +14,6 @@ import {
 import SemanticGlyph, {
   semanticKindForAsceza,
 } from '../components/SemanticGlyph'
-import CardSystemGlyph from '../components/CardSystemGlyph'
 import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import StreakBar from '../components/StreakBar'
 import {
@@ -364,15 +363,10 @@ function AscezaCard({
           status === 'held' ? 'opacity-100' : 'opacity-70'
         }`}
       >
-        {cardSystemPreviewEnabled
-          && semanticKindForAsceza(asceza) === 'asceza'
-          ? <CardSystemGlyph kind="asceza-boundary" />
-          : (
-            <SemanticGlyph
-              kind={semanticKindForAsceza(asceza)}
-              className="w-full h-full"
-            />
-          )}
+        <SemanticGlyph
+          kind={semanticKindForAsceza(asceza)}
+          className="w-full h-full"
+        />
       </div>
 
       <div className="mt-4">

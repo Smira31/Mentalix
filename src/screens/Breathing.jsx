@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import SemanticGlyph from '../components/SemanticGlyph'
-import CardSystemGlyph from '../components/CardSystemGlyph'
 import BackButton from '../components/BackButton'
 import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 import {
@@ -147,9 +146,7 @@ export default function Breathing({ onBack }) {
         <div className={cardSystemPreviewEnabled
           ? 'mx-card-system-breath-art mb-4'
           : 'w-[220px] h-[154px] mb-4'}>
-          {cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="breath-flow" />
-            : <SemanticGlyph kind="breath" className="w-full h-full" />}
+          <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
 
         <h2 className="font-display text-[24px] text-cream text-center leading-tight">
@@ -189,9 +186,7 @@ export default function Breathing({ onBack }) {
         <div className={cardSystemPreviewEnabled
           ? 'mx-card-system-breath-art mb-5'
           : 'w-[240px] h-[168px] mb-5'}>
-          {cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="breath-flow" />
-            : <SemanticGlyph kind="breath" className="w-full h-full" />}
+          <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
         <p className="text-[15px] text-muted mt-3">Возвращайся к этому кругу, когда штормит.</p>
