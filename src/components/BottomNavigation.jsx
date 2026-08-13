@@ -9,6 +9,16 @@ import MazeLogo from './MazeLogo'
 import { platform } from '../platform'
 
 
+/*
+ * Единый источник правды о геометрии панели: экраны-карусели
+ * («с кем говорим», «аскезы») используют эти же числа, чтобы
+ * структурно рассчитать точный отступ от карточки до навигации
+ * (см. App.jsx), а не подбирать его вручную.
+ */
+export const NAV_BOTTOM_OFFSET_PX = 12
+export const NAV_HEIGHT_EXPANDED_PX = 68
+
+
 const TABS = [
   {
     key: 'today',
@@ -53,12 +63,13 @@ function TabIcon({
         size={size}
         progress={1}
         showDot={false}
-        baseClass="text-transparent"
-        trailClass={
+        strokeWidth={1.9}
+        baseClass={
           active
-            ? 'text-gold'
+            ? 'text-cream'
             : 'text-muted'
         }
+        trailClass="text-transparent"
       />
     )
   }
@@ -116,7 +127,7 @@ export default function BottomNavigation({
         right:
           'max(16px, var(--app-safe-right))',
         bottom:
-          'calc(var(--app-safe-bottom) + 12px)',
+          `calc(var(--app-safe-bottom) + ${NAV_BOTTOM_OFFSET_PX}px)`,
       }}
     >
       {/* ==========================================================
@@ -158,7 +169,7 @@ export default function BottomNavigation({
 
           height: collapsed
             ? '58px'
-            : '68px',
+            : `${NAV_HEIGHT_EXPANDED_PX}px`,
 
           borderRadius: collapsed
             ? '9999px'

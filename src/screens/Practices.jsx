@@ -49,6 +49,7 @@ export default function Practices({
   user,
   initialSub = null,
   onGameChange,
+  onSubChange,
 }) {
   const [sub, setSub] = useState(initialSub)
   const [rituals, setRituals] = useState([])
@@ -57,6 +58,17 @@ export default function Practices({
   useEffect(() => {
     setSub(initialSub)
   }, [initialSub])
+
+  /*
+   * App.jsx не видит переходы между практиками изнутри этого
+   * компонента (клик по карточке «Аскезы» и т. п.) — только то,
+   * с чем сюда вошли. Экраны-карусели («аскезы») структурно
+   * рассчитывают отступ до нижней навигации в App.jsx, и им нужно
+   * знать актуальный sub, поэтому сообщаем о каждой смене наружу.
+   */
+  useEffect(() => {
+    onSubChange?.(sub)
+  }, [sub, onSubChange])
 
   useEffect(() => {
     window.scrollTo({

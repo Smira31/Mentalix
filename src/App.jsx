@@ -29,7 +29,10 @@ import AppLock from './screens/AppLock'
 
 import MazeLogo from './components/MazeLogo'
 import BackButton from './components/BackButton'
-import BottomNavigation from './components/BottomNavigation'
+import BottomNavigation, {
+  NAV_BOTTOM_OFFSET_PX,
+  NAV_HEIGHT_EXPANDED_PX,
+} from './components/BottomNavigation'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 
@@ -824,12 +827,35 @@ export default function App() {
    * На AI-персоне нижнего navbar нет,
    * поэтому не оставляем под него
    * искусственные 100px.
+   *
+   * Экраны-горизонтальные карусели («с кем говорим», «аскезы»)
+   * тянут карточку до самой навигации сами (flex-1 внутри своей
+   * колонки) — им не нужен универсальный запас в 100px, нужен
+   * ровно отступ карточка→панель. Считаем его от реальной
+   * геометрии BottomNavigation (её отступ от края экрана + высота
+   * в развёрнутом состоянии), а не подбираем константу вручную —
+   * так число остаётся верным на любом iPhone, потому что
+   * var(--app-safe-bottom) входит в обе формулы одинаково и
+   * взаимно сокращается.
    */
+  const isCarouselScreen =
+    (tab === 'mentor' && !mentorPersonaOpen) ||
+    (tab === 'practices' && practicesSub === 'ascezas')
+
+  const CAROUSEL_CARD_GAP_PX = 14 // середина требуемого диапазона 12–16px
+
+  const carouselBottomPadding =
+    `calc(var(--app-safe-bottom) + ${
+      NAV_BOTTOM_OFFSET_PX + NAV_HEIGHT_EXPANDED_PX + CAROUSEL_CARD_GAP_PX
+    }px)`
+
   const contentBottomPadding =
     tab === 'mentor' &&
     mentorPersonaOpen
       ? 'var(--app-safe-bottom)'
-      : 'calc(100px + var(--app-safe-bottom))'
+      : isCarouselScreen
+        ? carouselBottomPadding
+        : 'calc(100px + var(--app-safe-bottom))'
 
 
   /* ============================================================
@@ -1132,6 +1158,9 @@ export default function App() {
                   }
                   onGameChange={
                     setPracticeGameOpen
+                  }
+                  onSubChange={
+                    setPracticesSub
                   }
                 />
               )}
