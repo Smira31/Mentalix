@@ -49,7 +49,8 @@
 .mx-semantic-glyph__temptation-path,
 .mx-semantic-glyph__ritual-marks,
 .mx-semantic-glyph__brackets,
-.mx-semantic-glyph__template-axis {
+.mx-semantic-glyph__template-axis,
+.mx-semantic-glyph__path-wall {
   fill: none;
   stroke: rgb(var(--c-line-secondary));
   stroke-width: 1;
@@ -177,6 +178,11 @@
   opacity: 0.16;
 }
 
+.mx-semantic-glyph__path-route {
+  stroke: rgb(var(--c-line));
+  opacity: 0.42;
+}
+
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--neuro .mx-semantic-glyph__neuro-bridge {
   animation: mx-semantic-connect 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
@@ -265,6 +271,18 @@
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-layer--cross {
   animation: mx-semantic-orbit-layer 64s linear infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-wall--left {
+  animation: mx-semantic-path-left 11.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-wall--right {
+  animation: mx-semantic-path-right 11.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-signal {
+  animation: mx-semantic-path-signal 11.2s cubic-bezier(0.23, 1, 0.32, 1) infinite;
 }
 
 @keyframes mx-semantic-connect {
@@ -367,6 +385,23 @@
 
 @keyframes mx-semantic-orbit-layer {
   to { transform: rotate(360deg); }
+}
+
+@keyframes mx-semantic-path-left {
+  0%, 20%, 100% { transform: translateX(-4px); opacity: 0.48; }
+  54%, 76% { transform: translateX(4px); opacity: 0.9; }
+}
+
+@keyframes mx-semantic-path-right {
+  0%, 20%, 100% { transform: translateX(4px); opacity: 0.48; }
+  54%, 76% { transform: translateX(-4px); opacity: 0.9; }
+}
+
+@keyframes mx-semantic-path-signal {
+  0%, 14% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  76%, 86% { opacity: 1; transform: translate(108px, -66px); }
+  100% { opacity: 0; transform: translate(108px, -66px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

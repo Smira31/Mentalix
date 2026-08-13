@@ -54,7 +54,7 @@ function Guide() {
 }
 
 
-function Drawing({ kind }) {
+function Drawing({ kind, debugSource }) {
   switch (kind) {
     case 'neuro':
       return (
@@ -373,7 +373,32 @@ function Drawing({ kind }) {
         </>
       )
 
+    case 'next-step':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__path-wall mx-semantic-glyph__path-wall--left">
+            <path d="M18 92C42 84 52 68 64 56C76 44 80 32 84 16" />
+            <path d="M34 94C52 82 60 68 70 58C82 46 88 34 92 18" />
+          </g>
+          <g className="mx-semantic-glyph__path-wall mx-semantic-glyph__path-wall--right">
+            <path d="M142 20C118 28 108 42 96 54C84 66 80 78 76 96" />
+            <path d="M126 18C108 30 100 44 90 54C78 66 72 78 68 94" />
+          </g>
+          <path className="mx-semantic-glyph__path-route" d="M26 88C52 80 60 66 80 56C100 46 108 30 134 22" />
+          <circle className="mx-semantic-glyph__point mx-semantic-glyph__path-signal" cx="26" cy="88" r="4" />
+        </>
+      )
+
     default:
+      if (import.meta.env.DEV) {
+        console.error(
+          `[SemanticGlyph] неизвестный kind "${kind}"`
+            + (debugSource ? ` (источник: ${debugSource})` : '')
+            + ' — рендерится generic-заглушка. Проверь имя kind у вызывающего компонента.'
+        )
+      }
+
       return (
         <>
           <Guide />
@@ -391,6 +416,7 @@ export default function SemanticGlyph({
   className = '',
   animated = true,
   highlighted = true,
+  debugSource,
 }) {
   return (
     <svg
@@ -402,7 +428,7 @@ export default function SemanticGlyph({
       fill="none"
       aria-hidden="true"
     >
-      <Drawing kind={kind} />
+      <Drawing kind={kind} debugSource={debugSource} />
     </svg>
   )
 }
