@@ -37,8 +37,10 @@ There is no test suite, no typecheck script (project is JS despite a couple of s
 
 Read before making non-trivial changes, in this order: `PRODUCT.md` (why/for whom),
 `DESIGN_SYSTEM.md` (actual tokens/UI rules — code + this doc are the source of truth),
-`ARCHITECTURE.md` (frontend structure and technical boundaries), `ROADMAP.md`, `TASKS.md`
-(current work), `AI_RULES.md` (mandatory process for AI agents working in this repo).
+`ARCHITECTURE.md` (frontend structure and technical boundaries), `ROADMAP.md`
+(stabilization plan, plus a prioritized list of competitor-derived feature ideas —
+check it before proposing new features), `TASKS.md` (current work), `AI_RULES.md`
+(mandatory process for AI agents working in this repo).
 
 Перед началом любой работы прочитай секцию "Передача между агентами" в конце
 `TASKS.md` — там рабочая папка, ветка, статус незакоммиченных изменений и что
