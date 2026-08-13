@@ -202,10 +202,11 @@ export default function Practices({
         <PracticeCard
           artwork={<NeuroArt />}
           artworkScale={1.04}
-          title="Нейротренажёр"
+          title={<>Нейро<wbr className="min-[361px]:hidden" />тренажёр</>}
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
           soon
+          compactTitle
         />
 
         <PracticeCard
