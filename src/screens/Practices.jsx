@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 
 import PracticeCard from '../components/PracticeCard'
 import BackButton from '../components/BackButton'
-import CardSystemGlyph from '../components/CardSystemGlyph'
 
 import RitualsArt from '../components/practice-art/RitualsArt'
 import AskesisArt from '../components/practice-art/AskesisArt'
@@ -147,7 +145,7 @@ export default function Practices({
         w-full
         max-w-md
         px-5
-        ${cardSystemPreviewEnabled ? 'mx-card-system-practices' : ''}
+        mx-card-system-practices
       `}
     >
       <h2
@@ -186,7 +184,6 @@ export default function Practices({
               : null
           }
           onOpen={() => setSub('rituals')}
-          systemPreview={cardSystemPreviewEnabled}
         />
 
         <PracticeCard
@@ -200,18 +197,14 @@ export default function Practices({
               : null
           }
           onOpen={() => setSub('ascezas')}
-          systemPreview={cardSystemPreviewEnabled}
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="neuro-synapse" />
-            : <NeuroArt />}
+          artwork={<NeuroArt />}
           artworkScale={1.04}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
-          systemPreview={cardSystemPreviewEnabled}
           soon
         />
 
@@ -221,31 +214,24 @@ export default function Practices({
           title="Дыхание"
           subtitle="успокоить систему за минуту"
           onOpen={() => setSub('breathing')}
-          systemPreview={cardSystemPreviewEnabled}
           soon
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="focus-convergence" />
-            : <FocusArt />}
+          artwork={<FocusArt />}
           artworkScale={1.04}
           title="Фокус"
           subtitle="таймер глубокой работы"
           onOpen={() => setSub('focus')}
-          systemPreview={cardSystemPreviewEnabled}
           soon
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="meditation-contours" />
-            : <MeditationArt />}
+          artwork={<MeditationArt />}
           artworkScale={1.04}
           title="Медитации"
           subtitle="тишина для ума и тела"
           soon
-          systemPreview={cardSystemPreviewEnabled}
           onOpen={() => {
             platform.haptic('light')
           }}
