@@ -328,13 +328,16 @@ function Drawing({ kind, debugSource }) {
       return (
         <>
           <Guide />
-          <g className="mx-semantic-glyph__choice-boundary">
-            <path d="M48 24C34 38 34 74 48 88" />
-            <path d="M112 24C126 38 126 74 112 88" />
+          <g className="mx-semantic-glyph__boundary mx-semantic-glyph__boundary--outer">
+            <path d="M20 22L58 40L72 56L58 72L20 90" />
+            <path d="M140 22L102 40L88 56L102 72L140 90" />
           </g>
-          <path className="mx-semantic-glyph__choice-path" d="M80 88V24" />
-          <path className="mx-semantic-glyph__temptation-path" d="M80 60C66 54 52 42 42 28" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="60" r="4" />
+          <g className="mx-semantic-glyph__boundary mx-semantic-glyph__boundary--inner">
+            <path d="M38 30L66 44L76 56L66 68L38 82" />
+            <path d="M122 30L94 44L84 56L94 68L122 82" />
+          </g>
+          <path className="mx-semantic-glyph__threshold" d="M80 24V88" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
         </>
       )
 
