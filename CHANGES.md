@@ -1,8 +1,8 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
-## Реализовано 13.08.2026 — Цикл 3 MXL-GLYPH-UNIFY-001
+## Закрыто 13.08.2026 — Цикл 3 MXL-GLYPH-UNIFY-001
 
-- Оставшиеся глифы объединены в `SemanticGlyph`, старый `CardSystemGlyph` и preview-флаг удалены; production-layout и gating «Скоро» сохранены. Web/mobile QA пройдена, до merge остаётся живая проверка Telegram/iPhone. Подробности — `TASKS.md` → `MXL-GLYPH-UNIFY-001`.
+- Оставшиеся глифы объединены в `SemanticGlyph`, старый `CardSystemGlyph` и preview-флаг удалены; production-layout и gating «Скоро» сохранены. Web/mobile QA и живая проверка владельцем на iPhone/Telegram пройдены, PR #50 смёржен. Подробности — `TASKS.md` → `MXL-GLYPH-UNIFY-001`.
 
 ## Закрыто 13.08.2026 — checkpoint перед Циклом 3 MXL-GLYPH-UNIFY-001
 
