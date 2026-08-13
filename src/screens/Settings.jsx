@@ -212,7 +212,10 @@ export default function Settings({ user, onBack, onNavigate }) {
     <div className="w-full max-w-md px-5 flex flex-col items-center">
       <div className="relative w-full flex items-center justify-center min-h-[42px] mb-6">
         <div className="absolute left-0">
-          <BackButton onClick={onBack} />
+          <BackButton
+            onClick={onBack}
+            className="max-[359px]:w-10 max-[359px]:justify-center max-[359px]:gap-0 max-[359px]:px-0 max-[359px]:[&>span]:hidden"
+          />
         </div>
         <h1 className="font-display text-xl text-cream lowercase">настройки.</h1>
       </div>

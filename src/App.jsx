@@ -919,7 +919,7 @@ export default function App() {
             {/* Сохраняет приветствие по центру относительно аватара. */}
             <span
               id="mx-today-header-leading"
-              className="relative w-10 h-10 shrink-0"
+              className="relative w-10 max-[359px]:w-[78px] h-10 shrink-0"
             />
 
 
