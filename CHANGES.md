@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 13.08.2026 — MXL-GLYPH-UNIFY-001: Цикл 2 (пилот) закрыт
+
+- Оба пилотных `kind` (`asceza-boundary`, `breath-flow`) перенесены из `CardSystemGlyph` в `SemanticGlyph` по плану (`docs/glyph-unify-plan.md`), три коммита в ветке `feature/glyph-unify-cycle2`, подтверждены живым тестом на iPhone 13.08.2026. `CardSystemGlyph.jsx` не удалён — это Цикл 3. Подробности — `TASKS.md` → `MXL-GLYPH-UNIFY-001`.
+
 ## Закрыто 13.08.2026 — MXL-RITUAL-CARD-001: продуктовое решение принято, задача закрыта полностью
 
 - Владелец решил: форма создания ритуала остаётся как есть (5 полей, обязательно только `name`, без `textarea`/`maxLength`, отдельное поле описания не добавляется). Оба симптома (пустые зоны формы, ghost-text) и это решение по содержанию закрывают задачу целиком. Код не менялся. Подробности — `TASKS.md` → `Completed / Archived` → `MXL-RITUAL-CARD-001`.

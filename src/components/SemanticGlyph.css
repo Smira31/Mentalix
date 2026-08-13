@@ -15,9 +15,9 @@
 .mx-semantic-glyph__neuro-bridge,
 .mx-semantic-glyph__neuro-nodes,
 .mx-semantic-glyph__exercise,
-.mx-semantic-glyph__breath-left,
-.mx-semantic-glyph__breath-right,
-.mx-semantic-glyph__axis,
+.mx-semantic-glyph__breath-upper,
+.mx-semantic-glyph__breath-lower,
+.mx-semantic-glyph__breath-axis,
 .mx-semantic-glyph__lens-outer,
 .mx-semantic-glyph__lens-inner,
 .mx-semantic-glyph__meditation-waves,
@@ -44,12 +44,12 @@
 .mx-semantic-glyph__sleep-upper,
 .mx-semantic-glyph__sleep-lower,
 .mx-semantic-glyph__sleep-drop,
-.mx-semantic-glyph__choice-boundary,
-.mx-semantic-glyph__choice-path,
-.mx-semantic-glyph__temptation-path,
 .mx-semantic-glyph__ritual-marks,
 .mx-semantic-glyph__brackets,
-.mx-semantic-glyph__template-axis {
+.mx-semantic-glyph__template-axis,
+.mx-semantic-glyph__path-wall,
+.mx-semantic-glyph__boundary,
+.mx-semantic-glyph__threshold {
   fill: none;
   stroke: rgb(var(--c-line-secondary));
   stroke-width: 1;
@@ -132,9 +132,8 @@
 }
 
 .mx-semantic-glyph__neuro-bridge,
-.mx-semantic-glyph__temptation-path,
-.mx-semantic-glyph__breath-left,
-.mx-semantic-glyph__breath-right,
+.mx-semantic-glyph__breath-upper,
+.mx-semantic-glyph__breath-lower,
 .mx-semantic-glyph__lens-outer,
 .mx-semantic-glyph__lens-inner,
 .mx-semantic-glyph__meditation-waves,
@@ -149,7 +148,8 @@
 .mx-semantic-glyph__calm-line,
 .mx-semantic-glyph__sleep-upper,
 .mx-semantic-glyph__sleep-lower,
-.mx-semantic-glyph__brackets {
+.mx-semantic-glyph__brackets,
+.mx-semantic-glyph__boundary {
   transform-box: fill-box;
   transform-origin: center;
 }
@@ -177,16 +177,29 @@
   opacity: 0.16;
 }
 
+.mx-semantic-glyph__path-route {
+  stroke: rgb(var(--c-line));
+  opacity: 0.42;
+}
+
+.mx-semantic-glyph__threshold {
+  opacity: 0.38;
+}
+
+.mx-semantic-glyph__breath-axis {
+  opacity: 0.38;
+}
+
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--neuro .mx-semantic-glyph__neuro-bridge {
   animation: mx-semantic-connect 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-left {
-  animation: mx-semantic-breathe-left 5.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-upper {
+  animation: mx-semantic-breath-upper 8.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-right {
-  animation: mx-semantic-breathe-right 5.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-lower {
+  animation: mx-semantic-breath-lower 8.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--focus .mx-semantic-glyph__lens-inner {
@@ -219,8 +232,12 @@
   animation: mx-semantic-clear-smoke 5.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__temptation-path {
-  animation: mx-semantic-decline 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__boundary--outer {
+  animation: mx-semantic-boundary-outer 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__boundary--inner {
+  animation: mx-semantic-boundary-inner 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--pathfinder .mx-semantic-glyph__path-point {
@@ -267,19 +284,31 @@
   animation: mx-semantic-orbit-layer 64s linear infinite;
 }
 
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-wall--left {
+  animation: mx-semantic-path-left 11.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-wall--right {
+  animation: mx-semantic-path-right 11.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-signal {
+  animation: mx-semantic-path-signal 11.2s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+}
+
 @keyframes mx-semantic-connect {
   0%, 20%, 100% { opacity: 0.16; stroke-dashoffset: 72; }
   48%, 72% { opacity: 1; stroke-dashoffset: 0; stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-semantic-breathe-left {
-  0%, 100% { transform: translateX(0) scale(0.98); }
-  48%, 62% { transform: translateX(-5px) scale(1.04); }
+@keyframes mx-semantic-breath-upper {
+  0%, 18%, 100% { transform: translateY(5px) scaleX(0.92); opacity: 0.58; }
+  52%, 72% { transform: translateY(-4px) scaleX(1.04); opacity: 1; stroke: rgb(var(--c-line)); }
 }
 
-@keyframes mx-semantic-breathe-right {
-  0%, 100% { transform: translateX(0) scale(0.98); }
-  48%, 62% { transform: translateX(5px) scale(1.04); }
+@keyframes mx-semantic-breath-lower {
+  0%, 18%, 100% { transform: translateY(-5px) scaleX(0.92); opacity: 0.58; }
+  52%, 72% { transform: translateY(4px) scaleX(1.04); opacity: 1; stroke: rgb(var(--c-line)); }
 }
 
 @keyframes mx-semantic-focus {
@@ -317,9 +346,14 @@
   50%, 76% { opacity: 0.08; transform: translateY(-8px); }
 }
 
-@keyframes mx-semantic-decline {
-  0%, 20%, 100% { opacity: 0.82; transform: translate(0, 0); }
-  50%, 76% { opacity: 0.12; transform: translate(-5px, -3px); }
+@keyframes mx-semantic-boundary-outer {
+  0%, 22%, 100% { transform: scaleX(1); opacity: 0.52; }
+  52%, 76% { transform: scaleX(0.84); opacity: 0.9; }
+}
+
+@keyframes mx-semantic-boundary-inner {
+  0%, 22%, 100% { transform: scaleX(1); opacity: 0.72; }
+  52%, 76% { transform: scaleX(0.72); opacity: 1; stroke: rgb(var(--c-line)); }
 }
 
 @keyframes mx-semantic-follow {
@@ -367,6 +401,23 @@
 
 @keyframes mx-semantic-orbit-layer {
   to { transform: rotate(360deg); }
+}
+
+@keyframes mx-semantic-path-left {
+  0%, 20%, 100% { transform: translateX(-4px); opacity: 0.48; }
+  54%, 76% { transform: translateX(4px); opacity: 0.9; }
+}
+
+@keyframes mx-semantic-path-right {
+  0%, 20%, 100% { transform: translateX(4px); opacity: 0.48; }
+  54%, 76% { transform: translateX(-4px); opacity: 0.9; }
+}
+
+@keyframes mx-semantic-path-signal {
+  0%, 14% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  76%, 86% { opacity: 1; transform: translate(108px, -66px); }
+  100% { opacity: 0; transform: translate(108px, -66px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

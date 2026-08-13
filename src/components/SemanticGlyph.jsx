@@ -54,7 +54,7 @@ function Guide() {
 }
 
 
-function Drawing({ kind }) {
+function Drawing({ kind, debugSource }) {
   switch (kind) {
     case 'neuro':
       return (
@@ -148,10 +148,16 @@ function Drawing({ kind }) {
       return (
         <>
           <Guide />
-          <path className="mx-semantic-glyph__breath-left" d="M78 30C52 28 34 44 38 68C42 88 66 86 78 64Z" />
-          <path className="mx-semantic-glyph__breath-right" d="M82 30C108 28 126 44 122 68C118 88 94 86 82 64Z" />
-          <path className="mx-semantic-glyph__axis" d="M80 24V82" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+          <g className="mx-semantic-glyph__breath-upper">
+            <path d="M24 56C37 31 55 19 80 19C105 19 123 31 136 56" />
+            <path d="M39 56C49 39 62 31 80 31C98 31 111 39 121 56" />
+          </g>
+          <g className="mx-semantic-glyph__breath-lower">
+            <path d="M24 56C37 81 55 93 80 93C105 93 123 81 136 56" />
+            <path d="M39 56C49 73 62 81 80 81C98 81 111 73 121 56" />
+          </g>
+          <path className="mx-semantic-glyph__breath-axis" d="M80 22V90" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
         </>
       )
 
@@ -328,13 +334,16 @@ function Drawing({ kind }) {
       return (
         <>
           <Guide />
-          <g className="mx-semantic-glyph__choice-boundary">
-            <path d="M48 24C34 38 34 74 48 88" />
-            <path d="M112 24C126 38 126 74 112 88" />
+          <g className="mx-semantic-glyph__boundary mx-semantic-glyph__boundary--outer">
+            <path d="M20 22L58 40L72 56L58 72L20 90" />
+            <path d="M140 22L102 40L88 56L102 72L140 90" />
           </g>
-          <path className="mx-semantic-glyph__choice-path" d="M80 88V24" />
-          <path className="mx-semantic-glyph__temptation-path" d="M80 60C66 54 52 42 42 28" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="60" r="4" />
+          <g className="mx-semantic-glyph__boundary mx-semantic-glyph__boundary--inner">
+            <path d="M38 30L66 44L76 56L66 68L38 82" />
+            <path d="M122 30L94 44L84 56L94 68L122 82" />
+          </g>
+          <path className="mx-semantic-glyph__threshold" d="M80 24V88" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
         </>
       )
 
@@ -373,7 +382,32 @@ function Drawing({ kind }) {
         </>
       )
 
+    case 'next-step':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__path-wall mx-semantic-glyph__path-wall--left">
+            <path d="M18 92C42 84 52 68 64 56C76 44 80 32 84 16" />
+            <path d="M34 94C52 82 60 68 70 58C82 46 88 34 92 18" />
+          </g>
+          <g className="mx-semantic-glyph__path-wall mx-semantic-glyph__path-wall--right">
+            <path d="M142 20C118 28 108 42 96 54C84 66 80 78 76 96" />
+            <path d="M126 18C108 30 100 44 90 54C78 66 72 78 68 94" />
+          </g>
+          <path className="mx-semantic-glyph__path-route" d="M26 88C52 80 60 66 80 56C100 46 108 30 134 22" />
+          <circle className="mx-semantic-glyph__point mx-semantic-glyph__path-signal" cx="26" cy="88" r="4" />
+        </>
+      )
+
     default:
+      if (import.meta.env.DEV) {
+        console.error(
+          `[SemanticGlyph] неизвестный kind "${kind}"`
+            + (debugSource ? ` (источник: ${debugSource})` : '')
+            + ' — рендерится generic-заглушка. Проверь имя kind у вызывающего компонента.'
+        )
+      }
+
       return (
         <>
           <Guide />
@@ -391,6 +425,7 @@ export default function SemanticGlyph({
   className = '',
   animated = true,
   highlighted = true,
+  debugSource,
 }) {
   return (
     <svg
@@ -402,7 +437,7 @@ export default function SemanticGlyph({
       fill="none"
       aria-hidden="true"
     >
-      <Drawing kind={kind} />
+      <Drawing kind={kind} debugSource={debugSource} />
     </svg>
   )
 }

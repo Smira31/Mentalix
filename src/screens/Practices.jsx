@@ -190,9 +190,7 @@ export default function Practices({
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="asceza-boundary" />
-            : <AskesisArt />}
+          artwork={<AskesisArt />}
           artworkScale={1.04}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
@@ -218,9 +216,7 @@ export default function Practices({
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="breath-flow" />
-            : <BreathingArt />}
+          artwork={<BreathingArt />}
           artworkScale={1.04}
           title="Дыхание"
           subtitle="успокоить систему за минуту"

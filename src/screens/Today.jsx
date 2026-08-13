@@ -13,7 +13,7 @@ import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
-import CardSystemGlyph from '../components/CardSystemGlyph'
+import SemanticGlyph from '../components/SemanticGlyph'
 import TodayFocusCard from '../components/TodayFocusCard'
 import TodayFocusFlow from './TodayFocusFlow'
 import { readTodayFocusDay, clearTodayFocusPick } from '../lib/todayFocus'
@@ -528,7 +528,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         {motionExperimentEnabled ? (
           cardSystemPreviewEnabled ? (
             <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
-              <CardSystemGlyph kind="path-corridor" />
+              <SemanticGlyph kind="next-step" debugSource="Today.jsx" />
               <span>один следующий шаг</span>
             </div>
           ) : (
