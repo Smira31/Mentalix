@@ -3,7 +3,7 @@ import { platform } from '../platform'
 import Articles from './Articles'
 import Courses from './Courses'
 
-// Вкладка «Библиотека»: статьи (файл src/data/articles.js) и практикумы (бэкенд).
+// Вкладка «Библиотека»: статьи (GET /api/articles) и практикумы (бэкенд).
 // Заголовок экрана живёт здесь, внутри Courses остаются свои подзаголовки.
 //
 // Раздел назывался «Курсы». Слово обещает инфопродукт и мешает
@@ -27,7 +27,7 @@ export default function Library({ user }) {
       <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-5">библиотека.</h2>
 
       <div className="flex gap-1 p-1 rounded-full bg-emerald/60 mb-5">
-        {TABS.map((t) => {
+        {TABS.map(t => {
           const active = tab === t.key && !t.soon
 
           return (
