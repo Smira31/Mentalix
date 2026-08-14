@@ -43,24 +43,32 @@ function Card({ children }) {
   )
 }
 
-function Row({ icon: Icon, title, subtitle, onClick, danger = false, right = null, divider = true }) {
-  const Component = onClick
-    ? 'button'
-    : 'div'
+function Row({
+  icon: Icon,
+  title,
+  subtitle,
+  onClick,
+  danger = false,
+  right = null,
+  divider = true,
+}) {
+  const Component = onClick ? 'button' : 'div'
 
   return (
     <Component
-      {...(onClick
-        ? { type: 'button', onClick }
-        : {})}
+      {...(onClick ? { type: 'button', onClick } : {})}
       className={`w-full flex items-center gap-3 px-4 py-4 text-left ${
         divider ? 'border-b border-white/[0.06]' : ''
       } active:bg-white/[0.04] transition-colors`}
     >
       {Icon && <Icon size={18} className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
       <div className="flex-1 min-w-0">
-        <div className={`font-body text-[15px] ${danger ? 'text-red-400' : 'text-cream'}`}>{title}</div>
-        {subtitle && <div className="font-body text-[13px] text-muted mt-0.5 truncate">{subtitle}</div>}
+        <div className={`font-body text-[15px] ${danger ? 'text-red-400' : 'text-cream'}`}>
+          {title}
+        </div>
+        {subtitle && (
+          <div className="font-body text-[13px] text-muted mt-0.5 truncate">{subtitle}</div>
+        )}
       </div>
       {right ?? <ChevronRight size={18} className="text-muted shrink-0" />}
     </Component>
@@ -104,13 +112,16 @@ export default function Settings({ user, onBack, onNavigate }) {
 
   useEffect(() => {
     if (!user) return
-    api.profile.getSettings(user.id)
-      .then((s) => {
+    api.profile
+      .getSettings(user.id)
+      .then(s => {
         setReminderHour(s?.reminder_hour ?? 19)
         setReminderOn(!!s?.reminder_enabled)
         setReviewHour(s?.review_hour ?? 19)
       })
-      .catch(() => { setReminderHour(19) })
+      .catch(() => {
+        setReminderHour(19)
+      })
   }, [user])
 
   async function saveReminder(hour, enabled) {
@@ -135,15 +146,22 @@ export default function Settings({ user, onBack, onNavigate }) {
     setReminderHour(hour)
     setReminderOn(enabled)
 
-    try { await api.profile.saveSettings(user.id, { reminder_enabled: enabled, reminder_hour: hour }) }
-    catch (e) { console.error(e) }
+    try {
+      await api.profile.saveSettings(user.id, { reminder_enabled: enabled, reminder_hour: hour })
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   async function saveReviewHour(hour) {
     const prev = reviewHour
     setReviewHour(hour)
-    try { await api.profile.saveSettings(user.id, { review_hour: hour }) }
-    catch (e) { console.error(e); setReviewHour(prev) }
+    try {
+      await api.profile.saveSettings(user.id, { review_hour: hour })
+    } catch (e) {
+      console.error(e)
+      setReviewHour(prev)
+    }
   }
 
   // ── Блокировка приложения: см. src/lib/appLock.js и App.jsx.
@@ -158,8 +176,12 @@ export default function Settings({ user, onBack, onNavigate }) {
   useEffect(() => {
     if (platformName !== 'telegram') return
     let alive = true
-    biometric.isAvailable().then((available) => { if (alive) setBiometricAvailable(available) })
-    return () => { alive = false }
+    biometric.isAvailable().then(available => {
+      if (alive) setBiometricAvailable(available)
+    })
+    return () => {
+      alive = false
+    }
   }, [])
 
   function handleLockPress() {
@@ -174,11 +196,14 @@ export default function Settings({ user, onBack, onNavigate }) {
 
   const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'app-lock-setup'
   const [tier, setTier] = useState('base')
-  const go = (key) => onNavigate?.(key)
+  const go = key => onNavigate?.(key)
 
   useEffect(() => {
     if (!user) return
-    api.subscription.get(user.id).then((s) => setTier(s.tier)).catch(console.error)
+    api.subscription
+      .get(user.id)
+      .then(s => setTier(s.tier))
+      .catch(console.error)
   }, [user, screen])
 
   if (screen === 'quotes') {
@@ -232,7 +257,9 @@ export default function Settings({ user, onBack, onNavigate }) {
           subtitle="Профиль и мой путь"
           right={
             <span className="flex items-center gap-2">
-              <span className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-muted'}`}>
+              <span
+                className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-muted'}`}
+              >
                 {tierLabel}
               </span>
               <ChevronRight size={18} className="text-muted shrink-0" />
@@ -240,7 +267,11 @@ export default function Settings({ user, onBack, onNavigate }) {
           }
           onClick={() => go('profile')}
         />
-        <Row title="Управлять подпиской" onClick={() => setScreen('subscription')} divider={false} />
+        <Row
+          title="Управлять подпиской"
+          onClick={() => setScreen('subscription')}
+          divider={false}
+        />
       </Card>
 
       <SectionLabel>Уведомления</SectionLabel>
@@ -249,7 +280,11 @@ export default function Settings({ user, onBack, onNavigate }) {
         <Row
           icon={Bell}
           title="Напоминание от бота"
-          subtitle={reminderOn ? `Каждый день в ${String(reminderHour).padStart(2, '0')}:00` : 'Выключено'}
+          subtitle={
+            reminderOn
+              ? `Каждый день в ${String(reminderHour).padStart(2, '0')}:00 (МСК)`
+              : 'Выключено'
+          }
           right={
             <Toggle
               checked={reminderOn}
@@ -263,13 +298,15 @@ export default function Settings({ user, onBack, onNavigate }) {
 
       {reminderOn && (
         <div className="flex gap-2 mb-8 w-full">
-          {REMINDER_TIMES.map((t) => (
+          {REMINDER_TIMES.map(t => (
             <button
               key={t.hour}
               onClick={() => saveReminder(t.hour, true)}
               className={[
                 'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
-                reminderHour === t.hour ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-muted',
+                reminderHour === t.hour
+                  ? 'bg-gold text-emerald-deep'
+                  : 'bg-white/[0.04] text-muted',
               ].join(' ')}
             >
               {t.label}
@@ -296,7 +333,7 @@ export default function Settings({ user, onBack, onNavigate }) {
         />
       </Card>
       <div className="flex gap-2 mb-8 w-full">
-        {REVIEW_HOURS.map((h) => (
+        {REVIEW_HOURS.map(h => (
           <button
             key={h}
             onClick={() => saveReviewHour(h)}
@@ -312,7 +349,12 @@ export default function Settings({ user, onBack, onNavigate }) {
 
       <SectionLabel>Основные</SectionLabel>
       <Card>
-        <Row icon={Globe} title="Связать с сайтом" subtitle="Использовать те же данные в браузере" onClick={() => setScreen('link-web')} />
+        <Row
+          icon={Globe}
+          title="Связать с сайтом"
+          subtitle="Использовать те же данные в браузере"
+          onClick={() => setScreen('link-web')}
+        />
         <Row
           icon={Lock}
           title="Блокировка приложения"
@@ -326,11 +368,7 @@ export default function Settings({ user, onBack, onNavigate }) {
                   : 'Код доступа'
           }
           right={
-            <Toggle
-              checked={lockOn}
-              label="Блокировка приложения"
-              onChange={handleLockPress}
-            />
+            <Toggle checked={lockOn} label="Блокировка приложения" onChange={handleLockPress} />
           }
           divider={false}
         />
@@ -338,8 +376,18 @@ export default function Settings({ user, onBack, onNavigate }) {
 
       <SectionLabel>Поддержка</SectionLabel>
       <Card>
-        <Row icon={LifeBuoy} title="Написать в поддержку" subtitle="@mentalix_support_bot" onClick={() => window.open('https://t.me/mentalix_support_bot', '_blank')} />
-        <Row icon={Heart} title="Поддержать проект" onClick={() => setScreen('donate')} divider={false} />
+        <Row
+          icon={LifeBuoy}
+          title="Написать в поддержку"
+          subtitle="@mentalix_support_bot"
+          onClick={() => window.open('https://t.me/mentalix_support_bot', '_blank')}
+        />
+        <Row
+          icon={Heart}
+          title="Поддержать проект"
+          onClick={() => setScreen('donate')}
+          divider={false}
+        />
       </Card>
 
       <SectionLabel>Обновление приложения</SectionLabel>
@@ -365,7 +413,6 @@ export default function Settings({ user, onBack, onNavigate }) {
           divider={false}
         />
       </Card>
-
     </div>
   )
 }
