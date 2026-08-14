@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useRef,
@@ -17,13 +19,7 @@ import {
 } from './platform/telegram.hooks'
 
 import Today from './screens/Today'
-import Practices from './screens/Practices'
-import Analytics from './screens/Analytics'
-import MentalixChat from './screens/Mentalix'
-import Profile from './screens/Profile'
-import Settings from './screens/Settings'
 import WebAuthScreen from './screens/WebAuthScreen'
-import Library from './screens/Library'
 import Onboarding from './screens/Onboarding'
 import AppLock from './screens/AppLock'
 
@@ -41,6 +37,22 @@ import { initFullscreen } from './lib/tgFullscreen'
    ============================================================ */
 
 const ONBOARDED_KEY = 'mx-onboarded-v2'
+
+
+/* ============================================================
+   LAZY SCREENS
+
+   Первый экран, авторизация, онбординг и блокировка остаются в
+   стартовом bundle. Остальные вкладки и настройки загружаются
+   только при первом переходе к ним.
+   ============================================================ */
+
+const Practices = lazy(() => import('./screens/Practices'))
+const Analytics = lazy(() => import('./screens/Analytics'))
+const MentalixChat = lazy(() => import('./screens/Mentalix'))
+const Profile = lazy(() => import('./screens/Profile'))
+const Settings = lazy(() => import('./screens/Settings'))
+const Library = lazy(() => import('./screens/Library'))
 
 
 /* ============================================================
@@ -89,6 +101,19 @@ function Splash() {
       >
         выход находится шагами
       </div>
+    </div>
+  )
+}
+
+
+function ScreenLoading() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="w-full max-w-md px-5 pt-8 text-center text-sm text-muted"
+    >
+      Загрузка…
     </div>
   )
 }
@@ -1006,6 +1031,7 @@ export default function App() {
             contentBottomPadding,
         }}
       >
+        <Suspense fallback={<ScreenLoading />}>
         {!user && (
           <p
             className="
@@ -1190,6 +1216,7 @@ export default function App() {
               )}
           </>
         )}
+        </Suspense>
       </div>
 
 
