@@ -67,9 +67,13 @@ function Row({ icon: Icon, title, subtitle, onClick, danger = false, right = nul
   )
 }
 
-function Toggle({ checked, onChange }) {
+function Toggle({ checked, label, onChange }) {
   return (
     <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      aria-label={label}
       onClick={() => onChange(!checked)}
       className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${checked ? 'bg-gold' : 'bg-white/10'}`}
     >
@@ -249,6 +253,7 @@ export default function Settings({ user, onBack, onNavigate }) {
           right={
             <Toggle
               checked={reminderOn}
+              label="Напоминание от бота"
               onChange={() => saveReminder(reminderHour ?? 19, !reminderOn)}
             />
           }
@@ -320,7 +325,13 @@ export default function Settings({ user, onBack, onNavigate }) {
                   ? 'Код + Face ID/Touch ID'
                   : 'Код доступа'
           }
-          right={<Toggle checked={lockOn} onChange={handleLockPress} />}
+          right={
+            <Toggle
+              checked={lockOn}
+              label="Блокировка приложения"
+              onChange={handleLockPress}
+            />
+          }
           divider={false}
         />
       </Card>
