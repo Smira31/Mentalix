@@ -498,15 +498,17 @@
     2. Транслитерация slug — самописная таблица кириллица→латиница, без новой зависимости (`transliterate`/`unidecode` не добавлять).
     3. `published_at` не редактируется через флоу редактирования — всегда дата создания.
     4. `Articles.jsx` **не переключать** на `GET /api/articles` сейчас — `articles.js` остаётся fallback до готовности и живой проверки `/admin`-раздела.
-  - **План реализации (начато 15.08.2026, маленькими шагами, каждый файл — diff на согласование, деплой только после теста на проде):**
-    - [ ] `bot/states.py` — `AdminArticle` (FSM: `waiting_title`/`waiting_excerpt`/`waiting_tag`/`waiting_body` + состояние редактирования поля).
-    - [ ] `bot/models.py` — класс `Article`, зеркало `backend/articles.py:Article` (таблица уже существует в БД).
-    - [ ] `bot/keyboards.py` — `admin_articles_kb`, `article_card_kb` (Опубликовать/Снять, Редактировать, Назад), `article_edit_field_kb`, пункт «📝 Статьи» в `admin_main_kb`.
-    - [ ] `bot/handlers_admin.py` — секция «Статьи»: список + карточка + тумблер `is_published`.
-    - [ ] `bot/handlers_admin.py` — создание статьи (диалог 4 вопроса: title→excerpt→tag→body; slug/reading_minutes/`published_at`=сегодня/`is_published=true` автоматически; карточка-подтверждение перед сохранением).
-    - [ ] `bot/handlers_admin.py` — редактирование по полю (title/excerpt/tag/body, без `published_at`).
-    - [ ] Живой тест на проде: создать тестовую статью через бота, проверить (`GET /api/articles`/фронтенд), удалить тестовую запись.
-    - [ ] Деплой (push `mentalix-bot`) — только после успешного теста и отдельного подтверждения владельца.
+  - **План реализации (начато 15.08.2026, маленькими шагами, каждый файл — diff на согласование):**
+    - [x] `bot/states.py` — `AdminArticle` (FSM: `waiting_title`/`waiting_excerpt`/`waiting_tag`/`waiting_body`/`waiting_edit_value`). Коммит `8dd65b1`.
+    - [x] `bot/models.py` — класс `Article`, зеркало `backend/articles.py:Article` (таблица уже существует в БД, backend-контракт не менялся). Коммит `ca0be92`.
+    - [x] `bot/keyboards.py` — `admin_articles_kb`, `article_card_kb`, `article_edit_field_kb`, `article_confirm_kb`, пункт «📝 Статьи» в `admin_main_kb`. Коммиты `6cb23f8`, `de1211c` (уточнение префикса `admin_article_open_` во избежание коллизии с `startswith`-матчингом), `c7cf518`.
+    - [x] `bot/handlers_admin.py` — список + карточка + тумблер `is_published`. Коммит `4715128`.
+    - [x] `bot/handlers_admin.py` — создание статьи (диалог 4 вопроса: title→excerpt→tag→body; slug — самописная транслитерация кириллицы, без новой зависимости; reading_minutes — слов/180 вверх; `published_at`=сегодня; `is_published=true`; карточка-подтверждение перед сохранением, отдельный шаг «Сохранить»). Коммит `f334606`.
+    - [x] `bot/handlers_admin.py` — редактирование по полю (title/excerpt/tag/body, без `published_at`; при правке `body` заодно пересчитывается `reading_minutes` — не было в исходном плане явно, но иначе разойдётся с фактическим текстом). Коммит `fc107fd`.
+    - [x] DB-уровень протестирован напрямую (`INSERT`/`GET /api/articles`/`DELETE` теми же колонками, что использует `cb_admin_article_save`, на проде) — прошло чисто, 0 строк после удаления.
+    - **Ограничение теста:** реальный FSM-диалог через Telegram агент проверить не может — нет доступа к Telegram-клиенту, а локальный запуск `bot.py` конфликтнул бы с живым инстансом на Railway (`getUpdates`). Импорт всех модулей и синтаксис проверены; `import handlers_admin` доходит до создания движка БД без единой ошибки в коде (падает только на отсутствующем локально `asyncpg` — драйвере, не проблеме кода).
+    - [x] **Задеплоено 15.08.2026 по прямому решению владельца** (тест до деплоя оказался ограничен доступом к Telegram — владелец предпочёл задеплоить и проверить сценарий живьём сам): `git push origin main` в `mentalix-bot` (`8ef2be8..fc107fd`), Railway пересобрал `accurate-expression` (сам бот) и `mentalix-bot` (FastAPI backend, код не менялся) на коммите `fc107fd`, оба `SUCCESS`/`RUNNING`. Логи `accurate-expression` чистые: `Бот запущен, поллинг...`.
+    - [ ] **Ожидается:** владелец проверяет `/admin` → «📝 Статьи» в реальном Telegram — создать тестовую статью, убедиться в списке/карточке/тумблере/редактировании, удалить тестовую запись.
 
 - [x] **MXL-ASCEZA-CARD-001 — Убрать категории из карточки создания новой аскезы**
   - Владельцу не нравилось наличие категорий при создании новой аскезы — предложение убрать категории из формы создания.
