@@ -46,6 +46,11 @@ check it before proposing new features), `TASKS.md` (current work), `AI_RULES.md
 `TASKS.md` — там рабочая папка, ветка, статус незакоммиченных изменений и что
 нельзя менять без согласования.
 
+Перед началом любой новой **крупной** задачи или фичи (не мелкой правки, не багфикса,
+не задачи с уже принятым решением) — напомнить владельцу о скилле pre-mortem
+(`~/.claude/skills/pre-mortem/SKILL.md`) и предложить прогнать его перед стартом
+реализации, чтобы заранее предвидеть ошибки, а не чинить их постфактум.
+
 `docs/archive/CONTEXT.md` and `STOIC_FEATURES.md` are historical/legacy — context only,
 never source of truth. On conflict, priority is, in order:
 
