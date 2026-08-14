@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import {
-  ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell,
-  LineChart, Line, YAxis,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  Tooltip,
+  Cell,
+  LineChart,
+  Line,
+  YAxis,
 } from 'recharts'
 
 const WEEKDAY_LABELS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
@@ -26,8 +33,8 @@ function EmptyAnalytics() {
         <MotifArt name="lestnica" size={120} className="mx-auto mb-3" />
         <h3 className="font-display text-lg text-cream mb-2">Пока нечего показать</h3>
         <p className="font-body text-sm text-muted leading-relaxed">
-          Отмечай ритуалы и аскезы хотя бы несколько дней — и здесь появятся закономерности,
-          которые сам не замечаешь.
+          Отмечай ритуалы и аскезы хотя бы несколько дней — и здесь появятся закономерности, которые
+          сам не замечаешь.
         </p>
       </div>
     </div>
@@ -38,7 +45,7 @@ function WeekChart({ dailyActivity }) {
   const last7 = dailyActivity.slice(-7)
   const todayIso = new Date().toISOString().slice(0, 10)
 
-  const chartData = last7.map((d) => {
+  const chartData = last7.map(d => {
     const jsDate = new Date(d.date + 'T00:00:00')
     return {
       ...d,
@@ -47,7 +54,7 @@ function WeekChart({ dailyActivity }) {
     }
   })
 
-  const hasAny = chartData.some((d) => d.count > 0 || d.breaks > 0)
+  const hasAny = chartData.some(d => d.count > 0 || d.breaks > 0)
 
   return (
     <div className="rounded-[24px] bg-emerald-light/15 border border-cream/15 p-4">
@@ -65,7 +72,7 @@ function WeekChart({ dailyActivity }) {
                   dataKey="label"
                   axisLine={false}
                   tickLine={false}
-                  tick={(props) => {
+                  tick={props => {
                     const { x, y, payload, index } = props
                     const isToday = chartData[index]?.isToday
                     return (
@@ -120,7 +127,9 @@ function WeekChart({ dailyActivity }) {
         </>
       ) : (
         <p className="text-xs text-faint py-8 text-center leading-relaxed">
-          За эту неделю пока нет отметок.<br />Начни отмечаться — здесь появится картина дней.
+          За эту неделю пока нет отметок.
+          <br />
+          Начни отмечаться — здесь появится картина дней.
         </p>
       )}
     </div>
@@ -178,21 +187,23 @@ function MoodTrend({ checkins, onGoCheckin }) {
         <h3 className="font-display text-[17px] text-cream mb-1.5">Как ты сейчас?</h3>
         <p className="text-[13px] text-muted leading-snug mb-4">
           Пройди первый чек-ин — и здесь появится
-          <br />линия твоего настроения
+          <br />
+          линия твоего настроения
         </p>
-        <button
-          onClick={onGoCheckin}
-          className="cta-pill text-[14px] px-8 py-3"
-        >
+        <button onClick={onGoCheckin} className="cta-pill text-[14px] px-8 py-3">
           Пройти чек-ин
         </button>
       </div>
     )
   }
 
-  const chartData = checkins.map((c) => {
+  const chartData = checkins.map(c => {
     const d = new Date(c.date + 'T00:00:00')
-    return { label: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`, mood: c.mood, energy: c.energy }
+    return {
+      label: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`,
+      mood: c.mood,
+      energy: c.energy,
+    }
   })
   const last = checkins[checkins.length - 1]
   const avgMood = (checkins.reduce((s, c) => s + c.mood, 0) / checkins.length).toFixed(1)
@@ -207,21 +218,51 @@ function MoodTrend({ checkins, onGoCheckin }) {
         {checkins.length >= 2 ? (
           <ResponsiveContainer width="100%" height={140}>
             <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -28 }}>
-              <XAxis dataKey="label" tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <YAxis domain={[1, 5]} ticks={[1, 3, 5]} tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }} axisLine={false} tickLine={false} />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                domain={[1, 5]}
+                ticks={[1, 3, 5]}
+                tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }}
+                axisLine={false}
+                tickLine={false}
+              />
               <Tooltip
-                contentStyle={{ background: 'rgb(var(--c-card2))', border: '1px solid rgb(var(--c-border))', borderRadius: 12, fontSize: 12, color: 'rgb(var(--c-text))' }}
+                contentStyle={{
+                  background: 'rgb(var(--c-card2))',
+                  border: '1px solid rgb(var(--c-border))',
+                  borderRadius: 12,
+                  fontSize: 12,
+                  color: 'rgb(var(--c-text))',
+                }}
                 labelStyle={{ color: 'rgb(var(--c-text) / 0.6)' }}
                 formatter={(v, name) => [v + '/5', name === 'mood' ? 'настроение' : 'энергия']}
               />
-              <Line type="monotone" dataKey="mood" stroke="rgb(217,180,91)" strokeWidth={2.5} dot={{ r: 3, fill: 'rgb(217,180,91)' }} />
-              <Line type="monotone" dataKey="energy" stroke="rgb(var(--c-text) / 0.3)" strokeWidth={1.5} dot={false} />
+              <Line
+                type="monotone"
+                dataKey="mood"
+                stroke="rgb(217,180,91)"
+                strokeWidth={2.5}
+                dot={{ r: 3, fill: 'rgb(217,180,91)' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="energy"
+                stroke="rgb(var(--c-text) / 0.3)"
+                strokeWidth={1.5}
+                dot={false}
+              />
             </LineChart>
           </ResponsiveContainer>
         ) : (
           <p className="text-[13px] text-muted text-center py-4">
             Первая точка есть — сегодня: {MOOD_WORDS[(last.mood || 3) - 1]}.
-            <br />Ещё пара дней, и появится линия.
+            <br />
+            Ещё пара дней, и появится линия.
           </p>
         )}
       </div>
@@ -235,7 +276,9 @@ function EmotionCloud({ checkins }) {
   for (const c of checkins || []) {
     if (c.emotion) counts[c.emotion] = (counts[c.emotion] || 0) + 1
   }
-  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 6)
+  const top = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
   if (top.length === 0) return null
   const max = top[0][1]
 
@@ -264,7 +307,6 @@ function EmotionCloud({ checkins }) {
   )
 }
 
-
 // ============================================================
 // ВЫВОДЫ
 //
@@ -284,43 +326,23 @@ function EmotionCloud({ checkins }) {
 // ============================================================
 
 const MIN_GROUP = 3
-const MIN_CHECKINS = 5
-
+export const MIN_CHECKINS = 5
 
 function average(values) {
   if (!values.length) return null
 
-  const sum = values.reduce(
-    (acc, value) => acc + value,
-    0,
-  )
+  const sum = values.reduce((acc, value) => acc + value, 0)
 
   return sum / values.length
 }
 
-
 function pick(list, field) {
-  return list
-    .map((item) => item?.[field])
-    .filter(
-      (value) =>
-        typeof value === 'number',
-    )
+  return list.map(item => item?.[field]).filter(value => typeof value === 'number')
 }
 
-
 // Сравнение среднего значения поля в двух группах дней.
-function compareGroups({
-  withGroup,
-  withoutGroup,
-  field,
-  threshold,
-  build,
-}) {
-  if (
-    withGroup.length < MIN_GROUP
-    || withoutGroup.length < MIN_GROUP
-  ) {
+function compareGroups({ withGroup, withoutGroup, field, threshold, build }) {
+  if (withGroup.length < MIN_GROUP || withoutGroup.length < MIN_GROUP) {
     return null
   }
 
@@ -339,7 +361,6 @@ function compareGroups({
   }
 }
 
-
 function currentStreak(checkins) {
   let streak = 0
 
@@ -352,13 +373,12 @@ function currentStreak(checkins) {
   return streak
 }
 
-
-function deriveConclusions(checkins, data) {
+export function deriveConclusions(checkins, data) {
   const list = Array.isArray(checkins) ? checkins : []
   const found = []
 
-  const closed = list.filter((c) => c.review_completed_at)
-  const notClosed = list.filter((c) => !c.review_completed_at)
+  const closed = list.filter(c => c.review_completed_at)
+  const notClosed = list.filter(c => !c.review_completed_at)
 
   // 1. Вечерний разбор и тревога
   const anxiety = compareGroups({
@@ -366,7 +386,7 @@ function deriveConclusions(checkins, data) {
     withoutGroup: closed,
     field: 'anxiety',
     threshold: 0.6,
-    build: (delta) =>
+    build: delta =>
       delta > 0
         ? 'Тревога выше в дни, которые ты не закрываешь вечерним разбором.'
         : 'Тревога выше в дни, которые ты разбираешь вечером — возможно, разбор попадает именно на тяжёлые дни.',
@@ -374,14 +394,13 @@ function deriveConclusions(checkins, data) {
 
   if (anxiety) found.push(anxiety)
 
-
   // 2. Вечерний разбор и настроение следующего дня
   const mood = compareGroups({
     withGroup: closed,
     withoutGroup: notClosed,
     field: 'mood',
     threshold: 0.5,
-    build: (delta) =>
+    build: delta =>
       delta > 0
         ? 'В закрытые дни настроение держится заметно выше, чем в брошенные.'
         : 'Настроение в закрытые дни ниже — ты чаще доводишь до разбора трудные дни.',
@@ -389,24 +408,22 @@ function deriveConclusions(checkins, data) {
 
   if (mood) found.push(mood)
 
-
   // 3. Энергия и собранность
-  const energetic = list.filter((c) => c.energy >= 4)
-  const tired = list.filter((c) => c.energy <= 2)
+  const energetic = list.filter(c => c.energy >= 4)
+  const tired = list.filter(c => c.energy <= 2)
 
   const focus = compareGroups({
     withGroup: energetic,
     withoutGroup: tired,
     field: 'focus',
     threshold: 0.7,
-    build: (delta) =>
+    build: delta =>
       delta > 0
         ? 'Собранность идёт следом за энергией: в дни с силами ты заметно собраннее.'
         : 'Собранность не зависит от энергии — в уставшие дни ты собран не меньше.',
   })
 
   if (focus) found.push(focus)
-
 
   // 4. Тренд настроения внутри периода
   if (list.length >= MIN_CHECKINS * 2) {
@@ -415,11 +432,7 @@ function deriveConclusions(checkins, data) {
     const early = average(pick(list.slice(0, half), 'mood'))
     const late = average(pick(list.slice(half), 'mood'))
 
-    if (
-      early !== null
-      && late !== null
-      && Math.abs(late - early) >= 0.5
-    ) {
+    if (early !== null && late !== null && Math.abs(late - early) >= 0.5) {
       found.push({
         text:
           late > early
@@ -430,10 +443,9 @@ function deriveConclusions(checkins, data) {
     }
   }
 
-
   // 5. Срывы аскез и день недели
   const activity = data?.daily_activity || []
-  const breakDays = activity.filter((d) => d.breaks > 0)
+  const breakDays = activity.filter(d => d.breaks > 0)
 
   if (breakDays.length >= 3) {
     const byWeekday = {}
@@ -444,9 +456,7 @@ function deriveConclusions(checkins, data) {
       byWeekday[index] = (byWeekday[index] || 0) + 1
     }
 
-    const [topIndex, topCount] =
-      Object.entries(byWeekday)
-        .sort((a, b) => b[1] - a[1])[0]
+    const [topIndex, topCount] = Object.entries(byWeekday).sort((a, b) => b[1] - a[1])[0]
 
     if (topCount / breakDays.length >= 0.5) {
       found.push({
@@ -455,7 +465,6 @@ function deriveConclusions(checkins, data) {
       })
     }
   }
-
 
   // 6. Серия закрытых дней
   const streak = currentStreak(list)
@@ -467,12 +476,10 @@ function deriveConclusions(checkins, data) {
     })
   }
 
-
   found.sort((a, b) => b.weight - a.weight)
 
   return found
 }
-
 
 const WEEKDAY_FULL = [
   'воскресенье',
@@ -484,21 +491,15 @@ const WEEKDAY_FULL = [
   'субботу',
 ]
 
-
 function Metric({ label, value }) {
   return (
     <div className="flex-1 rounded-[18px] bg-emerald border border-cream/10 px-3 py-3">
-      <div className="text-[10px] text-faint leading-none mb-1.5">
-        {label}
-      </div>
+      <div className="text-[10px] text-faint leading-none mb-1.5">{label}</div>
 
-      <div className="font-display text-[18px] font-bold text-gold leading-none">
-        {value}
-      </div>
+      <div className="font-display text-[18px] font-bold text-gold leading-none">{value}</div>
     </div>
   )
 }
-
 
 export default function Analytics({ user, onGoCheckin }) {
   const [data, setData] = useState(null)
@@ -507,12 +508,12 @@ export default function Analytics({ user, onGoCheckin }) {
 
   useEffect(() => {
     if (!user) return
-    Promise.all([
-      api.analytics.get(user.id, 14),
-      api.checkin.history(user.id, 14).catch(() => []),
-    ])
-      .then(([d, c]) => { setData(d); setCheckins(c || []) })
-      .catch((e) => console.error(e))
+    Promise.all([api.analytics.get(user.id, 14), api.checkin.history(user.id, 14).catch(() => [])])
+      .then(([d, c]) => {
+        setData(d)
+        setCheckins(c || [])
+      })
+      .catch(e => console.error(e))
       .finally(() => setLoading(false))
   }, [user])
 
@@ -544,7 +545,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
   const enough = checkins.length >= MIN_CHECKINS
 
-  const round = (values) => {
+  const round = values => {
     const value = average(pick(checkins, values))
 
     return value === null ? '—' : value.toFixed(1)
@@ -552,14 +553,9 @@ export default function Analytics({ user, onGoCheckin }) {
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-1">
-        аналитика.
-      </h2>
+      <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-1">аналитика.</h2>
 
-      <p className="text-[12px] text-faint mb-7">
-        за последние {data.period_days} дней
-      </p>
-
+      <p className="text-[12px] text-faint mb-7">за последние {data.period_days} дней</p>
 
       {/* ── Главный вывод ── */}
 
@@ -568,9 +564,7 @@ export default function Analytics({ user, onGoCheckin }) {
       </div>
 
       {lead ? (
-        <p className="font-display text-[21px] text-cream leading-[1.3] mb-6">
-          {lead.text}
-        </p>
+        <p className="font-display text-[21px] text-cream leading-[1.3] mb-6">{lead.text}</p>
       ) : (
         <p className="font-display text-[19px] text-muted leading-[1.35] mb-6">
           {enough
@@ -578,7 +572,6 @@ export default function Analytics({ user, onGoCheckin }) {
             : `Данных пока мало. Нужно хотя бы ${MIN_CHECKINS} чек-инов, чтобы говорить о закономерностях, а не о совпадениях.`}
         </p>
       )}
-
 
       {/* ── Остальные закономерности ── */}
 
@@ -589,14 +582,11 @@ export default function Analytics({ user, onGoCheckin }) {
               key={index}
               className="rounded-[20px] bg-emerald border border-cream/10 px-4 py-3.5"
             >
-              <p className="text-[14px] text-muted leading-snug">
-                {item.text}
-              </p>
+              <p className="text-[14px] text-muted leading-snug">{item.text}</p>
             </div>
           ))}
         </div>
       )}
-
 
       {/* ── Инсайты бэкенда ── */}
 
@@ -619,7 +609,6 @@ export default function Analytics({ user, onGoCheckin }) {
         </>
       )}
 
-
       {/* ── Цифры ── */}
 
       <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
@@ -634,15 +623,10 @@ export default function Analytics({ user, onGoCheckin }) {
       </div>
 
       <div className="flex gap-2 mb-8">
-        {rituals.length > 0 && (
-          <Metric label="ритуалы выполнены" value={`${avgRituals}%`} />
-        )}
+        {rituals.length > 0 && <Metric label="ритуалы выполнены" value={`${avgRituals}%`} />}
 
-        {ascezas.length > 0 && (
-          <Metric label="аскезы удержаны" value={`${avgClean}%`} />
-        )}
+        {ascezas.length > 0 && <Metric label="аскезы удержаны" value={`${avgClean}%`} />}
       </div>
-
 
       {/* ── Данные ── */}
 
@@ -664,7 +648,7 @@ export default function Analytics({ user, onGoCheckin }) {
         <>
           <h3 className="text-sm text-cream mb-2">Аскезы</h3>
           <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4 mb-6">
-            {ascezas.map((a) => (
+            {ascezas.map(a => (
               <AscezaRow key={a.id} asceza={a} />
             ))}
           </div>
@@ -675,7 +659,7 @@ export default function Analytics({ user, onGoCheckin }) {
         <>
           <h3 className="text-sm text-cream mb-2">Ритуалы</h3>
           <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4">
-            {rituals.map((r) => (
+            {rituals.map(r => (
               <RitualBar key={r.id} ritual={r} />
             ))}
           </div>

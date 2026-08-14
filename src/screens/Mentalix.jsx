@@ -3,72 +3,67 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 
 import { readPendingMentor } from './mentalix/personas'
+import { maybeBuildInsightMessage } from './mentalix/insightDigest'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-
-
 
 // ============================================================
 // ЧАТ
 // ============================================================
 
-function Chat({
-  user,
-  persona,
-  initialText = '',
-  onBack,
-}) {
-  const [messages, setMessages] =
-    useState([])
+function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
+  const [messages, setMessages] = useState([])
 
-  const [input, setInput] =
-    useState(initialText)
+  const [input, setInput] = useState(initialText)
 
-  const [loading, setLoading] =
-    useState(true)
+  const [loading, setLoading] = useState(true)
 
-  const [sending, setSending] =
-    useState(false)
+  const [sending, setSending] = useState(false)
 
   useEffect(() => {
     if (!user) return
 
-    api.mentalix
-      .history(
-        user.id,
-        persona,
-      )
-      .then((history) => {
-        setMessages(history)
+    let cancelled = false
 
+    api.mentalix
+      .history(user.id, persona)
+      .then(async history => {
+        if (cancelled) return
+
+        let combined = history
+
+        // «Дайджест от Следопыта» (ROADMAP.md, идея 3): только при обычном
+        // входе в dnevnik, не через openScout()-хендофф вечернего разбора —
+        // они не должны конкурировать за первое сообщение.
+        if (persona === 'dnevnik' && !viaHandoff) {
+          const insight = await maybeBuildInsightMessage(user)
+
+          if (insight && !cancelled) {
+            combined = [insight, ...history]
+          }
+        }
+
+        if (!cancelled) setMessages(combined)
       })
-      .catch((error) => {
+      .catch(error => {
         console.error(error)
       })
       .finally(() => {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       })
-  }, [
-    user,
-    persona,
-  ])
 
+    return () => {
+      cancelled = true
+    }
+  }, [user, persona, viaHandoff])
 
   async function send(overrideText) {
-    const isVoiceMessage =
-      typeof overrideText === 'string'
+    const isVoiceMessage = typeof overrideText === 'string'
 
-    const text = (
-      isVoiceMessage
-        ? overrideText
-        : input
-    ).trim()
+    const text = (isVoiceMessage ? overrideText : input).trim()
 
-    if (
-      !text ||
-      sending
-    ) {
+    if (!text || sending) {
       return
     }
 
@@ -76,7 +71,7 @@ function Chat({
       setInput('')
     }
 
-    setMessages((previous) => [
+    setMessages(previous => [
       ...previous,
       {
         role: 'user',
@@ -88,26 +83,17 @@ function Chat({
     platform.haptic('light')
 
     try {
-      const reply =
-        await api.mentalix.send(
-          user.id,
-          text,
-          persona,
-        )
+      const reply = await api.mentalix.send(user.id, text, persona)
 
-      setMessages((previous) => [
-        ...previous,
-        reply,
-      ])
+      setMessages(previous => [...previous, reply])
     } catch (error) {
       console.error(error)
 
-      setMessages((previous) => [
+      setMessages(previous => [
         ...previous,
         {
           role: 'assistant',
-          content:
-            'Не удалось получить ответ, попробуй ещё раз.',
+          content: 'Не удалось получить ответ, попробуй ещё раз.',
         },
       ])
     } finally {
@@ -115,45 +101,31 @@ function Chat({
     }
   }
 
-
-return (
-  <Conversation
-    userId={user.id}
-    persona={persona}
-    messages={messages}
-    input={input}
-    setInput={setInput}
-    loading={loading}
-    sending={sending}
-    onSend={send}
-    onBack={onBack}
-  />
-)
+  return (
+    <Conversation
+      userId={user.id}
+      persona={persona}
+      messages={messages}
+      input={input}
+      setInput={setInput}
+      loading={loading}
+      sending={sending}
+      onSend={send}
+      onBack={onBack}
+    />
+  )
 }
-
 
 // ============================================================
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({
-  user,
-  onPersonaChange,
-}) {
-  const [pending] = useState(
-    () => readPendingMentor(),
-  )
+export default function MentalixChat({ user, onPersonaChange }) {
+  const [pending] = useState(() => readPendingMentor())
 
-  const [persona, setPersona] =
-    useState(
-      pending.persona,
-    )
+  const [persona, setPersona] = useState(pending.persona)
 
-  const [draft, setDraft] =
-    useState(
-      pending.draft,
-    )
-
+  const [draft, setDraft] = useState(pending.draft)
 
   /*
    * Сообщаем App.jsx,
@@ -163,14 +135,8 @@ export default function MentalixChat({
    * показывать BottomNavigation или нет.
    */
   useEffect(() => {
-    onPersonaChange?.(
-      Boolean(persona)
-    )
-  }, [
-    persona,
-    onPersonaChange,
-  ])
-
+    onPersonaChange?.(Boolean(persona))
+  }, [persona, onPersonaChange])
 
   /*
    * Если пользователь уйдёт с вкладки
@@ -183,18 +149,12 @@ export default function MentalixChat({
     }
   }, [onPersonaChange])
 
-
   if (!persona) {
     return (
       <PersonaPicker
         user={user}
-        onPick={(
-          key,
-          text,
-        ) => {
-          setDraft(
-            text || '',
-          )
+        onPick={(key, text) => {
+          setDraft(text || '')
 
           setPersona(key)
         }}
@@ -202,12 +162,12 @@ export default function MentalixChat({
     )
   }
 
-
   return (
     <Chat
       user={user}
       persona={persona}
       initialText={draft}
+      viaHandoff={Boolean(pending.persona)}
       onBack={() => {
         setDraft('')
         setPersona(null)
