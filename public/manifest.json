@@ -4,8 +4,8 @@
   "description": "Личная система развития: ритуалы, аскезы, ИИ-собеседники",
   "start_url": "/?source=pwa",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#050403",
+  "theme_color": "#050403",
   "orientation": "portrait",
   "icons": [
     {
