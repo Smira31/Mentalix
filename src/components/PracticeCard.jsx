@@ -17,6 +17,7 @@ export default function PracticeCard({
   artworkScale = 1,
   onOpen,
   soon = false,
+  compactTitle = false,
 }) {
   return (
     <button
@@ -136,6 +137,7 @@ export default function PracticeCard({
         <div
           className={[
             'font-display text-[17px] font-bold leading-[1.12] tracking-[-0.025em]',
+            compactTitle ? 'max-[360px]:text-[15px] max-[360px]:leading-none' : '',
             soon ? 'text-muted' : 'text-cream',
           ].join(' ')}
         >
@@ -145,6 +147,7 @@ export default function PracticeCard({
         <div
           className={[
             'text-[13px] font-normal mt-[8px] leading-[1.35] tracking-[-0.01em]',
+            compactTitle ? 'max-[360px]:mt-[2px] max-[360px]:leading-[1.25]' : '',
             soon ? 'text-muted' : 'text-muted',
           ].join(' ')}
         >
