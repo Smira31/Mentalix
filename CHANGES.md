@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 15.08.2026 — MXL-022: фронтенд переключён на реальный API статей
+
+`src/screens/Articles.jsx` больше не читает статичный `src/data/articles.js` — данные идут через `GET /api/articles` (`api.articles.list()`). Маппер не понадобился — формат ответа backend совпадает с ожиданиями UI поле-в-поле. Loading/error/empty — тот же паттерн, что на других экранах. `articles.js` оставлен как исторический артефакт, не удалён. Задеплоено (`11042d9`, Vercel — success), живой `GET /api/articles` подтверждён. Подробности: `TASKS.md` → `MXL-022`.
+
 ## 15.08.2026 — MXL-022: `/admin`-раздел «Статьи» реализован и задеплоен, ждёт живой проверки
 
 `mentalix-bot` (`bot/states.py`/`models.py`/`keyboards.py`/`handlers_admin.py`) — список, карточка, тумблер публикации, создание (диалог 4 вопроса, авто slug/минуты/дата), редактирование по полю. DB-уровень протестирован напрямую на проде (insert/get/delete). Задеплоено (`fc107fd`, Railway `accurate-expression`/`mentalix-bot` зелёные) — реальный FSM-диалог в Telegram ждёт вашей живой проверки. Подробности: `TASKS.md` → `MXL-022`.
