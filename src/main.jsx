@@ -24,17 +24,6 @@ const onboardingPreviewRequested =
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('onboarding_preview') === '1'
 
-const bgPreviewEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
-
-const bgPreviewRequested =
-  bgPreviewEnabled && new URLSearchParams(window.location.search).get('bg_preview') === '1'
-
-// MXL-021: временная визуальная проверка тёплого фона (#050403) поверх
-// реальных экранов — не production build, см. TASKS.md → MXL-021.
-if (bgPreviewRequested) {
-  document.documentElement.style.setProperty('--c-bg', '5 4 3')
-}
-
 const ArchetypeShowcase = import.meta.env.DEV
   ? lazy(() => import('./components/archetype-art/ArchetypeShowcase'))
   : null
