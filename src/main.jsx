@@ -24,6 +24,11 @@ const onboardingPreviewRequested =
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('onboarding_preview') === '1'
 
+const glyphGalleryEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+
+const glyphGalleryRequested =
+  glyphGalleryEnabled && new URLSearchParams(window.location.search).get('glyph_gallery') === '1'
+
 const ArchetypeShowcase = import.meta.env.DEV
   ? lazy(() => import('./components/archetype-art/ArchetypeShowcase'))
   : null
@@ -42,7 +47,19 @@ const CardDirectionsLab = cardLabEnabled
 
 const OnboardingPreview = import.meta.env.DEV ? lazy(() => import('./screens/Onboarding')) : null
 
+const GlyphGallery = glyphGalleryEnabled
+  ? lazy(() => import('./components/ui-lab/GlyphGallery'))
+  : null
+
 function RootScreen() {
+  if (glyphGalleryRequested && GlyphGallery) {
+    return (
+      <Suspense fallback={<div className="min-h-[100dvh] bg-emerald-deep" />}>
+        <GlyphGallery />
+      </Suspense>
+    )
+  }
+
   if (cardLabRequested && CardDirectionsLab) {
     return (
       <Suspense fallback={<div className="min-h-[100dvh] bg-emerald-deep" />}>
