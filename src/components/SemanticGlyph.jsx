@@ -367,6 +367,20 @@ function Drawing({ kind, debugSource }) {
         </>
       )
 
+    case 'finish':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__finish-attempts">
+            <path d="M30 40C34 28 44 22 54 24" />
+            <path d="M28 74C30 86 40 94 52 92" />
+            <path d="M96 26C108 26 118 34 120 46" />
+          </g>
+          <path className="mx-semantic-glyph__finish-loop" d="M80 24A34 34 0 1 1 46 58" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="24" r="4" />
+        </>
+      )
+
     case 'sleep':
       return (
         <>
