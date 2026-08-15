@@ -367,6 +367,29 @@ function Drawing({ kind, debugSource }) {
         </>
       )
 
+    case 'narrow':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__narrow-field">
+            <circle cx="30" cy="30" r="3" />
+            <circle cx="46" cy="82" r="2.6" />
+            <circle cx="24" cy="60" r="2.4" />
+            <circle cx="112" cy="28" r="2.8" />
+            <circle cx="130" cy="60" r="2.4" />
+            <circle cx="104" cy="86" r="2.6" />
+            <circle cx="60" cy="24" r="2.2" />
+            <circle cx="128" cy="90" r="2.2" />
+          </g>
+          <circle
+            className="mx-semantic-glyph__point mx-semantic-glyph__narrow-center"
+            cx="80"
+            cy="56"
+            r="4.5"
+          />
+        </>
+      )
+
     case 'sleep':
       return (
         <>

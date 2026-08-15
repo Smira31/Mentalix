@@ -14,6 +14,7 @@ import FocusArt from '../components/practice-art/FocusArt'
 import MeditationArt from '../components/practice-art/MeditationArt'
 import FirstStepArt from '../components/practice-art/FirstStepArt'
 import ReleaseArt from '../components/practice-art/ReleaseArt'
+import NarrowFocusArt from '../components/practice-art/NarrowFocusArt'
 
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
@@ -22,6 +23,7 @@ import Focus from './Focus'
 import Breathing from './Breathing'
 import FirstStepFlow from './FirstStepFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
+import NarrowFocusFlow from './NarrowFocusFlow'
 
 function SubHeader({ title, onBack }) {
   return (
@@ -85,6 +87,10 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
 
   if (sub === 'no-blame') {
     return <ProcrastinationFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
+  if (sub === 'narrow-focus') {
+    return <NarrowFocusFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'brain') {
@@ -174,6 +180,14 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Без вины"
           subtitle="когда откладываешь и знаешь это"
           onOpen={() => setSub('no-blame')}
+        />
+
+        <PracticeCard
+          artwork={<NarrowFocusArt />}
+          artworkScale={1.04}
+          title="Одно из всех"
+          subtitle="когда всё сразу — слишком много"
+          onOpen={() => setSub('narrow-focus')}
         />
 
         <PracticeCard
