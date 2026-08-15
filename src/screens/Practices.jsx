@@ -13,6 +13,7 @@ import BreathingArt from '../components/practice-art/BreathingArt'
 import FocusArt from '../components/practice-art/FocusArt'
 import MeditationArt from '../components/practice-art/MeditationArt'
 import FirstStepArt from '../components/practice-art/FirstStepArt'
+import ReleaseArt from '../components/practice-art/ReleaseArt'
 
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
@@ -20,6 +21,7 @@ import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
 import Breathing from './Breathing'
 import FirstStepFlow from './FirstStepFlow'
+import ProcrastinationFlow from './ProcrastinationFlow'
 
 function SubHeader({ title, onBack }) {
   return (
@@ -79,6 +81,10 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
 
   if (sub === 'first-step') {
     return <FirstStepFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
+  if (sub === 'no-blame') {
+    return <ProcrastinationFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'brain') {
@@ -160,6 +166,14 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Первый шаг"
           subtitle="маленький шаг, когда трудно начать"
           onOpen={() => setSub('first-step')}
+        />
+
+        <PracticeCard
+          artwork={<ReleaseArt />}
+          artworkScale={1.04}
+          title="Без вины"
+          subtitle="когда откладываешь и знаешь это"
+          onOpen={() => setSub('no-blame')}
         />
 
         <PracticeCard
