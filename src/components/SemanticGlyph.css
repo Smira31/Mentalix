@@ -42,6 +42,8 @@
 .mx-semantic-glyph__calm-line,
 .mx-semantic-glyph__release-knot,
 .mx-semantic-glyph__release-line,
+.mx-semantic-glyph__finish-attempts,
+.mx-semantic-glyph__finish-loop,
 .mx-semantic-glyph__sleep-upper,
 .mx-semantic-glyph__sleep-lower,
 .mx-semantic-glyph__sleep-drop,
@@ -175,6 +177,16 @@
 .mx-semantic-glyph__narrow-field circle {
   fill: rgb(var(--c-line-secondary));
   opacity: 0.6;
+}
+
+.mx-semantic-glyph__finish-attempts {
+  opacity: 0.6;
+}
+
+.mx-semantic-glyph__finish-loop {
+  opacity: 0.12;
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
 }
 
 .mx-semantic-glyph__network circle,
@@ -321,6 +333,15 @@
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--narrow
   .mx-semantic-glyph__narrow-center {
   animation: mx-semantic-narrow-center 6.4s ease infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--finish
+  .mx-semantic-glyph__finish-attempts {
+  animation: mx-semantic-finish-attempts 6.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--finish .mx-semantic-glyph__finish-loop {
+  animation: mx-semantic-finish-loop 6.4s ease infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--sleep .mx-semantic-glyph__sleep-upper {
@@ -679,6 +700,32 @@
   76% {
     opacity: 0.16;
     transform: scale(0.86) rotate(24deg);
+  }
+}
+
+@keyframes mx-semantic-finish-attempts {
+  0%,
+  24%,
+  100% {
+    opacity: 0.6;
+  }
+  56%,
+  76% {
+    opacity: 0.12;
+  }
+}
+
+@keyframes mx-semantic-finish-loop {
+  0%,
+  24%,
+  100% {
+    opacity: 0.12;
+    stroke-dashoffset: 160;
+  }
+  56%,
+  76% {
+    opacity: 1;
+    stroke-dashoffset: 0;
   }
 }
 
