@@ -12,13 +12,14 @@ import NeuroArt from '../components/practice-art/NeuroArt'
 import BreathingArt from '../components/practice-art/BreathingArt'
 import FocusArt from '../components/practice-art/FocusArt'
 import MeditationArt from '../components/practice-art/MeditationArt'
+import FirstStepArt from '../components/practice-art/FirstStepArt'
 
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
 import Breathing from './Breathing'
-
+import FirstStepFlow from './FirstStepFlow'
 
 function SubHeader({ title, onBack }) {
   return (
@@ -35,19 +36,12 @@ function SubHeader({ title, onBack }) {
     >
       <BackButton onClick={onBack} />
 
-      <span className="font-display text-[18px] text-cream lowercase">
-        {title}
-      </span>
+      <span className="font-display text-[18px] text-cream lowercase">{title}</span>
     </div>
   )
 }
 
-
-export default function Practices({
-  user,
-  initialSub = null,
-  onGameChange,
-}) {
+export default function Practices({ user, initialSub = null, onGameChange }) {
   const [sub, setSub] = useState(initialSub)
   const [rituals, setRituals] = useState([])
   const [ascezas, setAscezas] = useState([])
@@ -67,10 +61,7 @@ export default function Practices({
   useEffect(() => {
     if (!user || sub !== null) return
 
-    Promise.all([
-      api.rituals.list(user.id),
-      api.ascezas.list(user.id),
-    ])
+    Promise.all([api.rituals.list(user.id), api.ascezas.list(user.id)])
       .then(([ritualsData, ascezasData]) => {
         setRituals(ritualsData)
         setAscezas(ascezasData)
@@ -78,66 +69,39 @@ export default function Practices({
       .catch(console.error)
   }, [user, sub])
 
-
   if (sub === 'rituals') {
-    return (
-      <Rituals
-        user={user}
-        onBack={() => setSub(null)}
-      />
-    )
+    return <Rituals user={user} onBack={() => setSub(null)} />
   }
 
   if (sub === 'ascezas') {
-    return (
-      <Ascezas
-        user={user}
-        onBack={() => setSub(null)}
-      />
-    )
+    return <Ascezas user={user} onBack={() => setSub(null)} />
+  }
+
+  if (sub === 'first-step') {
+    return <FirstStepFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'brain') {
-    return (
-      <BrainTrainer
-        user={user}
-        onBack={() => setSub(null)}
-        onActiveChange={onGameChange}
-      />
-    )
+    return <BrainTrainer user={user} onBack={() => setSub(null)} onActiveChange={onGameChange} />
   }
 
   if (sub === 'breathing') {
-    return (
-      <Breathing
-        user={user}
-        onBack={() => setSub(null)}
-      />
-    )
+    return <Breathing user={user} onBack={() => setSub(null)} />
   }
 
   if (sub === 'focus') {
     return (
       <div className="w-full flex flex-col items-center">
-        <SubHeader
-          title="фокус."
-          onBack={() => setSub(null)}
-        />
+        <SubHeader title="фокус." onBack={() => setSub(null)} />
 
         <Focus user={user} />
       </div>
     )
   }
 
+  const ritualsDone = rituals.filter(ritual => ritual.today_level).length
 
-  const ritualsDone = rituals.filter(
-    (ritual) => ritual.today_level
-  ).length
-
-  const ascezasHeld = ascezas.filter(
-    (asceza) => asceza.today_status === 'held'
-  ).length
-
+  const ascezasHeld = ascezas.filter(asceza => asceza.today_status === 'held').length
 
   return (
     <div
@@ -163,7 +127,6 @@ export default function Practices({
         практики.
       </h2>
 
-
       <div
         className="
           grid
@@ -178,11 +141,7 @@ export default function Practices({
           artworkScale={1.04}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
-          right={
-            rituals.length > 0
-              ? `${ritualsDone}/${rituals.length}`
-              : null
-          }
+          right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
           onOpen={() => setSub('rituals')}
         />
 
@@ -191,18 +150,28 @@ export default function Practices({
           artworkScale={1.04}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
-          right={
-            ascezas.length > 0
-              ? `${ascezasHeld}/${ascezas.length}`
-              : null
-          }
+          right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
           onOpen={() => setSub('ascezas')}
+        />
+
+        <PracticeCard
+          artwork={<FirstStepArt />}
+          artworkScale={1.04}
+          title="Первый шаг"
+          subtitle="маленький шаг, когда трудно начать"
+          onOpen={() => setSub('first-step')}
         />
 
         <PracticeCard
           artwork={<NeuroArt />}
           artworkScale={1.04}
-          title={<>Нейро<wbr className="min-[361px]:hidden" />тренажёр</>}
+          title={
+            <>
+              Нейро
+              <wbr className="min-[361px]:hidden" />
+              тренажёр
+            </>
+          }
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
           soon
