@@ -40,6 +40,8 @@
 .mx-semantic-glyph__trail-marks,
 .mx-semantic-glyph__anxiety-knot,
 .mx-semantic-glyph__calm-line,
+.mx-semantic-glyph__release-knot,
+.mx-semantic-glyph__release-line,
 .mx-semantic-glyph__sleep-upper,
 .mx-semantic-glyph__sleep-lower,
 .mx-semantic-glyph__sleep-drop,
@@ -147,6 +149,8 @@
 .mx-semantic-glyph__path-point,
 .mx-semantic-glyph__anxiety-knot,
 .mx-semantic-glyph__calm-line,
+.mx-semantic-glyph__release-knot,
+.mx-semantic-glyph__release-line,
 .mx-semantic-glyph__sleep-upper,
 .mx-semantic-glyph__sleep-lower,
 .mx-semantic-glyph__brackets,
@@ -161,6 +165,10 @@
 }
 
 .mx-semantic-glyph__calm-line {
+  opacity: 0.12;
+}
+
+.mx-semantic-glyph__release-line {
   opacity: 0.12;
 }
 
@@ -204,11 +212,13 @@
   animation: mx-semantic-signal 13.5s cubic-bezier(0.23, 1, 0.32, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-upper {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath
+  .mx-semantic-glyph__breath-upper {
   animation: mx-semantic-breath-upper 8.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath .mx-semantic-glyph__breath-lower {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--breath
+  .mx-semantic-glyph__breath-lower {
   animation: mx-semantic-breath-lower 8.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
@@ -216,20 +226,24 @@
   animation: mx-semantic-focus 10.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__contour--outer {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation
+  .mx-semantic-glyph__contour--outer {
   animation: mx-semantic-contour-outer 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__contour--middle {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation
+  .mx-semantic-glyph__contour--middle {
   animation: mx-semantic-contour-middle 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation .mx-semantic-glyph__contour--inner {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--meditation
+  .mx-semantic-glyph__contour--inner {
   animation: mx-semantic-contour-inner 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--prayer .mx-semantic-glyph__prayer,
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--purpose .mx-semantic-glyph__purpose-arcs {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--purpose
+  .mx-semantic-glyph__purpose-arcs {
   animation: mx-semantic-rise 5.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
@@ -250,32 +264,48 @@
   animation: mx-semantic-clear-smoke 5.6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__boundary--outer {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza
+  .mx-semantic-glyph__boundary--outer {
   animation: mx-semantic-boundary-outer 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza .mx-semantic-glyph__boundary--inner {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--asceza
+  .mx-semantic-glyph__boundary--inner {
   animation: mx-semantic-boundary-inner 12s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--pathfinder .mx-semantic-glyph__path-point {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--pathfinder
+  .mx-semantic-glyph__path-point {
   animation: mx-semantic-follow 5.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--companion .mx-semantic-glyph__voice-left {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--companion
+  .mx-semantic-glyph__voice-left {
   animation: mx-semantic-listen-left 5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--companion .mx-semantic-glyph__voice-right {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--companion
+  .mx-semantic-glyph__voice-right {
   animation: mx-semantic-listen-right 5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--anxiety .mx-semantic-glyph__anxiety-knot {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--anxiety
+  .mx-semantic-glyph__anxiety-knot {
   animation: mx-semantic-untangle 6.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--anxiety .mx-semantic-glyph__calm-line {
   animation: mx-semantic-calm-line 6.4s ease infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--release
+  .mx-semantic-glyph__release-knot {
+  animation: mx-semantic-unspool 6.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--release
+  .mx-semantic-glyph__release-line {
+  animation: mx-semantic-release-line 6.4s ease infinite;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--sleep .mx-semantic-glyph__sleep-upper {
@@ -286,173 +316,455 @@
   animation: mx-semantic-sleep-lower 6.8s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-runner {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual
+  .mx-semantic-glyph__ritual-runner {
   animation: mx-semantic-orbit 9s linear infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-layer--outer {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual
+  .mx-semantic-glyph__ritual-orbit-layer--outer {
   animation: mx-semantic-orbit-layer 36s linear infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-layer--middle {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual
+  .mx-semantic-glyph__ritual-orbit-layer--middle {
   animation: mx-semantic-orbit-layer 48s linear infinite reverse;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-layer--cross {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual
+  .mx-semantic-glyph__ritual-orbit-layer--cross {
   animation: mx-semantic-orbit-layer 64s linear infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-wall--left {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step
+  .mx-semantic-glyph__path-wall--left {
   animation: mx-semantic-path-left 11.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-wall--right {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step
+  .mx-semantic-glyph__path-wall--right {
   animation: mx-semantic-path-right 11.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step .mx-semantic-glyph__path-signal {
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--next-step
+  .mx-semantic-glyph__path-signal {
   animation: mx-semantic-path-signal 11.2s cubic-bezier(0.23, 1, 0.32, 1) infinite;
 }
 
 @keyframes mx-semantic-network {
-  0%, 18%, 100% { opacity: 0.55; transform: scale(0.98); }
-  52%, 76% { opacity: 0.92; transform: scale(1.02); }
+  0%,
+  18%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+  52%,
+  76% {
+    opacity: 0.92;
+    transform: scale(1.02);
+  }
 }
 
 @keyframes mx-semantic-signal {
-  0%, 14% { opacity: 0; transform: translate(0, 0); }
-  20% { opacity: 1; }
-  76%, 86% { opacity: 1; transform: translate(118px, -22px); }
-  100% { opacity: 0; transform: translate(118px, -22px); }
+  0%,
+  14% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 1;
+  }
+  76%,
+  86% {
+    opacity: 1;
+    transform: translate(118px, -22px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(118px, -22px);
+  }
 }
 
 @keyframes mx-semantic-breath-upper {
-  0%, 18%, 100% { transform: translateY(5px) scaleX(0.92); opacity: 0.58; }
-  52%, 72% { transform: translateY(-4px) scaleX(1.04); opacity: 1; stroke: rgb(var(--c-line)); }
+  0%,
+  18%,
+  100% {
+    transform: translateY(5px) scaleX(0.92);
+    opacity: 0.58;
+  }
+  52%,
+  72% {
+    transform: translateY(-4px) scaleX(1.04);
+    opacity: 1;
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-breath-lower {
-  0%, 18%, 100% { transform: translateY(-5px) scaleX(0.92); opacity: 0.58; }
-  52%, 72% { transform: translateY(4px) scaleX(1.04); opacity: 1; stroke: rgb(var(--c-line)); }
+  0%,
+  18%,
+  100% {
+    transform: translateY(-5px) scaleX(0.92);
+    opacity: 0.58;
+  }
+  52%,
+  72% {
+    transform: translateY(4px) scaleX(1.04);
+    opacity: 1;
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-focus {
-  0%, 18%, 100% { transform: scaleX(1); opacity: 0.58; }
-  52%, 74% { transform: scaleX(0.78); opacity: 1; stroke: rgb(var(--c-line)); }
+  0%,
+  18%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.58;
+  }
+  52%,
+  74% {
+    transform: scaleX(0.78);
+    opacity: 1;
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-contour-outer {
-  0%, 20%, 100% { transform: scale(1.04); opacity: 0.42; }
-  54%, 76% { transform: scale(0.96); opacity: 0.78; }
+  0%,
+  20%,
+  100% {
+    transform: scale(1.04);
+    opacity: 0.42;
+  }
+  54%,
+  76% {
+    transform: scale(0.96);
+    opacity: 0.78;
+  }
 }
 
 @keyframes mx-semantic-contour-middle {
-  0%, 20%, 100% { transform: scale(0.96); opacity: 0.55; }
-  54%, 76% { transform: scale(1.03); opacity: 0.9; }
+  0%,
+  20%,
+  100% {
+    transform: scale(0.96);
+    opacity: 0.55;
+  }
+  54%,
+  76% {
+    transform: scale(1.03);
+    opacity: 0.9;
+  }
 }
 
 @keyframes mx-semantic-contour-inner {
-  0%, 20%, 100% { transform: scale(1.06); opacity: 0.72; }
-  54%, 76% { transform: scale(0.92); opacity: 1; stroke: rgb(var(--c-line)); }
+  0%,
+  20%,
+  100% {
+    transform: scale(1.06);
+    opacity: 0.72;
+  }
+  54%,
+  76% {
+    transform: scale(0.92);
+    opacity: 1;
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-rise {
-  0%, 20%, 100% { transform: translateY(3px) scale(0.97); opacity: 0.68; }
-  52%, 76% { transform: translateY(-3px) scale(1.03); opacity: 1; }
+  0%,
+  20%,
+  100% {
+    transform: translateY(3px) scale(0.97);
+    opacity: 0.68;
+  }
+  52%,
+  76% {
+    transform: translateY(-3px) scale(1.03);
+    opacity: 1;
+  }
 }
 
 @keyframes mx-semantic-stream {
-  0%, 18%, 100% { transform: translateY(-4px); opacity: 0.45; }
-  50%, 72% { transform: translateY(5px); opacity: 1; }
+  0%,
+  18%,
+  100% {
+    transform: translateY(-4px);
+    opacity: 0.45;
+  }
+  50%,
+  72% {
+    transform: translateY(5px);
+    opacity: 1;
+  }
 }
 
 @keyframes mx-semantic-align {
-  0%, 18%, 100% { transform: rotate(-8deg); opacity: 0.66; }
-  50%, 76% { transform: rotate(0deg) scale(1.04); opacity: 1; stroke: rgb(var(--c-line)); }
+  0%,
+  18%,
+  100% {
+    transform: rotate(-8deg);
+    opacity: 0.66;
+  }
+  50%,
+  76% {
+    transform: rotate(0deg) scale(1.04);
+    opacity: 1;
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-decision {
-  0%, 20%, 100% { opacity: 0.36; transform: scale(0.96); }
-  50%, 76% { opacity: 1; transform: scale(1.06); stroke: rgb(var(--c-line)); }
+  0%,
+  20%,
+  100% {
+    opacity: 0.36;
+    transform: scale(0.96);
+  }
+  50%,
+  76% {
+    opacity: 1;
+    transform: scale(1.06);
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-clear-smoke {
-  0%, 20%, 100% { opacity: 0.82; transform: translateY(0); }
-  50%, 76% { opacity: 0.08; transform: translateY(-8px); }
+  0%,
+  20%,
+  100% {
+    opacity: 0.82;
+    transform: translateY(0);
+  }
+  50%,
+  76% {
+    opacity: 0.08;
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes mx-semantic-boundary-outer {
-  0%, 22%, 100% { transform: scaleX(1); opacity: 0.52; }
-  52%, 76% { transform: scaleX(0.84); opacity: 0.9; }
+  0%,
+  22%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.52;
+  }
+  52%,
+  76% {
+    transform: scaleX(0.84);
+    opacity: 0.9;
+  }
 }
 
 @keyframes mx-semantic-boundary-inner {
-  0%, 22%, 100% { transform: scaleX(1); opacity: 0.72; }
-  52%, 76% { transform: scaleX(0.72); opacity: 1; stroke: rgb(var(--c-line)); }
+  0%,
+  22%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.72;
+  }
+  52%,
+  76% {
+    transform: scaleX(0.72);
+    opacity: 1;
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-follow {
-  0%, 16% { opacity: 0; transform: translate(-100px, 50px); }
-  24% { opacity: 1; transform: translate(-100px, 50px); }
-  42% { transform: translate(-67px, 36px); }
-  58% { transform: translate(-40px, 30px); }
-  76%, 88% { opacity: 1; transform: translate(0, 0); }
-  100% { opacity: 0; transform: translate(0, 0); }
+  0%,
+  16% {
+    opacity: 0;
+    transform: translate(-100px, 50px);
+  }
+  24% {
+    opacity: 1;
+    transform: translate(-100px, 50px);
+  }
+  42% {
+    transform: translate(-67px, 36px);
+  }
+  58% {
+    transform: translate(-40px, 30px);
+  }
+  76%,
+  88% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
 }
 
 @keyframes mx-semantic-listen-left {
-  0%, 18%, 100% { transform: translateX(0); }
-  48%, 72% { transform: translateX(7px); stroke: rgb(var(--c-line)); }
+  0%,
+  18%,
+  100% {
+    transform: translateX(0);
+  }
+  48%,
+  72% {
+    transform: translateX(7px);
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-listen-right {
-  0%, 18%, 100% { transform: translateX(0); }
-  48%, 72% { transform: translateX(-7px); stroke: rgb(var(--c-line)); }
+  0%,
+  18%,
+  100% {
+    transform: translateX(0);
+  }
+  48%,
+  72% {
+    transform: translateX(-7px);
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-untangle {
-  0%, 24%, 100% { opacity: 0.9; transform: scale(1); }
-  56%, 76% { opacity: 0.18; transform: scale(0.92); }
+  0%,
+  24%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  56%,
+  76% {
+    opacity: 0.18;
+    transform: scale(0.92);
+  }
 }
 
 @keyframes mx-semantic-calm-line {
-  0%, 24%, 100% { opacity: 0.12; }
-  56%, 76% { opacity: 1; }
+  0%,
+  24%,
+  100% {
+    opacity: 0.12;
+  }
+  56%,
+  76% {
+    opacity: 1;
+  }
+}
+
+@keyframes mx-semantic-unspool {
+  0%,
+  24%,
+  100% {
+    opacity: 0.9;
+    transform: scale(1) rotate(0deg);
+  }
+  56%,
+  76% {
+    opacity: 0.16;
+    transform: scale(0.86) rotate(24deg);
+  }
+}
+
+@keyframes mx-semantic-release-line {
+  0%,
+  24%,
+  100% {
+    opacity: 0.12;
+    transform: scaleX(0.55);
+  }
+  56%,
+  76% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
 }
 
 @keyframes mx-semantic-sleep-upper {
-  0%, 24%, 100% { transform: translateY(0) scaleY(1); }
-  58%, 78% { transform: translateY(7px) scaleY(0.78); stroke: rgb(var(--c-line)); }
+  0%,
+  24%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  58%,
+  78% {
+    transform: translateY(7px) scaleY(0.78);
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-sleep-lower {
-  0%, 24%, 100% { transform: translateY(0) scaleY(1); }
-  58%, 78% { transform: translateY(-7px) scaleY(0.78); stroke: rgb(var(--c-line)); }
+  0%,
+  24%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  58%,
+  78% {
+    transform: translateY(-7px) scaleY(0.78);
+    stroke: rgb(var(--c-line));
+  }
 }
 
 @keyframes mx-semantic-orbit {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes mx-semantic-orbit-layer {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes mx-semantic-path-left {
-  0%, 20%, 100% { transform: translateX(-4px); opacity: 0.48; }
-  54%, 76% { transform: translateX(4px); opacity: 0.9; }
+  0%,
+  20%,
+  100% {
+    transform: translateX(-4px);
+    opacity: 0.48;
+  }
+  54%,
+  76% {
+    transform: translateX(4px);
+    opacity: 0.9;
+  }
 }
 
 @keyframes mx-semantic-path-right {
-  0%, 20%, 100% { transform: translateX(4px); opacity: 0.48; }
-  54%, 76% { transform: translateX(-4px); opacity: 0.9; }
+  0%,
+  20%,
+  100% {
+    transform: translateX(4px);
+    opacity: 0.48;
+  }
+  54%,
+  76% {
+    transform: translateX(-4px);
+    opacity: 0.9;
+  }
 }
 
 @keyframes mx-semantic-path-signal {
-  0%, 14% { opacity: 0; transform: translate(0, 0); }
-  20% { opacity: 1; }
-  76%, 86% { opacity: 1; transform: translate(108px, -66px); }
-  100% { opacity: 0; transform: translate(108px, -66px); }
+  0%,
+  14% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  20% {
+    opacity: 1;
+  }
+  76%,
+  86% {
+    opacity: 1;
+    transform: translate(108px, -66px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(108px, -66px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
