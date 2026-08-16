@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { createPortal } from 'react-dom'
 
 import {
   ArrowRight,
@@ -329,7 +330,7 @@ export default function Conversation({
   ])
 
 
-  return (
+  return createPortal(
     <div
       className={FULLSCREEN_SHELL_CLASS}
       style={{
@@ -665,6 +666,7 @@ export default function Conversation({
         </div>
       </div>
 
-    </div>
+    </div>,
+    document.body,
   )
 }
