@@ -12,6 +12,7 @@ import SemanticGlyph, {
   semanticKindForRitual,
 } from '../components/SemanticGlyph'
 import StreakBar from '../components/StreakBar'
+import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
@@ -331,10 +332,14 @@ export default function Rituals({ user, onBack }) {
       {loading ? (
         <p className="text-muted text-sm">Загрузка...</p>
       ) : rituals.length === 0 ? (
-        <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-          <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
-            <SemanticGlyph kind="ritual" className="w-full h-full" />
-          </div>
+        <EmptyState
+          className="mb-4"
+          glyph={
+            <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
+              <SemanticGlyph kind="ritual" className="w-full h-full" />
+            </div>
+          }
+        >
           <h3 className="font-display text-lg text-cream mb-1">Ритуалов пока нет</h3>
           <p className="text-sm text-muted mb-4 leading-relaxed">
             Ритуал — это обряд, который держит твой день. Создай первый.
@@ -342,7 +347,7 @@ export default function Rituals({ user, onBack }) {
           <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
             Создать ритуал
           </button>
-        </div>
+        </EmptyState>
       ) : (
         <>
           <div

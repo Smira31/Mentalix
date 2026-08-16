@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
+import EmptyState from '../components/EmptyState'
 import {
   ResponsiveContainer,
   BarChart,
@@ -29,14 +30,15 @@ function EmptyAnalytics() {
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
       <p className="text-[11px] text-muted mb-8">за последние дни</p>
 
-      <div className="rounded-[24px] bg-emerald p-8 text-center">
-        <MotifArt name="lestnica" size={120} className="mx-auto mb-3" />
+      <EmptyState
+        glyph={<MotifArt name="lestnica" size={120} className="mx-auto mb-3" />}
+      >
         <h3 className="font-display text-lg text-cream mb-2">Пока нечего показать</h3>
         <p className="font-body text-sm text-muted leading-relaxed">
           Отмечай ритуалы и аскезы хотя бы несколько дней — и здесь появятся закономерности, которые
           сам не замечаешь.
         </p>
-      </div>
+      </EmptyState>
     </div>
   )
 }
@@ -183,7 +185,7 @@ const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хо
 function MoodTrend({ checkins, onGoCheckin }) {
   if (!checkins || checkins.length === 0) {
     return (
-      <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-6 text-center mb-6">
+      <EmptyState className="border border-cream/10 !bg-emerald-light/15 !p-6 mb-6">
         <h3 className="font-display text-[17px] text-cream mb-1.5">Как ты сейчас?</h3>
         <p className="text-[13px] text-muted leading-snug mb-4">
           Пройди первый чек-ин — и здесь появится
@@ -193,7 +195,7 @@ function MoodTrend({ checkins, onGoCheckin }) {
         <button onClick={onGoCheckin} className="cta-pill text-[14px] px-8 py-3">
           Пройти чек-ин
         </button>
-      </div>
+      </EmptyState>
     )
   }
 

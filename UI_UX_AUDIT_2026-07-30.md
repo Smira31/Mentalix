@@ -286,10 +286,12 @@ screenshots нельзя подтвердить, что итоговая поз�
 
 ### MXL-UX-U04 — Profile и Settings имеют разные title alignment contracts
 
-**Статус: актуально.** `Settings.jsx` теперь центрирует заголовок
-(`justify-center` + `absolute`-кнопка назад), `Profile` в `App.jsx` —
-`justify-between`; оба визуально центрируют title, но разными техниками, и
-единого документированного варианта (P09) по-прежнему нет.
+**Статус: закрыто, реализовано 16.08.2026** — `Settings.jsx` переведён на
+тот же паттерн, что и `Profile` в `App.jsx`: `grid grid-cols-[1fr_auto_1fr]`
+(back в левой колонке `justify-self-start`, заголовок в центральной `auto`,
+пустой `aria-hidden` span в правой для симметрии) вместо
+`relative`/`justify-center`/`absolute`-кнопки. Оба экрана теперь на одном
+контракте.
 
 - **Экран/сценарий:** Today → Profile → Settings.
 - **Проблема:** Profile title центрирован между двумя 40 px controls; Settings title расположен рядом с back.
@@ -405,9 +407,11 @@ native, motif из общего реестра `SemanticGlyph`) + явный CTA
 
 ### MXL-UX-P01 — Нейтральное greeting Today
 
-**Статус: актуально.** `App.jsx` → `greeting()` по-прежнему возвращает
-четыре time-based варианта («доброе утро.» / «добрый день.» / «добрый
-вечер.» / «тихой ночи.») — решение не принято.
+**Статус: решено 16.08.2026 — оставлено как есть, без изменений в коде.**
+Владелец решил не менять time-based greeting на нейтральный вариант.
+`App.jsx` → `greeting()` продолжает возвращать четыре time-based варианта
+(«доброе утро.» / «добрый день.» / «добрый вечер.» / «тихой ночи.») —
+это финальное решение, а не открытый вопрос.
 
 - **Текущее:** `App.jsx` имеет четыре time-based greeting и четыре tagline branches.
 - **Решение:** утвердить «Привет, Имя.» / «Привет.» и отдельно судьбу tagline.
@@ -467,8 +471,18 @@ MXL-PRB-* треки), и вопрос «что временно закрыто�
 
 ### MXL-UX-P05 — Canonical EmptyState
 
-**Статус: актуально.** Единого canonical EmptyState-компонента/решения не
-найдено — вопрос остаётся открытым.
+**Статус: закрыто, реализовано 16.08.2026** — создан `src/components/EmptyState.jsx`:
+минималистичная карточка-оболочка (по умолчанию — пунктирный круг), без
+текста/CTA внутри самого компонента; заголовок/описание/кнопка остаются
+за экраном и передаются как children. Применено в `Rituals.jsx`,
+`Analytics.jsx` (три состояния), `Courses.jsx`, `Articles.jsx`. Экраны с
+собственной содержательной иллюстрацией (`SemanticGlyph`, `MotifArt`)
+передают её через проп `glyph` вместо дефолтного круга — оба визуала
+разом не показываются. `Path.jsx` (`EmptyGoals`) сознательно не тронут —
+там художественный баннер `WireframeMountain` с перекрывающей иконкой,
+устройство существенно отличается от плоской карточки, конформизм
+потребовал бы убрать или переделать этот баннер, что не входило в
+согласованный объём правки.
 
 - **Текущее:** Rituals, Analytics, Path, Articles и Courses имеют разные empty layouts.
 - **Решение:** compact card, same-size + useful block или editorial borderless state.
@@ -512,10 +526,13 @@ transcribing), permissions-проверка (`voiceSupported`), cancel/fallback.
 
 ### MXL-UX-P09 — Header optical-centering rule
 
-**Статус: актуально.** Profile и Settings оба визуально центрируют title
-разными техниками (см. U04), но единого документированного правила
-(viewport-center vs center свободной области, допустимые variants)
-по-прежнему нет.
+**Статус: закрыто, реализовано 16.08.2026** — правило: viewport-center
+через `grid grid-cols-[1fr_auto_1fr]` (back слева `justify-self-start`,
+title в центре, пустой `aria-hidden` span справа для симметрии, когда
+второго контрола нет). `Profile` (`App.jsx`) и `Settings.jsx` (см. U04)
+теперь используют этот паттерн идентично. Правило установлено
+консистентной реализацией в коде; отдельной прозой в `DESIGN_SYSTEM.md`
+пока не зафиксировано.
 
 - **Текущее:** Profile geometric balance, Settings inline-left, AI picker left, fullscreen headers custom.
 - **Решение:** viewport center или center свободной области; допустимые variants.
