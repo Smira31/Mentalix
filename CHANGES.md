@@ -1,5 +1,20 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Зафиксировано 16.08.2026 — MXL-UI-005 заведена, Шаг 1 (CheckIn.jsx) готов к ревью
+
+- В `TASKS.md` заведена задача `MXL-UI-005` (Цикл E UI-аудита,
+  `docs/ui-audit-2026-08-13.md`), разбита на два шага по решению
+  владельца. Шаг 1 — `src/screens/CheckIn.jsx`: локальный дубль
+  fullscreen-контракта (`CHECKIN_SHELL_CLASS`/`CHECKIN_HEADER_SLOT_CLASS`/
+  `CHECKIN_SCROLL_CLASS`/`TG_CONTROLS_HEIGHT`/body-lock эффект/
+  `tgFullscreen` эффект) заменён на импорт `useFullscreenSurface` из
+  `src/lib/fullscreenSurface.js` — тот же контракт, что уже в 12 других
+  экранах. `createPortal` не тронут. Чистый рефакторинг, поведение не
+  менялось. `npx eslint`/`npm run build` — чисто. Ветка
+  `fix/mxl-ui-005-checkin-fullscreen-step1`, diff показан владельцу,
+  **не закоммичено** — ждёт подтверждения. Шаг 2
+  (`Conversation.jsx`) не начат, требует отдельного pre-mortem.
+
 ## Зафиксировано 16.08.2026 — заведена MXL-YEAR-PATH-001
 
 - В `TASKS.md` заведена задача `MXL-YEAR-PATH-001` («Год пути») на основе
