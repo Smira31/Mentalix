@@ -1,5 +1,25 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 16.08.2026 — MXL-TIMEZONE-CHECKIN-001: граница дня чек-ина/серий по МСК
+
+- `date.today()` в `mentalix-bot` (`backend/checkin.py`/`rituals.py`/`ascezas.py`)
+  брал дату по UTC-часам Railway-контейнера, не по времени владельца —
+  формулировка в `JOURNAL.md` («от локального времени устройства») тоже
+  была неверной. Новый `backend/timeutils.py::get_today()` —
+  `ZoneInfo("Europe/Moscow")`, тот же принцип, что уже принят для
+  `reminder_hour` (`MXL-REMINDERS-002`), без нового поля в БД/API.
+  **10 замен, не 8** — постановка не учла `checkin.py:136` и
+  `rituals.py:69`, той же категории. По пути найдена и исправлена
+  коллизия имён: FastAPI-хендлер `/today` уже назывался `get_today()` и
+  затенял бы импортированный хелпер (алиас `msk_today` только в
+  `checkin.py`). Sanity-тест на монкипатченном времени и живой
+  `GET /api/checkin/today` после деплоя — оба подтвердили корректную
+  дату. PR [`mentalix-bot#4`](https://github.com/Smira31/mentalix-bot/pull/4)
+  смёржен squash-коммитом `8b401e4`; Railway передеплоил оба сервиса
+  (`mentalix-bot`, `accurate-expression`) — `SUCCESS`, логи чистые.
+  `docs/engineering/JOURNAL.md` §5 обновлён с неверной формулировки на
+  факт. Подробности — `TASKS.md` → `MXL-TIMEZONE-CHECKIN-001`.
+
 ## Зафиксировано 16.08.2026 — U06: hero-арт Today.jsx по todayState, не по isEmpty
 
 - `src/screens/Today.jsx`: `state={isEmpty ? 'empty' : todayState}` →
