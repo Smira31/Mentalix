@@ -1,5 +1,17 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Зафиксировано 16.08.2026 — U06: hero-арт Today.jsx по todayState, не по isEmpty
+
+- `src/screens/Today.jsx`: `state={isEmpty ? 'empty' : todayState}` →
+  `state={todayState}` — точечная правка. `DayArc` (`Motif.jsx`) уже
+  корректно обрабатывал все четыре `todayState` через `DAY_PROGRESS`,
+  менять компонент не потребовалось. `isEmpty` не удалён — используется в
+  четырёх других местах файла, подтверждено `grep` и чистым `eslint` (без
+  unused-var). `npx eslint`/`npm run build` — чисто. Ветка
+  `fix/mxl-ui-u06-today-hero-state`, один коммит. **Не смёржено** — на
+  подтверждение. Подробности — `TASKS.md` → «Бэклог: аудит документации
+  16.08.2026», `UI_UX_AUDIT_2026-07-30.md` → U06.
+
 ## Закрыто 16.08.2026 — пять XS-правок подтверждены живой проверкой и смёржены
 
 - Владелец подтвердил на реальном iPhone: header `Settings.jsx`, `EmptyState`

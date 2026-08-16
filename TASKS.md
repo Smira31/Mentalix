@@ -896,7 +896,6 @@
 - **U01** — нет единого screen-header baseline.
 - **U02** — Today first viewport перегружен вертикальными резервами (требует device screenshots).
 - **U03** — CheckIn header/content grid не подтверждены живой проверкой.
-- **U06** — hero-арт `Today.jsx` выбирается по `isEmpty`, не по `todayState` (`state={isEmpty ? 'empty' : todayState}`).
 - **U07** — hero contract не формализован как explicit state → presentation mapping.
 - **P03** — coming-soon allowlist practices: конкретный instance закрыт, но политика для новых практик не формализована (регулярно возобновляемый вопрос).
 - **P07** — AI picker prototype direction: карточки выросли, но formal approved-prototype не зафиксирован.

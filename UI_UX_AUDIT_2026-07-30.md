@@ -319,10 +319,14 @@ light-режима больше нет вообще, вопрос снят.
 
 ### MXL-UX-U06 — Один `reviewPending` hero получает art по `isEmpty`, а не по state
 
-**Статус: актуально.** `MazeLogo`/`ArtThread` заменены единым компонентом
-`DayArc`, но код (`Today.jsx`): `state={isEmpty ? 'empty' : todayState}` —
-подтверждает, что art всё ещё выбирается по `isEmpty`, не по `todayState`
-напрямую — описанный баг воспроизводится в новой форме.
+**Статус: закрыто, реализовано 16.08.2026** — `Today.jsx`:
+`state={isEmpty ? 'empty' : todayState}` заменено на `state={todayState}`.
+`DayArc` (`src/components/Motif.jsx`) уже имел корректные значения
+`DAY_PROGRESS` для всех четырёх `todayState` (`checkinPending`,
+`dayInProgress`, `reviewPending`, `dayClosed`), включая `dayInProgress`
+через отдельный расчёт — менять компонент не потребовалось, только
+источник `state`. `isEmpty` остаётся в файле — используется в четырёх
+других местах (`grep` подтверждает), не unused.
 
 - **Экран/сценарий:** Today после `review_hour`, `review_completed_at` отсутствует, на empty и non-empty accounts.
 - **Проблема:** одинаковый текст «Разобрать день?» показывает `ArtThread` либо `MazeLogo`.
