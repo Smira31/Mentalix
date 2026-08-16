@@ -74,6 +74,12 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-T01 — Shell не скрывает Bottom Navigation во вложенных flow
 
+**Статус: закрыто, сверено 16.08.2026** — `App.jsx`: `bottomNavigationHidden`
+теперь учитывает `todayFlowOpen`/`practiceGameOpen` в дополнение к
+`mentorPersonaOpen`; `Today.jsx`/`Practices.jsx` сообщают шеллу о вложенном
+flow через `onFlowChange`/`onGameChange`. Коммит `927301f`, 30.07.2026 (тот
+же день, что аудит).
+
 - **Экран/сценарий:** Today → CheckIn/evening review; Today/Library → Theme Week; Practices → активный fullscreen stage.
 - **Проблема:** navbar остаётся отрендеренным и может перекрывать flow, textarea, CTA и финал.
 - **Ожидаемое поведение:** для CheckIn и Theme Week navbar скрыт от входа до возврата в parent screen; для practices действует утверждённая политика P02.
@@ -86,6 +92,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** на реальном iPhone пройти CheckIn, evening review и Theme Week из обоих entry points; navbar нигде внутри flow не виден, CTA не перекрыта, после единственного back/finish navbar возвращается без reload и без потери parent state.
 
 ### MXL-UX-T02 — CheckIn не учитывает visualViewport клавиатуры
+
+**Статус: закрыто, сверено 16.08.2026** — `CheckIn.jsx` на общем
+`useFullscreenSurface` (высота из `visualViewport`, единый scroll-region
+`FULLSCREEN_SCROLL_CLASS`). Впервые `70c3678`, 30.07.2026; финализировано
+Шагом 1 `MXL-UI-005` (`e368c0b`, 16.08.2026).
 
 - **Экран/сценарий:** CheckIn/evening review → note, три lesson textarea, три proud inputs.
 - **Проблема:** focused field и CTA могут уйти под iOS keyboard; центральная композиция не гарантирует видимость.
@@ -100,6 +111,10 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-T03 — Theme Week не имеет keyboard-aware layout
 
+**Статус: закрыто, сверено 16.08.2026** — `ThemeScreen.jsx` на общем
+`useFullscreenSurface`/`FULLSCREEN_SCROLL_CLASS`, поле рефлексии — `16px`.
+Коммит `39163fe`, 30.07.2026.
+
 - **Экран/сценарий:** Theme Week → reflection textarea → save; вход из Today и Courses.
 - **Проблема:** keyboard сокращает viewport, но screen остаётся обычным document flow с `pb-40`; CTA может исчезнуть, header/карточка столкнуться с controls.
 - **Ожидаемое поведение:** тот же проверенный viewport contract, что у CheckIn, без отдельного ad hoc fix.
@@ -112,6 +127,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** открыть Theme Week из Today и Library; проверить пустой/длинный ответ, все доступные дни, keyboard open/close; header и CTA остаются доступны, navbar скрыт до back.
 
 ### MXL-UX-T04 — CheckIn и Onboarding используют отсутствующий `--tg-top`
+
+**Статус: закрыто, сверено 16.08.2026** — `--tg-top` в коде больше не
+встречается (только в комментариях-пояснениях истории фикса); CheckIn и
+Onboarding — на `useFullscreenSurface`/`--app-safe-top`. Коммиты `70c3678`
+(CheckIn) и `36829a1` (Onboarding), оба 30.07.2026.
 
 - **Экран/сценарий:** все CheckIn steps/finals; onboarding.
 - **Проблема:** top padding фактически получает fallback `0px`, хотя канонический safe token существует.
@@ -126,6 +146,12 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-T05 — AI Conversation back вызывает new-conversation state вместо picker back
 
+**Статус: закрыто, сверено 16.08.2026** — `Conversation` получает реальный
+`onBack` (`Mentalix.jsx`), который сбрасывает `persona`/`draft` и
+возвращает к `PersonaPicker` для всех трёх персон одинаково, история не
+удаляется (перезагружается с сервера при повторном входе). Коммит
+`927301f`, 30.07.2026.
+
 - **Экран/сценарий:** Собеседник, Наставник, Следопыт → верхняя стрелка.
 - **Проблема:** у `mayak`/`kompas` tap визуально ничего не меняет; у `dnevnik` открывается JournalStart вместо picker.
 - **Ожидаемое поведение:** один tap возвращает к PersonaPicker; история не удаляется; navbar восстанавливается.
@@ -138,6 +164,13 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** для всех трёх personas: picker → persona → один back → picker; navbar появляется; повторный вход восстанавливает историю; draft не очищается/не отправляется неожиданно.
 
 ### MXL-UX-T06 — В активных BrainTrainer games нет cancel/back
+
+**Статус: закрыто, сверено 16.08.2026** — все пять игр обёрнуты
+`ActiveGameFrame` с `BackButton`, выход не вызывает `onFinish`/
+`api.brain.logSession`. Возвращает напрямую в Practices, а не сначала в
+хаб BrainTrainer, как буквально описывал acceptance — функционально риск
+(случайная запись незавершённой сессии) закрыт. Коммит `927301f`,
+30.07.2026.
 
 - **Экран/сценарий:** Practices → Нейротренажёр → любая из пяти игр.
 - **Проблема:** hub имеет back, но при `active` заменяется game component, которому передан только `onFinish`.
@@ -152,6 +185,10 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-T07 — 15 px form controls создают риск iOS input zoom
 
+**Статус: закрыто, сверено 16.08.2026** — `MXL-IOS-AUTOZOOM-001` (11.08.2026):
+полный аудит 32 полей в 13 файлах, все `<input>`/`<textarea>` приведены к
+computed `16px`, подтверждено живой проверкой на iPhone.
+
 - **Экран/сценарий:** CheckIn note/lessons/proud; Theme Week reflection.
 - **Проблема:** focus может непреднамеренно увеличить visual scale и усилить ощущение разного масштаба вкладок.
 - **Ожидаемое поведение:** computed font-size form controls не менее 16 px либо иной локально доказанный iOS-safe приём без запрета accessibility zoom.
@@ -165,6 +202,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-T08 — Telegram mode глобально блокирует zoom gestures
 
+**Статус: закрыто, сверено 16.08.2026** — document-level
+`gesturestart`/`touchstart`-блокировка удалена из `App.jsx` полностью
+(`grep` — 0 совпадений по `src/`). Коммит `6390967` «Убрать глобальную
+блокировку зума», 30.07.2026.
+
 - **Экран/сценарий:** всё приложение в Telegram.
 - **Проблема:** document-level handlers предотвращают pinch, multi-touch и double-tap.
 - **Ожидаемое поведение:** input zoom исправляется локально; accessibility zoom не блокируется без отдельного подтверждённого platform requirement.
@@ -177,6 +219,10 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** input focus не масштабирует UI; vertical gestures/controls работают; разрешённый платформой accessibility zoom не подавляется приложением; double tap CTA не создаёт accidental scale.
 
 ### MXL-UX-T09 — Quick Add использует отдельную safe-area модель и magic offsets
+
+**Статус: закрыто, сверено 16.08.2026** — `QuickAdd.jsx` позиционируется от
+`--app-safe-bottom` + именованные константы геометрии навбара, без
+`env(safe-area-inset-bottom) + 88px/152px`. Коммит `fc26a5f`, 30.07.2026.
 
 - **Экран/сценарий:** Today → Quick Add open/closed, navbar expanded/collapsed.
 - **Проблема:** кнопка и actions позиционируются независимо от Telegram insets и фактической геометрии navbar.
@@ -193,6 +239,10 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-U01 — Нет единого screen-header baseline
 
+**Статус: актуально.** Документированного header baseline
+(`DESIGN_SYSTEM.md` не содержит правила) по-прежнему нет; `pt-4`/`mt-4` и
+похожие ad hoc значения продолжают встречаться по экранам.
+
 - **Экран/сценарий:** Today, Profile, Settings, AI picker, CheckIn, Theme Week, Practices.
 - **Проблема:** safe gap и content start собираются разными `pt/mt`, а ownership header распределён между App и screens.
 - **Ожидаемое поведение:** документированный baseline: Telegram controls → `--app-safe-top` → safe gap → header → content.
@@ -203,6 +253,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** screenshot matrix одинаковой ширины; утверждённый header baseline выдержан, Telegram/web не получают лишний inset.
 
 ### MXL-UX-U02 — Today first viewport перегружен вертикальными резервами
+
+**Статус: актуально.** Композиция Today изменилась (hero теперь `DayArc`,
+`min-h-[54vh]` из старого описания не найден), но без реальных device
+screenshots нельзя подтвердить, что итоговая позиция при `scrollY=0`
+решает исходную жалобу — требует живой проверки.
 
 - **Экран/сценарий:** cold open Today и возврат из flow.
 - **Проблема:** greeting/tagline/WeekStrip/hero воспринимаются слишком низко; пользователь вручную прокручивал к более плотной позиции.
@@ -215,6 +270,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-U03 — CheckIn header и centered content не образуют одну сетку
 
+**Статус: актуально.** Структура изменилась (фиксированный
+`FULLSCREEN_HEADER_SLOT_CLASS` вместо `pt-5`, единый scroll-region), но
+итоговая сетка «header → question → action» без ручного scroll не
+подтверждена живой проверкой на устройстве.
+
 - **Экран/сценарий:** промежуточные и финальные steps.
 - **Проблема:** между header row и вопросом возникает большая свободная зона; финал зависит от доступной высоты.
 - **Ожидаемое поведение:** стабильный header, предсказуемый content start, visible primary action.
@@ -225,6 +285,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** все steps и финалы при keyboard open/closed; header не двигается, question начинается выше, action не требует ручного scroll.
 
 ### MXL-UX-U04 — Profile и Settings имеют разные title alignment contracts
+
+**Статус: актуально.** `Settings.jsx` теперь центрирует заголовок
+(`justify-center` + `absolute`-кнопка назад), `Profile` в `App.jsx` —
+`justify-between`; оба визуально центрируют title, но разными техниками, и
+единого документированного варианта (P09) по-прежнему нет.
 
 - **Экран/сценарий:** Today → Profile → Settings.
 - **Проблема:** Profile title центрирован между двумя 40 px controls; Settings title расположен рядом с back.
@@ -237,6 +302,10 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-U05 — Bottom Navigation не следует light-theme tokens
 
+**Статус: закрыто, сверено 16.08.2026** — не фиксом токенов, а продуктовым
+решением: `DESIGN_SYSTEM.md` — «Mentalix использует только тёмную тему»,
+light-режима больше нет вообще, вопрос снят.
+
 - **Экран/сценарий:** пять вкладок в light/auto theme, expanded/collapsed nav.
 - **Проблема:** navbar остаётся почти чёрным.
 - **Ожидаемое поведение:** surface/border/active/inactive используют фактические tokens обеих тем.
@@ -247,6 +316,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** light/dark/auto × expanded/collapsed × все active tabs; contrast и blur читаемы, переключение не мерцает.
 
 ### MXL-UX-U06 — Один `reviewPending` hero получает art по `isEmpty`, а не по state
+
+**Статус: актуально.** `MazeLogo`/`ArtThread` заменены единым компонентом
+`DayArc`, но код (`Today.jsx`): `state={isEmpty ? 'empty' : todayState}` —
+подтверждает, что art всё ещё выбирается по `isEmpty`, не по `todayState`
+напрямую — описанный баг воспроизводится в новой форме.
 
 - **Экран/сценарий:** Today после `review_hour`, `review_completed_at` отсутствует, на empty и non-empty accounts.
 - **Проблема:** одинаковый текст «Разобрать день?» показывает `ArtThread` либо `MazeLogo`.
@@ -267,6 +341,10 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-U07 — Hero contract существует только как общий wrapper
 
+**Статус: актуально.** `DayArc` унифицировал сам рисунок, но explicit
+state → presentation mapping (art/content/CTA slots по всем четырём
+`todayState`) формально не задокументирован — см. также U06.
+
 - **Экран/сценарий:** все четыре актуальных Today states.
 - **Проблема:** base card общая, но art sizes `150/168`, content blocks и CTA occupancy не формализованы по states.
 - **Ожидаемое поведение:** единая base grid; меняются art/copy/action slots.
@@ -277,6 +355,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** screenshot matrix `checkinPending/dayInProgress/reviewPending/dayClosed` × empty/non-empty; geometry стабильна, long copy не обрезается.
 
 ### MXL-UX-U08 — Page wrappers создают неодинаковую визуальную шкалу вкладок
+
+**Статус: закрыто, сверено 16.08.2026** — унифицированная обёртка
+`w-full max-w-md px-5` теперь используется в 30 экранах (`ARCHITECTURE.md`
+§8 документирует правило явно); смешение `max-w-sm/md`, `px-4/5/6/14px` из
+описания аудита не найдено.
 
 - **Экран/сценарий:** Today, Practices, Library, Trends, AI picker/Profile.
 - **Проблема:** контент ощущается разного масштаба.
@@ -289,6 +372,10 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-U09 — Article card не содержит желаемые cover и явный CTA
 
+**Статус: закрыто, сверено 16.08.2026** — `ArticleCover.jsx` (Mentalix-
+native, motif из общего реестра `SemanticGlyph`) + явный CTA «Читать
+статью» со стрелкой добавлены в `ArticleCard`.
+
 - **Экран/сценарий:** Library → Articles → Reader.
 - **Проблема:** card имеет title/excerpt/time/date/tag/chevron, но нет cover и текстового affordance.
 - **Ожидаемое поведение:** после P06 — Mentalix-native cover, metadata и ясный open action поверх существующего reader.
@@ -299,6 +386,11 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 - **Acceptance:** long title/tag, missing cover fallback, tap/CTA open reader, back restores list/scroll; `/api/articles` не подключён без решения.
 
 ### MXL-UX-U10 — AI picker остаётся узким списком utility-cards
+
+**Статус: закрыто, сверено 16.08.2026** — карточки персон теперь крупный
+горизонтальный swipe-carousel (`w-[82%]` viewport, `snap-center`,
+`rounded-[28px]`), не узкий вертикальный список. Заголовок над каруселью
+не проверялся отдельно на центрирование.
 
 - **Экран/сценарий:** вкладка «Наставник» до выбора persona.
 - **Проблема:** cards узкие/вертикальные, header left-aligned; не воспринимаются как крупные persona scenes.
@@ -313,12 +405,21 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ### MXL-UX-P01 — Нейтральное greeting Today
 
+**Статус: актуально.** `App.jsx` → `greeting()` по-прежнему возвращает
+четыре time-based варианта («доброе утро.» / «добрый день.» / «добрый
+вечер.» / «тихой ночи.») — решение не принято.
+
 - **Текущее:** `App.jsx` имеет четыре time-based greeting и четыре tagline branches.
 - **Решение:** утвердить «Привет, Имя.» / «Привет.» и отдельно судьбу tagline.
 - **Риск/зависимости:** низкий technical, продуктовый tone; copy-only batch.
 - **Acceptance:** четыре времени, имя/нет имени/невалидное имя, одна строка и корректная пунктуация.
 
 ### MXL-UX-P02 — Политика FlowLayout и navbar для practices
+
+**Статус: закрыто, сверено 16.08.2026** — минимальный контракт формально
+задокументирован в `ARCHITECTURE.md` §8 (portal, `visualViewport`-высота,
+`tgFullscreen`-офсет, body-lock) и реализован в `src/lib/fullscreenSurface.js`,
+принят как стандарт для fullscreen-экранов.
 
 - **Текущее:** CheckIn, Theme, Conversation, BrainTrainer/Breathing/Focus по-разному решают fixed/scroll/safe-area/back; shell видит только AI persona.
 - **Решение:** утвердить минимальный contract: safe area, header, scroll owner, keyboard mode, footer CTA, back target, navbar hidden/inherited. Отдельно решить, скрывать ли navbar в каждой practice.
@@ -340,12 +441,24 @@ FlowLayout
 
 ### MXL-UX-P03 — Coming-soon allowlist practices
 
+**Статус: актуально.** Конкретный allowlist на 30.07.2026 (Neuro/Breathing/
+Focus/Meditation — `soon`) закрыт `MXL-PRACTICES-LOCK-001` (11.08.2026), но
+с тех пор добавлены новые практики (`MXL-FIRST-STEP-001` и другие
+MXL-PRB-* треки), и вопрос «что временно закрыто» остаётся регулярно
+возобновляемым, не разовым решением.
+
 - **Текущее:** Neuro/Breathing/Focus открывают функционал; Meditation только haptic; Rituals/Askesis активны.
 - **Решение:** после E2E readiness определить, какие cards временно disabled/«Скоро». Наличие кода не доказывает готовность.
 - **Риск/зависимости:** средний; отключение существующей поверхности.
 - **Acceptance:** disabled semantics/a11y, card остаётся в grid, функция не удалена; Rituals/Askesis без регрессии.
 
 ### MXL-UX-P04 — Название и gating «Курсов»
+
+**Статус: закрыто, сверено 16.08.2026** — переименовано в «Практикумы»
+(`Library.jsx`: `{ key: 'courses', label: 'Практикумы', soon: true }`),
+временный gating применён. Коммит `c98889a`, 30.07.2026. Полная будущая
+модель «Путь → Блок → Неделя → День → Практика» — отдельный,
+незакрытый вопрос (см. `ROADMAP.md`/`PRODUCT.md` §9).
 
 - **Текущее:** active tab «Курсы» загружает, создаёт, удаляет и обновляет backend courses; Theme Week также открывается здесь.
 - **Решение:** название («Пути» — гипотеза), временный gating и будущая модель `Путь → Блок → Неделя → День → Практика`.
@@ -354,12 +467,20 @@ FlowLayout
 
 ### MXL-UX-P05 — Canonical EmptyState
 
+**Статус: актуально.** Единого canonical EmptyState-компонента/решения не
+найдено — вопрос остаётся открытым.
+
 - **Текущее:** Rituals, Analytics, Path, Articles и Courses имеют разные empty layouts.
 - **Решение:** compact card, same-size + useful block или editorial borderless state.
 - **Риск/зависимости:** средний; сначала инвентаризация и prototype.
 - **Acceptance:** 0/1/many data, понятный next action, без случайной массовой замены других states.
 
 ### MXL-UX-P06 — Article cover schema и publication source
+
+**Статус: закрыто, сверено 16.08.2026** — cover schema решена
+(`ArticleCover.jsx`, motif из общего реестра `SemanticGlyph`, два варианта
+`block`/`banner`); publication source решён отдельно `MXL-DEC-011`
+(backend API вместо git-commit) и реализован `MXL-022`.
 
 - **Текущее:** `src/data/articles.js` — local source; reader работает; актуальный `TASKS.md` сохраняет MXL-022.
 - **Решение:** cover/category/CTA schema отдельно от local-vs-backend publication architecture.
@@ -368,6 +489,11 @@ FlowLayout
 
 ### MXL-UX-P07 — AI picker prototype direction
 
+**Статус: актуально.** Карточки выросли в swipe-carousel (см. U10), что
+движется в сторону гипотезы этого пункта, но это не формальный prototype с
+production-approval, описанный в задаче, — решение как таковое не
+зафиксировано.
+
 - **Текущее:** vertical cards; fullscreen horizontal swipe — только гипотеза.
 - **Решение:** prototype до production; проверить конфликт с Telegram/iOS back gestures.
 - **Риск/зависимости:** высокий; accessibility, reduced motion, non-swipe alternative.
@@ -375,12 +501,21 @@ FlowLayout
 
 ### MXL-UX-P08 — Speech-to-text
 
+**Статус: закрыто, сверено 16.08.2026** — полностью реализовано в
+`Conversation.jsx`: `MediaRecorder`, `voiceState` (idle/recording/
+transcribing), permissions-проверка (`voiceSupported`), cancel/fallback.
+
 - **Текущее:** composer Plus button haptic-only; speech feature отсутствует.
 - **Решение:** отдельный functional scope с permissions, privacy, RU transcription, cancel/fallback.
 - **Риск/зависимости:** высокий; platform/API support и, возможно, backend неизвестны.
 - **Acceptance:** allow/deny, start/stop/cancel, draft preservation, no auto-send, keyboard coexistence.
 
 ### MXL-UX-P09 — Header optical-centering rule
+
+**Статус: актуально.** Profile и Settings оба визуально центрируют title
+разными техниками (см. U04), но единого документированного правила
+(viewport-center vs center свободной области, допустимые variants)
+по-прежнему нет.
 
 - **Текущее:** Profile geometric balance, Settings inline-left, AI picker left, fullscreen headers custom.
 - **Решение:** viewport center или center свободной области; допустимые variants.
@@ -391,6 +526,11 @@ FlowLayout
 
 ### MXL-UX-D01 — AI picker fullscreen/swipe redesign
 
+**Статус: актуально.** Карточки стали крупнее и получили horizontal swipe
+(см. U10/P07), но это инкрементальное изменение существующего экрана, не
+формальный approved-prototype полного fullscreen-редизайна, описанного
+здесь.
+
 - **Scope:** research/prototype only after P07.
 - **Файлы:** `PersonaPicker.jsx`, persona art.
 - **Риск:** высокий; не включать в A1/A2.
@@ -398,12 +538,22 @@ FlowLayout
 
 ### MXL-UX-D02 — Analytics как система смысловых выводов
 
+**Статус: актуально (частично).** `deriveConclusions` в `Analytics.jsx`
+(+ «Дайджест от Следопыта», `MXL-INSIGHT-DIGEST-001`) покрывает часть
+задачи — находки/паттерны с порогом `MIN_CHECKINS`, но полный
+редизайн-«нарратив» (personal insights/dynamics/Pathfinder conclusions
+как система, не cosmetic patch) не реализован — deferred-статус сохраняется.
+
 - **Scope:** personal insights, patterns, dynamics, Pathfinder conclusions; charts secondary.
 - **Файлы:** `src/screens/Analytics.jsx`, будущие approved data contracts.
 - **Риск:** очень высокий; малая выборка/backend semantics.
 - **Acceptance:** отдельная product/design spec; текущий functional screen не cosmetic-patch.
 
 ### MXL-UX-D03 — Profile «Мой путь»
+
+**Статус: актуально.** Narrative-редизайн Profile («Мой путь») не найден;
+главная метрика Пути (предпосылка для этого редизайна) остаётся открытым
+вопросом (`PRODUCT.md` §9).
 
 - **Scope:** narrative history/progress/next milestones вместо точечного redesign stat cards.
 - **Файлы:** `src/screens/Profile.jsx`, `Achievements.jsx`, Path/History.
