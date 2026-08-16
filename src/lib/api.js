@@ -1,15 +1,11 @@
 const BASE = '/api'
 
 async function request(path, options = {}) {
-  const isFormData =
-    typeof FormData !== 'undefined'
-    && options.body instanceof FormData
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
 
   const res = await fetch(`${BASE}${path}`, {
     headers: {
-      ...(!isFormData
-        ? { 'Content-Type': 'application/json' }
-        : {}),
+      ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
       ...options.headers,
     },
     ...options,
@@ -18,29 +14,23 @@ async function request(path, options = {}) {
   const raw = await res.text()
 
   if (!res.ok) {
-    throw new Error(
-      `API ${path} failed: ${res.status}. Ответ: ${raw.slice(0, 300)}`
-    )
+    throw new Error(`API ${path} failed: ${res.status}. Ответ: ${raw.slice(0, 300)}`)
   }
 
   if (!raw) {
-    throw new Error(
-      `API ${path} вернул пустой ответ при статусе ${res.status}`
-    )
+    throw new Error(`API ${path} вернул пустой ответ при статусе ${res.status}`)
   }
 
   try {
     return JSON.parse(raw)
   } catch {
-    throw new Error(
-      `API ${path} вернул не JSON: ${raw.slice(0, 300)}`
-    )
+    throw new Error(`API ${path} вернул не JSON: ${raw.slice(0, 300)}`)
   }
 }
 
 export const api = {
   habits: {
-    list: (userId) => request(`/habits?user_id=${userId}`),
+    list: userId => request(`/habits?user_id=${userId}`),
 
     create: (userId, habit) =>
       request('/habits', {
@@ -69,15 +59,14 @@ export const api = {
         }),
       }),
 
-    remove: (habitId) =>
+    remove: habitId =>
       request(`/habits/${habitId}`, {
         method: 'DELETE',
       }),
   },
 
   rituals: {
-    list: (userId) =>
-      request(`/rituals?user_id=${userId}`),
+    list: userId => request(`/rituals?user_id=${userId}`),
 
     create: (userId, ritual) =>
       request('/rituals', {
@@ -97,7 +86,7 @@ export const api = {
         }),
       }),
 
-    remove: (ritualId) =>
+    remove: ritualId =>
       request(`/rituals/${ritualId}`, {
         method: 'DELETE',
       }),
@@ -113,8 +102,7 @@ export const api = {
   },
 
   ascezas: {
-    list: (userId) =>
-      request(`/ascezas?user_id=${userId}`),
+    list: userId => request(`/ascezas?user_id=${userId}`),
 
     create: (userId, asceza) =>
       request('/ascezas', {
@@ -125,13 +113,7 @@ export const api = {
         }),
       }),
 
-    log: (
-      ascezaId,
-      userId,
-      status,
-      breakTrigger = null,
-      breakNote = null,
-    ) =>
+    log: (ascezaId, userId, status, breakTrigger = null, breakNote = null) =>
       request(`/ascezas/${ascezaId}/log`, {
         method: 'POST',
         body: JSON.stringify({
@@ -142,7 +124,7 @@ export const api = {
         }),
       }),
 
-    remove: (ascezaId) =>
+    remove: ascezaId =>
       request(`/ascezas/${ascezaId}`, {
         method: 'DELETE',
       }),
@@ -158,27 +140,13 @@ export const api = {
   },
 
   checkin: {
-    today: (userId) =>
-      request(`/checkin/today?user_id=${userId}`),
+    today: userId => request(`/checkin/today?user_id=${userId}`),
 
-    history: (userId, days = 14) =>
-      request(
-        `/checkin/history?user_id=${userId}&days=${days}`,
-      ),
+    history: (userId, days = 14) => request(`/checkin/history?user_id=${userId}&days=${days}`),
 
     save: (
       userId,
-      {
-        mood,
-        energy,
-        anxiety,
-        focus,
-        note,
-        emotion,
-        lessons,
-        wins,
-        review_completed,
-      },
+      { mood, energy, anxiety, focus, note, emotion, lessons, wins, review_completed }
     ) =>
       request('/checkin', {
         method: 'POST',
@@ -192,16 +160,13 @@ export const api = {
           emotion,
           lessons,
           wins,
-          ...(typeof review_completed === 'boolean'
-            ? { review_completed }
-            : {}),
+          ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
         }),
       }),
   },
 
   goals: {
-    list: (userId) =>
-      request(`/goals?user_id=${userId}`),
+    list: userId => request(`/goals?user_id=${userId}`),
 
     create: (userId, goal) =>
       request('/goals', {
@@ -212,33 +177,21 @@ export const api = {
         }),
       }),
 
-    remove: (goalId) =>
+    remove: goalId =>
       request(`/goals/${goalId}`, {
         method: 'DELETE',
       }),
   },
 
   analytics: {
-    get: (userId, days = 14) =>
-      request(
-        `/analytics?user_id=${userId}&days=${days}`,
-      ),
+    get: (userId, days = 14) => request(`/analytics?user_id=${userId}&days=${days}`),
   },
 
   mentalix: {
-    history: (
-      userId,
-      persona = 'mayak',
-    ) =>
-      request(
-        `/mentalix/messages?user_id=${userId}&persona=${persona}`,
-      ),
+    history: (userId, persona = 'mayak') =>
+      request(`/mentalix/messages?user_id=${userId}&persona=${persona}`),
 
-    send: (
-      userId,
-      content,
-      persona = 'mayak',
-    ) =>
+    send: (userId, content, persona = 'mayak') =>
       request('/mentalix/messages', {
         method: 'POST',
         body: JSON.stringify({
@@ -252,13 +205,7 @@ export const api = {
       const form = new FormData()
 
       form.append('user_id', String(userId))
-      form.append(
-        'audio',
-        audio,
-        audio.type.includes('mp4')
-          ? 'voice.mp4'
-          : 'voice.webm',
-      )
+      form.append('audio', audio, audio.type.includes('mp4') ? 'voice.mp4' : 'voice.webm')
 
       return request('/mentalix/transcribe', {
         method: 'POST',
@@ -268,22 +215,11 @@ export const api = {
   },
 
   profile: {
-    get: (userId) =>
-      request(`/profile?user_id=${userId}`),
+    get: userId => request(`/profile?user_id=${userId}`),
 
-    getSettings: (userId) =>
-      request(
-        `/profile/settings?user_id=${userId}`,
-      ),
+    getSettings: userId => request(`/profile/settings?user_id=${userId}`),
 
-    saveSettings: (
-      userId,
-      {
-        reminder_enabled,
-        reminder_hour,
-        review_hour,
-      },
-    ) =>
+    saveSettings: (userId, { reminder_enabled, reminder_hour, review_hour }) =>
       request('/profile/settings', {
         method: 'POST',
         body: JSON.stringify({
@@ -296,47 +232,33 @@ export const api = {
   },
 
   pulse: {
-    today: () =>
-      request('/analytics/pulse'),
+    today: () => request('/analytics/pulse'),
+  },
+
+  articles: {
+    list: () => request('/articles'),
   },
 
   themes: {
-    list: (userId) =>
-      request(`/themes?user_id=${userId}`),
+    list: userId => request(`/themes?user_id=${userId}`),
 
-    get: (themeId, userId) =>
-      request(
-        `/themes/${themeId}?user_id=${userId}`,
-      ),
+    get: (themeId, userId) => request(`/themes/${themeId}?user_id=${userId}`),
 
-    reflect: (
-      themeId,
-      userId,
-      day,
-      text,
-    ) =>
-      request(
-        `/themes/${themeId}/reflect`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            user_id: userId,
-            day,
-            text,
-          }),
-        },
-      ),
+    reflect: (themeId, userId, day, text) =>
+      request(`/themes/${themeId}/reflect`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          day,
+          text,
+        }),
+      }),
   },
 
   quotes: {
-    list: (userId) =>
-      request(`/quotes?user_id=${userId}`),
+    list: userId => request(`/quotes?user_id=${userId}`),
 
-    create: (
-      userId,
-      text,
-      tag,
-    ) =>
+    create: (userId, text, tag) =>
       request('/quotes', {
         method: 'POST',
         body: JSON.stringify({
@@ -346,20 +268,16 @@ export const api = {
         }),
       }),
 
-    remove: (quoteId) =>
+    remove: quoteId =>
       request(`/quotes/${quoteId}`, {
         method: 'DELETE',
       }),
 
-    today: (userId) =>
-      request(
-        `/quotes/today?user_id=${userId}`,
-      ),
+    today: userId => request(`/quotes/today?user_id=${userId}`),
   },
 
   courses: {
-    list: (userId) =>
-      request(`/courses?user_id=${userId}`),
+    list: userId => request(`/courses?user_id=${userId}`),
 
     create: (userId, course) =>
       request('/courses', {
@@ -370,55 +288,34 @@ export const api = {
         }),
       }),
 
-    updateStatus: (
-      courseId,
-      status,
-    ) =>
-      request(
-        `/courses/${courseId}/status`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            status,
-          }),
-        },
-      ),
+    updateStatus: (courseId, status) =>
+      request(`/courses/${courseId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status,
+        }),
+      }),
 
-    notes: (courseId) =>
-      request(
-        `/courses/${courseId}/notes`,
-      ),
+    notes: courseId => request(`/courses/${courseId}/notes`),
 
-    addNote: (
-      courseId,
-      text,
-    ) =>
-      request(
-        `/courses/${courseId}/notes`,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            text,
-          }),
-        },
-      ),
+    addNote: (courseId, text) =>
+      request(`/courses/${courseId}/notes`, {
+        method: 'POST',
+        body: JSON.stringify({
+          text,
+        }),
+      }),
 
-    remove: (courseId) =>
+    remove: courseId =>
       request(`/courses/${courseId}`, {
         method: 'DELETE',
       }),
   },
 
   focus: {
-    progress: (userId) =>
-      request(
-        `/focus/progress?user_id=${userId}`,
-      ),
+    progress: userId => request(`/focus/progress?user_id=${userId}`),
 
-    logSession: (
-      userId,
-      durationMin,
-    ) =>
+    logSession: (userId, durationMin) =>
       request('/focus', {
         method: 'POST',
         body: JSON.stringify({
@@ -429,17 +326,9 @@ export const api = {
   },
 
   brain: {
-    summary: (userId) =>
-      request(
-        `/brain/summary?user_id=${userId}`,
-      ),
+    summary: userId => request(`/brain/summary?user_id=${userId}`),
 
-    logSession: (
-      userId,
-      exerciseType,
-      score,
-      durationSec,
-    ) =>
+    logSession: (userId, exerciseType, score, durationSec) =>
       request('/brain/sessions', {
         method: 'POST',
         body: JSON.stringify({
@@ -452,16 +341,9 @@ export const api = {
   },
 
   subscription: {
-    get: (userId) =>
-      request(
-        `/subscription?user_id=${userId}`,
-      ),
+    get: userId => request(`/subscription?user_id=${userId}`),
 
-    donate: (
-      userId,
-      amount,
-      currency = 'RUB',
-    ) =>
+    donate: (userId, amount, currency = 'RUB') =>
       request('/subscription/donate', {
         method: 'POST',
         body: JSON.stringify({
@@ -473,58 +355,38 @@ export const api = {
   },
 
   auth: {
-    requestCode: (email) =>
-      request(
-        '/auth/email/request-code',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            email,
-          }),
-        },
-      ),
+    requestCode: email =>
+      request('/auth/email/request-code', {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+        }),
+      }),
 
-    verify: (
-      email,
-      code,
-    ) =>
-      request(
-        '/auth/email/verify',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            email,
-            code,
-          }),
-        },
-      ),
+    verify: (email, code) =>
+      request('/auth/email/verify', {
+        method: 'POST',
+        body: JSON.stringify({
+          email,
+          code,
+        }),
+      }),
 
-    generateLinkCode: (
-      telegramUserId,
-    ) =>
-      request(
-        '/auth/link/generate',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            user_id: telegramUserId,
-          }),
-        },
-      ),
+    generateLinkCode: telegramUserId =>
+      request('/auth/link/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: telegramUserId,
+        }),
+      }),
 
-    confirmLink: (
-      webUserId,
-      code,
-    ) =>
-      request(
-        '/auth/link/confirm',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            web_user_id: webUserId,
-            code,
-          }),
-        },
-      ),
+    confirmLink: (webUserId, code) =>
+      request('/auth/link/confirm', {
+        method: 'POST',
+        body: JSON.stringify({
+          web_user_id: webUserId,
+          code,
+        }),
+      }),
   },
 }

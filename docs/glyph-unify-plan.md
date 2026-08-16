@@ -1,10 +1,15 @@
 # MXL-GLYPH-UNIFY-001 — план Цикла 2 (пилот)
 
-Дата: 12.08.2026. Статус: план согласован владельцем 12.08.2026, пилот не начат.
+> Статус 13.08.2026: Цикл 3 завершён. Web/mobile QA и живая проверка владельцем
+> в Telegram на реальном iPhone пройдены; PR #50 смёржен в `main`. Детальный
+> статус — `TASKS.md` → `MXL-GLYPH-UNIFY-001`.
+
+Дата плана: 12.08.2026. Реализация Циклов 2–3 выполнена 13.08.2026; текущий
+статус проверки и merge указан выше.
 Опирается на факты из [`docs/glyph-unify-mapping.md`](glyph-unify-mapping.md) (Цикл 1) и
 риски/предохранители из [`docs/glyph-unify-premortem.md`](glyph-unify-premortem.md).
-Код не менялся — это план, реализация начинается отдельным циклом после явного
-разрешения владельца приступить.
+Документ сохраняет первоначальный план и принятые ограничения; фактический результат
+реализации фиксируется в `TASKS.md`.
 
 ## 1. Архитектурные решения (приняты владельцем 12.08.2026)
 
@@ -71,8 +76,9 @@ light/dark, `npm run build`) как часть первого коммита Ц�
 - Совпадает по объёму с уже действующей формулировкой Цикла 2 в `TASKS.md` — «перенос
   1–2 вариантов».
 
-`focus-convergence`, `neuro-synapse`, `meditation-contours` — Цикл 3, после проверки
-пилота на реальном iPhone/Telegram (чекпоинт из предусловий, см. `TASKS.md`).
+`focus-convergence`, `neuro-synapse`, `meditation-contours` — Цикл 3. Чекпоинт перед
+ним закрыт 13.08.2026; протокол и обязательный preview-gate для скрытых экранов —
+`docs/glyph-unify-checkpoint.md`.
 
 ## 4. Список миграции — все 11 реальных потребителей (из mapping.md)
 
@@ -87,7 +93,7 @@ light/dark, `npm run build`) как часть первого коммита Ц�
 | 5 | `Practices.jsx` — карточка «Дыхание» (`BreathingArt`) | `CardSystemGlyph kind="breath-flow"` ИЛИ `BreathingArt` через флаг | Тернарник убран — всегда `BreathingArt` | Без изменений |
 | 6 | `Focus.jsx` | `CardSystemGlyph kind="focus-convergence"` ИЛИ `SemanticGlyph kind="focus"` через флаг | Не трогается в пилоте | Тернарник убран, `kind="focus"` получает геометрию `focus-convergence`, импорт `CardSystemGlyph` удалён |
 | 7 | `Practices.jsx` — карточка «Фокус» (`FocusArt`) | аналогично | Не трогается в пилоте | Тернарник убран — всегда `FocusArt` |
-| 8 | `BrainTrainer.jsx` — герой-иллюстрация | `CardSystemGlyph kind="neuro-synapse"` ИЛИ `SemanticGlyph kind="neuro"` через флаг | Не трогается в пилоте | Тернарник убран, `kind="neuro"` получает геометрию `neuro-synapse`, импорт `CardSystemGlyph` удалён |
+| 8 | `BrainTrainer.jsx` — бывшая герой-иллюстрация | Глиф удалён по решению `MXL-NEURO-DETAIL-ANIM-001`; осталась пустая обёртка с CSS-тернарником через флаг | Не трогается в пилоте | Глиф не возвращается; пустая обёртка получает единый согласованный класс без флага |
 | 9 | `Practices.jsx` — карточка «Нейротренажёр» (`NeuroArt`) | аналогично | Не трогается в пилоте | Тернарник убран — всегда `NeuroArt` |
 | 10 | `Practices.jsx` — карточка «Медитация» (`MeditationArt`) | `CardSystemGlyph kind="meditation-contours"` ИЛИ `MeditationArt` через флаг | Не трогается в пилоте | Тернарник убран — всегда `MeditationArt`, `kind="meditation"` получает геометрию `meditation-contours` |
 | 11 | `BrainTrainer.jsx` — список упражнений | только `SemanticGlyph` (`brain-*`) | Без изменений | Без изменений — не связано с `CardSystemGlyph` |

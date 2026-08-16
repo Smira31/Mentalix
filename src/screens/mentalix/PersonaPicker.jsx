@@ -7,7 +7,6 @@ import {
 import { platform } from '../../platform'
 
 import { api } from '../../lib/api'
-import { cardSystemPreviewEnabled } from '../../lib/cardSystem'
 import SemanticGlyph, {
   semanticKindForPersona,
 } from '../../components/SemanticGlyph'
@@ -229,7 +228,7 @@ export default function PersonaPicker({
                   cursor-pointer
                   active:scale-[0.99]
                   transition-transform
-                  ${cardSystemPreviewEnabled ? 'mx-card-system-persona-card' : ''}
+                  mx-card-system-persona-card
                 `}
                 style={CARD_HEIGHT}
               >
@@ -239,9 +238,7 @@ export default function PersonaPicker({
                   * тянется до нижнего меню и на разных экранах имеет
                   * разную высоту.
                   */}
-                <div className={`-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 ${
-                  cardSystemPreviewEnabled ? 'mx-card-system-persona-art' : ''
-                }`}>
+                <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 mx-card-system-persona-art">
                   <SemanticGlyph
                     kind={semanticKindForPersona(persona.key)}
                     animated={active === index}
@@ -251,20 +248,20 @@ export default function PersonaPicker({
                 </div>
 
 
-                <div className="font-display text-[22px] text-cream leading-tight mt-3">
+                <div className="font-display text-[22px] text-cream leading-tight mt-3 mx-persona-card__title">
                   {persona.name}
                 </div>
 
-                <div className="text-[12px] text-gold mt-1.5">
+                <div className="text-[12px] text-gold mt-1.5 mx-persona-card__tagline">
                   {persona.tagline}
                 </div>
 
-                <p className="text-[14px] text-muted leading-snug mt-2.5">
+                <p className="text-[14px] text-muted leading-snug mt-2.5 mx-persona-card__description">
                   {persona.desc}
                 </p>
 
 
-                <div className="mt-auto pt-3">
+                <div className="mt-auto pt-3 mx-persona-card__actions">
                   {last ? (
                     <button
                       onClick={(event) => {
@@ -293,7 +290,7 @@ export default function PersonaPicker({
                     </button>
                   ) : (
                     <>
-                      <div className="flex flex-wrap gap-2 mb-3">
+                      <div className="flex flex-wrap gap-2 mb-3 mx-persona-card__starters">
                         {persona.starters.map(
                           (starter) => (
                             <button
@@ -308,7 +305,7 @@ export default function PersonaPicker({
                                   starter,
                                 )
                               }}
-                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform"
+                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform mx-persona-card__starter"
                             >
                               {starter}
                             </button>
@@ -325,7 +322,7 @@ export default function PersonaPicker({
                             '',
                           )
                         }}
-                        className="cta-pill w-full py-3.5 text-[15px]"
+                        className="cta-pill w-full py-3.5 text-[15px] mx-persona-card__cta"
                       >
                         Говорить
                       </button>

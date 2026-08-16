@@ -41,6 +41,7 @@ export default function BackButton({
   return (
     <button
       type="button"
+      aria-label={label}
       onClick={() => {
         platform.haptic('light')
         onClick?.()

@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 
 import PracticeCard from '../components/PracticeCard'
 import BackButton from '../components/BackButton'
-import CardSystemGlyph from '../components/CardSystemGlyph'
 
 import RitualsArt from '../components/practice-art/RitualsArt'
 import AskesisArt from '../components/practice-art/AskesisArt'
@@ -14,13 +12,20 @@ import NeuroArt from '../components/practice-art/NeuroArt'
 import BreathingArt from '../components/practice-art/BreathingArt'
 import FocusArt from '../components/practice-art/FocusArt'
 import MeditationArt from '../components/practice-art/MeditationArt'
+import FirstStepArt from '../components/practice-art/FirstStepArt'
+import ReleaseArt from '../components/practice-art/ReleaseArt'
+import NarrowFocusArt from '../components/practice-art/NarrowFocusArt'
+import OneFinishArt from '../components/practice-art/OneFinishArt'
 
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
 import Breathing from './Breathing'
-
+import FirstStepFlow from './FirstStepFlow'
+import ProcrastinationFlow from './ProcrastinationFlow'
+import NarrowFocusFlow from './NarrowFocusFlow'
+import FinishFlow from './FinishFlow'
 
 function SubHeader({ title, onBack }) {
   return (
@@ -37,19 +42,12 @@ function SubHeader({ title, onBack }) {
     >
       <BackButton onClick={onBack} />
 
-      <span className="font-display text-[18px] text-cream lowercase">
-        {title}
-      </span>
+      <span className="font-display text-[18px] text-cream lowercase">{title}</span>
     </div>
   )
 }
 
-
-export default function Practices({
-  user,
-  initialSub = null,
-  onGameChange,
-}) {
+export default function Practices({ user, initialSub = null, onGameChange }) {
   const [sub, setSub] = useState(initialSub)
   const [rituals, setRituals] = useState([])
   const [ascezas, setAscezas] = useState([])
@@ -69,10 +67,7 @@ export default function Practices({
   useEffect(() => {
     if (!user || sub !== null) return
 
-    Promise.all([
-      api.rituals.list(user.id),
-      api.ascezas.list(user.id),
-    ])
+    Promise.all([api.rituals.list(user.id), api.ascezas.list(user.id)])
       .then(([ritualsData, ascezasData]) => {
         setRituals(ritualsData)
         setAscezas(ascezasData)
@@ -80,66 +75,51 @@ export default function Practices({
       .catch(console.error)
   }, [user, sub])
 
-
   if (sub === 'rituals') {
-    return (
-      <Rituals
-        user={user}
-        onBack={() => setSub(null)}
-      />
-    )
+    return <Rituals user={user} onBack={() => setSub(null)} />
   }
 
   if (sub === 'ascezas') {
-    return (
-      <Ascezas
-        user={user}
-        onBack={() => setSub(null)}
-      />
-    )
+    return <Ascezas user={user} onBack={() => setSub(null)} />
+  }
+
+  if (sub === 'first-step') {
+    return <FirstStepFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
+  if (sub === 'no-blame') {
+    return <ProcrastinationFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
+  if (sub === 'narrow-focus') {
+    return <NarrowFocusFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
+  if (sub === 'one-finish') {
+    return <FinishFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'brain') {
-    return (
-      <BrainTrainer
-        user={user}
-        onBack={() => setSub(null)}
-        onActiveChange={onGameChange}
-      />
-    )
+    return <BrainTrainer user={user} onBack={() => setSub(null)} onActiveChange={onGameChange} />
   }
 
   if (sub === 'breathing') {
-    return (
-      <Breathing
-        user={user}
-        onBack={() => setSub(null)}
-      />
-    )
+    return <Breathing user={user} onBack={() => setSub(null)} />
   }
 
   if (sub === 'focus') {
     return (
       <div className="w-full flex flex-col items-center">
-        <SubHeader
-          title="фокус."
-          onBack={() => setSub(null)}
-        />
+        <SubHeader title="фокус." onBack={() => setSub(null)} />
 
         <Focus user={user} />
       </div>
     )
   }
 
+  const ritualsDone = rituals.filter(ritual => ritual.today_level).length
 
-  const ritualsDone = rituals.filter(
-    (ritual) => ritual.today_level
-  ).length
-
-  const ascezasHeld = ascezas.filter(
-    (asceza) => asceza.today_status === 'held'
-  ).length
-
+  const ascezasHeld = ascezas.filter(asceza => asceza.today_status === 'held').length
 
   return (
     <div
@@ -147,7 +127,7 @@ export default function Practices({
         w-full
         max-w-md
         px-5
-        ${cardSystemPreviewEnabled ? 'mx-card-system-practices' : ''}
+        mx-card-system-practices
       `}
     >
       <h2
@@ -165,7 +145,6 @@ export default function Practices({
         практики.
       </h2>
 
-
       <div
         className="
           grid
@@ -180,13 +159,8 @@ export default function Practices({
           artworkScale={1.04}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
-          right={
-            rituals.length > 0
-              ? `${ritualsDone}/${rituals.length}`
-              : null
-          }
+          right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
           onOpen={() => setSub('rituals')}
-          systemPreview={cardSystemPreviewEnabled}
         />
 
         <PracticeCard
@@ -194,25 +168,56 @@ export default function Practices({
           artworkScale={1.04}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
-          right={
-            ascezas.length > 0
-              ? `${ascezasHeld}/${ascezas.length}`
-              : null
-          }
+          right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
           onOpen={() => setSub('ascezas')}
-          systemPreview={cardSystemPreviewEnabled}
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="neuro-synapse" />
-            : <NeuroArt />}
+          artwork={<FirstStepArt />}
           artworkScale={1.04}
-          title="Нейротренажёр"
+          title="Первый шаг"
+          subtitle="маленький шаг, когда трудно начать"
+          onOpen={() => setSub('first-step')}
+        />
+
+        <PracticeCard
+          artwork={<ReleaseArt />}
+          artworkScale={1.04}
+          title="Без вины"
+          subtitle="когда откладываешь и знаешь это"
+          onOpen={() => setSub('no-blame')}
+        />
+
+        <PracticeCard
+          artwork={<NarrowFocusArt />}
+          artworkScale={1.04}
+          title="Одно из всех"
+          subtitle="когда всё сразу — слишком много"
+          onOpen={() => setSub('narrow-focus')}
+        />
+
+        <PracticeCard
+          artwork={<OneFinishArt />}
+          artworkScale={1.04}
+          title="Один финиш"
+          subtitle="маленький кусок, доведённый до конца"
+          onOpen={() => setSub('one-finish')}
+        />
+
+        <PracticeCard
+          artwork={<NeuroArt />}
+          artworkScale={1.04}
+          title={
+            <>
+              Нейро
+              <wbr className="min-[361px]:hidden" />
+              тренажёр
+            </>
+          }
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
-          systemPreview={cardSystemPreviewEnabled}
           soon
+          compactTitle
         />
 
         <PracticeCard
@@ -221,31 +226,24 @@ export default function Practices({
           title="Дыхание"
           subtitle="успокоить систему за минуту"
           onOpen={() => setSub('breathing')}
-          systemPreview={cardSystemPreviewEnabled}
           soon
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="focus-convergence" />
-            : <FocusArt />}
+          artwork={<FocusArt />}
           artworkScale={1.04}
           title="Фокус"
           subtitle="таймер глубокой работы"
           onOpen={() => setSub('focus')}
-          systemPreview={cardSystemPreviewEnabled}
           soon
         />
 
         <PracticeCard
-          artwork={cardSystemPreviewEnabled
-            ? <CardSystemGlyph kind="meditation-contours" />
-            : <MeditationArt />}
+          artwork={<MeditationArt />}
           artworkScale={1.04}
           title="Медитации"
           subtitle="тишина для ума и тела"
           soon
-          systemPreview={cardSystemPreviewEnabled}
           onOpen={() => {
             platform.haptic('light')
           }}

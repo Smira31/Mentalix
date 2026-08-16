@@ -3,8 +3,6 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import SemanticGlyph from '../components/SemanticGlyph'
-import CardSystemGlyph from '../components/CardSystemGlyph'
-import { cardSystemPreviewEnabled } from '../lib/cardSystem'
 
 const DURATIONS = [10, 25, 45]
 const POINTS_PER_CONSTELLATION = 5
@@ -92,12 +90,8 @@ export default function Focus({ user }) {
   const ss = String(secondsLeft % 60).padStart(2, '0')
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
-      <div className={cardSystemPreviewEnabled
-        ? 'mx-card-system-focus-art mb-3'
-        : 'w-[240px] h-[168px] mb-3'}>
-        {cardSystemPreviewEnabled
-          ? <CardSystemGlyph kind="focus-convergence" />
-          : <SemanticGlyph kind="focus" className="w-full h-full" />}
+      <div className="mx-card-system-focus-art mb-3">
+        <SemanticGlyph kind="focus" className="w-full h-full" />
       </div>
 
       {/* Пока прогресс не загружен — пусто, а не «0/5»: подставная цифра

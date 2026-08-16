@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
 import BackButton from '../components/BackButton'
 import { Search, ExternalLink, ArrowRight } from 'lucide-react'
-import { ARTICLES } from '../data/articles'
+import { api } from '../lib/api'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
 
@@ -25,7 +25,10 @@ function formatDate(iso) {
 function ArticleCard({ article, onOpen }) {
   return (
     <button
-      onClick={() => { platform.haptic('light'); onOpen(article) }}
+      onClick={() => {
+        platform.haptic('light')
+        onOpen(article)
+      }}
       className="w-full rounded-3xl bg-emerald mb-3 text-left border border-cream/10 p-4 transition-transform active:scale-[0.99]"
     >
       <div className="flex items-start gap-4">
@@ -38,13 +41,9 @@ function ArticleCard({ article, onOpen }) {
             </span>
           )}
 
-          <div className="font-display text-[17px] text-cream leading-tight">
-            {article.title}
-          </div>
+          <div className="font-display text-[17px] text-cream leading-tight">{article.title}</div>
 
-          <p className="text-[13px] text-muted leading-snug mt-2 line-clamp-3">
-            {article.excerpt}
-          </p>
+          <p className="text-[13px] text-muted leading-snug mt-2 line-clamp-3">{article.excerpt}</p>
         </div>
       </div>
 
@@ -61,7 +60,9 @@ function ArticleCard({ article, onOpen }) {
 }
 
 function Reader({ article, onBack }) {
-  const paragraphs = String(article.body || '').split(/\n\s*\n/).filter(Boolean)
+  const paragraphs = String(article.body || '')
+    .split(/\n\s*\n/)
+    .filter(Boolean)
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
@@ -82,7 +83,9 @@ function Reader({ article, onBack }) {
 
       <div className="space-y-4">
         {paragraphs.map((p, i) => (
-          <p key={i} className="text-[15px] text-cream leading-relaxed">{p}</p>
+          <p key={i} className="text-[15px] text-cream leading-relaxed">
+            {p}
+          </p>
         ))}
       </div>
 
@@ -104,17 +107,32 @@ function Reader({ article, onBack }) {
 export default function Articles() {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(null)
+  const [articles, setArticles] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.articles
+      .list()
+      .then(setArticles)
+      .catch(e => {
+        console.error(e)
+        setArticles([])
+      })
+      .finally(() => setLoading(false))
+  }, [])
 
   const list = useMemo(() => {
-    const sorted = [...ARTICLES].sort((a, b) => String(b.date).localeCompare(String(a.date)))
+    const sorted = [...articles].sort((a, b) => String(b.date).localeCompare(String(a.date)))
     const q = query.trim().toLowerCase()
     if (!q) return sorted
-    return sorted.filter((a) =>
-      `${a.title} ${a.excerpt} ${a.tag || ''}`.toLowerCase().includes(q)
-    )
-  }, [query])
+    return sorted.filter(a => `${a.title} ${a.excerpt} ${a.tag || ''}`.toLowerCase().includes(q))
+  }, [articles, query])
 
   if (open) return <Reader article={open} onBack={() => setOpen(null)} />
+
+  if (loading) {
+    return <p className="text-muted text-sm px-6 pt-8">Загрузка...</p>
+  }
 
   return (
     <div className="animate-fade-in">
@@ -122,7 +140,7 @@ export default function Articles() {
         <Search size={16} className="text-faint absolute left-4 top-1/2 -translate-y-1/2" />
         <input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={e => setQuery(e.target.value)}
           placeholder="Поиск статей"
           className="w-full bg-emerald/60 rounded-full pl-11 pr-4 py-3 text-[16px] text-cream placeholder-muted outline-none border border-transparent focus:border-gold/40 transition-colors"
         />
@@ -130,13 +148,11 @@ export default function Articles() {
 
       {list.length === 0 ? (
         <p className="text-faint text-sm text-center py-10">
-          {ARTICLES.length === 0
-            ? 'Статей пока нет — первая появится здесь'
-            : 'Ничего не найдено'}
+          {articles.length === 0 ? 'Статей пока нет — первая появится здесь' : 'Ничего не найдено'}
         </p>
       ) : (
         <div className="mx-stagger">
-          {list.map((a) => (
+          {list.map(a => (
             <ArticleCard key={a.id} article={a} onOpen={setOpen} />
           ))}
         </div>
