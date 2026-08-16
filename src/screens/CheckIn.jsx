@@ -35,8 +35,16 @@ const EMOTION_TALK_PROMPT =
 
 const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно']
 
+/*
+ * MXL-UX-U03: раньше центрировалась через m-auto внутри
+ * FULLSCREEN_SCROLL_CLASS — работающий приём (см. комментарий у самого
+ * FULLSCREEN_SCROLL_CLASS), но конкретно на CheckIn давал непредсказуемую
+ * пустую зону над вопросом на разной высоте (устройство/клавиатура/шаг с
+ * коротким контентом). Убрано намеренно: контент начинается сразу после
+ * шапки, а не «плавает» по центру доступной высоты.
+ */
 const CHECKIN_CENTER_CLASS =
-  'w-full m-auto px-6 py-6 flex flex-col items-center'
+  'w-full px-6 py-6 flex flex-col items-center'
 
 const CHECKIN_QUESTION_CLASS =
   'w-full text-center'
