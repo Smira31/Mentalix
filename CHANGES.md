@@ -1,5 +1,31 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 16.08.2026 — MXL-SECURITY-AUDIT-001: точечный патч захвата аккаунта через /api/auth/link/generate
+
+- **Уязвимость:** `POST /api/auth/link/generate` принимал произвольный
+  Telegram `user_id` без проверки и возвращал код привязки прямо в
+  HTTP-ответе. Любой, кто знал/подбирал числовой `user_id` жертвы, мог
+  привязать её аккаунт к своему email-логину через `/api/auth/link/confirm`
+  — без участия жертвы, без уведомления.
+- **Фикс (`mentalix-bot`):** эндпоинт `/link/generate` удалён целиком.
+  Код теперь генерируется внутри бота в ответ на deep-link
+  `/start link_web` — `telegram_user_id` берётся из подписанного
+  Telegram-сообщения, подделать нельзя — и уходит только личным
+  сообщением, никогда не в HTTP-ответе. `/link/confirm` — добавлен
+  лимит попыток (10/15 мин на IP, in-memory) на оставшийся вектор
+  блайнд-перебора кода. CORS сужен с `allow_origins=["*"]` до regex
+  (прод-домен, Vercel preview-деплои, localhost).
+- **Фронтенд (`Mentalix`):** `src/lib/api.js` и `LinkWebAccount.jsx`
+  больше не вызывают `/link/generate` напрямую — экран стал
+  инструктивным, ведёт в чат бота через
+  `Telegram.WebApp.openTelegramLink`.
+- **Явный открытый долг (не в объёме этого патча):** полная авторизация
+  остальных ~20 роутеров, initData-подпись глобально, rate-limiting-
+  инфраструктура, незащищённый платный AI-эндпоинт `mentalix.py`, и
+  найденный по ходу патча `dev_code` в `/api/auth/email/request-code`
+  (тот же класс уязвимости, для email-логина). Подробности —
+  `TASKS.md` → `MXL-SECURITY-AUDIT-001`, `MXL-SECURITY-AUDIT-001-DEV-CODE`.
+
 ## Закрыто 16.08.2026 — MXL-DESIGN-TOKENS-001 (ARCHITECTURE.md §7 п.10); аудит MXL-SECURITY-AUDIT-001 (п.11)
 
 - **Дизайн-токены:** 10 файлов переведены с hardcoded цветов на

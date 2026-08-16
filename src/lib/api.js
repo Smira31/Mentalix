@@ -372,14 +372,6 @@ export const api = {
         }),
       }),
 
-    generateLinkCode: telegramUserId =>
-      request('/auth/link/generate', {
-        method: 'POST',
-        body: JSON.stringify({
-          user_id: telegramUserId,
-        }),
-      }),
-
     confirmLink: (webUserId, code) =>
       request('/auth/link/confirm', {
         method: 'POST',

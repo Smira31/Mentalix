@@ -1,22 +1,15 @@
-import { useState } from 'react'
 import { ChevronLeft, Globe } from 'lucide-react'
-import { api } from '../lib/api'
+import { platform } from '../platform'
 
-export default function LinkWebAccount({ user, onBack }) {
-  const [code, setCode] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+const BOT_LINK_DEEPLINK = 'https://t.me/Mentalix_club_bot?start=link_web'
 
-  async function generate() {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await api.auth.generateLinkCode(user.id)
-      setCode(res.code)
-    } catch {
-      setError('Не получилось создать код, попробуй ещё раз')
-    } finally {
-      setLoading(false)
+export default function LinkWebAccount({ onBack }) {
+  function openBot() {
+    platform.haptic('light')
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(BOT_LINK_DEEPLINK)
+    } else {
+      window.open(BOT_LINK_DEEPLINK, '_blank')
     }
   }
 
@@ -34,25 +27,17 @@ export default function LinkWebAccount({ user, onBack }) {
       </div>
 
       <p className="text-sm text-muted text-center mb-8 px-4 leading-relaxed">
-        Открой mentalix.vercel.app в браузере, войди по email, и когда попросят код — введи тот, что появится здесь.
+        Код теперь приходит только в личку от бота — так его нельзя перехватить.
+        Открой чат с ботом, там появится код. Затем открой mentalix.vercel.app в
+        браузере, войди по email и введи этот код, когда попросят.
       </p>
 
-      {code ? (
-        <div className="w-full text-center mb-6">
-          <div className="font-display text-4xl text-gold tracking-widest mb-2">{code}</div>
-          <p className="text-xs text-muted">Код активен 10 минут</p>
-        </div>
-      ) : (
-        <button
-          onClick={generate}
-          disabled={loading}
-          className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
-        >
-          {loading ? 'Создаю...' : 'Получить код'}
-        </button>
-      )}
-
-      {error && <p className="text-xs text-red-400 mt-4 text-center">{error}</p>}
+      <button
+        onClick={openBot}
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium active:scale-95 transition-transform"
+      >
+        Получить код у бота
+      </button>
     </div>
   )
 }
