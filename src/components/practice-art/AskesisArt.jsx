@@ -1,5 +1,14 @@
-import SemanticGlyph from '../SemanticGlyph'
+import ascezasVisual from '../../assets/practice-cards/ascezas.webp'
 
 export default function AskesisArt() {
-  return <SemanticGlyph kind="asceza" />
+  return (
+    <img
+      src={ascezasVisual}
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+      draggable="false"
+      className="h-full w-full object-cover object-center select-none"
+    />
+  )
 }
