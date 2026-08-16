@@ -442,6 +442,213 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   const showFocusHero =
     motionExperimentEnabled && todayState === 'dayInProgress' && Boolean(todayFocus?.picked)
 
+  /*
+   * MXL-UX-U07: hero contract — явная state → presentation мапа.
+   *
+   * checkinAsHero (todayState checkinPending/reviewPending) — одна общая
+   * форма, параметризованная текстом по todayState, вынесена отдельно от
+   * мапы: она уже однозначно определяется одним условием, не цепочкой.
+   *
+   * Для остального дня (todayState === 'dayInProgress' или 'dayClosed')
+   * heroPresentationState — единственное значение, которое решает, что
+   * показать; heroContentByState — таблица «состояние → готовый JSX»,
+   * а не последовательность независимо повторяющихся условий, как было
+   * раньше. motionExperimentEnabled сюда намеренно не входит — это
+   * временный экспериментальный слой поверх итогового состояния 'next',
+   * не часть самого контракта.
+   */
+  const heroPresentationState =
+    todayState === 'dayClosed'
+      ? 'dayClosed'
+      : showFocusHero
+        ? 'focus'
+        : isEmpty
+          ? 'empty'
+          : next
+            ? 'next'
+            : 'allDone'
+
+  const heroCheckinContent = (
+    <>
+      <div className="text-[13px] text-muted font-semibold mb-2">
+        {todayState === 'reviewPending' ? 'Анализ дня' : 'Состояние'}
+      </div>
+
+      <h2 className="font-display text-[28px] text-cream leading-tight">
+        {todayState === 'reviewPending' ? 'Разобрать день?' : 'Как ты?'}
+      </h2>
+
+      <p className="text-[14px] text-muted mt-2">
+        {todayState === 'reviewPending'
+          ? 'Уроки и то, чем стоит гордиться'
+          : 'Короткий чек-ин состояния'}
+      </p>
+
+      {todayState === 'reviewPending' && (
+        <div className="w-full max-w-sm mx-auto mt-5 space-y-2 text-left">
+          {['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?'].map(question => (
+            <div
+              key={question}
+              className="rounded-2xl bg-cream/5 px-4 py-2.5 text-[12px] text-muted"
+            >
+              {question}
+            </div>
+          ))}
+
+          <div className="text-[11px] text-gold font-semibold px-1 pt-1">
+            + три вещи, которыми гордишься
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => {
+          platform.haptic('medium')
+
+          changeSub('checkin')
+        }}
+        className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+      >
+        {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
+      </button>
+
+      {next && <p className="text-[12px] text-faint mt-5">Дальше: {next.title}</p>}
+    </>
+  )
+
+  const heroContentByState = {
+    dayClosed: (
+      <>
+        <div className="text-[13px] text-muted font-semibold mb-2">Сегодня</div>
+
+        <h2 className="font-display text-[28px] text-cream leading-tight">День закрыт</h2>
+
+        <p className="text-[14px] text-muted mt-2">Вечерний разбор завершён</p>
+
+        <button
+          onClick={() => {
+            platform.haptic('medium')
+
+            changeSub('checkin')
+          }}
+          className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
+        >
+          Открыть разбор снова
+        </button>
+      </>
+    ),
+
+    focus: (
+      <FocusNextAction
+        focus={todayFocus}
+        onDefineFirstStep={() => {
+          platform.haptic('medium')
+
+          openTodayFocusFlow('firstStep')
+        }}
+        onChangeFocus={() => {
+          platform.haptic('light')
+
+          openTodayFocusFlow()
+        }}
+        onClearFocus={() => {
+          platform.haptic('light')
+
+          const entry = clearTodayFocusPick(user.id)
+
+          setTodayFocus(entry)
+        }}
+      />
+    ),
+
+    empty: (
+      <>
+        <div className="text-[13px] text-muted font-semibold mb-2">Твой путь ждёт</div>
+
+        <h2 className="font-display text-[26px] text-cream leading-tight">
+          Добавь первый ритуал
+        </h2>
+
+        <p className="text-[14px] text-muted mt-2">
+          Система работает через регулярность — начни с одного
+        </p>
+
+        <button
+          onClick={() => {
+            platform.haptic('medium')
+
+            onOpenPractice('rituals')
+          }}
+          className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+        >
+          Начать
+        </button>
+      </>
+    ),
+
+    next: next && (
+      motionExperimentEnabled ? (
+        <NextActionReveal
+          next={next}
+          remainAfter={remainAfter}
+          onStart={() => {
+            platform.haptic('medium')
+
+            onOpenPractice(next.sub)
+          }}
+        />
+      ) : (
+        <>
+          <div className="text-[13px] text-muted font-semibold mb-2">Самое важное</div>
+
+          <h2 className="font-display text-[28px] text-cream leading-tight">{next.title}</h2>
+
+          <p className="text-[14px] text-muted mt-2">{next.meta}</p>
+
+          <button
+            onClick={() => {
+              platform.haptic('medium')
+
+              onOpenPractice(next.sub)
+            }}
+            className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+          >
+            Начать
+          </button>
+
+          <p className="text-[12px] text-faint mt-5">
+            {remainAfter > 0
+              ? `После этого останется: ${remainAfter}`
+              : 'Это последнее на сегодня'}
+          </p>
+        </>
+      )
+    ),
+
+    allDone: (
+      <>
+        <div className="text-[13px] text-muted font-semibold mb-2">Путь продолжается</div>
+
+        <h2 className="font-display text-[26px] text-cream leading-tight">
+          Сегодня ты выше, чем вчера
+        </h2>
+
+        <p className="text-[14px] text-muted mt-2">Все практики закрыты</p>
+
+        <button
+          onClick={() => {
+            platform.haptic('medium')
+
+            onGoMentor()
+          }}
+          className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
+        >
+          Поговорить с наставником
+        </button>
+      </>
+    ),
+  }
+
   function changeTodayVariant(nextVariant) {
     setTodayVariant(nextVariant)
 
@@ -530,187 +737,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           heroArt
         )}
 
-        {checkinAsHero && (
-          <>
-            <div className="text-[13px] text-muted font-semibold mb-2">
-              {todayState === 'reviewPending' ? 'Анализ дня' : 'Состояние'}
-            </div>
-
-            <h2 className="font-display text-[28px] text-cream leading-tight">
-              {todayState === 'reviewPending' ? 'Разобрать день?' : 'Как ты?'}
-            </h2>
-
-            <p className="text-[14px] text-muted mt-2">
-              {todayState === 'reviewPending'
-                ? 'Уроки и то, чем стоит гордиться'
-                : 'Короткий чек-ин состояния'}
-            </p>
-
-            {todayState === 'reviewPending' && (
-              <div className="w-full max-w-sm mx-auto mt-5 space-y-2 text-left">
-                {['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?'].map(question => (
-                  <div
-                    key={question}
-                    className="rounded-2xl bg-cream/5 px-4 py-2.5 text-[12px] text-muted"
-                  >
-                    {question}
-                  </div>
-                ))}
-
-                <div className="text-[11px] text-gold font-semibold px-1 pt-1">
-                  + три вещи, которыми гордишься
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                platform.haptic('medium')
-
-                changeSub('checkin')
-              }}
-              className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
-            >
-              {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
-            </button>
-
-            {next && <p className="text-[12px] text-faint mt-5">Дальше: {next.title}</p>}
-          </>
-        )}
-
-        {todayState === 'dayClosed' && (
-          <>
-            <div className="text-[13px] text-muted font-semibold mb-2">Сегодня</div>
-
-            <h2 className="font-display text-[28px] text-cream leading-tight">День закрыт</h2>
-
-            <p className="text-[14px] text-muted mt-2">Вечерний разбор завершён</p>
-
-            <button
-              onClick={() => {
-                platform.haptic('medium')
-
-                changeSub('checkin')
-              }}
-              className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
-            >
-              Открыть разбор снова
-            </button>
-          </>
-        )}
-
-        {!checkinAsHero && todayState !== 'dayClosed' && showFocusHero && (
-          <FocusNextAction
-            focus={todayFocus}
-            onDefineFirstStep={() => {
-              platform.haptic('medium')
-
-              openTodayFocusFlow('firstStep')
-            }}
-            onChangeFocus={() => {
-              platform.haptic('light')
-
-              openTodayFocusFlow()
-            }}
-            onClearFocus={() => {
-              platform.haptic('light')
-
-              const entry = clearTodayFocusPick(user.id)
-
-              setTodayFocus(entry)
-            }}
-          />
-        )}
-
-        {!checkinAsHero && todayState !== 'dayClosed' && !showFocusHero && isEmpty && (
-          <>
-            <div className="text-[13px] text-muted font-semibold mb-2">Твой путь ждёт</div>
-
-            <h2 className="font-display text-[26px] text-cream leading-tight">
-              Добавь первый ритуал
-            </h2>
-
-            <p className="text-[14px] text-muted mt-2">
-              Система работает через регулярность — начни с одного
-            </p>
-
-            <button
-              onClick={() => {
-                platform.haptic('medium')
-
-                onOpenPractice('rituals')
-              }}
-              className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
-            >
-              Начать
-            </button>
-          </>
-        )}
-
-        {!checkinAsHero &&
-          todayState !== 'dayClosed' &&
-          !showFocusHero &&
-          !isEmpty &&
-          next &&
-          (motionExperimentEnabled ? (
-            <NextActionReveal
-              next={next}
-              remainAfter={remainAfter}
-              onStart={() => {
-                platform.haptic('medium')
-
-                onOpenPractice(next.sub)
-              }}
-            />
-          ) : (
-            <>
-              <div className="text-[13px] text-muted font-semibold mb-2">Самое важное</div>
-
-              <h2 className="font-display text-[28px] text-cream leading-tight">{next.title}</h2>
-
-              <p className="text-[14px] text-muted mt-2">{next.meta}</p>
-
-              <button
-                onClick={() => {
-                  platform.haptic('medium')
-
-                  onOpenPractice(next.sub)
-                }}
-                className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
-              >
-                Начать
-              </button>
-
-              <p className="text-[12px] text-faint mt-5">
-                {remainAfter > 0
-                  ? `После этого останется: ${remainAfter}`
-                  : 'Это последнее на сегодня'}
-              </p>
-            </>
-          ))}
-
-        {!checkinAsHero && todayState !== 'dayClosed' && !showFocusHero && !isEmpty && !next && (
-          <>
-            <div className="text-[13px] text-muted font-semibold mb-2">Путь продолжается</div>
-
-            <h2 className="font-display text-[26px] text-cream leading-tight">
-              Сегодня ты выше, чем вчера
-            </h2>
-
-            <p className="text-[14px] text-muted mt-2">Все практики закрыты</p>
-
-            <button
-              onClick={() => {
-                platform.haptic('medium')
-
-                onGoMentor()
-              }}
-              className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
-            >
-              Поговорить с наставником
-            </button>
-          </>
-        )}
+        {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
       {/* ======================================================

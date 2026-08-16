@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { ChevronLeft, Heart, Check } from 'lucide-react'
+import { Heart, Check } from 'lucide-react'
 import { api } from '../lib/api'
+import BackButton from '../components/BackButton'
 
 const AMOUNTS = [100, 300, 500, 1000]
 
@@ -46,11 +47,12 @@ export default function DonateScreen({ user, onBack }) {
 
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
-      <div className="w-full flex items-center gap-2 mb-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-cream active:opacity-60">
-          <ChevronLeft size={22} />
-        </button>
+      <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
+        <div className="justify-self-start">
+          <BackButton onClick={onBack} />
+        </div>
         <h1 className="font-display text-xl text-cream">Поддержать проект</h1>
+        <span aria-hidden="true" />
       </div>
 
       <div className="w-16 h-16 rounded-full bg-mint/20 flex items-center justify-center mb-4">

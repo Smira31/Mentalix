@@ -1,4 +1,5 @@
-import { ChevronLeft, Check, Lock } from 'lucide-react'
+import { Check, Lock } from 'lucide-react'
+import BackButton from '../components/BackButton'
 
 const TIERS = [
   {
@@ -31,11 +32,12 @@ const TIERS = [
 export default function SubscriptionManager({ user: _user, tier, onBack }) {
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
-      <div className="w-full flex items-center gap-2 mb-6">
-        <button onClick={onBack} className="p-2 -ml-2 text-cream active:opacity-60">
-          <ChevronLeft size={22} />
-        </button>
+      <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
+        <div className="justify-self-start">
+          <BackButton onClick={onBack} />
+        </div>
         <h1 className="font-display text-xl text-cream">Подписка</h1>
+        <span aria-hidden="true" />
       </div>
 
       {TIERS.map(t => {

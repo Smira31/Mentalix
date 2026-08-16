@@ -35,14 +35,20 @@ function SubHeader({ title, onBack }) {
         max-w-md
         px-5
         pb-[8px]
-        flex
+
+        grid
+        grid-cols-[1fr_auto_1fr]
         items-center
-        gap-[10px]
+        min-h-[42px]
       "
     >
-      <BackButton onClick={onBack} />
+      <div className="justify-self-start">
+        <BackButton onClick={onBack} />
+      </div>
 
       <span className="font-display text-[18px] text-cream lowercase">{title}</span>
+
+      <span aria-hidden="true" />
     </div>
   )
 }
@@ -130,20 +136,34 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
         mx-card-system-practices
       `}
     >
-      <h2
+      <div
         className="
-          font-display
-          text-[32px]
-          leading-[0.95]
-          tracking-[-0.04em]
-          text-cream
-          lowercase
+          w-full
+          grid
+          grid-cols-[1fr_auto_1fr]
+          items-center
+          min-h-[42px]
           mt-[12px]
           mb-[18px]
         "
       >
-        практики.
-      </h2>
+        <span aria-hidden="true" />
+
+        <h2
+          className="
+            font-display
+            text-[32px]
+            leading-[0.95]
+            tracking-[-0.04em]
+            text-cream
+            lowercase
+          "
+        >
+          практики.
+        </h2>
+
+        <span aria-hidden="true" />
+      </div>
 
       <div
         className="
