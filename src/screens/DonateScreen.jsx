@@ -67,7 +67,7 @@ export default function DonateScreen({ user, onBack }) {
             key={a}
             onClick={() => setSelected(a)}
             className={`py-4 rounded-2xl text-lg font-display transition-colors ${
-              selected === a ? 'bg-gold text-emerald-deep' : 'bg-white/[0.05] text-muted'
+              selected === a ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.05] text-muted'
             }`}
           >
             {a} ₽

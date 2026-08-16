@@ -107,7 +107,7 @@ export default function WebAuthScreen({ onAuthed }) {
             type="email"
             placeholder="you@example.com"
             autoFocus
-            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={requestCode}
@@ -133,7 +133,7 @@ export default function WebAuthScreen({ onAuthed }) {
             placeholder="000000"
             autoFocus
             inputMode="numeric"
-            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={verifyCode}
@@ -161,7 +161,7 @@ export default function WebAuthScreen({ onAuthed }) {
             onChange={(e) => setLinkCode(e.target.value)}
             placeholder="Код из Telegram"
             inputMode="numeric"
-            className="w-full bg-white/[0.05] border border-white/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={confirmLink}

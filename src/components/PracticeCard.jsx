@@ -34,8 +34,8 @@ export default function PracticeCard({
         'relative w-full h-[238px] rounded-[26px] bg-emerald overflow-hidden text-left border flex flex-col transition-transform',
         'mx-card-system-practice-card',
         soon
-          ? 'border-white/[0.06] cursor-default'
-          : 'border-white/[0.10] active:scale-[0.985]',
+          ? 'border-cream/[0.06] cursor-default'
+          : 'border-cream/[0.10] active:scale-[0.985]',
       ].join(' ')}
     >
       {/* Скоро */}

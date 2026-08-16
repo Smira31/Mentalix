@@ -44,7 +44,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
           <div
             key={t.key}
             className={`w-full rounded-2xl border p-5 mb-4 ${
-              isCurrent ? 'border-gold bg-gold/5' : 'border-white/[0.08] bg-white/[0.03]'
+              isCurrent ? 'border-gold bg-gold/5' : 'border-cream/[0.08] bg-cream/[0.03]'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
@@ -67,7 +67,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
             {t.key === 'pro' && !isCurrent && (
               <button
                 disabled
-                className="w-full py-3 rounded-xl bg-white/10 text-muted text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                className="w-full py-3 rounded-xl bg-cream/10 text-muted text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
               >
                 <Lock size={14} /> Оплата скоро появится
               </button>

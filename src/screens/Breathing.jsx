@@ -210,7 +210,7 @@ export default function Breathing({ onBack }) {
           style={{
             transform: `scale(${isPrepare ? 0.55 : phase.scale})`,
             transitionDuration: isPrepare ? '600ms' : `${phase.secs * 1000}ms`,
-            boxShadow: '0 0 60px rgba(217,180,91,0.08)',
+            boxShadow: '0 0 60px rgb(var(--c-gold) / 0.08)',
           }}
         />
         <h2 className="font-display text-[24px] text-cream mt-14">

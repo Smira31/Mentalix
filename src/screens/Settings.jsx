@@ -37,7 +37,7 @@ function SectionLabel({ children }) {
 
 function Card({ children }) {
   return (
-    <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl overflow-hidden mb-8 w-full">
+    <div className="bg-cream/[0.03] border border-cream/[0.08] rounded-2xl overflow-hidden mb-8 w-full">
       {children}
     </div>
   )
@@ -58,8 +58,8 @@ function Row({
     <Component
       {...(onClick ? { type: 'button', onClick } : {})}
       className={`w-full flex items-center gap-3 px-4 py-4 text-left ${
-        divider ? 'border-b border-white/[0.06]' : ''
-      } active:bg-white/[0.04] transition-colors`}
+        divider ? 'border-b border-cream/[0.06]' : ''
+      } active:bg-cream/[0.04] transition-colors`}
     >
       {Icon && <Icon size={18} className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
       <div className="flex-1 min-w-0">
@@ -83,7 +83,7 @@ function Toggle({ checked, label, onChange }) {
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${checked ? 'bg-gold' : 'bg-white/10'}`}
+      className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${checked ? 'bg-gold' : 'bg-cream/10'}`}
     >
       <span
         className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-cream transition-transform ${
@@ -259,7 +259,7 @@ export default function Settings({ user, onBack, onNavigate }) {
           right={
             <span className="flex items-center gap-2">
               <span
-                className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-white/10 text-muted'}`}
+                className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-cream/10 text-muted'}`}
               >
                 {tierLabel}
               </span>
@@ -307,7 +307,7 @@ export default function Settings({ user, onBack, onNavigate }) {
                 'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
                 reminderHour === t.hour
                   ? 'bg-gold text-emerald-deep'
-                  : 'bg-white/[0.04] text-muted',
+                  : 'bg-cream/[0.04] text-muted',
               ].join(' ')}
             >
               {t.label}
@@ -340,7 +340,7 @@ export default function Settings({ user, onBack, onNavigate }) {
             onClick={() => saveReviewHour(h)}
             className={[
               'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
-              reviewHour === h ? 'bg-gold text-emerald-deep' : 'bg-white/[0.04] text-muted',
+              reviewHour === h ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.04] text-muted',
             ].join(' ')}
           >
             {String(h).padStart(2, '0')}
@@ -393,7 +393,7 @@ export default function Settings({ user, onBack, onNavigate }) {
 
       <SectionLabel>Обновление приложения</SectionLabel>
       <Card>
-        <div className="w-full flex items-center gap-3 px-4 py-4 border-b border-white/[0.06]">
+        <div className="w-full flex items-center gap-3 px-4 py-4 border-b border-cream/[0.06]">
           <RefreshCw size={18} className="text-gold shrink-0" />
           <span className="flex-1 font-body text-[15px] text-cream">Текущая версия</span>
           <span className="text-muted text-sm font-body">v1.0.0</span>
