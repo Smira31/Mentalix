@@ -16,6 +16,11 @@ import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
 import { api } from '../../lib/api'
 import { useSynced } from '../../lib/store'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+  TG_CONTROLS_HEIGHT,
+} from '../../lib/fullscreenSurface'
 
 import { PERSONAS } from './personas'
 import './Conversation.css'
@@ -40,15 +45,8 @@ export default function Conversation({
     (item) => item.key === persona,
   )
 
-  const [
-    viewportHeight,
-    setViewportHeight,
-  ] = useState(null)
-
-  const [
-    viewportTop,
-    setViewportTop,
-  ] = useState(0)
+  const { style: surfaceStyle, tgFullscreen } =
+    useFullscreenSurface()
 
   const scrollRef = useRef(null)
   const previousMessageCount = useRef(0)
@@ -130,48 +128,6 @@ export default function Conversation({
       behavior,
     })
   }
-
-
-  useEffect(() => {
-    const viewport =
-      window.visualViewport
-
-    if (!viewport) return
-
-    const updateViewport = () => {
-      setViewportHeight(
-        viewport.height,
-      )
-
-      setViewportTop(
-        viewport.offsetTop || 0,
-      )
-    }
-
-    updateViewport()
-
-    viewport.addEventListener(
-      'resize',
-      updateViewport,
-    )
-
-    viewport.addEventListener(
-      'scroll',
-      updateViewport,
-    )
-
-    return () => {
-      viewport.removeEventListener(
-        'resize',
-        updateViewport,
-      )
-
-      viewport.removeEventListener(
-        'scroll',
-        updateViewport,
-      )
-    }
-  }, [])
 
 
   useEffect(() => {
@@ -375,13 +331,9 @@ export default function Conversation({
 
   return (
     <div
-      className="fixed left-0 right-0 z-[70] w-full bg-emerald-deep flex flex-col overflow-hidden animate-fade-in"
+      className={FULLSCREEN_SHELL_CLASS}
       style={{
-        top: `${viewportTop}px`,
-
-        height: viewportHeight
-          ? `${viewportHeight}px`
-          : '100dvh',
+        height: surfaceStyle.height,
 
         paddingTop: '0px',
 
@@ -396,7 +348,7 @@ export default function Conversation({
   className="relative shrink-0 px-5"
   style={{
     height:
-      'calc(var(--app-safe-top) + 102px)',
+      `calc(var(--app-safe-top) + ${tgFullscreen ? TG_CONTROLS_HEIGHT : 0}px + 102px)`,
   }}
 >
   {/* Следопыт — между Telegram-пинбарами */}
@@ -405,7 +357,7 @@ export default function Conversation({
     className="absolute left-1/2 -translate-x-1/2 text-center whitespace-nowrap"
     style={{
       top:
-        'calc(var(--app-safe-top) + 42px)',
+        `calc(var(--app-safe-top) + ${tgFullscreen ? TG_CONTROLS_HEIGHT : 0}px + 42px)`,
     }}
   >
     <div className="text-[15px] font-semibold tracking-[0.04em] text-cream uppercase leading-none">
@@ -424,7 +376,7 @@ export default function Conversation({
     className="absolute left-5"
     style={{
       top:
-        'calc(var(--app-safe-top) + 62px)',
+        `calc(var(--app-safe-top) + ${tgFullscreen ? TG_CONTROLS_HEIGHT : 0}px + 62px)`,
     }}
   >
     <BackButton onClick={onBack} />

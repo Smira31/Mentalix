@@ -1,5 +1,20 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Реализовано 16.08.2026 — MXL-UI-005, Шаг 2a: Conversation.jsx → useFullscreenSurface (ждёт живой проверки)
+
+- `src/screens/mentalix/Conversation.jsx` переведён на `useFullscreenSurface`/
+  `FULLSCREEN_SHELL_CLASS` — свой `visualViewport`-listener (в т.ч.
+  избыточный `scroll`/`viewportTop`, дублировавший то, что чинит body-lock
+  хука) удалён. `tgFullscreen`-офсет добавлен точечно в существующие
+  per-элементные `calc(var(--app-safe-top) + Npx)`, а не через
+  `style.paddingTop` хука — иначе safe-top удвоился бы. `z-[70]` → `z-[60]`
+  проверено как не влияющее на видимое поведение. `TG_CONTROLS_HEIGHT`
+  экспортирован из `fullscreenSurface.js` вместо локальной копии. Второй
+  оверлей и voice input не тронуты. `npx eslint`/`npm run build` — чисто.
+  Ветка `fix/mxl-ui-005-conversation-step2a`, один коммит, draft PR —
+  **не смёржено**, ждёт живой проверки на iPhone (предусловия 3–4 из
+  pre-mortem). Подробности — `TASKS.md` → `MXL-UI-005`.
+
 ## Подготовлено 16.08.2026 — pre-mortem для MXL-UI-005, Шаг 2
 
 - Создан `docs/mxl-ui-005-conversation-premortem.md` (риски по методу

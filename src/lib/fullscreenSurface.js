@@ -45,7 +45,7 @@ import {
  */
 
 
-const TG_CONTROLS_HEIGHT = 56
+export const TG_CONTROLS_HEIGHT = 56
 
 
 export const FULLSCREEN_SHELL_CLASS =
