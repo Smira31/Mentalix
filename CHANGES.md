@@ -1,5 +1,16 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 16.08.2026 — MXL-UI-005, Шаг 2a подтверждён живой проверкой и смёржен
+
+- Владелец подтвердил на реальном iPhone в Telegram все 4 пункта
+  предусловий 3–4 из pre-mortem: клавиатура+скролл+развёрнутый fullscreen
+  (поле ввода доступно), шапка в развёрнутом fullscreen (имя персоны и
+  «Назад» не перекрыты), свайп внутри истории не двигает страницу,
+  голосовое сообщение работает. PR #71 переведён из draft в ready,
+  смёржен squash-коммитом `cb1c8f8` в `main`; ветка
+  `fix/mxl-ui-005-conversation-step2a` удалена (remote и локально).
+  Подробности — `TASKS.md` → `MXL-UI-005`.
+
 ## Реализовано 16.08.2026 — MXL-UI-005, Шаг 2a: Conversation.jsx → useFullscreenSurface (ждёт живой проверки)
 
 - `src/screens/mentalix/Conversation.jsx` переведён на `useFullscreenSurface`/
