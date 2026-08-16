@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import ThemeScreen from './ThemeScreen'
 import { MotifArt } from '../components/Motif'
+import EmptyState from '../components/EmptyState'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
 
 const EMPTY_DRAFT = { title: '', source: '', duration_estimate_min: '', cover_url: '' }
@@ -377,10 +378,11 @@ export default function Courses({ user }) {
       {filtered.length === 0 ? (
         <div className="text-center py-8">
           {courses.length === 0 ? (
-            <>
-              <MotifArt name="set" size={120} className="mx-auto mb-3" />
+            <EmptyState
+              glyph={<MotifArt name="set" size={120} className="mx-auto mb-3" />}
+            >
               <p className="text-muted text-sm">Библиотека пуста — добавь первый материал</p>
-            </>
+            </EmptyState>
           ) : (
             <p className="text-faint text-sm py-6">Ничего не найдено</p>
           )}

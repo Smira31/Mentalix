@@ -4,6 +4,7 @@ import ArticleCover from '../components/ArticleCover'
 import BackButton from '../components/BackButton'
 import { Search, ExternalLink, ArrowRight } from 'lucide-react'
 import { api } from '../lib/api'
+import EmptyState from '../components/EmptyState'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
 
@@ -147,9 +148,13 @@ export default function Articles() {
       </div>
 
       {list.length === 0 ? (
-        <p className="text-faint text-sm text-center py-10">
-          {articles.length === 0 ? 'Статей пока нет — первая появится здесь' : 'Ничего не найдено'}
-        </p>
+        articles.length === 0 ? (
+          <EmptyState>
+            <p className="text-muted text-sm">Статей пока нет — первая появится здесь</p>
+          </EmptyState>
+        ) : (
+          <p className="text-faint text-sm text-center py-10">Ничего не найдено</p>
+        )
       ) : (
         <div className="mx-stagger">
           {list.map(a => (
