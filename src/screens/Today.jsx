@@ -414,7 +414,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   const heroArt = (
     <div className="w-full rounded-[28px] bg-artbed overflow-hidden mb-5 py-2">
       <DayArc
-        state={isEmpty ? 'empty' : todayState}
+        state={todayState}
         done={done}
         total={total}
         className="w-full max-w-[300px] h-[150px] mx-auto text-gold"
