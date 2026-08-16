@@ -176,7 +176,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
       >
         <PracticeCard
           artwork={<RitualsArt />}
-          artworkScale={1.04}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
           right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
@@ -185,7 +184,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
 
         <PracticeCard
           artwork={<AskesisArt />}
-          artworkScale={1.04}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
           right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
