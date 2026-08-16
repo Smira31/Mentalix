@@ -1,5 +1,16 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 16.08.2026 — пять XS-правок подтверждены живой проверкой и смёржены
+
+- Владелец подтвердил на реальном iPhone: header `Settings.jsx`, `EmptyState`
+  (Rituals/Analytics/Library/Articles), создание ритуала после
+  FK-миграции — всё работает корректно. PR [`Mentalix#74`](https://github.com/Smira31/Mentalix/pull/74)
+  смёржен squash-коммитом `71a8d59` в `main`; PR
+  [`mentalix-bot#3`](https://github.com/Smira31/mentalix-bot/pull/3)
+  смёржен squash-коммитом `c9e0b1b` в `main` отдельного репозитория.
+  Обе ветки удалены (remote и локально). Подробности — `TASKS.md` →
+  `MXL-ORPHAN-RITUALS-001`, «Бэклог: аудит документации 16.08.2026».
+
 ## Закрыто 16.08.2026 — MXL-ORPHAN-RITUALS-001 полностью: очистка + FK
 
 - По прямому решению владельца удалены 7 осиротевших `rituals` (`id 8–14`)

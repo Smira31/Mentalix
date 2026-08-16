@@ -795,10 +795,14 @@
     блоке). Применено напрямую к прод-БД до коммита кода; констрейнт
     подтверждён `SELECT ... FROM pg_constraint`; повторный прогон миграции
     — чистый `DO` без ошибок (идемпотентность подтверждена). Коммит
-    `1f46dca`, draft PR [`mentalix-bot#3`](https://github.com/Smira31/mentalix-bot/pull/3)
-    — не смёржен, ждёт вашей проверки.
-  - **Задача полностью закрыта 16.08.2026** — очистка данных и
-    FK-ограничение сделаны, открытых пунктов не осталось.
+    `1f46dca`. **Живая проверка подтверждена владельцем 16.08.2026** —
+    создание ритуала после FK-миграции работает корректно на реальном
+    iPhone. **Закрыто:** PR [`mentalix-bot#3`](https://github.com/Smira31/mentalix-bot/pull/3)
+    смёржен squash-коммитом `c9e0b1b` в `main` (`mentalix-bot`) по
+    прямому запросу владельца; ветка `feature/mxl-orphan-rituals-fk`
+    удалена (remote и локально).
+  - **Задача полностью закрыта 16.08.2026** — очистка данных,
+    FK-ограничение и живая проверка сделаны, открытых пунктов не осталось.
 
 - [ ] **MXL-STRICTMODE-PERSONA-001 — `readPendingMentor()` теряет persona/draft в dev под React StrictMode (не чинить, зафиксировано)**
   - Найдено при проверке `MXL-EMOTION-STEP-002` 13.08.2026. `readPendingMentor()` (`src/screens/mentalix/personas.js`) вызывает `sessionStorage.removeItem(...)` как побочный эффект прямо внутри функции, переданной в `useState(() => readPendingMentor())` (`src/screens/Mentalix.jsx`). В dev (`npm run dev`) `main.jsx` оборачивает приложение в `<StrictMode>`, который намеренно вызывает инициализатор `useState` дважды — второй вызов находит sessionStorage уже пустым (после первого) и возвращает `{persona: null}`, из-за чего вместо прямого перехода в диалог показывается `PersonaPicker`.
