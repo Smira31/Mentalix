@@ -102,8 +102,8 @@ class ErrorBoundary extends Component {
         <div
           style={{
             padding: 24,
-            color: '#F5F5F5',
-            background: '#0A0A0A',
+            color: 'rgb(var(--c-text))',
+            background: 'rgb(var(--c-bg))',
             minHeight: '100vh',
             fontFamily: 'monospace',
             fontSize: 13,
@@ -112,7 +112,7 @@ class ErrorBoundary extends Component {
           <p style={{ fontWeight: 700, marginBottom: 12 }}>
             Ошибка приложения — покажи этот экран разработчику:
           </p>
-          <pre style={{ whiteSpace: 'pre-wrap', color: '#D9B45B' }}>
+          <pre style={{ whiteSpace: 'pre-wrap', color: 'rgb(var(--c-gold))' }}>
             {String(
               this.state.error &&
                 (this.state.error.stack || this.state.error.message || this.state.error)

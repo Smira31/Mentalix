@@ -1,5 +1,29 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Закрыто 16.08.2026 — MXL-DESIGN-TOKENS-001 (ARCHITECTURE.md §7 п.10); аудит MXL-SECURITY-AUDIT-001 (п.11)
+
+- **Дизайн-токены:** 10 файлов переведены с hardcoded цветов на
+  существующие `--c-*` токены (без новых токенов) — `BottomNavigation.jsx`
+  (пропущенная строка в самом образце контракта 30.07.2026),
+  `PracticeCard.jsx`, `main.jsx` (ErrorBoundary — три исторических hex из
+  `DESIGN_SYSTEM.md` §8), `Breathing.jsx`, пять экранов с `white/[X]` →
+  `cream/[X]` (19 вхождений), `PersonaCardArt.jsx` (35 вхождений). Не
+  тронуто: `QuickAdd.jsx` тень (нет точного токена), `Path.jsx` иллюстрация,
+  `red-400`/`red-900` (нет токена ошибки), `bg-black` (функциональный
+  scrim), `BrainTrainer.jsx` (игровой контент). Удалён `src/screens/index.css`
+  — мёртвый дубль со старым pre-MXL-021 `--c-bg`.
+- **Security-аудит backend (`mentalix-bot`):** нигде нет проверки подписи
+  Telegram `initData`; все ~20 роутеров доверяют `user_id` из запроса.
+  **Критичная находка:** `POST /api/auth/link/generate` возвращает код
+  привязки аккаунта прямо в HTTP-ответе вместо доставки через бота —
+  позволяет захватить чужой аккаунт, зная только числовой Telegram
+  `user_id` жертвы. Точечный патч — отдельная задача/ветка. Полная
+  авторизация остальных роутеров, initData-подпись, rate-limiting и
+  незащищённый платный AI-эндпоинт (`mentalix.py`) зафиксированы как
+  критичный открытый долг, не входят в объём точечного патча.
+  Подробности обеих задач — `TASKS.md` → `MXL-DESIGN-TOKENS-001`,
+  `MXL-SECURITY-AUDIT-001`.
+
 ## Закрыто 16.08.2026 — MXL-TIMEZONE-CHECKIN-001: граница дня чек-ина/серий по МСК
 
 - `date.today()` в `mentalix-bot` (`backend/checkin.py`/`rituals.py`/`ascezas.py`)

@@ -261,7 +261,7 @@ export default function BottomNavigation({
                   'gap-[2px]',
                   'active:scale-95',
                   active
-                    ? 'bg-white/[0.12]'
+                    ? 'bg-cream/[0.12]'
                     : '',
                 ].join(' ')}
                 style={{
