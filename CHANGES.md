@@ -1,5 +1,15 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## Подготовлено 16.08.2026 — pre-mortem для MXL-UI-005, Шаг 2
+
+- Создан `docs/mxl-ui-005-conversation-premortem.md` (риски по методу
+  pre-mortem, сценарий провала — три iPhone-бага: клавиатура+скролл+
+  fullscreen, tgFullscreen-офсет шапки, утечка скролла body). 4 «Тигра», 2
+  «Бумажных тигра» (один закрыт прямо в ходе pre-mortem — `readPendingMentor()`/
+  `MXL-STRICTMODE-PERSONA-001` не затронуты), 1 «Слон» (второй `fixed
+  inset-0` оверлей, вынесен в отдельный Шаг 2b). Код не менялся. Статус —
+  `TASKS.md` → `MXL-UI-005`.
+
 ## Закрыто 16.08.2026 — PR #68 и PR #69 смёржены (MXL-UI-005 Шаг 1, инварианты AI_RULES.md §9)
 
 - PR #68 (`fix/mxl-ui-005-checkin-fullscreen-step1`, `CheckIn.jsx` →
