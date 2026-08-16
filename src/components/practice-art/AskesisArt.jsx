@@ -8,7 +8,7 @@ export default function AskesisArt() {
       aria-hidden="true"
       decoding="async"
       draggable="false"
-      className="h-full w-full object-cover object-center select-none"
+      className="h-full w-full object-contain object-center select-none"
     />
   )
 }
