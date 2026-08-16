@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useState,
 } from 'react'
 import { createPortal } from 'react-dom'
@@ -12,6 +11,12 @@ import {
   useMainButton,
   useSecondaryButton,
 } from '../platform/telegram.hooks'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+} from '../lib/fullscreenSurface'
 
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -29,35 +34,6 @@ const EMOTION_TALK_PROMPT =
   'Сейчас тяжело — не хочу делать вид, что всё в порядке. Хочу просто сказать вслух, что чувствую.'
 
 const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно']
-
-/*
- * Telegram в fullscreen рисует свои
- * контролы («Закрыть», меню) поверх
- * веб-вью. App.jsx компенсирует их теми
- * же 56px — CheckIn обязан совпадать,
- * иначе его собственные «назад» и
- * «крестик» уезжают под контролы
- * Telegram и перестают нажиматься.
- */
-const TG_CONTROLS_HEIGHT = 56
-
-const CHECKIN_HEADER_SLOT_CLASS =
-  'h-[52px] shrink-0'
-
-const CHECKIN_SHELL_CLASS =
-  'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden animate-fade-in'
-
-/*
- * Одна прокручиваемая область на весь
- * остаток экрана; содержимое внутри
- * центрируется по вертикали через
- * m-auto. Пока контент ниже экрана —
- * он стоит по центру, как только выше
- * (клавиатура) — область скроллится и
- * ничего не обрезается.
- */
-const CHECKIN_SCROLL_CLASS =
-  'w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
 
 const CHECKIN_CENTER_CLASS =
   'w-full m-auto px-6 py-6 flex flex-col items-center'
@@ -435,124 +411,8 @@ export default function CheckIn({
         : 0,
     )
 
-  const [
-    viewportHeight,
-    setViewportHeight,
-  ] = useState(null)
-
-
-  useEffect(() => {
-    const viewport =
-      window.visualViewport
-
-    if (!viewport) return
-
-    const updateViewportHeight = () => {
-      setViewportHeight(
-        Math.round(
-          viewport.height,
-        ),
-      )
-    }
-
-    updateViewportHeight()
-
-    viewport.addEventListener(
-      'resize',
-      updateViewportHeight,
-    )
-
-    return () => {
-      viewport.removeEventListener(
-        'resize',
-        updateViewportHeight,
-      )
-    }
-  }, [])
-
-
-  /*
-   * CheckIn живёт порталом в body и
-   * перекрывает весь экран. Пока он
-   * открыт, страница под ним не должна
-   * скроллиться: иначе iOS двигает
-   * layout viewport при появлении
-   * клавиатуры и якорь уезжает.
-   */
-  useEffect(() => {
-    const body = document.body
-
-    const previousOverflow =
-      body.style.overflow
-
-    body.style.overflow = 'hidden'
-
-    return () => {
-      body.style.overflow =
-        previousOverflow
-    }
-  }, [])
-
-
-  /*
-   * Тот же признак fullscreen, что и в
-   * App.jsx: если Telegram развернул
-   * приложение на весь экран, сверху
-   * нужно оставить место под его
-   * собственные контролы.
-   */
-  const [tgFullscreen, setTgFullscreen] =
-    useState(() =>
-      Boolean(
-        window.Telegram
-          ?.WebApp
-          ?.isFullscreen,
-      ),
-    )
-
-
-  useEffect(() => {
-    const webApp =
-      window.Telegram?.WebApp
-
-    if (!webApp?.onEvent) return
-
-    const sync = () => {
-      setTgFullscreen(
-        Boolean(
-          webApp.isFullscreen,
-        ),
-      )
-    }
-
-    sync()
-
-    webApp.onEvent(
-      'fullscreenChanged',
-      sync,
-    )
-
-    return () => {
-      webApp.offEvent?.(
-        'fullscreenChanged',
-        sync,
-      )
-    }
-  }, [])
-
-
-  const viewportStyle = {
-    paddingTop: tgFullscreen
-      ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
-      : 'var(--app-safe-top)',
-
-    paddingBottom:
-      'var(--app-safe-bottom)',
-
-    height: viewportHeight
-      ? `${viewportHeight}px`
-      : '100dvh',
-  }
+  const { style: viewportStyle } =
+    useFullscreenSurface()
 
 
   function pick(
@@ -902,20 +762,20 @@ export default function CheckIn({
     return createPortal(
       <div
         className={
-          CHECKIN_SHELL_CLASS
+          FULLSCREEN_SHELL_CLASS
         }
         style={viewportStyle}
       >
         <div
           className={
-            CHECKIN_HEADER_SLOT_CLASS
+            FULLSCREEN_HEADER_SLOT_CLASS
           }
           aria-hidden="true"
         />
 
         <div
           className={
-            CHECKIN_SCROLL_CLASS
+            FULLSCREEN_SCROLL_CLASS
           }
         >
           <div
@@ -1029,12 +889,12 @@ export default function CheckIn({
   return createPortal(
     <div
       className={
-        CHECKIN_SHELL_CLASS
+        FULLSCREEN_SHELL_CLASS
       }
       style={viewportStyle}
     >
       <div
-        className={`${CHECKIN_HEADER_SLOT_CLASS} flex items-end justify-between px-5`}
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-end justify-between px-5`}
       >
         <button
           onClick={() => {
@@ -1097,7 +957,7 @@ export default function CheckIn({
 
       <div
         className={
-          CHECKIN_SCROLL_CLASS
+          FULLSCREEN_SCROLL_CLASS
         }
         style={interactiveStyle}
       >
