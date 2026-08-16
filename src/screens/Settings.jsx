@@ -219,7 +219,7 @@ export default function Settings({ user, onBack, onNavigate }) {
   }
 
   if (screen === 'link-web') {
-    return <LinkWebAccount user={user} onBack={() => setScreen(null)} />
+    return <LinkWebAccount onBack={() => setScreen(null)} />
   }
 
   if (screen === 'app-lock-setup') {
