@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 
 import PracticeCard from '../components/PracticeCard'
 import BackButton from '../components/BackButton'
+import { AVAILABLE_PRACTICES } from '../config/practiceAvailability'
 
 import RitualsArt from '../components/practice-art/RitualsArt'
 import AskesisArt from '../components/practice-art/AskesisArt'
@@ -181,6 +182,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           subtitle="обряды, что держат твой день"
           right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
           onOpen={() => setSub('rituals')}
+          soon={!AVAILABLE_PRACTICES.includes('rituals')}
         />
 
         <PracticeCard
@@ -190,6 +192,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           subtitle="от чего ты отказываешься"
           right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
           onOpen={() => setSub('ascezas')}
+          soon={!AVAILABLE_PRACTICES.includes('ascezas')}
         />
 
         <PracticeCard
@@ -198,6 +201,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Первый шаг"
           subtitle="маленький шаг, когда трудно начать"
           onOpen={() => setSub('first-step')}
+          soon={!AVAILABLE_PRACTICES.includes('first-step')}
         />
 
         <PracticeCard
@@ -206,6 +210,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Без вины"
           subtitle="когда откладываешь и знаешь это"
           onOpen={() => setSub('no-blame')}
+          soon={!AVAILABLE_PRACTICES.includes('no-blame')}
         />
 
         <PracticeCard
@@ -214,6 +219,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Одно из всех"
           subtitle="когда всё сразу — слишком много"
           onOpen={() => setSub('narrow-focus')}
+          soon={!AVAILABLE_PRACTICES.includes('narrow-focus')}
         />
 
         <PracticeCard
@@ -222,6 +228,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Один финиш"
           subtitle="маленький кусок, доведённый до конца"
           onOpen={() => setSub('one-finish')}
+          soon={!AVAILABLE_PRACTICES.includes('one-finish')}
         />
 
         <PracticeCard
@@ -236,7 +243,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           }
           subtitle="внимание, память, реакция"
           onOpen={() => setSub('brain')}
-          soon
+          soon={!AVAILABLE_PRACTICES.includes('brain')}
           compactTitle
         />
 
@@ -246,7 +253,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Дыхание"
           subtitle="успокоить систему за минуту"
           onOpen={() => setSub('breathing')}
-          soon
+          soon={!AVAILABLE_PRACTICES.includes('breathing')}
         />
 
         <PracticeCard
@@ -255,7 +262,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Фокус"
           subtitle="таймер глубокой работы"
           onOpen={() => setSub('focus')}
-          soon
+          soon={!AVAILABLE_PRACTICES.includes('focus')}
         />
 
         <PracticeCard
@@ -263,7 +270,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           artworkScale={1.04}
           title="Медитации"
           subtitle="тишина для ума и тела"
-          soon
+          soon={!AVAILABLE_PRACTICES.includes('meditation')}
           onOpen={() => {
             platform.haptic('light')
           }}
