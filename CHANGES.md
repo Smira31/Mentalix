@@ -41,10 +41,13 @@
   тронутых строках). Ждёт живого теста на iPhone в Telegram; после
   разбора лога — логи убрать полностью и только тогда делать финальный
   фикс обычным циклом (branch → diff → подтверждение → PR).
-- **eruda/vConsole не подключены в проекте** — готового способа
-  посмотреть консоль внутри Telegram WebView на iPhone сейчас нет,
-  нужен Safari Web Inspector по кабелю с Mac либо отдельное решение
-  подключить консоль-оверлей.
+- **`eruda` подключён 17.08.2026 (тот же диагностический шаг, тоже не
+  финальный фикс):** динамический `<script src="cdn.jsdelivr.net/npm/eruda">`
+  + `eruda.init()` в `src/main.jsx`, за тем же гейтингом, что уже есть у
+  `motionKitEnabled`/`cardLabEnabled` в этом файле —
+  `import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'` и
+  явный `?debug=1` в URL; в обычном проде не подключается ни при каких
+  query-параметрах. `npx eslint`/`npm run build` — чисто.
 - Полная запись расследования и открытые вопросы — `TASKS.md` →
   `MXL-UI-005-CLOSE-GLITCH-001`.
 

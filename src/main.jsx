@@ -3,6 +3,24 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App'
 
+// MXL-DIAG (MXL-UI-005-CLOSE-GLITCH-001): временный консоль-оверлей для
+// диагностики на iPhone в Telegram, где нет доступа к обычному DevTools.
+// Тот же паттерн гейтинга, что у motionKitEnabled/cardLabEnabled ниже —
+// грузится только в dev/Vercel Preview и только по явному ?debug=1, в
+// обычном проде не подключается. Убрать вместе с остальным диагностическим
+// кодом этой задачи после разбора лога.
+const debugConsoleEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+
+const debugConsoleRequested =
+  debugConsoleEnabled && new URLSearchParams(window.location.search).get('debug') === '1'
+
+if (debugConsoleRequested) {
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/eruda'
+  script.onload = () => window.eruda?.init()
+  document.body.appendChild(script)
+}
+
 const showcaseRequested =
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('showcase') === 'archetypes'

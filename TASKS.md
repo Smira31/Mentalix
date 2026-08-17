@@ -188,19 +188,27 @@
     (оба файла) — 0 новых ошибок/предупреждений (4 существующих
     `react-hooks/refs`-предупреждения в `telegram.hooks.js` — на других
     строках, не тронутых этим диффом). `npm run build` — чисто.
+  - **Консоль-оверлей для iPhone добавлен 17.08.2026 (тот же
+    диагностический шаг, тоже НЕ финальный фикс).** `eruda` подключается
+    только динамическим `<script src="https://cdn.jsdelivr.net/npm/eruda">`
+    + `eruda.init()` в `src/main.jsx`, за тем же гейтингом, что уже
+    используют `motionKitEnabled`/`cardLabEnabled` в этом файле:
+    `import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'` и
+    явный `?debug=1` в URL. В обычном проде (`VERCEL_ENV === 'production'`)
+    не подключается ни при каких query-параметрах — тот же паттерн, не
+    новый. `npx eslint`/`npm run build` — чисто.
   - **Статус: ждёт живого теста владельцем на iPhone в Telegram** —
-    открыть диалог, закрыть, скопировать лог из консоли (`eruda`/
-    `vConsole` в проекте пока не подключены — готовой обвязки для
-    просмотра консоли внутри Telegram WebView на iPhone нет, нужен
-    отдельный способ: Safari Web Inspector по кабелю с Mac, либо
-    попросить подключить `eruda`/`vConsole` отдельным шагом).
-  - **После получения и разбора лога:** логи убрать полностью, только
-    затем — финальный фикс обычным циклом (branch → diff → подтверждение
-    владельца → PR). Не мёржить и не оставлять диагностический код в
-    `main`.
+    открыть Preview-ссылку с `?debug=1`, тапнуть плавающую кнопку eruda,
+    открыть вкладку Console, открыть диалог, закрыть, скопировать все
+    строки с префиксом `[MXL-DIAG]`.
+  - **После получения и разбора лога:** и `console.log`-и, и подключение
+    `eruda` убрать полностью, только затем — финальный фикс обычным
+    циклом (branch → diff → подтверждение владельца → PR). Не мёржить и
+    не оставлять диагностический код в `main`.
   - Ветка `investigate/mxl-conversation-close-glitch-001` — теперь
-    содержит и диагностический код (`src/screens/Mentalix.jsx`,
-    `src/platform/telegram.hooks.js`), и `TASKS.md`/`CHANGES.md`; в
+    содержит диагностический код (`src/screens/Mentalix.jsx`,
+    `src/platform/telegram.hooks.js`, `src/main.jsx`), и `TASKS.md`/
+    `CHANGES.md`; в
     `main` не мёржилась.
 
 - [x] **MXL-DESIGN-TOKENS-001 — ARCHITECTURE.md §7 п.10: hardcoded дизайн-значения → токены**
