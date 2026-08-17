@@ -3,6 +3,7 @@ import {
   MessageCircle,
   Mountain,
 } from 'lucide-react'
+import { pickByDay, PERSONA_STARTER_PROMPTS } from '../../data/prompts'
 
 export const MENTOR_PERSONA_KEY =
   'mx-mentor-persona'
@@ -27,8 +28,8 @@ export const PERSONAS = [
       'слушает тебя…',
     Icon: MessageCircle,
     starters: [
-      'Сегодня было тяжело',
-      'Не могу выключить голову',
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 0),
+      pickByDay(PERSONA_STARTER_PROMPTS.mayak, 1),
     ],
   },
 
@@ -48,8 +49,8 @@ export const PERSONAS = [
       'ищет следующий шаг…',
     Icon: Mountain,
     starters: [
-      'Разложи цель на шаги',
-      'Я топчусь на месте',
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 0),
+      pickByDay(PERSONA_STARTER_PROMPTS.kompas, 1),
     ],
   },
 
@@ -69,8 +70,8 @@ export const PERSONAS = [
       'разбирает твой день…',
     Icon: Footprints,
     starters: [
-      'Подведи итоги дня',
-      'Что я упускаю?',
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 0),
+      pickByDay(PERSONA_STARTER_PROMPTS.dnevnik, 1),
     ],
   },
 ]
