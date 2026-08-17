@@ -1,5 +1,28 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 17.08.2026 — MXL-SECURITY-AUDIT-001-DEV-CODE: скрыт dev_code в проде (`mentalix-bot`)
+
+- `backend/auth.py::request_code` (`POST /api/auth/email/request-code`,
+  `mentalix-bot`, отдельный приватный репозиторий) возвращал одноразовый код
+  входа по email прямо в теле HTTP-ответа в любом окружении — тот же класс
+  уязвимости, что был у закрытого `MXL-SECURITY-AUDIT-001` (`/link/generate`):
+  любой, кто знает чужой email, мог войти в его веб-аккаунт без доступа к почте.
+- Патч точечный, не архитектурный, в отличие от `/link/generate` (эндпоинт
+  там убрали целиком и завели доставку кода через бота) — реальной отправки
+  email пока нет, поэтому `dev_code` остаётся нужен для тестирования до
+  подключения email-сервиса (SMTP/SendGrid и т.п.).
+- Новый флаг `ENVIRONMENT` в `backend/config.py`
+  (`os.getenv("ENVIRONMENT", "production")`), safe-by-default: если
+  переменная не выставлена или не равна `"development"`, `dev_code`
+  исключается из ответа целиком (остаются только `ok`/`expires_in_minutes`).
+  На Railway-проде переменную выставлять не нужно — прод скрыт по
+  умолчанию; для локальной разработки в `.env` (не коммитится) добавлено
+  `ENVIRONMENT=development`.
+- Остальная логика `request_code` (создание `EmailOtp`, TTL, commit) не
+  менялась; `verify`/`link/confirm` не тронуты.
+- `dev_code` в `/api/auth/email/request-code` закрыт из
+  `MXL-SECURITY-AUDIT-001-DEV-CODE` → `TASKS.md`.
+
 ## 17.08.2026 — MXL-YEAR-PATH-001: фикс вёрстки YearPath (найдено живой проверкой в Telegram)
 
 - Подпись «дней с практикой» у `TickGauge` визуально задевала линию
