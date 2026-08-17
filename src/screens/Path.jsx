@@ -43,7 +43,7 @@ function WireframeMountain() {
   )
 }
 
-function TickGauge({ value, max, sublabel, size = 160 }) {
+export function TickGauge({ value, max, sublabel, size = 160 }) {
   const percent = Math.max(0, Math.min(1, value / max))
   const totalTicks = 40
   const filledTicks = Math.round(percent * totalTicks)
