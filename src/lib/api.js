@@ -381,4 +381,19 @@ export const api = {
         }),
       }),
   },
+
+  // MXL-EVENTS: только факт действия (event_type/entity_type/entity_id) —
+  // без текстов рефлексии, ответов чек-ина или содержимого чата.
+  events: {
+    log: (userId, eventType, entityType = null, entityId = null) =>
+      request('/events', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          event_type: eventType,
+          entity_type: entityType,
+          entity_id: entityId,
+        }),
+      }),
+  },
 }

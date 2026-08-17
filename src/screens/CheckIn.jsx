@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useState,
 } from 'react'
 import { createPortal } from 'react-dom'
@@ -340,6 +341,19 @@ export default function CheckIn({
 
   const skipScales =
     isEvening && !!existing
+
+  /*
+   * MXL-EVENTS: момент открытия флоу — единственное место, где backend
+   * не может сам заметить «старт» (в отличие от завершения, которое
+   * логируется атомарно внутри своих эндпоинтов). Один раз на монтирование,
+   * best-effort — сбой логирования события не должен мешать самому чек-ину.
+   */
+  useEffect(() => {
+    api.events
+      .log(user.id, isEvening ? 'checkin_evening_start' : 'checkin_morning_start', 'checkin')
+      .catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
 
   const [values, setValues] =
