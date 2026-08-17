@@ -145,11 +145,13 @@ export default function YearPath({ user }) {
     <div className="rounded-[28px] bg-emerald-deep border border-cream/10 overflow-hidden mb-5">
       <div className="text-[13px] text-muted font-semibold text-center pt-5">Год пути</div>
 
-      <div className="flex justify-center pt-2 pb-1">
+      <div className="flex justify-center pt-2 pb-6">
         <TickGauge value={percent} max={100} sublabel="дней с практикой" size={104} />
       </div>
 
-      <YearRidge values={weeklyBuckets} />
+      <div className="mt-2">
+        <YearRidge values={weeklyBuckets} />
+      </div>
     </div>
   )
 }
