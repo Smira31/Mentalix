@@ -24,6 +24,7 @@ import {
 } from '../../lib/fullscreenSurface'
 
 import { PERSONAS } from './personas'
+import MessageText from './MessageText'
 import './Conversation.css'
 
 
@@ -445,9 +446,9 @@ export default function Conversation({
                     {meta.name}
                   </div>
 
-                  <div className="text-[16px] leading-[1.62] tracking-[-0.01em] text-cream font-normal break-words whitespace-pre-wrap">
-  {message.content}
-</div>
+                  <div className="text-[16px] leading-[1.62] tracking-[-0.01em] text-cream font-normal break-words">
+                    <MessageText content={message.content} />
+                  </div>
                 </div>
               )
             },
