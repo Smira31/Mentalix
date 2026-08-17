@@ -8,6 +8,7 @@ import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import WebActionBar from '../components/WebActionBar'
+import { pickByDay, MORNING_NOTE_PROMPTS, LESSON_PROMPTS } from '../data/prompts'
 import {
   useMainButton,
   useSecondaryButton,
@@ -35,6 +36,10 @@ const EMOTION_TALK_PROMPT =
   'Сейчас тяжело — не хочу делать вид, что всё в порядке. Хочу просто сказать вслух, что чувствую.'
 
 const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно']
+
+// MXL-PROMPT-ROTATION-001: один и тот же вариант на весь календарный день
+// по МСК (см. src/data/prompts.js) — не пересчитывается на каждый рендер.
+const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
 /*
  * MXL-UX-U03: раньше центрировалась через m-auto внутри
@@ -194,20 +199,17 @@ const LESSON_FIELDS = [
   {
     key: 'done',
     label: 'Что получилось?',
-    placeholder:
-      'Даже маленькое считается',
+    placeholder: pickByDay(LESSON_PROMPTS.done),
   },
   {
     key: 'hard',
     label: 'Что было трудно?',
-    placeholder:
-      'Трудность — тоже часть пути',
+    placeholder: pickByDay(LESSON_PROMPTS.hard),
   },
   {
     key: 'lesson',
     label: 'Какой вывод забираешь?',
-    placeholder:
-      'Одна мысль, которую стоит запомнить',
+    placeholder: pickByDay(LESSON_PROMPTS.lesson),
   },
 ]
 
@@ -1206,7 +1208,7 @@ export default function CheckIn({
                   event.target.value,
                 )
               }
-              placeholder="Начни писать..."
+              placeholder={MORNING_NOTE_PLACEHOLDER}
               rows={5}
               className="w-full max-w-md mx-auto rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body"
             />
