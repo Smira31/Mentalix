@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { ChevronRight, ArrowUpRight } from 'lucide-react'
 
 import Path from './Path'
+import YearPath from './YearPath'
 import CheckIn from './CheckIn'
 import ThemeScreen from './ThemeScreen'
 import { DayArc } from '../components/Motif'
@@ -346,6 +347,10 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="w-full max-w-md px-5">
+          <YearPath user={user} />
         </div>
 
         {pathTab === 'path' ? (
