@@ -71,16 +71,27 @@ function syncBackButton() {
   if (!backButton) return
 
   safely(
-    () =>
-      stack.length
-        ? backButton.show()
-        : backButton.hide(),
+    () => {
+      // MXL-DIAG (MXL-UI-005-CLOSE-GLITCH-001): временные диагностические
+      // логи, убрать после расследования.
+      if (stack.length) {
+        console.log('[MXL-DIAG]', performance.now(), 'BackButton.show', 'stackLength', stack.length)
+        backButton.show()
+      } else {
+        console.log('[MXL-DIAG]', performance.now(), 'BackButton.hide', 'stackLength', stack.length)
+        backButton.hide()
+      }
+    },
     'BackButton',
   )
 }
 
 
 function handleBackClick() {
+  // MXL-DIAG (MXL-UI-005-CLOSE-GLITCH-001): временный диагностический лог,
+  // убрать после расследования.
+  console.log('[MXL-DIAG]', performance.now(), 'BackButton.onClick', 'stackLength', stack.length)
+
   const top = stack[stack.length - 1]
 
   top?.()
@@ -106,6 +117,10 @@ export function useBackButton(
 
     stack.push(entry)
 
+    // MXL-DIAG (MXL-UI-005-CLOSE-GLITCH-001): временный диагностический
+    // лог, убрать после расследования.
+    console.log('[MXL-DIAG]', performance.now(), 'BackButton.push', 'stackLength', stack.length)
+
     if (!bound) {
       safely(
         () =>
@@ -126,6 +141,10 @@ export function useBackButton(
       if (index >= 0) {
         stack.splice(index, 1)
       }
+
+      // MXL-DIAG (MXL-UI-005-CLOSE-GLITCH-001): временный диагностический
+      // лог, убрать после расследования.
+      console.log('[MXL-DIAG]', performance.now(), 'BackButton.pop', 'stackLength', stack.length)
 
       syncBackButton()
     }

@@ -154,6 +154,10 @@ export default function MentalixChat({ user, onPersonaChange }) {
       <PersonaPicker
         user={user}
         onPick={(key, text) => {
+          // MXL-DIAG (MXL-UI-005-CLOSE-GLITCH-001): временный диагностический
+          // лог, убрать после расследования.
+          console.log('[MXL-DIAG]', performance.now(), 'setPersona', key, 'from', 'onPick')
+
           setDraft(text || '')
 
           setPersona(key)
@@ -169,6 +173,10 @@ export default function MentalixChat({ user, onPersonaChange }) {
       initialText={draft}
       viaHandoff={Boolean(pending.persona)}
       onBack={() => {
+        // MXL-DIAG (MXL-UI-005-CLOSE-GLITCH-001): временный диагностический
+        // лог, убрать после расследования.
+        console.log('[MXL-DIAG]', performance.now(), 'setPersona', null, 'from', 'onBack')
+
         setDraft('')
         setPersona(null)
       }}
