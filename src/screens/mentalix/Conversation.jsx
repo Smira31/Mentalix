@@ -20,7 +20,8 @@ import { useSynced } from '../../lib/store'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
-  TG_CONTROLS_HEIGHT,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
 } from '../../lib/fullscreenSurface'
 
 import { PERSONAS } from './personas'
@@ -47,7 +48,7 @@ export default function Conversation({
     (item) => item.key === persona,
   )
 
-  const { style: surfaceStyle, tgFullscreen } =
+  const { style: surfaceStyle } =
     useFullscreenSurface()
 
   const scrollRef = useRef(null)
@@ -335,65 +336,35 @@ export default function Conversation({
     <div
       className={FULLSCREEN_SHELL_CLASS}
       style={{
-        height: surfaceStyle.height,
-
-        paddingTop: '0px',
+        ...surfaceStyle,
 
         paddingBottom:
           'max(14px, env(safe-area-inset-bottom))',
       }}
     >
 
-      {/* ── верхняя бренд-зона ── */}
+      {/* ── шапка ── */}
 
-<div
-  className="relative shrink-0 px-5"
-  style={{
-    height:
-      `calc(var(--app-safe-top) + ${tgFullscreen ? TG_CONTROLS_HEIGHT : 0}px + 102px)`,
-  }}
->
-  {/* Следопыт — между Telegram-пинбарами */}
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} grid grid-cols-[1fr_auto_1fr] items-center px-5`}
+      >
+        <div className="justify-self-start">
+          <BackButton onClick={onBack} />
+        </div>
 
-  <div
-    className="absolute left-1/2 -translate-x-1/2 text-center whitespace-nowrap"
-    style={{
-      top:
-        `calc(var(--app-safe-top) + ${tgFullscreen ? TG_CONTROLS_HEIGHT : 0}px + 42px)`,
-    }}
-  >
-    <div className="text-[15px] font-semibold tracking-[0.04em] text-cream uppercase leading-none">
-      {meta.name}
-    </div>
+        <div className="justify-self-center text-[15px] font-semibold tracking-[0.04em] text-cream uppercase leading-none whitespace-nowrap">
+          {meta.name}
+        </div>
 
-    <div className="text-[11px] font-medium tracking-[0.04em] text-gold uppercase mt-2 leading-none">
-      {meta.tagline}
-    </div>
-  </div>
-
-
-  {/* Назад — под кнопкой Telegram «Закрыть» */}
-
-  <div
-    className="absolute left-5"
-    style={{
-      top:
-        `calc(var(--app-safe-top) + ${tgFullscreen ? TG_CONTROLS_HEIGHT : 0}px + 62px)`,
-    }}
-  >
-    <BackButton onClick={onBack} />
-  </div>
-</div>
-
-
-{/* ── история сообщений ── */}
+        <span aria-hidden="true" />
+      </div>
 
 
       {/* ── история сообщений ── */}
 
       <div
         ref={scrollRef}
-        className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-6 px-5 pb-6"
+        className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-6`}
       >
 
         {loading && (
