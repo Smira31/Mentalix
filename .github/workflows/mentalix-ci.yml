@@ -1,30 +1,33 @@
-name: Mentalix CI
+name: Автоматическая проверка Mentalix
 
 on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
 
 jobs:
   check:
-    name: Lint & Build
+    name: Проверка кода и сборки
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Получить код Mentalix
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Подготовить Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: Установить зависимости
         run: npm ci
 
-      - name: Run ESLint
+      - name: Проверить качество кода
         run: npm run lint
 
-      - name: Build Mentalix
+      - name: Собрать Mentalix
         run: npm run build
