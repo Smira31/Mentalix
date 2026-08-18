@@ -2,20 +2,50 @@ import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { ChevronLeft, Check } from 'lucide-react'
-import MazeLogo from '../components/MazeLogo'
+import OnboardingHero from '../components/OnboardingHero'
 import { MotifArt } from '../components/Motif'
-import { useFullscreenSurface } from '../lib/fullscreenSurface'
+import {
+  useFullscreenSurface,
+  FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+} from '../lib/fullscreenSurface'
 import './Onboarding.css'
 
 // ── Онбординг по схеме stoic.: приветствие → вопросы о себе →
 // напоминания → «план готов» с зеркалом ответов ──
 
 const FOCUS_OPTIONS = [
-  { key: 'calm', label: 'Меньше тревоги', proof: 'Регулярная рефлексия снижает уровень тревоги: это подтверждают более 200 исследований о письменных практиках.' },
-  { key: 'discipline', label: 'Больше дисциплины', proof: 'Дисциплина — не характер, а система. Ритуалы и аскезы держат её за тебя, когда мотивация кончилась.' },
-  { key: 'focus', label: 'Собранность и фокус', proof: 'Одно действие за раз работает лучше списка из десяти. Mentalix всегда показывает только следующий шаг.' },
-  { key: 'sleep', label: 'Спокойный сон', proof: 'Вечерняя выгрузка мыслей на бумагу помогает засыпать быстрее: голова перестаёт дожёвывать день.' },
-  { key: 'self', label: 'Понять себя', proof: 'Чек-ины копят данные о твоём состоянии. Через пару недель ты увидишь, что на тебя влияет на самом деле.' },
+  {
+    key: 'calm',
+    label: 'Меньше тревоги',
+    proof:
+      'Регулярная рефлексия снижает уровень тревоги: это подтверждают более 200 исследований о письменных практиках.',
+  },
+  {
+    key: 'discipline',
+    label: 'Больше дисциплины',
+    proof:
+      'Дисциплина — не характер, а система. Ритуалы и аскезы держат её за тебя, когда мотивация кончилась.',
+  },
+  {
+    key: 'focus',
+    label: 'Собранность и фокус',
+    proof:
+      'Одно действие за раз работает лучше списка из десяти. Mentalix всегда показывает только следующий шаг.',
+  },
+  {
+    key: 'sleep',
+    label: 'Спокойный сон',
+    proof:
+      'Вечерняя выгрузка мыслей на бумагу помогает засыпать быстрее: голова перестаёт дожёвывать день.',
+  },
+  {
+    key: 'self',
+    label: 'Понять себя',
+    proof:
+      'Чек-ины копят данные о твоём состоянии. Через пару недель ты увидишь, что на тебя влияет на самом деле.',
+  },
 ]
 
 const AGE_OPTIONS = ['До 18', '18–24', '25–34', '35–44', '45+']
@@ -38,32 +68,38 @@ function Head({ step, total, onBack, onSkip }) {
     <div className="w-full max-w-md px-5 pt-5 flex items-center justify-between">
       {step > 0 ? (
         <button
-          onClick={() => { platform.haptic('light'); onBack() }}
+          onClick={() => {
+            platform.haptic('light')
+            onBack()
+          }}
           aria-label="Назад"
           className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
         >
           <ChevronLeft size={20} className="text-muted" />
         </button>
-      ) : <span className="w-10" />}
+      ) : (
+        <span className="w-10" />
+      )}
 
       <div className="flex gap-1.5">
         {Array.from({ length: total }).map((_, i) => (
-          <span
-            key={i}
-            className="mx-onboarding-progress-dot"
-            data-complete={i <= step}
-          />
+          <span key={i} className="mx-onboarding-progress-dot" data-complete={i <= step} />
         ))}
       </div>
 
       {onSkip ? (
         <button
-          onClick={() => { platform.haptic('light'); onSkip() }}
+          onClick={() => {
+            platform.haptic('light')
+            onSkip()
+          }}
           className="text-[13px] font-bold text-faint bg-transparent border-0 py-1 w-14 text-right"
         >
           Далее
         </button>
-      ) : <span className="w-10" />}
+      ) : (
+        <span className="w-10" />
+      )}
     </div>
   )
 }
@@ -109,24 +145,27 @@ export default function Onboarding({ user, onFinish }) {
   useEffect(() => {
     if (step !== 4) return
     const timers = PLAN_CARDS.map((_, i) =>
-      setTimeout(() => {
-        setRevealed(i + 1)
-        if (i === PLAN_CARDS.length - 1) {
-          platform.haptic('light')
-        }
-      }, 420 + i * 520)
+      setTimeout(
+        () => {
+          setRevealed(i + 1)
+          if (i === PLAN_CARDS.length - 1) {
+            platform.haptic('light')
+          }
+        },
+        420 + i * 520
+      )
     )
     return () => timers.forEach(clearTimeout)
   }, [step])
 
   function next() {
     platform.haptic('light')
-    setStep((s) => s + 1)
+    setStep(s => s + 1)
   }
 
   async function finish() {
     platform.haptic('medium')
-    const opt = REMINDER_OPTIONS.find((r) => r.key === reminder)
+    const opt = REMINDER_OPTIONS.find(r => r.key === reminder)
     try {
       localStorage.setItem('mx-onboarding', JSON.stringify({ focuses, age, reminder }))
     } catch {}
@@ -140,201 +179,228 @@ export default function Onboarding({ user, onFinish }) {
     onFinish()
   }
 
-  const chosenFocusLabels = FOCUS_OPTIONS.filter((f) => focuses.includes(f.key)).map((f) => f.label.toLowerCase())
+  const chosenFocusLabels = FOCUS_OPTIONS.filter(f => focuses.includes(f.key)).map(f =>
+    f.label.toLowerCase()
+  )
 
   return (
-    <div
-      className="fixed top-0 left-0 right-0 z-[70] bg-emerald-deep flex flex-col items-center overflow-y-auto"
-      style={surfaceStyle}
-    >
-      {step > 0 && step < 4 && (
-        <Head step={step} total={TOTAL} onBack={() => setStep(step - 1)} onSkip={next} />
-      )}
-
-      {/* ── 0. Приветствие ── */}
-      {step === 0 && (
-        <div className="mx-onboarding-step mx-onboarding-intro flex-1 w-full max-w-md flex flex-col items-center px-8 text-center">
-          <div className="mx-onboarding-intro-art" aria-hidden="true">
-            <MazeLogo
-              size={266}
-              progress={0.35}
-              animateOnMount
-              motionDuration={2400}
-              className="mx-onboarding-intro-maze"
-            />
+    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      <div className={FULLSCREEN_HEADER_SLOT_CLASS}>
+        {step > 0 && step < 4 && (
+          <Head step={step} total={TOTAL} onBack={() => setStep(step - 1)} onSkip={next} />
+        )}
+      </div>
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        {/* ── 0. Приветствие ── */}
+        {step === 0 && (
+          <div className="mx-onboarding-step mx-onboarding-intro flex-1 w-full max-w-md flex flex-col items-center px-8 text-center">
+            <div className="mx-onboarding-intro-art" aria-hidden="true">
+              <OnboardingHero className="mx-onboarding-intro-maze" />
+            </div>
+            <div className="mx-onboarding-intro-copy flex flex-col items-center">
+              <h2 className="font-display text-[30px] text-cream leading-tight">
+                это Mentalix.
+                <br />
+                твоя система, а не мотивация
+              </h2>
+              <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
+                Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
+              </p>
+              <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
+                Начать
+              </button>
+            </div>
           </div>
-          <div className="mx-onboarding-intro-copy flex flex-col items-center">
-            <h2 className="font-display text-[30px] text-cream leading-tight">
-              это Mentalix.
-              <br />
-              твоя система, а не мотивация
+        )}
+
+        {/* ── 1. Фокусы ── */}
+        {step === 1 && (
+          <div
+            key="s1"
+            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+          >
+            <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+              Что сейчас важнее всего?
             </h2>
-            <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
-              Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
+            <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
+              Ответы соберут приложение под твои задачи. Можно выбрать несколько.
             </p>
-            <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
-              Начать
+            <div className="space-y-2.5">
+              {FOCUS_OPTIONS.map(o => (
+                <Option
+                  key={o.key}
+                  label={o.label}
+                  proof={o.proof}
+                  selected={focuses.includes(o.key)}
+                  onClick={() => {
+                    platform.haptic('light')
+                    setFocuses(f =>
+                      f.includes(o.key) ? f.filter(k => k !== o.key) : [...f, o.key]
+                    )
+                  }}
+                />
+              ))}
+            </div>
+            <p className="text-[12px] text-faint text-center mt-6 leading-snug">
+              Выбор ничего не ограничивает — все функции остаются доступными.
+            </p>
+            <button
+              onClick={next}
+              disabled={focuses.length === 0}
+              className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
+            >
+              Дальше
             </button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── 1. Фокусы ── */}
-      {step === 1 && (
-        <div key="s1" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">Что сейчас важнее всего?</h2>
-          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
-            Ответы соберут приложение под твои задачи. Можно выбрать несколько.
-          </p>
-          <div className="space-y-2.5">
-            {FOCUS_OPTIONS.map((o) => (
-              <Option
-                key={o.key}
-                label={o.label}
-                proof={o.proof}
-                selected={focuses.includes(o.key)}
-                onClick={() => {
-                  platform.haptic('light')
-                  setFocuses((f) => (f.includes(o.key) ? f.filter((k) => k !== o.key) : [...f, o.key]))
-                }}
-              />
-            ))}
-          </div>
-          <p className="text-[12px] text-faint text-center mt-6 leading-snug">
-            Выбор ничего не ограничивает — все функции остаются доступными.
-          </p>
-          <button
-            onClick={next}
-            disabled={focuses.length === 0}
-            className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
+        {/* ── 2. Возраст ── */}
+        {step === 2 && (
+          <div
+            key="s2"
+            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
-            Дальше
-          </button>
-        </div>
-      )}
-
-      {/* ── 2. Возраст ── */}
-      {step === 2 && (
-        <div key="s2" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">Сколько тебе лет?</h2>
-          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
-            Чтобы говорить с тобой на одном языке.
-          </p>
-          <div className="space-y-2.5">
-            {AGE_OPTIONS.map((a) => (
-              <Option
-                key={a}
-                label={a}
-                selected={age === a}
-                onClick={() => { platform.haptic('light'); setAge(a) }}
-              />
-            ))}
+            <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+              Сколько тебе лет?
+            </h2>
+            <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
+              Чтобы говорить с тобой на одном языке.
+            </p>
+            <div className="space-y-2.5">
+              {AGE_OPTIONS.map(a => (
+                <Option
+                  key={a}
+                  label={a}
+                  selected={age === a}
+                  onClick={() => {
+                    platform.haptic('light')
+                    setAge(a)
+                  }}
+                />
+              ))}
+            </div>
+            <p className="text-[12px] text-faint text-center mt-6">Это остаётся только у тебя.</p>
+            <button
+              onClick={next}
+              disabled={!age}
+              className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
+            >
+              Дальше
+            </button>
           </div>
-          <p className="text-[12px] text-faint text-center mt-6">Это остаётся только у тебя.</p>
-          <button
-            onClick={next}
-            disabled={!age}
-            className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
+        )}
+
+        {/* ── 3. Напоминание ── */}
+        {step === 3 && (
+          <div
+            key="s3"
+            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
-            Дальше
-          </button>
-        </div>
-      )}
+            <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+              Когда напомнить о себе?
+            </h2>
+            <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
+              Привычка держится на одном постоянном времени. Бот пришлёт короткое сообщение — не
+              спам.
+            </p>
 
-      {/* ── 3. Напоминание ── */}
-      {step === 3 && (
-        <div key="s3" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
-          <h2 className="font-display text-[26px] text-cream text-center leading-tight">
-            Когда напомнить о себе?
-          </h2>
-          <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
-            Привычка держится на одном постоянном времени. Бот пришлёт короткое сообщение — не спам.
-          </p>
-
-          <div className="space-y-2.5">
-            {REMINDER_OPTIONS.map((r) => {
-              const on = reminder === r.key
-              return (
-                <button
-                  key={r.key}
-                  onClick={() => { platform.haptic('light'); setReminder(r.key) }}
-                  className={[
-                    'mx-onboarding-reminder w-full rounded-3xl px-5 py-4 flex items-center gap-4 border-0 text-left',
-                    on ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
-                  ].join(' ')}
-                >
-                  <span className="flex-1">
-                    <span className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-muted'}`}>{r.label}</span>
-                    <span className="block font-display text-[24px] leading-tight">{r.time}</span>
-                    <span className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-faint'}`}>{r.note}</span>
-                  </span>
-                  <span
+            <div className="space-y-2.5">
+              {REMINDER_OPTIONS.map(r => {
+                const on = reminder === r.key
+                return (
+                  <button
+                    key={r.key}
+                    onClick={() => {
+                      platform.haptic('light')
+                      setReminder(r.key)
+                    }}
                     className={[
-                      'mx-onboarding-reminder-check w-6 h-6 rounded-full flex items-center justify-center shrink-0',
-                      on ? 'bg-emerald-deep text-cream' : 'bg-cream/10 text-transparent',
+                      'mx-onboarding-reminder w-full rounded-3xl px-5 py-4 flex items-center gap-4 border-0 text-left',
+                      on ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
                     ].join(' ')}
                   >
-                    <Check size={14} strokeWidth={3} />
-                  </span>
-                </button>
-              )
-            })}
+                    <span className="flex-1">
+                      <span
+                        className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-muted'}`}
+                      >
+                        {r.label}
+                      </span>
+                      <span className="block font-display text-[24px] leading-tight">{r.time}</span>
+                      <span
+                        className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-faint'}`}
+                      >
+                        {r.note}
+                      </span>
+                    </span>
+                    <span
+                      className={[
+                        'mx-onboarding-reminder-check w-6 h-6 rounded-full flex items-center justify-center shrink-0',
+                        on ? 'bg-emerald-deep text-cream' : 'bg-cream/10 text-transparent',
+                      ].join(' ')}
+                    >
+                      <Check size={14} strokeWidth={3} />
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+
+            <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8">
+              Дальше
+            </button>
           </div>
+        )}
 
-          <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8">
-            Дальше
-          </button>
-        </div>
-      )}
+        {/* ── 4. План готов ── */}
+        {step === 4 && (
+          <div
+            key="s4"
+            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+          >
+            <h2 className="font-display text-[28px] text-cream text-center leading-tight">
+              Готово. Путь размечен.
+            </h2>
+            {chosenFocusLabels.length > 0 && (
+              <p className="text-[14px] text-muted mt-3 text-center leading-snug">
+                Фокус: <span className="text-cream font-bold">{chosenFocusLabels.join(', ')}</span>
+              </p>
+            )}
 
-      {/* ── 4. План готов ── */}
-      {step === 4 && (
-        <div key="s4" className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8">
-          <h2 className="font-display text-[28px] text-cream text-center leading-tight">
-            Готово. Путь размечен.
-          </h2>
-          {chosenFocusLabels.length > 0 && (
-            <p className="text-[14px] text-muted mt-3 text-center leading-snug">
-              Фокус: <span className="text-cream font-bold">{chosenFocusLabels.join(', ')}</span>
-            </p>
-          )}
-
-          <div className="space-y-2.5 mt-8">
-            {PLAN_CARDS.map((c, i) => {
-              const shown = revealed > i
-              return (
-                <div
-                  key={i}
-                  className="mx-onboarding-plan-card rounded-3xl bg-emerald px-5 py-4 flex items-center gap-4"
-                  data-revealed={shown}
-                >
-                  <MotifArt name={c.motif} size={44} className="shrink-0" />
-                  <span className="flex-1 text-[14px] font-semibold text-cream leading-snug">{c.text}</span>
-                  <span
-                    className="mx-onboarding-plan-check w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+            <div className="space-y-2.5 mt-8">
+              {PLAN_CARDS.map((c, i) => {
+                const shown = revealed > i
+                return (
+                  <div
+                    key={i}
+                    className="mx-onboarding-plan-card rounded-3xl bg-emerald px-5 py-4 flex items-center gap-4"
                     data-revealed={shown}
                   >
-                    <Check size={14} strokeWidth={3} />
-                  </span>
-                </div>
-              )
-            })}
-          </div>
+                    <MotifArt name={c.motif} size={44} className="shrink-0" />
+                    <span className="flex-1 text-[14px] font-semibold text-cream leading-snug">
+                      {c.text}
+                    </span>
+                    <span
+                      className="mx-onboarding-plan-check w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                      data-revealed={shown}
+                    >
+                      <Check size={14} strokeWidth={3} />
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
 
-          {/* лабиринт заполняется по мере готовности плана */}
-          <div className="flex justify-center mt-9">
-            <MazeLogo size={110} progress={revealed / PLAN_CARDS.length} />
+            {/* лабиринт заполняется по мере готовности плана */}
+            <button
+              onClick={finish}
+              disabled={revealed < PLAN_CARDS.length}
+              className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
+            >
+              {revealed < PLAN_CARDS.length ? 'Собираю...' : 'Войти'}
+            </button>
           </div>
-
-          <button
-            onClick={finish}
-            disabled={revealed < PLAN_CARDS.length}
-            className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
-          >
-            {revealed < PLAN_CARDS.length ? 'Собираю...' : 'Войти'}
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
