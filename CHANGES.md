@@ -1,6 +1,6 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
-## 18.08.2026 — MXL-LIBRARY-CACHE-001: кеш статей библиотеки (не смёржено, ждёт живой проверки)
+## 18.08.2026 — MXL-LIBRARY-CACHE-001: кеш статей библиотеки (подтверждено живой проверкой на iPhone, готово к мержу)
 
 - Тот же паттерн, что уже чинили трижды (`MXL-MENTALIX-HISTORY-CACHE-001`,
   `MXL-TODAY-CACHE-001`): `Articles.jsx` рефетчил `api.articles.list()`
@@ -12,10 +12,15 @@
   принимает `userId` — кешируется одним фиксированным ключом на
   приложение, не по пользователю. `fetchArticles()`/`invalidateArticles()`.
 - `Articles.jsx` переведён на `fetchArticles()`; `api`-импорт убран как
-  ставший не нужным. Loading-гейт не менялся.
-- `npx eslint`/`npm run build` — чисто. Живая проверка не проводилась.
-  Ветка `perf/mxl-library-cache`, `main` не трогать до подтверждения
-  владельца.
+  ставший не нужным. Вспышка «Загрузка...» при тёплом кеше убрана через
+  синхронный `peekArticles()` и lazy-инициализацию `useState`.
+- Диагностическая сессия проверяла гипотезу о полной перезагрузке
+  JS-бандла в Telegram WebView при переключении вкладки — не
+  подтвердилась; временные лог/eruda/tap-логгер удалены, в финальный
+  diff не попали.
+- `npx eslint`/`npm run build` — чисто. Живая проверка на iPhone
+  подтвердила: кеш работает, задержек и ошибок в консоли нет. Ветка
+  `perf/mxl-library-cache`, готова к мержу в `main`.
 - Полная запись — `TASKS.md` → `MXL-LIBRARY-CACHE-001`.
 
 ## 17.08.2026 — MXL-UI-005-CLOSE-GLITCH-001: `Conversation.jsx` переведён на `FULLSCREEN_HEADER_SLOT_CLASS`/`FULLSCREEN_SCROLL_CLASS` (не смёржено, ждёт живой проверки)
