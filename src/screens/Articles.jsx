@@ -3,7 +3,7 @@ import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
 import BackButton from '../components/BackButton'
 import { Search, ExternalLink, ArrowRight } from 'lucide-react'
-import { api } from '../lib/api'
+import { fetchArticles } from '../lib/libraryDataCache'
 import EmptyState from '../components/EmptyState'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
@@ -112,8 +112,7 @@ export default function Articles() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.articles
-      .list()
+    fetchArticles()
       .then(setArticles)
       .catch(e => {
         console.error(e)
