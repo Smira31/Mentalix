@@ -3,7 +3,7 @@ import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
 import BackButton from '../components/BackButton'
 import { Search, ExternalLink, ArrowRight } from 'lucide-react'
-import { fetchArticles } from '../lib/libraryDataCache'
+import { fetchArticles, peekArticles } from '../lib/libraryDataCache'
 import EmptyState from '../components/EmptyState'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
@@ -108,8 +108,8 @@ function Reader({ article, onBack }) {
 export default function Articles() {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(null)
-  const [articles, setArticles] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [articles, setArticles] = useState(() => peekArticles() ?? [])
+  const [loading, setLoading] = useState(() => peekArticles() === null)
 
   useEffect(() => {
     fetchArticles()
