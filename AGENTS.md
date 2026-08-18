@@ -1,82 +1,120 @@
 # AGENTS.md
 
-Guidance for AI coding agents (Codex, Claude Code, and others) working in this
-repository. Claude Code loads this file automatically via the `@AGENTS.md` import in
-`CLAUDE.md`; Codex and other AGENTS.md-aware tools read it directly.
+Единая точка входа для любого AI-агента, работающего в этом репозитории:
+Claude Code, Codex, ChatGPT, GitHub Copilot и другие. Правила ниже не зависят
+от конкретного инструмента — если инструмент не умеет что-то из описанного
+механизма (например, отдельные slash-команды или skills), это не освобождает
+от сути правила, только от способа его выполнения.
 
-## Language
+Claude Code загружает этот файл автоматически через `@AGENTS.md` в
+`CLAUDE.md`. Codex и GitHub Copilot читают `AGENTS.md` напрямую по конвенции
+файла. ChatGPT — если репозиторий подключён как контекст.
 
-Always respond to the user in Russian. The app's UI, copy, and in-app text are
-Russian-only — never introduce English strings into product-facing text.
+## Язык
 
-## Project
+Человекочитаемый текст — ответы пользователю, PR-описания, issues, коммиты,
+комментарии в коде — только на русском. Код, идентификаторы, команды и имена
+файлов — на английском.
 
-Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
-This repo is the **frontend only**, deployed to Vercel (auto-build on push to `main`,
-prod at https://mentalix.vercel.app). The backend/bot lives in a separate **private**
-repo, `mentalix-bot`, not visible here — do not invent its API shape; if a task needs
-backend files, say so instead of guessing. Stack and structure: see `ARCHITECTURE.md`.
+## О проекте
 
-App is Russian-language, dark theme only, Telegram-first with a web fallback.
+Mentalix — Telegram Mini App: ритуалы, аскезы, AI-персоны, аналитика.
+Этот репозиторий — **только фронтенд** (React + Vite + Tailwind), деплой на
+Vercel, автосборка при пуше в `main`. Бэкенд и бот — отдельный приватный
+репозиторий `mentalix-bot`, здесь не описан и не виден; если задача требует
+знания backend-контракта — прямо сказать об этом, а не придумывать API. За
+деталями структуры — `ARCHITECTURE.md`.
 
-## Commands
+## Принципы работы AI
+
+- Не делать предположений, если можно проверить: читать код, а не угадывать
+  поведение.
+- Минимизировать объём изменений — решать конкретную задачу, а не всё, что
+  попалось по пути.
+- Не менять несвязанные файлы, даже если заметил в них проблему — фиксировать
+  отдельно, не смешивать в один diff.
+- Объяснять важные архитектурные решения, а не просто применять их молча.
+- Сохранять стиль проекта — код, тон текста, структуру документов.
+
+## Команды
 
 ```bash
 npm install
 npm run dev        # vite dev server, http://localhost:5173
-npm run build       # vite build — run before every push, catches errors Vercel would hit
-npm run preview     # preview a production build
-npm run lint         # eslint .
+npm run build       # обязательно перед пушем — ловит то, что упадёт на Vercel
+npm run preview
+npm run lint
 npm run lint:fix
 ```
 
-There is no test suite, no typecheck script (project is JS despite a couple of stray
-`.tsx` files — see Gotchas below), and no CI config in this repo.
+Typecheck и автотестов в репозитории нет. CI есть:
+`.github/workflows/mentalix-ci.yml` запускает `lint` и `build` на каждый PR и
+push в `main`.
 
-## Documentation map
+## Что читать под какую задачу
 
-Read before making non-trivial changes, in this order: `PRODUCT.md` (why/for whom),
-`DESIGN_SYSTEM.md` (actual tokens/UI rules — code + this doc are the source of truth),
-`ARCHITECTURE.md` (frontend structure and technical boundaries), `ROADMAP.md`
-(stabilization plan, plus a prioritized list of competitor-derived feature ideas —
-check it before proposing new features), `TASKS.md` (current work), `AI_RULES.md`
-(mandatory process for AI agents working in this repo).
+Читать только то, что нужно для конкретной задачи, не весь список подряд.
 
-Перед началом любой работы прочитай секцию "Передача между агентами" в конце
-`TASKS.md` — там рабочая папка, ветка, статус незакоммиченных изменений и что
-нельзя менять без согласования.
+| Задача | Документ |
+|---|---|
+| Продуктовое решение, зачем и для кого | `PRODUCT.md` |
+| Визуальная/UI-правка, токены, типографика | `DESIGN_SYSTEM.md` |
+| Структура фронта, API-контракты, границы | `ARCHITECTURE.md` |
+| Обязательный процесс, границы разрешений, проверка, DoD задачи | `AI_RULES.md` |
+| Текущая работа, статус, передача между агентами | `TASKS.md` — обязательно прочитать раздел «Передача между агентами» перед стартом |
+| Что уже построено, порядок этапов | `ROADMAP.md` |
+| История подтверждённых изменений | `CHANGES.md` |
 
-Перед началом любой новой **крупной** задачи или фичи (не мелкой правки, не багфикса,
-не задачи с уже принятым решением) — напомнить владельцу о скилле pre-mortem
-(`~/.claude/skills/pre-mortem/SKILL.md`) и предложить прогнать его перед стартом
-реализации, чтобы заранее предвидеть ошибки, а не чинить их постфактум.
+Полный список документов с описаниями — `README.md`.
 
-`docs/archive/CONTEXT.md` and `STOIC_FEATURES.md` are historical/legacy — context only,
-never source of truth. On conflict, priority is, in order:
+## Приоритет источников при конфликте
 
-1. explicit user instruction;
-2. actual code (for current state);
-3. the relevant normative doc (for decisions/rules);
-4. historical docs.
+Явная команда пользователя → актуальный код → профильный нормативный
+документ → исторические документы (`docs/archive/`). Если документ расходится
+с кодом — не выбирать молча, зафиксировать расхождение и запросить решение.
 
-`AI_RULES.md` is binding process, not optional reading — scope boundaries, required
-verification, and task-closure steps (`CHANGES.md`/`TASKS.md`/`ROADMAP.md`) all live
-there; don't rely on a paraphrase.
+## Git и Pull Request
 
-## Pre-mortem before big changes
+Работа только через feature-ветку. Прямой push в `main` запрещён. Изменения
+попадают в `main` только через Pull Request, оформленный по
+`.github/pull_request_template.md`.
 
-Перед стартом крупной задачи (новая фича, продуктовое решение, архитектурное
-изменение) — провести pre-mortem: заранее предвидеть возможные ошибки, а не чинить
-их постфактум. Не применять к мелким правкам, багфиксам и задачам с уже принятым
-решением.
+## GitHub CLI и Issues
 
-## Gotchas
+Issues и PR создавать и просматривать через `gh`. Если задачу можно выполнить
+через `gh`, предпочитать его ручной работе через браузер. Перед созданием
+issue проверить существующие (`gh issue list` / поиск по теме) — не плодить
+дубликаты. При выборе label сверяться с `gh label list` и переиспользовать
+существующий русский label; новый label не заводить без явного подтверждения
+владельца.
 
-- There's no TypeScript build configured (no tsconfig), just a couple of legacy `.tsx`
-  files historically. Don't introduce a `.tsx`/`.jsx` pair for the same component name —
-  Vite's extensionless import resolution silently picks one and ignores the other, so a
-  stray duplicate ships as dead code with no error. (History of a past instance of this:
-  `CHANGES.md`.)
-- `vercel.json` rewrites `/api/*` to the Railway backend; `src/lib/api.js` always calls
-  the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
-  beyond running against that same rewrite (or a local backend serving the same paths).
+## Граница задачи
+
+Если задача только про GitHub (issue/PR/label) или только про документацию —
+не менять код продукта. Scope задачи не расширять по собственной инициативе;
+подробные границы разрешений — `AI_RULES.md`.
+
+## Pre-mortem перед крупными изменениями
+
+Перед крупной фичей, продуктовым решением или архитектурным изменением
+заранее проговорить возможные ошибки и риски, а не чинить их постфактум.
+Не применять к мелким правкам, багфиксам и задачам с уже принятым решением.
+
+## Технические ловушки
+
+- Нет `tsconfig` — TypeScript не настроен, в репозитории есть только пара
+  legacy `.tsx`-файлов. Не заводить `.tsx`/`.jsx`-пару для одного и того же
+  компонента: extensionless-резолвинг Vite молча выберет один файл, а второй
+  останется мёртвым кодом без ошибки сборки.
+- `vercel.json` перенаправляет `/api/*` на Railway-бэкенд; `src/lib/api.js`
+  всегда обращается к относительному префиксу `/api` — локально это работает
+  только через тот же rewrite или локальный backend с теми же путями.
+
+## Definition of Done
+
+- Согласованный scope задачи реализован.
+- Лишних изменений нет — diff соответствует только задаче.
+- `npm run build` / `npm run lint` выполнены, если задача касается кода.
+- Документация (`TASKS.md`, `CHANGES.md`, `ROADMAP.md`) обновлена, если того
+  требует `AI_RULES.md`.
+- Создан Pull Request или Issue, если задача этого требует.
