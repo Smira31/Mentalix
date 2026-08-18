@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 19.08.2026 — MXL-ONBOARDING-001: первый экран онбординга (смёржено в main, PR #116)
+
+- Реализован первый экран онбординга с новым Hero (`src/assets/onboarding-hero.png`) и компонентом `src/components/OnboardingHero.jsx`.
+- Экран переведён на новый визуальный стиль и адаптирован к fullscreen contract (`useFullscreenSurface`), маска нижнего края изображения добавлена, прямоугольная подложка убрана.
+- Изменения находятся в `main` (merge PR #116). `npm run build` и `npm run lint` проходят.
+- Полная запись и follow-up: TASKS.md → Онбординг v2 (Issue #117).
+
 ## 18.08.2026 — MXL-TRENDS-CACHE-001: кеш данных экрана «Тренды» (смёржено в main, PR #113)
 
 - Тот же паттерн, что уже чинили трижды (`MXL-MENTALIX-HISTORY-CACHE-001`,
