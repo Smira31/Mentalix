@@ -54,6 +54,8 @@ function trim(text, max = 90) {
 export default function PersonaPicker({ user, onPick }) {
   const [previews, setPreviews] = useState({})
 
+  const [previewsLoading, setPreviewsLoading] = useState(true)
+
   const [active, setActive] = useState(0)
 
   const trackRef = useRef(null)
@@ -72,19 +74,23 @@ export default function PersonaPicker({ user, onPick }) {
           ])
           .catch(() => [persona.key, null])
       )
-    ).then(pairs => {
-      if (!alive) return
+    )
+      .then(pairs => {
+        if (!alive) return
 
-      const next = {}
+        const next = {}
 
-      pairs.forEach(([key, last]) => {
-        if (last?.content) {
-          next[key] = last
-        }
+        pairs.forEach(([key, last]) => {
+          if (last?.content) {
+            next[key] = last
+          }
+        })
+
+        setPreviews(next)
       })
-
-      setPreviews(next)
-    })
+      .finally(() => {
+        if (alive) setPreviewsLoading(false)
+      })
 
     return () => {
       alive = false
@@ -194,7 +200,22 @@ export default function PersonaPicker({ user, onPick }) {
               </p>
 
               <div className="mt-auto pt-3 mx-persona-card__actions">
-                {last ? (
+                {previewsLoading ? (
+                  /*
+                   * Пока fetchHistory не резолвился, last === undefined —
+                   * неотличимо от «истории нет». Без этого нейтрального
+                   * состояния карточка на первом кадре всегда показывала бы
+                   * «Говорить», а через мгновение резко переключалась на
+                   * «Продолжить разговор» — мигание с неверным кадром.
+                   */
+                  <div
+                    aria-hidden="true"
+                    className="w-full rounded-[20px] bg-emerald-light/40 border border-cream/10 px-4 py-3.5 animate-pulse"
+                  >
+                    <div className="h-[10px] w-24 rounded-full bg-cream/10 mb-2" />
+                    <div className="h-[13px] w-full rounded-full bg-cream/10" />
+                  </div>
+                ) : last ? (
                   <button
                     onClick={event => {
                       event.stopPropagation()
