@@ -1,17 +1,10 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
 
-import { api } from '../../lib/api'
-import SemanticGlyph, {
-  semanticKindForPersona,
-} from '../../components/SemanticGlyph'
+import { fetchHistory } from '../../lib/mentalixHistoryCache'
+import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
-
 
 /*
  * ВЫБОР СОБЕСЕДНИКА
@@ -32,7 +25,6 @@ import { PERSONAS } from './personas'
  * уходил дальше — в жест закрытия окна.
  */
 
-
 /*
  * Карточка тянется до нижней навигации, а не живёт фиксированной
  * высотой. Вычитаем из высоты видимой области всё, что занято
@@ -47,46 +39,26 @@ import { PERSONAS } from './personas'
  * На телефоне min() ничего не меняет: там всегда выигрывает calc.
  */
 const CARD_HEIGHT = {
-  height:
-    'min(560px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 331px))',
+  height: 'min(560px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 331px))',
   minHeight: '360px',
 }
 
-
-
-
-function trim(
-  text,
-  max = 90,
-) {
-  const clean = String(
-    text || '',
-  )
+function trim(text, max = 90) {
+  const clean = String(text || '')
     .replace(/\s+/g, ' ')
     .trim()
 
-  return clean.length > max
-    ? `${clean
-        .slice(0, max)
-        .trimEnd()}…`
-    : clean
+  return clean.length > max ? `${clean.slice(0, max).trimEnd()}…` : clean
 }
 
+export default function PersonaPicker({ user, onPick }) {
+  const [previews, setPreviews] = useState({})
 
-export default function PersonaPicker({
-  user,
-  onPick,
-}) {
-  const [
-    previews,
-    setPreviews,
-  ] = useState({})
+  const [previewsLoading, setPreviewsLoading] = useState(true)
 
-  const [active, setActive] =
-    useState(0)
+  const [active, setActive] = useState(0)
 
   const trackRef = useRef(null)
-
 
   useEffect(() => {
     if (!user) return
@@ -94,84 +66,56 @@ export default function PersonaPicker({
     let alive = true
 
     Promise.all(
-      PERSONAS.map(
-        (persona) =>
-          api.mentalix
-            .history(
-              user.id,
-              persona.key,
-            )
-            .then(
-              (messages) => [
-                persona.key,
-                Array.isArray(
-                  messages,
-                )
-                  ? messages[
-                      messages.length -
-                        1
-                    ]
-                  : null,
-              ],
-            )
-            .catch(() => [
-              persona.key,
-              null,
-            ]),
-      ),
-    ).then((pairs) => {
-      if (!alive) return
+      PERSONAS.map(persona =>
+        fetchHistory(user.id, persona.key)
+          .then(messages => [
+            persona.key,
+            Array.isArray(messages) ? messages[messages.length - 1] : null,
+          ])
+          .catch(() => [persona.key, null])
+      )
+    )
+      .then(pairs => {
+        if (!alive) return
 
-      const next = {}
+        const next = {}
 
-      pairs.forEach(
-        ([key, last]) => {
+        pairs.forEach(([key, last]) => {
           if (last?.content) {
             next[key] = last
           }
-        },
-      )
+        })
 
-      setPreviews(next)
-    })
+        setPreviews(next)
+      })
+      .finally(() => {
+        if (alive) setPreviewsLoading(false)
+      })
 
     return () => {
       alive = false
     }
   }, [user])
 
-
   function syncActive() {
     const track = trackRef.current
 
     if (!track) return
 
-    const card =
-      track.firstElementChild
+    const card = track.firstElementChild
 
     if (!card) return
 
-    const step =
-      card.offsetWidth + 12
+    const step = card.offsetWidth + 12
 
-    setActive(
-      Math.round(
-        track.scrollLeft / step,
-      ),
-    )
+    setActive(Math.round(track.scrollLeft / step))
   }
-
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-[30px] text-cream lowercase mt-4 mb-1">
-        с кем говорим.
-      </h2>
+      <h2 className="font-display text-[30px] text-cream lowercase mt-4 mb-1">с кем говорим.</h2>
 
-      <p className="text-[12px] text-faint mb-6">
-        три собеседника, три отдельных разговора
-      </p>
-
+      <p className="text-[12px] text-faint mb-6">три собеседника, три отдельных разговора</p>
 
       <div
         ref={trackRef}
@@ -192,29 +136,25 @@ export default function PersonaPicker({
           scrollbarWidth: 'none',
         }}
       >
-        {PERSONAS.map(
-          (persona, index) => {
-            const last =
-              previews[
-                persona.key
-              ]
+        {PERSONAS.map((persona, index) => {
+          const last = previews[persona.key]
 
-            return (
-              /*
-               * Вся карточка — это вход в разговор. Раньше
-               * открыть персону можно было только через
-               * нижнюю кнопку, хотя нажать хочется на саму
-               * карточку: она и есть выбор.
-               */
-              <div
-                key={persona.key}
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  platform.haptic('light')
-                  onPick(persona.key, '')
-                }}
-                className={`
+          return (
+            /*
+             * Вся карточка — это вход в разговор. Раньше
+             * открыть персону можно было только через
+             * нижнюю кнопку, хотя нажать хочется на саму
+             * карточку: она и есть выбор.
+             */
+            <div
+              key={persona.key}
+              role="button"
+              tabIndex={0}
+              onClick={() => {
+                platform.haptic('light')
+                onPick(persona.key, '')
+              }}
+              className={`
                   snap-center
                   shrink-0
                   w-[82%]
@@ -230,130 +170,123 @@ export default function PersonaPicker({
                   transition-transform
                   mx-card-system-persona-card
                 `}
-                style={CARD_HEIGHT}
-              >
-                {/*
-                  * Верхняя треть карточки — рисунок. Он занимает
-                  * долю высоты, а не фиксированные пиксели: карточка
-                  * тянется до нижнего меню и на разных экранах имеет
-                  * разную высоту.
-                  */}
-                <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 mx-card-system-persona-art">
-                  <SemanticGlyph
-                    kind={semanticKindForPersona(persona.key)}
-                    animated={active === index}
-                    highlighted={active === index}
-                    className="w-full h-full scale-[1.06]"
-                  />
-                </div>
+              style={CARD_HEIGHT}
+            >
+              {/*
+               * Верхняя треть карточки — рисунок. Он занимает
+               * долю высоты, а не фиксированные пиксели: карточка
+               * тянется до нижнего меню и на разных экранах имеет
+               * разную высоту.
+               */}
+              <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 mx-card-system-persona-art">
+                <SemanticGlyph
+                  kind={semanticKindForPersona(persona.key)}
+                  animated={active === index}
+                  highlighted={active === index}
+                  className="w-full h-full scale-[1.06]"
+                />
+              </div>
 
+              <div className="font-display text-[22px] text-cream leading-tight mt-3 mx-persona-card__title">
+                {persona.name}
+              </div>
 
-                <div className="font-display text-[22px] text-cream leading-tight mt-3 mx-persona-card__title">
-                  {persona.name}
-                </div>
+              <div className="text-[12px] text-gold mt-1.5 mx-persona-card__tagline">
+                {persona.tagline}
+              </div>
 
-                <div className="text-[12px] text-gold mt-1.5 mx-persona-card__tagline">
-                  {persona.tagline}
-                </div>
+              <p className="text-[14px] text-muted leading-snug mt-2.5 mx-persona-card__description">
+                {persona.desc}
+              </p>
 
-                <p className="text-[14px] text-muted leading-snug mt-2.5 mx-persona-card__description">
-                  {persona.desc}
-                </p>
+              <div className="mt-auto pt-3 mx-persona-card__actions">
+                {previewsLoading ? (
+                  /*
+                   * Пока fetchHistory не резолвился, last === undefined —
+                   * неотличимо от «истории нет». Без этого нейтрального
+                   * состояния карточка на первом кадре всегда показывала бы
+                   * «Говорить», а через мгновение резко переключалась на
+                   * «Продолжить разговор» — мигание с неверным кадром.
+                   */
+                  <div
+                    aria-hidden="true"
+                    className="w-full rounded-[20px] bg-emerald-light/40 border border-cream/10 px-4 py-3.5 animate-pulse"
+                  >
+                    <div className="h-[10px] w-24 rounded-full bg-cream/10 mb-2" />
+                    <div className="h-[13px] w-full rounded-full bg-cream/10" />
+                  </div>
+                ) : last ? (
+                  <button
+                    onClick={event => {
+                      event.stopPropagation()
 
+                      platform.haptic('light')
 
-                <div className="mt-auto pt-3 mx-persona-card__actions">
-                  {last ? (
+                      onPick(persona.key, '')
+                    }}
+                    className="w-full text-left rounded-[20px] bg-emerald-light border border-cream/10 px-4 py-3.5 active:scale-[0.99] transition-transform"
+                  >
+                    <div className="text-[10px] uppercase tracking-wider text-gold mb-1">
+                      Продолжить разговор
+                    </div>
+
+                    <p className="text-[13px] text-muted leading-snug">
+                      {last.role === 'user' ? 'Ты: ' : ''}
+
+                      {trim(last.content)}
+                    </p>
+                  </button>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap gap-2 mb-3 mx-persona-card__starters">
+                      {persona.starters.map(starter => (
+                        <button
+                          key={starter}
+                          onClick={event => {
+                            event.stopPropagation()
+
+                            platform.haptic('light')
+
+                            onPick(persona.key, starter)
+                          }}
+                          className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform mx-persona-card__starter"
+                        >
+                          {starter}
+                        </button>
+                      ))}
+                    </div>
+
                     <button
-                      onClick={(event) => {
-                        event.stopPropagation()
-
+                      onClick={() => {
                         platform.haptic('light')
 
-                        onPick(
-                          persona.key,
-                          '',
-                        )
+                        onPick(persona.key, '')
                       }}
-                      className="w-full text-left rounded-[20px] bg-emerald-light border border-cream/10 px-4 py-3.5 active:scale-[0.99] transition-transform"
+                      className="cta-pill w-full py-3.5 text-[15px] mx-persona-card__cta"
                     >
-                      <div className="text-[10px] uppercase tracking-wider text-gold mb-1">
-                        Продолжить разговор
-                      </div>
-
-                      <p className="text-[13px] text-muted leading-snug">
-                        {last.role === 'user'
-                          ? 'Ты: '
-                          : ''}
-
-                        {trim(last.content)}
-                      </p>
+                      Говорить
                     </button>
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap gap-2 mb-3 mx-persona-card__starters">
-                        {persona.starters.map(
-                          (starter) => (
-                            <button
-                              key={starter}
-                              onClick={(event) => {
-                                event.stopPropagation()
-
-                                platform.haptic('light')
-
-                                onPick(
-                                  persona.key,
-                                  starter,
-                                )
-                              }}
-                              className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform mx-persona-card__starter"
-                            >
-                              {starter}
-                            </button>
-                          ),
-                        )}
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          platform.haptic('light')
-
-                          onPick(
-                            persona.key,
-                            '',
-                          )
-                        }}
-                        className="cta-pill w-full py-3.5 text-[15px] mx-persona-card__cta"
-                      >
-                        Говорить
-                      </button>
-                    </>
-                  )}
-                </div>
+                  </>
+                )}
               </div>
-            )
-          },
-        )}
+            </div>
+          )
+        })}
       </div>
-
 
       {/* ── точки ── */}
 
       <div className="flex justify-center gap-1.5 mt-4">
-        {PERSONAS.map(
-          (persona, index) => (
-            <span
-              key={persona.key}
-              className={[
-                'h-[3px] rounded-full transition-all duration-200',
-                index === active
-                  ? 'w-5 bg-gold'
-                  : 'w-4 bg-cream/15',
-              ].join(' ')}
-            />
-          ),
-        )}
+        {PERSONAS.map((persona, index) => (
+          <span
+            key={persona.key}
+            className={[
+              'h-[3px] rounded-full transition-all duration-200',
+              index === active ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
+            ].join(' ')}
+          />
+        ))}
       </div>
-
 
       <p className="text-[11px] text-faint leading-snug mt-6 text-center">
         У каждого своя история — разговоры не смешиваются.
