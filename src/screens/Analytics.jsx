@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api } from '../lib/api'
+import { fetchTrendsData, peekTrendsData } from '../lib/trendsDataCache'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import {
@@ -30,9 +30,7 @@ function EmptyAnalytics() {
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
       <p className="text-[11px] text-muted mb-8">за последние дни</p>
 
-      <EmptyState
-        glyph={<MotifArt name="lestnica" size={120} className="mx-auto mb-3" />}
-      >
+      <EmptyState glyph={<MotifArt name="lestnica" size={120} className="mx-auto mb-3" />}>
         <h3 className="font-display text-lg text-cream mb-2">Пока нечего показать</h3>
         <p className="font-body text-sm text-muted leading-relaxed">
           Отмечай ритуалы и аскезы хотя бы несколько дней — и здесь появятся закономерности, которые
@@ -504,16 +502,18 @@ function Metric({ label, value }) {
 }
 
 export default function Analytics({ user, onGoCheckin }) {
-  const [data, setData] = useState(null)
-  const [checkins, setCheckins] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [data, setData] = useState(() => (user && peekTrendsData(user.id, 14)?.analytics) ?? null)
+  const [checkins, setCheckins] = useState(
+    () => (user && peekTrendsData(user.id, 14)?.checkins) ?? []
+  )
+  const [loading, setLoading] = useState(() => !(user && peekTrendsData(user.id, 14)))
 
   useEffect(() => {
     if (!user) return
-    Promise.all([api.analytics.get(user.id, 14), api.checkin.history(user.id, 14).catch(() => [])])
-      .then(([d, c]) => {
-        setData(d)
-        setCheckins(c || [])
+    fetchTrendsData(user.id, 14)
+      .then(({ analytics, checkins }) => {
+        setData(analytics)
+        setCheckins(checkins || [])
       })
       .catch(e => console.error(e))
       .finally(() => setLoading(false))

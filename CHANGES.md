@@ -1,5 +1,28 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 18.08.2026 — MXL-TRENDS-CACHE-001: кеш данных экрана «Тренды» (не смёржено, ждёт живой проверки)
+
+- Тот же паттерн, что уже чинили трижды (`MXL-MENTALIX-HISTORY-CACHE-001`,
+  `MXL-TODAY-CACHE-001`, `MXL-LIBRARY-CACHE-001`): `Analytics.jsx` рефетчил
+  `api.analytics.get(userId, 14)` + `api.checkin.history(userId, 14)` при
+  каждом монтировании — на каждое переключение вкладки «Тренды», даже если
+  ничего не изменилось.
+- Новый `src/lib/trendsDataCache.js` — module-level `Map`, TTL 30 сек (как
+  у `todayDataCache.js` — данные завязаны на те же действия пользователя).
+  **Ключ двухчастный:** `` `${userId}:${days}` ``, а не только `userId`,
+  как у `todayDataCache.js` — `days` сейчас всегда 14, но параметр заложен
+  на случай выбора периода в будущем. Оба запроса кешируются одним
+  снимком `{ analytics, checkins }`, как в `todayDataCache.js`.
+  `fetchTrendsData()`/`peekTrendsData()`/`invalidateTrendsData()`.
+- `Analytics.jsx` переведён на `fetchTrendsData()`; `api`-импорт убран как
+  ставший не нужным. Вспышка «Загрузка...» при тёплом кеше убрана сразу
+  (не отдельным раундом, как в Library) через синхронный `peekTrendsData()`
+  и lazy-инициализацию `data`/`checkins`/`loading`.
+- `npx eslint`/`npm run build` — чисто. Живая проверка не проводилась.
+  Ветка `perf/mxl-trends-cache`, `main` не трогать до подтверждения
+  владельца.
+- Полная запись — `TASKS.md` → `MXL-TRENDS-CACHE-001`.
+
 ## 18.08.2026 — MXL-LIBRARY-CACHE-001: кеш статей библиотеки (подтверждено живой проверкой на iPhone, готово к мержу)
 
 - Тот же паттерн, что уже чинили трижды (`MXL-MENTALIX-HISTORY-CACHE-001`,

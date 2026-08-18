@@ -112,6 +112,41 @@
 
 ## Сейчас
 
+- [ ] **MXL-TRENDS-CACHE-001 — Кеш данных экрана «Тренды» (`Analytics.jsx`)**
+  - **Статус: реализовано 18.08.2026 на ветке `perf/mxl-trends-cache`,
+    ждёт живой проверки на iPhone — не смёржено в `main`.** Тот же
+    паттерн, что уже чинили трижды (`MXL-MENTALIX-HISTORY-CACHE-001`,
+    `MXL-TODAY-CACHE-001`, `MXL-LIBRARY-CACHE-001`): `Analytics.jsx`
+    рефетчил `api.analytics.get(userId, 14)` +
+    `api.checkin.history(userId, 14)` при каждом монтировании — то есть
+    на каждое переключение вкладки «Тренды» туда-обратно, даже если
+    ничего не изменилось.
+  - **Реализация:** новый `src/lib/trendsDataCache.js` — module-level
+    `Map`, TTL 30 сек (как у `todayDataCache.js` — аналитика и чек-ины
+    завязаны на те же действия пользователя: отметки ритуалов/аскез,
+    чек-ин). **Ключ двухчастный:** `` `${userId}:${days}` ``, в отличие
+    от `todayDataCache.js`, где ключ — только `userId`; `days` сейчас
+    всегда 14, но параметр заложен на случай, если экран когда-нибудь
+    даст выбор периода — кешировать одним `userId` было бы неверно, если
+    период поменяется. Оба запроса (`analytics` + `checkin.history`)
+    кешируются одним снимком `{ analytics, checkins }`, как в
+    `todayDataCache.js`. `fetchTrendsData()` отдаёт из кеша, если свежий,
+    иначе фетчит и кеширует; `peekTrendsData()` — синхронный, без сети,
+    для lazy-инициализации стейта; `invalidateTrendsData()` сбрасывает
+    кеш (не вызывается нигде в этом патче — экспортирован на будущее, по
+    образцу `invalidateArticles()`).
+  - `Analytics.jsx`: прямой `Promise.all([api.analytics.get(...),
+api.checkin.history(...)])` заменён на `fetchTrendsData()`;
+    `api`-импорт стал не нужен, убран. `data`/`checkins`/`loading`
+    инициализируются через lazy `useState` с `peekTrendsData(user.id, 14)`
+    — при тёплом кеше нет промежуточного кадра «Загрузка...» (тот же
+    фикс, что в `MXL-LIBRARY-CACHE-001` делали отдельным раундом после
+    диагностики на iPhone — здесь применён сразу). Loading-гейт
+    (`if (loading) return <p>Загрузка...</p>`) не тронут.
+  - `npx eslint`/`npm run build` — чисто. Живая проверка не проводилась.
+  - Ветка `perf/mxl-trends-cache`, `main` не трогать до подтверждения
+    владельца.
+
 - [ ] **MXL-LIBRARY-CACHE-001 — Кеш статей библиотеки (`Articles.jsx`)**
   - **Статус: подтверждено живой проверкой на iPhone 18.08.2026 (задержек
     нет, ошибок в консоли не было) — готово к мержу. Ветка
