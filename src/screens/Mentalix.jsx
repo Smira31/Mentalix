@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
 
 import { readPendingMentor } from './mentalix/personas'
 import { maybeBuildInsightMessage } from './mentalix/insightDigest'
@@ -26,8 +27,7 @@ function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
 
     let cancelled = false
 
-    api.mentalix
-      .history(user.id, persona)
+    fetchHistory(user.id, persona)
       .then(async history => {
         if (cancelled) return
 
@@ -86,6 +86,8 @@ function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
       const reply = await api.mentalix.send(user.id, text, persona)
 
       setMessages(previous => [...previous, reply])
+
+      invalidateHistory(user.id, persona)
     } catch (error) {
       console.error(error)
 
