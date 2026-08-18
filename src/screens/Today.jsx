@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { fetchTodayData, invalidateTodayData } from '../lib/todayDataCache'
 import { ChevronRight, ArrowUpRight } from 'lucide-react'
 
 import Path from './Path'
@@ -199,6 +200,8 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       const current = await api.checkin.today(user.id)
 
       setCheckin(current)
+
+      invalidateTodayData(user.id)
     } catch (error) {
       console.error(error)
     }
@@ -211,20 +214,14 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
     ;(async () => {
       try {
-        const [ritualsData, ascezasData, quoteData, checkinData, themesData, settingsData] =
-          await Promise.all([
-            api.rituals.list(user.id),
-
-            api.ascezas.list(user.id),
-
-            api.quotes.today(user.id),
-
-            api.checkin.today(user.id).catch(() => null),
-
-            api.themes.list(user.id).catch(() => []),
-
-            api.profile.getSettings(user.id).catch(() => null),
-          ])
+        const {
+          rituals: ritualsData,
+          ascezas: ascezasData,
+          quote: quoteData,
+          checkin: checkinData,
+          themes: themesData,
+          settings: settingsData,
+        } = await fetchTodayData(user.id)
 
         setTheme((themesData || [])[0] || null)
 
@@ -570,9 +567,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       <>
         <div className="text-[13px] text-muted font-semibold mb-2">Твой путь ждёт</div>
 
-        <h2 className="font-display text-[26px] text-cream leading-tight">
-          Добавь первый ритуал
-        </h2>
+        <h2 className="font-display text-[26px] text-cream leading-tight">Добавь первый ритуал</h2>
 
         <p className="text-[14px] text-muted mt-2">
           Система работает через регулярность — начни с одного
@@ -591,8 +586,9 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       </>
     ),
 
-    next: next && (
-      motionExperimentEnabled ? (
+    next:
+      next &&
+      (motionExperimentEnabled ? (
         <NextActionReveal
           next={next}
           remainAfter={remainAfter}
@@ -622,13 +618,10 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           </button>
 
           <p className="text-[12px] text-faint mt-5">
-            {remainAfter > 0
-              ? `После этого останется: ${remainAfter}`
-              : 'Это последнее на сегодня'}
+            {remainAfter > 0 ? `После этого останется: ${remainAfter}` : 'Это последнее на сегодня'}
           </p>
         </>
-      )
-    ),
+      )),
 
     allDone: (
       <>
@@ -730,9 +723,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div
-        className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero"
-      >
+      <div className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero">
         {motionExperimentEnabled ? (
           <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
             <SemanticGlyph kind="next-step" debugSource="Today.jsx" />
