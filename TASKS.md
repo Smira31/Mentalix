@@ -1889,3 +1889,27 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - Реальные экраны нельзя менять на основании одного лабораторного эксперимента.
 - Backend не менять без необходимости.
 - Не выполнять commit, push, merge или stash без прямого согласования.
+
+## GitHub-инфраструктура — состояние на 18.08.2026
+
+- GitHub CLI настроен и используется для Issues/PR.
+- GitHub Project настроен (подтверждено владельцем вручную, не через `gh`).
+- Auto-add Issues в Project работает (подтверждено владельцем вручную, не через `gh`).
+- Русские labels настроены.
+- Issue Templates настроены (Идея, Ошибка, Новая функция, Документация, Исследование, UX).
+- Pull Request Template настроен.
+- `AGENTS.md` настроен как единая точка входа AI.
+- CI настроен (`mentalix-ci.yml`: lint + build на PR/push в `main`).
+- `GITHUB_TOKEN` ограничен `contents: read`.
+- `delete_branch_on_merge` включён.
+- `main` работает через PR/ruleset (активный ruleset «Защита главной ветки Mentalix», блокирует прямой push, force-push и удаление ветки).
+- GitHub-менеджер Claude Code настроен.
+
+**Вернуться вечером**
+
+- Разобрать старые открытые PR.
+- Решить судьбу Issues #98–#105.
+- Проверить Projects через `gh` после добавления scope `read:project`.
+- Решить, нужны ли Milestones.
+- Решить, нужны ли отдельные labels для `perf/*` и `ci/*`.
+- Дальше добавлять только те GitHub-настройки, которые реально экономят время.
