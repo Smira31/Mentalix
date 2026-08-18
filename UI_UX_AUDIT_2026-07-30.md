@@ -37,38 +37,38 @@ Baseline: `main`, HEAD `162f8ad8a17e74691c805784105b7098e144c195` — «Сдел
 
 ## 1. Реестр всех пользовательских наблюдений
 
-| № | Пользовательское наблюдение | Повторный результат |
-|---:|---|---|
-| 1 | Bottom Navigation виден и перекрывает CheckIn/evening review, включая финалы | Подтверждено: T01 |
-| 2 | iPhone keyboard перекрывает поля и CTA CheckIn; нужен visualViewport | Подтверждено: T02, T07 |
-| 3 | Theme Week имеет тот же keyboard/navbar конфликт | Подтверждено: T01, T03, T07 |
-| 4 | Fullscreen practices требуют понятного выхода и решения по navbar | Частично подтверждено: T01, T06; политика — P02 |
-| 5 | AI Conversation back не возвращает к picker | Подтверждено: T05 |
-| 6 | Нужен общий FullscreenLayout/FlowLayout | Подтверждена фрагментация; архитектурный объём — P02 |
-| 7 | Верхние композиции расходятся относительно Telegram controls | Подтверждено: T04, U01, P09 |
-| 8 | Today визуально начинается слишком низко | Подтверждена кодовая композиция: U02; device measurement обязателен |
-| 9 | В CheckIn слишком большая зона между header и вопросом; финал требует scroll | Подтверждено: U03 |
-| 10 | Profile title нужно проверить/центрировать | Расхождение подтверждено: U04; точный канон — P09 |
-| 11 | Settings title привязан к back, желателен centered header | Подтверждено: U04; решение — P09 |
-| 12 | Practices допускает горизонтальный сдвиг | Конкретный offender статически не подтверждён: V02 |
-| 13 | Между вкладками ощущается разный scale; возможен iOS input zoom | Подтверждено: T07, T08, U08 |
-| 14 | Bottom Navigation остаётся тёмным в light theme | Подтверждено: U05 |
-| 15 | Hero «Разобрать день?» показывает разные иллюстрации | Подтверждено на новом state machine: U06 |
-| 16 | Hero различается по размеру/padding/composition | Подтвержден частичный contract: U07 |
-| 17 | Quick Add висит отдельно и не связан с safe area/navbar | Подтверждено: T09 |
-| 18 | Time-based greeting Today не нравится | Текущее поведение подтверждено; смена текста — P01 |
-| 19 | Нейротренажёр/Дыхание/Фокус/Медитации предлагается временно закрыть | Текущая неоднородность подтверждена; gating — P03 |
-| 20 | «Курсы» переименовать/закрыть; будущая модель «Пути» | Текущий активный раздел подтверждён; решение — P04 |
-| 21 | Нужны `/dev-reset`, `/dev-onboarding`, `/dev-demo`, state panel | Отсутствуют: V01 |
-| 22 | Empty state «Ритуалов пока нет» визуально пуст | Существование подтверждено; вариант дизайна — P05 |
-| 23 | Article cards нужны с cover/metadata/CTA и reader | Текущая структура подтверждена: U09; schema/source — P06 |
-| 24 | AI picker cards должны быть крупнее, header — центрирован | Текущее расхождение подтверждено: U10 |
-| 25 | Гипотеза fullscreen AI cards с horizontal swipe | Не реализация: P07, D01 |
-| 26 | Conversation нравится; нужен аккуратный header и speech-to-text backlog | Back bug T05; speech-to-text — P08 |
-| 27 | Analytics нужен смысловой redesign, не cosmetic patch | Deferred: D02 |
-| 28 | Profile нужен будущий «Мой путь», не точечный patch | Deferred: D03 |
-| 29 | Onboarding нужно пересобрать по смыслу | Deferred: D04; safe token дополнительно затронут T04 |
-| 30 | Возможна утечка Telegram/system accent, особенно «Далее» | Конкретный purple control не подтверждён; token bypass частично подтверждён: V03 |
+|   № | Пользовательское наблюдение                                                  | Повторный результат                                                              |
+| --: | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+|   1 | Bottom Navigation виден и перекрывает CheckIn/evening review, включая финалы | Подтверждено: T01                                                                |
+|   2 | iPhone keyboard перекрывает поля и CTA CheckIn; нужен visualViewport         | Подтверждено: T02, T07                                                           |
+|   3 | Theme Week имеет тот же keyboard/navbar конфликт                             | Подтверждено: T01, T03, T07                                                      |
+|   4 | Fullscreen practices требуют понятного выхода и решения по navbar            | Частично подтверждено: T01, T06; политика — P02                                  |
+|   5 | AI Conversation back не возвращает к picker                                  | Подтверждено: T05                                                                |
+|   6 | Нужен общий FullscreenLayout/FlowLayout                                      | Подтверждена фрагментация; архитектурный объём — P02                             |
+|   7 | Верхние композиции расходятся относительно Telegram controls                 | Подтверждено: T04, U01, P09                                                      |
+|   8 | Today визуально начинается слишком низко                                     | Подтверждена кодовая композиция: U02; device measurement обязателен              |
+|   9 | В CheckIn слишком большая зона между header и вопросом; финал требует scroll | Подтверждено: U03                                                                |
+|  10 | Profile title нужно проверить/центрировать                                   | Расхождение подтверждено: U04; точный канон — P09                                |
+|  11 | Settings title привязан к back, желателен centered header                    | Подтверждено: U04; решение — P09                                                 |
+|  12 | Practices допускает горизонтальный сдвиг                                     | Конкретный offender статически не подтверждён: V02                               |
+|  13 | Между вкладками ощущается разный scale; возможен iOS input zoom              | Подтверждено: T07, T08, U08                                                      |
+|  14 | Bottom Navigation остаётся тёмным в light theme                              | Подтверждено: U05                                                                |
+|  15 | Hero «Разобрать день?» показывает разные иллюстрации                         | Подтверждено на новом state machine: U06                                         |
+|  16 | Hero различается по размеру/padding/composition                              | Подтвержден частичный contract: U07                                              |
+|  17 | Quick Add висит отдельно и не связан с safe area/navbar                      | Подтверждено: T09                                                                |
+|  18 | Time-based greeting Today не нравится                                        | Текущее поведение подтверждено; смена текста — P01                               |
+|  19 | Нейротренажёр/Дыхание/Фокус/Медитации предлагается временно закрыть          | Текущая неоднородность подтверждена; gating — P03                                |
+|  20 | «Курсы» переименовать/закрыть; будущая модель «Пути»                         | Текущий активный раздел подтверждён; решение — P04                               |
+|  21 | Нужны `/dev-reset`, `/dev-onboarding`, `/dev-demo`, state panel              | Отсутствуют: V01                                                                 |
+|  22 | Empty state «Ритуалов пока нет» визуально пуст                               | Существование подтверждено; вариант дизайна — P05                                |
+|  23 | Article cards нужны с cover/metadata/CTA и reader                            | Текущая структура подтверждена: U09; schema/source — P06                         |
+|  24 | AI picker cards должны быть крупнее, header — центрирован                    | Текущее расхождение подтверждено: U10                                            |
+|  25 | Гипотеза fullscreen AI cards с horizontal swipe                              | Не реализация: P07, D01                                                          |
+|  26 | Conversation нравится; нужен аккуратный header и speech-to-text backlog      | Back bug T05; speech-to-text — P08                                               |
+|  27 | Analytics нужен смысловой redesign, не cosmetic patch                        | Deferred: D02                                                                    |
+|  28 | Profile нужен будущий «Мой путь», не точечный patch                          | Deferred: D03                                                                    |
+|  29 | Onboarding нужно пересобрать по смыслу                                       | Deferred: D04; safe token дополнительно затронут T04                             |
+|  30 | Возможна утечка Telegram/system accent, особенно «Далее»                     | Конкретный purple control не подтверждён; token bypass частично подтверждён: V03 |
 
 ## 2. Confirmed technical bug
 
@@ -337,12 +337,12 @@ light-режима больше нет вообще, вопрос снят.
 - **Приоритет/Batch:** P1, C.
 - **Acceptance:** один `reviewPending` state на empty/non-empty fixtures имеет одинаковый утверждённый art; прочие states сохраняют mapping.
 
-| Актуальный `todayState` | `isEmpty` | Текущий art | Текущий текст |
-|---|---:|---|---|
-| `checkinPending` | true | `ArtThread` | «Как ты?» |
-| `checkinPending` | false | `MazeLogo` | «Как ты?» |
-| `reviewPending` | true | `ArtThread` | «Разобрать день?» |
-| `reviewPending` | false | `MazeLogo` | «Разобрать день?» |
+| Актуальный `todayState`       |  `isEmpty` | Текущий art          | Текущий текст       |
+| ----------------------------- | ---------: | -------------------- | ------------------- |
+| `checkinPending`              |       true | `ArtThread`          | «Как ты?»           |
+| `checkinPending`              |      false | `MazeLogo`           | «Как ты?»           |
+| `reviewPending`               |       true | `ArtThread`          | «Разобрать день?»   |
+| `reviewPending`               |      false | `MazeLogo`           | «Разобрать день?»   |
 | `dayInProgress` / `dayClosed` | true/false | зависит от `isEmpty` | state-specific copy |
 
 ### MXL-UX-U07 — Hero contract существует только как общий wrapper
@@ -583,10 +583,21 @@ title в центре, пустой `aria-hidden` span справа для си�
 
 ### MXL-UX-D04 — Onboarding content redesign
 
+- **Статус:** частично реализовано — первый экран онбординга реализован и переведён на новый визуальный стиль; изменения смёржены в `main` (19.08.2026, PR #116). Остальной redesign остаётся в плане.
 - **Scope:** value proposition первого экрана, причина возврата завтра, cards/final; не смешивать с точечным safe-area fix T04.
-- **Файлы:** `src/screens/Onboarding.jsx`, settings persistence.
+- **Файлы:** `src/screens/Onboarding.jsx`, `src/components/OnboardingHero.jsx`, `src/assets/onboarding-hero.png`, стили экрана (`src/screens/Onboarding.css`), settings persistence.
 - **Риск:** высокий; activation, age/legal, notification promise.
 - **Acceptance:** clean-storage flow, back/skip, age variants, save failure, final CTA, next-day proposition.
+
+## Известные доработки
+
+Первый экран onboarding:
+
+- [ ] Финально подобрать композицию Hero после серии тестов на iPhone.
+- [ ] Проверить масштаб персонажа.
+- [ ] Проверить отсутствие вертикальной прокрутки.
+- [ ] При необходимости скорректировать положение Hero относительно заголовка.
+- [ ] После завершения этих проверок считать первый экран зафиксированным.
 
 ## 6. Developer tooling backlog
 
@@ -785,4 +796,3 @@ title в центре, пустой `aria-hidden` span справа для си�
 - light/dark/auto только для theme batch;
 - подтверждение неизменности `todayState`, `review_hour`, `review_completed_at`, API payload и backend contract;
 - результат фиксируется по формату `QA.md`: verified / not verified / blocked.
-
