@@ -30,6 +30,7 @@ import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 
 import { initFullscreen } from './lib/tgFullscreen'
+import { useVisualViewportHeight } from './lib/visualViewport'
 
 
 /* ============================================================
@@ -223,6 +224,9 @@ export default function App() {
   const [navCollapsed, setNavCollapsed] =
     useState(false)
 
+  const viewportHeight =
+    useVisualViewportHeight()
+
   /*
    * Отдельное состояние:
    * открыта ли конкретная AI-персона.
@@ -274,6 +278,9 @@ export default function App() {
    * requestAnimationFrame скролла.
    */
   const scrollFrame = useRef(null)
+
+  /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
+  const scrollRootRef = useRef(null)
 
 
   /*
@@ -487,7 +494,8 @@ export default function App() {
 
       const currentY =
         Math.max(
-          window.scrollY || 0,
+          scrollRootRef.current
+            ?.scrollTop || 0,
           0
         )
 
@@ -595,14 +603,20 @@ export default function App() {
 
     lastScrollY.current =
       Math.max(
-        window.scrollY || 0,
+        scrollRootRef.current
+          ?.scrollTop || 0,
         0
       )
 
     resetGesture()
 
 
-    window.addEventListener(
+    const scrollRoot =
+      scrollRootRef.current
+
+    if (!scrollRoot) return
+
+    scrollRoot.addEventListener(
       'scroll',
       handleScroll,
       { passive: true }
@@ -610,7 +624,7 @@ export default function App() {
 
 
     return () => {
-      window.removeEventListener(
+      scrollRoot.removeEventListener(
         'scroll',
         handleScroll
       )
@@ -625,17 +639,36 @@ export default function App() {
         scrollFrame.current = null
       }
     }
-  }, [bottomNavigationHidden])
+  }, [
+    authChecked,
+    bottomNavigationHidden,
+    locked,
+    onboarded,
+    user,
+  ])
 
 
   /* ============================================================
      NAVIGATION
      ============================================================ */
 
+  const scrollAppToTop = useCallback(
+    (behavior = 'auto') => {
+      scrollRootRef.current
+        ?.scrollTo({
+          top: 0,
+          left: 0,
+          behavior,
+        })
+    },
+    []
+  )
+
   function resetNavigationGesture() {
     lastScrollY.current =
       Math.max(
-        window.scrollY || 0,
+        scrollRootRef.current
+          ?.scrollTop || 0,
         0
       )
 
@@ -655,11 +688,7 @@ export default function App() {
     }
 
     if (key === tab) {
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'smooth',
-      })
+      scrollAppToTop('smooth')
 
       setNavCollapsed(false)
 
@@ -683,11 +712,7 @@ export default function App() {
     scrollDistance.current = 0
 
 
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'instant',
-    })
+    scrollAppToTop()
   }
 
 
@@ -709,11 +734,8 @@ export default function App() {
       scrollDirection.current = null
       scrollDistance.current = 0
 
-      window.scrollTo({
-        top: 0,
-        left: 0,
-      })
-    }, [])
+      scrollAppToTop()
+    }, [scrollAppToTop])
 
 
   const goMentor =
@@ -730,11 +752,8 @@ export default function App() {
       scrollDirection.current = null
       scrollDistance.current = 0
 
-      window.scrollTo({
-        top: 0,
-        left: 0,
-      })
-    }, [])
+      scrollAppToTop()
+    }, [scrollAppToTop])
 
 
   /* ============================================================
@@ -846,15 +865,13 @@ export default function App() {
    * ощущение, что часть экранов «стоит
    * слишком низко».
    *
-   * На AI-персоне нижнего navbar нет,
-   * поэтому не оставляем под него
-   * искусственные 100px.
+   * Когда navbar скрыт fullscreen-сценарием,
+   * оставляем только системную нижнюю safe area.
    */
   const contentBottomPadding =
-    tab === 'mentor' &&
-    mentorPersonaOpen
+    bottomNavigationHidden
       ? 'var(--app-safe-bottom)'
-      : 'calc(100px + var(--app-safe-bottom))'
+      : 'var(--app-content-bottom)'
 
 
   /* ============================================================
@@ -864,7 +881,8 @@ export default function App() {
   return (
     <div
       className="
-        min-h-screen
+        h-screen
+        overflow-hidden
         bg-emerald-deep
         text-cream
         flex
@@ -873,6 +891,9 @@ export default function App() {
         font-body
       "
       style={{
+        height: viewportHeight
+          ? `${viewportHeight}px`
+          : '100dvh',
         paddingTop:
           topSafeArea,
         paddingRight:
@@ -919,6 +940,11 @@ export default function App() {
             </span>
           </div>
         )}
+
+      <div
+        ref={scrollRootRef}
+        className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain flex flex-col items-center"
+      >
 
 
       {/* ========================================================
@@ -1207,16 +1233,14 @@ export default function App() {
 
                     resetNavigationGesture()
 
-                    window.scrollTo({
-                      top: 0,
-                      left: 0,
-                    })
+                    scrollAppToTop()
                   }}
                 />
               )}
           </>
         )}
         </Suspense>
+      </div>
       </div>
 
 

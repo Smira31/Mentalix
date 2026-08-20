@@ -12,6 +12,13 @@
 - Полная запись и значения для ручной проверки — `TASKS.md` →
   `MXL-TELEGRAM-STOREFRONT-001`.
 
+## 21.08.2026 — MXL-UNIFIED-MOBILE-LAYOUT-001: общий mobile layout (локально)
+
+- Обычные вкладки переведены на общий scroll-root внутри Telegram safe-area;
+  BottomNavigation и нижний резерв контента используют единую геометрию.
+- Build/lint проходят, живая проверка на iPhone обязательна до merge. Полная
+  запись — `TASKS.md` → `MXL-UNIFIED-MOBILE-LAYOUT-001`.
+
 ## 19.08.2026 — MXL-ONBOARDING-001: первый экран онбординга (смёржено в main, PR #116)
 
 - Реализован первый экран онбординга с новым Hero (`src/assets/onboarding-hero.png`) и компонентом `src/components/OnboardingHero.jsx`.

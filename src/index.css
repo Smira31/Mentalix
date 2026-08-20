@@ -61,6 +61,17 @@
     var(--tg-content-safe-area-right)
   );
 
+  /* Общая геометрия нижней навигации и резерва под неё. */
+
+  --bottom-nav-height: 68px;
+  --bottom-nav-collapsed-size: 58px;
+  --bottom-nav-offset: 12px;
+  --bottom-nav-content-gap: 20px;
+  --app-content-bottom: calc(
+    var(--app-safe-bottom) + var(--bottom-nav-offset) + var(--bottom-nav-height) +
+      var(--bottom-nav-content-gap)
+  );
+
   /* Основные поверхности */
 
   --c-bg: 5 4 3;
