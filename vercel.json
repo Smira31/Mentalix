@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://mentalix-bot-production.up.railway.app/api/:path*" }
+    { "source": "/api/:path*", "destination": "https://mentalix-bot.onrender.com/api/:path*" }
   ]
 }
