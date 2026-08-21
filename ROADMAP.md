@@ -6,9 +6,9 @@
 
 Следующая P0-задача — `MXL-UNIFIED-MOBILE-LAYOUT-001`: единый mobile layout
 для Telegram safe-area и BottomNavigation без редизайна. Системное исправление
-реализовано локально; до merge обязательна проверка Today, Practices, AI,
-Library/Article и Analytics на реальном iPhone внутри Telegram. Полный статус —
-в `TASKS.md`.
+реализовано в draft PR #128; владелец подтвердил Today, Practices, AI,
+Library/Article и Analytics на реальном iPhone внутри Telegram. Ручной gate
+пройден, merge и deploy не выполнялись. Полный статус — в `TASKS.md`.
 
 ## Фактический статус на 29.07.2026
 

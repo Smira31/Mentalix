@@ -12,13 +12,14 @@
 - Полная запись и значения для ручной проверки — `TASKS.md` →
   `MXL-TELEGRAM-STOREFRONT-001`.
 
-## 21.08.2026 — MXL-UNIFIED-MOBILE-LAYOUT-001: общий mobile layout (локально)
+## 21.08.2026 — MXL-UNIFIED-MOBILE-LAYOUT-001: общий mobile layout (draft PR #128)
 
 - Обычные вкладки переведены на общий scroll-root внутри Telegram safe-area;
   BottomNavigation и нижний резерв контента используют единую геометрию.
 - После первой iPhone-проверки исправлен сброс fullscreen-состояния при
-  `ALREADY_FULLSCREEN`; lint/build/diff-check проходят, повторная проверка
-  обязательна до merge. Полная запись — `TASKS.md` → `MXL-UNIFIED-MOBILE-LAYOUT-001`.
+  `ALREADY_FULLSCREEN`; lint/build/diff-check проходят. Владелец подтвердил
+  повторный gate на реальном iPhone внутри Telegram. Полная запись — `TASKS.md`
+  → `MXL-UNIFIED-MOBILE-LAYOUT-001`.
 
 ## 19.08.2026 — MXL-ONBOARDING-001: первый экран онбординга (смёржено в main, PR #116)
 
