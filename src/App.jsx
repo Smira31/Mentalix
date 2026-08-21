@@ -360,7 +360,7 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
-    initFullscreen(
+    return initFullscreen(
       ({ fullscreen: fs }) => {
         setFullscreen(fs)
       }

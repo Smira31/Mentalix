@@ -69,8 +69,9 @@
 
 - [ ] **[P0] MXL-UNIFIED-MOBILE-LAYOUT-001 — Unified Mobile Layout: Telegram safe-area + BottomNavigation**
   - **Статус:** минимальное системное исправление реализовано в ветке
-    `fix/unified-mobile-layout`; merge/deploy не выполнялись. Перед merge
-    обязательна живая проверка в Telegram на реальном iPhone.
+    `fix/unified-mobile-layout`; первая живая проверка выявила перекрытие
+    верхнего контента Today, follow-up исправлен локально. Merge/deploy не
+    выполнялись; перед merge обязательна повторная проверка на реальном iPhone.
   - Первопричина: обычные вкладки прокручивали `window`, поэтому верхний
     safe-area защищал только начальное положение контента. Нижний резерв
     задавался в `App.jsx` отдельным значением `100px`, независимо от фактических
@@ -84,11 +85,20 @@
   - Высота `visualViewport` вынесена в `src/lib/visualViewport.js` и повторно
     используется обычным shell и существующим `useFullscreenSurface`; AI chat,
     keyboard и fullscreen-контракт не переписывались.
+  - Follow-up после iPhone-проверки: эффект `initFullscreen()` в `App.jsx` не
+    возвращал cleanup, поэтому React StrictMode оставлял дублирующиеся
+    подписки/запросы. Ответ Telegram `ALREADY_FULLSCREEN` ошибочно сбрасывал
+    состояние shell в `false`, и общий верхний резерв `56px` исчезал при
+    фактически активном fullscreen. Cleanup восстановлен; повторный запрос не
+    отправляется при уже активном fullscreen, а `ALREADY_FULLSCREEN` сохраняет
+    корректное состояние. `safeAreaInset`, `contentSafeAreaInset`,
+    `visualViewport`, нижний резерв и `useFullscreenSurface` не менялись.
   - Удалён ставший нерабочим локальный `window.scrollTo` из `Practices.jsx`.
     Экранные padding-хаки не добавлялись; карусели Rituals, Ascezas и
     PersonaPicker не менялись.
-  - Проверки: `npm run lint` — 0 ошибок, 31 существующее предупреждение;
-    `npm run build` — успешно; локальный frontend — HTTP 200; формулы layout
+  - Проверки после follow-up: `npm run lint` — 0 ошибок, 31 существующее
+    предупреждение; `npm run build` и `git diff --check` — успешно; локальный
+    frontend — HTTP 200; формулы layout
     проверены для `390×844` и `320×568`, горизонтального выхода навигации нет.
     Интерактивный браузерный smoke недоступен в текущей сессии.
 

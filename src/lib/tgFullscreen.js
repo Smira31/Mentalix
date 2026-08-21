@@ -153,7 +153,19 @@ export function initFullscreen(onChange) {
   }
 
   const onFullscreenFailed = (event) => {
-    state.fullscreen = false
+    const error =
+      event?.error ?? event
+
+    /*
+     * requestFullscreen идемпотентен для нашего shell: ALREADY_FULLSCREEN
+     * означает, что нужное состояние уже достигнуто. Сбрасывать флаг здесь
+     * нельзя — иначе общий top reserve исчезает, хотя controls Telegram всё
+     * ещё лежат поверх webview.
+     */
+    state.fullscreen =
+      error === 'ALREADY_FULLSCREEN' ||
+      Boolean(webApp?.isFullscreen)
+
     apply()
 
     console.info(
@@ -225,6 +237,7 @@ export function initFullscreen(onChange) {
   )
 
   if (
+    !state.fullscreen &&
     typeof webApp?.requestFullscreen ===
     'function'
   ) {
@@ -242,7 +255,7 @@ export function initFullscreen(onChange) {
         onFullscreenFailed,
       )
     }
-  } else {
+  } else if (!state.fullscreen) {
     postWebViewEvent(
       webView,
       'web_app_request_fullscreen',

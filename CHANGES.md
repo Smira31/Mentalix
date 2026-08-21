@@ -16,8 +16,9 @@
 
 - Обычные вкладки переведены на общий scroll-root внутри Telegram safe-area;
   BottomNavigation и нижний резерв контента используют единую геометрию.
-- Build/lint проходят, живая проверка на iPhone обязательна до merge. Полная
-  запись — `TASKS.md` → `MXL-UNIFIED-MOBILE-LAYOUT-001`.
+- После первой iPhone-проверки исправлен сброс fullscreen-состояния при
+  `ALREADY_FULLSCREEN`; lint/build/diff-check проходят, повторная проверка
+  обязательна до merge. Полная запись — `TASKS.md` → `MXL-UNIFIED-MOBILE-LAYOUT-001`.
 
 ## 19.08.2026 — MXL-ONBOARDING-001: первый экран онбординга (смёржено в main, PR #116)
 
