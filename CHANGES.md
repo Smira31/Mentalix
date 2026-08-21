@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 21.08.2026 — MXL-TELEGRAM-STOREFRONT-001: короткий первый запуск (Issue #120)
+
+- Onboarding сокращён до одного честного обещания ценности и одного CTA с
+  переходом в существующий Today; вопросы без дальнейшего использования удалены.
+- Today, навигация, API и splash не менялись. Изменение `/start` подготовлено
+  отдельным backend PR; ручной BotFather/iPhone gate остаётся открытым.
+- Полная запись и значения для ручной проверки — `TASKS.md` →
+  `MXL-TELEGRAM-STOREFRONT-001`.
+
 ## 19.08.2026 — MXL-ONBOARDING-001: первый экран онбординга (смёржено в main, PR #116)
 
 - Реализован первый экран онбординга с новым Hero (`src/assets/onboarding-hero.png`) и компонентом `src/components/OnboardingHero.jsx`.
