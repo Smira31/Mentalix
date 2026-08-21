@@ -1,50 +1,22 @@
 .mx-onboarding-step {
-  animation: mx-onboarding-enter 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: mx-onboarding-enter 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
   will-change: opacity;
 }
 
 .mx-onboarding-intro {
-  /* keep vertical space tight so intro fits on small viewports */
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* center content vertically inside available space */
-  gap: 8px;
-  padding-top: clamp(12px, 3dvh, 28px);
-  padding-bottom: clamp(12px, 3dvh, 28px);
-}
-
-/* small viewport tweak: reduce vertical gaps further */
-@media (max-height: 720px) {
-  .mx-onboarding-intro {
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-}
-
-.mx-onboarding-intro.mx-onboarding-step {
-  animation-duration: 520ms;
-}
-
-/* Ensure first intro screen fills viewport and never scrolls vertically */
-.mx-onboarding-intro.mx-onboarding-step {
-  /* use svh when available, fall back to dVh */
-  height: calc(100svh - var(--app-safe-top) - var(--app-safe-bottom));
-  height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
-  min-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
-  max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
-  overflow: hidden; /* prevent vertical scroll */
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* top safe area, image, text+desc, button, bottom safe area */
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: clamp(4px, 1.5dvh, 12px);
+  padding-top: clamp(8px, 2dvh, 20px);
+  padding-bottom: clamp(12px, 3dvh, 28px);
 }
 
 .mx-onboarding-intro-art {
   width: 100%;
-  /* reduce image area height so first screen fits without vertical scroll on small viewports */
-  min-height: clamp(120px, 26dvh, 220px);
+  min-height: clamp(112px, 28dvh, 220px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,35 +24,29 @@
 }
 
 .mx-onboarding-intro-maze {
-  width: clamp(216px, 70vw, 266px);
+  width: clamp(196px, 70vw, 266px);
   height: auto;
   flex: 0 0 auto;
 }
 
-/* Onboarding hero visuals: contained image, subtle gold glow and line */
 .mx-onboarding-hero {
   position: relative;
   width: inherit;
   height: inherit;
-  background-color: transparent; /* ensure container does not draw a rectangle */
+  background-color: transparent;
   display: block;
   overflow: visible;
 }
-
-/* removed decorative pseudo-elements to avoid any rectangular artifacts */
 
 .mx-onboarding-hero-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  object-position: 50% 54%; /* raise framing slightly */
+  object-position: 50% 54%;
   display: block;
-  transform: translateY(-30px) scale(1); /* raise ~30px and scale ~+19% */
-  will-change: transform;
+  transform: translateY(-24px);
   z-index: 1;
-  filter: brightness(0.86); /* reduce gold brightness ~14% - ~20% */
-
-  /* smooth dissolve of bottom ~18-20% into transparent background */
+  filter: brightness(0.86);
   -webkit-mask-image: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 1) 0%,
@@ -99,122 +65,17 @@
   mask-repeat: no-repeat;
 }
 
-/* Respect reduced motion and do not change existing animations */
-@media (prefers-reduced-motion: reduce) {
-  .mx-onboarding-hero-img {
-    transition: none !important;
-    transform: translateY(-25px) scale(0.82) !important;
-  }
-  .mx-onboarding-hero:before,
-  .mx-onboarding-hero:after {
-    transition: none !important;
-    filter: none !important;
-  }
-}
-
 .mx-onboarding-intro-copy {
-  margin-top: clamp(6px, 1.5dvh, 12px);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px; /* spacing between title, description, and button handled by flex gap */
-  transform: translateY(-20px); /* lift text block closer to the character */
+  gap: clamp(12px, 2dvh, 18px);
+  transform: translateY(-12px);
 }
 
-.mx-onboarding-intro-copy h2 {
-  margin: 0;
-}
-
+.mx-onboarding-intro-copy h1,
 .mx-onboarding-intro-copy p {
   margin: 0;
-}
-
-/* ensure CTA sits just after description without extra margin */
-.mx-onboarding-intro .cta-pill {
-  margin-top: 0 !important;
-}
-
-.mx-onboarding-progress-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgb(var(--c-text) / 0.15);
-  transform: scale(0.82);
-  transition:
-    background-color 220ms ease-out,
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.mx-onboarding-progress-dot[data-complete='true'] {
-  background: rgb(var(--c-gold));
-  transform: scale(1);
-}
-
-.mx-onboarding-option {
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-text));
-  transition:
-    background-color 220ms ease-out,
-    color 220ms ease-out,
-    transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.mx-onboarding-option[data-selected='true'] {
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
-}
-
-.mx-onboarding-option:active {
-  transform: scale(0.985);
-}
-
-.mx-onboarding-proof {
-  animation: mx-onboarding-proof 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.mx-onboarding-reminder,
-.mx-onboarding-reminder-check {
-  transition:
-    background-color 220ms ease-out,
-    color 220ms ease-out,
-    transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.mx-onboarding-reminder:active {
-  transform: scale(0.985);
-}
-
-.mx-onboarding-plan-card {
-  opacity: 0.34;
-  transform: translate3d(0, 7px, 0);
-  transition:
-    opacity 260ms ease-out,
-    transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
-}
-
-.mx-onboarding-plan-card[data-revealed='true'] {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-}
-
-.mx-onboarding-plan-check {
-  background: rgb(var(--c-text) / 0.05);
-  color: transparent;
-  opacity: 0;
-  transform: scale(0.94);
-  transition:
-    opacity 200ms ease-out,
-    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 200ms ease-out,
-    color 200ms ease-out;
-}
-
-.mx-onboarding-plan-check[data-revealed='true'] {
-  background: rgb(var(--c-gold) / 0.2);
-  color: rgb(var(--c-gold));
-  opacity: 1;
-  transform: scale(1);
 }
 
 @keyframes mx-onboarding-enter {
@@ -227,36 +88,22 @@
   }
 }
 
-@keyframes mx-onboarding-proof {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 4px, 0);
+@media (max-height: 620px) {
+  .mx-onboarding-intro-art {
+    min-height: 104px;
   }
 
-  to {
-    opacity: 0.7;
-    transform: translate3d(0, 0, 0);
+  .mx-onboarding-intro-maze {
+    width: 184px;
   }
-}
 
-@keyframes mx-onboarding-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+  .mx-onboarding-intro-copy {
+    gap: 10px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mx-onboarding-step,
-  .mx-onboarding-proof {
-    animation: mx-onboarding-fade 160ms ease-out both !important;
-  }
-
-  .mx-onboarding-plan-card,
-  .mx-onboarding-plan-check {
-    transform: none !important;
-    transition-duration: 120ms !important;
+  .mx-onboarding-step {
+    animation-duration: 160ms;
   }
 }
