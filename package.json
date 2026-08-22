@@ -11,6 +11,7 @@
     "preview:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "ux:check": "playwright test --config=playwright.ux.config.mjs",
     "format": "prettier --write .",
     "prepare": "husky"
   },
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.62.1",
     "@vitejs/plugin-react": "4.3.4",
     "autoprefixer": "10.4.20",
     "eslint": "^9.39.5",
