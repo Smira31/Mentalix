@@ -1,5 +1,23 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001
+
+- Library и Trends переведены на stale-while-revalidate поверх существующих memory cache.
+- Добавлены versioned `sessionStorage` snapshots только с данными, необходимыми для первого полезного кадра.
+- Повреждённые, несовместимые и просроченные snapshots удаляются; refresh deduplicated, stale response не обновляет неактуальный экран.
+- Ручной Telegram/iPhone gate Library/Trends пройден владельцем 22.08.2026.
+- Lazy-loading `recharts` не добавлялся; Practices, API, backend, Render и Neon не менялись.
+- Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
+## 22.08.2026 — MXL-PERFORMANCE-TODAY-SWR-001
+
+- Today переведён на stale-while-revalidate поверх существующего memory cache: безопасный versioned snapshot хранится в `sessionStorage`.
+- При повторном открытии валидные данные показываются синхронно; свежие данные загружаются в фоне, а ошибка не скрывает старый экран.
+- Добавлены TTL, schema validation, безопасный JSON parse, очистка повреждённых snapshot, dedupe in-flight и защита от stale response.
+- Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+- API, backend, UI, тексты, navigation, core loop, Render и Neon не менялись.
+- Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
 ## 22.08.2026 — Release UX Screen Rhythm: Check-in и Today
 
 - В `DESIGN_SYSTEM.md` добавлен нормативный раздел `Screen Rhythm & Interaction`.

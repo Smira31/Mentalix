@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchTrendsData, peekTrendsData } from '../lib/trendsDataCache'
+import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import {
@@ -502,22 +502,41 @@ function Metric({ label, value }) {
 }
 
 export default function Analytics({ user, onGoCheckin }) {
-  const [data, setData] = useState(() => (user && peekTrendsData(user.id, 14)?.analytics) ?? null)
-  const [checkins, setCheckins] = useState(
-    () => (user && peekTrendsData(user.id, 14)?.checkins) ?? []
-  )
-  const [loading, setLoading] = useState(() => !(user && peekTrendsData(user.id, 14)))
+  const [initialTrendsState] = useState(() => {
+    if (!user) return null
+
+    const memoryData = peekTrendsData(user.id, 14)
+    if (memoryData !== null) return { data: memoryData, shouldRefresh: false }
+
+    const snapshotData = peekTrendsSnapshot(user.id, 14)
+    return { data: snapshotData, shouldRefresh: snapshotData !== null }
+  })
+  const initialTrendsSnapshot = initialTrendsState?.data ?? null
+  const [data, setData] = useState(() => initialTrendsSnapshot?.analytics ?? null)
+  const [checkins, setCheckins] = useState(() => initialTrendsSnapshot?.checkins ?? [])
+  const [loading, setLoading] = useState(() => initialTrendsSnapshot === null)
 
   useEffect(() => {
     if (!user) return
-    fetchTrendsData(user.id, 14)
+
+    let active = true
+
+    fetchTrendsData(user.id, 14, { force: initialTrendsState?.shouldRefresh === true })
       .then(({ analytics, checkins }) => {
+        if (!active) return
+
         setData(analytics)
         setCheckins(checkins || [])
       })
       .catch(e => console.error(e))
-      .finally(() => setLoading(false))
-  }, [user])
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [user, initialTrendsState])
 
   if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
   if (!data) return <p className="text-muted text-sm px-6">Не удалось загрузить аналитику</p>

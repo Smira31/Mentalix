@@ -25,6 +25,26 @@
 - `Частично` — основа существует, требуется доводка;
 - `Блокер` — работа зависит от внешнего решения или материала.
 
+## Завершено 22.08.2026 — MXL-PERFORMANCE-TODAY-SWR-001
+
+- [x] **Today stale-while-revalidate pilot**
+  - Для Today добавлен versioned `sessionStorage` snapshot поверх существующего memory cache.
+  - Snapshot содержит только данные первого полезного кадра; повреждённые, несовместимые и просроченные записи удаляются.
+  - При наличии snapshot Today показывается сразу, затем выполняется background refresh с dedupe in-flight и защитой от stale response.
+  - Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+  - Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
+## Завершено 22.08.2026 — MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001
+
+- [x] **Library и Trends stale-while-revalidate pilot**
+  - Library и Trends получили безопасные versioned `sessionStorage` snapshots поверх memory cache.
+  - При наличии snapshot данные показываются сразу, затем обновляются в фоне; ошибки не скрывают старый экран.
+  - Добавлены TTL, schema validation, safe JSON parse, очистка повреждённых snapshot, dedupe in-flight и защита от stale response.
+  - `recharts` не выносился в lazy-load: это отдельный рефакторинг и не входит в release scope.
+  - Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+  - Practices, API, backend, Render, Neon и product logic не менялись.
+  - Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
 ## Завершено 22.08.2026 — Release UX Screen Rhythm
 
 - [x] **MXL-CHECKIN-SCREEN-RHYTHM-001 — Check-in Screen Rhythm pilot**

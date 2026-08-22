@@ -25,10 +25,89 @@ import { api } from './api'
  */
 
 const LIBRARY_CACHE_TTL_MS = 60_000
+const LIBRARY_SNAPSHOT_TTL_MS = 5 * 60_000
+const LIBRARY_SNAPSHOT_VERSION = 1
+const LIBRARY_SNAPSHOT_KEY = 'mentalix:library:snapshot:v1'
 
 const CACHE_KEY = 'articles'
 
 const cache = new Map()
+const inFlight = new Map()
+
+function finiteNumber(value) {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function safeId(value) {
+  return typeof value === 'string' || finiteNumber(value) ? value : null
+}
+
+function sanitizeArticles(articles) {
+  if (!Array.isArray(articles)) return []
+
+  return articles.map(article => ({
+    id: safeId(article?.id),
+    title: typeof article?.title === 'string' ? article.title : '',
+    excerpt: typeof article?.excerpt === 'string' ? article.excerpt : '',
+    tag: typeof article?.tag === 'string' ? article.tag : null,
+    minutes: finiteNumber(article?.minutes) ? article.minutes : 0,
+    date: typeof article?.date === 'string' ? article.date : '',
+  }))
+}
+
+function removeSnapshot() {
+  try {
+    window.sessionStorage.removeItem(LIBRARY_SNAPSHOT_KEY)
+  } catch {
+    // sessionStorage can be unavailable; memory cache remains usable.
+  }
+}
+
+function isSnapshotShape(snapshot) {
+  return (
+    snapshot &&
+    typeof snapshot === 'object' &&
+    !Array.isArray(snapshot) &&
+    snapshot.version === LIBRARY_SNAPSHOT_VERSION &&
+    finiteNumber(snapshot.savedAt) &&
+    Array.isArray(snapshot.data)
+  )
+}
+
+function readSnapshot() {
+  try {
+    const raw = window.sessionStorage.getItem(LIBRARY_SNAPSHOT_KEY)
+    if (!raw) return null
+
+    const snapshot = JSON.parse(raw)
+    const age = Date.now() - snapshot?.savedAt
+
+    if (!isSnapshotShape(snapshot) || age < 0 || age > LIBRARY_SNAPSHOT_TTL_MS) {
+      removeSnapshot()
+      return null
+    }
+
+    return sanitizeArticles(snapshot.data)
+  } catch {
+    removeSnapshot()
+    return null
+  }
+}
+
+function writeSnapshot(articles) {
+  try {
+    window.sessionStorage.setItem(
+      LIBRARY_SNAPSHOT_KEY,
+      JSON.stringify({
+        version: LIBRARY_SNAPSHOT_VERSION,
+        savedAt: Date.now(),
+        data: sanitizeArticles(articles),
+      })
+    )
+  } catch {
+    // sessionStorage quota/security errors must not block Library.
+  }
+}
 
 function freshEntry() {
   const cached = cache.get(CACHE_KEY)
@@ -44,18 +123,36 @@ export function peekArticles() {
   return freshEntry()?.data ?? null
 }
 
-export async function fetchArticles() {
+export function peekArticlesSnapshot() {
+  return readSnapshot()
+}
+
+export async function fetchArticles({ force = false } = {}) {
   const cached = freshEntry()
 
-  if (cached) {
+  if (!force && cached) {
     return cached.data
   }
 
-  const data = await api.articles.list()
+  if (inFlight.has(CACHE_KEY)) {
+    return inFlight.get(CACHE_KEY)
+  }
 
-  cache.set(CACHE_KEY, { data, fetchedAt: Date.now() })
+  const request = api.articles
+    .list()
+    .then(data => {
+      cache.set(CACHE_KEY, { data, fetchedAt: Date.now() })
+      writeSnapshot(data)
 
-  return data
+      return data
+    })
+    .finally(() => {
+      inFlight.delete(CACHE_KEY)
+    })
+
+  inFlight.set(CACHE_KEY, request)
+
+  return request
 }
 
 export function invalidateArticles() {

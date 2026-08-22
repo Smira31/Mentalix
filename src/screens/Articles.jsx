@@ -3,7 +3,7 @@ import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
 import BackButton from '../components/BackButton'
 import { Search, ExternalLink, ArrowRight } from 'lucide-react'
-import { fetchArticles, peekArticles } from '../lib/libraryDataCache'
+import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
 import EmptyState from '../components/EmptyState'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
@@ -106,20 +106,27 @@ function Reader({ article, onBack }) {
 }
 
 export default function Articles() {
+  const [initialArticlesState] = useState(() => {
+    const memoryArticles = peekArticles()
+    if (memoryArticles !== null) return { data: memoryArticles, shouldRefresh: false }
+
+    const snapshotArticles = peekArticlesSnapshot()
+    return { data: snapshotArticles, shouldRefresh: snapshotArticles !== null }
+  })
+  const initialArticles = initialArticlesState.data
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(null)
-  const [articles, setArticles] = useState(() => peekArticles() ?? [])
-  const [loading, setLoading] = useState(() => peekArticles() === null)
+  const [articles, setArticles] = useState(() => initialArticles ?? [])
+  const [loading, setLoading] = useState(() => initialArticles === null)
 
   useEffect(() => {
-    fetchArticles()
-      .then(setArticles)
+    fetchArticles({ force: initialArticlesState.shouldRefresh })
+      .then(data => setArticles(data))
       .catch(e => {
         console.error(e)
-        setArticles([])
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [initialArticlesState])
 
   const list = useMemo(() => {
     const sorted = [...articles].sort((a, b) => String(b.date).localeCompare(String(a.date)))

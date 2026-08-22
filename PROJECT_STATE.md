@@ -120,10 +120,9 @@
 ## 5. Frontend / UI
 
 - Production: Vercel, commit `9b73075b28468160795bc8263f2f7570473b6f19`.
-- Текущая локальная ветка: `fix/unified-mobile-layout`; HEAD будет обновлён
-  коммитом закрытия Release UX Screen Rhythm после прохождения проверок.
-- Рабочее дерево должно быть чистым после commit/push; ветка синхронизирована с
-  `origin/fix/unified-mobile-layout`.
+- Текущая локальная ветка: `fix/unified-mobile-layout`; Today SWR-пилот закрыт отдельным
+  русскоязычным commit и отправлен только в `origin/fix/unified-mobile-layout`.
+- Рабочее дерево чистое; ветка синхронизирована с `origin/fix/unified-mobile-layout`.
 - Draft PR #128 открыт, не merged; CI и Vercel Preview имеют статус `success`.
 - Ветка содержит пять незадеплоенных commit:
   - `ee6e912c` — системный mobile layout и safe-area;
@@ -137,6 +136,12 @@
 - `src/screens/Today.jsx` в PR #128 не изменён.
 - Пилоты `MXL-CHECKIN-SCREEN-RHYTHM-001` и `MXL-TODAY-SCREEN-RHYTHM-001` приняты;
   ручной Telegram/iPhone gate для обоих пройден владельцем 22.08.2026.
+- `MXL-PERFORMANCE-TODAY-SWR-001` принят; versioned session snapshot и background
+  revalidation работают поверх существующего Today cache. Ручной Telegram/iPhone gate
+  пройден владельцем 22.08.2026. Library и Trends в этот пилот не входили.
+- `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001` принят; Library и Trends получили тот же
+  versioned session snapshot/SWR-контракт. Ручной Telegram/iPhone gate пройден владельцем
+  22.08.2026. Lazy-loading `recharts` в release не входит.
 - Следующий UX-аудит: `MXL-PRACTICES-RELEASE-UX-001` (read-only); код Practices,
   Preview, production/backend/API до отдельного подтверждения не менять.
 - Кроме PR #128 в frontend остаются старые открытые PR/ветки; они не являются
@@ -271,20 +276,21 @@ Data-dependent блоки:
 
 ## 12. Текущая P0-задача
 
-**P0 — подтвердить production-цепочку `Vercel → Render → Neon`:**
+**P0 — завершить release-проверку frontend-цепочки `Vercel → main → Vercel Production`:**
 
-- определить фактический Render deployment;
-- подтвердить, что `DATABASE_URL` указывает на ожидаемую Neon production DB;
-- read-only проверить live Neon schema и данные;
-- отдельно выяснить, были ли исторические Railway-данные перенесены;
-- после этого пройти на реальном iPhone:
-  `Today → CheckIn → Library → Trends`.
+- проверить итоговый PR и CI;
+- подтвердить merge и GitHub Actions;
+- подтвердить Vercel Production и HTTP 200;
+- не менять production backend, Render и Neon.
 
-До завершения этой проверки production hosting и базы данных не менять.
+Production-цепочка `Vercel → Render → Neon` и её provenance остаются отдельным
+инфраструктурным риском и не изменяются этим frontend-релизом.
 
 ## 13. Следующие задачи
 
-- **P0:** подтвердить и стабилизировать текущую production-цепочку
+- **P0:** завершить `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001` и пройти data-dependent
+  Telegram/iPhone gate для Library и Trends.
+- **P1:** подтвердить и стабилизировать текущую production-цепочку
   `Vercel → Render → Neon`, затем пройти data-dependent gate на реальном iPhone.
 - **P1:** отдельно воспроизвести и исправить регрессии Unified Mobile Layout из
   PR #128 без изменения логики Today.
