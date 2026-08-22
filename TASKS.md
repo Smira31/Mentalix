@@ -25,6 +25,21 @@
 - `Частично` — основа существует, требуется доводка;
 - `Блокер` — работа зависит от внешнего решения или материала.
 
+## Завершено 22.08.2026 — MXL-PERFORMANCE-TODAY-SWR-001
+
+- [x] **Today stale-while-revalidate pilot**
+  - Для Today добавлен versioned `sessionStorage` snapshot поверх существующего memory cache.
+  - Snapshot содержит только данные первого полезного кадра; повреждённые, несовместимые и просроченные записи удаляются.
+  - При наличии snapshot Today показывается сразу, затем выполняется background refresh с dedupe in-flight и защитой от stale response.
+  - Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+  - Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
+## В работе — MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001
+
+- Library и Trends переводятся на тот же безопасный versioned session snapshot/SWR-контракт.
+- Practices, API, backend, Render, Neon и product logic остаются вне scope.
+- Commit/push до ручного Telegram/iPhone gate этого цикла не выполнять.
+
 ## Завершено 22.08.2026 — Release UX Screen Rhythm
 
 - [x] **MXL-CHECKIN-SCREEN-RHYTHM-001 — Check-in Screen Rhythm pilot**

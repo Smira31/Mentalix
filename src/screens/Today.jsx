@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { fetchTodayData, invalidateTodayData } from '../lib/todayDataCache'
+import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
 import { ChevronRight, ArrowUpRight } from 'lucide-react'
 
 import Path from './Path'
@@ -133,19 +133,23 @@ function formatRemainingActions(count) {
 // ============================================================
 
 export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }) {
-  const [rituals, setRituals] = useState([])
+  const [initialTodaySnapshot] = useState(() => (user ? peekTodaySnapshot(user.id) : null))
 
-  const [ascezas, setAscezas] = useState([])
+  const [rituals, setRituals] = useState(() => initialTodaySnapshot?.rituals || [])
 
-  const [loading, setLoading] = useState(true)
+  const [ascezas, setAscezas] = useState(() => initialTodaySnapshot?.ascezas || [])
 
-  const [dailyQuote, setDailyQuote] = useState(null)
+  const [loading, setLoading] = useState(() => !initialTodaySnapshot)
 
-  const [checkin, setCheckin] = useState(null)
+  const [dailyQuote, setDailyQuote] = useState(() => initialTodaySnapshot?.quote?.text || null)
 
-  const [reviewHour, setReviewHour] = useState(19)
+  const [checkin, setCheckin] = useState(() => initialTodaySnapshot?.checkin || null)
 
-  const [theme, setTheme] = useState(null)
+  const [reviewHour, setReviewHour] = useState(
+    () => initialTodaySnapshot?.settings?.review_hour ?? 19
+  )
+
+  const [theme, setTheme] = useState(() => initialTodaySnapshot?.themes?.[0] || null)
 
   const [activeToday, setActiveToday] = useState(null)
 
@@ -232,6 +236,8 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       return
     }
 
+    let active = true
+
     ;(async () => {
       try {
         const {
@@ -241,7 +247,9 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           checkin: checkinData,
           themes: themesData,
           settings: settingsData,
-        } = await fetchTodayData(user.id)
+        } = await fetchTodayData(user.id, { force: Boolean(initialTodaySnapshot) })
+
+        if (!active) return
 
         setTheme((themesData || [])[0] || null)
 
@@ -262,10 +270,14 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       } catch (error) {
         console.error(error)
       } finally {
-        setLoading(false)
+        if (active) setLoading(false)
       }
     })()
-  }, [user, sub])
+
+    return () => {
+      active = false
+    }
+  }, [user, sub, initialTodaySnapshot])
 
   const hourNow = new Date().getHours()
 
