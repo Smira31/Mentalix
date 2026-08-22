@@ -15,12 +15,19 @@
 ## Known Issues
 
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
-- **MXL-UI-CTA-OVERLAP-001 (открыта):** На Today видимый CTA частично перекрыт нижней навигацией на viewport `320×568`; обнаружено автоматическим прогоном `npm run ux:check` (`MXL-UX-AUTOMATED-GATE-001`). UI не исправлялся — вне scope задачи gate. Приоритет и срок исправления не назначены.
+- **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 - **MXL-LINT-CLEANUP-001 (открыта):** Устранить 30 ESLint warnings на `main` (0 errors), сгруппированных по правилам. Приоритет и срок не назначены, не исправлялось — только зафиксировано.
   - `react-hooks/set-state-in-effect` (setState напрямую в useEffect) — `MorningPilotCard.jsx`, `BrainTrainer.jsx`, `Practices.jsx`, `ThemeScreen.jsx` (x3), `Today.jsx`, `Breathing.jsx`.
   - `react-hooks/exhaustive-deps` + `react-hooks/immutability` (функция вызывается до объявления, отсутствует в deps) — `BrainTrainer.jsx`, `Courses.jsx`, `Focus.jsx`, `Path.jsx`, `QuotesManager.jsx`.
   - `react-hooks/refs` — `store.js`, `telegram.hooks.js` (x4).
   - `no-empty` — `telegram.adapter.js` (x2), `QuoteView.jsx`.
+
+## Реализовано локально 22.08.2026 — MXL-UI-CTA-OVERLAP-001
+
+- [x] Починено перекрытие чек-ин CTA нижней навигацией на Today при
+      `320×568` — деталь фикса и найденная попутно мёртвая CSS-цепочка
+      (`MXL-CARDSYSTEM-DEADCODE-001`) описаны в `CHANGES.md`.
+- [x] `npm run ux:check` (оба viewport) и `npm run build` — зелёные.
 
 ## Реализовано локально 22.08.2026 — MXL-UX-AUTOMATED-GATE-001
 
