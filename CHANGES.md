@@ -1,5 +1,43 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — MXL-PRACTICES-CACHE-001
+
+- Добавлен in-memory кеш для экрана «Практики» (`Practices.jsx`) —
+  тот же паттерн, что уже применялся трижды
+  (`MXL-MENTALIX-HISTORY-CACHE-001`, `MXL-TODAY-CACHE-001`,
+  `MXL-LIBRARY-CACHE-001`, `MXL-TRENDS-CACHE-001`): экран рефетчил
+  `api.rituals.list()` + `api.ascezas.list()` при каждом монтировании —
+  на каждое переключение вкладки туда-обратно, даже без изменений.
+- **Реализация:** новый `src/lib/practicesDataCache.js` — module-level
+  `Map`, TTL 30 сек (как у `todayDataCache.js` — те же сущности,
+  завязанные на те же действия пользователя). Один снимок `{ rituals,
+ascezas }` на пользователя, оба запроса кешируются вместе.
+  `fetchPracticesData()` отдаёт из кеша, если свежий, иначе фетчит и
+  кеширует; `peekPracticesData()` — синхронный, без сети, для
+  lazy-инициализации `useState` в `Practices.jsx` (нет промежуточного
+  кадра пустого списка при тёплом кеше); `invalidatePracticesData()`
+  сбрасывает кеш.
+- **Отличие от library/trends/today:** без sessionStorage-снапшота.
+  У `Practices.jsx` не было loading-гейта — пустые `rituals`/`ascezas`
+  всегда были валидным первым рендером (список практик рисуется в любом
+  случае, счётчики справа просто пустые), поэтому второй уровень
+  персистентности (переживающий закрытие вкладки) не решает здесь
+  никакой реальной проблемы — только добавил бы сложность.
+- **Инвалидация после отметки:** `Rituals.jsx#logRitual` и
+  `Ascezas.jsx#logAsceza` теперь вызывают `invalidateTodayData(user.id)`
+  (`../lib/todayDataCache`) — до этой правки экран «Сегодня» мог до 30
+  сек показывать несвежий `today_level`/`today_status` после отметки
+  ритуала/аскезы, потому что ничего не сбрасывало его кеш. Той же правкой
+  добавлен `invalidatePracticesData(user.id)` — без него список
+  «Практики» показал бы несвежий счётчик «сделано/всего» при возврате
+  с экрана Ritual/Asceza тем же способом.
+- `Practices.jsx`: прямой `Promise.all([api.rituals.list(...),
+api.ascezas.list(...)])` в эффекте заменён на `fetchPracticesData()`;
+  `api`-импорт стал не нужен, убран.
+- `npm run lint` (0/0), `npm run build`, `npm run ux:check` — зелёные.
+  Живая проверка на iPhone не проводилась — открытый пробел, как и у
+  `MXL-TRENDS-CACHE-001` до её мержа.
+
 ## 22.08.2026 — MXL-UI-CTA-OVERLAP-001
 
 - Починено перекрытие чек-ин CTA («Пройти чек-ин»/«Разобрать день») нижней

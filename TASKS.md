@@ -17,6 +17,26 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
+## Реализовано локально 22.08.2026 — MXL-PRACTICES-CACHE-001
+
+- [x] Новый `src/lib/practicesDataCache.js` — тот же паттерн, что
+      `MXL-LIBRARY-CACHE-001`/`MXL-TRENDS-CACHE-001`: module-level `Map`,
+      TTL 30 сек (как у `todayDataCache.js` — те же ритуалы/аскезы),
+      `fetchPracticesData`/`invalidatePracticesData`/`peekPracticesData`,
+      синхронный `peekPracticesData` в lazy `useState` инициализаторе
+      `Practices.jsx`. Без sessionStorage-снапшота, в отличие от
+      library/trends/today — у `Practices.jsx` и раньше не было
+      loading-гейта (пустой список — валидный первый рендер), второй слой
+      персистентности не решает здесь никакой проблемы.
+- [x] Инвалидация кеша «Сегодня» (`invalidateTodayData`) добавлена в
+      `Rituals.jsx#logRitual` и `Ascezas.jsx#logAsceza` — без неё
+      Today.jsx мог до 30 сек показывать несвежий статус ритуала/аскезы
+      после отметки. Заодно (той же правкой, тот же смысл) добавлена
+      инвалидация `invalidatePracticesData` там же — иначе список
+      «Практики» на Back из Ritual/Asceza показывал бы несвежий счётчик
+      «сделано/всего» по той же причине.
+- [x] `npm run lint` (0/0), `npm run build`, `npm run ux:check` — зелёные.
+
 ## Реализовано локально 22.08.2026 — MXL-LINT-CLEANUP-001
 
 - [x] Устранены все 30 ESLint warnings на `main` (0 errors, 0 warnings) —

@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { invalidateTodayData } from '../lib/todayDataCache'
+import { invalidatePracticesData } from '../lib/practicesDataCache'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
@@ -515,6 +517,8 @@ export default function Ascezas({ user, onBack }) {
             : asceza
         )
       )
+      invalidateTodayData(user.id)
+      invalidatePracticesData(user.id)
     } catch (error) {
       console.error(error)
       throw error
