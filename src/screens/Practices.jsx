@@ -63,14 +63,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
   }, [initialSub])
 
   useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      left: 0,
-      behavior: 'instant',
-    })
-  }, [])
-
-  useEffect(() => {
     if (!user || sub !== null) return
 
     Promise.all([api.rituals.list(user.id), api.ascezas.list(user.id)])

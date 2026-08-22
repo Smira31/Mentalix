@@ -378,6 +378,37 @@
   font-weight: 600;
 }
 
+.mx-today-priority--next > small {
+  font-size: 13px;
+}
+
+.mx-today-priority--next > strong {
+  margin-top: 8px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.13;
+}
+
+.mx-today-priority--next > span {
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.mx-today-priority--next > .mx-today-priority__start {
+  min-height: 52px;
+  margin-top: 28px;
+  padding-inline: 44px;
+  border: 0;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.mx-today-priority--next > p {
+  margin-top: 20px;
+  font-size: 12px;
+}
+
 .mx-today-priority__links {
   display: flex;
   align-items: center;

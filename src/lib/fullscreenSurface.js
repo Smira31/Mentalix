@@ -3,6 +3,8 @@ import {
   useState,
 } from 'react'
 
+import { useVisualViewportHeight } from './visualViewport'
+
 
 /*
  * ОБЩИЙ КОНТРАКТ FULLSCREEN-ЭКРАНОВ MENTALIX
@@ -69,10 +71,8 @@ export const FULLSCREEN_SCROLL_CLASS =
 
 
 export function useFullscreenSurface() {
-  const [
-    viewportHeight,
-    setViewportHeight,
-  ] = useState(null)
+  const viewportHeight =
+    useVisualViewportHeight()
 
   const [
     tgFullscreen,
@@ -84,36 +84,6 @@ export function useFullscreenSurface() {
         ?.isFullscreen,
     ),
   )
-
-
-  useEffect(() => {
-    const viewport =
-      window.visualViewport
-
-    if (!viewport) return
-
-    const update = () => {
-      setViewportHeight(
-        Math.round(
-          viewport.height,
-        ),
-      )
-    }
-
-    update()
-
-    viewport.addEventListener(
-      'resize',
-      update,
-    )
-
-    return () => {
-      viewport.removeEventListener(
-        'resize',
-        update,
-      )
-    }
-  }, [])
 
 
   useEffect(() => {

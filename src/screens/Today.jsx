@@ -108,6 +108,26 @@ function deriveNextAction({ rituals, ascezas }) {
   return null
 }
 
+function formatRemainingActions(count) {
+  if (count <= 0) {
+    return 'Это последнее на сегодня'
+  }
+
+  const lastTwoDigits = count % 100
+  const lastDigit = count % 10
+
+  const noun =
+    lastTwoDigits >= 11 && lastTwoDigits <= 14
+      ? 'действий'
+      : lastDigit === 1
+        ? 'действие'
+        : lastDigit >= 2 && lastDigit <= 4
+          ? 'действия'
+          : 'действий'
+
+  return `После этого останется ещё ${count} ${noun}`
+}
+
 // ============================================================
 // TODAY
 // ============================================================
@@ -432,6 +452,8 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   const remainAfter = Math.max(0, remainRituals + remainAscezas - 1)
 
+  const remainingActionsText = formatRemainingActions(remainAfter)
+
   const motionExperimentEnabled = !TODAY_COMPARE_REQUESTED || todayVariant === 'after'
 
   /*
@@ -591,7 +613,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       (motionExperimentEnabled ? (
         <NextActionReveal
           next={next}
-          remainAfter={remainAfter}
+          remainingActionsText={remainingActionsText}
           onStart={() => {
             platform.haptic('medium')
 
@@ -617,9 +639,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
             Начать
           </button>
 
-          <p className="text-[12px] text-faint mt-5">
-            {remainAfter > 0 ? `После этого останется: ${remainAfter}` : 'Это последнее на сегодня'}
-          </p>
+          <p className="text-[12px] text-faint mt-5">{remainingActionsText}</p>
         </>
       )),
 
@@ -723,7 +743,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero">
+      <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero">
         {motionExperimentEnabled ? (
           <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
             <SemanticGlyph kind="next-step" debugSource="Today.jsx" />
@@ -759,7 +779,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('checkin')
           }}
-          className="w-full rounded-3xl bg-emerald/60 px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 mt-5 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-sm font-bold shrink-0">
             ✓
@@ -803,7 +823,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('path')
           }}
-          className="w-full rounded-3xl bg-emerald px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          className="w-full rounded-3xl bg-emerald px-5 py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <ArrowUpRight size={18} className="text-gold shrink-0" strokeWidth={2} />
 

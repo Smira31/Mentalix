@@ -1,5 +1,37 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — Release UX Screen Rhythm: Check-in и Today
+
+- В `DESIGN_SYSTEM.md` добавлен нормативный раздел `Screen Rhythm & Interaction`.
+- Завершены пилоты `MXL-CHECKIN-SCREEN-RHYTHM-001` и `MXL-TODAY-SCREEN-RHYTHM-001` без изменения продуктовой логики, API, данных, навигации и core loop.
+- Для обоих пилотов ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+- Today получил только композиционные правки: компактнее hero «Следующий шаг» и увеличен интервал между «Чек-ин выполнен» и «День».
+- Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
+## 22.08.2026 — Стандарт Telegram Preview workflow
+
+- Добавлен `npm run preview` как короткий алиас для `npm run preview:telegram`.
+- Helper публикует текущее рабочее дерево в отдельный Vercel project `mentalix-preview` без commit/push.
+- Основной Mentalix-бот получает сообщение с inline-кнопкой «Открыть Preview», веткой и коротким SHA.
+- Preview удаляется через один час; production frontend, Render и Neon не меняются.
+- После iPhone/Telegram gate можно выполнять commit/push отдельно.
+- Добавлен `npm run preview:stop`: удаление активного preview, остановка локального cleanup-процесса и уведомление в Telegram.
+- Финальный smoke создания и удаления Preview пройден; удаление дополнительно подтверждено по deployment URL.
+
+## 22.08.2026 — MXL-TODAY-CHECKIN-UX-001: release UX Today / Check-in (Issue #122)
+
+- Подготовлен локальный незакоммиченный diff: верх вопросов Check-in опущен на
+  `20px` в рамках существующего Telegram safe-area/fullscreen-контракта, а
+  финальный CTA «К дню» заменён на «К следующему шагу» с прежним переходом.
+- Карточка «Один следующий шаг» использует типографические размеры, насыщенность
+  и интервалы обычного Today hero. Неясная подпись теперь прямо говорит, сколько
+  действий останется; подсчёт ритуалов и аскез не изменён.
+- Порядок Today, scroll behavior, backend, API, сохранение Check-in и навигация
+  не менялись. Анимация вопросов отложена как необязательная полировка.
+- `npm run lint` — 0 ошибок, 30 существующих предупреждений; `npm run build` —
+  успешно. Интерактивная mobile-проверка недоступна в текущей сессии; реальный
+  iPhone/Telegram gate остаётся обязательным до принятия изменения.
+
 ## 21.08.2026 — MXL-TELEGRAM-STOREFRONT-001: короткий первый запуск (Issue #120)
 
 - Onboarding сокращён до одного честного обещания ценности и одного CTA с
@@ -11,6 +43,15 @@
   работают корректно; onboarding повторно не показывается.
 - Полная запись и значения для ручной проверки — `TASKS.md` →
   `MXL-TELEGRAM-STOREFRONT-001`.
+
+## 21.08.2026 — MXL-UNIFIED-MOBILE-LAYOUT-001: общий mobile layout (draft PR #128)
+
+- Обычные вкладки переведены на общий scroll-root внутри Telegram safe-area;
+  BottomNavigation и нижний резерв контента используют единую геометрию.
+- После первой iPhone-проверки исправлен сброс fullscreen-состояния при
+  `ALREADY_FULLSCREEN`; lint/build/diff-check проходят. Владелец подтвердил
+  повторный gate на реальном iPhone внутри Telegram. Полная запись — `TASKS.md`
+  → `MXL-UNIFIED-MOBILE-LAYOUT-001`.
 
 ## 19.08.2026 — MXL-ONBOARDING-001: первый экран онбординга (смёржено в main, PR #116)
 

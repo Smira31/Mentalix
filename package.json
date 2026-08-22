@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
+    "preview": "npm run preview:telegram",
+    "preview:telegram": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-telegram.ps1",
+    "preview:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

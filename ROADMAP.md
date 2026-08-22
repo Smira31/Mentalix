@@ -2,6 +2,14 @@
 
 Статус: предлагаемый порядок работ. Не является разрешением на продуктовые или визуальные изменения.
 
+## Актуальный release gate на 21.08.2026
+
+Следующая P0-задача — `MXL-UNIFIED-MOBILE-LAYOUT-001`: единый mobile layout
+для Telegram safe-area и BottomNavigation без редизайна. Системное исправление
+реализовано в draft PR #128; владелец подтвердил Today, Practices, AI,
+Library/Article и Analytics на реальном iPhone внутри Telegram. Ручной gate
+пройден, merge и deploy не выполнялись. Полный статус — в `TASKS.md`.
+
 ## Фактический статус на 29.07.2026
 
 ### Verified completed

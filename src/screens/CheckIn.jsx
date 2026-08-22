@@ -42,15 +42,16 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
 /*
- * MXL-UX-U03: раньше центрировалась через m-auto внутри
- * FULLSCREEN_SCROLL_CLASS — работающий приём (см. комментарий у самого
- * FULLSCREEN_SCROLL_CLASS), но конкретно на CheckIn давал непредсказуемую
- * пустую зону над вопросом на разной высоте (устройство/клавиатура/шаг с
- * коротким контентом). Убрано намеренно: контент начинается сразу после
- * шапки, а не «плавает» по центру доступной высоты.
+ * Короткие сцены (шкалы и эмоции) занимают доступную высоту и держат
+ * смысловой центр в середине. Текстовые карточки с клавиатурой используют
+ * отдельный top-aligned класс ниже: длинный ввод не должен плавать при
+ * изменении visualViewport.
  */
 const CHECKIN_CENTER_CLASS =
-  'w-full px-6 py-6 flex flex-col items-center'
+  'w-full flex-1 px-6 py-6 flex flex-col items-center justify-center'
+
+const CHECKIN_LONG_CLASS =
+  'w-full px-6 pt-6 pb-6 flex flex-col items-center'
 
 const CHECKIN_QUESTION_CLASS =
   'w-full text-center'
@@ -60,6 +61,9 @@ const CHECKIN_INTERACTIVE_CLASS =
 
 const CHECKIN_SUCCESS_CLASS =
   'w-full flex flex-col items-center text-center'
+
+const CHECKIN_HEADER_CLASS =
+  `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
 
 
 // ── Чек-ин и вечерний «Анализ дня» ──
@@ -704,7 +708,7 @@ export default function CheckIn({
   const mainAction = isFinal
     ? isEvening
       ? { text: 'Разобрать со Следопытом', run: openScout }
-      : { text: 'К дню', run: onDone }
+      : { text: 'К следующему шагу', run: onDone }
     : isEmotionStep
       ? {
           text: 'Дальше',
@@ -918,7 +922,7 @@ export default function CheckIn({
       style={viewportStyle}
     >
       <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-end justify-between px-5`}
+        className={CHECKIN_HEADER_CLASS}
       >
         <button
           onClick={() => {
@@ -987,7 +991,9 @@ export default function CheckIn({
       >
       <div
         className={
-          CHECKIN_CENTER_CLASS
+          isCard
+            ? CHECKIN_LONG_CLASS
+            : CHECKIN_CENTER_CLASS
         }
       >
 

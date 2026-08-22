@@ -116,7 +116,7 @@ export default function BottomNavigation({
         right:
           'max(16px, var(--app-safe-right))',
         bottom:
-          'calc(var(--app-safe-bottom) + 12px)',
+          'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
       }}
     >
       {/* ==========================================================
@@ -149,16 +149,16 @@ export default function BottomNavigation({
         "
         style={{
           width: collapsed
-            ? '58px'
+            ? 'var(--bottom-nav-collapsed-size)'
             : 'calc(100vw - 40px)',
 
           maxWidth: collapsed
-            ? '58px'
+            ? 'var(--bottom-nav-collapsed-size)'
             : '400px',
 
           height: collapsed
-            ? '58px'
-            : '68px',
+            ? 'var(--bottom-nav-collapsed-size)'
+            : 'var(--bottom-nav-height)',
 
           borderRadius: collapsed
             ? '9999px'
@@ -324,9 +324,6 @@ export default function BottomNavigation({
             absolute
             inset-0
 
-            w-[58px]
-            h-[58px]
-
             rounded-full
 
             flex
@@ -336,6 +333,12 @@ export default function BottomNavigation({
             origin-center
           "
           style={{
+            width:
+              'var(--bottom-nav-collapsed-size)',
+
+            height:
+              'var(--bottom-nav-collapsed-size)',
+
             opacity: collapsed ? 1 : 0,
 
             transform: collapsed
