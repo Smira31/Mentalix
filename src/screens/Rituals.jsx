@@ -8,14 +8,13 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
-import SemanticGlyph, {
-  semanticKindForRitual,
-} from '../components/SemanticGlyph'
+import SemanticGlyph, { semanticKindForRitual } from '../components/SemanticGlyph'
 import StreakBar from '../components/StreakBar'
 import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
+import '../components/practices/SceneLayout.css'
 
 /*
  * Карточка занимает всё, что осталось между шапкой экрана и
@@ -28,12 +27,12 @@ import { useMainButton } from '../platform/telegram.hooks'
  * сжималась в тесноте, верхний — чтобы на широком экране Telegram
  * Desktop она не растягивалась до нечитаемых пропорций.
  */
-const CARD_HEIGHT_CLASS = 'h-full min-h-[380px] max-h-[560px]'
-
-
-
 const EMPTY_DRAFT = {
-  name: '', goal: '', min_version: '', optimal_version: '', skip_consequence: '',
+  name: '',
+  goal: '',
+  min_version: '',
+  optimal_version: '',
+  skip_consequence: '',
 }
 
 function RitualCard({ ritual, onLog, onDelete }) {
@@ -61,7 +60,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   return (
     <div
-      className={`relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 transition-all duration-200 ${CARD_HEIGHT_CLASS} mx-card-system-detail-card ${
+      className={`practice-motion-card practice-detail-card relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 mx-card-system-detail-card ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
     >
@@ -73,14 +72,17 @@ function RitualCard({ ritual, onLog, onDelete }) {
           {confirming ? (
             <span className="flex items-center gap-1">
               <button
-                onClick={() => { platform.haptic('rigid'); onDelete(ritual.id) }}
-                className="text-[10px] px-2 py-0.5 rounded bg-cream/15 text-cream active:scale-90"
+                onClick={() => {
+                  platform.haptic('rigid')
+                  onDelete(ritual.id)
+                }}
+                className="practice-scene__choice text-[10px] px-2 py-0.5 rounded bg-cream/15 text-cream"
               >
                 Удалить
               </button>
               <button
                 onClick={() => setConfirming(false)}
-                className="text-[10px] px-2 py-0.5 rounded border border-cream/20 text-muted active:scale-90"
+                className="practice-scene__choice text-[10px] px-2 py-0.5 rounded border border-cream/20 text-muted"
               >
                 Отмена
               </button>
@@ -88,7 +90,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
           ) : (
             <span
               onClick={() => setConfirming(true)}
-              className="text-faint text-base leading-none px-1 active:scale-90"
+              className="practice-scene__choice text-faint text-base leading-none px-1"
             >
               ×
             </span>
@@ -97,51 +99,48 @@ function RitualCard({ ritual, onLog, onDelete }) {
       </div>
 
       {/*
-        * Верхняя треть — рисунок. Мотив угадывается по названию
-        * ритуала, поэтому новый ритуал получает свою картинку
-        * сразу, без правок в базе.
-        */}
+       * Верхняя треть — рисунок. Мотив угадывается по названию
+       * ритуала, поэтому новый ритуал получает свою картинку
+       * сразу, без правок в базе.
+       */}
       <div
         className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] mx-card-system-detail-art ${
           level ? 'opacity-100' : 'opacity-70'
         }`}
       >
-        <SemanticGlyph
-          kind={semanticKindForRitual(ritual.name)}
-          className="w-full h-full"
-        />
+        <SemanticGlyph kind={semanticKindForRitual(ritual.name)} className="w-full h-full" />
       </div>
 
       {/* название и смысл */}
       <div className="mt-4">
-        <h3 className="font-display text-[20px] text-cream leading-tight">
-          {ritual.name}
-        </h3>
+        <h3 className="font-display text-[20px] text-cream leading-tight">{ritual.name}</h3>
 
         {ritual.goal && (
-          <p className="text-[14px] text-muted leading-relaxed mt-3">
-            {ritual.goal}
-          </p>
+          <p className="text-[14px] text-muted leading-relaxed mt-3">{ritual.goal}</p>
         )}
       </div>
 
       {/* уровни */}
-      <div className="flex flex-col gap-2 pt-5">
+      <div className="flex flex-col gap-3 pt-5 mt-auto">
         {ritual.min_version && (
           <button
             onClick={() => handleLog('min')}
-            className={`w-full text-left rounded-[20px] px-4 py-3 border-0 transition-all duration-150 active:scale-[0.98] ${
+            className={`practice-scene__choice w-full text-left rounded-[20px] px-4 py-3 border-0 ${
               level === 'min' ? 'bg-cream/15' : 'bg-cream/5'
             }`}
           >
-            <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
-              level === 'min' ? 'text-cream' : 'text-muted'
-            }`}>
+            <div
+              className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                level === 'min' ? 'text-cream' : 'text-muted'
+              }`}
+            >
               Минимум
             </div>
-            <div className={`text-[13px] leading-snug ${
-              level === 'min' ? 'text-cream' : 'text-muted'
-            }`}>
+            <div
+              className={`text-[13px] leading-snug ${
+                level === 'min' ? 'text-cream' : 'text-muted'
+              }`}
+            >
               {ritual.min_version}
             </div>
           </button>
@@ -150,18 +149,22 @@ function RitualCard({ ritual, onLog, onDelete }) {
         {ritual.optimal_version && (
           <button
             onClick={() => handleLog('optimal')}
-            className={`w-full text-left rounded-[20px] px-4 py-3 border-0 transition-all duration-150 active:scale-[0.98] ${
+            className={`practice-scene__choice w-full text-left rounded-[20px] px-4 py-3 border-0 ${
               level === 'optimal' ? 'bg-gold' : 'bg-cream/5'
             }`}
           >
-            <div className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
-              level === 'optimal' ? 'text-emerald-deep/70' : 'text-muted'
-            }`}>
+            <div
+              className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                level === 'optimal' ? 'text-emerald-deep/70' : 'text-muted'
+              }`}
+            >
               Оптимум
             </div>
-            <div className={`text-[13px] leading-snug ${
-              level === 'optimal' ? 'text-emerald-deep' : 'text-muted'
-            }`}>
+            <div
+              className={`text-[13px] leading-snug ${
+                level === 'optimal' ? 'text-emerald-deep' : 'text-muted'
+              }`}
+            >
               {ritual.optimal_version}
             </div>
           </button>
@@ -170,7 +173,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
         {!ritual.min_version && !ritual.optimal_version && (
           <button
             onClick={() => handleLog('optimal')}
-            className={`w-full py-3.5 rounded-full text-[14px] font-bold border-0 transition-all duration-150 active:scale-95 ${
+            className={`practice-scene__choice w-full py-3.5 rounded-full text-[14px] font-bold border-0 ${
               level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'
             }`}
           >
@@ -182,7 +185,6 @@ function RitualCard({ ritual, onLog, onDelete }) {
   )
 }
 
-
 function CreateRitualScreen({ onCreate, onCancel }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
@@ -190,14 +192,17 @@ function CreateRitualScreen({ onCreate, onCancel }) {
   const [saving, setSaving] = useState(false)
 
   function set(field) {
-    return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
+    return e => setDraft(d => ({ ...d, [field]: e.target.value }))
   }
 
   async function submit() {
     if (!draft.name.trim() || saving) return
     setSaving(true)
-    await onCreate(draft)
-    setSaving(false)
+    try {
+      await onCreate(draft)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const inputCls =
@@ -226,29 +231,58 @@ function CreateRitualScreen({ onCreate, onCancel }) {
    */
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
-
-      <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-5 pb-8 flex flex-col">
-      <div className="flex items-center gap-3 mb-8 pt-4">
-        <BackButton onClick={onCancel} />
-        <h2 className="font-display text-[20px] text-cream lowercase">новый ритуал.</h2>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} px-5`}>
+        <div className="w-full max-w-md mx-auto">
+          <BackButton onClick={onCancel} />
+        </div>
       </div>
 
-      <div className="space-y-4 mb-5">
-        <input value={draft.name} onChange={set('name')} placeholder="Название ритуала" className={inputCls} />
-        <input value={draft.goal} onChange={set('goal')} placeholder="Почему это важно для тебя" className={inputCls} />
-        <input value={draft.min_version} onChange={set('min_version')} placeholder="Меньше нельзя" className={inputCls} />
-        <input value={draft.optimal_version} onChange={set('optimal_version')} placeholder="На полную" className={inputCls} />
-        <input value={draft.skip_consequence} onChange={set('skip_consequence')} placeholder="Цена пропуска" className={inputCls} />
-      </div>
+      <div className={`${FULLSCREEN_SCROLL_CLASS} practice-form__scroll`}>
+        <div className="practice-form__inner w-full max-w-md mx-auto px-5 flex flex-col">
+          <div className="mb-8">
+            <h2 className="font-display text-[27px] font-semibold text-cream lowercase">
+              новый ритуал.
+            </h2>
+          </div>
 
+          <div className="practice-form__fields mb-5">
+            <input
+              value={draft.name}
+              onChange={set('name')}
+              placeholder="Название ритуала"
+              className={inputCls}
+            />
+            <input
+              value={draft.goal}
+              onChange={set('goal')}
+              placeholder="Почему это важно для тебя"
+              className={inputCls}
+            />
+            <input
+              value={draft.min_version}
+              onChange={set('min_version')}
+              placeholder="Меньше нельзя"
+              className={inputCls}
+            />
+            <input
+              value={draft.optimal_version}
+              onChange={set('optimal_version')}
+              placeholder="На полную"
+              className={inputCls}
+            />
+            <input
+              value={draft.skip_consequence}
+              onChange={set('skip_consequence')}
+              placeholder="Цена пропуска"
+              className={inputCls}
+            />
+          </div>
         </div>
       </div>
 
       <WebActionBar action={webAction} />
     </div>,
-    document.body,
+    document.body
   )
 }
 
@@ -258,7 +292,6 @@ export default function Rituals({ user, onBack }) {
   const [showCreate, setShowCreate] = useState(false)
   const [active, setActive] = useState(0)
   const trackRef = useRef(null)
-
 
   /*
    * Перетаскивание карточек для смены порядка убрано вместе с
@@ -278,39 +311,56 @@ export default function Rituals({ user, onBack }) {
 
   useEffect(() => {
     if (!user) return
-    api.rituals.list(user.id)
+    api.rituals
+      .list(user.id)
       .then(setRituals)
-      .catch((e) => console.error(e))
+      .catch(e => console.error(e))
       .finally(() => setLoading(false))
   }, [user])
 
   async function logRitual(ritualId, level) {
     try {
       const updated = await api.rituals.log(ritualId, user.id, level)
-      setRituals((prev) => prev.map((r) =>
-        r.id === ritualId
-          ? { ...r, streak: updated.streak, freezes: updated.freezes, today_level: updated.today_level }
-          : r
-      ))
-    } catch (e) { console.error(e) }
+      setRituals(prev =>
+        prev.map(r =>
+          r.id === ritualId
+            ? {
+                ...r,
+                streak: updated.streak,
+                freezes: updated.freezes,
+                today_level: updated.today_level,
+              }
+            : r
+        )
+      )
+    } catch (e) {
+      console.error(e)
+      return null
+    }
   }
 
   async function createRitual(draft) {
     try {
       const ritual = await api.rituals.create(user.id, draft)
-      setRituals((prev) => [...prev, ritual])
+      setRituals(prev => [...prev, ritual])
       setShowCreate(false)
-    } catch (e) { console.error(e) }
+      return ritual
+    } catch (e) {
+      console.error(e)
+      return null
+    }
   }
 
   async function deleteRitual(ritualId) {
     try {
       await api.rituals.remove(ritualId)
-      setRituals((prev) => prev.filter((r) => r.id !== ritualId))
-    } catch (e) { console.error(e) }
+      setRituals(prev => prev.filter(r => r.id !== ritualId))
+    } catch (e) {
+      console.error(e)
+    }
   }
 
-  const doneCount = rituals.filter((r) => r.today_level).length
+  const doneCount = rituals.filter(r => r.today_level).length
 
   if (showCreate) {
     return <CreateRitualScreen onCreate={createRitual} onCancel={() => setShowCreate(false)} />
@@ -356,19 +406,17 @@ export default function Rituals({ user, onBack }) {
             className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
             style={{ scrollbarWidth: 'none' }}
           >
-            {rituals.map((r) => (
-              <RitualCard
-                key={r.id}
-                ritual={r}
-                onLog={logRitual}
-                onDelete={deleteRitual}
-              />
+            {rituals.map(r => (
+              <RitualCard key={r.id} ritual={r} onLog={logRitual} onDelete={deleteRitual} />
             ))}
 
             {/* последней карточкой — создание нового */}
             <button
-              onClick={() => { platform.haptic('light'); setShowCreate(true) }}
-              className={`shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2 active:scale-[0.99] transition-transform ${CARD_HEIGHT_CLASS}`}
+              onClick={() => {
+                platform.haptic('light')
+                setShowCreate(true)
+              }}
+              className="practice-motion-card practice-detail-card shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2"
             >
               <span className="text-[26px] text-faint leading-none">+</span>
               <span className="text-[14px] text-muted font-semibold">Новый ритуал</span>

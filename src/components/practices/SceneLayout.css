@@ -1,0 +1,90 @@
+.practice-scene {
+  position: relative;
+}
+
+.practice-scene__glyph {
+  position: relative;
+  flex: 0 0 4.5rem;
+  transform: none;
+}
+
+.practice-form__inner {
+  padding-top: 1rem;
+  padding-bottom: 9rem;
+}
+
+.practice-form__scroll {
+  scroll-padding-top: 1.5rem;
+  scroll-padding-bottom: 9rem;
+}
+
+.practice-scene--choice {
+  min-height: min(520px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 120px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.practice-scene--input {
+  padding-top: 1.5rem;
+}
+
+.practice-form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.practice-sheet__body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.practice-scene__content {
+  margin-top: 40px;
+}
+
+.practice-scene__choice,
+.practice-scene__cta {
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out,
+    color 140ms ease-out,
+    opacity 140ms ease-out;
+}
+
+.practice-scene__cta {
+  margin-top: 40px;
+}
+
+.practice-scene__secondary {
+  margin-top: 16px;
+}
+
+.practice-detail-card {
+  height: min(620px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 240px));
+  min-height: 440px;
+  max-height: 620px;
+}
+
+.practice-detail-card .mx-card-system-detail-art {
+  flex-basis: 46%;
+}
+
+@media (max-height: 650px) {
+  .practice-detail-card {
+    min-height: 400px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .practice-scene__glyph,
+  .practice-scene__choice,
+  .practice-scene__cta,
+  .practice-motion-card {
+    animation: none;
+    transition: none;
+  }
+}
