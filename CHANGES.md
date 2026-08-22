@@ -33,14 +33,73 @@
   срабатывает — внешний вид не изменился, скриншот идентичен.
 - `npm run ux:check` (оба viewport) и `npm run build` — зелёные.
 
-## 22.08.2026 — MXL-LINT-CLEANUP-001 (открыта)
+## 22.08.2026 — MXL-LINT-CLEANUP-001
 
-- Заведена задача на устранение 30 ESLint warnings на `main` (0 errors),
-  сгруппированных по 4 правилам (`react-hooks/set-state-in-effect`,
-  `react-hooks/exhaustive-deps` + `react-hooks/immutability`,
-  `react-hooks/refs`, `no-empty`) с полным списком затронутых файлов —
-  список в `TASKS.md`. Ничего не исправлялось, только зафиксировано;
-  приоритет и срок не назначены.
+Устранены все 30 ESLint warnings на `main` (`npm run lint` — 0 errors,
+0 warnings). Сгруппировано по правилам, как и было заведено:
+
+- **`no-empty` (3 — `telegram.adapter.js` x2, `QuoteView.jsx`):** пустые
+  `catch {}` — добавлен поясняющий комментарий внутри блока (ESLint не
+  считает блок пустым, если в нём есть комментарий).
+- **`react-hooks/refs` (5 — `store.js`, `telegram.hooks.js` x4):** паттерн
+  «latest ref» (`ref.current = handler` прямо в теле рендера, чтобы эффект
+  с пустыми/узкими deps всегда видел свежий колбэк) — запись перенесена в
+  `useEffect(() => { ref.current = handler })` без deps (тот же
+  официальный React-паттерн, что и раньше, просто после коммита, а не во
+  время рендера).
+- **`react-hooks/exhaustive-deps` + `react-hooks/immutability`
+  (`BrainTrainer.jsx`, `Courses.jsx`, `Focus.jsx`, `Path.jsx`,
+  `QuotesManager.jsx`):** `function load() {}`, объявленная и
+  использованная в эффекте до её объявления. Для чистого fetch-on-mount
+  (`Courses`/`Path`/`QuotesManager`) — эффект переписан на async IIFE по
+  образцу уже существующего в `Today.jsx` (`fetchTodayData`): `await` —
+  первая инструкция, поэтому `setState` вызывается только в колбэке
+  промиса, а не синхронно в теле эффекта — заодно снял и
+  `react-hooks/set-state-in-effect`, который иначе всплывал бы следом.
+  `Focus.jsx` (`finishSession`, используется только в одном эффекте) —
+  `useCallback`. `BrainTrainer.jsx` (`loadSummary`, вызывается из эффекта
+  И из `finish()`) — вынесена в модульную (вне компонента) функцию
+  `fetchBrainSummary`, компонент только вызывает её и делает `setState`.
+- **`react-hooks/set-state-in-effect` (11 —
+  `MorningPilotCard.jsx` x2, `BrainTrainer.jsx` x3, `Breathing.jsx`,
+  `Practices.jsx`, `ThemeScreen.jsx` x3, `Today.jsx`):** синхронный
+  `setState` в теле эффекта. По одному на каждый случай:
+  - «Синхронизация с внешним пропом/состоянием, без побочных эффектов»
+    (`setSub(initialSub)`, `setActiveId(themeId)`, `setData(null)` перед
+    рефетчем, `setText(...)` при смене дня, `setTodayFocus(...)` при
+    получении `user`, переход `stage: prepare → run` по времени) — код
+    перенесён из `useEffect` прямо в тело рендера с ручным сравнением
+    «предыдущее/текущее» через доп. `useState`: официальный React-паттерн
+    «Adjusting state when a prop changes», не создаёт лишних рендеров и не
+    триггерит это правило, потому что это не эффект.
+  - «Настоящая запись во внешнюю систему» (`recordMorningPilotEvent` пишет
+    в localStorage и возвращает состояние синхронно, без промиса) — оставлено
+    в `useEffect` с точечным `eslint-disable-next-line
+react-hooks/set-state-in-effect` и комментарием: перенести в колбэк
+    нечего, значение приходит не из промиса/таймера.
+  - `BrainTrainer.jsx` — три игры (Внимание/Память/Реакция) переписаны без
+    отдельного «эффект на маунт генерирует случайный раунd»: начальный
+    раунд/последовательность — через lazy-инициализатор `useState`, смена
+    раунда/уровня — прямо в обработчике клика/тапа. Устранило вспышку
+    пустого экрана на старте (раньше `if (!word) return null` до первого
+    эффекта) и заодно убрало `react-hooks/immutability` на `playSequence`
+    (объявлять её до эффекта стало не нужно — эффект отвечает только за
+    анимацию по уже готовой `sequence`, не генерирует её).
+- **Побочная находка (исправлена по месту, не расширяя это же затронутое
+  место дальше):** после того как `BrainTrainer.jsx#loadSummary` перестал
+  быть forward-reference, `eslint-plugin-react-hooks` начал попутно
+  ругаться (`react-hooks/purity`) на не связанную с этим строку
+  `startTimeRef.current = Date.now()` в обработчике `onClick` — ложное
+  срабатывание (это не рендер), подтверждено прогоном линтера на исходной,
+  незменённой версии файла до этой правки. Точечный `eslint-disable` с
+  пояснением.
+- Ручная проверка в браузере (dev-сервер, без backend — API-запросы
+  ожидаемо 500, не влияют на UI-логику): BrainTrainer — Внимание (раунды
+  меняются), Память (все 4 уровня пройдены, уровень растёт, финальный
+  экран со счётом), Реакция (раунды 1→2, фаза корректно сбрасывается в
+  `waiting`); Дыхание — переход `prepare → run` по времени, без ошибок в
+  консоли.
+- `npm run lint` (0/0), `npm run build`, `npm run ux:check` — зелёные.
 
 ## 22.08.2026 — MXL-TESTING-INFRASTRUCTURE-001 (Документация)
 

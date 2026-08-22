@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Play, Pause, RotateCcw } from 'lucide-react'
@@ -39,13 +39,26 @@ export default function Focus({ user }) {
     }
   }, [endsAt])
 
+  const finishSession = useCallback(async () => {
+    setRunning(false)
+    setEndsAt(null)
+    platform.haptic('success')
+    try {
+      const updated = await api.focus.logSession(user.id, selectedDuration)
+      setProgress(updated)
+    } catch (e) {
+      console.error(e)
+    }
+    setSecondsLeft(selectedDuration * 60)
+  }, [user, selectedDuration])
+
   // Завершение — отдельным эффектом, а не внутри апдейтера состояния:
   // в StrictMode апдейтер вызывается дважды и logSession уходил дублем.
   useEffect(() => {
     if (!endsAt || secondsLeft > 0 || finishedRef.current) return
     finishedRef.current = true
     finishSession()
-  }, [secondsLeft, endsAt])
+  }, [secondsLeft, endsAt, finishSession])
 
   function selectDuration(min) {
     if (running) return
@@ -73,19 +86,6 @@ export default function Focus({ user }) {
     setSecondsLeft(selectedDuration * 60)
   }
 
-  async function finishSession() {
-    setRunning(false)
-    setEndsAt(null)
-    platform.haptic('success')
-    try {
-      const updated = await api.focus.logSession(user.id, selectedDuration)
-      setProgress(updated)
-    } catch (e) {
-      console.error(e)
-    }
-    setSecondsLeft(selectedDuration * 60)
-  }
-
   const mm = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
   const ss = String(secondsLeft % 60).padStart(2, '0')
   return (
@@ -108,7 +108,7 @@ export default function Focus({ user }) {
       </div>
 
       <div className="flex gap-2 mb-8">
-        {DURATIONS.map((d) => (
+        {DURATIONS.map(d => (
           <button
             key={d}
             onClick={() => selectDuration(d)}

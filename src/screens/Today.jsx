@@ -213,11 +213,16 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
     }
   }, [onFlowChange])
 
-  useEffect(() => {
-    if (!user) return
-
+  /*
+   * todayFocus читается из localStorage при появлении user (Telegram-авторизация
+   * резолвится асинхронно) — синхронизация с внешним пропом без побочных
+   * эффектов, поэтому во время рендера, а не в useEffect.
+   */
+  const [seenFocusUserId, setSeenFocusUserId] = useState(null)
+  if (user && seenFocusUserId !== user.id) {
+    setSeenFocusUserId(user.id)
     setTodayFocus(readTodayFocusDay(user.id))
-  }, [user])
+  }
 
   async function refreshCheckin() {
     if (!user) return

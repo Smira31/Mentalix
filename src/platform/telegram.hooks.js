@@ -1,8 +1,4 @@
-import {
-  useEffect,
-  useRef,
-} from 'react'
-
+import { useEffect, useRef } from 'react'
 
 /*
  * TELEGRAM: REACT-ХУКИ НАД MINI APP API
@@ -25,27 +21,19 @@ import {
  * Приложение обязано продолжать работать, просто без украшения.
  */
 
-
 function api() {
-  return typeof window === 'undefined'
-    ? null
-    : window.Telegram?.WebApp ?? null
+  return typeof window === 'undefined' ? null : (window.Telegram?.WebApp ?? null)
 }
-
 
 function safely(action, label) {
   try {
     return action()
   } catch (error) {
-    console.info(
-      `Telegram WebApp: ${label} недоступен на этом клиенте.`,
-      error,
-    )
+    console.info(`Telegram WebApp: ${label} недоступен на этом клиенте.`, error)
 
     return undefined
   }
 }
-
 
 /* ============================================================
    КНОПКА «НАЗАД»
@@ -64,21 +52,13 @@ const stack = []
 
 let bound = false
 
-
 function syncBackButton() {
   const backButton = api()?.BackButton
 
   if (!backButton) return
 
-  safely(
-    () =>
-      stack.length
-        ? backButton.show()
-        : backButton.hide(),
-    'BackButton',
-  )
+  safely(() => (stack.length ? backButton.show() : backButton.hide()), 'BackButton')
 }
-
 
 function handleBackClick() {
   const top = stack[stack.length - 1]
@@ -86,14 +66,12 @@ function handleBackClick() {
   top?.()
 }
 
-
-export function useBackButton(
-  handler,
-  active = true,
-) {
+export function useBackButton(handler, active = true) {
   const ref = useRef(handler)
 
-  ref.current = handler
+  useEffect(() => {
+    ref.current = handler
+  })
 
   useEffect(() => {
     if (!active) return
@@ -107,13 +85,7 @@ export function useBackButton(
     stack.push(entry)
 
     if (!bound) {
-      safely(
-        () =>
-          backButton.onClick(
-            handleBackClick,
-          ),
-        'BackButton.onClick',
-      )
+      safely(() => backButton.onClick(handleBackClick), 'BackButton.onClick')
 
       bound = true
     }
@@ -131,7 +103,6 @@ export function useBackButton(
     }
   }, [active])
 }
-
 
 /* ============================================================
    ГЛАВНАЯ КНОПКА
@@ -153,11 +124,7 @@ export function useBackButton(
 function tokenHex(name) {
   if (typeof window === 'undefined') return null
 
-  const raw = getComputedStyle(
-    document.documentElement,
-  )
-    .getPropertyValue(name)
-    .trim()
+  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
   if (!raw) return null
 
@@ -165,60 +132,33 @@ function tokenHex(name) {
 
   const channels = raw.split(/\s+/).map(Number)
 
-  if (
-    channels.length !== 3
-    || channels.some(
-      (channel) =>
-        !Number.isFinite(channel),
-    )
-  ) {
+  if (channels.length !== 3 || channels.some(channel => !Number.isFinite(channel))) {
     return null
   }
 
-  return (
-    '#'
-    + channels
-      .map((channel) =>
-        channel
-          .toString(16)
-          .padStart(2, '0'),
-      )
-      .join('')
-  )
+  return '#' + channels.map(channel => channel.toString(16).padStart(2, '0')).join('')
 }
-
 
 function ctaColors() {
   if (typeof window === 'undefined') return null
 
-  const style = getComputedStyle(
-    document.documentElement,
-  )
+  const style = getComputedStyle(document.documentElement)
 
-  const background = style
-    .getPropertyValue('--btn-bg')
-    .trim()
+  const background = style.getPropertyValue('--btn-bg').trim()
 
-  const text = style
-    .getPropertyValue('--btn-text')
-    .trim()
+  const text = style.getPropertyValue('--btn-text').trim()
 
   if (!background || !text) return null
 
   return { background, text }
 }
 
-
-export function useMainButton({
-  text,
-  onClick,
-  visible = true,
-  enabled = true,
-  loading = false,
-}) {
+export function useMainButton({ text, onClick, visible = true, enabled = true, loading = false }) {
   const ref = useRef(onClick)
 
-  ref.current = onClick
+  useEffect(() => {
+    ref.current = onClick
+  })
 
   useEffect(() => {
     const button = api()?.MainButton
@@ -252,7 +192,6 @@ export function useMainButton({
     }
   }, [text, visible])
 
-
   useEffect(() => {
     const button = api()?.MainButton
 
@@ -274,7 +213,6 @@ export function useMainButton({
   }, [enabled, loading, visible])
 }
 
-
 /* ============================================================
    ВТОРАЯ КНОПКА
 
@@ -283,14 +221,12 @@ export function useMainButton({
    клиентов её не будет — и это нормально.
    ============================================================ */
 
-export function useSecondaryButton({
-  text,
-  onClick,
-  visible = true,
-}) {
+export function useSecondaryButton({ text, onClick, visible = true }) {
   const ref = useRef(onClick)
 
-  ref.current = onClick
+  useEffect(() => {
+    ref.current = onClick
+  })
 
   useEffect(() => {
     const button = api()?.SecondaryButton
@@ -334,7 +270,6 @@ export function useSecondaryButton({
   }, [text, visible])
 }
 
-
 /* ============================================================
    КНОПКА НАСТРОЕК В МЕНЮ «⋯»
    ============================================================ */
@@ -342,7 +277,9 @@ export function useSecondaryButton({
 export function useSettingsButton(onClick) {
   const ref = useRef(onClick)
 
-  ref.current = onClick
+  useEffect(() => {
+    ref.current = onClick
+  })
 
   useEffect(() => {
     const button = api()?.SettingsButton
@@ -365,7 +302,6 @@ export function useSettingsButton(onClick) {
   }, [])
 }
 
-
 /* ============================================================
    НАТИВНЫЕ ДИАЛОГИ
 
@@ -374,30 +310,18 @@ export function useSettingsButton(onClick) {
    ============================================================ */
 
 export function confirmAction(message) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const webApp = api()
 
     if (!webApp?.showConfirm) {
-      resolve(
-        typeof window !== 'undefined'
-          ? window.confirm(message)
-          : false,
-      )
+      resolve(typeof window !== 'undefined' ? window.confirm(message) : false)
 
       return
     }
 
-    safely(
-      () =>
-        webApp.showConfirm(
-          message,
-          (ok) => resolve(Boolean(ok)),
-        ),
-      'showConfirm',
-    )
+    safely(() => webApp.showConfirm(message, ok => resolve(Boolean(ok))), 'showConfirm')
   })
 }
-
 
 /* ============================================================
    ОБЛАЧНОЕ ХРАНИЛИЩЕ
@@ -410,7 +334,7 @@ export function confirmAction(message) {
 
 export const cloud = {
   get(key) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const storage = api()?.CloudStorage
 
       if (!storage?.getItem) {
@@ -420,21 +344,14 @@ export const cloud = {
       }
 
       safely(
-        () =>
-          storage.getItem(
-            key,
-            (error, value) =>
-              resolve(
-                error ? null : value || null,
-              ),
-          ),
-        'CloudStorage.getItem',
+        () => storage.getItem(key, (error, value) => resolve(error ? null : value || null)),
+        'CloudStorage.getItem'
       )
     })
   },
 
   set(key, value) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const storage = api()?.CloudStorage
 
       if (!storage?.setItem) {
@@ -444,19 +361,14 @@ export const cloud = {
       }
 
       safely(
-        () =>
-          storage.setItem(
-            key,
-            String(value ?? ''),
-            (error) => resolve(!error),
-          ),
-        'CloudStorage.setItem',
+        () => storage.setItem(key, String(value ?? ''), error => resolve(!error)),
+        'CloudStorage.setItem'
       )
     })
   },
 
   remove(key) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const storage = api()?.CloudStorage
 
       if (!storage?.removeItem) {
@@ -465,18 +377,10 @@ export const cloud = {
         return
       }
 
-      safely(
-        () =>
-          storage.removeItem(
-            key,
-            (error) => resolve(!error),
-          ),
-        'CloudStorage.removeItem',
-      )
+      safely(() => storage.removeItem(key, error => resolve(!error)), 'CloudStorage.removeItem')
     })
   },
 }
-
 
 /* ============================================================
    БИОМЕТРИЯ
@@ -497,7 +401,7 @@ function biometricManager() {
 }
 
 function ensureBiometricInited() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const manager = biometricManager()
 
     if (!manager) {
@@ -512,10 +416,7 @@ function ensureBiometricInited() {
       return
     }
 
-    safely(
-      () => manager.init(() => resolve(manager)),
-      'BiometricManager.init',
-    )
+    safely(() => manager.init(() => resolve(manager)), 'BiometricManager.init')
   })
 }
 
@@ -533,8 +434,8 @@ export const biometric = {
   },
 
   authenticate(reason) {
-    return new Promise((resolve) => {
-      ensureBiometricInited().then((manager) => {
+    return new Promise(resolve => {
+      ensureBiometricInited().then(manager => {
         if (!manager?.isBiometricAvailable) {
           resolve(false)
 
@@ -543,12 +444,8 @@ export const biometric = {
 
         const proceed = () => {
           safely(
-            () =>
-              manager.authenticate(
-                { reason },
-                (ok) => resolve(Boolean(ok)),
-              ),
-            'BiometricManager.authenticate',
+            () => manager.authenticate({ reason }, ok => resolve(Boolean(ok))),
+            'BiometricManager.authenticate'
           )
         }
 
@@ -560,17 +457,13 @@ export const biometric = {
 
         safely(
           () =>
-            manager.requestAccess(
-              { reason },
-              (granted) => (granted ? proceed() : resolve(false)),
-            ),
-          'BiometricManager.requestAccess',
+            manager.requestAccess({ reason }, granted => (granted ? proceed() : resolve(false))),
+          'BiometricManager.requestAccess'
         )
       })
     })
   },
 }
-
 
 /* ============================================================
    ЦВЕТ ШАПКИ И НИЖНЕЙ ПОЛОСЫ
@@ -584,23 +477,12 @@ export function paintChrome(color) {
 
   if (!webApp) return
 
-  safely(
-    () => webApp.setHeaderColor?.(color),
-    'setHeaderColor',
-  )
+  safely(() => webApp.setHeaderColor?.(color), 'setHeaderColor')
 
-  safely(
-    () => webApp.setBottomBarColor?.(color),
-    'setBottomBarColor',
-  )
+  safely(() => webApp.setBottomBarColor?.(color), 'setBottomBarColor')
 
-  safely(
-    () =>
-      webApp.setBackgroundColor?.(color),
-    'setBackgroundColor',
-  )
+  safely(() => webApp.setBackgroundColor?.(color), 'setBackgroundColor')
 }
-
 
 /* ============================================================
    ПРОЧЕЕ
@@ -609,18 +491,13 @@ export function paintChrome(color) {
 // Вертикальный свайп закрывает приложение — на длинных
 // прокручиваемых экранах это происходит случайно.
 export function lockVerticalSwipes() {
-  safely(
-    () =>
-      api()?.disableVerticalSwipes?.(),
-    'disableVerticalSwipes',
-  )
+  safely(() => api()?.disableVerticalSwipes?.(), 'disableVerticalSwipes')
 }
-
 
 // Разрешение боту писать. Спрашиваем только в момент, когда
 // человек сам включает напоминание, — не раньше.
 export function requestMessages() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const webApp = api()
 
     if (!webApp?.requestWriteAccess) {
@@ -630,23 +507,14 @@ export function requestMessages() {
     }
 
     safely(
-      () =>
-        webApp.requestWriteAccess(
-          (granted) =>
-            resolve(Boolean(granted)),
-        ),
-      'requestWriteAccess',
+      () => webApp.requestWriteAccess(granted => resolve(Boolean(granted))),
+      'requestWriteAccess'
     )
   })
 }
 
-
 // Иконка на домашнем экране — самый честный ответ на вопрос
 // «почему человек откроет Mentalix завтра».
 export function offerHomeScreen() {
-  safely(
-    () => api()?.addToHomeScreen?.(),
-    'addToHomeScreen',
-  )
+  safely(() => api()?.addToHomeScreen?.(), 'addToHomeScreen')
 }
-

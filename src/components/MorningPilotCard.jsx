@@ -54,15 +54,28 @@ export default function MorningPilotCard({
    */
   const allDone = rituals.length > 0 && visibleRituals.length === 0
 
-  useEffect(() => {
+  /*
+   * Смена userId — редкий кейс (переключение пользователя без ремонта
+   * компонента), но обработан: перечитываем localStorage при смене ключа
+   * прямо во время рендера (readMorningPilotDay — чистое чтение, не
+   * побочный эффект), а не в useEffect — тот же приём, что и ниже.
+   */
+  const [seenUserId, setSeenUserId] = useState(userId)
+  if (seenUserId !== userId) {
+    setSeenUserId(userId)
     setDayState(readMorningPilotDay(userId, currentDate))
-  }, [currentDate, userId])
+  }
 
   useEffect(() => {
     if (!isMorning || dayState?.viewed_at) {
       return
     }
 
+    // recordMorningPilotEvent пишет в localStorage — настоящая синхронизация
+    // с внешней системой, законное место для useEffect. setState здесь
+    // не может быть отложен в колбэк: значение приходит синхронно из самой
+    // записи, а не из промиса/таймера.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDayState(recordMorningPilotEvent(userId, 'viewed', currentDate))
   }, [dayState?.viewed_at, isMorning, currentDate, userId])
 

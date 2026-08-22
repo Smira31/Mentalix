@@ -36,8 +36,8 @@ export default function QuoteView({ user, todayQuote, onClose }) {
     if (!user) return
     api.quotes
       .list(user.id)
-      .then((list) => {
-        const rest = (list || []).filter((q) => q.text !== todayQuote)
+      .then(list => {
+        const rest = (list || []).filter(q => q.text !== todayQuote)
         setQuotes(todayQuote ? [{ id: 'today', text: todayQuote }, ...rest] : rest)
       })
       .catch(console.error)
@@ -46,7 +46,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
   function go(delta) {
     if (quotes.length === 0) return
     platform.haptic('light')
-    setIdx((i) => (i + delta + quotes.length) % quotes.length)
+    setIdx(i => (i + delta + quotes.length) % quotes.length)
   }
 
   function share() {
@@ -59,7 +59,9 @@ export default function QuoteView({ user, todayQuote, onClose }) {
           `https://t.me/share/url?url=${encodeURIComponent('https://t.me/Mentalix_club_bot/app')}&text=${encodeURIComponent(text)}`
         )
         return
-      } catch {}
+      } catch {
+        // Telegram-ссылка недоступна вне Telegram-клиента — падаем на navigator.share ниже
+      }
     }
     if (navigator.share) {
       navigator.share({ text }).catch(() => {})
@@ -69,7 +71,9 @@ export default function QuoteView({ user, todayQuote, onClose }) {
   }
 
   // свайп вверх/вниз — следующая/предыдущая
-  function onTouchStart(e) { touchY.current = e.touches[0].clientY }
+  function onTouchStart(e) {
+    touchY.current = e.touches[0].clientY
+  }
   function onTouchEnd(e) {
     if (touchY.current === null) return
     const dy = e.changedTouches[0].clientY - touchY.current
@@ -95,22 +99,28 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         </span>
       </div>
 
-      <div key={idx} className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-8 text-center animate-fade-in`}>
+      <div
+        key={idx}
+        className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-8 text-center animate-fade-in`}
+      >
         {current ? (
           <>
             <span className="font-display text-[40px] text-gold leading-none mb-6">«</span>
-            <p className="font-display text-[24px] text-cream leading-snug max-w-md">{current.text}</p>
+            <p className="font-display text-[24px] text-cream leading-snug max-w-md">
+              {current.text}
+            </p>
             {current.tag && (
               <span className="text-[12px] font-semibold text-faint mt-5">{current.tag}</span>
             )}
           </>
         ) : (
           <>
-          <MotifArt name="shozhdenie" size={130} className="mx-auto mb-6" />
-          <p className="text-[15px] text-muted leading-relaxed">
-            Здесь будут твои цитаты.
-            <br />Добавляй мысли, которые держат, — в настройках считки дня.
-          </p>
+            <MotifArt name="shozhdenie" size={130} className="mx-auto mb-6" />
+            <p className="text-[15px] text-muted leading-relaxed">
+              Здесь будут твои цитаты.
+              <br />
+              Добавляй мысли, которые держат, — в настройках считки дня.
+            </p>
           </>
         )}
       </div>
@@ -138,6 +148,6 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         </button>
       </div>
     </div>,
-    document.body,
+    document.body
   )
 }

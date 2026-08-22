@@ -5,13 +5,22 @@ import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import SemanticGlyph from '../components/SemanticGlyph'
 
-
 const EXERCISES = [
   { key: 'attention', title: 'Внимание', subtitle: 'Струп-тест', kind: 'brain-attention' },
   { key: 'memory', title: 'Память', subtitle: 'последовательности', kind: 'brain-memory' },
   { key: 'reaction', title: 'Реакция', subtitle: 'на время', kind: 'brain-reaction' },
-  { key: 'plasticity', title: 'Нейропластичность', subtitle: 'переключение', kind: 'brain-plasticity' },
-  { key: 'gymnastics', title: 'Гимнастика для мозга', subtitle: 'дыхание', kind: 'brain-gymnastics' },
+  {
+    key: 'plasticity',
+    title: 'Нейропластичность',
+    subtitle: 'переключение',
+    kind: 'brain-plasticity',
+  },
+  {
+    key: 'gymnastics',
+    title: 'Гимнастика для мозга',
+    subtitle: 'дыхание',
+    kind: 'brain-gymnastics',
+  },
 ]
 
 function ScoreScreen({ label, score, sub, onDone }) {
@@ -54,25 +63,20 @@ const COLORS = [
 ]
 const TOTAL_ROUNDS_ATTENTION = 10
 
+function randomAttentionRound() {
+  const wordColor = COLORS[Math.floor(Math.random() * COLORS.length)]
+  const match = Math.random() < 0.5
+  const displayColor = match
+    ? wordColor
+    : COLORS.filter(c => c.name !== wordColor.name)[Math.floor(Math.random() * 3)]
+  return { word: wordColor.name, colorHex: displayColor.hex, isMatch: match }
+}
+
 function AttentionGame({ onFinish }) {
   const [round, setRound] = useState(0)
   const [correct, setCorrect] = useState(0)
-  const [word, setWord] = useState(null)
-  const [colorHex, setColorHex] = useState(null)
-  const [isMatch, setIsMatch] = useState(false)
-
-  function makeRound() {
-    const wordColor = COLORS[Math.floor(Math.random() * COLORS.length)]
-    const match = Math.random() < 0.5
-    const displayColor = match
-      ? wordColor
-      : COLORS.filter((c) => c.name !== wordColor.name)[Math.floor(Math.random() * 3)]
-    setWord(wordColor.name)
-    setColorHex(displayColor.hex)
-    setIsMatch(match)
-  }
-
-  useEffect(() => { makeRound() }, [])
+  const [current, setCurrent] = useState(randomAttentionRound)
+  const { word, colorHex, isMatch } = current
 
   function answer(userSaysMatch) {
     platform.haptic('light')
@@ -84,16 +88,18 @@ function AttentionGame({ onFinish }) {
     } else {
       setCorrect(newCorrect)
       setRound(next)
-      makeRound()
+      setCurrent(randomAttentionRound())
     }
   }
 
-  if (!word) return null
-
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-muted mb-8">{round + 1} / {TOTAL_ROUNDS_ATTENTION} · Слово и цвет совпадают?</p>
-      <div className="font-display text-4xl mb-12" style={{ color: colorHex }}>{word}</div>
+      <p className="text-xs text-muted mb-8">
+        {round + 1} / {TOTAL_ROUNDS_ATTENTION} · Слово и цвет совпадают?
+      </p>
+      <div className="font-display text-4xl mb-12" style={{ color: colorHex }}>
+        {word}
+      </div>
       <div className="flex gap-4 w-full">
         <button
           onClick={() => answer(true)}
@@ -116,28 +122,24 @@ function AttentionGame({ onFinish }) {
 const TILE_COLORS = ['#B8952E', '#96CDB0', '#C18D52', '#5A8F76']
 const MEMORY_ROUNDS = 4 // после 4-го успешного уровня — завершение
 
+function randomSequence(level) {
+  return Array.from({ length: level + 2 }, () => Math.floor(Math.random() * 4))
+}
+
 function MemoryGame({ onFinish }) {
   const [level, setLevel] = useState(1)
-  const [sequence, setSequence] = useState([])
+  const [sequence, setSequence] = useState(() => randomSequence(1))
   const [userInput, setUserInput] = useState([])
   const [showing, setShowing] = useState(true)
   const [activeTile, setActiveTile] = useState(null)
 
   useEffect(() => {
-    const seq = Array.from({ length: level + 2 }, () => Math.floor(Math.random() * 4))
-    setSequence(seq)
-    setUserInput([])
-    setShowing(true)
-    playSequence(seq)
-  }, [level])
-
-  function playSequence(seq) {
-    seq.forEach((tile, i) => {
+    sequence.forEach((tile, i) => {
       setTimeout(() => setActiveTile(tile), i * 700)
       setTimeout(() => setActiveTile(null), i * 700 + 400)
     })
-    setTimeout(() => setShowing(false), seq.length * 700)
-  }
+    setTimeout(() => setShowing(false), sequence.length * 700)
+  }, [sequence])
 
   function tapTile(i) {
     if (showing) return
@@ -155,7 +157,15 @@ function MemoryGame({ onFinish }) {
       if (level >= MEMORY_ROUNDS) {
         onFinish(level)
       } else {
-        setTimeout(() => setLevel((l) => l + 1), 500)
+        setTimeout(() => {
+          setLevel(l => {
+            const nextLevel = l + 1
+            setSequence(randomSequence(nextLevel))
+            setUserInput([])
+            setShowing(true)
+            return nextLevel
+          })
+        }, 500)
       }
     }
   }
@@ -163,7 +173,8 @@ function MemoryGame({ onFinish }) {
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
       <p className="text-xs text-muted mb-8">
-        {showing ? 'Запоминай порядок...' : 'Повтори последовательность'} · Уровень {level}/{MEMORY_ROUNDS}
+        {showing ? 'Запоминай порядок...' : 'Повтори последовательность'} · Уровень {level}/
+        {MEMORY_ROUNDS}
       </p>
       <div className="grid grid-cols-2 gap-4 w-full max-w-[240px]">
         {TILE_COLORS.map((color, i) => (
@@ -195,45 +206,63 @@ function ReactionGame({ onFinish }) {
   const startRef = useRef(0)
   const timeoutRef = useRef(null)
 
+  // Каждая новая попытка (новый round или повтор после tooSoon) должна
+  // сразу сбросить фазу на 'waiting' — до срабатывания случайной задержки
+  // ниже. Правка состояния во время рендера, а не в эффекте: это не
+  // побочный эффект (таймер/вызов onFinish), а сброс на конкретное
+  // значение при смене round/attemptKey.
+  const attemptId = `${round}:${attemptKey}`
+  const [seenAttemptId, setSeenAttemptId] = useState(attemptId)
+  if (seenAttemptId !== attemptId) {
+    setSeenAttemptId(attemptId)
+    setPhase('waiting')
+  }
+
   useEffect(() => {
     if (round >= REACTION_ROUNDS) {
       const avg = times.length ? times.reduce((a, b) => a + b, 0) / times.length : 1000
       onFinish(Math.max(0, Math.round(2000 - avg)))
       return
     }
-    setPhase('waiting')
     const delay = 1000 + Math.random() * 1800
     timeoutRef.current = setTimeout(() => {
       startRef.current = Date.now()
       setPhase('ready')
     }, delay)
     return () => clearTimeout(timeoutRef.current)
-  }, [round, attemptKey])
+  }, [round, attemptKey, times, onFinish])
 
   function tap() {
     if (phase === 'waiting') {
       clearTimeout(timeoutRef.current)
       platform.haptic('light')
       setPhase('tooSoon')
-      setTimeout(() => setAttemptKey((k) => k + 1), 900)
+      setTimeout(() => setAttemptKey(k => k + 1), 900)
       return
     }
     if (phase === 'ready') {
       platform.haptic('success')
       const ms = Date.now() - startRef.current
-      setTimes((t) => [...t, ms])
-      setRound((r) => r + 1)
+      setTimes(t => [...t, ms])
+      setRound(r => r + 1)
     }
   }
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-muted mb-6">Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}</p>
+      <p className="text-xs text-muted mb-6">
+        Раунд {Math.min(round + 1, REACTION_ROUNDS)} / {REACTION_ROUNDS}
+      </p>
       <button
         onClick={tap}
         className="w-full aspect-square rounded-[32px] flex items-center justify-center transition-colors"
         style={{
-          backgroundColor: phase === 'ready' ? '#B8952E' : phase === 'tooSoon' ? 'rgba(232,92,92,0.25)' : 'rgba(150,205,176,0.12)',
+          backgroundColor:
+            phase === 'ready'
+              ? '#B8952E'
+              : phase === 'tooSoon'
+                ? 'rgba(232,92,92,0.25)'
+                : 'rgba(150,205,176,0.12)',
         }}
       >
         <span className="text-center text-cream text-sm px-8">
@@ -272,11 +301,13 @@ function PlasticityGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-muted mb-6">{round + 1} / {PLASTICITY_WORDS.length} · Напиши слово наоборот</p>
+      <p className="text-xs text-muted mb-6">
+        {round + 1} / {PLASTICITY_WORDS.length} · Напиши слово наоборот
+      </p>
       <div className="font-display text-3xl text-cream mb-8 tracking-widest">{word}</div>
       <input
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={e => setInput(e.target.value)}
         autoFocus
         className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-center text-lg text-cream outline-none focus:border-gold transition-colors mb-4 uppercase"
       />
@@ -349,7 +380,7 @@ function GymnasticsGame({ onFinish }) {
 
   const cycle = Math.min(BREATH_CYCLES - 1, Math.floor(elapsed / CYCLE_SECONDS))
   const intoCycle = elapsed % CYCLE_SECONDS
-  const phaseIndex = PHASE_ENDS.findIndex((end) => intoCycle < end)
+  const phaseIndex = PHASE_ENDS.findIndex(end => intoCycle < end)
   const secondsLeft = Math.max(1, Math.ceil(PHASE_ENDS[phaseIndex] - intoCycle))
 
   const phase = BREATH_PHASES[phaseIndex]
@@ -358,7 +389,9 @@ function GymnasticsGame({ onFinish }) {
 
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-6">
-      <p className="text-xs text-muted mb-8">Цикл {cycle + 1} / {BREATH_CYCLES}</p>
+      <p className="text-xs text-muted mb-8">
+        Цикл {cycle + 1} / {BREATH_CYCLES}
+      </p>
       <div
         className="rounded-full bg-mint/20 border-2 border-mint/50 flex items-center justify-center transition-all ease-linear"
         style={{
@@ -376,29 +409,27 @@ function GymnasticsGame({ onFinish }) {
   )
 }
 
+async function fetchBrainSummary(userId) {
+  try {
+    return await api.brain.summary(userId)
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}
+
 // ---------- Основной экран ----------
-export default function BrainTrainer({
-  user,
-  onBack,
-  onActiveChange,
-}) {
+export default function BrainTrainer({ user, onBack, onActiveChange }) {
   const [summary, setSummary] = useState(null)
   const [active, setActive] = useState(null)
   const [result, setResult] = useState(null)
   const startTimeRef = useRef(null)
 
-  const gameOpen =
-    active !== null
-    || result !== null
-
+  const gameOpen = active !== null || result !== null
 
   useEffect(() => {
     onActiveChange?.(gameOpen)
-  }, [
-    gameOpen,
-    onActiveChange,
-  ])
-
+  }, [gameOpen, onActiveChange])
 
   useEffect(() => {
     return () => {
@@ -406,23 +437,26 @@ export default function BrainTrainer({
     }
   }, [onActiveChange])
 
-
   useEffect(() => {
     if (!user) return
-    loadSummary()
-  }, [user])
 
-  async function loadSummary() {
-    try {
-      const s = await api.brain.summary(user.id)
-      setSummary(s)
-    } catch (e) {
-      console.error(e)
+    let active = true
+
+    fetchBrainSummary(user.id).then(s => {
+      if (active && s) setSummary(s)
+    })
+
+    return () => {
+      active = false
     }
-  }
+  }, [user])
 
   function start(key) {
     platform.haptic('light')
+    // start() — обработчик onClick, не рендер; Date.now() здесь не влияет
+    // на чистоту рендера. eslint-plugin-react-hooks путает это с рендером
+    // только после того, как loadSummary выше перестал быть forward-reference.
+    // eslint-disable-next-line react-hooks/purity
     startTimeRef.current = Date.now()
     setActive(key)
     setResult(null)
@@ -439,7 +473,9 @@ export default function BrainTrainer({
     }
     setResult({ key: finishedKey, score })
     setActive(null)
-    loadSummary()
+
+    const s = await fetchBrainSummary(user.id)
+    if (s) setSummary(s)
   }
 
   let activeGame = null
@@ -465,22 +501,13 @@ export default function BrainTrainer({
   }
 
   if (activeGame) {
-    return (
-      <ActiveGameFrame onExit={onBack}>
-        {activeGame}
-      </ActiveGameFrame>
-    )
+    return <ActiveGameFrame onExit={onBack}>{activeGame}</ActiveGameFrame>
   }
 
   if (result) {
-    const ex = EXERCISES.find((e) => e.key === result.key)
+    const ex = EXERCISES.find(e => e.key === result.key)
     return (
-      <ScoreScreen
-        label={ex.title}
-        sub="Сессия завершена"
-        score={result.score}
-        onDone={onBack}
-      />
+      <ScoreScreen label={ex.title} sub="Сессия завершена" score={result.score} onDone={onBack} />
     )
   }
 
@@ -495,7 +522,7 @@ export default function BrainTrainer({
 
       <div className="w-full h-[164px] rounded-[24px] overflow-hidden px-4 mb-4 bg-transparent border [border-color:rgb(var(--c-border))]" />
 
-      {EXERCISES.map((ex) => {
+      {EXERCISES.map(ex => {
         const doneToday = todayCompleted.includes(ex.key)
         const best = summary?.per_type?.[ex.key]?.best_score
         return (
@@ -526,9 +553,7 @@ export default function BrainTrainer({
                 )}
               </span>
 
-              <span className="text-[12px] text-muted mt-2 leading-tight">
-                {ex.subtitle}
-              </span>
+              <span className="text-[12px] text-muted mt-2 leading-tight">{ex.subtitle}</span>
 
               {best !== undefined && best > 0 && (
                 <span className="font-mono text-[11px] text-muted mt-2">

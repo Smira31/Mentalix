@@ -8,7 +8,9 @@ export const telegramAdapter = {
       WebApp.ready?.()
       WebApp.expand?.()
       WebApp.disableVerticalSwipes?.()
-    } catch {}
+    } catch {
+      // старые версии Telegram SDK/клиента могут не поддерживать вызов — не критично
+    }
   },
 
   // шапка и фон Telegram синхронизируются с темой приложения (день/ночь).
@@ -17,7 +19,9 @@ export const telegramAdapter = {
     try {
       WebApp.setHeaderColor?.(bgHex)
       WebApp.setBackgroundColor?.(bgHex)
-    } catch {}
+    } catch {
+      // старые версии Telegram SDK/клиента могут не поддерживать вызов — не критично
+    }
   },
 
   getUser() {

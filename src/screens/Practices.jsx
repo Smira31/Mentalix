@@ -125,9 +125,16 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
   const [rituals, setRituals] = useState([])
   const [ascezas, setAscezas] = useState([])
 
-  useEffect(() => {
+  /*
+   * initialSub приходит из навигации (открыть Practices сразу на
+   * конкретном экране) — синхронизация с внешним пропом, без побочных
+   * эффектов, поэтому во время рендера, а не в useEffect.
+   */
+  const [seenInitialSub, setSeenInitialSub] = useState(initialSub)
+  if (seenInitialSub !== initialSub) {
+    setSeenInitialSub(initialSub)
     setSub(initialSub)
-  }, [initialSub])
+  }
 
   useEffect(() => {
     if (!user || sub !== null) return

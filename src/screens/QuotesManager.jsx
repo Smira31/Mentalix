@@ -11,27 +11,31 @@ export default function QuotesManager({ user, onBack }) {
 
   useEffect(() => {
     if (!user) return
-    load()
-  }, [user])
 
-  async function load() {
-    setLoading(true)
-    try {
-      const list = await api.quotes.list(user.id)
-      setQuotes(list)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
+    let active = true
+
+    ;(async () => {
+      try {
+        const list = await api.quotes.list(user.id)
+        if (active) setQuotes(list)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (active) setLoading(false)
+      }
+    })()
+
+    return () => {
+      active = false
     }
-  }
+  }, [user])
 
   async function addQuote() {
     if (!text.trim() || saving) return
     setSaving(true)
     try {
       const quote = await api.quotes.create(user.id, text.trim())
-      setQuotes((prev) => [quote, ...prev])
+      setQuotes(prev => [quote, ...prev])
       setText('')
     } catch (e) {
       console.error(e)
@@ -43,7 +47,7 @@ export default function QuotesManager({ user, onBack }) {
   async function removeQuote(id) {
     try {
       await api.quotes.remove(id)
-      setQuotes((prev) => prev.filter((q) => q.id !== id))
+      setQuotes(prev => prev.filter(q => q.id !== id))
     } catch (e) {
       console.error(e)
     }
@@ -60,13 +64,14 @@ export default function QuotesManager({ user, onBack }) {
       </div>
 
       <p className="w-full text-sm text-muted mb-4 leading-relaxed">
-        Эти фразы будут появляться в карточке «Считка дня» на главном экране — одна фраза в день, по кругу.
+        Эти фразы будут появляться в карточке «Считка дня» на главном экране — одна фраза в день, по
+        кругу.
       </p>
 
       <div className="w-full flex gap-2 mb-6">
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={e => setText(e.target.value)}
           placeholder="Добавь свою фразу..."
           className="flex-1 bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
@@ -87,7 +92,7 @@ export default function QuotesManager({ user, onBack }) {
         </p>
       ) : (
         <div className="w-full bg-cream/[0.03] border border-cream/[0.08] rounded-2xl divide-y divide-cream/[0.06]">
-          {quotes.map((q) => (
+          {quotes.map(q => (
             <div key={q.id} className="flex items-center gap-3 px-4 py-3">
               <p className="flex-1 text-sm text-cream leading-snug">{q.text}</p>
               <button
