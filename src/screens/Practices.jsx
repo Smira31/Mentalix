@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 
-import PracticeCard from '../components/PracticeCard'
 import BackButton from '../components/BackButton'
 
 import RitualsArt from '../components/practice-art/RitualsArt'
@@ -50,6 +49,74 @@ function SubHeader({ title, onBack }) {
 
       <span aria-hidden="true" />
     </div>
+  )
+}
+
+function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) {
+  return (
+    <button
+      type="button"
+      disabled={soon}
+      aria-disabled={soon}
+      onClick={() => {
+        if (soon) return
+
+        platform.haptic('light')
+        onOpen?.()
+      }}
+      className={[
+        'w-full min-h-[72px] flex items-center gap-3 border-b text-left transition-colors',
+        soon ? 'border-cream/[0.06] cursor-default' : 'border-cream/[0.10] active:bg-cream/[0.03]',
+      ].join(' ')}
+    >
+      <span
+        className={[
+          'w-[58px] h-[42px] shrink-0 flex items-center justify-center',
+          soon ? 'text-muted' : 'text-cream',
+        ].join(' ')}
+        aria-hidden="true"
+      >
+        {artwork}
+      </span>
+
+      <span className="min-w-0 flex-1 py-3">
+        <span
+          className={[
+            'block font-display text-[16px] font-semibold leading-tight tracking-[-0.02em]',
+            soon ? 'text-muted' : 'text-cream',
+          ].join(' ')}
+        >
+          {title}
+        </span>
+        <span className="block mt-1 text-[12px] leading-[1.3] text-muted">{subtitle}</span>
+      </span>
+
+      <span className="w-[48px] shrink-0 flex items-center justify-end gap-2">
+        {soon ? (
+          <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-faint">
+            Скоро
+          </span>
+        ) : (
+          <>
+            {right && <span className="font-mono text-[11px] text-gold">{right}</span>}
+            <span className="text-[23px] leading-none text-gold" aria-hidden="true">
+              ›
+            </span>
+          </>
+        )}
+      </span>
+    </button>
+  )
+}
+
+function PracticeCategory({ title, children }) {
+  return (
+    <section className="mt-7 first:mt-0">
+      <h3 className="mb-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">
+        {title}
+      </h3>
+      <div>{children}</div>
+    </section>
   )
 }
 
@@ -135,8 +202,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           grid-cols-[1fr_auto_1fr]
           items-center
           min-h-[42px]
-          mt-[12px]
-          mb-[18px]
+          mb-[28px]
         "
       >
         <span aria-hidden="true" />
@@ -157,110 +223,71 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
         <span aria-hidden="true" />
       </div>
 
-      <div
-        className="
-          grid
-          grid-cols-2
-          gap-x-[10px]
-          gap-y-[12px]
-          mx-stagger
-        "
-      >
-        <PracticeCard
+      <PracticeCategory title="Доступно сейчас">
+        <PracticeRow
           artwork={<RitualsArt />}
-          artworkScale={1.04}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
           right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
           onOpen={() => setSub('rituals')}
         />
-
-        <PracticeCard
+        <PracticeRow
           artwork={<AskesisArt />}
-          artworkScale={1.04}
           title="Аскезы"
           subtitle="от чего ты отказываешься"
           right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
           onOpen={() => setSub('ascezas')}
         />
+      </PracticeCategory>
 
-        <PracticeCard
+      <PracticeCategory title="Психологические практики">
+        <PracticeRow
           artwork={<FirstStepArt />}
-          artworkScale={1.04}
           title="Первый шаг"
           subtitle="маленький шаг, когда трудно начать"
           onOpen={() => setSub('first-step')}
         />
-
-        <PracticeCard
+        <PracticeRow
           artwork={<ReleaseArt />}
-          artworkScale={1.04}
           title="Без вины"
           subtitle="когда откладываешь и знаешь это"
           onOpen={() => setSub('no-blame')}
         />
-
-        <PracticeCard
+        <PracticeRow
           artwork={<NarrowFocusArt />}
-          artworkScale={1.04}
           title="Одно из всех"
           subtitle="когда всё сразу — слишком много"
           onOpen={() => setSub('narrow-focus')}
         />
-
-        <PracticeCard
+        <PracticeRow
           artwork={<OneFinishArt />}
-          artworkScale={1.04}
           title="Один финиш"
           subtitle="маленький кусок, доведённый до конца"
           onOpen={() => setSub('one-finish')}
         />
+      </PracticeCategory>
 
-        <PracticeCard
+      <PracticeCategory title="Дальше / Скоро">
+        <PracticeRow
           artwork={<NeuroArt />}
-          artworkScale={1.04}
-          title={
-            <>
-              Нейро
-              <wbr className="min-[361px]:hidden" />
-              тренажёр
-            </>
-          }
+          title="Нейротренажёр"
           subtitle="внимание, память, реакция"
-          onOpen={() => setSub('brain')}
           soon
-          compactTitle
         />
-
-        <PracticeCard
+        <PracticeRow
           artwork={<BreathingArt />}
-          artworkScale={1.04}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
-          onOpen={() => setSub('breathing')}
           soon
         />
-
-        <PracticeCard
-          artwork={<FocusArt />}
-          artworkScale={1.04}
-          title="Фокус"
-          subtitle="таймер глубокой работы"
-          onOpen={() => setSub('focus')}
-          soon
-        />
-
-        <PracticeCard
+        <PracticeRow artwork={<FocusArt />} title="Фокус" subtitle="таймер глубокой работы" soon />
+        <PracticeRow
           artwork={<MeditationArt />}
-          artworkScale={1.04}
           title="Медитации"
           subtitle="тишина для ума и тела"
           soon
-          onOpen={() => {
-            platform.haptic('light')
-          }}
         />
-      </div>
+      </PracticeCategory>
     </div>
   )
 }

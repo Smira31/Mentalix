@@ -18,8 +18,8 @@
 
 - Hosting: **Vercel**.
 - Production URL: `https://mentalix.vercel.app`.
-- Production commit: `9b73075b28468160795bc8263f2f7570473b6f19`
-  (`main`, merge docs-only PR #127).
+- Production commit: `cf1972cad639d203200784e985ef29225f82ce97`
+  (`main`, merge PR #129).
 - Статус: GitHub commit status `Vercel: success`; прямой запрос к URL вернул
   `HTTP 200` 21.08.2026.
 - Production rewrite в актуальном `vercel.json` направляет `/api/*` на
@@ -89,7 +89,7 @@
 - Первый запуск, проверенный владельцем на реальном iPhone внутри Telegram:
   профиль бота → `/start` → единственный CTA → onboarding → прежний Today;
   повторный запуск onboarding не показывает.
-- GitHub Actions frontend для production commit `9b73075b` завершился успешно.
+- GitHub Actions frontend для production commit `cf1972ca` завершился успешно.
 - Hourly workflow backend scheduled jobs завершался успешно на current backend
   `main` `23610b38` 21.08.2026. Это подтверждает вызов защищённого jobs endpoint,
   но не доставку каждого конкретного напоминания.
@@ -111,45 +111,41 @@
   Trends сейчас нельзя объявить сломанными — backend health восстановлен и
   frontend указывает на Render, — но их актуальный end-to-end тест на реальном
   iPhone после этой смены **НЕ ПОДТВЕРЖДЁН**.
-- **Unified Mobile Layout:** владелец сообщил о регрессиях на iPhone. Изменения
-  не приняты и не должны автоматически считаться готовыми, несмотря на старую
-  запись об успешном gate.
+- **Unified Mobile Layout:** изменения вошли в `main` через PR #129 и считаются
+  текущей production-базой. Ручной Telegram/iPhone gate остаётся отдельной
+  проверкой для новых изменений.
 - Koyeb не является release blocker: существование его service не подтверждено,
   а текущий Render health работает.
 
 ## 5. Frontend / UI
 
-- Production: Vercel, commit `9b73075b28468160795bc8263f2f7570473b6f19`.
-- Текущая локальная ветка: `fix/unified-mobile-layout`; Today SWR-пилот закрыт отдельным
-  русскоязычным commit и отправлен только в `origin/fix/unified-mobile-layout`.
-- Рабочее дерево чистое; ветка синхронизирована с `origin/fix/unified-mobile-layout`.
-- Draft PR #128 открыт, не merged; CI и Vercel Preview имеют статус `success`.
-- Ветка содержит пять незадеплоенных commit:
-  - `ee6e912c` — системный mobile layout и safe-area;
-  - `c7680846` — повторная инициализация Telegram fullscreen;
-  - `4241c4b6` — документация ручного iPhone gate;
-  - `bbaecb50` — каноническое текущее состояние проекта и правило его проверки.
-  - `eca5ebac` — завершение Telegram Preview и фиксация iPhone gate.
-- Более свежий факт владельца: Unified Mobile Layout дал регрессии на iPhone.
-  Поэтому PR #128 не считается прошедшим приёмку; детали регрессий
-  **НЕ ПОДТВЕРЖДЕНЫ** и требуют отдельного воспроизведения.
-- `src/screens/Today.jsx` в PR #128 не изменён.
+- Production: Vercel, commit `cf1972cad639d203200784e985ef29225f82ce97`.
+- PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
+  Vercel Preview имеют статус `success`.
+- Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
+  рабочей веткой; новая работа ведётся в `feat/practices-catalog`.
+- `src/screens/Today.jsx` в PR #129 не изменён.
 - Пилоты `MXL-CHECKIN-SCREEN-RHYTHM-001` и `MXL-TODAY-SCREEN-RHYTHM-001` приняты;
   ручной Telegram/iPhone gate для обоих пройден владельцем 22.08.2026.
 - `MXL-PERFORMANCE-TODAY-SWR-001` принят; versioned session snapshot и background
   revalidation работают поверх существующего Today cache. Ручной Telegram/iPhone gate
   пройден владельцем 22.08.2026. Library и Trends в этот пилот не входили.
-- `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001` принят; Library и Trends получили тот же
-  versioned session snapshot/SWR-контракт. Ручной Telegram/iPhone gate пройден владельцем
-  22.08.2026. Lazy-loading `recharts` в release не входит.
-- Следующий UX-аудит: `MXL-PRACTICES-RELEASE-UX-001` (read-only); код Practices,
-  Preview, production/backend/API до отдельного подтверждения не менять.
-- Кроме PR #128 в frontend остаются старые открытые PR/ветки; они не являются
-  текущим P0 и не считаются готовыми без нового аудита.
+- `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001` принят и вошёл в production через PR #129;
+  Library и Trends получили versioned session snapshot/SWR-контракт. Ручной
+  Telegram/iPhone gate пройден владельцем 22.08.2026. Lazy-loading `recharts` в
+  release не входит.
+- Следующая активная задача: `MXL-PRACTICES-CATALOG-001` — минимальный пилот
+  каталога главного экрана Practices без изменения flows, API и navigation.
 - Ранее описанный как незакоммиченный release UX-diff для Issue #122 в текущем
   рабочем дереве отсутствует; его фактическое состояние и приёмка требуют
   отдельной проверки. Backend/API, порядок Today и навигация этой фиксацией не
   менялись. Production/backend сведения в этом разделе не переопределяются.
+
+## Known Issues
+
+- **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
+
+- Последние эксперименты keyboard position lock и fixed-layout для creation forms Ritual/Asceza откатаны; формы возвращены к принятой Preview-композиции.
 
 ## 6. Today / Core Loop
 
@@ -269,18 +265,17 @@ Data-dependent блоки:
   `DATABASE_URL`, live Neon schema и данные.
 - Не выполнен свежий end-to-end gate data-dependent экранов после перехода API
   на Render.
-- Регрессии Unified Mobile Layout не воспроизведены и не исправлены; PR #128 не
-  принят.
+- Новые изменения Practices ещё не прошли ручной Telegram/iPhone gate.
 - Не принято подтверждённое решение по Groq и по безопасному включению TLS
   verification для GigaChat.
 
 ## 12. Текущая P0-задача
 
-**P0 — завершить release-проверку frontend-цепочки `Vercel → main → Vercel Production`:**
+**P0 — реализовать и проверить `MXL-PRACTICES-CATALOG-001`:**
 
-- проверить итоговый PR и CI;
-- подтвердить merge и GitHub Actions;
-- подтвердить Vercel Production и HTTP 200;
+- заменить плотную grid-стену Practices на спокойный каталог/список;
+- сохранить существующие flows, API, navigation и внутренние practice screens;
+- пройти lint, build, diff-check, Preview и ручной Telegram/iPhone gate;
 - не менять production backend, Render и Neon.
 
 Production-цепочка `Vercel → Render → Neon` и её provenance остаются отдельным
@@ -288,12 +283,11 @@ Production-цепочка `Vercel → Render → Neon` и её provenance ост
 
 ## 13. Следующие задачи
 
-- **P0:** завершить `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001` и пройти data-dependent
-  Telegram/iPhone gate для Library и Trends.
+- **P0:** завершить `MXL-PRACTICES-CATALOG-001` и пройти ручной Telegram/iPhone gate.
 - **P1:** подтвердить и стабилизировать текущую production-цепочку
   `Vercel → Render → Neon`, затем пройти data-dependent gate на реальном iPhone.
-- **P1:** отдельно воспроизвести и исправить регрессии Unified Mobile Layout из
-  PR #128 без изменения логики Today.
+- **P1:** после Practices отдельно подтвердить data-dependent frontend-сценарии
+  на реальном iPhone внутри Telegram.
 - **Later:** Koyeb остаётся кандидатом на бесплатный backend hosting. Решение о
   миграции принимать после стабилизации текущего production, отдельно сравнив
   Render и Koyeb. Здесь же отдельно решить вопросы GigaChat TLS verification и

@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — MXL-PRACTICES-KEYBOARD-ROLLBACK-001
+
+- Последние эксперименты с keyboard position lock и fixed-layout для форм создания Ritual/Asceza отменены; формы возвращены к последней визуально принятой Preview-композиции.
+- Внешний вид Practices, First Step без верхней анимации, создание Ritual/Asceza и остальные принятые UX-изменения сохранены.
+- Known Issue: Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
+- Backend, API, Render и Neon не изменялись.
+
 ## 22.08.2026 — MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001
 
 - Library и Trends переведены на stale-while-revalidate поверх существующих memory cache.
