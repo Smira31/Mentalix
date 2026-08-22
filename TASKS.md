@@ -40,6 +40,50 @@
   алиас на перезапись screenshots создавал бы ложное ощущение snapshot-gate.
 - Состояние Git: ветка `feat/ux-automated-gate-001`, PR не смёржен. Preview/production не создавались и не менялись.
 
+## Планируется — MXL-TESTING-INFRASTRUCTURE-001 (Post-MVP, Infrastructure)
+
+**Статус:** Архитектура спроектирована, документация подготовлена.
+
+**Описание:** Развитие системы тестирования Mentalix — от текущего базового UX Gate к полнофункциональной инфраструктуре с UX States Coverage, Visual Regression, Performance Monitoring и Design Guard.
+
+**Документация:** Создана в `docs/testing/`:
+
+- `PLAYWRIGHT_ROADMAP.md` — стратегический план с 5 этапами;
+- `UX_GATE.md` — расширение текущего ux:check на states;
+- `VISUAL_REGRESSION.md` — baseline management и сравнение;
+- `PERFORMANCE.md` — автоматические проверки производительности;
+- `DESIGN_GUARD.md` — дизайн-валидация;
+- `RELEASE_GATE.md` — полная последовательность pre-release проверок;
+- `TELEGRAM_GATE.md` — ручной iPhone checklist.
+
+**Рекомендуемый порядок реализации:**
+
+1. **Этап 1: UX Gate v2 — States Coverage** (1–2 спринта, после release)
+   - Расширить существующий `npm run ux:check` проверкой всех состояний (loading, empty, filled, error) для каждого экрана.
+   - Результат: полное покрытие Today–Trends, 40–50 новых тестов, <2 мин на run.
+
+2. **Этап 3: Edge Cases Scenarios** (параллельно с Этапом 1)
+   - Библиотека 50+ сценариев (text overflow, empty, excess, network errors, state combos).
+   - Результат: docs с контрольным списком для manual gate, используется в CI-тригерах.
+
+3. **Этап 2: Visual Regression — Baseline** (после Этапа 1, когда UI стабилизирована)
+   - Baseline management, pixel-diff компаратор, GitHub workflow для PR.
+   - Результат: ложные positives <5%, требуется baseline каждого экрана.
+
+4. **Этап 4: Performance Gate** (после Этапа 2, когда baseline есть)
+   - TTI, FCP, bundle size, network, console errors, CLS мониторинг.
+   - Результат: baseline после first release, деградация >10% блокирует merge.
+
+5. **Этап 5: Contract Tests** (параллельно, может цеплять backend)
+   - Validation API responses по JSON Schema для всех endpoints.
+   - Результат: 100% conformance или документированные исключения.
+
+**Что НЕ менять:** текущий `npm run ux:check` остаётся работать, не ломается.
+
+**Зависимости:** никаких блокеров, может начаться в parallel с production work.
+
+**Риски:** none — pure additive infrastructure.
+
 ## Завершено 22.08.2026 — MXL-PRACTICES-KEYBOARD-ROLLBACK-001
 
 - [x] Последние keyboard auto-scroll эксперименты откатаны без отката принятых визуальных и продуктовых изменений Practices.
