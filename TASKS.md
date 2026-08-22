@@ -38,7 +38,7 @@
       keyboard, fullscreen Telegram, swipe physics и WebView performance.
 - `ux:check:update` не добавлен: утверждённых visual baselines пока нет; простой
   алиас на перезапись screenshots создавал бы ложное ощущение snapshot-gate.
-- Состояние Git: ветка `feat/ux-automated-gate-001`, PR не смёржен. Preview/production не создавались и не менялись.
+- Состояние Git: смёржено в `main` через PR #133 (squash); ветка `feat/ux-automated-gate-001` удалена. Preview/production не создавались и не менялись.
 
 ## Планируется — MXL-TESTING-INFRASTRUCTURE-001 (Post-MVP, Infrastructure)
 
