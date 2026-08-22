@@ -334,3 +334,47 @@ Production-цепочка `Vercel → Render → Neon` и её provenance ост
 - Номер, scope и приоритет задачи Groq.
 - Содержимое legacy Railway PostgreSQL volume; подтверждён только сам volume,
   но не его строки.
+
+## 16. Testing Infrastructure (Post-MVP, Planned)
+
+Текущее состояние (22.08.2026):
+
+- **UX Gate v1:** локальная команда `npm run ux:check` на Playwright реализована в ветке `feat/ux-automated-gate-001` (PR открыт).
+  - Два viewport: 390×844, 320×568.
+  - Маршрут: Today → Check-in → Practices → Rituals → Ascezas → First Step → Library → Trends.
+  - Детерминированные fixtures, 16 скриншотов, базовые layout-проверки.
+  - Контрольный прогон: 15/16 pass (Today 320×568 fail из-за navbar overlap — `MXL-UI-CTA-OVERLAP-001`, открыта).
+  - Ручной iPhone gate документирован в отчёте как обязательный.
+
+- **Документация:** создана в `docs/testing/`:
+  - `PLAYWRIGHT_ROADMAP.md` — архитектура 5-этапного развития;
+  - `UX_GATE.md` — расширение на states (loading, empty, filled, error);
+  - `VISUAL_REGRESSION.md` — baseline management;
+  - `PERFORMANCE.md` — TTI, FCP, bundle size, Core Web Vitals;
+  - `DESIGN_GUARD.md` — автоматические дизайн-проверки;
+  - `RELEASE_GATE.md` — полная pre-release последовательность;
+  - `TELEGRAM_GATE.md` — ручной iPhone checklist.
+
+**Roadmap (Post-MVP, Infrastructure):**
+
+1. **Этап 1: UX Gate v2 — States Coverage** (1–2 спринта)
+   - Расширить npm run ux:check на 40–50 новых тестов (states для всех экранов).
+   - Результат: полное покрытие Today–Trends, <2 мин на run.
+
+2. **Этап 3: Edge Cases Scenarios** (параллельно)
+   - Библиотека 50+ сценариев для manual gate и CI-тригеров.
+
+3. **Этап 2: Visual Regression** (после Этапа 1)
+   - Baseline management, pixel-diff, GitHub workflow.
+   - Требуется: утверждённый baseline.
+
+4. **Этап 4: Performance Gate** (после Этапа 2)
+   - Мониторинг TTI, FCP, bundle, network, CLS.
+   - Требуется: baseline после first release.
+
+5. **Этап 5: Contract Tests** (параллельно)
+   - JSON Schema validation всех endpoints.
+
+**Блокеры:** нет.
+
+**Зависимости:** после первого production release рекомендуется установить baseline для visual и performance.

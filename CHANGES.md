@@ -1,5 +1,54 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — MXL-TESTING-INFRASTRUCTURE-001 (Документация)
+
+**Статус:** Спроектирована архитектура и создана полная документация. Реализация перенесена на Post-MVP (Infrastructure).
+
+**Что создано:**
+
+- Новая папка `docs/testing/` с 6 нормативными документами:
+  - `PLAYWRIGHT_ROADMAP.md` — стратегический план развития UX Gate на 5 этапов;
+  - `UX_GATE.md` — спецификация текущего и расширенного ux:check;
+  - `VISUAL_REGRESSION.md` — базовый вариант не создан; входит в PLAYWRIGHT_ROADMAP;
+  - `PERFORMANCE.md` — метрики, baseline management, TTI/FCP/bundle/Core Web Vitals;
+  - `DESIGN_GUARD.md` — автоматические дизайн-проверки (цвета, spacing, safe area, CLS);
+  - `RELEASE_GATE.md` — полная pre-release последовательность (lint, build, ux, visual, performance, contracts);
+  - `TELEGRAM_GATE.md` — ручной iPhone checklist (safe area, keyboard, navigation, flows, edge cases).
+
+**Ключевые решения:**
+
+- **5-этапный roadmap:**
+  1. UX Gate v2 — States Coverage (1–2 спринта, низкий риск);
+  2. Visual Regression (после Этапа 1, зависит от UI стабильности);
+  3. Edge Cases Scenarios (параллельно, библиотека сценариев);
+  4. Performance Gate (после визуального, требуется baseline после release);
+  5. Contract Tests (параллельно, может цеплять backend).
+
+- **Текущий ux:check остаётся без изменений** — расширение не ломает существующее.
+
+- **Интеграция с CI:** lint → build → ux:check → visual (если baseline) → performance (если baseline) → contracts → release.
+
+- **Manual gates:** Telegram/iPhone checklist для safe-area, keyboard, navigation, flows, animations, edge cases.
+
+**Обновлена документация проекта:**
+
+- `TASKS.md`: добавлен раздел MXL-TESTING-INFRASTRUCTURE-001 с планом;
+- `PROJECT_STATE.md`: добавлен раздел о Testing Infrastructure с текущим состоянием и roadmap;
+- `CHANGES.md` (этот файл): документирована архитектура.
+
+**Что НЕ менялось:**
+
+- Production, backend, API, UI код;
+- Текущий `npm run ux:check`;
+- Конфигурация.
+
+**Блокеры:** нет. Реализация может начаться параллельно с продуктовой работой.
+
+**Сроки реализации:**
+
+- Этап 1 (States): 1–2 спринта после first release;
+- Этап 2–5: 3–6 месяцев, зависит от приоритета.
+
 ## 22.08.2026 — MXL-UX-AUTOMATED-GATE-001
 
 - Локально добавлен Playwright UX smoke для двух mobile viewport с fixtures,
