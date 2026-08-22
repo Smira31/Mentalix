@@ -16,6 +16,11 @@
 
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-UI-CTA-OVERLAP-001 (открыта):** На Today видимый CTA частично перекрыт нижней навигацией на viewport `320×568`; обнаружено автоматическим прогоном `npm run ux:check` (`MXL-UX-AUTOMATED-GATE-001`). UI не исправлялся — вне scope задачи gate. Приоритет и срок исправления не назначены.
+- **MXL-LINT-CLEANUP-001 (открыта):** Устранить 30 ESLint warnings на `main` (0 errors), сгруппированных по правилам. Приоритет и срок не назначены, не исправлялось — только зафиксировано.
+  - `react-hooks/set-state-in-effect` (setState напрямую в useEffect) — `MorningPilotCard.jsx`, `BrainTrainer.jsx`, `Practices.jsx`, `ThemeScreen.jsx` (x3), `Today.jsx`, `Breathing.jsx`.
+  - `react-hooks/exhaustive-deps` + `react-hooks/immutability` (функция вызывается до объявления, отсутствует в deps) — `BrainTrainer.jsx`, `Courses.jsx`, `Focus.jsx`, `Path.jsx`, `QuotesManager.jsx`.
+  - `react-hooks/refs` — `store.js`, `telegram.hooks.js` (x4).
+  - `no-empty` — `telegram.adapter.js` (x2), `QuoteView.jsx`.
 
 ## Реализовано локально 22.08.2026 — MXL-UX-AUTOMATED-GATE-001
 

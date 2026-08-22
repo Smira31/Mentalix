@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — MXL-LINT-CLEANUP-001 (открыта)
+
+- Заведена задача на устранение 30 ESLint warnings на `main` (0 errors),
+  сгруппированных по 4 правилам (`react-hooks/set-state-in-effect`,
+  `react-hooks/exhaustive-deps` + `react-hooks/immutability`,
+  `react-hooks/refs`, `no-empty`) с полным списком затронутых файлов —
+  список в `TASKS.md`. Ничего не исправлялось, только зафиксировано;
+  приоритет и срок не назначены.
+
 ## 22.08.2026 — MXL-TESTING-INFRASTRUCTURE-001 (Документация)
 
 **Статус:** Спроектирована архитектура и создана полная документация. Реализация перенесена на Post-MVP (Infrastructure).
