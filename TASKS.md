@@ -15,6 +15,30 @@
 ## Known Issues
 
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
+- **MXL-UI-CTA-OVERLAP-001 (открыта):** На Today видимый CTA частично перекрыт нижней навигацией на viewport `320×568`; обнаружено автоматическим прогоном `npm run ux:check` (`MXL-UX-AUTOMATED-GATE-001`). UI не исправлялся — вне scope задачи gate. Приоритет и срок исправления не назначены.
+
+## Реализовано локально 22.08.2026 — MXL-UX-AUTOMATED-GATE-001
+
+- [x] Добавлена локальная команда `npm run ux:check` на Playwright для viewport
+      `390×844` и `320×568`; production, backend, API-контракты и UI не менялись.
+- [x] Web-авторизация и данные изолированы внутри browser context: тест задаёт
+      локального пользователя через `localStorage`, а все `/api/**` перехватывает
+      детерминированными fixtures из `tests/ux/ux-check.spec.mjs`. Этот слой не
+      импортируется приложением и не попадает в production build.
+- [x] Маршрут проходит Today → Check-in → Practices → Rituals → Ascezas → First
+      Step → Library → Trends; для каждого экрана сохраняется viewport screenshot и
+      строка pass/fail в `artifacts/ux-check/report.md`.
+- [x] Проверяются горизонтальный overflow, границы app root, пустой экран,
+      runtime/console errors, доступность ожидаемых controls, пересечение видимых
+      `cta-pill` с navbar и disabled/«Скоро» controls в Practices/Library.
+- [x] Контрольный прогон создал 16 screenshots: 15 экранов прошли, Today на
+      `320×568` честно получил fail из-за частичного перекрытия видимого CTA нижней
+      навигацией. UI не исправлялся, так как это запрещено scope текущей задачи.
+- [x] В отчёте явно оставлен ручной iPhone gate: Telegram safe-area, iOS
+      keyboard, fullscreen Telegram, swipe physics и WebView performance.
+- `ux:check:update` не добавлен: утверждённых visual baselines пока нет; простой
+  алиас на перезапись screenshots создавал бы ложное ощущение snapshot-gate.
+- Состояние Git: ветка `feat/ux-automated-gate-001`, PR не смёржен. Preview/production не создавались и не менялись.
 
 ## Завершено 22.08.2026 — MXL-PRACTICES-KEYBOARD-ROLLBACK-001
 

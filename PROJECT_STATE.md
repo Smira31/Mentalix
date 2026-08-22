@@ -136,6 +136,12 @@
   release не входит.
 - Следующая активная задача: `MXL-PRACTICES-CATALOG-001` — минимальный пилот
   каталога главного экрана Practices без изменения flows, API и navigation.
+- В ветке `feat/ux-automated-gate-001` (PR открыт, не смёржен) реализован
+  Playwright gate `npm run ux:check`: два mobile viewport, изолированные fixtures,
+  16 screenshots и `artifacts/ux-check/report.md`. Контрольный прогон проходит
+  15/16 экранов и фиксирует fail Today на `320×568` из-за перекрытия видимого CTA
+  нижней навигацией — заведена задача `MXL-UI-CTA-OVERLAP-001` (открыта). UI,
+  production, Preview, backend и API не менялись.
 - Ранее описанный как незакоммиченный release UX-diff для Issue #122 в текущем
   рабочем дереве отсутствует; его фактическое состояние и приёмка требуют
   отдельной проверки. Backend/API, порядок Today и навигация этой фиксацией не

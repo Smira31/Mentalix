@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — MXL-UX-AUTOMATED-GATE-001
+
+- Локально добавлен Playwright UX smoke для двух mobile viewport с fixtures,
+  screenshots и Markdown-отчётом; production и UI не менялись.
+- Контрольный запуск прошёл 15/16 экранов и обнаружил перекрытие CTA на Today в
+  `320×568`; заведена отдельная задача `MXL-UI-CTA-OVERLAP-001` (открыта),
+  подробности и ограничения gate — в разделе задачи в `TASKS.md`.
+
 ## 22.08.2026 — MXL-PRACTICES-KEYBOARD-ROLLBACK-001
 
 - Последние эксперименты с keyboard position lock и fixed-layout для форм создания Ritual/Asceza отменены; формы возвращены к последней визуально принятой Preview-композиции.
