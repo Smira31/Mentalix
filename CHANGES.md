@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001
+
+- Library и Trends переведены на stale-while-revalidate поверх существующих memory cache.
+- Добавлены versioned `sessionStorage` snapshots только с данными, необходимыми для первого полезного кадра.
+- Повреждённые, несовместимые и просроченные snapshots удаляются; refresh deduplicated, stale response не обновляет неактуальный экран.
+- Ручной Telegram/iPhone gate Library/Trends пройден владельцем 22.08.2026.
+- Lazy-loading `recharts` не добавлялся; Practices, API, backend, Render и Neon не менялись.
+- Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
 ## 22.08.2026 — MXL-PERFORMANCE-TODAY-SWR-001
 
 - Today переведён на stale-while-revalidate поверх существующего memory cache: безопасный versioned snapshot хранится в `sessionStorage`.

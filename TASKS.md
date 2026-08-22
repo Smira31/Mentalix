@@ -34,11 +34,16 @@
   - Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
   - Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
 
-## В работе — MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001
+## Завершено 22.08.2026 — MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001
 
-- Library и Trends переводятся на тот же безопасный versioned session snapshot/SWR-контракт.
-- Practices, API, backend, Render, Neon и product logic остаются вне scope.
-- Commit/push до ручного Telegram/iPhone gate этого цикла не выполнять.
+- [x] **Library и Trends stale-while-revalidate pilot**
+  - Library и Trends получили безопасные versioned `sessionStorage` snapshots поверх memory cache.
+  - При наличии snapshot данные показываются сразу, затем обновляются в фоне; ошибки не скрывают старый экран.
+  - Добавлены TTL, schema validation, safe JSON parse, очистка повреждённых snapshot, dedupe in-flight и защита от stale response.
+  - `recharts` не выносился в lazy-load: это отдельный рефакторинг и не входит в release scope.
+  - Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+  - Practices, API, backend, Render, Neon и product logic не менялись.
+  - Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
 
 ## Завершено 22.08.2026 — Release UX Screen Rhythm
 

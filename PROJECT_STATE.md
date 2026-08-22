@@ -139,8 +139,9 @@
 - `MXL-PERFORMANCE-TODAY-SWR-001` принят; versioned session snapshot и background
   revalidation работают поверх существующего Today cache. Ручной Telegram/iPhone gate
   пройден владельцем 22.08.2026. Library и Trends в этот пилот не входили.
-- Следующая текущая P0-задача: `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001` — безопасный
-  SWR для Library и Trends без изменения API/backend и product logic.
+- `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001` принят; Library и Trends получили тот же
+  versioned session snapshot/SWR-контракт. Ручной Telegram/iPhone gate пройден владельцем
+  22.08.2026. Lazy-loading `recharts` в release не входит.
 - Следующий UX-аудит: `MXL-PRACTICES-RELEASE-UX-001` (read-only); код Practices,
   Preview, production/backend/API до отдельного подтверждения не менять.
 - Кроме PR #128 в frontend остаются старые открытые PR/ветки; они не являются
@@ -275,15 +276,15 @@ Data-dependent блоки:
 
 ## 12. Текущая P0-задача
 
-**P0 — `MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`:**
+**P0 — завершить release-проверку frontend-цепочки `Vercel → main → Vercel Production`:**
 
-- дать Library и Trends мгновенное открытие через безопасные versioned session snapshots;
-- сохранить cold-load поведение без snapshot;
-- не менять API/backend, Practices, product logic и production hosting;
-- пройти ручной Telegram/iPhone gate до commit/push.
+- проверить итоговый PR и CI;
+- подтвердить merge и GitHub Actions;
+- подтвердить Vercel Production и HTTP 200;
+- не менять production backend, Render и Neon.
 
-Отдельная production-цепочка `Vercel → Render → Neon` остаётся зафиксированным
-инфраструктурным риском и не проверяется в рамках этого frontend-пилота.
+Production-цепочка `Vercel → Render → Neon` и её provenance остаются отдельным
+инфраструктурным риском и не изменяются этим frontend-релизом.
 
 ## 13. Следующие задачи
 
