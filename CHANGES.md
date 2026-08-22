@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 22.08.2026 — Release UX Screen Rhythm: Check-in и Today
+
+- В `DESIGN_SYSTEM.md` добавлен нормативный раздел `Screen Rhythm & Interaction`.
+- Завершены пилоты `MXL-CHECKIN-SCREEN-RHYTHM-001` и `MXL-TODAY-SCREEN-RHYTHM-001` без изменения продуктовой логики, API, данных, навигации и core loop.
+- Для обоих пилотов ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+- Today получил только композиционные правки: компактнее hero «Следующий шаг» и увеличен интервал между «Чек-ин выполнен» и «День».
+- Проверки: `npm run lint` — 0 ошибок и 30 существующих предупреждений; `npm run build` — успешно; `git diff --check` — успешно.
+
 ## 22.08.2026 — Стандарт Telegram Preview workflow
 
 - Добавлен `npm run preview` как короткий алиас для `npm run preview:telegram`.

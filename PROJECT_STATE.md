@@ -120,25 +120,31 @@
 ## 5. Frontend / UI
 
 - Production: Vercel, commit `9b73075b28468160795bc8263f2f7570473b6f19`.
-- Текущая локальная ветка: `fix/unified-mobile-layout`, HEAD
-  `bbaecb50eb493a2e2cec45a4c4dd3de98ecc0c69`.
+- Текущая локальная ветка: `fix/unified-mobile-layout`; HEAD будет обновлён
+  коммитом закрытия Release UX Screen Rhythm после прохождения проверок.
+- Рабочее дерево должно быть чистым после commit/push; ветка синхронизирована с
+  `origin/fix/unified-mobile-layout`.
 - Draft PR #128 открыт, не merged; CI и Vercel Preview имеют статус `success`.
-- Ветка содержит четыре незадеплоенных commit:
+- Ветка содержит пять незадеплоенных commit:
   - `ee6e912c` — системный mobile layout и safe-area;
   - `c7680846` — повторная инициализация Telegram fullscreen;
   - `4241c4b6` — документация ручного iPhone gate;
   - `bbaecb50` — каноническое текущее состояние проекта и правило его проверки.
+  - `eca5ebac` — завершение Telegram Preview и фиксация iPhone gate.
 - Более свежий факт владельца: Unified Mobile Layout дал регрессии на iPhone.
   Поэтому PR #128 не считается прошедшим приёмку; детали регрессий
   **НЕ ПОДТВЕРЖДЕНЫ** и требуют отдельного воспроизведения.
 - `src/screens/Today.jsx` в PR #128 не изменён.
+- Пилоты `MXL-CHECKIN-SCREEN-RHYTHM-001` и `MXL-TODAY-SCREEN-RHYTHM-001` приняты;
+  ручной Telegram/iPhone gate для обоих пройден владельцем 22.08.2026.
+- Следующий UX-аудит: `MXL-PRACTICES-RELEASE-UX-001` (read-only); код Practices,
+  Preview, production/backend/API до отдельного подтверждения не менять.
 - Кроме PR #128 в frontend остаются старые открытые PR/ветки; они не являются
   текущим P0 и не считаются готовыми без нового аудита.
-- В рабочем дереве поверх этой ветки находится незакоммиченный release UX-diff
-  для Issue #122: safe-area вопросов Check-in, понятный финальный CTA,
-  типографика и подпись карточки следующего шага, а также `TASKS.md`/
-  `CHANGES.md`. Backend/API, порядок Today и навигация не менялись. `lint` и
-  production build проходят; реальный iPhone/Telegram gate ещё не выполнен.
+- Ранее описанный как незакоммиченный release UX-diff для Issue #122 в текущем
+  рабочем дереве отсутствует; его фактическое состояние и приёмка требуют
+  отдельной проверки. Backend/API, порядок Today и навигация этой фиксацией не
+  менялись. Production/backend сведения в этом разделе не переопределяются.
 
 ## 6. Today / Core Loop
 

@@ -743,7 +743,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div className="rounded-[32px] bg-emerald px-6 py-7 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero">
+      <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero">
         {motionExperimentEnabled ? (
           <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
             <SemanticGlyph kind="next-step" debugSource="Today.jsx" />
@@ -779,7 +779,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('checkin')
           }}
-          className="w-full rounded-3xl bg-emerald/60 px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 mt-5 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-sm font-bold shrink-0">
             ✓
@@ -823,7 +823,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('path')
           }}
-          className="w-full rounded-3xl bg-emerald px-5 py-4 mt-4 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          className="w-full rounded-3xl bg-emerald px-5 py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <ArrowUpRight size={18} className="text-gold shrink-0" strokeWidth={2} />
 

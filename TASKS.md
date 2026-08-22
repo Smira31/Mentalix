@@ -25,9 +25,19 @@
 - `Частично` — основа существует, требуется доводка;
 - `Блокер` — работа зависит от внешнего решения или материала.
 
-## В работе 22.08.2026 — release UX Today / Check-in (Issue #122)
+## Завершено 22.08.2026 — Release UX Screen Rhythm
 
-- [ ] **MXL-TODAY-CHECKIN-UX-001 — Уточнить переход от состояния к следующему шагу**
+- [x] **MXL-CHECKIN-SCREEN-RHYTHM-001 — Check-in Screen Rhythm pilot**
+  - Композиция Check-in приведена к принятому `Screen Rhythm & Interaction` без изменения вопросов, API, данных, текста, порядка шагов и core loop.
+  - Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+- [x] **MXL-TODAY-SCREEN-RHYTHM-001 — Today Screen Rhythm pilot**
+  - В `src/screens/Today.jsx` скорректированы только композиционные интервалы: компактнее hero «Следующий шаг» и разделены «Чек-ин выполнен» / «День».
+  - Ручной Telegram/iPhone gate пройден владельцем 22.08.2026.
+- Следующий участок Release UX Gate: read-only аудит **MXL-PRACTICES-RELEASE-UX-001**; код Practices не менять до отдельного подтверждения.
+
+## Детали завершённого release UX Today / Check-in (Issue #122)
+
+- [x] **MXL-TODAY-CHECKIN-UX-001 — Уточнить переход от состояния к следующему шагу**
   - По результатам production UX-аудита подготовлен локальный минимальный diff
     без commit/push: верхний блок вопросов Check-in опущен на `20px` внутри
     существующего fullscreen/safe-area контракта; финальный CTA переименован в
