@@ -108,6 +108,26 @@ function deriveNextAction({ rituals, ascezas }) {
   return null
 }
 
+function formatRemainingActions(count) {
+  if (count <= 0) {
+    return 'Это последнее на сегодня'
+  }
+
+  const lastTwoDigits = count % 100
+  const lastDigit = count % 10
+
+  const noun =
+    lastTwoDigits >= 11 && lastTwoDigits <= 14
+      ? 'действий'
+      : lastDigit === 1
+        ? 'действие'
+        : lastDigit >= 2 && lastDigit <= 4
+          ? 'действия'
+          : 'действий'
+
+  return `После этого останется ещё ${count} ${noun}`
+}
+
 // ============================================================
 // TODAY
 // ============================================================
@@ -432,6 +452,8 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   const remainAfter = Math.max(0, remainRituals + remainAscezas - 1)
 
+  const remainingActionsText = formatRemainingActions(remainAfter)
+
   const motionExperimentEnabled = !TODAY_COMPARE_REQUESTED || todayVariant === 'after'
 
   /*
@@ -591,7 +613,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       (motionExperimentEnabled ? (
         <NextActionReveal
           next={next}
-          remainAfter={remainAfter}
+          remainingActionsText={remainingActionsText}
           onStart={() => {
             platform.haptic('medium')
 
@@ -617,9 +639,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
             Начать
           </button>
 
-          <p className="text-[12px] text-faint mt-5">
-            {remainAfter > 0 ? `После этого останется: ${remainAfter}` : 'Это последнее на сегодня'}
-          </p>
+          <p className="text-[12px] text-faint mt-5">{remainingActionsText}</p>
         </>
       )),
 

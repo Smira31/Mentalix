@@ -1,6 +1,6 @@
 # Mentalix — Current Project State
 
-Дата последней проверки: **21.08.2026, Europe/Moscow**.
+Дата последней проверки: **22.08.2026, Europe/Moscow**.
 
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся
 в `CHANGES.md`, планы — в `ROADMAP.md`, рабочие детали — в `TASKS.md`.
@@ -121,20 +121,24 @@
 
 - Production: Vercel, commit `9b73075b28468160795bc8263f2f7570473b6f19`.
 - Текущая локальная ветка: `fix/unified-mobile-layout`, HEAD
-  `4241c4b6e640fb2fe38f2d0defde49bc94188ce7`.
+  `bbaecb50eb493a2e2cec45a4c4dd3de98ecc0c69`.
 - Draft PR #128 открыт, не merged; CI и Vercel Preview имеют статус `success`.
-- Ветка содержит три незадеплоенных commit:
+- Ветка содержит четыре незадеплоенных commit:
   - `ee6e912c` — системный mobile layout и safe-area;
   - `c7680846` — повторная инициализация Telegram fullscreen;
-  - `4241c4b6` — документация ручного iPhone gate.
+  - `4241c4b6` — документация ручного iPhone gate;
+  - `bbaecb50` — каноническое текущее состояние проекта и правило его проверки.
 - Более свежий факт владельца: Unified Mobile Layout дал регрессии на iPhone.
   Поэтому PR #128 не считается прошедшим приёмку; детали регрессий
   **НЕ ПОДТВЕРЖДЕНЫ** и требуют отдельного воспроизведения.
 - `src/screens/Today.jsx` в PR #128 не изменён.
 - Кроме PR #128 в frontend остаются старые открытые PR/ветки; они не являются
   текущим P0 и не считаются готовыми без нового аудита.
-- После создания этого файла рабочее дерево содержит только docs-only изменения
-  `AGENTS.md` и `PROJECT_STATE.md`; они не закоммичены и не задеплоены.
+- В рабочем дереве поверх этой ветки находится незакоммиченный release UX-diff
+  для Issue #122: safe-area вопросов Check-in, понятный финальный CTA,
+  типографика и подпись карточки следующего шага, а также `TASKS.md`/
+  `CHANGES.md`. Backend/API, порядок Today и навигация не менялись. `lint` и
+  production build проходят; реальный iPhone/Telegram gate ещё не выполнен.
 
 ## 6. Today / Core Loop
 
@@ -240,6 +244,11 @@ Data-dependent блоки:
   прошли реальный iPhone/Telegram gate; Today не перерабатывался.
 - Shared AI memory PR #10 merged в backend `main`.
 - Railway application services выведены из production request path.
+- Локальный Telegram Preview workflow зафиксирован: `npm run preview` публикует текущее рабочее дерево в отдельный
+  Vercel project `mentalix-preview`, отправляет ссылку через основной бот и удаляет deployment через один час; `npm run preview:stop`
+  удаляет активный deployment досрочно и останавливает связанный cleanup-процесс.
+- Финальный локальный smoke Preview → Telegram → stop пройден 22.08.2026; новых багов workflow не выявлено. Реальный iPhone gate
+  остаётся ручным подтверждением владельца.
 
 ## 11. Что НЕ сделано
 
@@ -296,6 +305,7 @@ Data-dependent блоки:
 - Не смешивать AI conversation histories разных персон.
 - Не добавлять новые функции до закрытия release blockers.
 - Не делать полный UI redesign перед первым релизом.
+- Preview-тестирование проводить через отдельный Vercel project; commit/push выполнять только после iPhone/Telegram gate.
 
 ## 15. Неподтверждённые факты
 

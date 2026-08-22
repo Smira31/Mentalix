@@ -195,9 +195,9 @@ export function FocusMark() {
   )
 }
 
-export function NextActionReveal({ next, remainAfter, onStart }) {
+export function NextActionReveal({ next, remainingActionsText, onStart }) {
   return (
-    <div className="mx-today-priority">
+    <div className="mx-today-priority mx-today-priority--next">
       <small>Самое важное</small>
       <strong>{next.title}</strong>
       <span>{next.meta}</span>
@@ -207,9 +207,7 @@ export function NextActionReveal({ next, remainAfter, onStart }) {
         <ArrowRight size={17} aria-hidden="true" />
       </button>
 
-      <p>
-        {remainAfter > 0 ? `После этого останется: ${remainAfter}` : 'Это последнее на сегодня'}
-      </p>
+      <p>{remainingActionsText}</p>
     </div>
   )
 }

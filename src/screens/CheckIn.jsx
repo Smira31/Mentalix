@@ -61,6 +61,9 @@ const CHECKIN_INTERACTIVE_CLASS =
 const CHECKIN_SUCCESS_CLASS =
   'w-full flex flex-col items-center text-center'
 
+const CHECKIN_HEADER_CLASS =
+  'shrink-0 pt-8 flex items-end justify-between px-5'
+
 
 // ── Чек-ин и вечерний «Анализ дня» ──
 // Утром: четыре шкалы + короткая мысль → note.
@@ -704,7 +707,7 @@ export default function CheckIn({
   const mainAction = isFinal
     ? isEvening
       ? { text: 'Разобрать со Следопытом', run: openScout }
-      : { text: 'К дню', run: onDone }
+      : { text: 'К следующему шагу', run: onDone }
     : isEmotionStep
       ? {
           text: 'Дальше',
@@ -918,7 +921,7 @@ export default function CheckIn({
       style={viewportStyle}
     >
       <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-end justify-between px-5`}
+        className={CHECKIN_HEADER_CLASS}
       >
         <button
           onClick={() => {

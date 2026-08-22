@@ -4,16 +4,14 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   define: {
-    'import.meta.env.VERCEL_ENV': JSON.stringify(
-      globalThis.process?.env?.VERCEL_ENV || '',
-    ),
+    'import.meta.env.VERCEL_ENV': JSON.stringify(globalThis.process?.env?.VERCEL_ENV || ''),
   },
   server: {
     host: true,
     port: 5173,
     proxy: {
       '/api': {
-        target: 'https://mentalix-bot-production.up.railway.app',
+        target: 'https://mentalix-bot.onrender.com',
         changeOrigin: true,
         secure: true,
       },
