@@ -132,6 +132,7 @@ function MemoryGame({ onFinish }) {
   const [userInput, setUserInput] = useState([])
   const [showing, setShowing] = useState(true)
   const [activeTile, setActiveTile] = useState(null)
+  const isFirstLevelRef = useRef(true)
 
   useEffect(() => {
     sequence.forEach((tile, i) => {
@@ -140,6 +141,24 @@ function MemoryGame({ onFinish }) {
     })
     setTimeout(() => setShowing(false), sequence.length * 700)
   }, [sequence])
+
+  // Новая последовательность на смену уровня — отдельным эффектом, а не
+  // внутри апдейтера setLevel (тот же баг-класс, что уже чинили в
+  // Focus.jsx/NarrowFocusFlow.jsx/ProcrastinationFlow.jsx/FirstStepFlow.jsx/
+  // FinishFlow.jsx: в StrictMode функциональный апдейтер может быть вызван
+  // дважды, и sequence/userInput/showing разъехались бы с level). Начальный
+  // уровень уже получил свою последовательность через lazy useState выше —
+  // ref пропускает этот первый рендер, чтобы не сгенерировать её повторно.
+  useEffect(() => {
+    if (isFirstLevelRef.current) {
+      isFirstLevelRef.current = false
+      return
+    }
+
+    setSequence(randomSequence(level))
+    setUserInput([])
+    setShowing(true)
+  }, [level])
 
   function tapTile(i) {
     if (showing) return
@@ -157,15 +176,7 @@ function MemoryGame({ onFinish }) {
       if (level >= MEMORY_ROUNDS) {
         onFinish(level)
       } else {
-        setTimeout(() => {
-          setLevel(l => {
-            const nextLevel = l + 1
-            setSequence(randomSequence(nextLevel))
-            setUserInput([])
-            setShowing(true)
-            return nextLevel
-          })
-        }, 500)
+        setTimeout(() => setLevel(l => l + 1), 500)
       }
     }
   }
