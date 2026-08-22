@@ -18,7 +18,7 @@
 
 - Hosting: **Vercel**.
 - Production URL: `https://mentalix.vercel.app`.
-- Production commit: `cf1972cad639d203200784e985ef29225f82ce97`
+- Production commit: `38140019195a5004809d94aff45d615b27ca19ec`
   (`main`, merge PR #129).
 - Статус: GitHub commit status `Vercel: success`; прямой запрос к URL вернул
   `HTTP 200` 21.08.2026.
@@ -119,7 +119,7 @@
 
 ## 5. Frontend / UI
 
-- Production: Vercel, commit `cf1972cad639d203200784e985ef29225f82ce97`.
+- Production: Vercel, commit `38140019195a5004809d94aff45d615b27ca19ec`.
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
 - Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
