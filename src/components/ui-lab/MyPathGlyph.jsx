@@ -87,12 +87,13 @@ const AXIS_UPPER_D =
 const GOLD_POINT_D =
   'M511.485 400.647C506.187 400.391 502.077 395.925 502.262 390.624C502.447 385.322 506.857 381.153 512.161 381.267C517.464 381.38 521.692 385.734 521.65 391.039C521.608 396.343 517.311 400.629 512.007 400.659C511.833 400.66 511.659 400.656 511.485 400.647Z'
 
-export default function MyPathGlyph({ className = '', animated = true }) {
+export default function MyPathGlyph({ className = '', animated = true, accent }) {
   return (
     <svg
       viewBox="0 0 1024 1024"
       className={`mx-my-path ${className}`}
       data-animated={animated}
+      data-accent={accent}
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >
@@ -123,7 +124,7 @@ export default function MyPathGlyph({ className = '', animated = true }) {
         <path className="mx-my-path__trace mx-my-path__trace--branch" d={BRANCH_D} pathLength="1" />
       </g>
 
-      <path className="mx-my-path__gold" d={GOLD_POINT_D} fill="#C38F3C" />
+      <path className="mx-my-path__gold" d={GOLD_POINT_D} />
     </svg>
   )
 }
