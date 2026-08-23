@@ -1,0 +1,329 @@
+/*
+ * Визуальный язык сверен с src/components/ui-lab/UiExperiments.css
+ * (тот файл не импортируется и не менялся — см. комментарий в
+ * ProdShowcase.jsx). Тонкие hairline-линии на почти-чёрном фоне, один
+ * золотой акцент (--c-gold), без заливок и градиентов.
+ */
+
+.mx-showcase {
+  min-height: 100dvh;
+  padding: max(32px, var(--app-safe-top)) max(20px, var(--app-safe-right))
+    max(48px, var(--app-safe-bottom)) max(20px, var(--app-safe-left));
+  overflow-x: hidden;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+  font-family: 'Onest', system-ui, sans-serif;
+}
+
+.mx-showcase-header,
+.mx-showcase-list,
+.mx-showcase-excluded,
+.mx-showcase-footer {
+  width: min(100%, 440px);
+  margin-inline: auto;
+}
+
+.mx-showcase-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Тот же crosshair-знак, что в шапке UiExperiments — под своим классом,
+   без импорта чужого CSS. */
+.mx-showcase-header__mark {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 22px;
+  border: 1px solid rgb(var(--c-line-secondary) / 0.65);
+  border-radius: 50%;
+}
+
+.mx-showcase-header__mark::before,
+.mx-showcase-header__mark::after,
+.mx-showcase-header__mark span::before,
+.mx-showcase-header__mark span::after {
+  position: absolute;
+  content: '';
+  background: rgb(var(--c-line-secondary) / 0.72);
+}
+
+.mx-showcase-header__mark::before {
+  inset: 50% 7px auto;
+  height: 1px;
+}
+
+.mx-showcase-header__mark::after {
+  inset: 7px auto 7px 50%;
+  width: 1px;
+}
+
+.mx-showcase-header__mark span::before {
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(var(--c-gold));
+  transform: translate(-50%, -50%);
+}
+
+.mx-showcase-header__mark span::after {
+  top: 5px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(var(--c-line));
+  transform: translateX(-50%);
+}
+
+/* Переключатель между витриной (?ui_lab=showcase) и списком экспериментов
+   (?ui_lab=1) — тот же класс и разметка, что в UiExperiments.css, под
+   собственным блоком стилей. */
+.mx-ui-lab-switch {
+  display: flex;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 4px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: rgb(var(--c-card));
+}
+
+.mx-ui-lab-switch a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.mx-ui-lab-switch a[aria-current='page'] {
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+}
+
+.mx-showcase-kicker {
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.mx-showcase-header h1 {
+  max-width: 390px;
+  margin: 12px 0 0;
+  font-size: clamp(28px, 8vw, 38px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.mx-showcase-intro {
+  max-width: 360px;
+  margin: 16px 0 0;
+  color: rgb(var(--c-muted));
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.mx-showcase-list {
+  display: grid;
+  gap: 28px;
+  margin-top: 42px;
+}
+
+.mx-showcase-card {
+  display: grid;
+  gap: 18px;
+}
+
+.mx-showcase-card__head {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 12px;
+  padding-inline: 2px;
+}
+
+.mx-showcase-card__number {
+  padding-top: 4px;
+  color: rgb(var(--c-faint));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.mx-showcase-card__path {
+  margin: 0;
+  color: rgb(var(--c-gold));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.mx-showcase-card__head h2 {
+  margin: 5px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.13;
+  letter-spacing: -0.025em;
+}
+
+.mx-showcase-card__note {
+  margin: 8px 0 0;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mx-showcase-card__note strong {
+  color: rgb(var(--c-text));
+}
+
+.mx-showcase-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 140px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  background: rgb(var(--c-card));
+}
+
+.mx-showcase-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.mx-showcase-glyph-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+  padding: 20px 16px;
+}
+
+.mx-showcase-glyph-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mx-showcase-glyph-box {
+  width: 100%;
+  aspect-ratio: 160 / 112;
+}
+
+.mx-showcase-glyph-cell span {
+  color: rgb(var(--c-faint));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+}
+
+/*
+ * BottomNavigation в прод-коде — position: fixed относительно вьюпорта.
+ * transform здесь не двигает контент (identity-преобразование), но по
+ * спецификации CSS создаёт для потомков с position: fixed новый
+ * containing block — панель остаётся внутри этой карточки, компонент не
+ * менялся.
+ */
+.mx-showcase-nav-frame {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+.mx-showcase-excluded {
+  margin-top: 52px;
+  padding-top: 24px;
+  border-top: 1px solid rgb(var(--c-border));
+}
+
+.mx-showcase-excluded > .mx-showcase-kicker {
+  color: rgb(var(--c-gold));
+}
+
+.mx-showcase-excluded__intro {
+  max-width: 380px;
+  margin: 8px 0 20px;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mx-showcase-excluded ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.mx-showcase-excluded li {
+  padding-top: 14px;
+  border-top: 1px solid rgb(var(--c-border));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mx-showcase-excluded li:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.mx-showcase-excluded li strong {
+  display: block;
+  margin-top: 2px;
+  color: rgb(var(--c-text));
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mx-showcase-excluded__path {
+  display: block;
+  color: rgb(var(--c-faint));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
+.mx-showcase-excluded li p {
+  margin: 4px 0 0;
+  color: rgb(var(--c-muted));
+}
+
+.mx-showcase-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 42px;
+  color: rgb(var(--c-faint));
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.mx-showcase-footer span {
+  height: 1px;
+  flex: 1;
+  background: rgb(var(--c-border));
+}
