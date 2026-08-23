@@ -1,0 +1,159 @@
+.mx-my-path {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mx-my-path__backdrop {
+  fill: #000;
+}
+
+.mx-my-path__figure {
+  opacity: 1;
+}
+
+.mx-my-path__gold {
+  opacity: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.mx-my-path__traces path {
+  vector-effect: non-scaling-stroke;
+  stroke: rgba(237, 189, 96, 0.55);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: 0;
+}
+
+/*
+ * Таймы и кривые — из MENTALIX_SEMANTIC_MOTION.md §4/§4.1: медленная
+ * иллюстративная фаза (3.8–6.8s) для однократного «раскрытия» карточки
+ * при появлении использует кривую однонаправленного появления
+ * cubic-bezier(0.23, 1, 0.32, 1); мягкая пульсация золотой точки —
+ * это колебание вокруг состояния, поэтому идёт на стандартной кривой
+ * cubic-bezier(0.77, 0, 0.175, 1) и стартует только после того, как
+ * линии дорисованы (animation-delay = длительности прорисовки).
+ */
+.mx-my-path[data-animated='true'] .mx-my-path__figure {
+  animation: mx-my-path-figure 4.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__trace--axis {
+  animation: mx-my-path-trace-axis 4.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__trace--main {
+  animation: mx-my-path-trace-main 4.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__trace--branch {
+  animation: mx-my-path-trace-branch 4.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__gold {
+  animation:
+    mx-my-path-gold-appear 4.8s cubic-bezier(0.23, 1, 0.32, 1) both,
+    mx-my-path-gold-pulse 4.2s cubic-bezier(0.77, 0, 0.175, 1) infinite 4.8s;
+}
+
+@keyframes mx-my-path-trace-axis {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes mx-my-path-trace-main {
+  0%,
+  12% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  75% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes mx-my-path-trace-branch {
+  0%,
+  28% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  88% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  96% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes mx-my-path-figure {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes mx-my-path-gold-appear {
+  0%,
+  88% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mx-my-path-gold-pulse {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-my-path * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

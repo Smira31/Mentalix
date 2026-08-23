@@ -1,39 +1,16 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  Pause,
-  Play,
-  RotateCcw,
-  X,
-} from 'lucide-react'
+import { ArrowRight, Check, ChevronDown, Pause, Play, RotateCcw, X } from 'lucide-react'
 
 import { DayArc } from '../Motif'
 import SemanticGlyph from '../SemanticGlyph'
-import {
-  DayThread,
-  DayThreadTrigger,
-  FocusMark,
-  NextActionReveal,
-} from '../TodayMotionExperiment'
+import { DayThread, DayThreadTrigger, FocusMark, NextActionReveal } from '../TodayMotionExperiment'
+import MyPathGlyph from './MyPathGlyph'
 import './UiExperiments.css'
-
 
 const DURATION = 60_000
 const PHI = (1 + Math.sqrt(5)) / 2
-const BREATH_PHASES = [
-  'вдох',
-  'пауза',
-  'выдох',
-  'пауза',
-]
-
+const BREATH_PHASES = ['вдох', 'пауза', 'выдох', 'пауза']
 
 function makeGoldenSpiralPath() {
   const centerX = 160
@@ -50,28 +27,15 @@ function makeGoldenSpiralPath() {
   }).join(' ')
 }
 
-
 const GOLDEN_SPIRAL_PATH = makeGoldenSpiralPath()
 
-
 function PreviewWeek() {
-  const names = [
-    'Пн',
-    'Вт',
-    'Ср',
-    'Чт',
-    'Пт',
-    'Сб',
-    'Вс',
-  ]
+  const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
   const today = new Date()
   const monday = new Date(today)
 
-  monday.setDate(
-    today.getDate()
-      - ((today.getDay() + 6) % 7),
-  )
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
 
   return (
     <div className="mx-lab-today__week">
@@ -80,9 +44,7 @@ function PreviewWeek() {
 
         date.setDate(monday.getDate() + index)
 
-        const active =
-          date.toDateString()
-          === today.toDateString()
+        const active = date.toDateString() === today.toDateString()
 
         return (
           <div key={name} data-active={active}>
@@ -94,7 +56,6 @@ function PreviewWeek() {
     </div>
   )
 }
-
 
 function TodayScreenPreview({ mode }) {
   const [threadOpen, setThreadOpen] = useState(false)
@@ -117,25 +78,16 @@ function TodayScreenPreview({ mode }) {
         <div className="mx-lab-today__app-head">
           <span className="mx-lab-today__thread-slot">
             {mode === 'after' && (
-              <DayThreadTrigger
-                open={threadOpen}
-                onToggle={() => setThreadOpen((value) => !value)}
-              />
+              <DayThreadTrigger open={threadOpen} onToggle={() => setThreadOpen(value => !value)} />
             )}
           </span>
           <strong>добрый день.</strong>
-          <button
-            type="button"
-            className="mx-lab-today__settings"
-            aria-label="Настройки"
-          >
+          <button type="button" className="mx-lab-today__settings" aria-label="Настройки">
             <span />
           </button>
         </div>
 
-        <p className="mx-lab-today__tagline">
-          шаг за шагом — выход находится
-        </p>
+        <p className="mx-lab-today__tagline">шаг за шагом — выход находится</p>
 
         <PreviewWeek />
 
@@ -155,21 +107,12 @@ function TodayScreenPreview({ mode }) {
             <FocusMark />
           ) : (
             <div className="mx-lab-today__art">
-              <DayArc
-                state="dayInProgress"
-                done={1}
-                total={3}
-                className="w-full h-full"
-              />
+              <DayArc state="dayInProgress" done={1} total={3} className="w-full h-full" />
             </div>
           )}
 
           {mode === 'after' ? (
-            <NextActionReveal
-              next={next}
-              remainAfter={2}
-              onStart={() => {}}
-            />
+            <NextActionReveal next={next} remainAfter={2} onStart={() => {}} />
           ) : (
             <div className="mx-lab-today__before-action">
               <small>Самое важное</small>
@@ -182,7 +125,7 @@ function TodayScreenPreview({ mode }) {
         </div>
 
         <div className="mx-lab-today__nav" aria-hidden="true">
-          {[0, 1, 2, 3, 4].map((item) => (
+          {[0, 1, 2, 3, 4].map(item => (
             <span key={item} data-active={item === 0} />
           ))}
         </div>
@@ -191,51 +134,31 @@ function TodayScreenPreview({ mode }) {
   )
 }
 
-
-function ExperimentShell({
-  number,
-  eyebrow,
-  title,
-  purpose,
-  mode,
-  children,
-}) {
+function ExperimentShell({ number, eyebrow, title, purpose, mode, children }) {
   return (
-    <section
-      className="mx-lab-experiment"
-      data-mode={mode}
-    >
+    <section className="mx-lab-experiment" data-mode={mode}>
       <div className="mx-lab-experiment__head">
-        <span className="mx-lab-experiment__number">
-          {number}
-        </span>
+        <span className="mx-lab-experiment__number">{number}</span>
 
         <div>
-          <p className="mx-lab-experiment__eyebrow">
-            {eyebrow}
-          </p>
+          <p className="mx-lab-experiment__eyebrow">{eyebrow}</p>
 
           <h2>{title}</h2>
 
-          <p className="mx-lab-experiment__purpose">
-            {purpose}
-          </p>
+          <p className="mx-lab-experiment__purpose">{purpose}</p>
         </div>
       </div>
 
-      <div className="mx-lab-stage">
-        {children}
-      </div>
+      <div className="mx-lab-stage">{children}</div>
     </section>
   )
 }
-
 
 function ExpansionExperiment({ mode }) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const onKeyDown = (event) => {
+    const onKeyDown = event => {
       if (event.key === 'Escape') {
         setOpen(false)
       }
@@ -256,10 +179,7 @@ function ExpansionExperiment({ mode }) {
       purpose="Карточка сохраняет пространственный контекст и раскрывает ровно ту информацию, которая нужна перед началом ритуала."
       mode={mode}
     >
-      <div
-        className="mx-lab-expand"
-        data-open={open}
-      >
+      <div className="mx-lab-expand" data-open={open}>
         <button
           type="button"
           className="mx-lab-expand__trigger"
@@ -279,10 +199,7 @@ function ExpansionExperiment({ mode }) {
           <ArrowRight size={18} aria-hidden="true" />
         </button>
 
-        <div
-          className="mx-lab-expand__layer"
-          aria-hidden={!open}
-        >
+        <div className="mx-lab-expand__layer" aria-hidden={!open}>
           <button
             type="button"
             className="mx-lab-expand__backdrop"
@@ -315,9 +232,7 @@ function ExpansionExperiment({ mode }) {
 
             <small>Ритуал · 5 минут</small>
             <h3>Записать главную мысль</h3>
-            <p>
-              Сформулируй одно предложение: что сегодня действительно требует твоего внимания?
-            </p>
+            <p>Сформулируй одно предложение: что сегодня действительно требует твоего внимания?</p>
 
             <div className="mx-lab-expand__prompt">
               Не план на весь день. Только одна ясная мысль.
@@ -339,7 +254,6 @@ function ExpansionExperiment({ mode }) {
   )
 }
 
-
 function FocusExperiment({ mode }) {
   const [running, setRunning] = useState(false)
   const [elapsed, setElapsed] = useState(22_000)
@@ -349,10 +263,7 @@ function FocusExperiment({ mode }) {
     if (!running) return undefined
 
     const timer = window.setInterval(() => {
-      const next = Math.min(
-        Date.now() - startedAt.current,
-        DURATION,
-      )
+      const next = Math.min(Date.now() - startedAt.current, DURATION)
 
       setElapsed(next)
 
@@ -367,25 +278,16 @@ function FocusExperiment({ mode }) {
       }
     }
 
-    document.addEventListener(
-      'visibilitychange',
-      pauseWhenHidden,
-    )
+    document.addEventListener('visibilitychange', pauseWhenHidden)
 
     return () => {
       window.clearInterval(timer)
-      document.removeEventListener(
-        'visibilitychange',
-        pauseWhenHidden,
-      )
+      document.removeEventListener('visibilitychange', pauseWhenHidden)
     }
   }, [running])
 
   const progress = Math.min(elapsed / DURATION, 1)
-  const remaining = Math.max(
-    0,
-    Math.ceil((DURATION - elapsed) / 1000),
-  )
+  const remaining = Math.max(0, Math.ceil((DURATION - elapsed) / 1000))
 
   return (
     <ExperimentShell
@@ -395,11 +297,7 @@ function FocusExperiment({ mode }) {
       purpose="Геометрия показывает ход короткой фокус-сессии: движение начинается только вместе с таймером и замирает на паузе."
       mode={mode}
     >
-      <div
-        className="mx-lab-focus"
-        data-running={running}
-        style={{ '--mx-progress': progress }}
-      >
+      <div className="mx-lab-focus" data-running={running} style={{ '--mx-progress': progress }}>
         <svg
           className="mx-lab-focus__field"
           viewBox="0 0 320 250"
@@ -418,12 +316,7 @@ function FocusExperiment({ mode }) {
             <path d="M86 190A96 96 0 0 0 234 190" />
           </g>
 
-          <circle
-            className="mx-lab-focus__track"
-            cx="160"
-            cy="126"
-            r="48"
-          />
+          <circle className="mx-lab-focus__track" cx="160" cy="126" r="48" />
 
           <circle
             className="mx-lab-focus__progress"
@@ -445,12 +338,7 @@ function FocusExperiment({ mode }) {
             <circle cx="160" cy="78" r="3.5" />
           </g>
 
-          <circle
-            className="mx-lab-focus__center"
-            cx="160"
-            cy="126"
-            r="3"
-          />
+          <circle className="mx-lab-focus__center" cx="160" cy="126" r="3" />
         </svg>
 
         <div className="mx-lab-focus__readout">
@@ -494,7 +382,6 @@ function FocusExperiment({ mode }) {
   )
 }
 
-
 function CompletionExperiment({ mode }) {
   const [complete, setComplete] = useState(false)
 
@@ -506,10 +393,7 @@ function CompletionExperiment({ mode }) {
       purpose="Нажатие сразу подтверждается, а завершённое состояние остаётся спокойным и однозначным — без конфетти и декоративного шума."
       mode={mode}
     >
-      <div
-        className="mx-lab-completion"
-        data-complete={complete}
-      >
+      <div className="mx-lab-completion" data-complete={complete}>
         <div className="mx-lab-completion__art" aria-hidden="true">
           <svg viewBox="0 0 140 100">
             <circle cx="70" cy="50" r="33" />
@@ -533,20 +417,17 @@ function CompletionExperiment({ mode }) {
         <button
           type="button"
           className="mx-lab-complete-button"
-          onClick={() => setComplete((current) => !current)}
+          onClick={() => setComplete(current => !current)}
         >
           <span className="mx-lab-complete-button__icon">
             <Check size={17} />
           </span>
-          <span>
-            {complete ? 'Готово' : 'Отметить'}
-          </span>
+          <span>{complete ? 'Готово' : 'Отметить'}</span>
         </button>
       </div>
     </ExperimentShell>
   )
 }
-
 
 function BreathingExperiment({ mode }) {
   const [active, setActive] = useState(false)
@@ -556,9 +437,7 @@ function BreathingExperiment({ mode }) {
     if (!active) return undefined
 
     const timer = window.setInterval(() => {
-      setPhase((current) =>
-        (current + 1) % BREATH_PHASES.length,
-      )
+      setPhase(current => (current + 1) % BREATH_PHASES.length)
     }, 3_000)
 
     return () => {
@@ -574,11 +453,7 @@ function BreathingExperiment({ mode }) {
       purpose="Фирменные дуги объясняют фазу упражнения. Движение не украшает экран, а заменяет необходимость постоянно читать таймер."
       mode={mode}
     >
-      <div
-        className="mx-lab-breath"
-        data-active={active}
-        data-phase={phase}
-      >
+      <div className="mx-lab-breath" data-active={active} data-phase={phase}>
         <div className="mx-lab-breath__visual">
           <svg viewBox="0 0 240 240" aria-hidden="true">
             <g className="mx-lab-breath__rays">
@@ -592,8 +467,18 @@ function BreathingExperiment({ mode }) {
               <path d="m192 48-17 17" />
             </g>
 
-            <circle className="mx-lab-breath__ring mx-lab-breath__ring--outer" cx="120" cy="120" r="72" />
-            <circle className="mx-lab-breath__ring mx-lab-breath__ring--inner" cx="120" cy="120" r="47" />
+            <circle
+              className="mx-lab-breath__ring mx-lab-breath__ring--outer"
+              cx="120"
+              cy="120"
+              r="72"
+            />
+            <circle
+              className="mx-lab-breath__ring mx-lab-breath__ring--inner"
+              cx="120"
+              cy="120"
+              r="47"
+            />
             <path className="mx-lab-breath__arc" d="M120 48a72 72 0 0 1 72 72" />
             <circle className="mx-lab-breath__core" cx="120" cy="120" r="8" />
           </svg>
@@ -608,7 +493,7 @@ function BreathingExperiment({ mode }) {
           type="button"
           className="mx-lab-primary"
           onClick={() => {
-            setActive((current) => !current)
+            setActive(current => !current)
             if (active) setPhase(0)
           }}
         >
@@ -620,15 +505,10 @@ function BreathingExperiment({ mode }) {
   )
 }
 
-
 function CheckinExperiment({ mode }) {
   const [energy, setEnergy] = useState(1)
 
-  const labels = [
-    'бережно',
-    'ровно',
-    'есть импульс',
-  ]
+  const labels = ['бережно', 'ровно', 'есть импульс']
 
   return (
     <ExperimentShell
@@ -638,10 +518,7 @@ function CheckinExperiment({ mode }) {
       purpose="Rive-подобная логика без чужого визуала: одна иллюстрация меняет состояние вслед за выбором энергии и подтверждает, что check-in понят."
       mode={mode}
     >
-      <div
-        className="mx-lab-checkin"
-        data-energy={energy}
-      >
+      <div className="mx-lab-checkin" data-energy={energy}>
         <div className="mx-lab-checkin__visual" aria-hidden="true">
           <svg viewBox="0 0 300 190">
             <g className="mx-lab-checkin__horizon">
@@ -689,7 +566,6 @@ function CheckinExperiment({ mode }) {
   )
 }
 
-
 function GoldenSpiralExperiment({ mode }) {
   const [drawKey, setDrawKey] = useState(0)
 
@@ -715,18 +591,9 @@ function GoldenSpiralExperiment({ mode }) {
               <circle cx="160" cy="126" r="42.8" />
             </g>
 
-            <path
-              key={drawKey}
-              className="mx-lab-phi-spiral__path"
-              d={GOLDEN_SPIRAL_PATH}
-            />
+            <path key={drawKey} className="mx-lab-phi-spiral__path" d={GOLDEN_SPIRAL_PATH} />
 
-            <circle
-              className="mx-lab-phi__core"
-              cx="160"
-              cy="126"
-              r="4"
-            />
+            <circle className="mx-lab-phi__core" cx="160" cy="126" r="4" />
           </svg>
         </div>
 
@@ -738,7 +605,7 @@ function GoldenSpiralExperiment({ mode }) {
         <button
           type="button"
           className="mx-lab-primary"
-          onClick={() => setDrawKey((value) => value + 1)}
+          onClick={() => setDrawKey(value => value + 1)}
         >
           <RotateCcw size={17} />
           Дорисовать снова
@@ -747,7 +614,6 @@ function GoldenSpiralExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function GoldenEllipseExperiment({ mode }) {
   const [running, setRunning] = useState(false)
@@ -760,10 +626,7 @@ function GoldenEllipseExperiment({ mode }) {
       purpose="Большая и малая оси орбиты соотносятся как 1.618. Точка движется только во время фокус-сессии и делает её ход видимым без отдельного таймера в центре."
       mode={mode}
     >
-      <div
-        className="mx-lab-phi mx-lab-phi-ellipse"
-        data-running={running && mode === 'after'}
-      >
+      <div className="mx-lab-phi mx-lab-phi-ellipse" data-running={running && mode === 'after'}>
         <div className="mx-lab-phi__visual mx-lab-phi-ellipse__visual">
           <svg
             viewBox="0 0 320 252"
@@ -776,28 +639,11 @@ function GoldenEllipseExperiment({ mode }) {
               <rect x="55" y="61.1" width="210" height="129.8" rx="4" />
             </g>
 
-            <ellipse
-              className="mx-lab-phi-ellipse__orbit"
-              cx="160"
-              cy="126"
-              rx="105"
-              ry="64.9"
-            />
+            <ellipse className="mx-lab-phi-ellipse__orbit" cx="160" cy="126" rx="105" ry="64.9" />
 
-            <ellipse
-              className="mx-lab-phi-ellipse__inner"
-              cx="160"
-              cy="126"
-              rx="64.9"
-              ry="40.1"
-            />
+            <ellipse className="mx-lab-phi-ellipse__inner" cx="160" cy="126" rx="64.9" ry="40.1" />
 
-            <circle
-              className="mx-lab-phi-ellipse__center"
-              cx="160"
-              cy="126"
-              r="3"
-            />
+            <circle className="mx-lab-phi-ellipse__center" cx="160" cy="126" r="3" />
           </svg>
 
           <span className="mx-lab-phi-ellipse__marker" aria-hidden="true" />
@@ -811,7 +657,7 @@ function GoldenEllipseExperiment({ mode }) {
         <button
           type="button"
           className="mx-lab-primary"
-          onClick={() => setRunning((value) => !value)}
+          onClick={() => setRunning(value => !value)}
         >
           {running ? <Pause size={17} /> : <Play size={17} />}
           {running ? 'Пауза' : 'Начать фокус'}
@@ -820,7 +666,6 @@ function GoldenEllipseExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function GoldenApertureExperiment({ mode }) {
   const [depth, setDepth] = useState(0)
@@ -834,16 +679,9 @@ function GoldenApertureExperiment({ mode }) {
       purpose="Четыре уровня внимания уменьшаются последовательно по φ. Нажатие не запускает декоративный цикл, а буквально сужает область выбора до следующего уровня."
       mode={mode}
     >
-      <div
-        className="mx-lab-phi mx-lab-phi-aperture"
-        data-depth={depth}
-      >
+      <div className="mx-lab-phi mx-lab-phi-aperture" data-depth={depth}>
         <div className="mx-lab-phi__visual">
-          <svg
-            viewBox="0 0 320 252"
-            role="img"
-            aria-label={`Глубина фокуса: ${depth + 1} из 4`}
-          >
+          <svg viewBox="0 0 320 252" role="img" aria-label={`Глубина фокуса: ${depth + 1} из 4`}>
             <g className="mx-lab-phi__guides">
               <path d="M32 126H288" />
               <path d="M160 22V230" />
@@ -856,21 +694,12 @@ function GoldenApertureExperiment({ mode }) {
                 data-ring={index}
                 data-reached={index <= depth}
               >
-                <path
-                  d={`M${160 - radius} 126A${radius} ${radius} 0 0 1 ${160 + radius} 126`}
-                />
-                <path
-                  d={`M${160 + radius} 126A${radius} ${radius} 0 0 1 ${160 - radius} 126`}
-                />
+                <path d={`M${160 - radius} 126A${radius} ${radius} 0 0 1 ${160 + radius} 126`} />
+                <path d={`M${160 + radius} 126A${radius} ${radius} 0 0 1 ${160 - radius} 126`} />
               </g>
             ))}
 
-            <circle
-              className="mx-lab-phi__core"
-              cx="160"
-              cy="126"
-              r="4"
-            />
+            <circle className="mx-lab-phi__core" cx="160" cy="126" r="4" />
           </svg>
         </div>
 
@@ -882,7 +711,7 @@ function GoldenApertureExperiment({ mode }) {
         <button
           type="button"
           className="mx-lab-primary"
-          onClick={() => setDepth((value) => (value + 1) % radii.length)}
+          onClick={() => setDepth(value => (value + 1) % radii.length)}
         >
           {depth === 3 ? <RotateCcw size={17} /> : <ArrowRight size={17} />}
           {depth === 3 ? 'Начать снова' : 'Следующий уровень'}
@@ -892,14 +721,9 @@ function GoldenApertureExperiment({ mode }) {
   )
 }
 
-
 function SoftFacetExperiment({ mode }) {
   const [energy, setEnergy] = useState(1)
-  const labels = [
-    'бережно',
-    'ровно',
-    'есть импульс',
-  ]
+  const labels = ['бережно', 'ровно', 'есть импульс']
 
   return (
     <ExperimentShell
@@ -909,10 +733,7 @@ function SoftFacetExperiment({ mode }) {
       purpose="Альтернатива круговой «Энергии сейчас»: пересекающиеся линзы сохраняют мягкость, а четыре спокойные вершины показывают направленность выбранного состояния."
       mode={mode}
     >
-      <div
-        className="mx-lab-facet"
-        data-energy={energy}
-      >
+      <div className="mx-lab-facet" data-energy={energy}>
         <div className="mx-lab-facet__visual" aria-hidden="true">
           <svg viewBox="0 0 320 252">
             <g className="mx-lab-facet__guides">
@@ -962,7 +783,6 @@ function SoftFacetExperiment({ mode }) {
   )
 }
 
-
 function FillingRitualExperiment({ mode }) {
   const [complete, setComplete] = useState(false)
 
@@ -974,10 +794,7 @@ function FillingRitualExperiment({ mode }) {
       purpose="Более выразительная замена простому знаку стакана: завершение утреннего действия спокойно наполняет сосуд и оставляет видимый след без конфетти."
       mode={mode}
     >
-      <div
-        className="mx-lab-vessel"
-        data-complete={complete}
-      >
+      <div className="mx-lab-vessel" data-complete={complete}>
         <div className="mx-lab-vessel__visual">
           <svg
             viewBox="0 0 320 252"
@@ -995,10 +812,7 @@ function FillingRitualExperiment({ mode }) {
               <path d="M160 24V228" />
             </g>
 
-            <g
-              className="mx-lab-vessel__water"
-              clipPath="url(#mx-lab-vessel-clip)"
-            >
+            <g className="mx-lab-vessel__water" clipPath="url(#mx-lab-vessel-clip)">
               <path className="mx-lab-vessel__fill" d="M64 118H256V236H64Z" />
               <path d="M64 118C100 102 124 134 160 118C196 102 220 134 256 118" />
               <path d="M76 151C108 137 130 165 160 151C190 137 212 165 244 151" />
@@ -1008,7 +822,10 @@ function FillingRitualExperiment({ mode }) {
               className="mx-lab-vessel__body"
               d="M82 55C90 157 112 205 160 220C208 205 230 157 238 55"
             />
-            <path className="mx-lab-vessel__rim" d="M82 55C112 43 208 43 238 55C208 67 112 67 82 55Z" />
+            <path
+              className="mx-lab-vessel__rim"
+              d="M82 55C112 43 208 43 238 55C208 67 112 67 82 55Z"
+            />
 
             <g className="mx-lab-vessel__drop">
               <path d="M160 30C151 42 148 48 160 56C172 48 169 42 160 30Z" />
@@ -1020,13 +837,15 @@ function FillingRitualExperiment({ mode }) {
         <div className="mx-lab-vessel__copy">
           <small>{complete ? 'Отмечено сегодня' : 'Утренний ритуал'}</small>
           <strong>Стакан воды</strong>
-          <span>{complete ? 'Форма заполнена — шаг учтён.' : 'Одно спокойное действие для начала дня.'}</span>
+          <span>
+            {complete ? 'Форма заполнена — шаг учтён.' : 'Одно спокойное действие для начала дня.'}
+          </span>
         </div>
 
         <button
           type="button"
           className="mx-lab-complete-button"
-          onClick={() => setComplete((value) => !value)}
+          onClick={() => setComplete(value => !value)}
         >
           <span className="mx-lab-complete-button__icon">
             <Check size={17} />
@@ -1038,7 +857,6 @@ function FillingRitualExperiment({ mode }) {
   )
 }
 
-
 function PetalBreathingExperiment({ mode }) {
   const [active, setActive] = useState(false)
   const [phase, setPhase] = useState(0)
@@ -1047,9 +865,7 @@ function PetalBreathingExperiment({ mode }) {
     if (!active) return undefined
 
     const timer = window.setInterval(() => {
-      setPhase((current) =>
-        (current + 1) % BREATH_PHASES.length,
-      )
+      setPhase(current => (current + 1) % BREATH_PHASES.length)
     }, 3_000)
 
     return () => window.clearInterval(timer)
@@ -1063,11 +879,7 @@ function PetalBreathingExperiment({ mode }) {
       purpose="Вместо ещё одного круга четыре линзы раскрываются на вдохе и собираются на выдохе. Движение остаётся инструкцией практики, а не фоновым украшением."
       mode={mode}
     >
-      <div
-        className="mx-lab-petal"
-        data-active={active}
-        data-phase={phase}
-      >
+      <div className="mx-lab-petal" data-active={active} data-phase={phase}>
         <div className="mx-lab-petal__visual">
           <svg viewBox="0 0 320 252" aria-hidden="true">
             <g className="mx-lab-petal__guides">
@@ -1103,7 +915,7 @@ function PetalBreathingExperiment({ mode }) {
           type="button"
           className="mx-lab-primary"
           onClick={() => {
-            setActive((value) => !value)
+            setActive(value => !value)
             if (active) setPhase(0)
           }}
         >
@@ -1115,14 +927,9 @@ function PetalBreathingExperiment({ mode }) {
   )
 }
 
-
 function ChoiceLensExperiment({ mode }) {
   const [depth, setDepth] = useState(0)
-  const labels = [
-    'Широкое поле',
-    'Только важное',
-    'Одна мысль',
-  ]
+  const labels = ['Широкое поле', 'Только важное', 'Одна мысль']
 
   return (
     <ExperimentShell
@@ -1139,9 +946,21 @@ function ChoiceLensExperiment({ mode }) {
               <path d="M28 126H292" />
               <path d="M160 26V226" />
             </g>
-            <path className="mx-lab-choice-lens__shape" data-lens="0" d="M32 126C82 48 238 48 288 126C238 204 82 204 32 126Z" />
-            <path className="mx-lab-choice-lens__shape" data-lens="1" d="M68 126C106 76 214 76 252 126C214 176 106 176 68 126Z" />
-            <path className="mx-lab-choice-lens__shape" data-lens="2" d="M108 126C130 101 190 101 212 126C190 151 130 151 108 126Z" />
+            <path
+              className="mx-lab-choice-lens__shape"
+              data-lens="0"
+              d="M32 126C82 48 238 48 288 126C238 204 82 204 32 126Z"
+            />
+            <path
+              className="mx-lab-choice-lens__shape"
+              data-lens="1"
+              d="M68 126C106 76 214 76 252 126C214 176 106 176 68 126Z"
+            />
+            <path
+              className="mx-lab-choice-lens__shape"
+              data-lens="2"
+              d="M108 126C130 101 190 101 212 126C190 151 130 151 108 126Z"
+            />
             <circle className="mx-lab-ref__core" cx="160" cy="126" r="5" />
           </svg>
         </div>
@@ -1152,7 +971,7 @@ function ChoiceLensExperiment({ mode }) {
         <button
           type="button"
           className="mx-lab-primary"
-          onClick={() => setDepth((value) => (value + 1) % labels.length)}
+          onClick={() => setDepth(value => (value + 1) % labels.length)}
         >
           {depth === 2 ? <RotateCcw size={17} /> : <ArrowRight size={17} />}
           {depth === 2 ? 'Сначала' : 'Сузить выбор'}
@@ -1161,7 +980,6 @@ function ChoiceLensExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function LivingContourExperiment({ mode }) {
   const [energy, setEnergy] = useState(1)
@@ -1215,7 +1033,6 @@ function LivingContourExperiment({ mode }) {
   )
 }
 
-
 function BreathingWaveExperiment({ mode }) {
   const [active, setActive] = useState(false)
   const [phase, setPhase] = useState(0)
@@ -1223,7 +1040,7 @@ function BreathingWaveExperiment({ mode }) {
   useEffect(() => {
     if (!active) return undefined
     const timer = window.setInterval(() => {
-      setPhase((value) => (value + 1) % BREATH_PHASES.length)
+      setPhase(value => (value + 1) % BREATH_PHASES.length)
     }, 3_000)
     return () => window.clearInterval(timer)
   }, [active])
@@ -1262,7 +1079,7 @@ function BreathingWaveExperiment({ mode }) {
           type="button"
           className="mx-lab-primary"
           onClick={() => {
-            setActive((value) => !value)
+            setActive(value => !value)
             if (active) setPhase(0)
           }}
         >
@@ -1273,7 +1090,6 @@ function BreathingWaveExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function FibonacciRouteExperiment({ mode }) {
   const [step, setStep] = useState(0)
@@ -1315,22 +1131,21 @@ function FibonacciRouteExperiment({ mode }) {
                 r="3"
               />
             ))}
-            <g
-              className="mx-lab-route__marker"
-              style={{ transform: `translate(${x}px, ${y}px)` }}
-            >
+            <g className="mx-lab-route__marker" style={{ transform: `translate(${x}px, ${y}px)` }}>
               <circle r="6" />
             </g>
           </svg>
         </div>
         <div className="mx-lab-ref__copy">
-          <small>Шаг {step + 1} из {points.length}</small>
+          <small>
+            Шаг {step + 1} из {points.length}
+          </small>
           <strong>{step === points.length - 1 ? 'Маршрут собран' : 'Следующий шаг виден'}</strong>
         </div>
         <button
           type="button"
           className="mx-lab-primary"
-          onClick={() => setStep((value) => (value + 1) % points.length)}
+          onClick={() => setStep(value => (value + 1) % points.length)}
         >
           {step === points.length - 1 ? <RotateCcw size={17} /> : <ArrowRight size={17} />}
           {step === points.length - 1 ? 'Пройти снова' : 'Сделать шаг'}
@@ -1339,7 +1154,6 @@ function FibonacciRouteExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function NextStepGateExperiment({ mode }) {
   const [open, setOpen] = useState(false)
@@ -1375,11 +1189,7 @@ function NextStepGateExperiment({ mode }) {
             <strong>{open ? 'Начать практику' : 'Записать главную мысль'}</strong>
           </div>
         </div>
-        <button
-          type="button"
-          className="mx-lab-primary"
-          onClick={() => setOpen((value) => !value)}
-        >
+        <button type="button" className="mx-lab-primary" onClick={() => setOpen(value => !value)}>
           {open ? <X size={17} /> : <ArrowRight size={17} />}
           {open ? 'Закрыть' : 'Открыть шаг'}
         </button>
@@ -1387,7 +1197,6 @@ function NextStepGateExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function FlowRouteExperiment({ mode }) {
   const [step, setStep] = useState(0)
@@ -1397,12 +1206,7 @@ function FlowRouteExperiment({ mode }) {
     [204, 176],
     [274, 104],
   ]
-  const labels = [
-    'Начало видно',
-    'Первый поворот',
-    'Ритм удержан',
-    'Шаг завершён',
-  ]
+  const labels = ['Начало видно', 'Первый поворот', 'Ритм удержан', 'Шаг завершён']
   const [x, y] = points[step]
 
   return (
@@ -1420,10 +1224,20 @@ function FlowRouteExperiment({ mode }) {
               <path d="M28 126H292" />
               <path d="M160 26V226" />
             </g>
-            <path className="mx-lab-flow-route__echo" d="M48 176C88 176 82 76 126 76S166 176 204 176S238 104 274 104" />
-            <path className="mx-lab-flow-route__path" d="M48 176C88 176 82 76 126 76S166 176 204 176S238 104 274 104" />
+            <path
+              className="mx-lab-flow-route__echo"
+              d="M48 176C88 176 82 76 126 76S166 176 204 176S238 104 274 104"
+            />
+            <path
+              className="mx-lab-flow-route__path"
+              d="M48 176C88 176 82 76 126 76S166 176 204 176S238 104 274 104"
+            />
             {points.map(([pointX, pointY], index) => (
-              <g key={`${pointX}-${pointY}`} className="mx-lab-flow-route__node" data-reached={index <= step}>
+              <g
+                key={`${pointX}-${pointY}`}
+                className="mx-lab-flow-route__node"
+                data-reached={index <= step}
+              >
                 <path d={`M${pointX - 12} ${pointY}H${pointX + 12}`} />
                 <circle cx={pointX} cy={pointY} r="3" />
               </g>
@@ -1437,13 +1251,15 @@ function FlowRouteExperiment({ mode }) {
           </svg>
         </div>
         <div className="mx-lab-ref__copy">
-          <small>Этап {step + 1} из {points.length}</small>
+          <small>
+            Этап {step + 1} из {points.length}
+          </small>
           <strong>{labels[step]}</strong>
         </div>
         <button
           type="button"
           className="mx-lab-primary"
-          onClick={() => setStep((value) => (value + 1) % points.length)}
+          onClick={() => setStep(value => (value + 1) % points.length)}
         >
           {step === points.length - 1 ? <RotateCcw size={17} /> : <ArrowRight size={17} />}
           {step === points.length - 1 ? 'Пройти снова' : 'Следующий этап'}
@@ -1452,7 +1268,6 @@ function FlowRouteExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function ResonanceExperiment({ mode }) {
   const [energy, setEnergy] = useState(1)
@@ -1506,7 +1321,6 @@ function ResonanceExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function SemanticAtlasExperiment({ mode }) {
   const [selected, setSelected] = useState(0)
@@ -1576,7 +1390,6 @@ function SemanticAtlasExperiment({ mode }) {
   )
 }
 
-
 function RitualCardsExperiment({ mode }) {
   const [selected, setSelected] = useState(0)
   const rituals = [
@@ -1624,9 +1437,7 @@ function RitualCardsExperiment({ mode }) {
             aria-pressed={selected === index}
             onClick={() => setSelected(index)}
           >
-            <span className="mx-lab-ritual-card__art">
-              {drawings[index]}
-            </span>
+            <span className="mx-lab-ritual-card__art">{drawings[index]}</span>
             <span className="mx-lab-ritual-card__copy">
               <small>{selected === index ? 'Выбранный ритуал' : 'Утренний ритуал'}</small>
               <strong>{ritual.title}</strong>
@@ -1639,7 +1450,6 @@ function RitualCardsExperiment({ mode }) {
     </ExperimentShell>
   )
 }
-
 
 function AscezaCardsExperiment({ mode }) {
   const [selected, setSelected] = useState(0)
@@ -1688,9 +1498,7 @@ function AscezaCardsExperiment({ mode }) {
             aria-pressed={selected === index}
             onClick={() => setSelected(index)}
           >
-            <span className="mx-lab-asceza-card__art">
-              {drawings[index]}
-            </span>
+            <span className="mx-lab-asceza-card__art">{drawings[index]}</span>
             <span className="mx-lab-asceza-card__copy">
               <small>{selected === index ? 'Выбранная аскеза' : 'Личная аскеза'}</small>
               <strong>{asceza.title}</strong>
@@ -1704,7 +1512,6 @@ function AscezaCardsExperiment({ mode }) {
   )
 }
 
-
 function SemanticSystemCard({ item, selected, onSelect }) {
   return (
     <button
@@ -1715,11 +1522,7 @@ function SemanticSystemCard({ item, selected, onSelect }) {
       onClick={onSelect}
     >
       <span className="mx-lab-system-card__art">
-        <SemanticGlyph
-          kind={item.kind}
-          animated={selected}
-          highlighted={selected}
-        />
+        <SemanticGlyph kind={item.kind} animated={selected} highlighted={selected} />
       </span>
       <span className="mx-lab-system-card__copy">
         <small>{selected ? item.activeLabel : item.label}</small>
@@ -1729,7 +1532,6 @@ function SemanticSystemCard({ item, selected, onSelect }) {
     </button>
   )
 }
-
 
 function SemanticSystemGrid({ items }) {
   const [selected, setSelected] = useState(0)
@@ -1747,7 +1549,6 @@ function SemanticSystemGrid({ items }) {
     </div>
   )
 }
-
 
 function PracticeSystemExperiment({ mode }) {
   const items = [
@@ -1794,20 +1595,28 @@ function PracticeSystemExperiment({ mode }) {
   )
 }
 
-
 function MentorSystemExperiment({ mode }) {
   const items = [
     {
-      title: 'Наставник', meta: 'помогает сверить направление', kind: 'mentor',
-      label: 'роль проводника', activeLabel: 'курс выстроен',
+      title: 'Наставник',
+      meta: 'помогает сверить направление',
+      kind: 'mentor',
+      label: 'роль проводника',
+      activeLabel: 'курс выстроен',
     },
     {
-      title: 'Собеседник', meta: 'слышит и возвращает мысль яснее', kind: 'companion',
-      label: 'роль диалога', activeLabel: 'контакт установлен',
+      title: 'Собеседник',
+      meta: 'слышит и возвращает мысль яснее',
+      kind: 'companion',
+      label: 'роль диалога',
+      activeLabel: 'контакт установлен',
     },
     {
-      title: 'Следопыт', meta: 'показывает следующий достижимый след', kind: 'pathfinder',
-      label: 'роль маршрута', activeLabel: 'след найден',
+      title: 'Следопыт',
+      meta: 'показывает следующий достижимый след',
+      kind: 'pathfinder',
+      label: 'роль маршрута',
+      activeLabel: 'след найден',
     },
   ]
 
@@ -1824,20 +1633,28 @@ function MentorSystemExperiment({ mode }) {
   )
 }
 
-
 function ArticleSystemExperiment({ mode }) {
   const items = [
     {
-      title: 'Тревога', meta: 'распутать напряжение до ровной опоры', kind: 'anxiety',
-      label: 'тема состояния', activeLabel: 'контур распутан',
+      title: 'Тревога',
+      meta: 'распутать напряжение до ровной опоры',
+      kind: 'anxiety',
+      label: 'тема состояния',
+      activeLabel: 'контур распутан',
     },
     {
-      title: 'Сон', meta: 'закрыть внешний контур и отпустить день', kind: 'sleep',
-      label: 'тема восстановления', activeLabel: 'контур закрыт',
+      title: 'Сон',
+      meta: 'закрыть внешний контур и отпустить день',
+      kind: 'sleep',
+      label: 'тема восстановления',
+      activeLabel: 'контур закрыт',
     },
     {
-      title: 'Новая тема', meta: 'каркас для будущей функции или статьи', kind: 'template',
-      label: 'расширяемая система', activeLabel: 'смысл собран',
+      title: 'Новая тема',
+      meta: 'каркас для будущей функции или статьи',
+      kind: 'template',
+      label: 'расширяемая система',
+      activeLabel: 'смысл собран',
     },
   ]
 
@@ -1854,6 +1671,42 @@ function ArticleSystemExperiment({ mode }) {
   )
 }
 
+function MyPathCardExperiment({ mode }) {
+  const [drawKey, setDrawKey] = useState(0)
+
+  return (
+    <ExperimentShell
+      number="25"
+      eyebrow="Askeza / Ritual · «Мой путь»"
+      title="Иллюстрация карточки проявляется линиями"
+      purpose="Готовый SVG-актив встроен как React-компонент по образцу SemanticGlyph: контур прочерчивается stroke-dashoffset'ом, фигура проявляется вслед за ним, а золотая точка переходит в мягкую пульсацию только после того, как линии дорисованы."
+      mode={mode}
+    >
+      <div className="mx-lab-my-path">
+        <div className="mx-lab-my-path__visual">
+          <MyPathGlyph key={drawKey} animated={mode === 'after'} />
+        </div>
+
+        <div className="mx-lab-my-path__copy">
+          <small>Пилот · только ui-lab</small>
+          <strong>Мой путь</strong>
+          <span>
+            В прод не деплоится — карточка ждёт отдельного решения о переносе в Askeza/Ritual.
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className="mx-lab-primary"
+          onClick={() => setDrawKey(value => value + 1)}
+        >
+          <RotateCcw size={17} />
+          Проиграть снова
+        </button>
+      </div>
+    </ExperimentShell>
+  )
+}
 
 export default function UiExperiments() {
   const [mode, setMode] = useState('after')
@@ -1865,36 +1718,23 @@ export default function UiExperiments() {
           <span />
         </div>
 
-        <p className="mx-lab-kicker">
-          Mentalix · лаборатория интерфейса
-        </p>
+        <p className="mx-lab-kicker">Mentalix · лаборатория интерфейса</p>
 
         <h1>Движение, которое помогает сделать шаг.</h1>
 
         <p className="mx-lab-intro">
-          Двадцать четыре изолированных прототипа. Они не меняют продуктовые данные и доступны только в режиме разработки.
+          Двадцать пять изолированных прототипов. Они не меняют продуктовые данные и доступны только
+          в режиме разработки.
         </p>
 
         <div className="mx-lab-toggle" role="group" aria-label="Сравнение вариантов">
-          <span
-            className="mx-lab-toggle__indicator"
-            data-side={mode}
-            aria-hidden="true"
-          />
+          <span className="mx-lab-toggle__indicator" data-side={mode} aria-hidden="true" />
 
-          <button
-            type="button"
-            aria-pressed={mode === 'before'}
-            onClick={() => setMode('before')}
-          >
+          <button type="button" aria-pressed={mode === 'before'} onClick={() => setMode('before')}>
             Текущий
           </button>
 
-          <button
-            type="button"
-            aria-pressed={mode === 'after'}
-            onClick={() => setMode('after')}
-          >
+          <button type="button" aria-pressed={mode === 'after'} onClick={() => setMode('after')}>
             Эксперимент
           </button>
         </div>
@@ -1933,6 +1773,7 @@ export default function UiExperiments() {
         <PracticeSystemExperiment mode={mode} />
         <MentorSystemExperiment mode={mode} />
         <ArticleSystemExperiment mode={mode} />
+        <MyPathCardExperiment mode={mode} />
       </div>
 
       <footer className="mx-lab-footer">
