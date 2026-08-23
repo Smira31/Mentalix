@@ -1671,6 +1671,24 @@ function ArticleSystemExperiment({ mode }) {
   )
 }
 
+const MY_PATH_MOTION_VARIANTS = [
+  {
+    motion: 'loop',
+    label: 'Плавный обход',
+    hint: 'Точка непрерывно скользит по всему пути по кругу.',
+  },
+  {
+    motion: 'steps',
+    label: 'Шаги',
+    hint: 'Та же траектория, но дискретными шагами — ощущение ходьбы.',
+  },
+  {
+    motion: 'progress',
+    label: 'Прогресс со шлейфом',
+    hint: 'Короткий яркий след тянется за точкой — ощущение пройденного участка.',
+  },
+]
+
 function MyPathCardExperiment({ mode }) {
   const [drawKey, setDrawKey] = useState(0)
 
@@ -1678,40 +1696,75 @@ function MyPathCardExperiment({ mode }) {
     <ExperimentShell
       number="25"
       eyebrow="Askeza / Ritual · «Мой путь»"
-      title="Иллюстрация карточки проявляется линиями"
-      purpose="Готовый SVG-актив встроен как React-компонент по образцу SemanticGlyph: контур прочерчивается stroke-dashoffset'ом, фигура проявляется вслед за ним, а золотая точка переходит в мягкую пульсацию только после того, как линии дорисованы."
+      title="Путь нарисован сразу — движется точка, а не линия"
+      purpose="Линии показаны сразу полностью и статично — путь уже существует. Акцентная точка едет по готовому маршруту: «иду по пути», а не «путь рисуется». Три варианта движения — для выбора владельцем."
       mode={mode}
     >
       <div className="mx-lab-my-path">
+        <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          {MY_PATH_MOTION_VARIANTS.map(variant => (
+            <div
+              key={variant.motion}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem',
+                maxWidth: '180px',
+              }}
+            >
+              <MyPathGlyph
+                key={`${variant.motion}-${drawKey}`}
+                animated={mode === 'after'}
+                motion={variant.motion}
+              />
+              <strong style={{ textAlign: 'center' }}>{variant.label}</strong>
+              <span style={{ fontSize: '0.8rem', opacity: 0.6, textAlign: 'center' }}>
+                {variant.hint}
+              </span>
+            </div>
+          ))}
+        </div>
+
         <div
-          className="mx-lab-my-path__visual"
-          style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}
+          style={{
+            marginTop: '2rem',
+            paddingTop: '2rem',
+            borderTop: '1px solid rgba(var(--c-line), 0.16)',
+          }}
         >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
+          <p
+            style={{ fontSize: '0.8rem', opacity: 0.68, textAlign: 'center', marginBottom: '1rem' }}
           >
-            <MyPathGlyph key={`primary-${drawKey}`} animated={mode === 'after'} />
-            <small style={{ opacity: 0.68 }}>Основной (золото)</small>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <MyPathGlyph
-              key={`secondary-${drawKey}`}
-              animated={mode === 'after'}
-              accent="secondary"
-            />
-            <small style={{ opacity: 0.68 }}>Вариант (#C77D7A)</small>
+            Акцентный цвет — вариант для сравнения (закреплён в PR #143)
+          </p>
+          <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              <MyPathGlyph key={`primary-${drawKey}`} animated={mode === 'after'} />
+              <small style={{ opacity: 0.68 }}>Основной (золото)</small>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+            >
+              <MyPathGlyph
+                key={`secondary-${drawKey}`}
+                animated={mode === 'after'}
+                accent="secondary"
+              />
+              <small style={{ opacity: 0.68 }}>Вариант (#C77D7A)</small>
+            </div>
           </div>
         </div>
 
