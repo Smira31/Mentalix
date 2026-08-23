@@ -17,8 +17,12 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
-## Реализовано локально 22.08.2026 — MXL-PRACTICES-CACHE-001
+## MXL-PRACTICES-CACHE-001 (закрыто)
 
+- **Статус: смёржено в `main` 23.08.2026 squash-мержем через PR #138
+  (ветка `fix/mxl-cta-lint-practices-cache`, удалена — remote и local).
+  Живая проверка в Telegram пройдена и подтверждена владельцем —
+  обновление Today/Practices после отметки ритуала/аскезы работает.**
 - [x] Новый `src/lib/practicesDataCache.js` — тот же паттерн, что
       `MXL-LIBRARY-CACHE-001`/`MXL-TRENDS-CACHE-001`: module-level `Map`,
       TTL 30 сек (как у `todayDataCache.js` — те же ритуалы/аскезы),
@@ -37,8 +41,14 @@
       «сделано/всего» по той же причине.
 - [x] `npm run lint` (0/0), `npm run build`, `npm run ux:check` — зелёные.
 
-## Реализовано локально 22.08.2026 — MXL-LINT-CLEANUP-001
+## MXL-LINT-CLEANUP-001 (закрыто)
 
+- **Статус: смёржено в `main` 23.08.2026 squash-мержем через PR #138
+  (ветка `fix/mxl-cta-lint-practices-cache`, удалена — remote и local).
+  Доработка после code review (MemoryGame — апдейтер `setLevel` больше
+  не вызывает другие `setState` внутри себя) вошла в тот же PR отдельным
+  4-м коммитом. Живая проверка в Telegram пройдена и подтверждена
+  владельцем — MemoryGame работает.**
 - [x] Устранены все 30 ESLint warnings на `main` (0 errors, 0 warnings) —
       `npm run lint` полностью чист. Детали фиксов по каждой группе правил
       и найденные попутно нюансы `eslint-plugin-react-hooks` — в `CHANGES.md`.
@@ -47,8 +57,12 @@
       переписанная логика) и Дыхание (переход prepare→run) — багов не
       найдено.
 
-## Реализовано локально 22.08.2026 — MXL-UI-CTA-OVERLAP-001
+## MXL-UI-CTA-OVERLAP-001 (закрыто)
 
+- **Статус: смёржено в `main` 23.08.2026 squash-мержем через PR #138
+  (ветка `fix/mxl-cta-lint-practices-cache`, удалена — remote и local).
+  Живая проверка в Telegram пройдена и подтверждена владельцем — CTA на
+  Today больше не перекрыт нижней навигацией.**
 - [x] Починено перекрытие чек-ин CTA нижней навигацией на Today при
       `320×568` — деталь фикса и найденная попутно мёртвая CSS-цепочка
       (`MXL-CARDSYSTEM-DEADCODE-001`) описаны в `CHANGES.md`.
