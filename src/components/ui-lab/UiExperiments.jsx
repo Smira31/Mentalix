@@ -1753,6 +1753,62 @@ function MyPathCardExperiment({ mode }) {
   )
 }
 
+function RitualAscezaStylesExperiment({ mode }) {
+  const [selected, setSelected] = useState(0)
+  const rituals = [
+    { title: 'Стакан воды', kind: 'ritual', variant: 'primary' },
+    { title: 'Стакан воды', kind: 'ritual', variant: 'secondary' },
+    { title: 'Аскеза', kind: 'asceza', variant: 'primary' },
+    { title: 'Аскеза', kind: 'asceza', variant: 'secondary' },
+  ]
+
+  return (
+    <ExperimentShell
+      number="26"
+      eyebrow="Стиль Ritual & Askeza"
+      title="Два цветовых варианта для различения категорий"
+      purpose="Золотой акцент (основной) для Askeza/Ritual. Медный/лиловый акцент (вариант) для будущих категорий (например, Наставник). Оба варианта показаны рядом. Не деплоится в прод — только в ui-lab (при ?ui_lab=1)."
+      mode={mode}
+    >
+      <div
+        className="mx-lab-styles-comparison"
+        style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem' }}
+      >
+        {rituals.map((ritual, index) => (
+          <div
+            key={`${ritual.kind}-${ritual.variant}`}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '1.5rem',
+              borderRadius: '0.75rem',
+              border: '1px solid rgba(var(--c-line), 0.24)',
+            }}
+          >
+            <div style={{ width: '80px', height: '80px' }}>
+              <SemanticGlyph
+                kind={ritual.kind}
+                animated={selected === index}
+                highlighted={selected === index}
+                accent={ritual.variant === 'secondary' ? 'secondary' : undefined}
+              />
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <small style={{ opacity: 0.68 }}>
+                {ritual.variant === 'primary' ? 'Основной' : 'Вариант'}
+              </small>
+              <strong style={{ display: 'block' }}>{ritual.title}</strong>
+              <span style={{ fontSize: '0.875rem', opacity: 0.56 }}>{ritual.kind}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </ExperimentShell>
+  )
+}
+
 export default function UiExperiments() {
   const [mode, setMode] = useState('after')
 
@@ -1821,6 +1877,7 @@ export default function UiExperiments() {
         <MentorSystemExperiment mode={mode} />
         <ArticleSystemExperiment mode={mode} />
         <MyPathCardExperiment mode={mode} />
+        <RitualAscezaStylesExperiment mode={mode} />
       </div>
 
       <footer className="mx-lab-footer">

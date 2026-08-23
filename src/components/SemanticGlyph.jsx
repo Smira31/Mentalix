@@ -574,6 +574,7 @@ export default function SemanticGlyph({
   className = '',
   animated = true,
   highlighted = true,
+  accent,
   debugSource,
 }) {
   return (
@@ -582,6 +583,7 @@ export default function SemanticGlyph({
       className={`mx-semantic-glyph mx-semantic-glyph--${kind} ${className}`}
       data-animated={animated}
       data-highlighted={highlighted}
+      data-accent={accent}
       preserveAspectRatio="xMidYMid meet"
       fill="none"
       aria-hidden="true"
