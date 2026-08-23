@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 23.08.2026 — MXL-UI-LAB-SHOWCASE-001 закрыт
+
+- Ручной Preview/Telegram gate пройден и подтверждён владельцем:
+  temporary anonymous Vercel-деплой ветки `feat/ui-lab-showcase-001`,
+  `/api/health` = ok, HTTP 200 без SSO-редиректа, обе части ui-lab
+  (`?ui_lab=1`, `?ui_lab=showcase`) и переключатель между ними проверены
+  вживую. PR #149 выведен из черновика и смёржен squash-мержем в `main`;
+  ветка `feat/ui-lab-showcase-001` удалена (remote и local).
+
 ## 23.08.2026 — MXL-UI-LAB-SHOWCASE-001: вкладки между списком экспериментов и витриной
 
 - Владелец хочет видеть обе части ui-lab одновременно, а не одну вместо

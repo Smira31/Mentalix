@@ -94,10 +94,15 @@
 - Код не менялся в рамках этой задачи, `npm run lint`/`npm run build` не
   требовались.
 
-## MXL-UI-LAB-SHOWCASE-001 (реализовано, ждёт ручного Preview/Telegram gate)
+## MXL-UI-LAB-SHOWCASE-001 (закрыто)
 
-- **Статус: код в ветке `feat/ui-lab-showcase-001`, PR #149 открыт как
-  черновик.** `npm run lint` (0/0) и `npm run build` — зелёные; в `dist/`
+- **Статус: ручной Preview/Telegram gate пройден и подтверждён владельцем
+  23.08.2026** (temporary anonymous Vercel-деплой ветки
+  `feat/ui-lab-showcase-001`, `/api/health` = ok, HTTP 200 без SSO-редиректа,
+  проверены обе части — `?ui_lab=1` и `?ui_lab=showcase` — и переключатель
+  между ними). PR #149 выведен из черновика и смёржен squash-мержем в
+  `main`; ветка удалена (remote и local).
+- `npm run lint` (0/0) и `npm run build` — зелёные; в `dist/`
   меток витрины нет (не попадает в production build, тот же паттерн, что у
   `card_lab`/`motion_kit`). `?ui_lab=1` и `?ui_lab=experiments` вручную
   проверены через `npm run dev` — без ошибок консоли, `UiExperiments.jsx`
@@ -164,9 +169,6 @@ href="?ui_lab=...">` ссылки (полная навигация, без кл�
   вкладка подсвечена (`aria-current="page"`), список 25 экспериментов не
   сломан.
 - Backend, API, Render, Neon, продуктовые экраны не менялись.
-- Осталось для закрытия: новый Preview с обновлённым визуалом, ручной
-  Telegram/iPhone gate (`?ui_lab=1` и `?ui_lab=showcase` оба на реальном
-  устройстве, включая переключатель), перевод PR #149 из черновика.
 
 ## MXL-UI-LAB-SHOWCASE-001 — идея и пре-мортем (для истории)
 
