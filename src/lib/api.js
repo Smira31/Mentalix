@@ -1,4 +1,19 @@
+import { platform } from '../platform'
+
 const BASE = '/api'
+
+/*
+ * MXL-SECURITY-AUDIT-001: подписанный Telegram initData едет в стандартном
+ * заголовке Authorization: tma <initData> (схема из документации Telegram
+ * Mini Apps) на КАЖДЫЙ запрос — так бэкенду не нужно менять сигнатуры
+ * отдельных эндпоинтов, когда появится проверка подписи. Backend её пока
+ * не проверяет (см. TASKS.md/CHANGES.md) — заголовок сам по себе от подмены
+ * user_id не защищает, это только фронтенд-часть контракта.
+ */
+function authHeader() {
+  const initData = platform.getInitData?.()
+  return initData ? { Authorization: `tma ${initData}` } : {}
+}
 
 async function request(path, options = {}) {
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
@@ -6,6 +21,7 @@ async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
     headers: {
       ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
+      ...authHeader(),
       ...options.headers,
     },
     ...options,

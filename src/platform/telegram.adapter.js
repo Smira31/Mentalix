@@ -35,6 +35,17 @@ export const telegramAdapter = {
     }
   },
 
+  /*
+   * MXL-SECURITY-AUDIT-001: сырая подписанная строка initData — в отличие
+   * от initDataUnsafe (используется только в getUser выше для чтения полей),
+   * её можно проверить на бэкенде по HMAC. Backend-валидация пока не
+   * подключена (см. TASKS.md) — этот метод только делает данные доступными
+   * для отправки, сам по себе от подмены user_id не защищает.
+   */
+  getInitData() {
+    return WebApp.initData || ''
+  },
+
   async requestAuth() {
     // в Telegram пользователь уже известен через initData, отдельного входа не требуется
     return this.getUser()
