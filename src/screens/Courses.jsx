@@ -35,9 +35,7 @@ function CourseCard({ course, onOpen }) {
         )}
         <span
           className={`absolute top-3 right-3 text-[10px] font-medium px-2.5 py-1 rounded-full ${
-            course.status === 'completed'
-              ? 'bg-gold text-emerald-deep'
-              : 'bg-black/40 text-cream'
+            course.status === 'completed' ? 'bg-gold text-emerald-deep' : 'bg-black/40 text-cream'
           }`}
         >
           {course.status === 'completed' ? 'Пройден' : 'В процессе'}
@@ -45,9 +43,7 @@ function CourseCard({ course, onOpen }) {
       </div>
       <div className="p-4">
         <h3 className="font-display text-base text-cream leading-snug mb-1">{course.title}</h3>
-        {course.source && (
-          <p className="text-xs text-muted mb-2">{course.source}</p>
-        )}
+        {course.source && <p className="text-xs text-muted mb-2">{course.source}</p>}
         <div className="flex items-center gap-3 text-xs text-muted">
           {duration && (
             <span className="flex items-center gap-1">
@@ -65,7 +61,7 @@ function CourseCreateScreen({ onCreate, onCancel }) {
   const [saving, setSaving] = useState(false)
 
   function set(field) {
-    return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
+    return e => setDraft(d => ({ ...d, [field]: e.target.value }))
   }
 
   async function submit() {
@@ -75,7 +71,9 @@ function CourseCreateScreen({ onCreate, onCancel }) {
       title: draft.title,
       source: draft.source || null,
       cover_url: draft.cover_url || null,
-      duration_estimate_min: draft.duration_estimate_min ? Number(draft.duration_estimate_min) : null,
+      duration_estimate_min: draft.duration_estimate_min
+        ? Number(draft.duration_estimate_min)
+        : null,
     })
     setSaving(false)
   }
@@ -134,7 +132,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
   async function addNote() {
     if (!noteText.trim()) return
     const note = await api.courses.addNote(course.id, noteText.trim())
-    setNotes((prev) => [note, ...prev])
+    setNotes(prev => [note, ...prev])
     setNoteText('')
   }
 
@@ -160,7 +158,11 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
             </button>
           </div>
         ) : (
-          <button onClick={() => setConfirming(true)} className="text-muted p-1.5" aria-label="Удалить материал">
+          <button
+            onClick={() => setConfirming(true)}
+            className="text-muted p-1.5"
+            aria-label="Удалить материал"
+          >
             <Trash2 size={16} />
           </button>
         )}
@@ -202,7 +204,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
       <div className="flex gap-2 mb-4">
         <input
           value={noteText}
-          onChange={(e) => setNoteText(e.target.value)}
+          onChange={e => setNoteText(e.target.value)}
           placeholder="Что вынес из материала..."
           className="flex-1 bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-2.5 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
@@ -216,7 +218,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
 
       {notes.length > 0 ? (
         <div className="rounded-2xl bg-emerald-light/20 border border-cream/10 divide-y divide-cream/10">
-          {notes.map((n) => (
+          {notes.map(n => (
             <div key={n.id} className="px-4 py-3 text-sm text-cream">
               {n.text}
             </div>
@@ -235,7 +237,10 @@ export default function Courses({ user }) {
 
   useEffect(() => {
     if (!user || openTheme) return
-    api.themes.list(user.id).then(setThemes).catch(() => {})
+    api.themes
+      .list(user.id)
+      .then(setThemes)
+      .catch(() => {})
   }, [user, openTheme])
 
   const [courses, setCourses] = useState([])
@@ -246,25 +251,29 @@ export default function Courses({ user }) {
 
   useEffect(() => {
     if (!user) return
-    load()
-  }, [user])
 
-  async function load() {
-    setLoading(true)
-    try {
-      const list = await api.courses.list(user.id)
-      setCourses(list)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
+    let active = true
+
+    ;(async () => {
+      try {
+        const list = await api.courses.list(user.id)
+        if (active) setCourses(list)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (active) setLoading(false)
+      }
+    })()
+
+    return () => {
+      active = false
     }
-  }
+  }, [user])
 
   async function createCourse(draft) {
     try {
       const course = await api.courses.create(user.id, draft)
-      setCourses((prev) => [course, ...prev])
+      setCourses(prev => [course, ...prev])
       setShowCreate(false)
     } catch (e) {
       console.error(e)
@@ -274,7 +283,7 @@ export default function Courses({ user }) {
   async function deleteCourse(courseId) {
     try {
       await api.courses.remove(courseId)
-      setCourses((prev) => prev.filter((c) => c.id !== courseId))
+      setCourses(prev => prev.filter(c => c.id !== courseId))
       setSelected(null)
     } catch (e) {
       console.error(e)
@@ -285,7 +294,7 @@ export default function Courses({ user }) {
     const newStatus = course.status === 'completed' ? 'in_progress' : 'completed'
     try {
       const updated = await api.courses.updateStatus(course.id, newStatus)
-      setCourses((prev) => prev.map((c) => (c.id === course.id ? updated : c)))
+      setCourses(prev => prev.map(c => (c.id === course.id ? updated : c)))
       setSelected(updated)
     } catch (e) {
       console.error(e)
@@ -309,7 +318,7 @@ export default function Courses({ user }) {
     )
   }
 
-  const filtered = courses.filter((c) => filter === 'all' || c.status === filter)
+  const filtered = courses.filter(c => filter === 'all' || c.status === filter)
 
   if (openTheme) {
     return <ThemeScreen user={user} themeId={openTheme} onBack={() => setOpenTheme(null)} />
@@ -322,7 +331,7 @@ export default function Courses({ user }) {
         <div className="mb-7">
           <h2 className="font-display text-lg text-cream mb-3">Темы недели</h2>
           <div className="mx-stagger space-y-2.5">
-            {themes.map((t) => (
+            {themes.map(t => (
               <button
                 key={t.id}
                 onClick={() => setOpenTheme(t.id)}
@@ -331,7 +340,9 @@ export default function Courses({ user }) {
                 <span className="block font-display text-[17px] text-cream lowercase leading-tight">
                   {t.title}
                 </span>
-                <span className="block text-[12.5px] text-muted mt-1 leading-snug">{t.subtitle}</span>
+                <span className="block text-[12.5px] text-muted mt-1 leading-snug">
+                  {t.subtitle}
+                </span>
                 <span className="flex items-center gap-1.5 mt-3">
                   {Array.from({ length: t.total_days }).map((_, i) => (
                     <span
@@ -362,7 +373,7 @@ export default function Courses({ user }) {
       </div>
 
       <div className="flex gap-2 mb-4">
-        {FILTERS.map((f) => (
+        {FILTERS.map(f => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
@@ -378,9 +389,7 @@ export default function Courses({ user }) {
       {filtered.length === 0 ? (
         <div className="text-center py-8">
           {courses.length === 0 ? (
-            <EmptyState
-              glyph={<MotifArt name="set" size={120} className="mx-auto mb-3" />}
-            >
+            <EmptyState glyph={<MotifArt name="set" size={120} className="mx-auto mb-3" />}>
               <p className="text-muted text-sm">Библиотека пуста — добавь первый материал</p>
             </EmptyState>
           ) : (
@@ -388,7 +397,7 @@ export default function Courses({ user }) {
           )}
         </div>
       ) : (
-        filtered.map((c) => <CourseCard key={c.id} course={c} onOpen={setSelected} />)
+        filtered.map(c => <CourseCard key={c.id} course={c} onOpen={setSelected} />)
       )}
     </div>
   )

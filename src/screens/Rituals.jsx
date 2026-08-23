@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { invalidateTodayData } from '../lib/todayDataCache'
+import { invalidatePracticesData } from '../lib/practicesDataCache'
 import { createPortal } from 'react-dom'
 import {
   useFullscreenSurface,
@@ -333,6 +335,8 @@ export default function Rituals({ user, onBack }) {
             : r
         )
       )
+      invalidateTodayData(user.id)
+      invalidatePracticesData(user.id)
     } catch (e) {
       console.error(e)
       return null

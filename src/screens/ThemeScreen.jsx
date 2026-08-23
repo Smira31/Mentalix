@@ -74,16 +74,38 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
   const { style } = useFullscreenSurface()
 
-  useEffect(() => {
+  /*
+   * Три ниже — синхронизация локального состояния с внешним пропом/
+   * данными без побочных эффектов (themeId — навигация, activeId/day —
+   * момент сброса перед перезагрузкой), поэтому во время рендера, а
+   * не в useEffect. Настоящие побочные эффекты (сетевые запросы) ниже
+   * остаются в useEffect как есть.
+   */
+  const [seenThemeId, setSeenThemeId] = useState(themeId)
+  if (seenThemeId !== themeId) {
+    setSeenThemeId(themeId)
     setActiveId(themeId)
-  }, [themeId])
+  }
+
+  const [seenActiveId, setSeenActiveId] = useState(activeId)
+  if (seenActiveId !== activeId) {
+    setSeenActiveId(activeId)
+    setData(null)
+  }
+
+  const [seenTextKey, setSeenTextKey] = useState({ day: null, data: null })
+  if (data && (seenTextKey.day !== day || seenTextKey.data !== data)) {
+    setSeenTextKey({ day, data })
+    const current = data.days.find(x => x.day === day)
+    setText(current?.reflection || '')
+  }
 
   useEffect(() => {
     if (!user) return
 
     api.themes
       .list(user.id)
-      .then((list) => setThemes(Array.isArray(list) ? list : []))
+      .then(list => setThemes(Array.isArray(list) ? list : []))
       .catch(() => setThemes([]))
   }, [user])
 
@@ -92,11 +114,9 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
     let alive = true
 
-    setData(null)
-
     api.themes
       .get(activeId, user.id)
-      .then((fresh) => {
+      .then(fresh => {
         if (!alive) return
 
         setData(fresh)
@@ -107,7 +127,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
          * тот, кто уже пишет вторую неделю подряд, не должен
          * каждый раз проходить через вступление.
          */
-        const started = fresh.days.some((d) => d.reflection)
+        const started = fresh.days.some(d => d.reflection)
 
         setView(started ? 'day' : 'intro')
       })
@@ -117,14 +137,6 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       alive = false
     }
   }, [user, activeId])
-
-  useEffect(() => {
-    if (!data) return
-
-    const current = data.days.find((x) => x.day === day)
-
-    setText(current?.reflection || '')
-  }, [day, data])
 
   async function save() {
     if (!data) return
@@ -139,7 +151,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
       setData(fresh)
 
-      const answered = fresh.days.filter((x) => x.reflection).length
+      const answered = fresh.days.filter(x => x.reflection).length
 
       /*
        * Последний ответ недели ведёт не на восьмой день, которого
@@ -157,8 +169,8 @@ export default function ThemeScreen({ user, themeId, onBack }) {
     }
   }
 
-  const current = data?.days?.find((x) => x.day === day)
-  const answered = data ? data.days.filter((x) => x.reflection).length : 0
+  const current = data?.days?.find(x => x.day === day)
+  const answered = data ? data.days.filter(x => x.reflection).length : 0
   const finished = Boolean(data) && answered === data.days.length
 
   /*
@@ -180,7 +192,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
     let alive = true
 
-    cloud.get(HOME_OFFERED_KEY).then((already) => {
+    cloud.get(HOME_OFFERED_KEY).then(already => {
       if (!alive || already) return
 
       cloud.set(HOME_OFFERED_KEY, '1')
@@ -206,7 +218,10 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
   const mainOnClick =
     view === 'intro'
-      ? () => { platform.haptic('light'); setView('day') }
+      ? () => {
+          platform.haptic('light')
+          setView('day')
+        }
       : view === 'review'
         ? onBack
         : save
@@ -235,11 +250,9 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <Shell style={style}>
         <BackButton onClick={onBack} />
 
-        <p className="w-full m-auto px-6 text-center text-muted text-sm">
-          Загрузка...
-        </p>
+        <p className="w-full m-auto px-6 text-center text-muted text-sm">Загрузка...</p>
       </Shell>,
-      document.body,
+      document.body
     )
   }
 
@@ -277,35 +290,29 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           )}
 
           <ul className="flex flex-col gap-3.5 mt-8">
-            <Fact>
-              {data.days.length} дней, каждый день — один вопрос. Не больше.
-            </Fact>
+            <Fact>{data.days.length} дней, каждый день — один вопрос. Не больше.</Fact>
 
             <Fact>
-              Ответы сохраняются. В конце ты увидишь всю неделю сразу — и это
-              главное, ради чего она нужна.
+              Ответы сохраняются. В конце ты увидишь всю неделю сразу — и это главное, ради чего она
+              нужна.
             </Fact>
 
             {data.free_days > 0 && data.free_days < data.days.length && (
-              <Fact>
-                Первые {data.free_days} дня открыты всем, остальные — часть Библиотеки.
-              </Fact>
+              <Fact>Первые {data.free_days} дня открыты всем, остальные — часть Библиотеки.</Fact>
             )}
 
-            <Fact>
-              Пропущенный день не сгорает: к нему можно вернуться.
-            </Fact>
+            <Fact>Пропущенный день не сгорает: к нему можно вернуться.</Fact>
           </ul>
         </div>
       </Shell>,
-      document.body,
+      document.body
     )
   }
 
   /* ── разбор: все ответы подряд ─────────────────────────── */
 
   if (view === 'review') {
-    const written = data.days.filter((x) => x.reflection)
+    const written = data.days.filter(x => x.reflection)
 
     return createPortal(
       <Shell style={style} footer={<WebActionBar action={webAction} />}>
@@ -326,24 +333,24 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         </div>
 
         <div className="flex flex-col gap-3">
-          {written.map((d) => (
+          {written.map(d => (
             <div key={d.day} className="rounded-[24px] bg-emerald border border-cream/10 p-5">
               <div className="text-[11px] text-gold font-bold uppercase tracking-wide mb-2">
                 День {d.day}
               </div>
 
-              {d.prompt && (
-                <p className="text-[14px] text-muted leading-snug mb-3">
-                  {d.prompt}
-                </p>
-              )}
+              {d.prompt && <p className="text-[14px] text-muted leading-snug mb-3">{d.prompt}</p>}
 
               <p className="text-[15px] text-cream leading-relaxed whitespace-pre-line">
                 {d.reflection}
               </p>
 
               <button
-                onClick={() => { platform.haptic('light'); setDay(d.day); setView('day') }}
+                onClick={() => {
+                  platform.haptic('light')
+                  setDay(d.day)
+                  setView('day')
+                }}
                 className="text-[12px] text-faint mt-3 bg-transparent border-0 p-0 active:opacity-60"
               >
                 Изменить
@@ -361,13 +368,13 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             </h3>
 
             <p className="text-[14px] text-muted mt-3 leading-relaxed">
-              Это уже не чтение, а практика. Перечитай написанное через месяц —
-              увидишь, что изменилось не в теме, а в тебе.
+              Это уже не чтение, а практика. Перечитай написанное через месяц — увидишь, что
+              изменилось не в теме, а в тебе.
             </p>
           </div>
         )}
       </Shell>,
-      document.body,
+      document.body
     )
   }
 
@@ -387,7 +394,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         </p>
 
         <div className="flex flex-col gap-3">
-          {themes.map((item) => {
+          {themes.map(item => {
             const done = item.reflected_days >= item.total_days
             const active = item.id === activeId
 
@@ -410,9 +417,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                     </div>
 
                     {item.subtitle && (
-                      <p className="text-[13px] text-muted leading-snug mt-1.5">
-                        {item.subtitle}
-                      </p>
+                      <p className="text-[13px] text-muted leading-snug mt-1.5">{item.subtitle}</p>
                     )}
                   </div>
 
@@ -434,7 +439,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           })}
         </div>
       </Shell>,
-      document.body,
+      document.body
     )
   }
 
@@ -448,7 +453,10 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         <div className="flex items-center gap-3 shrink-0">
           {answered > 0 && (
             <button
-              onClick={() => { platform.haptic('light'); setView('review') }}
+              onClick={() => {
+                platform.haptic('light')
+                setView('review')
+              }}
               className="text-[12px] text-gold bg-transparent border-0 p-0 active:opacity-60"
             >
               Мои ответы
@@ -457,7 +465,10 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
           {themes.length > 1 && (
             <button
-              onClick={() => { platform.haptic('light'); setView('list') }}
+              onClick={() => {
+                platform.haptic('light')
+                setView('list')
+              }}
               className="text-[12px] text-muted bg-transparent border-0 p-0 active:opacity-60"
             >
               Все темы
@@ -468,7 +479,10 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
       <div className="text-center mb-6">
         <button
-          onClick={() => { platform.haptic('light'); setView('intro') }}
+          onClick={() => {
+            platform.haptic('light')
+            setView('intro')
+          }}
           className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2 bg-transparent border-0 p-0 active:opacity-60"
         >
           Тема недели
@@ -481,13 +495,16 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
       {/* дни: точки-переключатели */}
       <div className="flex gap-1.5 mb-5">
-        {data.days.map((d) => {
+        {data.days.map(d => {
           const active = d.day === day
 
           return (
             <button
               key={d.day}
-              onClick={() => { platform.haptic('light'); setDay(d.day) }}
+              onClick={() => {
+                platform.haptic('light')
+                setDay(d.day)
+              }}
               className={[
                 'flex-1 h-9 rounded-full text-[12px] font-bold border-0 flex items-center justify-center transition-colors',
                 active
@@ -497,7 +514,13 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                     : 'bg-emerald text-muted',
               ].join(' ')}
             >
-              {d.locked ? <Lock size={12} /> : d.reflection && !active ? <Check size={13} strokeWidth={3} /> : d.day}
+              {d.locked ? (
+                <Lock size={12} />
+              ) : d.reflection && !active ? (
+                <Check size={13} strokeWidth={3} />
+              ) : (
+                d.day
+              )}
             </button>
           )
         })}
@@ -531,9 +554,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 День {day} из {data.days.length}
               </div>
 
-              <p className="font-display text-[19px] text-cream leading-snug">
-                {current?.text}
-              </p>
+              <p className="font-display text-[19px] text-cream leading-snug">{current?.text}</p>
 
               {current?.prompt && (
                 <p className="text-[14px] text-gold font-semibold mt-5 leading-snug">
@@ -548,13 +569,13 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       {!current?.locked && (
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={e => setText(e.target.value)}
           placeholder="Записать мысль..."
           rows={4}
           className="w-full shrink-0 rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3 mb-[76px]"
         />
       )}
     </Shell>,
-    document.body,
+    document.body
   )
 }

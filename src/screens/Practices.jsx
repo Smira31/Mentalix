@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { platform } from '../platform'
-import { api } from '../lib/api'
+import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 
 import BackButton from '../components/BackButton'
 
@@ -122,22 +122,39 @@ function PracticeCategory({ title, children }) {
 
 export default function Practices({ user, initialSub = null, onGameChange }) {
   const [sub, setSub] = useState(initialSub)
-  const [rituals, setRituals] = useState([])
-  const [ascezas, setAscezas] = useState([])
 
-  useEffect(() => {
+  const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
+  const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
+  const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
+
+  /*
+   * initialSub приходит из навигации (открыть Practices сразу на
+   * конкретном экране) — синхронизация с внешним пропом, без побочных
+   * эффектов, поэтому во время рендера, а не в useEffect.
+   */
+  const [seenInitialSub, setSeenInitialSub] = useState(initialSub)
+  if (seenInitialSub !== initialSub) {
+    setSeenInitialSub(initialSub)
     setSub(initialSub)
-  }, [initialSub])
+  }
 
   useEffect(() => {
     if (!user || sub !== null) return
 
-    Promise.all([api.rituals.list(user.id), api.ascezas.list(user.id)])
-      .then(([ritualsData, ascezasData]) => {
+    let active = true
+
+    fetchPracticesData(user.id)
+      .then(({ rituals: ritualsData, ascezas: ascezasData }) => {
+        if (!active) return
+
         setRituals(ritualsData)
         setAscezas(ascezasData)
       })
       .catch(console.error)
+
+    return () => {
+      active = false
+    }
   }, [user, sub])
 
   if (sub === 'rituals') {

@@ -3,10 +3,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import SemanticGlyph from '../components/SemanticGlyph'
 import BackButton from '../components/BackButton'
-import {
-  useFullscreenSurface,
-  FULLSCREEN_SHELL_CLASS,
-} from '../lib/fullscreenSurface'
+import { useFullscreenSurface, FULLSCREEN_SHELL_CLASS } from '../lib/fullscreenSurface'
 
 // ── Дыхание: анимированный круг, техника 4-7-8, как breathing. у stoic. ──
 // Вдох 4с (круг растёт) → задержка 7с (держится) → выдох 8с (сжимается)
@@ -16,7 +13,6 @@ const PHASES = [
   { key: 'hold', label: 'Задержи', secs: 7, scale: 1 },
   { key: 'exhale', label: 'Выдох', secs: 8, scale: 0.55 },
 ]
-
 
 /*
  * Полноэкранная часть вынесена в отдельный компонент намеренно.
@@ -32,7 +28,7 @@ function FullscreenStage({ className = '', children }) {
     <div className={`${FULLSCREEN_SHELL_CLASS} ${className}`} style={style}>
       {children}
     </div>,
-    document.body,
+    document.body
   )
 }
 
@@ -95,13 +91,18 @@ export default function Breathing({ onBack }) {
 
   const intoSession = Math.max(0, elapsed - PREPARE_SECONDS)
   const intoCycle = intoSession % CYCLE_SECONDS
-  const phaseIdx = PHASE_ENDS.findIndex((end) => intoCycle < end)
+  const phaseIdx = PHASE_ENDS.findIndex(end => intoCycle < end)
 
-  // Переход в дыхание и вибрация на смене фазы — эффектами, а не
-  // изнутри апдейтера состояния: в StrictMode он вызывается дважды.
-  useEffect(() => {
-    if (stage === 'prepare' && elapsed >= PREPARE_SECONDS) setStage('run')
-  }, [stage, elapsed])
+  /*
+   * Переход prepare → run — чистое производное от elapsed, без внешних
+   * побочных эффектов (в отличие от вибрации на смене фазы ниже), поэтому
+   * правим состояние прямо во время рендера, а не в useEffect: после
+   * первого же ре-рендера stage !== 'prepare' и условие больше не
+   * выполняется, повторного вызова нет.
+   */
+  if (stage === 'prepare' && elapsed >= PREPARE_SECONDS) {
+    setStage('run')
+  }
 
   useEffect(() => {
     if (stage !== 'run' || phaseRef.current === phaseIdx) return
@@ -150,15 +151,18 @@ export default function Breathing({ onBack }) {
           Успокоить систему
         </h2>
         <p className="text-[14px] text-muted text-center mt-3 leading-relaxed max-w-xs">
-          Техника 4-7-8: вдох носом на 4, задержка на 7, длинный выдох на 8.
-          Несколько циклов — и шум в голове тише.
+          Техника 4-7-8: вдох носом на 4, задержка на 7, длинный выдох на 8. Несколько циклов — и
+          шум в голове тише.
         </p>
 
         <div className="flex gap-2 mt-8">
-          {DURATIONS.map((d) => (
+          {DURATIONS.map(d => (
             <button
               key={d.secs}
-              onClick={() => { platform.haptic('light'); setDuration(d.secs) }}
+              onClick={() => {
+                platform.haptic('light')
+                setDuration(d.secs)
+              }}
               className={[
                 'px-6 py-3 rounded-full text-[14px] font-bold border-0 transition-colors',
                 duration === d.secs ? 'bg-cream/10 text-cream' : 'bg-emerald text-muted',
@@ -186,7 +190,10 @@ export default function Breathing({ onBack }) {
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
         <p className="text-[15px] text-muted mt-3">Возвращайся к этому кругу, когда штормит.</p>
         <button
-          onClick={() => { platform.haptic('light'); onBack() }}
+          onClick={() => {
+            platform.haptic('light')
+            onBack()
+          }}
           className="cta-pill text-[16px] px-12 py-4 mt-10"
         >
           Готово
@@ -201,7 +208,10 @@ export default function Breathing({ onBack }) {
     <FullscreenStage>
       {/* прогресс */}
       <div className="h-[3px] bg-cream/10">
-        <div className="h-full bg-gold transition-all duration-1000 ease-linear" style={{ width: `${progress}%` }} />
+        <div
+          className="h-full bg-gold transition-all duration-1000 ease-linear"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-8">

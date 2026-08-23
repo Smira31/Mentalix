@@ -81,18 +81,18 @@ export function useSynced(key, fallback, merge) {
   const [value, setValue] = useState(() => readLocal(key, fallback))
 
   const mergeRef = useRef(merge)
-  mergeRef.current = merge
+  useEffect(() => {
+    mergeRef.current = merge
+  })
 
   useEffect(() => {
     let alive = true
 
-    cloud.get(key).then((remote) => {
+    cloud.get(key).then(remote => {
       if (!alive || remote === null || remote === undefined) return
 
-      setValue((local) => {
-        const next = mergeRef.current
-          ? mergeRef.current(local, remote)
-          : remote
+      setValue(local => {
+        const next = mergeRef.current ? mergeRef.current(local, remote) : remote
 
         if (next === local) return local
 
@@ -108,12 +108,12 @@ export function useSynced(key, fallback, merge) {
   }, [key])
 
   const set = useCallback(
-    (next) => {
+    next => {
       setValue(next)
       writeLocal(key, next)
       cloud.set(key, next)
     },
-    [key],
+    [key]
   )
 
   return [value, set]

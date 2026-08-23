@@ -5,6 +5,8 @@ import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
 import { ChevronRight, ArrowUpRight } from 'lucide-react'
 
+import './Today.css'
+
 import Path from './Path'
 import YearPath from './YearPath'
 import CheckIn from './CheckIn'
@@ -211,11 +213,16 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
     }
   }, [onFlowChange])
 
-  useEffect(() => {
-    if (!user) return
-
+  /*
+   * todayFocus читается из localStorage при появлении user (Telegram-авторизация
+   * резолвится асинхронно) — синхронизация с внешним пропом без побочных
+   * эффектов, поэтому во время рендера, а не в useEffect.
+   */
+  const [seenFocusUserId, setSeenFocusUserId] = useState(null)
+  if (user && seenFocusUserId !== user.id) {
+    setSeenFocusUserId(user.id)
     setTodayFocus(readTodayFocusDay(user.id))
-  }, [user])
+  }
 
   async function refreshCheckin() {
     if (!user) return
@@ -758,7 +765,11 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero">
         {motionExperimentEnabled ? (
           <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
-            <SemanticGlyph kind="next-step" debugSource="Today.jsx" />
+            <SemanticGlyph
+              kind="next-step"
+              debugSource="Today.jsx"
+              className="mx-today-hero-art-glyph"
+            />
             <span>один следующий шаг</span>
           </div>
         ) : (

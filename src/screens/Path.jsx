@@ -7,7 +7,11 @@ const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 function WireframeMountain() {
   const rows = 5
   return (
-    <svg viewBox="0 0 400 160" className="absolute inset-0 w-full h-full opacity-70" preserveAspectRatio="none">
+    <svg
+      viewBox="0 0 400 160"
+      className="absolute inset-0 w-full h-full opacity-70"
+      preserveAspectRatio="none"
+    >
       <defs>
         <filter id="mtn-glow">
           <feGaussianBlur stdDeviation="2" result="blur" />
@@ -48,7 +52,10 @@ export function TickGauge({ value, max, sublabel, size = 160 }) {
   const totalTicks = 40
   const filledTicks = Math.round(percent * totalTicks)
   return (
-    <div className="relative mx-auto flex items-center justify-center" style={{ width: size, height: size }}>
+    <div
+      className="relative mx-auto flex items-center justify-center"
+      style={{ width: size, height: size }}
+    >
       <svg viewBox="0 0 200 200" className="absolute inset-0">
         {Array.from({ length: totalTicks }).map((_, i) => {
           const angle = (i / totalTicks) * 360
@@ -61,7 +68,10 @@ export function TickGauge({ value, max, sublabel, size = 160 }) {
           return (
             <line
               key={i}
-              x1={x1} y1={y1} x2={x2} y2={y2}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
               stroke={isFilled ? '#C9A227' : 'rgba(243,233,221,0.12)'}
               strokeWidth={3}
               strokeLinecap="round"
@@ -107,7 +117,7 @@ function GoalCreateScreen({ onCreate, onCancel }) {
   const [saving, setSaving] = useState(false)
 
   function set(field) {
-    return (e) => setDraft((d) => ({ ...d, [field]: e.target.value }))
+    return e => setDraft(d => ({ ...d, [field]: e.target.value }))
   }
 
   async function submit() {
@@ -281,7 +291,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
       <h3 className="text-sm text-cream mb-2">Привычки</h3>
       {goal.habits.length > 0 ? (
         <div className="rounded-2xl bg-emerald-light/20 border border-cream/10 divide-y divide-cream/10">
-          {goal.habits.map((h) => (
+          {goal.habits.map(h => (
             <div key={h.id} className="px-4 py-3 text-sm text-cream">
               {h.name}
             </div>
@@ -304,25 +314,29 @@ export default function Path({ user }) {
 
   useEffect(() => {
     if (!user) return
-    load()
-  }, [user])
 
-  async function load() {
-    setLoading(true)
-    try {
-      const g = await api.goals.list(user.id)
-      setGoals(g)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
+    let active = true
+
+    ;(async () => {
+      try {
+        const g = await api.goals.list(user.id)
+        if (active) setGoals(g)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        if (active) setLoading(false)
+      }
+    })()
+
+    return () => {
+      active = false
     }
-  }
+  }, [user])
 
   async function createGoal(draft) {
     try {
       const goal = await api.goals.create(user.id, draft)
-      setGoals((prev) => [...prev, goal])
+      setGoals(prev => [...prev, goal])
       setShowCreate(false)
     } catch (e) {
       console.error(e)
@@ -332,7 +346,7 @@ export default function Path({ user }) {
   async function deleteGoal(goalId) {
     try {
       await api.goals.remove(goalId)
-      setGoals((prev) => prev.filter((g) => g.id !== goalId))
+      setGoals(prev => prev.filter(g => g.id !== goalId))
       setSelectedGoal(null)
     } catch (e) {
       console.error(e)
@@ -347,11 +361,7 @@ export default function Path({ user }) {
 
   if (selectedGoal) {
     return (
-      <GoalDetail
-        goal={selectedGoal}
-        onBack={() => setSelectedGoal(null)}
-        onDelete={deleteGoal}
-      />
+      <GoalDetail goal={selectedGoal} onBack={() => setSelectedGoal(null)} onDelete={deleteGoal} />
     )
   }
 
@@ -363,7 +373,7 @@ export default function Path({ user }) {
         <EmptyGoals onCreate={() => setShowCreate(true)} />
       ) : (
         <>
-          {goals.map((g) => (
+          {goals.map(g => (
             <GoalCard key={g.id} goal={g} onOpen={setSelectedGoal} />
           ))}
           <button
