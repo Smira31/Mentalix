@@ -17,10 +17,10 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
-## MXL-UI-LAB-MY-PATH-001 (готово к диффу, ждёт подтверждения владельца)
+## MXL-UI-LAB-MY-PATH-001 (PR открыт, не смёржен)
 
-- **Статус: ветка `feat/mxl-ui-lab-my-path-glyph-001`, ещё не закоммичено —
-  явное подтверждение владельца перед commit/push не получено.**
+- **Статус: ветка `feat/mxl-ui-lab-my-path-glyph-001`, PR #140 открыт,
+  ожидает review/merge владельцем.**
 - [x] Предоставленный владельцем SVG-актив (1024×1024, компас/путь с золотой
       точкой) встроен как React-компонент `src/components/ui-lab/MyPathGlyph.jsx`
       по образцу `SemanticGlyph.jsx`.
