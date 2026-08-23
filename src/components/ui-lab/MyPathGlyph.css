@@ -6,7 +6,12 @@
 }
 
 .mx-my-path__backdrop {
-  fill: #000;
+  /*
+   * Токен, а не #000: карточка-хост в ui-lab (.mx-lab-stage) и артбед на
+   * проде оба используют --c-artbed/--c-card (9 9 9) — тот же приём, что
+   * и у настоящих карточек практик (bg-artbed), а не жёсткий чёрный.
+   */
+  fill: rgb(var(--c-artbed));
 }
 
 .mx-my-path__figure {
@@ -21,7 +26,13 @@
 
 .mx-my-path__traces path {
   vector-effect: non-scaling-stroke;
-  stroke: rgba(237, 189, 96, 0.55);
+  /*
+   * Приглушённый серый, не золото: золотой — только у акцентной точки
+   * (.mx-my-path__gold), как на карточке «Никотин» в проде. Раньше здесь
+   * стоял rgba(237, 189, 96, ...) — это ровно RGB токена --c-gold,
+   * из-за чего линии всё время прорисовки казались золотыми.
+   */
+  stroke: rgb(var(--c-line-secondary) / 0.55);
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-linejoin: round;
