@@ -17,6 +17,21 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
+## MXL-DATA-RITUAL-CATEGORY-001: скрытое поле category у ритуала (в работе)
+
+- **Статус: ветка `feat/ritual-category-field`, ожидает PR и мёржа.**
+  Выравнивание структуры данных ритуала и аскезы вне рамок текущей P0
+  (`MXL-UI-LAB-SHOWCASE-001`).
+- [x] `EMPTY_DRAFT` в `Rituals.jsx` дополнен `category: 'psycho'` — тем же
+      фиксированным значением, что уже жёстко задано в `CreateAscezaScreen`
+      (`Ascezas.jsx`). У ритуалов нет своего списка `CATEGORIES`, владелец
+      подтвердил переиспользовать значение аскезы, а не заводить отдельное.
+- [x] Видимый UI не менялся — выбора категории по-прежнему нет ни на
+      экране создания ритуала, ни аскезы.
+- [x] Совместимость с backend-моделью Ritual (`mentalix-bot`) подтверждена
+      владельцем напрямую, без чтения кода бэкенда (он вне этого репозитория).
+- [x] `npm run lint` / `npm run build` — зелёные. Деталь — в `CHANGES.md`.
+
 ## eslint.config.js: ignore локальных build-артефактов (в работе)
 
 - **Статус: ветка `chore/eslint-ignore-local-artifacts`, ожидает PR и мёржа.**

@@ -31,6 +31,7 @@ import '../components/practices/SceneLayout.css'
  */
 const EMPTY_DRAFT = {
   name: '',
+  category: 'psycho',
   goal: '',
   min_version: '',
   optimal_version: '',
