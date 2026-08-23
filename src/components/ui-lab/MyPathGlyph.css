@@ -1,0 +1,177 @@
+.mx-my-path {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mx-my-path__backdrop {
+  /*
+   * Токен, а не #000: карточка-хост в ui-lab (.mx-lab-stage) и артбед на
+   * проде оба используют --c-artbed/--c-card (9 9 9) — тот же приём, что
+   * и у настоящих карточек практик (bg-artbed), а не жёсткий чёрный.
+   */
+  fill: rgb(var(--c-artbed));
+}
+
+.mx-my-path__figure {
+  opacity: 1;
+}
+
+.mx-my-path__gold {
+  opacity: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.mx-my-path__traces path {
+  vector-effect: non-scaling-stroke;
+  /*
+   * Приглушённый серый, не золото: золотой — только у акцентной точки
+   * (.mx-my-path__gold), как на карточке «Никотин» в проде. Раньше здесь
+   * стоял rgba(237, 189, 96, ...) — это ровно RGB токена --c-gold,
+   * из-за чего линии всё время прорисовки казались золотыми.
+   */
+  stroke: rgb(var(--c-line-secondary) / 0.55);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: 0;
+}
+
+/*
+ * Таймы и кривые сверены с MENTALIX_SEMANTIC_MOTION.md §4 и с уже
+ * отгруженными медленными циклами SemanticGlyph.css (untangle/unspool/
+ * narrow/finish — везде 6.4s). Документ отдаёт cubic-bezier(0.77, 0, 0.175, 1)
+ * самому движению, а cubic-bezier(0.23, 1, 0.32, 1) — только быстрому
+ * отклику; в SemanticGlyph.css эта же граница проходит по факту: .77 — на
+ * каждом протяжённом цикле (contour/boundary/breath и т.д.), .23 — только
+ * на коротком «всплытии» точки (mx-semantic-signal/-follow) внутри давно
+ * идущего цикла. Прежняя версия ставила .23 на весь долгий draw — кривая
+ * с P1=(0.23,1) выходит на 100% почти сразу и весь оставшийся отрезок
+ * просто стоит, отсюда и ощущение рывка. Линии и фигура переведены на .77;
+ * .23 оставлен только на кратком появлении золотой точки (тот же приём,
+ * что и у сигнала в SemanticGlyph). Пульсация — колебание вокруг
+ * состояния, тоже на .77, и стартует только после дорисовки линий
+ * (animation-delay = длительности draw-фазы).
+ */
+.mx-my-path[data-animated='true'] .mx-my-path__figure {
+  animation: mx-my-path-figure 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__trace--axis {
+  animation: mx-my-path-trace-axis 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__trace--main {
+  animation: mx-my-path-trace-main 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__trace--branch {
+  animation: mx-my-path-trace-branch 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.mx-my-path[data-animated='true'] .mx-my-path__gold {
+  animation:
+    mx-my-path-gold-appear 6.4s cubic-bezier(0.23, 1, 0.32, 1) both,
+    mx-my-path-gold-pulse 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite 6.4s;
+}
+
+@keyframes mx-my-path-trace-axis {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  50% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes mx-my-path-trace-main {
+  0%,
+  12% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  75% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes mx-my-path-trace-branch {
+  0%,
+  28% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  88% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  96% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes mx-my-path-figure {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes mx-my-path-gold-appear {
+  0%,
+  88% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes mx-my-path-gold-pulse {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-my-path * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

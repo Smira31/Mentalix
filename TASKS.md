@@ -17,6 +17,55 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
+## MXL-UI-LAB-MY-PATH-001 (PR открыт, не смёржен)
+
+- **Статус: ветка `feat/mxl-ui-lab-my-path-glyph-001`, PR #140 открыт,
+  ожидает review/merge владельцем.**
+- [x] Предоставленный владельцем SVG-актив (1024×1024, компас/путь с золотой
+      точкой) встроен как React-компонент `src/components/ui-lab/MyPathGlyph.jsx`
+      по образцу `SemanticGlyph.jsx`.
+- [x] Анимация появления: `stroke-dashoffset` по трём линиям (ось, основной
+      силуэт, боковая ветвь), затем проявление фигуры — 6.4s на
+      `cubic-bezier(0.77, 0, 0.175, 1)` (то же значение длительности и та же
+      кривая, что у протяжённых циклов `SemanticGlyph.css`: `untangle`,
+      `unspool`, `narrow`, `finish`). Короткое появление золотой точки —
+      на `cubic-bezier(0.23, 1, 0.32, 1)`, по образцу `mx-semantic-signal`.
+      Золотая точка ждёт конца прорисовки (`animation-delay` 6.4s) и
+      пульсирует на `cubic-bezier(0.77, 0, 0.175, 1)`.
+      `prefers-reduced-motion: reduce` отключает обе анимации.
+- [x] **Правка после фидбека владельца (23.08.2026):** анимация ощущалась
+      слишком быстрой/резкой — прежняя кривая `cubic-bezier(0.23, 1, 0.32, 1)`
+      на долгом сегменте выходит на 100% почти сразу, остаток времени рисунок
+      просто стоял. Переведено на `cubic-bezier(0.77, 0, 0.175, 1)` (см.
+      выше и `CHANGES.md`); `CardSystemGlyph` как отдельный компонент
+      проверен и не найден — объединён в `SemanticGlyph` в
+      `MXL-GLYPH-UNIFY-001`. Ограничения пилота (только `ui-lab`, один
+      `--c-gold`, тактильный `scale(0.97–0.985)`, без прод-деплоя) не
+      менялись. Проверено через Web Animations API (`pause()` +
+      `currentTime`) по контрольным точкам — прогресс плавный на всём
+      протяжении.
+- [x] Пилот подключён только в `UiExperiments.jsx` (эксперимент №25, `?ui_lab=1`);
+      `Rituals.jsx`/`Ascezas.jsx` не изменены. `npm run build` подтверждает, что
+      ui-lab чанк не попадает в prod-бандл.
+- [x] Ручная проверка в Chrome: полный цикл анимации (прорисовка → проявление
+      фигуры → появление и пульсация золотой точки) проверен через Web
+      Animations API/`getComputedStyle`; ошибок в консоли нет.
+- [x] `npm run lint` (точечно на новые/изменённые файлы) и `npm run build` —
+      зелёные.
+- [x] **Vercel Preview + Telegram (тот же механизм, что для
+      `feat/practices-final-ux-001`):** гейт `?ui_lab=1` в `main.jsx` расширен
+      на `VERCEL_ENV === 'preview'` (по образцу `motionKitEnabled`/
+      `cardLabEnabled`) — без этого ui-lab не собирался бы на Vercel вообще.
+      `scripts/preview-telegram.ps1` получил необязательный `-Path` для
+      ссылки в кнопке. Ветка задеплоена в `mentalix-preview` с
+      `-Path '?ui_lab=1'`; кнопка «Открыть Preview» отправлена владельцу в
+      Telegram через основной бот. `curl` подтвердил `HTTP 200` и реальный
+      HTML по ссылке с `?ui_lab=1` (SSO-блокировка Vercel обойдена отдельным
+      проектом `mentalix-preview` без deployment protection). Deployment
+      удалится автоматически через 1 час.
+- Перенос карточки «Мой путь» в реальные Askeza/Ritual — отдельное продуктовое
+  решение, этой задачей не покрыто.
+
 ## MXL-PRACTICES-CACHE-001 (закрыто)
 
 - **Статус: смёржено в `main` 23.08.2026 squash-мержем через PR #138
