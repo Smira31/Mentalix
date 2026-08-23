@@ -1,5 +1,26 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 23.08.2026 — MXL-PRACTICES-CATALOG-001 (закрыто, без нового diff)
+
+- При старте задачи «заменить плотную grid-стену Practices на спокойный
+  каталог/список» обнаружено: `Practices.jsx` на `main` уже не использует
+  grid (`PracticeCard`) — экран уже отрисован как список (`PracticeRow` +
+  `PracticeCategory`, категории «Доступно сейчас» / «Психологические
+  практики» / «Дальше / Скоро»). Изменение попало в `main` и в production
+  коммитом `819b200b` (22.08.2026, задокументирован под ID
+  `MXL-PRACTICES-KEYBOARD-ROLLBACK-001` про откат keyboard-эксперимента;
+  замена вёрстки — сохранённый «принятый» побочный эффект того коммита).
+- Владелец подтвердил вид экрана вживую (dev-сервер, `npm run dev`) и решил
+  закрыть `MXL-PRACTICES-CATALOG-001` без нового кода, зафиксировав факт в
+  документах. Flows, API, навигация, внутренние practice-экраны и кеш-
+  обвязка `MXL-PRACTICES-CACHE-001` не менялись и не были затронуты.
+- Ветка `feat/practices-catalog` не содержала коммитов — работа над ней не
+  начиналась. Мёртвый grid-код (`PracticeCard.jsx`, `CardSystem.css`)
+  остаётся отдельной находкой `MXL-CARDSYSTEM-DEADCODE-001`, вне scope.
+- Следующая P0 (по ранее согласованному с владельцем секвенированию в
+  `TASKS.md`): `MXL-UI-LAB-SHOWCASE-001`.
+- Backend, API, Render и Neon не затрагивались.
+
 ## 23.08.2026 — eslint.config.js: ignore локальных build-артефактов
 
 - `eslint .` подхватывал `.vercel/output/static/assets/*.js` (минифицированный
