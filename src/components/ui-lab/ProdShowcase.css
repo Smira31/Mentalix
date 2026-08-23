@@ -80,6 +80,37 @@
   transform: translateX(-50%);
 }
 
+/* Переключатель между витриной (?ui_lab=showcase) и списком экспериментов
+   (?ui_lab=1) — тот же класс и разметка, что в UiExperiments.css, под
+   собственным блоком стилей. */
+.mx-ui-lab-switch {
+  display: flex;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 4px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: rgb(var(--c-card));
+}
+
+.mx-ui-lab-switch a {
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.mx-ui-lab-switch a[aria-current='page'] {
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+}
+
 .mx-showcase-kicker {
   margin: 0;
   color: rgb(var(--c-muted));

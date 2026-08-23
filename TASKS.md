@@ -143,13 +143,30 @@ document.body)` и автозапуск биометрии в реальном T
       `Rituals`/`Ascezas`, `*Flow.jsx`, `QuoteView`/`PersonaPicker`/
       `Conversation`, data-dependent экраны) с краткой причиной каждого.
 - **Новые файлы:** `src/components/ui-lab/ProdShowcase.jsx`,
-  `src/components/ui-lab/ProdShowcase.css`. **Изменён:** `src/main.jsx` —
-  `?ui_lab=1` теперь отдаёт витрину, старые 25 экспериментов переехали на
-  `?ui_lab=experiments` (файл `UiExperiments.jsx` не менялся ни строкой).
+  `src/components/ui-lab/ProdShowcase.css`.
+- **Правка по просьбе владельца — видимая навигация между обеими частями
+  ui-lab.** Владелец хотел видеть список экспериментов и витрину
+  одновременно как два раздела, а не заменой одного другим. Маршруты
+  вернули к исходному смыслу: `?ui_lab=1` — список 25 экспериментов (как
+  до этой задачи), `?ui_lab=showcase` — новая витрина (было наоборот:
+  `?ui_lab=1` → витрина, `?ui_lab=experiments` → список). Добавлен общий
+  компонент `src/components/ui-lab/UiLabSwitch.jsx` — две обычные `<a
+href="?ui_lab=...">` ссылки (полная навигация, без клиентского роутера —
+  так же, как остальные флаги в `main.jsx` читаются один раз при загрузке
+  модуля), рендерится в шапке `UiExperiments.jsx` и `ProdShowcase.jsx`.
+  CSS (`.mx-ui-lab-switch`) продублирован в оба `*.css`-файла под теми же
+  токенами (`--c-border`/`--c-card`/`--c-card2`), не импортируя один файл
+  в другой — тот же принцип разделения, что уже был в `ProdShowcase.css`.
+  `UiExperiments.jsx` содержательно не менялся (добавлен только импорт и
+  вызов `<UiLabSwitch active="experiments" />` в шапке).
+- Проверено вручную (`npm run dev`, Chrome): переход по вкладке в обе
+  стороны меняет URL и контент без перезагрузки состояния, активная
+  вкладка подсвечена (`aria-current="page"`), список 25 экспериментов не
+  сломан.
 - Backend, API, Render, Neon, продуктовые экраны не менялись.
 - Осталось для закрытия: новый Preview с обновлённым визуалом, ручной
-  Telegram/iPhone gate (`?ui_lab=1` и `?ui_lab=experiments` оба на реальном
-  устройстве), перевод PR #149 из черновика.
+  Telegram/iPhone gate (`?ui_lab=1` и `?ui_lab=showcase` оба на реальном
+  устройстве, включая переключатель), перевод PR #149 из черновика.
 
 ## MXL-UI-LAB-SHOWCASE-001 — идея и пре-мортем (для истории)
 

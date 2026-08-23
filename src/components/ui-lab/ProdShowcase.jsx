@@ -4,6 +4,7 @@ import MazeLogo from '../MazeLogo'
 import SemanticGlyph from '../SemanticGlyph'
 import BottomNavigation from '../BottomNavigation'
 import LinkWebAccount from '../../screens/LinkWebAccount'
+import UiLabSwitch from './UiLabSwitch'
 import './ProdShowcase.css'
 
 /*
@@ -134,6 +135,8 @@ export default function ProdShowcase() {
         </div>
 
         <p className="mx-showcase-kicker">Mentalix · живая витрина</p>
+
+        <UiLabSwitch active="showcase" />
 
         <h1>Реальные компоненты, не копии.</h1>
 

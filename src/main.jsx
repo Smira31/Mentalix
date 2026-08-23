@@ -11,11 +11,13 @@ const uiLabEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'prev
 
 const uiLabParam = new URLSearchParams(window.location.search).get('ui_lab')
 
-const uiLabRequested = uiLabEnabled && uiLabParam === '1'
+// ?ui_lab=1 — список из 25 изолированных экспериментов (как было до
+// MXL-UI-LAB-SHOWCASE-001). ?ui_lab=showcase — новая живая витрина
+// прод-компонентов. Внутри каждой страницы есть видимый переключатель
+// (UiLabSwitch) между ними.
+const uiLabExperimentsRequested = uiLabEnabled && uiLabParam === '1'
 
-// Старые 25 изолированных экспериментов (MXL-UI-LAB-MY-PATH-*, MXL-UI-LAB-SHOWCASE-001
-// их не трогает) остаются доступны по отдельному значению флага.
-const uiLabExperimentsRequested = uiLabEnabled && uiLabParam === 'experiments'
+const uiLabShowcaseRequested = uiLabEnabled && uiLabParam === 'showcase'
 
 const motionKitEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 
@@ -82,7 +84,7 @@ function RootScreen() {
     )
   }
 
-  if (uiLabRequested && ProdShowcase) {
+  if (uiLabShowcaseRequested && ProdShowcase) {
     return (
       <Suspense fallback={<div className="min-h-[100dvh] bg-emerald-deep" />}>
         <ProdShowcase />
