@@ -11,6 +11,11 @@ import './ProdShowcase.css'
  *
  * Формат карточки согласован владельцем на пилоте (MazeLogo): путь файла →
  * название → живой рендер → «Как реагирует» одним абзацем без маркетинга.
+ * Визуальный язык (hairline blueprint — тонкие серые линии на почти-чёрном
+ * фоне, один золотой акцент, без заливок/градиентов) сверен с
+ * UiExperiments.css и повторён здесь под своими классами — тот файл не
+ * импортируется и не менялся, чтобы не связывать две независимые
+ * ui-lab-страницы одной таблицей стилей.
  *
  * Список допущенных/исключённых компонентов — результат пре-мортема
  * (TASKS.md, MXL-UI-LAB-SHOWCASE-001) и последующей проверки кода перед
@@ -82,17 +87,24 @@ const NOT_PREVIEWABLE = [
   },
 ]
 
-function ShowcaseCard({ path, title, note, children }) {
+function ShowcaseCard({ number, path, title, note, children }) {
   return (
     <section className="mx-showcase-card">
-      <p className="mx-showcase-card__path">{path}</p>
-      <h2 className="mx-showcase-card__title">{title}</h2>
+      <div className="mx-showcase-card__head">
+        <span className="mx-showcase-card__number">{number}</span>
 
-      <div className="mx-showcase-card__stage">{children}</div>
+        <div>
+          <p className="mx-showcase-card__path">{path}</p>
 
-      <p className="mx-showcase-card__note">
-        <strong>Как реагирует:</strong> {note}
-      </p>
+          <h2>{title}</h2>
+
+          <p className="mx-showcase-card__note">
+            <strong>Как реагирует:</strong> {note}
+          </p>
+        </div>
+      </div>
+
+      <div className="mx-showcase-stage">{children}</div>
     </section>
   )
 }
@@ -117,8 +129,14 @@ export default function ProdShowcase() {
   return (
     <main className="mx-showcase">
       <header className="mx-showcase-header">
+        <div className="mx-showcase-header__mark" aria-hidden="true">
+          <span />
+        </div>
+
         <p className="mx-showcase-kicker">Mentalix · живая витрина</p>
+
         <h1>Реальные компоненты, не копии.</h1>
+
         <p className="mx-showcase-intro">
           Импорт из настоящего прод-кода, не копии. «Сочные» продуктовые экраны сюда не входят —
           список и причины ниже, в «Нет предпросмотра».
@@ -127,6 +145,7 @@ export default function ProdShowcase() {
 
       <div className="mx-showcase-list">
         <ShowcaseCard
+          number="01"
           path="src/components/MazeLogo.jsx"
           title="Лабиринт-логотип"
           note="progress (0..1) золотом заливает пройденную часть лабиринта, точка едет по маршруту следом. Внутреннего состояния нет — чистый SVG от пропов; ниже три статичных снимка прогресса одного и того же компонента."
@@ -139,6 +158,7 @@ export default function ProdShowcase() {
         </ShowcaseCard>
 
         <ShowcaseCard
+          number="02"
           path="src/components/SemanticGlyph.jsx"
           title="Смысловые знаки"
           note="kind выбирает один из готовых SVG-знаков (ritual, asceza, дыхание, персоны AI и т.д.) — так реальные экраны сопоставляют категорию данных со знаком через semanticKindFor*(). Ниже подмножество из 19 доступных kind, без анимации (animated=false — на витрине статично)."
@@ -156,6 +176,7 @@ export default function ProdShowcase() {
         </ShowcaseCard>
 
         <ShowcaseCard
+          number="03"
           path="src/components/BottomNavigation.jsx"
           title="Нижняя навигация"
           note="position: fixed в прод-коде — здесь контейнер карточки задаёт transform, поэтому CSS считает его новым containing block и фиксирует панель внутри карточки, а не по вьюпорту (сам компонент не менялся). Клик по вкладке или сворачивание — обычный локальный useState этой карточки, не роутинг приложения."
@@ -164,6 +185,7 @@ export default function ProdShowcase() {
         </ShowcaseCard>
 
         <ShowcaseCard
+          number="04"
           path="src/screens/LinkWebAccount.jsx"
           title="Связать с сайтом"
           note="статичный экран без user и без API. Кнопка «Получить код у бота» открывает реальную Telegram-ссылку (или новую вкладку вне Telegram) — переход происходит взаправду, но ничего не сохраняет и не отправляет."
@@ -173,21 +195,29 @@ export default function ProdShowcase() {
       </div>
 
       <section className="mx-showcase-excluded">
-        <h2>Нет предпросмотра</h2>
+        <p className="mx-showcase-kicker">Нет предпросмотра</p>
+
         <p className="mx-showcase-excluded__intro">
           Прод под нужды витрины не дорабатывается (правило 1 пре-мортема) — эти компоненты нельзя
           показать «как есть» без риска для страницы или живого backend.
         </p>
+
         <ul>
           {NOT_PREVIEWABLE.map(item => (
             <li key={item.name}>
-              <strong>{item.name}</strong>
               <span className="mx-showcase-excluded__path">{item.path}</span>
+              <strong>{item.name}</strong>
               <p>{item.reason}</p>
             </li>
           ))}
         </ul>
       </section>
+
+      <footer className="mx-showcase-footer">
+        <span />
+        Прототипы витрины не подключены к API
+        <span />
+      </footer>
     </main>
   )
 }
