@@ -17,6 +17,24 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
+## MXL-UI-LAB-MY-PATH-ACCENT-001 (закрыто)
+
+- **Статус: PR #142 (`fix/ritual-askeza-style`, 4 улучшения в общем
+  `SemanticGlyph.css`/`.jsx`) закрыт владельцем без мержа — правки задевали
+  прод-карточки (например «Никотин»), трогать общий компонент не нужно.
+  Вместо этого 2 из 4 улучшений, применимые к изолированному `MyPathGlyph`,
+  перенесены отдельной веткой `fix/my-path-glyph-style` → PR #<TBD>.**
+- [x] Второй акцентный цвет (`data-accent='secondary'`, `#C77D7A`) — проп
+      `accent` на `MyPathGlyph`, эксперимент №25 показывает оба варианта
+      рядом.
+- [x] Иерархия толщины линий: `trace--main` толще (`3`), `trace--axis`/
+      `trace--branch` тоньше (`1.3`, было `2.4` у всех).
+- Не перенесены (неприменимо к структуре `MyPathGlyph`): бледнее
+  направляющие — у глифа нет crosshair/horizon guides; фикс золотого
+  цвета при прорисовке — уже сделан раньше в рамках `MXL-UI-LAB-MY-PATH-001`.
+- `SemanticGlyph.css`/`.jsx` не менялись.
+- [x] `npm run lint` (точечно), `npm run build` — зелёные.
+
 ## MXL-UI-LAB-MY-PATH-001 (закрыто)
 
 - **Статус: смёржено в `main` 23.08.2026 squash-мержем через PR #140

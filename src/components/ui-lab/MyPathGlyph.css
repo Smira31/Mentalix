@@ -22,6 +22,12 @@
   opacity: 1;
   transform-box: fill-box;
   transform-origin: center;
+  fill: #c38f3c;
+}
+
+/* Второй акцентный цвет — вариант для сравнения (см. эксперимент №25) */
+.mx-my-path[data-accent='secondary'] .mx-my-path__gold {
+  fill: #c77d7a;
 }
 
 .mx-my-path__traces path {
@@ -33,12 +39,17 @@
    * из-за чего линии всё время прорисовки казались золотыми.
    */
   stroke: rgb(var(--c-line-secondary) / 0.55);
-  stroke-width: 2.4;
+  stroke-width: 1.3;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 0;
   opacity: 0;
+}
+
+/* Иерархия толщины: главный силуэт заметнее, ось и боковая ветвь — второстепенны */
+.mx-my-path__trace--main {
+  stroke-width: 3;
 }
 
 /*

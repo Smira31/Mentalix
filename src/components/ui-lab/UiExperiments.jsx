@@ -1683,8 +1683,36 @@ function MyPathCardExperiment({ mode }) {
       mode={mode}
     >
       <div className="mx-lab-my-path">
-        <div className="mx-lab-my-path__visual">
-          <MyPathGlyph key={drawKey} animated={mode === 'after'} />
+        <div
+          className="mx-lab-my-path__visual"
+          style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <MyPathGlyph key={`primary-${drawKey}`} animated={mode === 'after'} />
+            <small style={{ opacity: 0.68 }}>Основной (золото)</small>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem',
+            }}
+          >
+            <MyPathGlyph
+              key={`secondary-${drawKey}`}
+              animated={mode === 'after'}
+              accent="secondary"
+            />
+            <small style={{ opacity: 0.68 }}>Вариант (#C77D7A)</small>
+          </div>
         </div>
 
         <div className="mx-lab-my-path__copy">
