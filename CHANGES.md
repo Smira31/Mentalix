@@ -1,5 +1,29 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 23.08.2026 — MXL-UI-LAB-MY-PATH-001 (Vercel Preview + Telegram)
+
+- `?ui_lab=1` (и вместе с ним карточка «Мой путь») был доступен только в
+  `npm run dev` — на любом Vercel-деплое (включая Preview) `import.meta.env.DEV`
+  ложный, поэтому `UiExperiments` не попадал в бандл вообще. Гейт в `main.jsx`
+  расширен до `import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'`
+  — тот же паттерн, что уже используют `motionKitEnabled`/`cardLabEnabled` для
+  `PracticeMotionKit`/`CardDirectionsLab`. На production (`VERCEL_ENV ===
+'production'`) поведение не меняется — ui-lab по-прежнему не попадает в
+  prod-бандл, `npm run build` перепроверен.
+- `scripts/preview-telegram.ps1` (стандартный механизм temporary Vercel
+  preview-деплой + Telegram Bot API `sendMessage` с `inline_keyboard`,
+  тот же, что использовался для `feat/practices-final-ux-001`) получил
+  необязательный параметр `-Path` (по умолчанию `''`) — добавляет суффикс к
+  ссылке в кнопке «Открыть Preview» и в текст сообщения, не меняя поведение
+  без параметра.
+- Ветка `feat/mxl-ui-lab-my-path-glyph-001` задеплоена в отдельный Vercel
+  project `mentalix-preview` (deployment protection отключён — обход
+  SSO-блокировки Vercel в Telegram WebView) с `-Path '?ui_lab=1'`; ссылка на
+  кнопку отправлена владельцу через основной бот. `curl` подтвердил `HTTP 200`
+  и реальный HTML приложения по адресу с `?ui_lab=1` (без редиректа на Vercel
+  SSO). Deployment автоматически удаляется через 1 час тем же
+  cleanup-механизмом, что и раньше.
+
 ## 23.08.2026 — MXL-UI-LAB-MY-PATH-001
 
 - Предоставленный владельцем SVG-актив (1024×1024, компас/путь с золотой

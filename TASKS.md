@@ -32,12 +32,23 @@
       `prefers-reduced-motion: reduce` отключает обе анимации.
 - [x] Пилот подключён только в `UiExperiments.jsx` (эксперимент №25, `?ui_lab=1`);
       `Rituals.jsx`/`Ascezas.jsx` не изменены. `npm run build` подтверждает, что
-      ui-lab чанк (за `import.meta.env.DEV`) не попадает в prod-бандл.
+      ui-lab чанк не попадает в prod-бандл.
 - [x] Ручная проверка в Chrome: полный цикл анимации (прорисовка → проявление
       фигуры → появление и пульсация золотой точки) проверен через Web
       Animations API/`getComputedStyle`; ошибок в консоли нет.
 - [x] `npm run lint` (точечно на новые/изменённые файлы) и `npm run build` —
       зелёные.
+- [x] **Vercel Preview + Telegram (тот же механизм, что для
+      `feat/practices-final-ux-001`):** гейт `?ui_lab=1` в `main.jsx` расширен
+      на `VERCEL_ENV === 'preview'` (по образцу `motionKitEnabled`/
+      `cardLabEnabled`) — без этого ui-lab не собирался бы на Vercel вообще.
+      `scripts/preview-telegram.ps1` получил необязательный `-Path` для
+      ссылки в кнопке. Ветка задеплоена в `mentalix-preview` с
+      `-Path '?ui_lab=1'`; кнопка «Открыть Preview» отправлена владельцу в
+      Telegram через основной бот. `curl` подтвердил `HTTP 200` и реальный
+      HTML по ссылке с `?ui_lab=1` (SSO-блокировка Vercel обойдена отдельным
+      проектом `mentalix-preview` без deployment protection). Deployment
+      удалится автоматически через 1 час.
 - Перенос карточки «Мой путь» в реальные Askeza/Ritual — отдельное продуктовое
   решение, этой задачей не покрыто.
 
