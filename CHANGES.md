@@ -1,5 +1,35 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 23.08.2026 — MXL-UI-LAB-SHOWCASE-001 (реализовано, ждёт Preview/Telegram gate)
+
+- Главный экран ui-lab `?ui_lab=1` теперь отдаёт живую витрину реальных
+  прод-компонентов (`src/components/ui-lab/ProdShowcase.jsx`) вместо
+  списка 25 экспериментов; сами эксперименты не тронуты и переехали на
+  `?ui_lab=experiments` (правка только в `src/main.jsx`, `UiExperiments.jsx`
+  не менялся ни строкой).
+- Перед стартом при чтении исходников обнаружено расхождение с пре-мортемом
+  задачи: пункт 5 числил `AppLock`/`Breathing`/`Onboarding` подтверждённо
+  проходящими без «нет предпросмотра», но все три безусловно вызывают
+  `useFullscreenSurface()` (глобальный `document.body.style.overflow`,
+  у `AppLock` ещё `createPortal(..., document.body)` и автозапуск
+  биометрии в Telegram) — то самое правило 3, которым пре-мортем уже
+  исключил `Rituals`/`Ascezas`. Отдельно найден непредусмотренный риск:
+  `WebAuthScreen` не требует `user`, но шлёт живой запрос в
+  production `/api/auth` (Render/Neon). Владелец подтвердил: все четыре —
+  «нет предпросмотра».
+- В витрину вошли: `MazeLogo`, `SemanticGlyph` (8 из 19 `kind`),
+  `BottomNavigation` (её `position: fixed` контейнирован CSS-обёрткой
+  карточки через `transform`, сам компонент не менялся), `LinkWebAccount`.
+  Формат заметки «как реагирует» согласован с владельцем на пилоте
+  (`MazeLogo`) перед тиражированием на остальные три, по пункту 6
+  пре-мортема.
+- `npm run lint` — 0/0. `npm run build` — зелёный; в `dist/` меток витрины
+  нет (не входит в production build, как `card_lab`/`motion_kit`).
+  `?ui_lab=1` и `?ui_lab=experiments` проверены вручную через `npm run dev`
+  без ошибок консоли.
+- Backend, API, Render, Neon и продуктовые экраны не менялись. Ручной
+  Preview/Telegram gate — отдельный шаг, ещё не пройден.
+
 ## 23.08.2026 — MXL-PRACTICES-CATALOG-001 (закрыто, без нового diff)
 
 - При старте задачи «заменить плотную grid-стену Practices на спокойный

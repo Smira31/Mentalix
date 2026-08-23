@@ -94,7 +94,49 @@
 - Код не менялся в рамках этой задачи, `npm run lint`/`npm run build` не
   требовались.
 
-## MXL-UI-LAB-SHOWCASE-001 (активная P0, пре-мортем пройден)
+## MXL-UI-LAB-SHOWCASE-001 (реализовано, ждёт ручного Preview/Telegram gate)
+
+- **Статус: код готов в ветке `feat/ui-lab-showcase-001`, PR не открыт.**
+  `npm run lint` (0/0) и `npm run build` — зелёные; в `dist/` меток витрины
+  нет (не попадает в production build, тот же паттерн, что у `card_lab`/
+  `motion_kit`). `?ui_lab=1` и `?ui_lab=experiments` вручную проверены
+  через `npm run dev` — без ошибок консоли, `UiExperiments.jsx` не тронут
+  (единственная ошибка в консоли на `?ui_lab=experiments` — существующая
+  `SemanticGlyph kind "template"`, не из этой задачи).
+- **Найденное перед стартом расхождение:** пункт 5 пре-мортема числил
+  `AppLock`, `Breathing`, `Onboarding` подтверждённо проходящими без «нет
+  предпросмотра», но при чтении исходников все три оказались нарушающими
+  правило 3 того же пре-мортема — `AppLock`/`Onboarding` безусловно
+  вызывают `useFullscreenSurface()` с первого рендера (глобальный
+  `document.body.style.overflow`, у `AppLock` ещё `createPortal(...,
+document.body)` и автозапуск биометрии в реальном Telegram); `Breathing`
+  безопасен только в экране выбора длительности — кнопка «Начать
+  дыхание» уводит в тот же portal+scroll-лок. Отдельно найден риск, не
+  учтённый пре-мортемом: `WebAuthScreen` не требует `user`, но
+  `requestCode()` бьёт в живой `/api/auth` — на Preview это настоящий
+  Render/Neon. Владелец подтвердил: все четыре — «нет предпросмотра».
+- [x] Итоговый допущенный набор (подтверждён кодом и живым запуском):
+      `MazeLogo`, `SemanticGlyph` (8 из 19 `kind`), `BottomNavigation`
+      (CSS-контейнирование `position: fixed` через `transform` на
+      обёртке карточки, сам компонент не менялся), `LinkWebAccount`
+      (статичный экран, кнопка открывает реальную Telegram-ссылку —
+      предупреждено в заметке).
+- [x] Формат заметки «как реагирует» согласован с владельцем на пилоте
+      (`MazeLogo`) перед тиражированием на остальные три карточки — по
+      пункту 6 пре-мортема.
+- [x] Секция «Нет предпросмотра» — список исключённых компонентов
+      (`AppLock`, `Onboarding`, `Breathing`, `WebAuthScreen`,
+      `Rituals`/`Ascezas`, `*Flow.jsx`, `QuoteView`/`PersonaPicker`/
+      `Conversation`, data-dependent экраны) с краткой причиной каждого.
+- **Новые файлы:** `src/components/ui-lab/ProdShowcase.jsx`,
+  `src/components/ui-lab/ProdShowcase.css`. **Изменён:** `src/main.jsx` —
+  `?ui_lab=1` теперь отдаёт витрину, старые 25 экспериментов переехали на
+  `?ui_lab=experiments` (файл `UiExperiments.jsx` не менялся ни строкой).
+- Backend, API, Render, Neon, продуктовые экраны не менялись.
+- Осталось для закрытия: PR, Preview, ручной Telegram/iPhone gate
+  (`?ui_lab=1` и `?ui_lab=experiments` оба на реальном устройстве).
+
+## MXL-UI-LAB-SHOWCASE-001 — идея и пре-мортем (для истории)
 
 - **Идея:** переделать главный экран ui-lab (`?ui_lab=1`) в живую витрину
   текущих реальных прод-компонентов Mentalix (импорт из реального кода,
