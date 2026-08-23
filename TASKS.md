@@ -17,6 +17,15 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
+## eslint.config.js: ignore локальных build-артефактов (в работе)
+
+- **Статус: ветка `chore/eslint-ignore-local-artifacts`, ожидает PR и мёржа.**
+  Тривиальная конфигурационная правка, вне рамок `MXL-LINT-CLEANUP-001`.
+- [x] `.vercel`, `artifacts`, `graphify-out` добавлены в `ignores`
+      `eslint.config.js` — `npm run lint` больше не подхватывает локальные
+      gitignored build-артефакты. Деталь — в `CHANGES.md`.
+- [x] `npm run lint` — 0 errors, 0 warnings.
+
 ## MXL-UI-LAB-MY-PATH-MOTION-001 (закрыто)
 
 - **Статус: смёржено в `main` 23.08.2026 squash-мержем через PR #144
