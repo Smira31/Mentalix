@@ -6,6 +6,7 @@ import { DayArc } from '../Motif'
 import SemanticGlyph from '../SemanticGlyph'
 import { DayThread, DayThreadTrigger, FocusMark, NextActionReveal } from '../TodayMotionExperiment'
 import MyPathGlyph from './MyPathGlyph'
+import UiLabSwitch from './UiLabSwitch'
 import './UiExperiments.css'
 
 const DURATION = 60_000
@@ -1763,6 +1764,8 @@ export default function UiExperiments() {
         </div>
 
         <p className="mx-lab-kicker">Mentalix · лаборатория интерфейса</p>
+
+        <UiLabSwitch active="experiments" />
 
         <h1>Движение, которое помогает сделать шаг.</h1>
 

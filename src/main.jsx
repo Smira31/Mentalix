@@ -9,8 +9,15 @@ const showcaseRequested =
 
 const uiLabEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 
-const uiLabRequested =
-  uiLabEnabled && new URLSearchParams(window.location.search).get('ui_lab') === '1'
+const uiLabParam = new URLSearchParams(window.location.search).get('ui_lab')
+
+// ?ui_lab=1 — список из 25 изолированных экспериментов (как было до
+// MXL-UI-LAB-SHOWCASE-001). ?ui_lab=showcase — новая живая витрина
+// прод-компонентов. Внутри каждой страницы есть видимый переключатель
+// (UiLabSwitch) между ними.
+const uiLabExperimentsRequested = uiLabEnabled && uiLabParam === '1'
+
+const uiLabShowcaseRequested = uiLabEnabled && uiLabParam === 'showcase'
 
 const motionKitEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 
@@ -31,6 +38,8 @@ const ArchetypeShowcase = import.meta.env.DEV
   : null
 
 const UiExperiments = uiLabEnabled ? lazy(() => import('./components/ui-lab/UiExperiments')) : null
+
+const ProdShowcase = uiLabEnabled ? lazy(() => import('./components/ui-lab/ProdShowcase')) : null
 
 const PracticeMotionKit = motionKitEnabled
   ? lazy(() => import('./components/ui-lab/PracticeMotionKit'))
@@ -67,10 +76,18 @@ function RootScreen() {
     )
   }
 
-  if (uiLabRequested && UiExperiments) {
+  if (uiLabExperimentsRequested && UiExperiments) {
     return (
       <Suspense fallback={<div className="min-h-[100dvh] bg-emerald-deep" />}>
         <UiExperiments />
+      </Suspense>
+    )
+  }
+
+  if (uiLabShowcaseRequested && ProdShowcase) {
+    return (
+      <Suspense fallback={<div className="min-h-[100dvh] bg-emerald-deep" />}>
+        <ProdShowcase />
       </Suspense>
     )
   }
