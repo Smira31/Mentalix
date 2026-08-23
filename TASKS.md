@@ -17,10 +17,20 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
-## MXL-UI-LAB-MY-PATH-001 (PR открыт, не смёржен)
+## MXL-UI-LAB-MY-PATH-001 (закрыто)
 
-- **Статус: ветка `feat/mxl-ui-lab-my-path-glyph-001`, PR #140 открыт,
-  ожидает review/merge владельцем.**
+- **Статус: смёржено в `main` 23.08.2026 squash-мержем через PR #140
+  (ветка `feat/mxl-ui-lab-my-path-glyph-001`, удалена — remote и local).
+  Живая проверка в Telegram пройдена и подтверждена владельцем.**
+- [x] **Правка после фидбека владельца (23.08.2026, цвет линий и фон
+      карточки):** во время прорисовки линий их цвет временно выглядел
+      золотым вместо приглушённого серого — `.mx-my-path__traces path`
+      был задан `stroke: rgba(237, 189, 96, 0.55)`, ровно RGB токена
+      `--c-gold`. Заменено на `rgb(var(--c-line-secondary) / 0.55)`;
+      золотой остался только у акцентной точки. Заодно фон карточки
+      (`.mx-my-path__backdrop`, был жёстко зашит `fill: #000`) переведён
+      на `rgb(var(--c-artbed))` — тот же токен, что у карточки-хоста
+      `.mx-lab-stage` в ui-lab. Подробности проверки — `CHANGES.md`.
 - [x] Предоставленный владельцем SVG-актив (1024×1024, компас/путь с золотой
       точкой) встроен как React-компонент `src/components/ui-lab/MyPathGlyph.jsx`
       по образцу `SemanticGlyph.jsx`.
