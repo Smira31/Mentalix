@@ -1,3 +1,7 @@
+param(
+  [string]$Path = ''
+)
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = 'Stop'
@@ -48,6 +52,8 @@ if ($health -notmatch '"status"\s*:\s*"ok"') {
   exit 1
 }
 
+$targetUrl = $previewUrl + $Path
+
 $expiresAt = (Get-Date).ToUniversalTime().AddHours(1).ToString('yyyy-MM-dd HH:mm:ss') + ' UTC'
 $header = ConvertFrom-Json '"Mentalix Preview \u0433\u043e\u0442\u043e\u0432"'
 $openLabel = ConvertFrom-Json '"\u041e\u0442\u043a\u0440\u044b\u0442\u044c Preview"'
@@ -55,8 +61,9 @@ $availability = ConvertFrom-Json '"\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u0
 $branchLabel = ConvertFrom-Json '"\u0412\u0435\u0442\u043a\u0430:"'
 $commitLabel = ConvertFrom-Json '"Commit:"'
 $note = ConvertFrom-Json '"\u042d\u0442\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f, production \u043d\u0435 \u0438\u0437\u043c\u0435\u043d\u0451\u043d."'
-$message = "$header`n`n$openLabel`n$availability`n`n$branchLabel $branch`n$commitLabel $shortSha`n`n$note"
-$button = @{ text = $openLabel; web_app = @{ url = $previewUrl } }
+$pathLine = if ($Path) { "`n" + $targetUrl } else { '' }
+$message = "$header`n`n$openLabel`n$availability`n`n$branchLabel $branch`n$commitLabel $shortSha$pathLine`n`n$note"
+$button = @{ text = $openLabel; web_app = @{ url = $targetUrl } }
 $payload = @{
   chat_id = $envValues['TELEGRAM_PREVIEW_CHAT_ID']
   text = $message

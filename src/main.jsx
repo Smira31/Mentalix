@@ -7,8 +7,10 @@ const showcaseRequested =
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('showcase') === 'archetypes'
 
+const uiLabEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+
 const uiLabRequested =
-  import.meta.env.DEV && new URLSearchParams(window.location.search).get('ui_lab') === '1'
+  uiLabEnabled && new URLSearchParams(window.location.search).get('ui_lab') === '1'
 
 const motionKitEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 
@@ -28,9 +30,7 @@ const ArchetypeShowcase = import.meta.env.DEV
   ? lazy(() => import('./components/archetype-art/ArchetypeShowcase'))
   : null
 
-const UiExperiments = import.meta.env.DEV
-  ? lazy(() => import('./components/ui-lab/UiExperiments'))
-  : null
+const UiExperiments = uiLabEnabled ? lazy(() => import('./components/ui-lab/UiExperiments')) : null
 
 const PracticeMotionKit = motionKitEnabled
   ? lazy(() => import('./components/ui-lab/PracticeMotionKit'))
