@@ -87,6 +87,15 @@ const AXIS_UPPER_D =
 const GOLD_POINT_D =
   'M511.485 400.647C506.187 400.391 502.077 395.925 502.262 390.624C502.447 385.322 506.857 381.153 512.161 381.267C517.464 381.38 521.692 385.734 521.65 391.039C521.608 396.343 517.311 400.629 512.007 400.659C511.833 400.66 511.659 400.656 511.485 400.647Z'
 
+/*
+ * Точка едет по контуру главного силуэта (не по оси/ветке — это самая
+ * заметная линия после MXL-UI-LAB-MY-PATH-ACCENT-001, ей же задана
+ * основная толщина). offset-anchor у .mx-my-path__gold наследует
+ * transform-origin: center (fill-box) — точка движется своим центром,
+ * форма не искажается.
+ */
+const WALKER_OFFSET_PATH = `path("${MAIN_SILHOUETTE_D}")`
+
 export default function MyPathGlyph({ className = '', animated = true, accent }) {
   return (
     <svg
@@ -106,25 +115,19 @@ export default function MyPathGlyph({ className = '', animated = true, accent })
       </g>
 
       <g className="mx-my-path__traces" fill="none">
-        <path
-          className="mx-my-path__trace mx-my-path__trace--axis"
-          d={AXIS_UPPER_D}
-          pathLength="1"
-        />
-        <path
-          className="mx-my-path__trace mx-my-path__trace--axis"
-          d={AXIS_LOWER_D}
-          pathLength="1"
-        />
-        <path
-          className="mx-my-path__trace mx-my-path__trace--main"
-          d={MAIN_SILHOUETTE_D}
-          pathLength="1"
-        />
-        <path className="mx-my-path__trace mx-my-path__trace--branch" d={BRANCH_D} pathLength="1" />
+        <path className="mx-my-path__trace mx-my-path__trace--axis" d={AXIS_UPPER_D} />
+        <path className="mx-my-path__trace mx-my-path__trace--axis" d={AXIS_LOWER_D} />
+        <path className="mx-my-path__trace mx-my-path__trace--main" d={MAIN_SILHOUETTE_D} />
+        <path className="mx-my-path__trace mx-my-path__trace--branch" d={BRANCH_D} />
       </g>
 
-      <path className="mx-my-path__gold" d={GOLD_POINT_D} />
+      <path className="mx-my-path__walker-trail" d={MAIN_SILHOUETTE_D} pathLength="1" fill="none" />
+
+      <path
+        className="mx-my-path__gold"
+        d={GOLD_POINT_D}
+        style={{ offsetPath: WALKER_OFFSET_PATH }}
+      />
     </svg>
   )
 }

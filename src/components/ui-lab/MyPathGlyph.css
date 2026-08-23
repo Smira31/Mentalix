@@ -18,33 +18,18 @@
   opacity: 1;
 }
 
-.mx-my-path__gold {
-  opacity: 1;
-  transform-box: fill-box;
-  transform-origin: center;
-  fill: #c38f3c;
-}
-
-/* Второй акцентный цвет — вариант для сравнения (см. эксперимент №25) */
-.mx-my-path[data-accent='secondary'] .mx-my-path__gold {
-  fill: #c77d7a;
-}
-
+/*
+ * Линии показаны сразу и полностью — путь уже существует, ничего не
+ * "дорисовывается". Раньше здесь была stroke-dashoffset-анимация
+ * прорисовки; владелец попросил статичный путь и движение перенести на
+ * акцентную точку (MXL-UI-LAB-MY-PATH-MOTION-001).
+ */
 .mx-my-path__traces path {
   vector-effect: non-scaling-stroke;
-  /*
-   * Приглушённый серый, не золото: золотой — только у акцентной точки
-   * (.mx-my-path__gold), как на карточке «Никотин» в проде. Раньше здесь
-   * стоял rgba(237, 189, 96, ...) — это ровно RGB токена --c-gold,
-   * из-за чего линии всё время прорисовки казались золотыми.
-   */
   stroke: rgb(var(--c-line-secondary) / 0.55);
   stroke-width: 1.3;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 0;
-  opacity: 0;
 }
 
 /* Иерархия толщины: главный силуэт заметнее, ось и боковая ветвь — второстепенны */
@@ -53,130 +38,70 @@
 }
 
 /*
- * Таймы и кривые сверены с MENTALIX_SEMANTIC_MOTION.md §4 и с уже
- * отгруженными медленными циклами SemanticGlyph.css (untangle/unspool/
- * narrow/finish — везде 6.4s). Документ отдаёт cubic-bezier(0.77, 0, 0.175, 1)
- * самому движению, а cubic-bezier(0.23, 1, 0.32, 1) — только быстрому
- * отклику; в SemanticGlyph.css эта же граница проходит по факту: .77 — на
- * каждом протяжённом цикле (contour/boundary/breath и т.д.), .23 — только
- * на коротком «всплытии» точки (mx-semantic-signal/-follow) внутри давно
- * идущего цикла. Прежняя версия ставила .23 на весь долгий draw — кривая
- * с P1=(0.23,1) выходит на 100% почти сразу и весь оставшийся отрезок
- * просто стоит, отсюда и ощущение рывка. Линии и фигура переведены на .77;
- * .23 оставлен только на кратком появлении золотой точки (тот же приём,
- * что и у сигнала в SemanticGlyph). Пульсация — колебание вокруг
- * состояния, тоже на .77, и стартует только после дорисовки линий
- * (animation-delay = длительности draw-фазы).
+ * Шлейф движения — тонкий акцентный оверлей того же контура, что и
+ * главный силуэт, растущий от начала пути до текущей позиции точки.
+ * Серая базовая линия (.mx-my-path__traces) при этом всегда полностью
+ * видна и не участвует в анимации — "путь не рисуется", рисуется
+ * только сам прогресс поверх уже существующего пути. Технически это
+ * тот же приём stroke-dasharray/-dashoffset с pathLength="1", что раньше
+ * рисовал линию целиком, но теперь применён только к акцентному
+ * оверлею и синхронизирован с offset-distance точки (тот же keyframes,
+ * та же длительность/кривая) — на любом кадре золотой оверлей доходит
+ * ровно до текущего положения точки, не дальше и не меньше.
  */
-.mx-my-path[data-animated='true'] .mx-my-path__figure {
-  animation: mx-my-path-figure 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+.mx-my-path__walker-trail {
+  fill: none;
+  stroke: rgb(var(--c-gold));
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
 }
 
-.mx-my-path[data-animated='true'] .mx-my-path__trace--axis {
-  animation: mx-my-path-trace-axis 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+.mx-my-path[data-accent='secondary'] .mx-my-path__walker-trail {
+  stroke: #c77d7a;
 }
 
-.mx-my-path[data-animated='true'] .mx-my-path__trace--main {
-  animation: mx-my-path-trace-main 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+.mx-my-path__gold {
+  transform-box: fill-box;
+  transform-origin: center;
+  fill: #c38f3c;
+  offset-rotate: 0deg;
+  offset-distance: 0%;
 }
 
-.mx-my-path[data-animated='true'] .mx-my-path__trace--branch {
-  animation: mx-my-path-trace-branch 6.4s cubic-bezier(0.77, 0, 0.175, 1) both;
+/* Второй акцентный цвет — вариант для сравнения (см. эксперимент №25) */
+.mx-my-path[data-accent='secondary'] .mx-my-path__gold {
+  fill: #c77d7a;
 }
 
+/* Точка едет по готовому пути, золотой оверлей растёт следом за ней в такт */
 .mx-my-path[data-animated='true'] .mx-my-path__gold {
-  animation:
-    mx-my-path-gold-appear 6.4s cubic-bezier(0.23, 1, 0.32, 1) both,
-    mx-my-path-gold-pulse 5.2s cubic-bezier(0.77, 0, 0.175, 1) infinite 6.4s;
+  animation: mx-my-path-walker 7s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-@keyframes mx-my-path-trace-axis {
-  0% {
+.mx-my-path[data-animated='true'] .mx-my-path__walker-trail {
+  opacity: 0.55;
+  animation: mx-my-path-walker-trail 7s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+}
+
+@keyframes mx-my-path-walker {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes mx-my-path-walker-trail {
+  from {
     stroke-dashoffset: 1;
-    opacity: 1;
   }
-  50% {
+  to {
     stroke-dashoffset: 0;
-    opacity: 1;
-  }
-  82% {
-    opacity: 1;
-  }
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes mx-my-path-trace-main {
-  0%,
-  12% {
-    stroke-dashoffset: 1;
-    opacity: 1;
-  }
-  75% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes mx-my-path-trace-branch {
-  0%,
-  28% {
-    stroke-dashoffset: 1;
-    opacity: 1;
-  }
-  88% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-  96% {
-    opacity: 1;
-  }
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 0;
-  }
-}
-
-@keyframes mx-my-path-figure {
-  0%,
-  40% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-@keyframes mx-my-path-gold-appear {
-  0%,
-  88% {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes mx-my-path-gold-pulse {
-  0%,
-  100% {
-    opacity: 0.82;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.16);
   }
 }
 
