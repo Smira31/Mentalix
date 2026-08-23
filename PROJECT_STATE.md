@@ -1,6 +1,6 @@
 # Mentalix — Current Project State
 
-Дата последней проверки: **22.08.2026, Europe/Moscow**.
+Дата последней проверки: **23.08.2026, Europe/Moscow**.
 
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся
 в `CHANGES.md`, планы — в `ROADMAP.md`, рабочие детали — в `TASKS.md`.
@@ -123,7 +123,8 @@
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
 - Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
-  рабочей веткой; новая работа ведётся в `feat/practices-catalog`.
+  рабочей веткой. `feat/practices-catalog` не содержала коммитов (0 diff) —
+  см. `MXL-PRACTICES-CATALOG-001` ниже.
 - `src/screens/Today.jsx` в PR #129 не изменён.
 - Пилоты `MXL-CHECKIN-SCREEN-RHYTHM-001` и `MXL-TODAY-SCREEN-RHYTHM-001` приняты;
   ручной Telegram/iPhone gate для обоих пройден владельцем 22.08.2026.
@@ -134,14 +135,26 @@
   Library и Trends получили versioned session snapshot/SWR-контракт. Ручной
   Telegram/iPhone gate пройден владельцем 22.08.2026. Lazy-loading `recharts` в
   release не входит.
-- Следующая активная задача: `MXL-PRACTICES-CATALOG-001` — минимальный пилот
-  каталога главного экрана Practices без изменения flows, API и navigation.
-- В ветке `feat/ux-automated-gate-001` (PR открыт, не смёржен) реализован
-  Playwright gate `npm run ux:check`: два mobile viewport, изолированные fixtures,
-  16 screenshots и `artifacts/ux-check/report.md`. Контрольный прогон проходит
-  15/16 экранов и фиксирует fail Today на `320×568` из-за перекрытия видимого CTA
-  нижней навигацией — заведена задача `MXL-UI-CTA-OVERLAP-001` (открыта). UI,
-  production, Preview, backend и API не менялись.
+- `MXL-PRACTICES-CATALOG-001` закрыт 23.08.2026 без нового diff: при старте
+  задачи выяснилось, что grid (`PracticeCard`) в `Practices.jsx` уже заменён
+  на список (`PracticeRow`/`PracticeCategory`) коммитом `819b200b`
+  (22.08.2026, вошёл в production через merge PR #130 `38140019`) —
+  побочный, но осознанно сохранённый эффект отката keyboard-эксперимента
+  (`MXL-PRACTICES-KEYBOARD-ROLLBACK-001`), не задокументированный тогда под
+  этим ID. Владелец подтвердил вид экрана вживую и решил закрыть задачу
+  документально. Подробности — `TASKS.md`/`CHANGES.md` 23.08.2026.
+- `npm run ux:check` (Playwright gate, изначально ветка `feat/ux-automated-gate-001`,
+  сейчас на `main`) реализован; собирает два mobile viewport в одном тесте
+  (`390×844`, `320×568`). Контрольный прогон на текущем `main` 23.08.2026 —
+  зелёный (1/1, ни одного упавшего экрана).
+- `MXL-UI-CTA-OVERLAP-001` закрыта — вошло в `main` через PR #138
+  (`fix/mxl-cta-lint-practices-cache`) 23.08.2026: декоративный SVG-глиф в
+  hero-карточке Today сужен на `max-height: 650px` (`src/screens/Today.css`),
+  чек-ин CTA больше не перекрыт нижней навигацией на `320×568`. Ручная
+  проверка в Telegram владельцем пройдена.
+- `MXL-LINT-CLEANUP-001` закрыта — все 30 ESLint warnings устранены тем же
+  PR #138 23.08.2026; `npm run lint` — 0 errors, 0 warnings. UI, production,
+  Preview, backend и API этими двумя задачами не менялись.
 - Ранее описанный как незакоммиченный release UX-diff для Issue #122 в текущем
   рабочем дереве отсутствует; его фактическое состояние и приёмка требуют
   отдельной проверки. Backend/API, порядок Today и навигация этой фиксацией не
@@ -277,19 +290,27 @@ Data-dependent блоки:
 
 ## 12. Текущая P0-задача
 
-**P0 — реализовать и проверить `MXL-PRACTICES-CATALOG-001`:**
+**`MXL-PRACTICES-CATALOG-001` закрыт 23.08.2026** — grid уже был заменён на
+спокойный список коммитом `819b200b` (в production через PR #130), новый diff
+не потребовался. Подробности — §5 выше, `TASKS.md`/`CHANGES.md` 23.08.2026.
 
-- заменить плотную grid-стену Practices на спокойный каталог/список;
-- сохранить существующие flows, API, navigation и внутренние practice screens;
-- пройти lint, build, diff-check, Preview и ручной Telegram/iPhone gate;
+**P0 — `MXL-UI-LAB-SHOWCASE-001`** (согласовано с владельцем в `TASKS.md`,
+пре-мортем пройден 23.08.2026):
+
+- переделать главный экран ui-lab (`?ui_lab=1`) в живую витрину реальных
+  прод-компонентов (импорт из реального кода, не копии);
+- существующие 25 экспериментов ui-lab не трогать;
+- следовать предусловиям пре-мортема из `TASKS.md` (правило прод-кода, без
+  фиктивного `user`, full-screen/portal-компоненты — «нет предпросмотра»);
 - не менять production backend, Render и Neon.
 
 Production-цепочка `Vercel → Render → Neon` и её provenance остаются отдельным
-инфраструктурным риском и не изменяются этим frontend-релизом.
+инфраструктурным риском и не изменяются этим frontend-треком.
 
 ## 13. Следующие задачи
 
-- **P0:** завершить `MXL-PRACTICES-CATALOG-001` и пройти ручной Telegram/iPhone gate.
+- **P0:** `MXL-UI-LAB-SHOWCASE-001` — витрина реальных прод-компонентов в
+  ui-lab, пре-мортем пройден.
 - **P1:** подтвердить и стабилизировать текущую production-цепочку
   `Vercel → Render → Neon`, затем пройти data-dependent gate на реальном iPhone.
 - **P1:** после Practices отдельно подтвердить data-dependent frontend-сценарии
@@ -337,13 +358,14 @@ Production-цепочка `Vercel → Render → Neon` и её provenance ост
 
 ## 16. Testing Infrastructure (Post-MVP, Planned)
 
-Текущее состояние (22.08.2026):
+Текущее состояние (23.08.2026):
 
-- **UX Gate v1:** локальная команда `npm run ux:check` на Playwright реализована в ветке `feat/ux-automated-gate-001` (PR открыт).
+- **UX Gate v1:** локальная команда `npm run ux:check` на Playwright — на `main` (изначально реализована в ветке `feat/ux-automated-gate-001`).
   - Два viewport: 390×844, 320×568.
   - Маршрут: Today → Check-in → Practices → Rituals → Ascezas → First Step → Library → Trends.
-  - Детерминированные fixtures, 16 скриншотов, базовые layout-проверки.
-  - Контрольный прогон: 15/16 pass (Today 320×568 fail из-за navbar overlap — `MXL-UI-CTA-OVERLAP-001`, открыта).
+  - Детерминированные fixtures, 16 проверяемых экранов, базовые layout-проверки.
+  - Контрольный прогон 23.08.2026 на текущем `main`: зелёный, ни одного упавшего экрана —
+    navbar overlap на Today `320×568` устранён (`MXL-UI-CTA-OVERLAP-001` закрыта PR #138).
   - Ручной iPhone gate документирован в отчёте как обязательный.
 
 - **Документация:** создана в `docs/testing/`:
