@@ -1,5 +1,15 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 23.08.2026 — eslint.config.js: ignore локальных build-артефактов
+
+- `eslint .` подхватывал `.vercel/output/static/assets/*.js` (минифицированный
+  билд) — локальная gitignored папка, не исключённая в `ignores`, из-за чего
+  `npm run lint` мог показать сотни ложных problems, не относящихся к
+  исходникам. Добавлены `.vercel`, `artifacts`, `graphify-out` в `ignores`
+  рядом с существующими `dist`/`node_modules`. Не относится к
+  `MXL-LINT-CLEANUP-001` — та задача про warnings в исходниках, уже закрыта.
+- `npm run lint` — 0 errors, 0 warnings.
+
 ## 23.08.2026 — MXL-UI-LAB-MY-PATH-MOTION-001 (выбран вариант «progress», доработан)
 
 - **Выбор владельца:** из 3 показанных вариантов движения выбран
