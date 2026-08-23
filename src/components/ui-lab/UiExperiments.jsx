@@ -1671,24 +1671,6 @@ function ArticleSystemExperiment({ mode }) {
   )
 }
 
-const MY_PATH_MOTION_VARIANTS = [
-  {
-    motion: 'loop',
-    label: 'Плавный обход',
-    hint: 'Точка непрерывно скользит по всему пути по кругу.',
-  },
-  {
-    motion: 'steps',
-    label: 'Шаги',
-    hint: 'Та же траектория, но дискретными шагами — ощущение ходьбы.',
-  },
-  {
-    motion: 'progress',
-    label: 'Прогресс со шлейфом',
-    hint: 'Короткий яркий след тянется за точкой — ощущение пройденного участка.',
-  },
-]
-
 function MyPathCardExperiment({ mode }) {
   const [drawKey, setDrawKey] = useState(0)
 
@@ -1697,33 +1679,14 @@ function MyPathCardExperiment({ mode }) {
       number="25"
       eyebrow="Askeza / Ritual · «Мой путь»"
       title="Путь нарисован сразу — движется точка, а не линия"
-      purpose="Линии показаны сразу полностью и статично — путь уже существует. Акцентная точка едет по готовому маршруту: «иду по пути», а не «путь рисуется». Три варианта движения — для выбора владельцем."
+      purpose="Линии показаны сразу полностью и статично — путь уже существует. Акцентная точка едет по готовому маршруту, и тонкий золотой оверлей растёт следом за ней до её текущей позиции: «иду по пути», а не «путь рисуется»."
       mode={mode}
     >
       <div className="mx-lab-my-path">
-        <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {MY_PATH_MOTION_VARIANTS.map(variant => (
-            <div
-              key={variant.motion}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '0.5rem',
-                maxWidth: '180px',
-              }}
-            >
-              <MyPathGlyph
-                key={`${variant.motion}-${drawKey}`}
-                animated={mode === 'after'}
-                motion={variant.motion}
-              />
-              <strong style={{ textAlign: 'center' }}>{variant.label}</strong>
-              <span style={{ fontSize: '0.8rem', opacity: 0.6, textAlign: 'center' }}>
-                {variant.hint}
-              </span>
-            </div>
-          ))}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div style={{ width: '180px' }}>
+            <MyPathGlyph key={`progress-${drawKey}`} animated={mode === 'after'} />
+          </div>
         </div>
 
         <div

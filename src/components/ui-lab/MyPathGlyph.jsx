@@ -96,14 +96,13 @@ const GOLD_POINT_D =
  */
 const WALKER_OFFSET_PATH = `path("${MAIN_SILHOUETTE_D}")`
 
-export default function MyPathGlyph({ className = '', animated = true, accent, motion = 'loop' }) {
+export default function MyPathGlyph({ className = '', animated = true, accent }) {
   return (
     <svg
       viewBox="0 0 1024 1024"
       className={`mx-my-path ${className}`}
       data-animated={animated}
       data-accent={accent}
-      data-motion={motion}
       preserveAspectRatio="xMidYMid meet"
       aria-hidden="true"
     >

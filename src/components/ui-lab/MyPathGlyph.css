@@ -38,22 +38,26 @@
 }
 
 /*
- * Шлейф движения (вариант "progress") — короткий яркий сегмент того же
- * контура, что и главный силуэт, скользящий следом за точкой. Реализован
- * через тот же приём stroke-dasharray/-dashoffset с pathLength="1", что
- * раньше рисовал линию целиком, но теперь это скользящее окно
- * фиксированной длины (0.16 от пути), а не рост от 0 до 100% — визуально
- * это "пройденный участок за точкой", а не "путь рисуется".
+ * Шлейф движения — тонкий акцентный оверлей того же контура, что и
+ * главный силуэт, растущий от начала пути до текущей позиции точки.
+ * Серая базовая линия (.mx-my-path__traces) при этом всегда полностью
+ * видна и не участвует в анимации — "путь не рисуется", рисуется
+ * только сам прогресс поверх уже существующего пути. Технически это
+ * тот же приём stroke-dasharray/-dashoffset с pathLength="1", что раньше
+ * рисовал линию целиком, но теперь применён только к акцентному
+ * оверлею и синхронизирован с offset-distance точки (тот же keyframes,
+ * та же длительность/кривая) — на любом кадре золотой оверлей доходит
+ * ровно до текущего положения точки, не дальше и не меньше.
  */
 .mx-my-path__walker-trail {
   fill: none;
   stroke: rgb(var(--c-gold));
-  stroke-width: 3;
+  stroke-width: 1.6;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
   opacity: 0;
-  stroke-dasharray: 0.16 1;
-  stroke-dashoffset: 1.16;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
 }
 
 .mx-my-path[data-accent='secondary'] .mx-my-path__walker-trail {
@@ -73,22 +77,13 @@
   fill: #c77d7a;
 }
 
-/*
- * Три варианта движения точки по готовому пути (см. MyPathCardExperiment):
- * loop — непрерывный плавный обход всего контура;
- * steps — та же траектория, но шагами (timing-function: steps());
- * progress — тот же плавный ход, но с коротким шлейфом позади точки.
- */
+/* Точка едет по готовому пути, золотой оверлей растёт следом за ней в такт */
 .mx-my-path[data-animated='true'] .mx-my-path__gold {
   animation: mx-my-path-walker 7s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.mx-my-path[data-animated='true'][data-motion='steps'] .mx-my-path__gold {
-  animation-timing-function: steps(10, jump-end);
-}
-
-.mx-my-path[data-animated='true'][data-motion='progress'] .mx-my-path__walker-trail {
-  opacity: 0.85;
+.mx-my-path[data-animated='true'] .mx-my-path__walker-trail {
+  opacity: 0.55;
   animation: mx-my-path-walker-trail 7s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
@@ -103,7 +98,7 @@
 
 @keyframes mx-my-path-walker-trail {
   from {
-    stroke-dashoffset: 1.16;
+    stroke-dashoffset: 1;
   }
   to {
     stroke-dashoffset: 0;
