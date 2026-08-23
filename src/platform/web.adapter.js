@@ -12,6 +12,11 @@ export const webAdapter = {
     return raw ? JSON.parse(raw) : null
   },
 
+  // нет Telegram-контекста в браузере — подписанного initData не существует
+  getInitData() {
+    return ''
+  },
+
   async requestAuth() {
     // реальный флоу подключим на шаге email OTP — пока просто читаем сохранённого пользователя
     return this.getUser()
