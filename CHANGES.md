@@ -1,5 +1,36 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 24.08.2026 — MXL-CARDSYSTEM-DEADCODE-002: удалены осиротевшие className mx-card-system-* в 7 продовых файлах
+
+- Перед правкой, по прямому требованию владельца («не удалять молча,
+  если найдётся неожиданная зависимость») — прогреп всего `src` на
+  `mx-card-system-` после удаления `CardSystem.css`/`PracticeCard.jsx`
+  (`MXL-CARDSYSTEM-DEADCODE-001`, PR #156).
+- **Найдена неожиданная зависимость — 2 из 9 вхождений НЕ мёртвые:**
+  `mx-card-system-today-art` (`Today.jsx`) используется в
+  `Today.css:26` (`@media (max-height: 650px)`) — это сам фикс
+  `MXL-UI-CTA-OVERLAP-001`, сужает декоративный глиф на коротких
+  экранах (320×568), чтобы CTA чек-ина не перекрывался нижней
+  навигацией. `mx-card-system-detail-art` (`Rituals.jsx`, `Ascezas.jsx`)
+  используется в `SceneLayout.css:72` (`flex-basis: 46%` для иллюстрации
+  detail-карточки). Оба CSS-файла реально подключены в продовых экранах
+  — не связаны с удалённым `CardSystem.css`. **Оставлены нетронутыми**,
+  заведены отдельной находкой `MXL-CARDSYSTEM-DETAIL-ART-001` в
+  `TASKS.md` → Known Issues (название вводит в заблуждение, стоит
+  когда-нибудь переименовать без префикса `mx-card-system-`).
+- **Удалены остальные 9 подтверждённо мёртвых вхождений** (других
+  CSS-правил на них нигде в кодовой базе не найдено): className
+  `mx-card-system-today-hero` (`Today.jsx`), `mx-card-system-practices`
+  (`Practices.jsx`), `mx-card-system-detail-card` (`Rituals.jsx`,
+  `Ascezas.jsx`), `mx-card-system-breath-art` (`Breathing.jsx`, оба
+  вхождения), `mx-card-system-focus-art` (`Focus.jsx`),
+  `mx-card-system-persona-card`/`mx-card-system-persona-art`
+  (`PersonaPicker.jsx`). Только удаление className-строк, без изменений
+  остальной вёрстки/логики.
+- `npm run lint` — 0/0, `npm run build` — зелёный. Визуальной разницы
+  быть не должно — удалённые классы нигде не имели CSS-эффекта ни до,
+  ни после; живая проверка не проводилась.
+
 ## 24.08.2026 — ROADMAP.md: добавлена идея-кандидат 14 — Self-discovery
 
 - По прямому запросу владельца — новая идея-кандидат «Self-discovery —

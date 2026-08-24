@@ -63,7 +63,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
   return (
     <div
-      className={`practice-motion-card practice-detail-card relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 mx-card-system-detail-card ${
+      className={`practice-motion-card practice-detail-card relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
     >
