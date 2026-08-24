@@ -158,7 +158,7 @@
   `codex/xs-maintenance-batch`: подтверждённый onboarding dead code удалён,
   два живых CSS-якоря переименованы без изменения поведения, navbar
   отцентрирован симметричными боковыми резервами. Локальный UX gate и общий
-  Preview/iPhone gate пройдены; пакет готов к интеграции через PR.
+  Preview/iPhone gate пройдены. Интеграция: PR #163.
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
 - Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
