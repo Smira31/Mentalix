@@ -31,9 +31,15 @@
 - Production URL: `https://mentalix-bot.onrender.com`.
 - Health: `GET /api/health` вернул `HTTP 200` и `{"status":"ok"}` 21.08.2026.
 - Текущий GitHub `main`: `23610b38de4191bbce05282df07b42d965adb380`.
-- Точный commit работающего Render deployment: **НЕ ПОДТВЕРЖДЕНО**. Health
-  endpoint не сообщает SHA, а GitHub не содержит deployment status Render для
-  backend commit.
+- Точный commit работающего Render deployment: **ПОДТВЕРЖДЕНО 23.08.2026**.
+  Render Dashboard (`mentalix-bot`, `srv-da468ek9v7es739a3250`, проект
+  `Mentalix`, `Smira31/mentalix-bot`, ветка `main`) — событие «Deploy live
+  for `23610b3`: Merge pull request #13 from
+  Smira31/feature/issue-120-telegram-storefront», 21.08.2026 20:11. SHA
+  совпадает с GitHub `main` HEAD посимвольно. GitHub Deployments API для
+  этого репозитория не отражает Render (там только устаревшие записи
+  Railway `supportive-curiosity`) — provenance подтверждён напрямую через
+  Render Dashboard, а не через GitHub.
 - Koyeb не является текущей P0 и не должен заменять работающий Render до первого
   релиза без подтверждённого blocker. Koyeb остаётся кандидатом на бесплатный
   backend hosting для отдельного последующего сравнения.
@@ -53,13 +59,28 @@
   `Base.metadata.create_all()` и идемпотентные `ALTER TABLE` в
   `backend/main.py`; Alembic в актуальном репозитории не используется.
 - В коде определено 26 таблиц, включая `mentalix_user_facts`.
-- Фактическое значение Render `DATABASE_URL`, его Neon endpoint, live-схема и
-  количество строк: **НЕ ПОДТВЕРЖДЕНО** — секреты и Neon dashboard в этой
-  проверке недоступны.
+- **ПОДТВЕРЖДЕНО 23.08.2026** (Render Dashboard + Neon Console, read-only):
+  - Render `mentalix-bot` содержит env var `DATABASE_URL` (значение не
+    раскрывалось — секрет остался в Render, не скопирован и не выведен в
+    чат/файлы).
+  - Neon-проект `Mentalix` (`spring-hill-58592745`), регион AWS Europe
+    Central 1 (Frankfurt) — тот же регион, что у Render-сервиса. Единственная
+    ветка — `production` (Default), Compute «Primary» в состоянии `Active` на
+    момент проверки, `compute last active` — 18 минут назад в момент захода
+    в консоль, то есть недавний живой трафик от backend.
+  - SQL Editor Neon Console (ветка `production`, база `neondb` — совпадает с
+    документированным именем) подтвердил через
+    `information_schema.tables`: ровно 26 таблиц в схеме `public`,
+    посимвольно совпадают с задокументированным списком; `mentalix_user_facts`
+    присутствует.
+  - Живые данные (read-only `count(*)`): `users` = 2, `checkins` = 1,
+    `ritual_logs` = 8, `mentalix_messages` = 14, `mentalix_user_facts` = 0.
 - `RENDER.md` сообщает, что Neon создавался как fresh schema без импорта
-  исторических Railway rows. Это необходимо проверить read-only по обеим БД:
-  фактический состав Neon и наличие исторических данных в Railway сейчас
-  **НЕ ПОДТВЕРЖДЕНЫ**.
+  исторических Railway rows. Малое количество строк (2 пользователя, 1
+  checkin) согласуется с этим утверждением, но не является прямым
+  доказательством: содержимое legacy Railway PostgreSQL volume отдельно не
+  читалось, сопоставление строк между базами не выполнялось. Наличие
+  исторических данных в Railway остаётся **НЕ ПОДТВЕРЖДЕНО**.
 - Нельзя утверждать потерю данных, пока read-only не проверены существующая Neon
   DB и legacy Railway PostgreSQL. Существование старого Railway volume и наличие
   данных в Neon — разные факты.
@@ -98,14 +119,18 @@
 
 ## 4. Что сейчас не работает / release blockers
 
-- **Production backend provenance неполна:** точный SHA активного Render
-  deployment не подтверждён.
-- **Связь Render → Neon не подтверждена напрямую:** фактический production
-  `DATABASE_URL` и его соответствие ожидаемой Neon production DB не проверены.
-- **Neon data gate не закрыт:** live-схема, наличие `mentalix_user_facts` и
-  состав текущих пользовательских данных не проверены напрямую.
+- ~~Production backend provenance неполна~~ — **закрыто 23.08.2026**, SHA
+  Render deployment подтверждён и совпадает с GitHub `main` HEAD (§2).
+- ~~Связь Render → Neon не подтверждена напрямую~~ — **закрыто 23.08.2026**,
+  `DATABASE_URL` задан в Render, Neon-проект `Mentalix`/ветка `production`
+  показывает недавний живой compute-трафик (§2).
+- ~~Neon data gate не закрыт~~ — **закрыто 23.08.2026**, live-схема (26
+  таблиц, включая `mentalix_user_facts`) подтверждена напрямую через Neon SQL
+  Editor (§2).
 - **Исторические данные требуют сверки:** `RENDER.md` сообщает о fresh Neon
-  schema без импорта Railway rows, но обе БД read-only не сопоставлялись. Потеря
+  schema без импорта Railway rows. Малое число живых строк в Neon (§2)
+  согласуется с этим, но содержимое legacy Railway PostgreSQL volume
+  отдельно не читалось — прямое сопоставление обеих БД не выполнено. Потеря
   данных не подтверждена.
 - **Data-dependent функции после смены API:** Today data, CheckIn, Library и
   Trends сейчас нельзя объявить сломанными — backend health восстановлен и
@@ -252,10 +277,15 @@ Data-dependent блоки:
   Фактические строки Neon — **НЕ ПОДТВЕРЖДЕНО**.
 - Quotes: пользовательские мысли хранятся в `user_quotes`; фактические строки
   Neon — **НЕ ПОДТВЕРЖДЕНО**.
-- CheckIns: модель, история и сохранение существуют; фактические строки Neon —
-  **НЕ ПОДТВЕРЖДЕНО**.
-- Rituals и ascezas: модели, логи и API существуют; фактические строки Neon —
-  **НЕ ПОДТВЕРЖДЕНО**.
+- CheckIns: модель, история и сохранение существуют; **подтверждено
+  23.08.2026** — `checkins` = 1 строка в live Neon (read-only `count(*)`,
+  подробности §2).
+- Rituals и ascezas: модели, логи и API существуют; **подтверждено
+  23.08.2026** для ritual_logs — `ritual_logs` = 8 строк; `ascezas`/
+  `asceza_logs` отдельно не проверялись.
+- Пользователи: **подтверждено 23.08.2026** — `users` = 2 строки,
+  `mentalix_messages` = 14 строк, `mentalix_user_facts` = 0 строк (shared AI
+  memory ещё не накопила ни одного факта на момент проверки).
 - Analytics вычисляется из пользовательских данных и событий; корректность на
   live Neon после миграции **НЕ ПОДТВЕРЖДЕНА**.
 - Нельзя утверждать, что данные потеряны. Известно только, что исторические
@@ -280,8 +310,8 @@ Data-dependent блоки:
 
 - Миграция backend с фактически работающего Render на целевой Koyeb не
   подтверждена и, по найденным фактам, не завершена.
-- Не подтверждены live Koyeb service, runtime Render commit, runtime
-  `DATABASE_URL`, live Neon schema и данные.
+- Не подтверждён live Koyeb service (runtime Render commit, `DATABASE_URL` и
+  live Neon schema подтверждены 23.08.2026 — §2, §4).
 - Не выполнен свежий end-to-end gate data-dependent экранов после перехода API
   на Render.
 - Новые изменения Practices ещё не прошли ручной Telegram/iPhone gate.
@@ -294,27 +324,28 @@ Data-dependent блоки:
 спокойный список коммитом `819b200b` (в production через PR #130), новый diff
 не потребовался. Подробности — §5 выше, `TASKS.md`/`CHANGES.md` 23.08.2026.
 
-**P0 — `MXL-UI-LAB-SHOWCASE-001`** (согласовано с владельцем в `TASKS.md`,
-пре-мортем пройден 23.08.2026):
+**`MXL-UI-LAB-SHOWCASE-001` закрыт 23.08.2026** — этот раздел не был обновлён
+при закрытии задачи, хотя `TASKS.md` и `CHANGES.md` уже фиксируют её как
+закрытую, а `git log` подтверждает merge PR #149 (`46e2232d`) в `main`.
+Расхождение зафиксировано этой правкой. Живая витрина реальных
+прод-компонентов на `?ui_lab=showcase` принята владельцем через Preview/
+Telegram gate; 25 экспериментов на `?ui_lab=1` не тронуты; переключатель
+между ними — `UiLabSwitch.jsx`. Подробности — `TASKS.md`/`CHANGES.md`
+23.08.2026.
 
-- переделать главный экран ui-lab (`?ui_lab=1`) в живую витрину реальных
-  прод-компонентов (импорт из реального кода, не копии);
-- существующие 25 экспериментов ui-lab не трогать;
-- следовать предусловиям пре-мортема из `TASKS.md` (правило прод-кода, без
-  фиктивного `user`, full-screen/portal-компоненты — «нет предпросмотра»);
-- не менять production backend, Render и Neon.
-
-Production-цепочка `Vercel → Render → Neon` и её provenance остаются отдельным
-инфраструктурным риском и не изменяются этим frontend-треком.
+**Новая P0-задача не назначена.** По правилу AGENTS.md §8 требуется явно
+обозначенная текущая P0 — нужно решение владельца.
 
 ## 13. Следующие задачи
 
-- **P0:** `MXL-UI-LAB-SHOWCASE-001` — витрина реальных прод-компонентов в
-  ui-lab, пре-мортем пройден.
-- **P1:** подтвердить и стабилизировать текущую production-цепочку
-  `Vercel → Render → Neon`, затем пройти data-dependent gate на реальном iPhone.
-- **P1:** после Practices отдельно подтвердить data-dependent frontend-сценарии
-  на реальном iPhone внутри Telegram.
+- **P0:** не назначена — требуется решение владельца (см. §12).
+- ~~**P1:** подтвердить и стабилизировать текущую production-цепочку
+  `Vercel → Render → Neon`~~ — **закрыто 23.08.2026**: Render deploy SHA,
+  связь с Neon и live-схема подтверждены напрямую (§2, §4). Data-dependent
+  gate на реальном iPhone остаётся отдельным следующим шагом (пункт ниже).
+- **P1:** пройти data-dependent gate (Today, CheckIn, Library, Trends) на
+  реальном iPhone внутри Telegram — не выполнялся после перехода API на
+  Render и после Practices/UI-lab изменений.
 - **Later:** Koyeb остаётся кандидатом на бесплатный backend hosting. Решение о
   миграции принимать после стабилизации текущего production, отдельно сравнив
   Render и Koyeb. Здесь же отдельно решить вопросы GigaChat TLS verification и
@@ -344,10 +375,6 @@ Production-цепочка `Vercel → Render → Neon` и её provenance ост
 
 - Существует ли настроенный Koyeb app/service, его URL, status и deployment SHA.
 - Подключён ли Koyeb к существующей Neon production branch.
-- Точный commit активного Render deployment.
-- Фактическое значение runtime `DATABASE_URL` и его Neon endpoint.
-- Live-схема Neon, наличие всех 26 таблиц и `mentalix_user_facts`.
-- Состав и сохранность текущих пользовательских данных в Neon.
 - Текущий Telegram webhook URL по `getWebhookInfo`.
 - Актуальная end-to-end работа Today data, CheckIn, Library и Trends на реальном
   iPhone после смены API на Render.

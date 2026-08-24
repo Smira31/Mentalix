@@ -1,5 +1,36 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 23.08.2026 — P1: production-цепочка Vercel → Render → Neon подтверждена
+
+- Инфраструктурная проверка без изменения кода (PROJECT_STATE.md §13, P1).
+  Все три незакрытых release blocker'а из `PROJECT_STATE.md` закрыты фактами,
+  а не предположениями:
+  - **Render deploy SHA:** Render Dashboard (`mentalix-bot`,
+    `srv-da468ek9v7es739a3250`) показывает live deploy `23610b3` — посимвольно
+    совпадает с GitHub `main` HEAD `23610b38de41...`. GitHub Deployments API
+    для `Smira31/mentalix-bot` Render не отражает (там только устаревшие
+    записи Railway `supportive-curiosity`), поэтому provenance подтверждён
+    напрямую через Render Dashboard.
+  - **Связь Render → Neon:** `DATABASE_URL` задан в Render env vars (значение
+    секрета не раскрывалось и не копировалось). Neon-проект `Mentalix`
+    (регион Frankfurt, тот же, что у Render) показал `compute last active` —
+    18 минут назад на момент проверки, то есть недавний живой трафик.
+  - **Live-схема Neon:** SQL Editor Neon Console (ветка `production`, база
+    `neondb`) подтвердил `information_schema.tables` = ровно 26 таблиц,
+    включая `mentalix_user_facts` — совпадает с задокументированным списком.
+    Read-only `count(*)`: `users` = 2, `checkins` = 1, `ritual_logs` = 8,
+    `mentalix_messages` = 14, `mentalix_user_facts` = 0.
+- Малое количество живых строк согласуется с заявлением `RENDER.md` о fresh
+  Neon schema без импорта Railway rows, но не доказывает это напрямую —
+  содержимое legacy Railway PostgreSQL volume отдельно не читалось. Этот
+  пункт и end-to-end iPhone-gate остаются открытыми, детали —
+  `PROJECT_STATE.md` §4/§13.
+- Побочно найдено и зафиксировано расхождение документов: `MXL-UI-LAB-SHOWCASE-001`
+  уже закрыт (`TASKS.md`, этот файл, merge PR #149 `46e2232d`), но
+  `PROJECT_STATE.md` §12 всё ещё числил его текущим P0 — исправлено той же
+  правкой. Новая P0-задача не назначена, нужно решение владельца.
+- Код не менялся, `npm run lint`/`npm run build` не требовались.
+
 ## 23.08.2026 — Ритуалу добавлено скрытое поле category (выравнивание со структурой аскезы)
 
 - У `CreateAscezaScreen` поле `category` жёстко зафиксировано как `'psycho'`

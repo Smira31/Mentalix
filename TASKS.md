@@ -17,6 +17,37 @@
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
 - **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
 
+## P1 — production-цепочка Vercel → Render → Neon (закрыто)
+
+- **Статус: закрыто 23.08.2026.** Чисто инфраструктурная проверка из
+  `PROJECT_STATE.md` §13 (P1), без изменения кода — read-only через Render
+  Dashboard и Neon Console (браузер, уже авторизованные сессии владельца).
+- [x] Render deploy SHA подтверждён: `mentalix-bot`
+      (`srv-da468ek9v7es739a3250`) — live deploy `23610b3`, посимвольно
+      совпадает с GitHub `main` HEAD `23610b38de41...`. GitHub Deployments
+      API для `Smira31/mentalix-bot` Render не отражает (только устаревшие
+      записи Railway `supportive-curiosity`) — provenance подтверждён
+      напрямую через Render Dashboard, не через GitHub.
+- [x] Связь Render → Neon подтверждена: `DATABASE_URL` присутствует в env
+      vars Render (ключ виден, значение не раскрывалось и никуда не
+      копировалось). Neon-проект `Mentalix` (регион Frankfurt, как и
+      Render) — `compute last active` 18 минут назад на момент проверки.
+- [x] Live-схема Neon подтверждена через SQL Editor (ветка `production`,
+      база `neondb`): `information_schema.tables` = ровно 26 таблиц,
+      включая `mentalix_user_facts`, совпадают с документированным
+      списком. Read-only `count(*)`: `users`=2, `checkins`=1,
+      `ritual_logs`=8, `mentalix_messages`=14, `mentalix_user_facts`=0.
+- Не закрыто этой задачей и остаётся отдельным пунктом: сверка живых
+  Neon-строк с legacy Railway PostgreSQL volume (не читался) и
+  data-dependent end-to-end gate на реальном iPhone после смены API на
+  Render. Подробности — `PROJECT_STATE.md` §2/§4/§13.
+- **Побочно найденное и исправленное расхождение документов:**
+  `MXL-UI-LAB-SHOWCASE-001` был закрыт (PR #149, `46e2232d`) и уже отмечен
+  закрытым в этом файле и в `CHANGES.md`, но `PROJECT_STATE.md` §12
+  по-прежнему числил его текущей P0 — исправлено той же правкой. Новая P0
+  не назначена, нужно решение владельца.
+- Код не менялся, `npm run lint`/`npm run build` не требовались.
+
 ## MXL-DATA-RITUAL-CATEGORY-001: скрытое поле category у ритуала (в работе)
 
 - **Статус: ветка `feat/ritual-category-field`, ожидает PR и мёржа.**
