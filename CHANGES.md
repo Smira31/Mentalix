@@ -1,5 +1,31 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 24.08.2026 — MXL-CARDSYSTEM-DEADCODE-001: удалён мёртвый CardSystem.css и PracticeCard.jsx
+
+- Узкий согласованный объём — только `src/components/CardSystem.css` и
+  `src/components/PracticeCard.jsx`, продовые экраны не менялись.
+- **Расследование перед удалением показало больше связей, чем в исходном
+  описании находки, и в другую сторону:**
+  - `PracticeCard.jsx` оказался полностью осиротевшим файлом — ни одного
+    реального импорта нигде в кодовой базе (`grep "import.*PracticeCard"`
+    — 0 совпадений). Прежняя формулировка находки («единственный
+    импортёр используется lazy dev-инструментом `CardDirectionsLab`»)
+    была неточной: `CardDirectionsLab.jsx` только упоминает «PracticeCard»
+    в тексте одной из спецификаций (design-заметка), не импортирует и не
+    рендерит сам компонент.
+  - Отдельно найдено (не то же самое, что орфанность `PracticeCard.jsx`):
+    className `mx-card-system-*` применены ещё в 7 продовых файлах
+    (`Today.jsx`, `Practices.jsx`, `Rituals.jsx`, `Ascezas.jsx`,
+    `Breathing.jsx`, `Focus.jsx`, `PersonaPicker.jsx`) — ни один из них не
+    импортирует `CardSystem.css` напрямую и эффекта от него не получал ни
+    до, ни после этого удаления. Владелец подтвердил не трогать эти 7
+    файлов в этом заходе — заведена отдельная находка
+    `MXL-CARDSYSTEM-DEADCODE-002` в `TASKS.md` → Known Issues.
+- Удалены `src/components/CardSystem.css` и `src/components/PracticeCard.jsx`
+  целиком (весь файл, не только CSS-импорт — компонент был полностью
+  неиспользуемым).
+- `npm run lint` — 0/0, `npm run build` — зелёный.
+
 ## 24.08.2026 — TASKS.md: синхронизированы статусы четырёх задач с git (MXL-UI-005-CLOSE-GLITCH-001, MXL-MENTALIX-HISTORY-CACHE-001, MXL-DATA-RITUAL-CATEGORY-001, eslint.config.js ignore)
 
 - По запросу владельца — сверка задач/находок из `TASKS.md` с фактическим

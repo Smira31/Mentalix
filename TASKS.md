@@ -15,7 +15,33 @@
 ## Known Issues
 
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
-- **MXL-CARDSYSTEM-DEADCODE-001 (найдена, не исправлена):** Классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`) и однотипные `mx-card-system-practice-card`/`mx-card-system-persona-card` ссылаются на `src/components/CardSystem.css`, который в реальном приложении нигде не подключается — единственный импортёр (`PracticeCard.jsx`) используется только lazy dev-инструментом `CardDirectionsLab` за флагом в `main.jsx`. Для обычных пользователей эти классы не дают эффекта. Найдено при диагностике `MXL-UI-CTA-OVERLAP-001`, фикс не трогал эту цепочку (см. `CHANGES.md`). Приоритет и срок не назначены.
+- **MXL-CARDSYSTEM-DEADCODE-002 (найдена, не исправлена):** классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`), `mx-card-system-practices` (`Practices.jsx`), `mx-card-system-detail-card`/`mx-card-system-detail-art` (`Rituals.jsx`, `Ascezas.jsx`), `mx-card-system-breath-art` (`Breathing.jsx`), `mx-card-system-focus-art` (`Focus.jsx`), `mx-card-system-persona-card`/`mx-card-system-persona-art` (`PersonaPicker.jsx`) применены (className) в 7 продовых экранах, но стили из `CardSystem.css`, на которые они рассчитаны, туда никогда не доезжали (см. `MXL-CARDSYSTEM-DEADCODE-001` ниже — сам файл и его единственный источник удалены) и не доезжали ранее — эффекта у классов не было и нет. Найдено 24.08.2026 при работе над `MXL-CARDSYSTEM-DEADCODE-001`, вне её согласованного узкого объёма (владелец подтвердил не трогать эти 7 файлов в этом заходе). Приоритет и срок не назначены.
+
+## MXL-CARDSYSTEM-DEADCODE-001 — удалить мёртвый CardSystem.css и PracticeCard.jsx (закрыто)
+
+- **Статус: закрыто 24.08.2026**, ветка `chore/remove-cardsystem-deadcode`.
+  Узкий согласованный объём — только `src/components/CardSystem.css` и
+  `src/components/PracticeCard.jsx`, без изменений в продовых экранах.
+- [x] **Найдено при расследовании перед удалением (важнее исходного
+      описания находки):** `PracticeCard.jsx` — полностью осиротевший файл,
+      **ни одного реального импорта нигде в кодовой базе** (`grep "import.*
+    PracticeCard"` — 0 совпадений). Прежнее описание в Known Issues («используется
+      lazy dev-инструментом `CardDirectionsLab`») было неточным:
+      `CardDirectionsLab.jsx` лишь **упоминает** «PracticeCard» в текстовой
+      строке спецификации одного из направлений (design-заметка для
+      дев-лаборатории), но не импортирует и не рендерит компонент.
+      `Practices.jsx` тоже не использует `PracticeCard` (подтверждено ранее
+      в `MXL-PRACTICES-CATALOG-001`).
+- [x] Удалены `src/components/CardSystem.css` и `src/components/PracticeCard.jsx`
+      целиком (весь файл, не только импорт CSS — компонент был полностью
+      неиспользуемым, а не просто содержал мёртвую CSS-ссылку).
+- [x] Побочно найдены и вынесены отдельным пунктом Known Issues (не тронуты
+      в этом диффе, по прямому решению владельца — вне узкого объёма):
+      7 продовых файлов с className `mx-card-system-*`, которые
+      ссылались на удалённый `CardSystem.css`, но эффекта от него не
+      получали и раньше (файл до сих пор нигде, кроме `PracticeCard.jsx`,
+      не подключался) — заведено как `MXL-CARDSYSTEM-DEADCODE-002`.
+- [x] `npm run lint` — 0/0, `npm run build` — зелёный.
 
 ## AGENTS.md: убраны дублирующие секции, исправлена ссылка Railway→Render (закрыто)
 
