@@ -163,7 +163,8 @@
 - `MXL-AUTONOMOUS-SM-001` реализован локально в ветке
   `codex/autonomous-sm-maintenance`: P03 получил единую allowlist без изменения
   доступности, ручные query-string заменены чистым helper, добавлены три
-  unit-контракта. Unit/lint/build/UX gate зелёные; публикации ещё не было.
+  unit-контракта. Unit/lint/build/UX gate зелёные; открыт PR #164, production
+  не изменён.
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
 - Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
@@ -394,12 +395,12 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 
 **Текущая P0: `MXL-AUTONOMOUS-SM-001`.** Владелец поручил автономно отобрать
 и выполнить совместимые S/M-задачи; реализация и автоматические проверки
-завершены в feature-ветке, следующий шаг — PR без автоматического merge.
+завершены в feature-ветке, PR #164 открыт без автоматического merge.
 
 ## 13. Следующие задачи
 
-- **P0:** оформить и проверить PR `MXL-AUTONOMOUS-SM-001`; production не менять
-  без отдельного merge-решения владельца.
+- **P0:** проверить PR #164 (`MXL-AUTONOMOUS-SM-001`); production не менять без
+  отдельного merge-решения владельца.
 - ~~**P1:** подтвердить и стабилизировать текущую production-цепочку
   `Vercel → Render → Neon`~~ — **закрыто 23.08.2026**: Render deploy SHA,
   связь с Neon и live-схема подтверждены напрямую (§2, §4). Data-dependent
