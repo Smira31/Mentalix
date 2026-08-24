@@ -1,5 +1,60 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 24.08.2026 — MXL-SECURITY-AUDIT-001-INITDATA-BACKEND (реализовано локально, не закоммичено)
+
+- Бэкенд `mentalix-bot` (отдельный приватный репозиторий, свежий клон
+  `C:\Users\smira\mentalix-bot-security-2026-08-23`, ветка
+  `fix/mxl-security-audit-001-backend-initdata`) теперь проверяет подпись
+  Telegram `initData` вместо слепого доверия `user_id` из query/body —
+  закрывает основной открытый долг патча `MXL-SECURITY-AUDIT-001-INITDATA-FRONTEND`.
+- Пре-мортем перед реализацией (безопасность аутентификации) нашёл 4
+  «тигра» и закрыл их до старта кода: (1) web/email-пользователи без
+  Telegram-контекста не должны получать 401 — enforcement строго по знаку
+  `user_id`, отрицательный пропускается без проверки, положительный
+  требует валидную подпись; (2) строгий `auth_date` рвал бы активные
+  сессии — TTL поднят до 24ч вместо стандартных 5 мин; (3) проверено по
+  коду бота, что `id` в initData совпадает с уже используемым `User.id`
+  — миграция не нужна; (4) обратимость — вся логика в одном изолированном
+  `backend/telegram_auth.py` + feature-флаг `TELEGRAM_AUTH_VALIDATION_ENABLED`
+  для мгновенного отключения без редеплоя. Явно проговорённый «слон»: web/
+  email-путь входа остаётся непроверенным и после патча — тот же уже
+  известный отдельный долг, не в объёме этой задачи.
+- Новый модуль `backend/telegram_auth.py` (`verify_init_data` — HMAC-
+  проверка по алгоритму официальной документации Telegram Mini Apps;
+  `require_verified_identity` — FastAPI-зависимость с правилом
+  enforcement). Подключён как `dependencies=[Depends(require_verified_identity)]`
+  к 16 из 18 роутеров, зарегистрированных в `main.py` (`habits`, `checkin`,
+  `goals`, `analytics`, `mentalix`, `profile_api`, `rituals`, `ascezas`,
+  `courses`, `quotes`, `focus`, `brain`, `subscription`, `themes`,
+  `articles`, `events`) — по одной строке импорта на файл, без изменения
+  логики самих эндпоинтов. `auth.py` (источник идентичности — эндпоинты
+  не несут `user_id`-claim для сверки) и `telegram_api.py` (вебхук бота,
+  не пользовательский API) намеренно не участвуют — это все роутеры без
+  исключений, «~20» в находке аудита 16.08.2026 было приблизительной
+  оценкой, не точным числом.
+- Новый `backend/tests/test_telegram_auth.py` — 20 тестов на подпись, TTL,
+  mismatch id, feature-флаг. **Прогнаны штатным `pytest` и зелёные** —
+  единственный системный Python (3.14) не подходил (нет колёс
+  `pydantic-core`/`asyncpg`), поэтому портативно (без системной
+  регистрации, `py install -t <папка> 3.12`) поднят Python 3.12.10, venv,
+  `pip install -r requirements.txt -r requirements-dev.txt`, `pytest
+  tests/` — **33 passed** (20 новых + 13 уже существовавших).
+- **Регрессия, найденная и исправленная тем прогоном** (стандартная
+  standalone-проверка крипто-ядра её не поймала бы): модуль-уровневый
+  `from bot.config import BOT_TOKEN` в `telegram_auth.py` требовал корень
+  репозитория на `sys.path` — в проде это есть (`backend/Dockerfile`:
+  `PYTHONPATH=/app/backend:/app`), но `tests/test_mentalix_memory.py`
+  добавляет в `sys.path` только `backend/`, и транзитивный импорт через
+  `mentalix.py → telegram_auth.py → bot.config` ронял сбор тестов
+  (`ModuleNotFoundError: No module named 'bot'`). Исправлено: импорт
+  `BOT_TOKEN` сделан ленивым (внутри `verify_init_data`, не на уровне
+  модуля) — импорт `telegram_auth` больше не требует `bot` на `sys.path`,
+  только вызов проверки подписи.
+- Подробности решений пре-мортема, полный список роутеров и объяснение
+  enforcement-правила — в `TASKS.md`.
+- Фронтенд (Mentalix, этот репозиторий) не менялся — заголовок уже
+  отправляет с PR #148.
+
 ## 23.08.2026 — MXL-UI-LAB-SHOWCASE-001 закрыт
 
 - Ручной Preview/Telegram gate пройден и подтверждён владельцем:
