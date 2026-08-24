@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { ChevronLeft, Check } from 'lucide-react'
-import { MotifArt } from '../components/Motif'
+import { Check } from 'lucide-react'
+import BackButton from '../components/BackButton'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -56,49 +56,30 @@ const REMINDER_OPTIONS = [
 ]
 
 const PLAN_CARDS = [
-  { motif: 'povedenie', text: 'Всё, что ты пишешь, остаётся только твоим' },
-  { motif: 'sobesednik', text: 'Наставник, Собеседник и Следопыт готовы к разговору' },
-  { motif: 'lestnica', text: 'Первый шаг уже ждёт тебя на главной' },
+  'Всё, что ты пишешь, остаётся только твоим',
+  'Наставник, Собеседник и Следопыт готовы к разговору',
+  'Первый шаг уже ждёт тебя на главной',
 ]
 
-// ── шапка: назад · прогресс · пропустить ──
-function Head({ step, total, onBack, onSkip }) {
+// ── шапка: системный Telegram BackButton · прогресс ──
+function Head({ step, total, onBack }) {
   return (
-    <div className="w-full max-w-md px-5 pt-5 flex items-center justify-between">
-      {step > 0 ? (
-        <button
-          onClick={() => {
-            platform.haptic('light')
-            onBack()
-          }}
-          aria-label="Назад"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
-        >
-          <ChevronLeft size={20} className="text-muted" />
-        </button>
-      ) : (
-        <span className="w-10" />
-      )}
-
-      <div className="flex gap-1.5">
-        {Array.from({ length: total }).map((_, i) => (
-          <span key={i} className="mx-onboarding-progress-dot" data-complete={i <= step} />
-        ))}
+    <div className="w-full max-w-md px-5 pt-5 grid grid-cols-[1fr_auto_1fr] items-center">
+      <div className="justify-self-start">
+        <BackButton onClick={onBack} />
       </div>
 
-      {onSkip ? (
-        <button
-          onClick={() => {
-            platform.haptic('light')
-            onSkip()
-          }}
-          className="text-[13px] font-bold text-faint bg-transparent border-0 py-1 w-14 text-right"
-        >
-          Далее
-        </button>
+      {step < total - 1 ? (
+        <div className="flex gap-1.5" aria-label={`Шаг ${step + 1} из ${total}`}>
+          {Array.from({ length: total }).map((_, i) => (
+            <span key={i} className="mx-onboarding-progress-dot" data-complete={i <= step} />
+          ))}
+        </div>
       ) : (
-        <span className="w-10" />
+        <span aria-hidden="true" />
       )}
+
+      <span aria-hidden="true" />
     </div>
   )
 }
@@ -187,20 +168,16 @@ export default function Onboarding({ user, onFinish }) {
   return (
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
       <div className={FULLSCREEN_HEADER_SLOT_CLASS}>
-        {step > 0 && step < 4 && (
-          <Head step={step} total={TOTAL} onBack={() => setStep(step - 1)} onSkip={next} />
+        {step > 0 && (
+          <Head step={step} total={TOTAL} onBack={() => setStep(current => current - 1)} />
         )}
       </div>
       <div className={FULLSCREEN_SCROLL_CLASS}>
         {/* ── 0. Приветствие ── */}
         {step === 0 && (
-          <div className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center">
+          <div className="mx-onboarding-step mx-onboarding-intro-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center">
             <div className="mx-onboarding-intro-copy flex flex-col items-center">
-              <h2 className="font-display text-[30px] text-cream leading-tight">
-                это Mentalix.
-                <br />
-                твоя система, а не мотивация
-              </h2>
+              <h2 className="font-display text-[34px] text-cream leading-tight">Mentalix.</h2>
               <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
                 Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
               </p>
@@ -365,24 +342,24 @@ export default function Onboarding({ user, onFinish }) {
             )}
 
             <div className="space-y-2.5 mt-8">
-              {PLAN_CARDS.map((c, i) => {
+              {PLAN_CARDS.map((text, i) => {
                 const shown = revealed > i
                 return (
                   <div
                     key={i}
-                    className="mx-onboarding-plan-card rounded-3xl bg-emerald px-5 py-4 flex items-center gap-4"
+                    className="mx-onboarding-plan-card rounded-3xl bg-emerald px-5 py-4 flex items-center gap-3"
                     data-revealed={shown}
                   >
-                    <MotifArt name={c.motif} size={44} className="shrink-0" />
                     <span className="flex-1 text-[14px] font-semibold text-cream leading-snug">
-                      {c.text}
+                      {text}
                     </span>
-                    <span
-                      className="mx-onboarding-plan-check w-6 h-6 rounded-full flex items-center justify-center shrink-0"
+                    <Check
+                      size={20}
+                      strokeWidth={2.5}
+                      className="mx-onboarding-plan-check shrink-0"
                       data-revealed={shown}
-                    >
-                      <Check size={14} strokeWidth={3} />
-                    </span>
+                      aria-hidden="true"
+                    />
                   </div>
                 )
               })}
