@@ -3,61 +3,6 @@
   will-change: opacity;
 }
 
-/* Onboarding hero visuals: contained image, subtle gold glow and line */
-.mx-onboarding-hero {
-  position: relative;
-  width: inherit;
-  height: inherit;
-  background-color: transparent; /* ensure container does not draw a rectangle */
-  display: block;
-  overflow: visible;
-}
-
-/* removed decorative pseudo-elements to avoid any rectangular artifacts */
-
-.mx-onboarding-hero-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: 50% 54%; /* raise framing slightly */
-  display: block;
-  transform: translateY(-30px) scale(1); /* raise ~30px and scale ~+19% */
-  will-change: transform;
-  z-index: 1;
-  filter: brightness(0.86); /* reduce gold brightness ~14% - ~20% */
-
-  /* smooth dissolve of bottom ~18-20% into transparent background */
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 1) 80%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 1) 80%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-}
-
-/* Respect reduced motion and do not change existing animations */
-@media (prefers-reduced-motion: reduce) {
-  .mx-onboarding-hero-img {
-    transition: none !important;
-    transform: translateY(-25px) scale(0.82) !important;
-  }
-  .mx-onboarding-hero:before,
-  .mx-onboarding-hero:after {
-    transition: none !important;
-    filter: none !important;
-  }
-}
-
 .mx-onboarding-intro-copy {
   display: flex;
   flex-direction: column;
