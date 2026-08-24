@@ -23,7 +23,7 @@
    * Vite'ом определяется порядком импортов, а не порядком
    * объявления в файле; полагаться на него нельзя.
    */
-  .mx-card-system-today-art .mx-today-hero-art-glyph {
+  .mx-today-hero-art .mx-today-hero-art-glyph {
     width: 70px;
     margin-inline: auto;
   }

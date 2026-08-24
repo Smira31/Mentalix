@@ -112,9 +112,9 @@ export default function BottomNavigation({
       "
       style={{
         left:
-          'max(24px, var(--app-safe-left))',
+          'max(20px, var(--app-safe-left))',
         right:
-          'max(16px, var(--app-safe-right))',
+          'max(20px, var(--app-safe-right))',
         bottom:
           'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
       }}

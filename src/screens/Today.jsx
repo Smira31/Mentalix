@@ -764,7 +764,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       */}
       <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in">
         {motionExperimentEnabled ? (
-          <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
+          <div className="mx-today-hero-art" aria-label="Один следующий шаг">
             <SemanticGlyph
               kind="next-step"
               debugSource="Today.jsx"

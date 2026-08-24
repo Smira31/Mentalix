@@ -18,10 +18,11 @@
 
 - Hosting: **Vercel**.
 - Production URL: `https://mentalix.vercel.app`.
-- Production commit: `38140019195a5004809d94aff45d615b27ca19ec`
-  (`main`, merge PR #129).
-- Статус: GitHub commit status `Vercel: success`; прямой запрос к URL вернул
-  `HTTP 200` 21.08.2026.
+- Production commit: `b3253e9307a0580f3081ed764f4ca3b12983ffdb`
+  (`main`, merge PR #162).
+- Статус: GitHub Actions и Vercel deployment для PR #162 / нового `main`
+  завершились успешно; прямой запрос к production URL вернул `HTTP 200`
+  24.08.2026.
 - Production rewrite в актуальном `vercel.json` направляет `/api/*` на
   `https://mentalix-bot.onrender.com/api/*`.
 
@@ -113,7 +114,7 @@
   повторный запуск Onboarding не показывает. Пятишаговый сценарий восстановлен
   в PR #161, commit `ded6f9d2`, и подтверждён владельцем как актуальное
   продуктовое решение.
-- GitHub Actions frontend для production commit `cf1972ca` завершился успешно.
+- GitHub Actions frontend для production commit `b3253e93` завершился успешно.
 - Hourly workflow backend scheduled jobs завершался успешно на current backend
   `main` `23610b38` 21.08.2026. Это подтверждает вызов защищённого jobs endpoint,
   но не доставку каждого конкретного напоминания.
@@ -147,13 +148,17 @@
 
 ## 5. Frontend / UI
 
-- `MXL-ONBOARDING-POLISH-001` реализована локально в ветке
-  `codex/onboarding-toolbar-polish`: первый экран сведён к `Mentalix.`,
+- `MXL-ONBOARDING-POLISH-001` закрыта 24.08.2026 через PR #162
+  (`b3253e93`): первый экран сведён к `Mentalix.`,
   дублирующая навигация шапки заменена системным Telegram BackButton с
   web-fallback, финальные motif-рисунки заменены простыми золотыми галочками.
-  Код, build и два мобильных viewport проверены; post-change gate на реальном
-  iPhone внутри Telegram ещё не пройден, изменение не находится в production.
-- Production: Vercel, commit `38140019195a5004809d94aff45d615b27ca19ec`.
+  Код, build, два мобильных viewport и post-change gate на реальном iPhone
+  внутри Telegram проверены; изменение находится в production.
+- `MXL-XS-MAINTENANCE-001` принят владельцем 24.08.2026 в ветке
+  `codex/xs-maintenance-batch`: подтверждённый onboarding dead code удалён,
+  два живых CSS-якоря переименованы без изменения поведения, navbar
+  отцентрирован симметричными боковыми резервами. Локальный UX gate и общий
+  Preview/iPhone gate пройдены; пакет готов к интеграции через PR.
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
 - Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
@@ -263,9 +268,13 @@ Data-dependent блоки:
   они вызываются с `once=True` через защищённый `/api/internal/jobs/tick`,
   который запускает hourly GitHub Actions workflow.
 - Dispatcher использует `MemoryStorage`; FSM-состояния не являются durable.
-- `/start` и открытие Mini App подтверждены владельцем на реальном iPhone.
-- Live `getWebhookInfo` в этом аудите не запрашивался; текущий зарегистрированный
-  webhook URL — **НЕ ПОДТВЕРЖДЕНО**.
+- `/start`, открытие Mini App и `/admin` подтверждены владельцем на реальном
+  iPhone. Причина прежнего молчания `/admin` — отсутствовавший `ADMIN_IDS` в
+  env текущего Render-сервиса; владелец добавил переменную и подтвердил работу
+  после deploy. Значение Telegram ID не раскрывалось и в Git не фиксировалось.
+- Live `getWebhookInfo` проверен 24.08.2026: webhook зарегистрирован на
+  `https://mentalix-bot.onrender.com/api/telegram/webhook`, очередь пуста,
+  последней ошибки нет; разрешены `message` и `callback_query`.
 - Прежняя проблема `BOT_TOKEN` относилась к остановленному Railway deployment и
   проявлялась как `TelegramUnauthorizedError`. Работающий `/start` на текущем
   production подтверждает пригодность активного токена, но само значение
@@ -353,21 +362,21 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 навигацией на Today, 320×568») не воспроизводится.
 
 - Фикс `Today.css:26` (`@media (max-height: 650px)`, сужение
-  `.mx-today-hero-art-glyph` до `70px` внутри `.mx-card-system-today-art`)
+  `.mx-today-hero-art-glyph` до `70px` внутри `.mx-today-hero-art`)
   — на месте, не изменялся с момента исходного закрытия (PR #138,
   23.08.2026).
-- Класс-якорь `mx-card-system-today-art` (`Today.jsx:767`) сознательно
+- Класс-якорь `mx-card-system-today-art` (`Today.jsx:767`) был сознательно
   сохранён при удалении соседних мёртвых `mx-card-system-*` классов
-  (`MXL-CARDSYSTEM-DEADCODE-002`, PR #158, 24.08.2026) — заведён как
-  находка `MXL-CARDSYSTEM-DETAIL-ART-001` в `TASKS.md`, а не отдельная
-  проблема.
+  (`MXL-CARDSYSTEM-DEADCODE-002`, PR #158, 24.08.2026), а в локальном
+  `MXL-XS-MAINTENANCE-001` переименован в `mx-today-hero-art` без изменения
+  правила короткого viewport.
 - Обёртка глифа рендерится в проде всегда (`motionExperimentEnabled`
   истинно вне `today_compare`-эксперимента), одинаково для всех hero-
   состояний, включая `checkinAsHero` — сценарий из описания бага.
 - `git log -- src/screens/Today.jsx src/screens/Today.css` — с момента
   исходного фикса файлы трогал только `MXL-CARDSYSTEM-DEADCODE-002`,
   который не задевал сам фикс.
-- `npm run ux:check` прогнан заново 25.08.2026 — **passed** на обоих
+- `npm run ux:check` прогнан заново 24.08.2026 — **passed** на обоих
   viewport (390×844, 320×568), включая явную проверку
   `overlap(ctaBox, navBox)` для `checkinAsHero`-сценария (пустые
   ritual/asceza, `checkin: null` — тот же кейс, что в исходном баге).
