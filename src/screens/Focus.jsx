@@ -90,7 +90,7 @@ export default function Focus({ user }) {
   const ss = String(secondsLeft % 60).padStart(2, '0')
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
-      <div className="mx-card-system-focus-art mb-3">
+      <div className="mb-3">
         <SemanticGlyph kind="focus" className="w-full h-full" />
       </div>
 

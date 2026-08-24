@@ -168,7 +168,6 @@ export default function PersonaPicker({ user, onPick }) {
                   cursor-pointer
                   active:scale-[0.99]
                   transition-transform
-                  mx-card-system-persona-card
                 `}
               style={CARD_HEIGHT}
             >
@@ -178,7 +177,7 @@ export default function PersonaPicker({ user, onPick }) {
                * тянется до нижнего меню и на разных экранах имеет
                * разную высоту.
                */}
-              <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1 mx-card-system-persona-art">
+              <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1">
                 <SemanticGlyph
                   kind={semanticKindForPersona(persona.key)}
                   animated={active === index}

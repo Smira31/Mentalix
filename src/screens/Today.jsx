@@ -762,7 +762,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in mx-card-system-today-hero">
+      <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in">
         {motionExperimentEnabled ? (
           <div className="mx-card-system-today-art" aria-label="Один следующий шаг">
             <SemanticGlyph

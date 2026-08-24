@@ -15,7 +15,33 @@
 ## Known Issues
 
 - **MXL-PRACTICES-KEYBOARD-POSTRELEASE-001:** Telegram iOS WebView автоматически смещает форму создания Ritual/Asceza при переходе на 4-е и 5-е поле. Функциональность не нарушается, создание работает. Баг имеет низкий приоритет и переносится на пострелизный этап.
-- **MXL-CARDSYSTEM-DEADCODE-002 (найдена, не исправлена):** классы `mx-card-system-today-hero`/`mx-card-system-today-art` (`Today.jsx`), `mx-card-system-practices` (`Practices.jsx`), `mx-card-system-detail-card`/`mx-card-system-detail-art` (`Rituals.jsx`, `Ascezas.jsx`), `mx-card-system-breath-art` (`Breathing.jsx`), `mx-card-system-focus-art` (`Focus.jsx`), `mx-card-system-persona-card`/`mx-card-system-persona-art` (`PersonaPicker.jsx`) применены (className) в 7 продовых экранах, но стили из `CardSystem.css`, на которые они рассчитаны, туда никогда не доезжали (см. `MXL-CARDSYSTEM-DEADCODE-001` ниже — сам файл и его единственный источник удалены) и не доезжали ранее — эффекта у классов не было и нет. Найдено 24.08.2026 при работе над `MXL-CARDSYSTEM-DEADCODE-001`, вне её согласованного узкого объёма (владелец подтвердил не трогать эти 7 файлов в этом заходе). Приоритет и срок не назначены.
+- **MXL-CARDSYSTEM-DETAIL-ART-001 (найдена, не исправлена, не путать с закрытой `MXL-CARDSYSTEM-DEADCODE-002` ниже):** два класса из семейства `mx-card-system-*` оказались НЕ мёртвыми, а рабочими компаунд-селекторами в реально подключённых CSS-файлах, не связанных с удалённым `CardSystem.css` — `mx-card-system-today-art` (`Today.jsx:767`) используется в `Today.css:26` (`@media (max-height: 650px)`, сам фикс `MXL-UI-CTA-OVERLAP-001` — сужает глиф на коротких экранах, чтобы CTA чек-ина не перекрывался нижней навигацией); `mx-card-system-detail-art` (`Rituals.jsx:110`, `Ascezas.jsx:302`) используется в `SceneLayout.css:72` (`flex-basis: 46%` для иллюстрации detail-карточки). Оба CSS-файла подключены напрямую в продовых экранах (`Today.jsx` → `Today.css`; `Rituals.jsx`/`Ascezas.jsx`/`SceneLayout.jsx` → `SceneLayout.css`). Найдено 24.08.2026 при работе над `MXL-CARDSYSTEM-DEADCODE-002` — эти два класса намеренно не удалялись, оставлены как есть. Название `mx-card-system-*` вводит в заблуждение (похоже на мёртвый код той же системы), стоит когда-нибудь переименовать без префикса, чтобы не путать с реально мёртвыми классами. Приоритет и срок не назначены.
+
+## MXL-CARDSYSTEM-DEADCODE-002 — удалить осиротевшие className mx-card-system-* в 7 продовых файлах (закрыто)
+
+- **Статус: закрыто 24.08.2026**, ветка `chore/remove-cardsystem-deadcode-002`.
+- [x] **Проверка перед правкой (по прямому требованию владельца — не
+      удалять молча):** прогреп всего `src` на `mx-card-system-` после
+      удаления `CardSystem.css`/`PracticeCard.jsx` (PR #156) показал два
+      класса с живыми CSS-правилами в других файлах — вынесены отдельной
+      находкой `MXL-CARDSYSTEM-DETAIL-ART-001` выше, **не удалялись**.
+      Остальные 9 вхождений в 7 файлах подтверждены полностью мёртвыми —
+      других CSS-правил на них нигде в кодовой базе не найдено.
+- [x] Удалены (className, без изменений остальной вёрстки/логики):
+      `mx-card-system-today-hero` (`Today.jsx`), `mx-card-system-practices`
+      (`Practices.jsx`), `mx-card-system-detail-card` (`Rituals.jsx`,
+      `Ascezas.jsx` — не путать с `mx-card-system-detail-art`, тот
+      оставлен), `mx-card-system-breath-art` (`Breathing.jsx`, оба
+      вхождения), `mx-card-system-focus-art` (`Focus.jsx`),
+      `mx-card-system-persona-card`/`mx-card-system-persona-art`
+      (`PersonaPicker.jsx`).
+- [x] Сохранены нетронутыми (см. `MXL-CARDSYSTEM-DETAIL-ART-001`):
+      `mx-card-system-today-art` (`Today.jsx`), `mx-card-system-detail-art`
+      (`Rituals.jsx`, `Ascezas.jsx`).
+- [x] `npm run lint` — 0/0, `npm run build` — зелёный. Визуальной разницы
+      быть не должно — удалённые классы нигде не имели CSS-эффекта ни до,
+      ни после (живая проверка не проводилась, чисто удаление
+      неиспользуемых строк-классов).
 
 ## MXL-CARDSYSTEM-DEADCODE-001 — удалить мёртвый CardSystem.css и PracticeCard.jsx (закрыто)
 
@@ -25,7 +51,7 @@
 - [x] **Найдено при расследовании перед удалением (важнее исходного
       описания находки):** `PracticeCard.jsx` — полностью осиротевший файл,
       **ни одного реального импорта нигде в кодовой базе** (`grep "import.*
-    PracticeCard"` — 0 совпадений). Прежнее описание в Known Issues («используется
+  PracticeCard"` — 0 совпадений). Прежнее описание в Known Issues («используется
       lazy dev-инструментом `CardDirectionsLab`») было неточным:
       `CardDirectionsLab.jsx` лишь **упоминает** «PracticeCard» в текстовой
       строке спецификации одного из направлений (design-заметка для

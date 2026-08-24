@@ -209,7 +209,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
         w-full
         max-w-md
         px-5
-        mx-card-system-practices
       `}
     >
       <div

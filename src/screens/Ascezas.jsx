@@ -248,7 +248,7 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete }) {
 
   return (
     <div
-      className={`practice-motion-card practice-detail-card relative rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col mx-card-system-detail-card ${
+      className={`practice-motion-card practice-detail-card relative rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${
         status === 'held'

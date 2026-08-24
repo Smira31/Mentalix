@@ -143,7 +143,7 @@ export default function Breathing({ onBack }) {
           <span className="font-display text-lg text-cream lowercase">дыхание.</span>
         </div>
 
-        <div className="mx-card-system-breath-art mb-4">
+        <div className="mb-4">
           <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
 
@@ -184,7 +184,7 @@ export default function Breathing({ onBack }) {
   if (stage === 'done') {
     return (
       <FullscreenStage className="items-center justify-center px-8 text-center">
-        <div className="mx-card-system-breath-art mb-5">
+        <div className="mb-5">
           <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
         <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
