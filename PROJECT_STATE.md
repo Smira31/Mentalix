@@ -1,6 +1,6 @@
 # Mentalix — Current Project State
 
-Дата последней проверки: **23.08.2026, Europe/Moscow**.
+Дата последней проверки: **24.08.2026, Europe/Moscow**.
 
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся
 в `CHANGES.md`, планы — в `ROADMAP.md`, рабочие детали — в `TASKS.md`.
@@ -108,8 +108,11 @@
 - Frontend production открывается на Vercel (`HTTP 200`).
 - Backend health на Render отвечает (`HTTP 200`, `{"status":"ok"}`).
 - Первый запуск, проверенный владельцем на реальном iPhone внутри Telegram:
-  профиль бота → `/start` → единственный CTA → onboarding → прежний Today;
-  повторный запуск onboarding не показывает.
+  профиль бота → `/start` → единственный CTA → пятишаговый Onboarding
+  (приветствие → фокус → возраст → напоминания → «план готов») → Today;
+  повторный запуск Onboarding не показывает. Пятишаговый сценарий восстановлен
+  в PR #161, commit `ded6f9d2`, и подтверждён владельцем как актуальное
+  продуктовое решение.
 - GitHub Actions frontend для production commit `cf1972ca` завершился успешно.
 - Hourly workflow backend scheduled jobs завершался успешно на current backend
   `main` `23610b38` 21.08.2026. Это подтверждает вызов защищённого jobs endpoint,
@@ -144,6 +147,12 @@
 
 ## 5. Frontend / UI
 
+- `MXL-ONBOARDING-POLISH-001` реализована локально в ветке
+  `codex/onboarding-toolbar-polish`: первый экран сведён к `Mentalix.`,
+  дублирующая навигация шапки заменена системным Telegram BackButton с
+  web-fallback, финальные motif-рисунки заменены простыми золотыми галочками.
+  Код, build и два мобильных viewport проверены; post-change gate на реальном
+  iPhone внутри Telegram ещё не пройден, изменение не находится в production.
 - Production: Vercel, commit `38140019195a5004809d94aff45d615b27ca19ec`.
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
@@ -296,8 +305,12 @@ Data-dependent блоки:
 - Production frontend работает на Vercel и направляет API на Render.
 - Render Free + fresh Neon migration реализована в backend PR #12; health
   endpoint отвечает.
-- Issue #120 завершён: storefront `/start`, один CTA и короткий onboarding
-  прошли реальный iPhone/Telegram gate; Today не перерабатывался.
+- Issue #120 остаётся завершённым историческим этапом: storefront `/start`, один
+  CTA и короткий Onboarding прошли реальный iPhone/Telegram gate; Today не
+  перерабатывался. Позднее решение о коротком frontend-Onboarding было отменено
+  владельцем: PR #161 (`ded6f9d2`) восстановил актуальный пятишаговый сценарий
+  «приветствие → фокус → возраст → напоминания → план готов». История Issue #120
+  сохраняется и не переписывается задним числом.
 - Shared AI memory PR #10 merged в backend `main`.
 - Railway application services выведены из production request path.
 - Локальный Telegram Preview workflow зафиксирован: `npm run preview` публикует текущее рабочее дерево в отдельный
