@@ -168,7 +168,9 @@ export default function Onboarding({ user, onFinish }) {
     const opt = REMINDER_OPTIONS.find(r => r.key === reminder)
     try {
       localStorage.setItem('mx-onboarding', JSON.stringify({ focuses, age, reminder }))
-    } catch {}
+    } catch {
+      // приватный режим/квота — не критично
+    }
     try {
       if (user?.id && opt) {
         await api.profile.saveSettings(user.id, { reminder_enabled: true, reminder_hour: opt.hour })
