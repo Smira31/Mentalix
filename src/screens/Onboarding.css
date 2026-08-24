@@ -3,60 +3,6 @@
   will-change: opacity;
 }
 
-.mx-onboarding-intro {
-  /* keep vertical space tight so intro fits on small viewports */
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* center content vertically inside available space */
-  gap: 8px;
-  padding-top: clamp(12px, 3dvh, 28px);
-  padding-bottom: clamp(12px, 3dvh, 28px);
-}
-
-/* small viewport tweak: reduce vertical gaps further */
-@media (max-height: 720px) {
-  .mx-onboarding-intro {
-    padding-top: 12px;
-    padding-bottom: 12px;
-  }
-}
-
-.mx-onboarding-intro.mx-onboarding-step {
-  animation-duration: 520ms;
-}
-
-/* Ensure first intro screen fills viewport and never scrolls vertically */
-.mx-onboarding-intro.mx-onboarding-step {
-  /* use svh when available, fall back to dVh */
-  height: calc(100svh - var(--app-safe-top) - var(--app-safe-bottom));
-  height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
-  min-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
-  max-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
-  overflow: hidden; /* prevent vertical scroll */
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* top safe area, image, text+desc, button, bottom safe area */
-  align-items: center;
-  gap: 8px;
-}
-
-.mx-onboarding-intro-art {
-  width: 100%;
-  /* reduce image area height so first screen fits without vertical scroll on small viewports */
-  min-height: clamp(120px, 26dvh, 220px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 1 auto;
-}
-
-.mx-onboarding-intro-maze {
-  width: clamp(216px, 70vw, 266px);
-  height: auto;
-  flex: 0 0 auto;
-}
-
 /* Onboarding hero visuals: contained image, subtle gold glow and line */
 .mx-onboarding-hero {
   position: relative;
@@ -113,12 +59,10 @@
 }
 
 .mx-onboarding-intro-copy {
-  margin-top: clamp(6px, 1.5dvh, 12px);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px; /* spacing between title, description, and button handled by flex gap */
-  transform: translateY(-20px); /* lift text block closer to the character */
 }
 
 .mx-onboarding-intro-copy h2 {
@@ -127,11 +71,6 @@
 
 .mx-onboarding-intro-copy p {
   margin: 0;
-}
-
-/* ensure CTA sits just after description without extra margin */
-.mx-onboarding-intro .cta-pill {
-  margin-top: 0 !important;
 }
 
 .mx-onboarding-progress-dot {

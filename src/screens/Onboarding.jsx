@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { ChevronLeft, Check } from 'lucide-react'
-import OnboardingHero from '../components/OnboardingHero'
 import { MotifArt } from '../components/Motif'
 import {
   useFullscreenSurface,
@@ -195,10 +194,7 @@ export default function Onboarding({ user, onFinish }) {
       <div className={FULLSCREEN_SCROLL_CLASS}>
         {/* ── 0. Приветствие ── */}
         {step === 0 && (
-          <div className="mx-onboarding-step mx-onboarding-intro flex-1 w-full max-w-md flex flex-col items-center px-8 text-center">
-            <div className="mx-onboarding-intro-art" aria-hidden="true">
-              <OnboardingHero className="mx-onboarding-intro-maze" />
-            </div>
+          <div className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center">
             <div className="mx-onboarding-intro-copy flex flex-col items-center">
               <h2 className="font-display text-[30px] text-cream leading-tight">
                 это Mentalix.
