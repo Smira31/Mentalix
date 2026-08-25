@@ -462,13 +462,14 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 **Текущая P0-задача — `MXL-WRITING-CANVAS-ROLLOUT-001`.** Все три focused
 rollout-батча реализованы: первый принят владельцем в Telegram Preview и
 выпущен через PR #178; второй и третий подготовлены 25.08.2026 в
-`codex/writing-canvas-rollout-remaining`. Десять plain-сцен в `TodayFocusFlow`,
+`codex/writing-canvas-rollout-remaining` и опубликованы в Telegram Preview;
+draft-PR #180 открыт. Десять plain-сцен в `TodayFocusFlow`,
 `FirstStepFlow`, `NarrowFocusFlow`, `FinishFlow` и `ProcrastinationFlow`
 переиспользуют общий Writing Canvas без изменения данных, state machine и
 backend. Для каждого батча unit/lint/build, UX smoke на `390×844`/`320×568` и
-diff-check зелёные. Для оставшихся батчей объединённый Preview и ручная
-проверка клавиатуры на реальном iPhone ещё не выполнялись; push/PR/production
-не выполнялись. Вторичные формы Path и Ascezas остаются за отдельным
+diff-check зелёные. Для оставшихся батчей ручная проверка клавиатуры на
+реальном iPhone ещё не выполнена; production не менялся. Вторичные формы Path
+и Ascezas остаются за отдельным
 продуктовым и визуальным решением.
 
 **Параллельная P1-задача `MXL-PREVIEW-STOP-VERIFY-001` реализована локально

@@ -61,9 +61,8 @@
 ## MXL-WRITING-CANVAS-ROLLOUT-001 — перенос единого Writing Canvas
 
 - **Статус: текущая P0. Первый rollout-батч принят владельцем в Telegram
-  Preview и выпущен через PR #178; второй и третий батчи реализованы локально
-  25.08.2026 в `codex/writing-canvas-rollout-remaining`, без
-  push/PR/production.** Основа
+  Preview и выпущен через PR #178; второй и третий батчи опубликованы в
+  Telegram Preview 25.08.2026, draft-PR #180 открыт, production не менялся.** Основа
   выпущена через PR #176. По ограничению `AI_RULES.md` §4.1 один тестовый цикл
   содержит только две связанные функции.
 - [x] `TodayFocusFlow`: две сцены ввода переведены в plain/list Writing Canvas;
@@ -99,7 +98,7 @@
   чисто; `npm run build` — успешно; `npm run ux:check` — 1/1 на `390×844` и
   `320×568`, включая десять сцен ввода; `git diff --check` — чисто. Preview
   первого батча принят владельцем; объединённый Preview второго и третьего
-  батчей и реальный Telegram/iPhone gate ещё не выполнялись.
+  батчей опубликован, реальный Telegram/iPhone gate ожидает владельца.
 - **Не менялось:** backend/API/БД, формат и семантика данных, навигация,
   state machine остальных сцен, Path/Ascezas и обычный AI-чат.
 - **Норматив:** `DESIGN_SYSTEM.md` → `Mentalix Writing Canvas`.
