@@ -1,22 +1,9 @@
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import {
-  Settings as SettingsIcon,
-} from 'lucide-react'
+import { Settings as SettingsIcon } from 'lucide-react'
 
 import { platform, platformName } from './platform'
-import {
-  paintChrome,
-  lockVerticalSwipes,
-  useSettingsButton,
-} from './platform/telegram.hooks'
+import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
 
 import Today from './screens/Today'
 import WebAuthScreen from './screens/WebAuthScreen'
@@ -32,13 +19,11 @@ import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
 
-
 /* ============================================================
    STORAGE
    ============================================================ */
 
 const ONBOARDED_KEY = 'mx-onboarded-v2'
-
 
 /* ============================================================
    LAZY SCREENS
@@ -54,7 +39,6 @@ const MentalixChat = lazy(() => import('./screens/Mentalix'))
 const Profile = lazy(() => import('./screens/Profile'))
 const Settings = lazy(() => import('./screens/Settings'))
 const Library = lazy(() => import('./screens/Library'))
-
 
 /* ============================================================
    SPLASH
@@ -74,11 +58,7 @@ function Splash() {
         font-body
       "
     >
-      <MazeLogo
-        size={132}
-        progress={0.55}
-        className="animate-pulse-once"
-      />
+      <MazeLogo size={132} progress={0.55} className="animate-pulse-once" />
 
       <div
         className="
@@ -106,7 +86,6 @@ function Splash() {
   )
 }
 
-
 function ScreenLoading() {
   return (
     <div
@@ -118,7 +97,6 @@ function ScreenLoading() {
     </div>
   )
 }
-
 
 /* ============================================================
    TODAY TEXT
@@ -142,15 +120,12 @@ function greeting() {
   return 'тихой ночи.'
 }
 
-
 /* ============================================================
    THEME
    ============================================================ */
 
 function getThemeBackground() {
-  const channels = getComputedStyle(
-    document.documentElement
-  )
+  const channels = getComputedStyle(document.documentElement)
     .getPropertyValue('--c-bg')
     .trim()
     .split(/\s+/)
@@ -158,37 +133,22 @@ function getThemeBackground() {
 
   if (
     channels.length !== 3 ||
-    channels.some(
-      (channel) =>
-        !Number.isFinite(channel) ||
-        channel < 0 ||
-        channel > 255
-    )
+    channels.some(channel => !Number.isFinite(channel) || channel < 0 || channel > 255)
   ) {
     return null
   }
 
-  return `#${channels
-    .map((channel) =>
-      channel
-        .toString(16)
-        .padStart(2, '0')
-    )
-    .join('')}`
+  return `#${channels.map(channel => channel.toString(16).padStart(2, '0')).join('')}`
 }
-
 
 function applyDarkTheme() {
   // Снимаем legacy-класс и при HMR, и после старой открытой сессии.
   document.body.classList.remove('light')
 
-  const background =
-    getThemeBackground()
+  const background = getThemeBackground()
 
   if (background) {
-    platform.setThemeColors?.(
-      background
-    )
+    platform.setThemeColors?.(background)
 
     /*
      * Шапка и нижняя полоса Telegram красятся в цвет
@@ -199,7 +159,6 @@ function applyDarkTheme() {
   }
 }
 
-
 /* ============================================================
    USER NAME
    ============================================================ */
@@ -209,23 +168,17 @@ function applyDarkTheme() {
    ============================================================ */
 
 export default function App() {
-  const [user, setUser] =
-    useState(null)
+  const [user, setUser] = useState(null)
 
-  const [authChecked, setAuthChecked] =
-    useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
-  const [overlay, setOverlay] =
-    useState(null)
+  const [overlay, setOverlay] = useState(null)
 
-  const [fullscreen, setFullscreen] =
-    useState(false)
+  const [fullscreen, setFullscreen] = useState(false)
 
-  const [navCollapsed, setNavCollapsed] =
-    useState(false)
+  const [navCollapsed, setNavCollapsed] = useState(false)
 
-  const viewportHeight =
-    useVisualViewportHeight()
+  const viewportHeight = useVisualViewportHeight()
 
   /*
    * Отдельное состояние:
@@ -238,26 +191,13 @@ export default function App() {
    *         Следопыт открыт,
    *         navbar полностью скрыт.
    */
-  const [
-    mentorPersonaOpen,
-    setMentorPersonaOpen,
-  ] = useState(false)
+  const [mentorPersonaOpen, setMentorPersonaOpen] = useState(false)
 
-  const [
-    todayFlowOpen,
-    setTodayFlowOpen,
-  ] = useState(false)
+  const [todayFlowOpen, setTodayFlowOpen] = useState(false)
 
-  const [
-    practiceGameOpen,
-    setPracticeGameOpen,
-  ] = useState(false)
+  const [practiceGameOpen, setPracticeGameOpen] = useState(false)
 
-  const bottomNavigationHidden =
-    mentorPersonaOpen
-    || todayFlowOpen
-    || practiceGameOpen
-
+  const bottomNavigationHidden = mentorPersonaOpen || todayFlowOpen || practiceGameOpen
 
   /*
    * Последняя реальная позиция скролла.
@@ -281,7 +221,6 @@ export default function App() {
 
   /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
   const scrollRootRef = useRef(null)
-
 
   /*
    * Оба значения принадлежат человеку, а не устройству: знакомство
@@ -313,38 +252,15 @@ export default function App() {
 
   const appLockEnabled = appLockEnabledFlag === '1'
 
-  const [locked, setLocked] = useState(
-    () => appLockEnabled && hasPinRecord()
-  )
+  const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
-  const initialTab =
-    new URLSearchParams(
-      window.location.search
-    ).get('tab')
+  const initialTab = new URLSearchParams(window.location.search).get('tab')
 
+  const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
 
-  const validTabs = [
-    'today',
-    'practices',
-    'mentor',
-    'library',
-    'trends',
-  ]
+  const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : 'today')
 
-
-  const [tab, setTab] =
-    useState(
-      validTabs.includes(initialTab)
-        ? initialTab
-        : 'today'
-    )
-
-
-  const [
-    practicesSub,
-    setPracticesSub,
-  ] = useState(null)
-
+  const [practicesSub, setPracticesSub] = useState(null)
 
   /* ============================================================
      THEME
@@ -354,19 +270,15 @@ export default function App() {
     applyDarkTheme()
   }, [])
 
-
   /* ============================================================
      TELEGRAM FULLSCREEN
      ============================================================ */
 
   useEffect(() => {
-    return initFullscreen(
-      ({ fullscreen: fs }) => {
-        setFullscreen(fs)
-      }
-    )
+    return initFullscreen(({ fullscreen: fs }) => {
+      setFullscreen(fs)
+    })
   }, [])
-
 
   /* ============================================================
      AUTH
@@ -376,8 +288,7 @@ export default function App() {
     platform.init()
 
     ;(async () => {
-      const existing =
-        await platform.requestAuth()
+      const existing = await platform.requestAuth()
 
       if (existing) {
         setUser(existing)
@@ -386,7 +297,6 @@ export default function App() {
       setAuthChecked(true)
     })()
   }, [])
-
 
   /* ============================================================
      БЛОКИРОВКА ПРИЛОЖЕНИЯ
@@ -413,7 +323,6 @@ export default function App() {
     }
   }, [appLockEnabled])
 
-
   /* ============================================================
      ПЛАТФОРМА
 
@@ -427,7 +336,6 @@ export default function App() {
     lockVerticalSwipes()
   }, [])
 
-
   /*
    * Настройки уезжают в системное меню «⋯»: они нужны редко,
    * а место на экране занимали каждый день.
@@ -435,7 +343,6 @@ export default function App() {
   useSettingsButton(() => {
     setOverlay('settings')
   })
-
 
   /* ============================================================
      ZOOM
@@ -461,7 +368,6 @@ export default function App() {
      document, и не трогая доступность.
      ============================================================ */
 
-
   /* ============================================================
      COLLAPSIBLE NAVIGATION
      ============================================================ */
@@ -472,12 +378,10 @@ export default function App() {
     const COLLAPSE_AFTER_Y = 96
     const TOP_ZONE = 32
 
-
     const resetGesture = () => {
       scrollDirection.current = null
       scrollDistance.current = 0
     }
-
 
     const processScroll = () => {
       scrollFrame.current = null
@@ -492,22 +396,13 @@ export default function App() {
         return
       }
 
-      const currentY =
-        Math.max(
-          scrollRootRef.current
-            ?.scrollTop || 0,
-          0
-        )
+      const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
 
-      const previousY =
-        lastScrollY.current
+      const previousY = lastScrollY.current
 
-      const difference =
-        currentY - previousY
+      const difference = currentY - previousY
 
-      lastScrollY.current =
-        currentY
-
+      lastScrollY.current = currentY
 
       /*
        * Наверху страницы navbar
@@ -521,7 +416,6 @@ export default function App() {
         return
       }
 
-
       /*
        * Игнорируем микродвижения.
        */
@@ -529,31 +423,19 @@ export default function App() {
         return
       }
 
-
-      const direction =
-        difference > 0
-          ? 'down'
-          : 'up'
-
+      const direction = difference > 0 ? 'down' : 'up'
 
       /*
        * При смене направления
        * начинаем считать дистанцию заново.
        */
-      if (
-        scrollDirection.current !==
-        direction
-      ) {
-        scrollDirection.current =
-          direction
+      if (scrollDirection.current !== direction) {
+        scrollDirection.current = direction
 
         scrollDistance.current = 0
       }
 
-
-      scrollDistance.current +=
-        Math.abs(difference)
-
+      scrollDistance.current += Math.abs(difference)
 
       /*
        * Сворачивание.
@@ -561,8 +443,7 @@ export default function App() {
       if (
         direction === 'down' &&
         currentY > COLLAPSE_AFTER_Y &&
-        scrollDistance.current >=
-          COLLAPSE_DISTANCE
+        scrollDistance.current >= COLLAPSE_DISTANCE
       ) {
         setNavCollapsed(true)
 
@@ -571,111 +452,63 @@ export default function App() {
         return
       }
 
-
       /*
        * Раскрытие.
        */
-      if (
-        direction === 'up' &&
-        scrollDistance.current >=
-          EXPAND_DISTANCE
-      ) {
+      if (direction === 'up' && scrollDistance.current >= EXPAND_DISTANCE) {
         setNavCollapsed(false)
 
         scrollDistance.current = 0
       }
     }
 
-
     const handleScroll = () => {
-      if (
-        scrollFrame.current !== null
-      ) {
+      if (scrollFrame.current !== null) {
         return
       }
 
-      scrollFrame.current =
-        window.requestAnimationFrame(
-          processScroll
-        )
+      scrollFrame.current = window.requestAnimationFrame(processScroll)
     }
 
-
-    lastScrollY.current =
-      Math.max(
-        scrollRootRef.current
-          ?.scrollTop || 0,
-        0
-      )
+    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
 
     resetGesture()
 
-
-    const scrollRoot =
-      scrollRootRef.current
+    const scrollRoot = scrollRootRef.current
 
     if (!scrollRoot) return
 
-    scrollRoot.addEventListener(
-      'scroll',
-      handleScroll,
-      { passive: true }
-    )
-
+    scrollRoot.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
-      scrollRoot.removeEventListener(
-        'scroll',
-        handleScroll
-      )
+      scrollRoot.removeEventListener('scroll', handleScroll)
 
-      if (
-        scrollFrame.current !== null
-      ) {
-        window.cancelAnimationFrame(
-          scrollFrame.current
-        )
+      if (scrollFrame.current !== null) {
+        window.cancelAnimationFrame(scrollFrame.current)
 
         scrollFrame.current = null
       }
     }
-  }, [
-    authChecked,
-    bottomNavigationHidden,
-    locked,
-    onboarded,
-    user,
-  ])
-
+  }, [authChecked, bottomNavigationHidden, locked, onboarded, user])
 
   /* ============================================================
      NAVIGATION
      ============================================================ */
 
-  const scrollAppToTop = useCallback(
-    (behavior = 'auto') => {
-      scrollRootRef.current
-        ?.scrollTo({
-          top: 0,
-          left: 0,
-          behavior,
-        })
-    },
-    []
-  )
+  const scrollAppToTop = useCallback((behavior = 'auto') => {
+    scrollRootRef.current?.scrollTo({
+      top: 0,
+      left: 0,
+      behavior,
+    })
+  }, [])
 
   function resetNavigationGesture() {
-    lastScrollY.current =
-      Math.max(
-        scrollRootRef.current
-          ?.scrollTop || 0,
-        0
-      )
+    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
 
     scrollDirection.current = null
     scrollDistance.current = 0
   }
-
 
   function switchTab(key) {
     /*
@@ -698,7 +531,6 @@ export default function App() {
       return
     }
 
-
     platform.haptic('light')
 
     setPracticesSub(null)
@@ -711,20 +543,16 @@ export default function App() {
     scrollDirection.current = null
     scrollDistance.current = 0
 
-
     scrollAppToTop()
   }
 
-
-  const openPractice =
-    useCallback((sub) => {
+  const openPractice = useCallback(
+    sub => {
       platform.haptic('light')
 
       setMentorPersonaOpen(false)
 
-      setPracticesSub(
-        sub || null
-      )
+      setPracticesSub(sub || null)
 
       setTab('practices')
 
@@ -735,26 +563,25 @@ export default function App() {
       scrollDistance.current = 0
 
       scrollAppToTop()
-    }, [scrollAppToTop])
+    },
+    [scrollAppToTop]
+  )
 
+  const goMentor = useCallback(() => {
+    platform.haptic('light')
 
-  const goMentor =
-    useCallback(() => {
-      platform.haptic('light')
+    setMentorPersonaOpen(false)
 
-      setMentorPersonaOpen(false)
+    setTab('mentor')
 
-      setTab('mentor')
+    setNavCollapsed(false)
 
-      setNavCollapsed(false)
+    lastScrollY.current = 0
+    scrollDirection.current = null
+    scrollDistance.current = 0
 
-      lastScrollY.current = 0
-      scrollDirection.current = null
-      scrollDistance.current = 0
-
-      scrollAppToTop()
-    }, [scrollAppToTop])
-
+    scrollAppToTop()
+  }, [scrollAppToTop])
 
   /* ============================================================
      LOADING
@@ -763,7 +590,6 @@ export default function App() {
   if (!authChecked) {
     return <Splash />
   }
-
 
   /* ============================================================
      ONBOARDING
@@ -780,15 +606,11 @@ export default function App() {
     )
   }
 
-
   /* ============================================================
      WEB AUTH
      ============================================================ */
 
-  if (
-    !user &&
-    platformName === 'web'
-  ) {
+  if (!user && platformName === 'web') {
     return (
       <div
         className="
@@ -801,13 +623,10 @@ export default function App() {
           font-body
         "
       >
-        <WebAuthScreen
-          onAuthed={setUser}
-        />
+        <WebAuthScreen onAuthed={setUser} />
       </div>
     )
   }
-
 
   /* ============================================================
      БЛОКИРОВКА ПРИЛОЖЕНИЯ
@@ -818,14 +637,8 @@ export default function App() {
      ============================================================ */
 
   if (user && locked) {
-    return (
-      <AppLock
-        mode="unlock"
-        onUnlock={() => setLocked(false)}
-      />
-    )
+    return <AppLock mode="unlock" onUnlock={() => setLocked(false)} />
   }
-
 
   /* ============================================================
      HEADER VISIBILITY
@@ -837,15 +650,9 @@ export default function App() {
    * сообщает об этом через onFlowChange; раньше флаг
    * гасил только нижнюю навигацию.
    */
-  const showTodayHeader =
-    !overlay &&
-    tab === 'today' &&
-    !todayFlowOpen
+  const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen
 
-  const topSafeArea =
-    fullscreen
-      ? 'calc(var(--app-safe-top) + 56px)'
-      : 'var(--app-safe-top)'
+  const topSafeArea = fullscreen ? 'calc(var(--app-safe-top) + 56px)' : 'var(--app-safe-top)'
 
   /*
    * КОНТРАКТ ОТСТУПОВ ЭКРАНА
@@ -868,11 +675,9 @@ export default function App() {
    * Когда navbar скрыт fullscreen-сценарием,
    * оставляем только системную нижнюю safe area.
    */
-  const contentBottomPadding =
-    bottomNavigationHidden
-      ? 'var(--app-safe-bottom)'
-      : 'var(--app-content-bottom)'
-
+  const contentBottomPadding = bottomNavigationHidden
+    ? 'var(--app-safe-bottom)'
+    : 'var(--app-content-bottom)'
 
   /* ============================================================
      UI
@@ -891,27 +696,20 @@ export default function App() {
         font-body
       "
       style={{
-        height: viewportHeight
-          ? `${viewportHeight}px`
-          : '100dvh',
-        paddingTop:
-          topSafeArea,
-        paddingRight:
-          'var(--app-safe-right)',
-        paddingLeft:
-          'var(--app-safe-left)',
+        height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+        paddingTop: topSafeArea,
+        paddingRight: 'var(--app-safe-right)',
+        paddingLeft: 'var(--app-safe-left)',
       }}
     >
-
       {/* ========================================================
           MENTALIX WORDMARK
           Только Сегодня.
          ======================================================== */}
 
-      {fullscreen &&
-        showTodayHeader && (
-          <div
-            className="
+      {fullscreen && showTodayHeader && (
+        <div
+          className="
               absolute
               left-0
               right-0
@@ -923,38 +721,36 @@ export default function App() {
 
               pointer-events-none
             "
-            style={{
-              top: 'var(--app-safe-top)',
-              height: '56px',
-            }}
-          >
-            <span
-              className="
+          style={{
+            top: 'var(--app-safe-top)',
+            height: '56px',
+          }}
+        >
+          <span
+            className="
                 font-display
                 text-[16px]
                 tracking-[0.42em]
                 text-muted
               "
-            >
-              MENTALIX
-            </span>
-          </div>
-        )}
+          >
+            MENTALIX
+          </span>
+        </div>
+      )}
 
       <div
         ref={scrollRootRef}
         className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain flex flex-col items-center"
       >
-
-
-      {/* ========================================================
+        {/* ========================================================
           TODAY HEADER
          ======================================================== */}
 
-      {showTodayHeader && (
-        <>
-          <div
-            className="
+        {showTodayHeader && (
+          <>
+            <div
+              className="
               w-full
               max-w-md
 
@@ -966,50 +762,44 @@ export default function App() {
               items-center
               justify-between
             "
-          >
-            {/* Сохраняет приветствие по центру относительно аватара. */}
-            <span
-              id="mx-today-header-leading"
-              className="relative w-10 max-[359px]:w-[78px] h-10 shrink-0"
-            />
+            >
+              {/* Сохраняет приветствие по центру относительно аватара. */}
+              <span
+                id="mx-today-header-leading"
+                className="relative w-10 max-[359px]:w-[78px] h-10 shrink-0"
+              />
 
+              {/* Greeting */}
 
-            {/* Greeting */}
-
-            <h1
-              className="
+              <h1
+                className="
                 font-display
                 text-xl
                 text-cream
                 lowercase
               "
-            >
-              {/*
+              >
+                {/*
                 Простое приветствие по
                 времени суток, без имени.
                 Обращение по имени каждый
                 день звучит как рассылка,
                 а не как разговор с собой.
               */}
-              {greeting()}
-            </h1>
+                {greeting()}
+              </h1>
 
+              {/* Settings */}
 
-            {/* Settings */}
+              <button
+                type="button"
+                onClick={() => {
+                  platform.haptic('light')
 
-            <button
-              type="button"
-              onClick={() => {
-                platform.haptic(
-                  'light'
-                )
-
-                setOverlay(
-                  'settings'
-                )
-              }}
-              aria-label="Настройки"
-              className="
+                  setOverlay('settings')
+                }}
+                aria-label="Настройки"
+                className="
                 w-10
                 h-10
 
@@ -1026,87 +816,71 @@ export default function App() {
 
                 active:scale-95
               "
-            >
-              <SettingsIcon
-                size={19}
-                strokeWidth={1.7}
-                className="text-muted"
-              />
-            </button>
-          </div>
+              >
+                <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
+              </button>
+            </div>
+          </>
+        )}
 
-
-        </>
-      )}
-
-
-      {/* ========================================================
+        {/* ========================================================
           CONTENT
          ======================================================== */}
 
-      <div
-  key={overlay || 'main'}
-  className={[
-    'flex-1 w-full flex flex-col items-center',
-    mentorPersonaOpen
-      ? ''
-      : 'animate-fade-in',
-  ].join(' ')}
-        style={{
-          paddingBottom:
-            contentBottomPadding,
-        }}
-      >
-        <Suspense fallback={<ScreenLoading />}>
-        {!user && (
-          <p
-            className="
+        <div
+          key={overlay || 'main'}
+          className={[
+            'flex-1 w-full flex flex-col items-center',
+            mentorPersonaOpen ? '' : 'animate-fade-in',
+          ].join(' ')}
+          style={{
+            paddingBottom: contentBottomPadding,
+          }}
+        >
+          <Suspense fallback={<ScreenLoading />}>
+            {!user && (
+              <p
+                className="
               text-muted
               text-sm
               px-6
               text-center
               pt-8
             "
-          >
-            Открой приложение через
-            кнопку в боте, чтобы
-            Менталикс увидел тебя
-          </p>
-        )}
+              >
+                Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
+              </p>
+            )}
 
+            {/* Settings */}
 
-        {/* Settings */}
+            {overlay === 'settings' && (
+              <Settings
+                user={user}
+                onBack={() => {
+                  setOverlay(null)
+                }}
+                onNavigate={destination => {
+                  if (destination === 'profile') {
+                    setOverlay('profile')
+                  }
+                }}
+              />
+            )}
 
-        {overlay ===
-          'settings' && (
-          <Settings
-            user={user}
-            onBack={() => {
-              setOverlay(null)
-            }}
-            onNavigate={(destination) => {
-              if (destination === 'profile') {
-                setOverlay('profile')
-              }
-            }}
-          />
-        )}
+            {/* Profile */}
 
-
-        {/* Profile */}
-
-        {overlay ===
-          'profile' && (
-          <div
-            className="
+            {overlay === 'profile' && (
+              <div
+                className="
               w-full
               flex
               flex-col
               items-center
             "
-          >
-            <div
-              className="
+              >
+                <div
+                  className="
                 w-full
                 max-w-md
 
@@ -1118,152 +892,100 @@ export default function App() {
                 grid-cols-[1fr_auto_1fr]
                 items-center
               "
-            >
-              <div className="justify-self-start">
-                <BackButton
-                  onClick={() => {
-                    setOverlay('settings')
-                  }}
-                />
-              </div>
+                >
+                  <div className="justify-self-start">
+                    <BackButton
+                      onClick={() => {
+                        setOverlay('settings')
+                      }}
+                    />
+                  </div>
 
-
-              <span
-                className="
+                  <span
+                    className="
                   font-display
                   text-lg
                   text-cream
                   lowercase
                 "
-              >
-                профиль.
-              </span>
+                  >
+                    профиль.
+                  </span>
 
+                  <span aria-hidden="true" />
+                </div>
 
-              <span aria-hidden="true" />
-            </div>
+                <Profile user={user} />
+              </div>
+            )}
 
-
-            <Profile
-              user={user}
-            />
-          </div>
-        )}
-
-
-        {/* ======================================================
+            {/* ======================================================
             MAIN TABS
            ====================================================== */}
 
-        {!overlay && (
-          <>
-            {user &&
-              tab === 'today' && (
-                <Today
-                  user={user}
-                  onOpenPractice={
-                    openPractice
-                  }
-                  onGoMentor={
-                    goMentor
-                  }
-                  onFlowChange={
-                    setTodayFlowOpen
-                  }
-                />
-              )}
+            {!overlay && (
+              <>
+                {user && tab === 'today' && (
+                  <Today
+                    user={user}
+                    onOpenPractice={openPractice}
+                    onGoMentor={goMentor}
+                    onFlowChange={setTodayFlowOpen}
+                  />
+                )}
 
+                {user && tab === 'practices' && (
+                  <Practices
+                    user={user}
+                    initialSub={practicesSub}
+                    onGameChange={setPracticeGameOpen}
+                  />
+                )}
 
-            {user &&
-              tab ===
-                'practices' && (
-                <Practices
-                  user={user}
-                  initialSub={
-                    practicesSub
-                  }
-                  onGameChange={
-                    setPracticeGameOpen
-                  }
-                />
-              )}
+                {user && tab === 'mentor' && (
+                  <MentalixChat user={user} onPersonaChange={setMentorPersonaOpen} />
+                )}
 
+                {user && tab === 'library' && <Library user={user} />}
 
-            {user &&
-              tab === 'mentor' && (
-                <MentalixChat
-                  user={user}
-                  onPersonaChange={
-                    setMentorPersonaOpen
-                  }
-                />
-              )}
+                {user && tab === 'trends' && (
+                  <Analytics
+                    user={user}
+                    onGoCheckin={() => {
+                      platform.haptic('light')
 
+                      setMentorPersonaOpen(false)
 
-            {user &&
-              tab === 'library' && (
-                <Library
-                  user={user}
-                />
-              )}
+                      setTab('today')
 
+                      setPracticesSub(null)
 
-            {user &&
-              tab === 'trends' && (
-                <Analytics
-                  user={user}
-                  onGoCheckin={() => {
-                    platform.haptic(
-                      'light'
-                    )
+                      setNavCollapsed(false)
 
-                    setMentorPersonaOpen(
-                      false
-                    )
+                      resetNavigationGesture()
 
-                    setTab('today')
-
-                    setPracticesSub(
-                      null
-                    )
-
-                    setNavCollapsed(
-                      false
-                    )
-
-                    resetNavigationGesture()
-
-                    scrollAppToTop()
-                  }}
-                />
-              )}
-          </>
-        )}
-        </Suspense>
+                      scrollAppToTop()
+                    }}
+                  />
+                )}
+              </>
+            )}
+          </Suspense>
+        </div>
       </div>
-      </div>
-
 
       {/* ========================================================
           COLLAPSIBLE NAVIGATION
          ======================================================== */}
 
-      {user &&
-        !overlay &&
-        !bottomNavigationHidden && (
-          <BottomNavigation
-            tab={tab}
-            collapsed={
-              navCollapsed
-            }
-            onCollapseChange={
-              setNavCollapsed
-            }
-            onTabChange={
-              switchTab
-            }
-          />
-        )}
+      {user && !overlay && !bottomNavigationHidden && (
+        <BottomNavigation
+          tab={tab}
+          collapsed={navCollapsed}
+          onCollapseChange={setNavCollapsed}
+          onTabChange={switchTab}
+        />
+      )}
     </div>
   )
 }
