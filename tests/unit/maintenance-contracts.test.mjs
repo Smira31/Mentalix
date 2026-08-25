@@ -8,10 +8,7 @@ import {
   isPracticeAvailable,
 } from '../../src/config/practiceAvailability.js'
 import { withQuery } from '../../src/lib/apiQuery.js'
-import {
-  MOOD_CHECK_CHECKIN_ERROR,
-  shouldShowMoodCheckGate,
-} from '../../src/lib/moodCheckGate.js'
+import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from '../../src/lib/moodCheckGate.js'
 
 test('allowlist сохраняет текущие шесть доступных практик', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
@@ -56,15 +53,14 @@ test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при
 
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: null }), true)
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: undefined }), false)
-  assert.equal(
-    shouldShowMoodCheckGate({ ...base, todayCheckin: MOOD_CHECK_CHECKIN_ERROR }),
-    false
-  )
+  assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: MOOD_CHECK_CHECKIN_ERROR }), false)
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: { id: 10 } }), false)
 })
 
 test('MXL-PREVIEW-STOP-DRY-RUN-001 связывает npm-алиас с безопасным DryRun', () => {
-  const packageJson = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'))
+  const packageJson = JSON.parse(
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+  )
   const source = readFileSync(new URL('../../scripts/preview-stop.ps1', import.meta.url), 'utf8')
   assert.equal(
     packageJson.scripts['preview:stop:dry-run'],
@@ -72,6 +68,22 @@ test('MXL-PREVIEW-STOP-DRY-RUN-001 связывает npm-алиас с безо
   )
   assert.match(source, /\[switch\]\$DryRun/)
   assert.match(source, /No Vercel, state, process, or Telegram operations will run/)
+})
+
+test('MXL-DOCS-BACKLOG-NORMALIZATION-001 публикует docs:check и task index', () => {
+  const packageJson = JSON.parse(
+    readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+  )
+  const index = readFileSync(new URL('../../docs/TASK_INDEX.md', import.meta.url), 'utf8')
+  const checker = readFileSync(new URL('../../scripts/docs-check.mjs', import.meta.url), 'utf8')
+
+  assert.equal(packageJson.scripts['docs:check'], 'node scripts/docs-check.mjs')
+  assert.match(index, /## Автономная очередь/)
+  assert.match(index, /Сейчас очередь `autonomous` пуста/)
+  assert.match(index, /## Product decision register/)
+  assert.match(checker, /broken local link/)
+  assert.match(checker, /duplicate task heading/)
+  assert.match(checker, /requiredFiles/)
 })
 
 test('preview cleanup подтверждает удаление до очистки state и уведомления', () => {

@@ -19,7 +19,8 @@ Telegram Mini App — операционная система личного р�
 | [`ROADMAP.md`](ROADMAP.md)                                                                 | Что построено, что в работе                                         |
 | [`AI_RULES.md`](AI_RULES.md)                                                               | Обязательный процесс работы AI с Mentalix                           |
 | [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md)                                           | Как переводить референсы в Mentalix без копирования                 |
-| [`TASKS.md`](TASKS.md)                                                                     | Задачи на сейчас                                                    |
+| [`TASKS.md`](TASKS.md)                                                                     | Подробные задачи и handoff                                          |
+| [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md)                                                 | Короткий канонический индекс активного backlog                      |
 | [`PROJECT_STATE.md`](PROJECT_STATE.md)                                                     | Текущее подтверждённое состояние, release blockers и handoff        |
 | [`docs/DOCUMENTATION_GUIDE.md`](docs/DOCUMENTATION_GUIDE.md)                               | Как читать, классифицировать и обновлять документацию               |
 | [`docs/core/README.md`](docs/core/README.md)                                               | Mentalix Core: связь проблем, законов, методов и продукта           |
