@@ -99,6 +99,15 @@ function Eyebrow({ children = 'Без вины', centered = false }) {
   )
 }
 
+function StageHeading({ children }) {
+  return (
+    <div className="no-blame-stage__anchor">
+      <Eyebrow centered />
+      <h2 className="no-blame-stage__title font-display text-cream">{children}</h2>
+    </div>
+  )
+}
+
 function Progress({ step }) {
   const current = STEP_PROGRESS[step]
 
@@ -311,11 +320,9 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         )}
 
         {step === 'task' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in pt-2">
+          <div className="no-blame-stage no-blame-stage--writing animate-fade-in">
             <Progress step={step} />
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">Что откладываешь?</h2>
+            <StageHeading>Что откладываешь?</StageHeading>
 
             <JournalTextarea
               autoFocus
@@ -323,7 +330,7 @@ export default function ProcrastinationFlow({ userId, onClose }) {
               onChange={setTask}
               placeholder="Например: разобрать почту"
               ariaLabel="Дело, которое откладываешь"
-              className="mt-6 min-h-[18rem]"
+              className="no-blame-stage__writer min-h-[12rem]"
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
@@ -337,13 +344,8 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         {step === 'feeling' && (
           <div className="no-blame-stage animate-fade-in">
             <Progress step={step} />
-            <div className="no-blame-stage__center no-blame-stage__center--compact">
-              <Eyebrow centered />
-
-              <h2 className="font-display text-[26px] text-center text-cream leading-tight">
-                Что в этом неприятного?
-              </h2>
-
+            <StageHeading>Что в этом неприятного?</StageHeading>
+            <div className="no-blame-stage__scene no-blame-stage__scene--choices">
               <OptionList options={FEELING_OPTIONS} onPick={chooseFeeling} />
             </div>
           </div>
@@ -352,12 +354,9 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         {step === 'release' && (
           <div className="no-blame-stage animate-fade-in">
             <Progress step={step} />
-            <div className="no-blame-stage__center">
+            <StageHeading>{releasePhrase}</StageHeading>
+            <div className="no-blame-stage__scene">
               <NoBlameArtwork stage="release" />
-              <Eyebrow centered />
-              <h2 className="font-display text-[24px] text-center text-cream leading-snug">
-                {releasePhrase}
-              </h2>
             </div>
             <button
               type="button"
@@ -372,13 +371,8 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         {step === 'plan' && !distraction && (
           <div className="no-blame-stage animate-fade-in">
             <Progress step={step} />
-            <div className="no-blame-stage__center no-blame-stage__center--compact">
-              <Eyebrow centered />
-
-              <h2 className="font-display text-[26px] text-center text-cream leading-tight">
-                Что обычно отвлекает вместо этого?
-              </h2>
-
+            <StageHeading>Что обычно отвлекает вместо этого?</StageHeading>
+            <div className="no-blame-stage__scene no-blame-stage__scene--choices">
               <OptionList options={DISTRACTION_OPTIONS} onPick={chooseDistraction} />
             </div>
           </div>
@@ -387,13 +381,8 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         {step === 'plan' && distraction && (
           <div className="no-blame-stage animate-fade-in">
             <Progress step={step} />
-            <div className="no-blame-stage__center">
-              <Eyebrow centered />
-
-              <h2 className="font-display text-[28px] text-center text-cream leading-tight">
-                Договорись с собой
-              </h2>
-
+            <StageHeading>Договорись с собой</StageHeading>
+            <div className="no-blame-stage__scene">
               <p className="mx-auto mt-3 max-w-[310px] text-center text-[14px] text-muted leading-relaxed">
                 Как только снова потянет отвлечься — вернись к делу на две минуты.
               </p>
@@ -412,15 +401,12 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         {step === 'run' && (
           <div className="no-blame-stage animate-fade-in text-center">
             <Progress step={step} />
-            <div className="no-blame-stage__center">
-              <Eyebrow centered />
+            <StageHeading>Только эти две минуты</StageHeading>
+            <div className="no-blame-stage__scene">
               <div className="font-display text-[68px] text-gold tabular-nums leading-none">
                 {minutes}:{seconds}
               </div>
               <NoBlameArtwork stage="line" />
-              <h2 className="font-display text-[27px] text-cream leading-tight">
-                Только эти две минуты
-              </h2>
               <p className="mt-3 text-[14px] text-muted">Не идеально. Просто начни.</p>
             </div>
 
@@ -437,13 +423,8 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         {step === 'outcome' && (
           <div className="no-blame-stage animate-fade-in">
             <Progress step={step} />
-            <div className="no-blame-stage__center no-blame-stage__center--compact">
-              <Eyebrow centered />
-
-              <h2 className="font-display text-[28px] text-center text-cream leading-tight">
-                Как прошло?
-              </h2>
-
+            <StageHeading>Как прошло?</StageHeading>
+            <div className="no-blame-stage__scene no-blame-stage__scene--choices">
               <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />
             </div>
           </div>

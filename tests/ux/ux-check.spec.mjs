@@ -637,6 +637,7 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Начать' }).click()
+    let noBlameAnchorTop
     await captureScreen({
       page,
       viewport,
@@ -648,6 +649,9 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(page.getByRole('heading', { name: 'Что откладываешь?' })).toBeVisible()
         const editor = page.getByRole('textbox', { name: 'Дело, которое откладываешь' })
         await expect(editor).toBeVisible()
+        const anchorBox = await page.locator('.no-blame-stage__anchor').boundingBox()
+        expect(anchorBox).not.toBeNull()
+        noBlameAnchorTop = anchorBox.y
         await editor.fill('Разобрать почту')
         await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
         await assertClickable(page.getByRole('button', { name: 'Дальше' }))
@@ -663,6 +667,9 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'Что в этом неприятного?' })).toBeVisible()
+        const anchorBox = await page.locator('.no-blame-stage__anchor').boundingBox()
+        expect(anchorBox).not.toBeNull()
+        expect(Math.abs(anchorBox.y - noBlameAnchorTop)).toBeLessThanOrEqual(1)
         await assertClickable(page.getByRole('button', { name: 'Тревожно' }))
       },
     })
