@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { Plus, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import EmptyState from '../components/EmptyState'
 
 export default function QuotesManager({ user, onBack }) {
   const [quotes, setQuotes] = useState([])
@@ -87,9 +88,12 @@ export default function QuotesManager({ user, onBack }) {
       {loading ? (
         <p className="text-muted text-sm">Загрузка...</p>
       ) : quotes.length === 0 ? (
-        <p className="text-muted text-sm italic text-center py-8">
-          Пока нет ни одной фразы — добавь первую
-        </p>
+        <EmptyState className="mt-2">
+          <h3 className="font-display text-lg text-cream mb-1">Пока нет твоих фраз</h3>
+          <p className="text-sm text-muted leading-relaxed">
+            Добавь первую в поле выше — она начнёт появляться в «Мысли дня».
+          </p>
+        </EmptyState>
       ) : (
         <div className="w-full bg-cream/[0.03] border border-cream/[0.08] rounded-2xl divide-y divide-cream/[0.06]">
           {quotes.map(q => (

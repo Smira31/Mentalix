@@ -16,6 +16,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import SemanticGlyph, { semanticKindForAsceza } from '../components/SemanticGlyph'
+import EmptyState from '../components/EmptyState'
 import StreakBar from '../components/StreakBar'
 import { Shield, ShieldOff, Cigarette, Brain, Users, Smartphone, Cookie, X } from 'lucide-react'
 
@@ -581,11 +582,14 @@ export default function Ascezas({ user, onBack }) {
         {loading ? (
           <p className="text-muted text-sm">Загрузка...</p>
         ) : ascezas.length === 0 ? (
-          <div className="rounded-3xl bg-emerald p-8 text-center mb-4">
-            <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
-              <SemanticGlyph kind="asceza" className="w-full h-full" />
-            </div>
-
+          <EmptyState
+            glyph={
+              <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
+                <SemanticGlyph kind="asceza" className="w-full h-full" />
+              </div>
+            }
+            className="mb-4"
+          >
             <h3 className="font-display text-lg text-cream mb-1">Аскез пока нет</h3>
 
             <p className="text-sm text-muted mb-4 leading-relaxed">
@@ -598,7 +602,7 @@ export default function Ascezas({ user, onBack }) {
             >
               Принять аскезу
             </button>
-          </div>
+          </EmptyState>
         ) : (
           <>
             <div
