@@ -1,7 +1,7 @@
 // src/screens/Settings.jsx
 //
 // Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Разбор дня
-//         4. Основные  5. Поддержка  6. Документы  7. Версия  8. Аккаунт
+//         4. Карточки «Сегодня»  5. Основные  6. Поддержка  7. Документы  8. Версия  9. Аккаунт
 
 import { useEffect, useState } from 'react'
 import BackButton from '../components/BackButton'
@@ -21,6 +21,12 @@ import { forget, useSynced } from '../lib/store'
 import { requestMessages, biometric } from '../platform/telegram.hooks'
 import { platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
+import {
+  TODAY_CARDS_HIDDEN_KEY,
+  TODAY_CARD_IDS,
+  TODAY_CARD_LABELS,
+  parseHiddenCards,
+} from '../lib/todayCardVisibility'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -172,6 +178,18 @@ export default function Settings({ user, onBack, onNavigate }) {
   const lockOn = lockEnabledFlag === '1'
   const lockConfiguredHere = hasPinRecord()
   const [biometricAvailable, setBiometricAvailable] = useState(false)
+
+  // ── Видимость карточек «Сегодня»: см. src/lib/todayCardVisibility.js.
+  const [hiddenCardsRaw, setHiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
+  const hiddenCards = parseHiddenCards(hiddenCardsRaw)
+
+  function toggleTodayCard(id) {
+    const next = hiddenCards.includes(id)
+      ? hiddenCards.filter(cardId => cardId !== id)
+      : [...hiddenCards, id]
+
+    setHiddenCardsRaw(JSON.stringify(next))
+  }
 
   useEffect(() => {
     if (platformName !== 'telegram') return
@@ -347,6 +365,25 @@ export default function Settings({ user, onBack, onNavigate }) {
           </button>
         ))}
       </div>
+
+      <SectionLabel>Карточки «Сегодня»</SectionLabel>
+      <Card>
+        {TODAY_CARD_IDS.map((id, index) => (
+          <Row
+            key={id}
+            title={TODAY_CARD_LABELS[id].title}
+            subtitle={TODAY_CARD_LABELS[id].subtitle}
+            right={
+              <Toggle
+                checked={!hiddenCards.includes(id)}
+                label={TODAY_CARD_LABELS[id].title}
+                onChange={() => toggleTodayCard(id)}
+              />
+            }
+            divider={index < TODAY_CARD_IDS.length - 1}
+          />
+        ))}
+      </Card>
 
       <SectionLabel>Основные</SectionLabel>
       <Card>
