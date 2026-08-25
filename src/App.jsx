@@ -16,6 +16,8 @@ import BottomNavigation from './components/BottomNavigation'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
+import { api } from './lib/api'
+import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -40,6 +42,10 @@ const MentalixChat = lazy(() => import('./screens/Mentalix'))
 const Profile = lazy(() => import('./screens/Profile'))
 const Settings = lazy(() => import('./screens/Settings'))
 const Library = lazy(() => import('./screens/Library'))
+
+// Opt-in (MOOD_CHECK_ENABLED_KEY по умолчанию '0') — большинство никогда
+// его не увидит, поэтому вне стартового bundle, в отличие от AppLock.
+const MoodCheckGate = lazy(() => import('./screens/MoodCheckGate'))
 
 /* ============================================================
    SPLASH
@@ -270,6 +276,55 @@ export default function App() {
   const accent = parseAccent(accentRaw)
 
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
+
+  /*
+   * MXL-MOOD-CHECK-001 — быстрый mood-check при запуске (opt-in,
+   * см. src/lib/moodCheckDraft.js). Тумблер синхронизируется как
+   * appLockEnabled/accent выше; "показывать сегодня" и данные
+   * чек-ина за сегодня — чисто локальные и решаются здесь, а не в
+   * Today.jsx, потому что гейт должен показаться ДО монтирования
+   * Today (см. рендер ниже, сразу после AppLock).
+   *
+   * moodCheckCheckin: undefined — ещё не фетчили, null — фетчили,
+   * чек-ина на сегодня нет, объект — чек-ин уже есть (гейт не нужен).
+   * Фетчится только если тумблер включён — большинство его не видит.
+   */
+  const [moodCheckEnabledFlag] = useSynced(MOOD_CHECK_ENABLED_KEY, '0')
+
+  const moodCheckEnabled = moodCheckEnabledFlag === '1'
+
+  const [moodCheckDismissedToday, setMoodCheckDismissedToday] = useState(
+    () => !shouldOfferMoodCheck()
+  )
+
+  const [moodCheckCheckin, setMoodCheckCheckin] = useState(undefined)
+
+  useEffect(() => {
+    if (!user || !onboarded || locked || !moodCheckEnabled || moodCheckDismissedToday) return
+
+    let alive = true
+
+    api.checkin
+      .today(user.id)
+      .then(checkin => {
+        if (alive) setMoodCheckCheckin(checkin ?? null)
+      })
+      .catch(() => {
+        if (alive) setMoodCheckCheckin(null)
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [user, onboarded, locked, moodCheckEnabled, moodCheckDismissedToday])
+
+  const showMoodCheckGate =
+    Boolean(user) &&
+    onboarded &&
+    !locked &&
+    moodCheckEnabled &&
+    !moodCheckDismissedToday &&
+    moodCheckCheckin === null
 
   const initialTab = new URLSearchParams(window.location.search).get('tab')
 
@@ -663,6 +718,22 @@ export default function App() {
 
   if (user && locked) {
     return <AppLock mode="unlock" onUnlock={() => setLocked(false)} />
+  }
+
+  /* ============================================================
+     MOOD-CHECK ПРИ ЗАПУСКЕ (MXL-MOOD-CHECK-001)
+
+     Тот же порядок, что у AppLock выше: гейт поверх готового
+     приложения, ДО основного UI, но не альтернативная авторизация.
+     Условия показа — см. showMoodCheckGate.
+     ============================================================ */
+
+  if (showMoodCheckGate) {
+    return (
+      <Suspense fallback={null}>
+        <MoodCheckGate onDismiss={() => setMoodCheckDismissedToday(true)} />
+      </Suspense>
+    )
   }
 
   /* ============================================================
