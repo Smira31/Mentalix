@@ -14,7 +14,9 @@
 
 ## MXL-TODAY-CARD-TOGGLES-001 — тумблеры видимости карточек «Сегодня»
 
-- **Статус: реализовано 25.08.2026, ветка `feat/today-card-toggles`, ожидает PR/gate.**
+- **Статус: закрыто 25.08.2026.** PR #167 (`feat/today-card-toggles`)
+  squash-смёржен в `main`, commit `4443b947`; CI (`Проверка кода и сборки`,
+  Vercel) — `success`. Ветка удалена (remote + local).
 - [x] `src/lib/todayCardVisibility.js` — общий ключ `mx-today-cards-hidden`,
       список из пяти id (`focus`, `pulse`, `dayProgress`, `theme`, `quote`) и
       подписи для Settings.
@@ -30,9 +32,9 @@
 
 ## MXL-AUTONOMOUS-SM-001 — автономный пакет S/M-задач
 
-- **Статус: реализовано 24.08.2026, PR #164.** Ветка
-  `codex/autonomous-sm-maintenance`; runtime-задачи не конфликтуют между собой,
-  production не изменён.
+- **Статус: закрыто 24.08.2026, PR #164 смёржен в `main`** (merge commit
+  `dc5f2e9b`, ветка `codex/autonomous-sm-maintenance`); изменения в
+  production.
 - [x] **[M] P03 — единая allowlist-политика Practices:** добавлен
       `src/config/practiceAvailability.js` с десятью стабильными ключами и шестью
       доступными практиками. Нейротренажёр, Дыхание, Фокус и Медитации остаются

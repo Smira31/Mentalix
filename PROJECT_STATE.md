@@ -1,6 +1,6 @@
 # Mentalix — Current Project State
 
-Дата последней проверки: **24.08.2026, Europe/Moscow**.
+Дата последней проверки: **25.08.2026, Europe/Moscow**.
 
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся
 в `CHANGES.md`, планы — в `ROADMAP.md`, рабочие детали — в `TASKS.md`.
@@ -18,11 +18,11 @@
 
 - Hosting: **Vercel**.
 - Production URL: `https://mentalix.vercel.app`.
-- Production commit: `711f440b01aacc39fea984cfcb15623cf660bd70`
-  (`main`, merge PR #163).
-- Статус: GitHub Actions и Vercel deployment для PR #163 / нового `main`
-  завершились успешно; прямой запрос к production URL вернул `HTTP 200`
-  24.08.2026.
+- Production commit: `4443b947f70621ed5ba42a2f87df4d32c4389178`
+  (`main`, squash-merge PR #167, `MXL-TODAY-CARD-TOGGLES-001`).
+- Статус: GitHub Actions («Проверка кода и сборки») и Vercel deployment для
+  PR #167 / нового `main` завершились успешно (`success`) 25.08.2026; прямой
+  HTTP-запрос к production URL после этого деплоя отдельно не переповторялся.
 - Production rewrite в актуальном `vercel.json` направляет `/api/*` на
   `https://mentalix-bot.onrender.com/api/*`.
 
@@ -148,6 +148,14 @@
 
 ## 5. Frontend / UI
 
+- `MXL-TODAY-CARD-TOGGLES-001` закрыта 25.08.2026 через PR #167
+  (squash-merge, `4443b947`): в Settings добавлена секция «Карточки
+  „Сегодня“» с пятью тумблерами (`focus`, `pulse`, `dayProgress`, `theme`,
+  `quote`), Today скрывает соответствующие блоки по общему флагу
+  `mx-today-cards-hidden`. Герой-карточка, `MorningPilotCard` и блок «Чек-ин
+  выполнен» не входили в scope. `npm run lint`/`npm run build` пройдены
+  локально; CI (`Проверка кода и сборки`, Vercel) — `success`. Backend,
+  данные и остальные экраны не менялись.
 - `MXL-ONBOARDING-POLISH-001` закрыта 24.08.2026 через PR #162
   (`b3253e93`): первый экран сведён к `Mentalix.`,
   дублирующая навигация шапки заменена системным Telegram BackButton с
@@ -160,11 +168,11 @@
   отцентрирован симметричными боковыми резервами. Локальный UX gate и общий
   Preview/iPhone gate пройдены; PR #163 смёржен в `main` (`711f440b`), CI и
   Vercel Production — `success`.
-- `MXL-AUTONOMOUS-SM-001` реализован локально в ветке
-  `codex/autonomous-sm-maintenance`: P03 получил единую allowlist без изменения
-  доступности, ручные query-string заменены чистым helper, добавлены три
-  unit-контракта. Unit/lint/build/UX gate зелёные; открыт PR #164, production
-  не изменён.
+- `MXL-AUTONOMOUS-SM-001` закрыта 24.08.2026, PR #164 (ветка
+  `codex/autonomous-sm-maintenance`) смёржен в `main` (merge commit
+  `dc5f2e9b`): P03 получил единую allowlist без изменения доступности,
+  ручные query-string заменены чистым helper, добавлены три unit-контракта.
+  Unit/lint/build/UX gate зелёные; изменения в production.
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
 - Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
@@ -393,14 +401,19 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 фикса не потребовалось.** Подробности проверки — `TASKS.md` →
 `MXL-UI-CTA-OVERLAP-001`, `CHANGES.md` 24.08.2026.
 
-**Текущая P0: `MXL-AUTONOMOUS-SM-001`.** Владелец поручил автономно отобрать
-и выполнить совместимые S/M-задачи; реализация и автоматические проверки
-завершены в feature-ветке, PR #164 открыт без автоматического merge.
+**`MXL-AUTONOMOUS-SM-001` закрыта 24.08.2026** — PR #164 смёржен в `main`
+(`dc5f2e9b`), production обновлён. Подробности — §5 выше.
+
+**`MXL-TODAY-CARD-TOGGLES-001` закрыта 25.08.2026** — PR #167 squash-смёржен
+в `main` (`4443b947`), CI и Vercel — `success`, ветка `feat/today-card-toggles`
+удалена (remote + local). Подробности — §5 выше.
+
+**Текущая P0-задача не выбрана.** Требуется решение владельца о следующем
+приоритете; кандидаты — data-dependent gate на iPhone (§13) и решение по
+Koyeb/GigaChat TLS/Groq (§11).
 
 ## 13. Следующие задачи
 
-- **P0:** проверить PR #164 (`MXL-AUTONOMOUS-SM-001`); production не менять без
-  отдельного merge-решения владельца.
 - ~~**P1:** подтвердить и стабилизировать текущую production-цепочку
   `Vercel → Render → Neon`~~ — **закрыто 23.08.2026**: Render deploy SHA,
   связь с Neon и live-схема подтверждены напрямую (§2, §4). Data-dependent
