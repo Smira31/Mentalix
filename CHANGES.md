@@ -1,5 +1,10 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-WRITING-CANVAS-ROLLOUT-001: первый focused rollout
+
+- Через PR #178 Writing Canvas перенесён в «Разгрузить голову» и «Первый шаг»;
+  Telegram/iPhone gate пройден владельцем. Подробности — `TASKS.md`.
+
 ## 25.08.2026 — MXL-JOURNAL-MARKDOWN-001: форматирование записей
 
 - В CheckIn и «Теме недели» выпущен через PR #176 Writing Canvas с dock

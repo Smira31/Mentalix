@@ -459,13 +459,12 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 (remote + local). Живой gate на iPhone в Telegram подтверждён владельцем.
 Подробности — §5 выше.
 
-**Текущая P0-задача — `MXL-WRITING-CANVAS-ROLLOUT-001`.** Первый батч локально
-реализован 25.08.2026 в `codex/writing-canvas-rollout`: четыре plain-сцены
+**Текущая P0-задача — `MXL-WRITING-CANVAS-ROLLOUT-001`.** Первый батч принят
+владельцем в Telegram Preview 25.08.2026 и выпущен через PR #178: четыре plain-сцены
 `TodayFocusFlow` и `FirstStepFlow` переиспользуют общий Writing Canvas без
 изменения данных, state machine и backend. Unit/lint/build, UX smoke на
-`390×844`/`320×568` и diff-check зелёные; следующий gate — отдельный Telegram
-Preview и ручная проверка клавиатуры на реальном iPhone. Push/PR/production не
-выполнялись. `NarrowFocusFlow`, `FinishFlow` и `ProcrastinationFlow` остаются
+`390×844`/`320×568` и diff-check зелёные; ручная проверка клавиатуры на реальном
+iPhone внутри Telegram пройдена. `NarrowFocusFlow`, `FinishFlow` и `ProcrastinationFlow` остаются
 следующими отдельными циклами по лимиту двух функций из `AI_RULES.md` §4.1.
 
 ## 13. Следующие задачи
