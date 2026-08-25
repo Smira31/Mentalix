@@ -377,6 +377,43 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Закрыть' }).click()
 
+    await page.getByRole('button', { name: 'Разгрузить голову' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Today focus writer',
+      slug: '02c-today-focus-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: 'Дела, которые тянут внимание' })
+        await expect(editor).toBeVisible()
+        await expect(editor).toHaveAttribute('contenteditable', 'true')
+        await editor.fill('Написать отчёт\nРазобрать почту')
+        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        await assertClickable(page.getByRole('button', { name: 'Продолжить' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Продолжить' }).click()
+    await page.getByRole('button', { name: 'Написать отчёт' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Today first step writer',
+      slug: '02d-today-first-step-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: 'Первый шаг' })
+        await expect(editor).toBeVisible()
+        await editor.fill('Открыть документ')
+        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        await assertClickable(page.getByRole('button', { name: 'Подсказать шаг' }))
+        await assertClickable(page.getByRole('button', { name: 'Сохранить шаг' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Сохранить шаг' }).click()
+
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
     await captureScreen({
       page,
@@ -472,7 +509,32 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'Что не двигается?' })).toBeVisible()
+        const editor = page.getByRole('textbox', { name: 'Дело, которое не двигается' })
+        await expect(editor).toBeVisible()
+        await editor.fill('Подготовить презентацию')
+        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        await assertClickable(page.getByRole('button', { name: 'Дальше' }))
         await assertClickable(page.getByRole('button', { name: 'Назад' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Дальше' }).click()
+    await page.getByRole('button', { name: 'Не знаю, с чего начать' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'First Step plan writer',
+      slug: '06b-first-step-plan-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(
+          page.getByRole('heading', { name: 'Что можно сделать за пять минут?' })
+        ).toBeVisible()
+        const editor = page.getByRole('textbox', { name: 'Первый шаг на пять минут' })
+        await expect(editor).toBeVisible()
+        await editor.fill('Создать первый слайд')
+        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        await assertClickable(page.getByRole('button', { name: 'Начать пять минут' }))
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
