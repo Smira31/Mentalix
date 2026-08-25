@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
+import JournalTextarea from '../components/JournalTextarea'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -188,23 +189,20 @@ export default function FinishFlow({ userId, onClose }) {
               Что зависло на середине?
             </h2>
 
-            <textarea
+            <JournalTextarea
               autoFocus
-              rows={3}
               value={project}
-              onChange={event => setProject(event.target.value)}
+              onChange={setProject}
               placeholder="Например: ремонт в комнате"
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              ariaLabel="Проект, который завис на середине"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={goToState}
+              submitLabel="Дальше"
+              submitDisabled={!project.trim()}
             />
-
-            <button
-              type="button"
-              onClick={goToState}
-              disabled={!project.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Дальше
-            </button>
           </div>
         )}
 
@@ -242,23 +240,20 @@ export default function FinishFlow({ userId, onClose }) {
               Какой маленький кусок можно завершить сегодня?
             </h2>
 
-            <textarea
+            <JournalTextarea
               autoFocus
-              rows={3}
               value={finish}
-              onChange={event => setFinish(event.target.value)}
+              onChange={setFinish}
               placeholder="Например: докрасить один угол, а не всю комнату"
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              ariaLabel="Маленький кусок для завершения"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={startRun}
+              submitLabel="Начать пять минут"
+              submitDisabled={!finish.trim()}
             />
-
-            <button
-              type="button"
-              onClick={startRun}
-              disabled={!finish.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Начать пять минут
-            </button>
           </div>
         )}
 

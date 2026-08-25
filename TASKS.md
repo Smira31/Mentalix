@@ -60,8 +60,9 @@
 
 ## MXL-WRITING-CANVAS-ROLLOUT-001 — перенос единого Writing Canvas
 
-- **Статус: текущая P0, первый rollout-батч принят владельцем в Telegram
-  Preview 25.08.2026 и выпущен через PR #178.** Основа
+- **Статус: текущая P0. Первый rollout-батч принят владельцем в Telegram
+  Preview и выпущен через PR #178; второй батч реализован локально 25.08.2026
+  в `codex/writing-canvas-rollout-remaining`, без push/PR/production.** Основа
   выпущена через PR #176. По ограничению `AI_RULES.md` §4.1 один тестовый цикл
   содержит только две связанные функции.
 - [x] `TodayFocusFlow`: две сцены ввода переведены в plain/list Writing Canvas;
@@ -70,8 +71,12 @@
 - [x] `FirstStepFlow`: поля задачи и пятиминутного плана переведены в plain
       Writing Canvas; выбор причины, ветка отдыха, таймер, outcome и reflection
       не менялись.
-- [ ] Следующие отдельные циклы: `NarrowFocusFlow` (3 сцены), `FinishFlow`
-      (2), `ProcrastinationFlow` (1).
+- [x] `NarrowFocusFlow`: выгрузка, выбор одного дела и первый шаг переведены в
+      plain/list Writing Canvas; release, таймер, outcome, reflection и
+      локальная семантика данных не менялись.
+- [x] `FinishFlow`: поля проекта и малого завершаемого куска переведены в plain
+      Writing Canvas; state, reframe, таймер, outcome и reflection не менялись.
+- [ ] Следующий отдельный цикл: `ProcrastinationFlow` (1 сцена).
 - [ ] Для каждой сцены выбрать вариант `journal/Markdown` или `plain/list`.
       Поля, где каждая строка становится отдельной задачей, остаются plain/list
       и не получают Markdown-панель.
@@ -86,12 +91,14 @@
 - [ ] Реализовывать последовательными PR: общая основа и пилот → focused flows
       → вторичные формы после отдельного визуального решения. Для каждого PR
       обязательны lint/build, малые viewport и ручной Telegram/iPhone gate.
-- **Проверено для первого батча:** `npm run test:unit` — 6/6; `npm run lint` —
+- **Проверено для каждого из двух батчей:** `npm run test:unit` — 6/6;
+  `npm run lint` —
   чисто; `npm run build` — успешно; `npm run ux:check` — 1/1 на `390×844` и
-  `320×568`, включая четыре сцены ввода; `git diff --check` — чисто. Реальный
-  Telegram/iPhone gate пройден владельцем.
+  `320×568`, включая девять сцен ввода; `git diff --check` — чисто. Preview
+  первого батча принят владельцем; для второго батча объединённый Preview и
+  реальный Telegram/iPhone gate ещё не выполнялись.
 - **Не менялось:** backend/API/БД, формат и семантика данных, навигация,
-  state machine остальных сцен, Path/Ascezas и три следующих flow.
+  state machine остальных сцен, Path/Ascezas и `ProcrastinationFlow`.
 - **Норматив:** `DESIGN_SYSTEM.md` → `Mentalix Writing Canvas`.
 
 ## MXL-PREVIEW-STOP-VERIFY-001 — честная проверка удаления Preview
