@@ -627,8 +627,21 @@ test('локальный UX smoke по основному маршруту', asy
     await captureScreen({
       page,
       viewport,
+      screen: 'No blame intro',
+      slug: '06h-no-blame-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Вернись к делу без давления' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать' }).click()
+    await captureScreen({
+      page,
+      viewport,
       screen: 'No blame task writer',
-      slug: '06h-no-blame-task-writer',
+      slug: '06i-no-blame-task-writer',
       runtimeErrors,
       results,
       check: async () => {
@@ -641,7 +654,55 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Дальше' }).click()
-    await expect(page.getByRole('heading', { name: 'Что в этом неприятного?' })).toBeVisible()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'No blame centered choice',
+      slug: '06j-no-blame-choice',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Что в этом неприятного?' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Тревожно' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Тревожно' }).click()
+    await expect(page.locator('.no-blame-art--release')).toBeVisible()
+    await page.getByRole('button', { name: 'Дальше' }).click()
+    await expect(
+      page.getByRole('heading', { name: 'Что обычно отвлекает вместо этого?' })
+    ).toBeVisible()
+    await page.getByRole('button', { name: 'Телефон' }).click()
+    await expect(page.getByRole('heading', { name: 'Договорись с собой' })).toBeVisible()
+    await page.getByRole('button', { name: 'Начать две минуты' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'No blame timer',
+      slug: '06k-no-blame-timer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Только эти две минуты' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Остановить' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Остановить' }).click()
+    await expect(page.getByRole('heading', { name: 'Как прошло?' })).toBeVisible()
+    await page.getByRole('button', { name: 'Начал(а)', exact: true }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'No blame completion',
+      slug: '06l-no-blame-completion',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Первый шаг сделан' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Немного' }))
+        await assertClickable(page.getByRole('button', { name: 'Завершить' }))
+      },
+    })
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Библиотека' }).click()

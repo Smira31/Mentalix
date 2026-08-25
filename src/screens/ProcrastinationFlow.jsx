@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
@@ -11,6 +12,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { saveNoBlameEntry } from '../lib/noBlamePractice'
+import './ProcrastinationFlow.css'
 
 /*
  * MXL-PRB-001, MXL-DEC-014: разовая практика «Без вины» — не серия, не
@@ -58,28 +60,112 @@ const OUTCOME_OPTIONS = [
 ]
 
 const REFLECTION_OPTIONS = [
-  { key: 'easier', label: 'Да' },
-  { key: 'same', label: 'Не особо' },
-  { key: 'harder', label: 'Нет' },
+  { key: 'harder', label: 'Нет', Icon: ThumbsDown },
+  { key: 'same', label: 'Немного', Icon: Hand },
+  { key: 'easier', label: 'Да', Icon: ThumbsUp },
 ]
 
-function Eyebrow() {
+const STEP_PROGRESS = {
+  task: 1,
+  feeling: 2,
+  release: 3,
+  plan: 4,
+  run: 5,
+  outcome: 6,
+}
+
+const COMPLETION_COPY = {
+  started: {
+    title: 'Первый шаг сделан',
+    description: 'Ты не давил на себя — ты вернулся к делу.',
+  },
+  not_started: {
+    title: 'Ты заметил, что мешает',
+    description: 'Это уже честнее, чем продолжать винить себя.',
+  },
+  stopped_for_safety: {
+    title: 'Ты выбрал безопасность',
+    description: 'Остановиться вовремя — тоже бережный шаг.',
+  },
+}
+
+function Eyebrow({ children = 'Без вины', centered = false }) {
   return (
-    <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
-      Без вины
+    <span
+      className={`block text-[11px] font-bold uppercase tracking-wider text-gold mb-2 ${centered ? 'text-center' : ''}`}
+    >
+      {children}
     </span>
+  )
+}
+
+function Progress({ step }) {
+  const current = STEP_PROGRESS[step]
+
+  if (!current) return null
+
+  return (
+    <div className="no-blame-progress" aria-label={`Шаг ${current} из 6`}>
+      <div className="no-blame-progress__rail" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, index) => (
+          <span
+            key={index}
+            className={index < current ? 'no-blame-progress__segment--active' : ''}
+          />
+        ))}
+      </div>
+      <span className="no-blame-progress__label">{current} из 6</span>
+    </div>
+  )
+}
+
+function NoBlameArtwork({ stage }) {
+  return (
+    <svg viewBox="0 0 240 132" className={`no-blame-art no-blame-art--${stage}`} aria-hidden="true">
+      {stage === 'knot' && (
+        <>
+          <path d="M48 72c8-36 38 16 55-25 15-36 51 12 29 34-22 22-59-30-84-9Z" />
+          <path d="M55 88c30-69 61 31 107-28" />
+          <path d="M70 42c28-22 66 4 57 34-7 24-42 34-63 13" />
+          <circle cx="164" cy="59" r="4" />
+        </>
+      )}
+
+      {stage === 'release' && (
+        <>
+          <path d="M31 73c8-31 35 14 48-21 12-31 41 10 24 29-18 20-50-25-72-8Z" />
+          <path d="M39 87c23-58 49 21 78-13 17-20 34-13 48-8 15 5 29 2 44-13" />
+          <circle cx="210" cy="52" r="4" />
+        </>
+      )}
+
+      {stage === 'line' && (
+        <>
+          <path d="M24 75c31-8 48 11 78 3 31-9 50-23 83-12 12 4 21 2 31-4" />
+          <circle cx="216" cy="62" r="4" />
+        </>
+      )}
+
+      {stage === 'complete' && (
+        <>
+          <path d="M24 86c35-6 51 7 79-2 34-12 43-43 78-36 13 3 23-2 34-15" />
+          <path className="no-blame-art__star" d="m216 23 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z" />
+          <circle cx="216" cy="34" r="3.5" />
+        </>
+      )}
+    </svg>
   )
 }
 
 function OptionList({ options, onPick }) {
   return (
-    <div className="mt-5 space-y-2">
+    <div className="mt-6 space-y-2.5">
       {options.map(option => (
         <button
           key={option.key}
           type="button"
           onClick={() => onPick(option.key)}
-          className="w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[15px] font-semibold text-cream active:scale-[0.98] transition-transform"
+          className="w-full min-h-14 rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[15px] font-semibold text-cream active:scale-[0.98] transition-transform"
         >
           {option.label}
         </button>
@@ -91,10 +177,11 @@ function OptionList({ options, onPick }) {
 export default function ProcrastinationFlow({ userId, onClose }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
-  const [step, setStep] = useState('task')
+  const [step, setStep] = useState('intro')
   const [task, setTask] = useState('')
   const [distraction, setDistraction] = useState(null)
   const [outcome, setOutcome] = useState(null)
+  const [reflection, setReflection] = useState(null)
 
   const [releasePhrase] = useState(
     () => RELEASE_PHRASES[Math.floor(Math.random() * RELEASE_PHRASES.length)]
@@ -141,6 +228,11 @@ export default function ProcrastinationFlow({ userId, onClose }) {
     setStep('feeling')
   }
 
+  function startPractice() {
+    platform.haptic('light')
+    setStep('task')
+  }
+
   function chooseFeeling() {
     platform.haptic('light')
     setStep('release')
@@ -173,10 +265,10 @@ export default function ProcrastinationFlow({ userId, onClose }) {
   function chooseOutcome(key) {
     platform.haptic('medium')
     setOutcome(key)
-    setStep('reflect')
+    setStep('complete')
   }
 
-  function finish(reflection) {
+  function finish() {
     platform.haptic('light')
     saveNoBlameEntry(userId, { outcome, reflection })
     onClose()
@@ -192,8 +284,35 @@ export default function ProcrastinationFlow({ userId, onClose }) {
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+        {step === 'intro' && (
+          <div className="no-blame-stage no-blame-stage--intro animate-fade-in">
+            <div className="no-blame-stage__center">
+              <Eyebrow centered />
+              <h2 className="font-display text-[30px] text-cream text-center leading-[1.08] tracking-[-0.035em]">
+                Вернись к делу без давления
+              </h2>
+              <p className="mx-auto mt-4 max-w-[310px] text-center text-[14px] leading-relaxed text-muted">
+                Три минуты, чтобы заметить избегание и сделать один безопасный шаг.
+              </p>
+              <p className="mt-4 text-center text-[12px] font-semibold text-faint">
+                3 минуты&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
+              </p>
+              <NoBlameArtwork stage="knot" />
+            </div>
+
+            <button
+              type="button"
+              onClick={startPractice}
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+            >
+              Начать
+            </button>
+          </div>
+        )}
+
         {step === 'task' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
+          <div className="w-full max-w-md mx-auto animate-fade-in pt-2">
+            <Progress step={step} />
             <Eyebrow />
 
             <h2 className="font-display text-[24px] text-cream leading-tight">Что откладываешь?</h2>
@@ -216,27 +335,34 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         )}
 
         {step === 'feeling' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
+          <div className="no-blame-stage animate-fade-in">
+            <Progress step={step} />
+            <div className="no-blame-stage__center no-blame-stage__center--compact">
+              <Eyebrow centered />
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Что в этом неприятного?
-            </h2>
+              <h2 className="font-display text-[26px] text-center text-cream leading-tight">
+                Что в этом неприятного?
+              </h2>
 
-            <OptionList options={FEELING_OPTIONS} onPick={chooseFeeling} />
+              <OptionList options={FEELING_OPTIONS} onPick={chooseFeeling} />
+            </div>
           </div>
         )}
 
         {step === 'release' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[22px] text-cream leading-snug">{releasePhrase}</h2>
-
+          <div className="no-blame-stage animate-fade-in">
+            <Progress step={step} />
+            <div className="no-blame-stage__center">
+              <NoBlameArtwork stage="release" />
+              <Eyebrow centered />
+              <h2 className="font-display text-[24px] text-center text-cream leading-snug">
+                {releasePhrase}
+              </h2>
+            </div>
             <button
               type="button"
               onClick={goToPlan}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5"
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
             >
               Дальше
             </button>
@@ -244,33 +370,39 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         )}
 
         {step === 'plan' && !distraction && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
+          <div className="no-blame-stage animate-fade-in">
+            <Progress step={step} />
+            <div className="no-blame-stage__center no-blame-stage__center--compact">
+              <Eyebrow centered />
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Что обычно отвлекает вместо этого?
-            </h2>
+              <h2 className="font-display text-[26px] text-center text-cream leading-tight">
+                Что обычно отвлекает вместо этого?
+              </h2>
 
-            <OptionList options={DISTRACTION_OPTIONS} onPick={chooseDistraction} />
+              <OptionList options={DISTRACTION_OPTIONS} onPick={chooseDistraction} />
+            </div>
           </div>
         )}
 
         {step === 'plan' && distraction && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
+          <div className="no-blame-stage animate-fade-in">
+            <Progress step={step} />
+            <div className="no-blame-stage__center">
+              <Eyebrow centered />
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Договорись сама с собой
-            </h2>
+              <h2 className="font-display text-[28px] text-center text-cream leading-tight">
+                Договорись с собой
+              </h2>
 
-            <p className="text-[13px] text-muted mt-2 leading-relaxed">
-              Как только это случится — вернись сюда на две минуты.
-            </p>
+              <p className="mx-auto mt-3 max-w-[310px] text-center text-[14px] text-muted leading-relaxed">
+                Как только снова потянет отвлечься — вернись к делу на две минуты.
+              </p>
+            </div>
 
             <button
               type="button"
               onClick={startRun}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5"
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
             >
               Начать две минуты
             </button>
@@ -278,21 +410,24 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         )}
 
         {step === 'run' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in text-center">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Только эти две минуты
-            </h2>
-
-            <div className="font-display text-[64px] text-cream mt-8 tabular-nums">
-              {minutes}:{seconds}
+          <div className="no-blame-stage animate-fade-in text-center">
+            <Progress step={step} />
+            <div className="no-blame-stage__center">
+              <Eyebrow centered />
+              <div className="font-display text-[68px] text-gold tabular-nums leading-none">
+                {minutes}:{seconds}
+              </div>
+              <NoBlameArtwork stage="line" />
+              <h2 className="font-display text-[27px] text-cream leading-tight">
+                Только эти две минуты
+              </h2>
+              <p className="mt-3 text-[14px] text-muted">Не идеально. Просто начни.</p>
             </div>
 
             <button
               type="button"
               onClick={stopRun}
-              className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60 mt-8"
+              className="mx-auto text-[13px] font-semibold text-muted -m-2 p-3 active:opacity-60 mt-6"
             >
               Остановить
             </button>
@@ -300,32 +435,60 @@ export default function ProcrastinationFlow({ userId, onClose }) {
         )}
 
         {step === 'outcome' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
+          <div className="no-blame-stage animate-fade-in">
+            <Progress step={step} />
+            <div className="no-blame-stage__center no-blame-stage__center--compact">
+              <Eyebrow centered />
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">Как прошло?</h2>
+              <h2 className="font-display text-[28px] text-center text-cream leading-tight">
+                Как прошло?
+              </h2>
 
-            <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />
+              <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />
+            </div>
           </div>
         )}
 
-        {step === 'reflect' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
+        {step === 'complete' && (
+          <div className="no-blame-stage no-blame-stage--complete animate-fade-in">
+            <div className="no-blame-stage__center">
+              <NoBlameArtwork stage="complete" />
+              <h2 className="font-display text-[29px] text-center text-cream leading-tight">
+                {COMPLETION_COPY[outcome]?.title}
+              </h2>
+              <p className="mx-auto mt-3 max-w-[310px] text-center text-[14px] text-muted leading-relaxed">
+                {COMPLETION_COPY[outcome]?.description}
+              </p>
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">Стало ли легче?</h2>
-
-            <OptionList options={REFLECTION_OPTIONS} onPick={finish} />
-
-            <div className="mt-5">
-              <button
-                type="button"
-                onClick={() => finish(null)}
-                className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
-              >
-                Пропустить
-              </button>
+              <p className="mt-7 text-center text-[13px] font-semibold text-muted">
+                Помогло сейчас?
+              </p>
+              <div className="no-blame-feedback">
+                {REFLECTION_OPTIONS.map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={reflection === key}
+                    onClick={() => {
+                      platform.haptic('light')
+                      setReflection(key)
+                    }}
+                    className="no-blame-feedback__option"
+                  >
+                    <Icon size={23} strokeWidth={1.8} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={finish}
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+            >
+              Завершить
+            </button>
           </div>
         )}
       </div>
