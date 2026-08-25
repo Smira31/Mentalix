@@ -20,6 +20,8 @@ import SemanticGlyph from '../components/SemanticGlyph'
 import TodayFocusCard from '../components/TodayFocusCard'
 import TodayFocusFlow from './TodayFocusFlow'
 import { readTodayFocusDay, clearTodayFocusPick } from '../lib/todayFocus'
+import { useSynced } from '../lib/store'
+import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import {
   DayThread,
   DayThreadTrigger,
@@ -168,6 +170,10 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   const [dayThreadOpen, setDayThreadOpen] = useState(false)
 
   const [todayHeaderLeading, setTodayHeaderLeading] = useState(null)
+
+  const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
+
+  const hiddenCards = parseHiddenCards(hiddenCardsRaw)
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -729,7 +735,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         />
       )}
 
-      {!showFocusHero && (
+      {!showFocusHero && !hiddenCards.includes('focus') && (
         <TodayFocusCard
           focus={todayFocus}
           readOnly={todayState === 'dayClosed'}
@@ -783,7 +789,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           ПУЛЬС
           ====================================================== */}
 
-      {activeToday !== null && activeToday > 1 && (
+      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
         <p className="text-center text-[12px] text-faint font-semibold mt-4">
           {activeToday < 20
             ? `Сегодня в пути вместе с тобой: ${activeToday}`
@@ -837,7 +843,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           дней. Цели остались там же, соседней вкладкой.
           ====================================================== */}
 
-      {!isEmpty && (
+      {!isEmpty && !hiddenCards.includes('dayProgress') && (
         <button
           onClick={() => {
             platform.haptic('light')
@@ -873,7 +879,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           ТЕМА НЕДЕЛИ
           ====================================================== */}
 
-      {theme && (
+      {theme && !hiddenCards.includes('theme') && (
         <button
           onClick={() => {
             platform.haptic('light')
@@ -924,7 +930,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           МЫСЛЬ ДНЯ
           ====================================================== */}
 
-      {dailyQuote && (
+      {dailyQuote && !hiddenCards.includes('quote') && (
         <button
           onClick={() => {
             platform.haptic('light')

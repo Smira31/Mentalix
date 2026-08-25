@@ -12,6 +12,22 @@
 - Финальный smoke Preview → Telegram → stop пройден 22.08.2026; новых багов workflow не выявлено.
 - Реальный iPhone gate остаётся ручным подтверждением владельца и не объявляется пройденным автоматически.
 
+## MXL-TODAY-CARD-TOGGLES-001 — тумблеры видимости карточек «Сегодня»
+
+- **Статус: реализовано 25.08.2026, ветка `feat/today-card-toggles`, ожидает PR/gate.**
+- [x] `src/lib/todayCardVisibility.js` — общий ключ `mx-today-cards-hidden`,
+      список из пяти id (`focus`, `pulse`, `dayProgress`, `theme`, `quote`) и
+      подписи для Settings.
+- [x] `Settings.jsx` — новая секция «Карточки „Сегодня“» между «Разбор дня» и
+      «Основные», один `Toggle` на карточку, состояние через `useSynced` (тот
+      же паттерн, что `appLockEnabledFlag`/`onboardedFlag`).
+- [x] `Today.jsx` — те же пять блоков (`TodayFocusCard`, Пульс, «День»,
+      «Тема недели», «Мысль дня») скрываются по флагу. Герой-карточка,
+      `TodayFocusCard`-мердж в hero, `MorningPilotCard` и блок «Чек-ин
+      выполнен» не тронуты — не входят в scope по согласованному плану.
+- **Проверено:** `npm run lint` — чисто; `npm run build` — успешно.
+- **Не менялось:** backend, данные, остальные экраны, production.
+
 ## MXL-AUTONOMOUS-SM-001 — автономный пакет S/M-задач
 
 - **Статус: реализовано 24.08.2026, PR #164.** Ветка
@@ -39,33 +55,33 @@
   `codex/xs-maintenance-batch`; локальные проверки и общий Telegram/iPhone gate
   пройдены.
 - [x] **Статусная уборка после PR #162:** `PROJECT_STATE.md` и `TASKS.md`
-  больше не описывают принятый владельцем и смёрженный Onboarding как локальный;
-  production commit синхронизирован с `main` `b3253e93`. Старые исторические
-  записи не переписывались.
+      больше не описывают принятый владельцем и смёрженный Onboarding как локальный;
+      production commit синхронизирован с `main` `b3253e93`. Старые исторические
+      записи не переписывались.
 - [x] **MXL-ONBOARDING-HERO-DEADCODE-001:** удалены подтверждённо
-  неиспользуемые `src/components/OnboardingHero.jsx`,
-  `src/assets/onboarding-hero.png` и связанные правила
-  `.mx-onboarding-hero*` из `Onboarding.css`. Импортёров и строковых
-  потребителей до удаления не было.
+      неиспользуемые `src/components/OnboardingHero.jsx`,
+      `src/assets/onboarding-hero.png` и связанные правила
+      `.mx-onboarding-hero*` из `Onboarding.css`. Импортёров и строковых
+      потребителей до удаления не было.
 - [x] **MXL-CARDSYSTEM-DETAIL-ART-001:** живые CSS-якоря переименованы без
-  изменения правил: `mx-card-system-today-art` → `mx-today-hero-art`,
-  `mx-card-system-detail-art` → `mx-practice-detail-art` во всех JSX/CSS-
-  потребителях. Фикс короткого Today и `flex-basis: 46%` detail-карточек
-  сохранены.
+      изменения правил: `mx-card-system-today-art` → `mx-today-hero-art`,
+      `mx-card-system-detail-art` → `mx-practice-detail-art` во всех JSX/CSS-
+      потребителях. Фикс короткого Today и `flex-basis: 46%` detail-карточек
+      сохранены.
 - [x] **U02 / cold-open Today:** локальный детерминированный gate на
-  `390×844` и `320×568` прошёл; CTA не пересекается с navbar. Владелец
-  подтвердил cold-open `scrollY=0` на iPhone внутри Telegram.
+      `390×844` и `320×568` прошёл; CTA не пересекается с navbar. Владелец
+      подтвердил cold-open `scrollY=0` на iPhone внутри Telegram.
 - [x] **Визуальные ограничения «Пути» и navbar:** старое замечание про мотивы
-  `54px` устарело — `Achievements.jsx` уже рендерит `MotifArt size={72}`, а
-  `Motif.jsx` использует адаптивные padding/radius. Асимметрия navbar
-  `24/16px` подтверждена скриншотом `320×568` и исправлена на `20/20px` с
-  сохранением safe-area. Обе поверхности приняты владельцем на iPhone.
+      `54px` устарело — `Achievements.jsx` уже рендерит `MotifArt size={72}`, а
+      `Motif.jsx` использует адаптивные padding/radius. Асимметрия navbar
+      `24/16px` подтверждена скриншотом `320×568` и исправлена на `20/20px` с
+      сохранением safe-area. Обе поверхности приняты владельцем на iPhone.
 - [x] **Живой `/admin`-сценарий статей:** основной `MXL-022` уже закрыт — API,
-  миграция контента, бот-интерфейс и frontend API существуют. Причина молчания
-  команды найдена не во frontend/backend-коде: на текущем Render-сервисе
-  отсутствовал `ADMIN_IDS`, поэтому backend штатно игнорировал неразрешённый
-  Telegram ID. Владелец добавил переменную без раскрытия секрета, дождался
-  deploy и подтвердил, что `/admin` и сценарий статей работают.
+      миграция контента, бот-интерфейс и frontend API существуют. Причина молчания
+      команды найдена не во frontend/backend-коде: на текущем Render-сервисе
+      отсутствовал `ADMIN_IDS`, поэтому backend штатно игнорировал неразрешённый
+      Telegram ID. Владелец добавил переменную без раскрытия секрета, дождался
+      deploy и подтвердил, что `/admin` и сценарий статей работают.
 - **Проверено:** `npm run lint` — чисто; `npm run build` — успешно;
   `npm run ux:check` — 1/1 после центрирования navbar; production
   `https://mentalix.vercel.app` — `HTTP 200`. `diff --check` и общий Preview
@@ -133,7 +149,7 @@
       золотым мозгом — `src/assets/onboarding-hero.png`), контент
       (заголовок/подзаголовок/кнопка) сцентрирован по вертикали тем же
       способом, что у шагов 1–4 (`flex-1 ... flex flex-col
-    justify-center`), не новым подходом. Причина, почему просто
+justify-center`), не новым подходом. Причина, почему просто
       `justify-center` не сработал бы: составной селектор
       `.mx-onboarding-intro.mx-onboarding-step` в `Onboarding.css` имел
       более высокую специфичность и жёстко задавал
@@ -986,7 +1002,7 @@ href="?ui_lab=...">` ссылки (полная навигация, без кл�
 ## Сейчас
 
 - [x] Онбординг v2 — финальная полировка и визуальные обновления (Issue #117;
-  закрыто PR #161 и #162, живой gate пройден 24.08.2026)
+      закрыто PR #161 и #162, живой gate пройден 24.08.2026)
 
 - [x] **MXL-TRENDS-CACHE-001 — Кеш данных экрана «Тренды» (`Analytics.jsx`)**
   - **Статус: смёржено в `main` 18.08.2026 (PR #113, ветка
@@ -2326,7 +2342,7 @@ entityType, entityId)`.
 ## Позже
 
 - [x] **MXL-013 — Подключить frontend статей к существующему backend API**
-  — закрыто в рамках `MXL-022`: `Articles.jsx` использует `GET /api/articles`.
+      — закрыто в рамках `MXL-022`: `Articles.jsx` использует `GET /api/articles`.
 - [ ] **MXL-014 — Определить backend и сценарий для Медитаций**
 - [ ] **MXL-015 — Определить таксономию категорий тем недели**
 - [ ] **MXL-016 — Сформировать банк «Мыслей дня»**
