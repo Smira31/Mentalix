@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-PREVIEW-STOP-DRY-RUN-001: отдельный npm-алиас для dry-run
+
+- Добавлен `npm run preview:stop:dry-run`, который вызывает
+  `preview-stop.ps1 -DryRun` без ручной передачи PowerShell-параметра.
+- Добавлен maintenance-контракт для npm-алиаса и безопасного поведения без
+  Vercel, state, process и Telegram операций.
+
 ## 25.08.2026 — MXL-PREVIEW-STOP-RETRY-WINDOW-001: retry-window и dry-run Preview cleanup
 
 - Retry-window `preview-stop.ps1` стал настраиваемым: 10 попыток и задержка

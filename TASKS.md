@@ -15,6 +15,17 @@
   не удалив deployment. До исправления завершение подтверждается через Vercel
   и повторный запрос URL; задача — `MXL-PREVIEW-STOP-VERIFY-001` ниже.
 
+## MXL-PREVIEW-STOP-DRY-RUN-001 — отдельная команда безопасной проверки Preview cleanup
+
+- **Статус: реализовано локально 25.08.2026 в ветке
+  `chore/preview-stop-dry-run-001`; commit/PR готовятся.**
+- [x] Добавить `npm run preview:stop:dry-run` как явный алиас для PowerShell
+      `-DryRun`, чтобы проверять retry-window без ручной передачи аргумента.
+- [x] Сохранить гарантию: dry-run не вызывает Vercel, не изменяет state, не
+      останавливает процессы и не отправляет Telegram.
+- [x] Добавить maintenance-контракт для npm-алиаса и его связи с `-DryRun`.
+- **Не менять:** production project `mentalix`, backend и Telegram-бот.
+
 ## MXL-PREVIEW-STOP-RETRY-WINDOW-001 — устойчивое ожидание удаления Preview
 - **Статус: реализовано локально 25.08.2026 в ветке
   `improve/preview-stop-retry-window-001`; commit/PR готовятся.** Основание —
