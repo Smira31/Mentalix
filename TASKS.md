@@ -12,6 +12,27 @@
 - Финальный smoke Preview → Telegram → stop пройден 22.08.2026; новых багов workflow не выявлено.
 - Реальный iPhone gate остаётся ручным подтверждением владельца и не объявляется пройденным автоматически.
 
+## MXL-AUTONOMOUS-SM-001 — автономный пакет S/M-задач
+
+- **Статус: реализовано 24.08.2026, PR #164.** Ветка
+  `codex/autonomous-sm-maintenance`; runtime-задачи не конфликтуют между собой,
+  production не изменён.
+- [x] **[M] P03 — единая allowlist-политика Practices:** добавлен
+      `src/config/practiceAvailability.js` с десятью стабильными ключами и шестью
+      доступными практиками. Нейротренажёр, Дыхание, Фокус и Медитации остаются
+      disabled/«Скоро»; текущий вид и доступность не изменились.
+- [x] **[S] Единая query-сериализация API:** `src/lib/apiQuery.js::withQuery`
+      заменил ручную сборку query-string во всех 18 GET-вызовах `api.js`. Порядок
+      параметров сохранён, значения теперь кодируются через `URLSearchParams`.
+- [x] **[S] Актуализирован долг по тестам:** добавлена команда
+      `npm run test:unit` и три контракта для allowlist/query helper; существующий
+      Playwright `npm run ux:check` остаётся основным автоматическим UX smoke.
+- **Проверено:** `npm run test:unit` — 3/3; `npm run lint` — чисто;
+  `npm run build` — успешно; `npm run ux:check` — 1/1 на `390×844` и
+  `320×568`; `git diff --check` — чисто.
+- **Не менялось:** визуальная композиция Practices, доступность практик,
+  backend/API endpoints, данные, product flow и production.
+
 ## MXL-XS-MAINTENANCE-001 — пакет шести XS-задач
 
 - **Статус: принято владельцем 24.08.2026.** Интеграция: PR #163, ветка
@@ -2470,12 +2491,13 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 - **[M] U01** — нет единого screen-header baseline. **Закрыто 16.08.2026** — см. `MXL-UX-FLOWLAYOUT-001` ниже.
 - **[M] U02** — Today first viewport перегружен вертикальными резервами.
-  **Локальный gate пройден 24.08.2026** на `390×844` и `320×568`, CTA доступен
-  и не пересекается с navbar; живая проверка cold-open `scrollY=0` на iPhone
-  остаётся в `MXL-XS-MAINTENANCE-001`.
+  **Закрыто 24.08.2026:** локальный gate пройден на `390×844` и `320×568`,
+  живая проверка cold-open `scrollY=0` принята владельцем в
+  `MXL-XS-MAINTENANCE-001`.
 - **[M] U03** — CheckIn header/content grid не подтверждены живой проверкой. **Закрыто 16.08.2026** (рефакторинг центрирования; живая проверка на устройстве не проводилась в рамках этого патча) — см. `MXL-UX-FLOWLAYOUT-001` ниже.
 - **[M] U07** — hero contract не формализован как explicit state → presentation mapping. **Закрыто 16.08.2026** — см. `MXL-UX-FLOWLAYOUT-001` ниже.
-- **[M] P03** — coming-soon allowlist practices: конкретный instance закрыт, но политика для новых практик не формализована (регулярно возобновляемый вопрос).
+- **[M] P03** — **закрыто 24.08.2026:** единая allowlist-политика и стабильные
+  ключи реализованы в `MXL-AUTONOMOUS-SM-001`, текущая доступность не менялась.
 - **[M-L] P07** — AI picker prototype direction: карточки выросли, но formal approved-prototype не зафиксирован.
 - **[L] D01** — AI picker fullscreen/swipe redesign: инкрементальное движение есть, полного редизайна нет.
 - **[L] D02** — Analytics как система смысловых выводов: `deriveConclusions` покрывает часть, полный «нарратив» не реализован.
@@ -2485,10 +2507,13 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 1. [S] `App.jsx` совмещает слишком много обязанностей, ручная state-навигация.
 2. [S] Экраны соединяют получение данных, бизнес-решения и presentation.
-3. [S] Нет автоматических unit/integration/e2e тестов и test script.
+3. [S] Автоматический UX smoke и test script уже существуют; базовый unit
+   script/контракты добавлены в `MXL-AUTONOMOUS-SM-001`. Широкое покрытие
+   unit/integration по-прежнему остаётся отдельным долгом.
 4. [S] Есть lint, нет typecheck; JS без схем frontend-контрактов.
 5. [S] API-клиент без timeout/отмены/retry/нормализованного типа ошибки/telemetry.
-6. [S] Query-параметры собираются строками, нет единого слоя сериализации.
+6. [S] **Закрыто 24.08.2026:** query-параметры централизованы через
+   `apiQuery.js::withQuery`, контракт покрыт unit-тестом.
 7. [S] Loading/error/empty реализуются неравномерно.
 8. [S] `habits` остаётся в API рядом с продуктовой моделью ритуалов.
 9. [S] Навигационные состояния не отражены в URL.

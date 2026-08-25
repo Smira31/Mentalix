@@ -170,9 +170,14 @@ async function assertClickable(locator) {
 }
 
 async function assertSoonControls(page) {
-  const neuro = page.getByRole('button', { name: 'Нейротренажёр' })
-  await expect(neuro).toBeDisabled()
-  await neuro.evaluate(element => element.click())
+  const soonPractices = ['Нейротренажёр', 'Дыхание', 'Фокус', 'Медитации']
+
+  for (const name of soonPractices) {
+    await expect(page.getByRole('button', { name })).toBeDisabled()
+  }
+
+  await expect(page.getByText('Скоро', { exact: true })).toHaveCount(soonPractices.length)
+  await page.getByRole('button', { name: 'Нейротренажёр' }).evaluate(element => element.click())
   await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 }
 

@@ -88,10 +88,13 @@ main.jsx
 
 1. `App.jsx` совмещает слишком много обязанностей и содержит ручную state-навигацию.
 2. Экраны соединяют получение данных, бизнес-решения и presentation.
-3. Нет автоматических unit/integration/e2e тестов и test script.
+3. Автоматический Playwright UX smoke доступен через `npm run ux:check`;
+   базовые unit-контракты — через `npm run test:unit`. Широкого покрытия
+   unit/integration для экранов и API-контрактов пока нет.
 4. Есть lint script (npm run lint, ESLint), но нет typecheck script; проект JavaScript без схем frontend-контрактов.
 5. API-клиент не содержит timeout, отмену запроса, retry, нормализованный тип ошибки или telemetry.
-6. Параметры query собираются строками; отсутствует единый слой сериализации.
+6. Query-параметры API централизованно сериализуются через
+   `src/lib/apiQuery.js::withQuery` (`URLSearchParams`).
 7. Состояния loading/error/empty реализуются неравномерно.
 8. `habits` остаётся в API рядом с продуктовой моделью ритуалов — возможный legacy-контракт.
 9. Навигационные состояния не отражены в URL, deep-link ограничен только `?tab=`.

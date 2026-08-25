@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 24.08.2026 — MXL-AUTONOMOUS-SM-001: закрыты автономные S/M-задачи
+
+- Practices получил единую allowlist без изменения доступности, API — безопасную query-сериализацию, а оба контракта — три unit-теста. `test:unit`, lint, build и UX gate зелёные; backend, данные, UI и production не менялись.
+
 ## 24.08.2026 — MXL-XS-MAINTENANCE-001: закрыт пакет шести XS-задач
 
 - Удалён onboarding dead code, переименованы два живых CSS-якоря, navbar отцентрирован, а статусы Onboarding/Articles синхронизированы. Локальные и Telegram/iPhone gates пройдены; `/admin` восстановлен владельцем через отсутствовавший `ADMIN_IDS` в Render без изменения кода и раскрытия секрета.

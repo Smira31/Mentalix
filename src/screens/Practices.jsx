@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
+import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability'
 
 import BackButton from '../components/BackButton'
 
@@ -245,6 +246,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
           right={rituals.length > 0 ? `${ritualsDone}/${rituals.length}` : null}
+          soon={!isPracticeAvailable(PRACTICE_KEYS.rituals)}
           onOpen={() => setSub('rituals')}
         />
         <PracticeRow
@@ -252,6 +254,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           title="Аскезы"
           subtitle="от чего ты отказываешься"
           right={ascezas.length > 0 ? `${ascezasHeld}/${ascezas.length}` : null}
+          soon={!isPracticeAvailable(PRACTICE_KEYS.ascezas)}
           onOpen={() => setSub('ascezas')}
         />
       </PracticeCategory>
@@ -261,24 +264,28 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           artwork={<FirstStepArt />}
           title="Первый шаг"
           subtitle="маленький шаг, когда трудно начать"
+          soon={!isPracticeAvailable(PRACTICE_KEYS.firstStep)}
           onOpen={() => setSub('first-step')}
         />
         <PracticeRow
           artwork={<ReleaseArt />}
           title="Без вины"
           subtitle="когда откладываешь и знаешь это"
+          soon={!isPracticeAvailable(PRACTICE_KEYS.noBlame)}
           onOpen={() => setSub('no-blame')}
         />
         <PracticeRow
           artwork={<NarrowFocusArt />}
           title="Одно из всех"
           subtitle="когда всё сразу — слишком много"
+          soon={!isPracticeAvailable(PRACTICE_KEYS.narrowFocus)}
           onOpen={() => setSub('narrow-focus')}
         />
         <PracticeRow
           artwork={<OneFinishArt />}
           title="Один финиш"
           subtitle="маленький кусок, доведённый до конца"
+          soon={!isPracticeAvailable(PRACTICE_KEYS.oneFinish)}
           onOpen={() => setSub('one-finish')}
         />
       </PracticeCategory>
@@ -288,20 +295,28 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           artwork={<NeuroArt />}
           title="Нейротренажёр"
           subtitle="внимание, память, реакция"
-          soon
+          soon={!isPracticeAvailable(PRACTICE_KEYS.brain)}
+          onOpen={() => setSub('brain')}
         />
         <PracticeRow
           artwork={<BreathingArt />}
           title="Дыхание"
           subtitle="успокоить систему за минуту"
-          soon
+          soon={!isPracticeAvailable(PRACTICE_KEYS.breathing)}
+          onOpen={() => setSub('breathing')}
         />
-        <PracticeRow artwork={<FocusArt />} title="Фокус" subtitle="таймер глубокой работы" soon />
+        <PracticeRow
+          artwork={<FocusArt />}
+          title="Фокус"
+          subtitle="таймер глубокой работы"
+          soon={!isPracticeAvailable(PRACTICE_KEYS.focus)}
+          onOpen={() => setSub('focus')}
+        />
         <PracticeRow
           artwork={<MeditationArt />}
           title="Медитации"
           subtitle="тишина для ума и тела"
-          soon
+          soon={!isPracticeAvailable(PRACTICE_KEYS.meditation)}
         />
       </PracticeCategory>
     </div>
