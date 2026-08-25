@@ -931,6 +931,7 @@ export default function App() {
                     onOpenPractice={openPractice}
                     onGoMentor={goMentor}
                     onFlowChange={setTodayFlowOpen}
+                    onOpenSettings={() => setOverlay('settings')}
                   />
                 )}
 

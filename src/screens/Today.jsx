@@ -17,6 +17,7 @@ import History from './History'
 import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
 import SemanticGlyph from '../components/SemanticGlyph'
+import EmptyState from '../components/EmptyState'
 import TodayFocusCard from '../components/TodayFocusCard'
 import TodayFocusFlow from './TodayFocusFlow'
 import { readTodayFocusDay, clearTodayFocusPick } from '../lib/todayFocus'
@@ -136,7 +137,7 @@ function formatRemainingActions(count) {
 // TODAY
 // ============================================================
 
-export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }) {
+export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, onOpenSettings }) {
   const [initialTodaySnapshot] = useState(() => (user ? peekTodaySnapshot(user.id) : null))
 
   const [rituals, setRituals] = useState(() => initialTodaySnapshot?.rituals || [])
@@ -843,37 +844,55 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           дней. Цели остались там же, соседней вкладкой.
           ====================================================== */}
 
-      {!isEmpty && !hiddenCards.includes('dayProgress') && (
-        <button
-          onClick={() => {
-            platform.haptic('light')
+      {!hiddenCards.includes('dayProgress') &&
+        (isEmpty ? (
+          <EmptyState className="mt-8">
+            <h3 className="font-display text-lg text-cream mb-1">Пока нет практик</h3>
+            <p className="text-sm text-muted mb-4 leading-relaxed">
+              Добавь ритуал или аскезу — здесь появится прогресс дня.
+            </p>
+            <button
+              onClick={() => {
+                platform.haptic('light')
 
-            setPathTab('history')
-
-            changeSub('path')
-          }}
-          className="w-full rounded-3xl bg-emerald px-5 py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
-        >
-          <ArrowUpRight size={18} className="text-gold shrink-0" strokeWidth={2} />
-
-          <span className="text-[14px] font-bold text-cream whitespace-nowrap">День</span>
-
-          <div className="flex-1 h-[5px] rounded-full bg-cream/10 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gold transition-all duration-500"
-              style={{
-                width: `${pct}%`,
+                onOpenPractice?.()
               }}
-            />
-          </div>
+              className="cta-pill px-9 py-3.5 text-[14px]"
+            >
+              Выбрать практику
+            </button>
+          </EmptyState>
+        ) : (
+          <button
+            onClick={() => {
+              platform.haptic('light')
 
-          <span className="text-[13px] font-bold text-gold whitespace-nowrap">
-            {done} из {total}
-          </span>
+              setPathTab('history')
 
-          <ChevronRight size={18} className="text-faint shrink-0" />
-        </button>
-      )}
+              changeSub('path')
+            }}
+            className="w-full rounded-3xl bg-emerald px-5 py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          >
+            <ArrowUpRight size={18} className="text-gold shrink-0" strokeWidth={2} />
+
+            <span className="text-[14px] font-bold text-cream whitespace-nowrap">День</span>
+
+            <div className="flex-1 h-[5px] rounded-full bg-cream/10 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-gold transition-all duration-500"
+                style={{
+                  width: `${pct}%`,
+                }}
+              />
+            </div>
+
+            <span className="text-[13px] font-bold text-gold whitespace-nowrap">
+              {done} из {total}
+            </span>
+
+            <ChevronRight size={18} className="text-faint shrink-0" />
+          </button>
+        ))}
 
       {/* ======================================================
           ТЕМА НЕДЕЛИ
@@ -930,24 +949,42 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           МЫСЛЬ ДНЯ
           ====================================================== */}
 
-      {dailyQuote && !hiddenCards.includes('quote') && (
-        <button
-          onClick={() => {
-            platform.haptic('light')
+      {!hiddenCards.includes('quote') &&
+        (dailyQuote ? (
+          <button
+            onClick={() => {
+              platform.haptic('light')
 
-            changeSub('quote')
-          }}
-          className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
-        >
-          <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
+              changeSub('quote')
+            }}
+            className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          >
+            <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
 
-          <span className="block font-display text-[19px] text-cream leading-snug">
-            {dailyQuote}
-          </span>
+            <span className="block font-display text-[19px] text-cream leading-snug">
+              {dailyQuote}
+            </span>
 
-          <span className="block text-[11px] text-faint font-semibold mt-4">открыть все →</span>
-        </button>
-      )}
+            <span className="block text-[11px] text-faint font-semibold mt-4">открыть все →</span>
+          </button>
+        ) : (
+          <EmptyState className="mt-4">
+            <h3 className="font-display text-lg text-cream mb-1">Пока нет твоих фраз</h3>
+            <p className="text-sm text-muted mb-4 leading-relaxed">
+              Здесь будут появляться твои мысли — как только сохранишь первую.
+            </p>
+            <button
+              onClick={() => {
+                platform.haptic('light')
+
+                onOpenSettings?.()
+              }}
+              className="cta-pill px-9 py-3.5 text-[14px]"
+            >
+              Мои фразы
+            </button>
+          </EmptyState>
+        ))}
     </div>
   )
 }
