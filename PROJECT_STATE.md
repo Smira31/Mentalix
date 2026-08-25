@@ -18,11 +18,19 @@
 
 - Hosting: **Vercel**.
 - Production URL: `https://mentalix.vercel.app`.
-- Production commit: `4443b947f70621ed5ba42a2f87df4d32c4389178`
-  (`main`, squash-merge PR #167, `MXL-TODAY-CARD-TOGGLES-001`).
-- Статус: GitHub Actions («Проверка кода и сборки») и Vercel deployment для
-  PR #167 / нового `main` завершились успешно (`success`) 25.08.2026; прямой
-  HTTP-запрос к production URL после этого деплоя отдельно не переповторялся.
+- Production commit: `b8549357c85794443be0b0419fc243a1da54c284`
+  (`main`, squash-merge PR #172, `MXL-THEME-ACCENT-001`). Между этим
+  коммитом и предыдущей зафиксированной здесь точкой (`4443b947`, PR #167)
+  в `main` вошли ещё PR #168–#171 (empty-state задачи Today/Ascezas/
+  History/QuotesManager, обновление ROADMAP по Stoic-идеям) — они не были
+  отдельно отражены в этом файле в момент своего мержа; полное
+  постатейное описание — `CHANGES.md`/`TASKS.md`.
+- Статус: GitHub Actions («Автоматическая проверка Mentalix») для `main`
+  на `b8549357` — `success` (25.08.2026). Прямой HTTP-запрос к
+  `https://mentalix.vercel.app` после этого деплоя — `200`; точное
+  соответствие живого Vercel-деплоя именно этому commit SHA отдельно не
+  проверялось (нет прямого запроса к Vercel API/Dashboard в рамках этой
+  правки).
 - Production rewrite в актуальном `vercel.json` направляет `/api/*` на
   `https://mentalix-bot.onrender.com/api/*`.
 
@@ -148,6 +156,26 @@
 
 ## 5. Frontend / UI
 
+- `MXL-THEME-ACCENT-001` закрыта 25.08.2026 через PR #172 (squash-merge,
+  `b8549357`): идея 13 конкурентного анализа Stoic («смена фона/темы»),
+  объём сужен владельцем до выбора акцентного цвета — `--c-bg` не
+  менялся, `MXL-DEC-010` не пересматривалось. Новая секция Settings
+  «Внешний вид», два варианта — золотой `#EDBD60` (дефолт) и лазурный
+  `#5EB2ED`, хранение через `useSynced` (`src/lib/accentColor.js`),
+  переключение — CSS-override `[data-accent='ice']` в `src/index.css`
+  поверх единственного источника акцента `--c-gold`. В процессе найдены
+  и исправлены два бага до live gate: (1) состояние `accent` изначально
+  жило в двух независимых `useSynced`-инстансах (`App.jsx`/`Settings.jsx`)
+  без канала синхронизации между ними — переключатель не перекрашивал
+  интерфейс сразу по клику, только после перезагрузки; исправлено
+  подъёмом состояния в `App.jsx` с прокидыванием пропом в `Settings`;
+  (2) детальная карточка ритуала (`SemanticGlyph kind="ritual"`)
+  оставалась золотой — легаси-класс `.bg-artbed` фиксировал `--c-gold`
+  локально (защита от удалённой светлой темы, MXL-032), убрана одна
+  строка. Живой gate на iPhone в Telegram подтверждён владельцем —
+  акцент переключается корректно везде, включая карточку ритуала.
+  `npm run lint`/`npm run build` — чисто. Подробности — `TASKS.md`/
+  `CHANGES.md` 25.08.2026.
 - `MXL-TODAY-CARD-TOGGLES-001` закрыта 25.08.2026 через PR #167
   (squash-merge, `4443b947`): в Settings добавлена секция «Карточки
   „Сегодня“» с пятью тумблерами (`focus`, `pulse`, `dayProgress`, `theme`,
@@ -408,9 +436,17 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 в `main` (`4443b947`), CI и Vercel — `success`, ветка `feat/today-card-toggles`
 удалена (remote + local). Подробности — §5 выше.
 
+**`MXL-THEME-ACCENT-001` закрыта 25.08.2026** — PR #172 squash-смёржен в
+`main` (`b8549357`), CI — `success`, ветка `feat/theme-accent-001` удалена
+(remote + local). Живой gate на iPhone в Telegram подтверждён владельцем.
+Подробности — §5 выше.
+
 **Текущая P0-задача не выбрана.** Требуется решение владельца о следующем
-приоритете; кандидаты — data-dependent gate на iPhone (§13) и решение по
-Koyeb/GigaChat TLS/Groq (§11).
+приоритете; кандидаты — data-dependent gate на iPhone (§13), решение по
+Koyeb/GigaChat TLS/Groq (§11), и следующая задача из подтверждённой
+владельцем очереди 10 код-задач конкурентного анализа Stoic (см.
+`ROADMAP.md` → «Обновление 25.08.2026» — `MXL-THEME-ACCENT-001` была
+первой в этой очереди, вторая — «Быстрый mood-check при запуске»).
 
 ## 13. Следующие задачи
 

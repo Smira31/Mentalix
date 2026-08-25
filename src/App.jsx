@@ -15,6 +15,7 @@ import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
+import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -252,6 +253,22 @@ export default function App() {
 
   const appLockEnabled = appLockEnabledFlag === '1'
 
+  /*
+   * Акцентный цвет (MXL-THEME-ACCENT-001) — косметическая персонализация,
+   * выбор живёт вместе с человеком (облако), как и onboarded/appLock выше.
+   * Фон (--c-bg) этим не затрагивается.
+   *
+   * Состояние живёт здесь, а не в самом Settings: useSynced — это просто
+   * useState без канала синхронизации между инстансами (нет storage-
+   * listener, нет контекста), поэтому смена значения внутри Settings не
+   * долетала бы до этого эффекта, если бы Settings держал свой отдельный
+   * вызов useSynced на тот же ключ. Settings получает setAccentRaw пропом
+   * (onAccentChange) и меняет именно это состояние.
+   */
+  const [accentRaw, setAccentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
+
+  const accent = parseAccent(accentRaw)
+
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
   const initialTab = new URLSearchParams(window.location.search).get('tab')
@@ -269,6 +286,14 @@ export default function App() {
   useEffect(() => {
     applyDarkTheme()
   }, [])
+
+  useEffect(() => {
+    if (accent === DEFAULT_ACCENT) {
+      document.documentElement.removeAttribute('data-accent')
+    } else {
+      document.documentElement.setAttribute('data-accent', accent)
+    }
+  }, [accent])
 
   /* ============================================================
      TELEGRAM FULLSCREEN
@@ -865,6 +890,8 @@ export default function App() {
                     setOverlay('profile')
                   }
                 }}
+                accent={accent}
+                onAccentChange={setAccentRaw}
               />
             )}
 
