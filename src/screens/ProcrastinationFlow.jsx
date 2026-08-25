@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
+import JournalTextarea from '../components/JournalTextarea'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -197,23 +198,20 @@ export default function ProcrastinationFlow({ userId, onClose }) {
 
             <h2 className="font-display text-[24px] text-cream leading-tight">Что откладываешь?</h2>
 
-            <textarea
+            <JournalTextarea
               autoFocus
-              rows={3}
               value={task}
-              onChange={event => setTask(event.target.value)}
+              onChange={setTask}
               placeholder="Например: разобрать почту"
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              ariaLabel="Дело, которое откладываешь"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={goToFeeling}
+              submitLabel="Дальше"
+              submitDisabled={!task.trim()}
             />
-
-            <button
-              type="button"
-              onClick={goToFeeling}
-              disabled={!task.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Дальше
-            </button>
           </div>
         )}
 

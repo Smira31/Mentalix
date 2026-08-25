@@ -623,6 +623,27 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Назад' }).click()
 
+    await page.getByRole('button', { name: 'Без вины' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'No blame task writer',
+      slug: '06h-no-blame-task-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Что откладываешь?' })).toBeVisible()
+        const editor = page.getByRole('textbox', { name: 'Дело, которое откладываешь' })
+        await expect(editor).toBeVisible()
+        await editor.fill('Разобрать почту')
+        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        await assertClickable(page.getByRole('button', { name: 'Дальше' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Дальше' }).click()
+    await expect(page.getByRole('heading', { name: 'Что в этом неприятного?' })).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+
     await page.getByRole('button', { name: 'Библиотека' }).click()
     await captureScreen({
       page,
