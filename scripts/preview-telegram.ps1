@@ -83,7 +83,8 @@ if (-not $send.ok) {
   ConvertTo-Json -Compress | Set-Content -LiteralPath $statePath -Encoding UTF8
 
 if ($deploymentId) {
-  $cleanup = "Start-Sleep -Seconds 3600; npx vercel@latest remove '$previewUrl' --yes --scope $scope | Out-Null; if (Test-Path '$statePath') { `$s = Get-Content -Raw '$statePath' | ConvertFrom-Json; if (`$s.deploymentId -eq '$deploymentId') { Remove-Item '$statePath' -Force } }"
+  $stopScript = Join-Path $PSScriptRoot 'preview-stop.ps1'
+  $cleanup = "Start-Sleep -Seconds 3600; & '$stopScript' | Out-Null"
   Start-Process powershell.exe -WindowStyle Hidden -ArgumentList @('-NoProfile', '-Command', $cleanup) | Out-Null
 }
 

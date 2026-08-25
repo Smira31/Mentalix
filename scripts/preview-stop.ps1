@@ -49,8 +49,6 @@ if ([string]::IsNullOrWhiteSpace($deploymentId)) {
   exit 0
 }
 
-Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
-
 $oldPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Continue'
 $removeTarget = if ($deploymentUrl) { $deploymentUrl } else { $deploymentId }
@@ -68,6 +66,47 @@ if (-not $removedSuccessfully -or ($removeExit -ne 0 -and $removeOutput -notmatc
   exit 1
 }
 
+# Vercel CLI может напечатать сообщение об удалении до фактического исчезновения
+# deployment. Не очищаем state и не уведомляем Telegram, пока отсутствие не
+# подтверждено независимо через публичный URL или Vercel inspect.
+$verifiedRemoved = $false
+$verificationDetails = @()
+for ($attempt = 1; $attempt -le 5 -and -not $verifiedRemoved; $attempt++) {
+  if (-not [string]::IsNullOrWhiteSpace($deploymentUrl)) {
+    $oldPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $httpCode = (& curl.exe --noproxy '*' --http1.1 --max-time 20 -sS -o NUL -w '%{http_code}' $deploymentUrl 2>$null | Out-String).Trim()
+    $curlExit = $LASTEXITCODE
+    $ErrorActionPreference = $oldPreference
+    $verificationDetails += "HTTP attempt $attempt`: exit=$curlExit status=$httpCode"
+    if ($curlExit -eq 0 -and $httpCode -match '^(404|410)$') {
+      $verifiedRemoved = $true
+    }
+  }
+
+  if (-not $verifiedRemoved -and -not [string]::IsNullOrWhiteSpace($deploymentId)) {
+    $oldPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $inspectOutput = & npx vercel@latest inspect $deploymentId --scope $scope 2>&1 | Out-String
+    $inspectExit = $LASTEXITCODE
+    $ErrorActionPreference = $oldPreference
+    $inspectMissing = $inspectOutput -match '(?i)not found|does not exist|could not find'
+    $verificationDetails += "Inspect attempt $attempt`: exit=$inspectExit missing=$inspectMissing"
+    if ($inspectExit -ne 0 -and $inspectMissing) {
+      $verifiedRemoved = $true
+    }
+  }
+
+  if (-not $verifiedRemoved -and $attempt -lt 5) {
+    Start-Sleep -Seconds 2
+  }
+}
+
+if (-not $verifiedRemoved) {
+  Write-Error ("Vercel принял cleanup, но удаление Preview не подтверждено. State сохранён для повторной попытки.`n" + ($verificationDetails -join "`n"))
+  exit 1
+}
+
 $related = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
   Where-Object {
     $_.ProcessId -ne $PID -and
@@ -79,6 +118,7 @@ foreach ($process in $related) {
   Stop-Process -Id $process.ProcessId -Force -ErrorAction SilentlyContinue
 }
 
+# State удаляется только после независимого подтверждения отсутствия deployment.
 if (Test-Path -LiteralPath $statePath) {
   Remove-Item -LiteralPath $statePath -Force -ErrorAction SilentlyContinue
 }

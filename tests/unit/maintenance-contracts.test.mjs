@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
 
 import {
@@ -38,4 +39,28 @@ test('withQuery пропускает только null/undefined и не доб�
     withQuery('/example', { empty: null, missing: undefined, zero: 0, disabled: false }),
     '/example?zero=0&disabled=false'
   )
+})
+
+test('preview cleanup подтверждает удаление до очистки state и уведомления', () => {
+  const source = readFileSync(new URL('../../scripts/preview-stop.ps1', import.meta.url), 'utf8')
+  const launcher = readFileSync(
+    new URL('../../scripts/preview-telegram.ps1', import.meta.url),
+    'utf8'
+  )
+  const removeCall = source.indexOf('vercel@latest remove')
+  const verificationGate = source.indexOf('if (-not $verifiedRemoved)')
+  const stateCleanup = source.indexOf('if (Test-Path -LiteralPath $statePath)', verificationGate)
+  const telegramNotification = source.indexOf("$token = $envValues['TELEGRAM_MAIN_BOT_TOKEN']")
+  const successMessage = source.indexOf("Write-Output 'Preview stopped.'")
+
+  assert.ok(removeCall >= 0)
+  assert.ok(verificationGate > removeCall)
+  assert.ok(stateCleanup > verificationGate)
+  assert.ok(telegramNotification > stateCleanup)
+  assert.ok(successMessage > telegramNotification)
+  assert.match(source, /\$httpCode -match '\^\(404\|410\)\$'/)
+  assert.match(source, /\$inspectExit -ne 0 -and \$inspectMissing/)
+  assert.match(source, /State сохранён для повторной попытки/)
+  assert.match(launcher, /Join-Path \$PSScriptRoot 'preview-stop\.ps1'/)
+  assert.doesNotMatch(launcher, /Start-Sleep -Seconds 3600; npx vercel@latest remove/)
 })

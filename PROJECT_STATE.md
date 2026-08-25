@@ -467,6 +467,13 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 iPhone внутри Telegram пройдена. `NarrowFocusFlow`, `FinishFlow` и `ProcrastinationFlow` остаются
 следующими отдельными циклами по лимиту двух функций из `AI_RULES.md` §4.1.
 
+**Параллельная P1-задача `MXL-PREVIEW-STOP-VERIFY-001` реализована локально
+25.08.2026** в `codex/preview-stop-verify`: cleanup сохраняет state и не
+уведомляет Telegram, пока удаление не подтверждено HTTP 404/410 или Vercel
+inspect. PowerShell parser, unit 7/7, lint, build и diff-check зелёные. Живое
+удаление не запускалось, чтобы не уничтожить активный Writing Canvas Preview;
+push/PR/production не выполнялись.
+
 ## 13. Следующие задачи
 
 - ~~**P1:** подтвердить и стабилизировать текущую production-цепочку
