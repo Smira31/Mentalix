@@ -1,5 +1,27 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-EMPTY-STATE-REUSE-001: унификация пустых состояний вне Today (частично)
+
+- Pre-mortem перед стартом (задача трогала 5 файлов) выявил риск: механическая
+  подгонка `Path.jsx` (`EmptyGoals`) под общий `EmptyState` выкинула бы
+  осмысленную фишку экрана — анимацию `WireframeMountain`, а заодно грозил
+  scope creep в `Achievements.jsx`, где `if (!badges) return null` — это
+  loading-state (набор вех фиксирован, после загрузки `badges` всегда
+  непустой), а не «нет данных». Владелец сузил scope до трёх файлов, оба
+  риска — вне scope этой задачи.
+- `Ascezas.jsx` (~583) и `History.jsx` (~48) — ручной markup карточки заменён
+  на `EmptyState`; в `History.jsx` паддинг (`px-6 py-10`) и глиф (`MotifArt
+name="sledopyt"`) сохранены через `glyph`/`className`, а не унифицированы
+  под дефолт компонента.
+- `QuotesManager.jsx` (~89) — курсивная строка без глифа заменена на
+  `EmptyState` с заголовком «Пока нет твоих фраз» (та же формулировка, что и
+  в одноимённом пустом состоянии `Today.jsx` для того же контента — личные
+  цитаты). CTA не добавлен: форма добавления уже открыта на этом экране.
+- **Вне scope (сознательно, см. pre-mortem выше):** `Path.jsx` (`EmptyGoals`,
+  ~90 и мелкая подпись ~300), `Achievements.jsx` (~142) — остаются как есть.
+- **Проверено:** `npm run lint` — чисто; `npm run build` — успешно.
+- **Не менялось:** backend, данные, Path.jsx, Achievements.jsx, production.
+
 ## 25.08.2026 — MXL-EMPTY-STATE-TODAY-001: пустые состояния «День» и «Мысль дня»
 
 - ROADMAP-идея Stoic-6 «Улучшить пустые состояния»: перед стартом прошли pre-mortem, который сузил scope до Today.jsx (карточки «Тема недели», Ascezas/History/Path/QuotesManager/Achievements вынесены отдельно — новая backlog-задача `MXL-EMPTY-STATE-REUSE-001` в `TASKS.md`). Ключевая находка pre-mortem: read-only проверка бэкенда (`mentalix-bot/backend/quotes.py`, `/api/quotes/today`) показала, что «Мысль дня» тянется из персональных `UserQuote` пользователя, а не общего каталога — пусто означает «ещё не сохранил фразу», а не нехватку контента; «Тема недели» же из-за `ensure_seed()` в `themes.py` пуста практически только при сбое запроса, поэтому исключена из scope как error-state, а не content-empty-state.

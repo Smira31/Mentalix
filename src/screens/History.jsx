@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
+import EmptyState from '../components/EmptyState'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
@@ -11,7 +12,8 @@ const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'и�
 
 function dayTitle(iso) {
   const d = new Date(iso + 'T00:00:00')
-  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const diff = Math.round((today - d) / 86400000)
   if (diff === 0) return 'Сегодня'
   if (diff === 1) return 'Вчера'
@@ -47,20 +49,22 @@ export default function History({ user }) {
 
   if (days.length === 0) {
     return (
-      <div className="rounded-[24px] bg-emerald px-6 py-10 text-center mt-2">
-        <MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />
+      <EmptyState
+        glyph={<MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />}
+        className="px-6 py-10 mt-2"
+      >
         <h3 className="font-display text-[18px] text-cream mb-2">Пока пусто</h3>
         <p className="text-[14px] text-muted leading-snug">
           Пройди чек-ин или закрой ритуал —
           <br />и здесь появится первая запись пути.
         </p>
-      </div>
+      </EmptyState>
     )
   }
 
   return (
     <div className="space-y-5 mt-1">
-      {days.map((d) => {
+      {days.map(d => {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
@@ -82,7 +86,9 @@ export default function History({ user }) {
 
                   {d.checkin.note && (
                     <p className="text-[14px] text-muted leading-snug mt-3 whitespace-pre-line">
-                      {d.checkin.note.length > 220 ? d.checkin.note.slice(0, 220) + '…' : d.checkin.note}
+                      {d.checkin.note.length > 220
+                        ? d.checkin.note.slice(0, 220) + '…'
+                        : d.checkin.note}
                     </p>
                   )}
 
