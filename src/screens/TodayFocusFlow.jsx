@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
+import JournalTextarea from '../components/JournalTextarea'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -48,7 +49,6 @@ export default function TodayFocusFlow({
 
   const [aiError, setAiError] = useState('')
 
-  const textareaRef = useRef(null)
   const scrollRef = useRef(null)
   const mountedRef = useRef(true)
 
@@ -82,7 +82,7 @@ export default function TodayFocusFlow({
 
     platform.haptic('light')
 
-    textareaRef.current?.blur()
+    document.activeElement?.blur?.()
 
     setItems(parsed)
     setStep('pick')
@@ -161,24 +161,20 @@ export default function TodayFocusFlow({
               потеряется.
             </p>
 
-            <textarea
-              ref={textareaRef}
+            <JournalTextarea
               autoFocus
-              rows={7}
               value={text}
-              onChange={event => setText(event.target.value)}
+              onChange={setText}
               placeholder={'Например:\nНаписать отчёт\nРазобрать почту\nПозвонить в поликлинику'}
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              ariaLabel="Дела, которые тянут внимание"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={goToPick}
+              submitLabel="Продолжить"
+              submitDisabled={!text.trim()}
             />
-
-            <button
-              type="button"
-              onClick={goToPick}
-              disabled={!text.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Продолжить
-            </button>
           </div>
         )}
 
@@ -231,33 +227,26 @@ export default function TodayFocusFlow({
               Первый шаг, который займёт не больше пяти минут — необязательно, можно пропустить.
             </p>
 
-            <textarea
-              rows={4}
+            <JournalTextarea
+              autoFocus
               value={firstStepText}
-              onChange={event => setFirstStepText(event.target.value)}
+              onChange={setFirstStepText}
               placeholder="Например: открыть документ и записать три пункта"
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              ariaLabel="Первый шаг"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={saveFirstStep}
+              submitLabel="Сохранить шаг"
+              submitDisabled={!firstStepText.trim()}
+              onDeepen={suggestFirstStep}
+              deepenLabel={aiLoading ? kompas.typing : 'Подсказать шаг'}
+              deepenDisabled={false}
+              deepenLoading={aiLoading}
             />
 
             {aiError && <p className="text-[12px] text-red-400 mt-2">{aiError}</p>}
-
-            <button
-              type="button"
-              onClick={suggestFirstStep}
-              disabled={aiLoading}
-              className="w-full rounded-2xl px-4 py-3 bg-cream/5 border border-cream/10 text-[13px] font-semibold text-cream mt-3 active:scale-[0.98] transition-transform disabled:opacity-50"
-            >
-              {aiLoading ? kompas.typing : 'Подсказать шаг'}
-            </button>
-
-            <button
-              type="button"
-              onClick={saveFirstStep}
-              disabled={!firstStepText.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Сохранить шаг
-            </button>
 
             <div className="mt-5">
               <button

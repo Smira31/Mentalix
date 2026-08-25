@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import SceneLayout from '../components/practices/SceneLayout'
+import JournalTextarea from '../components/JournalTextarea'
 import { useFullscreenSurface, FULLSCREEN_SHELL_CLASS } from '../lib/fullscreenSurface'
 import { saveFirstStepEntry } from '../lib/firstStepPractice'
 
@@ -168,22 +169,20 @@ export default function FirstStepFlow({ userId, onClose }) {
             </>
           }
         >
-          <textarea
+          <JournalTextarea
             autoFocus
-            rows={3}
             value={task}
-            onChange={event => setTask(event.target.value)}
+            onChange={setTask}
             placeholder="Например: написать отчёт"
-            className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none"
+            ariaLabel="Дело, которое не двигается"
+            className="min-h-[18rem]"
+            editorClassName="pb-24"
+            floatingToolbar
+            formatting={false}
+            onSubmit={goToState}
+            submitLabel="Дальше"
+            submitDisabled={!task.trim()}
           />
-          <button
-            type="button"
-            onClick={goToState}
-            disabled={!task.trim()}
-            className="practice-scene__cta cta-pill w-full text-[15px] px-6 py-3.5 disabled:opacity-35"
-          >
-            Дальше
-          </button>
         </SceneLayout>
       )}
 
@@ -235,22 +234,20 @@ export default function FirstStepFlow({ userId, onClose }) {
           className="practice-scene--input"
           description={<>Не «написать отчёт», а «открыть документ и записать три пункта».</>}
         >
-          <textarea
+          <JournalTextarea
             autoFocus
-            rows={3}
             value={plan}
-            onChange={event => setPlan(event.target.value)}
+            onChange={setPlan}
             placeholder="Например: открыть документ и записать три пункта"
-            className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none"
+            ariaLabel="Первый шаг на пять минут"
+            className="min-h-[18rem]"
+            editorClassName="pb-24"
+            floatingToolbar
+            formatting={false}
+            onSubmit={startRun}
+            submitLabel="Начать пять минут"
+            submitDisabled={!plan.trim()}
           />
-          <button
-            type="button"
-            onClick={startRun}
-            disabled={!plan.trim()}
-            className="practice-scene__cta cta-pill w-full text-[15px] px-6 py-3.5 disabled:opacity-35"
-          >
-            Начать пять минут
-          </button>
         </SceneLayout>
       )}
 

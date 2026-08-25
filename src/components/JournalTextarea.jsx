@@ -71,6 +71,20 @@ function renderMarkdown(editor, value) {
   editor.replaceChildren(fragment)
 }
 
+function renderPlainText(editor, value) {
+  const documentRef = editor.ownerDocument
+  const fragment = documentRef.createDocumentFragment()
+
+  String(value || '')
+    .split('\n')
+    .forEach((line, index) => {
+      if (index > 0) fragment.append(documentRef.createElement('br'))
+      fragment.append(documentRef.createTextNode(line))
+    })
+
+  editor.replaceChildren(fragment)
+}
+
 function serializeNode(node, suppressFormatting = false) {
   if (node.nodeType === 3) return node.textContent || ''
   if (node.nodeType !== 1) return ''
@@ -141,6 +155,10 @@ export default function JournalTextarea({
   submitLoading = false,
   onDeepen,
   deepenLabel = 'Пойти глубже',
+  deepenDisabled,
+  deepenLoading = false,
+  formatting = true,
+  autoFocus = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -150,9 +168,11 @@ export default function JournalTextarea({
     const editor = editorRef.current
     if (!editor || emittedValueRef.current === value) return
 
-    renderMarkdown(editor, value)
+    if (formatting) renderMarkdown(editor, value)
+    else renderPlainText(editor, value)
+
     emittedValueRef.current = value
-  }, [value])
+  }, [formatting, value])
 
   function emitValue() {
     const editor = editorRef.current
@@ -201,6 +221,7 @@ export default function JournalTextarea({
         role="textbox"
         aria-label={ariaLabel}
         aria-multiline="true"
+        autoFocus={autoFocus}
         contentEditable
         suppressContentEditableWarning
         data-placeholder={placeholder}
@@ -213,45 +234,55 @@ export default function JournalTextarea({
         className={[
           'min-h-[9rem] flex-1 bg-transparent text-[17px] leading-[1.65] text-cream outline-none font-body caret-gold',
           '[overflow-wrap:anywhere] empty:before:pointer-events-none empty:before:text-muted empty:before:content-[attr(data-placeholder)]',
-          '[&_strong]:font-semibold [&_em]:italic [&_mark]:rounded-[4px] [&_mark]:bg-gold/20 [&_mark]:px-0.5 [&_mark]:text-inherit',
-          '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5',
+          formatting
+            ? '[&_strong]:font-semibold [&_em]:italic [&_mark]:rounded-[4px] [&_mark]:bg-gold/20 [&_mark]:px-0.5 [&_mark]:text-inherit'
+            : '',
+          formatting ? '[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:pl-5 [&_ol]:pl-5' : '',
           editorClassName,
         ].join(' ')}
       />
 
       {floatingToolbar ? (
         <>
-          {formatOpen && (
+          {formatting && formatOpen && (
             <div className="fixed bottom-[calc(var(--app-safe-bottom)+86px)] left-5 z-[71] flex items-center gap-2 rounded-full border border-cream/10 bg-emerald-deep/95 p-2 shadow-xl backdrop-blur-md">
               {formatButtons}
             </div>
           )}
 
           <div className="fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-3">
-            <button
-              type="button"
-              aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
-              aria-expanded={formatOpen}
-              onPointerDown={event => event.preventDefault()}
-              onClick={() => {
-                platform.haptic('light')
-                setFormatOpen(current => !current)
-              }}
-              className={[
-                'flex h-14 w-14 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
-                formatOpen
-                  ? 'border-gold/40 bg-gold/15 text-gold'
-                  : 'border-cream/10 bg-emerald text-cream',
-              ].join(' ')}
-            >
-              Aa
-            </button>
+            {formatting ? (
+              <button
+                type="button"
+                aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
+                aria-expanded={formatOpen}
+                onPointerDown={event => event.preventDefault()}
+                onClick={() => {
+                  platform.haptic('light')
+                  setFormatOpen(current => !current)
+                }}
+                className={[
+                  'flex h-14 w-14 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
+                  formatOpen
+                    ? 'border-gold/40 bg-gold/15 text-gold'
+                    : 'border-cream/10 bg-emerald text-cream',
+                ].join(' ')}
+              >
+                Aa
+              </button>
+            ) : (
+              <span aria-hidden="true" />
+            )}
 
             {onDeepen ? (
               <button
                 type="button"
                 onClick={onDeepen}
-                disabled={!String(value || '').trim() || submitLoading}
+                disabled={
+                  (deepenDisabled ?? !String(value || '').trim()) ||
+                  submitLoading ||
+                  deepenLoading
+                }
                 className="h-14 min-w-0 rounded-full border border-cream/10 bg-emerald px-5 text-[14px] font-semibold text-cream transition-transform active:scale-[0.98] disabled:opacity-35"
               >
                 {deepenLabel}
@@ -264,20 +295,23 @@ export default function JournalTextarea({
               type="button"
               aria-label={submitLabel}
               title={submitLabel}
-              onClick={() => onSubmit?.()}
-              disabled={submitDisabled || submitLoading}
+              onClick={() => {
+                editorRef.current?.blur()
+                onSubmit?.()
+              }}
+              disabled={submitDisabled || submitLoading || deepenLoading}
               className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
             >
               <Check size={25} strokeWidth={2.4} />
             </button>
           </div>
         </>
-      ) : (
+      ) : formatting ? (
         <div className="sticky bottom-0 z-10 mt-3 flex shrink-0 items-center gap-1.5 border-t border-cream/10 bg-emerald-deep/95 py-2 backdrop-blur-md">
           <span className="mr-auto text-[11px] font-semibold text-faint">Формат</span>
           {formatButtons}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }
