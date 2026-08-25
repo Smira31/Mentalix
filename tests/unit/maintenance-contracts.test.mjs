@@ -8,6 +8,10 @@ import {
   isPracticeAvailable,
 } from '../../src/config/practiceAvailability.js'
 import { withQuery } from '../../src/lib/apiQuery.js'
+import {
+  MOOD_CHECK_CHECKIN_ERROR,
+  shouldShowMoodCheckGate,
+} from '../../src/lib/moodCheckGate.js'
 
 test('allowlist сохраняет текущие шесть доступных практик', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
@@ -39,6 +43,24 @@ test('withQuery пропускает только null/undefined и не доб�
     withQuery('/example', { empty: null, missing: undefined, zero: 0, disabled: false }),
     '/example?zero=0&disabled=false'
   )
+})
+
+test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при неизвестном check-in state', () => {
+  const base = {
+    user: { id: 1 },
+    onboarded: true,
+    locked: false,
+    enabled: true,
+    dismissedToday: false,
+  }
+
+  assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: null }), true)
+  assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: undefined }), false)
+  assert.equal(
+    shouldShowMoodCheckGate({ ...base, todayCheckin: MOOD_CHECK_CHECKIN_ERROR }),
+    false
+  )
+  assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: { id: 10 } }), false)
 })
 
 test('preview cleanup подтверждает удаление до очистки state и уведомления', () => {

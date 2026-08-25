@@ -18,6 +18,10 @@ import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { api } from './lib/api'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
+import {
+  MOOD_CHECK_CHECKIN_ERROR,
+  shouldShowMoodCheckGate,
+} from './lib/moodCheckGate'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -286,7 +290,9 @@ export default function App() {
    * Today (см. рендер ниже, сразу после AppLock).
    *
    * moodCheckCheckin: undefined — ещё не фетчили, null — фетчили,
-   * чек-ина на сегодня нет, объект — чек-ин уже есть (гейт не нужен).
+   * чек-ина на сегодня нет, объект — чек-ин уже есть, error — backend
+   * недоступен. Гейт разрешён только для null: неизвестное состояние не
+   * должно блокировать запуск приложения.
    * Фетчится только если тумблер включён — большинство его не видит.
    */
   const [moodCheckEnabledFlag] = useSynced(MOOD_CHECK_ENABLED_KEY, '0')
@@ -310,7 +316,7 @@ export default function App() {
         if (alive) setMoodCheckCheckin(checkin ?? null)
       })
       .catch(() => {
-        if (alive) setMoodCheckCheckin(null)
+        if (alive) setMoodCheckCheckin(MOOD_CHECK_CHECKIN_ERROR)
       })
 
     return () => {
@@ -318,13 +324,14 @@ export default function App() {
     }
   }, [user, onboarded, locked, moodCheckEnabled, moodCheckDismissedToday])
 
-  const showMoodCheckGate =
-    Boolean(user) &&
-    onboarded &&
-    !locked &&
-    moodCheckEnabled &&
-    !moodCheckDismissedToday &&
-    moodCheckCheckin === null
+  const showMoodCheckGate = shouldShowMoodCheckGate({
+    user,
+    onboarded,
+    locked,
+    enabled: moodCheckEnabled,
+    dismissedToday: moodCheckDismissedToday,
+    todayCheckin: moodCheckCheckin,
+  })
 
   const initialTab = new URLSearchParams(window.location.search).get('tab')
 
