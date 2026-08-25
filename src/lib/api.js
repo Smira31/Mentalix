@@ -1,4 +1,5 @@
 import { platform } from '../platform'
+import { withQuery } from './apiQuery'
 
 const BASE = '/api'
 
@@ -46,7 +47,7 @@ async function request(path, options = {}) {
 
 export const api = {
   habits: {
-    list: userId => request(`/habits?user_id=${userId}`),
+    list: userId => request(withQuery('/habits', { user_id: userId })),
 
     create: (userId, habit) =>
       request('/habits', {
@@ -82,7 +83,7 @@ export const api = {
   },
 
   rituals: {
-    list: userId => request(`/rituals?user_id=${userId}`),
+    list: userId => request(withQuery('/rituals', { user_id: userId })),
 
     create: (userId, ritual) =>
       request('/rituals', {
@@ -118,7 +119,7 @@ export const api = {
   },
 
   ascezas: {
-    list: userId => request(`/ascezas?user_id=${userId}`),
+    list: userId => request(withQuery('/ascezas', { user_id: userId })),
 
     create: (userId, asceza) =>
       request('/ascezas', {
@@ -156,9 +157,10 @@ export const api = {
   },
 
   checkin: {
-    today: userId => request(`/checkin/today?user_id=${userId}`),
+    today: userId => request(withQuery('/checkin/today', { user_id: userId })),
 
-    history: (userId, days = 14) => request(`/checkin/history?user_id=${userId}&days=${days}`),
+    history: (userId, days = 14) =>
+      request(withQuery('/checkin/history', { user_id: userId, days })),
 
     save: (
       userId,
@@ -182,7 +184,7 @@ export const api = {
   },
 
   goals: {
-    list: userId => request(`/goals?user_id=${userId}`),
+    list: userId => request(withQuery('/goals', { user_id: userId })),
 
     create: (userId, goal) =>
       request('/goals', {
@@ -200,12 +202,12 @@ export const api = {
   },
 
   analytics: {
-    get: (userId, days = 14) => request(`/analytics?user_id=${userId}&days=${days}`),
+    get: (userId, days = 14) => request(withQuery('/analytics', { user_id: userId, days })),
   },
 
   mentalix: {
     history: (userId, persona = 'mayak') =>
-      request(`/mentalix/messages?user_id=${userId}&persona=${persona}`),
+      request(withQuery('/mentalix/messages', { user_id: userId, persona })),
 
     send: (userId, content, persona = 'mayak') =>
       request('/mentalix/messages', {
@@ -231,9 +233,9 @@ export const api = {
   },
 
   profile: {
-    get: userId => request(`/profile?user_id=${userId}`),
+    get: userId => request(withQuery('/profile', { user_id: userId })),
 
-    getSettings: userId => request(`/profile/settings?user_id=${userId}`),
+    getSettings: userId => request(withQuery('/profile/settings', { user_id: userId })),
 
     saveSettings: (userId, { reminder_enabled, reminder_hour, review_hour }) =>
       request('/profile/settings', {
@@ -256,9 +258,9 @@ export const api = {
   },
 
   themes: {
-    list: userId => request(`/themes?user_id=${userId}`),
+    list: userId => request(withQuery('/themes', { user_id: userId })),
 
-    get: (themeId, userId) => request(`/themes/${themeId}?user_id=${userId}`),
+    get: (themeId, userId) => request(withQuery(`/themes/${themeId}`, { user_id: userId })),
 
     reflect: (themeId, userId, day, text) =>
       request(`/themes/${themeId}/reflect`, {
@@ -272,7 +274,7 @@ export const api = {
   },
 
   quotes: {
-    list: userId => request(`/quotes?user_id=${userId}`),
+    list: userId => request(withQuery('/quotes', { user_id: userId })),
 
     create: (userId, text, tag) =>
       request('/quotes', {
@@ -289,11 +291,11 @@ export const api = {
         method: 'DELETE',
       }),
 
-    today: userId => request(`/quotes/today?user_id=${userId}`),
+    today: userId => request(withQuery('/quotes/today', { user_id: userId })),
   },
 
   courses: {
-    list: userId => request(`/courses?user_id=${userId}`),
+    list: userId => request(withQuery('/courses', { user_id: userId })),
 
     create: (userId, course) =>
       request('/courses', {
@@ -329,7 +331,7 @@ export const api = {
   },
 
   focus: {
-    progress: userId => request(`/focus/progress?user_id=${userId}`),
+    progress: userId => request(withQuery('/focus/progress', { user_id: userId })),
 
     logSession: (userId, durationMin) =>
       request('/focus', {
@@ -342,7 +344,7 @@ export const api = {
   },
 
   brain: {
-    summary: userId => request(`/brain/summary?user_id=${userId}`),
+    summary: userId => request(withQuery('/brain/summary', { user_id: userId })),
 
     logSession: (userId, exerciseType, score, durationSec) =>
       request('/brain/sessions', {
@@ -357,7 +359,7 @@ export const api = {
   },
 
   subscription: {
-    get: userId => request(`/subscription?user_id=${userId}`),
+    get: userId => request(withQuery('/subscription', { user_id: userId })),
 
     donate: (userId, amount, currency = 'RUB') =>
       request('/subscription/donate', {

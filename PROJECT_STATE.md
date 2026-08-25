@@ -18,9 +18,9 @@
 
 - Hosting: **Vercel**.
 - Production URL: `https://mentalix.vercel.app`.
-- Production commit: `b3253e9307a0580f3081ed764f4ca3b12983ffdb`
-  (`main`, merge PR #162).
-- Статус: GitHub Actions и Vercel deployment для PR #162 / нового `main`
+- Production commit: `711f440b01aacc39fea984cfcb15623cf660bd70`
+  (`main`, merge PR #163).
+- Статус: GitHub Actions и Vercel deployment для PR #163 / нового `main`
   завершились успешно; прямой запрос к production URL вернул `HTTP 200`
   24.08.2026.
 - Production rewrite в актуальном `vercel.json` направляет `/api/*` на
@@ -114,7 +114,7 @@
   повторный запуск Onboarding не показывает. Пятишаговый сценарий восстановлен
   в PR #161, commit `ded6f9d2`, и подтверждён владельцем как актуальное
   продуктовое решение.
-- GitHub Actions frontend для production commit `b3253e93` завершился успешно.
+- GitHub Actions frontend для production commit `711f440b` завершился успешно.
 - Hourly workflow backend scheduled jobs завершался успешно на current backend
   `main` `23610b38` 21.08.2026. Это подтверждает вызов защищённого jobs endpoint,
   но не доставку каждого конкретного напоминания.
@@ -158,7 +158,13 @@
   `codex/xs-maintenance-batch`: подтверждённый onboarding dead code удалён,
   два живых CSS-якоря переименованы без изменения поведения, navbar
   отцентрирован симметричными боковыми резервами. Локальный UX gate и общий
-  Preview/iPhone gate пройдены. Интеграция: PR #163.
+  Preview/iPhone gate пройдены; PR #163 смёржен в `main` (`711f440b`), CI и
+  Vercel Production — `success`.
+- `MXL-AUTONOMOUS-SM-001` реализован локально в ветке
+  `codex/autonomous-sm-maintenance`: P03 получил единую allowlist без изменения
+  доступности, ручные query-string заменены чистым helper, добавлены три
+  unit-контракта. Unit/lint/build/UX gate зелёные; открыт PR #164, production
+  не изменён.
 - PR #129 (`MXL-PERFORMANCE-LIBRARY-TRENDS-SWR-001`) merged 22.08.2026; CI и
   Vercel Preview имеют статус `success`.
 - Предыдущая ветка `fix/unified-mobile-layout` больше не является актуальной
@@ -336,7 +342,9 @@ Data-dependent блоки:
   live Neon schema подтверждены 23.08.2026 — §2, §4).
 - Не выполнен свежий end-to-end gate data-dependent экранов после перехода API
   на Render.
-- Новые изменения Practices ещё не прошли ручной Telegram/iPhone gate.
+- Новый P03-рефакторинг Practices не меняет UI или доступность и проверен
+  unit-контрактом плюс UX smoke на двух mobile viewport; отдельный iPhone gate
+  для нулевого визуального diff не требуется.
 - Не принято подтверждённое решение по Groq и по безопасному включению TLS
   verification для GigaChat.
 
@@ -355,7 +363,7 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 между ними — `UiLabSwitch.jsx`. Подробности — `TASKS.md`/`CHANGES.md`
 23.08.2026.
 
-**`MXL-UI-CTA-OVERLAP-001` выбрана владельцем как P0 25.08.2026, повторно
+**`MXL-UI-CTA-OVERLAP-001` выбрана владельцем как P0 24.08.2026, повторно
 закрыта в тот же день без нового кода.** Перед стартом работы —
 обязательная сверка по коду (правило CLAUDE.md: «сначала сверь фактическое
 состояние»). Проверка показала: баг («CTA чек-ина перекрыт нижней
@@ -383,14 +391,16 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 
 **Вывод: закрытие `MXL-UI-CTA-OVERLAP-001` (23.08.2026) в силе, нового
 фикса не потребовалось.** Подробности проверки — `TASKS.md` →
-`MXL-UI-CTA-OVERLAP-001`, `CHANGES.md` 25.08.2026.
+`MXL-UI-CTA-OVERLAP-001`, `CHANGES.md` 24.08.2026.
 
-**Новая P0-задача снова не назначена.** По правилу AGENTS.md §8 требуется
-явно обозначенная текущая P0 — нужно решение владельца.
+**Текущая P0: `MXL-AUTONOMOUS-SM-001`.** Владелец поручил автономно отобрать
+и выполнить совместимые S/M-задачи; реализация и автоматические проверки
+завершены в feature-ветке, PR #164 открыт без автоматического merge.
 
 ## 13. Следующие задачи
 
-- **P0:** не назначена — требуется решение владельца (см. §12).
+- **P0:** проверить PR #164 (`MXL-AUTONOMOUS-SM-001`); production не менять без
+  отдельного merge-решения владельца.
 - ~~**P1:** подтвердить и стабилизировать текущую production-цепочку
   `Vercel → Render → Neon`~~ — **закрыто 23.08.2026**: Render deploy SHA,
   связь с Neon и live-схема подтверждены напрямую (§2, §4). Data-dependent
@@ -427,7 +437,7 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 
 - Существует ли настроенный Koyeb app/service, его URL, status и deployment SHA.
 - Подключён ли Koyeb к существующей Neon production branch.
-- Текущий Telegram webhook URL по `getWebhookInfo`.
+- ~~Текущий Telegram webhook URL~~ — подтверждён 24.08.2026, см. §8.
 - Актуальная end-to-end работа Today data, CheckIn, Library и Trends на реальном
   iPhone после смены API на Render.
 - Точный список и сценарии регрессий Unified Mobile Layout.
