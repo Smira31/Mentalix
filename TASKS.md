@@ -105,17 +105,22 @@
 
 ## MXL-PRACTICES-EXPERIENCE-PILOT-001 — полный маршрут практики «Без вины»
 
-- **Статус: текущая P0, реализовано в draft-PR #180 25.08.2026; ожидает новый
-  Telegram Preview и ручной iPhone gate.** Владелец утвердил визуальную
-  раскадровку и отдельно решил отложить анимации.
-  **Доработка 25.08.2026 (та же задача, довложена в draft-PR #180):** Codex
-  начал единый верхний якорь заголовка для всех шести шагов и отдельный
-  keyboard-layout для Writing Canvas шага 1, не успел проверить (кончились
-  токены); Claude Code проверил diff, не вносил правок в код и по прямому
-  подтверждению владельца закоммитил и запушил доработку в существующий
-  draft-PR #180 (ветка `codex/writing-canvas-rollout-remaining`, worktree
-  `mentalix-writing-canvas-remaining`). Живой iPhone/Telegram gate — до
-  squash-merge, как и требует сам `ux-check.spec.mjs`; без него не мёржить.
+- **Статус: закрыта 25.08.2026.** PR #180 squash-смёржен в `main` (`b049e8d7`),
+  CI (`Проверка кода и сборки`) и Vercel — `success`, ветка
+  `codex/writing-canvas-rollout-remaining` удалена (remote + local), локальный
+  worktree `mentalix-writing-canvas-remaining` удалён. Владелец утвердил
+  визуальную раскадровку, отдельно решил отложить анимации и подтвердил живой
+  iPhone/Telegram gate: единый якорь заголовка и keyboard-layout Writing
+  Canvas работают корректно на всех 6 шагах на реальном устройстве. Временный
+  Vercel Preview (`mentalix-preview-aa80mi7eo…`), развёрнутый для этого gate,
+  остановлен и подтверждён удалённым (HTTP 404) после проверки.
+  **Доработка 25.08.2026 (та же задача, довложена в draft-PR #180 перед
+  merge):** Codex начал единый верхний якорь заголовка для всех шести шагов и
+  отдельный keyboard-layout для Writing Canvas шага 1, не успел проверить
+  (кончились токены); Claude Code проверил diff, не вносил правок в код и по
+  прямому подтверждению владельца закоммитил и запушил доработку в
+  существующий draft-PR #180, затем после подтверждённого живого gate
+  выполнил squash-merge и синхронизировал `main`.
 - [x] Перед существующим вводом добавлено вступление: польза, длительность,
       число шагов, статическая метафора спутанной линии и одна CTA «Начать».
 - [x] Шесть рабочих шагов получили единый прогресс; короткие сцены выбора,
@@ -127,7 +132,7 @@
       если пользователь не начал или остановился из-за безопасности; оценка
       «Нет / Немного / Да» сохраняется в прежнее поле `reflection`.
 - [x] Fullscreen-психологические практики (`Первый шаг`, `Без вины`, `Одно из
-  всех`, `Один финиш`) теперь скрывают нижнюю навигацию через существующий
+всех`, `Один финиш`) теперь скрывают нижнюю навигацию через существующий
       `onGameChange`, а при закрытии возвращают её.
 - [x] _(доработка, PR #180)_ Единый верхний якорь («Без вины» + заголовок,
       компонент `StageHeading` → `.no-blame-stage__anchor`) вынесен во все
@@ -152,8 +157,8 @@
   `390×844 → 390×400 → 390×844` (приближение открытия/закрытия клавиатуры
   через resize viewport) даёт 0px сдвига координаты якоря и `scrollTop`
   контейнера. Это офлайн-приближение в Chromium, не настоящая iOS/Telegram
-  клавиатура — обязательный ручной iPhone/Telegram gate по-прежнему не
-  пройден и остаётся обязательным перед merge.
+  клавиатура — обязательный ручной iPhone/Telegram gate пройден отдельно и
+  подтверждён владельцем 25.08.2026 на реальном устройстве (см. статус выше).
 - **Не менялось:** backend/API/БД, формат локального лога, длительность таймера,
   остальные practice-flow, каталог и production. Анимации остаются отдельным
   будущим слоем после принятия статического пилота. `Practices.jsx` и прочие
@@ -3046,6 +3051,8 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 `TASKS.md` — текущее состояние и передача работы.
 
 **Claude Code, 25.08.2026 (MXL-PRACTICES-EXPERIENCE-PILOT-001, доработка якоря/клавиатуры):** Codex Desktop начал единый верхний якорь заголовка для всех шести шагов «Без вины» и отдельный keyboard-layout для Writing Canvas шага 1 — отредактировал `src/screens/ProcrastinationFlow.jsx`, `ProcrastinationFlow.css` и `tests/ux/ux-check.spec.mjs`, но не успел проверить (кончились токены). Изменения найдены незакоммиченными в отдельном worktree `mentalix-writing-canvas-remaining` (ветка `codex/writing-canvas-rollout-remaining`, актуальна с `origin/codex/writing-canvas-rollout-remaining`) — не в основной `Mentalix` и не в `Mentalix-other-tasks`; перед следующей работой по этой задаче сверять именно этот worktree через `git worktree list`. Claude Code показал владельцу `git status`/`git diff` по трём файлам, прогнал `npm run ux:check` (1/1 на обоих viewport, включая новую проверку координаты `.no-blame-stage__anchor` между шагом 1 и 2), вручную сверил скриншоты `06h`–`06l`, отдельно смоделировал самую длинную release-фразу и цикл открытия/закрытия клавиатуры (resize viewport `390×844 → 390×400 → 390×844`) — поломок не найдено, правок в код не вносил (детали — раздел задачи выше). Временные проверочные скрипты и фоновый dev-сервер, созданные для этой проверки, удалены/остановлены. По прямому подтверждению владельца diff (три файла Codex + этот файл) закоммичен и запушен в уже существующий draft-PR #180 на GitHub (не новый PR — ветка `codex/writing-canvas-rollout-remaining` уже была открыта как #180). Squash-merge не выполнялся: перед ним обязателен живой iPhone/Telegram gate, как и требует сам `ux-check.spec.mjs` («Обязательный ручной iPhone gate»).
+
+**Claude Code, 25.08.2026 (продолжение, закрытие задачи):** Владелец подтвердил живой iPhone/Telegram gate — единый якорь заголовка и keyboard-layout Writing Canvas работают корректно на всех 6 шагах. Перед деплоем временного Preview обнаружен и остановлен чужой «зависший» Preview (создан ранее, вне этой сессии; штатный `npm run preview:stop` не смог подтвердить удаление за 5 попыток — снят вручную через `vercel remove` + независимая проверка HTTP 404/`vercel inspect`, чтобы фоновый auto-cleanup таймер не снёс потом новый Preview по общему state-файлу). Новый Preview развёрнут (`npm run preview:telegram`), health-check пройден, сообщение с кнопкой «Открыть Preview» (`web_app`, не сырой URL) отправлено владельцу в Telegram; после подтверждённого gate этот Preview остановлен тем же способом (state-файл `mentalix-preview-state.json` подтверждён отсутствующим/очищен), в Telegram отправлено «Preview остановлен». После этого: PR #180 переведён из draft (`gh pr ready`), `gh pr merge 180 --squash --delete-branch` — squash-merge в `main` (`b049e8d7`), remote-ветка удалена. `gh`-команда не смогла сама удалить и переключить локальную ветку (в `~/Mentalix` уже был checkout `main` в отдельном worktree), поэтому worktree `mentalix-writing-canvas-remaining` удалён вручную (`git worktree remove`; каталог не поддавался из-за фонового `preview-stop.ps1`-таймера предыдущего Preview, процесс остановлен, затем каталог убран), локальная ветка `codex/writing-canvas-rollout-remaining` удалена (`git branch -D`, ожидаемо не fast-forward — squash не сохраняет ancestry). `~/Mentalix` синхронизирован (`git pull origin main`, fast-forward `0af5b4cc..b049e8d7`). Несвязанные untracked-файлы `src/components/practices/PracticeVisual.{css,jsx}` в `~/Mentalix` не трогались — не относятся к этой задаче.
 
 **Codex Desktop, 14.08.2026 (MXL-017):** работа из изолированного worktree `mxl-cycle3-current`, ветка `codex/split-frontend-bundle` от `origin/main` `82ffa97`. Шесть не стартовых экранов разделены на динамические чанки; lint/build и мобильный web fallback пройдены. Основная рабочая копия с чужими незакоммиченными изменениями не затрагивалась. Перед merge нужен короткий проход авторизованных вкладок в Vercel Preview; `main` без прямого разрешения не менять.
 
