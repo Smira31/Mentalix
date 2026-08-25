@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-EMPTY-STATE-TODAY-001: пустые состояния «День» и «Мысль дня»
+
+- ROADMAP-идея Stoic-6 «Улучшить пустые состояния»: перед стартом прошли pre-mortem, который сузил scope до Today.jsx (карточки «Тема недели», Ascezas/History/Path/QuotesManager/Achievements вынесены отдельно — новая backlog-задача `MXL-EMPTY-STATE-REUSE-001` в `TASKS.md`). Ключевая находка pre-mortem: read-only проверка бэкенда (`mentalix-bot/backend/quotes.py`, `/api/quotes/today`) показала, что «Мысль дня» тянется из персональных `UserQuote` пользователя, а не общего каталога — пусто означает «ещё не сохранил фразу», а не нехватку контента; «Тема недели» же из-за `ensure_seed()` в `themes.py` пуста практически только при сбое запроса, поэтому исключена из scope как error-state, а не content-empty-state.
+- «День» (`isEmpty`) и «Мысль дня» (`!dailyQuote`) в `Today.jsx` теперь переиспользуют общий `src/components/EmptyState.jsx` вместо исчезновения блока: заголовок + пояснение + CTA («Выбрать практику» → `onOpenPractice()`; «Мои фразы» → новый проп `onOpenSettings()` из `App.jsx`, открывает Settings без deep-link в `QuotesManager`). Порядок условий переписан так, что ручное скрытие карточки тумблером (`MXL-TODAY-CARD-TOGGLES-001`) всегда проверяется раньше пустоты.
+- **Не менялось:** backend, данные, остальные экраны, production.
+
 ## 25.08.2026 — ROADMAP: 7 новых идей-кандидатов по Stoic + 3 отложены до нативного приложения
 
 - В `ROADMAP.md` добавлен раздел «Конкурентный анализ: Stoic — дополнительные экраны» по итогам разбора полного user guide (Ideas/Add Button/Explore/History/Daily Journaling Flow). 7 идей применимы в текущем Telegram MiniApp (статус: ждёт решения владельца, пункт 8 конфликтует с уже принятой идеей №5 — отмечено отдельно). 3 идеи (HealthKit-зависимые) зафиксированы как задел на будущее нативное iOS/Android-приложение, не задача сейчас. Без изменений кода, без новой задачи в `TASKS.md`.
