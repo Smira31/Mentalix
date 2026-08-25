@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
+import JournalTextarea from '../components/JournalTextarea'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -183,23 +184,20 @@ export default function NarrowFocusFlow({ userId, onClose }) {
               Выпиши всё, что крутится в голове
             </h2>
 
-            <textarea
+            <JournalTextarea
               autoFocus
-              rows={6}
               value={dump}
-              onChange={event => setDump(event.target.value)}
-              placeholder={'Без разбора и порядка — просто всё подряд'}
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              onChange={setDump}
+              placeholder="Без разбора и порядка — просто всё подряд"
+              ariaLabel="Всё, что крутится в голове"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={goToPick}
+              submitLabel="Дальше"
+              submitDisabled={!dump.trim()}
             />
-
-            <button
-              type="button"
-              onClick={goToPick}
-              disabled={!dump.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Дальше
-            </button>
           </div>
         )}
 
@@ -213,23 +211,20 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
             <p className="text-[13px] text-muted mt-2 leading-relaxed">Назови только одно.</p>
 
-            <textarea
+            <JournalTextarea
               autoFocus
-              rows={2}
               value={pick}
-              onChange={event => setPick(event.target.value)}
+              onChange={setPick}
               placeholder="Одно дело"
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              ariaLabel="Одно самое важное дело"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={goToRelease}
+              submitLabel="Дальше"
+              submitDisabled={!pick.trim()}
             />
-
-            <button
-              type="button"
-              onClick={goToRelease}
-              disabled={!pick.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Дальше
-            </button>
           </div>
         )}
 
@@ -257,23 +252,20 @@ export default function NarrowFocusFlow({ userId, onClose }) {
               Что можно сделать по этому одному прямо сейчас?
             </h2>
 
-            <textarea
+            <JournalTextarea
               autoFocus
-              rows={3}
               value={plan}
-              onChange={event => setPlan(event.target.value)}
+              onChange={setPlan}
               placeholder="Например: написать первое сообщение"
-              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none mt-5"
+              ariaLabel="Первое действие по выбранному делу"
+              className="mt-6 min-h-[18rem]"
+              editorClassName="pb-24"
+              floatingToolbar
+              formatting={false}
+              onSubmit={startRun}
+              submitLabel="Начать пять минут"
+              submitDisabled={!plan.trim()}
             />
-
-            <button
-              type="button"
-              onClick={startRun}
-              disabled={!plan.trim()}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5 disabled:opacity-35"
-            >
-              Начать пять минут
-            </button>
           </div>
         )}
 

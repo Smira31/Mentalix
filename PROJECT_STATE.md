@@ -18,13 +18,19 @@
 
 - Hosting: **Vercel**.
 - Production URL: `https://mentalix.vercel.app`.
-- Production commit: `b8549357c85794443be0b0419fc243a1da54c284`
+- Последний точно подтверждённый здесь production commit:
+  `b8549357c85794443be0b0419fc243a1da54c284`
   (`main`, squash-merge PR #172, `MXL-THEME-ACCENT-001`). Между этим
   коммитом и предыдущей зафиксированной здесь точкой (`4443b947`, PR #167)
   в `main` вошли ещё PR #168–#171 (empty-state задачи Today/Ascezas/
   History/QuotesManager, обновление ROADMAP по Stoic-идеям) — они не были
   отдельно отражены в этом файле в момент своего мержа; полное
   постатейное описание — `CHANGES.md`/`TASKS.md`.
+- Актуальный GitHub `origin/main` на 25.08.2026 — `7a64423f` (PR #179,
+  честное подтверждение удаления Preview); перед ним через PR #178 выпущен
+  первый rollout Writing Canvas (`0af5b4cc`). Соответствие живого Vercel
+  Production этим двум более новым commit отдельно не проверялось, поэтому
+  они не подменяют последнюю точно подтверждённую production-точку выше.
 - Статус: GitHub Actions («Автоматическая проверка Mentalix») для `main`
   на `b8549357` — `success` (25.08.2026). Прямой HTTP-запрос к
   `https://mentalix.vercel.app` после этого деплоя — `200`; точное
@@ -156,6 +162,15 @@
 
 ## 5. Frontend / UI
 
+- `MXL-PRACTICES-EXPERIENCE-PILOT-001` реализован 25.08.2026 в draft-PR
+  #180 как пилот на практике «Без вины»: добавлены отдельное вступление,
+  шестишаговый прогресс, центрированные сцены выбора и объяснения, статическая
+  метафора «узел → путь» и честный completion-экран с оценкой
+  «Нет / Немного / Да». Анимации намеренно не добавлялись. Существующие
+  `outcome`/`reflection`, двухминутный таймер и локальный лог сохранены;
+  fullscreen-психологические практики теперь действительно скрывают нижнюю
+  навигацию. Unit 7/7, lint, build, UX smoke на `390×844`/`320×568` и
+  diff-check зелёные; Telegram Preview/iPhone gate ещё не выполнен.
 - `MXL-JOURNAL-MARKDOWN-001` закрыта 25.08.2026 через PR #176 (squash-merge
   `61b51452`) и выпущена в Vercel Production: после обратной связи владельца
   одиночные записи
@@ -459,13 +474,26 @@ Telegram gate; 25 экспериментов на `?ui_lab=1` не тронут�
 (remote + local). Живой gate на iPhone в Telegram подтверждён владельцем.
 Подробности — §5 выше.
 
-**Текущая P0-задача — `MXL-WRITING-CANVAS-ROLLOUT-001`.** Первый батч принят
-владельцем в Telegram Preview 25.08.2026 и выпущен через PR #178: четыре plain-сцены
-`TodayFocusFlow` и `FirstStepFlow` переиспользуют общий Writing Canvas без
-изменения данных, state machine и backend. Unit/lint/build, UX smoke на
-`390×844`/`320×568` и diff-check зелёные; ручная проверка клавиатуры на реальном
-iPhone внутри Telegram пройдена. `NarrowFocusFlow`, `FinishFlow` и `ProcrastinationFlow` остаются
-следующими отдельными циклами по лимиту двух функций из `AI_RULES.md` §4.1.
+**`MXL-WRITING-CANVAS-ROLLOUT-001` реализована, но остаётся в draft-PR #180 до
+общего Telegram/iPhone gate.** Все три focused
+rollout-батча реализованы: первый принят владельцем в Telegram Preview и
+выпущен через PR #178; второй и третий подготовлены 25.08.2026 в
+`codex/writing-canvas-rollout-remaining` и опубликованы в Telegram Preview;
+draft-PR #180 открыт. Десять plain-сцен в `TodayFocusFlow`,
+`FirstStepFlow`, `NarrowFocusFlow`, `FinishFlow` и `ProcrastinationFlow`
+переиспользуют общий Writing Canvas без изменения данных, state machine и
+backend. Для каждого батча unit/lint/build, UX smoke на `390×844`/`320×568` и
+diff-check зелёные. Для оставшихся батчей ручная проверка клавиатуры на
+реальном iPhone ещё не выполнена; production не менялся. Вторичные формы Path
+и Ascezas остаются за отдельным
+продуктовым и визуальным решением.
+
+**Текущая P0-задача — `MXL-PRACTICES-EXPERIENCE-PILOT-001`.** Владелец
+утвердил визуальную раскадровку и реализацию без анимаций. Пилот «Без вины»
+добавлен в ту же feature-ветку draft-PR #180 поверх одобренного Writing Canvas;
+локальные автоматические проверки зелёные. Следующий обязательный gate — новый
+Telegram Preview и ручной проход на реальном iPhone. До него PR остаётся draft,
+`main` и production не меняются.
 
 **Параллельная P1-задача `MXL-PREVIEW-STOP-VERIFY-001` реализована локально
 25.08.2026** в `codex/preview-stop-verify`: cleanup сохраняет state и не

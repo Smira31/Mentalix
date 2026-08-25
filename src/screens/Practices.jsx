@@ -124,6 +124,14 @@ function PracticeCategory({ title, children }) {
 export default function Practices({ user, initialSub = null, onGameChange }) {
   const [sub, setSub] = useState(initialSub)
 
+  const focusedFlowOpen = ['first-step', 'no-blame', 'narrow-focus', 'one-finish'].includes(sub)
+
+  useEffect(() => {
+    onGameChange?.(focusedFlowOpen)
+
+    return () => onGameChange?.(false)
+  }, [focusedFlowOpen, onGameChange])
+
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
