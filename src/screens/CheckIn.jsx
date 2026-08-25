@@ -20,6 +20,7 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
+import { consumeMoodDraft } from '../lib/moodCheckDraft'
 
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -77,7 +78,7 @@ const CHECKIN_HEADER_CLASS =
 // сохраняет прежнее значение, и вечер не затирает утро.
 
 
-function Face({
+export function Face({
   level,
   active,
   size = 56,
@@ -147,7 +148,7 @@ function Face({
 }
 
 
-const SCALE_STEPS = [
+export const SCALE_STEPS = [
   {
     key: 'mood',
     title: 'Как ты сейчас?',
@@ -364,16 +365,19 @@ export default function CheckIn({
 
 
   const [values, setValues] =
-    useState({
+    useState(() => ({
       mood:
-        existing?.mood ?? null,
+        existing?.mood
+        ?? (isEvening
+          ? null
+          : consumeMoodDraft()),
       energy:
         existing?.energy ?? null,
       anxiety:
         existing?.anxiety ?? null,
       focus:
         existing?.focus ?? null,
-    })
+    }))
 
 
   const [emotion, setEmotion] =
