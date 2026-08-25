@@ -20,7 +20,45 @@ const FIXTURES = {
   ascezas: [],
   quote: { text: 'Один спокойный шаг важнее идеального плана.' },
   checkin: null,
-  themes: [],
+  themes: [
+    {
+      id: 701,
+      title: 'о меньшем усилии',
+      subtitle: 'Семь коротких наблюдений о том, что действительно двигает.',
+      total_days: 7,
+      reflected_days: 1,
+    },
+  ],
+  theme: {
+    id: 701,
+    title: 'о меньшем усилии',
+    subtitle: 'Семь коротких наблюдений о том, что действительно двигает.',
+    current_day: 2,
+    free_days: 7,
+    days: [
+      {
+        day: 1,
+        text: 'Бывало так, что ты переставал давить — и дело вдруг шло легче?',
+        prompt: 'Что тогда произошло на самом деле?',
+        reflection: 'Я сделал **один** спокойный шаг.',
+        locked: false,
+      },
+      {
+        day: 2,
+        text: 'Усилие и напряжение — разные вещи. Первое двигает, второе только изматывает.',
+        prompt: 'Где сегодня ты напрягался вместо того, чтобы делать?',
+        reflection: '',
+        locked: false,
+      },
+      ...Array.from({ length: 5 }, (_, index) => ({
+        day: index + 3,
+        text: 'Следующий вопрос недели.',
+        prompt: 'Что замечаешь?',
+        reflection: '',
+        locked: false,
+      })),
+    ],
+  },
   settings: { review_hour: 24 },
   pulse: { active_today: 12 },
   articles: [
@@ -71,6 +109,7 @@ function fixtureFor(request) {
   if (pathname === '/api/checkin/today') return jsonResponse(FIXTURES.checkin)
   if (pathname === '/api/checkin/history') return jsonResponse(FIXTURES.history)
   if (pathname === '/api/themes') return jsonResponse(FIXTURES.themes)
+  if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
   if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
@@ -313,7 +352,70 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(page.getByText(/Чек-ин|Анализ дня/).first()).toBeVisible()
       },
     })
+
+    for (const option of ['Нормально', 'Средне', 'Заметно', 'Держусь']) {
+      await page.getByRole('button', { name: new RegExp(option, 'i') }).click()
+      await page.waitForTimeout(320)
+    }
+    await page.getByRole('button', { name: 'ровно' }).click()
+    await page.getByRole('button', { name: 'Дальше' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Check-in writer',
+      slug: '02b-check-in-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: 'Утренняя мысль' })
+        await expect(editor).toBeVisible()
+        await editor.pressSequentially('Спокойное утро')
+        await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
+        await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
+        await assertClickable(page.getByRole('button', { name: 'Завершить чек-ин' }))
+      },
+    })
     await page.getByRole('button', { name: 'Закрыть' }).click()
+
+    await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Theme journal',
+      slug: '03-theme-journal',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: 'Мысль по теме недели' })
+        await expect(editor).toBeVisible()
+        await expect(editor).toHaveAttribute('contenteditable', 'true')
+        await editor.pressSequentially('Важное')
+        await editor.evaluate(element => {
+          const selection = window.getSelection()
+          const range = document.createRange()
+          range.selectNodeContents(element)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        })
+        await page.getByRole('button', { name: 'Показать форматирование' }).click()
+        await page.getByRole('button', { name: 'Жирный текст' }).click()
+        await expect(editor.locator('b, strong')).toHaveText('Важное')
+        await expect(editor).not.toContainText('**')
+        await assertClickable(page.getByRole('button', { name: 'Жирный текст' }))
+        await assertClickable(page.getByRole('button', { name: 'Выделение' }))
+        await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
+        await assertClickable(page.getByRole('button', { name: 'Сохранить мысль' }))
+        await page.getByRole('button', { name: 'Скрыть форматирование' }).click()
+      },
+    })
+    const reflectionRequest = page.waitForRequest(request => {
+      const url = new URL(request.url())
+      return request.method() === 'POST' && url.pathname === '/api/themes/701/reflect'
+    })
+    await page.getByRole('button', { name: 'Сохранить мысль' }).click()
+    const reflectionPayload = (await reflectionRequest).postDataJSON()
+    expect(reflectionPayload.text).toBe('**Важное**')
+    await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Практики' }).click()
     await captureScreen({
