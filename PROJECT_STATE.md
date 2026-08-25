@@ -5,6 +5,17 @@
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся
 в `CHANGES.md`, планы — в `ROADMAP.md`, рабочие детали — в `TASKS.md`.
 
+## 0. Документационный operating layer
+
+- **MXL-DOCS-OPERATING-SYSTEM-001** реализуется в ветке
+  `docs/documentation-operating-system-001`: добавлен
+  [`docs/DOCUMENTATION_GUIDE.md`](docs/DOCUMENTATION_GUIDE.md), README получил
+  единый маршрут чтения и исправлено устаревшее описание текущего backend hosting.
+- Этот слой не меняет продукт, API, backend, данные, дизайн или release status.
+- После merge нужно обновить дату этого файла и отдельным read-only проходом
+  подтвердить GitHub `main` SHA и фактический production deployment SHA, не
+  смешивая эти два факта.
+
 ## 1. Главная цель текущего этапа
 
 - Выпустить качественную первую версию Mentalix.

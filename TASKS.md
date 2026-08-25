@@ -1,5 +1,17 @@
 # Mentalix — задачи
 
+## MXL-DOCS-OPERATING-SYSTEM-001 — единая навигация и контроль качества документации
+
+- **Статус:** реализовано в ветке `docs/documentation-operating-system-001`; PR ещё не создан.
+- **Размер:** S.
+- **Тип:** technical/documentation.
+- **Автономность:** autonomous; продуктовая логика, API, backend и дизайн не меняются.
+- [x] Добавить `docs/DOCUMENTATION_GUIDE.md` с картой источников истины, статусами задач, decision gates, handoff и release snapshot.
+- [x] Добавить `PROJECT_STATE.md` и гайд в корневую навигацию README.
+- [x] Исправить устаревшее описание текущего backend hosting в README: Render/Neon вместо Railway.
+- [ ] Проверить ссылки и согласовать этот документный слой после PR.
+- **Слепые пятна, обнаруженные аудитом:** `TASKS.md` содержит исторические и текущие записи вперемешку; `PROJECT_STATE.md` может устаревать относительно GitHub/production; `ROADMAP.md` иногда выглядит как разрешение на реализацию; README ранее называл legacy Railway текущим hosting; нет единого формата размера, статуса, типа, автономности и rollback для задач.
+
 ## Стандарт разработки — Telegram Preview
 
 - Запуск: `npm run preview` (короткий алиас для `npm run preview:telegram`).
@@ -27,6 +39,7 @@
 - **Не менять:** production project `mentalix`, backend и Telegram-бот.
 
 ## MXL-PREVIEW-STOP-RETRY-WINDOW-001 — устойчивое ожидание удаления Preview
+
 - **Статус: реализовано локально 25.08.2026 в ветке
   `improve/preview-stop-retry-window-001`; commit/PR готовятся.** Основание —
   наблюдение после MXL-PREVIEW-STOP-VERIFY-001: Vercel может некоторое время
@@ -45,7 +58,6 @@
 - [x] Telegram-уведомление отправляется только после подтверждённого HTTP
       404/410 или отсутствия deployment через `inspect`.
 - **Не менять:** production project `mentalix`, backend и Telegram-бот.
-
 
 ## MXL-MOOD-CHECK-ERROR-GUARD-001 — не блокировать запуск при ошибке check-in
 

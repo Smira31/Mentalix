@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-DOCS-OPERATING-SYSTEM-001: единая навигация документации
+
+- Добавлен `docs/DOCUMENTATION_GUIDE.md`, README получил ссылки на `PROJECT_STATE.md` и новый гайд, а устаревшее описание текущего backend hosting в README исправлено на Render/Neon. Подробности и найденные слепые пятна — в `TASKS.md` → `MXL-DOCS-OPERATING-SYSTEM-001`.
+
 ## 25.08.2026 — MXL-PREVIEW-STOP-DRY-RUN-001: отдельный npm-алиас для dry-run
 
 - Добавлен `npm run preview:stop:dry-run`, который вызывает
