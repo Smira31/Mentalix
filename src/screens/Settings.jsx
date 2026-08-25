@@ -1,7 +1,8 @@
 // src/screens/Settings.jsx
 //
 // Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Разбор дня
-//         4. Карточки «Сегодня»  5. Основные  6. Поддержка  7. Документы  8. Версия  9. Аккаунт
+//         4. Карточки «Сегодня»  5. Внешний вид  6. Основные  7. Поддержка
+//         8. Документы  9. Версия  10. Аккаунт
 
 import { useEffect, useState } from 'react'
 import BackButton from '../components/BackButton'
@@ -27,6 +28,7 @@ import {
   TODAY_CARD_LABELS,
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
+import { ACCENT_COLORS } from '../lib/accentColor'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -111,7 +113,7 @@ const REMINDER_TIMES = [
 // Это не рассылка: приложение ничего не присылает, просто меняет экран.
 const REVIEW_HOURS = [18, 19, 20, 21, 22]
 
-export default function Settings({ user, onBack, onNavigate }) {
+export default function Settings({ user, onBack, onNavigate, accent, onAccentChange }) {
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
   const [reviewHour, setReviewHour] = useState(19)
@@ -383,6 +385,34 @@ export default function Settings({ user, onBack, onNavigate }) {
             divider={index < TODAY_CARD_IDS.length - 1}
           />
         ))}
+      </Card>
+
+      {/* Акцентный цвет: состояние живёт в App.jsx (MXL-THEME-ACCENT-001) —
+          см. комментарий у useSynced(ACCENT_COLOR_KEY, ...) там. */}
+      <SectionLabel>Внешний вид</SectionLabel>
+      <Card>
+        <Row
+          title="Акцентный цвет"
+          subtitle={ACCENT_COLORS[accent].label}
+          divider={false}
+          right={
+            <div className="flex gap-2">
+              {Object.entries(ACCENT_COLORS).map(([id, { label, hex }]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-label={label}
+                  aria-pressed={accent === id}
+                  onClick={() => onAccentChange(id)}
+                  className={`w-8 h-8 rounded-full shrink-0 transition-transform ${
+                    accent === id ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep' : ''
+                  }`}
+                  style={{ background: hex }}
+                />
+              ))}
+            </div>
+          }
+        />
       </Card>
 
       <SectionLabel>Основные</SectionLabel>
