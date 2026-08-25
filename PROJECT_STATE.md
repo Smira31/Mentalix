@@ -522,6 +522,12 @@ P0-задаче).
 регрессионный контракт проверяет расположение dry-run guard и retry-цикла.
 Production, backend и Telegram-бот не затрагиваются.
 
+**`MXL-PREVIEW-STOP-DRY-RUN-001` реализуется в ветке
+`chore/preview-stop-dry-run-001`**: добавлен явный npm-алиас
+`npm run preview:stop:dry-run`, связывающий безопасный режим с
+`preview-stop.ps1 -DryRun`; maintenance-контракт проверяет, что dry-run не
+выполняет сетевые, state, process или Telegram операции.
+
 ## 13. Следующие задачи
 
 - ~~**P1:** подтвердить и стабилизировать текущую production-цепочку

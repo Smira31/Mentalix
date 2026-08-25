@@ -14,7 +14,8 @@
     "test:unit": "node --test tests/unit/maintenance-contracts.test.mjs tests/unit/journal-markdown.test.mjs",
     "ux:check": "playwright test --config=playwright.ux.config.mjs",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "preview:stop:dry-run": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1 -DryRun"
   },
   "dependencies": {
     "@twa-dev/sdk": "7.10.1",

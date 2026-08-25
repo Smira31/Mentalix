@@ -63,6 +63,17 @@ test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: { id: 10 } }), false)
 })
 
+test('MXL-PREVIEW-STOP-DRY-RUN-001 связывает npm-алиас с безопасным DryRun', () => {
+  const packageJson = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'))
+  const source = readFileSync(new URL('../../scripts/preview-stop.ps1', import.meta.url), 'utf8')
+  assert.equal(
+    packageJson.scripts['preview:stop:dry-run'],
+    'powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1 -DryRun'
+  )
+  assert.match(source, /\[switch\]\$DryRun/)
+  assert.match(source, /No Vercel, state, process, or Telegram operations will run/)
+})
+
 test('preview cleanup подтверждает удаление до очистки state и уведомления', () => {
   const source = readFileSync(new URL('../../scripts/preview-stop.ps1', import.meta.url), 'utf8')
   const launcher = readFileSync(
