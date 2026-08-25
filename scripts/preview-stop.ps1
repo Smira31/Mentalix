@@ -54,14 +54,27 @@ $ErrorActionPreference = 'Continue'
 $removeTarget = if ($deploymentUrl) { $deploymentUrl } else { $deploymentId }
 $removeOutput = & npx vercel@latest remove $removeTarget --yes --scope $scope 2>&1 | Out-String
 $removeExit = $LASTEXITCODE
-$removedSuccessfully = $removeOutput -match '(?i)success! removed|removed 1 deployment|not found|does not exist'
+$removedSuccessfully = [regex]::IsMatch(
+  $removeOutput,
+  'success! removed|removed 1 deployment|not found|does not exist',
+  [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+)
 if (-not $removedSuccessfully -and $deploymentId -and $removeTarget -ne $deploymentId) {
   $removeOutput = & npx vercel@latest remove $deploymentId --yes --scope $scope 2>&1 | Out-String
   $removeExit = $LASTEXITCODE
-  $removedSuccessfully = $removeOutput -match '(?i)success! removed|removed 1 deployment|not found|does not exist'
+  $removedSuccessfully = [regex]::IsMatch(
+    $removeOutput,
+    'success! removed|removed 1 deployment|not found|does not exist',
+    [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+  )
 }
 $ErrorActionPreference = $oldPreference
-if (-not $removedSuccessfully -or ($removeExit -ne 0 -and $removeOutput -notmatch '(?i)not found|does not exist')) {
+$removeNotFound = [regex]::IsMatch(
+  $removeOutput,
+  'not found|does not exist',
+  [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+)
+if (-not $removedSuccessfully -or ($removeExit -ne 0 -and -not $removeNotFound)) {
   Write-Error 'Не удалось удалить Preview deployment.'
   exit 1
 }
@@ -90,7 +103,11 @@ for ($attempt = 1; $attempt -le 5 -and -not $verifiedRemoved; $attempt++) {
     $inspectOutput = & npx vercel@latest inspect $deploymentId --scope $scope 2>&1 | Out-String
     $inspectExit = $LASTEXITCODE
     $ErrorActionPreference = $oldPreference
-    $inspectMissing = $inspectOutput -match '(?i)not found|does not exist|could not find'
+    $inspectMissing = [regex]::IsMatch(
+      $inspectOutput,
+      'not found|does not exist|could not find',
+      [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
+    )
     $verificationDetails += "Inspect attempt $attempt`: exit=$inspectExit missing=$inspectMissing"
     if ($inspectExit -ne 0 -and $inspectMissing) {
       $verifiedRemoved = $true

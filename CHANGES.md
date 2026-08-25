@@ -1,5 +1,16 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-PREVIEW-STOP-VERIFY-001: закрытие guard-проверки удаления Preview
+
+- PR #179 squash-смёржен в `main` (`7a64423f`); `preview-stop.ps1` сохраняет
+  state и не уведомляет Telegram, пока удаление не подтверждено независимой
+  HTTP-проверкой `404/410` или отсутствием deployment через `vercel inspect`.
+- Maintenance unit-контракт проверяет порядок: remove → verification guard →
+  state cleanup → Telegram notification → success message.
+- Зафиксирован edge case Vercel edge propagation: после `remove` deployment
+  может временно отвечать `200`; в таком случае команда завершается с ошибкой,
+  state сохраняется для повторной попытки, ложное «Preview stopped» не отправляется.
+
 ## 25.08.2026 — MXL-MOOD-CHECK-ERROR-GUARD-001: защита запуска при ошибке check-in
 
 - Ошибка `api.checkin.today()` больше не считается подтверждением отсутствия
