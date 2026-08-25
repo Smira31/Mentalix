@@ -1132,6 +1132,38 @@ href="?ui_lab=...">` ссылки (полная навигация, без кл�
     как есть (сознательная фиксация контраста иллюстраций, не связана с
     багом). Геометрия/анимация/JS не менялись — только эта одна строка.
     `npm run lint`/`npm run build` — чисто.
+  - **Проверены остальные потребители `.bg-artbed` (25.08.2026, до live
+    gate):** статически — есть ли внутри golden-элементы и через
+    `rgb(var(--c-gold))` ли они заливаются (не хардкод-hex — `grep` по
+    `EDBD60` в этих файлах чист); живьём на preview commit `6cc46d2` —
+    без входа в аккаунт (email-OTP регистрация запрещена) прямым JS-тестом:
+    scratch-элемент `class="bg-artbed"`, `--c-gold` внутри него меняется
+    `237 189 96` → `94 178 237` при `data-accent="ice"` и обратно,
+    `--c-text` остаётся зафиксированным. Механизм общий на все места
+    (один класс, один `rgb(var(--c-gold))`), поэтому один такой тест
+    покрывает их разом:
+    - `Rituals.jsx` — источник бага, уже описан выше.
+    - `Ascezas.jsx:307` — `SemanticGlyph` (`alcohol`/`smoking`/`asceza`),
+      точки `.mx-semantic-glyph__point` — тот же механизм. ОК.
+    - `Today.jsx:463` (`heroArt`) — `DayArc` (`Motif.jsx`): и
+      `className="text-gold"` (`currentColor`), и внутренняя константа
+      `const GOLD = 'rgb(var(--c-gold))'` для точки/градиента прогресса
+      (`Motif.jsx:25,61,717-719`) — оба пути через ту же переменную. ОК.
+    - `ArticleCover.jsx` — `SemanticGlyph` по `semanticKindForArticle`
+      (`anxiety`/`sleep`/`neuro`/`focus`/`breath`/`template`), у каждого
+      есть `.mx-semantic-glyph__point`. ОК.
+    - `PersonaPicker.jsx:180` — `SemanticGlyph` (`mentor`/`pathfinder`/
+      `companion`), золотая точка есть только у активной карточки
+      (`highlighted={active === index}`) — механизм тот же. ОК.
+    - `ArchetypeShowcase.jsx` — `bg-artbed text-gold` есть в коде и
+      механизм исправен, но сам компонент рендерится только за
+      `import.meta.env.DEV` (`main.jsx:36-38`) — недоступен ни на
+      preview, ни в production; живая проверка невозможна и не нужна.
+    - `MyPathGlyph.css` (`.mx-my-path__walker-trail`) — используется
+      только внутри `?ui_lab=1` (`UiExperiments.jsx`), собственный
+      `.mx-lab-stage`, `.bg-artbed` там вообще не участвует (только
+      разделяет токен `--c-artbed` для визуального сходства) — баг этого
+      места не касался, вне scope фикса.
   - **Осталось:** ручная проверка переключения в Settings (включая
     детальную карточку ритуала) и live gate в Telegram на iPhone перед
     squash-merge.
