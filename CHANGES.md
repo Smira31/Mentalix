@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-PRACTICES-EXPERIENCE-PILOT-001 + MXL-WRITING-CANVAS-ROLLOUT-001: закрытие
+
+- PR #180 squash-смёржен в `main` (`b049e8d7`), ветка
+  `codex/writing-canvas-rollout-remaining` удалена (remote + local); живой
+  iPhone/Telegram gate подтверждён владельцем. Подробности — `TASKS.md`.
+
 ## 25.08.2026 — MXL-PRACTICES-EXPERIENCE-PILOT-001: маршрут «Без вины»
 
 - В draft-PR #180 добавлены статичные intro/прогресс/центрированные сцены и
