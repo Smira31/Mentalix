@@ -2,10 +2,10 @@
 
 ## 25.08.2026 — MXL-JOURNAL-MARKDOWN-001: форматирование записей
 
-- В CheckIn и «Теме недели» подготовлен Writing Canvas с dock
+- В CheckIn и «Теме недели» выпущен через PR #176 Writing Canvas с dock
   `Aa / Пойти глубже / ✓`, без рамочной карточки, видимых Markdown-маркеров и
-  большой CTA; iPhone/Telegram gate принят владельцем, backend и формат данных
-  не менялись. Подробности — `TASKS.md`.
+  большой CTA; iPhone/Telegram gate, CI, Vercel Production и health пройдены,
+  backend и формат данных не менялись. Подробности — `TASKS.md`.
 
 ## 25.08.2026 — MXL-THEME-ACCENT-001: выбор акцентного цвета (золотой/лазурный)
 
