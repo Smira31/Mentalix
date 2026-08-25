@@ -1,7 +1,8 @@
 // src/screens/Settings.jsx
 //
 // Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Разбор дня
-//         4. Карточки «Сегодня»  5. Основные  6. Поддержка  7. Документы  8. Версия  9. Аккаунт
+//         4. Карточки «Сегодня»  5. Внешний вид  6. Основные  7. Поддержка
+//         8. Документы  9. Версия  10. Аккаунт
 
 import { useEffect, useState } from 'react'
 import BackButton from '../components/BackButton'
@@ -27,6 +28,7 @@ import {
   TODAY_CARD_LABELS,
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
+import { ACCENT_COLOR_KEY, ACCENT_COLORS, DEFAULT_ACCENT, parseAccent } from '../lib/accentColor'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -190,6 +192,10 @@ export default function Settings({ user, onBack, onNavigate }) {
 
     setHiddenCardsRaw(JSON.stringify(next))
   }
+
+  // ── Акцентный цвет: см. src/lib/accentColor.js (MXL-THEME-ACCENT-001).
+  const [accentRaw, setAccentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
+  const accent = parseAccent(accentRaw)
 
   useEffect(() => {
     if (platformName !== 'telegram') return
@@ -383,6 +389,32 @@ export default function Settings({ user, onBack, onNavigate }) {
             divider={index < TODAY_CARD_IDS.length - 1}
           />
         ))}
+      </Card>
+
+      <SectionLabel>Внешний вид</SectionLabel>
+      <Card>
+        <Row
+          title="Акцентный цвет"
+          subtitle={ACCENT_COLORS[accent].label}
+          divider={false}
+          right={
+            <div className="flex gap-2">
+              {Object.entries(ACCENT_COLORS).map(([id, { label, hex }]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-label={label}
+                  aria-pressed={accent === id}
+                  onClick={() => setAccentRaw(id)}
+                  className={`w-8 h-8 rounded-full shrink-0 transition-transform ${
+                    accent === id ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep' : ''
+                  }`}
+                  style={{ background: hex }}
+                />
+              ))}
+            </div>
+          }
+        />
       </Card>
 
       <SectionLabel>Основные</SectionLabel>
