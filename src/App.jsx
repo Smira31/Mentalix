@@ -257,8 +257,15 @@ export default function App() {
    * Акцентный цвет (MXL-THEME-ACCENT-001) — косметическая персонализация,
    * выбор живёт вместе с человеком (облако), как и onboarded/appLock выше.
    * Фон (--c-bg) этим не затрагивается.
+   *
+   * Состояние живёт здесь, а не в самом Settings: useSynced — это просто
+   * useState без канала синхронизации между инстансами (нет storage-
+   * listener, нет контекста), поэтому смена значения внутри Settings не
+   * долетала бы до этого эффекта, если бы Settings держал свой отдельный
+   * вызов useSynced на тот же ключ. Settings получает setAccentRaw пропом
+   * (onAccentChange) и меняет именно это состояние.
    */
-  const [accentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
+  const [accentRaw, setAccentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
 
   const accent = parseAccent(accentRaw)
 
@@ -883,6 +890,8 @@ export default function App() {
                     setOverlay('profile')
                   }
                 }}
+                accent={accent}
+                onAccentChange={setAccentRaw}
               />
             )}
 

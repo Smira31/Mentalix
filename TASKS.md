@@ -1087,6 +1087,28 @@ href="?ui_lab=...">` ссылки (полная навигация, без кл�
     «Основные» (`Settings.jsx`), два тап-свотча по паттерну существующих
     `Row`/`SectionLabel`.
   - **Проверено:** `npm run lint` — чисто; `npm run build` — успешно.
+  - **Найден и исправлен баг живой реакции (25.08.2026):** первая версия
+    переключателя не перекрашивала интерфейс сразу по клику — цвет
+    менялся только после перезагрузки. Причина: `App.jsx` (эффект,
+    ставящий `data-accent` на `<html>`) и `Settings.jsx` (кнопки-свотчи)
+    держали два независимых вызова `useSynced(ACCENT_COLOR_KEY, ...)`.
+    `useSynced` (`src/lib/store.js`) — это просто `useState`, без
+    storage-listener и без общего контекста между инстансами; клик в
+    Settings менял только локальный стейт Settings и запись в
+    localStorage/облаке, а состояние `accent` в App.jsx об этом не
+    узнавало. Подтверждено живьём на Vercel preview (Playwright,
+    без входа в аккаунт — email-OTP регистрация не выполнялась):
+    прямая запись `localStorage.setItem('mx-accent-color', 'ice')` не
+    меняла `data-accent` в уже смонтированной сессии, но подхватывалась
+    корректно после `reload()` (холодный старт). CSS-каскад
+    (`[data-accent='ice']` в `index.css`) при этом был исправен с
+    самого начала — проверено вручную через `getComputedStyle`.
+  - **Фикс:** состояние поднято в `App.jsx` (`useSynced` остаётся один
+    вызов на весь модуль); `Settings` получает `accent`/`onAccentChange`
+    пропами, как остальные callback-пропы (`onBack`/`onNavigate`).
+    `useSynced`/`src/lib/store.js` не менялись — общий паттерн для
+    остальных ключей (`APP_LOCK_ENABLED_KEY`, `TODAY_CARDS_HIDDEN_KEY`)
+    вне объёма этой задачи. `npm run lint`/`npm run build` — чисто.
   - **Осталось:** ручная проверка переключения в Settings и live gate в
     Telegram на iPhone перед squash-merge.
 

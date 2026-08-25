@@ -28,7 +28,7 @@ import {
   TODAY_CARD_LABELS,
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
-import { ACCENT_COLOR_KEY, ACCENT_COLORS, DEFAULT_ACCENT, parseAccent } from '../lib/accentColor'
+import { ACCENT_COLORS } from '../lib/accentColor'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -113,7 +113,7 @@ const REMINDER_TIMES = [
 // Это не рассылка: приложение ничего не присылает, просто меняет экран.
 const REVIEW_HOURS = [18, 19, 20, 21, 22]
 
-export default function Settings({ user, onBack, onNavigate }) {
+export default function Settings({ user, onBack, onNavigate, accent, onAccentChange }) {
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
   const [reviewHour, setReviewHour] = useState(19)
@@ -192,10 +192,6 @@ export default function Settings({ user, onBack, onNavigate }) {
 
     setHiddenCardsRaw(JSON.stringify(next))
   }
-
-  // ── Акцентный цвет: см. src/lib/accentColor.js (MXL-THEME-ACCENT-001).
-  const [accentRaw, setAccentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
-  const accent = parseAccent(accentRaw)
 
   useEffect(() => {
     if (platformName !== 'telegram') return
@@ -391,6 +387,8 @@ export default function Settings({ user, onBack, onNavigate }) {
         ))}
       </Card>
 
+      {/* Акцентный цвет: состояние живёт в App.jsx (MXL-THEME-ACCENT-001) —
+          см. комментарий у useSynced(ACCENT_COLOR_KEY, ...) там. */}
       <SectionLabel>Внешний вид</SectionLabel>
       <Card>
         <Row
@@ -405,7 +403,7 @@ export default function Settings({ user, onBack, onNavigate }) {
                   type="button"
                   aria-label={label}
                   aria-pressed={accent === id}
-                  onClick={() => setAccentRaw(id)}
+                  onClick={() => onAccentChange(id)}
                   className={`w-8 h-8 rounded-full shrink-0 transition-transform ${
                     accent === id ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep' : ''
                   }`}
