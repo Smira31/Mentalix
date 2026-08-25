@@ -180,21 +180,24 @@
 
 ## MXL-PREVIEW-STOP-VERIFY-001 — честная проверка удаления Preview
 
-- **Статус: исправление реализовано локально 25.08.2026 в
-  `codex/preview-stop-verify`; live cleanup не запускался, push/PR/production
-  не выполнялись.** После релиза
-  `npm run preview:stop` сообщил `Preview stopped`, но целевой deployment
-  оставался `Ready` и отвечал HTTP 200; он удалён вручную через Vercel CLI,
-  повторный запрос вернул HTTP 404.
+- **Статус: закрыто 25.08.2026 через PR #179, squash-merge `7a64423f`
+  в `main`.** Исправление прошло review/CI; live cleanup после ручного
+  подтверждения также был завершён: Preview удалён вручную, повторный
+  запрос URL вернул HTTP 404.
 - [x] Сообщать об успешной остановке и уведомлять бота только после
       подтверждённого удаления deployment.
 - [x] После удаления проверять отсутствие URL через Vercel и/или ожидаемый
       HTTP 404; ошибка проверки должна завершать команду ненулевым кодом.
 - [x] Добавить regression-проверку для ложного успешного ответа cleanup.
-- **Проверено:** PowerShell parser — чисто; `npm run test:unit` — 7/7;
-  `npm run lint` — чисто; `npm run build` — успешно; `git diff --check` —
-  чисто. Реальный Vercel cleanup остаётся обязательным gate после завершения
-  активного Writing Canvas Preview.
+- **Проверено:** PowerShell parser — чисто; `npm run test:unit` — 8/8 на
+  актуальном `main`; `npm run lint` — чисто; `npm run build` — успешно;
+  `git diff --check` — чисто. Реальный Vercel cleanup был подтверждён
+  ручным gate владельца.
+- **Известное ограничение:** после успешного `vercel remove` edge propagation
+  может временно оставить HTTP 200 и успешный `vercel inspect`; скрипт в этом
+  случае корректно завершается ошибкой, сохраняет state для повторной попытки
+  и не отправляет ложное уведомление. Автоматическое увеличение retry-window
+  остаётся отдельным улучшением, но не release blocker.
 - **Не менять в этой задаче:** production project `mentalix`, backend и бот.
 
 ## MXL-EMPTY-STATE-REUSE-001 — унификация пустых состояний вне Today (частично закрыта)
