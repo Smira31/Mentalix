@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Lock, Check } from 'lucide-react'
+import { Lock, Check, Sparkles } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import JournalTextarea from '../components/JournalTextarea'
+import MarkdownText from '../components/MarkdownText'
 import Motif, { MotifArt } from '../components/Motif'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
+import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY } from './mentalix/personas'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -138,7 +141,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
     }
   }, [user, activeId])
 
-  async function save() {
+  async function persistReflection({ advance = true } = {}) {
     if (!data) return
 
     setSaving(true)
@@ -157,16 +160,54 @@ export default function ThemeScreen({ user, themeId, onBack }) {
        * Последний ответ недели ведёт не на восьмой день, которого
        * нет, а сразу в разбор: это и есть завершение темы.
        */
-      if (answered === fresh.days.length) {
-        setView('review')
-      } else if (day < data.days.length) {
-        setDay(day + 1)
+      if (advance) {
+        if (answered === fresh.days.length) {
+          setView('review')
+        } else if (day < data.days.length) {
+          setDay(day + 1)
+        }
       }
+
+      return true
     } catch (error) {
       console.error(error)
+      return false
     } finally {
       setSaving(false)
     }
+  }
+
+  async function save() {
+    await persistReflection()
+  }
+
+  async function deepenReflection() {
+    if (!current || !text.trim()) return
+
+    const saved = await persistReflection({ advance: false })
+    if (!saved) return
+
+    try {
+      sessionStorage.setItem(MENTOR_PERSONA_KEY, 'kompas')
+      sessionStorage.setItem(
+        MENTOR_DRAFT_KEY,
+        [
+          'Помоги мне пойти глубже в этом размышлении.',
+          `Вопрос: ${current.text}`,
+          current.prompt ? `Подсказка: ${current.prompt}` : '',
+          `Мой ответ: ${text.trim()}`,
+          'Не давай готовый совет сразу. Задай один точный вопрос, который поможет увидеть главное.',
+        ]
+          .filter(Boolean)
+          .join('\n\n')
+      )
+    } catch (error) {
+      console.error(error)
+    }
+
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', 'mentor')
+    window.location.href = url.toString()
   }
 
   const current = data?.days?.find(x => x.day === day)
@@ -233,15 +274,17 @@ export default function ThemeScreen({ user, themeId, onBack }) {
    * Хук вызывается всегда, а видимостью и текстом управляет вид.
    * Условный вызов сломал бы порядок хуков.
    */
+  const writingDay = view === 'day' && !current?.locked
+
   useMainButton({
     text: mainText,
     onClick: mainOnClick,
-    visible: mainVisible,
+    visible: mainVisible && !writingDay,
     enabled: mainEnabled,
     loading: saving,
   })
 
-  const webAction = mainVisible
+  const webAction = mainVisible && !writingDay
     ? { text: mainText, onClick: mainOnClick, disabled: !mainEnabled }
     : null
 
@@ -341,9 +384,10 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
               {d.prompt && <p className="text-[14px] text-muted leading-snug mb-3">{d.prompt}</p>}
 
-              <p className="text-[15px] text-cream leading-relaxed whitespace-pre-line">
-                {d.reflection}
-              </p>
+              <MarkdownText
+                content={d.reflection}
+                className="space-y-2 text-[15px] text-cream leading-relaxed"
+              />
 
               <button
                 onClick={() => {
@@ -450,14 +494,26 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <div className="flex items-center justify-between gap-3 mb-5">
         <BackButton onClick={onBack} />
 
-        <div className="flex items-center gap-3 shrink-0">
+        <button
+          type="button"
+          onClick={deepenReflection}
+          disabled={!canSave || saving}
+          className="flex h-11 items-center gap-2 rounded-full border border-cream/10 bg-emerald px-4 text-[13px] font-semibold text-cream transition-transform active:scale-95 disabled:opacity-35"
+        >
+          <Sparkles size={15} className="text-gold" />
+          Наставник
+        </button>
+      </div>
+
+      <div className="mb-5 flex items-center justify-between gap-4 [@media(max-height:650px)]:hidden">
+        <div className="flex items-center gap-4">
           {answered > 0 && (
             <button
               onClick={() => {
                 platform.haptic('light')
                 setView('review')
               }}
-              className="text-[12px] text-gold bg-transparent border-0 p-0 active:opacity-60"
+              className="border-0 bg-transparent p-0 text-[12px] text-gold active:opacity-60"
             >
               Мои ответы
             </button>
@@ -469,67 +525,57 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 platform.haptic('light')
                 setView('list')
               }}
-              className="text-[12px] text-muted bg-transparent border-0 p-0 active:opacity-60"
+              className="border-0 bg-transparent p-0 text-[12px] text-muted active:opacity-60"
             >
               Все темы
             </button>
           )}
         </div>
-      </div>
 
-      <div className="text-center mb-6">
         <button
           onClick={() => {
             platform.haptic('light')
             setView('intro')
           }}
-          className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2 bg-transparent border-0 p-0 active:opacity-60"
+          className="border-0 bg-transparent p-0 text-[12px] text-faint active:opacity-60"
         >
-          Тема недели
-        </button>
-
-        <h2 className="font-display text-[26px] text-cream lowercase leading-tight">
           {data.title}
-        </h2>
+        </button>
       </div>
 
-      {/* дни: точки-переключатели */}
-      <div className="flex gap-1.5 mb-5">
+      <div className="mb-6 flex gap-1.5" aria-label="Дни темы недели">
         {data.days.map(d => {
           const active = d.day === day
 
           return (
             <button
               key={d.day}
+              aria-label={`День ${d.day}`}
+              aria-current={active ? 'step' : undefined}
               onClick={() => {
                 platform.haptic('light')
                 setDay(d.day)
               }}
               className={[
-                'flex-1 h-9 rounded-full text-[12px] font-bold border-0 flex items-center justify-center transition-colors',
+                'h-1.5 flex-1 overflow-hidden rounded-full border-0 p-0 transition-colors',
                 active
-                  ? 'bg-cream text-emerald-deep'
+                  ? 'bg-gold'
                   : d.reflection
-                    ? 'bg-gold/20 text-gold'
-                    : 'bg-emerald text-muted',
+                    ? 'bg-gold/35'
+                    : 'bg-cream/10',
               ].join(' ')}
             >
-              {d.locked ? (
-                <Lock size={12} />
-              ) : d.reflection && !active ? (
-                <Check size={13} strokeWidth={3} />
-              ) : (
-                d.day
-              )}
+              <span className="sr-only">
+                {d.locked ? 'Закрыт' : d.reflection ? 'Заполнен' : 'Не заполнен'}
+              </span>
             </button>
           )
         })}
       </div>
 
-      {/* Стабильная карточка: клавиатура уменьшает scroll-zone, но не центрирует её заново. */}
       <div className="shrink-0">
-        <div className="rounded-[28px] bg-emerald px-6 py-8 text-center">
-          {current?.locked ? (
+        {current?.locked ? (
+          <div className="rounded-[28px] bg-emerald px-6 py-8 text-center">
             <>
               <MotifArt name="povedenie" size={110} className="mx-auto mb-4" />
 
@@ -548,31 +594,40 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 Скоро откроется
               </button>
             </>
-          ) : (
-            <>
-              <div className="text-[12px] text-faint font-bold mb-3">
-                День {day} из {data.days.length}
-              </div>
+          </div>
+        ) : (
+          <div className="text-left">
+            <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+              Тема недели · День {day} из {data.days.length}
+            </div>
 
-              <p className="font-display text-[19px] text-cream leading-snug">{current?.text}</p>
+            <h3 className="font-display text-[27px] leading-[1.16] text-cream [@media(max-height:650px)]:text-[22px]">
+              {current?.text}
+            </h3>
 
-              {current?.prompt && (
-                <p className="text-[14px] text-gold font-semibold mt-5 leading-snug">
-                  {current.prompt}
-                </p>
-              )}
-            </>
-          )}
-        </div>
+            {current?.prompt && (
+              <p className="mt-5 border-l border-gold pl-4 text-[15px] leading-relaxed text-muted">
+                {current.prompt}
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {!current?.locked && (
-        <textarea
+        <JournalTextarea
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={setText}
           placeholder="Записать мысль..."
-          rows={4}
-          className="w-full shrink-0 rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body mt-3 mb-[76px]"
+          ariaLabel="Мысль по теме недели"
+          className="mt-6 min-h-[18rem] flex-1"
+          editorClassName="pb-24"
+          floatingToolbar
+          onSubmit={save}
+          submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
+          submitDisabled={!canSave}
+          submitLoading={saving}
+          onDeepen={deepenReflection}
         />
       )}
     </Shell>,

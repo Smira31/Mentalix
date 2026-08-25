@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
+import MarkdownText from '../components/MarkdownText'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
@@ -85,11 +86,14 @@ export default function History({ user }) {
                   </div>
 
                   {d.checkin.note && (
-                    <p className="text-[14px] text-muted leading-snug mt-3 whitespace-pre-line">
-                      {d.checkin.note.length > 220
-                        ? d.checkin.note.slice(0, 220) + '…'
-                        : d.checkin.note}
-                    </p>
+                    <MarkdownText
+                      className="space-y-2 text-[14px] text-muted leading-snug mt-3"
+                      content={
+                        d.checkin.note.length > 220
+                          ? d.checkin.note.slice(0, 220) + '…'
+                          : d.checkin.note
+                      }
+                    />
                   )}
 
                   {d.checkin.lessons && (
@@ -97,9 +101,10 @@ export default function History({ user }) {
                       <div className="text-[12px] font-bold text-muted uppercase tracking-wide mb-2">
                         Уроки дня
                       </div>
-                      <p className="text-[14px] text-cream leading-relaxed whitespace-pre-line">
-                        {d.checkin.lessons}
-                      </p>
+                      <MarkdownText
+                        content={d.checkin.lessons}
+                        className="space-y-2 text-[14px] text-cream leading-relaxed"
+                      />
                     </div>
                   )}
 
@@ -114,7 +119,10 @@ export default function History({ user }) {
                             <span className="w-5 h-5 rounded-full bg-gold/15 text-gold text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
                               {i + 1}
                             </span>
-                            <span className="text-[14px] text-cream leading-snug">{w}</span>
+                            <MarkdownText
+                              content={w}
+                              className="min-w-0 space-y-1 text-[14px] text-cream leading-snug"
+                            />
                           </li>
                         ))}
                       </ul>

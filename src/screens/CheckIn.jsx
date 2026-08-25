@@ -7,6 +7,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { X, ChevronLeft } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
+import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
 import { pickByDay, MORNING_NOTE_PROMPTS, LESSON_PROMPTS } from '../data/prompts'
 import {
@@ -51,7 +52,7 @@ const CHECKIN_CENTER_CLASS =
   'w-full flex-1 px-6 py-6 flex flex-col items-center justify-center'
 
 const CHECKIN_LONG_CLASS =
-  'w-full px-6 pt-6 pb-6 flex flex-col items-center'
+  'w-full min-h-full flex-1 px-6 pt-4 pb-2 flex flex-col items-center'
 
 const CHECKIN_QUESTION_CLASS =
   'w-full text-center'
@@ -524,7 +525,7 @@ export default function CheckIn({
   }
 
 
-  async function submit() {
+  async function submit({ afterSave } = {}) {
     setSaving(true)
     setError(false)
 
@@ -579,7 +580,11 @@ export default function CheckIn({
         'success',
       )
 
-      setStep(doneStep)
+      if (afterSave) {
+        afterSave()
+      } else {
+        setStep(doneStep)
+      }
     } catch (error) {
       console.error(error)
 
@@ -657,6 +662,46 @@ export default function CheckIn({
 
     window.location.href =
       url.toString()
+  }
+
+
+  async function deepenMorningNote() {
+    if (!note.trim()) return
+
+    await submit({
+      afterSave: () => {
+        try {
+          sessionStorage.setItem(
+            MENTOR_PERSONA_KEY,
+            'kompas',
+          )
+
+          sessionStorage.setItem(
+            MENTOR_DRAFT_KEY,
+            [
+              'Помоги мне пойти глубже в утренней записи.',
+              `Моя мысль: ${note.trim()}`,
+              'Не давай готовый совет сразу. Задай один точный вопрос, который поможет увидеть следующий шаг.',
+            ].join('\n\n'),
+          )
+        } catch (error) {
+          console.error(error)
+        }
+
+        const url =
+          new URL(
+            window.location.href,
+          )
+
+        url.searchParams.set(
+          'tab',
+          'mentor',
+        )
+
+        window.location.href =
+          url.toString()
+      },
+    })
   }
 
 
@@ -760,7 +805,7 @@ export default function CheckIn({
       platform.haptic('light')
       mainAction?.run()
     },
-    visible: Boolean(mainAction),
+    visible: Boolean(mainAction) && !isMorningNoteStep,
     enabled: !saving,
     loading: saving,
   })
@@ -772,16 +817,16 @@ export default function CheckIn({
       platform.haptic('light')
       skipAction?.run()
     },
-    visible: Boolean(skipAction) && !saving,
+    visible: Boolean(skipAction) && !saving && !isMorningNoteStep,
   })
 
 
-  const webAction = mainAction
+  const webAction = mainAction && !isMorningNoteStep
     ? { text: mainAction.text, onClick: mainAction.run, disabled: saving }
     : null
 
   const webSecondaryAction =
-    skipAction && !saving
+    skipAction && !saving && !isMorningNoteStep
       ? { text: skipAction.text, onClick: skipAction.run }
       : null
 
@@ -999,25 +1044,50 @@ export default function CheckIn({
 
       <section
         className={
-          CHECKIN_QUESTION_CLASS
+          isMorningNoteStep
+            ? 'w-full text-left'
+            : CHECKIN_QUESTION_CLASS
         }
       >
-        <div className="text-[12px] text-faint font-semibold mb-2 uppercase tracking-wide">
+        <div
+          className={[
+            'mb-2 text-[12px] font-semibold uppercase tracking-wide',
+            isMorningNoteStep
+              ? 'text-gold'
+              : 'text-faint',
+          ].join(' ')}
+        >
           {stepLabel}
         </div>
 
-        <h2 className="font-display text-[26px] text-cream leading-tight">
+        <h2
+          className={[
+            'font-display text-cream',
+            isMorningNoteStep
+              ? 'text-[30px] leading-[1.12]'
+              : 'text-[26px] leading-tight',
+          ].join(' ')}
+        >
           {questionTitle}
         </h2>
 
-        <p className="text-[14px] text-muted mt-2">
+        <p
+          className={[
+            'text-[14px] text-muted',
+            isMorningNoteStep
+              ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
+              : 'mt-2',
+          ].join(' ')}
+        >
           {questionSubtitle}
         </p>
       </section>
 
       <div
         className={
-          CHECKIN_INTERACTIVE_CLASS
+          isCard
+            ? `${isMorningNoteStep ? 'w-full pt-6' : CHECKIN_INTERACTIVE_CLASS} flex flex-1 flex-col`
+            : CHECKIN_INTERACTIVE_CLASS
         }
       >
 
@@ -1155,7 +1225,7 @@ export default function CheckIn({
       {isCard && cardIdx === 0 && (
         <div
           key="c1"
-          className="w-full flex flex-col items-center"
+          className="w-full flex flex-1 flex-col items-center"
         >
           {isEvening ? (
             <div className="space-y-3 max-w-md mx-auto w-full">
@@ -1173,14 +1243,14 @@ export default function CheckIn({
                       }
                     </div>
 
-                    <textarea
+                    <JournalTextarea
                       value={
                         lessons[
                           field.key
                         ] || ''
                       }
                       onChange={(
-                        event,
+                        value,
                       ) =>
                         setLessons(
                           (
@@ -1189,34 +1259,33 @@ export default function CheckIn({
                             ...current,
                             [
                               field.key
-                            ]:
-                              event
-                                .target
-                                .value,
+                            ]: value,
                           }),
                         )
                       }
                       placeholder={
                         field.placeholder
                       }
-                      rows={2}
-                      className="w-full bg-transparent text-cream placeholder-muted text-[16px] leading-relaxed outline-none resize-none font-body"
+                      ariaLabel={field.label}
+                      className="min-h-[11rem]"
                     />
                   </div>
                 ),
               )}
             </div>
           ) : (
-            <textarea
+            <JournalTextarea
               value={note}
-              onChange={(event) =>
-                setNote(
-                  event.target.value,
-                )
-              }
+              onChange={setNote}
               placeholder={MORNING_NOTE_PLACEHOLDER}
-              rows={5}
-              className="w-full max-w-md mx-auto rounded-3xl bg-emerald text-cream placeholder-muted p-5 text-[16px] leading-relaxed outline-none border border-cream/10 focus:border-gold/40 resize-none font-body"
+              ariaLabel="Утренняя мысль"
+              className="w-full max-w-md mx-auto min-h-[18rem] flex-1"
+              editorClassName="pb-24"
+              floatingToolbar
+              onSubmit={() => submit()}
+              submitLabel="Завершить чек-ин"
+              submitLoading={saving}
+              onDeepen={deepenMorningNote}
             />
           )}
 
