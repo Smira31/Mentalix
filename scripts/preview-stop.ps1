@@ -1,4 +1,9 @@
+param(
+  [switch]$DryRun
+)
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 $OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = 'Stop'
 
@@ -22,6 +27,27 @@ $project = 'mentalix-preview'
 $statePath = Join-Path $env:TEMP 'mentalix-preview-state.json'
 $deploymentId = $null
 $deploymentUrl = $null
+
+function Get-PositiveInt {
+  param(
+    [string]$Value,
+    [int]$Default
+  )
+  $parsed = 0
+  if ([int]::TryParse($Value, [ref]$parsed) -and $parsed -gt 0) {
+    return $parsed
+  }
+  return $Default
+}
+
+$retryAttempts = Get-PositiveInt $envValues['MENTALIX_PREVIEW_STOP_RETRY_ATTEMPTS'] 10
+$retryDelaySeconds = Get-PositiveInt $envValues['MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS'] 3
+$dryRunFromEnv = $envValues['MENTALIX_PREVIEW_STOP_DRY_RUN'] -match '^(1|true|yes)$'
+
+if ($DryRun -or $dryRunFromEnv) {
+  Write-Output ("Preview stop dry-run: retry attempts={0}, delay seconds={1}. No Vercel, state, process, or Telegram operations will run." -f $retryAttempts, $retryDelaySeconds)
+  exit 0
+}
 
 if (Test-Path -LiteralPath $statePath) {
   try {
@@ -84,7 +110,7 @@ if (-not $removedSuccessfully -or ($removeExit -ne 0 -and -not $removeNotFound))
 # подтверждено независимо через публичный URL или Vercel inspect.
 $verifiedRemoved = $false
 $verificationDetails = @()
-for ($attempt = 1; $attempt -le 5 -and -not $verifiedRemoved; $attempt++) {
+for ($attempt = 1; $attempt -le $retryAttempts -and -not $verifiedRemoved; $attempt++) {
   if (-not [string]::IsNullOrWhiteSpace($deploymentUrl)) {
     $oldPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
@@ -114,13 +140,17 @@ for ($attempt = 1; $attempt -le 5 -and -not $verifiedRemoved; $attempt++) {
     }
   }
 
-  if (-not $verifiedRemoved -and $attempt -lt 5) {
-    Start-Sleep -Seconds 2
+  if (-not $verifiedRemoved -and $attempt -lt $retryAttempts) {
+    Start-Sleep -Seconds $retryDelaySeconds
   }
 }
 
 if (-not $verifiedRemoved) {
-  Write-Error ("Vercel принял cleanup, но удаление Preview не подтверждено. State сохранён для повторной попытки.`n" + ($verificationDetails -join "`n"))
+  Write-Error (
+    "Vercel принял cleanup, но удаление Preview не подтверждено после {0} попыток. State сохранён для повторной попытки.`n{1}" -f
+    $retryAttempts,
+    ($verificationDetails -join "`n")
+  )
   exit 1
 }
 

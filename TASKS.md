@@ -15,6 +15,27 @@
   не удалив deployment. До исправления завершение подтверждается через Vercel
   и повторный запрос URL; задача — `MXL-PREVIEW-STOP-VERIFY-001` ниже.
 
+## MXL-PREVIEW-STOP-RETRY-WINDOW-001 — устойчивое ожидание удаления Preview
+- **Статус: реализовано локально 25.08.2026 в ветке
+  `improve/preview-stop-retry-window-001`; commit/PR готовятся.** Основание —
+  наблюдение после MXL-PREVIEW-STOP-VERIFY-001: Vercel может некоторое время
+  отвечать HTTP 200 и находить deployment через `inspect` после успешного
+  `vercel remove` из-за edge propagation.
+- [x] Retry-window стал настраиваемым через `MENTALIX_PREVIEW_STOP_RETRY_ATTEMPTS`
+      (по умолчанию 10) и `MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS`
+      (по умолчанию 3).
+- [x] При неподтверждённом удалении state-файл сохраняется, команда завершается
+      с ненулевым exit code, Telegram не уведомляется.
+- [x] Добавлен `-DryRun` и env-флаг `MENTALIX_PREVIEW_STOP_DRY_RUN`; dry-run
+      завершается до любых Vercel, state, process или Telegram операций и
+      печатает выбранное retry-window.
+- [x] Добавлен детерминированный regression-контракт без реального удаления
+      production или Preview deployment.
+- [x] Telegram-уведомление отправляется только после подтверждённого HTTP
+      404/410 или отсутствия deployment через `inspect`.
+- **Не менять:** production project `mentalix`, backend и Telegram-бот.
+
+
 ## MXL-MOOD-CHECK-ERROR-GUARD-001 — не блокировать запуск при ошибке check-in
 
 - **Статус: закрыто 25.08.2026 локально.**

@@ -1,5 +1,18 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 25.08.2026 — MXL-PREVIEW-STOP-RETRY-WINDOW-001: retry-window и dry-run Preview cleanup
+
+- Retry-window `preview-stop.ps1` стал настраиваемым: 10 попыток и задержка
+  3 секунды используются по умолчанию, значения можно переопределить через
+  `MENTALIX_PREVIEW_STOP_RETRY_ATTEMPTS` и
+  `MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS`.
+- Добавлен параметр `-DryRun` и env-флаг
+  `MENTALIX_PREVIEW_STOP_DRY_RUN`. Они печатают план retry без вызовов Vercel,
+  изменения state, остановки процессов или отправки Telegram.
+- Guard удаления сохранён: state и Telegram-уведомление выполняются только
+  после независимого подтверждения HTTP 404/410 или отсутствия deployment через
+  `vercel inspect`. Добавлен regression-контракт для retry-window и dry-run.
+
 ## 25.08.2026 — MXL-PREVIEW-STOP-VERIFY-001: закрытие guard-проверки удаления Preview
 
 - PR #179 squash-смёржен в `main` (`7a64423f`); `preview-stop.ps1` сохраняет
