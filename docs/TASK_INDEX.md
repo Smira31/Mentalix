@@ -22,7 +22,7 @@
 | `MXL-011`                    |       L | release          | verified   | completed                      | Закрыта после Telegram/iPhone release gate владельца           |
 | `MXL-012`                    |       L | release          | backlog    | manual-gate                     | Провести Android gate                                            |
 | `MXL-014`                    |       ? | product/backend  | ready     | backend-dependent + manual-gate | Спроектировать одну текстовую практику на 5–10 минут; аудио не входит в MVP |
-| `MXL-015`                    |       ? | content/product  | ready     | manual-gate                     | Подготовить 5–7 редакционных тем, связанных с ежедневным действием |
+| `MXL-015`                    |       M | content/product  | in progress | manual-gate + backend-dependent | Curated-каталог из 7 тем готовится; backend publication не входит в этот PR |
 | `MXL-016`                    |       ? | content/product  | ready     | manual-gate                     | Подготовить curated-банк с проверенной атрибуцией; не генерировать цитаты без источника |
 | `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
 | `MXL-019`                    |       ? | product/UX       | ready     | manual-gate                     | Переосмыслить Journey как следующий шаг и активные дни, не как соревнование |

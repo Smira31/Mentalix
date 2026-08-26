@@ -3811,3 +3811,16 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Критерии готовности:** на picker виден этап «идея»; до первого сообщения Conversation показывает «идея»; после user message — «действие»; после assistant reply — «анализ»; четыре подписи доступны через aria-label; существующий `api.mentalix.send(user.id, text, persona)` не меняется.
 - **Проверки:** unit regression contract, lint, build, docs:check, UX smoke на `390×844` и `320×568`, затем ручной Telegram/iPhone gate.
 - **Rollback:** удалить `AiFlowIndicator` и его два вызова; API, сообщения и backend останутся прежними.
+
+
+## MXL-015 — Stoic-inspired weekly themes
+
+- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-015-weekly-themes`.
+- **Размер:** M
+- **Тип:** content/product
+- **Автономность:** manual-gate + backend-dependent для публикации.
+- **Цель:** подготовить редакционный baseline из 5–7 тем, где каждая тема ведёт пользователя через вопрос, действие, анализ и новый шаг.
+- **Реализованный scope:** добавлен curated-каталог из 7 тем: «Круг влияния», «Внимание», «Трение», «Мужество», «Мера», «Перспектива» и «Возвращение». Для каждой темы зафиксированы subtitle, Stoic-inspired question, action prompt, analysis prompt и next-step prompt.
+- **Не входит:** создание backend theme IDs, публикация через приватный admin-контракт, миграции, изменение `/themes`, автоматическая генерация цитат и новый UI-раздел.
+- **Критерии готовности:** каталог имеет ровно 7 уникальных ключей; каждая тема содержит четыре шага ежедневного цикла; тексты не обещают терапевтический результат и не копируют Stoic; backend-зависимость явно документирована.
+- **Следующий gate:** после merge этого контентного baseline нужна проверка владельцем на тоне и ручной Telegram/iPhone gate только при подключении каталога к пользовательскому UI. Публикация в backend требует доступа к приватному контракту.
