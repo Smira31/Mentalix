@@ -26,6 +26,11 @@ import {
 
 import { PERSONAS } from './personas'
 import MessageText from './MessageText'
+import {
+  groupJournalMessages,
+  isLongJournalMessage,
+  journalMessageKey,
+} from '../../lib/journalPresentation'
 import './Conversation.css'
 
 
@@ -66,6 +71,8 @@ export default function Conversation({
     useState(0)
   const [voiceError, setVoiceError] =
     useState('')
+  const [expandedMessages, setExpandedMessages] =
+    useState(() => new Set())
 
   const voiceSupported =
     typeof navigator !== 'undefined'
@@ -389,41 +396,63 @@ export default function Conversation({
 
 
         <div className="w-full max-w-md mx-auto space-y-5">
-          {messages.map(
-            (message, index) => {
-              const isUser =
-                message.role === 'user'
+          {groupJournalMessages(messages).map(group => (
+            <div key={group.key} className="space-y-5">
+              {group.label && (
+                <div className="pt-2 text-center text-[10px] uppercase tracking-[0.18em] text-faint">
+                  {group.label}
+                </div>
+              )}
 
-              if (isUser) {
-                return (
-                  <div
-                    key={index}
-                    className="flex justify-end"
-                  >
-                    <div className="w-fit max-w-[82%] rounded-[24px] bg-cognac px-5 py-4 text-[16px] leading-[1.5] font-normal text-cream break-words whitespace-pre-wrap">
-                      {message.content}
+              {group.messages.map(({ message, index }) => {
+                const isUser = message.role === 'user'
+                const messageKey = journalMessageKey(message, index)
+                const isLong = !isUser && isLongJournalMessage(message)
+                const isExpanded = expandedMessages.has(messageKey)
+
+                if (isUser) {
+                  return (
+                    <div key={messageKey} className="flex justify-end">
+                      <div className="w-fit max-w-[82%] rounded-[24px] bg-cognac px-5 py-4 text-[16px] leading-[1.5] font-normal text-cream break-words whitespace-pre-wrap">
+                        {message.content}
+                      </div>
                     </div>
+                  )
+                }
+
+                return (
+                  <div key={messageKey} className="w-full mx-msg-in">
+                    <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-2.5">
+                      {meta.name}
+                    </div>
+
+                    <div
+                      className={`text-[16px] leading-[1.62] tracking-[-0.01em] text-cream font-normal break-words ${isLong && !isExpanded ? 'max-h-[280px] overflow-hidden' : ''}`}
+                    >
+                      <MessageText content={message.content} />
+                    </div>
+
+                    {isLong && (
+                      <button
+                        type="button"
+                        className="mt-3 text-[12px] uppercase tracking-[0.14em] text-gold font-semibold"
+                        onClick={() => {
+                          setExpandedMessages(previous => {
+                            const next = new Set(previous)
+                            if (next.has(messageKey)) next.delete(messageKey)
+                            else next.add(messageKey)
+                            return next
+                          })
+                        }}
+                      >
+                        {isExpanded ? 'Свернуть ответ' : 'Читать полностью'}
+                      </button>
+                    )}
                   </div>
                 )
-              }
-
-
-              return (
-                <div
-                  key={index}
-                  className="w-full mx-msg-in"
-                >
-                  <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-2.5">
-                    {meta.name}
-                  </div>
-
-                  <div className="text-[16px] leading-[1.62] tracking-[-0.01em] text-cream font-normal break-words">
-                    <MessageText content={message.content} />
-                  </div>
-                </div>
-              )
-            },
-          )}
+              })}
+            </div>
+          ))}
 
 
           {sending && (

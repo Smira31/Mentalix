@@ -44,3 +44,38 @@ test('toolbar оборачивает выделение и повторным д
     }
   )
 })
+
+test('journal presentation группирует сообщения по последовательным календарным датам', async () => {
+  const { groupJournalMessages } = await import('../../src/lib/journalPresentation.js')
+
+  const groups = groupJournalMessages([
+    { role: 'user', content: 'Первый', created_at: '2026-08-26T08:00:00Z' },
+    { role: 'assistant', content: 'Ответ', created_at: '2026-08-26T08:01:00Z' },
+    { role: 'user', content: 'Следующий день', created_at: '2026-08-27T08:00:00Z' },
+  ])
+
+  assert.equal(groups.length, 2)
+  assert.equal(groups[0].messages.length, 2)
+  assert.equal(groups[1].messages.length, 1)
+  assert.match(groups[0].label, /2026/)
+})
+
+test('journal presentation сохраняет сообщения без даты в одном fallback-разделе', async () => {
+  const { groupJournalMessages } = await import('../../src/lib/journalPresentation.js')
+
+  const groups = groupJournalMessages([
+    { role: 'assistant', content: 'Ответ без даты' },
+    { role: 'user', content: 'Вопрос без даты' },
+  ])
+
+  assert.equal(groups.length, 1)
+  assert.equal(groups[0].key, 'undated')
+  assert.equal(groups[0].messages.length, 2)
+})
+
+test('journal presentation определяет длинный ответ по безопасному порогу', async () => {
+  const { isLongJournalMessage } = await import('../../src/lib/journalPresentation.js')
+
+  assert.equal(isLongJournalMessage({ content: 'a'.repeat(720) }), false)
+  assert.equal(isLongJournalMessage({ content: 'a'.repeat(721) }), true)
+})
