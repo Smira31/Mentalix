@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 26.08.2026 — MXL-011: финальный Telegram/iPhone release gate
+
+- Владелец подтвердил прохождение финального production gate в Telegram на iPhone.
+- Проверены запуск и авторизация, safe area и нижняя навигация, Today/CheckIn/Library/Trends, Path/History, Journey CTA и возврат после сворачивания приложения.
+- Автоматические сигналы также зелёные: `npm run ux:check` на 390×844 и 320×568, Vercel/Render `/api/health` отвечают `200 OK`.
+- MXL-011 переведена в `verified/completed`; новых технических дефектов в рамках gate не обнаружено.
+
+
 ## 26.08.2026 — MXL-021: Journey CTA
 
 - В Journey добавлены CTA `Начать сегодня` для empty state и `Продолжить сегодня` для пользователя с историей практики.
