@@ -17,7 +17,7 @@
 - **Последние завершённые изменения:** единая лента History (`PR #194`), именованные уровни серии (`PR #196`), Stoic-inspired цикл Today (`PR #197`) и закрытие его документации (`PR #198`).
 - **Проверки:** последний GitHub Actions run для `main` завершён успешно; `docs:check` подтверждает 94 Markdown-файла, 18 canonical task ID и 0 ошибок.
 - **Production:** `https://mentalix.vercel.app/api/health` и `https://mentalix-bot.onrender.com/api/health` возвращают `status: ok`. Точный commit, который сейчас обслуживает Vercel Production, в этой проверке отдельно не подтверждался.
-- **Backlog:** 1 задача завершена (`MXL-007`), 17 активных записей остаются в backlog; автономная очередь пуста. Следующий продуктовый выбор — `MXL-008`.
+- **Backlog:** `MXL-007` завершена; `MXL-008` находится в реализации как Stoic-like Journey и ожидает PR/ручного Telegram-iPhone gate; остальные активные записи остаются в backlog. Автономная очередь пуста.
 - **Открытые PR:** #152 и четыре draft PR остаются без merge; они не входят в текущий autonomous scope из-за устаревшей базы, владельческого решения или backend/manual gate.
 
 ## 1. Документационный operating layer
