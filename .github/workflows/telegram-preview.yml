@@ -62,11 +62,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          set +e
           deploy_output="$(npx vercel@latest deploy --yes --target preview \
             --project "$VERCEL_PROJECT" \
             --scope "$VERCEL_SCOPE" \
             --token "$VERCEL_TOKEN" 2>&1)"
+          deploy_status=$?
+          set -e
           printf '%s\n' "$deploy_output"
+          if [ "$deploy_status" -ne 0 ]; then
+            echo "Vercel deploy failed with exit code $deploy_status." >&2
+            exit "$deploy_status"
+          fi
           preview_url="$(printf '%s\n' "$deploy_output" | grep -Eo 'https://[a-z0-9-]+\.vercel\.app' | tail -1)"
           if [ -z "$preview_url" ]; then
             echo 'Could not obtain the Vercel preview URL.' >&2
