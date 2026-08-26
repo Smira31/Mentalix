@@ -6,33 +6,35 @@
 
 `autonomous` можно выполнять без нового продуктового решения при соблюдении обычного PR-цикла. `needs-owner` требует решения владельца по сценарию, приоритету или продуктовой формулировке. `manual-gate` может иметь готовый код, но не закрывается без проверки на реальном устройстве или пользователях. `backend-dependent` нельзя реализовывать по предположению без приватного контракта.
 
-| ID                           |  Размер | Тип              | Статус     | Автономность                    | Следующий шаг                                                    |
-| ---------------------------- | ------: | ---------------- | ---------- | ------------------------------- | ---------------------------------------------------------------- |
-| `MXL-RSCH-002`               | Ongoing | research         | backlog    | needs-owner                     | Уточнить протокол проверки и границы обобщения                   |
-| `MXL-USERS`                  |      ML | research/release | backlog    | manual-gate                     | Согласовать выборку, согласия, сценарий и критерии               |
-| `MXL-001`                    |      ML | product/UX       | backlog    | needs-owner + manual-gate       | Выбрать scope трёх AI-экранов и референсы                        |
-| `MXL-002`                    |      ML | UX/release       | backlog    | manual-gate                     | Провести свежий iPhone/Telegram gate всех AI-экранов             |
-| `MXL-005`                    |      ML | product/UX       | backlog    | needs-owner                     | Уточнить журнальный формат длинных ответов и истории             |
-| `MXL-006`                    |      ML | UX               | backlog    | needs-owner + manual-gate       | Утвердить типографическую шкалу и проверить iPhone               |
-| `MXL-007`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #197; iPhone/Telegram gate пройден владельцем |
-| `MXL-008`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #200; Vercel/телефонный gate пройден          |
-| `MXL-021`                    |       M | product/UX       | backlog    | needs-owner + manual-gate       | Подтвердить CTA «Продолжить сегодня» для Journey                |
-| `MXL-009`                    |      ML | product/data     | backlog    | needs-owner + backend-dependent | Утвердить полезные закономерности и источник данных              |
-| `MXL-010`                    |       L | release          | backlog    | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные        |
-| `MXL-011`                    |       L | release          | backlog    | manual-gate                     | Провести финальный iPhone/Telegram gate                          |
-| `MXL-012`                    |       L | release          | backlog    | manual-gate                     | Провести Android gate                                            |
-| `MXL-014`                    |       ? | product/backend  | backlog    | needs-owner + backend-dependent | Определить сценарий и backend для медитаций                      |
-| `MXL-015`                    |       ? | content/product  | backlog    | needs-owner                     | Утвердить таксономию тем недели                                  |
-| `MXL-016`                    |       ? | content/product  | backlog    | needs-owner                     | Утвердить источник и правила банка «Мыслей дня»                  |
-| `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
-| `MXL-019`                    |       ? | product/UX       | backlog    | needs-owner                     | Сформулировать проблему и критерий замены лабиринта              |
-| `MXL-020`                    |       ? | product/payment  | backlog    | needs-owner + backend-dependent | Выбрать модель оплаты, provider и ограничения                    |
+| ID                           |  Размер | Тип              | Статус      | Автономность                    | Следующий шаг                                                         |
+| ---------------------------- | ------: | ---------------- | ----------- | ------------------------------- | --------------------------------------------------------------------- |
+| `MXL-RSCH-002`               | Ongoing | research         | backlog     | needs-owner                     | Уточнить протокол проверки и границы обобщения                        |
+| `MXL-USERS`                  |      ML | research/release | backlog     | manual-gate                     | Согласовать выборку, согласия, сценарий и критерии                    |
+| `MXL-001`                    |      ML | product/UX       | backlog     | needs-owner + manual-gate       | Выбрать scope трёх AI-экранов и референсы                             |
+| `MXL-002`                    |      ML | UX/release       | backlog     | manual-gate                     | Провести свежий iPhone/Telegram gate всех AI-экранов                  |
+| `MXL-005`                    |      ML | product/UX       | backlog     | needs-owner                     | Уточнить журнальный формат длинных ответов и истории                  |
+| `MXL-006`                    |      ML | UX               | backlog     | needs-owner + manual-gate       | Утвердить типографическую шкалу и проверить iPhone                    |
+| `MXL-007`                    |      ML | product/UX       | verified    | completed                       | Закрыта через PR #197; iPhone/Telegram gate пройден владельцем        |
+| `MXL-008`                    |      ML | product/UX       | verified    | completed                       | Закрыта через PR #200; Vercel/телефонный gate пройден                 |
+| `MXL-021`                    |       M | product/UX       | implemented | manual-gate                     | Открыть PR и пройти Telegram/iPhone gate для CTA «Продолжить сегодня» |
+| `MXL-009`                    |      ML | product/data     | backlog     | needs-owner + backend-dependent | Утвердить полезные закономерности и источник данных                   |
+| `MXL-010`                    |       L | release          | backlog     | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные             |
+| `MXL-011`                    |       L | release          | backlog     | manual-gate                     | Провести финальный iPhone/Telegram gate                               |
+| `MXL-012`                    |       L | release          | backlog     | manual-gate                     | Провести Android gate                                                 |
+| `MXL-014`                    |       ? | product/backend  | backlog     | needs-owner + backend-dependent | Определить сценарий и backend для медитаций                           |
+| `MXL-015`                    |       ? | content/product  | backlog     | needs-owner                     | Утвердить таксономию тем недели                                       |
+| `MXL-016`                    |       ? | content/product  | backlog     | needs-owner                     | Утвердить источник и правила банка «Мыслей дня»                       |
+| `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented  | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически      |
+| `MXL-019`                    |       ? | product/UX       | backlog     | needs-owner                     | Сформулировать проблему и критерий замены лабиринта                   |
+| `MXL-020`                    |       ? | product/payment  | backlog     | needs-owner + backend-dependent | Выбрать модель оплаты, provider и ограничения                         |
 
 ## Автономная очередь
 
 Сейчас очередь `autonomous` пуста. Это намеренно: все оставшиеся активные записи либо требуют продуктового решения, ручного gate, backend-контракта или прямо помечены как не подлежащие исправлению. Новая автономная задача может появиться только через отдельную запись с однозначным scope и критериями готовности.
 
 Документационные и maintenance-задачи, обнаруженные аудитом, ведутся отдельными ID и после завершения переводятся в историю. Они не должны маскироваться под продуктовый backlog.
+
+По сверке 26.08.2026 остальные активные строки индекса оставлены без изменения: подтверждений их полного завершения или прохождения обязательных manual/backend gates нет. `MXL-021` переведена в `implemented`, потому что код CTA уже находится в feature-ветке и локальные проверки пройдены; PR и Telegram/iPhone gate ещё не выполнены.
 
 ## Product decision register
 
