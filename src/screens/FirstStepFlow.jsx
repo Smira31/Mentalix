@@ -28,6 +28,14 @@ const STATE_OPTIONS = [
 
 const RUN_SECONDS = 5 * 60
 
+const STEP_PROGRESS = {
+  task: 1,
+  state: 2,
+  plan: 3,
+  run: 4,
+  outcome: 5,
+}
+
 const OUTCOME_OPTIONS = [
   { key: 'started', label: 'Начал(а)' },
   { key: 'not_started', label: 'Не начал(а)' },
@@ -53,6 +61,26 @@ const COMPLETION_COPY = {
     title: 'Ты выбрал(а) безопасность',
     description: 'Остановиться вовремя — тоже разумный шаг.',
   },
+}
+
+function Progress({ step }) {
+  const current = STEP_PROGRESS[step]
+
+  if (!current) return null
+
+  return (
+    <div className="first-step-progress" aria-label={`Шаг ${current} из 5`}>
+      <div className="first-step-progress__rail" aria-hidden="true">
+        {Array.from({ length: 5 }, (_, index) => (
+          <span
+            key={index}
+            className={index < current ? 'first-step-progress__segment--active' : ''}
+          />
+        ))}
+      </div>
+      <span className="first-step-progress__label">{current} из 5</span>
+    </div>
+  )
 }
 
 function OptionList({ options, onPick }) {
@@ -189,7 +217,7 @@ export default function FirstStepFlow({ userId, onClose }) {
               Пять минут, чтобы найти одно простое действие и просто начать — без давления сделать
               всё сразу.
               <span className="mt-3 block text-[12px] font-semibold text-faint">
-                5 минут&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
+                5 минут&nbsp;&nbsp;·&nbsp;&nbsp;5 шагов
               </span>
             </>
           }
@@ -211,6 +239,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           onBack={onClose}
           label="Первый шаг"
           title="Что не двигается?"
+          progress={<Progress step={step} />}
           className="practice-scene--input"
           description={
             <>
@@ -243,6 +272,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           onBack={onClose}
           label="Первый шаг"
           title="Что сейчас мешает?"
+          progress={<Progress step={step} />}
           className="practice-scene--choice"
         >
           <OptionList options={STATE_OPTIONS} onPick={chooseState} />
@@ -281,6 +311,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           onBack={onClose}
           label="Первый шаг"
           title="Что можно сделать за пять минут?"
+          progress={<Progress step={step} />}
           className="practice-scene--input"
           description={<>Не «написать отчёт», а «открыть документ и записать три пункта».</>}
         >
@@ -308,6 +339,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           onBack={onClose}
           label="Первый шаг"
           title="Только этот шаг"
+          progress={<Progress step={step} />}
           centered
           className="min-h-[58vh] text-center"
         >
@@ -331,6 +363,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           onBack={onClose}
           label="Первый шаг"
           title="Как прошло?"
+          progress={<Progress step={step} />}
           className="practice-scene--choice"
         >
           <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />

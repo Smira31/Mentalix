@@ -46,6 +46,15 @@ const REFRAME_PHRASES = [
 
 const RUN_SECONDS = 5 * 60
 
+const STEP_PROGRESS = {
+  project: 1,
+  state: 2,
+  reframe: 3,
+  finish: 4,
+  run: 5,
+  outcome: 6,
+}
+
 const OUTCOME_OPTIONS = [
   { key: 'started', label: 'Начал(а)' },
   { key: 'not_started', label: 'Не начал(а)' },
@@ -86,6 +95,26 @@ function StageHeading({ children }) {
     <div className="one-finish-stage__anchor">
       <Eyebrow />
       <h2 className="one-finish-stage__title font-display text-cream">{children}</h2>
+    </div>
+  )
+}
+
+function Progress({ step }) {
+  const current = STEP_PROGRESS[step]
+
+  if (!current) return null
+
+  return (
+    <div className="one-finish-progress" aria-label={`Шаг ${current} из 6`}>
+      <div className="one-finish-progress__rail" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, index) => (
+          <span
+            key={index}
+            className={index < current ? 'one-finish-progress__segment--active' : ''}
+          />
+        ))}
+      </div>
+      <span className="one-finish-progress__label">{current} из 6</span>
     </div>
   )
 }
@@ -245,6 +274,7 @@ export default function FinishFlow({ userId, onClose }) {
 
         {step === 'project' && (
           <div className="one-finish-stage one-finish-stage--writing animate-fade-in">
+            <Progress step={step} />
             <StageHeading>Что зависло на середине?</StageHeading>
 
             <JournalTextarea
@@ -266,6 +296,7 @@ export default function FinishFlow({ userId, onClose }) {
 
         {step === 'state' && (
           <div className="one-finish-stage animate-fade-in">
+            <Progress step={step} />
             <StageHeading>На чём застряло?</StageHeading>
 
             <OptionList options={STATE_OPTIONS} onPick={chooseState} />
@@ -274,6 +305,7 @@ export default function FinishFlow({ userId, onClose }) {
 
         {step === 'reframe' && (
           <div className="one-finish-stage animate-fade-in">
+            <Progress step={step} />
             <StageHeading>{reframePhrase}</StageHeading>
 
             <button
@@ -288,6 +320,7 @@ export default function FinishFlow({ userId, onClose }) {
 
         {step === 'finish' && (
           <div className="one-finish-stage one-finish-stage--writing animate-fade-in">
+            <Progress step={step} />
             <StageHeading>Какой маленький кусок можно завершить сегодня?</StageHeading>
 
             <JournalTextarea
@@ -309,6 +342,7 @@ export default function FinishFlow({ userId, onClose }) {
 
         {step === 'run' && (
           <div className="one-finish-stage animate-fade-in text-center">
+            <Progress step={step} />
             <StageHeading>Только этот кусок</StageHeading>
 
             <div className="font-display text-[64px] text-cream mt-8 tabular-nums">
@@ -327,6 +361,7 @@ export default function FinishFlow({ userId, onClose }) {
 
         {step === 'outcome' && (
           <div className="one-finish-stage animate-fade-in">
+            <Progress step={step} />
             <StageHeading>Как прошло?</StageHeading>
 
             <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />

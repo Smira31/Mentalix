@@ -1,5 +1,19 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 26.08.2026 — MXL-PRACTICES-PROGRESS-BAR-UNIFY-001: прогресс-бар «N из 5/6»
+
+- Реализовано локально (незакоммичено): найденный в ходе живой проверки
+  PR #191 пробел закрыт на всех трёх flow — `FinishFlow.jsx`/
+  `NarrowFocusFlow.jsx` получили прогресс-бар «N из 6» прямым переносом 1:1
+  (у обоих действительно 6 шагов); `FirstStepFlow.jsx` — «N из 5» с
+  отдельным решением по branch-шагу `rest` (без прогресса, как `intro`/
+  `complete`) и новым опциональным пропом `progress` у `SceneLayout.jsx`,
+  чтобы сохранить ту же визуальную позицию (над Eyebrow), что и у трёх
+  остальных практик. Заодно поправлен фактически неверный текст «5 минут ·
+  6 шагов» на интро «Первого шага» (у него 5). `ProcrastinationFlow.jsx` и
+  `Ascezas.jsx`/`Rituals.jsx` не затронуты. Подробности, pre-mortem и
+  проверка — `TASKS.md`.
+
 ## 26.08.2026 — MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001: единый intro/completion
 
 - Реализовано локально (незакоммичено): `FirstStepFlow.jsx`,

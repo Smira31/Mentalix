@@ -38,6 +38,15 @@ const RELEASE_PHRASES = [
 
 const RUN_SECONDS = 5 * 60
 
+const STEP_PROGRESS = {
+  dump: 1,
+  pick: 2,
+  release: 3,
+  plan: 4,
+  run: 5,
+  outcome: 6,
+}
+
 const OUTCOME_OPTIONS = [
   { key: 'started', label: 'Начал(а)' },
   { key: 'not_started', label: 'Не начал(а)' },
@@ -78,6 +87,26 @@ function StageHeading({ children }) {
     <div className="narrow-focus-stage__anchor">
       <Eyebrow />
       <h2 className="narrow-focus-stage__title font-display text-cream">{children}</h2>
+    </div>
+  )
+}
+
+function Progress({ step }) {
+  const current = STEP_PROGRESS[step]
+
+  if (!current) return null
+
+  return (
+    <div className="narrow-focus-progress" aria-label={`Шаг ${current} из 6`}>
+      <div className="narrow-focus-progress__rail" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, index) => (
+          <span
+            key={index}
+            className={index < current ? 'narrow-focus-progress__segment--active' : ''}
+          />
+        ))}
+      </div>
+      <span className="narrow-focus-progress__label">{current} из 6</span>
     </div>
   )
 }
@@ -240,6 +269,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
         {step === 'dump' && (
           <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
+            <Progress step={step} />
             <StageHeading>Выпиши всё, что крутится в голове</StageHeading>
 
             <JournalTextarea
@@ -261,6 +291,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
         {step === 'pick' && (
           <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
+            <Progress step={step} />
             <StageHeading>Что из этого важнее всего сейчас?</StageHeading>
 
             <p className="text-[13px] text-muted mt-2 mb-4 leading-relaxed">Назови только одно.</p>
@@ -284,6 +315,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
         {step === 'release' && (
           <div className="narrow-focus-stage animate-fade-in">
+            <Progress step={step} />
             <StageHeading>{releasePhrase}</StageHeading>
 
             <button
@@ -298,6 +330,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
         {step === 'plan' && (
           <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
+            <Progress step={step} />
             <StageHeading>Что можно сделать по этому одному прямо сейчас?</StageHeading>
 
             <JournalTextarea
@@ -319,6 +352,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
         {step === 'run' && (
           <div className="narrow-focus-stage animate-fade-in text-center">
+            <Progress step={step} />
             <StageHeading>Только это одно</StageHeading>
 
             <div className="font-display text-[64px] text-cream mt-8 tabular-nums">
@@ -337,6 +371,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
         {step === 'outcome' && (
           <div className="narrow-focus-stage animate-fade-in">
+            <Progress step={step} />
             <StageHeading>Как прошло?</StageHeading>
 
             <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />
