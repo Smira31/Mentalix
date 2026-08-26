@@ -3797,3 +3797,17 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** возрастная граница, payment provider, приватный backend-контракт, юридический режим контента и публичный-release threshold остаются отдельными safety/backend/commercial gates.
 - **Критерии готовности:** PRODUCT.md содержит baseline и ссылки; TASK_INDEX.md отражает готовые продуктовые направления и P0-рекомендацию; последующие реализации не расширяют scope без нового dated decision record.
 - **Источник референса:** официальные материалы Stoic — `https://www.getstoic.com/`, `https://www.getstoic.com/features` и Daily Journaling Flow в Help Center.
+
+
+## MXL-001 — Stoic-inspired AI core flow
+
+- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-001-ai-core-flow`.
+- **Размер:** ML
+- **Тип:** product/UX
+- **Автономность:** manual-gate; backend/API не меняется.
+- **Цель:** сделать роль AI-потока видимой и последовательной: выбор намерения → действие → анализ ответа → новый шаг.
+- **Scope:** добавить компактный индикатор четырёх фаз на экране выбора персоны и в Conversation; активную фазу вычислять из уже существующей локальной истории сообщений; сохранить текущий выбор персоны, отдельную историю, текстовый и голосовой ввод, journal formatting и существующий API.
+- **Не входит:** новые backend endpoints, изменение AI prompt/persona tone, новый формат хранения, автоматическое извлечение «нового шага» из ответа, новые вкладки или отдельный экран.
+- **Критерии готовности:** на picker виден этап «идея»; до первого сообщения Conversation показывает «идея»; после user message — «действие»; после assistant reply — «анализ»; четыре подписи доступны через aria-label; существующий `api.mentalix.send(user.id, text, persona)` не меняется.
+- **Проверки:** unit regression contract, lint, build, docs:check, UX smoke на `390×844` и `320×568`, затем ручной Telegram/iPhone gate.
+- **Rollback:** удалить `AiFlowIndicator` и его два вызова; API, сообщения и backend останутся прежними.

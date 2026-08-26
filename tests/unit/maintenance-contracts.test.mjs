@@ -157,6 +157,33 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
+test('MXL-001 публикует Stoic-inspired AI flow без backend изменений', () => {
+  const indicator = readFileSync(
+    new URL('../../src/screens/mentalix/AiFlowIndicator.jsx', import.meta.url),
+    'utf8'
+  )
+  const picker = readFileSync(
+    new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
+    'utf8'
+  )
+  const conversation = readFileSync(
+    new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
+    'utf8'
+  )
+  const container = readFileSync(
+    new URL('../../src/screens/Mentalix.jsx', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(indicator, /idea.*action.*analysis.*next/s)
+  assert.match(indicator, /Цикл разговора: идея, действие, анализ, новый шаг/)
+  assert.match(picker, /<AiFlowIndicator active="idea" \/>/)
+  assert.match(conversation, /const flowPhase/)
+  assert.match(conversation, /<AiFlowIndicator active=\{flowPhase\} \/>/)
+  assert.match(container, /api\.mentalix\.send\(user\.id, text, persona\)/)
+  assert.doesNotMatch(container, /api\.mentalix\.send\([^\n]*flow/)
+})
+
 test('MXL-006 публикует единый AI typography baseline без backend изменений', () => {
   const tokens = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
   const conversation = readFileSync(
