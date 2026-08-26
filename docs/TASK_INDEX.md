@@ -21,7 +21,7 @@
 | `MXL-010`                    |       L | release          | backlog    | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные        |
 | `MXL-011`                    |       L | release          | verified   | completed                      | Закрыта после Telegram/iPhone release gate владельца           |
 | `MXL-012`                    |       L | release          | backlog    | manual-gate                     | Провести Android gate                                            |
-| `MXL-014`                    |       M | product/content/UX | in progress | manual-gate                  | Text meditation flow из 4 сцен готовится; аудио и backend persistence не входят |
+| `MXL-014`                    |       M | product/content/UX | verified   | completed                      | Закрыта через PR #217; 4-сценная text meditation опубликована |
 | `MXL-015`                    |       M | content/product  | verified   | completed                      | Закрыта через PR #213; curated-каталог из 7 тем зафиксирован |
 | `MXL-016`                    |       M | content/product/UX | verified   | completed                      | Закрыта через PR #215; curated fallback и reflective metadata опубликованы |
 | `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |

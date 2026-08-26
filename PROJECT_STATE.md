@@ -660,3 +660,7 @@ Production, backend и Telegram-бот не затрагиваются.
 ## 26.08.2026 — MXL-016 verified
 
 `main` синхронизирован с merge commit `2f63692` после PR #215. MXL-016 закрыта: curated daily-thought fallback и reflective metadata опубликованы, 20/20 unit-тестов, docs:check, lint, build, UX smoke и Vercel Preview прошли; ручной Telegram/iPhone gate подтверждён владельцем. Backend `/quotes` контракт не менялся.
+
+## 26.08.2026 — MXL-014 verified
+
+`main` синхронизирован с merge commit `182a93a` после PR #217. MXL-014 закрыта: MeditationFlow доступен из Practices и работает в четырёх сценах без backend/API изменений. 21/21 unit-тестов, docs:check, lint, build, UX smoke и Vercel Preview прошли; ручной Telegram/iPhone gate подтверждён владельцем.
