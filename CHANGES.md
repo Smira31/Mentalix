@@ -3144,3 +3144,7 @@ Onest — и, в отличие от Poppins/Figtree/Circular, у него по�
 ## 26.08.2026 — MXL-PRODUCT-DECISION-STOIC-001
 
 Зафиксирован рабочий продуктовый baseline: ежедневный цикл Mentalix — **Идея → Действие → Анализ → Новый шаг**. Рекомендации по Today, AI, Journal, Journey, темам недели, «Мысли дня», медитациям, insights, пользовательскому исследованию и оплате синхронизированы в `PRODUCT.md` и `docs/TASK_INDEX.md`; открытыми намеренно оставлены только safety, backend, юридические и коммерческие gates.
+
+## 26.08.2026 — MXL-001: Stoic-inspired AI flow закрыт
+
+PR #211 смёржен в `main` (merge commit `3cd9514`), feature-ветка удалена. В AI-раздел добавлен компактный индикатор цикла **идея → действие → анализ → новый шаг**: он показан на выборе персоны и в Conversation, где активная фаза определяется по существующей локальной истории сообщений. Backend/API, prompts, persona tone, storage, voice flow и journal formatting не менялись. Владелец подтвердил ручной Telegram/iPhone gate.

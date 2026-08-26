@@ -648,3 +648,7 @@ Production, backend и Telegram-бот не затрагиваются.
 ## 26.08.2026 — Stoic-inspired product baseline
 
 В `PRODUCT.md`, `docs/TASK_INDEX.md` и `TASKS.md` зафиксирован рабочий продуктовый baseline `MXL-PRODUCT-DECISION-STOIC-001`: Mentalix следует собственному циклу **Идея → Действие → Анализ → Новый шаг**, используя Stoic только как концептуальный референс короткого ежедневного ритуала. MXL-001, MXL-009, MXL-014, MXL-015, MXL-016 и MXL-019 получили однозначные рекомендации для планирования; MXL-020 отложена до подтверждения ценности. Возраст, backend/API, юридический режим контента и payment provider остаются отдельными gates.
+
+## 26.08.2026 — MXL-001 verified
+
+`main` синхронизирован с merge commit `3cd9514` после PR #211. MXL-001 закрыта: Stoic-inspired AI-flow indicator опубликован, GitHub CI/Vercel Preview зелёные, 18/18 unit-тестов, lint, build, docs:check и UX smoke прошли, ручной Telegram/iPhone gate подтверждён владельцем. Рабочее дерево перед documentation handoff содержит только ожидающие изменения статуса/истории.
