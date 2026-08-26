@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
+import OneFinishArt from '../components/practice-art/OneFinishArt'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -51,10 +53,25 @@ const OUTCOME_OPTIONS = [
 ]
 
 const REFLECTION_OPTIONS = [
-  { key: 'easier', label: 'Да' },
-  { key: 'same', label: 'Не особо' },
-  { key: 'harder', label: 'Нет' },
+  { key: 'harder', label: 'Нет', Icon: ThumbsDown },
+  { key: 'same', label: 'Немного', Icon: Hand },
+  { key: 'easier', label: 'Да', Icon: ThumbsUp },
 ]
+
+const COMPLETION_COPY = {
+  started: {
+    title: 'Кусок завершён',
+    description: 'Ты не пытался(ась) закрыть всё — и именно поэтому получилось.',
+  },
+  not_started: {
+    title: 'Ты заметил(а), что мешает закончить',
+    description: 'Понять, что мешает, — уже честнее, чем снова отложить.',
+  },
+  stopped_for_safety: {
+    title: 'Ты выбрал(а) безопасность',
+    description: 'Остановиться вовремя — тоже бережный шаг.',
+  },
+}
 
 function Eyebrow() {
   return (
@@ -93,10 +110,11 @@ function OptionList({ options, onPick }) {
 export default function FinishFlow({ userId, onClose }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
-  const [step, setStep] = useState('project')
+  const [step, setStep] = useState('intro')
   const [project, setProject] = useState('')
   const [finish, setFinish] = useState('')
   const [outcome, setOutcome] = useState(null)
+  const [reflection, setReflection] = useState(null)
 
   const [reframePhrase] = useState(
     () => REFRAME_PHRASES[Math.floor(Math.random() * REFRAME_PHRASES.length)]
@@ -136,6 +154,11 @@ export default function FinishFlow({ userId, onClose }) {
     setStep('outcome')
   }, [secondsLeft, endsAt])
 
+  function startPractice() {
+    platform.haptic('light')
+    setStep('project')
+  }
+
   function goToState() {
     if (!project.trim()) return
 
@@ -172,10 +195,10 @@ export default function FinishFlow({ userId, onClose }) {
   function chooseOutcome(key) {
     platform.haptic('medium')
     setOutcome(key)
-    setStep('reflect')
+    setStep('complete')
   }
 
-  function finishSession(reflection) {
+  function finishSession() {
     platform.haptic('light')
     saveOneFinishEntry(userId, { outcome, reflection })
     onClose()
@@ -191,6 +214,35 @@ export default function FinishFlow({ userId, onClose }) {
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+        {step === 'intro' && (
+          <div className="one-finish-stage one-finish-stage--intro animate-fade-in">
+            <div className="one-finish-stage__center text-center">
+              <Eyebrow />
+              <h2 className="font-display text-[28px] text-cream leading-[1.1] tracking-[-0.03em]">
+                Доведи один маленький кусок до конца
+              </h2>
+              <p className="mx-auto mt-4 max-w-[310px] text-[14px] leading-relaxed text-muted">
+                Пять минут, чтобы завершить не всё, а что-то одно — и получить то самое чувство
+                завершённости.
+              </p>
+              <p className="mt-4 text-[12px] font-semibold text-faint">
+                5 минут&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
+              </p>
+              <div className="one-finish-art" aria-hidden="true">
+                <OneFinishArt />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={startPractice}
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+            >
+              Начать
+            </button>
+          </div>
+        )}
+
         {step === 'project' && (
           <div className="one-finish-stage one-finish-stage--writing animate-fade-in">
             <StageHeading>Что зависло на середине?</StageHeading>
@@ -281,21 +333,56 @@ export default function FinishFlow({ userId, onClose }) {
           </div>
         )}
 
-        {step === 'reflect' && (
-          <div className="one-finish-stage animate-fade-in">
-            <StageHeading>Стало ли легче?</StageHeading>
+        {step === 'complete' && (
+          <div className="one-finish-stage one-finish-stage--complete animate-fade-in">
+            <div className="one-finish-stage__center text-center">
+              <div className="one-finish-art" aria-hidden="true">
+                <OneFinishArt />
+              </div>
+              <h2 className="font-display text-[26px] text-cream leading-tight">
+                {COMPLETION_COPY[outcome]?.title}
+              </h2>
+              <p className="mx-auto mt-3 max-w-[310px] text-[14px] text-muted leading-relaxed">
+                {COMPLETION_COPY[outcome]?.description}
+              </p>
 
-            <OptionList options={REFLECTION_OPTIONS} onPick={finishSession} />
+              <p className="mt-7 text-[13px] font-semibold text-muted">Помогло сейчас?</p>
+              <div className="one-finish-feedback">
+                {REFLECTION_OPTIONS.map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={reflection === key}
+                    onClick={() => {
+                      platform.haptic('light')
+                      setReflection(key)
+                    }}
+                    className="one-finish-feedback__option"
+                  >
+                    <Icon size={23} strokeWidth={1.8} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
 
-            <div className="mt-5">
-              <button
-                type="button"
-                onClick={() => finishSession(null)}
-                className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
-              >
-                Пропустить
-              </button>
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={finishSession}
+                  className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+                >
+                  Пропустить
+                </button>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={finishSession}
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+            >
+              Завершить
+            </button>
           </div>
         )}
       </div>

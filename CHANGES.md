@@ -1,5 +1,15 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 26.08.2026 — MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001: единый intro/completion
+
+- Реализовано локально (незакоммичено): `FirstStepFlow.jsx`,
+  `FinishFlow.jsx`, `NarrowFocusFlow.jsx` получили вступительную карточку
+  (польза/длительность/шаги + существующая иллюстрация практики) и
+  completion-экран с оценкой Нет/Немного/Да по образцу «Без вины» —
+  структура унифицирована, содержание и иллюстрации у каждой практики свои.
+  `ProcrastinationFlow.jsx`/`SceneLayout.jsx` не менялись. Подробности,
+  pre-mortem и проверка — `TASKS.md`.
+
 ## 26.08.2026 — MXL-STAGE-HEADING-UNIFY-001: закрытие
 
 - PR #189 смёржен в `main` через `--rebase` (`b9a68125`) — разовое

@@ -503,8 +503,23 @@ test('локальный UX smoke по основному маршруту', asy
     await captureScreen({
       page,
       viewport,
+      screen: 'First Step intro',
+      slug: '06-first-step-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(
+          page.getByRole('heading', { name: 'Сделай маленький шаг, когда трудно начать' })
+        ).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать' }).click()
+    await captureScreen({
+      page,
+      viewport,
       screen: 'First Step',
-      slug: '06-first-step',
+      slug: '06a-first-step',
       runtimeErrors,
       results,
       check: async () => {
@@ -537,9 +552,41 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Начать пять минут' }))
       },
     })
+    await page.getByRole('button', { name: 'Начать пять минут' }).click()
+    await page.getByRole('button', { name: 'Остановить' }).click()
+    await expect(page.getByRole('heading', { name: 'Как прошло?' })).toBeVisible()
+    await page.getByRole('button', { name: 'Начал(а)', exact: true }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'First Step completion',
+      slug: '06c-first-step-completion',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Ты начал(а)' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Немного' }))
+        await assertClickable(page.getByRole('button', { name: 'Завершить' }))
+      },
+    })
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Одно из всех' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Narrow focus intro',
+      slug: '06f0-narrow-focus-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(
+          page.getByRole('heading', { name: 'Сузь всё до одного дела' })
+        ).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать' }).click()
     let narrowFocusAnchorTop
     await captureScreen({
       page,
@@ -593,9 +640,41 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Начать пять минут' }))
       },
     })
+    await page.getByRole('button', { name: 'Начать пять минут' }).click()
+    await page.getByRole('button', { name: 'Остановить' }).click()
+    await expect(page.getByRole('heading', { name: 'Как прошло?' })).toBeVisible()
+    await page.getByRole('button', { name: 'Начал(а)', exact: true }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Narrow focus completion',
+      slug: '06f1-narrow-focus-completion',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Ты сузил(а) фокус' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Немного' }))
+        await assertClickable(page.getByRole('button', { name: 'Завершить' }))
+      },
+    })
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Один финиш' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'One finish intro',
+      slug: '06f2-one-finish-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(
+          page.getByRole('heading', { name: 'Доведи один маленький кусок до конца' })
+        ).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать' }).click()
     let oneFinishAnchorTop
     await captureScreen({
       page,
@@ -633,6 +712,23 @@ test('локальный UX smoke по основному маршруту', asy
         expect(anchorBox).not.toBeNull()
         expect(Math.abs(anchorBox.y - oneFinishAnchorTop)).toBeLessThanOrEqual(1)
         await assertClickable(page.getByRole('button', { name: 'Начать пять минут' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать пять минут' }).click()
+    await page.getByRole('button', { name: 'Остановить' }).click()
+    await expect(page.getByRole('heading', { name: 'Как прошло?' })).toBeVisible()
+    await page.getByRole('button', { name: 'Начал(а)', exact: true }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'One finish completion',
+      slug: '06g1-one-finish-completion',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Кусок завершён' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Немного' }))
+        await assertClickable(page.getByRole('button', { name: 'Завершить' }))
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
