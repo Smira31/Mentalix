@@ -3842,7 +3842,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-014 — Первая текстовая медитация
 
-- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-014-text-meditation`.
+- **Статус:** verified/completed 26.08.2026; PR #217 смёржен в `main`, Telegram/iPhone gate пройден владельцем.
 - **Размер:** M
 - **Тип:** product/content/UX
 - **Автономность:** manual-gate; backend/API не меняется.
