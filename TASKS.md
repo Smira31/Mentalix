@@ -3838,3 +3838,17 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** непроверенные цитаты известных авторов, AI-генерация цитат, backend admin publication, новые endpoints, миграции и payment.
 - **Критерии готовности:** 7 уникальных мыслей; у каждой есть attribution, prompt, action и nextStep; Today показывает fallback без personal quote; QuoteView сохраняет swipe/share/history; unit contract, lint, build, docs:check и UX smoke зелёные.
 - **Следующий gate:** ручная Telegram/iPhone проверка Today → «Мысль дня» → вопрос/шаг/дальше и regression пользовательской фразы.
+
+
+## MXL-014 — Первая текстовая медитация
+
+- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-014-text-meditation`.
+- **Размер:** M
+- **Тип:** product/content/UX
+- **Автономность:** manual-gate; backend/API не меняется.
+- **Цель:** дать пользователю одну короткую письменную практику на 5–10 минут в Stoic-inspired формате: заметить ситуацию, отделить свою зону влияния, выбрать один следующий шаг и завершить рефлексию.
+- **Реализованный scope:** добавлен `MeditationFlow` в fullscreen practice shell. В потоке четыре сцены: «Что сейчас происходит?», «Что из этого зависит от тебя?», «Какой один шаг ты выбираешь?» и completion screen. Есть progress rail, безопасный stop-copy и локальный component state без сохранения чувствительного текста.
+- **Навигация:** «Медитация» стала доступной карточкой в Practices; «Нейротренажёр», «Дыхание» и «Фокус» остаются в режиме Скоро.
+- **Не входит:** аудио, таймер, backend persistence, диагнозы, обещания терапевтического результата, streak и pressure mechanics.
+- **Критерии готовности:** practice открывается из Practices, все четыре шага работают на 390×844 и 320×568, Back/Telegram fullscreen не ломаются, unit contract, docs:check, lint, build, UX smoke и diff-check зелёные.
+- **Следующий gate:** ручная Telegram/iPhone проверка intro, переходов, клавиатуры, safe area, узкого экрана и выхода без сохранения текста.
