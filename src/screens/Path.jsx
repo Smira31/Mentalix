@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import { Target, ArrowUp, ArrowLeft, Flame, TrendingUp, Trash2 } from 'lucide-react'
+import { Target, ArrowUp, ArrowLeft, ArrowRight, Flame, TrendingUp, Trash2 } from 'lucide-react'
 import JourneyLineArt from '../components/JourneyLineArt'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
@@ -265,7 +265,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
   )
 }
 
-export default function Path({ user }) {
+export default function Path({ user, onContinueToday }) {
   const [goals, setGoals] = useState([])
   const [showCreate, setShowCreate] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -326,7 +326,24 @@ export default function Path({ user }) {
 
   return (
     <div className="w-full max-w-md px-5 pb-24">
-      <h2 className="font-display text-[16px] mb-4 text-cream">Мой путь</h2>
+      <div className="mb-5 rounded-[28px] bg-emerald-deep border border-cream/10 px-5 py-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-display text-[16px] text-cream">Мой путь</h2>
+            <p className="text-sm text-muted mt-1 leading-relaxed">
+              Регулярность складывается из возвращений. Следующий шаг уже ждёт тебя сегодня.
+            </p>
+          </div>
+          <ArrowRight size={20} className="text-gold mt-1 shrink-0" strokeWidth={1.8} />
+        </div>
+        <button
+          type="button"
+          onClick={onContinueToday}
+          className="w-full mt-4 py-3 rounded-2xl bg-gold text-emerald-deep text-sm font-semibold active:scale-[0.98] transition-transform"
+        >
+          Продолжить сегодня
+        </button>
+      </div>
 
       {goals.length === 0 ? (
         <EmptyGoals onCreate={() => setShowCreate(true)} />

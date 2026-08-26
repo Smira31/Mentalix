@@ -746,3 +746,13 @@ test('MXL-JOURNAL-UI-247 выравнивает Journal слева и не по�
   assert.doesNotMatch(themeScreen, />\s*Тема недели\s*</)
   assert.doesNotMatch(themeScreen, /Тема недели · День/)
 })
+
+test('MXL-021 возвращает из Journey в Today через CTA «Продолжить сегодня»', () => {
+  const path = readFileSync(new URL('../../src/screens/Path.jsx', import.meta.url), 'utf8')
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+
+  assert.match(path, /function Path\(\{ user, onContinueToday \}\)/)
+  assert.match(path, /Продолжить сегодня/)
+  assert.match(path, /onClick=\{onContinueToday\}/)
+  assert.match(today, /<Path user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
+})
