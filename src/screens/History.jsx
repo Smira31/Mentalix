@@ -3,10 +3,14 @@ import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
+import { buildBadges } from '../lib/badges'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
 // Каждый блок показывается, только если в нём что-то есть.
+// Вехи и записи по темам — отдельные недатированные блоки ниже ленты:
+// у бейджей и тем нет даты в контракте бэкенда, честного слияния в общую
+// хронологию по датам без этого не сделать (MXL-HISTORY-UNIFIED-FEED-001).
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
@@ -23,6 +27,8 @@ function dayTitle(iso) {
 
 export default function History({ user }) {
   const [days, setDays] = useState(null)
+  const [badges, setBadges] = useState(null)
+  const [themeEntries, setThemeEntries] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -46,20 +52,104 @@ export default function History({ user }) {
     })
   }, [user])
 
+  useEffect(() => {
+    if (!user) return
+    Promise.all([
+      api.profile.get(user.id).catch(() => null),
+      api.rituals.list(user.id).catch(() => []),
+      api.ascezas.list(user.id).catch(() => []),
+    ]).then(([stats, rituals, ascezas]) => {
+      setBadges(buildBadges({ stats, rituals, ascezas }).filter(b => b.done))
+    })
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    api.themes
+      .list(user.id)
+      .catch(() => [])
+      .then(list => {
+        const reflected = (list || []).filter(t => t.reflected_days > 0)
+        if (reflected.length === 0) {
+          setThemeEntries([])
+          return
+        }
+        Promise.all(reflected.map(t => api.themes.get(t.id, user.id).catch(() => null))).then(
+          themes => {
+            const entries = []
+            for (const theme of themes) {
+              if (!theme) continue
+              for (const d of theme.days || []) {
+                if (d.reflection) {
+                  entries.push({
+                    themeId: theme.id,
+                    themeTitle: theme.title,
+                    day: d.day,
+                    text: d.reflection,
+                  })
+                }
+              }
+            }
+            setThemeEntries(entries)
+          }
+        )
+      })
+  }, [user])
+
   if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
+
+  const milestonesBlock = badges && badges.length > 0 && (
+    <div className="mt-8">
+      <div className="text-[13px] text-muted font-semibold mb-2 px-1">Вехи пути</div>
+      <div className="rounded-3xl bg-emerald p-5 grid grid-cols-3 gap-2">
+        {badges.map(b => (
+          <div
+            key={b.id}
+            className="rounded-2xl p-3 flex flex-col items-center text-center bg-gold/10 border border-gold/25"
+          >
+            <MotifArt name={b.motif} size={56} className="mb-2" />
+            <span className="text-[11px] font-bold leading-tight text-cream">{b.title}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  const themeEntriesBlock = themeEntries && themeEntries.length > 0 && (
+    <div className="mt-8">
+      <div className="text-[13px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
+      <div className="space-y-3">
+        {themeEntries.map(e => (
+          <div key={`${e.themeId}-${e.day}`} className="rounded-3xl bg-emerald p-5">
+            <div className="text-[12px] font-bold text-gold mb-1">
+              {e.themeTitle} · день {e.day}
+            </div>
+            <MarkdownText
+              content={e.text}
+              className="space-y-2 text-[14px] text-muted leading-snug"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   if (days.length === 0) {
     return (
-      <EmptyState
-        glyph={<MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />}
-        className="px-6 py-10 mt-2"
-      >
-        <h3 className="font-display text-[18px] text-cream mb-2">Пока пусто</h3>
-        <p className="text-[14px] text-muted leading-snug">
-          Пройди чек-ин или закрой ритуал —
-          <br />и здесь появится первая запись пути.
-        </p>
-      </EmptyState>
+      <>
+        <EmptyState
+          glyph={<MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />}
+          className="px-6 py-10 mt-2"
+        >
+          <h3 className="font-display text-[18px] text-cream mb-2">Пока пусто</h3>
+          <p className="text-[14px] text-muted leading-snug">
+            Пройди чек-ин или закрой ритуал —
+            <br />и здесь появится первая запись пути.
+          </p>
+        </EmptyState>
+        {milestonesBlock}
+        {themeEntriesBlock}
+      </>
     )
   }
 
@@ -143,6 +233,9 @@ export default function History({ user }) {
           </div>
         )
       })}
+
+      {milestonesBlock}
+      {themeEntriesBlock}
     </div>
   )
 }
