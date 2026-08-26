@@ -19,7 +19,7 @@
 | `MXL-021`                    |       M | product/UX       | verified   | completed                      | Закрыта через PR #203; Telegram/iPhone gate пройден владельцем |
 | `MXL-009`                    |      ML | product/data     | backlog    | needs-owner + backend-dependent | Утвердить полезные закономерности и источник данных              |
 | `MXL-010`                    |       L | release          | backlog    | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные        |
-| `MXL-011`                    |       L | release          | backlog    | manual-gate                     | Провести финальный iPhone/Telegram gate                          |
+| `MXL-011`                    |       L | release          | verified   | completed                      | Закрыта после Telegram/iPhone release gate владельца           |
 | `MXL-012`                    |       L | release          | backlog    | manual-gate                     | Провести Android gate                                            |
 | `MXL-014`                    |       ? | product/backend  | backlog    | needs-owner + backend-dependent | Определить сценарий и backend для медитаций                      |
 | `MXL-015`                    |       ? | content/product  | backlog    | needs-owner                     | Утвердить таксономию тем недели                                  |

@@ -15,10 +15,10 @@
 
 - **Репозиторий:** `main` чистый и синхронизирован с `origin/main`; текущий HEAD — `0ae6aa0`.
 - **Последние завершённые изменения:** единая лента History (`PR #194`), именованные уровни серии (`PR #196`), Stoic-inspired цикл Today (`PR #197`), Stoic-like Journey (`PR #200`) и синхронизация статусов задач (`PR #202`).
-- **Проверки:** последний GitHub Actions run для `main` завершён успешно; `docs:check` подтверждает 94 Markdown-файла, 19 canonical task ID и 0 ошибок.
+- **Проверки:** `npm run ux:check` прошёл на viewport 390×844 и 320×568; последний GitHub Actions run для `main` успешен; `docs:check` подтверждает 94 Markdown-файла, 19 canonical task ID и 0 ошибок.
 - **Production:** 26.08.2026 Vercel `/api/health` вернул `200 OK` в 3/3 попытках (0.30–0.41 с), Render `/api/health` вернул `200 OK` в 3/3 попытках (1.95–2.13 с). Точный commit Vercel Production отдельно не подтверждён.
-- **Backlog:** `MXL-007` и `MXL-008` завершены; `MXL-021` завершена через PR #203; Telegram/iPhone gate пройден владельцем; остальные активные записи остаются в backlog.
-- **Открытые PR:** #152 и четыре draft PR остаются без merge; MXL-021 полностью закрыта через PR #203 и документационный PR #204.
+- **Backlog:** `MXL-007`, `MXL-008`, `MXL-021` и `MXL-011` завершены; остальные активные записи остаются в backlog. Последний финальный Telegram/iPhone release gate пройден владельцем.
+- **Открытые PR:** #152 и четыре draft PR остаются без merge; они не входят в текущий release scope из-за устаревшей базы, владельческого решения или backend/manual gate.
 
 ## 1. Документационный operating layer
 
