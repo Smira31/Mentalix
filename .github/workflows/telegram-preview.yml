@@ -9,6 +9,12 @@ on:
     branches-ignore:
       - main
   workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or commit to preview'
+        required: false
+        default: 'main'
+        type: string
 
 permissions:
   contents: read
@@ -20,7 +26,7 @@ concurrency:
 jobs:
   preview:
     name: Deploy preview and notify Telegram
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
@@ -31,8 +37,10 @@ jobs:
       TELEGRAM_PREVIEW_CHAT_ID: ${{ secrets.TELEGRAM_PREVIEW_CHAT_ID }}
 
     steps:
-      - name: Checkout PR
+      - name: Checkout preview ref
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.event.pull_request.head.sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -78,11 +86,11 @@ jobs:
       - name: Notify Telegram
         env:
           PREVIEW_URL: ${{ steps.deploy.outputs.url }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          BRANCH: ${{ github.event.pull_request.head.ref }}
-          SHORT_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
+          PR_TITLE: ${{ github.event.pull_request.title || 'Manual preview' }}
+          PR_URL: ${{ github.event.pull_request.html_url || format('https://github.com/{0}/pulls', github.repository) }}
+          BRANCH: ${{ github.event.pull_request.head.ref || inputs.ref || github.ref_name }}
+          SHORT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         shell: bash
         run: |
           set -euo pipefail
@@ -105,7 +113,7 @@ jobs:
         if: always()
         env:
           PREVIEW_URL: ${{ steps.deploy.outputs.url }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_URL: ${{ github.event.pull_request.html_url || format('https://github.com/{0}/pulls', github.repository) }}
         run: |
           {
             echo "### Telegram Preview"
