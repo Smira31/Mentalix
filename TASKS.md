@@ -3961,3 +3961,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 4. Зафиксировать `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
 5. Реализовать `MXL-JOURNAL-PERSONALIZE-001` и `MXL-JOURNAL-GUIDED-001`.
 6. Только после evidence решать tags, search, favorites, memories, reminders и payment.
+
+## MXL-JOURNAL-001 — Stoic-inspired Journal Home
+
+Статус: functional prototype реализован; PR #224 ожидает ручной Telegram/iPhone gate. Journal Home встроен во вкладку Mentor без новой вкладки и ведёт через четыре фазы **Идея → Действие → Анализ → Новый шаг**. Используются существующие `JournalTextarea`, AI handoff и локальный prototype draft. Новая backend schema, cloud persistence, теги, custom templates, audio, Memories, community, payment и обязательный streak в scope не входят.

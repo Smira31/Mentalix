@@ -176,6 +176,21 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
+test('MXL-JOURNAL-001 публикует полноценный четыре-фазный Journal Home', () => {
+  const journal = readFileSync(new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url), 'utf8')
+  const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
+
+  assert.match(journal, /Идея/)
+  assert.match(journal, /Действие/)
+  assert.match(journal, /Анализ/)
+  assert.match(journal, /Новый шаг/)
+  assert.match(journal, /JournalTextarea/)
+  assert.match(journal, /localStorage/)
+  assert.match(journal, /Пойти глубже с наставником/)
+  assert.match(mentalix, /JournalHome/)
+  assert.match(mentalix, /journalOpen/)
+})
+
 test('MXL-009 ограничивает insights описательными наблюдениями', () => {
   const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
   const safety = readFileSync(new URL('../../src/lib/descriptiveInsights.js', import.meta.url), 'utf8')
