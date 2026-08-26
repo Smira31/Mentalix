@@ -540,6 +540,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Одно из всех' }).click()
+    let narrowFocusAnchorTop
     await captureScreen({
       page,
       viewport,
@@ -552,6 +553,9 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(editor).toBeVisible()
         await editor.fill('Ответить на письма\nПодготовить встречу')
         await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        const anchorBox = await page.locator('.narrow-focus-stage__anchor').boundingBox()
+        expect(anchorBox).not.toBeNull()
+        narrowFocusAnchorTop = anchorBox.y
         await assertClickable(page.getByRole('button', { name: 'Дальше' }))
       },
     })
@@ -567,6 +571,9 @@ test('локальный UX smoke по основному маршруту', asy
         const editor = page.getByRole('textbox', { name: 'Одно самое важное дело' })
         await expect(editor).toBeVisible()
         await editor.fill('Подготовить встречу')
+        const anchorBox = await page.locator('.narrow-focus-stage__anchor').boundingBox()
+        expect(anchorBox).not.toBeNull()
+        expect(Math.abs(anchorBox.y - narrowFocusAnchorTop)).toBeLessThanOrEqual(1)
         await assertClickable(page.getByRole('button', { name: 'Дальше' }))
       },
     })
@@ -589,6 +596,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Один финиш' }).click()
+    let oneFinishAnchorTop
     await captureScreen({
       page,
       viewport,
@@ -601,6 +609,9 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(editor).toBeVisible()
         await editor.fill('Обновление портфолио')
         await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        const anchorBox = await page.locator('.one-finish-stage__anchor').boundingBox()
+        expect(anchorBox).not.toBeNull()
+        oneFinishAnchorTop = anchorBox.y
         await assertClickable(page.getByRole('button', { name: 'Дальше' }))
       },
     })
@@ -618,6 +629,9 @@ test('локальный UX smoke по основному маршруту', asy
         const editor = page.getByRole('textbox', { name: 'Маленький кусок для завершения' })
         await expect(editor).toBeVisible()
         await editor.fill('Добавить один завершённый проект')
+        const anchorBox = await page.locator('.one-finish-stage__anchor').boundingBox()
+        expect(anchorBox).not.toBeNull()
+        expect(Math.abs(anchorBox.y - oneFinishAnchorTop)).toBeLessThanOrEqual(1)
         await assertClickable(page.getByRole('button', { name: 'Начать пять минут' }))
       },
     })
