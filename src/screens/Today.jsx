@@ -521,7 +521,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
   const heroCheckinContent = (
     <>
       <div className="text-[13px] text-muted font-semibold mb-2">
-        {todayState === 'reviewPending' ? 'Анализ дня' : 'Состояние'}
+        {todayState === 'reviewPending' ? 'Анализ дня' : 'Идея дня'}
       </div>
 
       <h2 className="font-display text-[28px] text-cream leading-tight">
@@ -531,7 +531,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
       <p className="text-[14px] text-muted mt-2">
         {todayState === 'reviewPending'
           ? 'Уроки и то, чем стоит гордиться'
-          : 'Короткий чек-ин состояния'}
+          : 'Короткая утренняя настройка'}
       </p>
 
       {todayState === 'reviewPending' && (
@@ -562,7 +562,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
         {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
       </button>
 
-      {next && <p className="text-[12px] text-faint mt-5">Дальше: {next.title}</p>}
+      {next && <p className="text-[12px] text-faint mt-5">Следующее действие: {next.title}</p>}
     </>
   )
 
@@ -648,7 +648,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
         />
       ) : (
         <>
-          <div className="text-[13px] text-muted font-semibold mb-2">Самое важное</div>
+          <div className="text-[13px] text-muted font-semibold mb-2">Действие дня</div>
 
           <h2 className="font-display text-[28px] text-cream leading-tight">{next.title}</h2>
 
@@ -671,7 +671,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
 
     allDone: (
       <>
-        <div className="text-[13px] text-muted font-semibold mb-2">Путь продолжается</div>
+        <div className="text-[13px] text-muted font-semibold mb-2">Новый шаг</div>
 
         <h2 className="font-display text-[26px] text-cream leading-tight">
           Сегодня ты выше, чем вчера

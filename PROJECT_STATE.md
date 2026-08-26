@@ -1,11 +1,17 @@
 # Mentalix — Current Project State
 
-Дата последней проверки: **25.08.2026, Europe/Moscow**.
+Дата последней проверки: **26.08.2026, Europe/Moscow**.
 
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся
 в `CHANGES.md`, планы — в `ROADMAP.md`, рабочие детали — в `TASKS.md`.
 
-## 0. Документационный operating layer
+## 0. MXL-007 — текущий продуктовый scope
+
+- Владелец утвердил 26.08.2026 Stoic-inspired модель Today: **mood check-in → утренняя подготовка → действие дня → вечерний анализ → новый шаг**.
+- Реализация ведётся в ветке `feat/mxl-007-stoic-daily-cycle`; текущий scope ограничен labels и поясняющими текстами существующего Today/«Цикла дня».
+- Backend, API, существующие переходы и визуальный язык Mentalix не меняются. Проверка на реальном iPhone/Telegram остаётся обязательной после Preview.
+
+## 1. Документационный operating layer
 
 - **MXL-DOCS-OPERATING-SYSTEM-001** реализуется в ветке
   `docs/documentation-operating-system-001`: добавлен
@@ -16,14 +22,14 @@
   подтвердить GitHub `main` SHA и фактический production deployment SHA, не
   смешивая эти два факта.
 
-## 1. Главная цель текущего этапа
+## 2. Главная цель текущего этапа
 
 - Выпустить качественную первую версию Mentalix.
 - Не расширять scope без необходимости.
 - Сначала устранять release blockers и подтверждать production фактическими
   проверками.
 
-## 2. Production / Infrastructure
+## 3. Production / Infrastructure
 
 ### Frontend
 

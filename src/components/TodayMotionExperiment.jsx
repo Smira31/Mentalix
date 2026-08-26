@@ -2,7 +2,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react'
 
 import './TodayMotionExperiment.css'
 
-const THREAD_LABELS = ['Состояние', 'Ближайший шаг', 'Практики', 'Разбор']
+const THREAD_LABELS = ['Идея', 'Действие', 'Анализ', 'Новый шаг']
 
 const THREAD_POINTS = [
   [22, 28],
@@ -87,13 +87,13 @@ export function DayThreadTrigger({ open, onToggle }) {
       className="mx-day-thread-launcher"
       data-open={open}
       aria-expanded={open}
-      aria-label={open ? 'Свернуть Нить дня' : 'Открыть Нить дня'}
+      aria-label={open ? 'Свернуть цикл дня' : 'Открыть цикл дня'}
       onClick={onToggle}
     >
       <span className="mx-day-thread-launcher__mark" aria-hidden="true">
         <span />
       </span>
-      <span>нить</span>
+      <span>цикл</span>
     </button>
   )
 }
@@ -112,7 +112,7 @@ export function DayThread({ checkinDone, done, open, onOpenChange, total, todayS
     <section
       className="mx-day-thread"
       data-open={open}
-      aria-label="Нить сегодняшнего дня"
+      aria-label="Цикл сегодняшнего дня"
       style={{
         '--mx-thread-progress': progress,
       }}
@@ -125,7 +125,7 @@ export function DayThread({ checkinDone, done, open, onOpenChange, total, todayS
       >
         <span className="mx-day-thread__heading">
           <span>
-            <strong>Нить дня</strong>
+            <strong>Цикл дня</strong>
             <small>{todayState === 'dayClosed' ? 'День завершён' : THREAD_LABELS[current]}</small>
           </span>
 
@@ -136,7 +136,7 @@ export function DayThread({ checkinDone, done, open, onOpenChange, total, todayS
           className="mx-day-thread__path"
           viewBox="0 0 320 40"
           role="img"
-          aria-label={`Путь дня: ${THREAD_LABELS[current]}`}
+          aria-label={`Цикл дня: ${THREAD_LABELS[current]}`}
         >
           <path className="mx-day-thread__path-base" d={THREAD_PATH} pathLength="1" />
           <path
@@ -198,7 +198,7 @@ export function FocusMark() {
 export function NextActionReveal({ next, remainingActionsText, onStart }) {
   return (
     <div className="mx-today-priority mx-today-priority--next">
-      <small>Самое важное</small>
+      <small>Действие дня</small>
       <strong>{next.title}</strong>
       <span>{next.meta}</span>
 
