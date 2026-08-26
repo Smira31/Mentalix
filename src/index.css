@@ -249,6 +249,40 @@ button {
   letter-spacing: -0.02em;
 }
 
+/* AI-экраны: единая шкала, проверяемая на 320px и 390px viewport. */
+.mx-ai-title {
+  font-size: clamp(1.75rem, 7vw, 2.125rem);
+  line-height: 1.15;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+
+.mx-ai-body {
+  font-size: 1rem;
+  line-height: 1.62;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.mx-ai-meta {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mx-ai-caption {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.mx-ai-input {
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
 /* ============================================================
    CTA
    ============================================================ */

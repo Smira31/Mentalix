@@ -49,11 +49,11 @@ export default function JournalStart({
           </div>
 
           <div className="min-w-0">
-            <div className="font-display text-[18px] text-cream leading-none">
+            <div className="mx-ai-title text-cream leading-none">
               {meta.name}
             </div>
 
-            <div className="text-[10px] text-gold mt-1 uppercase tracking-[0.05em]">
+            <div className="mx-ai-meta text-gold mt-1">
               {meta.tagline}
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function JournalStart({
       {/* ── персона спрашивает ── */}
 
       <div className="flex items-center gap-3 mt-1">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-gold whitespace-nowrap">
+        <span className="mx-ai-meta text-gold whitespace-nowrap">
           {meta.asking}
         </span>
 
@@ -105,7 +105,7 @@ export default function JournalStart({
 
       <div className="pt-8">
         <h1
-          className="text-[35px] leading-[1.14] text-cream font-normal tracking-[-0.025em] whitespace-pre-line"
+          className="mx-ai-title text-cream whitespace-pre-line"
           style={{
             fontFamily:
               'Georgia, "Times New Roman", serif',
@@ -116,7 +116,7 @@ export default function JournalStart({
 
         <div className="w-8 h-px bg-gold mt-7 mb-5" />
 
-        <p className="text-[15px] leading-[1.62] text-muted max-w-[300px]">
+        <p className="mx-ai-body text-muted max-w-[300px]">
           {meta.intro}
         </p>
       </div>
@@ -164,7 +164,7 @@ export default function JournalStart({
 
             placeholder="Начни писать..."
 
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[16px] text-cream placeholder:text-faint px-1"
+            className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none text-cream placeholder:text-faint px-1"
           />
 
 
