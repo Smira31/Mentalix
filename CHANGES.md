@@ -5,7 +5,7 @@
 - В Journey добавлены CTA `Начать сегодня` для empty state и `Продолжить сегодня` для пользователя с историей практики.
 - CTA возвращает пользователя в существующий Today через текущий локальный navigation state; backend и API-контракт не менялись.
 - Добавлен regression-контракт MXL-021; локально проходят 13/13 unit-тестов, lint, build, `docs:check` и `git diff --check`.
-- До закрытия остаются PR, GitHub CI/Vercel и ручная Telegram/iPhone-проверка.
+- PR #203 смёржен в  (commit ), GitHub CI/Vercel зелёные, ручная Telegram/iPhone-проверка пройдена владельцем.
 
 
 ## 26.08.2026 — documentation drift synchronization
