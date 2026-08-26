@@ -43,6 +43,18 @@
   padding-top: 0.25rem;
 }
 
+.narrow-focus-stage__center {
+  width: 100%;
+  margin-block: auto;
+  padding-block: 1.5rem;
+}
+
+.narrow-focus-art {
+  width: min(100%, 19rem);
+  height: 9.5rem;
+  margin: 1.25rem auto 0;
+}
+
 @media (max-height: 650px) {
   .narrow-focus-stage__anchor {
     min-height: 7.5rem;
@@ -57,5 +69,14 @@
 
   .narrow-focus-stage__writer {
     padding-top: 0;
+  }
+
+  .narrow-focus-stage__center {
+    padding-block: 0.75rem;
+  }
+
+  .narrow-focus-art {
+    height: 6.25rem;
+    margin-top: 0.5rem;
   }
 }

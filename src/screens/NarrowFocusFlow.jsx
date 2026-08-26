@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
+import NarrowFocusArt from '../components/practice-art/NarrowFocusArt'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -85,7 +86,7 @@ function OptionList({ options, onPick }) {
 export default function NarrowFocusFlow({ userId, onClose }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
-  const [step, setStep] = useState('dump')
+  const [step, setStep] = useState('intro')
   const [dump, setDump] = useState('')
   const [pick, setPick] = useState('')
   const [plan, setPlan] = useState('')
@@ -128,6 +129,11 @@ export default function NarrowFocusFlow({ userId, onClose }) {
     platform.haptic('success')
     setStep('outcome')
   }, [secondsLeft, endsAt])
+
+  function startPractice() {
+    platform.haptic('light')
+    setStep('dump')
+  }
 
   function goToPick() {
     if (!dump.trim()) return
@@ -186,6 +192,35 @@ export default function NarrowFocusFlow({ userId, onClose }) {
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+        {step === 'intro' && (
+          <div className="narrow-focus-stage narrow-focus-stage--intro animate-fade-in">
+            <div className="narrow-focus-stage__center text-center">
+              <Eyebrow />
+              <h2 className="font-display text-[28px] text-cream leading-[1.1] tracking-[-0.03em]">
+                Сузь всё до одного дела
+              </h2>
+              <p className="mx-auto mt-4 max-w-[310px] text-[14px] leading-relaxed text-muted">
+                Пять минут, чтобы выгрузить всё из головы и сделать шаг только по одному, самому
+                важному.
+              </p>
+              <p className="mt-4 text-[12px] font-semibold text-faint">
+                5 минут&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
+              </p>
+              <div className="narrow-focus-art" aria-hidden="true">
+                <NarrowFocusArt />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={startPractice}
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+            >
+              Начать
+            </button>
+          </div>
+        )}
+
         {step === 'dump' && (
           <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
             <StageHeading>Выпиши всё, что крутится в голове</StageHeading>
