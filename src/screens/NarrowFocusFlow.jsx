@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
@@ -44,10 +45,25 @@ const OUTCOME_OPTIONS = [
 ]
 
 const REFLECTION_OPTIONS = [
-  { key: 'easier', label: 'Да' },
-  { key: 'same', label: 'Не особо' },
-  { key: 'harder', label: 'Нет' },
+  { key: 'harder', label: 'Нет', Icon: ThumbsDown },
+  { key: 'same', label: 'Немного', Icon: Hand },
+  { key: 'easier', label: 'Да', Icon: ThumbsUp },
 ]
+
+const COMPLETION_COPY = {
+  started: {
+    title: 'Ты сузил(а) фокус',
+    description: 'Не всё сразу, а что-то одно — этого достаточно.',
+  },
+  not_started: {
+    title: 'Ты заметил(а), что отвлекает',
+    description: 'Это уже честнее, чем продолжать держать всё в голове.',
+  },
+  stopped_for_safety: {
+    title: 'Ты выбрал(а) безопасность',
+    description: 'Остановиться вовремя — тоже бережный шаг.',
+  },
+}
 
 function Eyebrow() {
   return (
@@ -91,6 +107,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
   const [pick, setPick] = useState('')
   const [plan, setPlan] = useState('')
   const [outcome, setOutcome] = useState(null)
+  const [reflection, setReflection] = useState(null)
 
   const [releasePhrase] = useState(
     () => RELEASE_PHRASES[Math.floor(Math.random() * RELEASE_PHRASES.length)]
@@ -173,10 +190,10 @@ export default function NarrowFocusFlow({ userId, onClose }) {
   function chooseOutcome(key) {
     platform.haptic('medium')
     setOutcome(key)
-    setStep('reflect')
+    setStep('complete')
   }
 
-  function finish(reflection) {
+  function finish() {
     platform.haptic('light')
     saveNarrowFocusEntry(userId, { outcome, reflection })
     onClose()
@@ -326,21 +343,56 @@ export default function NarrowFocusFlow({ userId, onClose }) {
           </div>
         )}
 
-        {step === 'reflect' && (
-          <div className="narrow-focus-stage animate-fade-in">
-            <StageHeading>Стало ли легче?</StageHeading>
+        {step === 'complete' && (
+          <div className="narrow-focus-stage narrow-focus-stage--complete animate-fade-in">
+            <div className="narrow-focus-stage__center text-center">
+              <div className="narrow-focus-art" aria-hidden="true">
+                <NarrowFocusArt />
+              </div>
+              <h2 className="font-display text-[26px] text-cream leading-tight">
+                {COMPLETION_COPY[outcome]?.title}
+              </h2>
+              <p className="mx-auto mt-3 max-w-[310px] text-[14px] text-muted leading-relaxed">
+                {COMPLETION_COPY[outcome]?.description}
+              </p>
 
-            <OptionList options={REFLECTION_OPTIONS} onPick={finish} />
+              <p className="mt-7 text-[13px] font-semibold text-muted">Помогло сейчас?</p>
+              <div className="narrow-focus-feedback">
+                {REFLECTION_OPTIONS.map(({ key, label, Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    aria-pressed={reflection === key}
+                    onClick={() => {
+                      platform.haptic('light')
+                      setReflection(key)
+                    }}
+                    className="narrow-focus-feedback__option"
+                  >
+                    <Icon size={23} strokeWidth={1.8} />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
 
-            <div className="mt-5">
-              <button
-                type="button"
-                onClick={() => finish(null)}
-                className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
-              >
-                Пропустить
-              </button>
+              <div className="mt-5">
+                <button
+                  type="button"
+                  onClick={finish}
+                  className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+                >
+                  Пропустить
+                </button>
+              </div>
             </div>
+
+            <button
+              type="button"
+              onClick={finish}
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+            >
+              Завершить
+            </button>
           </div>
         )}
       </div>
