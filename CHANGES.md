@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 26.08.2026 — documentation drift synchronization
+
+- Статусы `MXL-008` синхронизированы с фактом merge PR #200: задача отмечена завершённой.
+- В канонический backlog возвращена следующая sprint-задача `MXL-021` — CTA `Продолжить сегодня` из Journey в Today; она остаётся `backlog / needs-owner + manual-gate`.
+- `PROJECT_STATE.md` обновлён до `main` commit `dfe88aa`, 19 canonical task ID и актуальных production-проверок.
+- Health-check 26.08.2026 подтвердил Vercel `/api/health` 200 в 3/3 попытках (0.30–0.41 с) и Render `/api/health` 200 в 3/3 попытках (1.95–2.13 с).
+
+
 ## 26.08.2026 — MXL-008: Stoic-like Journey в разделе «Путь»
 
 - По решению владельца верхний блок раздела «Путь» переименован в «Мой путь» и получил пояснение о регулярности и движении.
