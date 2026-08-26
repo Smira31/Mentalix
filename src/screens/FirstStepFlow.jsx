@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 
 import { platform } from '../platform'
 import SceneLayout from '../components/practices/SceneLayout'
@@ -34,10 +35,25 @@ const OUTCOME_OPTIONS = [
 ]
 
 const REFLECTION_OPTIONS = [
-  { key: 'easier', label: 'Да' },
-  { key: 'same', label: 'Не особо' },
-  { key: 'harder', label: 'Нет' },
+  { key: 'harder', label: 'Нет', Icon: ThumbsDown },
+  { key: 'same', label: 'Немного', Icon: Hand },
+  { key: 'easier', label: 'Да', Icon: ThumbsUp },
 ]
+
+const COMPLETION_COPY = {
+  started: {
+    title: 'Ты начал(а)',
+    description: 'Дело больше не стоит на месте — этого достаточно на сегодня.',
+  },
+  not_started: {
+    title: 'Ты заметил(а), что мешает',
+    description: 'Понять, что мешало начать, — уже честнее, чем корить себя.',
+  },
+  stopped_for_safety: {
+    title: 'Ты выбрал(а) безопасность',
+    description: 'Остановиться вовремя — тоже разумный шаг.',
+  },
+}
 
 function OptionList({ options, onPick }) {
   return (
@@ -63,6 +79,7 @@ export default function FirstStepFlow({ userId, onClose }) {
   const [task, setTask] = useState('')
   const [plan, setPlan] = useState('')
   const [outcome, setOutcome] = useState(null)
+  const [reflection, setReflection] = useState(null)
   const sceneScrollRef = useRef(null)
 
   const [secondsLeft, setSecondsLeft] = useState(RUN_SECONDS)
@@ -146,10 +163,10 @@ export default function FirstStepFlow({ userId, onClose }) {
   function chooseOutcome(key) {
     platform.haptic('medium')
     setOutcome(key)
-    setStep('reflect')
+    setStep('complete')
   }
 
-  function finish(reflection) {
+  function finish() {
     platform.haptic('light')
     saveFirstStepEntry(userId, { outcome, reflection })
     onClose()
@@ -320,25 +337,49 @@ export default function FirstStepFlow({ userId, onClose }) {
         </SceneLayout>
       )}
 
-      {step === 'reflect' && (
+      {step === 'complete' && (
         <SceneLayout
-          showGlyph={false}
           scrollRef={sceneScrollRef}
           onBack={onClose}
           label="Первый шаг"
-          title="Стало ли легче начать?"
-          className="practice-scene--choice"
+          title={COMPLETION_COPY[outcome]?.title}
+          centered
+          description={COMPLETION_COPY[outcome]?.description}
         >
-          <OptionList options={REFLECTION_OPTIONS} onPick={finish} />
+          <p className="mt-2 text-center text-[13px] font-semibold text-muted">Помогло сейчас?</p>
+          <div className="first-step-feedback">
+            {REFLECTION_OPTIONS.map(({ key, label, Icon }) => (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={reflection === key}
+                onClick={() => {
+                  platform.haptic('light')
+                  setReflection(key)
+                }}
+                className="first-step-feedback__option"
+              >
+                <Icon size={23} strokeWidth={1.8} />
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
           <div className="practice-scene__secondary">
             <button
               type="button"
-              onClick={() => finish(null)}
-              className="practice-scene__choice text-[12px] font-semibold text-muted -m-2 p-2"
+              onClick={finish}
+              className="text-[12px] font-semibold text-muted -m-2 p-2"
             >
               Пропустить
             </button>
           </div>
+          <button
+            type="button"
+            onClick={finish}
+            className="practice-scene__cta cta-pill w-full text-[15px] px-6 py-3.5"
+          >
+            Завершить
+          </button>
         </SceneLayout>
       )}
     </div>,
