@@ -176,6 +176,20 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
+test('MXL-009 ограничивает insights описательными наблюдениями', () => {
+  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
+  const safety = readFileSync(new URL('../../src/lib/descriptiveInsights.js', import.meta.url), 'utf8')
+
+  assert.match(analytics, /selectDescriptiveInsights\(data\.insights\)/)
+  assert.match(analytics, /не диагнозы и не доказанные причины/)
+  assert.match(analytics, /чаще совпадала/)
+  assert.doesNotMatch(analytics, /Собранность не зависит от энергии/)
+  assert.match(safety, /UNSAFE_INSIGHT_PATTERNS/)
+  assert.match(safety, /MAX_INSIGHTS = 3/)
+  assert.match(safety, /вызывает/)
+  assert.match(safety, /диагноз/)
+})
+
 test('MXL-019 заменяет Journey mountain metaphor на continuous progress line', () => {
   const path = readFileSync(new URL('../../src/screens/Path.jsx', import.meta.url), 'utf8')
   const line = readFileSync(new URL('../../src/components/JourneyLineArt.jsx', import.meta.url), 'utf8')
