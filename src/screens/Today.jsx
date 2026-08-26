@@ -393,7 +393,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
         </div>
 
         <div className="w-full max-w-md px-5">
-          <YearPath user={user} />
+          <YearPath user={user} onContinueToday={() => changeSub(null)} />
         </div>
 
         {pathTab === 'path' ? (

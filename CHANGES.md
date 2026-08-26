@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 26.08.2026 — MXL-021: Journey CTA
+
+- В Journey добавлены CTA `Начать сегодня` для empty state и `Продолжить сегодня` для пользователя с историей практики.
+- CTA возвращает пользователя в существующий Today через текущий локальный navigation state; backend и API-контракт не менялись.
+- Добавлен regression-контракт MXL-021; локально проходят 13/13 unit-тестов, lint, build, `docs:check` и `git diff --check`.
+- До закрытия остаются PR, GitHub CI/Vercel и ручная Telegram/iPhone-проверка.
+
+
 ## 26.08.2026 — documentation drift synchronization
 
 - Статусы `MXL-008` синхронизированы с фактом merge PR #200: задача отмечена завершённой.

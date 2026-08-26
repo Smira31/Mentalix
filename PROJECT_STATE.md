@@ -17,8 +17,8 @@
 - **Последние завершённые изменения:** единая лента History (`PR #194`), именованные уровни серии (`PR #196`), Stoic-inspired цикл Today (`PR #197`), Stoic-like Journey (`PR #200`) и синхронизация статусов задач (`PR #202`).
 - **Проверки:** последний GitHub Actions run для `main` завершён успешно; `docs:check` подтверждает 94 Markdown-файла, 19 canonical task ID и 0 ошибок.
 - **Production:** 26.08.2026 Vercel `/api/health` вернул `200 OK` в 3/3 попытках (0.30–0.41 с), Render `/api/health` вернул `200 OK` в 3/3 попытках (1.95–2.13 с). Точный commit Vercel Production отдельно не подтверждён.
-- **Backlog:** `MXL-007` и `MXL-008` завершены; `MXL-021` предложена следующей sprint-задачей и ожидает подтверждения CTA; остальные активные записи остаются в backlog. Автономная очередь пуста.
-- **Открытые PR:** #152 и четыре draft PR остаются без merge; они не входят в текущий autonomous scope из-за устаревшей базы, владельческого решения или backend/manual gate.
+- **Backlog:** `MXL-007` и `MXL-008` завершены; `MXL-021` реализована в feature-ветке и ожидает PR, CI/Vercel и ручного Telegram/iPhone gate; остальные активные записи остаются в backlog.
+- **Открытые PR:** #152 и четыре draft PR остаются без merge; текущая feature-ветка MXL-021 готовится к PR.
 
 ## 1. Документационный operating layer
 
