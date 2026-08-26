@@ -209,13 +209,17 @@ async function assertClickable(locator) {
 }
 
 async function assertSoonControls(page) {
-  const soonPractices = ['Нейротренажёр', 'Дыхание', 'Фокус', 'Медитации']
+  const soonPractices = ['Нейротренажёр', 'Дыхание', 'Фокус']
 
   for (const name of soonPractices) {
     await expect(page.getByRole('button', { name })).toBeDisabled()
   }
 
   await expect(page.getByText('Скоро', { exact: true })).toHaveCount(soonPractices.length)
+  await expect(page.getByRole('button', { name: 'Медитация' })).toBeEnabled()
+  await page.getByRole('button', { name: 'Медитация' }).click()
+  await expect(page.getByRole('heading', { name: 'Вернись к тому, что действительно зависит от тебя' })).toBeVisible()
+  await page.getByRole('button', { name: 'Назад' }).click()
   await page.getByRole('button', { name: 'Нейротренажёр' }).evaluate(element => element.click())
   await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 }

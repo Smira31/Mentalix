@@ -10,7 +10,7 @@ import {
 import { withQuery } from '../../src/lib/apiQuery.js'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from '../../src/lib/moodCheckGate.js'
 
-test('allowlist сохраняет текущие шесть доступных практик', () => {
+test('allowlist сохраняет текущие семь доступных практик', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
     'rituals',
     'ascezas',
@@ -18,13 +18,32 @@ test('allowlist сохраняет текущие шесть доступных 
     'no-blame',
     'narrow-focus',
     'one-finish',
+    'meditation',
   ])
 
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.brain), false)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.breathing), false)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.focus), false)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), false)
+  assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), true)
   assert.equal(isPracticeAvailable('unknown-practice'), false)
+})
+
+test('MXL-014 публикует короткую текстовую медитацию без backend changes', () => {
+  const flow = readFileSync(new URL('../../src/screens/MeditationFlow.jsx', import.meta.url), 'utf8')
+  const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
+  const availability = readFileSync(new URL('../../src/config/practiceAvailability.js', import.meta.url), 'utf8')
+
+  assert.match(flow, /5–10 минут/)
+  assert.match(flow, /Что сейчас происходит\?/)
+  assert.match(flow, /Что из этого зависит от тебя\?/)
+  assert.match(flow, /Какой один шаг ты выбираешь\?/)
+  assert.match(flow, /Если становится тяжелее, остановись/)
+  assert.match(flow, /<SceneLayout/)
+  assert.match(flow, /<JournalTextarea/)
+  assert.match(practices, /<MeditationFlow onClose=\{\(\) => setSub\(null\)\} \/>/)
+  assert.match(practices, /title="Медитация"/)
+  assert.match(availability, /PRACTICE_KEYS\.meditation,/)
+  assert.doesNotMatch(flow, /api\./)
 })
 
 test('withQuery сохраняет порядок и кодирует значения', () => {

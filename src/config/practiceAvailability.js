@@ -18,6 +18,7 @@ export const AVAILABLE_PRACTICES = Object.freeze([
   PRACTICE_KEYS.noBlame,
   PRACTICE_KEYS.narrowFocus,
   PRACTICE_KEYS.oneFinish,
+  PRACTICE_KEYS.meditation,
 ])
 
 export function isPracticeAvailable(practiceKey) {

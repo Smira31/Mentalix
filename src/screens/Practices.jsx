@@ -23,6 +23,7 @@ import BrainTrainer from './BrainTrainer'
 import Focus from './Focus'
 import Breathing from './Breathing'
 import FirstStepFlow from './FirstStepFlow'
+import MeditationFlow from './MeditationFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
 import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
@@ -124,7 +125,7 @@ function PracticeCategory({ title, children }) {
 export default function Practices({ user, initialSub = null, onGameChange }) {
   const [sub, setSub] = useState(initialSub)
 
-  const focusedFlowOpen = ['first-step', 'no-blame', 'narrow-focus', 'one-finish'].includes(sub)
+  const focusedFlowOpen = ['first-step', 'no-blame', 'narrow-focus', 'one-finish', 'meditation'].includes(sub)
 
   useEffect(() => {
     onGameChange?.(focusedFlowOpen)
@@ -176,6 +177,10 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
 
   if (sub === 'first-step') {
     return <FirstStepFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
+  if (sub === 'meditation') {
+    return <MeditationFlow onClose={() => setSub(null)} />
   }
 
   if (sub === 'no-blame') {
@@ -250,6 +255,14 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
 
       <PracticeCategory title="Доступно сейчас">
         <PracticeRow
+          artwork={<MeditationArt />}
+          title="Медитация"
+          subtitle="заметить своё и выбрать один спокойный шаг"
+          right="5–10 мин"
+          soon={!isPracticeAvailable(PRACTICE_KEYS.meditation)}
+          onOpen={() => setSub('meditation')}
+        />
+        <PracticeRow
           artwork={<RitualsArt />}
           title="Ритуалы"
           subtitle="обряды, что держат твой день"
@@ -319,12 +332,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           subtitle="таймер глубокой работы"
           soon={!isPracticeAvailable(PRACTICE_KEYS.focus)}
           onOpen={() => setSub('focus')}
-        />
-        <PracticeRow
-          artwork={<MeditationArt />}
-          title="Медитации"
-          subtitle="тишина для ума и тела"
-          soon={!isPracticeAvailable(PRACTICE_KEYS.meditation)}
         />
       </PracticeCategory>
     </div>
