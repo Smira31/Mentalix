@@ -1,51 +1,10 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { Target, ArrowUp, ArrowLeft, Flame, TrendingUp, Trash2 } from 'lucide-react'
+import JourneyLineArt from '../components/JourneyLineArt'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
-function WireframeMountain() {
-  const rows = 5
-  return (
-    <svg
-      viewBox="0 0 400 160"
-      className="absolute inset-0 w-full h-full opacity-70"
-      preserveAspectRatio="none"
-    >
-      <defs>
-        <filter id="mtn-glow">
-          <feGaussianBlur stdDeviation="2" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      {Array.from({ length: rows }).map((_, r) => {
-        const baseY = 40 + r * 22
-        const amp = 22 - r * 2.5
-        const points = Array.from({ length: 18 })
-          .map((_, i) => {
-            const x = (i / 17) * 400
-            const y = baseY - Math.sin(i * 0.7 + r) * amp - Math.sin(i * 0.25 + r * 2) * (amp / 2)
-            return `${x},${y}`
-          })
-          .join(' ')
-        return (
-          <polyline
-            key={r}
-            points={points}
-            fill="none"
-            stroke="#C9A227"
-            strokeOpacity={0.3 + r * 0.08}
-            strokeWidth={1}
-            filter="url(#mtn-glow)"
-          />
-        )
-      })}
-    </svg>
-  )
-}
 
 export function TickGauge({ value, max, sublabel, size = 160 }) {
   const percent = Math.max(0, Math.min(1, value / max))
@@ -91,7 +50,7 @@ function EmptyGoals({ onCreate }) {
   return (
     <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-4 animate-fade-in">
       <div className="relative h-32">
-        <WireframeMountain />
+        <JourneyLineArt progress={0} className="absolute inset-0 w-full h-full opacity-80" />
       </div>
       <div className="px-6 pb-6 pt-2 text-center">
         <div className="w-12 h-12 rounded-2xl bg-emerald-light/30 flex items-center justify-center mx-auto mb-3 -mt-8 relative">
@@ -99,7 +58,7 @@ function EmptyGoals({ onCreate }) {
         </div>
         <h3 className="font-display text-lg text-cream mb-1">Пока нет ни одной цели</h3>
         <p className="font-body text-sm text-muted mb-4 leading-relaxed">
-          Создай первую — и увидишь путь к ней прямо здесь, на карте
+          Создай первую — и увидишь линию движения к ней прямо здесь
         </p>
         <button
           onClick={onCreate}
@@ -136,7 +95,7 @@ function GoalCreateScreen({ onCreate, onCancel }) {
       <h2 className="font-display text-lg mb-4 text-cream">Новая цель</h2>
 
       <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
-        <WireframeMountain />
+        <JourneyLineArt progress={0} className="absolute inset-0 w-full h-full opacity-80" />
         <div className="absolute top-3 left-3">
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
             <Target size={12} /> Цель
@@ -194,7 +153,7 @@ function GoalCard({ goal, onOpen }) {
       onClick={() => onOpen(goal)}
       className="relative w-full text-left rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-4 h-40"
     >
-      <WireframeMountain />
+      <JourneyLineArt progress={goal.progress} className="absolute inset-0 w-full h-full opacity-80" />
       <div className="absolute top-3 left-3">
         <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
           <Target size={12} /> Цель
@@ -258,7 +217,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
       </div>
 
       <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep h-44 mb-5">
-        <WireframeMountain />
+        <JourneyLineArt progress={goal.progress} className="absolute inset-0 w-full h-full opacity-80" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
           <div className="w-14 h-14 rounded-2xl bg-black/30 flex items-center justify-center mb-3">
             <Target size={26} className="text-gold" strokeWidth={1.5} />

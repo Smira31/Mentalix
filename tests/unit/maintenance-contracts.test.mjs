@@ -176,6 +176,19 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
+test('MXL-019 заменяет Journey mountain metaphor на continuous progress line', () => {
+  const path = readFileSync(new URL('../../src/screens/Path.jsx', import.meta.url), 'utf8')
+  const line = readFileSync(new URL('../../src/components/JourneyLineArt.jsx', import.meta.url), 'utf8')
+
+  assert.doesNotMatch(path, /WireframeMountain/)
+  assert.match(path, /JourneyLineArt progress=\{goal\.progress\}/)
+  assert.match(path, /Создай первую — и увидишь линию движения/)
+  assert.match(line, /const PATH_D/)
+  assert.equal((line.match(/<path/g) || []).length, 2)
+  assert.match(line, /strokeDasharray=\{`\$\{normalized\} 100`\}/)
+  assert.match(line, /role="img"/)
+})
+
 test('MXL-016 публикует семь авторских мыслей без непроверенной атрибуции', () => {
   const thoughts = readFileSync(
     new URL('../../src/data/dailyThoughts.js', import.meta.url),
