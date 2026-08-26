@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
+import OneFinishArt from '../components/practice-art/OneFinishArt'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -93,7 +94,7 @@ function OptionList({ options, onPick }) {
 export default function FinishFlow({ userId, onClose }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
-  const [step, setStep] = useState('project')
+  const [step, setStep] = useState('intro')
   const [project, setProject] = useState('')
   const [finish, setFinish] = useState('')
   const [outcome, setOutcome] = useState(null)
@@ -135,6 +136,11 @@ export default function FinishFlow({ userId, onClose }) {
     platform.haptic('success')
     setStep('outcome')
   }, [secondsLeft, endsAt])
+
+  function startPractice() {
+    platform.haptic('light')
+    setStep('project')
+  }
 
   function goToState() {
     if (!project.trim()) return
@@ -191,6 +197,35 @@ export default function FinishFlow({ userId, onClose }) {
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+        {step === 'intro' && (
+          <div className="one-finish-stage one-finish-stage--intro animate-fade-in">
+            <div className="one-finish-stage__center text-center">
+              <Eyebrow />
+              <h2 className="font-display text-[28px] text-cream leading-[1.1] tracking-[-0.03em]">
+                Доведи один маленький кусок до конца
+              </h2>
+              <p className="mx-auto mt-4 max-w-[310px] text-[14px] leading-relaxed text-muted">
+                Пять минут, чтобы завершить не всё, а что-то одно — и получить то самое чувство
+                завершённости.
+              </p>
+              <p className="mt-4 text-[12px] font-semibold text-faint">
+                5 минут&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
+              </p>
+              <div className="one-finish-art" aria-hidden="true">
+                <OneFinishArt />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={startPractice}
+              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+            >
+              Начать
+            </button>
+          </div>
+        )}
+
         {step === 'project' && (
           <div className="one-finish-stage one-finish-stage--writing animate-fade-in">
             <StageHeading>Что зависло на середине?</StageHeading>

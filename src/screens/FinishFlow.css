@@ -43,6 +43,18 @@
   padding-top: 0.25rem;
 }
 
+.one-finish-stage__center {
+  width: 100%;
+  margin-block: auto;
+  padding-block: 1.5rem;
+}
+
+.one-finish-art {
+  width: min(100%, 19rem);
+  height: 9.5rem;
+  margin: 1.25rem auto 0;
+}
+
 @media (max-height: 650px) {
   .one-finish-stage__anchor {
     min-height: 7.5rem;
@@ -57,5 +69,14 @@
 
   .one-finish-stage__writer {
     padding-top: 0;
+  }
+
+  .one-finish-stage__center {
+    padding-block: 0.75rem;
+  }
+
+  .one-finish-art {
+    height: 6.25rem;
+    margin-top: 0.5rem;
   }
 }
