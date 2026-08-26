@@ -17,7 +17,7 @@
 | `MXL-007`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #197; iPhone/Telegram gate пройден владельцем |
 | `MXL-008`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #200; Vercel/телефонный gate пройден          |
 | `MXL-021`                    |       M | product/UX       | verified   | completed                      | Закрыта через PR #203; Telegram/iPhone gate пройден владельцем |
-| `MXL-009`                    |      ML | product/data/UX  | in progress | backend-dependent + manual-gate | Descriptive insights safety slice готов; backend contract и реальная малая выборка требуют отдельной проверки |
+| `MXL-009`                    |      ML | product/data/UX  | verified   | completed + backend-follow-up | Закрыта через PR #221; frontend safety slice опубликован, backend contract остаётся отдельным follow-up |
 | `MXL-010`                    |       L | release          | backlog    | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные        |
 | `MXL-011`                    |       L | release          | verified   | completed                      | Закрыта после Telegram/iPhone release gate владельца           |
 | `MXL-012`                    |       L | release          | backlog    | manual-gate                     | Провести Android gate                                            |
