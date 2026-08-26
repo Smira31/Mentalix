@@ -3828,7 +3828,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-016 — Curated «Мысль дня»
 
-- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-016-daily-thoughts`.
+- **Статус:** verified/completed 26.08.2026; PR #215 смёржен в `main`, Telegram/iPhone gate пройден владельцем.
 - **Размер:** M
 - **Тип:** content/product/UX
 - **Автономность:** manual-gate; backend/API не меняется.
