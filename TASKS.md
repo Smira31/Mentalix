@@ -3856,7 +3856,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-019 — Непрерывная линия Journey вместо лабиринта
 
-- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-019-journey-line`.
+- **Статус:** verified/completed 26.08.2026; PR #219 смёржен в `main`, Telegram/iPhone gate пройден владельцем.
 - **Размер:** M
 - **Тип:** product/UX/visual
 - **Автономность:** manual-gate; backend/API и метрика активных дней не меняются.

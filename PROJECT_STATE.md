@@ -664,3 +664,7 @@ Production, backend и Telegram-бот не затрагиваются.
 ## 26.08.2026 — MXL-014 verified
 
 `main` синхронизирован с merge commit `182a93a` после PR #217. MXL-014 закрыта: MeditationFlow доступен из Practices и работает в четырёх сценах без backend/API изменений. 21/21 unit-тестов, docs:check, lint, build, UX smoke и Vercel Preview прошли; ручной Telegram/iPhone gate подтверждён владельцем.
+
+## 26.08.2026 — MXL-019 verified
+
+`main` синхронизирован с merge commit `c573a41` после PR #219. MXL-019 закрыта: Path использует JourneyLineArt вместо WireframeMountain, goal progress отображается заполненной частью одной линии, backend/API и active-days metric не менялись. 22/22 unit-теста, docs:check, lint, build, UX smoke и Vercel Preview прошли; ручной Telegram/iPhone gate подтверждён владельцем.
