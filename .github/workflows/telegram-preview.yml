@@ -1,0 +1,124 @@
+name: Telegram Preview
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or commit to preview'
+        required: false
+        default: 'main'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Deploy preview and notify Telegram
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_SCOPE: smiraandre2-8311s-projects
+      VERCEL_PROJECT: mentalix-preview
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      TELEGRAM_MAIN_BOT_TOKEN: ${{ secrets.TELEGRAM_MAIN_BOT_TOKEN }}
+      TELEGRAM_PREVIEW_CHAT_ID: ${{ secrets.TELEGRAM_PREVIEW_CHAT_ID }}
+
+    steps:
+      - name: Checkout preview ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.event.pull_request.head.sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy Vercel preview
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          deploy_output="$(npx vercel@latest deploy --yes --target preview \
+            --project "$VERCEL_PROJECT" \
+            --scope "$VERCEL_SCOPE" \
+            --token "$VERCEL_TOKEN" 2>&1)"
+          printf '%s\n' "$deploy_output"
+          preview_url="$(printf '%s\n' "$deploy_output" | grep -Eo 'https://[a-z0-9-]+\.vercel\.app' | tail -1)"
+          if [ -z "$preview_url" ]; then
+            echo 'Could not obtain the Vercel preview URL.' >&2
+            exit 1
+          fi
+          printf 'url=%s\n' "$preview_url" >> "$GITHUB_OUTPUT"
+
+      - name: Verify preview health
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error --retry 10 --retry-delay 3 \
+            --retry-connrefused --max-time 20 "$PREVIEW_URL/api/health")"
+          printf '%s\n' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
+
+      - name: Notify Telegram
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
+          PR_TITLE: ${{ github.event.pull_request.title || 'Manual preview' }}
+          PR_URL: ${{ github.event.pull_request.html_url || format('https://github.com/{0}/pulls', github.repository) }}
+          BRANCH: ${{ github.event.pull_request.head.ref || inputs.ref || github.ref_name }}
+          SHORT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          short_sha="${SHORT_SHA:0:7}"
+          message="Mentalix Preview готов\n\nВетка: $BRANCH\nCommit: $short_sha\nPR #$PR_NUMBER: $PR_TITLE\n\nPreview доступен после успешной проверки /api/health."
+          payload="$(jq -n \
+            --arg chat_id "$TELEGRAM_PREVIEW_CHAT_ID" \
+            --arg text "$message" \
+            --arg url "$PREVIEW_URL" \
+            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Preview", web_app: {url: $url}}]]}}')"
+          response="$(curl --fail --silent --show-error \
+            --request POST \
+            --header 'Content-Type: application/json; charset=utf-8' \
+            --data "$payload" \
+            "https://api.telegram.org/bot${TELEGRAM_MAIN_BOT_TOKEN}/sendMessage")"
+          printf '%s\n' "$response" | jq -e '.ok == true' >/dev/null
+          echo "Telegram notification sent for PR #$PR_NUMBER."
+
+      - name: Publish preview summary
+        if: always()
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+          PR_URL: ${{ github.event.pull_request.html_url || format('https://github.com/{0}/pulls', github.repository) }}
+        run: |
+          {
+            echo "### Telegram Preview"
+            if [ -n "${PREVIEW_URL:-}" ]; then
+              echo "Preview: ${PREVIEW_URL}"
+            fi
+            echo "PR: ${PR_URL}"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -229,6 +229,15 @@
 - Остановка: `npm run preview:stop` удаляет активный deployment и отправляет подтверждение в основной бот.
 - Финальный smoke Preview → Telegram → stop пройден 22.08.2026; новых багов workflow не выявлено.
 - Реальный iPhone gate остаётся ручным подтверждением владельца и не объявляется пройденным автоматически.
+
+## MXL-PREVIEW-ACTIONS-001 — Автоматический Preview и Telegram после PR
+
+- **Статус:** workflow подготовлен локально в ветке `chore/telegram-preview-actions`; PR и первый запуск ожидают добавления repository secrets владельцем.
+- **Цель:** после открытия или обновления PR в `main` автоматически установить зависимости, выполнить lint/build, создать Preview в отдельном Vercel-проекте `mentalix-preview`, проверить `/api/health` и отправить в основной Mentalix-бот кнопку «Открыть Preview».
+- **Безопасность:** workflow запускается только для веток внутри `Smira31/Mentalix`; PR из fork не получает секреты. Telegram-сообщение отправляется только после успешного deploy и health-check.
+- **Необходимые repository secrets:** `VERCEL_TOKEN`, `TELEGRAM_MAIN_BOT_TOKEN`, `TELEGRAM_PREVIEW_CHAT_ID`. Сами значения не хранятся в Git и не передаются в чат.
+- **Файл реализации:** `.github/workflows/telegram-preview.yml`; инструкция владельцу — [`docs/TELEGRAM_PREVIEW_ACTIONS.md`](docs/TELEGRAM_PREVIEW_ACTIONS.md).
+- **Ограничение:** GitHub Actions подтверждает сборку и доступность health endpoint, но не заменяет ручной Telegram/iPhone визуальный gate.
 - **Known issue 25.08.2026:** `preview:stop` может вывести `Preview stopped`,
   не удалив deployment. До исправления завершение подтверждается через Vercel
   и повторный запрос URL; задача — `MXL-PREVIEW-STOP-VERIFY-001` ниже.
@@ -3112,6 +3121,7 @@ entityType, entityId)`.
   - **Критерии готовности:** шкала едина для AI-экранов; длинный текст переносится без горизонтального overflow; роли title/body/meta/caption/input видимы и проверяемы; ручная iPhone-проверка пройдена.
 
 ## Следующий этап
+
 - [x] **[M-L] MXL-007 — Stoic-inspired daily cycle экрана «Сегодня»**
   - **Решение владельца 26.08.2026:** использовать ежедневный ритм Stoic как основу Mentalix: mood check-in → утренняя подготовка → действие дня → вечерний анализ → новый шаг.
   - В текущем интерфейсе этапы отображаются как **Идея → Действие → Анализ → Новый шаг**; визуальный язык и контент Stoic буквально не копируются.
@@ -3125,7 +3135,6 @@ entityType, entityId)`.
   - Переход к AI.
   - Вечерний анализ.
   - **Закрыто 26.08.2026:** PR #197 squash-смёржен в `main` (commit `afdc266`), remote-ветка удалена; GitHub CI и Vercel Preview зелёные, владелец подтвердил работу Preview с телефона в Telegram. Локально: 11/11 unit, lint, build, docs:check и diff-check проходят.
-
 
 - [x] **[M-L] MXL-008 — Stoic-like Journey в разделе «Путь»**
   - **Решение владельца 26.08.2026:** сделать раздел по принципу Stoic Journey: личное движение, регулярность, история и понятный прогресс без буквального копирования интерфейса.
@@ -3798,7 +3807,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Критерии готовности:** PRODUCT.md содержит baseline и ссылки; TASK_INDEX.md отражает готовые продуктовые направления и P0-рекомендацию; последующие реализации не расширяют scope без нового dated decision record.
 - **Источник референса:** официальные материалы Stoic — `https://www.getstoic.com/`, `https://www.getstoic.com/features` и Daily Journaling Flow в Help Center.
 
-
 ## MXL-001 — Stoic-inspired AI core flow
 
 - **Статус:** verified/completed 26.08.2026; PR #211 смёржен в `main`, Telegram/iPhone gate пройден владельцем.
@@ -3812,7 +3820,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Проверки:** unit regression contract, lint, build, docs:check, UX smoke на `390×844` и `320×568`, затем ручной Telegram/iPhone gate.
 - **Rollback:** удалить `AiFlowIndicator` и его два вызова; API, сообщения и backend останутся прежними.
 
-
 ## MXL-015 — Stoic-inspired weekly themes
 
 - **Статус:** verified/completed 26.08.2026; PR #213 смёржен в `main`, Telegram/телефонный gate пройден владельцем.
@@ -3824,7 +3831,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** создание backend theme IDs, публикация через приватный admin-контракт, миграции, изменение `/themes`, автоматическая генерация цитат и новый UI-раздел.
 - **Критерии готовности:** каталог имеет ровно 7 уникальных ключей; каждая тема содержит четыре шага ежедневного цикла; тексты не обещают терапевтический результат и не копируют Stoic; backend-зависимость явно документирована.
 - **Следующий gate:** после merge этого контентного baseline нужна проверка владельцем на тоне и ручной Telegram/iPhone gate только при подключении каталога к пользовательскому UI. Публикация в backend требует доступа к приватному контракту.
-
 
 ## MXL-016 — Curated «Мысль дня»
 
@@ -3839,7 +3845,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Критерии готовности:** 7 уникальных мыслей; у каждой есть attribution, prompt, action и nextStep; Today показывает fallback без personal quote; QuoteView сохраняет swipe/share/history; unit contract, lint, build, docs:check и UX smoke зелёные.
 - **Следующий gate:** ручная Telegram/iPhone проверка Today → «Мысль дня» → вопрос/шаг/дальше и regression пользовательской фразы.
 
-
 ## MXL-014 — Первая текстовая медитация
 
 - **Статус:** verified/completed 26.08.2026; PR #217 смёржен в `main`, Telegram/iPhone gate пройден владельцем.
@@ -3853,7 +3858,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Критерии готовности:** practice открывается из Practices, все четыре шага работают на 390×844 и 320×568, Back/Telegram fullscreen не ломаются, unit contract, docs:check, lint, build, UX smoke и diff-check зелёные.
 - **Следующий gate:** ручная Telegram/iPhone проверка intro, переходов, клавиатуры, safe area, узкого экрана и выхода без сохранения текста.
 
-
 ## MXL-019 — Непрерывная линия Journey вместо лабиринта
 
 - **Статус:** verified/completed 26.08.2026; PR #219 смёржен в `main`, Telegram/iPhone gate пройден владельцем.
@@ -3865,7 +3869,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** новый backend endpoint, новая метрика, изменение целей/привычек, глобальная замена брендового MazeLogo, новый раздел навигации.
 - **Критерии готовности:** все Journey goal visuals используют одну line-art метафору; progress отображается через stroke-dash; MXL-008/MXL-021 contracts не ломаются; unit, docs:check, lint, build, UX smoke и diff-check зелёные.
 - **Следующий gate:** ручная Telegram/iPhone проверка Path/Journey на empty state, goal card и goal detail, включая safe area и отсутствие визуального ощущения лабиринта.
-
 
 ## MXL-009 — Описательные AI-insights без причинных claims
 
