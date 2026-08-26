@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
@@ -28,7 +28,12 @@ import { ChevronLeft, ChevronRight, Share2 } from 'lucide-react'
 export default function QuoteView({ user, todayQuote, onClose }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
-  const [quotes, setQuotes] = useState(todayQuote ? [{ id: 'today', text: todayQuote }] : [])
+  const todayEntry = useMemo(() => {
+    if (typeof todayQuote === 'string') return { id: 'today', text: todayQuote }
+    return todayQuote ? { id: 'today', ...todayQuote } : null
+  }, [todayQuote])
+
+  const [quotes, setQuotes] = useState(todayEntry ? [todayEntry] : [])
   const [idx, setIdx] = useState(0)
   const touchY = useRef(null)
 
@@ -37,11 +42,11 @@ export default function QuoteView({ user, todayQuote, onClose }) {
     api.quotes
       .list(user.id)
       .then(list => {
-        const rest = (list || []).filter(q => q.text !== todayQuote)
-        setQuotes(todayQuote ? [{ id: 'today', text: todayQuote }, ...rest] : rest)
+        const rest = (list || []).filter(q => q.text !== todayEntry?.text)
+        setQuotes(todayEntry ? [todayEntry, ...rest] : rest)
       })
       .catch(console.error)
-  }, [user, todayQuote])
+  }, [user, todayEntry])
 
   function go(delta) {
     if (quotes.length === 0) return
@@ -109,8 +114,25 @@ export default function QuoteView({ user, todayQuote, onClose }) {
             <p className="font-display text-[24px] text-cream leading-snug max-w-md">
               {current.text}
             </p>
-            {current.tag && (
-              <span className="text-[12px] font-semibold text-faint mt-5">{current.tag}</span>
+            {(current.attribution || current.tag) && (
+              <span className="text-[12px] font-semibold text-faint mt-5">
+                {current.attribution || current.tag}
+              </span>
+            )}
+
+            {current.prompt && (
+              <div className="w-full max-w-sm mt-8 text-left rounded-3xl bg-emerald px-5 py-4">
+                <span className="block text-[11px] uppercase tracking-[0.14em] text-gold font-semibold mb-2">
+                  вопрос к себе
+                </span>
+                <p className="text-[14px] text-cream leading-relaxed">{current.prompt}</p>
+                <p className="text-[13px] text-muted leading-relaxed mt-3">
+                  <strong className="text-cream">Шаг:</strong> {current.action}
+                </p>
+                <p className="text-[13px] text-muted leading-relaxed mt-2">
+                  <strong className="text-cream">Дальше:</strong> {current.nextStep}
+                </p>
+              </div>
             )}
           </>
         ) : (

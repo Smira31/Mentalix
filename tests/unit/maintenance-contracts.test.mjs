@@ -157,6 +157,28 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
+test('MXL-016 публикует семь авторских мыслей без непроверенной атрибуции', () => {
+  const thoughts = readFileSync(
+    new URL('../../src/data/dailyThoughts.js', import.meta.url),
+    'utf8'
+  )
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const quoteView = readFileSync(new URL('../../src/screens/QuoteView.jsx', import.meta.url), 'utf8')
+
+  assert.equal((thoughts.match(/key: '/g) || []).length, 7)
+  assert.equal((thoughts.match(/attribution: 'авторская мысль Mentalix'/g) || []).length, 7)
+  assert.equal((thoughts.match(/prompt:/g) || []).length, 7)
+  assert.equal((thoughts.match(/action:/g) || []).length, 7)
+  assert.equal((thoughts.match(/nextStep:/g) || []).length, 7)
+  assert.match(thoughts, /not quotations/)
+  assert.match(today, /const thoughtOfDay = useMemo/)
+  assert.match(today, /dailyQuote \? \{ text: dailyQuote/)
+  assert.match(today, /getDailyThought\(\)/)
+  assert.match(quoteView, /current\.attribution \|\| current\.tag/)
+  assert.match(quoteView, /current\.prompt/)
+  assert.match(quoteView, /current\.nextStep/)
+})
+
 test('MXL-015 публикует семь curated Stoic-inspired тем без backend предположений', () => {
   const source = readFileSync(
     new URL('../../src/data/weeklyThemes.js', import.meta.url),

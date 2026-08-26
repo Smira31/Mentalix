@@ -23,7 +23,7 @@
 | `MXL-012`                    |       L | release          | backlog    | manual-gate                     | Провести Android gate                                            |
 | `MXL-014`                    |       ? | product/backend  | ready     | backend-dependent + manual-gate | Спроектировать одну текстовую практику на 5–10 минут; аудио не входит в MVP |
 | `MXL-015`                    |       M | content/product  | verified   | completed                      | Закрыта через PR #213; curated-каталог из 7 тем зафиксирован |
-| `MXL-016`                    |       ? | content/product  | ready     | manual-gate                     | Подготовить curated-банк с проверенной атрибуцией; не генерировать цитаты без источника |
+| `MXL-016`                    |       M | content/product/UX | in progress | manual-gate                  | Curated-банк из 7 авторских мыслей готовится; personal quote остаётся приоритетной |
 | `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
 | `MXL-019`                    |       ? | product/UX       | ready     | manual-gate                     | Переосмыслить Journey как следующий шаг и активные дни, не как соревнование |
 | `MXL-020`                    |       ? | product/payment  | deferred   | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
