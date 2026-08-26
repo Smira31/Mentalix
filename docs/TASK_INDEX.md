@@ -16,7 +16,7 @@
 | `MXL-006`                    |      ML | UX               | backlog    | needs-owner + manual-gate       | Утвердить типографическую шкалу и проверить iPhone               |
 | `MXL-007`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #197; iPhone/Telegram gate пройден владельцем |
 | `MXL-008`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #200; Vercel/телефонный gate пройден          |
-| `MXL-021`                    |       M | product/UX       | backlog    | needs-owner + manual-gate       | Подтвердить CTA «Продолжить сегодня» для Journey                |
+| `MXL-021`                    |       M | product/UX       | in progress | manual-gate                    | Проверить CTA «Продолжить сегодня» на iPhone/Telegram          |
 | `MXL-009`                    |      ML | product/data     | backlog    | needs-owner + backend-dependent | Утвердить полезные закономерности и источник данных              |
 | `MXL-010`                    |       L | release          | backlog    | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные        |
 | `MXL-011`                    |       L | release          | backlog    | manual-gate                     | Провести финальный iPhone/Telegram gate                          |

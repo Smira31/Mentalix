@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp } from 'lucide-react'
+import { ArrowUpRight, TrendingUp } from 'lucide-react'
 import { api } from '../lib/api'
 import { TickGauge } from './Path'
 
@@ -92,7 +92,7 @@ function YearRidge({ values }) {
   )
 }
 
-function YearPathEmpty() {
+function YearPathEmpty({ onContinueToday }) {
   return (
     <div className="rounded-[28px] bg-emerald-deep border border-cream/10 px-6 py-8 text-center mb-5">
       <div className="w-12 h-12 rounded-2xl bg-emerald-light/30 flex items-center justify-center mx-auto mb-3">
@@ -102,11 +102,18 @@ function YearPathEmpty() {
       <p className="font-body text-sm text-muted leading-relaxed">
         График появится, когда наберётся несколько дней практики
       </p>
+      <button
+        type="button"
+        onClick={onContinueToday}
+        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gold px-4 py-2.5 text-sm font-medium text-emerald-deep active:scale-95"
+      >
+        Начать сегодня <ArrowUpRight size={16} strokeWidth={1.8} />
+      </button>
     </div>
   )
 }
 
-export default function YearPath({ user }) {
+export default function YearPath({ user, onContinueToday }) {
   const [analytics, setAnalytics] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -128,7 +135,7 @@ export default function YearPath({ user }) {
 
   const firstActiveIndex = daily.findIndex((d) => d.count + d.held_ascezas > 0)
 
-  if (firstActiveIndex === -1) return <YearPathEmpty />
+  if (firstActiveIndex === -1) return <YearPathEmpty onContinueToday={onContinueToday} />
 
   // Считаем «путь» с первого реального дня практики, а не за весь
   // 365-дневный запрошенный период — иначе новый аккаунт видел бы
@@ -136,7 +143,9 @@ export default function YearPath({ user }) {
   const relevant = daily.slice(firstActiveIndex)
   const activeDaysCount = relevant.filter((d) => d.count + d.held_ascezas > 0).length
 
-  if (activeDaysCount < MIN_ACTIVE_DAYS) return <YearPathEmpty />
+  if (activeDaysCount < MIN_ACTIVE_DAYS) {
+    return <YearPathEmpty onContinueToday={onContinueToday} />
+  }
 
   const percent = Math.round((activeDaysCount / relevant.length) * 100)
   const weeklyBuckets = bucketByWeek(relevant)
@@ -155,6 +164,15 @@ export default function YearPath({ user }) {
       </div>
       <div className="mt-2">
         <YearRidge values={weeklyBuckets} />
+      </div>
+      <div className="px-6 pb-5 pt-4">
+        <button
+          type="button"
+          onClick={onContinueToday}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-sm font-medium text-emerald-deep active:scale-95"
+        >
+          Продолжить сегодня <ArrowUpRight size={16} strokeWidth={1.8} />
+        </button>
       </div>
     </div>
   )
