@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
@@ -22,6 +22,7 @@ import TodayFocusCard from '../components/TodayFocusCard'
 import TodayFocusFlow from './TodayFocusFlow'
 import { readTodayFocusDay, clearTodayFocusPick } from '../lib/todayFocus'
 import { useSynced } from '../lib/store'
+import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import {
   DayThread,
@@ -137,7 +138,7 @@ function formatRemainingActions(count) {
 // TODAY
 // ============================================================
 
-export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, onOpenSettings }) {
+export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }) {
   const [initialTodaySnapshot] = useState(() => (user ? peekTodaySnapshot(user.id) : null))
 
   const [rituals, setRituals] = useState(() => initialTodaySnapshot?.rituals || [])
@@ -147,6 +148,13 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
   const [loading, setLoading] = useState(() => !initialTodaySnapshot)
 
   const [dailyQuote, setDailyQuote] = useState(() => initialTodaySnapshot?.quote?.text || null)
+
+  const [dailyThought] = useState(() => getDailyThought())
+
+  const thoughtOfDay = useMemo(
+    () => (dailyQuote ? { text: dailyQuote, attribution: 'твоя фраза' } : dailyThought),
+    [dailyQuote, dailyThought]
+  )
 
   const [checkin, setCheckin] = useState(() => initialTodaySnapshot?.checkin || null)
 
@@ -356,7 +364,13 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
   // ============================================================
 
   if (sub === 'quote') {
-    return <QuoteView user={user} todayQuote={dailyQuote} onClose={() => changeSub(null)} />
+    return (
+      <QuoteView
+        user={user}
+        todayQuote={thoughtOfDay}
+        onClose={() => changeSub(null)}
+      />
+    )
   }
 
   // ============================================================
@@ -949,8 +963,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
           МЫСЛЬ ДНЯ
           ====================================================== */}
 
-      {!hiddenCards.includes('quote') &&
-        (dailyQuote ? (
+      {!hiddenCards.includes('quote') && thoughtOfDay && (
           <button
             onClick={() => {
               platform.haptic('light')
@@ -962,29 +975,14 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
             <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
 
             <span className="block font-display text-[19px] text-cream leading-snug">
-              {dailyQuote}
+              {thoughtOfDay.text}
             </span>
 
-            <span className="block text-[11px] text-faint font-semibold mt-4">открыть все →</span>
+            <span className="block text-[11px] text-faint font-semibold mt-4">
+              {thoughtOfDay.attribution} · открыть →
+            </span>
           </button>
-        ) : (
-          <EmptyState className="mt-4">
-            <h3 className="font-display text-lg text-cream mb-1">Пока нет твоих фраз</h3>
-            <p className="text-sm text-muted mb-4 leading-relaxed">
-              Здесь будут появляться твои мысли — как только сохранишь первую.
-            </p>
-            <button
-              onClick={() => {
-                platform.haptic('light')
-
-                onOpenSettings?.()
-              }}
-              className="cta-pill px-9 py-3.5 text-[14px]"
-            >
-              Мои фразы
-            </button>
-          </EmptyState>
-        ))}
+      )}
     </div>
   )
 }
