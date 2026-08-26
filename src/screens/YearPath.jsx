@@ -143,12 +143,16 @@ export default function YearPath({ user }) {
 
   return (
     <div className="rounded-[28px] bg-emerald-deep border border-cream/10 overflow-hidden mb-5">
-      <div className="text-[13px] text-muted font-semibold text-center pt-5">Год пути</div>
+      <div className="text-[13px] text-muted font-semibold text-center pt-5">Мой путь</div>
+      <p className="text-[12px] text-faint text-center mt-1">История регулярности и движения</p>
 
       <div className="flex justify-center pt-2 pb-6">
         <TickGauge value={percent} max={100} sublabel="дней с практикой" size={104} />
       </div>
 
+      <div className="px-6 pb-1 text-center text-[12px] text-muted">
+        {activeDaysCount} активных {activeDaysCount === 1 ? 'день' : activeDaysCount < 5 ? 'дня' : 'дней'} в периоде
+      </div>
       <div className="mt-2">
         <YearRidge values={weeklyBuckets} />
       </div>

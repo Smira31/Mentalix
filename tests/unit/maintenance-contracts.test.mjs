@@ -137,3 +137,12 @@ test('MXL-007 публикует цикл Today: идея, действие, а�
   assert.match(today, /'Анализ дня'/)
   assert.match(today, /Новый шаг/)
 })
+
+test('MXL-008 публикует Stoic-like Journey и объясняет метрику активных дней', () => {
+  const source = readFileSync(new URL('../../src/screens/YearPath.jsx', import.meta.url), 'utf8')
+
+  assert.match(source, />Мой путь<\/div>/)
+  assert.match(source, /История регулярности и движения/)
+  assert.match(source, /дней с практикой|дней в периоде/i)
+  assert.match(source, /daily_activity/)
+})
