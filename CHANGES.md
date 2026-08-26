@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 26.08.2026 — актуальная сводка состояния проекта
+
+- `main` синхронизирован с `origin/main` на commit `882894f`; рабочее дерево чистое.
+- Последние завершённые изменения: History unified feed (`PR #194`), streak tiers (`PR #196`) и Stoic-inspired Today cycle (`PR #197` + документационная фиксация `PR #198`).
+- Последний GitHub Actions run для `main` успешен; `docs:check` прошёл: 94 Markdown-файла, 18 canonical task ID, 0 ошибок.
+- Frontend и backend health endpoints возвращают `status: ok`; точное соответствие Vercel Production текущему commit отдельно не подтверждено.
+- MXL-007 закрыта; в активном backlog остаются 17 записей, autonomous queue пуста. Следующий продуктовый выбор — MXL-008.
+- Открытые PR #152 и четыре draft PR оставлены без merge из-за владельческого/backend/manual gate или устаревшей базы.
+
 ## 26.08.2026 — MXL-007: Stoic-inspired daily cycle Today
 
 - По решению владельца Today оформлен вокруг ежедневного ритма: mood check-in, утренняя подготовка, действие дня, вечерний анализ и новый шаг.
