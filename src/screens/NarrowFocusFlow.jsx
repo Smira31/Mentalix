@@ -11,6 +11,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { saveNarrowFocusEntry } from '../lib/narrowFocusPractice'
+import './NarrowFocusFlow.css'
 
 /*
  * MXL-PRB-015, MXL-DEC-016: разовая практика «Одно из всех» — не серия, не
@@ -52,6 +53,15 @@ function Eyebrow() {
     <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
       Одно из всех
     </span>
+  )
+}
+
+function StageHeading({ children }) {
+  return (
+    <div className="narrow-focus-stage__anchor">
+      <Eyebrow />
+      <h2 className="narrow-focus-stage__title font-display text-cream">{children}</h2>
+    </div>
   )
 }
 
@@ -177,12 +187,8 @@ export default function NarrowFocusFlow({ userId, onClose }) {
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
         {step === 'dump' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Выпиши всё, что крутится в голове
-            </h2>
+          <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
+            <StageHeading>Выпиши всё, что крутится в голове</StageHeading>
 
             <JournalTextarea
               autoFocus
@@ -190,7 +196,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
               onChange={setDump}
               placeholder="Без разбора и порядка — просто всё подряд"
               ariaLabel="Всё, что крутится в голове"
-              className="mt-6 min-h-[18rem]"
+              className="narrow-focus-stage__writer min-h-[12rem]"
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
@@ -202,14 +208,10 @@ export default function NarrowFocusFlow({ userId, onClose }) {
         )}
 
         {step === 'pick' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
+          <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
+            <StageHeading>Что из этого важнее всего сейчас?</StageHeading>
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Что из этого важнее всего сейчас?
-            </h2>
-
-            <p className="text-[13px] text-muted mt-2 leading-relaxed">Назови только одно.</p>
+            <p className="text-[13px] text-muted mt-2 mb-4 leading-relaxed">Назови только одно.</p>
 
             <JournalTextarea
               autoFocus
@@ -217,7 +219,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
               onChange={setPick}
               placeholder="Одно дело"
               ariaLabel="Одно самое важное дело"
-              className="mt-6 min-h-[18rem]"
+              className="narrow-focus-stage__writer min-h-[12rem]"
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
@@ -229,10 +231,8 @@ export default function NarrowFocusFlow({ userId, onClose }) {
         )}
 
         {step === 'release' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[22px] text-cream leading-snug">{releasePhrase}</h2>
+          <div className="narrow-focus-stage animate-fade-in">
+            <StageHeading>{releasePhrase}</StageHeading>
 
             <button
               type="button"
@@ -245,12 +245,8 @@ export default function NarrowFocusFlow({ userId, onClose }) {
         )}
 
         {step === 'plan' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Что можно сделать по этому одному прямо сейчас?
-            </h2>
+          <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
+            <StageHeading>Что можно сделать по этому одному прямо сейчас?</StageHeading>
 
             <JournalTextarea
               autoFocus
@@ -258,7 +254,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
               onChange={setPlan}
               placeholder="Например: написать первое сообщение"
               ariaLabel="Первое действие по выбранному делу"
-              className="mt-6 min-h-[18rem]"
+              className="narrow-focus-stage__writer min-h-[12rem]"
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
@@ -270,10 +266,8 @@ export default function NarrowFocusFlow({ userId, onClose }) {
         )}
 
         {step === 'run' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in text-center">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">Только это одно</h2>
+          <div className="narrow-focus-stage animate-fade-in text-center">
+            <StageHeading>Только это одно</StageHeading>
 
             <div className="font-display text-[64px] text-cream mt-8 tabular-nums">
               {minutes}:{seconds}
@@ -290,20 +284,16 @@ export default function NarrowFocusFlow({ userId, onClose }) {
         )}
 
         {step === 'outcome' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">Как прошло?</h2>
+          <div className="narrow-focus-stage animate-fade-in">
+            <StageHeading>Как прошло?</StageHeading>
 
             <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />
           </div>
         )}
 
         {step === 'reflect' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">Стало ли легче?</h2>
+          <div className="narrow-focus-stage animate-fade-in">
+            <StageHeading>Стало ли легче?</StageHeading>
 
             <OptionList options={REFLECTION_OPTIONS} onPick={finish} />
 
