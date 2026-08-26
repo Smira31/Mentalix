@@ -10,7 +10,7 @@
 | ---------------------------- | ------: | ---------------- | ---------- | ------------------------------- | ---------------------------------------------------------------- |
 | `MXL-RSCH-002`               | Ongoing | research         | backlog    | needs-owner                     | Уточнить протокол проверки и границы обобщения                   |
 | `MXL-USERS`                  |      ML | research/release | backlog    | manual-gate                     | Согласовать выборку, согласия, сценарий и критерии               |
-| `MXL-001`                    |      ML | product/UX       | ready     | manual-gate                     | Реализовать AI-flow по baseline: идея → действие → анализ → новый шаг |
+| `MXL-001`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #211; Telegram/iPhone gate пройден владельцем |
 | `MXL-002`                    |      ML | UX/release       | backlog    | manual-gate                     | Провести свежий iPhone/Telegram gate всех AI-экранов             |
 | `MXL-005`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #207; Telegram/iPhone gate пройден владельцем |
 | `MXL-006`                    |      ML | UX               | verified   | completed                      | Закрыта через PR #209; iPhone/Telegram gate пройден владельцем     |

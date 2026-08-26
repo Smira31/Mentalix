@@ -3801,7 +3801,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-001 — Stoic-inspired AI core flow
 
-- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-001-ai-core-flow`.
+- **Статус:** verified/completed 26.08.2026; PR #211 смёржен в `main`, Telegram/iPhone gate пройден владельцем.
 - **Размер:** ML
 - **Тип:** product/UX
 - **Автономность:** manual-gate; backend/API не меняется.
