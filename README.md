@@ -21,6 +21,7 @@ Telegram Mini App — операционная система личного р�
 | [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md)                                           | Как переводить референсы в Mentalix без копирования                 |
 | [`TASKS.md`](TASKS.md)                                                                     | Подробные задачи и handoff                                          |
 | [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md)                                                 | Короткий канонический индекс активного backlog                      |
+| [`docs/TELEGRAM_PREVIEW_ACTIONS.md`](docs/TELEGRAM_PREVIEW_ACTIONS.md)                     | Автоматический Vercel Preview и Telegram-уведомления через Actions  |
 | [`PROJECT_STATE.md`](PROJECT_STATE.md)                                                     | Текущее подтверждённое состояние, release blockers и handoff        |
 | [`docs/DOCUMENTATION_GUIDE.md`](docs/DOCUMENTATION_GUIDE.md)                               | Как читать, классифицировать и обновлять документацию               |
 | [`docs/core/README.md`](docs/core/README.md)                                               | Mentalix Core: связь проблем, законов, методов и продукта           |
