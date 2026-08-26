@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
+import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import {
@@ -388,8 +389,8 @@ export function deriveConclusions(checkins, data) {
     threshold: 0.6,
     build: delta =>
       delta > 0
-        ? 'Тревога выше в дни, которые ты не закрываешь вечерним разбором.'
-        : 'Тревога выше в дни, которые ты разбираешь вечером — возможно, разбор попадает именно на тяжёлые дни.',
+        ? 'В этой выборке тревога чаще отмечалась в дни без завершённого вечернего разбора.'
+        : 'В этой выборке тревога чаще отмечалась в дни с завершённым вечерним разбором — возможно, это были более тяжёлые дни.',
   })
 
   if (anxiety) found.push(anxiety)
@@ -402,8 +403,8 @@ export function deriveConclusions(checkins, data) {
     threshold: 0.5,
     build: delta =>
       delta > 0
-        ? 'В закрытые дни настроение держится заметно выше, чем в брошенные.'
-        : 'Настроение в закрытые дни ниже — ты чаще доводишь до разбора трудные дни.',
+        ? 'В этой выборке настроение было выше в дни с завершённым вечерним разбором.'
+        : 'В этой выборке настроение было ниже в дни с завершённым вечерним разбором — такие дни могли быть сложнее.',
   })
 
   if (mood) found.push(mood)
@@ -419,8 +420,8 @@ export function deriveConclusions(checkins, data) {
     threshold: 0.7,
     build: delta =>
       delta > 0
-        ? 'Собранность идёт следом за энергией: в дни с силами ты заметно собраннее.'
-        : 'Собранность не зависит от энергии — в уставшие дни ты собран не меньше.',
+        ? 'В этой выборке более высокая энергия чаще совпадала с более высокой собранностью.'
+        : 'В этой выборке энергия и собранность заметно не различались между группами.',
   })
 
   if (focus) found.push(focus)
@@ -563,6 +564,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
   const conclusions = deriveConclusions(checkins, data)
   const [lead, ...rest] = conclusions
+  const descriptiveBackendInsights = selectDescriptiveInsights(data.insights)
 
   const enough = checkins.length >= MIN_CHECKINS
 
@@ -611,14 +613,18 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {/* ── Инсайты бэкенда ── */}
 
-      {data.insights?.length > 0 && (
+      {descriptiveBackendInsights.length > 0 && (
         <>
           <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
-            Замечено системой
+            Наблюдения из системы
           </div>
 
+          <p className="text-[12px] text-faint leading-relaxed mb-3">
+            Это описательные наблюдения по доступным данным, а не диагнозы и не доказанные причины.
+          </p>
+
           <div className="space-y-2 mb-7">
-            {data.insights.map((text, i) => (
+            {descriptiveBackendInsights.map((text, i) => (
               <div
                 key={i}
                 className="rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5 text-[14px] text-cream leading-snug"

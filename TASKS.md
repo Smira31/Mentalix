@@ -3865,3 +3865,16 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** новый backend endpoint, новая метрика, изменение целей/привычек, глобальная замена брендового MazeLogo, новый раздел навигации.
 - **Критерии готовности:** все Journey goal visuals используют одну line-art метафору; progress отображается через stroke-dash; MXL-008/MXL-021 contracts не ломаются; unit, docs:check, lint, build, UX smoke и diff-check зелёные.
 - **Следующий gate:** ручная Telegram/iPhone проверка Path/Journey на empty state, goal card и goal detail, включая safe area и отсутствие визуального ощущения лабиринта.
+
+
+## MXL-009 — Описательные AI-insights без причинных claims
+
+- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-009-descriptive-insights`.
+- **Размер:** ML
+- **Тип:** product/data/UX
+- **Автономность:** frontend scope готов; backend insight contract остаётся отдельным ограничением.
+- **Продуктовое решение:** Mentalix показывает наблюдения по доступной выборке, а не диагнозы, причины или обещания. Формулировки используют «в этой выборке», «чаще совпадало» и «могли быть сложнее».
+- **Реализованный scope:** добавлен `selectDescriptiveInsights` с ограничением до трёх коротких backend-строк и фильтрацией диагностических/причинных паттернов. В Analytics добавлен disclaimer: наблюдения не являются диагнозами и доказанными причинами. Клиентские deriveConclusions переписаны в наблюдательном стиле; тот же текст автоматически используется insightDigest в дневниковом AI-flow.
+- **Не входит:** новый backend endpoint, генерация AI-выводов, статистическая причинность, диагнозы, персональные рекомендации по лечению или решение о достаточности выборки для научных выводов.
+- **Критерии готовности:** backend strings sanitised before rendering, insufficient data remains explicit, no causal/diagnostic language in shipped local rules, unit/docs/lint/build/UX smoke green, manual Analytics/Telegram gate required.
+- **Следующий gate:** проверить Analytics на телефоне с малой и достаточной выборкой, backend insight cards, disclaimer и переход в дневниковый AI-flow.
