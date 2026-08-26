@@ -5,7 +5,8 @@
 - По решению владельца журнал моделируется как лента отдельных AI-ответов, сгруппированных по датам и темам; непрерывная история диалога автоматически не создаётся.
 - В Conversation добавлены календарные разделители при доступном timestamp, fallback для старых сообщений без даты и раскрытие длинных AI-ответов через `Читать полностью`/`Свернуть ответ`.
 - Backend/API, формат хранения, voice flow и существующий markdown renderer не менялись.
-- Локально проходят 16/16 unit-тестов, lint, build, `docs:check`, `git diff --check` и UX smoke на двух мобильных viewport; до закрытия остаётся Telegram/iPhone gate.
+- Локально проходят 16/16 unit-тестов, lint, build, `docs:check`, `git diff --check` и UX smoke на двух мобильных viewport; владелец подтвердил Telegram/iPhone gate.
+- **Закрыто 26.08.2026:** PR #207 squash-смёржен в `main` (commit `ec65618`), ветка удалена, MXL-005 переведена в `verified/completed`.
 
 
 ## 26.08.2026 — MXL-011: финальный Telegram/iPhone release gate
