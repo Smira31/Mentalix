@@ -1,9 +1,93 @@
 # Mentalix — задачи
 
+## MXL-PRACTICES-PROGRESS-BAR-UNIFY-001 — единый прогресс-бар «N из 6»
+
+- **Статус: реализовано локально 26.08.2026 на всех трёх файлах,
+  незакоммичено (диф на подтверждение).** Найдено в ходе
+  живой проверки PR #191 (владелец): у трёх flow нет прогресс-бара «N из 6»,
+  который есть на каждом шаге «Без вины» — не регрессия переноса
+  `StageHeading`/intro-completion (PR #180/189/191), компонент `Progress`
+  никогда не входил в переносимый паттерн ни в одной из трёх задач.
+- **Сверка факта с кодом до старта:** `Progress`/`STEP_PROGRESS`
+  (`ProcrastinationFlow.jsx:68-75,111-129`) — самостоятельный компонент,
+  соседний с `StageHeading` в файле, но не вложенный в него; не импортируется
+  нигде за пределами `ProcrastinationFlow.jsx`/`.css` (проверено `grep` по
+  всему `src/`). `STEP_PROGRESS` привязан к шести именам шагов конкретно этой
+  практики (`task/feeling/release/plan/run/outcome`), не абстрагирован.
+- **Pre-mortem (все пять зон, методика из предыдущих задач сессии):**
+  1. _Тигр, подтверждён цифрами_ — количество «настоящих» пронумерованных
+     шагов расходится между flow: у `FinishFlow` (project/state/reframe/
+     finish/run/outcome) и `NarrowFocusFlow` (dump/pick/release/plan/run/
+     outcome) — ровно 6, маппинг 1:1 безопасен. У `FirstStepFlow`
+     (task/state/plan/run/outcome) — только **5**: шаг `rest` — аварийная
+     ветка из `state` (когда выбрано «Устал(а)»), ведёт сразу к `onClose()`,
+     не часть числовой последовательности. Слепое копирование маппинга с
+     чужими именами и жёстким «из 6» дало бы `undefined`/сломанный прогресс.
+     Митигация: `FinishFlow`/`NarrowFocusFlow` — прямой перенос 1:1;
+     `FirstStepFlow` — отдельное решение по `rest`, не по аналогии.
+  2. _Бумажный тигр_ — Telegram API/`web.adapter.js`: `Progress` — чистый
+     presentational-компонент (`div`/`span`, CSS-grid, `aria-label`/
+     `aria-hidden`), ни одного вызова `platform.*`/`Telegram`/
+     `useMainButton`/`WebActionBar` ни в компоненте, ни в его CSS.
+  3. _Бумажный тигр, подтверждён фактом (не по аналогии)_ — данные/бэкенд:
+     `step` хранится строкой-именем шага во всех трёх файлах (проверено
+     `grep` на `setStep('...')` — везде строковые литералы, ни одного
+     числового индекса), значит маппинг по имени шага встанет без сюрпризов;
+     `Progress` не касается `save*Entry`/схемы хранения вообще.
+  4. Митигация объёма — неравный вес работы по файлам: `FinishFlow`/
+     `NarrowFocusFlow` быстрые и коммитятся первыми; `FirstStepFlow` —
+     отдельно, чтобы застревание на решении по `rest` не блокировало два
+     готовых файла.
+  5. Митигация обратимости — `Progress` полностью presentational и
+     независим от данных/платформы, откат по экрану — это удаление одной
+     строки `<Progress step={step} />` и локального `STEP_PROGRESS`/CSS;
+     локальная копия компонента в каждом файле (без общего хелпера) — тот
+     же принцип, что и в предыдущих задачах сессии — сохраняет эту
+     гранулярность.
+- [x] `FinishFlow.jsx` + `FinishFlow.css`: `STEP_PROGRESS`
+      `{project:1, state:2, reframe:3, finish:4, run:5, outcome:6}`,
+      локальный `Progress`, `.one-finish-progress*`; добавлен на все шесть
+      пронумерованных шагов, отсутствует на `intro`/`complete` (та же
+      находка, что и у «Без вины» — там тоже не рендерится на completion).
+- [x] `NarrowFocusFlow.jsx` + `NarrowFocusFlow.css`: `STEP_PROGRESS`
+      `{dump:1, pick:2, release:3, plan:4, run:5, outcome:6}`, аналогично.
+- [x] `FirstStepFlow.jsx` + `FirstStepFlow.css`: решение по `rest` — «никакого
+      прогресса» (владелец), тот же механизм, что уже отсекает `intro`/
+      `complete` (`if (!current) return null`). `STEP_PROGRESS`
+      `{task:1, state:2, plan:3, run:4, outcome:5}` — **5**, не 6, с
+      соответствующей правкой хардкода `Array.from({length:5})`/«из 5» в
+      `Progress`. Заодно поправлен текст на `intro`: «5 минут · 6 шагов» →
+      «5 минут · 5 шагов» (был фактически неверен ещё с прошлой задачи,
+      найдено этой сверкой). `FirstStepFlow` рендерится через `SceneLayout`,
+      который кладёт `children` **после** label/title — не туда, где
+      Progress стоит у трёх остальных практик (над Eyebrow). Решение
+      владельца: новый опциональный проп `progress` у `SceneLayout.jsx`
+      (рендерится до `label`, `= null` по умолчанию) — нулевой эффект для
+      Ascezas.jsx/Rituals.jsx, которые этот компонент не вызывают вообще
+      (см. находку выше); `ux:check` подтверждает после правки.
+- **Проверено:** `npm run lint`/`npm run build` — чисто; `npm run ux:check`
+  — 1/1 на `390×844`/`320×568` (существующие ассерты координаты якоря
+  по-прежнему проходят — `Progress` добавлен одинаково на все шаги внутри
+  каждого flow, инвариант не нарушен; Ascezas/Rituals в общем сценарии
+  не задеты правкой `SceneLayout.jsx`). Скриншоты: `06f`/`06g`
+  (FinishFlow, «1 из 6»/«4 из 6»), `06c`/`06d` (NarrowFocusFlow, «1 из 6»),
+  `06a`/`06b` (FirstStepFlow, «1 из 5»/«3 из 5»), `06f2`/`06g1`/интро
+  «Первого шага» (без прогресс-бара) — все из автопрогона. Вручную (временный
+  скрипт, не в репозитории) досняты непокрытые тестом шаги `FirstStepFlow`:
+  `state` («2 из 5»), `rest` (без прогресса, подтверждено), `run` («4 из 5»,
+  сочетание с `centered` не ломает grid-разметку прогресса), `outcome`
+  («5 из 5», все сегменты).
+- **Не менялось:** `ProcrastinationFlow.jsx`, `SceneLayout.css`,
+  `Ascezas.jsx`, `Rituals.jsx`, backend/API, данные, остальная вёрстка
+  шагов. `SceneLayout.jsx` изменён (см. выше) — единственное исключение,
+  явно согласованное с владельцем перед правкой.
+
 ## MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001 — единый intro/completion во всех практиках
 
-- **Статус: реализовано локально 26.08.2026 на ветке
-  `feat/practices-intro-completion-unify-001`, незакоммичено.** Приводит
+- **Статус: PR #191 открыт 26.08.2026 (ветка
+  `feat/practices-intro-completion-unify-001`, 6 коммитов — intro/completion
+  раздельно на файл), CI зелёный, Telegram Preview развёрнут — ждёт живого
+  iPhone gate владельца перед обычным squash-merge.** Приводит
   `FirstStepFlow.jsx`, `FinishFlow.jsx`, `NarrowFocusFlow.jsx` к тому же
   паттерну подачи, что уже есть у «Без вины»
   (`MXL-PRACTICES-EXPERIENCE-PILOT-001`): вступительная карточка
