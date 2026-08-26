@@ -146,3 +146,13 @@ test('MXL-008 публикует Stoic-like Journey и объясняет мет
   assert.match(source, /дней с практикой|дней в периоде/i)
   assert.match(source, /daily_activity/)
 })
+
+test('MXL-021 возвращает из Journey в Today через CTA «Продолжить сегодня»', () => {
+  const path = readFileSync(new URL('../../src/screens/Path.jsx', import.meta.url), 'utf8')
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+
+  assert.match(path, /function Path\(\{ user, onContinueToday \}\)/)
+  assert.match(path, /Продолжить сегодня/)
+  assert.match(path, /onClick=\{onContinueToday\}/)
+  assert.match(today, /<Path user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
+})

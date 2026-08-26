@@ -397,7 +397,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange, 
         </div>
 
         {pathTab === 'path' ? (
-          <Path user={user} />
+          <Path user={user} onContinueToday={() => changeSub(null)} />
         ) : (
           <div className="w-full max-w-md px-5">
             <History user={user} />
