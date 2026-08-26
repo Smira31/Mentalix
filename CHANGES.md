@@ -3160,3 +3160,7 @@ PR #215 смёржен в `main` (merge commit `2f63692`), feature-ветка у
 ## 26.08.2026 — MXL-014: первая текстовая медитация закрыта
 
 PR #217 смёржен в `main` (merge commit `182a93a`), feature-ветка удалена. В Practices опубликована короткая Stoic-inspired письменная практика на 5–10 минут: наблюдение, зона влияния, один следующий шаг и завершение. Аудио, backend persistence, диагнозы и pressure mechanics не добавлялись. Владелец подтвердил Telegram/iPhone gate.
+
+## 26.08.2026 — MXL-019: continuous Journey line закрыта
+
+PR #219 смёржен в `main` (merge commit `c573a41`), feature-ветка удалена. В goal Journey удалена старая mountain/maze metaphor и добавлена одна непрерывная line-art траектория с заполнением по progress. YearPath с активными днями и CTA «Продолжить сегодня» не менялись. Владелец подтвердил Telegram/iPhone gate.

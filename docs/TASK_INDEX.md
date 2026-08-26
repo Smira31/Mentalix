@@ -25,7 +25,7 @@
 | `MXL-015`                    |       M | content/product  | verified   | completed                      | Закрыта через PR #213; curated-каталог из 7 тем зафиксирован |
 | `MXL-016`                    |       M | content/product/UX | verified   | completed                      | Закрыта через PR #215; curated fallback и reflective metadata опубликованы |
 | `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
-| `MXL-019`                    |       M | product/UX/visual | in progress | manual-gate                  | Continuous Journey line готова; YearPath active days и Continue Today сохранены |
+| `MXL-019`                    |       M | product/UX/visual | verified   | completed                      | Закрыта через PR #219; continuous Journey line опубликована |
 | `MXL-020`                    |       ? | product/payment  | deferred   | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
 
 ## Автономная очередь
