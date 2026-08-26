@@ -6,6 +6,7 @@ import SceneLayout from '../components/practices/SceneLayout'
 import JournalTextarea from '../components/JournalTextarea'
 import { useFullscreenSurface, FULLSCREEN_SHELL_CLASS } from '../lib/fullscreenSurface'
 import { saveFirstStepEntry } from '../lib/firstStepPractice'
+import './FirstStepFlow.css'
 
 /*
  * MXL-PRB-002, MXL-DEC-013: разовая практика «Первый шаг» — не серия,
@@ -58,7 +59,7 @@ function OptionList({ options, onPick }) {
 export default function FirstStepFlow({ userId, onClose }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
-  const [step, setStep] = useState('task')
+  const [step, setStep] = useState('intro')
   const [task, setTask] = useState('')
   const [plan, setPlan] = useState('')
   const [outcome, setOutcome] = useState(null)
@@ -102,6 +103,11 @@ export default function FirstStepFlow({ userId, onClose }) {
     platform.haptic('success')
     setStep('outcome')
   }, [secondsLeft, endsAt])
+
+  function startPractice() {
+    platform.haptic('light')
+    setStep('task')
+  }
 
   function goToState() {
     if (!task.trim()) return
@@ -154,6 +160,33 @@ export default function FirstStepFlow({ userId, onClose }) {
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      {step === 'intro' && (
+        <SceneLayout
+          scrollRef={sceneScrollRef}
+          onBack={onClose}
+          label="Первый шаг"
+          title="Сделай маленький шаг, когда трудно начать"
+          centered
+          description={
+            <>
+              Пять минут, чтобы найти одно простое действие и просто начать — без давления сделать
+              всё сразу.
+              <span className="mt-3 block text-[12px] font-semibold text-faint">
+                5 минут&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
+              </span>
+            </>
+          }
+        >
+          <button
+            type="button"
+            onClick={startPractice}
+            className="cta-pill w-full text-[15px] px-6 py-4"
+          >
+            Начать
+          </button>
+        </SceneLayout>
+      )}
+
       {step === 'task' && (
         <SceneLayout
           showGlyph={false}
