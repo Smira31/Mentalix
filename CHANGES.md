@@ -6,7 +6,7 @@
 - В существующем компоненте «Цикл дня» этапы названы **Идея → Действие → Анализ → Новый шаг**; обновлены связанные подписи и поясняющие тексты главной карточки Today.
 - Backend, API и существующие переходы не менялись. Добавлен regression-контракт на четыре этапа.
 - Локальные проверки: `npm run test:unit` — 11/11, `npm run lint` — успешно, `npm run build` — успешно, `npm run docs:check` — успешно, `git diff --check` — успешно.
-- Осталось до закрытия: PR, GitHub CI/Vercel Preview и ручная iPhone/Telegram-проверка.
+- Закрыто: PR #197 squash-смёржен в `main` (commit `afdc266`), remote-ветка удалена; GitHub CI и Vercel Preview зелёные, владелец подтвердил работу Preview с телефона в Telegram.
 
 ## 26.08.2026 — MXL-HISTORY-UNIFIED-FEED-001: закрытие
 
