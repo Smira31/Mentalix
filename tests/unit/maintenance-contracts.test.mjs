@@ -122,3 +122,18 @@ test('preview cleanup подтверждает удаление до очист�
   assert.match(launcher, /Join-Path \$PSScriptRoot 'preview-stop\.ps1'/)
   assert.doesNotMatch(launcher, /Start-Sleep -Seconds 3600; npx vercel@latest remove/)
 })
+
+test('MXL-007 публикует цикл Today: идея, действие, анализ и новый шаг', () => {
+  const thread = readFileSync(
+    new URL('../../src/components/TodayMotionExperiment.jsx', import.meta.url),
+    'utf8'
+  )
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+
+  assert.match(thread, /const THREAD_LABELS = \['Идея', 'Действие', 'Анализ', 'Новый шаг'\]/)
+  assert.match(thread, /<strong>Цикл дня<\/strong>/)
+  assert.match(today, /'Идея дня'/)
+  assert.match(thread, /<small>Действие дня<\/small>/)
+  assert.match(today, /'Анализ дня'/)
+  assert.match(today, /Новый шаг/)
+})

@@ -14,7 +14,7 @@
 | `MXL-002`                    |      ML | UX/release       | backlog    | manual-gate                     | Провести свежий iPhone/Telegram gate всех AI-экранов             |
 | `MXL-005`                    |      ML | product/UX       | backlog    | needs-owner                     | Уточнить журнальный формат длинных ответов и истории             |
 | `MXL-006`                    |      ML | UX               | backlog    | needs-owner + manual-gate       | Утвердить типографическую шкалу и проверить iPhone               |
-| `MXL-007`                    |      ML | product/UX       | backlog    | needs-owner + manual-gate       | Зафиксировать один наблюдаемый Today-сценарий                    |
+| `MXL-007`                    |      ML | product/UX       | in progress | manual-gate                    | Проверить Stoic-inspired daily cycle на iPhone/Telegram             |
 | `MXL-008`                    |      ML | product/UX       | backlog    | needs-owner                     | Утвердить роль «Пути» и метрику прогресса                        |
 | `MXL-009`                    |      ML | product/data     | backlog    | needs-owner + backend-dependent | Утвердить полезные закономерности и источник данных              |
 | `MXL-010`                    |       L | release          | backlog    | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные        |
