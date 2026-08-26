@@ -157,6 +157,28 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
+test('MXL-015 публикует семь curated Stoic-inspired тем без backend предположений', () => {
+  const source = readFileSync(
+    new URL('../../src/data/weeklyThemes.js', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(source, /export const WEEKLY_THEME_CATALOG = \[/)
+  assert.equal((source.match(/key: '/g) || []).length, 7)
+  assert.match(source, /control-and-influence/)
+  assert.match(source, /attention/)
+  assert.match(source, /friction/)
+  assert.match(source, /courage/)
+  assert.match(source, /temperance/)
+  assert.match(source, /perspective/)
+  assert.match(source, /renewal/)
+  assert.equal((source.match(/stoicQuestion:/g) || []).length, 7)
+  assert.equal((source.match(/actionPrompt:/g) || []).length, 7)
+  assert.equal((source.match(/analysisPrompt:/g) || []).length, 7)
+  assert.equal((source.match(/nextStepPrompt:/g) || []).length, 7)
+  assert.match(source, /Backend theme IDs, publication, and reflection persistence remain/)
+})
+
 test('MXL-001 публикует Stoic-inspired AI flow без backend изменений', () => {
   const indicator = readFileSync(
     new URL('../../src/screens/mentalix/AiFlowIndicator.jsx', import.meta.url),
