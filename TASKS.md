@@ -3852,3 +3852,16 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** аудио, таймер, backend persistence, диагнозы, обещания терапевтического результата, streak и pressure mechanics.
 - **Критерии готовности:** practice открывается из Practices, все четыре шага работают на 390×844 и 320×568, Back/Telegram fullscreen не ломаются, unit contract, docs:check, lint, build, UX smoke и diff-check зелёные.
 - **Следующий gate:** ручная Telegram/iPhone проверка intro, переходов, клавиатуры, safe area, узкого экрана и выхода без сохранения текста.
+
+
+## MXL-019 — Непрерывная линия Journey вместо лабиринта
+
+- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-019-journey-line`.
+- **Размер:** M
+- **Тип:** product/UX/visual
+- **Автономность:** manual-gate; backend/API и метрика активных дней не меняются.
+- **Продуктовое решение:** Journey показывает не соревнование и не декоративный лабиринт, а спокойную непрерывную линию движения. Заполненная часть линии отражает progress цели; существующий YearPath продолжает показывать реальную регулярность и CTA «Продолжить сегодня».
+- **Реализованный scope:** добавлен source-controlled `JourneyLineArt` с одной непрерывной SVG path, track line, progress stroke и endpoint marker. Старый `WireframeMountain` удалён из empty state, goal creation, GoalCard и GoalDetail. Copy «на карте» заменён на «линию движения».
+- **Не входит:** новый backend endpoint, новая метрика, изменение целей/привычек, глобальная замена брендового MazeLogo, новый раздел навигации.
+- **Критерии готовности:** все Journey goal visuals используют одну line-art метафору; progress отображается через stroke-dash; MXL-008/MXL-021 contracts не ломаются; unit, docs:check, lint, build, UX smoke и diff-check зелёные.
+- **Следующий gate:** ручная Telegram/iPhone проверка Path/Journey на empty state, goal card и goal detail, включая safe area и отсутствие визуального ощущения лабиринта.
