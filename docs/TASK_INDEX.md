@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного backlog** на 26.08.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Этот индекс не заменяет продуктовые решения и не выбирает P0 автоматически.
+Статус индекса: каноническое представление **активного backlog** на 26.08.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Stoic-inspired product baseline зафиксирован в [`PRODUCT.md`](../PRODUCT.md), но новые safety, backend и коммерческие решения по-прежнему требуют отдельного подтверждения.
 
 ## Как читать индекс
 
@@ -10,23 +10,23 @@
 | ---------------------------- | ------: | ---------------- | ---------- | ------------------------------- | ---------------------------------------------------------------- |
 | `MXL-RSCH-002`               | Ongoing | research         | backlog    | needs-owner                     | Уточнить протокол проверки и границы обобщения                   |
 | `MXL-USERS`                  |      ML | research/release | backlog    | manual-gate                     | Согласовать выборку, согласия, сценарий и критерии               |
-| `MXL-001`                    |      ML | product/UX       | backlog    | needs-owner + manual-gate       | Выбрать scope трёх AI-экранов и референсы                        |
+| `MXL-001`                    |      ML | product/UX       | ready     | manual-gate                     | Реализовать AI-flow по baseline: идея → действие → анализ → новый шаг |
 | `MXL-002`                    |      ML | UX/release       | backlog    | manual-gate                     | Провести свежий iPhone/Telegram gate всех AI-экранов             |
 | `MXL-005`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #207; Telegram/iPhone gate пройден владельцем |
-| `MXL-006`                    |      ML | UX               | in progress | manual-gate                  | Проверить AI typography baseline на iPhone/Telegram             |
+| `MXL-006`                    |      ML | UX               | verified   | completed                      | Закрыта через PR #209; iPhone/Telegram gate пройден владельцем     |
 | `MXL-007`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #197; iPhone/Telegram gate пройден владельцем |
 | `MXL-008`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #200; Vercel/телефонный gate пройден          |
 | `MXL-021`                    |       M | product/UX       | verified   | completed                      | Закрыта через PR #203; Telegram/iPhone gate пройден владельцем |
-| `MXL-009`                    |      ML | product/data     | backlog    | needs-owner + backend-dependent | Утвердить полезные закономерности и источник данных              |
+| `MXL-009`                    |      ML | product/data     | ready     | backend-dependent + manual-gate | Реализовать только описательные insights; backend-контракт и малую выборку проверить отдельно |
 | `MXL-010`                    |       L | release          | backlog    | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные        |
 | `MXL-011`                    |       L | release          | verified   | completed                      | Закрыта после Telegram/iPhone release gate владельца           |
 | `MXL-012`                    |       L | release          | backlog    | manual-gate                     | Провести Android gate                                            |
-| `MXL-014`                    |       ? | product/backend  | backlog    | needs-owner + backend-dependent | Определить сценарий и backend для медитаций                      |
-| `MXL-015`                    |       ? | content/product  | backlog    | needs-owner                     | Утвердить таксономию тем недели                                  |
-| `MXL-016`                    |       ? | content/product  | backlog    | needs-owner                     | Утвердить источник и правила банка «Мыслей дня»                  |
+| `MXL-014`                    |       ? | product/backend  | ready     | backend-dependent + manual-gate | Спроектировать одну текстовую практику на 5–10 минут; аудио не входит в MVP |
+| `MXL-015`                    |       ? | content/product  | ready     | manual-gate                     | Подготовить 5–7 редакционных тем, связанных с ежедневным действием |
+| `MXL-016`                    |       ? | content/product  | ready     | manual-gate                     | Подготовить curated-банк с проверенной атрибуцией; не генерировать цитаты без источника |
 | `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
-| `MXL-019`                    |       ? | product/UX       | backlog    | needs-owner                     | Сформулировать проблему и критерий замены лабиринта              |
-| `MXL-020`                    |       ? | product/payment  | backlog    | needs-owner + backend-dependent | Выбрать модель оплаты, provider и ограничения                    |
+| `MXL-019`                    |       ? | product/UX       | ready     | manual-gate                     | Переосмыслить Journey как следующий шаг и активные дни, не как соревнование |
+| `MXL-020`                    |       ? | product/payment  | deferred   | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
 
 ## Автономная очередь
 
@@ -38,12 +38,12 @@
 
 | Тема            | Состояние                              | Не делать автоматически                             |
 | --------------- | -------------------------------------- | --------------------------------------------------- |
-| P0              | Новая текущая P0 не выбрана владельцем | Не назначать следующую задачу как P0 самостоятельно |
-| Навигация       | Пять основных разделов утверждены      | Не добавлять шестую вкладку                         |
+| P0              | Рекомендована MXL-001 как следующая P0 | Не менять порядок без новых данных или явного решения владельца |
+| Навигация       | Пять основных разделов; Today — главный вход | Не добавлять шестую вкладку                         |
 | AI-персоны      | Тон и набор зафиксированы              | Не менять персонажей и их роль                      |
-| Возраст         | Открытое решение                       | Не менять 18+/16+                                   |
-| Оплата          | Открытое решение                       | Не выбирать provider и не менять checkout           |
-| Медитации       | Сценарий не утверждён                  | Не объявлять заглушку готовой                       |
+| Возраст         | Открыто; safety gate                   | Не менять 18+/16+                                   |
+| Оплата          | Отложена до подтверждения ценности     | Не выбирать provider и не менять checkout           |
+| Медитации       | Рекомендована одна текстовая практика 5–10 минут | Не объявлять аудио/placeholder готовым без проверки |
 | Backend/API     | Приватный репозиторий                  | Не придумывать endpoint или схему                   |
 | Telegram/iPhone | Основной manual gate                   | Desktop smoke не считать заменой реальной проверки  |
 
