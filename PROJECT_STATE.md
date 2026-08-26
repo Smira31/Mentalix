@@ -13,11 +13,11 @@
 
 ## 0.1 Краткая сводка на 26.08.2026
 
-- **Репозиторий:** `main` чистый и синхронизирован с `origin/main`; текущий HEAD — `882894f`.
-- **Последние завершённые изменения:** единая лента History (`PR #194`), именованные уровни серии (`PR #196`), Stoic-inspired цикл Today (`PR #197`) и закрытие его документации (`PR #198`).
-- **Проверки:** последний GitHub Actions run для `main` завершён успешно; `docs:check` подтверждает 94 Markdown-файла, 18 canonical task ID и 0 ошибок.
-- **Production:** `https://mentalix.vercel.app/api/health` и `https://mentalix-bot.onrender.com/api/health` возвращают `status: ok`. Точный commit, который сейчас обслуживает Vercel Production, в этой проверке отдельно не подтверждался.
-- **Backlog:** `MXL-007` завершена; `MXL-008` находится в реализации как Stoic-like Journey и ожидает PR/ручного Telegram-iPhone gate; остальные активные записи остаются в backlog. Автономная очередь пуста.
+- **Репозиторий:** `main` чистый и синхронизирован с `origin/main`; текущий HEAD — `dfe88aa`.
+- **Последние завершённые изменения:** единая лента History (`PR #194`), именованные уровни серии (`PR #196`), Stoic-inspired цикл Today (`PR #197`), Stoic-like Journey (`PR #200`) и синхронизация статусов задач (`PR #202`).
+- **Проверки:** последний GitHub Actions run для `main` завершён успешно; `docs:check` подтверждает 94 Markdown-файла, 19 canonical task ID и 0 ошибок.
+- **Production:** 26.08.2026 Vercel `/api/health` вернул `200 OK` в 3/3 попытках (0.30–0.41 с), Render `/api/health` вернул `200 OK` в 3/3 попытках (1.95–2.13 с). Точный commit Vercel Production отдельно не подтверждён.
+- **Backlog:** `MXL-007` и `MXL-008` завершены; `MXL-021` предложена следующей sprint-задачей и ожидает подтверждения CTA; остальные активные записи остаются в backlog. Автономная очередь пуста.
 - **Открытые PR:** #152 и четыре draft PR остаются без merge; они не входят в текущий autonomous scope из-за устаревшей базы, владельческого решения или backend/manual gate.
 
 ## 1. Документационный operating layer
