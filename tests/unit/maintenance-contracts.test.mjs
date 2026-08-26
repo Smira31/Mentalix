@@ -156,3 +156,22 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(yearPath, /onContinueToday/)
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
+
+test('MXL-006 публикует единый AI typography baseline без backend изменений', () => {
+  const tokens = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+  const conversation = readFileSync(
+    new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
+    'utf8'
+  )
+  const personaPicker = readFileSync(
+    new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(tokens, /\.mx-ai-title\s*\{[\s\S]*font-size: clamp\(1\.75rem, 7vw, 2\.125rem\)/)
+  assert.match(tokens, /\.mx-ai-body\s*\{[\s\S]*font-size: 1rem[\s\S]*line-height: 1\.62/)
+  assert.match(tokens, /\.mx-ai-meta\s*\{[\s\S]*font-size: 0\.6875rem/)
+  assert.match(conversation, /mx-ai-body/)
+  assert.match(conversation, /mx-ai-input/)
+  assert.match(personaPicker, /mx-ai-title/)
+})

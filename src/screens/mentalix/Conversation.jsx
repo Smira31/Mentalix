@@ -359,7 +359,7 @@ export default function Conversation({
           <BackButton onClick={onBack} />
         </div>
 
-        <div className="justify-self-center text-[15px] font-semibold tracking-[0.04em] text-cream uppercase leading-none whitespace-nowrap">
+        <div className="justify-self-center mx-ai-meta text-cream leading-none whitespace-nowrap">
           {meta.name}
         </div>
 
@@ -422,12 +422,12 @@ export default function Conversation({
 
                 return (
                   <div key={messageKey} className="w-full mx-msg-in">
-                    <div className="text-[10px] uppercase tracking-[0.18em] text-gold font-semibold mb-2.5">
+                    <div className="mx-ai-meta text-gold mb-2.5">
                       {meta.name}
                     </div>
 
                     <div
-                      className={`text-[16px] leading-[1.62] tracking-[-0.01em] text-cream font-normal break-words ${isLong && !isExpanded ? 'max-h-[280px] overflow-hidden' : ''}`}
+                      className={`mx-ai-body text-cream break-words ${isLong && !isExpanded ? 'max-h-[280px] overflow-hidden' : ''}`}
                     >
                       <MessageText content={message.content} />
                     </div>
@@ -435,7 +435,7 @@ export default function Conversation({
                     {isLong && (
                       <button
                         type="button"
-                        className="mt-3 text-[12px] uppercase tracking-[0.14em] text-gold font-semibold"
+                        className="mx-ai-meta mt-3 text-gold"
                         onClick={() => {
                           setExpandedMessages(previous => {
                             const next = new Set(previous)
@@ -539,7 +539,7 @@ export default function Conversation({
 
             placeholder={`Написать ${meta.name}…`}
 
-            className="flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-[17px] text-cream placeholder:text-faint"
+            className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-cream placeholder:text-faint"
           />
 
 

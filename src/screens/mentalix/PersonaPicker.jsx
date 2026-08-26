@@ -113,9 +113,9 @@ export default function PersonaPicker({ user, onPick }) {
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-[30px] text-cream lowercase mt-4 mb-1">с кем говорим.</h2>
+      <h2 className="mx-ai-title text-cream lowercase mt-4 mb-1">с кем говорим.</h2>
 
-      <p className="text-[12px] text-faint mb-6">три собеседника, три отдельных разговора</p>
+      <p className="mx-ai-caption text-faint mb-6">три собеседника, три отдельных разговора</p>
 
       <div
         ref={trackRef}
@@ -186,15 +186,15 @@ export default function PersonaPicker({ user, onPick }) {
                 />
               </div>
 
-              <div className="font-display text-[22px] text-cream leading-tight mt-3 mx-persona-card__title">
+              <div className="mx-ai-title text-cream mt-3 mx-persona-card__title">
                 {persona.name}
               </div>
 
-              <div className="text-[12px] text-gold mt-1.5 mx-persona-card__tagline">
+              <div className="mx-ai-meta text-gold mt-1.5 mx-persona-card__tagline">
                 {persona.tagline}
               </div>
 
-              <p className="text-[14px] text-muted leading-snug mt-2.5 mx-persona-card__description">
+              <p className="mx-ai-caption text-muted mt-2.5 mx-persona-card__description">
                 {persona.desc}
               </p>
 
@@ -225,11 +225,11 @@ export default function PersonaPicker({ user, onPick }) {
                     }}
                     className="w-full text-left rounded-[20px] bg-emerald-light border border-cream/10 px-4 py-3.5 active:scale-[0.99] transition-transform"
                   >
-                    <div className="text-[10px] uppercase tracking-wider text-gold mb-1">
+                    <div className="mx-ai-meta text-gold mb-1">
                       Продолжить разговор
                     </div>
 
-                    <p className="text-[13px] text-muted leading-snug">
+                    <p className="mx-ai-caption text-muted">
                       {last.role === 'user' ? 'Ты: ' : ''}
 
                       {trim(last.content)}
@@ -287,7 +287,7 @@ export default function PersonaPicker({ user, onPick }) {
         ))}
       </div>
 
-      <p className="text-[11px] text-faint leading-snug mt-6 text-center">
+      <p className="mx-ai-caption text-faint mt-6 text-center">
         У каждого своя история — разговоры не смешиваются.
       </p>
     </div>

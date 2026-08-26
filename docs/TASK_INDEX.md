@@ -13,7 +13,7 @@
 | `MXL-001`                    |      ML | product/UX       | backlog    | needs-owner + manual-gate       | Выбрать scope трёх AI-экранов и референсы                        |
 | `MXL-002`                    |      ML | UX/release       | backlog    | manual-gate                     | Провести свежий iPhone/Telegram gate всех AI-экранов             |
 | `MXL-005`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #207; Telegram/iPhone gate пройден владельцем |
-| `MXL-006`                    |      ML | UX               | backlog    | needs-owner + manual-gate       | Утвердить типографическую шкалу и проверить iPhone               |
+| `MXL-006`                    |      ML | UX               | in progress | manual-gate                  | Проверить AI typography baseline на iPhone/Telegram             |
 | `MXL-007`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #197; iPhone/Telegram gate пройден владельцем |
 | `MXL-008`                    |      ML | product/UX       | verified   | completed                      | Закрыта через PR #200; Vercel/телефонный gate пройден          |
 | `MXL-021`                    |       M | product/UX       | verified   | completed                      | Закрыта через PR #203; Telegram/iPhone gate пройден владельцем |
