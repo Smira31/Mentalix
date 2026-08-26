@@ -3869,7 +3869,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-009 — Описательные AI-insights без причинных claims
 
-- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-009-descriptive-insights`.
+- **Статус:** verified/completed 26.08.2026; PR #221 смёржен в `main`, Telegram/iPhone gate пройден владельцем. Backend contract follow-up остаётся отдельной задачей.
 - **Размер:** ML
 - **Тип:** product/data/UX
 - **Автономность:** frontend scope готов; backend insight contract остаётся отдельным ограничением.

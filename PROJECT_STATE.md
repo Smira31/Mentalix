@@ -668,3 +668,7 @@ Production, backend и Telegram-бот не затрагиваются.
 ## 26.08.2026 — MXL-019 verified
 
 `main` синхронизирован с merge commit `c573a41` после PR #219. MXL-019 закрыта: Path использует JourneyLineArt вместо WireframeMountain, goal progress отображается заполненной частью одной линии, backend/API и active-days metric не менялись. 22/22 unit-теста, docs:check, lint, build, UX smoke и Vercel Preview прошли; ручной Telegram/iPhone gate подтверждён владельцем.
+
+## 26.08.2026 — MXL-009 verified
+
+`main` синхронизирован с merge commit `9f9e8fe` после PR #221. MXL-009 frontend safety slice закрыт: descriptive insights boundary применяется в Analytics и через тот же deriveConclusions в insightDigest. 23/23 unit-теста, docs:check, lint, build, UX smoke и Vercel Preview прошли; ручной Telegram/iPhone gate подтверждён владельцем. Backend insight contract и production small-sample validation не заявлены выполненными.
