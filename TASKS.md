@@ -3815,7 +3815,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-015 — Stoic-inspired weekly themes
 
-- **Статус:** in progress 26.08.2026 на ветке `feat/mxl-015-weekly-themes`.
+- **Статус:** verified/completed 26.08.2026; PR #213 смёржен в `main`, Telegram/телефонный gate пройден владельцем.
 - **Размер:** M
 - **Тип:** content/product
 - **Автономность:** manual-gate + backend-dependent для публикации.

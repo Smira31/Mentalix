@@ -3148,3 +3148,7 @@ Onest — и, в отличие от Poppins/Figtree/Circular, у него по�
 ## 26.08.2026 — MXL-001: Stoic-inspired AI flow закрыт
 
 PR #211 смёржен в `main` (merge commit `3cd9514`), feature-ветка удалена. В AI-раздел добавлен компактный индикатор цикла **идея → действие → анализ → новый шаг**: он показан на выборе персоны и в Conversation, где активная фаза определяется по существующей локальной истории сообщений. Backend/API, prompts, persona tone, storage, voice flow и journal formatting не менялись. Владелец подтвердил ручной Telegram/iPhone gate.
+
+## 26.08.2026 — MXL-015: curated weekly themes закрыта
+
+PR #213 смёржен в `main` (merge commit `a1e0974`), feature-ветка удалена. Зафиксирован curated-каталог из семи Stoic-inspired тем: «Круг влияния», «Внимание», «Трение», «Мужество», «Мера», «Перспектива» и «Возвращение». Каждая тема содержит вопрос, действие, анализ и новый шаг. Backend publication не выполнялась: приватные theme IDs и admin-контракт не предполагались. Владелец подтвердил телефонный/Telegram regression gate.

@@ -652,3 +652,7 @@ Production, backend и Telegram-бот не затрагиваются.
 ## 26.08.2026 — MXL-001 verified
 
 `main` синхронизирован с merge commit `3cd9514` после PR #211. MXL-001 закрыта: Stoic-inspired AI-flow indicator опубликован, GitHub CI/Vercel Preview зелёные, 18/18 unit-тестов, lint, build, docs:check и UX smoke прошли, ручной Telegram/iPhone gate подтверждён владельцем. Рабочее дерево перед documentation handoff содержит только ожидающие изменения статуса/истории.
+
+## 26.08.2026 — MXL-015 verified
+
+`main` синхронизирован с merge commit `a1e0974` после PR #213. MXL-015 закрыта: curated weekly theme catalog опубликован в frontend repository, 19/19 unit-тестов, docs:check, lint, build и diff-check прошли; ручной Telegram/телефонный gate подтверждён владельцем. Backend publication остаётся отдельной задачей, зависящей от приватного `/themes` контракта.
