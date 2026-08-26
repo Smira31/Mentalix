@@ -11,6 +11,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { saveOneFinishEntry } from '../lib/oneFinishPractice'
+import './FinishFlow.css'
 
 /*
  * MXL-PRB-003, MXL-DEC-015: разовая практика «Один финиш» — не серия, не
@@ -60,6 +61,15 @@ function Eyebrow() {
     <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
       Один финиш
     </span>
+  )
+}
+
+function StageHeading({ children }) {
+  return (
+    <div className="one-finish-stage__anchor">
+      <Eyebrow />
+      <h2 className="one-finish-stage__title font-display text-cream">{children}</h2>
+    </div>
   )
 }
 
@@ -182,12 +192,8 @@ export default function FinishFlow({ userId, onClose }) {
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
         {step === 'project' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Что зависло на середине?
-            </h2>
+          <div className="one-finish-stage one-finish-stage--writing animate-fade-in">
+            <StageHeading>Что зависло на середине?</StageHeading>
 
             <JournalTextarea
               autoFocus
@@ -195,7 +201,7 @@ export default function FinishFlow({ userId, onClose }) {
               onChange={setProject}
               placeholder="Например: ремонт в комнате"
               ariaLabel="Проект, который завис на середине"
-              className="mt-6 min-h-[18rem]"
+              className="one-finish-stage__writer min-h-[12rem]"
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
@@ -207,20 +213,16 @@ export default function FinishFlow({ userId, onClose }) {
         )}
 
         {step === 'state' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">На чём застряло?</h2>
+          <div className="one-finish-stage animate-fade-in">
+            <StageHeading>На чём застряло?</StageHeading>
 
             <OptionList options={STATE_OPTIONS} onPick={chooseState} />
           </div>
         )}
 
         {step === 'reframe' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[22px] text-cream leading-snug">{reframePhrase}</h2>
+          <div className="one-finish-stage animate-fade-in">
+            <StageHeading>{reframePhrase}</StageHeading>
 
             <button
               type="button"
@@ -233,12 +235,8 @@ export default function FinishFlow({ userId, onClose }) {
         )}
 
         {step === 'finish' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">
-              Какой маленький кусок можно завершить сегодня?
-            </h2>
+          <div className="one-finish-stage one-finish-stage--writing animate-fade-in">
+            <StageHeading>Какой маленький кусок можно завершить сегодня?</StageHeading>
 
             <JournalTextarea
               autoFocus
@@ -246,7 +244,7 @@ export default function FinishFlow({ userId, onClose }) {
               onChange={setFinish}
               placeholder="Например: докрасить один угол, а не всю комнату"
               ariaLabel="Маленький кусок для завершения"
-              className="mt-6 min-h-[18rem]"
+              className="one-finish-stage__writer min-h-[12rem]"
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
@@ -258,10 +256,8 @@ export default function FinishFlow({ userId, onClose }) {
         )}
 
         {step === 'run' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in text-center">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">Только этот кусок</h2>
+          <div className="one-finish-stage animate-fade-in text-center">
+            <StageHeading>Только этот кусок</StageHeading>
 
             <div className="font-display text-[64px] text-cream mt-8 tabular-nums">
               {minutes}:{seconds}
@@ -278,20 +274,16 @@ export default function FinishFlow({ userId, onClose }) {
         )}
 
         {step === 'outcome' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">Как прошло?</h2>
+          <div className="one-finish-stage animate-fade-in">
+            <StageHeading>Как прошло?</StageHeading>
 
             <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />
           </div>
         )}
 
         {step === 'reflect' && (
-          <div className="w-full max-w-md mx-auto animate-fade-in">
-            <Eyebrow />
-
-            <h2 className="font-display text-[24px] text-cream leading-tight">Стало ли легче?</h2>
+          <div className="one-finish-stage animate-fade-in">
+            <StageHeading>Стало ли легче?</StageHeading>
 
             <OptionList options={REFLECTION_OPTIONS} onPick={finishSession} />
 

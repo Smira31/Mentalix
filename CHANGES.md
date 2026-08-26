@@ -1,5 +1,16 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 26.08.2026 — MXL-STAGE-HEADING-UNIFY-001: единый якорь заголовка в «Один финиш» и «Одно из всех»
+
+- Первым коммитом (`FinishFlow.jsx`+`.css`): паттерн `StageHeading` из «Без
+  вины» (PR #180) перенесён на `FinishFlow.jsx` — единая зона заголовка и
+  keyboard-стабильный Writing Canvas на обоих шагах с текстовым вводом
+  (`project`, `finish`). `NarrowFocusFlow.jsx` — отдельным вторым коммитом
+  той же ветки/PR (гранулярность для отката). `FirstStepFlow.jsx` осознанно
+  пропущен — использует общий `SceneLayout.jsx` (также в Ascezas/Rituals),
+  перенос требует отдельного решения. Подробности, pre-mortem и проверка —
+  `TASKS.md`.
+
 ## 25.08.2026 — MXL-DOCS-OPERATING-SYSTEM-001: единая навигация документации
 
 - Добавлен `docs/DOCUMENTATION_GUIDE.md`, README получил ссылки на `PROJECT_STATE.md` и новый гайд, а устаревшее описание текущего backend hosting в README исправлено на Render/Neon. Подробности и найденные слепые пятна — в `TASKS.md` → `MXL-DOCS-OPERATING-SYSTEM-001`.

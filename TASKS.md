@@ -73,6 +73,96 @@
 - **Не менялось:** onboarding, CheckIn, API-контракт, backend, формат данных
   и прямой save из mood-check.
 
+## MXL-STAGE-HEADING-UNIFY-001 — перенос единого якоря заголовка (StageHeading)
+
+- **Статус: первый из двух коммитов сделан 26.08.2026 в ветке
+  `feat/stage-heading-unify-001` (`FinishFlow.jsx`+`.css`); второй
+  (`NarrowFocusFlow.jsx`+`.css`) подготовлен, коммит следующим шагом. Ветка
+  ещё не запушена, PR не создан.** Продолжение
+  `MXL-PRACTICES-EXPERIENCE-PILOT-001`/PR #180 — переносит паттерн единого
+  верхнего якоря заголовка (`StageHeading`, впервые появился в
+  `ProcrastinationFlow.jsx`) на `FinishFlow.jsx` и `NarrowFocusFlow.jsx`.
+  Владелец подтвердил перед стартом через pre-mortem-skill.
+- **Pre-mortem (владелец сам назвал риски, до подсказок):**
+  1. _Тигр_ — унификация заголовка могла обезличить сюжетную идентичность
+     каждой практики (по аналогии с «узел → путь» у «Без вины»). Проверено:
+     ни `FinishFlow.jsx`, ни `NarrowFocusFlow.jsx` не имели заголовочной
+     иллюстрации/анимации — переносить нечего; решено НЕ добавлять
+     `text-align: center`/`font-weight: 700` из `.no-blame-stage__title`, а
+     оставить исходное левое выравнивание и вес `.font-display` — перенесена
+     только структура (фиксированная зона якоря), не визуальный стиль.
+  2. _Оказался бумажный тигр_ — опасение за web-fallback keyboard-layout вне
+     Telegram. Проверено: `useFullscreenSurface`/`useVisualViewportHeight`
+     (`src/lib/fullscreenSurface.js`) — общая инфраструктура 18 файлов,
+     `FinishFlow.jsx`/`NarrowFocusFlow.jsx` уже используют её сегодня для
+     существующих шагов Writing Canvas; уже живьём гейтилась в PR
+     #176/#178/#180. Анкор-CSS — чистый flexbox без Telegram API.
+  3. _Бумажный тигр, подтверждено_ — скрытая связка layout↔JS (замер
+     `offsetTop`/высоты заголовка для переходов). `grep` по всем трём файлам
+     на `offsetTop|offsetHeight|getBoundingClientRect|scrollIntoView|
+IntersectionObserver|ResizeObserver` — ноль совпадений.
+  4. Митигация процесса — «один экран — один коммит» (принцип
+     `MXL-GLYPH-UNIFY-001`), чтобы прерывание сессии не оставляло WIP сразу
+     по нескольким файлам.
+  5. Митигация мержа — не squash всех файлов в один коммит; либо отдельные
+     PR на файл, либо явно разделённые коммиты внутри одного PR — для
+     гранулярного `git revert` одного экрана без затрагивания остальных.
+- **Находка pre-mortem, изменившая scope:** `FirstStepFlow.jsx` не использует
+  паттерн `Eyebrow`/`h2`, как остальные три экрана — он рендерится через
+  общий `SceneLayout.jsx` (`src/components/practices/SceneLayout.jsx`),
+  который также используют `Ascezas.jsx` и `Rituals.jsx` (явно запрещено
+  трогать в этой задаче). Там же обнаружен реальный, но отдельный баг:
+  `.practice-scene--choice` центрирует контент (`justify-content: center`
+  в min-height боксе), а `.practice-scene--input` только паддингом сверху —
+  то есть координата заголовка у `FirstStepFlow.jsx` уже сегодня плывёт между
+  choice- и input-шагами, тем же классом проблемы, что чинил `StageHeading`
+  в «Без вины». **Владелец решил пропустить `FirstStepFlow.jsx` в этой
+  задаче** — перенос туда потребовал бы либо трогать `SceneLayout.jsx`
+  (расширение scope на Ascezas/Rituals), либo локальный дубль паттерна в
+  обход `SceneLayout` (потеря glyph/description slot). Кандидат в отдельную
+  будущую задачу.
+- [x] Проверено наличие шага с текстовым вводом (Writing Canvas) в обоих
+      экранах: `FinishFlow.jsx` — `project` и `finish`; `NarrowFocusFlow.jsx`
+      — `dump`, `pick` и `plan` (три, не один, в отличие от «Без вины») —
+      keyboard-layout (`--writing`/`__writer`) перенесён на все шаги с вводом
+      в обоих файлах, не только на первый.
+- [x] `FinishFlow.jsx` + новый `FinishFlow.css` (`.one-finish-stage*`):
+      `project`/`finish` (writing), `state`/`outcome`/`reflect` (choices, без
+      `.scene`-обёртки — у экрана не было flex-центрирования и раньше, в
+      отличие от «Без вины»), `reframe` (фраза+CTA), `run` (таймер,
+      `text-center` как раньше).
+- [x] `NarrowFocusFlow.jsx` + новый `NarrowFocusFlow.css`
+      (`.narrow-focus-stage*`): `dump`/`pick`/`plan` (writing, `pick`
+      сохраняет описание «Назови только одно.» между заголовком и полем),
+      `release` (фраза+CTA), `run` (таймер), `outcome`/`reflect` (choices).
+- **Найден и исправлен баг до коммита:** копия `align-items: center` из
+  `.no-blame-stage__anchor` центрировала `Eyebrow` (нет `width: 100%`, в
+  отличие от заголовка) — в «Без вины» это скрывалось явным `centered`-пропом
+  Eyebrow, здесь он не центрированный, и якорь визуально ломал левое
+  выравнивание. Обнаружено скриншотом, исправлено на `align-items: stretch`
+  в обоих новых CSS-файлах.
+- **Проверено:** `npm run lint`, `npm run build` — чисто; `npm run ux:check`
+  — 1/1 на `390×844`/`320×568`, включая новые ассерты совпадения координаты
+  якоря (`dump`↔`pick` для `NarrowFocusFlow`, `project`↔`finish` для
+  `FinishFlow`, ±1px). Вручную (временный скрипт, не в репозитории) пройдены
+  и сфотографированы непокрытые тестом шаги (`state`/`reframe`/`run`/
+  `outcome`/`reflect` в обоих флоу) на обоих viewport — координата якоря
+  идентична (`60px`) на всех типах шагов, включая нетестируемые. Отдельно
+  смоделирован цикл клавиатуры (`390×844 → 390×400 → 390×844`) на
+  `FinishFlow`'s `project` — 0px сдвига якоря/`scrollTop`, тот же результат,
+  что и у «Без вины».
+- **Не менялось:** `FirstStepFlow.jsx`, `SceneLayout.jsx`, `Ascezas.jsx`,
+  `Rituals.jsx`, backend/API, данные, state machine, длительность таймеров.
+- **Дальше:** владелец подтвердил план коммитов 26.08.2026. Первый коммит
+  (`FinishFlow.jsx`+`.css`, `tests/ux/ux-check.spec.mjs`, `TASKS.md`,
+  `CHANGES.md`) сделан на `feat/stage-heading-unify-001`, при рейбейзе на
+  свежий `main` (ушёл вперёд на PR #182/#183–188 за время работы) без
+  конфликтов в коде — только в этих двух `.md`-файлах, разрешено вручную.
+  Второй коммит (`NarrowFocusFlow.jsx`+`.css`) — следующим шагом из
+  сохранённого `git stash`. Дальше — PR (не squash всех файлов в один коммит
+  при мерже — см. митигацию №5 выше), затем живой iPhone/Telegram gate перед
+  squash-merge.
+
 ## MXL-JOURNAL-MARKDOWN-001 — Markdown-форматирование журнальных записей
 
 - **Статус: закрыто 25.08.2026 через PR #176;** squash-merge `61b51452` в
