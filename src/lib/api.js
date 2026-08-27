@@ -16,6 +16,20 @@ function authHeader() {
   return initData ? { Authorization: `tma ${initData}` } : {}
 }
 
+async function download(path, filename) {
+  const response = await fetch(`${BASE}${path}`, { headers: authHeader() })
+  if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
+  const blob = await response.blob()
+  const href = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = href
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(href)
+}
+
 async function request(path, options = {}) {
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
 
@@ -268,6 +282,10 @@ export const api = {
         body: form,
       })
     },
+  },
+
+  privacy: {
+    downloadExport: userId => download(withQuery('/privacy/export', { user_id: userId }), `mentalix-export-${new Date().toISOString().slice(0, 10)}.json`),
   },
 
   profile: {
