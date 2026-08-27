@@ -1,5 +1,12 @@
 # Mentalix — Current Project State
 
+## 27.08.2026 — Финальный clean-dialog пакет
+
+- Подготовлен `docs/handoffs/2026-08-27-final-clean-dialog-handoff.md` с текущей сводкой проекта, блокером PR #242 и готовым prompt для нового диалога.
+- Подготовлен `docs/MENTALIX_CHAT_OPERATING_MODEL.md` с ролями coordinator/implementer/QA, writer-lock, маршрутизацией запросов и шаблонами старта/завершения.
+- Основной reusable skill остаётся `mentalix-safe-release-workflow`; новые skills без повторяющейся необходимости не создаются.
+- PR #242 пока не смёржен: 3 checks успешны, production Vercel check failed из-за `build-rate-limit`; bypass не выполняется.
+
 ## 27.08.2026 — Coordination protocol и PR triage
 
 - Проведён read-only triage открытых PR #241, #237, #234, #152, #28, #26, #21 и #11 после merge PR #240.

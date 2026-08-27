@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 27.08.2026 — Финальный clean-dialog пакет
+
+- Подготовлен финальный handoff `docs/handoffs/2026-08-27-final-clean-dialog-handoff.md`.
+- Добавлена repository-level инструкция `docs/MENTALIX_CHAT_OPERATING_MODEL.md` для трёх ролей диалогов, writer-lock и шаблонов новых чатов.
+- Зафиксировано, что PR #242 ожидает снятия Vercel `build-rate-limit`; bypass не применяется.
+
 ## 27.08.2026 — Coordination protocol и PR triage
 
 - Подготовлены `docs/COORDINATION_PROTOCOL.md` и `docs/handoffs/2026-08-27-pr-triage.md`.
