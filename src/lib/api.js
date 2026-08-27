@@ -240,6 +240,23 @@ export const api = {
         }),
       }),
 
+    contextConsent: userId => request(withQuery('/mentalix/consent', { user_id: userId })),
+
+    setContextConsent: (userId, enabled) =>
+      request('/mentalix/consent', {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: userId, enabled }),
+      }),
+
+    feedback: (userId, rating, messageId, note) =>
+      request('/mentalix/feedback', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, rating, message_id: messageId, note }),
+      }),
+
+    deleteData: userId =>
+      request(withQuery('/mentalix/data', { user_id: userId }), { method: 'DELETE' }),
+
     transcribe: (userId, audio) => {
       const form = new FormData()
 
