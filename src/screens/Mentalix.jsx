@@ -140,8 +140,8 @@ export default function MentalixChat({ user, onPersonaChange }) {
    * показывать BottomNavigation или нет.
    */
   useEffect(() => {
-    onPersonaChange?.(Boolean(persona))
-  }, [persona, onPersonaChange])
+    onPersonaChange?.(Boolean(persona) || journalOpen)
+  }, [journalOpen, persona, onPersonaChange])
 
   /*
    * Если пользователь уйдёт с вкладки
