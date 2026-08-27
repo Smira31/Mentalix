@@ -21,7 +21,7 @@ import {
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
 import { requestMessages, biometric } from '../platform/telegram.hooks'
-import { platformName } from '../platform'
+import { platform, platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import { MOOD_CHECK_ENABLED_KEY } from '../lib/moodCheckDraft'
 import { clearCheckinDraft } from '../lib/checkinDraft'
@@ -136,6 +136,10 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   const [reminderStatus, setReminderStatus] = useState('')
   const [exportStatus, setExportStatus] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [erasingAccount, setErasingAccount] = useState(false)
+  const [accountErased, setAccountErased] = useState(false)
+  const [accountEraseError, setAccountEraseError] = useState('')
+  const privacyProtectedByTelegram = platformName === 'telegram' && Number(user?.id) > 0
 
   useEffect(() => {
     if (!user) return
@@ -186,7 +190,11 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
     }
   }
 
-  async function saveQuietHours(nextEnabled = quietHoursOn, nextStart = quietStart, nextEnd = quietEnd) {
+  async function saveQuietHours(
+    nextEnabled = quietHoursOn,
+    nextStart = quietStart,
+    nextEnd = quietEnd
+  ) {
     setQuietHoursOn(nextEnabled)
     try {
       await api.profile.saveSettings(user.id, {
@@ -226,14 +234,22 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   async function snoozeReminders() {
     try {
       const result = await api.profile.snoozeReminders(user.id, 2)
-      setReminderStatus(`Напоминания отложены до ${new Date(result.reminder_snoozed_until).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}.`)
+      setReminderStatus(
+        `Напоминания отложены до ${new Date(result.reminder_snoozed_until).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}.`
+      )
     } catch {
       setReminderStatus('Не удалось отложить напоминания.')
     }
   }
 
   async function downloadPersonalExport(format) {
-    if (exporting || !window.confirm('Скачать копию личных данных на это устройство? Файл не будет отправлен третьей стороне.')) return
+    if (
+      exporting ||
+      !window.confirm(
+        'Скачать копию личных данных на это устройство? Файл не будет отправлен третьей стороне.'
+      )
+    )
+      return
     setExporting(true)
     setExportStatus('')
     try {
@@ -247,13 +263,54 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   }
 
   function clearLocalDraft() {
-    if (!window.confirm('Очистить незавершённую утреннюю запись только на этом устройстве? Сохранённые записи не изменятся.')) return
+    if (
+      !window.confirm(
+        'Очистить незавершённую утреннюю запись только на этом устройстве? Сохранённые записи не изменятся.'
+      )
+    )
+      return
     const cleared = clearCheckinDraft({ userId: user.id })
-    setExportStatus(cleared ? 'Локальный черновик очищен. Сохранённые записи не затронуты.' : 'Не удалось очистить локальный черновик.')
+    setExportStatus(
+      cleared
+        ? 'Локальный черновик очищен. Сохранённые записи не затронуты.'
+        : 'Не удалось очистить локальный черновик.'
+    )
+  }
+
+  async function eraseAccountAndData() {
+    if (!privacyProtectedByTelegram || erasingAccount) return
+    const firstConfirmation = window.confirm(
+      'Удалить аккаунт Mentalix и все связанные данные? Будут удалены journal-записи, теги, цели, привычки, шаблоны, история AI и настройки. Отменить это нельзя.'
+    )
+    if (!firstConfirmation) return
+    const finalConfirmation = window.confirm(
+      'Это последнее подтверждение. Удалить все данные сейчас?'
+    )
+    if (!finalConfirmation) return
+
+    setErasingAccount(true)
+    setAccountEraseError('')
+    try {
+      await api.privacy.eraseAccount(user.id)
+      clearCheckinDraft({ userId: user.id })
+      platform.clearUser?.()
+      setAccountErased(true)
+    } catch {
+      setAccountEraseError(
+        'Не удалось удалить данные. Ничего не было подтверждено как удалённое — проверь соединение и попробуй ещё раз.'
+      )
+    } finally {
+      setErasingAccount(false)
+    }
   }
 
   async function clearAllReminderSettings() {
-    if (!window.confirm('Отключить напоминания и удалить их тихие часы, snooze и цель записей? Journal и другие настройки не изменятся.')) return
+    if (
+      !window.confirm(
+        'Отключить напоминания и удалить их тихие часы, snooze и цель записей? Journal и другие настройки не изменятся.'
+      )
+    )
+      return
     try {
       const settings = await api.profile.clearReminderSettings(user.id)
       setReminderOn(Boolean(settings?.reminder_enabled))
@@ -370,6 +427,31 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
 
   const tierLabel = tier === 'pro' ? 'Про' : 'Базовый'
 
+  if (accountErased) {
+    return (
+      <div className="w-full max-w-md px-5 pt-12 text-center">
+        <div className="rounded-3xl bg-emerald p-6">
+          <h1 className="font-display text-[26px] text-cream">данные удалены.</h1>
+          <p className="mt-3 text-[14px] leading-relaxed text-muted">
+            Мы получили подтверждение удаления аккаунта Mentalix и связанных серверных данных.
+            Локальный незавершённый check-in на этом устройстве также очищен.
+          </p>
+          <p className="mt-3 text-[12px] leading-relaxed text-faint">
+            В Telegram закрой мини-приложение. Если захочешь начать с чистого листа, сначала отправь
+            боту команду /start, а затем открой приложение снова.
+          </p>
+          <button
+            type="button"
+            onClick={() => platform.close?.()}
+            className="mt-6 min-h-11 rounded-full bg-gold px-5 text-[13px] font-semibold text-emerald-deep"
+          >
+            Закрыть приложение
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center">
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
@@ -456,25 +538,126 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         <div className="mb-8 w-full space-y-3 rounded-3xl bg-emerald p-4">
           <label className="block text-[12px] text-muted">
             Часовой пояс
-            <select value={reminderTimezone} onChange={event => saveTimezone(event.target.value)} className="mt-2 min-h-11 w-full rounded-2xl bg-emerald-light px-3 text-[14px] text-cream">
-              {TIMEZONES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            <select
+              value={reminderTimezone}
+              onChange={event => saveTimezone(event.target.value)}
+              className="mt-2 min-h-11 w-full rounded-2xl bg-emerald-light px-3 text-[14px] text-cream"
+            >
+              {TIMEZONES.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
             </select>
           </label>
           <div className="flex items-center justify-between gap-3">
-            <div><p className="text-[14px] font-semibold text-cream">Тихие часы</p><p className="mt-1 text-[12px] text-muted">В это время бот не пишет.</p></div>
+            <div>
+              <p className="text-[14px] font-semibold text-cream">Тихие часы</p>
+              <p className="mt-1 text-[12px] text-muted">В это время бот не пишет.</p>
+            </div>
             <Toggle checked={quietHoursOn} label="Тихие часы" onChange={saveQuietHours} />
           </div>
-          {quietHoursOn && <div className="grid grid-cols-2 gap-2"><label className="text-[12px] text-muted">С<select value={quietStart} onChange={event => { const value = Number(event.target.value); setQuietStart(value); saveQuietHours(true, value, quietEnd) }} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream">{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></label><label className="text-[12px] text-muted">До<select value={quietEnd} onChange={event => { const value = Number(event.target.value); setQuietEnd(value); saveQuietHours(true, quietStart, value) }} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream">{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></label></div>}
-          <div className="flex flex-wrap gap-2"><button type="button" onClick={snoozeReminders} className="min-h-11 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream">Отложить на 2 часа</button><button type="button" onClick={clearAllReminderSettings} className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300">Отключить и очистить</button></div>
+          {quietHoursOn && (
+            <div className="grid grid-cols-2 gap-2">
+              <label className="text-[12px] text-muted">
+                С
+                <select
+                  value={quietStart}
+                  onChange={event => {
+                    const value = Number(event.target.value)
+                    setQuietStart(value)
+                    saveQuietHours(true, value, quietEnd)
+                  }}
+                  className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream"
+                >
+                  {Array.from({ length: 24 }, (_, h) => (
+                    <option key={h} value={h}>
+                      {String(h).padStart(2, '0')}:00
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-[12px] text-muted">
+                До
+                <select
+                  value={quietEnd}
+                  onChange={event => {
+                    const value = Number(event.target.value)
+                    setQuietEnd(value)
+                    saveQuietHours(true, quietStart, value)
+                  }}
+                  className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream"
+                >
+                  {Array.from({ length: 24 }, (_, h) => (
+                    <option key={h} value={h}>
+                      {String(h).padStart(2, '0')}:00
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={snoozeReminders}
+              className="min-h-11 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream"
+            >
+              Отложить на 2 часа
+            </button>
+            <button
+              type="button"
+              onClick={clearAllReminderSettings}
+              className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300"
+            >
+              Отключить и очистить
+            </button>
+          </div>
         </div>
       )}
 
       <SectionLabel>Цель письма</SectionLabel>
       <Card>
-        <Row icon={Heart} title="Записей в неделю" subtitle={writingGoalOn ? `${writingGoalCount} в неделю — без штрафов за пропуск` : 'Выключено'} right={<Toggle checked={writingGoalOn} label="Цель записей в неделю" onChange={saveWritingGoal} />} divider={false} />
+        <Row
+          icon={Heart}
+          title="Записей в неделю"
+          subtitle={
+            writingGoalOn ? `${writingGoalCount} в неделю — без штрафов за пропуск` : 'Выключено'
+          }
+          right={
+            <Toggle
+              checked={writingGoalOn}
+              label="Цель записей в неделю"
+              onChange={saveWritingGoal}
+            />
+          }
+          divider={false}
+        />
       </Card>
-      {writingGoalOn && <div className="mb-8 flex gap-2 w-full">{[1, 3, 5, 7].map(count => <button type="button" key={count} onClick={() => saveWritingGoal(true, count)} className={['flex-1 min-h-11 rounded-2xl text-[13px] font-bold', writingGoalCount === count ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.04] text-muted'].join(' ')}>{count}</button>)}</div>}
-      {reminderStatus && <p role="status" className="mb-5 w-full text-[12px] text-muted">{reminderStatus}</p>}
+      {writingGoalOn && (
+        <div className="mb-8 flex gap-2 w-full">
+          {[1, 3, 5, 7].map(count => (
+            <button
+              type="button"
+              key={count}
+              onClick={() => saveWritingGoal(true, count)}
+              className={[
+                'flex-1 min-h-11 rounded-2xl text-[13px] font-bold',
+                writingGoalCount === count
+                  ? 'bg-gold text-emerald-deep'
+                  : 'bg-cream/[0.04] text-muted',
+              ].join(' ')}
+            >
+              {count}
+            </button>
+          ))}
+        </div>
+      )}
+      {reminderStatus && (
+        <p role="status" className="mb-5 w-full text-[12px] text-muted">
+          {reminderStatus}
+        </p>
+      )}
 
       <SectionLabel>Разбор дня</SectionLabel>
       <Card>
@@ -574,12 +757,68 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
 
       <SectionLabel>Личные данные</SectionLabel>
       <Card>
-        <Row icon={Download} title="Экспорт JSON" subtitle="Полная машиночитаемая копия" onClick={() => downloadPersonalExport('json')} />
-        <Row icon={Download} title="Экспорт Markdown" subtitle="Записи для чтения или передачи специалисту" onClick={() => downloadPersonalExport('markdown')} />
-        <Row icon={Download} title="Экспорт CSV" subtitle="Табличные метрики и check-in" onClick={() => downloadPersonalExport('csv')} />
-        <Row icon={Lock} title="Очистить local draft" subtitle="Только незавершённый текст на этом устройстве" onClick={clearLocalDraft} danger divider={false} />
+        {privacyProtectedByTelegram ? (
+          <>
+            <Row
+              icon={Download}
+              title="Экспорт JSON"
+              subtitle="Полная машиночитаемая копия"
+              onClick={() => downloadPersonalExport('json')}
+            />
+            <Row
+              icon={Download}
+              title="Экспорт Markdown"
+              subtitle="Записи для чтения или передачи специалисту"
+              onClick={() => downloadPersonalExport('markdown')}
+            />
+            <Row
+              icon={Download}
+              title="Экспорт CSV"
+              subtitle="Табличные метрики и check-in"
+              onClick={() => downloadPersonalExport('csv')}
+            />
+          </>
+        ) : (
+          <div className="px-4 py-4 text-[13px] leading-relaxed text-muted">
+            Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной подписью.
+            В web-версии нет серверной сессии, поэтому мы не выполняем чувствительные операции по
+            переданному id.
+          </div>
+        )}
+        <Row
+          icon={Lock}
+          title="Очистить local draft"
+          subtitle="Только незавершённый текст на этом устройстве"
+          onClick={clearLocalDraft}
+          danger
+          divider={!privacyProtectedByTelegram}
+        />
+        {privacyProtectedByTelegram && (
+          <Row
+            icon={Lock}
+            title={erasingAccount ? 'Удаляем данные…' : 'Удалить аккаунт и данные'}
+            subtitle="Необратимо; потребуется два подтверждения"
+            onClick={eraseAccountAndData}
+            danger
+            divider={false}
+          />
+        )}
       </Card>
-      {exportStatus && <p role="status" className="-mt-5 mb-5 w-full text-[12px] text-muted">{exportStatus}</p>}
+      {exportStatus && (
+        <p role="status" className="-mt-5 mb-5 w-full text-[12px] text-muted">
+          {exportStatus}
+        </p>
+      )}
+      {accountEraseError && (
+        <p role="alert" className="-mt-5 mb-5 w-full text-[12px] text-red-300">
+          {accountEraseError}
+        </p>
+      )}
+      <p className="-mt-3 mb-8 w-full px-1 text-[12px] leading-relaxed text-faint">
+        Сохранённые данные синхронизируются через ваш профиль Mentalix. Незавершённый draft остаётся
+        только на текущем устройстве и не является cloud backup. Блокировка приложения — локальный
+        экранный барьер, а не шифрование данных.
+      </p>
 
       <SectionLabel>Основные</SectionLabel>
       <Card>

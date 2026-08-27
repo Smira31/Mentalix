@@ -26,7 +26,7 @@ function dayTitle(iso) {
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`
 }
 
-function HistoryDetail({ day, onBack }) {
+function HistoryDetail({ day, onBack, onDelete, deleting, deleteError }) {
   const checkin = day.checkin
   const wins = checkin?.wins || []
 
@@ -70,28 +70,43 @@ function HistoryDetail({ day, onBack }) {
 
             {checkin.note && (
               <div>
-                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">Утренняя запись</div>
-                <MarkdownText content={checkin.note} className="space-y-2 text-[15px] leading-relaxed text-cream" />
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">
+                  Утренняя запись
+                </div>
+                <MarkdownText
+                  content={checkin.note}
+                  className="space-y-2 text-[15px] leading-relaxed text-cream"
+                />
               </div>
             )}
 
             {checkin.lessons && (
               <div className="rounded-2xl bg-emerald-light p-4">
-                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">Уроки дня</div>
-                <MarkdownText content={checkin.lessons} className="space-y-2 text-[14px] leading-relaxed text-cream" />
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">
+                  Уроки дня
+                </div>
+                <MarkdownText
+                  content={checkin.lessons}
+                  className="space-y-2 text-[14px] leading-relaxed text-cream"
+                />
               </div>
             )}
 
             {wins.length > 0 && (
               <div className="rounded-2xl bg-emerald-light p-4">
-                <div className="mb-2.5 text-[12px] font-bold uppercase tracking-wide text-muted">Чем горжусь</div>
+                <div className="mb-2.5 text-[12px] font-bold uppercase tracking-wide text-muted">
+                  Чем горжусь
+                </div>
                 <ul className="space-y-2">
                   {wins.map((win, index) => (
                     <li key={`${day.date}-${index}`} className="flex items-start gap-2.5">
                       <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/15 text-[11px] font-bold text-gold">
                         {index + 1}
                       </span>
-                      <MarkdownText content={win} className="min-w-0 space-y-1 text-[14px] leading-snug text-cream" />
+                      <MarkdownText
+                        content={win}
+                        className="min-w-0 space-y-1 text-[14px] leading-snug text-cream"
+                      />
                     </li>
                   ))}
                 </ul>
@@ -99,18 +114,46 @@ function HistoryDetail({ day, onBack }) {
             )}
 
             {!checkin.note && !checkin.lessons && wins.length === 0 && (
-              <p className="text-[14px] leading-relaxed text-muted">В этот день сохранено состояние и активность, но текстовой записи нет.</p>
+              <p className="text-[14px] leading-relaxed text-muted">
+                В этот день сохранено состояние и активность, но текстовой записи нет.
+              </p>
             )}
           </>
         ) : (
-          <p className="text-[14px] leading-relaxed text-muted">В этот день отмечена активность, но check-in не сохранён.</p>
+          <p className="text-[14px] leading-relaxed text-muted">
+            В этот день отмечена активность, но check-in не сохранён.
+          </p>
         )}
 
         {day.activity?.count > 0 && (
           <p className="text-[13px] font-semibold text-muted">
             Ритуалов закрыто: {day.activity.count}
-            {day.activity.breaks > 0 && <span className="text-faint"> · срывов аскез: {day.activity.breaks}</span>}
+            {day.activity.breaks > 0 && (
+              <span className="text-faint"> · срывов аскез: {day.activity.breaks}</span>
+            )}
           </p>
+        )}
+
+        {checkin && (
+          <div className="border-t border-cream/10 pt-4">
+            <p className="mb-3 text-[12px] leading-relaxed text-muted">
+              Удаление необратимо: исчезнет только этот check-in и его личные теги. Активность
+              ритуалов за день сохранится.
+            </p>
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={deleting}
+              className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {deleting ? 'Удаляем…' : 'Удалить эту запись'}
+            </button>
+            {deleteError && (
+              <p role="alert" className="mt-2 text-[12px] text-red-300">
+                {deleteError}
+              </p>
+            )}
+          </div>
         )}
       </div>
     </section>
@@ -123,6 +166,9 @@ export default function History({ user }) {
   const [themeEntries, setThemeEntries] = useState(null)
   const [selectedDay, setSelectedDay] = useState(null)
   const [journeySearchOpen, setJourneySearchOpen] = useState(false)
+  const [deletingCheckin, setDeletingCheckin] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+  const [historyStatus, setHistoryStatus] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -190,14 +236,56 @@ export default function History({ user }) {
       })
   }, [user])
 
+  async function deleteSelectedCheckin() {
+    const checkin = selectedDay?.checkin
+    if (!checkin || deletingCheckin) return
+    if (!window.confirm('Удалить эту сохранённую запись? Это действие нельзя отменить.')) return
+
+    setDeletingCheckin(true)
+    setDeleteError('')
+    try {
+      await api.privacy.deleteCheckin(user.id, checkin.id)
+      setDays(current =>
+        current
+          .map(day => (day.date === selectedDay.date ? { ...day, checkin: null } : day))
+          .filter(day => day.checkin || day.activity?.count > 0)
+      )
+      setSelectedDay(null)
+      setHistoryStatus('Запись удалена. Активность ритуалов за этот день сохранена.')
+    } catch {
+      setDeleteError('Не удалось удалить запись. Проверь соединение и попробуй ещё раз.')
+    } finally {
+      setDeletingCheckin(false)
+    }
+  }
+
   if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
 
   if (selectedDay) {
-    return <HistoryDetail day={selectedDay} onBack={() => setSelectedDay(null)} />
+    return (
+      <HistoryDetail
+        day={selectedDay}
+        onBack={() => setSelectedDay(null)}
+        onDelete={deleteSelectedCheckin}
+        deleting={deletingCheckin}
+        deleteError={deleteError}
+      />
+    )
   }
 
   if (journeySearchOpen) {
-    return <><button type="button" onClick={() => setJourneySearchOpen(false)} className="mb-3 min-h-10 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted">К обычной истории</button><JourneySearch user={user} /></>
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setJourneySearchOpen(false)}
+          className="mb-3 min-h-10 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted"
+        >
+          К обычной истории
+        </button>
+        <JourneySearch user={user} />
+      </>
+    )
   }
 
   const milestonesBlock = badges && badges.length > 0 && (
@@ -257,7 +345,18 @@ export default function History({ user }) {
 
   return (
     <div className="space-y-5 mt-1">
-      <button type="button" onClick={() => setJourneySearchOpen(true)} className="min-h-11 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted">Искать и фильтровать записи</button>
+      {historyStatus && (
+        <p role="status" className="rounded-2xl bg-gold/10 px-4 py-3 text-[13px] text-gold">
+          {historyStatus}
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={() => setJourneySearchOpen(true)}
+        className="min-h-11 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted"
+      >
+        Искать и фильтровать записи
+      </button>
       {days.map(d => {
         const wins = d.checkin?.wins || []
         return (
