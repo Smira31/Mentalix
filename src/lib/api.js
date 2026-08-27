@@ -363,6 +363,9 @@ export const api = {
 
     getSettings: userId => request(withQuery('/profile/settings', { user_id: userId })),
 
+    writingGoalProgress: userId =>
+      request(withQuery('/profile/writing-goal/progress', { user_id: userId })),
+
     saveSettings: (userId, settings) =>
       request('/profile/settings', {
         method: 'POST',
