@@ -757,7 +757,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in">
+      <div className="rounded-[28px] bg-emerald px-6 pt-5 pb-6 mt-6 text-center flex flex-col justify-center animate-fade-in">
         {motionExperimentEnabled ? (
           <div className="mx-today-hero-art" aria-label="Один следующий шаг">
             <SemanticGlyph
@@ -913,7 +913,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('theme')
           }}
-          className="mx-today-theme-card w-full px-6 py-7 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
+          className="mx-today-theme-card w-full px-5 py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
           <span className="block text-[11px] text-faint font-bold uppercase tracking-wider mb-2">
             Тема недели
@@ -964,7 +964,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('quote')
           }}
-          className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          className="w-full px-2 py-5 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
 

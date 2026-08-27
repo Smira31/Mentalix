@@ -32,3 +32,33 @@ Backend, cloud sync, AI consent, новая навигационная вкла�
 ## Следующий ручной gate
 
 Проверить Home в Telegram на iPhone в состояниях: pending check-in, day in progress, day closed; открыть keyboard из Journal; проверить safe-area, один главный CTA, читаемость Onest и отсутствие визуального шума.
+
+## MXL-HOME-QUIET-V2-001
+
+### Цель
+
+Устранить перекрытие fixed bottom navigation, сделать один daily focus главным визуальным центром и облегчить вторичные блоки без удаления существующих функций.
+
+### Решения
+
+- основной контент резервирует место под `--app-content-bottom` и `env(safe-area-inset-bottom)`;
+- последний видимый блок не уходит под навигацию и остаётся доступным для нажатия;
+- главный hero Today размещается перед вторичными секциями;
+- «Пилот · утро» и progress row имеют меньший визуальный вес, чем главный daily action;
+- «Тема недели» остаётся единственной вторичной surface-карточкой;
+- «Мысль дня» остаётся текстовым вторичным блоком без конкурирующего основного CTA;
+- все переходы и существующие состояния Today сохраняются.
+
+### Acceptance criteria
+
+1. На 320×568 и 390×844 фиксированная нижняя навигация не закрывает последнюю карточку, кнопку или текст.
+2. При pending check-in, day in progress и day closed пользователь видит один главный CTA.
+3. Главный hero находится в DOM-порядке раньше secondary sections.
+4. Нет горизонтального overflow и непреднамеренной прокрутки в поперечном направлении.
+5. Русский текст использует Onest baseline; пользовательские Georgia/Times New Roman/Manrope overrides отсутствуют.
+6. Existing Today, Practices, Наставник, Library и Trends navigation не удаляются.
+7. Journal fullscreen и keyboard-aware поведение не меняются регрессией.
+
+### Не входит
+
+V2 не добавляет новую вкладку, backend/cloud sync, tags, search, media, новый AI-flow или pixel-perfect копирование Stoic.
