@@ -28,9 +28,9 @@
 | `MXL-016` | M | content/product/UX | verified | completed | Закрыта через PR #215; curated fallback и reflective metadata опубликованы |
 | `MXL-STRICTMODE-PERSONA-001` | ? | technical | documented | blocked | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
 | `MXL-019` | M | product/UX/visual | verified | completed | Закрыта через PR #219; continuous Journey line опубликована |
-| `MXL-JOURNAL-001` | ML | product/UX | in progress | manual-gate | Journal Home prototype: 4-фазный цикл, Writing Canvas, local draft; ждёт Preview gate |
+| `MXL-JOURNAL-001` | ML | product/UX | in progress | manual-gate | Journal Flow в «Практиках»: intro → 4 фазы → completion/return, local-first; ждёт повторный Preview gate |
 | `MXL-020` | ? | product/payment | deferred | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
-| `MXL-JOURNAL-PERSISTENCE-001` | XL | product/backend | in progress | local-first now; backend-dependent later | Версионировать local-first storage, сохранить draft/final и мигрировать prototype format; cloud sync остаётся отдельным gate |
+| `MXL-JOURNAL-PERSISTENCE-001` | XL | product/backend | in progress | local-first now; backend-dependent later | User-scoped versioned local storage, draft/final и explicit legacy migration реализованы; cloud sync остаётся отдельным backend gate |
 | `MXL-JOURNAL-HISTORY-001` | L | product/backend/UX | backlog | backend-dependent | Объединить датированную историю после persistence |
 | `MXL-JOURNAL-PRIVACY-001` | L | product/safety/backend | backlog | needs-owner + backend-dependent | Решить AI consent, retention, export и delete |
 | `MXL-JOURNAL-PERSONALIZE-001` | M | product/UX | backlog | needs-owner | Выбрать cadence и режим prompt/free write/AI |
@@ -60,7 +60,7 @@
 | Backend/API | Приватный репозиторий | Не придумывать endpoint или схему |
 | Telegram/iPhone | Основной manual gate | Desktop smoke не считать заменой реальной проверки |
 | Stoic-аудит | Русская карта функций и design principles добавлена в `docs/product/` | Не копировать бренд, тексты и UI Stoic |
-| Journal | Большой эпик разбит на persistence, history, privacy, personalization и content layers | Не дублировать закрытые MXL-001/MXL-005/MXL-009/MXL-014/MXL-015/MXL-016/MXL-019 |
+| Journal | Текущий Journal Flow имеет явный дом в «Практиках»; эпик разбит на persistence, history, privacy, personalization и content layers | Не добавлять шестую вкладку, не скрывать Journal внутри Mentor и не дублировать закрытые MXL-001/MXL-005/MXL-009/MXL-014/MXL-015/MXL-016/MXL-019 |
 
 ## Definition of Ready
 

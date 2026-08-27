@@ -3,14 +3,14 @@
 **Статус:** предложение для решения владельца; не меняет `TASKS.md`, код, backend-контракты, тарифы или навигацию автоматически.  
 **Основание:** [`stoic_to_mentalix_gap_map_2026-08-27.md`](stoic_to_mentalix_gap_map_2026-08-27.md), `PRODUCT.md`, `docs/TASK_INDEX.md`, текущий frontend `main` (`12326a5`).
 
-> **Главная рекомендация.** Не переносить набор функций Stoic. Сначала сделать у Mentalix надёжным собственный путь: **свободно зафиксировать мысль → вернуться к ней в датированной истории → понимать, где хранятся данные и как ими управлять**. Это устраняет реальную слабость current Journal Home и одновременно усиливает модель «Идея → Действие → Анализ → Новый шаг».
+> **Главная рекомендация.** Не переносить набор функций Stoic. Сначала сделать у Mentalix надёжным собственный путь: **свободно зафиксировать мысль → вернуться к ней в датированной истории → понимать, где хранятся данные и как ими управлять**. Это устраняет реальную слабость прежнего Journal Home и одновременно усиливает модель «Идея → Действие → Анализ → Новый шаг».
 
 ## 1. Приоритизация
 
 | Волна | Задача | Ценность для Mentalix | Почему именно сейчас | Автономность |
 |---|---|---|---|---|
 | 0 | `MXL-UX-RESPONSIVE-001` | Сохраняет доступность всех существующих сцен на iPhone/Telegram | Уже выбрано владельцем как v1.1 priority; новые journal screens нельзя строить поверх непроверенного layout. | owner-priority; frontend-only. |
-| 1A | `MXL-JOURNAL-001`: принять текущий Journal Home на реальном iPhone | Устанавливает, что текущий четырёхшаговый путь понятен и доступен | Код уже есть, но остаётся prototype/manual-gate. | **manual-gate**; без изменения кода. |
+| 1A | `MXL-JOURNAL-001`: принять Journal Flow в «Практиках» на реальном iPhone | Устанавливает, что явный четырёхшаговый путь, completion и возврат понятны и доступны | Код уже есть в PR #245, но остаётся local-first/manual-gate. | **manual-gate**; без дальнейшего изменения кода. |
 | 1B | `MXL-JOURNAL-PERSISTENCE-001`: durable local-first journal | Не теряются draft/final, journal становится честной частью daily loop | Без этой основы невозможны History, tags, AI-context и cross-device promises. | Scope можно подготовить; cloud/backend — **не начинать** без контракта. |
 | 1C | `MXL-JOURNAL-HISTORY-001`: unified dated history | Позволяет вернуться к идее/действию/анализу в один момент времени | Делает Journey полезным retrieval-инструментом, а не набором разрозненных блоков. | **backend-dependent** после 1B. |
 | 1D | `MXL-JOURNAL-PRIVACY-001`: privacy/data centre | Делает доверие к journal и AI явным до роста данных | Появление durable entries без export/delete/consent создаст доверительный долг. | **needs-owner + backend + safety/legal**. |
@@ -29,21 +29,22 @@
 
 **Готово, когда:** UX-R-01…UX-R-16 проходят в agreed viewports; целевые flows не перекрываются keyboard/dock; `lint`, `test:unit`, `build`, `ux:check` зелёные; владелец проходит iPhone/Telegram gate. Никакие Stoic features не должны быть «захвачены» этой maintenance-задачей.
 
-### Wave 1A — Journal Home acceptance gate
+### Wave 1A — Journal Flow acceptance gate
 
-**Проблема.** Journal Home уже существует, однако открывается внутри вкладки «Наставник» и сохраняет данные только в `localStorage`. До любого расширения надо узнать, считывает ли пользователь этот путь как самостоятельный журнал и остаётся ли CTA доступной над клавиатурой.
+**Проблема.** В PR #245 Journal Home заменён на явную строку «Журнал» в «Практиках»: intro → writing → completion → возврат. Запись хранится только local-first. До любого расширения надо подтвердить на реальном iPhone внутри Telegram, что пользователь видит вход, может писать поверх keyboard/dock, действительно завершает цикл и без поиска открывает сохранённую запись снова.
 
-**Ручной маршрут:** `Наставник → журнал → Идея → Действие → Анализ → Новый шаг → закрыть/вернуться → снова открыть Наставник`. Используется тестовый, не личный текст.
+**Ручной маршрут:** `Практики → Журнал → Начать → Идея → Действие → Анализ → Новый шаг → Цикл сохранён → Вернуться к практикам → Журнал → Открыть запись`. Используется тестовый, не личный текст.
 
 **Критерии приёмки:**
 
 | Критерий | Наблюдаемое доказательство |
 |---|---|
-| Понятный start | Пользователь без подсказки понимает, что это журнал, а не AI-чат. |
+| Понятный start | Пользователь без подсказки видит «Журнал» в «Практиках» и понимает, что это не AI-чат. |
 | Понятный progress | Видит 4 шага и может вернуться к заполненному предыдущему. |
-| Безопасный draft | Текст сохраняется после ухода/возврата в тот же день. |
-| Завершение | `Закрыть сегодняшний цикл` доступно и не сообщает completion при пустом поле. |
-| Telegram layout | Keyboard, back, dock и bottom navigation не перекрывают сцену на реальном iPhone. |
+| Безопасный draft | Текст сохраняется после ухода/возврата в тот же день для того же профиля и устройства. |
+| Завершение | После непустого «Нового шага» появляется отдельный экран `Цикл сохранён`, а `Вернуться к практикам` действительно закрывает flow. |
+| Повторное открытие | Из «Практик» повторно находится «Журнал», а готовая запись открывается без потери final-статуса. |
+| Telegram layout | Keyboard, back, dock и нижняя навигация не перекрывают сцену на реальном iPhone. |
 
 **Non-goals:** cloud sync, tags, search, upload, AI memory, share, new tab or mock persistence.
 
@@ -51,7 +52,7 @@
 
 **Цель.** Стабилизировать уже существующую модель `mx-journal-v2` без обещания cloud-sync: versioned storage, deterministic migration, draft/final status, date/timezone semantics, explicit local-storage error state, per-user isolation on shared browser and a safe clear/reset route. Это не замена backend persistence.
 
-**Факт кода.** `journalStorage.js` хранит записи только под датой и без `user_id`; freeWrites model declared but no current UI writer uses it. Если разными аккаунтами пользоваться на одном web browser, shared key создаёт риск смешения данных. Это делает **per-user namespacing** наиболее ценным local-first improvement.
+**Факт кода.** `journalStorage.js` уже хранит новые записи в user-scoped ключе `mx-journal-v2:user:<id>` и предлагает перенос прежней browser-wide записи только явным действием. Четыре фазы имеют статусы draft/final; `freeWrites` остаётся моделью без текущего writer UI. Это local-first защита на одном устройстве, а не cloud identity/sync model.
 
 | In scope | Out of scope |
 |---|---|
@@ -63,7 +64,7 @@
 
 **Готово, когда:** journal data survive refresh/reopen for same user; do not appear for a different test user in same browser; old v2/prototype data migrate once without loss; inaccessible storage produces recoverable no-false-success state; `npm run test:unit`, lint/build/UX check green; iPhone gate follows.
 
-**Needed before coding:** confirm whether `user.id` is stable and available wherever JournalHome mounts; agree whether local reset only clears journal (recommended) or all local app settings (not recommended).
+**До следующего backend-подэтапа:** зафиксировать server entry ID, schema, calendar-day/timezone, edit/delete across devices, sync conflicts, offline behavior, export и retention. Текущий user-scoped ключ не является заменой этим решениям.
 
 ### Wave 1C — `MXL-JOURNAL-HISTORY-001`
 
@@ -131,9 +132,9 @@ To move from analysis to implementation without violating repository decisions, 
 | Route | Commit-able work after approval | Does it require private backend? | Recommendation |
 |---|---|---|---|
 | **R0 — Quality first** | `MXL-UX-RESPONSIVE-001` only. | No. | Required release hygiene, but does not close functional journal gap. |
-| **R1 — Trustworthy Journal foundation** | Manual acceptance of Journal Home, then local-first `MXL-JOURNAL-PERSISTENCE-001` slice. | No for initial local-first scope. | **Recommended first product route.** |
+| **R1 — Trustworthy Journal foundation** | Manual acceptance of the Journal Flow in «Практиках», then local-first `MXL-JOURNAL-PERSISTENCE-001` slice. | No for current local-first scope. | **Recommended first product route.** |
 | **R2 — History first** | Unified History. | Yes; also blocked by R1. | Do not start first. |
 | **R3 — More guided content first** | Prompt cadence/guided track work. | No/limited, but needs content decision. | Useful later; risks hiding persistence weakness. |
 | **R4 — Privacy first** | Privacy/data-centre discovery and decision record. | Yes for actual product claims. | Start policy/contract workshop in parallel; code only after answers. |
 
-**Recommended execution order:** approve **R0 + R1**, run the real-device Journal acceptance route, then begin the strictly local-first portion of persistence. In parallel, record decisions for R4; do not code its claims until private backend/legal behaviour is known.
+**Recommended execution order:** approve **R0 + R1**, run the real-device Journal Flow acceptance route, then continue only with the strictly local-first persistence work that has passed that gate. In parallel, record decisions for R4; do not code its claims until private backend/legal behaviour is known.

@@ -3900,10 +3900,10 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 - **Статус:** in progress; local-first slice реализован 27.08.2026, cloud/backend часть остаётся backend-dependent и не начата.
 - **Размер:** XL.
-- **Цель:** превратить Journal Home prototype в надёжный journal с сохранением утренних и вечерних записей.
-- **Реализованный local-first slice:** новые записи из Journal Home изолированы по текущему `user.id` в ключах `mx-journal-v2:user:<id>`; старый browser-wide формат не переносится автоматически, а предлагает явный перенос только при подтверждении пользователя; перенос объединяет старые фазы с уже существующей записью профиля без затирания; недоступное browser storage показывает ошибку и не позволяет перейти к следующей фазе с ложным сохранением. Добавлены unit-контракты isolation/migration/storage failure и Journal Home в UX smoke на `390×844` / `320×568`.
-- **Проверено локально:** `npm run test:unit` 31/31, `npm run lint`, `npm run build`, `npm run docs:check` (109 Markdown, 29 canonical IDs, 0 errors), `npm run ux:check`, `git diff --check` — PASS. Визуальные кадры и граница проверки сохранены в `docs/testing/MXL-JOURNAL-PERSISTENCE-001_VERIFICATION.md`.
-- **Следующий gate:** ручная проверка владельцем на реальном iPhone внутри Telegram: Journal Home → 4 фазы → выход/повторное открытие → legacy-prompt (если применимо) → keyboard/safe area. До неё slice не называть полностью принятым для production.
+- **Цель:** сделать собственный Journal Flow надёжной local-first частью ежедневного цикла «Идея → Действие → Анализ → Новый шаг», не подменяя его утренним/вечерним scheduler или cloud journal.
+- **Реализованный local-first slice:** видимая строка «Журнал» в «Практиках» ведёт в `intro → 4 фазы → «Цикл сохранён» → возврат`; Journal больше не открывается автоматически в «Наставнике». Новые записи из `JournalFlow` изолированы по текущему `user.id` в ключах `mx-journal-v2:user:<id>`; старый browser-wide формат не переносится автоматически, а предлагает явный перенос только при подтверждении пользователя; перенос объединяет старые фазы с уже существующей записью профиля без затирания; недоступное browser storage показывает ошибку и не позволяет перейти к следующей фазе с ложным сохранением. Добавлены unit-контракты isolation/migration/storage failure и UX smoke на `390×844` / `320×568`, включая completion, возврат, повторное открытие и сохранение final-status после правки.
+- **Проверено локально:** до финального commit выполнены `npm run test:unit` 31/31, `npm run lint`, `npm run build`, `npm run ux:check`, `git diff --check` — PASS. Визуальные кадры и граница проверки сохранены в `docs/testing/MXL-JOURNAL-PERSISTENCE-001_VERIFICATION.md`; финальный `docs:check` выполняется в составе commit-gate.
+- **Следующий gate:** ручная проверка владельцем на реальном iPhone внутри Telegram: `Практики → Журнал → Начать → 4 фазы → Цикл сохранён → Вернуться к практикам → Журнал → Открыть запись`; дополнительно проверить Back, legacy-prompt (если применимо) и keyboard/safe area. До неё slice не называть полностью принятым для production.
 - **Нужно решить/зафиксировать до следующих подэтапов:** entry ID, server schema, calendar day/timezone в backend, edit/delete across devices, sync conflicts, offline behavior, export и retention.
 - **Не входит:** копирование Stoic storage, media attachments, AI отправка по умолчанию, backend endpoint, cloud sync или обещание кросс-девайсного journal sync.
 - **Готово для всего эпика, когда:** запись можно начать, продолжить, сохранить, изменить, удалить и восстановить после повторного входа с понятным ownership данных.
@@ -3929,7 +3929,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Статус:** needs-owner; после persistence.
 - **Размер:** M.
 - **Цель:** дать выбор между одним Daily Check-In и двумя шагами Morning Preparation + Evening Reflection, а также между prompt, free write и optional AI deepen.
-- **Не дублирует:** текущие check-in, Journal Home и Stoic baseline; это только слой пользовательской настройки cadence.
+- **Не дублирует:** текущие check-in, Journal Flow в «Практиках» и Stoic baseline; это только слой пользовательской настройки cadence.
 
 ### MXL-JOURNAL-GUIDED-001 — Guided journals и библиотека практик
 
@@ -3959,21 +3959,21 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## Приоритет большого продукта
 
-1. Проверить и при необходимости уточнить текущий Journal Home prototype в PR #224.
-2. Получить backend/storage contract и реализовать `MXL-JOURNAL-PERSISTENCE-001`.
+1. Провести ручной Telegram/iPhone gate Journal Flow в «Практиках» из PR #245; не мержить без явного подтверждения владельца.
+2. Получить backend/storage contract для следующего подэтапа `MXL-JOURNAL-PERSISTENCE-001`.
 3. Реализовать `MXL-JOURNAL-HISTORY-001`.
 4. Зафиксировать `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
 5. Реализовать `MXL-JOURNAL-PERSONALIZE-001` и `MXL-JOURNAL-GUIDED-001`.
 6. Только после evidence решать tags, search, favorites, memories, reminders и payment.
 
-## MXL-JOURNAL-001 — Stoic-inspired Journal Home
+## MXL-JOURNAL-001 — Journal Flow в «Практиках»
 
-Статус: functional prototype реализован; PR #224 ожидает ручной Telegram/iPhone gate. Journal Home встроен во вкладку Mentor без новой вкладки и ведёт через четыре фазы **Идея → Действие → Анализ → Новый шаг**. Используются существующие `JournalTextarea`, AI handoff и локальный prototype draft. Новая backend schema, cloud persistence, теги, custom templates, audio, Memories, community, payment и обязательный streak в scope не входят.
+**Статус:** реализован в PR #245; ожидает повторный ручной Telegram/iPhone gate после переработки маршрута. Journal — видимая focused practice без новой вкладки: `Практики → Журнал → intro → Идея → Действие → Анализ → Новый шаг → Цикл сохранён → Вернуться к практикам`. Он использует существующие `SceneLayout`, `useFullscreenSurface` и `JournalTextarea`; «Наставник» снова начинается с PersonaPicker и не открывает журнал автоматически. Текст сохраняется только local-first для текущего профиля и устройства; backend schema, cloud persistence, теги, custom templates, audio, Memories, community, payment и обязательный streak в scope не входят. Не закрывать задачу и не мержить PR без явного подтверждения владельца после gate.
 
 ## MXL-UX-RESPONSIVE-001 — Responsive UI и fixed-element offsets для v1.1.0
 
 - **Статус:** ready / owner-priority для v1.1.0. Владелец выбрал задачу первым направлением версии; это не изменение глобального P0-регистра. Это узкая maintenance-задача по визуальным рискам, найденным на ручных скриншотах Telegram Mini App.
-- **Наблюдения:** проверить возможное перекрытие верхним Telegram/Mini App header начала контента на экранах Mentor/Journal после открытия и прокрутки; проверить взаимодействие нижнего dock с iOS keyboard и Writing Canvas; проверить отступ и hit area floating control у правого края; дополнительно проверить читаемость вторичных подписей на OLED и узких экранах.
+- **Наблюдения:** проверить возможное перекрытие верхним Telegram/Mini App header начала контента на focused экранах «Практик», включая Journal Flow, после открытия и прокрутки; проверить взаимодействие нижнего dock с iOS keyboard и Writing Canvas; проверить отступ и hit area floating control у правого края; дополнительно проверить читаемость вторичных подписей на OLED и узких экранах.
 - **Не утверждается заранее:** статичный скриншот не доказывает layout jump, поэтому «прыжок» считается дефектом только после воспроизведения в динамике или на повторной ручной проверке.
 - **Scope:** только frontend layout/safe-area/keyboard/overflow и точечные visual polish-исправления после подтверждения; backend, API, данные, core loop, тексты Stoic и новая навигация не меняются.
 - **Профили:** iPhone SE 2 / 320×568, современный узкий iPhone около 375×812, стандартный iPhone около 390×844, Pro Max около 430×932; Android добавляется только отдельным решением владельца.

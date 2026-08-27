@@ -8,7 +8,6 @@ import { maybeBuildInsightMessage } from './mentalix/insightDigest'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-import JournalHome from './mentalix/JournalHome'
 
 // ============================================================
 // ЧАТ
@@ -128,8 +127,6 @@ export default function MentalixChat({ user, onPersonaChange }) {
 
   const [persona, setPersona] = useState(pending.persona)
 
-  const [journalOpen, setJournalOpen] = useState(!pending.persona)
-
   const [draft, setDraft] = useState(pending.draft)
 
   /*
@@ -154,10 +151,6 @@ export default function MentalixChat({ user, onPersonaChange }) {
     }
   }, [onPersonaChange])
 
-  if (!persona && journalOpen) {
-    return <JournalHome user={user} onOpenMentor={() => setJournalOpen(false)} />
-  }
-
   if (!persona) {
     return (
       <PersonaPicker
@@ -180,7 +173,6 @@ export default function MentalixChat({ user, onPersonaChange }) {
       onBack={() => {
         setDraft('')
         setPersona(null)
-        setJournalOpen(true)
       }}
     />
   )

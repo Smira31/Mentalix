@@ -150,8 +150,8 @@ Mentalix Iteration Loop не заменяет большой продуктов�
 
 | Слой Stoic | Что уже есть в Mentalix | Что следует делать дальше |
 | --- | --- | --- |
-| Ежедневный вход и рефлексия | Today, CheckIn, Journal Home prototype, цикл «Идея → Действие → Анализ → Новый шаг» | Стабилизировать Journal Home и затем добавить честное morning/evening persistence |
-| Свободное письмо | `JournalTextarea`, markdown formatting, draft и optional AI deepen | Сделать свободную запись равноправным входом без обязательного prompt |
+| Ежедневный вход и рефлексия | Today, CheckIn, Journal Flow в «Практиках», цикл «Идея → Действие → Анализ → Новый шаг» | Пройти Telegram/iPhone gate явного Journal Flow, затем проектировать честный persistence без обещания cloud sync |
+| Свободное письмо | `JournalTextarea`, markdown formatting и local draft/final в четырёх фазах Journal Flow; optional AI deepen остаётся в поддерживающих flows | Сохранять Journal равноправной focused practice без обязательного prompt и без AI отправки по умолчанию |
 | Daily prompts и weekly themes | MXL-015 и MXL-016 закрыты | Связать их с текущим журналом, не создавая отдельный обязательный каталог |
 | Guided journals и exercises | ThemeScreen, Practices, MXL-014 | Добавлять короткие авторские треки после стабилизации core journal |
 | History | History объединяет check-ins, activity, темы и badges с оговоркой о датах | Улучшить раскрытие датированного дня; unified feed требует backend date contract |

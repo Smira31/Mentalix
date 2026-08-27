@@ -1,7 +1,8 @@
 # Stoic → Mentalix: карта соответствия, различий и функциональных пробелов
 
 **Дата:** 27 августа 2026 г.  
-**Mentalix baseline:** `main` at `12326a54916c4845fddc25212c5d2f3b295ebe6c`.  
+**Исходный Mentalix baseline:** `main` at `12326a54916c4845fddc25212c5d2f3b295ebe6c`.
+**Актуализация PR #245:** Journal Home заменён на явный `JournalFlow` внутри «Практик»; local-first поведение ещё ожидает отдельный ручной Telegram/iPhone gate.
 **Stoic baseline:** доказательный анализ iOS `v2026.16` и официальный публичный corpus, завершённые в этой рабочей сессии: [`/home/ubuntu/stoic_full_product_analysis.md`](../../../stoic_full_product_analysis.md) и [`/home/ubuntu/stoic_official_public_materials_catalog.md`](../../../stoic_official_public_materials_catalog.md).
 
 > **Принцип.** Цель не в том, чтобы повторить Stoic. Mentalix должен сохранить собственное преимущество — «идея → действие → анализ → новый шаг», ритуалы/аскезы и AI-персоны. Заимствуются только проверенные поведенческие принципы: низкий порог входа, ясное завершение, прозрачное хранение и полезное возвращение к данным.
@@ -30,7 +31,7 @@ Mentalix не должен менять Today на Stoic-карусель и в�
 | Evening Reflection | Evening mode с lessons, hard/easy, wins и закрытием дня есть. | **Есть и сильнее.** | Усилить связь с «следующим шагом завтра»; не добавлять длинный обязательный опросник. | Server check-in contract уже существует. |
 | Home completion state | Today показывает check-in complete, day closed, progress и next action. | **Есть, иначе.** | Сделать состояние Journal понятным и visible только после durable persistence; не множить карточки. | Journal persistence. |
 | Один check-in / два ритуала в день | Check-in + review time уже есть, но явного user choice cadence нет. | **Частично.** | `MXL-JOURNAL-PERSONALIZE-001`: предложить один простой режим, не сложный scheduler. | Owner product decision + persistence. |
-| Free writing / Empty Page | JournalHome exists, but is four-phase local-first flow and is nested under Mentor. | **Частично, критично.** | Дать явный non-AI «свободно написать» entry point within existing IA; persist draft/final durably. | `MXL-JOURNAL-001` manual gate → `MXL-JOURNAL-PERSISTENCE-001`. |
+| Free writing / Empty Page | `JournalFlow` — отдельная focused practice в «Практиках»: intro → четыре фазы → completion/return; текущая запись сохраняется local-first. | **Частично, foundation improved.** | Проверить на iPhone/Telegram, что понятны вход, keyboard/dock, выход и повторное открытие; не превращать журнал в AI-чат. Датированная история и cloud persistence остаются отдельными задачами. | `MXL-JOURNAL-001` manual gate → `MXL-JOURNAL-PERSISTENCE-001`. |
 | Guided journals | Themes and multiple guided practices exist; no stable guided-journal content layer. | **Частично.** | Build small authored tracks from user problems, not an imitation of Stoic collections/catalogue. | Content governance + owner. |
 | Custom templates | No equivalent. | **Осознанно не делать сейчас.** | Keep rotated prompts/theme/persona starters; do not build builder until evidence changes decision. | Explicit owner reversal required. |
 | Suggestions / sentence beginnings | Writing Canvas has simple placeholder and AI deepen; curated `starters` exist for personas. | **Частично.** | Add small content map `theme × day × context` to improve first words, without AI fabrication. | Content editorial review; can be frontend-first after scope approval. |
@@ -61,7 +62,7 @@ Mentalix не должен менять Today на Stoic-карусель и в�
 
 | Домен Stoic | Mentalix сегодня | Вердикт | Required next decision |
 |---|---|---|---|
-| AI mentor / dig deeper | Three named personas, distinct histories and shared-fact model are documented; check-in/journal handoffs exist. | **Есть, сильнее по identity.** | Preserve role separation; do not imitate Stoic mentors. |
+| AI mentor / dig deeper | Three named personas, distinct histories and shared-fact model are documented; check-in handoff exists. Journal Flow намеренно остаётся non-AI local-first writing practice. | **Есть, сильнее по identity.** | Preserve role separation; do not imitate Stoic mentors or скрывать journal внутри AI route. |
 | AI consent & data transparency | No integrated journal privacy centre or per-feature consent/retention choice in current Settings. | **Critical gap.** | `MXL-JOURNAL-PRIVACY-001`: first define consent, retention, context scope, export/delete and event-data boundary. |
 | App lock / biometrics | PIN + Telegram biometric availability, web fallback semantics. | **Present.** | Improve recovery/new-device copy; do not claim end-to-end encryption without evidence. |
 | Export / delete / import | No user-facing journal data center. | **Missing, required before cloud journal expansion.** | Joint privacy/backend contract, then a small transparent Data screen. |
@@ -79,7 +80,7 @@ Mentalix не должен менять Today на Stoic-карусель и в�
 | Lowercase, conversational labels | Mentalix uses `сегодня.`, `практики.`, calm second-person voice. | **Already aligned.** Maintain content tone, avoid pseudo-Stoic phrases. |
 | One dominant action per screen | Focused flow design system explicitly codifies one meaning/one CTA. | **Already stronger as rule.** Enforce in new journal/privacy screens. |
 | Progressive disclosure in editor | Writing Canvas dock supports formatting, optional deepening and save. | **Partial.** Never show decorative unsupported `+`, media or AI actions. |
-| Clear completion state | Check-in and some practices have completion. | **Partial.** Journal draft/final and cross-screen updates need durable data basis. |
+| Clear completion state | Check-in and focused practices have completion; Journal Flow now shows a dedicated «Цикл сохранён» state with return to «Практики». | **Partial.** Validate final status, exit/reopen and Telegram keyboard/safe area; do not claim cloud durability before the backend contract. |
 | Helpful empty/loading/error states | Design rules exist; Architecture says implementation uneven. | **Cross-cutting gap.** Address only as scoped quality criteria inside chosen feature, not repo-wide redesign. |
 | Settings discoverability | Stoic had doc/UI mismatch for check-in schedule. | **Preventive requirement.** Every new setting needs entry path, state reflection in Today and updated docs in same PR. |
 
@@ -97,7 +98,7 @@ The following five opportunities are the only ones worth carrying from this map 
 
 | Candidate | Why it matters | Current status | Delivery mode |
 |---|---|---|---|
-| Finish Journal Home validation and local-first persistence | Closes biggest gap between daily reflection and reliable return to it; unlocks History honestly. | Existing `MXL-JOURNAL-001` + `MXL-JOURNAL-PERSISTENCE-001`. | Manual gate first; persistence scope needs precise contract. |
+| Finish Journal Flow validation and local-first persistence | Закрывает gap между ежедневной рефлексией и понятным возвращением к ней; в PR #245 путь перенесён из Mentor в «Практики» и получил completion. | Existing `MXL-JOURNAL-001` + `MXL-JOURNAL-PERSISTENCE-001`. | Manual Telegram/iPhone gate first; persistence остаётся local-first до точного backend contract. |
 | Journal-aware unified dated History | Makes action/reflection discoverable later, without a new tab. | Existing `MXL-JOURNAL-HISTORY-001`. | Backend-dependent after persistence. |
 | Journal privacy/data centre | Required trust layer before expanding AI, sync or media. | Existing `MXL-JOURNAL-PRIVACY-001`. | Owner + safety/legal + backend contract. |
 | Cadence and contextual writing entry | Reduces empty-page friction while preserving one-next-step model. | Existing `MXL-JOURNAL-PERSONALIZE-001`. | Owner decision; then limited frontend/content work. |
@@ -105,6 +106,6 @@ The following five opportunities are the only ones worth carrying from this map 
 
 ## 9. Consequence for the next release
 
-The comparison **does not support a feature spree**. The correct order remains the repository’s own sequence: validate Journal Home, make journal persistence trustworthy, add dated retrieval, make privacy explicit, then choose cadence/content. In parallel, the explicit v1.1 owner priority `MXL-UX-RESPONSIVE-001` should retain its place because every new Writing Canvas and fullscreen flow will otherwise multiply Telegram/iPhone layout risk.
+The comparison **does not support a feature spree**. The correct order remains the repository’s own sequence: validate Journal Flow in «Практиках», make journal persistence trustworthy, add dated retrieval, make privacy explicit, then choose cadence/content. In parallel, the explicit v1.1 owner priority `MXL-UX-RESPONSIVE-001` should retain its place because every new Writing Canvas and fullscreen flow will otherwise multiply Telegram/iPhone layout risk.
 
 The next document converts this map into a concise backlog with Definition of Ready, non-goals, dependencies and a single first-wave decision for the owner.

@@ -201,11 +201,9 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
-test('MXL-JOURNAL-001 публикует полноценный четыре-фазный Journal Home', () => {
-  const journal = readFileSync(
-    new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
-    'utf8'
-  )
+test('MXL-JOURNAL-001 открывает Journal Flow из «Практик» и не подменяет им вкладку «Наставник»', () => {
+  const journal = readFileSync(new URL('../../src/screens/JournalFlow.jsx', import.meta.url), 'utf8')
+  const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
   const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
 
   assert.match(journal, /Идея/)
@@ -213,10 +211,15 @@ test('MXL-JOURNAL-001 публикует полноценный четыре-ф�
   assert.match(journal, /Анализ/)
   assert.match(journal, /Новый шаг/)
   assert.match(journal, /JournalTextarea/)
-  assert.match(journal, /readJournalEntry|saveJournalPhase/)
-  assert.match(journal, /Пойти глубже с наставником/)
-  assert.match(mentalix, /JournalHome/)
-  assert.match(mentalix, /journalOpen/)
+  assert.match(journal, /SceneLayout/)
+  assert.match(journal, /Цикл сохранён/)
+  assert.match(journal, /Вернуться к практикам/)
+  assert.match(journal, /setStage\('complete'\)/)
+  assert.match(practices, /title="Журнал"/)
+  assert.match(practices, /setSub\('journal'\)/)
+  assert.match(practices, /<JournalFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\}/)
+  assert.doesNotMatch(mentalix, /JournalHome|journalOpen/)
+  assert.match(mentalix, /PersonaPicker/)
 })
 
 test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат', () => {
@@ -449,8 +452,9 @@ test('MXL-006 публикует единый AI typography baseline без back
 })
 
 test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
-  const journalHome = readFileSync(
-    new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
+  const journalFlow = readFileSync(new URL('../../src/screens/JournalFlow.jsx', import.meta.url), 'utf8')
+  const sceneLayout = readFileSync(
+    new URL('../../src/components/practices/SceneLayout.jsx', import.meta.url),
     'utf8'
   )
   const journalStart = readFileSync(
@@ -462,10 +466,11 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
     'utf8'
   )
 
-  assert.match(journalHome, /font-display/)
+  assert.match(journalFlow, /SceneLayout/)
+  assert.match(sceneLayout, /font-display/)
   assert.match(journalStart, /font-display/)
   assert.match(analytics, /fontFamily="Onest"/)
-  assert.doesNotMatch(journalHome, /Georgia|Times New Roman/)
+  assert.doesNotMatch(journalFlow, /Georgia|Times New Roman/)
   assert.doesNotMatch(journalStart, /Georgia|Times New Roman/)
   assert.doesNotMatch(analytics, /Manrope/)
 })
