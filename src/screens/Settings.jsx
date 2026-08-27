@@ -4,7 +4,7 @@
 //         4. Карточки «Сегодня»  5. Внешний вид  6. Основные  7. Поддержка
 //         8. Документы  9. Версия  10. Аккаунт
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import BackButton from '../components/BackButton'
 import {
   ChevronRight,
@@ -135,6 +135,8 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   const [quietEnd, setQuietEnd] = useState(8)
   const [writingGoalOn, setWritingGoalOn] = useState(false)
   const [writingGoalCount, setWritingGoalCount] = useState(3)
+  const [writingGoalProgress, setWritingGoalProgress] = useState(null)
+  const [writingGoalProgressError, setWritingGoalProgressError] = useState('')
   const [insightsEnabled, setInsightsEnabled] = useState(true)
   const [insightsSaving, setInsightsSaving] = useState(false)
   const [insightsStatus, setInsightsStatus] = useState('')
@@ -166,6 +168,25 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         setReminderHour(19)
       })
   }, [user])
+
+  const loadWritingGoalProgress = useCallback(async () => {
+    if (!user) return
+    setWritingGoalProgressError('')
+    try {
+      setWritingGoalProgress(await api.profile.writingGoalProgress(user.id))
+    } catch {
+      setWritingGoalProgress(null)
+      setWritingGoalProgressError('Не удалось загрузить прогресс цели. Сама цель не изменилась.')
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    const timeoutId = window.setTimeout(() => {
+      void loadWritingGoalProgress()
+    }, 0)
+    return () => window.clearTimeout(timeoutId)
+  }, [user, loadWritingGoalProgress])
 
   async function saveReminder(hour, enabled) {
     /*
@@ -232,6 +253,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         writing_goal_enabled: nextEnabled,
         writing_goal_weekly_count: nextCount,
       })
+      await loadWritingGoalProgress()
     } catch {
       setReminderStatus('Не удалось сохранить цель записи.')
     }
@@ -685,6 +707,58 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
               {count}
             </button>
           ))}
+        </div>
+      )}
+      {writingGoalOn && (
+        <div className="-mt-5 mb-8 w-full rounded-2xl border border-gold/15 bg-gold/5 px-4 py-3.5">
+          {writingGoalProgress?.enabled ? (
+            <>
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="text-[13px] font-semibold text-cream">
+                  Эта неделя: {writingGoalProgress.completed} из {writingGoalProgress.goal}
+                </p>
+                <span className="shrink-0 text-[11px] font-semibold text-gold">
+                  {writingGoalProgress.reached
+                    ? 'Цель достигнута'
+                    : `Осталось ${writingGoalProgress.remaining}`}
+                </span>
+              </div>
+              <div
+                className="mt-3 h-2 overflow-hidden rounded-full bg-emerald-light"
+                aria-label={`Прогресс цели письма: ${writingGoalProgress.completed} из ${writingGoalProgress.goal}`}
+              >
+                <div
+                  className="h-full rounded-full bg-gold transition-[width] duration-500"
+                  style={{
+                    width: `${Math.min(100, Math.round((writingGoalProgress.completed / writingGoalProgress.goal) * 100))}%`,
+                  }}
+                />
+              </div>
+              <p className="mt-3 text-[12px] leading-relaxed text-muted">
+                {writingGoalProgress.reached
+                  ? 'Цель на эту неделю уже выполнена. Можно писать дальше только если тебе хочется.'
+                  : 'Это мягкий ориентир, не серия и не оценка: пропущенные дни не считаются против тебя.'}
+              </p>
+            </>
+          ) : (
+            <p className="text-[12px] leading-relaxed text-muted">
+              Прогресс появится, когда цель будет включена и выбрано число записей в неделю.
+            </p>
+          )}
+          {writingGoalProgressError && (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <p role="status" className="text-[12px] leading-relaxed text-muted">
+                {writingGoalProgressError}
+              </p>
+              <button
+                type="button"
+                onClick={loadWritingGoalProgress}
+                className="min-h-9 rounded-full border border-cream/15 px-3 text-[12px] font-semibold text-gold"
+              >
+                Повторить
+              </button>
+            </div>
+          )}
         </div>
       )}
       {reminderStatus && (
