@@ -1,5 +1,19 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 27.08.2026 — MXL-UX-RESPONSIVE-001: UI-проверка для v1.1.0
+
+- По результатам ручных Telegram/iPhone скриншотов зафиксированы кандидаты на проверку: верхний content offset под Telegram/Mini App header, взаимодействие нижнего dock с iOS keyboard, крайнее положение floating control и контраст вторичных подписей.
+- Добавлена узкая backlog-задача `MXL-UX-RESPONSIVE-001`; layout jump не объявляется подтверждённым без воспроизведения.
+- Добавлена инструкция `docs/testing/UI_RESPONSIVE_CHECK.md` с матрицей iPhone viewport, safe-area/keyboard/overflow критериями, evidence-шаблоном и release decision.
+- Backend, API, данные и продуктовый scope не менялись.
+
+## 27.08.2026 — Telegram/iPhone manual gate
+
+- Владелец проверил production Mentalix внутри Telegram на реальном iPhone 16 Pro Max с iOS 26.6.
+- Подтверждены запуск Mini App, safe area, Today, Practices, Mentor/AI, Library, Trends, навигация по пяти вкладкам, Check-in 1–6, клавиатура iOS, запись Check-in и обновление Today со статусом «Чек-ин выполнен».
+- В AI-диалоге «Наставник» сообщение отправлено и ответ получен; владелец сообщил «Все работает».
+- `MXL-002` переведена в `verified/completed`; отдельная проверка закрытия Mini App оставлена как regression-пункт.
+
 ## 26.08.2026 — MXL-006: AI typography baseline
 
 - Зафиксирована единая AI-шкала: title `clamp(1.75rem, 7vw, 2.125rem)`, body `1rem/1.62`, meta `0.6875rem/1.2`, caption `0.8125rem/1.5`, input `1rem/1.4`.

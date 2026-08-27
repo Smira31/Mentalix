@@ -3096,10 +3096,12 @@ entityType, entityId)`.
   - Композиция сообщений Собеседника выровнена; требуется проверка на реальном iPhone.
   - Осталось: сверить композицию, размеры, вертикальные интервалы и состояния по референсам.
 
-- [ ] **[M-L] MXL-002 — Проверить размеры и safe area AI-экранов на iPhone**
+- [x] **[M-L] MXL-002 — Проверить размеры и safe area AI-экранов на iPhone**
   - Глобальный Telegram Fullscreen Mode и safe areas реализованы.
-  - Осталось проверить каждый AI-экран на реальном iPhone после свежего деплоя.
-  - Контент не должен попадать под status bar и плавающие кнопки Telegram.
+  - **Закрыто 27.08.2026:** владелец проверил Mentalix внутри Telegram на реальном iPhone 16 Pro Max, iOS 26.6.
+  - Подтверждены запуск Mini App, Dynamic Island/Home Indicator safe area, Today, Practices, Mentor/AI, Library, Trends, навигация по пяти вкладкам, Check-in 1–6, ввод текста с клавиатурой iOS, экран «Чек-ин записан» и обновление Today со статусом «Чек-ин выполнен».
+  - В AI-диалоге «Наставник» сообщение отправлено, ответ получен; владелец сообщил «Все работает».
+  - Сценарий закрытия Mini App отдельным скриншотом не представлен, но критический user-facing flow подтверждён владельцем; повторить отдельно при следующем regression gate.
 
 - [x] **[M-L] MXL-005 — Довести диалог до журнального формата**
   - Частично: базовый журнальный формат реализован.
@@ -3882,7 +3884,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Критерии готовности:** backend strings sanitised before rendering, insufficient data remains explicit, no causal/diagnostic language in shipped local rules, unit/docs/lint/build/UX smoke green, manual Analytics/Telegram gate required.
 - **Следующий gate:** проверить Analytics на телефоне с малой и достаточной выборкой, backend insight cards, disclaimer и переход в дневниковый AI-flow.
 
-
 # 2026-08-27 — Русский аудит Stoic → Mentalix и крупный journal backlog
 
 ## MXL-DOCS-STOIC-AUDIT-001 — Русская карта функций и дизайна Stoic
@@ -3965,3 +3966,16 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 ## MXL-JOURNAL-001 — Stoic-inspired Journal Home
 
 Статус: functional prototype реализован; PR #224 ожидает ручной Telegram/iPhone gate. Journal Home встроен во вкладку Mentor без новой вкладки и ведёт через четыре фазы **Идея → Действие → Анализ → Новый шаг**. Используются существующие `JournalTextarea`, AI handoff и локальный prototype draft. Новая backend schema, cloud persistence, теги, custom templates, audio, Memories, community, payment и обязательный streak в scope не входят.
+
+## MXL-UX-RESPONSIVE-001 — Responsive UI и fixed-element offsets для v1.1.0
+
+- **Статус:** backlog / needs-owner. Это узкая maintenance-задача по визуальным рискам, найденным на ручных скриншотах Telegram Mini App; новая P0 автоматически не выбирается.
+- **Наблюдения:** проверить возможное перекрытие верхним Telegram/Mini App header начала контента на экранах Mentor/Journal после открытия и прокрутки; проверить взаимодействие нижнего dock с iOS keyboard и Writing Canvas; проверить отступ и hit area floating control у правого края; дополнительно проверить читаемость вторичных подписей на OLED и узких экранах.
+- **Не утверждается заранее:** статичный скриншот не доказывает layout jump, поэтому «прыжок» считается дефектом только после воспроизведения в динамике или на повторной ручной проверке.
+- **Scope:** только frontend layout/safe-area/keyboard/overflow и точечные visual polish-исправления после подтверждения; backend, API, данные, core loop, тексты Stoic и новая навигация не меняются.
+- **Профили:** iPhone SE 2 / 320×568, современный узкий iPhone около 375×812, стандартный iPhone около 390×844, Pro Max около 430×932; Android добавляется только отдельным решением владельца.
+- **Критерии готовности:** верхний контент не скрывается header; нижний dock не скрывает поле или CTA при keyboard; floating control не обрезается и имеет рабочую touch-зону; нет горизонтального overflow; длинные заголовки переносятся; viewport/scroll не прыгает после открытия и закрытия keyboard; визуальные изменения не затрагивают backend/API.
+- **Проверки:** `npm run test:unit`, `npm run lint`, `npm run build`, `npm run docs:check`, `git diff --check`, `npm run ux:check`, затем ручной Telegram/iPhone gate по `docs/testing/UI_RESPONSIVE_CHECK.md` на согласованных профилях.
+- **Evidence:** для каждого дефекта обязательны устройство, viewport, экран, шаги воспроизведения, ожидаемое/фактическое поведение, повторяемость и screenshot или screen recording.
+- **Rollback:** отдельный узкий PR с revert без удаления данных и без production-операций; если проблема не воспроизводится, оставить задачу в backlog с отрицательным результатом проверки вместо изменения дизайна по предположению.
+- **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
