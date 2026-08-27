@@ -1,5 +1,12 @@
 # Mentalix — Current Project State
 
+## 27.08.2026 — Coordination protocol и PR triage
+
+- Проведён read-only triage открытых PR #241, #237, #234, #152, #28, #26, #21 и #11 после merge PR #240.
+- Добавлены `docs/COORDINATION_PROTOCOL.md` и `docs/handoffs/2026-08-27-pr-triage.md` с ролями трёх диалогов, writer-lock, источниками истины, decision matrix и безопасными правилами triage.
+- Ни один PR, branch или commit этим шагом не закрывался, не удалялся, не rebased и не переписывался.
+- Рекомендованный первый review — PR #241 из-за `CONFLICTING`/`DIRTY` и failed Vercel production check; это не изменение глобального P0-регистра.
+
 Дата последней проверки: **26.08.2026, Europe/Moscow**.
 
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся

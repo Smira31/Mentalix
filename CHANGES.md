@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 27.08.2026 — Coordination protocol и PR triage
+
+- Подготовлены `docs/COORDINATION_PROTOCOL.md` и `docs/handoffs/2026-08-27-pr-triage.md`.
+- Проведён read-only triage открытых PR #241, #237, #234, #152, #28, #26, #21 и #11.
+- Cleanup остаётся non-destructive: PR, ветки и история не закрывались и не удалялись.
+
 ## 27.08.2026 — Приоритет v1.1.0 и testing plans
 
 - Владелец выбрал `MXL-UX-RESPONSIVE-001` первым приоритетом v1.1.0; глобальный P0-регистр не изменён.
