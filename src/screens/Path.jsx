@@ -40,7 +40,7 @@ export function TickGauge({ value, max, sublabel, size = 160 }) {
       </svg>
       <div className="text-center">
         <div className="font-display text-3xl text-cream">{value}%</div>
-        <div className="font-body text-xs text-muted mt-1">{sublabel}</div>
+        <div className="font-body text-[11px] text-muted mt-1">{sublabel}</div>
       </div>
     </div>
   )
@@ -56,13 +56,13 @@ function EmptyGoals({ onCreate }) {
         <div className="w-12 h-12 rounded-2xl bg-emerald-light/30 flex items-center justify-center mx-auto mb-3 -mt-8 relative">
           <Target size={22} className="text-gold" strokeWidth={1.5} />
         </div>
-        <h3 className="font-display text-lg text-cream mb-1">Пока нет ни одной цели</h3>
-        <p className="font-body text-sm text-muted mb-4 leading-relaxed">
+        <h3 className="font-display text-[16px] text-cream mb-1">Пока нет ни одной цели</h3>
+        <p className="font-body text-[13px] text-muted mb-4 leading-relaxed">
           Создай первую — и увидишь линию движения к ней прямо здесь
         </p>
         <button
           onClick={onCreate}
-          className="px-5 py-2.5 rounded-xl bg-gold text-emerald-deep text-sm font-medium transition-transform active:scale-95"
+          className="px-5 py-2.5 rounded-xl bg-gold text-emerald-deep text-[13px] font-medium transition-transform active:scale-95"
         >
           Создать цель
         </button>
@@ -88,25 +88,25 @@ function GoalCreateScreen({ onCreate, onCancel }) {
 
   return (
     <div className="w-full max-w-md px-5">
-      <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-sm mb-4">
+      <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-[13px] mb-4">
         <ArrowLeft size={16} /> Отмена
       </button>
 
-      <h2 className="font-display text-lg mb-4 text-cream">Новая цель</h2>
+      <h2 className="font-display text-[16px] mb-4 text-cream">Новая цель</h2>
 
       <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
         <JourneyLineArt progress={0} className="absolute inset-0 w-full h-full opacity-80" />
         <div className="absolute top-3 left-3">
-          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-[11px] font-body">
             <Target size={12} /> Цель
           </span>
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between">
           <div>
-            <h3 className="font-display text-lg text-cream leading-snug">
+            <h3 className="font-display text-[16px] text-cream leading-snug">
               {draft.title || 'Название появится здесь'}
             </h3>
-            <p className="font-mono text-xs text-gold mt-0.5">0% пройдено</p>
+            <p className="font-mono text-[11px] text-gold mt-0.5">0% пройдено</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-gold flex items-center justify-center shrink-0">
             <ArrowUp size={16} className="text-emerald-deep" />
@@ -139,7 +139,7 @@ function GoalCreateScreen({ onCreate, onCancel }) {
       <button
         onClick={submit}
         disabled={!draft.title.trim() || saving}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 transition-transform active:scale-95"
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 transition-transform active:scale-95"
       >
         {saving ? 'Сохраняю...' : 'Создать цель'}
       </button>
@@ -155,14 +155,14 @@ function GoalCard({ goal, onOpen }) {
     >
       <JourneyLineArt progress={goal.progress} className="absolute inset-0 w-full h-full opacity-80" />
       <div className="absolute top-3 left-3">
-        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-xs font-body">
+        <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-[11px] font-body">
           <Target size={12} /> Цель
         </span>
       </div>
       <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between">
         <div>
-          <h3 className="font-display text-lg text-cream leading-snug">{goal.title}</h3>
-          <p className="font-mono text-xs text-gold mt-0.5">{goal.progress}% пройдено</p>
+          <h3 className="font-display text-[16px] text-cream leading-snug">{goal.title}</h3>
+          <p className="font-mono text-[11px] text-gold mt-0.5">{goal.progress}% пройдено</p>
         </div>
         <div className="w-9 h-9 rounded-full bg-gold flex items-center justify-center shrink-0">
           <ArrowUp size={16} className="text-emerald-deep" />
@@ -185,7 +185,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
   return (
     <div className="w-full max-w-md px-5">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-sm">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-[13px]">
           <ArrowLeft size={16} /> Назад
         </button>
 
@@ -194,13 +194,13 @@ function GoalDetail({ goal, onBack, onDelete }) {
             <button
               onClick={handleDelete}
               disabled={deleting}
-              className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 text-cream transition-transform active:scale-95 disabled:opacity-50"
+              className="text-[11px] px-3 py-1.5 rounded-lg bg-red-900/60 text-cream transition-transform active:scale-95 disabled:opacity-50"
             >
               {deleting ? 'Удаляю...' : 'Удалить'}
             </button>
             <button
               onClick={() => setConfirming(false)}
-              className="text-xs px-3 py-1.5 rounded-lg border border-cream/20 text-muted transition-transform active:scale-95"
+              className="text-[11px] px-3 py-1.5 rounded-lg border border-cream/20 text-muted transition-transform active:scale-95"
             >
               Отмена
             </button>
@@ -222,12 +222,12 @@ function GoalDetail({ goal, onBack, onDelete }) {
           <div className="w-14 h-14 rounded-2xl bg-black/30 flex items-center justify-center mb-3">
             <Target size={26} className="text-gold" strokeWidth={1.5} />
           </div>
-          <h2 className="font-display text-2xl text-cream">{goal.title}</h2>
+          <h2 className="font-display text-[22px] text-cream">{goal.title}</h2>
         </div>
       </div>
 
       {goal.description && (
-        <p className="text-sm text-muted text-center mb-5 leading-relaxed">{goal.description}</p>
+        <p className="text-[13px] text-muted text-center mb-5 leading-relaxed">{goal.description}</p>
       )}
 
       <div className="rounded-[28px] bg-emerald-light/20 border border-cream/10 p-6 mb-5 flex justify-center">
@@ -237,27 +237,27 @@ function GoalDetail({ goal, onBack, onDelete }) {
       <div className="grid grid-cols-2 gap-3 mb-5">
         <div className="rounded-2xl bg-emerald-light/20 p-4">
           <Flame size={18} className="text-gold mb-2" strokeWidth={1.75} />
-          <div className="font-body text-sm text-cream">{goal.habits.length}</div>
-          <div className="font-body text-xs text-muted">связанных привычек</div>
+          <div className="font-body text-[13px] text-cream">{goal.habits.length}</div>
+          <div className="font-body text-[11px] text-muted">связанных привычек</div>
         </div>
         <div className="rounded-2xl bg-emerald-light/20 p-4">
           <TrendingUp size={18} className="text-gold mb-2" strokeWidth={1.75} />
-          <div className="font-body text-sm text-cream">{goal.target_date || '—'}</div>
-          <div className="font-body text-xs text-muted">срок</div>
+          <div className="font-body text-[13px] text-cream">{goal.target_date || '—'}</div>
+          <div className="font-body text-[11px] text-muted">срок</div>
         </div>
       </div>
 
-      <h3 className="text-sm text-cream mb-2">Привычки</h3>
+      <h3 className="text-[13px] text-cream mb-2">Привычки</h3>
       {goal.habits.length > 0 ? (
         <div className="rounded-2xl bg-emerald-light/20 border border-cream/10 divide-y divide-cream/10">
           {goal.habits.map(h => (
-            <div key={h.id} className="px-4 py-3 text-sm text-cream">
+            <div key={h.id} className="px-4 py-3 text-[13px] text-cream">
               {h.name}
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-xs text-faint italic">
+        <p className="text-[11px] text-faint italic">
           Пока нет привязанных привычек — привяжи их на экране «Сегодня» при создании
         </p>
       )}
@@ -312,7 +312,7 @@ export default function Path({ user }) {
     }
   }
 
-  if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
+  if (loading) return <p className="text-muted text-[13px] px-6">Загрузка...</p>
 
   if (showCreate) {
     return <GoalCreateScreen onCreate={createGoal} onCancel={() => setShowCreate(false)} />
@@ -326,7 +326,7 @@ export default function Path({ user }) {
 
   return (
     <div className="w-full max-w-md px-5 pb-24">
-      <h2 className="font-display text-lg mb-4 text-cream">Мой путь</h2>
+      <h2 className="font-display text-[16px] mb-4 text-cream">Мой путь</h2>
 
       {goals.length === 0 ? (
         <EmptyGoals onCreate={() => setShowCreate(true)} />
@@ -337,7 +337,7 @@ export default function Path({ user }) {
           ))}
           <button
             onClick={() => setShowCreate(true)}
-            className="w-full py-2.5 rounded-xl border border-cream/20 text-muted text-sm mt-2"
+            className="w-full py-2.5 rounded-xl border border-cream/20 text-muted text-[13px] mt-2"
           >
             + Новая цель
           </button>

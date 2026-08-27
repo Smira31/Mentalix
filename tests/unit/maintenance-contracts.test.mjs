@@ -364,9 +364,11 @@ test('MXL-006 публикует единый AI typography baseline без back
     'utf8'
   )
 
-  assert.match(tokens, /\.mx-ai-title\s*\{[\s\S]*font-size: clamp\(1\.75rem, 7vw, 2\.125rem\)/)
-  assert.match(tokens, /\.mx-ai-body\s*\{[\s\S]*font-size: 1rem[\s\S]*line-height: 1\.62/)
+  assert.match(tokens, /\.mx-ai-title\s*\{[\s\S]*font-size: clamp\(1\.5rem, 6vw, 1\.75rem\)/)
+  assert.match(tokens, /\.mx-ai-body\s*\{[\s\S]*font-size: 0\.875rem[\s\S]*line-height: 1\.55/)
+  assert.match(tokens, /\.mx-ai-caption\s*\{[\s\S]*font-size: 0\.75rem[\s\S]*line-height: 1\.45/)
   assert.match(tokens, /\.mx-ai-meta\s*\{[\s\S]*font-size: 0\.6875rem/)
+  assert.match(tokens, /\.mx-ai-input\s*\{[\s\S]*font-size: 1rem/)
   assert.match(conversation, /mx-ai-body/)
   assert.match(conversation, /mx-ai-input/)
   assert.doesNotMatch(personaPicker, /mx-ai-title/)
@@ -430,6 +432,12 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
     new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
     'utf8'
   )
+  const courses = readFileSync(new URL('../../src/screens/Courses.jsx', import.meta.url), 'utf8')
+  const brainTrainer = readFileSync(
+    new URL('../../src/screens/BrainTrainer.jsx', import.meta.url),
+    'utf8'
+  )
+  const focus = readFileSync(new URL('../../src/screens/Focus.jsx', import.meta.url), 'utf8')
 
   assert.match(styles, /--mx-type-page-size:\s*1\.875rem/)
   assert.match(styles, /\.mx-type-page\s*\{[\s\S]*line-height:\s*1[\s\S]*font-weight:\s*700/)
@@ -442,12 +450,17 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(styles, /\.mx-type-persona-title\s*\{[\s\S]*font-size:\s*1\.125rem/)
   assert.match(styles, /\.mx-type-article-title\s*\{[\s\S]*font-size:\s*1rem/)
   assert.match(styles, /\.mx-type-article-meta\s*\{[\s\S]*font-size:\s*0\.625rem/)
+  assert.match(styles, /\.mx-type-flow-title\s*\{[\s\S]*font-size:\s*1\.375rem/)
+  assert.match(styles, /\.mx-type-flow-body\s*\{[\s\S]*font-size:\s*0\.8125rem/)
+  assert.match(styles, /\.mx-type-flow-action\s*\{[\s\S]*font-size:\s*0\.875rem/)
   assert.match(styles, /\.mx-type-segment\s*\{[\s\S]*font-size:\s*var\(--mx-type-segment-size\)/)
   assert.doesNotMatch(styles, /Honest/)
 
   assert.match(app, /mx-type-greeting/)
   assert.match(today, /mx-type-hero/)
-  assert.match(today, /mx-type-section/)
+  assert.match(today, /mx-type-card/)
+  assert.match(today, /mx-type-list-title/)
+  assert.match(today, /mx-type-flow-action/)
   assert.match(practices, /mx-type-page/)
   assert.match(practices, /mx-type-list-title/)
   assert.match(practices, /mx-type-list-body/)
@@ -464,4 +477,11 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.doesNotMatch(personaPicker, /AiFlowIndicator/)
   assert.doesNotMatch(personaPicker, /mx-ai-title/)
   assert.doesNotMatch(journalHome, /mx-type-page|mx-type-hero/)
+  assert.match(courses, /mx-type-list-title/)
+  assert.match(courses, /mx-type-flow-action/)
+  assert.match(courses, /text-\[16px\]/)
+  assert.match(brainTrainer, /mx-type-list-title/)
+  assert.match(brainTrainer, /mx-type-flow-action/)
+  assert.match(brainTrainer, /text-\[16px\]/)
+  assert.match(focus, /text-\[13px\]/)
 })

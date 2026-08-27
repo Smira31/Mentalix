@@ -390,7 +390,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
                   setPathTab(key)
                 }}
                 className={[
-                  'flex-1 py-2 rounded-full text-[13px] font-bold border-0 transition-colors',
+                  'flex-1 py-2 rounded-full text-[12px] font-bold border-0 transition-colors',
                   pathTab === key ? 'bg-cream/10 text-cream' : 'bg-transparent text-muted',
                 ].join(' ')}
               >
@@ -420,7 +420,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   // ============================================================
 
   if (loading) {
-    return <p className="text-muted text-sm px-6 pt-8">Загрузка...</p>
+    return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
   }
 
   // ============================================================
@@ -819,12 +819,12 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           }}
           className="w-full rounded-3xl bg-emerald/60 px-5 py-3 mt-5 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
-          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-sm font-bold shrink-0">
+          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] font-bold shrink-0">
             ✓
           </span>
 
           <span className="flex-1 text-left">
-            <span className="block mx-type-card text-cream">
+            <span className="block mx-type-list-title text-cream">
               {todayState === 'dayClosed' ? 'День разобран' : 'Чек-ин выполнен'}
             </span>
 
@@ -855,8 +855,8 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       {!hiddenCards.includes('dayProgress') &&
         (isEmpty ? (
           <EmptyState className="mt-8">
-            <h3 className="font-display mx-type-section text-cream mb-1">Пока нет практик</h3>
-            <p className="mx-type-body text-muted mb-4">
+            <h3 className="font-display mx-type-card text-cream mb-1">Пока нет практик</h3>
+            <p className="mx-type-list-body text-muted mb-4">
               Добавь ритуал или аскезу — здесь появится прогресс дня.
             </p>
             <button
@@ -865,7 +865,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
                 onOpenPractice?.()
               }}
-              className="cta-pill mx-type-control px-9 py-3.5"
+              className="cta-pill mx-type-flow-action px-9 py-3.5"
             >
               Выбрать практику
             </button>
@@ -883,7 +883,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           >
             <ArrowUpRight size={18} className="text-gold shrink-0" strokeWidth={2} />
 
-            <span className="mx-type-card text-cream whitespace-nowrap">День</span>
+            <span className="mx-type-list-title text-cream whitespace-nowrap">День</span>
 
             <div className="flex-1 h-[5px] rounded-full bg-cream/10 overflow-hidden">
               <div
@@ -894,7 +894,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
               />
             </div>
 
-            <span className="mx-type-control text-gold whitespace-nowrap">
+            <span className="mx-type-flow-action text-gold whitespace-nowrap">
               {done} из {total}
             </span>
 
@@ -919,11 +919,11 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
             Тема недели
           </span>
 
-          <span className="block font-display mx-type-section text-cream lowercase">
+          <span className="block font-display mx-type-card text-cream lowercase">
             {theme.title}
           </span>
 
-          <span className="block mx-type-body text-muted mt-2">{theme.subtitle}</span>
+          <span className="block mx-type-list-body text-muted mt-2">{theme.subtitle}</span>
 
           <span className="flex items-center justify-center gap-1.5 mt-4">
             {Array.from({
@@ -968,7 +968,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         >
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
-          <span className="block font-display mx-type-section text-cream">
+          <span className="block font-display mx-type-card text-cream">
             {thoughtOfDay.text}
           </span>
 

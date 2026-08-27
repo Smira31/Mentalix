@@ -74,7 +74,7 @@ function Reader({ article, onBack }) {
       {/* тот же мотив, что и в списке, — статья узнаётся при открытии */}
       <ArticleCover article={article} variant="banner" className="mb-5" />
 
-      <h1 className="font-display text-[26px] text-cream leading-tight">{article.title}</h1>
+      <h1 className="font-display text-[22px] text-cream leading-tight">{article.title}</h1>
 
       <div className="flex items-center gap-2 mt-3 mb-6">
         <span className="text-[11px] text-gold">{article.minutes} мин чтения</span>
@@ -84,7 +84,7 @@ function Reader({ article, onBack }) {
 
       <div className="space-y-4">
         {paragraphs.map((p, i) => (
-          <p key={i} className="text-[15px] text-cream leading-relaxed">
+          <p key={i} className="text-[14px] text-cream leading-relaxed">
             {p}
           </p>
         ))}
@@ -98,7 +98,7 @@ function Reader({ article, onBack }) {
           className="flex items-center gap-2 mt-8 rounded-3xl bg-emerald/60 px-4 py-3.5"
         >
           <ExternalLink size={16} className="text-gold shrink-0" />
-          <span className="text-[13px] text-muted">Первоисточник</span>
+          <span className="text-[12px] text-muted">Первоисточник</span>
         </a>
       )}
     </div>
@@ -138,7 +138,7 @@ export default function Articles() {
   if (open) return <Reader article={open} onBack={() => setOpen(null)} />
 
   if (loading) {
-    return <p className="text-muted text-sm px-6 pt-8">Загрузка...</p>
+    return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
   }
 
   return (
@@ -156,10 +156,10 @@ export default function Articles() {
       {list.length === 0 ? (
         articles.length === 0 ? (
           <EmptyState>
-            <p className="text-muted text-sm">Статей пока нет — первая появится здесь</p>
+            <p className="text-muted text-[13px]">Статей пока нет — первая появится здесь</p>
           </EmptyState>
         ) : (
-          <p className="text-faint text-sm text-center py-10">Ничего не найдено</p>
+          <p className="text-faint text-[13px] text-center py-10">Ничего не найдено</p>
         )
       ) : (
         <div className="mx-stagger">

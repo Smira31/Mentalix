@@ -96,11 +96,11 @@ export default function History({ user }) {
       })
   }, [user])
 
-  if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
+  if (days === null) return <p className="text-muted text-[13px] px-5 pt-6">Загрузка...</p>
 
   const milestonesBlock = badges && badges.length > 0 && (
     <div className="mt-8">
-      <div className="text-[13px] text-muted font-semibold mb-2 px-1">Вехи пути</div>
+      <div className="text-[12px] text-muted font-semibold mb-2 px-1">Вехи пути</div>
       <div className="rounded-3xl bg-emerald p-5 grid grid-cols-3 gap-2">
         {badges.map(b => (
           <div
@@ -117,7 +117,7 @@ export default function History({ user }) {
 
   const themeEntriesBlock = themeEntries && themeEntries.length > 0 && (
     <div className="mt-8">
-      <div className="text-[13px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
+      <div className="text-[12px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
       <div className="space-y-3">
         {themeEntries.map(e => (
           <div key={`${e.themeId}-${e.day}`} className="rounded-3xl bg-emerald p-5">
@@ -126,7 +126,7 @@ export default function History({ user }) {
             </div>
             <MarkdownText
               content={e.text}
-              className="space-y-2 text-[14px] text-muted leading-snug"
+              className="space-y-2 text-[13px] text-muted leading-snug"
             />
           </div>
         ))}
@@ -141,8 +141,8 @@ export default function History({ user }) {
           glyph={<MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />}
           className="px-6 py-10 mt-2"
         >
-          <h3 className="font-display text-[18px] text-cream mb-2">Пока пусто</h3>
-          <p className="text-[14px] text-muted leading-snug">
+          <h3 className="font-display text-[16px] text-cream mb-2">Пока пусто</h3>
+          <p className="text-[13px] text-muted leading-snug">
             Пройди чек-ин или закрой ритуал —
             <br />и здесь появится первая запись пути.
           </p>
@@ -159,7 +159,7 @@ export default function History({ user }) {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            <div className="text-[12px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
             <div className="rounded-3xl bg-emerald p-5 space-y-3">
               {d.checkin && (
                 <div>
@@ -177,7 +177,7 @@ export default function History({ user }) {
 
                   {d.checkin.note && (
                     <MarkdownText
-                      className="space-y-2 text-[14px] text-muted leading-snug mt-3"
+                      className="space-y-2 text-[13px] text-muted leading-snug mt-3"
                       content={
                         d.checkin.note.length > 220
                           ? d.checkin.note.slice(0, 220) + '…'
@@ -193,7 +193,7 @@ export default function History({ user }) {
                       </div>
                       <MarkdownText
                         content={d.checkin.lessons}
-                        className="space-y-2 text-[14px] text-cream leading-relaxed"
+                        className="space-y-2 text-[13px] text-cream leading-relaxed"
                       />
                     </div>
                   )}
@@ -211,7 +211,7 @@ export default function History({ user }) {
                             </span>
                             <MarkdownText
                               content={w}
-                              className="min-w-0 space-y-1 text-[14px] text-cream leading-snug"
+                              className="min-w-0 space-y-1 text-[13px] text-cream leading-snug"
                             />
                           </li>
                         ))}
@@ -222,7 +222,7 @@ export default function History({ user }) {
               )}
 
               {d.activity && d.activity.count > 0 && (
-                <div className="text-[13px] font-semibold text-muted">
+                <div className="text-[12px] font-semibold text-muted">
                   ✦ ритуалов закрыто: {d.activity.count}
                   {d.activity.breaks > 0 && (
                     <span className="text-faint"> · срывов аскез: {d.activity.breaks}</span>

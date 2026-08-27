@@ -890,14 +890,14 @@ export default function CheckIn({
             </div>
 
 
-            <h2 className="font-display text-[26px] text-cream leading-tight">
+            <h2 className="font-display text-[22px] text-cream leading-tight">
               {isEvening
                 ? 'День закрыт'
                 : 'Чек-ин записан'}
             </h2>
 
 
-            <p className="text-[15px] text-muted mt-3 leading-relaxed max-w-sm">
+            <p className="text-[14px] text-muted mt-3 leading-relaxed max-w-sm">
               {isEvening
                 ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
                 : 'Ты услышал себя — это тоже шаг.'}
@@ -1068,8 +1068,8 @@ export default function CheckIn({
           className={[
             'font-display text-cream',
             isMorningNoteStep
-              ? 'text-[30px] leading-[1.12]'
-              : 'text-[26px] leading-tight',
+              ? 'text-[24px] leading-[1.12]'
+              : 'text-[22px] leading-tight',
           ].join(' ')}
         >
           {questionTitle}
@@ -1077,7 +1077,7 @@ export default function CheckIn({
 
         <p
           className={[
-            'text-[14px] text-muted',
+            'text-[13px] text-muted',
             isMorningNoteStep
               ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
               : 'mt-2',
@@ -1197,7 +1197,7 @@ export default function CheckIn({
                     )
                   }}
                   className={[
-                    'px-4 py-2.5 rounded-full text-[14px] font-semibold border-0 transition-colors',
+                    'px-4 py-2.5 rounded-full text-[13px] font-semibold border-0 transition-colors',
                     active
                       ? 'bg-gold text-emerald-deep'
                       : 'bg-emerald text-muted',
@@ -1214,7 +1214,7 @@ export default function CheckIn({
           {HEAVY_EMOTIONS.includes(emotion) && (
             <button
               onClick={openListener}
-              className="mt-6 text-[13px] font-semibold text-gold bg-transparent border-0"
+              className="mt-6 text-[12px] font-semibold text-gold bg-transparent border-0"
             >
               Поговорить об этом с Собеседником →
             </button>
@@ -1241,7 +1241,7 @@ export default function CheckIn({
                     }
                     className="rounded-3xl bg-emerald p-4"
                   >
-                    <div className="text-[13px] font-bold text-cream mb-2">
+                    <div className="text-[12px] font-bold text-cream mb-2">
                       {
                         field.label
                       }
@@ -1295,7 +1295,7 @@ export default function CheckIn({
 
 
           {error && (
-            <p className="text-[13px] text-muted text-center mt-4">
+            <p className="text-[12px] text-muted text-center mt-4">
               Не получилось
               сохранить — проверь
               связь
@@ -1365,7 +1365,7 @@ export default function CheckIn({
 
 
           {error && (
-            <p className="text-[13px] text-muted text-center mt-4">
+            <p className="text-[12px] text-muted text-center mt-4">
               Не получилось
               сохранить — проверь
               связь

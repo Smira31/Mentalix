@@ -92,7 +92,7 @@ function Option({ label, proof, selected, onClick }) {
       className="mx-onboarding-option w-full rounded-[22px] px-5 py-4 text-center border-0"
       data-selected={selected}
     >
-      <span className="block text-[15px] font-bold">{label}</span>
+      <span className="block text-[14px] font-bold">{label}</span>
       {proof && selected && (
         <span className="mx-onboarding-proof block text-[12.5px] leading-snug mt-2 opacity-70">
           {proof}
@@ -177,8 +177,8 @@ export default function Onboarding({ user, onFinish }) {
         {step === 0 && (
           <div className="mx-onboarding-step mx-onboarding-intro-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center">
             <div className="mx-onboarding-intro-copy flex flex-col items-center">
-              <h2 className="font-display text-[34px] text-cream leading-tight">Mentalix.</h2>
-              <p className="text-[15px] text-muted mt-4 leading-relaxed max-w-xs">
+              <h2 className="font-display text-[30px] text-cream leading-tight">Mentalix.</h2>
+              <p className="text-[14px] text-muted mt-4 leading-relaxed max-w-xs">
                 Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
               </p>
               <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mt-10">
@@ -194,10 +194,10 @@ export default function Onboarding({ user, onFinish }) {
             key="s1"
             className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
-            <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+            <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Что сейчас важнее всего?
             </h2>
-            <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
+            <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
               Ответы соберут приложение под твои задачи. Можно выбрать несколько.
             </p>
             <div className="space-y-2.5">
@@ -235,10 +235,10 @@ export default function Onboarding({ user, onFinish }) {
             key="s2"
             className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
-            <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+            <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Сколько тебе лет?
             </h2>
-            <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
+            <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
               Чтобы говорить с тобой на одном языке.
             </p>
             <div className="space-y-2.5">
@@ -271,10 +271,10 @@ export default function Onboarding({ user, onFinish }) {
             key="s3"
             className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
-            <h2 className="font-display text-[26px] text-cream text-center leading-tight">
+            <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Когда напомнить о себе?
             </h2>
-            <p className="text-[14px] text-muted mt-3 mb-7 text-center leading-snug">
+            <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
               Привычка держится на одном постоянном времени. Бот пришлёт короткое сообщение — не
               спам.
             </p>
@@ -296,11 +296,11 @@ export default function Onboarding({ user, onFinish }) {
                   >
                     <span className="flex-1">
                       <span
-                        className={`block text-[13px] font-bold ${on ? 'opacity-60' : 'text-muted'}`}
+                        className={`block text-[12px] font-bold ${on ? 'opacity-60' : 'text-muted'}`}
                       >
                         {r.label}
                       </span>
-                      <span className="block font-display text-[24px] leading-tight">{r.time}</span>
+                      <span className="block font-display text-[22px] leading-tight">{r.time}</span>
                       <span
                         className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-faint'}`}
                       >
@@ -332,11 +332,11 @@ export default function Onboarding({ user, onFinish }) {
             key="s4"
             className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
-            <h2 className="font-display text-[28px] text-cream text-center leading-tight">
+            <h2 className="font-display text-[24px] text-cream text-center leading-tight">
               Готово. Путь размечен.
             </h2>
             {chosenFocusLabels.length > 0 && (
-              <p className="text-[14px] text-muted mt-3 text-center leading-snug">
+              <p className="text-[13px] text-muted mt-3 text-center leading-snug">
                 Фокус: <span className="text-cream font-bold">{chosenFocusLabels.join(', ')}</span>
               </p>
             )}
@@ -350,7 +350,7 @@ export default function Onboarding({ user, onFinish }) {
                     className="mx-onboarding-plan-card rounded-3xl bg-emerald px-5 py-4 flex items-center gap-3"
                     data-revealed={shown}
                   >
-                    <span className="flex-1 text-[14px] font-semibold text-cream leading-snug">
+                    <span className="flex-1 text-[13px] font-semibold text-cream leading-snug">
                       {text}
                     </span>
                     <Check

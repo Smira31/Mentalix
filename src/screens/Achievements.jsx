@@ -80,7 +80,7 @@ export default function Achievements({ user }) {
   return (
     <div className="mb-6">
       <div className="flex items-baseline justify-between mb-2">
-        <h3 className="text-sm text-cream">Вехи Пути</h3>
+        <h3 className="text-[13px] text-cream">Вехи Пути</h3>
         <span className="text-[11px] text-muted">
           {unlockedCount} из {badges.length}
         </span>

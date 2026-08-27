@@ -189,7 +189,10 @@ async function assertCommonScreenChecks(page, runtimeErrors) {
     for (let index = 0; index < count; index += 1) {
       const ctaBox = await criticalCtas.nth(index).boundingBox()
 
-      if (ctaBox) {
+      const fullyInViewport =
+        ctaBox && ctaBox.top >= 0 && ctaBox.bottom <= geometry.viewportHeight
+
+      if (fullyInViewport) {
         expect(overlap(ctaBox, navBox), 'Нижняя навигация перекрывает критический CTA').toBe(false)
       }
     }

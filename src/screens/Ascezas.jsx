@@ -135,7 +135,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-gold mb-2">Аскеза</p>
 
-            <h2 className="font-display text-[24px] leading-tight text-cream">Что произошло?</h2>
+            <h2 className="font-display text-[22px] leading-tight text-cream">Что произошло?</h2>
           </div>
 
           <button
@@ -148,12 +148,12 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
         </div>
 
         <div className="practice-sheet__body">
-          <p className="text-[13px] text-muted leading-relaxed mb-5">
+          <p className="text-[12px] text-muted leading-relaxed mb-5">
             Ты сорвался с «{asceza.name}». Не ругаем себя — фиксируем контекст, чтобы Mentalix смог
             увидеть закономерность.
           </p>
 
-          <p className="text-xs text-muted mb-2">Что сильнее всего повлияло?</p>
+          <p className="text-[11px] text-muted mb-2">Что сильнее всего повлияло?</p>
 
           <div className="grid grid-cols-2 gap-2 mb-4">
             {BREAK_TRIGGERS.map(item => {
@@ -166,7 +166,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
                     platform.haptic('light')
                     setTrigger(item)
                   }}
-                  className={`practice-scene__choice py-3 px-3 rounded-2xl border text-[13px] font-semibold ${
+                  className={`practice-scene__choice py-3 px-3 rounded-2xl border text-[12px] font-semibold ${
                     active
                       ? 'bg-gold text-emerald-deep border-gold'
                       : 'bg-cream/5 text-muted border-cream/10'
@@ -178,7 +178,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
             })}
           </div>
 
-          <label className="block text-xs text-muted mb-2">Хочешь добавить пару слов?</label>
+          <label className="block text-[11px] text-muted mb-2">Хочешь добавить пару слов?</label>
 
           <textarea
             value={note}
@@ -193,7 +193,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
             <div className="mt-4 rounded-2xl bg-mint/5 border border-mint/10 px-4 py-3">
               <p className="text-[11px] text-muted mb-1">Ты заранее выбрал замену</p>
 
-              <p className="text-[14px] text-cream">{asceza.replacement}</p>
+              <p className="text-[13px] text-cream">{asceza.replacement}</p>
             </div>
           )}
 
@@ -286,7 +286,7 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete }) {
           ) : (
             <span
               onClick={() => setConfirming(true)}
-              className="practice-scene__choice text-faint text-sm leading-none px-1"
+              className="practice-scene__choice text-faint text-[13px] leading-none px-1"
             >
               ×
             </span>
@@ -308,11 +308,11 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete }) {
       </div>
 
       <div className="mt-4">
-        <div className="font-display text-[19px] text-cream leading-tight">{asceza.name}</div>
+        <div className="font-display text-[18px] text-cream leading-tight">{asceza.name}</div>
 
         <div className="text-[10px] text-muted mb-3">{meta.label}</div>
 
-        {asceza.reason && <p className="text-xs text-muted mb-2">{asceza.reason}</p>}
+        {asceza.reason && <p className="text-[11px] text-muted mb-2">{asceza.reason}</p>}
 
         <div className="flex gap-2 mt-3">
           <button
@@ -337,19 +337,19 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete }) {
         </div>
 
         {status === 'broke' && asceza.today_break_trigger && (
-          <p className="text-xs text-muted mt-3">Причина: {asceza.today_break_trigger}</p>
+          <p className="text-[11px] text-muted mt-3">Причина: {asceza.today_break_trigger}</p>
         )}
 
         {status === 'broke' && asceza.today_break_note && (
-          <p className="text-xs text-muted mt-1 leading-relaxed">{asceza.today_break_note}</p>
+          <p className="text-[11px] text-muted mt-1 leading-relaxed">{asceza.today_break_note}</p>
         )}
 
         {status === 'broke' && asceza.replacement && (
-          <p className="text-xs text-muted mt-2">Замена: {asceza.replacement}</p>
+          <p className="text-[11px] text-muted mt-2">Замена: {asceza.replacement}</p>
         )}
 
         {!status && asceza.trigger && (
-          <p className="text-xs text-faint mt-2 italic">Триггер: {asceza.trigger}</p>
+          <p className="text-[11px] text-faint mt-2 italic">Триггер: {asceza.trigger}</p>
         )}
       </div>
     </div>
@@ -419,7 +419,7 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
       <div className={`${FULLSCREEN_SCROLL_CLASS} practice-form__scroll`}>
         <div className="practice-form__inner w-full max-w-md mx-auto px-5 flex flex-col">
           <div className="mb-8">
-            <h2 className="font-display text-[27px] font-semibold text-cream lowercase">
+            <h2 className="font-display text-[24px] font-semibold text-cream lowercase">
               новая аскеза.
             </h2>
           </div>
@@ -572,7 +572,7 @@ export default function Ascezas({ user, onBack }) {
         <div className="flex items-center gap-3 mb-3">
           <BackButton onClick={onBack} />
 
-          <h2 className="font-display text-[22px] text-cream lowercase">аскезы.</h2>
+          <h2 className="font-display text-[20px] text-cream lowercase">аскезы.</h2>
         </div>
 
         <p className="text-[12px] text-muted mb-5 px-1">
@@ -580,7 +580,7 @@ export default function Ascezas({ user, onBack }) {
         </p>
 
         {loading ? (
-          <p className="text-muted text-sm">Загрузка...</p>
+          <p className="text-muted text-[13px]">Загрузка...</p>
         ) : ascezas.length === 0 ? (
           <EmptyState
             glyph={
@@ -590,15 +590,15 @@ export default function Ascezas({ user, onBack }) {
             }
             className="mb-4"
           >
-            <h3 className="font-display text-lg text-cream mb-1">Аскез пока нет</h3>
+            <h3 className="font-display text-[16px] text-cream mb-1">Аскез пока нет</h3>
 
-            <p className="text-sm text-muted mb-4 leading-relaxed">
+            <p className="text-[13px] text-muted mb-4 leading-relaxed">
               Аскеза — сознательный отказ. Выбери одну вредную привычку и назови её честно.
             </p>
 
             <button
               onClick={() => setShowCreate(true)}
-              className="cta-pill px-9 py-3.5 text-[14px]"
+              className="cta-pill px-9 py-3.5 text-[13px]"
             >
               Принять аскезу
             </button>
@@ -628,8 +628,8 @@ export default function Ascezas({ user, onBack }) {
                 }}
                 className="practice-motion-card practice-detail-card shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2"
               >
-                <span className="text-[26px] text-faint leading-none">+</span>
-                <span className="text-[14px] text-muted font-semibold">Новая аскеза</span>
+                <span className="text-[22px] text-faint leading-none">+</span>
+                <span className="text-[13px] text-muted font-semibold">Новая аскеза</span>
               </button>
             </div>
 

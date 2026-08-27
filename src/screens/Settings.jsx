@@ -38,7 +38,7 @@ import AppLock from './AppLock'
 
 function SectionLabel({ children }) {
   return (
-    <div className="px-1 mb-2 text-xs font-body uppercase tracking-wider text-muted">
+    <div className="px-1 mb-2 text-[11px] font-body uppercase tracking-wider text-muted">
       {children}
     </div>
   )
@@ -72,11 +72,11 @@ function Row({
     >
       {Icon && <Icon size={18} className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
       <div className="flex-1 min-w-0">
-        <div className={`font-body text-[15px] ${danger ? 'text-red-400' : 'text-cream'}`}>
+        <div className={`font-body text-[14px] ${danger ? 'text-red-400' : 'text-cream'}`}>
           {title}
         </div>
         {subtitle && (
-          <div className="font-body text-[13px] text-muted mt-0.5 truncate">{subtitle}</div>
+          <div className="font-body text-[12px] text-muted mt-0.5 truncate">{subtitle}</div>
         )}
       </div>
       {right ?? <ChevronRight size={18} className="text-muted shrink-0" />}
@@ -275,7 +275,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
             className="max-[359px]:w-10 max-[359px]:justify-center max-[359px]:gap-0 max-[359px]:px-0 max-[359px]:[&>span]:hidden"
           />
         </div>
-        <h1 className="font-display text-xl text-cream lowercase">настройки.</h1>
+        <h1 className="font-display text-[18px] text-cream lowercase">настройки.</h1>
         <span aria-hidden="true" />
       </div>
 
@@ -333,7 +333,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
               key={t.hour}
               onClick={() => saveReminder(t.hour, true)}
               className={[
-                'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
+                'flex-1 py-3 rounded-2xl text-[12px] font-bold border-0 transition-colors',
                 reminderHour === t.hour
                   ? 'bg-gold text-emerald-deep'
                   : 'bg-cream/[0.04] text-muted',
@@ -368,7 +368,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
             key={h}
             onClick={() => saveReviewHour(h)}
             className={[
-              'flex-1 py-3 rounded-2xl text-[13px] font-bold border-0 transition-colors',
+              'flex-1 py-3 rounded-2xl text-[12px] font-bold border-0 transition-colors',
               reviewHour === h ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.04] text-muted',
             ].join(' ')}
           >
@@ -491,8 +491,8 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       <Card>
         <div className="w-full flex items-center gap-3 px-4 py-4 border-b border-cream/[0.06]">
           <RefreshCw size={18} className="text-gold shrink-0" />
-          <span className="flex-1 font-body text-[15px] text-cream">Текущая версия</span>
-          <span className="text-muted text-sm font-body">v1.0.0</span>
+          <span className="flex-1 font-body text-[14px] text-cream">Текущая версия</span>
+          <span className="text-muted text-[13px] font-body">v1.0.0</span>
         </div>
         <Row
           title="Пройти знакомство заново"

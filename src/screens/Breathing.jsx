@@ -140,17 +140,17 @@ export default function Breathing({ onBack }) {
       <div className="w-full max-w-md px-5 flex flex-col items-center animate-fade-in">
         <div className="w-full flex items-center gap-3 pb-6">
           <BackButton onClick={onBack} />
-          <span className="font-display text-lg text-cream lowercase">дыхание.</span>
+          <span className="font-display text-[16px] text-cream lowercase">дыхание.</span>
         </div>
 
         <div className="mb-4">
           <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
 
-        <h2 className="font-display text-[24px] text-cream text-center leading-tight">
+        <h2 className="font-display text-[22px] text-cream text-center leading-tight">
           Успокоить систему
         </h2>
-        <p className="text-[14px] text-muted text-center mt-3 leading-relaxed max-w-xs">
+        <p className="text-[13px] text-muted text-center mt-3 leading-relaxed max-w-xs">
           Техника 4-7-8: вдох носом на 4, задержка на 7, длинный выдох на 8. Несколько циклов — и
           шум в голове тише.
         </p>
@@ -164,7 +164,7 @@ export default function Breathing({ onBack }) {
                 setDuration(d.secs)
               }}
               className={[
-                'px-6 py-3 rounded-full text-[14px] font-bold border-0 transition-colors',
+                'px-6 py-3 rounded-full text-[13px] font-bold border-0 transition-colors',
                 duration === d.secs ? 'bg-cream/10 text-cream' : 'bg-emerald text-muted',
               ].join(' ')}
             >
@@ -187,8 +187,8 @@ export default function Breathing({ onBack }) {
         <div className="mb-5">
           <SemanticGlyph kind="breath" className="w-full h-full" />
         </div>
-        <h2 className="font-display text-[26px] text-cream leading-tight">Система спокойнее</h2>
-        <p className="text-[15px] text-muted mt-3">Возвращайся к этому кругу, когда штормит.</p>
+        <h2 className="font-display text-[22px] text-cream leading-tight">Система спокойнее</h2>
+        <p className="text-[14px] text-muted mt-3">Возвращайся к этому кругу, когда штормит.</p>
         <button
           onClick={() => {
             platform.haptic('light')
@@ -223,10 +223,10 @@ export default function Breathing({ onBack }) {
             boxShadow: '0 0 60px rgb(var(--c-gold) / 0.08)',
           }}
         />
-        <h2 className="font-display text-[24px] text-cream mt-14">
+        <h2 className="font-display text-[22px] text-cream mt-14">
           {isPrepare ? 'Устройся удобно' : phase.label}
         </h2>
-        <p className="text-[14px] text-muted mt-2 text-center">
+        <p className="text-[13px] text-muted mt-2 text-center">
           {isPrepare ? 'Сядь или ляг так, чтобы дышалось свободно' : `${phase.secs} секунд`}
         </p>
       </div>
@@ -234,7 +234,7 @@ export default function Breathing({ onBack }) {
       <div className="flex justify-center shrink-0 pb-7">
         <button
           onClick={finish}
-          className="px-7 py-3 rounded-full bg-emerald text-muted text-[14px] font-bold border-0 active:scale-95 transition-transform"
+          className="px-7 py-3 rounded-full bg-emerald text-muted text-[13px] font-bold border-0 active:scale-95 transition-transform"
         >
           Завершить раньше
         </button>

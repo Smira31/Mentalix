@@ -174,7 +174,7 @@ function OptionList({ options, onPick }) {
           key={option.key}
           type="button"
           onClick={() => onPick(option.key)}
-          className="w-full min-h-14 rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[15px] font-semibold text-cream active:scale-[0.98] transition-transform"
+          className="w-full min-h-14 rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[14px] font-semibold text-cream active:scale-[0.98] transition-transform"
         >
           {option.label}
         </button>
@@ -297,10 +297,10 @@ export default function ProcrastinationFlow({ userId, onClose }) {
           <div className="no-blame-stage no-blame-stage--intro animate-fade-in">
             <div className="no-blame-stage__center">
               <Eyebrow centered />
-              <h2 className="font-display text-[30px] text-cream text-center leading-[1.08] tracking-[-0.035em]">
+              <h2 className="font-display text-[24px] text-cream text-center leading-[1.08] tracking-[-0.035em]">
                 Вернись к делу без давления
               </h2>
-              <p className="mx-auto mt-4 max-w-[310px] text-center text-[14px] leading-relaxed text-muted">
+              <p className="mx-auto mt-4 max-w-[310px] text-center text-[13px] leading-relaxed text-muted">
                 Три минуты, чтобы заметить избегание и сделать один безопасный шаг.
               </p>
               <p className="mt-4 text-center text-[12px] font-semibold text-faint">
@@ -312,7 +312,7 @@ export default function ProcrastinationFlow({ userId, onClose }) {
             <button
               type="button"
               onClick={startPractice}
-              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
               Начать
             </button>
@@ -361,7 +361,7 @@ export default function ProcrastinationFlow({ userId, onClose }) {
             <button
               type="button"
               onClick={goToPlan}
-              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
               Дальше
             </button>
@@ -383,7 +383,7 @@ export default function ProcrastinationFlow({ userId, onClose }) {
             <Progress step={step} />
             <StageHeading>Договорись с собой</StageHeading>
             <div className="no-blame-stage__scene">
-              <p className="mx-auto mt-3 max-w-[310px] text-center text-[14px] text-muted leading-relaxed">
+              <p className="mx-auto mt-3 max-w-[310px] text-center text-[13px] text-muted leading-relaxed">
                 Как только снова потянет отвлечься — вернись к делу на две минуты.
               </p>
             </div>
@@ -391,7 +391,7 @@ export default function ProcrastinationFlow({ userId, onClose }) {
             <button
               type="button"
               onClick={startRun}
-              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
               Начать две минуты
             </button>
@@ -407,13 +407,13 @@ export default function ProcrastinationFlow({ userId, onClose }) {
                 {minutes}:{seconds}
               </div>
               <NoBlameArtwork stage="line" />
-              <p className="mt-3 text-[14px] text-muted">Не идеально. Просто начни.</p>
+              <p className="mt-3 text-[13px] text-muted">Не идеально. Просто начни.</p>
             </div>
 
             <button
               type="button"
               onClick={stopRun}
-              className="mx-auto text-[13px] font-semibold text-muted -m-2 p-3 active:opacity-60 mt-6"
+              className="mx-auto text-[12px] font-semibold text-muted -m-2 p-3 active:opacity-60 mt-6"
             >
               Остановить
             </button>
@@ -434,14 +434,14 @@ export default function ProcrastinationFlow({ userId, onClose }) {
           <div className="no-blame-stage no-blame-stage--complete animate-fade-in">
             <div className="no-blame-stage__center">
               <NoBlameArtwork stage="complete" />
-              <h2 className="font-display text-[29px] text-center text-cream leading-tight">
+              <h2 className="font-display text-[24px] text-center text-cream leading-tight">
                 {COMPLETION_COPY[outcome]?.title}
               </h2>
-              <p className="mx-auto mt-3 max-w-[310px] text-center text-[14px] text-muted leading-relaxed">
+              <p className="mx-auto mt-3 max-w-[310px] text-center text-[13px] text-muted leading-relaxed">
                 {COMPLETION_COPY[outcome]?.description}
               </p>
 
-              <p className="mt-7 text-center text-[13px] font-semibold text-muted">
+              <p className="mt-7 text-center text-[12px] font-semibold text-muted">
                 Помогло сейчас?
               </p>
               <div className="no-blame-feedback">
@@ -466,7 +466,7 @@ export default function ProcrastinationFlow({ userId, onClose }) {
             <button
               type="button"
               onClick={finish}
-              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
               Завершить
             </button>

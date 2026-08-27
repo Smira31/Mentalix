@@ -99,7 +99,7 @@ function ScreenLoading() {
     <div
       role="status"
       aria-live="polite"
-      className="w-full max-w-md px-5 pt-8 text-center text-sm text-muted"
+      className="w-full max-w-md px-5 pt-8 text-center text-[13px] text-muted"
     >
       Загрузка…
     </div>
@@ -943,7 +943,7 @@ export default function App() {
               <p
                 className="
               text-muted
-              text-sm
+              text-[13px]
               px-6
               text-center
               pt-8
@@ -1007,7 +1007,7 @@ export default function App() {
                   <span
                     className="
                   font-display
-                  text-lg
+                  mx-type-card
                   text-cream
                   lowercase
                 "

@@ -388,7 +388,7 @@ export default function Conversation({
       >
 
         {loading && (
-          <p className="text-muted text-[15px] text-center pt-4">
+          <p className="text-muted text-[14px] text-center pt-4">
             Загрузка...
           </p>
         )}
@@ -396,7 +396,7 @@ export default function Conversation({
 
         {!loading &&
           messages.length === 0 && (
-            <p className="text-muted text-[15px] text-center pt-10 leading-[1.6]">
+            <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">
               {meta.desc}
 
               <br />
@@ -474,7 +474,7 @@ export default function Conversation({
                 {meta.name}
               </div>
 
-              <p className="text-[15px] text-faint">
+              <p className="text-[14px] text-faint">
                 {meta.typing}
               </p>
             </div>
@@ -572,7 +572,7 @@ export default function Conversation({
                 />
 
                 <div className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in">
-                  <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[13px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
+                  <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
                     Нажми и удерживай, чтобы записать голосовое
                   </div>
 

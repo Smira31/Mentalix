@@ -152,7 +152,7 @@ function PathEvent({ event, isLast }) {
           {event.mark}
         </div>
 
-        <p className="text-[14px] text-cream leading-snug">
+        <p className="text-[13px] text-cream leading-snug">
           {event.text}
         </p>
       </div>
@@ -198,13 +198,13 @@ export default function Profile({ user }) {
     <div className="w-full max-w-md px-5 animate-fade-in">
       <div className="flex items-center gap-3.5 mt-4 mb-7">
         <div className="w-12 h-12 rounded-full border border-gold/60 flex items-center justify-center shrink-0">
-          <span className="font-display text-[18px] text-gold">
+          <span className="font-display text-[16px] text-gold">
             {user.first_name?.[0]?.toUpperCase() || '?'}
           </span>
         </div>
 
         <div className="min-w-0">
-          <h2 className="font-display text-[22px] text-cream leading-tight truncate">
+          <h2 className="font-display text-[20px] text-cream leading-tight truncate">
             {user.first_name}
           </h2>
 
@@ -217,16 +217,16 @@ export default function Profile({ user }) {
       </div>
 
 
-      <h3 className="font-display text-[30px] text-cream lowercase mb-5">
+      <h3 className="font-display text-[24px] text-cream lowercase mb-5">
         мой путь.
       </h3>
 
       {loading && (
-        <p className="text-muted text-sm mb-8">Собираю историю...</p>
+        <p className="text-muted text-[13px] mb-8">Собираю историю...</p>
       )}
 
       {!loading && path.length === 0 && (
-        <p className="text-[14px] text-muted leading-relaxed mb-8">
+        <p className="text-[13px] text-muted leading-relaxed mb-8">
           Путь начнётся с первого чек-ина. Здесь появятся серии,
           удержанные аскезы и пройденные темы — всё, что было на
           самом деле.
@@ -249,7 +249,7 @@ export default function Profile({ user }) {
         <div className="rounded-[22px] border border-gold/25 bg-emerald px-5 py-4 mb-8">
           <div className="text-[11px] text-faint mb-1">личный максимум</div>
 
-          <p className="text-[15px] text-cream leading-snug">
+          <p className="text-[14px] text-cream leading-snug">
             Лучшая серия — {stats.best_streak} дней подряд.
           </p>
         </div>

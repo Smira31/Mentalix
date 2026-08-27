@@ -80,7 +80,7 @@ export default function MeditationFlow({ onClose }) {
           <p className="mb-5 text-center text-[12px] leading-relaxed text-faint">
             Если становится тяжелее, остановись и вернись к себе позже.
           </p>
-          <button type="button" onClick={() => next('observe')} className="cta-pill w-full px-6 py-4 text-[15px]">
+          <button type="button" onClick={() => next('observe')} className="cta-pill w-full px-6 py-4 text-[14px]">
             Начать
           </button>
         </SceneLayout>
@@ -183,9 +183,9 @@ export default function MeditationFlow({ onClose }) {
         >
           <div className="rounded-3xl bg-emerald px-5 py-4 text-left">
             <span className="block text-[11px] uppercase tracking-[0.14em] text-gold">твой шаг</span>
-            <p className="mt-2 text-[15px] leading-relaxed text-cream">{action}</p>
+            <p className="mt-2 text-[14px] leading-relaxed text-cream">{action}</p>
           </div>
-          <button type="button" onClick={onClose} className="cta-pill mt-5 w-full px-6 py-4 text-[15px]">
+          <button type="button" onClick={onClose} className="cta-pill mt-5 w-full px-6 py-4 text-[14px]">
             Вернуться к практикам
           </button>
         </SceneLayout>

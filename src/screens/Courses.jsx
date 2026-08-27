@@ -42,7 +42,7 @@ function CourseCard({ course, onOpen }) {
         </span>
       </div>
       <div className="p-4">
-        <h3 className="font-display text-base text-cream leading-snug mb-1">{course.title}</h3>
+        <h3 className="font-display mx-type-list-title text-cream leading-snug mb-1">{course.title}</h3>
         {course.source && <p className="text-xs text-muted mb-2">{course.source}</p>}
         <div className="flex items-center gap-3 text-xs text-muted">
           {duration && (
@@ -80,11 +80,11 @@ function CourseCreateScreen({ onCreate, onCancel }) {
 
   return (
     <div className="w-full max-w-md px-5">
-      <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-sm mb-4">
+      <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-[13px] mb-4">
         <ArrowLeft size={16} /> Отмена
       </button>
 
-      <h2 className="font-display text-lg mb-4 text-cream">Новый материал</h2>
+      <h2 className="font-display mx-type-card mb-4 text-cream">Новый материал</h2>
 
       <div className="space-y-2 mb-6">
         <input
@@ -111,7 +111,7 @@ function CourseCreateScreen({ onCreate, onCancel }) {
       <button
         onClick={submit}
         disabled={!draft.title.trim() || saving}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 transition-transform active:scale-95"
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep mx-type-flow-action disabled:opacity-40 transition-transform active:scale-95"
       >
         {saving ? 'Сохраняю...' : 'Добавить в библиотеку'}
       </button>
@@ -139,7 +139,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
   return (
     <div className="w-full max-w-md px-5">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-sm">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-[13px]">
           <ArrowLeft size={16} /> Назад
         </button>
         {confirming ? (
@@ -177,7 +177,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
           )}
         </div>
         <div className="p-5">
-          <h2 className="font-display text-xl text-cream mb-1">{course.title}</h2>
+          <h2 className="font-display mx-type-section text-cream mb-1">{course.title}</h2>
           {course.source && <p className="text-xs text-muted mb-3">{course.source}</p>}
           <div className="flex items-center gap-3 text-xs text-muted mb-4">
             {duration && (
@@ -188,7 +188,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
           </div>
           <button
             onClick={() => onToggleStatus(course)}
-            className={`w-full py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+            className={`w-full py-2.5 rounded-xl mx-type-flow-action flex items-center justify-center gap-2 transition-colors ${
               course.status === 'completed'
                 ? 'bg-emerald-light/30 text-muted'
                 : 'bg-gold text-emerald-deep'
@@ -200,7 +200,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
         </div>
       </div>
 
-      <h3 className="text-sm text-cream mb-2">Заметки</h3>
+      <h3 className="text-[13px] text-cream mb-2">Заметки</h3>
       <div className="flex gap-2 mb-4">
         <input
           value={noteText}
@@ -219,7 +219,7 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
       {notes.length > 0 ? (
         <div className="rounded-2xl bg-emerald-light/20 border border-cream/10 divide-y divide-cream/10">
           {notes.map(n => (
-            <div key={n.id} className="px-4 py-3 text-sm text-cream">
+            <div key={n.id} className="px-4 py-3 text-[13px] text-cream">
               {n.text}
             </div>
           ))}
@@ -301,7 +301,7 @@ export default function Courses({ user }) {
     }
   }
 
-  if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
+  if (loading) return <p className="text-muted text-[13px] px-6">Загрузка...</p>
 
   if (showCreate) {
     return <CourseCreateScreen onCreate={createCourse} onCancel={() => setShowCreate(false)} />
@@ -329,7 +329,7 @@ export default function Courses({ user }) {
       {/* ── витрина тем недели ── */}
       {themes.length > 0 && (
         <div className="mb-7">
-          <h2 className="font-display text-lg text-cream mb-3">Темы недели</h2>
+          <h2 className="font-display mx-type-card text-cream mb-3">Темы недели</h2>
           <div className="mx-stagger space-y-2.5">
             {themes.map(t => (
               <button
@@ -337,10 +337,10 @@ export default function Courses({ user }) {
                 onClick={() => setOpenTheme(t.id)}
                 className="w-full rounded-3xl bg-emerald px-5 py-4 text-left border-0 active:scale-[0.98] transition-transform"
               >
-                <span className="block font-display text-[17px] text-cream lowercase leading-tight">
+                <span className="block font-display mx-type-card text-cream lowercase leading-tight">
                   {t.title}
                 </span>
-                <span className="block text-[12.5px] text-muted mt-1 leading-snug">
+                <span className="block text-[12px] text-muted mt-1 leading-snug">
                   {t.subtitle}
                 </span>
                 <span className="flex items-center gap-1.5 mt-3">
@@ -363,7 +363,7 @@ export default function Courses({ user }) {
       )}
 
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-display text-lg text-cream">Мои материалы</h2>
+        <h2 className="font-display mx-type-card text-cream">Мои материалы</h2>
         <button
           onClick={() => setShowCreate(true)}
           className="w-8 h-8 rounded-full bg-gold flex items-center justify-center"
@@ -390,10 +390,10 @@ export default function Courses({ user }) {
         <div className="text-center py-8">
           {courses.length === 0 ? (
             <EmptyState glyph={<MotifArt name="set" size={120} className="mx-auto mb-3" />}>
-              <p className="text-muted text-sm">Библиотека пуста — добавь первый материал</p>
+              <p className="text-muted text-[13px]">Библиотека пуста — добавь первый материал</p>
             </EmptyState>
           ) : (
-            <p className="text-faint text-sm py-6">Ничего не найдено</p>
+            <p className="text-faint text-[13px] py-6">Ничего не найдено</p>
           )}
         </div>
       ) : (

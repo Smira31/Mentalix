@@ -94,13 +94,13 @@ export default function WebAuthScreen({ onAuthed }) {
   return (
     <div className="w-full max-w-md px-5 flex flex-col items-center pt-16">
       <div className="w-14 h-14 rounded-full border border-gold flex items-center justify-center mb-6">
-        <span className="font-display text-xl text-gold">M</span>
+        <span className="font-display text-[18px] text-gold">M</span>
       </div>
-      <h1 className="font-display text-2xl text-cream mb-2 text-center">Вход в Mentalix</h1>
+      <h1 className="font-display text-[22px] text-cream mb-2 text-center">Вход в Mentalix</h1>
 
       {step === 'email' && (
         <>
-          <p className="text-sm text-muted mb-8 text-center">Введи email — пришлём одноразовый код</p>
+          <p className="text-[13px] text-muted mb-8 text-center">Введи email — пришлём одноразовый код</p>
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -112,7 +112,7 @@ export default function WebAuthScreen({ onAuthed }) {
           <button
             onClick={requestCode}
             disabled={!email.trim() || loading}
-            className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
+            className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 active:scale-95 transition-transform"
           >
             {loading ? 'Отправляю...' : 'Получить код'}
           </button>
@@ -121,9 +121,9 @@ export default function WebAuthScreen({ onAuthed }) {
 
       {step === 'code' && (
         <>
-          <p className="text-sm text-muted mb-4 text-center">Код отправлен на {email}</p>
+          <p className="text-[13px] text-muted mb-4 text-center">Код отправлен на {email}</p>
           {devCode && (
-            <p className="text-xs text-muted mb-3 text-center">
+            <p className="text-[11px] text-muted mb-3 text-center">
               Тестовый режим — код: <span className="font-mono text-mint">{devCode}</span>
             </p>
           )}
@@ -133,16 +133,16 @@ export default function WebAuthScreen({ onAuthed }) {
             placeholder="000000"
             autoFocus
             inputMode="numeric"
-            className="w-full bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-center text-[16px] tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={verifyCode}
             disabled={!code.trim() || loading}
-            className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform mb-3"
+            className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 active:scale-95 transition-transform mb-3"
           >
             {loading ? 'Проверяю...' : 'Войти'}
           </button>
-          <button onClick={() => setStep('email')} className="text-xs text-muted active:opacity-60">
+          <button onClick={() => setStep('email')} className="text-[11px] text-muted active:opacity-60">
             Изменить email
           </button>
         </>
@@ -150,10 +150,10 @@ export default function WebAuthScreen({ onAuthed }) {
 
       {step === 'link' && (
         <>
-          <p className="text-sm text-muted mb-2 text-center">
+          <p className="text-[13px] text-muted mb-2 text-center">
             Уже пользуешься Mentalix в Telegram?
           </p>
-          <p className="text-xs text-muted mb-6 text-center leading-relaxed">
+          <p className="text-[11px] text-muted mb-6 text-center leading-relaxed">
             Открой мини-апп в Telegram → Настройки → «Связать с сайтом», введи код здесь — и все твои данные подтянутся сюда же.
           </p>
           <input
@@ -161,22 +161,22 @@ export default function WebAuthScreen({ onAuthed }) {
             onChange={(e) => setLinkCode(e.target.value)}
             placeholder="Код из Telegram"
             inputMode="numeric"
-            className="w-full bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-center text-lg tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
+            className="w-full bg-cream/[0.05] border border-cream/[0.1] rounded-xl px-4 py-3 text-center text-[16px] tracking-widest text-cream placeholder-muted outline-none focus:border-gold transition-colors mb-4"
           />
           <button
             onClick={confirmLink}
             disabled={!linkCode.trim() || loading}
-            className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform mb-3"
+            className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 active:scale-95 transition-transform mb-3"
           >
             {loading ? 'Связываю...' : 'Связать аккаунты'}
           </button>
-          <button onClick={skipLink} className="text-xs text-muted active:opacity-60">
+          <button onClick={skipLink} className="text-[11px] text-muted active:opacity-60">
             Пропустить — начать с чистого аккаунта
           </button>
         </>
       )}
 
-      {error && <p className="text-xs text-red-400 mt-4 text-center">{error}</p>}
+      {error && <p className="text-[11px] text-red-400 mt-4 text-center">{error}</p>}
     </div>
   )
 }

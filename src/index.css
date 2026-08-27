@@ -384,16 +384,38 @@ button {
 }
 
 /* AI-экраны: единая шкала, проверяемая на 320px и 390px viewport. */
+
+/* v5: compact roles for secondary user journeys. Inputs retain 16px separately. */
+.mx-type-flow-title {
+  font-size: 1.375rem;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.mx-type-flow-body {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.mx-type-flow-action {
+  font-size: 0.875rem;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
 .mx-ai-title {
-  font-size: clamp(1.75rem, 7vw, 2.125rem);
+  font-size: clamp(1.5rem, 6vw, 1.75rem);
   line-height: 1.15;
   font-weight: 400;
   letter-spacing: -0.025em;
 }
 
 .mx-ai-body {
-  font-size: 1rem;
-  line-height: 1.62;
+  font-size: 0.875rem;
+  line-height: 1.55;
   font-weight: 400;
   letter-spacing: -0.01em;
 }
@@ -407,8 +429,8 @@ button {
 }
 
 .mx-ai-caption {
-  font-size: 0.8125rem;
-  line-height: 1.5;
+  font-size: 0.75rem;
+  line-height: 1.45;
   font-weight: 400;
 }
 

@@ -98,14 +98,14 @@ function YearPathEmpty({ onContinueToday }) {
       <div className="w-12 h-12 rounded-2xl bg-emerald-light/30 flex items-center justify-center mx-auto mb-3">
         <TrendingUp size={22} className="text-gold" strokeWidth={1.5} />
       </div>
-      <h3 className="font-display text-lg text-cream mb-1">Пока рано подводить итоги</h3>
-      <p className="font-body text-sm text-muted leading-relaxed">
+      <h3 className="font-display text-[16px] text-cream mb-1">Пока рано подводить итоги</h3>
+      <p className="font-body text-[13px] text-muted leading-relaxed">
         График появится, когда наберётся несколько дней практики
       </p>
       <button
         type="button"
         onClick={onContinueToday}
-        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gold px-4 py-2.5 text-sm font-medium text-emerald-deep active:scale-95"
+        className="mt-4 inline-flex items-center gap-2 rounded-xl bg-gold px-4 py-2.5 text-[13px] font-medium text-emerald-deep active:scale-95"
       >
         Начать сегодня <ArrowUpRight size={16} strokeWidth={1.8} />
       </button>
@@ -152,7 +152,7 @@ export default function YearPath({ user, onContinueToday }) {
 
   return (
     <div className="rounded-[28px] bg-emerald-deep border border-cream/10 overflow-hidden mb-5">
-      <div className="text-[13px] text-muted font-semibold text-center pt-5">Мой путь</div>
+      <div className="text-[12px] text-muted font-semibold text-center pt-5">Мой путь</div>
       <p className="text-[12px] text-faint text-center mt-1">История регулярности и движения</p>
 
       <div className="flex justify-center pt-2 pb-6">
@@ -169,7 +169,7 @@ export default function YearPath({ user, onContinueToday }) {
         <button
           type="button"
           onClick={onContinueToday}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-sm font-medium text-emerald-deep active:scale-95"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gold px-4 py-3 text-[13px] font-medium text-emerald-deep active:scale-95"
         >
           Продолжить сегодня <ArrowUpRight size={16} strokeWidth={1.8} />
         </button>
