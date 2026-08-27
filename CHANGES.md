@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 27.08.2026 — Приоритет v1.1.0 и testing plans
+
+- Владелец выбрал `MXL-UX-RESPONSIVE-001` первым приоритетом v1.1.0; глобальный P0-регистр не изменён.
+- Добавлены детальные кейсы `docs/testing/MXL-UX-RESPONSIVE-001_TEST_CASES.md` и Android gate `docs/testing/MXL-012_ANDROID_GATE.md`.
+- Добавлен общий план `docs/testing/V1_1_TEST_PLAN.md` с зависимостями, автоматическими проверками, device gates, blocker-критериями и rollback.
+- Backend, API, production data и продуктовый core loop не менялись.
+
 ## 27.08.2026 — MXL-UX-RESPONSIVE-001: UI-проверка для v1.1.0
 
 - По результатам ручных Telegram/iPhone скриншотов зафиксированы кандидаты на проверку: верхний content offset под Telegram/Mini App header, взаимодействие нижнего dock с iOS keyboard, крайнее положение floating control и контраст вторичных подписей.

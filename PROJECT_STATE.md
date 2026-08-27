@@ -191,8 +191,11 @@
 - Для v1.1.0 добавлена backlog-задача `MXL-UX-RESPONSIVE-001` по проверке
   возможного перекрытия header, взаимодействия dock с keyboard, floating control,
   overflow и visual polish на разных viewport. Статичные скриншоты фиксируют
-  кандидатов на проверку, но не доказывают layout jump. Инструкция проверки
-  находится в `docs/testing/UI_RESPONSIVE_CHECK.md`.
+  кандидатов на проверку, но не доказывают layout jump. Владелец выбрал задачу
+  приоритетом v1.1.0; это не меняет глобальный P0-регистр. Детальные кейсы находятся
+  в `docs/testing/MXL-UX-RESPONSIVE-001_TEST_CASES.md`, Android gate — в
+  `docs/testing/MXL-012_ANDROID_GATE.md`, общий план — в
+  `docs/testing/V1_1_TEST_PLAN.md`.
 - **Unified Mobile Layout:** изменения вошли в `main` через PR #129 и считаются
   текущей production-базой. Ручной Telegram/iPhone gate остаётся отдельной
   проверкой для новых изменений.
