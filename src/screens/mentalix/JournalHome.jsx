@@ -1,5 +1,5 @@
-import { ArrowRight, BookOpen, Check, Compass, PenLine } from 'lucide-react'
 import { useState } from 'react'
+import { ArrowRight, BookOpen, Check, Compass, PenLine } from 'lucide-react'
 import JournalTextarea from '../../components/JournalTextarea'
 import { platform } from '../../platform'
 import { readJournalEntry, saveJournalPhase, todayKey } from '../../lib/journalStorage'
@@ -65,7 +65,8 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
           Вернись к тому, что важно сегодня
         </h1>
         <p className="mx-type-flow-body mx-auto mt-4 max-w-[310px] text-muted">
-          Четыре коротких шага, чтобы заметить свои мысли, выбрать то, что зависит от тебя, и спокойно продолжить.
+          Четыре коротких шага, чтобы заметить свои мысли, выбрать то, что зависит от тебя, и
+          спокойно продолжить.
         </p>
         <p className="mx-type-meta mt-4 text-faint">Идея · Действие · Анализ · Новый шаг</p>
         <button
@@ -128,7 +129,10 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
         </button>
       </div>
 
-      <div className="mx-journal-step-note mx-type-meta mt-5 text-faint" aria-label={`Шаг ${phaseIndex + 1} из ${PHASES.length}`}>
+      <div
+        className="mx-journal-step-note mx-type-meta mt-5 text-faint"
+        aria-label={`Шаг ${phaseIndex + 1} из ${PHASES.length}`}
+      >
         шаг {phaseIndex + 1} из {PHASES.length} · {phase.label}
       </div>
 

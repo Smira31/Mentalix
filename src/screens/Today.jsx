@@ -30,7 +30,7 @@ const INITIAL_TODAY_VARIANT =
 
 // ── календарь недели + отдельные дневные streak strips ──
 
-function WeekStrip({ todayComplete = false }) {
+function WeekStrip() {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = new Date()
   const monday = new Date(now)
@@ -42,7 +42,7 @@ function WeekStrip({ todayComplete = false }) {
   })
 
   return (
-    <div className="mx-today-week" aria-label="Неделя и дневные стрики">
+    <div className="mx-today-week" aria-label="Календарь недели">
       <div className="mx-today-week__calendar" aria-label="Дни недели">
         {days.map(day => {
           const isToday = day.toDateString() === now.toDateString()
@@ -53,23 +53,6 @@ function WeekStrip({ todayComplete = false }) {
               </span>
               <span className="mx-type-calendar-date">{day.getDate()}</span>
             </div>
-          )
-        })}
-      </div>
-
-      <div className="mx-today-streaks" aria-label="Дневные стрики">
-        {days.map(day => {
-          const isToday = day.toDateString() === now.toDateString()
-          const isPast = day < now && !isToday
-          return (
-            <span
-              key={day.getTime()}
-              className="mx-today-streak__strip"
-              data-today={isToday}
-              data-past={isPast}
-              data-complete={isToday && todayComplete}
-              aria-label={`${names[day.getDay() === 0 ? 6 : day.getDay() - 1]} ${day.getDate()}${isToday ? ', сегодня' : ''}`}
-            />
           )
         })}
       </div>
@@ -599,7 +582,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   return (
     <div className="w-full max-w-md px-5">
-      <WeekStrip todayComplete={checkinDone || done > 0} />
+      <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />

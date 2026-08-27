@@ -488,16 +488,16 @@ test('локальный UX smoke по основному маршруту', asy
     await captureScreen({
       page,
       viewport,
-      screen: 'Journal intro in Practices',
+      screen: 'Journal day 2 in Practices',
       slug: '03a-journal-intro',
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'Вернись к тому, что важно сегодня' })).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Начать запись' }))
+        await expect(page.getByText('Тема недели · День 2 из 7')).toBeVisible()
+        await expect(page.getByRole('heading', { name: /Усилие и напряжение/ })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'Наставник' }).first()).toBeVisible()
       },
     })
-    await page.getByRole('button', { name: 'Начать запись' }).click()
     await captureScreen({
       page,
       viewport,
@@ -506,10 +506,13 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        const editor = page.getByRole('textbox', { name: /Идея:/ })
+        await expect(page.getByText('Тема недели · День 2 из 7')).toBeVisible()
+        const editor = page.getByRole('textbox', { name: 'Мысль по теме недели' })
         await expect(editor).toBeVisible()
         await editor.fill('Записать главную мысль дня')
-        await assertClickable(page.getByRole('button', { name: 'Продолжить' }))
+        await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
+        await assertClickable(page.getByRole('button', { name: 'Наставник' }).first())
+        await assertClickable(page.getByRole('button', { name: 'Сохранить мысль' }))
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()

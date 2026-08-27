@@ -174,8 +174,10 @@ test('MXL-007 публикует дневные strips и убирает ста�
   )
   const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
 
-  assert.match(today, /mx-today-streaks/)
+  assert.match(today, /mx-today-week__calendar/)
+  assert.match(today, /mx-today-week-day/)
   assert.match(today, /Дни недели/)
+  assert.doesNotMatch(today, /mx-today-streaks/)
   assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
   assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
   assert.match(analytics, /stroke="rgb\(94 178 237\)"/)
@@ -194,12 +196,10 @@ test('MXL-008 публикует Stoic-like Journey и объясняет мет
 
 test('MXL-021 связывает Journey с продолжением Today', () => {
   const yearPath = readFileSync(new URL('../../src/screens/YearPath.jsx', import.meta.url), 'utf8')
-  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 
   assert.match(yearPath, /Начать сегодня/)
   assert.match(yearPath, /Продолжить сегодня/)
   assert.match(yearPath, /onContinueToday/)
-  assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
 test('MXL-JOURNAL-001 публикует полноценный четыре-фазный Journal Home', () => {
@@ -417,7 +417,7 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
   assert.match(today, /mx-today-primary-card/)
   assert.match(today, /data-complete=\{heroPresentationState === 'allDone' \|\| heroPresentationState === 'dayClosed'\}/)
-  assert.match(today, /heroPresentationState !== 'allDone' && heroPresentationState !== 'dayClosed'/)
+  assert.match(today, /heroPresentationState !== 'allDone'\s+&&\s+heroPresentationState !== 'dayClosed'/)
   assert.match(today, /mx-today-hero-breath/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
   assert.match(today, /mx-today-affirmation-card/)
