@@ -14,6 +14,7 @@ import NeuroArt from '../components/practice-art/NeuroArt'
 import BreathingArt from '../components/practice-art/BreathingArt'
 import FocusArt from '../components/practice-art/FocusArt'
 import MeditationArt from '../components/practice-art/MeditationArt'
+import JournalArt from '../components/practice-art/JournalArt'
 import FirstStepArt from '../components/practice-art/FirstStepArt'
 import ReleaseArt from '../components/practice-art/ReleaseArt'
 import NarrowFocusArt from '../components/practice-art/NarrowFocusArt'
@@ -26,6 +27,7 @@ import Focus from './Focus'
 import Breathing from './Breathing'
 import FirstStepFlow from './FirstStepFlow'
 import MeditationFlow from './MeditationFlow'
+import JournalFlow from './JournalFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
 import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
@@ -133,6 +135,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
     'narrow-focus',
     'one-finish',
     'meditation',
+    'journal',
   ].includes(sub)
 
   useEffect(() => {
@@ -238,6 +241,10 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
     return <MeditationFlow onClose={() => setSub(null)} />
   }
 
+  if (sub === 'journal') {
+    return <JournalFlow userId={user.id} onClose={() => setSub(null)} />
+  }
+
   if (sub === 'no-blame') {
     return <ProcrastinationFlow userId={user.id} onClose={() => setSub(null)} />
   }
@@ -324,6 +331,13 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           right="5–10 мин"
           soon={!isPracticeAvailable(PRACTICE_KEYS.meditation)}
           onOpen={() => setSub('meditation')}
+        />
+        <PracticeRow
+          artwork={<JournalArt />}
+          title="Журнал"
+          subtitle="идея, действие, анализ и новый шаг"
+          right="4 шага"
+          onOpen={() => setSub('journal')}
         />
         <PracticeRow
           artwork={<RitualsArt />}

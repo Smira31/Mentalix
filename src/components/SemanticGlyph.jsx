@@ -202,6 +202,19 @@ function Drawing({ kind, debugSource }) {
         </>
       )
 
+    case 'journal':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__journal-pages">
+            <path d="M36 30H75C83 30 87 34 87 42V86C87 78 83 74 75 74H36Z" />
+            <path d="M124 30H85C77 30 73 34 73 42V86C73 78 77 74 85 74H124Z" />
+          </g>
+          <path className="mx-semantic-glyph__journal-line" d="M48 46H70M48 56H70M90 46H112M90 56H112" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="86" r="4" />
+        </>
+      )
+
     case 'prayer':
       return (
         <>

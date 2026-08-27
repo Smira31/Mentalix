@@ -1,5 +1,17 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 27.08.2026 — MXL-JOURNAL-001: Journal Flow в «Практиках»
+
+- По обратной связи владельца журнал перенесён из скрытого автооткрывающегося пути «Наставника» в видимую строку **«Журнал»** раздела «Практики»; «Наставник» снова начинает путь с выбора AI-персоны.
+- Новый focused flow: `intro → Идея → Действие → Анализ → Новый шаг → «Цикл сохранён» → возврат/повторное открытие`; local-first storage остаётся frontend-only и user-scoped.
+- Unit 31/31, lint, build, UX smoke и diff-check локально прошли; ручной Telegram/iPhone gate по новому Preview обязателен до принятия и merge PR #245. Детали и ограничения — `TASKS.md` → `MXL-JOURNAL-001` / `MXL-JOURNAL-PERSISTENCE-001`.
+
+## 27.08.2026 — MXL-JOURNAL-PERSISTENCE-001: initial local-first slice
+
+- Journal Home теперь хранит новые записи в профильно изолированном local store; старую browser-wide запись пользователь переносит только явно и без затирания уже созданных фаз.
+- При недоступном local storage интерфейс показывает ошибку и не выдаёт ложное сохранение; добавлены unit-контракты и UX smoke Journal Home на двух мобильных viewport.
+- Backend/API, cloud sync, payment, primary navigation и privacy-claims не менялись. Локальные проверки зелёные; до принятия остаётся ручной Telegram/iPhone gate. Полное описание и границы — `TASKS.md` → `MXL-JOURNAL-PERSISTENCE-001`.
+
 ## 27.08.2026 — Приоритет v1.1.0 и testing plans
 
 - Владелец выбрал `MXL-UX-RESPONSIVE-001` первым приоритетом v1.1.0; глобальный P0-регистр не изменён.

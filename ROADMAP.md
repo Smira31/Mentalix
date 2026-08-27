@@ -146,10 +146,10 @@ check-in → следующий шаг → практика → вечерний
 
 ### Уже есть и не создаётся заново
 
-Текущий Journal Home остаётся отдельным PR #224 и не считается production persistence до ручного Telegram/iPhone gate.
+Текущий `JournalFlow` реализован в открытом PR #245 как явная focused practice внутри «Практик» и не считается production persistence до повторного ручного Telegram/iPhone gate.
 
 - ежедневный цикл **Идея → Действие → Анализ → Новый шаг**;
-- Journal Home prototype и Writing Canvas;
+- Journal Flow в «Практиках» с intro, Writing Canvas, completion/return и local-first draft/final;
 - curated-темы недели и «Мысль дня»;
 - короткая текстовая медитация;
 - Journey с active days и continuous line;
@@ -160,7 +160,7 @@ check-in → следующий шаг → практика → вечерний
 
 | ID                            | Эпик                                                                          | Размер | Зависимость                                 | Статус                                                  |
 | ----------------------------- | ----------------------------------------------------------------------------- | -----: | ------------------------------------------- | ------------------------------------------------------- |
-| `MXL-JOURNAL-PERSISTENCE-001` | Production-хранение Journal Home и morning/evening entries                    |     XL | приватный backend/storage contract          | in progress: local-first slice; cloud persistence later |
+| `MXL-JOURNAL-PERSISTENCE-001` | Production-хранение Journal Flow и честный daily-entry contract               |     XL | приватный backend/storage contract          | in progress: user-scoped local-first slice; cloud persistence later |
 | `MXL-JOURNAL-HISTORY-001`     | Единая датированная история записей и возврат к сегодняшнему шагу             |      L | persistence и единая date/timezone модель   | backlog                                                 |
 | `MXL-JOURNAL-PRIVACY-001`     | Центр приватности: AI consent, retention, export, delete и telemetry boundary |      L | safety/legal и backend contract             | needs-owner                                             |
 | `MXL-JOURNAL-GUIDED-001`      | Guided journals и library поверх проверенного авторского контента             |      M | content governance и taxonomy               | backlog                                                 |
@@ -171,15 +171,15 @@ check-in → следующий шаг → практика → вечерний
 
 ### Порядок реализации
 
-1. Довести до gate текущий Journal Home prototype из `MXL-JOURNAL-001`.
-2. Реализовать `MXL-JOURNAL-PERSISTENCE-001` после фиксации backend-контракта.
+1. Довести до повторного Telegram/iPhone gate текущий Journal Flow в «Практиках» из PR #245 / `MXL-JOURNAL-001`.
+2. Продолжать `MXL-JOURNAL-PERSISTENCE-001` только после фиксации backend-контракта для cloud/history подэтапов.
 3. Реализовать `MXL-JOURNAL-HISTORY-001` и связать историю с «Продолжить сегодня».
 4. Зафиксировать и внедрить `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
 5. Добавить `MXL-JOURNAL-PERSONALIZE-001` и только затем guided library.
 6. После проверки использования решать tags/search/favorites, memories и reminders.
 7. После evidence пользовательского исследования принимать решения о payment и advanced personalization.
 
-Критерий большого эпика: пользователь может начать запись, продолжить её утром или вечером, безопасно сохранить, вернуться из истории, явно выбрать AI-deepen и удалить или экспортировать свои данные.
+Критерий большого эпика: пользователь может начать, продолжить и безопасно сохранить запись, найти её в честной датированной истории, понимать storage/AI boundaries и управлять удалением/экспортом. Текущий PR #245 покрывает только явный local-first focused flow и не заявляет историю, AI-deepen, cloud sync, удаление или экспорт готовыми.
 
 ## Не делать параллельно
 
