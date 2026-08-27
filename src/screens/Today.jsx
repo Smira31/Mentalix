@@ -757,7 +757,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div className="rounded-[28px] bg-emerald px-6 pt-5 pb-6 mt-6 text-center flex flex-col justify-center animate-fade-in">
+      <div className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in">
         {motionExperimentEnabled ? (
           <div className="mx-today-hero-art" aria-label="Один следующий шаг">
             <SemanticGlyph
@@ -964,7 +964,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('quote')
           }}
-          className="w-full px-2 py-5 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          className="mx-today-affirmation-card w-full px-5 py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
