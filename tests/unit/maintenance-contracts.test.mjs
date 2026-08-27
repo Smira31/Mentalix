@@ -511,6 +511,27 @@ test('MXL-001 сохраняет Stoic-inspired AI flow без backend изме�
   assert.doesNotMatch(container, /api\.mentalix\.send\([^\n]*flow/)
 })
 
+test('MXL-MENTOR-UI-248 убирает внешнюю рамку и индикатор, сохраняя изоляцию историй персон', () => {
+  const picker = readFileSync(
+    new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
+    'utf8'
+  )
+  const historyCache = readFileSync(
+    new URL('../../src/lib/mentalixHistoryCache.js', import.meta.url),
+    'utf8'
+  )
+  const container = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
+
+  assert.match(picker, /data-testid="mentor-persona-card"/)
+  assert.doesNotMatch(picker, /rounded-\[28px\]\s+border\s+border-cream\/12/)
+  assert.doesNotMatch(picker, /aria-label="Выбранный собеседник"/)
+  assert.doesNotMatch(picker, /h-\[3px\] rounded-full transition-all duration-200/)
+  assert.match(picker, /У каждого своя история — разговоры не смешиваются\./)
+  assert.match(historyCache, /return `\$\{userId\}:\$\{persona\}`/)
+  assert.match(historyCache, /api\.mentalix\.history\(userId, persona\)/)
+  assert.match(container, /fetchHistory\(user\.id, persona\)/)
+})
+
 test('MXL-006 публикует единый AI typography baseline без backend изменений', () => {
   const tokens = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
   const conversation = readFileSync(

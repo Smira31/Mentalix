@@ -114,6 +114,17 @@ function fixtureFor(request) {
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
   if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
   if (pathname === '/api/analytics') return jsonResponse(FIXTURES.analytics)
+  if (pathname === '/api/mentalix/consent') return jsonResponse({ context_consent: false })
+  if (pathname === '/api/mentalix/messages') {
+    const persona = url.searchParams.get('persona') || 'unknown'
+    return jsonResponse([
+      {
+        id: `fixture-${persona}`,
+        role: 'assistant',
+        content: `История ${persona}`,
+      },
+    ])
+  }
 
   return jsonResponse({ error: `Нет локального fixture для ${method} ${pathname}` }, 501)
 }
@@ -948,4 +959,68 @@ test('локальный UX smoke по основному маршруту', asy
   expect(failed, `UX check: ${failed.map(item => `${item.viewport}/${item.screen}`).join(', ')}`).toEqual(
     []
   )
+})
+
+
+test('Mentor PersonaPicker сохраняет границы на mobile, tablet и desktop без индикатора', async ({ browser, baseURL }) => {
+  const layouts = [
+    ...VIEWPORTS,
+    { name: '768x1024', width: 768, height: 1024 },
+    { name: '1280x800', width: 1280, height: 800 },
+  ]
+
+  for (const viewport of layouts) {
+    const context = await browser.newContext({
+      baseURL,
+      viewport: { width: viewport.width, height: viewport.height },
+      colorScheme: 'dark',
+      reducedMotion: 'reduce',
+      serviceWorkers: 'block',
+    })
+
+    await context.addInitScript(user => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+      localStorage.setItem('mx-onboarded-v2', '1')
+      localStorage.setItem('mx-app-lock-enabled', '0')
+    }, TEST_USER)
+
+    await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+
+    const page = await context.newPage()
+    const runtimeErrors = []
+    page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
+    page.on('console', message => {
+      if (
+        message.type() === 'error' &&
+        !message.text().includes('CloudStorage is not supported in version 6.0')
+      ) {
+        runtimeErrors.push(`console.error: ${message.text()}`)
+      }
+    })
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Наставник' }).click()
+    await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
+    await expect(page.getByLabel('Выбранный собеседник')).toHaveCount(0)
+    const cards = page.getByTestId('mentor-persona-card')
+    await expect(cards).toHaveCount(3)
+    expect(await cards.evaluateAll(elements => elements.map(element => getComputedStyle(element).borderTopWidth))).toEqual([
+      '0px',
+      '0px',
+      '0px',
+    ])
+    await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
+
+    const mentorCard = cards.filter({ hasText: 'Наставник' })
+    await mentorCard.scrollIntoViewIfNeeded()
+    await mentorCard.click()
+    await expect(page.getByText('История kompas')).toBeVisible()
+    await expect(page.getByText('История mayak')).toHaveCount(0)
+    await assertClickable(page.getByRole('button', { name: 'Назад' }))
+    await assertCommonScreenChecks(page, runtimeErrors)
+
+    await context.close()
+  }
 })

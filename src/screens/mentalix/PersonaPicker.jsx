@@ -150,6 +150,7 @@ export default function PersonaPicker({ user, onPick }) {
               <div
                 key={persona.key}
                 role="button"
+                data-testid="mentor-persona-card"
                 tabIndex={0}
                 onClick={() => {
                   platform.haptic('light')
@@ -160,8 +161,6 @@ export default function PersonaPicker({ user, onPick }) {
                   shrink-0
                   w-[82%]
                   rounded-[28px]
-                  border
-                  border-cream/12
                   bg-emerald
                   p-6
                   flex
@@ -273,23 +272,9 @@ export default function PersonaPicker({ user, onPick }) {
         </div>
       </div>
 
-      <div className="mx-persona-picker__footer mt-4 rounded-[22px] border border-cream/10 bg-cream/[0.035] px-4 py-3.5">
-        <div className="flex justify-center gap-1.5" aria-label="Выбранный собеседник">
-          {PERSONAS.map((persona, index) => (
-            <span
-              key={persona.key}
-              className={[
-                'h-[3px] rounded-full transition-all duration-200',
-                index === active ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
-              ].join(' ')}
-            />
-          ))}
-        </div>
-
-        <p className="mx-type-list-body text-muted mt-3 text-center leading-relaxed">
-          У каждого своя история — разговоры не смешиваются.
-        </p>
-      </div>
+      <p className="mx-type-list-body mt-4 text-center leading-relaxed text-muted">
+        У каждого своя история — разговоры не смешиваются.
+      </p>
     </div>
   )
 }
