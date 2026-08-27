@@ -672,44 +672,23 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
         data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
       >
-        {motionExperimentEnabled ? (
-          <div className="mx-today-hero-art" aria-label="Один следующий шаг">
-            <SemanticGlyph
-              kind="next-step"
-              debugSource="Today.jsx"
-              className="mx-today-hero-art-glyph"
-            />
-          </div>
-        ) : (
-          heroArt
-        )}
+        {heroPresentationState !== 'allDone' && heroPresentationState !== 'dayClosed' &&
+          (motionExperimentEnabled ? (
+            <div className="mx-today-hero-art" aria-label="Один следующий шаг">
+              <SemanticGlyph
+                kind="next-step"
+                debugSource="Today.jsx"
+                className="mx-today-hero-art-glyph"
+              />
+            </div>
+          ) : (
+            heroArt
+          ))}
 
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
       <div className="mx-today-hero-breath" aria-hidden="true" />
-
-      <MorningPilotCard
-        userId={user.id}
-        rituals={rituals}
-        onOpenRituals={() => onOpenPractice('rituals')}
-      />
-
-      {/* ======================================================
-          ПУЛЬС
-          ====================================================== */}
-
-      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
-        <p className="text-center mx-type-meta text-faint mt-4">
-          {activeToday < 20
-            ? `Сегодня в пути вместе с тобой: ${activeToday}`
-            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
-        </p>
-      )}
-
-      {/* ======================================================
-          УТРЕННИЙ ЧЕК-ИН
-          ====================================================== */}
 
       {checkinDone && (
         <button
@@ -718,7 +697,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('checkin')
           }}
-          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 mt-5 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] font-bold shrink-0">
             ✓
@@ -737,6 +716,24 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
           <span className="mx-type-meta text-faint shrink-0">изменить</span>
         </button>
+      )}
+
+      <MorningPilotCard
+        userId={user.id}
+        rituals={rituals}
+        onOpenRituals={() => onOpenPractice('rituals')}
+      />
+
+      {/* ======================================================
+          ПУЛЬС
+          ====================================================== */}
+
+      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
+        <p className="text-center mx-type-meta text-faint mt-4">
+          {activeToday < 20
+            ? `Сегодня в пути вместе с тобой: ${activeToday}`
+            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+        </p>
       )}
 
       {/* ======================================================

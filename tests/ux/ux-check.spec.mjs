@@ -571,6 +571,38 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Назад' }).click()
 
+    await page.getByRole('button', { name: 'Медитация' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Meditation intro',
+      slug: '06d-meditation-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(
+          page.getByRole('heading', { name: 'Вернись к тому, что действительно зависит от тебя' })
+        ).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Meditation observation',
+      slug: '06e-meditation-observation',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: 'Что сейчас происходит' })
+        await expect(editor).toBeVisible()
+        await editor.fill('Я жду ответа и постоянно проверяю телефон')
+        await assertClickable(page.getByRole('button', { name: 'Дальше' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Назад' }).click()
+
     await page.getByRole('button', { name: 'Одно из всех' }).click()
     await captureScreen({
       page,

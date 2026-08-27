@@ -29,6 +29,32 @@
   padding-top: 1.5rem;
 }
 
+/* Writing steps keep their editor and confirmation in one visual center. */
+.practice-scene--input-centered {
+  padding-top: clamp(5rem, 11vh, 6rem);
+}
+
+.practice-scene--input-centered .practice-scene__body {
+  display: flex;
+  min-height: min(610px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 148px));
+  flex-direction: column;
+  justify-content: center;
+}
+
+.practice-scene--input-centered .practice-scene__content {
+  margin-top: 28px;
+}
+
+@media (max-height: 650px) {
+  .practice-scene--input-centered {
+    padding-top: 1.5rem;
+  }
+
+  .practice-scene--input-centered .practice-scene__body {
+    min-height: 0;
+  }
+}
+
 .practice-form__fields {
   display: flex;
   flex-direction: column;

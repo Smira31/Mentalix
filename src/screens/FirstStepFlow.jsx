@@ -240,7 +240,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           label="Первый шаг"
           title="Что не двигается?"
           progress={<Progress step={step} />}
-          className="practice-scene--input"
+          className="practice-scene--input practice-scene--input-centered"
           description={
             <>
               Одно дело, которое ты откладываешь — не потому что забыл, а потому что не можешь
@@ -312,7 +312,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           label="Первый шаг"
           title="Что можно сделать за пять минут?"
           progress={<Progress step={step} />}
-          className="practice-scene--input"
+          className="practice-scene--input practice-scene--input-centered"
           description={<>Не «написать отчёт», а «открыть документ и записать три пункта».</>}
         >
           <JournalTextarea
