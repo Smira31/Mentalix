@@ -3,6 +3,7 @@ import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/tren
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
+import { CircleCheck } from 'lucide-react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -92,7 +93,7 @@ function WeekChart({ dailyActivity }) {
                   }}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgb(var(--c-text) / 0.05)' }}
+                  cursor={false}
                   contentStyle={{
                     background: 'rgb(var(--c-card2))',
                     border: '1px solid rgb(var(--c-border))',
@@ -107,16 +108,16 @@ function WeekChart({ dailyActivity }) {
                 />
                 <Bar dataKey="count" radius={[5, 5, 5, 5]}>
                   {chartData.map((d, i) => (
-                    <Cell key={i} fill={d.isToday ? 'rgb(var(--c-text))' : 'rgb(var(--c-gold))'} />
+                    <Cell key={i} fill={d.isToday ? 'rgb(94 178 237)' : 'rgb(var(--c-gold))'} />
                   ))}
                 </Bar>
-                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="rgb(var(--c-text) / 0.3)" />
+                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="rgb(var(--c-cognac, 180 112 92) / 0.45)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="flex items-center gap-4 mt-2 flex-wrap">
-            <span className="flex items-center gap-1.5 text-[11px] text-muted">
-              <span className="w-2 h-2 rounded-full bg-mint" /> сегодня
+              <span className="flex items-center gap-1.5 text-[11px] text-muted">
+              <span className="w-2 h-2 rounded-full bg-[#5EB2ED]" /> сегодня
             </span>
             <span className="flex items-center gap-1.5 text-[11px] text-muted">
               <span className="w-2 h-2 rounded-full bg-gold" /> ритуалы
@@ -162,7 +163,10 @@ function AscezaRow({ asceza }) {
           {asceza.name}
           <span className="text-faint ml-1.5">{CATEGORY_LABELS[asceza.category] || ''}</span>
         </span>
-        <span className="font-mono text-mint whitespace-nowrap">🛡 {asceza.streak}</span>
+        <span className="inline-flex items-center gap-1 font-mono text-mint whitespace-nowrap" aria-label={`серия дней: ${asceza.streak}`}>
+          <CircleCheck size={14} strokeWidth={2.2} aria-hidden="true" />
+          {asceza.streak}
+        </span>
       </div>
       <div className="h-2 rounded-full bg-emerald-deep overflow-hidden">
         <div
@@ -246,9 +250,10 @@ function MoodTrend({ checkins, onGoCheckin }) {
               <Line
                 type="monotone"
                 dataKey="mood"
-                stroke="rgb(217,180,91)"
+                stroke="rgb(94 178 237)"
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: 'rgb(217,180,91)' }}
+                dot={{ r: 3, fill: 'rgb(94 178 237)' }}
+                activeDot={{ r: 5, fill: 'rgb(94 178 237)', stroke: 'rgb(var(--c-card2))', strokeWidth: 2 }}
               />
               <Line
                 type="monotone"

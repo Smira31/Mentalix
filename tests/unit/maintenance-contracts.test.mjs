@@ -166,19 +166,21 @@ test('preview cleanup подтверждает удаление до очист�
   assert.doesNotMatch(launcher, /Start-Sleep -Seconds 3600; npx vercel@latest remove/)
 })
 
-test('MXL-007 публикует цикл Today: идея, действие, анализ и новый шаг', () => {
-  const thread = readFileSync(
-    new URL('../../src/components/TodayMotionExperiment.jsx', import.meta.url),
+test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const conversation = readFileSync(
+    new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
     'utf8'
   )
-  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
 
-  assert.match(thread, /const THREAD_LABELS = \['Идея', 'Действие', 'Анализ', 'Новый шаг'\]/)
-  assert.match(thread, /<strong>Цикл дня<\/strong>/)
-  assert.match(today, /'Идея дня'/)
-  assert.match(thread, /<small>Действие дня<\/small>/)
-  assert.match(today, /'Анализ дня'/)
-  assert.match(today, /Новый шаг/)
+  assert.match(today, /mx-today-streaks/)
+  assert.match(today, /Дни недели/)
+  assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
+  assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
+  assert.match(analytics, /stroke="rgb\(94 178 237\)"/)
+  assert.match(analytics, /cursor=\{false\}/)
+  assert.doesNotMatch(analytics, /🛡/)
 })
 
 test('MXL-008 публикует Stoic-like Journey и объясняет метрику активных дней', () => {
@@ -349,8 +351,7 @@ test('MXL-001 сохраняет Stoic-inspired AI flow без backend изме�
   assert.match(indicator, /idea.*action.*analysis.*next/s)
   assert.match(indicator, /Цикл разговора: идея, действие, анализ, новый шаг/)
   assert.doesNotMatch(picker, /AiFlowIndicator/)
-  assert.match(conversation, /const flowPhase/)
-  assert.match(conversation, /<AiFlowIndicator active=\{flowPhase\} \/>/)
+  assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
   assert.match(container, /api\.mentalix\.send\(user\.id, text, persona\)/)
   assert.doesNotMatch(container, /api\.mentalix\.send\([^\n]*flow/)
 })

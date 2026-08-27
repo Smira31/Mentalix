@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
@@ -22,8 +21,6 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import {
-  DayThread,
-  DayThreadTrigger,
   NextActionReveal,
   TodayCompareControl,
 } from '../components/TodayMotionExperiment'
@@ -34,45 +31,34 @@ const TODAY_COMPARE_REQUESTED =
 const INITIAL_TODAY_VARIANT =
   new URLSearchParams(window.location.search).get('today_variant') === 'before' ? 'before' : 'after'
 
-// ── лента недели, как у stoic. ──
+// ── дневные strips: спокойная отметка присутствия вместо «Цикла дня» ──
 
 function WeekStrip() {
-  const names = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-
+  const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = new Date()
   const monday = new Date(now)
-
   monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
-
-  const days = Array.from(
-    {
-      length: 7,
-    },
-    (_, index) => {
-      const day = new Date(monday)
-
-      day.setDate(monday.getDate() + index)
-
-      return day
-    }
-  )
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(monday)
+    day.setDate(monday.getDate() + index)
+    return day
+  })
 
   return (
-    <div className="flex justify-between w-full mb-4">
+    <div className="mx-today-streaks" aria-label="Дни недели">
       {days.map(day => {
         const isToday = day.toDateString() === now.toDateString()
-
+        const isPast = day < now && !isToday
         return (
           <div
             key={day.getTime()}
-            className={[
-              'flex flex-col items-center gap-0.5 w-11 py-2 rounded-2xl mx-type-weekday',
-              isToday ? 'text-cream border border-cream/15' : 'text-faint',
-            ].join(' ')}
+            className="mx-today-streak"
+            data-today={isToday}
+            data-past={isPast}
           >
-            {names[day.getDay()]}
-
-            <b className="mx-type-calendar-date">{day.getDate()}</b>
+            <span className="mx-today-streak__day mx-type-weekday">{names[day.getDay() === 0 ? 6 : day.getDay() - 1]}</span>
+            <span className="mx-today-streak__date mx-type-calendar-date">{day.getDate()}</span>
+            <span className="mx-today-streak__strip" aria-hidden="true" />
           </div>
         )
       })}
@@ -168,23 +154,10 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   const [todayVariant, setTodayVariant] = useState(INITIAL_TODAY_VARIANT)
 
-  const [dayThreadOpen, setDayThreadOpen] = useState(false)
-
-  const [todayHeaderLeading, setTodayHeaderLeading] = useState(null)
 
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setTodayHeaderLeading(document.getElementById('mx-today-header-leading'))
-    })
-
-    return () => {
-      window.cancelAnimationFrame(frame)
-    }
-  }, [sub])
 
   /*
    * Любой вложенный экран Today — это отдельный сценарий, а не
@@ -615,10 +588,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   function changeTodayVariant(nextVariant) {
     setTodayVariant(nextVariant)
 
-    if (nextVariant === 'before') {
-      setDayThreadOpen(false)
-    }
-
     const url = new URL(window.location.href)
 
     url.searchParams.set('today_variant', nextVariant)
@@ -628,31 +597,10 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   return (
     <div className="w-full max-w-md px-5">
-      {motionExperimentEnabled &&
-        todayHeaderLeading &&
-        createPortal(
-          <DayThreadTrigger
-            open={dayThreadOpen}
-            onToggle={() => setDayThreadOpen(value => !value)}
-          />,
-          todayHeaderLeading
-        )}
-
       <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
-      )}
-
-      {motionExperimentEnabled && dayThreadOpen && (
-        <DayThread
-          checkinDone={checkinDone}
-          done={done}
-          open={dayThreadOpen}
-          onOpenChange={setDayThreadOpen}
-          total={total}
-          todayState={todayState}
-        />
       )}
 
       {/* ======================================================

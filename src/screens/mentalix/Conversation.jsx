@@ -31,7 +31,6 @@ import {
   isLongJournalMessage,
   journalMessageKey,
 } from '../../lib/journalPresentation'
-import AiFlowIndicator from './AiFlowIndicator'
 import './Conversation.css'
 
 
@@ -85,14 +84,6 @@ export default function Conversation({
   }, [sending])
 
   const hasText = Boolean(input.trim())
-
-  const lastMessage = messages[messages.length - 1]
-  const flowPhase =
-    messages.length === 0
-      ? 'idea'
-      : lastMessage?.role === 'user'
-        ? 'action'
-        : 'analysis'
 
   const iconKey =
     voiceState === 'recording'
@@ -377,10 +368,6 @@ export default function Conversation({
 
 
       {/* ── история сообщений ── */}
-
-      <div className="shrink-0 px-5 pb-2">
-        <AiFlowIndicator active={flowPhase} />
-      </div>
 
       <div
         ref={scrollRef}
