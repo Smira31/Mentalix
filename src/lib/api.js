@@ -298,6 +298,12 @@ export const api = {
         body: JSON.stringify({ user_id: userId, enabled }),
       }),
 
+    setCheckinContext: (userId, checkinId, enabled) =>
+      request(`/mentalix/context/checkins/${checkinId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: userId, enabled }),
+      }),
+
     feedback: (userId, rating, messageId, note) =>
       request('/mentalix/feedback', {
         method: 'POST',
