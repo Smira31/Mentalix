@@ -112,4 +112,3 @@ RISKS:
 VALIDATION:
 DECISION STATUS: proposed / approved / rejected / shipped
 ```
-

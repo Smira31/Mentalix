@@ -100,4 +100,4 @@ AND-16: PASS/FAIL/NOT TESTED
 
 1. [`TELEGRAM_GATE.md`](TELEGRAM_GATE.md) — базовый Telegram/iPhone gate.
 2. [`UI_RESPONSIVE_CHECK.md`](UI_RESPONSIVE_CHECK.md) — общая responsive UI матрица.
-3. [`QA.md`](../../QA.md) — общие правила smoke и регрессии.
+3. [`QA_BASELINE.md`](QA_BASELINE.md) — общие правила smoke и регрессии.

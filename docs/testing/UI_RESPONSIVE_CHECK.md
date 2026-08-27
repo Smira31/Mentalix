@@ -93,5 +93,5 @@ Evidence: screenshot или video
 ## References
 
 1. [TELEGRAM_GATE.md](TELEGRAM_GATE.md) — основной ручной checklist Telegram/iPhone для Mentalix.
-2. [QA.md](../../QA.md) — общие правила фиксации среды и smoke-проверок.
+2. [QA_BASELINE.md](QA_BASELINE.md) — общие правила фиксации среды и smoke-проверок.
 3. [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) — канонические UI- и типографические ограничения.

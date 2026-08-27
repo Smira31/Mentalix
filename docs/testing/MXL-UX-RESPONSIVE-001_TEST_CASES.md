@@ -80,4 +80,4 @@ Evidence:
 
 1. [`UI_RESPONSIVE_CHECK.md`](UI_RESPONSIVE_CHECK.md) — общая матрица viewport и критерии responsive UI.
 2. [`TELEGRAM_GATE.md`](TELEGRAM_GATE.md) — базовый Telegram/iPhone gate Mentalix.
-3. [`QA.md`](../../QA.md) — общие Given/When/Then и регрессионные проверки.
+3. [`QA_BASELINE.md`](QA_BASELINE.md) — общие Given/When/Then и регрессионные проверки.
