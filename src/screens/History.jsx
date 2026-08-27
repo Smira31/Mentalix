@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
+import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
 import { platformName } from '../platform'
 
@@ -213,7 +214,16 @@ export default function History({ user }) {
   const [historyStatus, setHistoryStatus] = useState('')
   const [savingContext, setSavingContext] = useState(false)
   const [contextError, setContextError] = useState('')
+  const userId = user?.id
   const canManageAiContext = platformName === 'telegram' && Number(user?.id) > 0
+  const journalEntries = useMemo(() => {
+    if (!userId) return []
+    try {
+      return readJournalHistory(user.id)
+    } catch {
+      return []
+    }
+  }, [user, userId])
 
   useEffect(() => {
     if (!user) return
@@ -392,6 +402,46 @@ export default function History({ user }) {
     </div>
   )
 
+  const journalEntriesBlock = journalEntries.length > 0 && (
+    <div className="mt-8" data-testid="local-journal-history">
+      <div className="px-1 text-[13px] font-semibold text-muted">Локальный журнал</div>
+      <p className="mt-1 px-1 text-[12px] leading-snug text-faint">
+        Записи сохранены на этом устройстве и доступны только в этом профиле.
+      </p>
+      <div className="mt-3 space-y-3">
+        {journalEntries.map(entry => (
+          <article key={entry.date} className="rounded-3xl bg-emerald p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="text-[13px] font-semibold text-cream">{dayTitle(entry.date)}</h3>
+              <span className="rounded-full bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
+                {entry.completedCount}/{entry.totalPhases} шага
+              </span>
+              <span className="text-[11px] text-faint">
+                {entry.status === 'final' ? 'завершено' : 'черновик'}
+              </span>
+            </div>
+            <div className="mt-4 space-y-4">
+              {entry.phases.map(phase => (
+                <div key={phase.key}>
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-[12px] font-bold text-gold">{phase.label}</span>
+                    <span className="text-[11px] text-faint">
+                      {phase.status === 'final' ? 'завершено' : 'черновик'}
+                    </span>
+                  </div>
+                  <MarkdownText
+                    content={phase.text}
+                    className="space-y-2 text-[14px] leading-snug text-muted"
+                  />
+                </div>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  )
+
   const themeEntriesBlock = themeEntries && themeEntries.length > 0 && (
     <div className="mt-8">
       <div className="text-[13px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
@@ -424,6 +474,7 @@ export default function History({ user }) {
             <br />и здесь появится первая запись пути.
           </p>
         </EmptyState>
+        {journalEntriesBlock}
         {milestonesBlock}
         {themeEntriesBlock}
       </>
@@ -528,6 +579,7 @@ export default function History({ user }) {
         )
       })}
 
+      {journalEntriesBlock}
       {milestonesBlock}
       {themeEntriesBlock}
     </div>

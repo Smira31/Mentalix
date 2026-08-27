@@ -105,6 +105,7 @@ function fixtureFor(request) {
     return jsonResponse({ ok: true })
   }
 
+  if (pathname === '/api/profile') return jsonResponse(TEST_USER)
   if (pathname === '/api/rituals') return jsonResponse(FIXTURES.rituals)
   if (pathname === '/api/ascezas') return jsonResponse(FIXTURES.ascezas)
   if (pathname === '/api/quotes/today') return jsonResponse(FIXTURES.quote)
@@ -919,6 +920,92 @@ test('Mentor PersonaPicker сохраняет границы на mobile, tablet
     await expect(page.getByText('История kompas')).toBeVisible()
     await expect(page.getByText('История mayak')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Назад' }))
+    await assertCommonScreenChecks(page, runtimeErrors)
+
+    await context.close()
+  }
+})
+
+
+test('History показывает user-scoped local Journal на mobile и tablet', async ({ browser, baseURL }) => {
+  const layouts = [
+    { name: '390x844', width: 390, height: 844 },
+    { name: '768x1024', width: 768, height: 1024 },
+  ]
+  const journalStore = {
+    version: 2,
+    entries: {
+      '2026-08-27': {
+        date: '2026-08-27',
+        version: 2,
+        cycle: {
+          idea: { text: 'Сначала замечаю главное.', status: 'draft' },
+          action: { text: 'Делаю один спокойный шаг.', status: 'draft' },
+          analysis: { text: '', status: 'draft' },
+          newStep: { text: '', status: 'draft' },
+        },
+        freeWrites: [],
+        updatedAt: '2026-08-27T12:00:00.000Z',
+      },
+    },
+  }
+
+  for (const viewport of layouts) {
+    const context = await browser.newContext({
+      baseURL,
+      viewport: { width: viewport.width, height: viewport.height },
+      colorScheme: 'dark',
+      reducedMotion: 'reduce',
+      serviceWorkers: 'block',
+    })
+
+    await context.addInitScript(
+      ({ user, store }) => {
+        localStorage.clear()
+        sessionStorage.clear()
+        localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+        localStorage.setItem('mx-onboarded-v2', '1')
+        localStorage.setItem('mx-app-lock-enabled', '0')
+        localStorage.setItem(`mx-journal-v2:user:${user.id}`, JSON.stringify(store))
+      },
+      { user: TEST_USER, store: journalStore }
+    )
+
+    await context.route('**/api/**', route => {
+      const pathname = new URL(route.request().url()).pathname
+      if (route.request().method() === 'GET' && pathname === '/api/rituals') {
+        return route.fulfill(jsonResponse([{ id: 1, title: 'Тестовый ритуал' }]))
+      }
+      return route.fulfill(fixtureFor(route.request()))
+    })
+
+    const page = await context.newPage()
+    const runtimeErrors = []
+    page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
+    page.on('response', response => {
+      if (response.status() >= 500) {
+        runtimeErrors.push(`HTTP ${response.status()}: ${new URL(response.url()).pathname}`)
+      }
+    })
+    page.on('console', message => {
+      if (
+        message.type() === 'error' &&
+        !message.text().includes('CloudStorage is not supported in version 6.0')
+      ) {
+        runtimeErrors.push(`console.error: ${message.text()}`)
+      }
+    })
+
+    await page.goto('/')
+    await page.getByRole('button', { name: 'День' }).click()
+    await page.getByRole('button', { name: 'История' }).click()
+    await expect(page.getByTestId('local-journal-history')).toBeVisible()
+    await expect(page.getByText('Локальный журнал')).toBeVisible()
+    await expect(page.getByText('2/4 шага')).toBeVisible()
+    await expect(page.getByText('Идея')).toBeVisible()
+    await expect(page.getByText('Действие')).toBeVisible()
+    await expect(page.getByText('Сначала замечаю главное.')).toBeVisible()
+    await expect(page.getByText('Делаю один спокойный шаг.')).toBeVisible()
     await assertCommonScreenChecks(page, runtimeErrors)
 
     await context.close()
