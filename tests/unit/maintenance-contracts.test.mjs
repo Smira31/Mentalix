@@ -440,11 +440,14 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   const focus = readFileSync(new URL('../../src/screens/Focus.jsx', import.meta.url), 'utf8')
 
   assert.match(styles, /--mx-type-page-size:\s*1\.875rem/)
+  assert.match(styles, /--mx-type-greeting-size:\s*1\.375rem/)
   assert.match(styles, /\.mx-type-page\s*\{[\s\S]*line-height:\s*1[\s\S]*font-weight:\s*700/)
   assert.match(styles, /\.mx-type-greeting\s*\{[\s\S]*font-size:\s*var\(--mx-type-greeting-size\)/)
   assert.match(styles, /\.mx-type-body\s*\{[\s\S]*font-size:\s*var\(--mx-type-body-size\)/)
   assert.match(styles, /\.mx-type-control\s*\{[\s\S]*font-size:\s*var\(--mx-type-control-size\)/)
   assert.match(styles, /\.mx-type-insight\s*\{[\s\S]*font-size:\s*1\.1875rem/)
+  assert.match(styles, /\.mx-type-weekday\s*\{[\s\S]*font-size:\s*0\.625rem/)
+  assert.match(styles, /\.mx-type-calendar-date\s*\{[\s\S]*font-size:\s*0\.8125rem/)
   assert.match(styles, /\.mx-type-list-title\s*,[\s\S]*font-size:\s*0\.9375rem/)
   assert.match(styles, /\.mx-type-list-body\s*,[\s\S]*font-size:\s*0\.8125rem/)
   assert.match(styles, /\.mx-type-persona-title\s*\{[\s\S]*font-size:\s*1\.125rem/)
@@ -458,6 +461,8 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
 
   assert.match(app, /mx-type-greeting/)
   assert.match(today, /mx-type-hero/)
+  assert.match(today, /mx-type-weekday/)
+  assert.match(today, /mx-type-calendar-date/)
   assert.match(today, /mx-type-card/)
   assert.match(today, /mx-type-list-title/)
   assert.match(today, /mx-type-flow-action/)

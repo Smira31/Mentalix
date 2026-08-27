@@ -70,13 +70,13 @@ function WeekStrip() {
           <div
             key={day.getTime()}
             className={[
-              'flex flex-col items-center gap-1 w-11 py-2 rounded-2xl text-[12px] font-semibold',
+              'flex flex-col items-center gap-0.5 w-11 py-2 rounded-2xl mx-type-weekday',
               isToday ? 'text-cream border border-cream/15' : 'text-faint',
             ].join(' ')}
           >
             {names[day.getDay()]}
 
-            <b className="text-[16px] font-bold">{day.getDate()}</b>
+            <b className="mx-type-calendar-date">{day.getDate()}</b>
           </div>
         )
       })}
