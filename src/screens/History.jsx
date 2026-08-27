@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
-import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
+import JourneySearch from './JourneySearch'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
@@ -15,26 +15,6 @@ import { buildBadges } from '../lib/badges'
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
-const HISTORY_FILTERS = [
-  ['all', 'Все'],
-  ['thoughts', 'Мысли'],
-  ['unpack', 'Разбор'],
-  ['practices', 'Практики'],
-]
-
-function hasValue(value) {
-  return Array.isArray(value) ? value.length > 0 : Boolean(String(value || '').trim())
-}
-
-function matchesHistoryFilter(day, filter) {
-  if (filter === 'all') return true
-  if (filter === 'thoughts') return hasValue(day.checkin?.note)
-  if (filter === 'unpack') return hasValue(day.checkin?.lessons) || hasValue(day.checkin?.wins)
-  if (filter === 'practices') {
-    return Boolean(day.activity?.count > 0 || day.activity?.breaks > 0)
-  }
-  return true
-}
 
 function dayTitle(iso) {
   const d = new Date(iso + 'T00:00:00')
@@ -46,11 +26,103 @@ function dayTitle(iso) {
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`
 }
 
+function HistoryDetail({ day, onBack }) {
+  const checkin = day.checkin
+  const wins = checkin?.wins || []
+
+  return (
+    <section aria-label={`Запись за ${dayTitle(day.date)}`} className="mt-1 animate-fade-in">
+      <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
+        <button
+          type="button"
+          onClick={onBack}
+          className="justify-self-start rounded-full px-3 py-2 text-[13px] font-semibold text-muted active:text-gold"
+        >
+          Назад
+        </button>
+        <h2 className="font-display text-[20px] text-cream">{dayTitle(day.date)}</h2>
+        <span aria-hidden="true" />
+      </div>
+
+      <div className="mt-5 space-y-4 rounded-3xl bg-emerald p-5">
+        {checkin ? (
+          <>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
+                настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+              </span>
+              {checkin.energy && (
+                <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                  энергия {checkin.energy}/5
+                </span>
+              )}
+              {checkin.focus && (
+                <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                  фокус {checkin.focus}/5
+                </span>
+              )}
+              {checkin.emotion && (
+                <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                  {checkin.emotion}
+                </span>
+              )}
+            </div>
+
+            {checkin.note && (
+              <div>
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">Утренняя запись</div>
+                <MarkdownText content={checkin.note} className="space-y-2 text-[15px] leading-relaxed text-cream" />
+              </div>
+            )}
+
+            {checkin.lessons && (
+              <div className="rounded-2xl bg-emerald-light p-4">
+                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">Уроки дня</div>
+                <MarkdownText content={checkin.lessons} className="space-y-2 text-[14px] leading-relaxed text-cream" />
+              </div>
+            )}
+
+            {wins.length > 0 && (
+              <div className="rounded-2xl bg-emerald-light p-4">
+                <div className="mb-2.5 text-[12px] font-bold uppercase tracking-wide text-muted">Чем горжусь</div>
+                <ul className="space-y-2">
+                  {wins.map((win, index) => (
+                    <li key={`${day.date}-${index}`} className="flex items-start gap-2.5">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/15 text-[11px] font-bold text-gold">
+                        {index + 1}
+                      </span>
+                      <MarkdownText content={win} className="min-w-0 space-y-1 text-[14px] leading-snug text-cream" />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {!checkin.note && !checkin.lessons && wins.length === 0 && (
+              <p className="text-[14px] leading-relaxed text-muted">В этот день сохранено состояние и активность, но текстовой записи нет.</p>
+            )}
+          </>
+        ) : (
+          <p className="text-[14px] leading-relaxed text-muted">В этот день отмечена активность, но check-in не сохранён.</p>
+        )}
+
+        {day.activity?.count > 0 && (
+          <p className="text-[13px] font-semibold text-muted">
+            Ритуалов закрыто: {day.activity.count}
+            {day.activity.breaks > 0 && <span className="text-faint"> · срывов аскез: {day.activity.breaks}</span>}
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}
+
 export default function History({ user }) {
   const [days, setDays] = useState(null)
   const [badges, setBadges] = useState(null)
   const [themeEntries, setThemeEntries] = useState(null)
-  const [filter, setFilter] = useState('all')
+  const [selectedDay, setSelectedDay] = useState(null)
+  const [journeySearchOpen, setJourneySearchOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -118,42 +190,19 @@ export default function History({ user }) {
       })
   }, [user])
 
-  if (days === null) return <p className="text-muted text-[13px] px-5 pt-6">Загрузка...</p>
+  if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
 
-  const filteredDays = days.filter(day => matchesHistoryFilter(day, filter))
+  if (selectedDay) {
+    return <HistoryDetail day={selectedDay} onBack={() => setSelectedDay(null)} />
+  }
 
-  const filterBar = (
-    <div
-      role="tablist"
-      aria-label="Фильтр истории"
-      className="mb-5 flex max-w-full gap-1 overflow-x-auto rounded-full bg-emerald p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-    >
-      {HISTORY_FILTERS.map(([key, label]) => {
-        const active = filter === key
-        return (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={active}
-            onClick={() => {
-              platform.haptic('light')
-              setFilter(key)
-            }}
-            className={`min-h-[38px] shrink-0 rounded-full border-0 px-4 text-[12px] font-semibold transition-colors ${
-              active ? 'bg-gold text-emerald-deep' : 'bg-transparent text-muted'
-            }`}
-          >
-            {label}
-          </button>
-        )
-      })}
-    </div>
-  )
+  if (journeySearchOpen) {
+    return <><button type="button" onClick={() => setJourneySearchOpen(false)} className="mb-3 min-h-10 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted">К обычной истории</button><JourneySearch user={user} /></>
+  }
 
   const milestonesBlock = badges && badges.length > 0 && (
     <div className="mt-8">
-      <div className="text-[12px] text-muted font-semibold mb-2 px-1">Вехи пути</div>
+      <div className="text-[13px] text-muted font-semibold mb-2 px-1">Вехи пути</div>
       <div className="rounded-3xl bg-emerald p-5 grid grid-cols-3 gap-2">
         {badges.map(b => (
           <div
@@ -170,7 +219,7 @@ export default function History({ user }) {
 
   const themeEntriesBlock = themeEntries && themeEntries.length > 0 && (
     <div className="mt-8">
-      <div className="text-[12px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
+      <div className="text-[13px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
       <div className="space-y-3">
         {themeEntries.map(e => (
           <div key={`${e.themeId}-${e.day}`} className="rounded-3xl bg-emerald p-5">
@@ -179,7 +228,7 @@ export default function History({ user }) {
             </div>
             <MarkdownText
               content={e.text}
-              className="space-y-2 text-[13px] text-muted leading-snug"
+              className="space-y-2 text-[14px] text-muted leading-snug"
             />
           </div>
         ))}
@@ -190,13 +239,12 @@ export default function History({ user }) {
   if (days.length === 0) {
     return (
       <>
-        {filterBar}
         <EmptyState
           glyph={<MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />}
           className="px-6 py-10 mt-2"
         >
-          <h3 className="font-display text-[16px] text-cream mb-2">Пока пусто</h3>
-          <p className="text-[13px] text-muted leading-snug">
+          <h3 className="font-display text-[18px] text-cream mb-2">Пока пусто</h3>
+          <p className="text-[14px] text-muted leading-snug">
             Пройди чек-ин или закрой ритуал —
             <br />и здесь появится первая запись пути.
           </p>
@@ -207,29 +255,20 @@ export default function History({ user }) {
     )
   }
 
-  if (filteredDays.length === 0) {
-    return (
-      <>
-        {filterBar}
-        <EmptyState className="px-6 py-10 mt-2">
-          <h3 className="font-display text-[16px] text-cream mb-2">Здесь пока тихо</h3>
-          <p className="text-[13px] text-muted leading-snug">В этой категории пока нет записей.</p>
-        </EmptyState>
-        {milestonesBlock}
-        {themeEntriesBlock}
-      </>
-    )
-  }
-
   return (
     <div className="space-y-5 mt-1">
-      {filterBar}
-      {filteredDays.map(d => {
+      <button type="button" onClick={() => setJourneySearchOpen(true)} className="min-h-11 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted">Искать и фильтровать записи</button>
+      {days.map(d => {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[12px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
-            <div className="rounded-3xl bg-emerald p-5 space-y-3">
+            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            <button
+              type="button"
+              onClick={() => setSelectedDay(d)}
+              aria-label={`Открыть запись за ${dayTitle(d.date)}`}
+              className="w-full rounded-3xl bg-emerald p-5 space-y-3 text-left active:scale-[0.99] transition-transform"
+            >
               {d.checkin && (
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -246,7 +285,7 @@ export default function History({ user }) {
 
                   {d.checkin.note && (
                     <MarkdownText
-                      className="space-y-2 text-[13px] text-muted leading-snug mt-3"
+                      className="space-y-2 text-[14px] text-muted leading-snug mt-3"
                       content={
                         d.checkin.note.length > 220
                           ? d.checkin.note.slice(0, 220) + '…'
@@ -262,7 +301,7 @@ export default function History({ user }) {
                       </div>
                       <MarkdownText
                         content={d.checkin.lessons}
-                        className="space-y-2 text-[13px] text-cream leading-relaxed"
+                        className="space-y-2 text-[14px] text-cream leading-relaxed"
                       />
                     </div>
                   )}
@@ -280,7 +319,7 @@ export default function History({ user }) {
                             </span>
                             <MarkdownText
                               content={w}
-                              className="min-w-0 space-y-1 text-[13px] text-cream leading-snug"
+                              className="min-w-0 space-y-1 text-[14px] text-cream leading-snug"
                             />
                           </li>
                         ))}
@@ -291,14 +330,14 @@ export default function History({ user }) {
               )}
 
               {d.activity && d.activity.count > 0 && (
-                <div className="text-[12px] font-semibold text-muted">
+                <div className="text-[13px] font-semibold text-muted">
                   ✦ ритуалов закрыто: {d.activity.count}
                   {d.activity.breaks > 0 && (
                     <span className="text-faint"> · срывов аскез: {d.activity.breaks}</span>
                   )}
                 </div>
               )}
-            </div>
+            </button>
           </div>
         )
       })}

@@ -330,13 +330,17 @@ export default function App() {
     todayCheckin: moodCheckCheckin,
   })
 
-  const initialTab = new URLSearchParams(window.location.search).get('tab')
-
+  const searchParams = new URLSearchParams(window.location.search)
+  const initialTab = searchParams.get('tab')
+  const initialAction = searchParams.get('action')
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
+  const actionTab = initialAction === 'breathing' ? 'practices' : 'today'
 
-  const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : 'today')
+  const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
 
-  const [practicesSub, setPracticesSub] = useState(null)
+  // Разрешён только один известный deep-link. Остальные query-параметры не
+  // меняют состояние приложения и не могут открыть произвольный экран.
+  const [practicesSub, setPracticesSub] = useState(initialAction === 'breathing' ? 'breathing' : null)
 
   /* ============================================================
      THEME

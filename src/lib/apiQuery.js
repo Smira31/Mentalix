@@ -3,6 +3,10 @@ export function withQuery(path, params = {}) {
 
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === null) return
+    if (Array.isArray(value)) {
+      value.filter(item => item !== undefined && item !== null).forEach(item => query.append(key, String(item)))
+      return
+    }
     query.append(key, String(value))
   })
 

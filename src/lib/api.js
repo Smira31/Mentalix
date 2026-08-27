@@ -16,6 +16,20 @@ function authHeader() {
   return initData ? { Authorization: `tma ${initData}` } : {}
 }
 
+async function download(path, filename) {
+  const response = await fetch(`${BASE}${path}`, { headers: authHeader() })
+  if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
+  const blob = await response.blob()
+  const href = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = href
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(href)
+}
+
 async function request(path, options = {}) {
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
 
@@ -183,6 +197,27 @@ export const api = {
       }),
   },
 
+  journalTemplates: {
+    list: (userId, { q, category } = {}) => request(withQuery('/journal/templates', { user_id: userId, q, category })),
+    get: (templateId, userId) => request(withQuery(`/journal/templates/${templateId}`, { user_id: userId })),
+    create: (userId, template) => request('/journal/templates', { method: 'POST', body: JSON.stringify({ user_id: userId, ...template }) }),
+    update: (templateId, userId, template) => request(`/journal/templates/${templateId}`, { method: 'PATCH', body: JSON.stringify({ user_id: userId, ...template }) }),
+    remove: (templateId, userId) => request(withQuery(`/journal/templates/${templateId}`, { user_id: userId }), { method: 'DELETE' }),
+    startOrResume: (templateId, userId) => request(`/journal/templates/${templateId}/sessions`, { method: 'POST', body: JSON.stringify({ user_id: userId }) }),
+    updateSession: (sessionId, userId, answers, complete = false) => request(`/journal/templates/sessions/${sessionId}`, { method: 'PATCH', body: JSON.stringify({ user_id: userId, answers, complete }) }),
+    sessions: (userId, status) => request(withQuery('/journal/templates/sessions/mine', { user_id: userId, status })),
+  },
+
+  journey: {
+    tags: userId => request(withQuery('/journey/tags', { user_id: userId })),
+    createTag: (userId, tag) => request('/journey/tags', { method: 'POST', body: JSON.stringify({ user_id: userId, ...tag }) }),
+    updateTag: (tagId, userId, tag) => request(`/journey/tags/${tagId}`, { method: 'PATCH', body: JSON.stringify({ user_id: userId, ...tag }) }),
+    removeTag: (tagId, userId) => request(withQuery(`/journey/tags/${tagId}`, { user_id: userId }), { method: 'DELETE' }),
+    entries: (userId, filters = {}) => request(withQuery('/journey/entries', { user_id: userId, ...filters })),
+    entry: (userId, date) => request(withQuery(`/journey/entries/${date}`, { user_id: userId })),
+    replaceTags: (userId, date, tagIds) => request(`/journey/entries/${date}/tags`, { method: 'PUT', body: JSON.stringify({ user_id: userId, tag_ids: tagIds }) }),
+  },
+
   goals: {
     list: userId => request(withQuery('/goals', { user_id: userId })),
 
@@ -219,6 +254,23 @@ export const api = {
         }),
       }),
 
+    contextConsent: userId => request(withQuery('/mentalix/consent', { user_id: userId })),
+
+    setContextConsent: (userId, enabled) =>
+      request('/mentalix/consent', {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: userId, enabled }),
+      }),
+
+    feedback: (userId, rating, messageId, note) =>
+      request('/mentalix/feedback', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, rating, message_id: messageId, note }),
+      }),
+
+    deleteData: userId =>
+      request(withQuery('/mentalix/data', { user_id: userId }), { method: 'DELETE' }),
+
     transcribe: (userId, audio) => {
       const form = new FormData()
 
@@ -232,20 +284,25 @@ export const api = {
     },
   },
 
+  privacy: {
+    downloadExport: userId => download(withQuery('/privacy/export', { user_id: userId }), `mentalix-export-${new Date().toISOString().slice(0, 10)}.json`),
+  },
+
   profile: {
     get: userId => request(withQuery('/profile', { user_id: userId })),
 
     getSettings: userId => request(withQuery('/profile/settings', { user_id: userId })),
 
-    saveSettings: (userId, { reminder_enabled, reminder_hour, review_hour }) =>
+    saveSettings: (userId, settings) =>
       request('/profile/settings', {
         method: 'POST',
-        body: JSON.stringify({
-          user_id: userId,
-          reminder_enabled,
-          reminder_hour,
-          review_hour,
-        }),
+        body: JSON.stringify({ user_id: userId, ...settings }),
+      }),
+
+    snoozeReminders: (userId, hours = 2) =>
+      request('/profile/settings/snooze', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, hours }),
       }),
   },
 
