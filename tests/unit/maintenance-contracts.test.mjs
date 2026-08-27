@@ -9,7 +9,11 @@ import {
 } from '../../src/config/practiceAvailability.js'
 import { withQuery } from '../../src/lib/apiQuery.js'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from '../../src/lib/moodCheckGate.js'
-import { clearJournalStore, readJournalEntry, saveJournalPhase } from '../../src/lib/journalStorage.js'
+import {
+  clearJournalStore,
+  readJournalEntry,
+  saveJournalPhase,
+} from '../../src/lib/journalStorage.js'
 
 test('allowlist сохраняет текущие семь доступных практик', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
@@ -30,9 +34,18 @@ test('allowlist сохраняет текущие семь доступных п
 })
 
 test('MXL-014 публикует короткую текстовую медитацию без backend changes', () => {
-  const flow = readFileSync(new URL('../../src/screens/MeditationFlow.jsx', import.meta.url), 'utf8')
-  const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
-  const availability = readFileSync(new URL('../../src/config/practiceAvailability.js', import.meta.url), 'utf8')
+  const flow = readFileSync(
+    new URL('../../src/screens/MeditationFlow.jsx', import.meta.url),
+    'utf8'
+  )
+  const practices = readFileSync(
+    new URL('../../src/screens/Practices.jsx', import.meta.url),
+    'utf8'
+  )
+  const availability = readFileSync(
+    new URL('../../src/config/practiceAvailability.js', import.meta.url),
+    'utf8'
+  )
 
   assert.match(flow, /5–10 минут/)
   assert.match(flow, /Что сейчас происходит\?/)
@@ -75,6 +88,14 @@ test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: undefined }), false)
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: MOOD_CHECK_CHECKIN_ERROR }), false)
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: { id: 10 } }), false)
+})
+
+test('MXL-HOME-QUIET-V2-002 сохраняет нижний воздух и различимое active CTA-состояние', () => {
+  const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+
+  assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
+  assert.match(styles, /\.cta-pill:active\s*\{[\s\S]*background:\s*rgb\(var\(--btn-bg\) \/ 0\.88\)/)
+  assert.match(styles, /\.cta-pill:active\s*\{[\s\S]*box-shadow:\s*inset 0 0 0 2px/)
 })
 
 test('MXL-PREVIEW-STOP-DRY-RUN-001 связывает npm-алиас с безопасным DryRun', () => {
@@ -178,7 +199,10 @@ test('MXL-021 связывает Journey с продолжением Today', () 
 })
 
 test('MXL-JOURNAL-001 публикует полноценный четыре-фазный Journal Home', () => {
-  const journal = readFileSync(new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url), 'utf8')
+  const journal = readFileSync(
+    new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
+    'utf8'
+  )
   const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
 
   assert.match(journal, /Идея/)
@@ -200,18 +224,26 @@ test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различае�
     removeItem: key => memory.delete(key),
   }
 
-  memory.set('mx-journal-prototype-v1', JSON.stringify({
-    date: '2026-08-27',
-    phaseIndex: 1,
-    drafts: { idea: 'Старая идея', action: 'Один шаг' },
-  }))
+  memory.set(
+    'mx-journal-prototype-v1',
+    JSON.stringify({
+      date: '2026-08-27',
+      phaseIndex: 1,
+      drafts: { idea: 'Старая идея', action: 'Один шаг' },
+    })
+  )
 
   const migrated = readJournalEntry('2026-08-27')
   assert.equal(migrated.cycle.idea.text, 'Старая идея')
   assert.equal(migrated.cycle.idea.status, 'draft')
 
   saveJournalPhase({ date: '2026-08-27', phase: 'analysis', text: 'Итог дня' })
-  saveJournalPhase({ date: '2026-08-27', phase: 'newStep', text: 'Продолжить завтра', status: 'final' })
+  saveJournalPhase({
+    date: '2026-08-27',
+    phase: 'newStep',
+    text: 'Продолжить завтра',
+    status: 'final',
+  })
   const saved = readJournalEntry('2026-08-27')
   assert.equal(saved.cycle.analysis.status, 'draft')
   assert.equal(saved.cycle.newStep.status, 'final')
@@ -221,8 +253,14 @@ test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различае�
 })
 
 test('MXL-009 ограничивает insights описательными наблюдениями', () => {
-  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
-  const safety = readFileSync(new URL('../../src/lib/descriptiveInsights.js', import.meta.url), 'utf8')
+  const analytics = readFileSync(
+    new URL('../../src/screens/Analytics.jsx', import.meta.url),
+    'utf8'
+  )
+  const safety = readFileSync(
+    new URL('../../src/lib/descriptiveInsights.js', import.meta.url),
+    'utf8'
+  )
 
   assert.match(analytics, /selectDescriptiveInsights\(data\.insights\)/)
   assert.match(analytics, /не диагнозы и не доказанные причины/)
@@ -236,7 +274,10 @@ test('MXL-009 ограничивает insights описательными на�
 
 test('MXL-019 заменяет Journey mountain metaphor на continuous progress line', () => {
   const path = readFileSync(new URL('../../src/screens/Path.jsx', import.meta.url), 'utf8')
-  const line = readFileSync(new URL('../../src/components/JourneyLineArt.jsx', import.meta.url), 'utf8')
+  const line = readFileSync(
+    new URL('../../src/components/JourneyLineArt.jsx', import.meta.url),
+    'utf8'
+  )
 
   assert.doesNotMatch(path, /WireframeMountain/)
   assert.match(path, /JourneyLineArt progress=\{goal\.progress\}/)
@@ -248,12 +289,12 @@ test('MXL-019 заменяет Journey mountain metaphor на continuous progres
 })
 
 test('MXL-016 публикует семь авторских мыслей без непроверенной атрибуции', () => {
-  const thoughts = readFileSync(
-    new URL('../../src/data/dailyThoughts.js', import.meta.url),
+  const thoughts = readFileSync(new URL('../../src/data/dailyThoughts.js', import.meta.url), 'utf8')
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const quoteView = readFileSync(
+    new URL('../../src/screens/QuoteView.jsx', import.meta.url),
     'utf8'
   )
-  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
-  const quoteView = readFileSync(new URL('../../src/screens/QuoteView.jsx', import.meta.url), 'utf8')
 
   assert.equal((thoughts.match(/key: '/g) || []).length, 7)
   assert.equal((thoughts.match(/attribution: 'авторская мысль Mentalix'/g) || []).length, 7)
@@ -270,10 +311,7 @@ test('MXL-016 публикует семь авторских мыслей без
 })
 
 test('MXL-015 публикует семь curated Stoic-inspired тем без backend предположений', () => {
-  const source = readFileSync(
-    new URL('../../src/data/weeklyThemes.js', import.meta.url),
-    'utf8'
-  )
+  const source = readFileSync(new URL('../../src/data/weeklyThemes.js', import.meta.url), 'utf8')
 
   assert.match(source, /export const WEEKLY_THEME_CATALOG = \[/)
   assert.equal((source.match(/key: '/g) || []).length, 7)
@@ -304,10 +342,7 @@ test('MXL-001 публикует Stoic-inspired AI flow без backend изме�
     new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
     'utf8'
   )
-  const container = readFileSync(
-    new URL('../../src/screens/Mentalix.jsx', import.meta.url),
-    'utf8'
-  )
+  const container = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
 
   assert.match(indicator, /idea.*action.*analysis.*next/s)
   assert.match(indicator, /Цикл разговора: идея, действие, анализ, новый шаг/)
@@ -335,4 +370,42 @@ test('MXL-006 публикует единый AI typography baseline без back
   assert.match(conversation, /mx-ai-body/)
   assert.match(conversation, /mx-ai-input/)
   assert.match(personaPicker, /mx-ai-title/)
+})
+
+test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
+  const journalHome = readFileSync(
+    new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
+    'utf8'
+  )
+  const journalStart = readFileSync(
+    new URL('../../src/screens/mentalix/JournalStart.jsx', import.meta.url),
+    'utf8'
+  )
+  const analytics = readFileSync(
+    new URL('../../src/screens/Analytics.jsx', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(journalHome, /font-display/)
+  assert.match(journalStart, /font-display/)
+  assert.match(analytics, /fontFamily="Onest"/)
+  assert.doesNotMatch(journalHome, /Georgia|Times New Roman/)
+  assert.doesNotMatch(journalStart, /Georgia|Times New Roman/)
+  assert.doesNotMatch(analytics, /Manrope/)
+})
+
+test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями', () => {
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const heroIndex = today.indexOf('ГЕРОЙ-КАРТОЧКА')
+  const secondaryIndex = today.indexOf('<TodayFocusCard', heroIndex)
+
+  assert.ok(heroIndex >= 0)
+  assert.ok(secondaryIndex >= 0)
+  const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
+  assert.ok(heroIndex < secondaryIndex)
+  assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
+  assert.match(today, /className="w-full px-2 py-5 mt-4 text-center/)
+  assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
+  assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
 })

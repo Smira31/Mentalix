@@ -731,3 +731,12 @@ Workflow `Журнал состояния Mentalix` добавляет запи�
 ### Release readiness
 
 Перед публикацией релиза ответственный проверяет четыре независимых gate: frontend build, внешний Render health, deployment provenance и ручной продуктовый сценарий. Релиз не считается полностью подтверждённым только на основании зелёного CI: ручная проверка интерфейса и data-dependent сценариев остаётся обязательной.
+
+## 0.3 Home/type slice — локальный handoff 27.08.2026
+
+- В feature-ветке `feat/mxl-home-quiet-type-001` реализованы `MXL-HOME-QUIET-FOUNDATION-001`, `MXL-TYPE-SYSTEM-001` и follow-up `MXL-HOME-QUIET-V2-002`.
+- Today получил более спокойную иерархию: главный hero перед вторичными секциями; Onest закреплён как единый пользовательский baseline, локальные serif/Manrope overrides удалены.
+- В follow-up добавлено 10px нижнего воздуха перед fixed-навигацией и различимое active-состояние CTA с сохранением спокойной визуальной системы.
+- PR #241 обновлён; CI/Vercel checks успешны, повторный Telegram/iPhone gate пройден по видео владельца.
+- Локально проходят 27/27 unit-тестов, lint, build, docs:check и `git diff --check`.
+- Следующий decision gate: merge PR #241 в `main`; cloud sync, AI consent и production/data-операции не затронуты.

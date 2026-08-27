@@ -18,10 +18,7 @@ import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { api } from './lib/api'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
-import {
-  MOOD_CHECK_CHECKIN_ERROR,
-  shouldShowMoodCheckGate,
-} from './lib/moodCheckGate'
+import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -845,6 +842,10 @@ export default function App() {
       <div
         ref={scrollRootRef}
         className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain flex flex-col items-center"
+        style={{
+          paddingBottom: contentBottomPadding,
+          scrollPaddingBottom: contentBottomPadding,
+        }}
       >
         {/* ========================================================
           TODAY HEADER
@@ -936,9 +937,6 @@ export default function App() {
             'flex-1 w-full flex flex-col items-center',
             mentorPersonaOpen ? '' : 'animate-fade-in',
           ].join(' ')}
-          style={{
-            paddingBottom: contentBottomPadding,
-          }}
         >
           <Suspense fallback={<ScreenLoading />}>
             {!user && (

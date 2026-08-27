@@ -364,13 +364,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   // ============================================================
 
   if (sub === 'quote') {
-    return (
-      <QuoteView
-        user={user}
-        todayQuote={thoughtOfDay}
-        onClose={() => changeSub(null)}
-      />
-    )
+    return <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
   }
 
   // ============================================================
@@ -750,6 +744,36 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         />
       )}
 
+      {/* ======================================================
+          ГЕРОЙ-КАРТОЧКА
+          ====================================================== */}
+
+      {/*
+        Плоская поверхность карточки, а не градиент.
+        Градиента нет в таблице токенов, и именно из-за
+        него подложка под иллюстрацией читалась как
+        отдельная плашка: она плоская, карточка была с
+        переходом. На одном цвете подложка сливается с
+        карточкой и остаётся тем, чем задумана, — окном
+        в ночь, тёмным в обеих темах.
+      */}
+      <div className="rounded-[28px] bg-emerald px-6 pt-5 pb-6 mt-6 text-center flex flex-col justify-center animate-fade-in">
+        {motionExperimentEnabled ? (
+          <div className="mx-today-hero-art" aria-label="Один следующий шаг">
+            <SemanticGlyph
+              kind="next-step"
+              debugSource="Today.jsx"
+              className="mx-today-hero-art-glyph"
+            />
+            <span>один следующий шаг</span>
+          </div>
+        ) : (
+          heroArt
+        )}
+
+        {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
+      </div>
+
       {!showFocusHero && !hiddenCards.includes('focus') && (
         <TodayFocusCard
           focus={todayFocus}
@@ -769,36 +793,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         onOpenRituals={() => onOpenPractice('rituals')}
         todayFocusPicked={Boolean(todayFocus?.picked)}
       />
-
-      {/* ======================================================
-          ГЕРОЙ-КАРТОЧКА
-          ====================================================== */}
-
-      {/*
-        Плоская поверхность карточки, а не градиент.
-        Градиента нет в таблице токенов, и именно из-за
-        него подложка под иллюстрацией читалась как
-        отдельная плашка: она плоская, карточка была с
-        переходом. На одном цвете подложка сливается с
-        карточкой и остаётся тем, чем задумана, — окном
-        в ночь, тёмным в обеих темах.
-      */}
-      <div className="rounded-[32px] bg-emerald px-6 pt-6 pb-7 mt-6 text-center flex flex-col justify-center animate-fade-in">
-        {motionExperimentEnabled ? (
-          <div className="mx-today-hero-art" aria-label="Один следующий шаг">
-            <SemanticGlyph
-              kind="next-step"
-              debugSource="Today.jsx"
-              className="mx-today-hero-art-glyph"
-            />
-            <span>один следующий шаг</span>
-          </div>
-        ) : (
-          heroArt
-        )}
-
-        {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
-      </div>
 
       {/* ======================================================
           ПУЛЬС
@@ -919,7 +913,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('theme')
           }}
-          className="mx-today-theme-card w-full px-6 py-7 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
+          className="mx-today-theme-card w-full px-5 py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
           <span className="block text-[11px] text-faint font-bold uppercase tracking-wider mb-2">
             Тема недели
@@ -964,24 +958,24 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           ====================================================== */}
 
       {!hiddenCards.includes('quote') && thoughtOfDay && (
-          <button
-            onClick={() => {
-              platform.haptic('light')
+        <button
+          onClick={() => {
+            platform.haptic('light')
 
-              changeSub('quote')
-            }}
-            className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
-          >
-            <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
+            changeSub('quote')
+          }}
+          className="w-full px-2 py-5 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+        >
+          <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
 
-            <span className="block font-display text-[19px] text-cream leading-snug">
-              {thoughtOfDay.text}
-            </span>
+          <span className="block font-display text-[19px] text-cream leading-snug">
+            {thoughtOfDay.text}
+          </span>
 
-            <span className="block text-[11px] text-faint font-semibold mt-4">
-              {thoughtOfDay.attribution} · открыть →
-            </span>
-          </button>
+          <span className="block text-[11px] text-faint font-semibold mt-4">
+            {thoughtOfDay.attribution} · открыть →
+          </span>
+        </button>
       )}
     </div>
   )

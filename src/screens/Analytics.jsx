@@ -83,7 +83,7 @@ function WeekChart({ dailyActivity }) {
                         textAnchor="middle"
                         fill={isToday ? 'rgb(var(--c-text))' : 'rgb(var(--c-text) / 0.4)'}
                         fontSize={11}
-                        fontFamily="Manrope"
+                        fontFamily="Onest"
                         fontWeight={isToday ? 600 : 400}
                       >
                         {payload.value}
