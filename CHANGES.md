@@ -7,7 +7,6 @@
 - Локально проходят 17/17 unit-тестов, lint, build, `docs:check`, `git diff --check` и UX smoke на 390×844 и 320×568.
 - До закрытия остаётся ручная iPhone/Telegram-проверка переносов и визуальной иерархии.
 
-
 ## 26.08.2026 — MXL-005: журнальный формат AI-ответов
 
 - По решению владельца журнал моделируется как лента отдельных AI-ответов, сгруппированных по датам и темам; непрерывная история диалога автоматически не создаётся.
@@ -16,7 +15,6 @@
 - Локально проходят 16/16 unit-тестов, lint, build, `docs:check`, `git diff --check` и UX smoke на двух мобильных viewport; владелец подтвердил Telegram/iPhone gate.
 - **Закрыто 26.08.2026:** PR #207 squash-смёржен в `main` (commit `ec65618`), ветка удалена, MXL-005 переведена в `verified/completed`.
 
-
 ## 26.08.2026 — MXL-011: финальный Telegram/iPhone release gate
 
 - Владелец подтвердил прохождение финального production gate в Telegram на iPhone.
@@ -24,14 +22,12 @@
 - Автоматические сигналы также зелёные: `npm run ux:check` на 390×844 и 320×568, Vercel/Render `/api/health` отвечают `200 OK`.
 - MXL-011 переведена в `verified/completed`; новых технических дефектов в рамках gate не обнаружено.
 
-
 ## 26.08.2026 — MXL-021: Journey CTA
 
 - В Journey добавлены CTA `Начать сегодня` для empty state и `Продолжить сегодня` для пользователя с историей практики.
 - CTA возвращает пользователя в существующий Today через текущий локальный navigation state; backend и API-контракт не менялись.
 - Добавлен regression-контракт MXL-021; локально проходят 13/13 unit-тестов, lint, build, `docs:check` и `git diff --check`.
-- PR #203 смёржен в  (commit ), GitHub CI/Vercel зелёные, ручная Telegram/iPhone-проверка пройдена владельцем.
-
+- PR #203 смёржен в (commit ), GitHub CI/Vercel зелёные, ручная Telegram/iPhone-проверка пройдена владельцем.
 
 ## 26.08.2026 — documentation drift synchronization
 
@@ -39,7 +35,6 @@
 - В канонический backlog возвращена следующая sprint-задача `MXL-021` — CTA `Продолжить сегодня` из Journey в Today; она остаётся `backlog / needs-owner + manual-gate`.
 - `PROJECT_STATE.md` обновлён до `main` commit `dfe88aa`, 19 canonical task ID и актуальных production-проверок.
 - Health-check 26.08.2026 подтвердил Vercel `/api/health` 200 в 3/3 попытках (0.30–0.41 с) и Render `/api/health` 200 в 3/3 попытках (1.95–2.13 с).
-
 
 ## 26.08.2026 — MXL-008: Stoic-like Journey в разделе «Путь»
 
@@ -3169,9 +3164,12 @@ PR #219 смёржен в `main` (merge commit `c573a41`), feature-ветка у
 
 PR #221 смёржен в `main` (merge commit `9f9e8fe`), feature-ветка удалена. Frontend теперь фильтрует backend insight strings, ограничивает их длину и количество, исключает диагностические/причинные/терапевтические формулировки и показывает disclaimer. Локальные выводы Analytics используют наблюдательный язык; backend contract и validation на реальной малой выборке остаются отдельным follow-up. Владелец подтвердил Telegram/iPhone gate.
 
-
 ## 27.08.2026 — Русский аудит Stoic → Mentalix
 
 Подготовлен и добавлен в документацию полный русскоязычный разбор Stoic по официальным материалам: ежедневный flow, Home, свободная запись, prompts, weekly themes, guided journals, History, insights, meditation, breathing, privacy, storage, export/import и Explore. Сопоставление с текущим Mentalix сохранено в `docs/product/STOIC_TO_MENTALIX_AUDIT.md`, а источники и ограничения адаптации — в `docs/product/STOIC_REFERENCE_NOTES.md`.
 
 В `PRODUCT.md` добавлена карта «Stoic → Mentalix», а в `ROADMAP.md`, `TASKS.md` и `docs/TASK_INDEX.md` выделены только новые крупные journal-эпики: production persistence, единая история, privacy/AI consent, настройка cadence и guided journal layer. Уже закрытые MXL-001, MXL-005, MXL-009, MXL-014, MXL-015, MXL-016 и MXL-019 повторно не заведены. Runtime-код и backend/API в этом documentation change не менялись.
+
+## 27.08.2026 — MXL-JOURNAL-PERSISTENCE-001: local-first storage slice
+
+Journal Home переведён с прямого prototype `localStorage` на версионируемый `src/lib/journalStorage.js`. Сохраняются четыре фазы цикла, локальная дата устройства, статусы `draft/final`, timestamps и миграция `mx-journal-prototype-v1`. Добавлен регрессионный тест; unit 25/25, lint и build проходят. Cloud sync и backend schema не заявлены готовыми до приватного контракта.

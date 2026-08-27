@@ -146,6 +146,8 @@ check-in → следующий шаг → практика → вечерний
 
 ### Уже есть и не создаётся заново
 
+Текущий Journal Home остаётся отдельным PR #224 и не считается production persistence до ручного Telegram/iPhone gate.
+
 - ежедневный цикл **Идея → Действие → Анализ → Новый шаг**;
 - Journal Home prototype и Writing Canvas;
 - curated-темы недели и «Мысль дня»;
@@ -156,16 +158,16 @@ check-in → следующий шаг → практика → вечерний
 
 ### Новые крупные эпики
 
-| ID | Эпик | Размер | Зависимость | Статус |
-| --- | --- | ---: | --- | --- |
-| `MXL-JOURNAL-PERSISTENCE-001` | Production-хранение Journal Home и morning/evening entries | XL | приватный backend/storage contract | backlog |
-| `MXL-JOURNAL-HISTORY-001` | Единая датированная история записей и возврат к сегодняшнему шагу | L | persistence и единая date/timezone модель | backlog |
-| `MXL-JOURNAL-PRIVACY-001` | Центр приватности: AI consent, retention, export, delete и telemetry boundary | L | safety/legal и backend contract | needs-owner |
-| `MXL-JOURNAL-GUIDED-001` | Guided journals и library поверх проверенного авторского контента | M | content governance и taxonomy | backlog |
-| `MXL-JOURNAL-PERSONALIZE-001` | Настройка cadence: один check-in или morning/evening, prompt/free write/AI | M | persistence и product copy | needs-owner |
-| `MXL-JOURNAL-ORGANIZE-001` | Tags, search и favorites для записей и практик | M | schema, indexing и persistence | deferred |
-| `MXL-JOURNAL-MEMORIES-001` | Photos, videos и memories | M/L | attachment storage, privacy и upload limits | deferred |
-| `MXL-JOURNAL-REMINDERS-001` | Gentle reminders и quiet hours | S/M | consent, scheduler и backend | deferred |
+| ID                            | Эпик                                                                          | Размер | Зависимость                                 | Статус                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------- | -----: | ------------------------------------------- | ------------------------------------------------------- |
+| `MXL-JOURNAL-PERSISTENCE-001` | Production-хранение Journal Home и morning/evening entries                    |     XL | приватный backend/storage contract          | in progress: local-first slice; cloud persistence later |
+| `MXL-JOURNAL-HISTORY-001`     | Единая датированная история записей и возврат к сегодняшнему шагу             |      L | persistence и единая date/timezone модель   | backlog                                                 |
+| `MXL-JOURNAL-PRIVACY-001`     | Центр приватности: AI consent, retention, export, delete и telemetry boundary |      L | safety/legal и backend contract             | needs-owner                                             |
+| `MXL-JOURNAL-GUIDED-001`      | Guided journals и library поверх проверенного авторского контента             |      M | content governance и taxonomy               | backlog                                                 |
+| `MXL-JOURNAL-PERSONALIZE-001` | Настройка cadence: один check-in или morning/evening, prompt/free write/AI    |      M | persistence и product copy                  | needs-owner                                             |
+| `MXL-JOURNAL-ORGANIZE-001`    | Tags, search и favorites для записей и практик                                |      M | schema, indexing и persistence              | deferred                                                |
+| `MXL-JOURNAL-MEMORIES-001`    | Photos, videos и memories                                                     |    M/L | attachment storage, privacy и upload limits | deferred                                                |
+| `MXL-JOURNAL-REMINDERS-001`   | Gentle reminders и quiet hours                                                |    S/M | consent, scheduler и backend                | deferred                                                |
 
 ### Порядок реализации
 

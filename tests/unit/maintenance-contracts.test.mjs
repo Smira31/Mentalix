@@ -216,7 +216,7 @@ test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различае�
   assert.equal(saved.cycle.analysis.status, 'draft')
   assert.equal(saved.cycle.newStep.status, 'final')
   assert.equal(saved.cycle.newStep.text, 'Продолжить завтра')
-  assert.match(saved.updatedAt, /^\\d{4}-\\d{2}-\\d{2}T/)
+  assert.match(saved.updatedAt, /^\d{4}-\d{2}-\d{2}T/)
   assert.equal(clearJournalStore(), true)
 })
 
