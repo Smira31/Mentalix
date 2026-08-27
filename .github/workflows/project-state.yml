@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-project-state:
@@ -51,7 +52,10 @@ jobs:
           ' PROJECT_STATE.md > /tmp/PROJECT_STATE.md
           mv /tmp/PROJECT_STATE.md PROJECT_STATE.md
 
-      - name: Сохранить журнал
+      - name: Создать PR с журналом
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
@@ -61,5 +65,14 @@ jobs:
             echo 'Новых данных для журнала нет.'
             exit 0
           fi
-          git commit -m 'docs: обновить журнал состояния проекта [skip ci]'
-          git push
+          short_sha="${COMMIT_SHA:0:7}"
+          branch="automation/project-state-${short_sha}"
+          git switch -c "$branch"
+          git commit -m "docs: обновить журнал состояния проекта (${short_sha})"
+          git push --set-upstream origin "$branch"
+          gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$branch" \
+            --title "Документировать изменение ${short_sha}" \
+            --body "Автоматическая запись PROJECT_STATE.md после изменения ${short_sha}. Пройдите стандартные CI-проверки и выполните merge после ревью."

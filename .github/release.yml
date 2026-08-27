@@ -1,0 +1,32 @@
+changelog:
+  categories:
+    - title: 'Новые возможности'
+      labels:
+        - 'feature'
+        - '✨ Новая функция'
+        - 'enhancement'
+    - title: 'Исправления'
+      labels:
+        - 'bug'
+        - '🐞 Ошибка'
+        - 'fix'
+    - title: 'Интерфейс и UX'
+      labels:
+        - '🎯 UX'
+        - 'ux'
+        - 'design'
+    - title: 'Документация и процесс'
+      labels:
+        - '📚 Документация'
+        - 'documentation'
+        - 'docs'
+    - title: 'Инфраструктура и автоматизация'
+      labels:
+        - 'ci'
+        - 'automation'
+        - 'backend'
+  exclude:
+    labels:
+      - 'skip-changelog'
+    authors:
+      - 'github-actions[bot]'
