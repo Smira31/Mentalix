@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
@@ -14,6 +15,26 @@ import { buildBadges } from '../lib/badges'
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+const HISTORY_FILTERS = [
+  ['all', 'Все'],
+  ['thoughts', 'Мысли'],
+  ['unpack', 'Разбор'],
+  ['practices', 'Практики'],
+]
+
+function hasValue(value) {
+  return Array.isArray(value) ? value.length > 0 : Boolean(String(value || '').trim())
+}
+
+function matchesHistoryFilter(day, filter) {
+  if (filter === 'all') return true
+  if (filter === 'thoughts') return hasValue(day.checkin?.note)
+  if (filter === 'unpack') return hasValue(day.checkin?.lessons) || hasValue(day.checkin?.wins)
+  if (filter === 'practices') {
+    return Boolean(day.activity?.count > 0 || day.activity?.breaks > 0)
+  }
+  return true
+}
 
 function dayTitle(iso) {
   const d = new Date(iso + 'T00:00:00')
@@ -29,6 +50,7 @@ export default function History({ user }) {
   const [days, setDays] = useState(null)
   const [badges, setBadges] = useState(null)
   const [themeEntries, setThemeEntries] = useState(null)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     if (!user) return
@@ -98,6 +120,37 @@ export default function History({ user }) {
 
   if (days === null) return <p className="text-muted text-[13px] px-5 pt-6">Загрузка...</p>
 
+  const filteredDays = days.filter(day => matchesHistoryFilter(day, filter))
+
+  const filterBar = (
+    <div
+      role="tablist"
+      aria-label="Фильтр истории"
+      className="mb-5 flex max-w-full gap-1 overflow-x-auto rounded-full bg-emerald p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {HISTORY_FILTERS.map(([key, label]) => {
+        const active = filter === key
+        return (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => {
+              platform.haptic('light')
+              setFilter(key)
+            }}
+            className={`min-h-[38px] shrink-0 rounded-full border-0 px-4 text-[12px] font-semibold transition-colors ${
+              active ? 'bg-gold text-emerald-deep' : 'bg-transparent text-muted'
+            }`}
+          >
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+
   const milestonesBlock = badges && badges.length > 0 && (
     <div className="mt-8">
       <div className="text-[12px] text-muted font-semibold mb-2 px-1">Вехи пути</div>
@@ -137,6 +190,7 @@ export default function History({ user }) {
   if (days.length === 0) {
     return (
       <>
+        {filterBar}
         <EmptyState
           glyph={<MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />}
           className="px-6 py-10 mt-2"
@@ -153,9 +207,24 @@ export default function History({ user }) {
     )
   }
 
+  if (filteredDays.length === 0) {
+    return (
+      <>
+        {filterBar}
+        <EmptyState className="px-6 py-10 mt-2">
+          <h3 className="font-display text-[16px] text-cream mb-2">Здесь пока тихо</h3>
+          <p className="text-[13px] text-muted leading-snug">В этой категории пока нет записей.</p>
+        </EmptyState>
+        {milestonesBlock}
+        {themeEntriesBlock}
+      </>
+    )
+  }
+
   return (
     <div className="space-y-5 mt-1">
-      {days.map(d => {
+      {filterBar}
+      {filteredDays.map(d => {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>

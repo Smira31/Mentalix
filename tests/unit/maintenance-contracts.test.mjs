@@ -219,8 +219,8 @@ test('MXL-JOURNAL-001 публикует полноценный четыре-ф�
   assert.match(journal, /Завершить запись/)
   assert.match(journal, /stickyToolbar=\{false\}/)
   assert.doesNotMatch(journal, /aria-label="Прогресс журнала"/)
-  assert.match(mentalix, /JournalHome/)
-  assert.match(mentalix, /journalOpen/)
+  assert.doesNotMatch(mentalix, /JournalHome/)
+  assert.doesNotMatch(mentalix, /journalOpen/)
 })
 
 test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат', () => {

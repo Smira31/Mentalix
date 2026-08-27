@@ -471,7 +471,6 @@ test('локальный UX smoke по основному маршруту', asy
     })
 
     await page.getByRole('button', { name: 'Наставник' }).click()
-    await page.getByRole('button', { name: 'Открыть AI-наставника' }).click()
     await captureScreen({
       page,
       viewport,

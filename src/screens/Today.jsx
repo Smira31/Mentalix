@@ -20,10 +20,7 @@ import EmptyState from '../components/EmptyState'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
-import {
-  NextActionReveal,
-  TodayCompareControl,
-} from '../components/TodayMotionExperiment'
+import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -31,9 +28,9 @@ const TODAY_COMPARE_REQUESTED =
 const INITIAL_TODAY_VARIANT =
   new URLSearchParams(window.location.search).get('today_variant') === 'before' ? 'before' : 'after'
 
-// ── дневные strips: спокойная отметка присутствия вместо «Цикла дня» ──
+// ── календарь недели + отдельные дневные streak strips ──
 
-function WeekStrip() {
+function WeekStrip({ todayComplete = false }) {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = new Date()
   const monday = new Date(now)
@@ -45,23 +42,37 @@ function WeekStrip() {
   })
 
   return (
-    <div className="mx-today-streaks" aria-label="Дни недели">
-      {days.map(day => {
-        const isToday = day.toDateString() === now.toDateString()
-        const isPast = day < now && !isToday
-        return (
-          <div
-            key={day.getTime()}
-            className="mx-today-streak"
-            data-today={isToday}
-            data-past={isPast}
-          >
-            <span className="mx-today-streak__day mx-type-weekday">{names[day.getDay() === 0 ? 6 : day.getDay() - 1]}</span>
-            <span className="mx-today-streak__date mx-type-calendar-date">{day.getDate()}</span>
-            <span className="mx-today-streak__strip" aria-hidden="true" />
-          </div>
-        )
-      })}
+    <div className="mx-today-week" aria-label="Неделя и дневные стрики">
+      <div className="mx-today-week__calendar" aria-label="Дни недели">
+        {days.map(day => {
+          const isToday = day.toDateString() === now.toDateString()
+          return (
+            <div key={day.getTime()} className="mx-today-week-day" data-today={isToday}>
+              <span className="mx-type-weekday">
+                {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
+              </span>
+              <span className="mx-type-calendar-date">{day.getDate()}</span>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mx-today-streaks" aria-label="Дневные стрики">
+        {days.map(day => {
+          const isToday = day.toDateString() === now.toDateString()
+          const isPast = day < now && !isToday
+          return (
+            <span
+              key={day.getTime()}
+              className="mx-today-streak__strip"
+              data-today={isToday}
+              data-past={isPast}
+              data-complete={isToday && todayComplete}
+              aria-label={`${names[day.getDay() === 0 ? 6 : day.getDay() - 1]} ${day.getDate()}${isToday ? ', сегодня' : ''}`}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -153,7 +164,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   const [pathTab, setPathTab] = useState('path')
 
   const [todayVariant, setTodayVariant] = useState(INITIAL_TODAY_VARIANT)
-
 
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
@@ -425,13 +435,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
    * не часть самого контракта.
    */
   const heroPresentationState =
-    todayState === 'dayClosed'
-      ? 'dayClosed'
-      : isEmpty
-        ? 'empty'
-        : next
-          ? 'next'
-          : 'allDone'
+    todayState === 'dayClosed' ? 'dayClosed' : isEmpty ? 'empty' : next ? 'next' : 'allDone'
 
   const heroCheckinContent = (
     <>
@@ -565,9 +569,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       <>
         <div className="mx-type-meta text-muted mb-2">Новый шаг</div>
 
-        <h2 className="font-display mx-type-hero text-cream">
-          Сегодня ты выше, чем вчера
-        </h2>
+        <h2 className="font-display mx-type-hero text-cream">Сегодня ты выше, чем вчера</h2>
 
         <p className="mx-type-body text-muted mt-2">Все практики закрыты</p>
 
@@ -597,7 +599,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   return (
     <div className="w-full max-w-md px-5">
-      <WeekStrip />
+      <WeekStrip todayComplete={checkinDone || done > 0} />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
@@ -620,7 +622,8 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
         data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
       >
-        {heroPresentationState !== 'allDone' && heroPresentationState !== 'dayClosed' &&
+        {heroPresentationState !== 'allDone' &&
+          heroPresentationState !== 'dayClosed' &&
           (motionExperimentEnabled ? (
             <div className="mx-today-hero-art" aria-label="Один следующий шаг">
               <SemanticGlyph
@@ -814,9 +817,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         >
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
-          <span className="block font-display mx-type-card text-cream">
-            {thoughtOfDay.text}
-          </span>
+          <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
 
           <span className="block mx-type-meta text-faint mt-4">
             {thoughtOfDay.attribution} · открыть →

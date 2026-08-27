@@ -865,12 +865,13 @@ export default function App() {
               flex
               items-center
               justify-between
+              gap-2
             "
             >
               {/* Сохраняет приветствие по центру относительно аватара. */}
               <span
                 id="mx-today-header-leading"
-                className="relative w-10 max-[359px]:w-[78px] h-10 shrink-0"
+                className="relative w-10 max-[359px]:w-6 h-10 shrink-0"
               />
 
               {/* Greeting */}
@@ -881,6 +882,10 @@ export default function App() {
                 mx-type-greeting
                 text-cream
                 lowercase
+                min-w-0
+                flex-1
+                text-center
+                truncate
               "
               >
                 {/*
@@ -919,6 +924,7 @@ export default function App() {
                 justify-center
 
                 active:scale-95
+                shrink-0
               "
               >
                 <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />

@@ -110,48 +110,82 @@
   }
 }
 
+.mx-today-week {
+  width: 100%;
+  margin-bottom: 16px;
+  padding-inline: 2px;
+}
+
+.mx-today-week__calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.mx-today-week-day {
+  display: flex;
+  min-width: 0;
+  min-height: 50px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid rgb(var(--c-text) / 0.12);
+  border-radius: 999px;
+  color: rgb(var(--c-text) / 0.48);
+}
+
+.mx-today-week-day[data-today='true'] {
+  border-color: rgb(var(--c-text) / 0.26);
+  background: rgb(var(--c-text) / 0.035);
+  color: rgb(var(--c-text) / 0.8);
+}
+
+.mx-today-week-day .mx-type-calendar-date {
+  color: inherit;
+}
+
 .mx-today-streaks {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
   width: 100%;
-  margin-bottom: 16px;
-}
-
-.mx-today-streak {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  color: rgb(var(--c-text) / 0.38);
-}
-
-.mx-today-streak__day,
-.mx-today-streak__date {
-  font-size: 10px;
-  line-height: 1.1;
-  font-weight: 500;
+  margin-top: 7px;
 }
 
 .mx-today-streak__strip {
   width: 100%;
-  height: 5px;
+  height: 6px;
   border-radius: 999px;
-  background: rgb(var(--c-text) / 0.12);
-  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  background: rgb(var(--c-text) / 0.13);
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
-.mx-today-streak[data-past='true'] .mx-today-streak__strip {
-  background: rgb(var(--c-text) / 0.24);
+.mx-today-streak__strip[data-past='true'] {
+  background: rgb(var(--c-text) / 0.25);
 }
 
-.mx-today-streak[data-today='true'] {
-  color: rgb(94 178 237);
+.mx-today-streak__strip[data-today='true'] {
+  background: rgb(var(--c-text) / 0.38);
 }
 
-.mx-today-streak[data-today='true'] .mx-today-streak__strip {
-  background: rgb(94 178 237);
-  box-shadow: 0 0 14px rgb(94 178 237 / 0.25);
-  transform: scaleY(1.2);
+.mx-today-streak__strip[data-complete='true'] {
+  background: rgb(var(--c-gold));
+  box-shadow: 0 0 10px rgb(var(--c-gold) / 0.16);
+}
+
+@media (max-width: 359px) {
+  .mx-today-week__calendar,
+  .mx-today-streaks {
+    gap: 4px;
+  }
+
+  .mx-today-week-day {
+    min-height: 44px;
+    border-radius: 999px;
+  }
 }
