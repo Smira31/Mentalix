@@ -3969,7 +3969,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-UX-RESPONSIVE-001 — Responsive UI и fixed-element offsets для v1.1.0
 
-- **Статус:** backlog / needs-owner. Это узкая maintenance-задача по визуальным рискам, найденным на ручных скриншотах Telegram Mini App; новая P0 автоматически не выбирается.
+- **Статус:** ready / owner-priority для v1.1.0. Владелец выбрал задачу первым направлением версии; это не изменение глобального P0-регистра. Это узкая maintenance-задача по визуальным рискам, найденным на ручных скриншотах Telegram Mini App.
 - **Наблюдения:** проверить возможное перекрытие верхним Telegram/Mini App header начала контента на экранах Mentor/Journal после открытия и прокрутки; проверить взаимодействие нижнего dock с iOS keyboard и Writing Canvas; проверить отступ и hit area floating control у правого края; дополнительно проверить читаемость вторичных подписей на OLED и узких экранах.
 - **Не утверждается заранее:** статичный скриншот не доказывает layout jump, поэтому «прыжок» считается дефектом только после воспроизведения в динамике или на повторной ручной проверке.
 - **Scope:** только frontend layout/safe-area/keyboard/overflow и точечные visual polish-исправления после подтверждения; backend, API, данные, core loop, тексты Stoic и новая навигация не меняются.
@@ -3978,4 +3978,4 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Проверки:** `npm run test:unit`, `npm run lint`, `npm run build`, `npm run docs:check`, `git diff --check`, `npm run ux:check`, затем ручной Telegram/iPhone gate по `docs/testing/UI_RESPONSIVE_CHECK.md` на согласованных профилях.
 - **Evidence:** для каждого дефекта обязательны устройство, viewport, экран, шаги воспроизведения, ожидаемое/фактическое поведение, повторяемость и screenshot или screen recording.
 - **Rollback:** отдельный узкий PR с revert без удаления данных и без production-операций; если проблема не воспроизводится, оставить задачу в backlog с отрицательным результатом проверки вместо изменения дизайна по предположению.
-- **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
+- **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/MXL-UX-RESPONSIVE-001_TEST_CASES.md`, `docs/testing/V1_1_TEST_PLAN.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
