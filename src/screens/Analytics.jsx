@@ -27,7 +27,7 @@ const CATEGORY_LABELS = {
 
 function EmptyAnalytics() {
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in">
+    <div className="mx-type-page w-full max-w-md px-5 animate-fade-in">
       <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
       <p className="text-[11px] text-muted mb-8">за последние дни</p>
 
@@ -92,7 +92,7 @@ function WeekChart({ dailyActivity }) {
                   }}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgb(var(--c-text) / 0.05)' }}
+                  cursor={false}
                   contentStyle={{
                     background: 'rgb(var(--c-card2))',
                     border: '1px solid rgb(var(--c-border))',
@@ -162,7 +162,7 @@ function AscezaRow({ asceza }) {
           {asceza.name}
           <span className="text-faint ml-1.5">{CATEGORY_LABELS[asceza.category] || ''}</span>
         </span>
-        <span className="font-mono text-mint whitespace-nowrap">🛡 {asceza.streak}</span>
+        <span className="font-mono text-mint whitespace-nowrap">серия {asceza.streak}</span>
       </div>
       <div className="h-2 rounded-full bg-emerald-deep overflow-hidden">
         <div
@@ -246,7 +246,7 @@ function MoodTrend({ checkins, onGoCheckin }) {
               <Line
                 type="monotone"
                 dataKey="mood"
-                stroke="rgb(217,180,91)"
+                stroke="rgb(94 178 237)"
                 strokeWidth={2.5}
                 dot={{ r: 3, fill: 'rgb(217,180,91)' }}
               />
@@ -581,8 +581,8 @@ export default function Analytics({ user, onGoCheckin }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-1">аналитика.</h2>
+    <div className="mx-type-page w-full max-w-md px-5 animate-fade-in">
+      <h2 className="mx-type-analytics-heading font-display text-[34px] text-cream lowercase mt-4 mb-1">аналитика.</h2>
 
       <p className="text-[12px] text-faint mb-7">за последние {data.period_days} дней</p>
 
@@ -597,7 +597,7 @@ export default function Analytics({ user, onGoCheckin }) {
       {observations.length > 0 ? (
         <div className="space-y-2 mb-7">
           {observations.map((observation, index) => (
-            <div key={`${observation.kind || 'observation'}-${index}`} className="rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5">
+            <div key={`${observation.kind || 'observation'}-${index}`} className="mx-type-insight rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5">
               <p className="text-[14px] leading-snug text-cream">{observation.text}</p>
               {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
                 <p className="mt-2 text-[11px] text-muted">Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}{observation.sourceDates?.length ? ` · ${observation.sourceDates.length} дат` : ''}</p>
