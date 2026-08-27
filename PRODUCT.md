@@ -144,6 +144,27 @@ Mentalix Iteration Loop не заменяет большой продуктов�
 
 Эти рекомендации считаются **рабочим продуктовым baseline**, достаточным для планирования MXL-001, MXL-015, MXL-016 и последующих задач. Они обратимы: новые данные пользовательского исследования, backend-ограничения или safety-review могут уточнить их через dated decision record, но агент не должен самовольно расширять scope.
 
+## 6.1. Карта Stoic → Mentalix
+
+Официальные материалы Stoic описывают Home как ежедневную стартовую точку, Daily Check-In, Morning Preparation, Evening Reflection, свободную запись, daily prompts, weekly themes, guided journals, историю, insights, meditation, breathing, tags, favorites, memories, reminders, writing goals и отдельные privacy/storage controls [4] [5] [6] [7]. Эта карта нужна для анализа продукта, а не для копирования интерфейса или бренда.
+
+| Слой Stoic | Что уже есть в Mentalix | Что следует делать дальше |
+| --- | --- | --- |
+| Ежедневный вход и рефлексия | Today, CheckIn, Journal Home prototype, цикл «Идея → Действие → Анализ → Новый шаг» | Стабилизировать Journal Home и затем добавить честное morning/evening persistence |
+| Свободное письмо | `JournalTextarea`, markdown formatting, draft и optional AI deepen | Сделать свободную запись равноправным входом без обязательного prompt |
+| Daily prompts и weekly themes | MXL-015 и MXL-016 закрыты | Связать их с текущим журналом, не создавая отдельный обязательный каталог |
+| Guided journals и exercises | ThemeScreen, Practices, MXL-014 | Добавлять короткие авторские треки после стабилизации core journal |
+| History | History объединяет check-ins, activity, темы и badges с оговоркой о датах | Улучшить раскрытие датированного дня; unified feed требует backend date contract |
+| Tags, search, favorites | Не реализованы как единый journal layer | Отложить до решения по схеме хранения, индексации и синхронизации |
+| Progress, streaks, badges, writing goals | Active days, Journey, badges и activity | Сохранять non-pressure модель; не превращать журнал в соревнование |
+| Personalized insights | MXL-009: только descriptive safety slice | Нужны provenance, sample-size guards и реальный backend contract |
+| Memories, photos, videos | Не входят в текущий scope | Отложить до privacy, attachments и storage review |
+| Notifications | Отдельная backend-dependent задача | Сначала определить режим повторения, consent и quiet hours |
+| Privacy, storage, export/import | Есть Telegram/backend architecture, но нет полноценного journal data center | Отдельно определить retention, AI disclosure, export/delete и sync conflict policy |
+| Subscription | MXL-020 deferred | Не выбирать оплату до подтверждения повторяемой ценности |
+
+**Правило адаптации:** переносим поведенческий принцип «короткое ежедневное возвращение к себе», но не копируем названия, тексты, визуальные assets, навигацию или proprietary implementation Stoic. Все новые крупные journal-возможности сначала проходят продуктовый, backend и safety contract.
+
 ## 7. Что не делать без отдельного решения
 
 - не добавлять новые основные вкладки;

@@ -3878,3 +3878,83 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** новый backend endpoint, генерация AI-выводов, статистическая причинность, диагнозы, персональные рекомендации по лечению или решение о достаточности выборки для научных выводов.
 - **Критерии готовности:** backend strings sanitised before rendering, insufficient data remains explicit, no causal/diagnostic language in shipped local rules, unit/docs/lint/build/UX smoke green, manual Analytics/Telegram gate required.
 - **Следующий gate:** проверить Analytics на телефоне с малой и достаточной выборкой, backend insight cards, disclaimer и переход в дневниковый AI-flow.
+
+
+# 2026-08-27 — Русский аудит Stoic → Mentalix и крупный journal backlog
+
+## MXL-DOCS-STOIC-AUDIT-001 — Русская карта функций и дизайна Stoic
+
+- **Статус:** documentation-ready; новая задача продукта не создаётся.
+- **Тип:** product research/documentation.
+- **Результат:** официальный разбор Stoic сохранён в `docs/product/STOIC_REFERENCE_NOTES.md`, а сопоставление с Mentalix — в `docs/product/STOIC_TO_MENTALIX_AUDIT.md`.
+- **Правило против дублирования:** закрытые `MXL-001`, `MXL-005`, `MXL-009`, `MXL-014`, `MXL-015`, `MXL-016`, `MXL-019` считаются исходными реализованными слоями; аудит не создаёт для них новые задачи.
+- **Граница:** Stoic используется как концептуальный референс ежедневного ритуала. Названия, тексты, бренд, визуальные assets, навигация и proprietary implementation не копируются.
+
+## Новые крупные journal-эпики
+
+### MXL-JOURNAL-PERSISTENCE-001 — Production-хранение журнала
+
+- **Статус:** backlog; backend-dependent.
+- **Размер:** XL.
+- **Цель:** превратить Journal Home prototype в надёжный journal с сохранением утренних и вечерних записей.
+- **Нужно решить/зафиксировать:** entry ID, calendar day и timezone, draft/final, edit/delete, sync conflicts, offline behavior, export и retention.
+- **Не входит:** копирование Stoic storage, media attachments и AI отправка по умолчанию.
+- **Готово, когда:** запись можно начать, продолжить, сохранить, изменить, удалить и восстановить после повторного входа с понятным ownership данных.
+
+### MXL-JOURNAL-HISTORY-001 — Единая история журнала
+
+- **Статус:** backlog; зависит от `MXL-JOURNAL-PERSISTENCE-001`.
+- **Размер:** L.
+- **Цель:** показывать датированные journal entries и возвращать пользователя к сегодняшнему следующему шагу.
+- **Не дублирует:** существующий History, check-ins, activity, Journey и MXL-021 CTA; добавляет только единый journal date contract и раскрытие записи.
+- **Готово, когда:** пользователь открывает день, видит соответствующие фазы, понимает дату/статус и может перейти к «Продолжить сегодня» без потери контекста.
+
+### MXL-JOURNAL-PRIVACY-001 — Приватность и AI-consent журнала
+
+- **Статус:** needs-owner; safety/legal и backend-dependent.
+- **Размер:** L.
+- **Цель:** явно разделить local draft, synced journal, telemetry и текст, отправленный AI.
+- **Нужно решить:** retention, export/delete, consent copy, provider disclosure, analytics boundary и account deletion.
+- **Не входит:** обещание локальной приватности, если данные реально проходят через backend.
+
+### MXL-JOURNAL-PERSONALIZE-001 — Настройка ежедневного ритма
+
+- **Статус:** needs-owner; после persistence.
+- **Размер:** M.
+- **Цель:** дать выбор между одним Daily Check-In и двумя шагами Morning Preparation + Evening Reflection, а также между prompt, free write и optional AI deepen.
+- **Не дублирует:** текущие check-in, Journal Home и Stoic baseline; это только слой пользовательской настройки cadence.
+
+### MXL-JOURNAL-GUIDED-001 — Guided journals и библиотека практик
+
+- **Статус:** backlog; content-governance dependent.
+- **Размер:** M.
+- **Цель:** добавить проверенные авторские guided tracks поверх core journal и MXL-014.
+- **Не входит:** новый главный раздел, бесконечный каталог или непроверенный терапевтический контент.
+
+### MXL-JOURNAL-ORGANIZE-001 — Tags, search и favorites
+
+- **Статус:** deferred; schema-dependent.
+- **Размер:** M.
+- **Цель:** организовывать записи и практики после стабилизации persistence.
+- **Не дублирует:** текущие списки History и Library; требует отдельной схемы индексации и UX поиска.
+
+### MXL-JOURNAL-MEMORIES-001 — Фото, видео и memories
+
+- **Статус:** deferred; storage/privacy-dependent.
+- **Размер:** M/L.
+- **Цель:** добавлять медиа только после attachment storage, лимитов, удаления и privacy review.
+
+### MXL-JOURNAL-REMINDERS-001 — Мягкие напоминания
+
+- **Статус:** deferred; backend/scheduler-dependent.
+- **Размер:** S/M.
+- **Цель:** напоминать о ритуале без давления, с quiet hours, consent и отключением.
+
+## Приоритет большого продукта
+
+1. Проверить и при необходимости уточнить текущий Journal Home prototype в PR #224.
+2. Получить backend/storage contract и реализовать `MXL-JOURNAL-PERSISTENCE-001`.
+3. Реализовать `MXL-JOURNAL-HISTORY-001`.
+4. Зафиксировать `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
+5. Реализовать `MXL-JOURNAL-PERSONALIZE-001` и `MXL-JOURNAL-GUIDED-001`.
+6. Только после evidence решать tags, search, favorites, memories, reminders и payment.

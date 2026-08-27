@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного backlog** на 26.08.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Stoic-inspired product baseline зафиксирован в [`PRODUCT.md`](../PRODUCT.md), но новые safety, backend и коммерческие решения по-прежнему требуют отдельного подтверждения.
+Статус индекса: каноническое представление **активного backlog** на 27.08.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Stoic-inspired product baseline зафиксирован в [`PRODUCT.md`](../PRODUCT.md), но новые safety, backend и коммерческие решения по-прежнему требуют отдельного подтверждения.
 
 ## Как читать индекс
 
@@ -27,6 +27,14 @@
 | `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
 | `MXL-019`                    |       M | product/UX/visual | verified   | completed                      | Закрыта через PR #219; continuous Journey line опубликована |
 | `MXL-020`                    |       ? | product/payment  | deferred   | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
+| `MXL-JOURNAL-PERSISTENCE-001` | XL | product/backend | backlog | backend-dependent | Зафиксировать storage contract для morning/evening entries |
+| `MXL-JOURNAL-HISTORY-001` | L | product/backend/UX | backlog | backend-dependent | Объединить датированную историю после persistence |
+| `MXL-JOURNAL-PRIVACY-001` | L | product/safety/backend | backlog | needs-owner + backend-dependent | Решить AI consent, retention, export и delete |
+| `MXL-JOURNAL-PERSONALIZE-001` | M | product/UX | backlog | needs-owner | Выбрать cadence и режим prompt/free write/AI |
+| `MXL-JOURNAL-GUIDED-001` | M | product/content | backlog | needs-owner | Подготовить guided tracks после стабилизации core journal |
+| `MXL-JOURNAL-ORGANIZE-001` | M | product/backend/UX | deferred | backend-dependent | Tags, search и favorites после schema decision |
+| `MXL-JOURNAL-MEMORIES-001` | M/L | product/privacy/backend | deferred | backend-dependent | Media attachments только после privacy/storage review |
+| `MXL-JOURNAL-REMINDERS-001` | S/M | product/backend | deferred | needs-owner + backend-dependent | Quiet hours, consent и scheduler contract |
 
 ## Автономная очередь
 
@@ -37,6 +45,7 @@
 ## Product decision register
 
 | Тема            | Состояние                              | Не делать автоматически                             |
+
 | --------------- | -------------------------------------- | --------------------------------------------------- |
 | P0              | Рекомендована MXL-001 как следующая P0 | Не менять порядок без новых данных или явного решения владельца |
 | Навигация       | Пять основных разделов; Today — главный вход | Не добавлять шестую вкладку                         |
@@ -46,6 +55,8 @@
 | Медитации       | Рекомендована одна текстовая практика 5–10 минут | Не объявлять аудио/placeholder готовым без проверки |
 | Backend/API     | Приватный репозиторий                  | Не придумывать endpoint или схему                   |
 | Telegram/iPhone | Основной manual gate                   | Desktop smoke не считать заменой реальной проверки  |
+| Stoic-аудит | Русская карта функций и design principles добавлена в `docs/product/` | Не копировать бренд, тексты и UI Stoic |
+| Journal | Большой эпик разбит на persistence, history, privacy, personalization и content layers | Не дублировать закрытые MXL-001/MXL-005/MXL-009/MXL-014/MXL-015/MXL-016/MXL-019 |
 
 ## Definition of Ready
 

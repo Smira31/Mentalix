@@ -672,3 +672,12 @@ Production, backend и Telegram-бот не затрагиваются.
 ## 26.08.2026 — MXL-009 verified
 
 `main` синхронизирован с merge commit `9f9e8fe` после PR #221. MXL-009 frontend safety slice закрыт: descriptive insights boundary применяется в Analytics и через тот же deriveConclusions в insightDigest. 23/23 unit-теста, docs:check, lint, build, UX smoke и Vercel Preview прошли; ручной Telegram/iPhone gate подтверждён владельцем. Backend insight contract и production small-sample validation не заявлены выполненными.
+
+
+## 14. Русский Stoic-аудит и крупный journal backlog — 27.08.2026
+
+В documentation-ветке добавлены [`docs/product/STOIC_REFERENCE_NOTES.md`](docs/product/STOIC_REFERENCE_NOTES.md) и [`docs/product/STOIC_TO_MENTALIX_AUDIT.md`](docs/product/STOIC_TO_MENTALIX_AUDIT.md). Они содержат русскую карту функций, сценариев, design principles, privacy/storage требований и сравнение с Mentalix по официальным материалам Stoic.
+
+Аудит не создаёт дубликаты уже закрытых `MXL-001`, `MXL-005`, `MXL-009`, `MXL-014`, `MXL-015`, `MXL-016` и `MXL-019`. Эти задачи считаются реализованными зависимостями. Новые крупные journal-эпики выделены отдельно: production persistence, unified history, privacy/AI consent, cadence personalization, guided journals, organization, memories и reminders.
+
+Текущий Journal Home prototype остаётся отдельным PR #224 и не считается production persistence. До backend/storage contract нельзя обещать cloud sync, export/delete, conflict resolution или privacy-модель, которой нет в коде. До ручного gate PR #224 не переводить в verified.

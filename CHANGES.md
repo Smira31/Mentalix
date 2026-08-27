@@ -3168,3 +3168,10 @@ PR #219 смёржен в `main` (merge commit `c573a41`), feature-ветка у
 ## 26.08.2026 — MXL-009: descriptive insights safety slice закрыт
 
 PR #221 смёржен в `main` (merge commit `9f9e8fe`), feature-ветка удалена. Frontend теперь фильтрует backend insight strings, ограничивает их длину и количество, исключает диагностические/причинные/терапевтические формулировки и показывает disclaimer. Локальные выводы Analytics используют наблюдательный язык; backend contract и validation на реальной малой выборке остаются отдельным follow-up. Владелец подтвердил Telegram/iPhone gate.
+
+
+## 27.08.2026 — Русский аудит Stoic → Mentalix
+
+Подготовлен и добавлен в документацию полный русскоязычный разбор Stoic по официальным материалам: ежедневный flow, Home, свободная запись, prompts, weekly themes, guided journals, History, insights, meditation, breathing, privacy, storage, export/import и Explore. Сопоставление с текущим Mentalix сохранено в `docs/product/STOIC_TO_MENTALIX_AUDIT.md`, а источники и ограничения адаптации — в `docs/product/STOIC_REFERENCE_NOTES.md`.
+
+В `PRODUCT.md` добавлена карта «Stoic → Mentalix», а в `ROADMAP.md`, `TASKS.md` и `docs/TASK_INDEX.md` выделены только новые крупные journal-эпики: production persistence, единая история, privacy/AI consent, настройка cadence и guided journal layer. Уже закрытые MXL-001, MXL-005, MXL-009, MXL-014, MXL-015, MXL-016 и MXL-019 повторно не заведены. Runtime-код и backend/API в этом documentation change не менялись.
