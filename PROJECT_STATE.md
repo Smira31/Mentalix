@@ -180,6 +180,19 @@
   Trends сейчас нельзя объявить сломанными — backend health восстановлен и
   frontend указывает на Render, — но их актуальный end-to-end тест на реальном
   iPhone после этой смены **НЕ ПОДТВЕРЖДЁН**.
+- **Telegram/iPhone gate 27.08.2026:** владелец проверил production Mini App
+  внутри Telegram на iPhone 16 Pro Max, iOS 26.6. Подтверждены запуск, safe area
+  Dynamic Island/Home Indicator, Today, Practices, Mentor/AI, Library, Trends,
+  навигация по пяти вкладкам, Check-in 1–6, ввод текста через клавиатуру iOS,
+  экран «Чек-ин записан», обновление Today со статусом «Чек-ин выполнен» и
+  фактический ответ AI «Наставника». Владелец сообщил: «Все работает».
+  Результат: **manual gate PASS**. Закрытие Mini App отдельным скриншотом не
+  представлено и остаётся отдельным regression-пунктом.
+- Для v1.1.0 добавлена backlog-задача `MXL-UX-RESPONSIVE-001` по проверке
+  возможного перекрытия header, взаимодействия dock с keyboard, floating control,
+  overflow и visual polish на разных viewport. Статичные скриншоты фиксируют
+  кандидатов на проверку, но не доказывают layout jump. Инструкция проверки
+  находится в `docs/testing/UI_RESPONSIVE_CHECK.md`.
 - **Unified Mobile Layout:** изменения вошли в `main` через PR #129 и считаются
   текущей production-базой. Ручной Telegram/iPhone gate остаётся отдельной
   проверкой для новых изменений.
