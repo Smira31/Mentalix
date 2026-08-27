@@ -3,6 +3,7 @@ import { useState } from 'react'
 import JournalTextarea from '../../components/JournalTextarea'
 import { platform } from '../../platform'
 import { readJournalEntry, saveJournalPhase, todayKey } from '../../lib/journalStorage'
+import './JournalHome.css'
 
 const PHASES = [
   {
@@ -55,12 +56,14 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
 
   if (showIntro && !journalStarted) {
     return (
-      <div className="w-full max-w-md mx-auto px-5 flex min-h-[calc(100vh-160px)] flex-col justify-center text-center animate-fade-in">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] border border-gold/25 bg-gold/[0.04] text-gold">
+      <div className="mx-journal-intro w-full max-w-md mx-auto px-5 flex min-h-[calc(100dvh-160px)] flex-col justify-center text-center animate-fade-in">
+        <div className="mx-journal-intro__art mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] border border-[#5EB2ED]/35 bg-[#5EB2ED]/[0.05] text-[#5EB2ED]">
           <BookOpen size={30} strokeWidth={1.6} />
         </div>
-        <span className="mx-type-meta uppercase tracking-[0.14em] text-gold">Журнал</span>
-        <h1 className="mx-type-flow-title mt-4 font-display text-cream">Вернись к тому, что важно сегодня</h1>
+        <span className="mx-type-meta uppercase tracking-[0.14em] text-[#5EB2ED]">Журнал</span>
+        <h1 className="mx-type-flow-title mt-4 font-display text-cream">
+          Вернись к тому, что важно сегодня
+        </h1>
         <p className="mx-type-flow-body mx-auto mt-4 max-w-[310px] text-muted">
           Четыре коротких шага, чтобы заметить свои мысли, выбрать то, что зависит от тебя, и спокойно продолжить.
         </p>
@@ -71,7 +74,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
             platform.haptic('light')
             setJournalStarted(true)
           }}
-          className="cta-pill mt-8 w-full px-6 py-4 mx-type-control"
+          className="cta-pill mt-8 w-full px-6 py-4 mx-type-control mx-journal-primary-action"
         >
           Начать запись
         </button>
@@ -98,84 +101,74 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
       text: value,
       status: isLast ? 'final' : 'draft',
     })
-    if (isLast) return
-    setPhaseIndex(index => index + 1)
+    if (!isLast) setPhaseIndex(index => index + 1)
   }
 
   return (
-    <div className="w-full max-w-md mx-auto px-5 flex min-h-[calc(100vh-160px)] flex-col animate-fade-in">
-      <div className="flex items-center gap-3 pt-1">
-        <div className="w-10 h-10 rounded-xl border border-gold/25 bg-gold/[0.04] flex items-center justify-center text-gold">
-          <BookOpen size={21} strokeWidth={1.7} />
+    <div className="mx-journal-screen w-full max-w-md mx-auto px-5 flex min-h-[calc(100dvh-160px)] flex-col animate-fade-in">
+      <div className="mx-journal-day-header flex items-center gap-3">
+        <div className="mx-journal-day-header__mark flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-[#5EB2ED]/35 bg-[#5EB2ED]/[0.05] text-[#5EB2ED]">
+          <BookOpen size={22} strokeWidth={1.7} />
         </div>
-        <div>
-          <div className="mx-ai-title text-cream leading-none">журнал.</div>
-          <div className="mx-ai-meta text-gold mt-1">сегодня · {completed}/4 шага</div>
+        <div className="min-w-0">
+          <div className="mx-journal-day-header__title font-display text-[25px] leading-none text-cream">
+            журнал.
+          </div>
+          <div className="mx-journal-day-header__meta mx-type-meta mt-1 text-[#5EB2ED]">
+            сегодня · {completed}/4 шага
+          </div>
         </div>
         <button
           type="button"
           onClick={onOpenMentor}
           aria-label="Открыть AI-наставника"
-          className="ml-auto flex h-10 w-10 items-center justify-center text-muted active:scale-90"
+          className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/10 bg-emerald text-muted active:scale-90"
         >
-          <Compass size={22} strokeWidth={1.7} />
+          <Compass size={18} strokeWidth={1.7} />
         </button>
       </div>
 
-      <div className="mt-7 grid grid-cols-4 gap-2" aria-label="Прогресс журнала">
-        {PHASES.map((item, index) => (
-          <button
-            type="button"
-            key={item.key}
-            onClick={() => index <= phaseIndex && setPhaseIndex(index)}
-            aria-label={`${item.label}, шаг ${index + 1} из 4`}
-            className="text-left"
-          >
-            <div className={`h-1.5 ${index <= phaseIndex ? 'bg-gold' : 'bg-cream/15'}`} />
-            <div
-              className={`mt-2 mx-type-meta ${index === phaseIndex ? 'text-gold' : 'text-faint'}`}
-            >
-              {item.label}
-            </div>
-          </button>
-        ))}
+      <div className="mx-journal-step-note mx-type-meta mt-5 text-faint" aria-label={`Шаг ${phaseIndex + 1} из ${PHASES.length}`}>
+        шаг {phaseIndex + 1} из {PHASES.length} · {phase.label}
       </div>
 
-      <div className="pt-9">
+      <div className="mx-journal-prompt pt-7">
         <div className="flex items-center gap-3 mx-type-meta uppercase tracking-[0.14em] text-faint">
-          <PenLine size={15} className="text-gold" />
+          <PenLine size={15} className="text-[#5EB2ED]" />
           {phase.label}
         </div>
-        <h1 className="mx-ai-title mt-4 text-cream font-display">{phase.title}</h1>
-        <p className="mx-ai-body mt-4 max-w-[310px] text-muted">{phase.hint}</p>
+        <h1 className="mx-type-flow-title mt-4 font-display text-cream">{phase.title}</h1>
+        <p className="mx-type-flow-body mt-4 max-w-[320px] text-muted">{phase.hint}</p>
       </div>
 
-      <div className="mt-8 flex-1 min-h-[230px]">
+      <div className="mx-journal-editor-wrap mt-7 flex min-h-0 flex-1" data-keyboard-safe="true">
         <JournalTextarea
           value={value}
           onChange={updateValue}
           placeholder="Начни писать..."
           ariaLabel={`${phase.label}: ${phase.title}`}
           formatting
-          editorClassName="min-h-[14rem]"
+          stickyToolbar={false}
+          className="w-full min-h-[15rem]"
+          editorClassName="min-h-[11rem] pb-4"
         />
       </div>
 
-      <div className="pb-3 pt-5">
+      <div className="mx-journal-footer pt-4 pb-3" data-keyboard-safe-footer="true">
         <button
           type="button"
           onClick={continueFlow}
           disabled={!value.trim()}
-          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-gold px-5 mx-type-control text-emerald-deep disabled:opacity-35"
+          className="mx-journal-primary-action flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-[#5EB2ED] px-5 mx-type-control font-semibold text-[#07131c] disabled:opacity-35"
         >
           {isLast ? <Check size={19} /> : <ArrowRight size={19} />}
-          {isLast ? 'Закрыть сегодняшний цикл' : 'Продолжить'}
+          {isLast ? 'Завершить запись' : 'Продолжить'}
         </button>
-        <div className="mt-3 flex items-center justify-between mx-type-meta text-faint">
+        <div className="mt-3 flex items-center justify-between gap-3 mx-type-meta text-faint">
           <button
             type="button"
             onClick={onOpenMentor}
-            className="text-muted underline-offset-4 active:text-gold"
+            className="text-left text-muted underline-offset-4 active:text-[#5EB2ED]"
           >
             Пойти глубже с наставником
           </button>
@@ -183,7 +176,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
             <button
               type="button"
               onClick={() => setPhaseIndex(index => index - 1)}
-              className="active:text-gold"
+              className="shrink-0 active:text-[#5EB2ED]"
             >
               Назад
             </button>
