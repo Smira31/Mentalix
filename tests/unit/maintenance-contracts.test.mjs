@@ -420,7 +420,7 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.match(todayStyles, /\.mx-today-primary-card\s*\{[\s\S]*min-height:\s*452px/)
   assert.match(todayStyles, /\.mx-today-primary-card\[data-complete='true'\][\s\S]*background:\s*rgb\(var\(--c-card\)\)/)
   assert.match(todayStyles, /\.mx-today-primary-card\[data-complete='true'\] \.mx-type-hero[\s\S]*font-size:\s*1\.25rem/)
-  assert.match(todayStyles, /\.mx-today-hero-breath\s*\{[\s\S]*height:\s*54px/)
+  assert.match(todayStyles, /\.mx-today-hero-breath\s*\{[\s\S]*height:\s*16px/)
   assert.match(todayStyles, /\.mx-today-affirmation-card\s*\{[\s\S]*min-height:\s*340px/)
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { BookOpen } from 'lucide-react'
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability'
@@ -27,6 +28,7 @@ import MeditationFlow from './MeditationFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
 import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
+import JournalHome from './mentalix/JournalHome'
 
 function SubHeader({ title, onBack }) {
   return (
@@ -167,6 +169,15 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
     }
   }, [user, sub])
 
+  if (sub === 'journal') {
+    return (
+      <div className="w-full flex flex-col items-center">
+        <SubHeader title="Журнал" onBack={() => setSub(null)} />
+        <JournalHome showIntro onOpenMentor={() => setSub(null)} />
+      </div>
+    )
+  }
+
   if (sub === 'rituals') {
     return <Rituals user={user} onBack={() => setSub(null)} />
   }
@@ -250,6 +261,16 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
 
         <span aria-hidden="true" />
       </div>
+
+      <PracticeCategory title="Сначала сюда">
+        <PracticeRow
+          artwork={<BookOpen size={24} strokeWidth={1.7} />}
+          title="Журнал"
+          subtitle="заметить своё, выбрать главное и продолжить спокойно"
+          right="4 шага"
+          onOpen={() => setSub('journal')}
+        />
+      </PracticeCategory>
 
       <PracticeCategory title="Доступно сейчас">
         <PracticeRow

@@ -94,7 +94,7 @@ export default function MeditationFlow({ onClose }) {
           label="Медитация"
           title="Что сейчас происходит?"
           progress={<Progress step={step} />}
-          className="practice-scene--input practice-scene--input-centered"
+          className="practice-scene--input practice-scene--input-centered practice-scene--no-blame"
           description="Назови ситуацию так, как она выглядит сейчас. Без объяснений и обвинений — только то, что ты можешь заметить."
         >
           <JournalTextarea
@@ -122,7 +122,7 @@ export default function MeditationFlow({ onClose }) {
           label="Медитация"
           title="Что из этого зависит от тебя?"
           progress={<Progress step={step} />}
-          className="practice-scene--input practice-scene--input-centered"
+          className="practice-scene--input practice-scene--input-centered practice-scene--no-blame"
           description="Отдели своё действие от чужой реакции, времени и обстоятельств. Здесь не нужно решить всё — достаточно найти свою часть."
         >
           <JournalTextarea
@@ -150,7 +150,7 @@ export default function MeditationFlow({ onClose }) {
           label="Медитация"
           title="Какой один шаг ты выбираешь?"
           progress={<Progress step={step} />}
-          className="practice-scene--input practice-scene--input-centered"
+          className="practice-scene--input practice-scene--input-centered practice-scene--no-blame"
           description="Сделай шаг маленьким и проверяемым. Не обещай себе изменить всё — выбери действие, которое можно выполнить сегодня."
         >
           <JournalTextarea

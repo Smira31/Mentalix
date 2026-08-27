@@ -123,6 +123,7 @@ function fixtureFor(request, fixtures = FIXTURES) {
   if (pathname === '/api/analytics/pulse') return jsonResponse(fixtures.pulse)
   if (pathname === '/api/articles') return jsonResponse(fixtures.articles)
   if (pathname === '/api/analytics') return jsonResponse(fixtures.analytics)
+  if (pathname === '/api/mentalix/messages') return jsonResponse([])
 
   return jsonResponse({ error: `Нет локального fixture для ${method} ${pathname}` }, 501)
 }
@@ -468,6 +469,51 @@ test('локальный UX smoke по основному маршруту', asy
         await assertSoonControls(page)
       },
     })
+
+    await page.getByRole('button', { name: 'Наставник' }).click()
+    await page.getByRole('button', { name: 'Открыть AI-наставника' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Mentor picker',
+      slug: '03-mentor-picker',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
+        await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
+      },
+    })
+    await page.getByRole('button', { name: 'Практики' }).click()
+    await page.getByRole('button', { name: 'Журнал' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal intro in Practices',
+      slug: '03a-journal-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'Вернись к тому, что важно сегодня' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать запись' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать запись' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal writer in Practices',
+      slug: '03b-journal-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: /Идея:/ })
+        await expect(editor).toBeVisible()
+        await editor.fill('Записать главную мысль дня')
+        await assertClickable(page.getByRole('button', { name: 'Продолжить' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Ритуалы' }).click()
     await captureScreen({

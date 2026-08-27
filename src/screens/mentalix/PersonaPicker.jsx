@@ -113,12 +113,11 @@ export default function PersonaPicker({ user, onPick }) {
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display mx-type-page text-cream lowercase mt-4 mb-1">с кем говорим.</h2>
+      <h2 className="font-display mx-type-page text-cream lowercase mt-0 mb-2">с кем говорим.</h2>
 
-      <p className="mx-type-meta text-faint mb-5">три собеседника, три отдельных разговора</p>
+      <p className="mx-type-meta text-faint mb-4">три собеседника, три отдельных разговора</p>
 
-
-      <div className="mt-6">
+      <div className="mt-4">
       <div
         ref={trackRef}
         onScroll={syncActive}
@@ -290,7 +289,7 @@ export default function PersonaPicker({ user, onPick }) {
         ))}
       </div>
 
-      <p className="mx-type-meta text-faint mt-6 text-center">
+      <p className="mx-type-list-body text-muted mt-5 text-center leading-relaxed">
         У каждого своя история — разговоры не смешиваются.
       </p>
     </div>

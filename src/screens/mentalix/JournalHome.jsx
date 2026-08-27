@@ -43,14 +43,41 @@ function readSaved() {
   }
 }
 
-export default function JournalHome({ onOpenMentor }) {
+export default function JournalHome({ onOpenMentor, showIntro = false }) {
   const [initial] = useState(readSaved)
+  const [journalStarted, setJournalStarted] = useState(!showIntro)
   const [phaseIndex, setPhaseIndex] = useState(initial.phaseIndex || 0)
   const [drafts, setDrafts] = useState(initial.drafts || {})
   const phase = PHASES[phaseIndex]
   const isLast = phaseIndex === PHASES.length - 1
   const completed = PHASES.filter(item => drafts[item.key]?.trim()).length
   const value = drafts[phase.key] || ''
+
+  if (showIntro && !journalStarted) {
+    return (
+      <div className="w-full max-w-md mx-auto px-5 flex min-h-[calc(100vh-160px)] flex-col justify-center text-center animate-fade-in">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] border border-gold/25 bg-gold/[0.04] text-gold">
+          <BookOpen size={30} strokeWidth={1.6} />
+        </div>
+        <span className="mx-type-meta uppercase tracking-[0.14em] text-gold">Журнал</span>
+        <h1 className="mx-type-flow-title mt-4 font-display text-cream">Вернись к тому, что важно сегодня</h1>
+        <p className="mx-type-flow-body mx-auto mt-4 max-w-[310px] text-muted">
+          Четыре коротких шага, чтобы заметить свои мысли, выбрать то, что зависит от тебя, и спокойно продолжить.
+        </p>
+        <p className="mx-type-meta mt-4 text-faint">Идея · Действие · Анализ · Новый шаг</p>
+        <button
+          type="button"
+          onClick={() => {
+            platform.haptic('light')
+            setJournalStarted(true)
+          }}
+          className="cta-pill mt-8 w-full px-6 py-4 mx-type-control"
+        >
+          Начать запись
+        </button>
+      </div>
+    )
+  }
 
   function storagePhaseKey() {
     return phase.key === 'next' ? 'newStep' : phase.key
