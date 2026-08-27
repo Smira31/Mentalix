@@ -5,6 +5,7 @@ import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import JourneySearch from './JourneySearch'
+import { platformName } from '../platform'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
@@ -26,7 +27,17 @@ function dayTitle(iso) {
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`
 }
 
-function HistoryDetail({ day, onBack, onDelete, deleting, deleteError }) {
+function HistoryDetail({
+  day,
+  onBack,
+  onDelete,
+  deleting,
+  deleteError,
+  canManageAiContext,
+  onContextChange,
+  savingContext,
+  contextError,
+}) {
   const checkin = day.checkin
   const wins = checkin?.wins || []
 
@@ -136,7 +147,38 @@ function HistoryDetail({ day, onBack, onDelete, deleting, deleteError }) {
 
         {checkin && (
           <div className="border-t border-cream/10 pt-4">
-            <p className="mb-3 text-[12px] leading-relaxed text-muted">
+            <h3 className="text-[14px] font-semibold text-cream">Эта запись и AI</h3>
+            <p className="mt-1 text-[12px] leading-relaxed text-muted">
+              AI получает запись только после этого выбора и только при включённом персональном
+              контексте в «Наставнике». Неотмеченные записи ему не передаются.
+            </p>
+            {canManageAiContext ? (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={Boolean(checkin.ai_context_enabled)}
+                aria-label="Разрешение AI использовать эту запись"
+                onClick={() => onContextChange(!checkin.ai_context_enabled)}
+                disabled={savingContext}
+                className="mt-3 min-h-10 rounded-full bg-cream/5 px-3 text-left text-[12px] font-semibold text-gold disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {savingContext
+                  ? 'Сохраняем…'
+                  : checkin.ai_context_enabled
+                    ? 'AI может использовать запись — отключить'
+                    : 'Разрешить AI использовать эту запись'}
+              </button>
+            ) : (
+              <p className="mt-2 text-[12px] leading-relaxed text-faint">
+                Выбор контекста доступен в Telegram Mini App с проверенной подписью.
+              </p>
+            )}
+            {contextError && (
+              <p role="alert" className="mt-2 text-[12px] text-red-300">
+                {contextError}
+              </p>
+            )}
+            <p className="mb-3 mt-5 text-[12px] leading-relaxed text-muted">
               Удаление необратимо: исчезнет только этот check-in и его личные теги. Активность
               ритуалов за день сохранится.
             </p>
@@ -169,6 +211,9 @@ export default function History({ user }) {
   const [deletingCheckin, setDeletingCheckin] = useState(false)
   const [deleteError, setDeleteError] = useState('')
   const [historyStatus, setHistoryStatus] = useState('')
+  const [savingContext, setSavingContext] = useState(false)
+  const [contextError, setContextError] = useState('')
+  const canManageAiContext = platformName === 'telegram' && Number(user?.id) > 0
 
   useEffect(() => {
     if (!user) return
@@ -259,6 +304,44 @@ export default function History({ user }) {
     }
   }
 
+  async function updateSelectedCheckinContext(nextEnabled) {
+    const checkin = selectedDay?.checkin
+    if (!checkin || savingContext || !canManageAiContext) return
+    if (
+      nextEnabled &&
+      !window.confirm(
+        'Разрешить AI использовать текст и метрики этой записи в пределах персонального контекста? Неотмеченные записи передаваться не будут.'
+      )
+    )
+      return
+
+    setSavingContext(true)
+    setContextError('')
+    try {
+      const result = await api.mentalix.setCheckinContext(user.id, checkin.id, nextEnabled)
+      const enabled = Boolean(result?.enabled)
+      setDays(current =>
+        current.map(day =>
+          day.date === selectedDay.date && day.checkin?.id === checkin.id
+            ? { ...day, checkin: { ...day.checkin, ai_context_enabled: enabled } }
+            : day
+        )
+      )
+      setSelectedDay(current =>
+        current && current.date === selectedDay.date
+          ? { ...current, checkin: { ...current.checkin, ai_context_enabled: enabled } }
+          : current
+      )
+      setHistoryStatus(
+        enabled ? 'Эта запись разрешена для AI-контекста.' : 'Эта запись больше не передаётся AI.'
+      )
+    } catch {
+      setContextError('Не удалось сохранить выбор. Запись не была подтверждена для AI.')
+    } finally {
+      setSavingContext(false)
+    }
+  }
+
   if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
 
   if (selectedDay) {
@@ -269,6 +352,10 @@ export default function History({ user }) {
         onDelete={deleteSelectedCheckin}
         deleting={deletingCheckin}
         deleteError={deleteError}
+        canManageAiContext={canManageAiContext}
+        onContextChange={updateSelectedCheckinContext}
+        savingContext={savingContext}
+        contextError={contextError}
       />
     )
   }
