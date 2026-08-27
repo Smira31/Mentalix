@@ -26,6 +26,7 @@
 | `MXL-016`                    |       M | content/product/UX | verified   | completed                      | Закрыта через PR #215; curated fallback и reflective metadata опубликованы |
 | `MXL-STRICTMODE-PERSONA-001` |       ? | technical        | documented | blocked                         | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
 | `MXL-019`                    |       M | product/UX/visual | verified   | completed                      | Закрыта через PR #219; continuous Journey line опубликована |
+| `MXL-JOURNAL-001`           |      ML | product/UX       | in progress | manual-gate                    | Journal Home prototype: 4-фазный цикл, Writing Canvas, local draft; ждёт Preview gate |
 | `MXL-020`                    |       ? | product/payment  | deferred   | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
 | `MXL-JOURNAL-PERSISTENCE-001` | XL | product/backend | backlog | backend-dependent | Зафиксировать storage contract для morning/evening entries |
 | `MXL-JOURNAL-HISTORY-001` | L | product/backend/UX | backlog | backend-dependent | Объединить датированную историю после persistence |
