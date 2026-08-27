@@ -311,6 +311,9 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, hours }),
       }),
+
+    clearReminderSettings: userId =>
+      request(withQuery('/profile/settings', { user_id: userId }), { method: 'DELETE' }),
   },
 
   pulse: {

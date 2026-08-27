@@ -18,6 +18,9 @@ export default function JourneySearch({ user }) {
   const [tags, setTags] = useState([])
   const [selectedTagIds, setSelectedTagIds] = useState([])
   const [mood, setMood] = useState('')
+  const [emotion, setEmotion] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
   const [sort, setSort] = useState('newest')
   const [result, setResult] = useState(null)
   const [tagName, setTagName] = useState('')
@@ -32,6 +35,9 @@ export default function JourneySearch({ user }) {
         q: query || undefined,
         tag_id: selectedTagIds,
         mood: mood || undefined,
+        emotion: emotion || undefined,
+        from_date: fromDate || undefined,
+        to_date: toDate || undefined,
         sort,
         cursor,
       })
@@ -93,7 +99,7 @@ export default function JourneySearch({ user }) {
       active = false
       window.clearTimeout(timeoutId)
     }
-  }, [query, selectedTagIds, mood, sort, user.id])
+  }, [query, selectedTagIds, mood, emotion, fromDate, toDate, sort, user.id])
 
   async function createTag() {
     if (!tagName.trim()) return
@@ -143,6 +149,10 @@ export default function JourneySearch({ user }) {
               <option value="oldest">Сначала старые</option>
             </select>
           </label>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <label className="text-[12px] text-muted">Эмоция<input value={emotion} onChange={event => setEmotion(event.target.value)} maxLength={60} placeholder="Например, спокойно" className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-[14px] text-cream outline-none placeholder:text-faint" /></label>
+          <div className="grid grid-cols-2 gap-1"><label className="text-[11px] text-muted">С<input type="date" value={fromDate} max={toDate || undefined} onChange={event => setFromDate(event.target.value)} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-1 text-[12px] text-cream" /></label><label className="text-[11px] text-muted">По<input type="date" value={toDate} min={fromDate || undefined} onChange={event => setToDate(event.target.value)} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-1 text-[12px] text-cream" /></label></div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2" aria-label="Фильтр по тегам">
           {tags.map(tag => {
