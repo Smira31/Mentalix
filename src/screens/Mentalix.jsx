@@ -8,6 +8,7 @@ import { maybeBuildInsightMessage } from './mentalix/insightDigest'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
+import AiPrivacyControls from './mentalix/AiPrivacyControls'
 
 // ============================================================
 // ЧАТ
@@ -103,6 +104,11 @@ function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
     }
   }
 
+  function handleAiDataDeleted() {
+    invalidateHistory(user.id, persona)
+    setMessages([])
+  }
+
   return (
     <Conversation
       userId={user.id}
@@ -114,6 +120,7 @@ function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
       sending={sending}
       onSend={send}
       onBack={onBack}
+      privacyControls={<AiPrivacyControls userId={user.id} onDataDeleted={handleAiDataDeleted} />}
     />
   )
 }

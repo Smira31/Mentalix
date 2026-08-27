@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Heart,
   Moon,
+  Download,
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -23,6 +24,7 @@ import { requestMessages, biometric } from '../platform/telegram.hooks'
 import { platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import { MOOD_CHECK_ENABLED_KEY } from '../lib/moodCheckDraft'
+import { clearCheckinDraft } from '../lib/checkinDraft'
 import {
   TODAY_CARDS_HIDDEN_KEY,
   TODAY_CARD_IDS,
@@ -132,6 +134,8 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   const [writingGoalOn, setWritingGoalOn] = useState(false)
   const [writingGoalCount, setWritingGoalCount] = useState(3)
   const [reminderStatus, setReminderStatus] = useState('')
+  const [exportStatus, setExportStatus] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -226,6 +230,26 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
     } catch {
       setReminderStatus('Не удалось отложить напоминания.')
     }
+  }
+
+  async function downloadPersonalExport(format) {
+    if (exporting || !window.confirm('Скачать копию личных данных на это устройство? Файл не будет отправлен третьей стороне.')) return
+    setExporting(true)
+    setExportStatus('')
+    try {
+      await api.privacy.downloadExport(user.id, { format })
+      setExportStatus('Файл подготовлен для скачивания на этом устройстве.')
+    } catch {
+      setExportStatus('Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  function clearLocalDraft() {
+    if (!window.confirm('Очистить незавершённую утреннюю запись только на этом устройстве? Сохранённые записи не изменятся.')) return
+    const cleared = clearCheckinDraft({ userId: user.id })
+    setExportStatus(cleared ? 'Локальный черновик очищен. Сохранённые записи не затронуты.' : 'Не удалось очистить локальный черновик.')
   }
 
   async function saveReviewHour(hour) {
@@ -533,6 +557,15 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
           }
         />
       </Card>
+
+      <SectionLabel>Личные данные</SectionLabel>
+      <Card>
+        <Row icon={Download} title="Экспорт JSON" subtitle="Полная машиночитаемая копия" onClick={() => downloadPersonalExport('json')} />
+        <Row icon={Download} title="Экспорт Markdown" subtitle="Записи для чтения или передачи специалисту" onClick={() => downloadPersonalExport('markdown')} />
+        <Row icon={Download} title="Экспорт CSV" subtitle="Табличные метрики и check-in" onClick={() => downloadPersonalExport('csv')} />
+        <Row icon={Lock} title="Очистить local draft" subtitle="Только незавершённый текст на этом устройстве" onClick={clearLocalDraft} danger divider={false} />
+      </Card>
+      {exportStatus && <p role="status" className="-mt-5 mb-5 w-full text-[12px] text-muted">{exportStatus}</p>}
 
       <SectionLabel>Основные</SectionLabel>
       <Card>
