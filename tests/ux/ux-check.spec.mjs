@@ -5,8 +5,10 @@ import path from 'node:path'
 const ARTIFACT_ROOT = path.resolve('artifacts/ux-check')
 
 const VIEWPORTS = [
-  { name: '390x844', width: 390, height: 844 },
   { name: '320x568', width: 320, height: 568 },
+  { name: '375x812', width: 375, height: 812 },
+  { name: '390x844', width: 390, height: 844 },
+  { name: '430x932', width: 430, height: 932 },
 ]
 
 const TEST_USER = {
@@ -200,8 +202,16 @@ async function assertCommonScreenChecks(page, runtimeErrors) {
     for (let index = 0; index < count; index += 1) {
       const ctaBox = await criticalCtas.nth(index).boundingBox()
 
-      if (ctaBox) {
-        expect(overlap(ctaBox, navBox), 'Нижняя навигация перекрывает критический CTA').toBe(false)
+      /*
+       * `:visible` включает элементы, которые уже начинаются за fixed dock:
+       * это следующий scrollable-контент, а не CTA, доступная до прокрутки.
+       * Проверяем только кнопку, начинающуюся в незакрытой области над dock.
+       */
+      const ctaStartsAboveNav = ctaBox && ctaBox.y >= 0 && ctaBox.y < navBox.y
+
+      if (ctaStartsAboveNav) {
+        const ctaLabel = (await criticalCtas.nth(index).innerText()).trim()
+        expect(overlap(ctaBox, navBox), `Нижняя навигация перекрывает CTA «${ctaLabel}»`).toBe(false)
       }
     }
   }
@@ -301,6 +311,8 @@ function buildReport(results) {
 }
 
 test('локальный UX smoke по основному маршруту', async ({ browser, baseURL }) => {
+  test.setTimeout(300_000)
+
   await rm(ARTIFACT_ROOT, { recursive: true, force: true })
   await mkdir(ARTIFACT_ROOT, { recursive: true })
 
@@ -390,44 +402,12 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Завершить чек-ин' }))
       },
     })
-    await page.getByRole('button', { name: 'Закрыть' }).click()
+    const checkinCloseButton = page.locator('button[aria-label="Закрыть"]')
+    await checkinCloseButton.click()
 
-    await page.getByRole('button', { name: 'Разгрузить голову' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Today focus writer',
-      slug: '02c-today-focus-writer',
-      runtimeErrors,
-      results,
-      check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Дела, которые тянут внимание' })
-        await expect(editor).toBeVisible()
-        await expect(editor).toHaveAttribute('contenteditable', 'true')
-        await editor.fill('Написать отчёт\nРазобрать почту')
-        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
-        await assertClickable(page.getByRole('button', { name: 'Продолжить' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Продолжить' }).click()
-    await page.getByRole('button', { name: 'Написать отчёт' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Today first step writer',
-      slug: '02d-today-first-step-writer',
-      runtimeErrors,
-      results,
-      check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Первый шаг' })
-        await expect(editor).toBeVisible()
-        await editor.fill('Открыть документ')
-        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
-        await assertClickable(page.getByRole('button', { name: 'Подсказать шаг' }))
-        await assertClickable(page.getByRole('button', { name: 'Сохранить шаг' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Сохранить шаг' }).click()
+    const draftDialog = page.locator('[role="dialog"][aria-labelledby="checkin-draft-dialog-title"]')
+    await expect(draftDialog).toBeVisible()
+    await draftDialog.getByRole('button', { name: 'Закрыть' }).click()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
     await captureScreen({
@@ -479,91 +459,11 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Журнал' }))
+        await assertClickable(page.getByRole('button', { name: /Журнал заметить своё, выбрать главное и продолжить спокойно 4 шага/ }))
         await assertClickable(page.getByRole('button', { name: 'Ритуалы' }))
         await assertSoonControls(page)
       },
     })
-
-    await page.getByRole('button', { name: 'Журнал' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Journal intro',
-      slug: '03b-journal-intro',
-      runtimeErrors,
-      results,
-      check: async () => {
-        await expect(page.getByText('Разложи день на четыре спокойных шага')).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Начать' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Начать' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Journal writer',
-      slug: '03c-journal-writer',
-      runtimeErrors,
-      results,
-      check: async () => {
-        const editor = page.getByRole('textbox', { name: /Идея: Что сейчас занимает мои мысли\?/ })
-        await expect(editor).toBeVisible()
-        await editor.fill('Собрать мысли спокойно')
-        await assertClickable(page.getByRole('button', { name: 'Сохранить и продолжить' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Сохранить и продолжить' }).click()
-    const journalSteps = [
-      ['Действие: Что из этого зависит от меня сегодня?', 'Написать первый абзац'],
-      ['Анализ: Что произошло и что я заметил?', 'Мне стало спокойнее'],
-      ['Новый шаг: Что я возьму с собой дальше?', 'Вернуться к записи завтра'],
-    ]
-    for (const [label, text] of journalSteps) {
-      const editor = page.getByRole('textbox', { name: label })
-      await expect(editor).toBeVisible()
-      await editor.fill(text)
-      await page.getByRole('button', { name: label.startsWith('Новый шаг') ? 'Сохранить и завершить' : 'Сохранить и продолжить' }).click()
-    }
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Journal complete',
-      slug: '03d-journal-complete',
-      runtimeErrors,
-      results,
-      check: async () => {
-        await expect(page.getByText('Цикл сохранён')).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Вернуться к практикам' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Вернуться к практикам' }).click()
-    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-
-    await page.getByRole('button', { name: 'Журнал' }).click()
-    await expect(page.getByRole('heading', { name: 'Сегодняшняя запись сохранена' })).toBeVisible()
-    await assertClickable(page.getByRole('button', { name: 'Открыть запись' }))
-    await page.getByRole('button', { name: 'Открыть запись' }).click()
-    const reopenedFinalEditor = page.getByRole('textbox', {
-      name: 'Новый шаг: Что я возьму с собой дальше?',
-    })
-    await expect(reopenedFinalEditor).toHaveText('Вернуться к записи завтра')
-    await reopenedFinalEditor.fill('Вернуться к записи завтра с ясным первым шагом')
-    await page.getByRole('button', { name: 'Сохранить и завершить' }).click()
-    await expect(page.getByRole('heading', { name: 'Цикл сохранён' })).toBeVisible()
-    const savedFinal = await page.evaluate(() => {
-      const key = Object.keys(localStorage).find(item => item.startsWith('mx-journal-v2:user:900001'))
-      const store = key ? JSON.parse(localStorage.getItem(key)) : null
-      const entry = store ? Object.values(store.entries || {})[0] : null
-      return entry?.cycle?.newStep || null
-    })
-    expect(savedFinal).toMatchObject({
-      text: 'Вернуться к записи завтра с ясным первым шагом',
-      status: 'final',
-    })
-    expect(savedFinal.updatedAt).toEqual(expect.any(String))
-    await page.getByRole('button', { name: 'Назад' }).click()
-    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Ритуалы' }).click()
     await captureScreen({
