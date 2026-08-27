@@ -17,6 +17,7 @@ import {
   Heart,
   Moon,
   Download,
+  ShieldCheck,
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -37,6 +38,7 @@ import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
 import AppLock from './AppLock'
+import PrivacyNotice from './PrivacyNotice'
 
 function SectionLabel({ children }) {
   return (
@@ -384,7 +386,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
     setScreen('app-lock-setup')
   }
 
-  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'app-lock-setup'
+  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup'
   const [tier, setTier] = useState('base')
   const go = key => onNavigate?.(key)
 
@@ -410,6 +412,10 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
 
   if (screen === 'link-web') {
     return <LinkWebAccount onBack={() => setScreen(null)} />
+  }
+
+  if (screen === 'privacy-notice') {
+    return <PrivacyNotice onBack={() => setScreen(null)} />
   }
 
   if (screen === 'app-lock-setup') {
@@ -760,6 +766,12 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         {privacyProtectedByTelegram ? (
           <>
             <Row
+              icon={ShieldCheck}
+              title="Политика и данные"
+              subtitle="Хранение, local draft, синхронизация и ограничения"
+              onClick={() => setScreen('privacy-notice')}
+            />
+            <Row
               icon={Download}
               title="Экспорт JSON"
               subtitle="Полная машиночитаемая копия"
@@ -779,11 +791,19 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
             />
           </>
         ) : (
-          <div className="px-4 py-4 text-[13px] leading-relaxed text-muted">
-            Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной подписью.
-            В web-версии нет серверной сессии, поэтому мы не выполняем чувствительные операции по
-            переданному id.
-          </div>
+          <>
+            <Row
+              icon={ShieldCheck}
+              title="Политика и данные"
+              subtitle="Хранение, local draft, синхронизация и ограничения"
+              onClick={() => setScreen('privacy-notice')}
+            />
+            <div className="px-4 py-4 text-[13px] leading-relaxed text-muted">
+              Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной
+              подписью. В web-версии нет серверной сессии, поэтому мы не выполняем чувствительные
+              операции по переданному id.
+            </div>
+          </>
         )}
         <Row
           icon={Lock}
@@ -815,9 +835,9 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         </p>
       )}
       <p className="-mt-3 mb-8 w-full px-1 text-[12px] leading-relaxed text-faint">
-        Сохранённые данные синхронизируются через ваш профиль Mentalix. Незавершённый draft остаётся
-        только на текущем устройстве и не является cloud backup. Блокировка приложения — локальный
-        экранный барьер, а не шифрование данных.
+        Незавершённый draft остаётся только на текущем устройстве и не является cloud backup.
+        Блокировка приложения — локальный экранный барьер, а не шифрование данных. Подробности о
+        хранении и ограничениях синхронизации — в разделе «Политика и данные».
       </p>
 
       <SectionLabel>Основные</SectionLabel>
