@@ -3190,4 +3190,4 @@ Journal Home переведён с прямого prototype `localStorage` на 
 
 ## 27.08.2026 — Home/type quiet slice
 
-Локально начаты `MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001`: главный hero Today поднят перед вторичными секциями, а пользовательские serif/Manrope overrides заменены на Onest baseline. Добавлены design note и regression-контракты. Backend, cloud sync, AI consent и proprietary Stoic assets не затронуты.
+`MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001` реализованы в PR #241: главный hero Today поднят перед вторичными секциями, а пользовательские serif/Manrope overrides заменены на Onest baseline. Follow-up `MXL-HOME-QUIET-V2-002` добавил 10px нижнего воздуха перед fixed-навигацией и различимое active-состояние CTA; добавлен regression-контракт. CI/Vercel и повторный Telegram/iPhone gate пройдены. Backend, cloud sync, AI consent и proprietary Stoic assets не затронуты.

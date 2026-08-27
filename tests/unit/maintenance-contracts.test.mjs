@@ -90,6 +90,14 @@ test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: { id: 10 } }), false)
 })
 
+test('MXL-HOME-QUIET-V2-002 сохраняет нижний воздух и различимое active CTA-состояние', () => {
+  const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+
+  assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
+  assert.match(styles, /\.cta-pill:active\s*\{[\s\S]*background:\s*rgb\(var\(--btn-bg\) \/ 0\.88\)/)
+  assert.match(styles, /\.cta-pill:active\s*\{[\s\S]*box-shadow:\s*inset 0 0 0 2px/)
+})
+
 test('MXL-PREVIEW-STOP-DRY-RUN-001 связывает npm-алиас с безопасным DryRun', () => {
   const packageJson = JSON.parse(
     readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
@@ -396,7 +404,7 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
   assert.ok(heroIndex < secondaryIndex)
-  assert.match(styles, /--bottom-nav-content-gap: 36px/)
+  assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
   assert.match(today, /className="w-full px-2 py-5 mt-4 text-center/)
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
