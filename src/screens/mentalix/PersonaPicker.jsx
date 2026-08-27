@@ -5,7 +5,6 @@ import { platform } from '../../platform'
 import { fetchHistory } from '../../lib/mentalixHistoryCache'
 import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
-import AiFlowIndicator from './AiFlowIndicator'
 
 /*
  * ВЫБОР СОБЕСЕДНИКА
@@ -118,7 +117,6 @@ export default function PersonaPicker({ user, onPick }) {
 
       <p className="mx-type-meta text-faint mb-5">три собеседника, три отдельных разговора</p>
 
-      <AiFlowIndicator active="idea" />
 
       <div className="mt-6">
       <div
@@ -190,7 +188,7 @@ export default function PersonaPicker({ user, onPick }) {
                 />
               </div>
 
-              <div className="mx-ai-title font-display mx-type-section text-cream mt-3 mx-persona-card__title">
+              <div className="font-display mx-type-persona-title text-cream mt-3 mx-persona-card__title">
                 {persona.name}
               </div>
 
@@ -198,7 +196,7 @@ export default function PersonaPicker({ user, onPick }) {
                 {persona.tagline}
               </div>
 
-              <p className="mx-type-body text-muted mt-2.5 mx-persona-card__description">
+              <p className="mx-type-persona-body text-muted mt-2.5 mx-persona-card__description">
                 {persona.desc}
               </p>
 

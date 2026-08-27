@@ -257,7 +257,7 @@ button {
  * контрактом для пяти основных вкладок на узких Telegram viewport.
  */
 :root {
-  --mx-type-page-size: 2rem;
+  --mx-type-page-size: 1.875rem;
   --mx-type-greeting-size: 1.75rem;
   --mx-type-hero-size: 1.75rem;
   --mx-type-section-size: 1.125rem;
@@ -290,10 +290,58 @@ button {
 }
 
 .mx-type-insight {
-  font-size: 1.3125rem;
+  font-size: 1.1875rem;
   line-height: 1.3;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+/* v4: compact catalogue/content roles. These do not affect Today. */
+.mx-type-list-title,
+.mx-type-persona-title,
+.mx-type-analytics-heading {
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.mx-type-list-body,
+.mx-type-persona-body {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.mx-type-persona-title {
+  font-size: 1.125rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.mx-type-article-title {
+  font-size: 1rem;
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.mx-type-article-body {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.mx-type-article-action {
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.mx-type-article-meta {
+  font-size: 0.625rem;
+  line-height: 1.2;
+  font-weight: 500;
 }
 
 .mx-type-section {

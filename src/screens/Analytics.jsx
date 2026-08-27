@@ -673,7 +673,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {ascezas.length > 0 && (
         <>
-          <h3 className="mx-type-section text-cream mb-2">Аскезы</h3>
+          <h3 className="mx-type-analytics-heading text-cream mb-2">Аскезы</h3>
           <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4 mb-6">
             {ascezas.map(a => (
               <AscezaRow key={a.id} asceza={a} />
@@ -684,7 +684,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {rituals.length > 0 && (
         <>
-          <h3 className="mx-type-section text-cream mb-2">Ритуалы</h3>
+          <h3 className="mx-type-analytics-heading text-cream mb-2">Ритуалы</h3>
           <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4">
             {rituals.map(r => (
               <RitualBar key={r.id} ritual={r} />

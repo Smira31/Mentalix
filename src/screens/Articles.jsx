@@ -42,17 +42,17 @@ function ArticleCard({ article, onOpen }) {
             </span>
           )}
 
-          <div className="font-display text-[17px] text-cream leading-tight">{article.title}</div>
+          <div className="font-display mx-type-article-title text-cream">{article.title}</div>
 
-          <p className="text-[13px] text-muted leading-snug mt-2 line-clamp-3">{article.excerpt}</p>
+          <p className="mx-type-article-body text-muted mt-2 line-clamp-3">{article.excerpt}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2 mt-4 pt-3.5 border-t border-cream/8">
-        <span className="text-[13px] text-gold">Читать статью</span>
+        <span className="mx-type-article-action text-gold">Читать статью</span>
         <ArrowRight size={14} className="text-gold shrink-0" strokeWidth={2} />
 
-        <span className="text-[11px] text-faint ml-auto whitespace-nowrap">
+        <span className="mx-type-article-meta text-faint ml-auto whitespace-nowrap">
           {article.minutes} мин · {formatDate(article.date)}
         </span>
       </div>

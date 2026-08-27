@@ -329,7 +329,7 @@ test('MXL-015 публикует семь curated Stoic-inspired тем без b
   assert.match(source, /Backend theme IDs, publication, and reflection persistence remain/)
 })
 
-test('MXL-001 публикует Stoic-inspired AI flow без backend изменений', () => {
+test('MXL-001 сохраняет Stoic-inspired AI flow без backend изменений и без entry-strip в PersonaPicker', () => {
   const indicator = readFileSync(
     new URL('../../src/screens/mentalix/AiFlowIndicator.jsx', import.meta.url),
     'utf8'
@@ -346,7 +346,7 @@ test('MXL-001 публикует Stoic-inspired AI flow без backend изме�
 
   assert.match(indicator, /idea.*action.*analysis.*next/s)
   assert.match(indicator, /Цикл разговора: идея, действие, анализ, новый шаг/)
-  assert.match(picker, /<AiFlowIndicator active="idea" \/>/)
+  assert.doesNotMatch(picker, /AiFlowIndicator/)
   assert.match(conversation, /const flowPhase/)
   assert.match(conversation, /<AiFlowIndicator active=\{flowPhase\} \/>/)
   assert.match(container, /api\.mentalix\.send\(user\.id, text, persona\)/)
@@ -369,7 +369,8 @@ test('MXL-006 публикует единый AI typography baseline без back
   assert.match(tokens, /\.mx-ai-meta\s*\{[\s\S]*font-size: 0\.6875rem/)
   assert.match(conversation, /mx-ai-body/)
   assert.match(conversation, /mx-ai-input/)
-  assert.match(personaPicker, /mx-ai-title/)
+  assert.doesNotMatch(personaPicker, /mx-ai-title/)
+  assert.match(personaPicker, /mx-type-persona-title/)
 })
 
 test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
@@ -419,6 +420,7 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
     'utf8'
   )
   const library = readFileSync(new URL('../../src/screens/Library.jsx', import.meta.url), 'utf8')
+  const articles = readFileSync(new URL('../../src/screens/Articles.jsx', import.meta.url), 'utf8')
   const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
   const personaPicker = readFileSync(
     new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
@@ -429,12 +431,17 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
     'utf8'
   )
 
-  assert.match(styles, /--mx-type-page-size:\s*2rem/)
+  assert.match(styles, /--mx-type-page-size:\s*1\.875rem/)
   assert.match(styles, /\.mx-type-page\s*\{[\s\S]*line-height:\s*1[\s\S]*font-weight:\s*700/)
   assert.match(styles, /\.mx-type-greeting\s*\{[\s\S]*font-size:\s*var\(--mx-type-greeting-size\)/)
   assert.match(styles, /\.mx-type-body\s*\{[\s\S]*font-size:\s*var\(--mx-type-body-size\)/)
   assert.match(styles, /\.mx-type-control\s*\{[\s\S]*font-size:\s*var\(--mx-type-control-size\)/)
-  assert.match(styles, /\.mx-type-insight\s*\{[\s\S]*font-size:\s*1\.3125rem/)
+  assert.match(styles, /\.mx-type-insight\s*\{[\s\S]*font-size:\s*1\.1875rem/)
+  assert.match(styles, /\.mx-type-list-title\s*,[\s\S]*font-size:\s*0\.9375rem/)
+  assert.match(styles, /\.mx-type-list-body\s*,[\s\S]*font-size:\s*0\.8125rem/)
+  assert.match(styles, /\.mx-type-persona-title\s*\{[\s\S]*font-size:\s*1\.125rem/)
+  assert.match(styles, /\.mx-type-article-title\s*\{[\s\S]*font-size:\s*1rem/)
+  assert.match(styles, /\.mx-type-article-meta\s*\{[\s\S]*font-size:\s*0\.625rem/)
   assert.match(styles, /\.mx-type-segment\s*\{[\s\S]*font-size:\s*var\(--mx-type-segment-size\)/)
   assert.doesNotMatch(styles, /Honest/)
 
@@ -442,13 +449,19 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(today, /mx-type-hero/)
   assert.match(today, /mx-type-section/)
   assert.match(practices, /mx-type-page/)
-  assert.match(practices, /mx-type-card/)
+  assert.match(practices, /mx-type-list-title/)
+  assert.match(practices, /mx-type-list-body/)
   assert.match(library, /mx-type-page/)
   assert.match(library, /mx-type-segment/)
+  assert.match(articles, /mx-type-article-title/)
+  assert.match(articles, /mx-type-article-body/)
   assert.match(analytics, /mx-type-page/)
-  assert.match(analytics, /mx-type-section/)
+  assert.match(analytics, /mx-type-analytics-heading/)
   assert.match(analytics, /mx-type-insight/)
   assert.match(personaPicker, /mx-type-page/)
-  assert.match(personaPicker, /mx-type-section/)
+  assert.match(personaPicker, /mx-type-persona-title/)
+  assert.match(personaPicker, /mx-type-persona-body/)
+  assert.doesNotMatch(personaPicker, /AiFlowIndicator/)
+  assert.doesNotMatch(personaPicker, /mx-ai-title/)
   assert.doesNotMatch(journalHome, /mx-type-page|mx-type-hero/)
 })

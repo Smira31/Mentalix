@@ -84,13 +84,13 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
       <span className="min-w-0 flex-1 py-3">
         <span
           className={[
-            'block font-display mx-type-card',
+            'block font-display mx-type-list-title',
             soon ? 'text-muted' : 'text-cream',
           ].join(' ')}
         >
           {title}
         </span>
-        <span className="block mt-1 mx-type-body text-muted">{subtitle}</span>
+        <span className="block mt-1 mx-type-list-body text-muted">{subtitle}</span>
       </span>
 
       <span className="w-[48px] shrink-0 flex items-center justify-end gap-2">
