@@ -140,6 +140,45 @@ check-in → следующий шаг → практика → вечерний
 - исправление blocker issues;
 - публичный запуск.
 
+## P7. Полноценный Stoic-inspired журнал Mentalix
+
+Этот эпик добавлен после анализа официальных материалов Stoic и текущего состояния Mentalix. Он **не дублирует** закрытые `MXL-001`, `MXL-005`, `MXL-014`, `MXL-015`, `MXL-016` и `MXL-019`: они считаются уже реализованными слоями и используются как исходные зависимости.
+
+### Уже есть и не создаётся заново
+
+- ежедневный цикл **Идея → Действие → Анализ → Новый шаг**;
+- Journal Home prototype и Writing Canvas;
+- curated-темы недели и «Мысль дня»;
+- короткая текстовая медитация;
+- Journey с active days и continuous line;
+- descriptive-insights safety boundary;
+- AI-flow и journal formatting.
+
+### Новые крупные эпики
+
+| ID | Эпик | Размер | Зависимость | Статус |
+| --- | --- | ---: | --- | --- |
+| `MXL-JOURNAL-PERSISTENCE-001` | Production-хранение Journal Home и morning/evening entries | XL | приватный backend/storage contract | backlog |
+| `MXL-JOURNAL-HISTORY-001` | Единая датированная история записей и возврат к сегодняшнему шагу | L | persistence и единая date/timezone модель | backlog |
+| `MXL-JOURNAL-PRIVACY-001` | Центр приватности: AI consent, retention, export, delete и telemetry boundary | L | safety/legal и backend contract | needs-owner |
+| `MXL-JOURNAL-GUIDED-001` | Guided journals и library поверх проверенного авторского контента | M | content governance и taxonomy | backlog |
+| `MXL-JOURNAL-PERSONALIZE-001` | Настройка cadence: один check-in или morning/evening, prompt/free write/AI | M | persistence и product copy | needs-owner |
+| `MXL-JOURNAL-ORGANIZE-001` | Tags, search и favorites для записей и практик | M | schema, indexing и persistence | deferred |
+| `MXL-JOURNAL-MEMORIES-001` | Photos, videos и memories | M/L | attachment storage, privacy и upload limits | deferred |
+| `MXL-JOURNAL-REMINDERS-001` | Gentle reminders и quiet hours | S/M | consent, scheduler и backend | deferred |
+
+### Порядок реализации
+
+1. Довести до gate текущий Journal Home prototype из `MXL-JOURNAL-001`.
+2. Реализовать `MXL-JOURNAL-PERSISTENCE-001` после фиксации backend-контракта.
+3. Реализовать `MXL-JOURNAL-HISTORY-001` и связать историю с «Продолжить сегодня».
+4. Зафиксировать и внедрить `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
+5. Добавить `MXL-JOURNAL-PERSONALIZE-001` и только затем guided library.
+6. После проверки использования решать tags/search/favorites, memories и reminders.
+7. После evidence пользовательского исследования принимать решения о payment и advanced personalization.
+
+Критерий большого эпика: пользователь может начать запись, продолжить её утром или вечером, безопасно сохранить, вернуться из истории, явно выбрать AI-deepen и удалить или экспортировать свои данные.
+
 ## Не делать параллельно
 
 - крупный редизайн и проверку core loop;
