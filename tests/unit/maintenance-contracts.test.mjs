@@ -400,7 +400,7 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
 test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const heroIndex = today.indexOf('ГЕРОЙ-КАРТОЧКА')
-  const secondaryIndex = today.indexOf('<TodayFocusCard', heroIndex)
+  const secondaryIndex = today.indexOf('mx-today-hero-breath', heroIndex)
 
   assert.ok(heroIndex >= 0)
   assert.ok(secondaryIndex >= 0)
@@ -410,8 +410,13 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.ok(heroIndex < secondaryIndex)
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
   assert.match(today, /mx-today-primary-card/)
+  assert.match(today, /data-complete=\{heroPresentationState === 'allDone' \|\| heroPresentationState === 'dayClosed'\}/)
+  assert.match(today, /mx-today-hero-breath/)
+  assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
   assert.match(today, /mx-today-affirmation-card/)
   assert.match(todayStyles, /\.mx-today-primary-card\s*\{[\s\S]*min-height:\s*452px/)
+  assert.match(todayStyles, /\.mx-today-primary-card\[data-complete='true'\][\s\S]*background:\s*rgb\(var\(--c-card\)\)/)
+  assert.match(todayStyles, /\.mx-today-hero-breath\s*\{[\s\S]*height:\s*54px/)
   assert.match(todayStyles, /\.mx-today-affirmation-card\s*\{[\s\S]*min-height:\s*340px/)
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
@@ -444,7 +449,7 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   const focus = readFileSync(new URL('../../src/screens/Focus.jsx', import.meta.url), 'utf8')
 
   assert.match(styles, /--mx-type-page-size:\s*1\.875rem/)
-  assert.match(styles, /--mx-type-greeting-size:\s*1\.375rem/)
+  assert.match(styles, /--mx-type-greeting-size:\s*1\.125rem/)
   assert.match(styles, /\.mx-type-page\s*\{[\s\S]*line-height:\s*1[\s\S]*font-weight:\s*700/)
   assert.match(styles, /\.mx-type-greeting\s*\{[\s\S]*font-size:\s*var\(--mx-type-greeting-size\)/)
   assert.match(styles, /\.mx-type-body\s*\{[\s\S]*font-size:\s*var\(--mx-type-body-size\)/)

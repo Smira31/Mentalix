@@ -82,6 +82,15 @@ const FIXTURES = {
   history: [],
 }
 
+const COMPLETED_TODAY_FIXTURES = {
+  ...FIXTURES,
+  checkin: {
+    mood: 5,
+    emotion: 'отлично',
+    review_completed_at: '2026-08-27T12:00:00.000Z',
+  },
+}
+
 function jsonResponse(body, status = 200) {
   return {
     status,
@@ -90,7 +99,7 @@ function jsonResponse(body, status = 200) {
   }
 }
 
-function fixtureFor(request) {
+function fixtureFor(request, fixtures = FIXTURES) {
   const url = new URL(request.url())
   const pathname = url.pathname
   const method = request.method()
@@ -103,17 +112,17 @@ function fixtureFor(request) {
     return jsonResponse({ ok: true })
   }
 
-  if (pathname === '/api/rituals') return jsonResponse(FIXTURES.rituals)
-  if (pathname === '/api/ascezas') return jsonResponse(FIXTURES.ascezas)
-  if (pathname === '/api/quotes/today') return jsonResponse(FIXTURES.quote)
-  if (pathname === '/api/checkin/today') return jsonResponse(FIXTURES.checkin)
-  if (pathname === '/api/checkin/history') return jsonResponse(FIXTURES.history)
-  if (pathname === '/api/themes') return jsonResponse(FIXTURES.themes)
-  if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
-  if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
-  if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
-  if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
-  if (pathname === '/api/analytics') return jsonResponse(FIXTURES.analytics)
+  if (pathname === '/api/rituals') return jsonResponse(fixtures.rituals)
+  if (pathname === '/api/ascezas') return jsonResponse(fixtures.ascezas)
+  if (pathname === '/api/quotes/today') return jsonResponse(fixtures.quote)
+  if (pathname === '/api/checkin/today') return jsonResponse(fixtures.checkin)
+  if (pathname === '/api/checkin/history') return jsonResponse(fixtures.history)
+  if (pathname === '/api/themes') return jsonResponse(fixtures.themes)
+  if (pathname === '/api/themes/701') return jsonResponse(fixtures.theme)
+  if (pathname === '/api/profile/settings') return jsonResponse(fixtures.settings)
+  if (pathname === '/api/analytics/pulse') return jsonResponse(fixtures.pulse)
+  if (pathname === '/api/articles') return jsonResponse(fixtures.articles)
+  if (pathname === '/api/analytics') return jsonResponse(fixtures.analytics)
 
   return jsonResponse({ error: `Нет локального fixture для ${method} ${pathname}` }, 501)
 }
@@ -315,7 +324,8 @@ test('локальный UX smoke по основному маршруту', asy
       localStorage.setItem('mx-app-lock-enabled', '0')
     }, TEST_USER)
 
-    await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+    let activeFixtures = FIXTURES
+    await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request(), activeFixtures)))
 
     const page = await context.newPage()
     const runtimeErrors = []
@@ -345,6 +355,26 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(checkin)
       },
     })
+
+    activeFixtures = COMPLETED_TODAY_FIXTURES
+    const completedPage = await context.newPage()
+    completedPage.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
+    await completedPage.goto('/')
+    await captureScreen({
+      page: completedPage,
+      viewport,
+      screen: 'Today completed',
+      slug: '01b-today-completed',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const completedCard = completedPage.locator(".mx-today-primary-card[data-complete='true']")
+        await expect(completedCard).toBeVisible()
+        await expect(completedCard).toHaveCSS('background-color', 'rgb(9, 9, 9)')
+      },
+    })
+    await completedPage.close()
+    activeFixtures = FIXTURES
 
     await page.getByRole('button', { name: /Пройти чек-ин|Разобрать день/ }).click()
     await captureScreen({
@@ -383,43 +413,6 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Закрыть' }).click()
-
-    await page.getByRole('button', { name: 'Разгрузить голову' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Today focus writer',
-      slug: '02c-today-focus-writer',
-      runtimeErrors,
-      results,
-      check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Дела, которые тянут внимание' })
-        await expect(editor).toBeVisible()
-        await expect(editor).toHaveAttribute('contenteditable', 'true')
-        await editor.fill('Написать отчёт\nРазобрать почту')
-        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
-        await assertClickable(page.getByRole('button', { name: 'Продолжить' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Продолжить' }).click()
-    await page.getByRole('button', { name: 'Написать отчёт' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Today first step writer',
-      slug: '02d-today-first-step-writer',
-      runtimeErrors,
-      results,
-      check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Первый шаг' })
-        await expect(editor).toBeVisible()
-        await editor.fill('Открыть документ')
-        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
-        await assertClickable(page.getByRole('button', { name: 'Подсказать шаг' }))
-        await assertClickable(page.getByRole('button', { name: 'Сохранить шаг' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Сохранить шаг' }).click()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
     await captureScreen({

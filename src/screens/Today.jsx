@@ -18,16 +18,12 @@ import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
-import TodayFocusCard from '../components/TodayFocusCard'
-import TodayFocusFlow from './TodayFocusFlow'
-import { readTodayFocusDay, clearTodayFocusPick } from '../lib/todayFocus'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import {
   DayThread,
   DayThreadTrigger,
-  FocusNextAction,
   NextActionReveal,
   TodayCompareControl,
 } from '../components/TodayMotionExperiment'
@@ -168,10 +164,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   const [sub, setSub] = useState(null)
 
-  const [todayFocus, setTodayFocus] = useState(null)
-
-  const [focusFlowStep, setFocusFlowStep] = useState(null)
-
   const [pathTab, setPathTab] = useState('path')
 
   const [todayVariant, setTodayVariant] = useState(INITIAL_TODAY_VARIANT)
@@ -203,23 +195,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   function changeSub(nextSub) {
     onFlowChange?.(Boolean(nextSub))
 
-    if (!nextSub) {
-      setFocusFlowStep(null)
-    }
-
     setSub(nextSub)
-  }
-
-  /*
-   * По умолчанию флоу сам решает шаг (пустой список → input,
-   * уже собранный → pick). Явный step нужен только для входа
-   * из hero «Определить первый шаг» — сразу на firstStep, минуя
-   * повторный выбор из уже известного picked.
-   */
-  function openTodayFocusFlow(step = null) {
-    setFocusFlowStep(step)
-
-    changeSub('todayFocus')
   }
 
   useEffect(() => {
@@ -227,17 +203,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       onFlowChange?.(false)
     }
   }, [onFlowChange])
-
-  /*
-   * todayFocus читается из localStorage при появлении user (Telegram-авторизация
-   * резолвится асинхронно) — синхронизация с внешним пропом без побочных
-   * эффектов, поэтому во время рендера, а не в useEffect.
-   */
-  const [seenFocusUserId, setSeenFocusUserId] = useState(null)
-  if (user && seenFocusUserId !== user.id) {
-    setSeenFocusUserId(user.id)
-    setTodayFocus(readTodayFocusDay(user.id))
-  }
 
   async function refreshCheckin() {
     if (!user) return
@@ -338,25 +303,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   if (sub === 'theme' && theme) {
     return <ThemeScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
-  }
-
-  // ============================================================
-  // РАЗГРУЗИТЬ ГОЛОВУ
-  // ============================================================
-
-  if (sub === 'todayFocus') {
-    return (
-      <TodayFocusFlow
-        userId={user.id}
-        initialItems={todayFocus?.items || []}
-        initialStep={focusFlowStep || (todayFocus?.items?.length ? 'pick' : 'input')}
-        initialPicked={todayFocus?.picked || null}
-        onClose={() => changeSub(null)}
-        onPicked={entry => {
-          setTodayFocus(entry)
-        }}
-      />
-    )
   }
 
   // ============================================================
@@ -491,16 +437,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   const motionExperimentEnabled = !TODAY_COMPARE_REQUESTED || todayVariant === 'after'
 
   /*
-   * Merge «Точки внимания» в hero (Цикл 0B) — только
-   * production-вариант (после), только пока день идёт, и
-   * только если фокус реально выбран. В dev-only сравнении
-   * «до» и в остальных состояниях дня (чек-ин, разбор,
-   * закрытый день) поведение не трогаем.
-   */
-  const showFocusHero =
-    motionExperimentEnabled && todayState === 'dayInProgress' && Boolean(todayFocus?.picked)
-
-  /*
    * MXL-UX-U07: hero contract — явная state → presentation мапа.
    *
    * checkinAsHero (todayState checkinPending/reviewPending) — одна общая
@@ -518,13 +454,11 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   const heroPresentationState =
     todayState === 'dayClosed'
       ? 'dayClosed'
-      : showFocusHero
-        ? 'focus'
-        : isEmpty
-          ? 'empty'
-          : next
-            ? 'next'
-            : 'allDone'
+      : isEmpty
+        ? 'empty'
+        : next
+          ? 'next'
+          : 'allDone'
 
   const heroCheckinContent = (
     <>
@@ -594,29 +528,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           Открыть разбор снова
         </button>
       </>
-    ),
-
-    focus: (
-      <FocusNextAction
-        focus={todayFocus}
-        onDefineFirstStep={() => {
-          platform.haptic('medium')
-
-          openTodayFocusFlow('firstStep')
-        }}
-        onChangeFocus={() => {
-          platform.haptic('light')
-
-          openTodayFocusFlow()
-        }}
-        onClearFocus={() => {
-          platform.haptic('light')
-
-          const entry = clearTodayFocusPick(user.id)
-
-          setTodayFocus(entry)
-        }}
-      />
     ),
 
     empty: (
@@ -757,7 +668,10 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         карточкой и остаётся тем, чем задумана, — окном
         в ночь, тёмным в обеих темах.
       */}
-      <div className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in">
+      <div
+        className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
+        data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
+      >
         {motionExperimentEnabled ? (
           <div className="mx-today-hero-art" aria-label="Один следующий шаг">
             <SemanticGlyph
@@ -765,7 +679,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
               debugSource="Today.jsx"
               className="mx-today-hero-art-glyph"
             />
-            <span>один следующий шаг</span>
           </div>
         ) : (
           heroArt
@@ -774,24 +687,12 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
-      {!showFocusHero && !hiddenCards.includes('focus') && (
-        <TodayFocusCard
-          focus={todayFocus}
-          readOnly={todayState === 'dayClosed'}
-          onOpenFlow={() => openTodayFocusFlow()}
-          onClearFocus={() => {
-            const entry = clearTodayFocusPick(user.id)
-
-            setTodayFocus(entry)
-          }}
-        />
-      )}
+      <div className="mx-today-hero-breath" aria-hidden="true" />
 
       <MorningPilotCard
         userId={user.id}
         rituals={rituals}
         onOpenRituals={() => onOpenPractice('rituals')}
-        todayFocusPicked={Boolean(todayFocus?.picked)}
       />
 
       {/* ======================================================
