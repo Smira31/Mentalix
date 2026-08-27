@@ -11,10 +11,7 @@ const requiredFiles = [
   'ARCHITECTURE.md',
   'AI_RULES.md',
   'AGENTS.md',
-  'TASKS.md',
   'PROJECT_STATE.md',
-  'ROADMAP.md',
-  'CHANGES.md',
   'docs/DOCUMENTATION_GUIDE.md',
   'docs/TASK_INDEX.md',
 ]

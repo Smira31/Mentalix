@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Правила проекта Mentalix
     url: https://github.com/Smira31/Mentalix/blob/main/README.md
-    about: Сначала проверьте README и TASKS.md, чтобы не дублировать существующую задачу.
+    about: Сначала проверьте README, docs/TASK_INDEX.md и похожие открытые Issues, чтобы не дублировать существующую задачу.
