@@ -2,8 +2,7 @@ import { ArrowRight, BookOpen, Check, Compass, PenLine } from 'lucide-react'
 import { useState } from 'react'
 import JournalTextarea from '../../components/JournalTextarea'
 import { platform } from '../../platform'
-
-const STORAGE_KEY = 'mx-journal-prototype-v1'
+import { readJournalEntry, saveJournalPhase, todayKey } from '../../lib/journalStorage'
 
 const PHASES = [
   {
@@ -33,19 +32,14 @@ const PHASES = [
 ]
 
 function readSaved() {
-  try {
-    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
-    return value.date === new Date().toISOString().slice(0, 10) ? value : {}
-  } catch {
-    return {}
-  }
-}
-
-function writeSaved(value) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(value))
-  } catch {
-    // Local persistence is best effort; the current screen remains usable.
+  const entry = readJournalEntry(todayKey())
+  const drafts = Object.fromEntries(
+    PHASES.map(({ key }) => [key, entry.cycle[key === 'next' ? 'newStep' : key]?.text || '']),
+  )
+  const phaseIndex = PHASES.findIndex(({ key }) => !drafts[key].trim())
+  return {
+    phaseIndex: phaseIndex === -1 ? PHASES.length - 1 : phaseIndex,
+    drafts,
   }
 }
 
@@ -58,19 +52,27 @@ export default function JournalHome({ onOpenMentor }) {
   const completed = PHASES.filter(item => drafts[item.key]?.trim()).length
   const value = drafts[phase.key] || ''
 
+  function storagePhaseKey() {
+    return phase.key === 'next' ? 'newStep' : phase.key
+  }
+
   function updateValue(nextValue) {
     const nextDrafts = { ...drafts, [phase.key]: nextValue }
     setDrafts(nextDrafts)
-    writeSaved({ date: new Date().toISOString().slice(0, 10), phaseIndex, drafts: nextDrafts })
+    saveJournalPhase({ date: todayKey(), phase: storagePhaseKey(), text: nextValue })
   }
 
   function continueFlow() {
     if (!value.trim()) return
     platform.haptic('light')
+    saveJournalPhase({
+      date: todayKey(),
+      phase: storagePhaseKey(),
+      text: value,
+      status: isLast ? 'final' : 'draft',
+    })
     if (isLast) return
-    const nextIndex = phaseIndex + 1
-    setPhaseIndex(nextIndex)
-    writeSaved({ date: new Date().toISOString().slice(0, 10), phaseIndex: nextIndex, drafts })
+    setPhaseIndex(index => index + 1)
   }
 
   return (

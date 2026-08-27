@@ -9,6 +9,7 @@ import {
 } from '../../src/config/practiceAvailability.js'
 import { withQuery } from '../../src/lib/apiQuery.js'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from '../../src/lib/moodCheckGate.js'
+import { clearJournalStore, readJournalEntry, saveJournalPhase } from '../../src/lib/journalStorage.js'
 
 test('allowlist сохраняет текущие семь доступных практик', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
@@ -185,10 +186,38 @@ test('MXL-JOURNAL-001 публикует полноценный четыре-ф�
   assert.match(journal, /Анализ/)
   assert.match(journal, /Новый шаг/)
   assert.match(journal, /JournalTextarea/)
-  assert.match(journal, /localStorage/)
+  assert.match(journal, /readJournalEntry|saveJournalPhase/)
   assert.match(journal, /Пойти глубже с наставником/)
   assert.match(mentalix, /JournalHome/)
   assert.match(mentalix, /journalOpen/)
+})
+
+test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат', () => {
+  const memory = new Map()
+  globalThis.localStorage = {
+    getItem: key => memory.get(key) || null,
+    setItem: (key, value) => memory.set(key, value),
+    removeItem: key => memory.delete(key),
+  }
+
+  memory.set('mx-journal-prototype-v1', JSON.stringify({
+    date: '2026-08-27',
+    phaseIndex: 1,
+    drafts: { idea: 'Старая идея', action: 'Один шаг' },
+  }))
+
+  const migrated = readJournalEntry('2026-08-27')
+  assert.equal(migrated.cycle.idea.text, 'Старая идея')
+  assert.equal(migrated.cycle.idea.status, 'draft')
+
+  saveJournalPhase({ date: '2026-08-27', phase: 'analysis', text: 'Итог дня' })
+  saveJournalPhase({ date: '2026-08-27', phase: 'newStep', text: 'Продолжить завтра', status: 'final' })
+  const saved = readJournalEntry('2026-08-27')
+  assert.equal(saved.cycle.analysis.status, 'draft')
+  assert.equal(saved.cycle.newStep.status, 'final')
+  assert.equal(saved.cycle.newStep.text, 'Продолжить завтра')
+  assert.match(saved.updatedAt, /^\d{4}-\d{2}-\d{2}T/)
+  assert.equal(clearJournalStore(), true)
 })
 
 test('MXL-009 ограничивает insights описательными наблюдениями', () => {
