@@ -5,6 +5,7 @@ const root = process.cwd()
 const ignored = new Set(['.git', 'node_modules', 'dist'])
 const requiredFiles = [
   'README.md',
+  'PROJECT_BRIEF.md',
   'PRODUCT.md',
   'DESIGN_SYSTEM.md',
   'ARCHITECTURE.md',
@@ -56,7 +57,9 @@ for (const absolute of files) {
       const id = match[1]
       const previous = taskHeadings.get(id)
       if (previous)
-        errors.push(`TASKS.md: duplicate task heading ${id} at lines ${previous} and ${index + 1}`)
+        errors.push(
+          `docs/TASK_INDEX.md: duplicate task heading ${id} at lines ${previous} and ${index + 1}`
+        )
       else taskHeadings.set(id, index + 1)
     }
   }
