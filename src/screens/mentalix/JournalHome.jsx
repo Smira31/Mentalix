@@ -82,7 +82,7 @@ export default function JournalHome({ onOpenMentor }) {
           <BookOpen size={21} strokeWidth={1.7} />
         </div>
         <div>
-          <div className="mx-ai-title text-cream leading-none">журнал.</div>
+          <div className="mx-ai-title font-display mx-type-page text-cream">журнал.</div>
           <div className="mx-ai-meta text-gold mt-1">сегодня · {completed}/4 шага</div>
         </div>
         <button
@@ -106,7 +106,7 @@ export default function JournalHome({ onOpenMentor }) {
           >
             <div className={`h-1.5 ${index <= phaseIndex ? 'bg-gold' : 'bg-cream/15'}`} />
             <div
-              className={`mt-2 text-[10px] ${index === phaseIndex ? 'text-gold' : 'text-faint'}`}
+              className={`mt-2 mx-type-meta ${index === phaseIndex ? 'text-gold' : 'text-faint'}`}
             >
               {item.label}
             </div>
@@ -115,11 +115,11 @@ export default function JournalHome({ onOpenMentor }) {
       </div>
 
       <div className="pt-9">
-        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
+        <div className="flex items-center gap-3 mx-type-meta uppercase tracking-[0.14em] text-faint">
           <PenLine size={15} className="text-gold" />
           {phase.label}
         </div>
-        <h1 className="mx-ai-title mt-4 text-cream font-display">{phase.title}</h1>
+        <h1 className="mx-ai-title font-display mx-type-hero mt-4 text-cream">{phase.title}</h1>
         <p className="mx-ai-body mt-4 max-w-[310px] text-muted">{phase.hint}</p>
       </div>
 
@@ -139,12 +139,12 @@ export default function JournalHome({ onOpenMentor }) {
           type="button"
           onClick={continueFlow}
           disabled={!value.trim()}
-          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-gold px-5 text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-gold px-5 mx-type-control text-emerald-deep disabled:opacity-35"
         >
           {isLast ? <Check size={19} /> : <ArrowRight size={19} />}
           {isLast ? 'Закрыть сегодняшний цикл' : 'Продолжить'}
         </button>
-        <div className="mt-3 flex items-center justify-between text-[12px] text-faint">
+        <div className="mt-3 flex items-center justify-between mx-type-meta text-faint">
           <button
             type="button"
             onClick={onOpenMentor}

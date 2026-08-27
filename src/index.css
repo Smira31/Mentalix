@@ -250,6 +250,77 @@ button {
   letter-spacing: -0.02em;
 }
 
+/*
+ * MXL-TYPE-CONSISTENCY-001 — единая оптическая шкала верхнеуровневых экранов.
+ * Onest остаётся единственной пользовательской гарнитурой: здесь задаются роли,
+ * а не новый шрифт. Размеры фиксированы намеренно — они являются проверяемым
+ * контрактом для пяти основных вкладок на узких Telegram viewport.
+ */
+:root {
+  --mx-type-page-size: 2.125rem;
+  --mx-type-greeting-size: 1.75rem;
+  --mx-type-hero-size: 1.75rem;
+  --mx-type-section-size: 1.25rem;
+  --mx-type-card-size: 1.0625rem;
+  --mx-type-body-size: 1rem;
+  --mx-type-control-size: 0.9375rem;
+  --mx-type-meta-size: 0.75rem;
+}
+
+.mx-type-page {
+  font-size: var(--mx-type-page-size);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.mx-type-greeting {
+  font-size: var(--mx-type-greeting-size);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.mx-type-hero {
+  font-size: var(--mx-type-hero-size);
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.mx-type-section {
+  font-size: var(--mx-type-section-size);
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.mx-type-card {
+  font-size: var(--mx-type-card-size);
+  line-height: 1.28;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.mx-type-body {
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+.mx-type-control {
+  font-size: var(--mx-type-control-size);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.mx-type-meta {
+  font-size: var(--mx-type-meta-size);
+  line-height: 1.25;
+  font-weight: 600;
+}
+
 /* AI-экраны: единая шкала, проверяемая на 320px и 390px viewport. */
 .mx-ai-title {
   font-size: clamp(1.75rem, 7vw, 2.125rem);

@@ -409,3 +409,44 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
 })
+
+test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale для пяти вкладок', () => {
+  const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const practices = readFileSync(
+    new URL('../../src/screens/Practices.jsx', import.meta.url),
+    'utf8'
+  )
+  const library = readFileSync(new URL('../../src/screens/Library.jsx', import.meta.url), 'utf8')
+  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
+  const personaPicker = readFileSync(
+    new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
+    'utf8'
+  )
+  const journalHome = readFileSync(
+    new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(styles, /--mx-type-page-size:\s*2\.125rem/)
+  assert.match(styles, /\.mx-type-page\s*\{[\s\S]*line-height:\s*1[\s\S]*font-weight:\s*700/)
+  assert.match(styles, /\.mx-type-greeting\s*\{[\s\S]*font-size:\s*var\(--mx-type-greeting-size\)/)
+  assert.match(styles, /\.mx-type-body\s*\{[\s\S]*font-size:\s*var\(--mx-type-body-size\)/)
+  assert.match(styles, /\.mx-type-control\s*\{[\s\S]*font-size:\s*var\(--mx-type-control-size\)/)
+  assert.doesNotMatch(styles, /Honest/)
+
+  assert.match(app, /mx-type-greeting/)
+  assert.match(today, /mx-type-hero/)
+  assert.match(today, /mx-type-section/)
+  assert.match(practices, /mx-type-page/)
+  assert.match(practices, /mx-type-card/)
+  assert.match(library, /mx-type-page/)
+  assert.match(library, /mx-type-control/)
+  assert.match(analytics, /mx-type-page/)
+  assert.match(analytics, /mx-type-section/)
+  assert.match(personaPicker, /mx-type-page/)
+  assert.match(personaPicker, /mx-type-section/)
+  assert.match(journalHome, /mx-type-page/)
+  assert.match(journalHome, /mx-type-hero/)
+})

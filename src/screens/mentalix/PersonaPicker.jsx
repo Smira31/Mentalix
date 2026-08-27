@@ -114,9 +114,9 @@ export default function PersonaPicker({ user, onPick }) {
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="mx-ai-title text-cream lowercase mt-4 mb-1">с кем говорим.</h2>
+      <h2 className="font-display mx-type-page text-cream lowercase mt-4 mb-1">с кем говорим.</h2>
 
-      <p className="mx-ai-caption text-faint mb-5">три собеседника, три отдельных разговора</p>
+      <p className="mx-type-meta text-faint mb-5">три собеседника, три отдельных разговора</p>
 
       <AiFlowIndicator active="idea" />
 
@@ -190,7 +190,7 @@ export default function PersonaPicker({ user, onPick }) {
                 />
               </div>
 
-              <div className="mx-ai-title text-cream mt-3 mx-persona-card__title">
+              <div className="mx-ai-title font-display mx-type-section text-cream mt-3 mx-persona-card__title">
                 {persona.name}
               </div>
 
@@ -198,7 +198,7 @@ export default function PersonaPicker({ user, onPick }) {
                 {persona.tagline}
               </div>
 
-              <p className="mx-ai-caption text-muted mt-2.5 mx-persona-card__description">
+              <p className="mx-type-body text-muted mt-2.5 mx-persona-card__description">
                 {persona.desc}
               </p>
 
@@ -265,7 +265,7 @@ export default function PersonaPicker({ user, onPick }) {
 
                         onPick(persona.key, '')
                       }}
-                      className="cta-pill w-full py-3.5 text-[15px] mx-persona-card__cta"
+                      className="cta-pill mx-type-control w-full py-3.5 mx-persona-card__cta"
                     >
                       Говорить
                     </button>
@@ -292,7 +292,7 @@ export default function PersonaPicker({ user, onPick }) {
         ))}
       </div>
 
-      <p className="mx-ai-caption text-faint mt-6 text-center">
+      <p className="mx-type-meta text-faint mt-6 text-center">
         У каждого своя история — разговоры не смешиваются.
       </p>
     </div>

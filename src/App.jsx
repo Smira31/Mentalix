@@ -878,7 +878,7 @@ export default function App() {
               <h1
                 className="
                 font-display
-                text-xl
+                mx-type-greeting
                 text-cream
                 lowercase
               "

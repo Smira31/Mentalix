@@ -84,13 +84,13 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
       <span className="min-w-0 flex-1 py-3">
         <span
           className={[
-            'block font-display text-[16px] font-semibold leading-tight tracking-[-0.02em]',
+            'block font-display mx-type-card',
             soon ? 'text-muted' : 'text-cream',
           ].join(' ')}
         >
           {title}
         </span>
-        <span className="block mt-1 text-[12px] leading-[1.3] text-muted">{subtitle}</span>
+        <span className="block mt-1 mx-type-body text-muted">{subtitle}</span>
       </span>
 
       <span className="w-[48px] shrink-0 flex items-center justify-end gap-2">
@@ -114,7 +114,7 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
 function PracticeCategory({ title, children }) {
   return (
     <section className="mt-7 first:mt-0">
-      <h3 className="mb-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">
+      <h3 className="mb-2 mx-type-meta uppercase tracking-[0.12em] text-muted">
         {title}
       </h3>
       <div>{children}</div>
@@ -240,9 +240,7 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
         <h2
           className="
             font-display
-            text-[32px]
-            leading-[0.95]
-            tracking-[-0.04em]
+            mx-type-page
             text-cream
             lowercase
           "

@@ -528,15 +528,15 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
   const heroCheckinContent = (
     <>
-      <div className="text-[13px] text-muted font-semibold mb-2">
+      <div className="mx-type-meta text-muted mb-2">
         {todayState === 'reviewPending' ? 'Анализ дня' : 'Идея дня'}
       </div>
 
-      <h2 className="font-display text-[28px] text-cream leading-tight">
+      <h2 className="font-display mx-type-hero text-cream">
         {todayState === 'reviewPending' ? 'Разобрать день?' : 'Как ты?'}
       </h2>
 
-      <p className="text-[14px] text-muted mt-2">
+      <p className="mx-type-body text-muted mt-2">
         {todayState === 'reviewPending'
           ? 'Уроки и то, чем стоит гордиться'
           : 'Короткая утренняя настройка'}
@@ -565,23 +565,23 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
           changeSub('checkin')
         }}
-        className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+        className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
         {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
       </button>
 
-      {next && <p className="text-[12px] text-faint mt-5">Следующее действие: {next.title}</p>}
+      {next && <p className="mx-type-meta text-faint mt-5">Следующее действие: {next.title}</p>}
     </>
   )
 
   const heroContentByState = {
     dayClosed: (
       <>
-        <div className="text-[13px] text-muted font-semibold mb-2">Сегодня</div>
+        <div className="mx-type-meta text-muted mb-2">Сегодня</div>
 
-        <h2 className="font-display text-[28px] text-cream leading-tight">День закрыт</h2>
+        <h2 className="font-display mx-type-hero text-cream">День закрыт</h2>
 
-        <p className="text-[14px] text-muted mt-2">Вечерний разбор завершён</p>
+        <p className="mx-type-body text-muted mt-2">Вечерний разбор завершён</p>
 
         <button
           onClick={() => {
@@ -589,7 +589,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             changeSub('checkin')
           }}
-          className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
+          className="cta-pill mx-type-control px-9 py-4 mx-auto mt-7"
         >
           Открыть разбор снова
         </button>
@@ -621,11 +621,11 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
     empty: (
       <>
-        <div className="text-[13px] text-muted font-semibold mb-2">Твой путь ждёт</div>
+        <div className="mx-type-meta text-muted mb-2">Твой путь ждёт</div>
 
-        <h2 className="font-display text-[26px] text-cream leading-tight">Добавь первый ритуал</h2>
+        <h2 className="font-display mx-type-hero text-cream">Добавь первый ритуал</h2>
 
-        <p className="text-[14px] text-muted mt-2">
+        <p className="mx-type-body text-muted mt-2">
           Система работает через регулярность — начни с одного
         </p>
 
@@ -635,7 +635,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             onOpenPractice('rituals')
           }}
-          className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+          className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
         >
           Начать
         </button>
@@ -656,11 +656,11 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         />
       ) : (
         <>
-          <div className="text-[13px] text-muted font-semibold mb-2">Действие дня</div>
+          <div className="mx-type-meta text-muted mb-2">Действие дня</div>
 
-          <h2 className="font-display text-[28px] text-cream leading-tight">{next.title}</h2>
+          <h2 className="font-display mx-type-hero text-cream">{next.title}</h2>
 
-          <p className="text-[14px] text-muted mt-2">{next.meta}</p>
+          <p className="mx-type-body text-muted mt-2">{next.meta}</p>
 
           <button
             onClick={() => {
@@ -668,24 +668,24 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
               onOpenPractice(next.sub)
             }}
-            className="cta-pill text-[16px] px-11 py-4 mx-auto mt-7"
+            className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
           >
             Начать
           </button>
 
-          <p className="text-[12px] text-faint mt-5">{remainingActionsText}</p>
+          <p className="mx-type-meta text-faint mt-5">{remainingActionsText}</p>
         </>
       )),
 
     allDone: (
       <>
-        <div className="text-[13px] text-muted font-semibold mb-2">Новый шаг</div>
+        <div className="mx-type-meta text-muted mb-2">Новый шаг</div>
 
-        <h2 className="font-display text-[26px] text-cream leading-tight">
+        <h2 className="font-display mx-type-hero text-cream">
           Сегодня ты выше, чем вчера
         </h2>
 
-        <p className="text-[14px] text-muted mt-2">Все практики закрыты</p>
+        <p className="mx-type-body text-muted mt-2">Все практики закрыты</p>
 
         <button
           onClick={() => {
@@ -693,7 +693,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
             onGoMentor()
           }}
-          className="cta-pill text-[16px] px-9 py-4 mx-auto mt-7"
+          className="cta-pill mx-type-control px-9 py-4 mx-auto mt-7"
         >
           Поговорить с наставником
         </button>
@@ -799,7 +799,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           ====================================================== */}
 
       {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
-        <p className="text-center text-[12px] text-faint font-semibold mt-4">
+        <p className="text-center mx-type-meta text-faint mt-4">
           {activeToday < 20
             ? `Сегодня в пути вместе с тобой: ${activeToday}`
             : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
@@ -824,17 +824,17 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           </span>
 
           <span className="flex-1 text-left">
-            <span className="block text-[14px] font-bold text-cream">
+            <span className="block mx-type-card text-cream">
               {todayState === 'dayClosed' ? 'День разобран' : 'Чек-ин выполнен'}
             </span>
 
-            <span className="block text-[12px] text-muted font-medium">
+            <span className="block mx-type-meta text-muted">
               {checkin.emotion ? `${checkin.emotion} · ` : ''}
               настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
             </span>
           </span>
 
-          <span className="text-[12px] font-semibold text-faint shrink-0">изменить</span>
+          <span className="mx-type-meta text-faint shrink-0">изменить</span>
         </button>
       )}
 
@@ -855,8 +855,8 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       {!hiddenCards.includes('dayProgress') &&
         (isEmpty ? (
           <EmptyState className="mt-8">
-            <h3 className="font-display text-lg text-cream mb-1">Пока нет практик</h3>
-            <p className="text-sm text-muted mb-4 leading-relaxed">
+            <h3 className="font-display mx-type-section text-cream mb-1">Пока нет практик</h3>
+            <p className="mx-type-body text-muted mb-4">
               Добавь ритуал или аскезу — здесь появится прогресс дня.
             </p>
             <button
@@ -865,7 +865,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
                 onOpenPractice?.()
               }}
-              className="cta-pill px-9 py-3.5 text-[14px]"
+              className="cta-pill mx-type-control px-9 py-3.5"
             >
               Выбрать практику
             </button>
@@ -883,7 +883,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           >
             <ArrowUpRight size={18} className="text-gold shrink-0" strokeWidth={2} />
 
-            <span className="text-[14px] font-bold text-cream whitespace-nowrap">День</span>
+            <span className="mx-type-card text-cream whitespace-nowrap">День</span>
 
             <div className="flex-1 h-[5px] rounded-full bg-cream/10 overflow-hidden">
               <div
@@ -894,7 +894,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
               />
             </div>
 
-            <span className="text-[13px] font-bold text-gold whitespace-nowrap">
+            <span className="mx-type-control text-gold whitespace-nowrap">
               {done} из {total}
             </span>
 
@@ -915,15 +915,15 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           }}
           className="mx-today-theme-card w-full px-5 py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
-          <span className="block text-[11px] text-faint font-bold uppercase tracking-wider mb-2">
+          <span className="block mx-type-meta text-faint uppercase tracking-wider mb-2">
             Тема недели
           </span>
 
-          <span className="block font-display text-[22px] text-cream lowercase leading-tight">
+          <span className="block font-display mx-type-section text-cream lowercase">
             {theme.title}
           </span>
 
-          <span className="block text-[13px] text-muted mt-2 leading-snug">{theme.subtitle}</span>
+          <span className="block mx-type-body text-muted mt-2">{theme.subtitle}</span>
 
           <span className="flex items-center justify-center gap-1.5 mt-4">
             {Array.from({
@@ -938,7 +938,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
             ))}
           </span>
 
-          <span className="block text-[12px] text-faint font-semibold mt-3">
+          <span className="block mx-type-meta text-faint mt-3">
             {theme.reflected_days > 0
               ? `Пройдено дней: ${theme.reflected_days} из ${theme.total_days}`
               : 'Начать неделю'}
@@ -966,13 +966,13 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           }}
           className="w-full px-2 py-5 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
-          <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
+          <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
-          <span className="block font-display text-[19px] text-cream leading-snug">
+          <span className="block font-display mx-type-section text-cream">
             {thoughtOfDay.text}
           </span>
 
-          <span className="block text-[11px] text-faint font-semibold mt-4">
+          <span className="block mx-type-meta text-faint mt-4">
             {thoughtOfDay.attribution} · открыть →
           </span>
         </button>
