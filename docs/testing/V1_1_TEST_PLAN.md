@@ -59,5 +59,5 @@ v1.1.0 нельзя объявлять готовой только по зелё
 2. [`MXL-012_ANDROID_GATE.md`](MXL-012_ANDROID_GATE.md) — Android Telegram gate.
 3. [`UI_RESPONSIVE_CHECK.md`](UI_RESPONSIVE_CHECK.md) — общая responsive UI инструкция.
 4. [`TELEGRAM_GATE.md`](TELEGRAM_GATE.md) — базовый Telegram/iPhone gate.
-5. [`QA.md`](../../QA.md) — общие QA-сценарии.
+5. [`QA_BASELINE.md`](QA_BASELINE.md) — общие QA-сценарии.
 6. [`docs/TASK_INDEX.md`](../TASK_INDEX.md) — канонический backlog.
