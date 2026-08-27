@@ -9,7 +9,7 @@ import {
   useFullscreenSurface,
 } from '../lib/fullscreenSurface'
 import { api } from '../lib/api'
-import { platform } from '../platform'
+import { platform, platformName } from '../platform'
 
 const STEP_TYPES = [
   ['prompt', 'Вопрос'],
@@ -406,6 +406,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
 }
 
 export default function GuidedJournals({ user }) {
+  const canUseGuidedJournals = platformName === 'telegram' && Number(user?.id) > 0
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
   const [templates, setTemplates] = useState(null)
@@ -427,6 +428,7 @@ export default function GuidedJournals({ user }) {
   const categories = useMemo(() => allCategories, [allCategories])
 
   useEffect(() => {
+    if (!canUseGuidedJournals) return undefined
     let active = true
     const timeoutId = window.setTimeout(async () => {
       if (active) setError('')
@@ -448,9 +450,10 @@ export default function GuidedJournals({ user }) {
       active = false
       window.clearTimeout(timeoutId)
     }
-  }, [query, category, user.id])
+  }, [canUseGuidedJournals, query, category, user.id])
 
   useEffect(() => {
+    if (!canUseGuidedJournals) return undefined
     let active = true
     api.journalTemplates
       .list(user.id)
@@ -464,9 +467,10 @@ export default function GuidedJournals({ user }) {
     return () => {
       active = false
     }
-  }, [user.id])
+  }, [canUseGuidedJournals, user.id])
 
   useEffect(() => {
+    if (!canUseGuidedJournals) return undefined
     let active = true
     api.journalTemplates
       .sessions(user.id, 'draft')
@@ -479,9 +483,10 @@ export default function GuidedJournals({ user }) {
     return () => {
       active = false
     }
-  }, [user.id])
+  }, [canUseGuidedJournals, user.id])
 
   const loadCompletedSessions = useCallback(async () => {
+    if (!canUseGuidedJournals) return
     setCompletedSessionsLoading(true)
     setCompletedSessionsError('')
     try {
@@ -495,16 +500,18 @@ export default function GuidedJournals({ user }) {
     } finally {
       setCompletedSessionsLoading(false)
     }
-  }, [user.id])
+  }, [canUseGuidedJournals, user.id])
 
   useEffect(() => {
+    if (!canUseGuidedJournals) return undefined
     const timeoutId = window.setTimeout(() => {
       void loadCompletedSessions()
     }, 0)
     return () => window.clearTimeout(timeoutId)
-  }, [loadCompletedSessions])
+  }, [canUseGuidedJournals, loadCompletedSessions])
 
   async function openTemplate(template) {
+    if (!canUseGuidedJournals) return
     setLoading(true)
     setError('')
     try {
@@ -528,7 +535,7 @@ export default function GuidedJournals({ user }) {
   }
 
   async function startOrResume() {
-    if (!selected) return
+    if (!canUseGuidedJournals || !selected) return
     setLoading(true)
     setError('')
     try {
@@ -547,6 +554,7 @@ export default function GuidedJournals({ user }) {
   }
 
   async function saveProgress({ complete = false } = {}) {
+    if (!canUseGuidedJournals) return
     const steps = session?.template.steps || []
     const step = steps[stepIndex]
     if (!step) return
@@ -599,7 +607,8 @@ export default function GuidedJournals({ user }) {
   }
 
   async function deletePrivateTemplate() {
-    if (!selected || selected.visibility !== 'private' || deletingTemplate) return
+    if (!canUseGuidedJournals || !selected || selected.visibility !== 'private' || deletingTemplate)
+      return
     if (
       !window.confirm(
         'Удалить личный шаблон? Он исчезнет из каталога. Уже начатые сессии сохранят свой набор вопросов и не будут удалены.'
@@ -621,6 +630,23 @@ export default function GuidedJournals({ user }) {
     } finally {
       setDeletingTemplate(false)
     }
+  }
+
+  if (!canUseGuidedJournals) {
+    return (
+      <section className="mt-8 animate-fade-in">
+        <div className="rounded-3xl bg-emerald p-5">
+          <h2 className="font-display text-[25px] text-cream">Направленные записи</h2>
+          <p className="mt-3 text-[14px] leading-relaxed text-muted">
+            Личные шаблоны и сохранённые ответы доступны в Telegram Mini App с проверенной подписью.
+          </p>
+          <p className="mt-2 text-[12px] leading-relaxed text-faint">
+            Веб-версия временно не открывает этот раздел, пока для неё не появятся server-side
+            sessions.
+          </p>
+        </div>
+      </section>
+    )
   }
 
   if (completedSession) {

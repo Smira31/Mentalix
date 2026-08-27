@@ -3,6 +3,7 @@ import { ChevronDown, Plus, Search, X } from 'lucide-react'
 
 import MarkdownText from '../components/MarkdownText'
 import { api } from '../lib/api'
+import { platformName } from '../platform'
 
 const MOODS = [
   ['', 'Любое настроение'],
@@ -14,6 +15,7 @@ const MOODS = [
 ]
 
 export default function JourneySearch({ user }) {
+  const canUsePrivateJourney = platformName === 'telegram' && Number(user?.id) > 0
   const [query, setQuery] = useState('')
   const [tags, setTags] = useState([])
   const [selectedTagIds, setSelectedTagIds] = useState([])
@@ -31,6 +33,7 @@ export default function JourneySearch({ user }) {
   const [savingEntryTags, setSavingEntryTags] = useState(false)
 
   async function loadEntries({ cursor, append = false } = {}) {
+    if (!canUsePrivateJourney) return
     setLoading(true)
     setError('')
     try {
@@ -61,6 +64,7 @@ export default function JourneySearch({ user }) {
   }
 
   useEffect(() => {
+    if (!canUsePrivateJourney) return undefined
     let active = true
     const timeoutId = window.setTimeout(async () => {
       try {
@@ -75,9 +79,10 @@ export default function JourneySearch({ user }) {
       active = false
       window.clearTimeout(timeoutId)
     }
-  }, [user.id])
+  }, [canUsePrivateJourney, user.id])
 
   useEffect(() => {
+    if (!canUsePrivateJourney) return undefined
     let active = true
     const timeoutId = window.setTimeout(async () => {
       if (active) {
@@ -109,10 +114,10 @@ export default function JourneySearch({ user }) {
       active = false
       window.clearTimeout(timeoutId)
     }
-  }, [query, selectedTagIds, mood, emotion, fromDate, toDate, sort, user.id])
+  }, [canUsePrivateJourney, query, selectedTagIds, mood, emotion, fromDate, toDate, sort, user.id])
 
   async function createTag() {
-    if (!tagName.trim()) return
+    if (!canUsePrivateJourney || !tagName.trim()) return
     setError('')
     try {
       const tag = await api.journey.createTag(user.id, {
@@ -130,6 +135,7 @@ export default function JourneySearch({ user }) {
   }
 
   async function deleteTag(tag) {
+    if (!canUsePrivateJourney) return
     setError('')
     try {
       await api.journey.removeTag(tag.id, user.id)
@@ -159,7 +165,7 @@ export default function JourneySearch({ user }) {
   }
 
   async function saveEntryTags(entry) {
-    if (savingEntryTags) return
+    if (!canUsePrivateJourney || savingEntryTags) return
     setSavingEntryTags(true)
     setError('')
     try {
@@ -182,6 +188,23 @@ export default function JourneySearch({ user }) {
     } finally {
       setSavingEntryTags(false)
     }
+  }
+
+  if (!canUsePrivateJourney) {
+    return (
+      <section className="mt-1 animate-fade-in" aria-label="Поиск по истории">
+        <div className="rounded-3xl bg-emerald p-5">
+          <h2 className="font-display text-[23px] text-cream">Поиск по Journey</h2>
+          <p className="mt-3 text-[14px] leading-relaxed text-muted">
+            Личные записи и теги доступны в Telegram Mini App с проверенной подписью.
+          </p>
+          <p className="mt-2 text-[12px] leading-relaxed text-faint">
+            Веб-версия временно не открывает этот раздел, пока для неё не появятся server-side
+            sessions.
+          </p>
+        </div>
+      </section>
+    )
   }
 
   return (

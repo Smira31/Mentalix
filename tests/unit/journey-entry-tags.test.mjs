@@ -20,6 +20,19 @@ test('Journey search передаёт видимые emotion и date range filte
   assert.match(journeySource, /to_date: toDate \|\| undefined/)
 })
 
+test('Journey закрывает private API для legacy web-ID до server-side sessions', () => {
+  assert.match(
+    journeySource,
+    /const canUsePrivateJourney = platformName === 'telegram' && Number\(user\?\.id\) > 0/
+  )
+  assert.match(journeySource, /if \(!canUsePrivateJourney\) return undefined/)
+  assert.match(
+    journeySource,
+    /Личные записи и теги доступны в Telegram Mini App с проверенной подписью\./
+  )
+  assert.match(journeySource, /пока для неё не появятся server-side\s+sessions\./)
+})
+
 test('Journey предоставляет доступный inline editor tags без смены основной навигации', () => {
   assert.match(journeySource, /Изменить теги/)
   assert.match(journeySource, /Теги для записи \$\{entry\.date\}/)
