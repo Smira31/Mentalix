@@ -17,6 +17,13 @@ import {
   readJournalEntry,
   saveJournalPhase,
 } from '../../src/lib/journalStorage.js'
+import {
+  clearCheckinDraft,
+  draftHasContent,
+  morningDraftToNote,
+  readCheckinDraft,
+  saveCheckinDraft,
+} from '../../src/lib/checkinDraft.js'
 
 test('allowlist сохраняет текущие семь доступных практик', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
@@ -224,6 +231,48 @@ test('MXL-JOURNAL-001 открывает Journal Flow из «Практик» и
   assert.match(practices, /<JournalFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\}/)
   assert.doesNotMatch(mentalix, /JournalHome|journalOpen/)
   assert.match(mentalix, /PersonaPicker/)
+})
+
+test('MXL-P0-CORE-JOURNAL-001 сохраняет local-only draft пользователя и формирует поддерживаемый note payload', () => {
+  const memory = new Map()
+  globalThis.localStorage = {
+    getItem: key => memory.get(key) || null,
+    setItem: (key, value) => memory.set(key, value),
+    removeItem: key => memory.delete(key),
+  }
+
+  const draft = {
+    mode: 'reflect',
+    fact: 'Утром был сложный разговор.',
+    feeling: 'Напряжён',
+    nextStep: 'Сначала составлю короткий план.',
+  }
+
+  assert.equal(saveCheckinDraft({ userId: 17, date: '2026-08-27', draft }), true)
+  assert.equal(draftHasContent(readCheckinDraft({ userId: 17, date: '2026-08-27' })), true)
+  assert.equal(readCheckinDraft({ userId: 18, date: '2026-08-27' }).fact, '')
+  assert.equal(
+    morningDraftToNote(readCheckinDraft({ userId: 17, date: '2026-08-27' })),
+    '**Факт:** Утром был сложный разговор.\n\n**Чувство:** Напряжён\n\n**Следующий шаг:** Сначала составлю короткий план.'
+  )
+  assert.equal(clearCheckinDraft({ userId: 17, date: '2026-08-27' }), true)
+  assert.equal(draftHasContent(readCheckinDraft({ userId: 17, date: '2026-08-27' })), false)
+})
+
+test('MXL-P0-CORE-JOURNAL-001 содержит режимы записи, confirmation и detail view без нового journal route', () => {
+  const checkin = readFileSync(new URL('../../src/screens/CheckIn.jsx', import.meta.url), 'utf8')
+  const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
+
+  assert.match(checkin, /label: 'Коротко'/)
+  assert.match(checkin, /label: 'Разобрать'/)
+  assert.match(checkin, /label: 'Своя запись'/)
+  assert.match(checkin, /Черновик сохранён локально/)
+  assert.match(checkin, /Есть несохранённая запись/)
+  assert.match(checkin, /clearCheckinDraft/)
+  assert.match(checkin, /aria-modal="true"/)
+  assert.match(history, /function HistoryDetail/)
+  assert.match(history, /Открыть запись за/)
+  assert.match(history, /content=\{checkin\.note\}/)
 })
 
 test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат', () => {
