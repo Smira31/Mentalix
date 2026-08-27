@@ -10,6 +10,7 @@ import {
 import { withQuery } from '../../src/lib/apiQuery.js'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from '../../src/lib/moodCheckGate.js'
 import { clearJournalStore, readJournalEntry, saveJournalPhase } from '../../src/lib/journalStorage.js'
+import { readJournalEntry as readHistoryJournalEntry } from '../../src/lib/journalHistory.js'
 
 test('allowlist сохраняет текущие семь доступных практик', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
@@ -218,6 +219,46 @@ test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различае�
   assert.equal(saved.cycle.newStep.text, 'Продолжить завтра')
   assert.match(saved.updatedAt, /^\d{4}-\d{2}-\d{2}T/)
   assert.equal(clearJournalStore(), true)
+})
+
+test('LS-EMPTY-001 возвращает безопасную пустую запись для History', () => {
+  const memory = new Map()
+  globalThis.localStorage = {
+    getItem: key => memory.get(key) || null,
+    setItem: (key, value) => memory.set(key, value),
+    removeItem: key => memory.delete(key),
+  }
+
+  const historyEntry = readHistoryJournalEntry('2026-08-27')
+
+  assert.equal(historyEntry.status, 'empty')
+  assert.equal(historyEntry.completedCount, 0)
+  assert.equal(historyEntry.totalPhases, 4)
+  assert.equal(historyEntry.resumePhase, 'idea')
+  assert.equal(historyEntry.hasContent, false)
+  assert.deepEqual(historyEntry.phases.map(phase => phase.key), [
+    'idea',
+    'action',
+    'analysis',
+    'newStep',
+  ])
+  assert.ok(historyEntry.phases.every(phase => phase.text === '' && phase.status === 'draft'))
+})
+
+test('LS-CORRUPT-001 не роняет History при невалидном JSON v2 storage', () => {
+  const memory = new Map([['mx-journal-v2', '{broken-json']])
+  globalThis.localStorage = {
+    getItem: key => memory.get(key) || null,
+    setItem: (key, value) => memory.set(key, value),
+    removeItem: key => memory.delete(key),
+  }
+
+  assert.doesNotThrow(() => readHistoryJournalEntry('2026-08-27'))
+  const historyEntry = readHistoryJournalEntry('2026-08-27')
+  assert.equal(historyEntry.status, 'empty')
+  assert.equal(historyEntry.completedCount, 0)
+  assert.equal(historyEntry.hasContent, false)
+  assert.equal(memory.get('mx-journal-v2'), '{broken-json')
 })
 
 test('MXL-009 ограничивает insights описательными наблюдениями', () => {

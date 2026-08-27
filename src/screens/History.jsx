@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
+import { readJournalEntry } from '../lib/journalHistory'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
@@ -29,6 +30,14 @@ export default function History({ user }) {
   const [days, setDays] = useState(null)
   const [badges, setBadges] = useState(null)
   const [themeEntries, setThemeEntries] = useState(null)
+  const journalEntry = useMemo(() => {
+    if (!user) return null
+    try {
+      return readJournalEntry()
+    } catch {
+      return null
+    }
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -115,6 +124,32 @@ export default function History({ user }) {
     </div>
   )
 
+  const journalEntryBlock = journalEntry?.hasContent && (
+    <div className="mt-8">
+      <div className="text-[13px] text-muted font-semibold mb-2 px-1">
+        Журнал · {journalEntry.completedCount}/{journalEntry.totalPhases}
+      </div>
+      <div className="rounded-3xl bg-emerald p-5 space-y-3">
+        {journalEntry.phases
+          .filter(phase => phase.text.trim())
+          .map(phase => (
+            <div key={phase.key}>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[12px] font-bold text-gold">{phase.label}</span>
+                <span className="text-[11px] text-faint">
+                  {phase.status === 'final' ? 'завершено' : 'черновик'}
+                </span>
+              </div>
+              <MarkdownText
+                content={phase.text}
+                className="space-y-2 text-[14px] text-muted leading-snug"
+              />
+            </div>
+          ))}
+      </div>
+    </div>
+  )
+
   const themeEntriesBlock = themeEntries && themeEntries.length > 0 && (
     <div className="mt-8">
       <div className="text-[13px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
@@ -147,6 +182,7 @@ export default function History({ user }) {
             <br />и здесь появится первая запись пути.
           </p>
         </EmptyState>
+        {journalEntryBlock}
         {milestonesBlock}
         {themeEntriesBlock}
       </>
@@ -234,6 +270,7 @@ export default function History({ user }) {
         )
       })}
 
+      {journalEntryBlock}
       {milestonesBlock}
       {themeEntriesBlock}
     </div>

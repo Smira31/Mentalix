@@ -3882,7 +3882,6 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Критерии готовности:** backend strings sanitised before rendering, insufficient data remains explicit, no causal/diagnostic language in shipped local rules, unit/docs/lint/build/UX smoke green, manual Analytics/Telegram gate required.
 - **Следующий gate:** проверить Analytics на телефоне с малой и достаточной выборкой, backend insight cards, disclaimer и переход в дневниковый AI-flow.
 
-
 # 2026-08-27 — Русский аудит Stoic → Mentalix и крупный journal backlog
 
 ## MXL-DOCS-STOIC-AUDIT-001 — Русская карта функций и дизайна Stoic
@@ -3897,7 +3896,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ### MXL-JOURNAL-PERSISTENCE-001 — Production-хранение журнала
 
-- **Статус:** backlog; backend-dependent.
+- **Статус:** completed через PR #232; merge commit `26adf72` в `main`.
 - **Размер:** XL.
 - **Цель:** превратить Journal Home prototype в надёжный journal с сохранением утренних и вечерних записей.
 - **Нужно решить/зафиксировать:** entry ID, calendar day и timezone, draft/final, edit/delete, sync conflicts, offline behavior, export и retention.
@@ -3906,11 +3905,13 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ### MXL-JOURNAL-HISTORY-001 — Единая история журнала
 
-- **Статус:** backlog; зависит от `MXL-JOURNAL-PERSISTENCE-001`.
-- **Размер:** L.
-- **Цель:** показывать датированные journal entries и возвращать пользователя к сегодняшнему следующему шагу.
-- **Не дублирует:** существующий History, check-ins, activity, Journey и MXL-021 CTA; добавляет только единый journal date contract и раскрытие записи.
-- **Готово, когда:** пользователь открывает день, видит соответствующие фазы, понимает дату/статус и может перейти к «Продолжить сегодня» без потери контекста.
+- **Статус:** in progress; local read-only mini-slice реализуется в ветке `feat/mxl-journal-history-readonly-001` после завершения PR #224 и #232.
+- **Размер:** S–M для текущего local slice; L для полного cloud/unified scope.
+- **Цель:** показывать сегодняшнюю local-first journal entry в существующем History и возвращать пользователя к следующему шагу без нового backend endpoint.
+- **Не дублирует:** существующий History, check-ins, activity, Journey и MXL-021 CTA; добавляет только read-only adapter, date/status summary и раскрытие записи.
+- **Текущий scope:** `readJournalEntry(date)` → view model, сегодняшняя journal-секция в History, `empty/draft/partial/final`, safe fallback для corrupted storage. CTA «Продолжить сегодня», cloud writes, недатированные badges/themes, tags, search и media не входят в текущий slice.
+- **Проверки:** unit для empty/corrupted states; build/lint/docs:check; ручной Telegram/iPhone gate.
+- **Готово, когда:** пользователь открывает сегодняшний день, видит фазы и статус, может продолжить Journal без потери контекста, а при local storage error History не падает и не показывает ложную синхронизацию.
 
 ### MXL-JOURNAL-PRIVACY-001 — Приватность и AI-consent журнала
 
@@ -3953,15 +3954,21 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Размер:** S/M.
 - **Цель:** напоминать о ритуале без давления, с quiet hours, consent и отключением.
 
+## Актуальный порядок после merge PR #224 и #232
+
+1. Завершить и проверить local read-only mini-slice `MXL-JOURNAL-HISTORY-001`.
+2. Пройти Telegram/iPhone gate и открыть PR для History slice.
+3. Только после этого согласовать backend contract и cloud reconciliation.
+4. Закрыть решения `MXL-JOURNAL-PRIVACY-001` до расширения AI или cloud storage.
+
 ## Приоритет большого продукта
 
-1. Проверить и при необходимости уточнить текущий Journal Home prototype в PR #224.
-2. Получить backend/storage contract и реализовать `MXL-JOURNAL-PERSISTENCE-001`.
-3. Реализовать `MXL-JOURNAL-HISTORY-001`.
-4. Зафиксировать `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
-5. Реализовать `MXL-JOURNAL-PERSONALIZE-001` и `MXL-JOURNAL-GUIDED-001`.
-6. Только после evidence решать tags, search, favorites, memories, reminders и payment.
+1. Реализовать local read-only slice `MXL-JOURNAL-HISTORY-001`.
+2. Получить backend/storage contract для cloud path.
+3. Зафиксировать `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
+4. Реализовать `MXL-JOURNAL-PERSONALIZE-001` и `MXL-JOURNAL-GUIDED-001`.
+5. Только после evidence решать tags, search, favorites, memories, reminders и payment.
 
 ## MXL-JOURNAL-001 — Stoic-inspired Journal Home
 
-Статус: functional prototype реализован; PR #224 ожидает ручной Telegram/iPhone gate. Journal Home встроен во вкладку Mentor без новой вкладки и ведёт через четыре фазы **Идея → Действие → Анализ → Новый шаг**. Используются существующие `JournalTextarea`, AI handoff и локальный prototype draft. Новая backend schema, cloud persistence, теги, custom templates, audio, Memories, community, payment и обязательный streak в scope не входят.
+Статус: functional prototype реализован и вошёл в `main` через PR #224, merge commit `ab76e7a`; ручной Telegram/iPhone gate пройден владельцем перед merge. Journal Home встроен во вкладку Mentor без новой вкладки и ведёт через четыре фазы **Идея → Действие → Анализ → Новый шаг**. Используются существующие `JournalTextarea`, AI handoff и локальный prototype draft. Новая backend schema, cloud persistence, теги, custom templates, audio, Memories, community, payment и обязательный streak в scope не входят.

@@ -1,9 +1,20 @@
 # Mentalix — Current Project State
 
-Дата последней проверки: **26.08.2026, Europe/Moscow**.
+Дата последней проверки: **27.08.2026, Europe/Moscow**.
 
 Этот файл фиксирует только текущее состояние Mentalix. История изменений остаётся
 в `CHANGES.md`, планы — в `ROADMAP.md`, рабочие детали — в `TASKS.md`.
+
+## 0.2 Актуальный journal snapshot на 27.08.2026
+
+- **GitHub `main`:** `26adf7294e45651cdfb29bc08a473a036047f38e`; PR #224 и PR #232 смёржены squash-merge после зелёных checks.
+- **PR #224 — Journal Home:** закрыт через merge commit `ab76e7a`; Journal Home вошёл в `main`, ручной Telegram/iPhone gate владельцем подтверждён перед merge.
+- **PR #232 — local-first persistence:** закрыт через merge commit `26adf72`; `journalStorage.js`, draft/final, legacy migration и регрессионный контракт вошли в `main`. Cloud sync, backend schema и server-side journal storage не реализованы.
+- **Следующая работа:** `MXL-JOURNAL-HISTORY-001`, минимальный local read-only slice для существующего History без нового backend endpoint и cloud writes.
+- **Текущая feature-ветка:** `feat/mxl-journal-history-readonly-001`; adapter и тесты LS-EMPTY-001/LS-CORRUPT-001 подготовлены локально, но ещё не опубликованы в PR.
+- **Privacy/legal:** `MXL-JOURNAL-PRIVACY-001` остаётся `needs-owner`; AI consent, retention, export/delete, provider disclosure, age/safety regime и cloud-sync consent не утверждены.
+
+Старые исторические разделы ниже сохраняются для provenance и не заменяют этот актуальный snapshot.
 
 ## 0. MXL-007 — текущий продуктовый scope
 

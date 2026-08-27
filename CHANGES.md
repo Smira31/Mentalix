@@ -3173,3 +3173,7 @@ PR #221 смёржен в `main` (merge commit `9f9e8fe`), feature-ветка у
 ## 27.08.2026 — MXL-JOURNAL-PERSISTENCE-001: local-first storage slice
 
 Journal Home переведён с прямого prototype `localStorage` на версионируемый `src/lib/journalStorage.js`. Сохраняются четыре фазы цикла, локальная дата устройства, статусы `draft/final`, timestamps и миграция `mx-journal-prototype-v1`. Добавлен регрессионный тест; unit 25/25, lint и build проходят. Cloud sync и backend schema не заявлены готовыми до приватного контракта.
+
+## 27.08.2026 — завершение Journal Home/persistence и старт History mini-slice
+
+PR #224 смёржен в `main` commit `ab76e7a`, PR #232 смёржен в `main` commit `26adf72`. Journal Home и local-first persistence теперь входят в основную ветку; cloud sync, server-side journal schema и AI consent не реализованы. Начат минимальный `MXL-JOURNAL-HISTORY-001`: read-only adapter `readJournalEntry(date)`, сегодняшняя journal-секция в History и регрессии LS-EMPTY-001/LS-CORRUPT-001. Изменения находятся в feature-ветке `feat/mxl-journal-history-readonly-001`.
