@@ -113,11 +113,25 @@ const REMINDER_TIMES = [
 // Часы, с которых «Сегодня» переключается на разбор дня.
 // Это не рассылка: приложение ничего не присылает, просто меняет экран.
 const REVIEW_HOURS = [18, 19, 20, 21, 22]
+const TIMEZONES = [
+  ['Europe/Moscow', 'Москва'],
+  ['Europe/Kaliningrad', 'Калининград'],
+  ['Asia/Yekaterinburg', 'Екатеринбург'],
+  ['Asia/Novosibirsk', 'Новосибирск'],
+  ['Asia/Vladivostok', 'Владивосток'],
+]
 
 export default function Settings({ user, onBack, onNavigate, accent, onAccentChange }) {
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
   const [reviewHour, setReviewHour] = useState(19)
+  const [reminderTimezone, setReminderTimezone] = useState('Europe/Moscow')
+  const [quietHoursOn, setQuietHoursOn] = useState(false)
+  const [quietStart, setQuietStart] = useState(22)
+  const [quietEnd, setQuietEnd] = useState(8)
+  const [writingGoalOn, setWritingGoalOn] = useState(false)
+  const [writingGoalCount, setWritingGoalCount] = useState(3)
+  const [reminderStatus, setReminderStatus] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -127,6 +141,12 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         setReminderHour(s?.reminder_hour ?? 19)
         setReminderOn(!!s?.reminder_enabled)
         setReviewHour(s?.review_hour ?? 19)
+        setReminderTimezone(s?.reminder_timezone ?? 'Europe/Moscow')
+        setQuietHoursOn(s?.quiet_hours_start !== null && s?.quiet_hours_start !== undefined)
+        setQuietStart(s?.quiet_hours_start ?? 22)
+        setQuietEnd(s?.quiet_hours_end ?? 8)
+        setWritingGoalOn(!!s?.writing_goal_enabled)
+        setWritingGoalCount(s?.writing_goal_weekly_count || 3)
       })
       .catch(() => {
         setReminderHour(19)
@@ -159,6 +179,52 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       await api.profile.saveSettings(user.id, { reminder_enabled: enabled, reminder_hour: hour })
     } catch (e) {
       console.error(e)
+    }
+  }
+
+  async function saveQuietHours(nextEnabled = quietHoursOn, nextStart = quietStart, nextEnd = quietEnd) {
+    setQuietHoursOn(nextEnabled)
+    try {
+      await api.profile.saveSettings(user.id, {
+        quiet_hours_enabled: nextEnabled,
+        quiet_hours_start: nextStart,
+        quiet_hours_end: nextEnd,
+      })
+    } catch {
+      setReminderStatus('Не удалось сохранить тихие часы.')
+    }
+  }
+
+  async function saveTimezone(nextTimezone) {
+    const previous = reminderTimezone
+    setReminderTimezone(nextTimezone)
+    try {
+      await api.profile.saveSettings(user.id, { reminder_timezone: nextTimezone })
+    } catch {
+      setReminderTimezone(previous)
+      setReminderStatus('Не удалось изменить часовой пояс.')
+    }
+  }
+
+  async function saveWritingGoal(nextEnabled = writingGoalOn, nextCount = writingGoalCount) {
+    setWritingGoalOn(nextEnabled)
+    setWritingGoalCount(nextCount)
+    try {
+      await api.profile.saveSettings(user.id, {
+        writing_goal_enabled: nextEnabled,
+        writing_goal_weekly_count: nextCount,
+      })
+    } catch {
+      setReminderStatus('Не удалось сохранить цель записи.')
+    }
+  }
+
+  async function snoozeReminders() {
+    try {
+      const result = await api.profile.snoozeReminders(user.id, 2)
+      setReminderStatus(`Напоминания отложены до ${new Date(result.reminder_snoozed_until).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}.`)
+    } catch {
+      setReminderStatus('Не удалось отложить напоминания.')
     }
   }
 
@@ -347,6 +413,30 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
           ))}
         </div>
       )}
+
+      {reminderOn && (
+        <div className="mb-8 w-full space-y-3 rounded-3xl bg-emerald p-4">
+          <label className="block text-[12px] text-muted">
+            Часовой пояс
+            <select value={reminderTimezone} onChange={event => saveTimezone(event.target.value)} className="mt-2 min-h-11 w-full rounded-2xl bg-emerald-light px-3 text-[14px] text-cream">
+              {TIMEZONES.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+          </label>
+          <div className="flex items-center justify-between gap-3">
+            <div><p className="text-[14px] font-semibold text-cream">Тихие часы</p><p className="mt-1 text-[12px] text-muted">В это время бот не пишет.</p></div>
+            <Toggle checked={quietHoursOn} label="Тихие часы" onChange={saveQuietHours} />
+          </div>
+          {quietHoursOn && <div className="grid grid-cols-2 gap-2"><label className="text-[12px] text-muted">С<select value={quietStart} onChange={event => { const value = Number(event.target.value); setQuietStart(value); saveQuietHours(true, value, quietEnd) }} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream">{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></label><label className="text-[12px] text-muted">До<select value={quietEnd} onChange={event => { const value = Number(event.target.value); setQuietEnd(value); saveQuietHours(true, quietStart, value) }} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream">{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></label></div>}
+          <button type="button" onClick={snoozeReminders} className="min-h-11 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream">Отложить на 2 часа</button>
+        </div>
+      )}
+
+      <SectionLabel>Цель письма</SectionLabel>
+      <Card>
+        <Row icon={Heart} title="Записей в неделю" subtitle={writingGoalOn ? `${writingGoalCount} в неделю — без штрафов за пропуск` : 'Выключено'} right={<Toggle checked={writingGoalOn} label="Цель записей в неделю" onChange={saveWritingGoal} />} divider={false} />
+      </Card>
+      {writingGoalOn && <div className="mb-8 flex gap-2 w-full">{[1, 3, 5, 7].map(count => <button type="button" key={count} onClick={() => saveWritingGoal(true, count)} className={['flex-1 min-h-11 rounded-2xl text-[13px] font-bold', writingGoalCount === count ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.04] text-muted'].join(' ')}>{count}</button>)}</div>}
+      {reminderStatus && <p role="status" className="mb-5 w-full text-[12px] text-muted">{reminderStatus}</p>}
 
       <SectionLabel>Разбор дня</SectionLabel>
       <Card>

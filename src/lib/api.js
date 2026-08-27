@@ -258,15 +258,16 @@ export const api = {
 
     getSettings: userId => request(withQuery('/profile/settings', { user_id: userId })),
 
-    saveSettings: (userId, { reminder_enabled, reminder_hour, review_hour }) =>
+    saveSettings: (userId, settings) =>
       request('/profile/settings', {
         method: 'POST',
-        body: JSON.stringify({
-          user_id: userId,
-          reminder_enabled,
-          reminder_hour,
-          review_hour,
-        }),
+        body: JSON.stringify({ user_id: userId, ...settings }),
+      }),
+
+    snoozeReminders: (userId, hours = 2) =>
+      request('/profile/settings/snooze', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, hours }),
       }),
   },
 
