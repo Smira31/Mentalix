@@ -13,7 +13,7 @@ on:
 
 jobs:
   check:
-    name: Проверка кода и сборки
+    name: Базовая проверка проекта
     runs-on: ubuntu-latest
 
     steps:
@@ -29,11 +29,8 @@ jobs:
       - name: Установить зависимости
         run: npm ci
 
-      - name: Проверить качество кода
-        run: npm run lint
-
-      - name: Собрать Mentalix
-        run: npm run build
+      - name: Проверить unit, lint, build и документацию
+        run: npm run check:core
 
       - name: Проверить Render backend
         env:

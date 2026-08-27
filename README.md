@@ -1,59 +1,31 @@
 # Mentalix
 
-Telegram Mini App — операционная система личного роста.
-Ритуалы (что делаю) и аскезы (от чего отказываюсь), ИИ-наставники, аналитика.
+Telegram Mini App — операционная система личного роста: ритуалы, аскезы, ИИ-наставники и аналитика.
 
 **Прод:** https://mentalix.vercel.app
 
----
+## Начать здесь
 
-## Документация
+Для владельца и любого ИИ сначала откройте [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md). Он объясняет, какой документ нужен для конкретного вопроса, что считать источником истины и как не тратить контекст на историю, которая не относится к задаче.
 
-### Актуальные нормативные документы
+| Нужна информация о…                   | Откройте                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------- |
+| Текущем состоянии, release и blockers | [`PROJECT_STATE.md`](PROJECT_STATE.md)                                                |
+| Следующей работе и активном backlog   | [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md)                                            |
+| Обязательных правилах для всех ИИ     | [`AGENTS.md`](AGENTS.md)                                                              |
+| Продукте и решениях                   | [`PRODUCT.md`](PRODUCT.md)                                                            |
+| Frontend и backend boundary           | [`ARCHITECTURE.md`](ARCHITECTURE.md)                                                  |
+| UI-токенах и дизайн-правилах          | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md)                                                |
+| Технических инвариантах frontend-кода | [`AI_RULES.md`](AI_RULES.md)                                                          |
+| Историческом контексте                | [`CHANGES.md`](CHANGES.md), [`TASKS.md`](TASKS.md), `docs/archive/`, `docs/handoffs/` |
 
-| Файл                                                                                       | О чём                                                               |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| [`PRODUCT.md`](PRODUCT.md)                                                                 | Зачем продукт и для кого. Принципы, что не делаем, открытые решения |
-| [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md)                                                     | Фактические дизайн-токены, типографика и UI-правила                 |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md)                                                       | Устройство frontend, platform layer и API-контракты                 |
-| [`ROADMAP.md`](ROADMAP.md)                                                                 | Что построено, что в работе                                         |
-| [`AI_RULES.md`](AI_RULES.md)                                                               | Обязательный процесс работы AI с Mentalix                           |
-| [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md)                                           | Как переводить референсы в Mentalix без копирования                 |
-| [`TASKS.md`](TASKS.md)                                                                     | Подробные задачи и handoff                                          |
-| [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md)                                                 | Короткий канонический индекс активного backlog                      |
-| [`docs/TELEGRAM_PREVIEW_ACTIONS.md`](docs/TELEGRAM_PREVIEW_ACTIONS.md)                     | Автоматический Vercel Preview и Telegram-уведомления через Actions  |
-| [`PROJECT_STATE.md`](PROJECT_STATE.md)                                                     | Текущее подтверждённое состояние, release blockers и handoff        |
-| [`docs/DOCUMENTATION_GUIDE.md`](docs/DOCUMENTATION_GUIDE.md)                               | Как читать, классифицировать и обновлять документацию               |
-| [`docs/core/README.md`](docs/core/README.md)                                               | Mentalix Core: связь проблем, законов, методов и продукта           |
-| [`docs/core/CORE_PRINCIPLES.md`](docs/core/CORE_PRINCIPLES.md)                             | Правила мышления, проверки и безопасности Core                      |
-| [`docs/core/MENTALIX_LAWS.md`](docs/core/MENTALIX_LAWS.md)                                 | Каталог первичных законов-гипотез                                   |
-| [`docs/problems/PROBLEMS.md`](docs/problems/PROBLEMS.md)                                   | Кластеры, первичная карта и приоритеты 15 проблем пользователя      |
-| [`docs/problems/ne-mogu-nachat.md`](docs/problems/ne-mogu-nachat.md)                       | Первая вертикаль «Не могу начать», готовая к проблемным интервью    |
-| [`docs/research/ne-mogu-nachat-interviews.md`](docs/research/ne-mogu-nachat-interviews.md) | Протокол пяти проблемных интервью перед тестом практики             |
-| [`docs/methodology/books/README.md`](docs/methodology/books/README.md)                     | Реестр сверенных книжных источников и разборов                      |
-
-### История и архив
-
-| Файл                                                             | О чём                                      |
-| ---------------------------------------------------------------- | ------------------------------------------ |
-| [`CHANGES.md`](CHANGES.md)                                       | История изменений                          |
-| [`CONTEXT.md`](docs/archive/CONTEXT.md)                          | Legacy-контекст и старый шаблон работы     |
-| [`STOIC_FEATURES.md`](docs/archive/STOIC_FEATURES_2026-07-24.md) | Историческое исследование референса stoic. |
-
-При конфликте приоритет такой:
-
-1. явная команда пользователя;
-2. актуальный код — для фактического состояния;
-3. профильный нормативный документ — для решений и правил;
-4. исторические документы — только как контекст.
+Полное правило владения документами находится в [`docs/DOCUMENTATION_GUIDE.md`](docs/DOCUMENTATION_GUIDE.md). Для новой работы используйте существующий GitHub Issue или создайте Issue через подходящий шаблон; scope, checks и evidence одной задачи фиксируются в соответствующем Pull Request.
 
 ## Стек
 
-**Этот репозиторий — фронт.** React + Vite + Tailwind.
-Деплой Vercel, автосборка при пуше в `main`.
+**Этот репозиторий — frontend.** React + Vite + Tailwind; deployment — Vercel.
 
-**Бэкенд и бот — отдельный приватный репозиторий** `mentalix-bot`.
-FastAPI + SQLAlchemy + aiogram, PostgreSQL, текущий production hosting — Render; Neon используется как production database. Подробности и подтверждённые SHA находятся в [`PROJECT_STATE.md`](PROJECT_STATE.md).
+**Backend и бот находятся в отдельном приватном репозитории** `mentalix-bot`: FastAPI + SQLAlchemy + aiogram, PostgreSQL, Render и Neon. Актуальные подтверждённые сведения и SHA находятся в [`PROJECT_STATE.md`](PROJECT_STATE.md). Не предполагайте backend-контракт по frontend-коду.
 
 ## Разработка
 
@@ -62,21 +34,20 @@ npm install
 npm run dev
 ```
 
-**Перед каждым PR:**
+**Перед Pull Request выполните одну базовую команду:**
 
 ```bash
-npm run lint
-npm run test:unit
-npm run build
+npm run check:core
+```
+
+Она последовательно запускает unit-тесты, lint, production build и проверку документации. Для UI-изменений дополнительно выполните:
+
+```bash
 npm run ux:check
 ```
 
-Для изменений, затрагивающих Telegram, safe area, keyboard или fullscreen, дополнительно нужен ручной gate на реальном iPhone в Telegram. Полный процесс и ограничения описаны в [`docs/DOCUMENTATION_GUIDE.md`](docs/DOCUMENTATION_GUIDE.md).
+Для изменений, затрагивающих Telegram, safe area, keyboard или fullscreen, автоматические проверки не заменяют ручной gate на реальном iPhone внутри Telegram. Ограничения и порядок действий описаны в [`AGENTS.md`](AGENTS.md) и [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md).
 
 ## Дизайн
 
-Палитра и радиусы меняются чаще, чем стоит дублировать их здесь. Актуальные
-значения находятся в коде и [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md).
-
-Коротко: монохром + золото как единственный акцент, только тёмная тема.
-Символ — лабиринт, заполняющийся золотом по мере прохождения Пути.
+Палитра, типографика и радиусы намеренно не дублируются здесь. Единственный источник UI-токенов — [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md).
