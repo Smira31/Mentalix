@@ -4,9 +4,9 @@
 
 ## Как это работает
 
-Workflow запускается при открытии PR, повторном открытии PR и каждом новом push в его feature-ветку. Он устанавливает зависимости, выполняет `npm run lint`, собирает приложение через `npm run build`, создаёт deployment в проекте `mentalix-preview`, проверяет `https://<preview>/api/health` и только затем вызывает Telegram Bot API. Если любой шаг до уведомления завершается ошибкой, сообщение с Preview не отправляется.
+Vercel Git Integration запускает deployment для каждого push и PR в подключённом репозитории. После успешного Preview Vercel отправляет `repository_dispatch` в GitHub, а workflow проверяет `https://<preview>/api/health` и только затем вызывает Telegram Bot API. Если deployment или health-check завершается ошибкой, сообщение с Preview не отправляется. GitHub Actions больше не выполняет Vercel CLI и не требует `VERCEL_TOKEN`.
 
-Workflow намеренно работает только для PR из веток внутри `Smira31/Mentalix`. PR из fork не получает доступ к секретам. Одновременно для одного PR выполняется только последний запуск; старый запуск отменяется. Workflow также поддерживает ручной запуск через `workflow_dispatch` с указанием ветки или commit.
+Workflow реагирует только на успешное событие `vercel.deployment.success` и ручной `workflow_dispatch` с URL. Preview создаётся подключённой Vercel Git Integration; PR из fork не получает доступ к Telegram-секретам. Одновременно для одного deployment выполняется только последний запуск; старый запуск отменяется.
 
 ## Одноразовая настройка через GitHub на телефоне
 
@@ -22,15 +22,15 @@ Workflow намеренно работает только для PR из вет�
 
 Значения вводятся непосредственно в GitHub и после сохранения больше не отображаются. **Не присылайте токены в issue, PR, чат или commit и не добавляйте их в `.env`-файлы, которые могут попасть в Git.**
 
-`VERCEL_SCOPE` и `VERCEL_PROJECT` уже зафиксированы в workflow как непубличные параметры маршрутизации deployment: `smiraandre2-8311s-projects` и `mentalix-preview`. Если Vercel-проект будет переименован или перенесён, workflow нужно обновить отдельным PR.
+Проект `mentalix-preview` подключён к `Smira31/Mentalix` через Vercel Git Integration. Поэтому `VERCEL_TOKEN`, `VERCEL_SCOPE` и `VERCEL_PROJECT` больше не нужны в GitHub Secrets или workflow. Если проект будет отключён от GitHub или перенесён в другой team, сначала восстановите подключение в Vercel Project Settings → Git.
 
 ## Ручной запуск с телефона
 
-После того как PR с workflow попадёт в `main`, в GitHub на телефоне откройте **Actions → Telegram Preview → Run workflow**. В поле `Branch or commit to preview` укажите имя feature-ветки, например `feat/my-feature`, и нажмите **Run workflow**. GitHub запустит deploy для выбранной ветки даже без нового commit.
+После того как workflow попадёт в `main`, для ручной проверки откройте **Actions → Telegram Preview → Run workflow**. Вставьте готовый Vercel Preview URL в поле `Vercel Preview URL to verify and notify` и нажмите **Run workflow**. В обычном сценарии ручной запуск не нужен: Vercel сам отправляет событие после успешного deployment.
 
 ## Ежедневный сценарий
 
-После настройки вам не нужно запускать PowerShell, Vercel CLI или Telegram-команду. Достаточно отправить feature-ветку в GitHub или открыть PR. В приложении GitHub откройте PR и дождитесь зелёного workflow **Telegram Preview**. Затем откройте Telegram: бот пришлёт кнопку **«Открыть Preview»**. Preview считается временным и предназначен для ручной проверки интерфейса на телефоне.
+После настройки вам не нужно запускать PowerShell, Vercel CLI или Telegram-команду. Достаточно отправить feature-ветку в GitHub или открыть PR. Vercel создаст Preview самостоятельно, затем workflow **Telegram Preview** проверит deployment и отправит в Telegram кнопку **«Открыть Preview»**. Preview предназначен для ручной проверки интерфейса на телефоне.
 
 Для MXL-021 после открытия Preview нужно проверить Journey → `Продолжить сегодня` → Today, затем пройти ручной Telegram/iPhone gate. GitHub Actions может проверить сборку и health endpoint, но не заменяет визуальную проверку на реальном iPhone.
 
