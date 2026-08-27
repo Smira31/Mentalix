@@ -29,12 +29,12 @@ function ScoreScreen({ label, score, sub, onDone }) {
       <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-4">
         <Check size={28} className="text-gold" />
       </div>
-      <h2 className="font-display text-xl text-cream mb-1">{label}</h2>
-      <p className="text-sm text-muted mb-6">{sub}</p>
+      <h2 className="font-display mx-type-section text-cream mb-1">{label}</h2>
+      <p className="text-[13px] text-muted mb-6">{sub}</p>
       <div className="font-display text-4xl text-gold mb-8">{score}</div>
       <button
         onClick={onDone}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium active:scale-95 transition-transform"
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep mx-type-flow-action active:scale-95 transition-transform"
       >
         Готово
       </button>
@@ -103,13 +103,13 @@ function AttentionGame({ onFinish }) {
       <div className="flex gap-4 w-full">
         <button
           onClick={() => answer(true)}
-          className="flex-1 py-4 rounded-2xl bg-mint/20 text-mint text-sm font-medium active:scale-95 transition-transform"
+          className="flex-1 py-4 rounded-2xl bg-mint/20 text-mint mx-type-flow-action active:scale-95 transition-transform"
         >
           Да
         </button>
         <button
           onClick={() => answer(false)}
-          className="flex-1 py-4 rounded-2xl bg-cognac/20 text-cognac text-sm font-medium active:scale-95 transition-transform"
+          className="flex-1 py-4 rounded-2xl bg-cognac/20 text-cognac mx-type-flow-action active:scale-95 transition-transform"
         >
           Нет
         </button>
@@ -276,7 +276,7 @@ function ReactionGame({ onFinish }) {
                 : 'rgba(150,205,176,0.12)',
         }}
       >
-        <span className="text-center text-cream text-sm px-8">
+        <span className="text-center text-cream text-[13px] px-8">
           {phase === 'waiting' && 'Жди золотого сигнала...'}
           {phase === 'ready' && 'Тапни сейчас!'}
           {phase === 'tooSoon' && 'Рано! Сейчас повторим'}
@@ -320,11 +320,11 @@ function PlasticityGame({ onFinish }) {
         value={input}
         onChange={e => setInput(e.target.value)}
         autoFocus
-        className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-center text-lg text-cream outline-none focus:border-gold transition-colors mb-4 uppercase"
+        className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-center text-[16px] text-cream outline-none focus:border-gold transition-colors mb-4 uppercase"
       />
       <button
         onClick={submit}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium active:scale-95 transition-transform"
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep mx-type-flow-action active:scale-95 transition-transform"
       >
         Ответить
       </button>
@@ -412,8 +412,8 @@ function GymnasticsGame({ onFinish }) {
         }}
       >
         <div className="text-center">
-          <div className="font-display text-2xl text-cream">{phase.label}</div>
-          <div className="text-mint text-sm mt-1">{secondsLeft}</div>
+          <div className="font-display text-[22px] text-cream">{phase.label}</div>
+          <div className="text-mint text-[13px] mt-1">{secondsLeft}</div>
         </div>
       </div>
     </div>
@@ -528,7 +528,7 @@ export default function BrainTrainer({ user, onBack, onActiveChange }) {
     <div className="w-full max-w-md px-5">
       <div className="w-full flex items-center gap-2 mb-6">
         <BackButton onClick={onBack} />
-        <h2 className="font-display text-lg text-cream">Нейротренажёр</h2>
+        <h2 className="font-display mx-type-section text-cream">Нейротренажёр</h2>
       </div>
 
       <div className="w-full h-[164px] rounded-[24px] overflow-hidden px-4 mb-4 bg-transparent border [border-color:rgb(var(--c-border))]" />
@@ -553,7 +553,7 @@ export default function BrainTrainer({ user, onBack, onActiveChange }) {
 
             <span className="min-w-0 px-4 py-4 flex flex-col justify-center">
               <span className="flex items-start justify-between gap-2">
-                <span className="font-display text-[16px] text-cream leading-[1.12]">
+                <span className="font-display mx-type-list-title text-cream leading-[1.12]">
                   {ex.title}
                 </span>
 

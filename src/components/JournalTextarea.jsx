@@ -149,6 +149,7 @@ export default function JournalTextarea({
   className = '',
   editorClassName = '',
   floatingToolbar = false,
+  stickyToolbar = true,
   onSubmit,
   submitLabel = 'Сохранить',
   submitDisabled = false,
@@ -307,7 +308,7 @@ export default function JournalTextarea({
           </div>
         </>
       ) : formatting ? (
-        <div className="sticky bottom-0 z-10 mt-3 flex shrink-0 items-center gap-1.5 border-t border-cream/10 bg-emerald-deep/95 py-2 backdrop-blur-md">
+        <div className={`${stickyToolbar ? 'sticky bottom-0 z-10' : 'relative z-0 journal-toolbar--inline'} mt-3 flex shrink-0 items-center gap-1.5 border-t border-cream/10 bg-emerald-deep/95 py-2 backdrop-blur-md`}>
           <span className="mr-auto text-[11px] font-semibold text-faint">Формат</span>
           {formatButtons}
         </div>

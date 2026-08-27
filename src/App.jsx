@@ -99,7 +99,7 @@ function ScreenLoading() {
     <div
       role="status"
       aria-live="polite"
-      className="w-full max-w-md px-5 pt-8 text-center text-sm text-muted"
+      className="w-full max-w-md px-5 pt-8 text-center text-[13px] text-muted"
     >
       Загрузка…
     </div>
@@ -865,12 +865,13 @@ export default function App() {
               flex
               items-center
               justify-between
+              gap-2
             "
             >
               {/* Сохраняет приветствие по центру относительно аватара. */}
               <span
                 id="mx-today-header-leading"
-                className="relative w-10 max-[359px]:w-[78px] h-10 shrink-0"
+                className="relative w-10 max-[359px]:w-6 h-10 shrink-0"
               />
 
               {/* Greeting */}
@@ -878,9 +879,13 @@ export default function App() {
               <h1
                 className="
                 font-display
-                text-xl
+                mx-type-greeting
                 text-cream
                 lowercase
+                min-w-0
+                flex-1
+                text-center
+                truncate
               "
               >
                 {/*
@@ -919,6 +924,7 @@ export default function App() {
                 justify-center
 
                 active:scale-95
+                shrink-0
               "
               >
                 <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
@@ -943,7 +949,7 @@ export default function App() {
               <p
                 className="
               text-muted
-              text-sm
+              text-[13px]
               px-6
               text-center
               pt-8
@@ -1007,7 +1013,7 @@ export default function App() {
                   <span
                     className="
                   font-display
-                  text-lg
+                  mx-type-card
                   text-cream
                   lowercase
                 "

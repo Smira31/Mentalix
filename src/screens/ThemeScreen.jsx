@@ -59,7 +59,7 @@ function Shell({ style, footer, children }) {
 
 function Fact({ children }) {
   return (
-    <li className="flex gap-3 text-[14px] text-muted leading-snug">
+    <li className="flex gap-3 text-[13px] text-muted leading-snug">
       <span className="text-gold shrink-0 mt-[7px] w-[14px] h-px bg-gold/70" aria-hidden="true" />
       <span>{children}</span>
     </li>
@@ -293,7 +293,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <Shell style={style}>
         <BackButton onClick={onBack} />
 
-        <p className="w-full m-auto px-6 text-center text-muted text-sm">Загрузка...</p>
+        <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
       </Shell>,
       document.body
     )
@@ -322,12 +322,12 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             Тема недели
           </div>
 
-          <h2 className="font-display text-[28px] text-cream lowercase leading-tight text-center">
+          <h2 className="font-display text-[24px] text-cream lowercase leading-tight text-center">
             {data.title}
           </h2>
 
           {data.subtitle && (
-            <p className="text-[15px] text-muted leading-relaxed text-center mt-4">
+            <p className="text-[14px] text-muted leading-relaxed text-center mt-4">
               {data.subtitle}
             </p>
           )}
@@ -366,11 +366,11 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             {finished ? 'Неделя пройдена' : 'Что уже написано'}
           </div>
 
-          <h2 className="font-display text-[26px] text-cream lowercase leading-tight">
+          <h2 className="font-display text-[22px] text-cream lowercase leading-tight">
             {data.title}
           </h2>
 
-          <p className="text-[13px] text-muted mt-3">
+          <p className="text-[12px] text-muted mt-3">
             {written.length} из {data.days.length} дней
           </p>
         </div>
@@ -382,11 +382,11 @@ export default function ThemeScreen({ user, themeId, onBack }) {
                 День {d.day}
               </div>
 
-              {d.prompt && <p className="text-[14px] text-muted leading-snug mb-3">{d.prompt}</p>}
+              {d.prompt && <p className="text-[13px] text-muted leading-snug mb-3">{d.prompt}</p>}
 
               <MarkdownText
                 content={d.reflection}
-                className="space-y-2 text-[15px] text-cream leading-relaxed"
+                className="space-y-2 text-[14px] text-cream leading-relaxed"
               />
 
               <button
@@ -407,11 +407,11 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           <div className="rounded-[28px] bg-emerald border border-gold/25 px-6 py-8 text-center mt-4">
             <MotifArt name="ryad" size={110} className="mx-auto mb-4" />
 
-            <h3 className="font-display text-[20px] text-cream leading-tight">
+            <h3 className="font-display text-[18px] text-cream leading-tight">
               Семь дней — семь мыслей
             </h3>
 
-            <p className="text-[14px] text-muted mt-3 leading-relaxed">
+            <p className="text-[13px] text-muted mt-3 leading-relaxed">
               Это уже не чтение, а практика. Перечитай написанное через месяц — увидишь, что
               изменилось не в теме, а в тебе.
             </p>
@@ -429,7 +429,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <Shell style={style}>
         <BackButton onClick={back} />
 
-        <h2 className="font-display text-[26px] text-cream lowercase leading-tight mt-4 mb-1">
+        <h2 className="font-display text-[22px] text-cream lowercase leading-tight mt-4 mb-1">
           все темы.
         </h2>
 
@@ -456,12 +456,12 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="font-display text-[18px] text-cream leading-tight lowercase">
+                    <div className="font-display text-[16px] text-cream leading-tight lowercase">
                       {item.title}
                     </div>
 
                     {item.subtitle && (
-                      <p className="text-[13px] text-muted leading-snug mt-1.5">{item.subtitle}</p>
+                      <p className="text-[12px] text-muted leading-snug mt-1.5">{item.subtitle}</p>
                     )}
                   </div>
 
@@ -498,7 +498,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           type="button"
           onClick={deepenReflection}
           disabled={!canSave || saving}
-          className="flex h-11 items-center gap-2 rounded-full border border-cream/10 bg-emerald px-4 text-[13px] font-semibold text-cream transition-transform active:scale-95 disabled:opacity-35"
+          className="flex h-11 items-center gap-2 rounded-full border border-cream/10 bg-emerald px-4 text-[12px] font-semibold text-cream transition-transform active:scale-95 disabled:opacity-35"
         >
           <Sparkles size={15} className="text-gold" />
           Наставник
@@ -579,17 +579,17 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             <>
               <MotifArt name="povedenie" size={110} className="mx-auto mb-4" />
 
-              <h3 className="font-display text-[20px] text-cream leading-tight">
+              <h3 className="font-display text-[18px] text-cream leading-tight">
                 День {day} под замком
               </h3>
 
-              <p className="text-[14px] text-muted mt-3 leading-relaxed">
+              <p className="text-[13px] text-muted mt-3 leading-relaxed">
                 Первые {data.free_days} дня открыты всем. Остальные — часть Библиотеки.
               </p>
 
               <button
                 onClick={() => platform.haptic('light')}
-                className="cta-pill text-[15px] px-9 py-3.5 mt-6"
+                className="cta-pill text-[14px] px-9 py-3.5 mt-6"
               >
                 Скоро откроется
               </button>
@@ -601,12 +601,12 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               Тема недели · День {day} из {data.days.length}
             </div>
 
-            <h3 className="font-display text-[27px] leading-[1.16] text-cream [@media(max-height:650px)]:text-[22px]">
+            <h3 className="font-display text-[24px] leading-[1.16] text-cream [@media(max-height:650px)]:text-[20px]">
               {current?.text}
             </h3>
 
             {current?.prompt && (
-              <p className="mt-5 border-l border-gold pl-4 text-[15px] leading-relaxed text-muted">
+              <p className="mt-5 border-l border-gold pl-4 text-[14px] leading-relaxed text-muted">
                 {current.prompt}
               </p>
             )}

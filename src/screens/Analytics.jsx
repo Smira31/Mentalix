@@ -3,6 +3,7 @@ import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/tren
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
+import { CircleCheck } from 'lucide-react'
 import {
   ResponsiveContainer,
   BarChart,
@@ -28,12 +29,12 @@ const CATEGORY_LABELS = {
 function EmptyAnalytics() {
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
-      <p className="text-[11px] text-muted mb-8">за последние дни</p>
+      <h2 className="font-display mx-type-page text-cream lowercase mt-4 mb-1">аналитика.</h2>
+      <p className="mx-type-meta text-muted mb-8">за последние дни</p>
 
       <EmptyState glyph={<MotifArt name="lestnica" size={120} className="mx-auto mb-3" />}>
-        <h3 className="font-display text-lg text-cream mb-2">Пока нечего показать</h3>
-        <p className="font-body text-sm text-muted leading-relaxed">
+        <h3 className="font-display mx-type-section text-cream mb-2">Пока нечего показать</h3>
+        <p className="font-body mx-type-body text-muted">
           Отмечай ритуалы и аскезы хотя бы несколько дней — и здесь появятся закономерности, которые
           сам не замечаешь.
         </p>
@@ -92,7 +93,7 @@ function WeekChart({ dailyActivity }) {
                   }}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgb(var(--c-text) / 0.05)' }}
+                  cursor={false}
                   contentStyle={{
                     background: 'rgb(var(--c-card2))',
                     border: '1px solid rgb(var(--c-border))',
@@ -107,16 +108,16 @@ function WeekChart({ dailyActivity }) {
                 />
                 <Bar dataKey="count" radius={[5, 5, 5, 5]}>
                   {chartData.map((d, i) => (
-                    <Cell key={i} fill={d.isToday ? 'rgb(var(--c-text))' : 'rgb(var(--c-gold))'} />
+                    <Cell key={i} fill={d.isToday ? 'rgb(94 178 237)' : 'rgb(var(--c-gold))'} />
                   ))}
                 </Bar>
-                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="rgb(var(--c-text) / 0.3)" />
+                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="rgb(var(--c-cognac, 180 112 92) / 0.45)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="flex items-center gap-4 mt-2 flex-wrap">
-            <span className="flex items-center gap-1.5 text-[11px] text-muted">
-              <span className="w-2 h-2 rounded-full bg-mint" /> сегодня
+              <span className="flex items-center gap-1.5 text-[11px] text-muted">
+              <span className="w-2 h-2 rounded-full bg-[#5EB2ED]" /> сегодня
             </span>
             <span className="flex items-center gap-1.5 text-[11px] text-muted">
               <span className="w-2 h-2 rounded-full bg-gold" /> ритуалы
@@ -162,7 +163,10 @@ function AscezaRow({ asceza }) {
           {asceza.name}
           <span className="text-faint ml-1.5">{CATEGORY_LABELS[asceza.category] || ''}</span>
         </span>
-        <span className="font-mono text-mint whitespace-nowrap">🛡 {asceza.streak}</span>
+        <span className="inline-flex items-center gap-1 font-mono text-mint whitespace-nowrap" aria-label={`серия дней: ${asceza.streak}`}>
+          <CircleCheck size={14} strokeWidth={2.2} aria-hidden="true" />
+          {asceza.streak}
+        </span>
       </div>
       <div className="h-2 rounded-full bg-emerald-deep overflow-hidden">
         <div
@@ -185,13 +189,13 @@ function MoodTrend({ checkins, onGoCheckin }) {
   if (!checkins || checkins.length === 0) {
     return (
       <EmptyState className="border border-cream/10 !bg-emerald-light/15 !p-6 mb-6">
-        <h3 className="font-display text-[17px] text-cream mb-1.5">Как ты сейчас?</h3>
-        <p className="text-[13px] text-muted leading-snug mb-4">
+        <h3 className="font-display mx-type-card text-cream mb-1.5">Как ты сейчас?</h3>
+        <p className="mx-type-body text-muted mb-4">
           Пройди первый чек-ин — и здесь появится
           <br />
           линия твоего настроения
         </p>
-        <button onClick={onGoCheckin} className="cta-pill text-[14px] px-8 py-3">
+        <button onClick={onGoCheckin} className="cta-pill mx-type-control px-8 py-3">
           Пройти чек-ин
         </button>
       </EmptyState>
@@ -246,9 +250,10 @@ function MoodTrend({ checkins, onGoCheckin }) {
               <Line
                 type="monotone"
                 dataKey="mood"
-                stroke="rgb(217,180,91)"
+                stroke="rgb(94 178 237)"
                 strokeWidth={2.5}
-                dot={{ r: 3, fill: 'rgb(217,180,91)' }}
+                dot={{ r: 3, fill: 'rgb(94 178 237)' }}
+                activeDot={{ r: 5, fill: 'rgb(94 178 237)', stroke: 'rgb(var(--c-card2))', strokeWidth: 2 }}
               />
               <Line
                 type="monotone"
@@ -576,20 +581,20 @@ export default function Analytics({ user, onGoCheckin }) {
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-1">аналитика.</h2>
+      <h2 className="font-display mx-type-page text-cream lowercase mt-4 mb-1">аналитика.</h2>
 
-      <p className="text-[12px] text-faint mb-7">за последние {data.period_days} дней</p>
+      <p className="mx-type-meta text-faint mb-7">за последние {data.period_days} дней</p>
 
       {/* ── Главный вывод ── */}
 
-      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="mx-type-meta text-faint uppercase tracking-[0.14em] mb-2.5">
         Главное
       </div>
 
       {lead ? (
-        <p className="font-display text-[21px] text-cream leading-[1.3] mb-6">{lead.text}</p>
+        <p className="font-display mx-type-insight text-cream mb-6">{lead.text}</p>
       ) : (
-        <p className="font-display text-[19px] text-muted leading-[1.35] mb-6">
+        <p className="font-display mx-type-insight text-muted mb-6">
           {enough
             ? 'Устойчивых закономерностей пока не видно. Это нормально: они проявляются на большем отрезке.'
             : `Данных пока мало. Нужно хотя бы ${MIN_CHECKINS} чек-инов, чтобы говорить о закономерностях, а не о совпадениях.`}
@@ -605,7 +610,7 @@ export default function Analytics({ user, onGoCheckin }) {
               key={index}
               className="rounded-[20px] bg-emerald border border-cream/10 px-4 py-3.5"
             >
-              <p className="text-[14px] text-muted leading-snug">{item.text}</p>
+              <p className="mx-type-body text-muted">{item.text}</p>
             </div>
           ))}
         </div>
@@ -615,7 +620,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {descriptiveBackendInsights.length > 0 && (
         <>
-          <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
+          <div className="mx-type-meta text-faint uppercase tracking-[0.14em] mb-2.5">
             Наблюдения из системы
           </div>
 
@@ -627,7 +632,7 @@ export default function Analytics({ user, onGoCheckin }) {
             {descriptiveBackendInsights.map((text, i) => (
               <div
                 key={i}
-                className="rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5 text-[14px] text-cream leading-snug"
+                className="rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5 mx-type-body text-cream"
               >
                 {text}
               </div>
@@ -638,7 +643,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {/* ── Цифры ── */}
 
-      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="mx-type-meta text-faint uppercase tracking-[0.14em] mb-2.5">
         Цифры
       </div>
 
@@ -657,7 +662,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {/* ── Данные ── */}
 
-      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="mx-type-meta text-faint uppercase tracking-[0.14em] mb-2.5">
         Данные
       </div>
 
@@ -673,7 +678,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {ascezas.length > 0 && (
         <>
-          <h3 className="text-sm text-cream mb-2">Аскезы</h3>
+          <h3 className="mx-type-analytics-heading text-cream mb-2">Аскезы</h3>
           <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4 mb-6">
             {ascezas.map(a => (
               <AscezaRow key={a.id} asceza={a} />
@@ -684,7 +689,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {rituals.length > 0 && (
         <>
-          <h3 className="text-sm text-cream mb-2">Ритуалы</h3>
+          <h3 className="mx-type-analytics-heading text-cream mb-2">Ритуалы</h3>
           <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4">
             {rituals.map(r => (
               <RitualBar key={r.id} ritual={r} />

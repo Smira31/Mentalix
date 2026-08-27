@@ -184,8 +184,8 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
       <div className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-8 text-center`}>
         <MazeLogo size={64} progress={1} className="mb-6" />
 
-        <h1 className="font-display text-[24px] text-cream lowercase leading-tight">{title}</h1>
-        <p className="text-[14px] text-muted mt-2 mb-9">{subtitle}</p>
+        <h1 className="font-display text-[22px] text-cream lowercase leading-tight">{title}</h1>
+        <p className="text-[13px] text-muted mt-2 mb-9">{subtitle}</p>
 
         <div
           className={`mx-applock-dots flex items-center justify-center gap-4 ${
@@ -235,7 +235,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
                 onClick={() => press(key)}
                 className="w-16 h-16 rounded-full bg-emerald flex items-center justify-center mx-auto border-0 active:scale-90 transition-transform"
               >
-                <span className="font-display text-[22px] text-cream">{key}</span>
+                <span className="font-display text-[20px] text-cream">{key}</span>
               </button>
             )
           })}

@@ -1,30 +1,158 @@
 /*
- * MXL-UI-CTA-OVERLAP-001
+ * Today reference composition.
  *
- * На viewport высотой ≤650px (iPhone SE-класс, 320×568)
- * декоративный SVG-глиф "один следующий шаг" в hero-карточке
- * занимает столько вертикального места, что чек-ин CTA
- * ("Пройти чек-ин"/"Разобрать день") оказывается позади
- * нижней навигации без прокрутки — npm run ux:check находил
- * это на Today/320x568.
- *
- * Ширина/высота глифа завязаны на ширину карточки через
- * SVG viewBox (160×112) без явных width/height — на коротком
- * экране сокращаем только ширину (высота следует за
- * пропорцией), чтобы освободить место под CTA, не трогая
- * вид на обычных высотах (390×844 и выше).
+ * The card system is deliberately scoped to Today. It takes the reference's
+ * matte dark surfaces, generous radius and calm vertical rhythm, while keeping
+ * Mentalix copy, state handling and navigation independent.
  */
 
+.mx-today-primary-card {
+  min-height: 452px;
+  padding: 36px 24px 42px;
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  border-radius: 32px;
+  background: #2a2a2a;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.025),
+    0 18px 44px rgb(0 0 0 / 0.18);
+}
+
+.mx-today-primary-card[data-complete='true'] {
+  border-color: rgb(var(--c-border));
+  background: rgb(var(--c-card));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.012);
+}
+
+.mx-today-primary-card[data-complete='true'] .mx-type-hero {
+  font-size: 1.25rem;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.mx-today-hero-breath {
+  height: 16px;
+}
+
+.mx-today-primary-card .mx-today-hero-art {
+  min-height: 178px;
+  margin-bottom: 8px;
+}
+
+.mx-today-primary-card .cta-pill {
+  min-height: 52px;
+  padding-block: 0;
+}
+
+.mx-today-theme-card {
+  display: flex;
+  min-height: 184px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  border-radius: 32px;
+  background: rgb(var(--c-card2));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.018);
+}
+
+.mx-today-affirmation-card {
+  display: flex;
+  min-height: 340px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  border-radius: 32px;
+  background: rgb(var(--c-card2));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.018);
+}
+
+/*
+ * MXL-UI-CTA-OVERLAP-001
+ *
+ * На viewport высотой ≤650px (iPhone SE-класс, 320×568) декоративный SVG-глиф
+ * в hero-карточке не должен вытеснять CTA за fixed-навигацию. Короткий экран
+ * сохраняет ту же поверхность, но сокращает только свободное вертикальное поле.
+ */
 @media (max-height: 650px) {
-  /*
-   * Компаундный селектор — не одиночный класс — специально:
-   * `.mx-semantic-glyph { width: 100% }` (SemanticGlyph.css)
-   * той же специфичности, и порядок инъекции CSS-модулей
-   * Vite'ом определяется порядком импортов, а не порядком
-   * объявления в файле; полагаться на него нельзя.
-   */
-  .mx-today-hero-art .mx-today-hero-art-glyph {
+  .mx-today-primary-card {
+    min-height: 270px;
+    padding: 22px 20px 24px;
+    border-radius: 28px;
+  }
+
+  .mx-today-hero-breath {
+    height: 40px;
+  }
+
+  .mx-today-primary-card .mx-today-hero-art {
+    min-height: 86px;
+    margin-bottom: 0;
+  }
+
+  .mx-today-primary-card .mx-today-hero-art .mx-today-hero-art-glyph {
     width: 70px;
     margin-inline: auto;
+  }
+
+  .mx-today-theme-card,
+  .mx-today-affirmation-card {
+    min-height: 220px;
+    border-radius: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-primary-card,
+  .mx-today-theme-card,
+  .mx-today-affirmation-card {
+    box-shadow: none;
+  }
+}
+
+.mx-today-week {
+  width: 100%;
+  margin-bottom: 16px;
+  padding-inline: 2px;
+}
+
+.mx-today-week__calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+.mx-today-week-day {
+  display: flex;
+  min-width: 0;
+  min-height: 50px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  color: rgb(var(--c-text) / 0.48);
+}
+
+.mx-today-week-day[data-today='true'] {
+  border-color: rgb(var(--c-text) / 0.22);
+  background: rgb(var(--c-text) / 0.025);
+  color: rgb(var(--c-text) / 0.8);
+}
+
+.mx-today-week-day .mx-type-calendar-date {
+  color: inherit;
+}
+
+@media (max-width: 359px) {
+  .mx-today-week__calendar {
+    gap: 4px;
+  }
+
+  .mx-today-week-day {
+    min-height: 44px;
+    border-radius: 14px;
   }
 }

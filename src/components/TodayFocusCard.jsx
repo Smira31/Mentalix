@@ -23,7 +23,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
 
           onOpenFlow()
         }}
-        className="w-full rounded-full bg-cream/5 border border-cream/10 text-cream text-[13px] font-semibold py-3 px-5 mb-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+        className="w-full rounded-full bg-cream/5 border border-cream/10 text-cream text-[12px] font-semibold py-3 px-5 mb-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
         <ListChecks size={16} className="text-gold" />
         Разгрузить голову
@@ -40,7 +40,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
       </span>
 
       <div className="rounded-2xl px-4 py-3.5 bg-gold/10 border border-gold/25">
-        <span className="block text-left text-[15px] font-bold text-cream leading-snug">
+        <span className="block text-left text-[14px] font-bold text-cream leading-snug">
           {focus.firstStep || focus.picked}
         </span>
 
@@ -66,7 +66,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
               {rest.map((item, index) => (
                 <div
                   key={`${item}-${index}`}
-                  className="rounded-2xl px-4 py-3 bg-cream/5 border border-transparent text-left text-[13px] text-muted truncate"
+                  className="rounded-2xl px-4 py-3 bg-cream/5 border border-transparent text-left text-[12px] text-muted truncate"
                 >
                   {item}
                 </div>

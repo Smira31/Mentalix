@@ -152,11 +152,11 @@ export default function TodayFocusFlow({
               Разгрузить голову
             </span>
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">
+            <h2 className="font-display text-[22px] text-cream leading-tight">
               Что тянет внимание?
             </h2>
 
-            <p className="text-[13px] text-muted mt-2 leading-relaxed">
+            <p className="text-[12px] text-muted mt-2 leading-relaxed">
               Выпиши все дела, которые конкурируют за сегодня — по одному на строку. Ничего не
               потеряется.
             </p>
@@ -184,9 +184,9 @@ export default function TodayFocusFlow({
               Разгрузить голову
             </span>
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">Выбери одно</h2>
+            <h2 className="font-display text-[22px] text-cream leading-tight">Выбери одно</h2>
 
-            <p className="text-[13px] text-muted mt-2 leading-relaxed">
+            <p className="text-[12px] text-muted mt-2 leading-relaxed">
               Остальное никуда не денется — просто не сегодня.
             </p>
 
@@ -196,7 +196,7 @@ export default function TodayFocusFlow({
                   key={`${item}-${index}`}
                   type="button"
                   onClick={() => pick(item)}
-                  className="w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[15px] font-semibold text-cream active:scale-[0.98] transition-transform"
+                  className="w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[14px] font-semibold text-cream active:scale-[0.98] transition-transform"
                 >
                   {item}
                 </button>
@@ -221,9 +221,9 @@ export default function TodayFocusFlow({
               Разгрузить голову
             </span>
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">Как начнёшь?</h2>
+            <h2 className="font-display text-[22px] text-cream leading-tight">Как начнёшь?</h2>
 
-            <p className="text-[13px] text-muted mt-2 leading-relaxed">
+            <p className="text-[12px] text-muted mt-2 leading-relaxed">
               Первый шаг, который займёт не больше пяти минут — необязательно, можно пропустить.
             </p>
 

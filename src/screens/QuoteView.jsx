@@ -111,7 +111,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         {current ? (
           <>
             <span className="font-display text-[40px] text-gold leading-none mb-6">«</span>
-            <p className="font-display text-[24px] text-cream leading-snug max-w-md">
+            <p className="font-display text-[22px] text-cream leading-snug max-w-md">
               {current.text}
             </p>
             {(current.attribution || current.tag) && (
@@ -125,11 +125,11 @@ export default function QuoteView({ user, todayQuote, onClose }) {
                 <span className="block text-[11px] uppercase tracking-[0.14em] text-gold font-semibold mb-2">
                   вопрос к себе
                 </span>
-                <p className="text-[14px] text-cream leading-relaxed">{current.prompt}</p>
-                <p className="text-[13px] text-muted leading-relaxed mt-3">
+                <p className="text-[13px] text-cream leading-relaxed">{current.prompt}</p>
+                <p className="text-[12px] text-muted leading-relaxed mt-3">
                   <strong className="text-cream">Шаг:</strong> {current.action}
                 </p>
-                <p className="text-[13px] text-muted leading-relaxed mt-2">
+                <p className="text-[12px] text-muted leading-relaxed mt-2">
                   <strong className="text-cream">Дальше:</strong> {current.nextStep}
                 </p>
               </div>
@@ -138,7 +138,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         ) : (
           <>
             <MotifArt name="shozhdenie" size={130} className="mx-auto mb-6" />
-            <p className="text-[15px] text-muted leading-relaxed">
+            <p className="text-[14px] text-muted leading-relaxed">
               Здесь будут твои цитаты.
               <br />
               Добавляй мысли, которые держат, — в настройках считки дня.
@@ -157,7 +157,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         </button>
         <button
           onClick={share}
-          className="cta-pill text-[15px] px-8 py-3.5 flex items-center gap-2"
+          className="cta-pill text-[14px] px-8 py-3.5 flex items-center gap-2"
         >
           <Share2 size={16} /> Поделиться
         </button>

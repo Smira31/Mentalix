@@ -113,3 +113,41 @@ export const PERSONA_STARTER_PROMPTS = {
     'Разбери день целиком',
   ],
 }
+
+// 4. CheckIn morning Journal modes: UI-only selector until backend supports journal_mode.
+// Questions stay in this file so Moscow-day rotation remains deterministic and stable.
+export const JOURNAL_MODES = {
+  brief: {
+    key: 'brief',
+    title: 'Коротко',
+    description: 'Зафиксируй главное за пару минут.',
+    questions: [
+      'Какой момент сегодня стоит не пропустить?',
+      'Что сейчас просит одного честного предложения?',
+      'Какая мысль может стать опорой на сегодня?',
+    ],
+    placeholder: 'Пиши главное, без лишних объяснений...',
+  },
+  unpack: {
+    key: 'unpack',
+    title: 'Разобрать',
+    description: 'Раздели факт, чувство и следующий шаг.',
+    questions: [
+      'Что произошло? Что ты почувствовал? Какой маленький шаг вернёт опору?',
+      'Где здесь факт, а где твоя интерпретация?',
+      'Что в этой ситуации зависит от тебя прямо сейчас?',
+    ],
+    placeholder: 'Факт · чувство · следующий шаг...',
+  },
+  free: {
+    key: 'free',
+    title: 'Своя запись',
+    description: 'Оставь место мысли идти своим порядком.',
+    questions: [
+      'Что хочет быть услышанным без порядка и редактуры?',
+      'Оставь здесь всё, чему пока не нашлось места.',
+      'Что ты хочешь сказать себе без подготовки?',
+    ],
+    placeholder: 'Пиши так, как тебе сейчас нужно...',
+  },
+}

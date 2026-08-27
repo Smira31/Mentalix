@@ -113,7 +113,7 @@ export default function MorningPilotCard({
 
         <div className="flex items-center gap-3">
           <div className="flex-1 min-w-0">
-            <h2 className="font-display text-[18px] text-cream">{resolution.title}</h2>
+            <h2 className="font-display text-[16px] text-cream">{resolution.title}</h2>
 
             <p className="text-[12px] text-muted mt-1 leading-relaxed">{resolution.body}</p>
           </div>
@@ -154,9 +154,9 @@ export default function MorningPilotCard({
         Пилот · утро
       </span>
 
-      <h2 className="font-display text-[22px] text-cream leading-tight">До других дел</h2>
+      <h2 className="font-display text-[20px] text-cream leading-tight">До других дел</h2>
 
-      <p className="text-[13px] text-muted mt-1 leading-relaxed">
+      <p className="text-[12px] text-muted mt-1 leading-relaxed">
         Один ближайший шаг — не весь день.
       </p>
 
@@ -182,7 +182,7 @@ export default function MorningPilotCard({
               </span>
 
               <span className="flex-1 min-w-0 text-left">
-                <span className="block text-[14px] font-bold text-cream truncate">
+                <span className="block text-[13px] font-bold text-cream truncate">
                   {ritual.name}
                 </span>
 
@@ -197,7 +197,7 @@ export default function MorningPilotCard({
         </div>
       ) : (
         <div className="rounded-2xl bg-cream/5 px-4 py-4 mt-4">
-          <p className="text-[13px] text-muted leading-relaxed">
+          <p className="text-[12px] text-muted leading-relaxed">
             {allDone
               ? 'Утро закрыто — все ритуалы отмечены.'
               : 'Добавь один ритуал, который важно увидеть утром.'}
@@ -208,7 +208,7 @@ export default function MorningPilotCard({
       <button
         type="button"
         onClick={openRituals}
-        className="cta-pill w-full text-[14px] px-6 py-3.5 mt-4 flex items-center justify-center gap-2"
+        className="cta-pill w-full text-[13px] px-6 py-3.5 mt-4 flex items-center justify-center gap-2"
       >
         {visibleRituals.length > 0
           ? 'Открыть первый шаг'

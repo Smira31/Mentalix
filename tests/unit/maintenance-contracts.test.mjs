@@ -53,6 +53,8 @@ test('MXL-014 публикует короткую текстовую медит�
   assert.match(flow, /Какой один шаг ты выбираешь\?/)
   assert.match(flow, /Если становится тяжелее, остановись/)
   assert.match(flow, /<SceneLayout/)
+  assert.match(flow, /practice-scene--input practice-scene--input-centered/)
+  assert.equal((flow.match(/floatingToolbar/g) || []).length, 3)
   assert.match(flow, /<JournalTextarea/)
   assert.match(practices, /<MeditationFlow onClose=\{\(\) => setSub\(null\)\} \/>/)
   assert.match(practices, /title="Медитация"/)
@@ -164,19 +166,23 @@ test('preview cleanup подтверждает удаление до очист�
   assert.doesNotMatch(launcher, /Start-Sleep -Seconds 3600; npx vercel@latest remove/)
 })
 
-test('MXL-007 публикует цикл Today: идея, действие, анализ и новый шаг', () => {
-  const thread = readFileSync(
-    new URL('../../src/components/TodayMotionExperiment.jsx', import.meta.url),
+test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const conversation = readFileSync(
+    new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
     'utf8'
   )
-  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
 
-  assert.match(thread, /const THREAD_LABELS = \['Идея', 'Действие', 'Анализ', 'Новый шаг'\]/)
-  assert.match(thread, /<strong>Цикл дня<\/strong>/)
-  assert.match(today, /'Идея дня'/)
-  assert.match(thread, /<small>Действие дня<\/small>/)
-  assert.match(today, /'Анализ дня'/)
-  assert.match(today, /Новый шаг/)
+  assert.match(today, /mx-today-week__calendar/)
+  assert.match(today, /mx-today-week-day/)
+  assert.match(today, /Дни недели/)
+  assert.doesNotMatch(today, /mx-today-streaks/)
+  assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
+  assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
+  assert.match(analytics, /stroke="rgb\(94 178 237\)"/)
+  assert.match(analytics, /cursor=\{false\}/)
+  assert.doesNotMatch(analytics, /🛡/)
 })
 
 test('MXL-008 публикует Stoic-like Journey и объясняет метрику активных дней', () => {
@@ -190,12 +196,10 @@ test('MXL-008 публикует Stoic-like Journey и объясняет мет
 
 test('MXL-021 связывает Journey с продолжением Today', () => {
   const yearPath = readFileSync(new URL('../../src/screens/YearPath.jsx', import.meta.url), 'utf8')
-  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 
   assert.match(yearPath, /Начать сегодня/)
   assert.match(yearPath, /Продолжить сегодня/)
   assert.match(yearPath, /onContinueToday/)
-  assert.match(today, /<YearPath user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
 })
 
 test('MXL-JOURNAL-001 публикует полноценный четыре-фазный Journal Home', () => {
@@ -212,8 +216,11 @@ test('MXL-JOURNAL-001 публикует полноценный четыре-ф�
   assert.match(journal, /JournalTextarea/)
   assert.match(journal, /readJournalEntry|saveJournalPhase/)
   assert.match(journal, /Пойти глубже с наставником/)
-  assert.match(mentalix, /JournalHome/)
-  assert.match(mentalix, /journalOpen/)
+  assert.match(journal, /Завершить запись/)
+  assert.match(journal, /stickyToolbar=\{false\}/)
+  assert.doesNotMatch(journal, /aria-label="Прогресс журнала"/)
+  assert.doesNotMatch(mentalix, /JournalHome/)
+  assert.doesNotMatch(mentalix, /journalOpen/)
 })
 
 test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат', () => {
@@ -329,7 +336,7 @@ test('MXL-015 публикует семь curated Stoic-inspired тем без b
   assert.match(source, /Backend theme IDs, publication, and reflection persistence remain/)
 })
 
-test('MXL-001 публикует Stoic-inspired AI flow без backend изменений', () => {
+test('MXL-001 сохраняет Stoic-inspired AI flow без backend изменений и без entry-strip в PersonaPicker', () => {
   const indicator = readFileSync(
     new URL('../../src/screens/mentalix/AiFlowIndicator.jsx', import.meta.url),
     'utf8'
@@ -346,9 +353,8 @@ test('MXL-001 публикует Stoic-inspired AI flow без backend изме�
 
   assert.match(indicator, /idea.*action.*analysis.*next/s)
   assert.match(indicator, /Цикл разговора: идея, действие, анализ, новый шаг/)
-  assert.match(picker, /<AiFlowIndicator active="idea" \/>/)
-  assert.match(conversation, /const flowPhase/)
-  assert.match(conversation, /<AiFlowIndicator active=\{flowPhase\} \/>/)
+  assert.doesNotMatch(picker, /AiFlowIndicator/)
+  assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
   assert.match(container, /api\.mentalix\.send\(user\.id, text, persona\)/)
   assert.doesNotMatch(container, /api\.mentalix\.send\([^\n]*flow/)
 })
@@ -364,12 +370,15 @@ test('MXL-006 публикует единый AI typography baseline без back
     'utf8'
   )
 
-  assert.match(tokens, /\.mx-ai-title\s*\{[\s\S]*font-size: clamp\(1\.75rem, 7vw, 2\.125rem\)/)
-  assert.match(tokens, /\.mx-ai-body\s*\{[\s\S]*font-size: 1rem[\s\S]*line-height: 1\.62/)
+  assert.match(tokens, /\.mx-ai-title\s*\{[\s\S]*font-size: clamp\(1\.5rem, 6vw, 1\.75rem\)/)
+  assert.match(tokens, /\.mx-ai-body\s*\{[\s\S]*font-size: 0\.875rem[\s\S]*line-height: 1\.55/)
+  assert.match(tokens, /\.mx-ai-caption\s*\{[\s\S]*font-size: 0\.75rem[\s\S]*line-height: 1\.45/)
   assert.match(tokens, /\.mx-ai-meta\s*\{[\s\S]*font-size: 0\.6875rem/)
+  assert.match(tokens, /\.mx-ai-input\s*\{[\s\S]*font-size: 1rem/)
   assert.match(conversation, /mx-ai-body/)
   assert.match(conversation, /mx-ai-input/)
-  assert.match(personaPicker, /mx-ai-title/)
+  assert.doesNotMatch(personaPicker, /mx-ai-title/)
+  assert.match(personaPicker, /mx-type-persona-title/)
 })
 
 test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
@@ -397,15 +406,104 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
 test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const heroIndex = today.indexOf('ГЕРОЙ-КАРТОЧКА')
-  const secondaryIndex = today.indexOf('<TodayFocusCard', heroIndex)
+  const secondaryIndex = today.indexOf('mx-today-hero-breath', heroIndex)
 
   assert.ok(heroIndex >= 0)
   assert.ok(secondaryIndex >= 0)
   const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+  const todayStyles = readFileSync(new URL('../../src/screens/Today.css', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
   assert.ok(heroIndex < secondaryIndex)
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
-  assert.match(today, /className="w-full px-2 py-5 mt-4 text-center/)
+  assert.match(today, /mx-today-primary-card/)
+  assert.match(today, /data-complete=\{heroPresentationState === 'allDone' \|\| heroPresentationState === 'dayClosed'\}/)
+  assert.match(today, /heroPresentationState !== 'allDone'\s+&&\s+heroPresentationState !== 'dayClosed'/)
+  assert.match(today, /mx-today-hero-breath/)
+  assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
+  assert.match(today, /mx-today-affirmation-card/)
+  assert.match(todayStyles, /\.mx-today-primary-card\s*\{[\s\S]*min-height:\s*452px/)
+  assert.match(todayStyles, /\.mx-today-primary-card\[data-complete='true'\][\s\S]*background:\s*rgb\(var\(--c-card\)\)/)
+  assert.match(todayStyles, /\.mx-today-primary-card\[data-complete='true'\] \.mx-type-hero[\s\S]*font-size:\s*1\.25rem/)
+  assert.match(todayStyles, /\.mx-today-hero-breath\s*\{[\s\S]*height:\s*16px/)
+  assert.match(todayStyles, /\.mx-today-affirmation-card\s*\{[\s\S]*min-height:\s*340px/)
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
+})
+
+test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale для пяти вкладок', () => {
+  const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
+  const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
+  const practices = readFileSync(
+    new URL('../../src/screens/Practices.jsx', import.meta.url),
+    'utf8'
+  )
+  const library = readFileSync(new URL('../../src/screens/Library.jsx', import.meta.url), 'utf8')
+  const articles = readFileSync(new URL('../../src/screens/Articles.jsx', import.meta.url), 'utf8')
+  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
+  const personaPicker = readFileSync(
+    new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
+    'utf8'
+  )
+  const journalHome = readFileSync(
+    new URL('../../src/screens/mentalix/JournalHome.jsx', import.meta.url),
+    'utf8'
+  )
+  const courses = readFileSync(new URL('../../src/screens/Courses.jsx', import.meta.url), 'utf8')
+  const brainTrainer = readFileSync(
+    new URL('../../src/screens/BrainTrainer.jsx', import.meta.url),
+    'utf8'
+  )
+  const focus = readFileSync(new URL('../../src/screens/Focus.jsx', import.meta.url), 'utf8')
+
+  assert.match(styles, /--mx-type-page-size:\s*1\.875rem/)
+  assert.match(styles, /--mx-type-greeting-size:\s*1\.125rem/)
+  assert.match(styles, /\.mx-type-page\s*\{[\s\S]*line-height:\s*1[\s\S]*font-weight:\s*700/)
+  assert.match(styles, /\.mx-type-greeting\s*\{[\s\S]*font-size:\s*var\(--mx-type-greeting-size\)/)
+  assert.match(styles, /\.mx-type-body\s*\{[\s\S]*font-size:\s*var\(--mx-type-body-size\)/)
+  assert.match(styles, /\.mx-type-control\s*\{[\s\S]*font-size:\s*var\(--mx-type-control-size\)/)
+  assert.match(styles, /\.mx-type-insight\s*\{[\s\S]*font-size:\s*1\.1875rem/)
+  assert.match(styles, /\.mx-type-weekday\s*\{[\s\S]*font-size:\s*0\.625rem/)
+  assert.match(styles, /\.mx-type-calendar-date\s*\{[\s\S]*font-size:\s*0\.8125rem/)
+  assert.match(styles, /\.mx-type-list-title\s*,[\s\S]*font-size:\s*0\.9375rem/)
+  assert.match(styles, /\.mx-type-list-body\s*,[\s\S]*font-size:\s*0\.8125rem/)
+  assert.match(styles, /\.mx-type-persona-title\s*\{[\s\S]*font-size:\s*1\.125rem/)
+  assert.match(styles, /\.mx-type-article-title\s*\{[\s\S]*font-size:\s*1rem/)
+  assert.match(styles, /\.mx-type-article-meta\s*\{[\s\S]*font-size:\s*0\.625rem/)
+  assert.match(styles, /\.mx-type-flow-title\s*\{[\s\S]*font-size:\s*1\.375rem/)
+  assert.match(styles, /\.mx-type-flow-body\s*\{[\s\S]*font-size:\s*0\.8125rem/)
+  assert.match(styles, /\.mx-type-flow-action\s*\{[\s\S]*font-size:\s*0\.875rem/)
+  assert.match(styles, /\.mx-type-segment\s*\{[\s\S]*font-size:\s*var\(--mx-type-segment-size\)/)
+  assert.doesNotMatch(styles, /Honest/)
+
+  assert.match(app, /mx-type-greeting/)
+  assert.match(today, /mx-type-hero/)
+  assert.match(today, /mx-type-weekday/)
+  assert.match(today, /mx-type-calendar-date/)
+  assert.match(today, /mx-type-card/)
+  assert.match(today, /mx-type-list-title/)
+  assert.match(today, /mx-type-flow-action/)
+  assert.match(practices, /mx-type-page/)
+  assert.match(practices, /mx-type-list-title/)
+  assert.match(practices, /mx-type-list-body/)
+  assert.match(library, /mx-type-page/)
+  assert.match(library, /mx-type-segment/)
+  assert.match(articles, /mx-type-article-title/)
+  assert.match(articles, /mx-type-article-body/)
+  assert.match(analytics, /mx-type-page/)
+  assert.match(analytics, /mx-type-analytics-heading/)
+  assert.match(analytics, /mx-type-insight/)
+  assert.match(personaPicker, /mx-type-page/)
+  assert.match(personaPicker, /mx-type-persona-title/)
+  assert.match(personaPicker, /mx-type-persona-body/)
+  assert.doesNotMatch(personaPicker, /AiFlowIndicator/)
+  assert.doesNotMatch(personaPicker, /mx-ai-title/)
+  assert.doesNotMatch(journalHome, /mx-type-page|mx-type-hero/)
+  assert.match(courses, /mx-type-list-title/)
+  assert.match(courses, /mx-type-flow-action/)
+  assert.match(courses, /text-\[16px\]/)
+  assert.match(brainTrainer, /mx-type-list-title/)
+  assert.match(brainTrainer, /mx-type-flow-action/)
+  assert.match(brainTrainer, /text-\[16px\]/)
+  assert.match(focus, /text-\[13px\]/)
 })

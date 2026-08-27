@@ -127,7 +127,7 @@ function OptionList({ options, onPick }) {
           key={option.key}
           type="button"
           onClick={() => onPick(option.key)}
-          className="w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[15px] font-semibold text-cream active:scale-[0.98] transition-transform"
+          className="w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[14px] font-semibold text-cream active:scale-[0.98] transition-transform"
         >
           {option.label}
         </button>
@@ -247,10 +247,10 @@ export default function FinishFlow({ userId, onClose }) {
           <div className="one-finish-stage one-finish-stage--intro animate-fade-in">
             <div className="one-finish-stage__center text-center">
               <Eyebrow />
-              <h2 className="font-display text-[28px] text-cream leading-[1.1] tracking-[-0.03em]">
+              <h2 className="font-display text-[24px] text-cream leading-[1.1] tracking-[-0.03em]">
                 Доведи один маленький кусок до конца
               </h2>
-              <p className="mx-auto mt-4 max-w-[310px] text-[14px] leading-relaxed text-muted">
+              <p className="mx-auto mt-4 max-w-[310px] text-[13px] leading-relaxed text-muted">
                 Пять минут, чтобы завершить не всё, а что-то одно — и получить то самое чувство
                 завершённости.
               </p>
@@ -265,7 +265,7 @@ export default function FinishFlow({ userId, onClose }) {
             <button
               type="button"
               onClick={startPractice}
-              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
               Начать
             </button>
@@ -311,7 +311,7 @@ export default function FinishFlow({ userId, onClose }) {
             <button
               type="button"
               onClick={goToFinish}
-              className="cta-pill w-full text-[15px] px-6 py-3.5 mt-5"
+              className="cta-pill w-full text-[14px] px-6 py-3.5 mt-5"
             >
               Дальше
             </button>
@@ -374,14 +374,14 @@ export default function FinishFlow({ userId, onClose }) {
               <div className="one-finish-art" aria-hidden="true">
                 <OneFinishArt />
               </div>
-              <h2 className="font-display text-[26px] text-cream leading-tight">
+              <h2 className="font-display text-[22px] text-cream leading-tight">
                 {COMPLETION_COPY[outcome]?.title}
               </h2>
-              <p className="mx-auto mt-3 max-w-[310px] text-[14px] text-muted leading-relaxed">
+              <p className="mx-auto mt-3 max-w-[310px] text-[13px] text-muted leading-relaxed">
                 {COMPLETION_COPY[outcome]?.description}
               </p>
 
-              <p className="mt-7 text-[13px] font-semibold text-muted">Помогло сейчас?</p>
+              <p className="mt-7 text-[12px] font-semibold text-muted">Помогло сейчас?</p>
               <div className="one-finish-feedback">
                 {REFLECTION_OPTIONS.map(({ key, label, Icon }) => (
                   <button
@@ -414,7 +414,7 @@ export default function FinishFlow({ userId, onClose }) {
             <button
               type="button"
               onClick={finishSession}
-              className="cta-pill w-full text-[15px] px-6 py-4 mt-6"
+              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
               Завершить
             </button>

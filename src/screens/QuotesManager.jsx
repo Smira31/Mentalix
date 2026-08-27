@@ -60,11 +60,11 @@ export default function QuotesManager({ user, onBack }) {
         <div className="justify-self-start">
           <BackButton onClick={onBack} />
         </div>
-        <h1 className="font-display text-xl text-cream">Мои фразы</h1>
+        <h1 className="font-display text-[18px] text-cream">Мои фразы</h1>
         <span aria-hidden="true" />
       </div>
 
-      <p className="w-full text-sm text-muted mb-4 leading-relaxed">
+      <p className="w-full text-[13px] text-muted mb-4 leading-relaxed">
         Эти фразы будут появляться в карточке «Считка дня» на главном экране — одна фраза в день, по
         кругу.
       </p>
@@ -86,11 +86,11 @@ export default function QuotesManager({ user, onBack }) {
       </div>
 
       {loading ? (
-        <p className="text-muted text-sm">Загрузка...</p>
+        <p className="text-muted text-[13px]">Загрузка...</p>
       ) : quotes.length === 0 ? (
         <EmptyState className="mt-2">
-          <h3 className="font-display text-lg text-cream mb-1">Пока нет твоих фраз</h3>
-          <p className="text-sm text-muted leading-relaxed">
+          <h3 className="font-display text-[16px] text-cream mb-1">Пока нет твоих фраз</h3>
+          <p className="text-[13px] text-muted leading-relaxed">
             Добавь первую в поле выше — она начнёт появляться в «Мысли дня».
           </p>
         </EmptyState>
@@ -98,7 +98,7 @@ export default function QuotesManager({ user, onBack }) {
         <div className="w-full bg-cream/[0.03] border border-cream/[0.08] rounded-2xl divide-y divide-cream/[0.06]">
           {quotes.map(q => (
             <div key={q.id} className="flex items-center gap-3 px-4 py-3">
-              <p className="flex-1 text-sm text-cream leading-snug">{q.text}</p>
+              <p className="flex-1 text-[13px] text-cream leading-snug">{q.text}</p>
               <button
                 onClick={() => removeQuote(q.id)}
                 className="text-faint shrink-0 active:text-red-400 transition-colors"

@@ -20,7 +20,7 @@ export default function LinkWebAccount({ onBack }) {
         <div className="justify-self-start">
           <BackButton onClick={onBack} />
         </div>
-        <h1 className="font-display text-xl text-cream">Связать с сайтом</h1>
+        <h1 className="font-display text-[18px] text-cream">Связать с сайтом</h1>
         <span aria-hidden="true" />
       </div>
 
@@ -28,7 +28,7 @@ export default function LinkWebAccount({ onBack }) {
         <Globe size={26} className="text-mint" />
       </div>
 
-      <p className="text-sm text-muted text-center mb-8 px-4 leading-relaxed">
+      <p className="text-[13px] text-muted text-center mb-8 px-4 leading-relaxed">
         Код теперь приходит только в личку от бота — так его нельзя перехватить.
         Открой чат с ботом, там появится код. Затем открой mentalix.vercel.app в
         браузере, войди по email и введи этот код, когда попросят.
@@ -36,7 +36,7 @@ export default function LinkWebAccount({ onBack }) {
 
       <button
         onClick={openBot}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium active:scale-95 transition-transform"
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium active:scale-95 transition-transform"
       >
         Получить код у бота
       </button>

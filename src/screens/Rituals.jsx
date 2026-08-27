@@ -116,10 +116,10 @@ function RitualCard({ ritual, onLog, onDelete }) {
 
       {/* название и смысл */}
       <div className="mt-4">
-        <h3 className="font-display text-[20px] text-cream leading-tight">{ritual.name}</h3>
+        <h3 className="font-display text-[18px] text-cream leading-tight">{ritual.name}</h3>
 
         {ritual.goal && (
-          <p className="text-[14px] text-muted leading-relaxed mt-3">{ritual.goal}</p>
+          <p className="text-[13px] text-muted leading-relaxed mt-3">{ritual.goal}</p>
         )}
       </div>
 
@@ -140,7 +140,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
               Минимум
             </div>
             <div
-              className={`text-[13px] leading-snug ${
+              className={`text-[12px] leading-snug ${
                 level === 'min' ? 'text-cream' : 'text-muted'
               }`}
             >
@@ -164,7 +164,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
               Оптимум
             </div>
             <div
-              className={`text-[13px] leading-snug ${
+              className={`text-[12px] leading-snug ${
                 level === 'optimal' ? 'text-emerald-deep' : 'text-muted'
               }`}
             >
@@ -176,7 +176,7 @@ function RitualCard({ ritual, onLog, onDelete }) {
         {!ritual.min_version && !ritual.optimal_version && (
           <button
             onClick={() => handleLog('optimal')}
-            className={`practice-scene__choice w-full py-3.5 rounded-full text-[14px] font-bold border-0 ${
+            className={`practice-scene__choice w-full py-3.5 rounded-full text-[13px] font-bold border-0 ${
               level ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'
             }`}
           >
@@ -243,7 +243,7 @@ function CreateRitualScreen({ onCreate, onCancel }) {
       <div className={`${FULLSCREEN_SCROLL_CLASS} practice-form__scroll`}>
         <div className="practice-form__inner w-full max-w-md mx-auto px-5 flex flex-col">
           <div className="mb-8">
-            <h2 className="font-display text-[27px] font-semibold text-cream lowercase">
+            <h2 className="font-display text-[24px] font-semibold text-cream lowercase">
               новый ритуал.
             </h2>
           </div>
@@ -375,7 +375,7 @@ export default function Rituals({ user, onBack }) {
     <div className="w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0">
       <div className="flex items-center gap-3 mb-3 shrink-0">
         <BackButton onClick={onBack} />
-        <h2 className="font-display text-[22px] text-cream lowercase">ритуалы.</h2>
+        <h2 className="font-display text-[20px] text-cream lowercase">ритуалы.</h2>
       </div>
 
       <p className="text-[12px] text-muted mb-4 px-1 shrink-0">
@@ -385,7 +385,7 @@ export default function Rituals({ user, onBack }) {
       </p>
 
       {loading ? (
-        <p className="text-muted text-sm">Загрузка...</p>
+        <p className="text-muted text-[13px]">Загрузка...</p>
       ) : rituals.length === 0 ? (
         <EmptyState
           className="mb-4"
@@ -395,11 +395,11 @@ export default function Rituals({ user, onBack }) {
             </div>
           }
         >
-          <h3 className="font-display text-lg text-cream mb-1">Ритуалов пока нет</h3>
-          <p className="text-sm text-muted mb-4 leading-relaxed">
+          <h3 className="font-display text-[16px] text-cream mb-1">Ритуалов пока нет</h3>
+          <p className="text-[13px] text-muted mb-4 leading-relaxed">
             Ритуал — это обряд, который держит твой день. Создай первый.
           </p>
-          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[14px]">
+          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[13px]">
             Создать ритуал
           </button>
         </EmptyState>
@@ -423,8 +423,8 @@ export default function Rituals({ user, onBack }) {
               }}
               className="practice-motion-card practice-detail-card shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2"
             >
-              <span className="text-[26px] text-faint leading-none">+</span>
-              <span className="text-[14px] text-muted font-semibold">Новый ритуал</span>
+              <span className="text-[22px] text-faint leading-none">+</span>
+              <span className="text-[13px] text-muted font-semibold">Новый ритуал</span>
             </button>
           </div>
 

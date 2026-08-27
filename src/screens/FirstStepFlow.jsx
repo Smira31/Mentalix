@@ -91,7 +91,7 @@ function OptionList({ options, onPick }) {
           key={option.key}
           type="button"
           onClick={() => onPick(option.key)}
-          className="practice-scene__choice w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[15px] font-semibold text-cream"
+          className="practice-scene__choice w-full rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[14px] font-semibold text-cream"
         >
           {option.label}
         </button>
@@ -225,7 +225,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           <button
             type="button"
             onClick={startPractice}
-            className="cta-pill w-full text-[15px] px-6 py-4"
+            className="cta-pill w-full text-[14px] px-6 py-4"
           >
             Начать
           </button>
@@ -240,7 +240,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           label="Первый шаг"
           title="Что не двигается?"
           progress={<Progress step={step} />}
-          className="practice-scene--input"
+          className="practice-scene--input practice-scene--input-centered"
           description={
             <>
               Одно дело, которое ты откладываешь — не потому что забыл, а потому что не можешь
@@ -297,7 +297,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="practice-scene__cta cta-pill w-full text-[15px] px-6 py-3.5"
+            className="practice-scene__cta cta-pill w-full text-[14px] px-6 py-3.5"
           >
             Хорошо
           </button>
@@ -312,7 +312,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           label="Первый шаг"
           title="Что можно сделать за пять минут?"
           progress={<Progress step={step} />}
-          className="practice-scene--input"
+          className="practice-scene--input practice-scene--input-centered"
           description={<>Не «написать отчёт», а «открыть документ и записать три пункта».</>}
         >
           <JournalTextarea
@@ -379,7 +379,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           centered
           description={COMPLETION_COPY[outcome]?.description}
         >
-          <p className="mt-2 text-center text-[13px] font-semibold text-muted">Помогло сейчас?</p>
+          <p className="mt-2 text-center text-[12px] font-semibold text-muted">Помогло сейчас?</p>
           <div className="first-step-feedback">
             {REFLECTION_OPTIONS.map(({ key, label, Icon }) => (
               <button
@@ -409,7 +409,7 @@ export default function FirstStepFlow({ userId, onClose }) {
           <button
             type="button"
             onClick={finish}
-            className="practice-scene__cta cta-pill w-full text-[15px] px-6 py-3.5"
+            className="practice-scene__cta cta-pill w-full text-[14px] px-6 py-3.5"
           >
             Завершить
           </button>

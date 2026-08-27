@@ -31,7 +31,6 @@ import {
   isLongJournalMessage,
   journalMessageKey,
 } from '../../lib/journalPresentation'
-import AiFlowIndicator from './AiFlowIndicator'
 import './Conversation.css'
 
 
@@ -85,14 +84,6 @@ export default function Conversation({
   }, [sending])
 
   const hasText = Boolean(input.trim())
-
-  const lastMessage = messages[messages.length - 1]
-  const flowPhase =
-    messages.length === 0
-      ? 'idea'
-      : lastMessage?.role === 'user'
-        ? 'action'
-        : 'analysis'
 
   const iconKey =
     voiceState === 'recording'
@@ -378,17 +369,13 @@ export default function Conversation({
 
       {/* ── история сообщений ── */}
 
-      <div className="shrink-0 px-5 pb-2">
-        <AiFlowIndicator active={flowPhase} />
-      </div>
-
       <div
         ref={scrollRef}
         className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-6`}
       >
 
         {loading && (
-          <p className="text-muted text-[15px] text-center pt-4">
+          <p className="text-muted text-[14px] text-center pt-4">
             Загрузка...
           </p>
         )}
@@ -396,7 +383,7 @@ export default function Conversation({
 
         {!loading &&
           messages.length === 0 && (
-            <p className="text-muted text-[15px] text-center pt-10 leading-[1.6]">
+            <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">
               {meta.desc}
 
               <br />
@@ -474,7 +461,7 @@ export default function Conversation({
                 {meta.name}
               </div>
 
-              <p className="text-[15px] text-faint">
+              <p className="text-[14px] text-faint">
                 {meta.typing}
               </p>
             </div>
@@ -572,7 +559,7 @@ export default function Conversation({
                 />
 
                 <div className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in">
-                  <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[13px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
+                  <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
                     Нажми и удерживай, чтобы записать голосовое
                   </div>
 

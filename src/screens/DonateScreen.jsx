@@ -31,13 +31,13 @@ export default function DonateScreen({ user, onBack }) {
         <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-4">
           <Check size={28} className="text-gold" />
         </div>
-        <h2 className="font-display text-xl text-cream mb-2">Спасибо!</h2>
-        <p className="text-sm text-muted mb-8">
+        <h2 className="font-display text-[18px] text-cream mb-2">Спасибо!</h2>
+        <p className="text-[13px] text-muted mb-8">
           Твоя поддержка помогает Mentalix развиваться дальше.
         </p>
         <button
           onClick={onBack}
-          className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium active:scale-95 transition-transform"
+          className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium active:scale-95 transition-transform"
         >
           Готово
         </button>
@@ -51,7 +51,7 @@ export default function DonateScreen({ user, onBack }) {
         <div className="justify-self-start">
           <BackButton onClick={onBack} />
         </div>
-        <h1 className="font-display text-xl text-cream">Поддержать проект</h1>
+        <h1 className="font-display text-[18px] text-cream">Поддержать проект</h1>
         <span aria-hidden="true" />
       </div>
 
@@ -59,7 +59,7 @@ export default function DonateScreen({ user, onBack }) {
         <Heart size={26} className="text-mint" />
       </div>
 
-      <p className="text-sm text-muted text-center mb-8 px-4">
+      <p className="text-[13px] text-muted text-center mb-8 px-4">
         Донат не связан с тарифами — просто способ поддержать развитие Mentalix.
       </p>
 
@@ -68,7 +68,7 @@ export default function DonateScreen({ user, onBack }) {
           <button
             key={a}
             onClick={() => setSelected(a)}
-            className={`py-4 rounded-2xl text-lg font-display transition-colors ${
+            className={`py-4 rounded-2xl text-[16px] font-display transition-colors ${
               selected === a ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.05] text-muted'
             }`}
           >
@@ -80,12 +80,12 @@ export default function DonateScreen({ user, onBack }) {
       <button
         onClick={send}
         disabled={sending}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-sm font-medium disabled:opacity-40 active:scale-95 transition-transform"
+        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 active:scale-95 transition-transform"
       >
         {sending ? 'Отправляю...' : `Поддержать на ${selected} ₽`}
       </button>
 
-      <p className="text-xs text-muted text-center mt-4 px-4">
+      <p className="text-[11px] text-muted text-center mt-4 px-4">
         Оплата через Telegram Payments подключится в следующем обновлении — сейчас донат фиксируется без реального списания средств.
       </p>
     </div>

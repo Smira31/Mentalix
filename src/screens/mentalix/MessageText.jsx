@@ -107,7 +107,7 @@ export default function MessageText({ content }) {
           return (
             <h3
               key={`${block.type}-${index}`}
-              className="text-[15px] font-semibold leading-[1.45] text-cream"
+              className="text-[14px] font-semibold leading-[1.45] text-cream"
             >
               <InlineText text={block.text} />
             </h3>

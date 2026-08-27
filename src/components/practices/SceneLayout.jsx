@@ -40,14 +40,14 @@ export default function SceneLayout({
           <div className="practice-scene__body">
             {progress}
 
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-3">
+            <span className="block mx-type-meta uppercase tracking-wider text-gold mb-3">
               {label}
             </span>
 
-            <h2 className="font-display text-[24px] text-cream leading-tight">{title}</h2>
+            <h2 className="font-display mx-type-flow-title text-cream">{title}</h2>
 
             {description && (
-              <div className="practice-scene__description text-[13px] text-muted mt-5 leading-relaxed">
+              <div className="practice-scene__description mx-type-flow-body text-muted mt-5">
                 {description}
               </div>
             )}

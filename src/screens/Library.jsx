@@ -24,7 +24,7 @@ export default function Library({ user }) {
 
   return (
     <div className="w-full max-w-md px-5">
-      <h2 className="font-display text-[34px] text-cream lowercase mt-4 mb-5">библиотека.</h2>
+      <h2 className="font-display mx-type-page text-cream lowercase mt-4 mb-5">библиотека.</h2>
 
       <div className="flex gap-1 p-1 rounded-full bg-emerald/60 mb-5">
         {TABS.map(t => {
@@ -42,7 +42,7 @@ export default function Library({ user }) {
                 platform.haptic('light')
                 setTab(t.key)
               }}
-              className={`flex-1 rounded-full py-2.5 text-[13px] font-semibold transition-colors border-0 flex items-center justify-center gap-1.5 ${
+              className={`flex-1 rounded-full py-2.5 mx-type-segment transition-colors border-0 flex items-center justify-center gap-1.5 ${
                 active
                   ? 'bg-gold text-emerald-deep'
                   : t.soon

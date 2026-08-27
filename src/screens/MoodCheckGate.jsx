@@ -56,15 +56,15 @@ export default function MoodCheckGate({ onDismiss }) {
         <button
           type="button"
           onClick={skip}
-          className="text-[14px] font-semibold text-muted bg-transparent border-0"
+          className="text-[13px] font-semibold text-muted bg-transparent border-0"
         >
           Пропустить
         </button>
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-6 text-center`}>
-        <h2 className="font-display text-[26px] text-cream leading-tight">{MOOD_STEP.title}</h2>
-        <p className="text-[14px] text-muted mt-2 mb-9">{MOOD_STEP.hint}</p>
+        <h2 className="font-display text-[22px] text-cream leading-tight">{MOOD_STEP.title}</h2>
+        <p className="text-[13px] text-muted mt-2 mb-9">{MOOD_STEP.hint}</p>
 
         <div className="flex items-end justify-center gap-3 w-full max-w-sm">
           {[1, 2, 3, 4, 5].map(level => (

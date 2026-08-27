@@ -36,7 +36,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
         <div className="justify-self-start">
           <BackButton onClick={onBack} />
         </div>
-        <h1 className="font-display text-xl text-cream">Подписка</h1>
+        <h1 className="font-display text-[18px] text-cream">Подписка</h1>
         <span aria-hidden="true" />
       </div>
 
@@ -50,17 +50,17 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <h2 className="font-display text-lg text-cream">{t.name}</h2>
+              <h2 className="font-display text-[16px] text-cream">{t.name}</h2>
               {isCurrent && (
                 <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-gold text-emerald-deep">
                   Текущий
                 </span>
               )}
             </div>
-            <p className="text-sm text-muted mb-4">{t.price}</p>
+            <p className="text-[13px] text-muted mb-4">{t.price}</p>
             <ul className="space-y-2 mb-4">
               {t.features.map(f => (
-                <li key={f} className="flex items-start gap-2 text-sm text-cream">
+                <li key={f} className="flex items-start gap-2 text-[13px] text-cream">
                   <Check size={15} className="text-gold shrink-0 mt-0.5" />
                   {f}
                 </li>
@@ -69,7 +69,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
             {t.key === 'pro' && !isCurrent && (
               <button
                 disabled
-                className="w-full py-3 rounded-xl bg-cream/10 text-muted text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed"
+                className="w-full py-3 rounded-xl bg-cream/10 text-muted text-[13px] font-medium flex items-center justify-center gap-2 cursor-not-allowed"
               >
                 <Lock size={14} /> Оплата скоро появится
               </button>
@@ -78,7 +78,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
         )
       })}
 
-      <p className="text-xs text-muted text-center px-4">
+      <p className="text-[11px] text-muted text-center px-4">
         Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем
         обновлении.
       </p>

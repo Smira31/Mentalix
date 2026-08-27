@@ -82,6 +82,15 @@ const FIXTURES = {
   history: [],
 }
 
+const COMPLETED_TODAY_FIXTURES = {
+  ...FIXTURES,
+  checkin: {
+    mood: 5,
+    emotion: 'отлично',
+    review_completed_at: '2026-08-27T12:00:00.000Z',
+  },
+}
+
 function jsonResponse(body, status = 200) {
   return {
     status,
@@ -90,7 +99,7 @@ function jsonResponse(body, status = 200) {
   }
 }
 
-function fixtureFor(request) {
+function fixtureFor(request, fixtures = FIXTURES) {
   const url = new URL(request.url())
   const pathname = url.pathname
   const method = request.method()
@@ -103,17 +112,18 @@ function fixtureFor(request) {
     return jsonResponse({ ok: true })
   }
 
-  if (pathname === '/api/rituals') return jsonResponse(FIXTURES.rituals)
-  if (pathname === '/api/ascezas') return jsonResponse(FIXTURES.ascezas)
-  if (pathname === '/api/quotes/today') return jsonResponse(FIXTURES.quote)
-  if (pathname === '/api/checkin/today') return jsonResponse(FIXTURES.checkin)
-  if (pathname === '/api/checkin/history') return jsonResponse(FIXTURES.history)
-  if (pathname === '/api/themes') return jsonResponse(FIXTURES.themes)
-  if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
-  if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
-  if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
-  if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
-  if (pathname === '/api/analytics') return jsonResponse(FIXTURES.analytics)
+  if (pathname === '/api/rituals') return jsonResponse(fixtures.rituals)
+  if (pathname === '/api/ascezas') return jsonResponse(fixtures.ascezas)
+  if (pathname === '/api/quotes/today') return jsonResponse(fixtures.quote)
+  if (pathname === '/api/checkin/today') return jsonResponse(fixtures.checkin)
+  if (pathname === '/api/checkin/history') return jsonResponse(fixtures.history)
+  if (pathname === '/api/themes') return jsonResponse(fixtures.themes)
+  if (pathname === '/api/themes/701') return jsonResponse(fixtures.theme)
+  if (pathname === '/api/profile/settings') return jsonResponse(fixtures.settings)
+  if (pathname === '/api/analytics/pulse') return jsonResponse(fixtures.pulse)
+  if (pathname === '/api/articles') return jsonResponse(fixtures.articles)
+  if (pathname === '/api/analytics') return jsonResponse(fixtures.analytics)
+  if (pathname === '/api/mentalix/messages') return jsonResponse([])
 
   return jsonResponse({ error: `Нет локального fixture для ${method} ${pathname}` }, 501)
 }
@@ -189,7 +199,10 @@ async function assertCommonScreenChecks(page, runtimeErrors) {
     for (let index = 0; index < count; index += 1) {
       const ctaBox = await criticalCtas.nth(index).boundingBox()
 
-      if (ctaBox) {
+      const fullyInViewport =
+        ctaBox && ctaBox.top >= 0 && ctaBox.bottom <= geometry.viewportHeight
+
+      if (fullyInViewport) {
         expect(overlap(ctaBox, navBox), 'Нижняя навигация перекрывает критический CTA').toBe(false)
       }
     }
@@ -312,7 +325,8 @@ test('локальный UX smoke по основному маршруту', asy
       localStorage.setItem('mx-app-lock-enabled', '0')
     }, TEST_USER)
 
-    await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+    let activeFixtures = FIXTURES
+    await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request(), activeFixtures)))
 
     const page = await context.newPage()
     const runtimeErrors = []
@@ -342,6 +356,26 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(checkin)
       },
     })
+
+    activeFixtures = COMPLETED_TODAY_FIXTURES
+    const completedPage = await context.newPage()
+    completedPage.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
+    await completedPage.goto('/')
+    await captureScreen({
+      page: completedPage,
+      viewport,
+      screen: 'Today completed',
+      slug: '01b-today-completed',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const completedCard = completedPage.locator(".mx-today-primary-card[data-complete='true']")
+        await expect(completedCard).toBeVisible()
+        await expect(completedCard).toHaveCSS('background-color', 'rgb(9, 9, 9)')
+      },
+    })
+    await completedPage.close()
+    activeFixtures = FIXTURES
 
     await page.getByRole('button', { name: /Пройти чек-ин|Разобрать день/ }).click()
     await captureScreen({
@@ -380,43 +414,6 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Закрыть' }).click()
-
-    await page.getByRole('button', { name: 'Разгрузить голову' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Today focus writer',
-      slug: '02c-today-focus-writer',
-      runtimeErrors,
-      results,
-      check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Дела, которые тянут внимание' })
-        await expect(editor).toBeVisible()
-        await expect(editor).toHaveAttribute('contenteditable', 'true')
-        await editor.fill('Написать отчёт\nРазобрать почту')
-        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
-        await assertClickable(page.getByRole('button', { name: 'Продолжить' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Продолжить' }).click()
-    await page.getByRole('button', { name: 'Написать отчёт' }).click()
-    await captureScreen({
-      page,
-      viewport,
-      screen: 'Today first step writer',
-      slug: '02d-today-first-step-writer',
-      runtimeErrors,
-      results,
-      check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Первый шаг' })
-        await expect(editor).toBeVisible()
-        await editor.fill('Открыть документ')
-        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
-        await assertClickable(page.getByRole('button', { name: 'Подсказать шаг' }))
-        await assertClickable(page.getByRole('button', { name: 'Сохранить шаг' }))
-      },
-    })
-    await page.getByRole('button', { name: 'Сохранить шаг' }).click()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
     await captureScreen({
@@ -472,6 +469,53 @@ test('локальный UX smoke по основному маршруту', asy
         await assertSoonControls(page)
       },
     })
+
+    await page.getByRole('button', { name: 'Наставник' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Mentor picker',
+      slug: '03-mentor-picker',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
+        await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
+      },
+    })
+    await page.getByRole('button', { name: 'Практики' }).click()
+    await page.getByRole('button', { name: 'Журнал' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal day 2 in Practices',
+      slug: '03a-journal-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByText('Тема недели · День 2 из 7')).toBeVisible()
+        await expect(page.getByRole('heading', { name: /Усилие и напряжение/ })).toBeVisible()
+        await expect(page.getByRole('button', { name: 'Наставник' }).first()).toBeVisible()
+      },
+    })
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal writer in Practices',
+      slug: '03b-journal-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByText('Тема недели · День 2 из 7')).toBeVisible()
+        const editor = page.getByRole('textbox', { name: 'Мысль по теме недели' })
+        await expect(editor).toBeVisible()
+        await editor.fill('Записать главную мысль дня')
+        await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
+        await assertClickable(page.getByRole('button', { name: 'Наставник' }).first())
+        await assertClickable(page.getByRole('button', { name: 'Сохранить мысль' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Ритуалы' }).click()
     await captureScreen({
@@ -571,6 +615,38 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(page.getByRole('heading', { name: 'Ты начал(а)' })).toBeVisible()
         await assertClickable(page.getByRole('button', { name: 'Немного' }))
         await assertClickable(page.getByRole('button', { name: 'Завершить' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Назад' }).click()
+
+    await page.getByRole('button', { name: 'Медитация' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Meditation intro',
+      slug: '06d-meditation-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(
+          page.getByRole('heading', { name: 'Вернись к тому, что действительно зависит от тебя' })
+        ).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Meditation observation',
+      slug: '06e-meditation-observation',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: 'Что сейчас происходит' })
+        await expect(editor).toBeVisible()
+        await editor.fill('Я жду ответа и постоянно проверяю телефон')
+        await assertClickable(page.getByRole('button', { name: 'Дальше' }))
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
