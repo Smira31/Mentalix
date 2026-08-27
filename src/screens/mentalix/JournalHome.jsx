@@ -34,7 +34,7 @@ const PHASES = [
 function readSaved() {
   const entry = readJournalEntry(todayKey())
   const drafts = Object.fromEntries(
-    PHASES.map(({ key }) => [key, entry.cycle[key === 'next' ? 'newStep' : key]?.text || '']),
+    PHASES.map(({ key }) => [key, entry.cycle[key === 'next' ? 'newStep' : key]?.text || ''])
   )
   const phaseIndex = PHASES.findIndex(({ key }) => !drafts[key].trim())
   return {
@@ -105,7 +105,9 @@ export default function JournalHome({ onOpenMentor }) {
             className="text-left"
           >
             <div className={`h-1.5 ${index <= phaseIndex ? 'bg-gold' : 'bg-cream/15'}`} />
-            <div className={`mt-2 text-[10px] ${index === phaseIndex ? 'text-gold' : 'text-faint'}`}>
+            <div
+              className={`mt-2 text-[10px] ${index === phaseIndex ? 'text-gold' : 'text-faint'}`}
+            >
               {item.label}
             </div>
           </button>
@@ -117,9 +119,7 @@ export default function JournalHome({ onOpenMentor }) {
           <PenLine size={15} className="text-gold" />
           {phase.label}
         </div>
-        <h1 className="mx-ai-title mt-4 text-cream" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-          {phase.title}
-        </h1>
+        <h1 className="mx-ai-title mt-4 text-cream font-display">{phase.title}</h1>
         <p className="mx-ai-body mt-4 max-w-[310px] text-muted">{phase.hint}</p>
       </div>
 
@@ -145,11 +145,19 @@ export default function JournalHome({ onOpenMentor }) {
           {isLast ? 'Закрыть сегодняшний цикл' : 'Продолжить'}
         </button>
         <div className="mt-3 flex items-center justify-between text-[12px] text-faint">
-          <button type="button" onClick={onOpenMentor} className="text-muted underline-offset-4 active:text-gold">
+          <button
+            type="button"
+            onClick={onOpenMentor}
+            className="text-muted underline-offset-4 active:text-gold"
+          >
             Пойти глубже с наставником
           </button>
           {phaseIndex > 0 && (
-            <button type="button" onClick={() => setPhaseIndex(index => index - 1)} className="active:text-gold">
+            <button
+              type="button"
+              onClick={() => setPhaseIndex(index => index - 1)}
+              className="active:text-gold"
+            >
               Назад
             </button>
           )}

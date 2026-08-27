@@ -3187,3 +3187,7 @@ PR #221 смёржен в `main` (merge commit `9f9e8fe`), feature-ветка у
 ## 27.08.2026 — MXL-JOURNAL-PERSISTENCE-001: local-first storage slice
 
 Journal Home переведён с прямого prototype `localStorage` на версионируемый `src/lib/journalStorage.js`. Сохраняются четыре фазы цикла, локальная дата устройства, статусы `draft/final`, timestamps и миграция `mx-journal-prototype-v1`. Добавлен регрессионный тест; unit 25/25, lint и build проходят. Cloud sync и backend schema не заявлены готовыми до приватного контракта.
+
+## 27.08.2026 — Home/type quiet slice
+
+Локально начаты `MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001`: главный hero Today поднят перед вторичными секциями, а пользовательские serif/Manrope overrides заменены на Onest baseline. Добавлены design note и regression-контракты. Backend, cloud sync, AI consent и proprietary Stoic assets не затронуты.

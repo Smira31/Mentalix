@@ -3979,3 +3979,9 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Evidence:** для каждого дефекта обязательны устройство, viewport, экран, шаги воспроизведения, ожидаемое/фактическое поведение, повторяемость и screenshot или screen recording.
 - **Rollback:** отдельный узкий PR с revert без удаления данных и без production-операций; если проблема не воспроизводится, оставить задачу в backlog с отрицательным результатом проверки вместо изменения дизайна по предположению.
 - **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
+
+## MXL-HOME-QUIET-FOUNDATION-001 / MXL-TYPE-SYSTEM-001 — Home/type slice
+
+Статус: реализовано локально в `feat/mxl-home-quiet-type-001`, без публикации PR. Today перестроен так, чтобы главный hero-блок был первым фокусом перед вторичными секциями; пользовательские `Georgia`, `Times New Roman` и `Manrope` overrides заменены на единый Onest baseline. Добавлен design note `docs/product/MXL-HOME-TYPE-FOUNDATION-001_DESIGN.md` и regression-контракты.
+
+Scope не включает backend, cloud sync, AI consent, новую вкладку, proprietary Stoic assets, tags, search или изменение смысла существующих flows. Следующий gate — CI/Vercel и ручная Telegram/iPhone проверка Home на 320×568 и 390×844.

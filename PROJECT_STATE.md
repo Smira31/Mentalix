@@ -728,3 +728,10 @@ Workflow `Журнал состояния Mentalix` добавляет запи�
 ### Release readiness
 
 Перед публикацией релиза ответственный проверяет четыре независимых gate: frontend build, внешний Render health, deployment provenance и ручной продуктовый сценарий. Релиз не считается полностью подтверждённым только на основании зелёного CI: ручная проверка интерфейса и data-dependent сценариев остаётся обязательной.
+
+## 0.3 Home/type slice — локальный handoff 27.08.2026
+
+- В feature-ветке `feat/mxl-home-quiet-type-001` начаты `MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001`.
+- Today получил более спокойную иерархию: главный hero перед вторичными секциями; Onest закреплён как единый пользовательский baseline, локальные serif/Manrope overrides удалены.
+- Локально проходят 27/27 unit-тестов, lint, build, docs:check (100 Markdown-файлов, 29 canonical task IDs) и `git diff --check`.
+- PR ещё не создан; следующий шаг — опубликовать отдельный PR и пройти Home/Journal Telegram+iPhone gate.

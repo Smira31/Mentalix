@@ -364,13 +364,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
   // ============================================================
 
   if (sub === 'quote') {
-    return (
-      <QuoteView
-        user={user}
-        todayQuote={thoughtOfDay}
-        onClose={() => changeSub(null)}
-      />
-    )
+    return <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
   }
 
   // ============================================================
@@ -750,26 +744,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
         />
       )}
 
-      {!showFocusHero && !hiddenCards.includes('focus') && (
-        <TodayFocusCard
-          focus={todayFocus}
-          readOnly={todayState === 'dayClosed'}
-          onOpenFlow={() => openTodayFocusFlow()}
-          onClearFocus={() => {
-            const entry = clearTodayFocusPick(user.id)
-
-            setTodayFocus(entry)
-          }}
-        />
-      )}
-
-      <MorningPilotCard
-        userId={user.id}
-        rituals={rituals}
-        onOpenRituals={() => onOpenPractice('rituals')}
-        todayFocusPicked={Boolean(todayFocus?.picked)}
-      />
-
       {/* ======================================================
           ГЕРОЙ-КАРТОЧКА
           ====================================================== */}
@@ -799,6 +773,26 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
+
+      {!showFocusHero && !hiddenCards.includes('focus') && (
+        <TodayFocusCard
+          focus={todayFocus}
+          readOnly={todayState === 'dayClosed'}
+          onOpenFlow={() => openTodayFocusFlow()}
+          onClearFocus={() => {
+            const entry = clearTodayFocusPick(user.id)
+
+            setTodayFocus(entry)
+          }}
+        />
+      )}
+
+      <MorningPilotCard
+        userId={user.id}
+        rituals={rituals}
+        onOpenRituals={() => onOpenPractice('rituals')}
+        todayFocusPicked={Boolean(todayFocus?.picked)}
+      />
 
       {/* ======================================================
           ПУЛЬС
@@ -964,24 +958,24 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           ====================================================== */}
 
       {!hiddenCards.includes('quote') && thoughtOfDay && (
-          <button
-            onClick={() => {
-              platform.haptic('light')
+        <button
+          onClick={() => {
+            platform.haptic('light')
 
-              changeSub('quote')
-            }}
-            className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
-          >
-            <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
+            changeSub('quote')
+          }}
+          className="w-full rounded-[28px] bg-emerald px-6 py-8 mt-4 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+        >
+          <span className="block text-[12px] text-muted font-semibold mb-3">Мысль дня</span>
 
-            <span className="block font-display text-[19px] text-cream leading-snug">
-              {thoughtOfDay.text}
-            </span>
+          <span className="block font-display text-[19px] text-cream leading-snug">
+            {thoughtOfDay.text}
+          </span>
 
-            <span className="block text-[11px] text-faint font-semibold mt-4">
-              {thoughtOfDay.attribution} · открыть →
-            </span>
-          </button>
+          <span className="block text-[11px] text-faint font-semibold mt-4">
+            {thoughtOfDay.attribution} · открыть →
+          </span>
+        </button>
       )}
     </div>
   )
