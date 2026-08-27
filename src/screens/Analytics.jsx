@@ -587,9 +587,9 @@ export default function Analytics({ user, onGoCheckin }) {
       </div>
 
       {lead ? (
-        <p className="font-display mx-type-section text-cream mb-6">{lead.text}</p>
+        <p className="font-display mx-type-insight text-cream mb-6">{lead.text}</p>
       ) : (
-        <p className="font-display mx-type-section text-muted mb-6">
+        <p className="font-display mx-type-insight text-muted mb-6">
           {enough
             ? 'Устойчивых закономерностей пока не видно. Это нормально: они проявляются на большем отрезке.'
             : `Данных пока мало. Нужно хотя бы ${MIN_CHECKINS} чек-инов, чтобы говорить о закономерностях, а не о совпадениях.`}

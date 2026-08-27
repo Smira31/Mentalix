@@ -82,7 +82,7 @@ export default function JournalHome({ onOpenMentor }) {
           <BookOpen size={21} strokeWidth={1.7} />
         </div>
         <div>
-          <div className="mx-ai-title font-display mx-type-page text-cream">журнал.</div>
+          <div className="mx-ai-title text-cream leading-none">журнал.</div>
           <div className="mx-ai-meta text-gold mt-1">сегодня · {completed}/4 шага</div>
         </div>
         <button
@@ -119,7 +119,7 @@ export default function JournalHome({ onOpenMentor }) {
           <PenLine size={15} className="text-gold" />
           {phase.label}
         </div>
-        <h1 className="mx-ai-title font-display mx-type-hero mt-4 text-cream">{phase.title}</h1>
+        <h1 className="mx-ai-title mt-4 text-cream font-display">{phase.title}</h1>
         <p className="mx-ai-body mt-4 max-w-[310px] text-muted">{phase.hint}</p>
       </div>
 

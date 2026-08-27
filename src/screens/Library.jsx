@@ -42,7 +42,7 @@ export default function Library({ user }) {
                 platform.haptic('light')
                 setTab(t.key)
               }}
-              className={`flex-1 rounded-full py-2.5 mx-type-control transition-colors border-0 flex items-center justify-center gap-1.5 ${
+              className={`flex-1 rounded-full py-2.5 mx-type-segment transition-colors border-0 flex items-center justify-center gap-1.5 ${
                 active
                   ? 'bg-gold text-emerald-deep'
                   : t.soon
