@@ -224,7 +224,10 @@ function TemplateBuilder({ user, onBack, onCreated }) {
 
 export default function GuidedJournals({ user }) {
   const [query, setQuery] = useState('')
+  const [category, setCategory] = useState('')
   const [templates, setTemplates] = useState(null)
+  const [allCategories, setAllCategories] = useState([])
+  const [activeSessions, setActiveSessions] = useState([])
   const [selected, setSelected] = useState(null)
   const [session, setSession] = useState(null)
   const [stepIndex, setStepIndex] = useState(0)
@@ -232,17 +235,14 @@ export default function GuidedJournals({ user }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const categories = useMemo(
-    () => [...new Set((templates || []).map(template => template.category))],
-    [templates]
-  )
+  const categories = useMemo(() => allCategories, [allCategories])
 
   useEffect(() => {
     let active = true
     const timeoutId = window.setTimeout(async () => {
       if (active) setError('')
       try {
-        const list = await api.journalTemplates.list(user.id, { q: query || undefined })
+        const list = await api.journalTemplates.list(user.id, { q: query || undefined, category: category || undefined })
         if (active) setTemplates(list)
       } catch {
         if (active) {
@@ -256,7 +256,25 @@ export default function GuidedJournals({ user }) {
       active = false
       window.clearTimeout(timeoutId)
     }
-  }, [query, user.id])
+  }, [query, category, user.id])
+
+  useEffect(() => {
+    let active = true
+    api.journalTemplates.list(user.id)
+      .then(items => {
+        if (active) setAllCategories([...new Set((items || []).map(item => item.category).filter(Boolean))])
+      })
+      .catch(() => { if (active) setAllCategories([]) })
+    return () => { active = false }
+  }, [user.id])
+
+  useEffect(() => {
+    let active = true
+    api.journalTemplates.sessions(user.id, 'active')
+      .then(items => { if (active) setActiveSessions(Array.isArray(items) ? items : []) })
+      .catch(() => { if (active) setActiveSessions([]) })
+    return () => { active = false }
+  }, [user.id])
 
   async function openTemplate(template) {
     setLoading(true)
@@ -269,6 +287,14 @@ export default function GuidedJournals({ user }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  function resumeSession(existingSession) {
+    const steps = existingSession.template?.steps || []
+    const firstUnanswered = steps.findIndex(step => !stepAnswerIsPresent(existingSession.answers?.[step.id]))
+    setSelected(existingSession.template || null)
+    setStepIndex(firstUnanswered === -1 ? Math.max(steps.length - 1, 0) : firstUnanswered)
+    setSession(existingSession)
   }
 
   async function startOrResume() {
@@ -386,11 +412,12 @@ export default function GuidedJournals({ user }) {
         </div>
         <button type="button" onClick={() => setBuilderOpen(true)} aria-label="Создать личный шаблон" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold text-emerald-deep"><Plus size={20} /></button>
       </div>
+      {activeSessions.length > 0 && <div className="mt-5 rounded-3xl border border-gold/25 bg-emerald p-4"><p className="text-[12px] font-bold uppercase tracking-wide text-gold">Продолжить</p><div className="mt-3 space-y-2">{activeSessions.slice(0, 3).map(item => <button key={item.id} type="button" onClick={() => resumeSession(item)} className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-emerald-light px-4 text-left"><span className="text-[14px] font-semibold text-cream">{item.template?.title || 'Незавершённая запись'}</span><span className="text-[12px] text-gold">Открыть</span></button>)}</div></div>}
       <label className="mt-5 flex min-h-12 items-center gap-3 rounded-2xl bg-emerald px-4 text-muted">
         <Search size={18} />
         <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Поиск по шаблонам" className="min-w-0 flex-1 bg-transparent text-[16px] text-cream outline-none placeholder:text-muted" />
       </label>
-      {categories.length > 0 && <p className="mt-3 text-[12px] text-faint">Категории: {categories.join(' · ')}</p>}
+      {categories.length > 0 && <div className="mt-3 flex flex-wrap gap-2" aria-label="Фильтр по категориям"><button type="button" onClick={() => setCategory('')} aria-pressed={!category} className={['min-h-9 rounded-full px-3 text-[12px] font-semibold', !category ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'].join(' ')}>Все</button>{categories.map(item => <button key={item} type="button" onClick={() => setCategory(item)} aria-pressed={category === item} className={['min-h-9 rounded-full px-3 text-[12px] font-semibold', category === item ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'].join(' ')}>{item}</button>)}</div>}
       {error && <p role="alert" className="mt-4 text-[13px] text-muted">{error}</p>}
       {templates === null ? (
         <p className="mt-8 text-[14px] text-muted">Загружаем шаблоны…</p>

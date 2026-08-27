@@ -285,7 +285,14 @@ export const api = {
   },
 
   privacy: {
-    downloadExport: userId => download(withQuery('/privacy/export', { user_id: userId }), `mentalix-export-${new Date().toISOString().slice(0, 10)}.json`),
+    downloadExport: (userId, { format = 'json', dateFrom, dateTo } = {}) => {
+      const extension = format === 'markdown' ? 'md' : format
+      const prefix = format === 'csv' ? 'mentalix-metrics' : format === 'markdown' ? 'mentalix-journal' : 'mentalix-export'
+      return download(
+        withQuery('/privacy/export', { user_id: userId, export_format: format, date_from: dateFrom, date_to: dateTo }),
+        `${prefix}-${new Date().toISOString().slice(0, 10)}.${extension}`,
+      )
+    },
   },
 
   profile: {
@@ -304,6 +311,9 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ user_id: userId, hours }),
       }),
+
+    clearReminderSettings: userId =>
+      request(withQuery('/profile/settings', { user_id: userId }), { method: 'DELETE' }),
   },
 
   pulse: {

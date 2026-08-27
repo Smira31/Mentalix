@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Heart,
   Moon,
+  Download,
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -23,6 +24,7 @@ import { requestMessages, biometric } from '../platform/telegram.hooks'
 import { platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import { MOOD_CHECK_ENABLED_KEY } from '../lib/moodCheckDraft'
+import { clearCheckinDraft } from '../lib/checkinDraft'
 import {
   TODAY_CARDS_HIDDEN_KEY,
   TODAY_CARD_IDS,
@@ -132,6 +134,8 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   const [writingGoalOn, setWritingGoalOn] = useState(false)
   const [writingGoalCount, setWritingGoalCount] = useState(3)
   const [reminderStatus, setReminderStatus] = useState('')
+  const [exportStatus, setExportStatus] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -225,6 +229,40 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       setReminderStatus(`Напоминания отложены до ${new Date(result.reminder_snoozed_until).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}.`)
     } catch {
       setReminderStatus('Не удалось отложить напоминания.')
+    }
+  }
+
+  async function downloadPersonalExport(format) {
+    if (exporting || !window.confirm('Скачать копию личных данных на это устройство? Файл не будет отправлен третьей стороне.')) return
+    setExporting(true)
+    setExportStatus('')
+    try {
+      await api.privacy.downloadExport(user.id, { format })
+      setExportStatus('Файл подготовлен для скачивания на этом устройстве.')
+    } catch {
+      setExportStatus('Не удалось подготовить файл. Проверь соединение и попробуй ещё раз.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  function clearLocalDraft() {
+    if (!window.confirm('Очистить незавершённую утреннюю запись только на этом устройстве? Сохранённые записи не изменятся.')) return
+    const cleared = clearCheckinDraft({ userId: user.id })
+    setExportStatus(cleared ? 'Локальный черновик очищен. Сохранённые записи не затронуты.' : 'Не удалось очистить локальный черновик.')
+  }
+
+  async function clearAllReminderSettings() {
+    if (!window.confirm('Отключить напоминания и удалить их тихие часы, snooze и цель записей? Journal и другие настройки не изменятся.')) return
+    try {
+      const settings = await api.profile.clearReminderSettings(user.id)
+      setReminderOn(Boolean(settings?.reminder_enabled))
+      setQuietHoursOn(false)
+      setWritingGoalOn(false)
+      setWritingGoalCount(0)
+      setReminderStatus('Напоминания и связанные настройки отключены.')
+    } catch {
+      setReminderStatus('Не удалось отключить напоминания. Ничего не менялось.')
     }
   }
 
@@ -427,7 +465,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
             <Toggle checked={quietHoursOn} label="Тихие часы" onChange={saveQuietHours} />
           </div>
           {quietHoursOn && <div className="grid grid-cols-2 gap-2"><label className="text-[12px] text-muted">С<select value={quietStart} onChange={event => { const value = Number(event.target.value); setQuietStart(value); saveQuietHours(true, value, quietEnd) }} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream">{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></label><label className="text-[12px] text-muted">До<select value={quietEnd} onChange={event => { const value = Number(event.target.value); setQuietEnd(value); saveQuietHours(true, quietStart, value) }} className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream">{Array.from({ length: 24 }, (_, h) => <option key={h} value={h}>{String(h).padStart(2, '0')}:00</option>)}</select></label></div>}
-          <button type="button" onClick={snoozeReminders} className="min-h-11 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream">Отложить на 2 часа</button>
+          <div className="flex flex-wrap gap-2"><button type="button" onClick={snoozeReminders} className="min-h-11 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream">Отложить на 2 часа</button><button type="button" onClick={clearAllReminderSettings} className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300">Отключить и очистить</button></div>
         </div>
       )}
 
@@ -533,6 +571,15 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
           }
         />
       </Card>
+
+      <SectionLabel>Личные данные</SectionLabel>
+      <Card>
+        <Row icon={Download} title="Экспорт JSON" subtitle="Полная машиночитаемая копия" onClick={() => downloadPersonalExport('json')} />
+        <Row icon={Download} title="Экспорт Markdown" subtitle="Записи для чтения или передачи специалисту" onClick={() => downloadPersonalExport('markdown')} />
+        <Row icon={Download} title="Экспорт CSV" subtitle="Табличные метрики и check-in" onClick={() => downloadPersonalExport('csv')} />
+        <Row icon={Lock} title="Очистить local draft" subtitle="Только незавершённый текст на этом устройстве" onClick={clearLocalDraft} danger divider={false} />
+      </Card>
+      {exportStatus && <p role="status" className="-mt-5 mb-5 w-full text-[12px] text-muted">{exportStatus}</p>}
 
       <SectionLabel>Основные</SectionLabel>
       <Card>

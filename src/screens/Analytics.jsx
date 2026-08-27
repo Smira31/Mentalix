@@ -515,6 +515,7 @@ export default function Analytics({ user, onGoCheckin }) {
   const initialTrendsSnapshot = initialTrendsState?.data ?? null
   const [data, setData] = useState(() => initialTrendsSnapshot?.analytics ?? null)
   const [checkins, setCheckins] = useState(() => initialTrendsSnapshot?.checkins ?? [])
+  const [days, setDays] = useState(14)
   const [loading, setLoading] = useState(() => initialTrendsSnapshot === null)
 
   useEffect(() => {
@@ -522,7 +523,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
     let active = true
 
-    fetchTrendsData(user.id, 14, { force: initialTrendsState?.shouldRefresh === true })
+    fetchTrendsData(user.id, days, { force: days !== 14 || initialTrendsState?.shouldRefresh === true })
       .then(({ analytics, checkins }) => {
         if (!active) return
 
@@ -537,7 +538,7 @@ export default function Analytics({ user, onGoCheckin }) {
     return () => {
       active = false
     }
-  }, [user, initialTrendsState])
+  }, [user, days, initialTrendsState])
 
   if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
   if (!data) return <p className="text-muted text-sm px-6">Не удалось загрузить аналитику</p>
@@ -584,6 +585,7 @@ export default function Analytics({ user, onGoCheckin }) {
     <div className="mx-type-page w-full max-w-md px-5 animate-fade-in">
       <h2 className="mx-type-analytics-heading font-display text-[34px] text-cream lowercase mt-4 mb-1">аналитика.</h2>
 
+      <div className="mb-5 flex flex-wrap gap-2" aria-label="Период аналитики">{[7, 14, 30, 90].map(period => <button key={period} type="button" onClick={() => { if (days !== period) { setLoading(true); setDays(period) } }} aria-pressed={days === period} className={['min-h-9 rounded-full px-3 text-[12px] font-semibold', days === period ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'].join(' ')}>{period} дней</button>)}</div>
       <p className="text-[12px] text-faint mb-7">за последние {data.period_days} дней</p>
 
       <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
