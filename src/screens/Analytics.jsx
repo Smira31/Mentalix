@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
+import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
@@ -182,7 +183,12 @@ const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хо
 
 // ── настроение по чек-инам: линия за 14 дней ──
 function MoodTrend({ checkins, onGoCheckin }) {
-  if (!checkins || checkins.length === 0) {
+  // Cache уже отбрасывает outliers; эта граница дополнительно защищает UI,
+  // если компонент когда-либо получит данные из другого источника.
+  const scoredCheckins = (Array.isArray(checkins) ? checkins : []).filter(
+    checkin => Number.isInteger(checkin?.mood) && checkin.mood >= 1 && checkin.mood <= 5
+  )
+  if (scoredCheckins.length === 0) {
     return (
       <EmptyState className="border border-cream/10 !bg-emerald-light/15 !p-6 mb-6">
         <h3 className="font-display text-[17px] text-cream mb-1.5">Как ты сейчас?</h3>
@@ -198,7 +204,7 @@ function MoodTrend({ checkins, onGoCheckin }) {
     )
   }
 
-  const chartData = checkins.map(c => {
+  const chartData = scoredCheckins.map(c => {
     const d = new Date(c.date + 'T00:00:00')
     return {
       label: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`,
@@ -206,8 +212,10 @@ function MoodTrend({ checkins, onGoCheckin }) {
       energy: c.energy,
     }
   })
-  const last = checkins[checkins.length - 1]
-  const avgMood = (checkins.reduce((s, c) => s + c.mood, 0) / checkins.length).toFixed(1)
+  const last = scoredCheckins[scoredCheckins.length - 1]
+  const avgMood = (
+    scoredCheckins.reduce((sum, checkin) => sum + checkin.mood, 0) / scoredCheckins.length
+  ).toFixed(1)
 
   return (
     <div className="mb-6">
@@ -216,7 +224,7 @@ function MoodTrend({ checkins, onGoCheckin }) {
         <span className="text-[11px] text-muted">в среднем {avgMood}/5</span>
       </div>
       <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-4">
-        {checkins.length >= 2 ? (
+        {scoredCheckins.length >= 2 ? (
           <ResponsiveContainer width="100%" height={140}>
             <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -28 }}>
               <XAxis
@@ -343,12 +351,16 @@ function pick(list, field) {
 
 // Сравнение среднего значения поля в двух группах дней.
 function compareGroups({ withGroup, withoutGroup, field, threshold, build }) {
-  if (withGroup.length < MIN_GROUP || withoutGroup.length < MIN_GROUP) {
+  // Группы считаются по числу валидных числовых значений, а не по числу
+  // неполных записей. Иначе один score мог бы выглядеть как достаточная выборка.
+  const withValues = pick(withGroup, field)
+  const withoutValues = pick(withoutGroup, field)
+  if (withValues.length < MIN_GROUP || withoutValues.length < MIN_GROUP) {
     return null
   }
 
-  const a = average(pick(withGroup, field))
-  const b = average(pick(withoutGroup, field))
+  const a = average(withValues)
+  const b = average(withoutValues)
 
   if (a === null || b === null) return null
 
@@ -482,6 +494,12 @@ export function deriveConclusions(checkins, data) {
   return found
 }
 
+function formatSourceDate(value) {
+  const date = new Date(`${value}T00:00:00`)
+  if (Number.isNaN(date.getTime())) return value
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' }).format(date)
+}
+
 const WEEKDAY_FULL = [
   'воскресенье',
   'понедельник',
@@ -523,7 +541,9 @@ export default function Analytics({ user, onGoCheckin }) {
 
     let active = true
 
-    fetchTrendsData(user.id, days, { force: days !== 14 || initialTrendsState?.shouldRefresh === true })
+    fetchTrendsData(user.id, days, {
+      force: days !== 14 || initialTrendsState?.shouldRefresh === true,
+    })
       .then(({ analytics, checkins }) => {
         if (!active) return
 
@@ -565,15 +585,15 @@ export default function Analytics({ user, onGoCheckin }) {
 
   const descriptiveBackendInsights = selectDescriptiveInsights(data.insights)
   const backendObservations = Array.isArray(data.observations) ? data.observations.slice(0, 3) : []
-  const observations = backendObservations.length > 0
-    ? backendObservations
-    : descriptiveBackendInsights.map(text => ({
-        text,
-        sampleSize: null,
-        sourceDates: [],
-        caveat: 'Это описание доступных данных, а не диагноз и не доказательство причины.',
-      }))
-
+  const observations =
+    backendObservations.length > 0
+      ? backendObservations
+      : descriptiveBackendInsights.map(text => ({
+          text,
+          sampleSize: null,
+          sourceDates: [],
+          caveat: 'Это описание доступных данных, а не диагноз и не доказательство причины.',
+        }))
 
   const round = values => {
     const value = average(pick(checkins, values))
@@ -583,9 +603,31 @@ export default function Analytics({ user, onGoCheckin }) {
 
   return (
     <div className="mx-type-page w-full max-w-md px-5 animate-fade-in">
-      <h2 className="mx-type-analytics-heading font-display text-[34px] text-cream lowercase mt-4 mb-1">аналитика.</h2>
+      <h2 className="mx-type-analytics-heading font-display text-[34px] text-cream lowercase mt-4 mb-1">
+        аналитика.
+      </h2>
 
-      <div className="mb-5 flex flex-wrap gap-2" aria-label="Период аналитики">{[7, 14, 30, 90].map(period => <button key={period} type="button" onClick={() => { if (days !== period) { setLoading(true); setDays(period) } }} aria-pressed={days === period} className={['min-h-9 rounded-full px-3 text-[12px] font-semibold', days === period ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'].join(' ')}>{period} дней</button>)}</div>
+      <div className="mb-5 flex flex-wrap gap-2" aria-label="Период аналитики">
+        {ANALYTICS_PERIODS.map(period => (
+          <button
+            key={period}
+            type="button"
+            onClick={() => {
+              if (days !== period) {
+                setLoading(true)
+                setDays(period)
+              }
+            }}
+            aria-pressed={days === period}
+            className={[
+              'min-h-9 rounded-full px-3 text-[12px] font-semibold',
+              days === period ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted',
+            ].join(' ')}
+          >
+            {period} дней
+          </button>
+        ))}
+      </div>
       <p className="text-[12px] text-faint mb-7">за последние {data.period_days} дней</p>
 
       <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
@@ -593,16 +635,36 @@ export default function Analytics({ user, onGoCheckin }) {
       </div>
 
       <p className="text-[12px] text-faint leading-relaxed mb-3">
-        Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные причины; они также не являются прогнозами.
+        Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные причины;
+        они также не являются прогнозами.
       </p>
 
       {observations.length > 0 ? (
         <div className="space-y-2 mb-7">
           {observations.map((observation, index) => (
-            <div key={`${observation.kind || 'observation'}-${index}`} className="mx-type-insight rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5">
+            <div
+              key={`${observation.kind || 'observation'}-${index}`}
+              className="mx-type-insight rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5"
+            >
               <p className="text-[14px] leading-snug text-cream">{observation.text}</p>
               {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-                <p className="mt-2 text-[11px] text-muted">Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}{observation.sourceDates?.length ? ` · ${observation.sourceDates.length} дат` : ''}</p>
+                <p className="mt-2 text-[11px] text-muted">
+                  Основа: {observation.sampleSize}{' '}
+                  {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
+                  {observation.sourceDates?.length
+                    ? ` · ${observation.sourceDates.length} дат`
+                    : ''}
+                </p>
+              )}
+              {observation.sourceDates?.length > 0 && (
+                <details className="mt-2 text-[11px] text-muted">
+                  <summary className="cursor-pointer select-none text-gold">
+                    Даты в основе наблюдения
+                  </summary>
+                  <p className="mt-1 leading-relaxed">
+                    {observation.sourceDates.map(formatSourceDate).join(' · ')}
+                  </p>
+                </details>
               )}
               <p className="mt-2 text-[11px] leading-relaxed text-faint">{observation.caveat}</p>
             </div>
