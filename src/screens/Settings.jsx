@@ -135,6 +135,9 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   const [quietEnd, setQuietEnd] = useState(8)
   const [writingGoalOn, setWritingGoalOn] = useState(false)
   const [writingGoalCount, setWritingGoalCount] = useState(3)
+  const [insightsEnabled, setInsightsEnabled] = useState(true)
+  const [insightsSaving, setInsightsSaving] = useState(false)
+  const [insightsStatus, setInsightsStatus] = useState('')
   const [reminderStatus, setReminderStatus] = useState('')
   const [exportStatus, setExportStatus] = useState('')
   const [exporting, setExporting] = useState(false)
@@ -157,6 +160,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         setQuietEnd(s?.quiet_hours_end ?? 8)
         setWritingGoalOn(!!s?.writing_goal_enabled)
         setWritingGoalCount(s?.writing_goal_weekly_count || 3)
+        setInsightsEnabled(s?.insights_enabled !== false)
       })
       .catch(() => {
         setReminderHour(19)
@@ -230,6 +234,30 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       })
     } catch {
       setReminderStatus('Не удалось сохранить цель записи.')
+    }
+  }
+
+  async function saveInsightsVisibility(nextEnabled) {
+    if (insightsSaving) return
+    const previous = insightsEnabled
+    setInsightsEnabled(nextEnabled)
+    setInsightsSaving(true)
+    setInsightsStatus('')
+    try {
+      const settings = await api.profile.saveSettings(user.id, { insights_enabled: nextEnabled })
+      setInsightsEnabled(settings?.insights_enabled !== false)
+      setInsightsStatus(
+        nextEnabled
+          ? 'Описательные наблюдения снова показываются. Данные не изменялись.'
+          : 'Описательные наблюдения скрыты. Сохранённые данные и обычные цифры не удалены.'
+      )
+    } catch {
+      setInsightsEnabled(previous)
+      setInsightsStatus(
+        'Не удалось изменить видимость наблюдений. Настройка возвращена без изменений.'
+      )
+    } finally {
+      setInsightsSaving(false)
     }
   }
 
@@ -662,6 +690,32 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       {reminderStatus && (
         <p role="status" className="mb-5 w-full text-[12px] text-muted">
           {reminderStatus}
+        </p>
+      )}
+
+      <SectionLabel>Наблюдения</SectionLabel>
+      <Card>
+        <Row
+          icon={Heart}
+          title="Показывать описательные наблюдения"
+          subtitle={
+            insightsEnabled
+              ? 'Основаны на сохранённых отметках; не являются диагнозом'
+              : 'Скрыты; данные и обычные цифры остаются доступными'
+          }
+          right={
+            <Toggle
+              checked={insightsEnabled}
+              label="Показывать описательные наблюдения"
+              onChange={saveInsightsVisibility}
+            />
+          }
+          divider={false}
+        />
+      </Card>
+      {insightsStatus && (
+        <p role="status" className="-mt-5 mb-5 w-full text-[12px] leading-relaxed text-muted">
+          {insightsSaving ? 'Сохраняем настройку…' : insightsStatus}
         </p>
       )}
 

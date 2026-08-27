@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
 import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
+import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import {
@@ -535,6 +536,8 @@ export default function Analytics({ user, onGoCheckin }) {
   const [checkins, setCheckins] = useState(() => initialTrendsSnapshot?.checkins ?? [])
   const [days, setDays] = useState(14)
   const [loading, setLoading] = useState(() => initialTrendsSnapshot === null)
+  const [insightsEnabled, setInsightsEnabled] = useState(true)
+  const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
 
   useEffect(() => {
     if (!user) return
@@ -559,6 +562,29 @@ export default function Analytics({ user, onGoCheckin }) {
       active = false
     }
   }, [user, days, initialTrendsState])
+
+  useEffect(() => {
+    if (!user) return
+
+    let active = true
+    api.profile
+      .getSettings(user.id)
+      .then(settings => {
+        if (active) setInsightsEnabled(settings?.insights_enabled !== false)
+      })
+      .catch(() => {
+        if (active) {
+          setInsightsEnabled(true)
+          setInsightsPreferenceError(
+            'Не удалось проверить настройку видимости. Наблюдения показаны по умолчанию.'
+          )
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [user])
 
   if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
   if (!data) return <p className="text-muted text-sm px-6">Не удалось загрузить аналитику</p>
@@ -634,46 +660,67 @@ export default function Analytics({ user, onGoCheckin }) {
         Наблюдения
       </div>
 
-      <p className="text-[12px] text-faint leading-relaxed mb-3">
-        Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные причины;
-        они также не являются прогнозами.
-      </p>
+      {insightsEnabled ? (
+        <>
+          {/* Safety invariant: не диагнозы и не доказанные причины. */}
+          <p className="text-[12px] text-faint leading-relaxed mb-3">
+            Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные
+            причины; они также не являются прогнозами.
+          </p>
 
-      {observations.length > 0 ? (
-        <div className="space-y-2 mb-7">
-          {observations.map((observation, index) => (
-            <div
-              key={`${observation.kind || 'observation'}-${index}`}
-              className="mx-type-insight rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5"
-            >
-              <p className="text-[14px] leading-snug text-cream">{observation.text}</p>
-              {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-                <p className="mt-2 text-[11px] text-muted">
-                  Основа: {observation.sampleSize}{' '}
-                  {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
-                  {observation.sourceDates?.length
-                    ? ` · ${observation.sourceDates.length} дат`
-                    : ''}
-                </p>
-              )}
-              {observation.sourceDates?.length > 0 && (
-                <details className="mt-2 text-[11px] text-muted">
-                  <summary className="cursor-pointer select-none text-gold">
-                    Даты в основе наблюдения
-                  </summary>
-                  <p className="mt-1 leading-relaxed">
-                    {observation.sourceDates.map(formatSourceDate).join(' · ')}
+          {observations.length > 0 ? (
+            <div className="space-y-2 mb-7">
+              {observations.map((observation, index) => (
+                <div
+                  key={`${observation.kind || 'observation'}-${index}`}
+                  className="mx-type-insight rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5"
+                >
+                  <p className="text-[14px] leading-snug text-cream">{observation.text}</p>
+                  {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
+                    <p className="mt-2 text-[11px] text-muted">
+                      Основа: {observation.sampleSize}{' '}
+                      {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
+                      {observation.sourceDates?.length
+                        ? ` · ${observation.sourceDates.length} дат`
+                        : ''}
+                    </p>
+                  )}
+                  {observation.sourceDates?.length > 0 && (
+                    <details className="mt-2 text-[11px] text-muted">
+                      <summary className="cursor-pointer select-none text-gold">
+                        Даты в основе наблюдения
+                      </summary>
+                      <p className="mt-1 leading-relaxed">
+                        {observation.sourceDates.map(formatSourceDate).join(' · ')}
+                      </p>
+                    </details>
+                  )}
+                  <p className="mt-2 text-[11px] leading-relaxed text-faint">
+                    {observation.caveat}
                   </p>
-                </details>
-              )}
-              <p className="mt-2 text-[11px] leading-relaxed text-faint">{observation.caveat}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="mb-7 rounded-[20px] bg-emerald px-4 py-3.5 text-[14px] leading-relaxed text-muted">
+              Пока недостаточно отметок для наблюдения. Продолжай в своём темпе — данные появятся
+              сами.
+            </div>
+          )}
+        </>
       ) : (
-        <div className="mb-7 rounded-[20px] bg-emerald px-4 py-3.5 text-[14px] leading-relaxed text-muted">
-          Пока недостаточно отметок для наблюдения. Продолжай в своём темпе — данные появятся сами.
+        <div
+          role="status"
+          className="mb-7 rounded-[20px] border border-cream/10 bg-emerald px-4 py-3.5 text-[14px] leading-relaxed text-muted"
+        >
+          Персональные описательные наблюдения скрыты. Твои сохранённые данные и обычные цифры ниже
+          не удалены. Включить наблюдения можно в настройках.
         </div>
+      )}
+      {insightsPreferenceError && (
+        <p role="status" className="-mt-5 mb-7 text-[12px] leading-relaxed text-faint">
+          {insightsPreferenceError}
+        </p>
       )}
 
       {/* ── Цифры ── */}
