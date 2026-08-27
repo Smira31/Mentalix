@@ -34,3 +34,14 @@ jobs:
 
       - name: Собрать Mentalix
         run: npm run build
+
+      - name: Проверить Render backend
+        env:
+          RENDER_BACKEND_URL: https://mentalix-bot.onrender.com
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error \
+            --retry 10 --retry-delay 5 --retry-all-errors --max-time 20 \
+            "$RENDER_BACKEND_URL/api/health")"
+          printf '%s\n' "$response"
+          printf '%s\n' "$response" | jq -e '.status == "ok"' >/dev/null
