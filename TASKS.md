@@ -3898,12 +3898,15 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ### MXL-JOURNAL-PERSISTENCE-001 — Production-хранение журнала
 
-- **Статус:** backlog; backend-dependent.
+- **Статус:** in progress; local-first slice реализован 27.08.2026, cloud/backend часть остаётся backend-dependent и не начата.
 - **Размер:** XL.
 - **Цель:** превратить Journal Home prototype в надёжный journal с сохранением утренних и вечерних записей.
-- **Нужно решить/зафиксировать:** entry ID, calendar day и timezone, draft/final, edit/delete, sync conflicts, offline behavior, export и retention.
-- **Не входит:** копирование Stoic storage, media attachments и AI отправка по умолчанию.
-- **Готово, когда:** запись можно начать, продолжить, сохранить, изменить, удалить и восстановить после повторного входа с понятным ownership данных.
+- **Реализованный local-first slice:** новые записи из Journal Home изолированы по текущему `user.id` в ключах `mx-journal-v2:user:<id>`; старый browser-wide формат не переносится автоматически, а предлагает явный перенос только при подтверждении пользователя; перенос объединяет старые фазы с уже существующей записью профиля без затирания; недоступное browser storage показывает ошибку и не позволяет перейти к следующей фазе с ложным сохранением. Добавлены unit-контракты isolation/migration/storage failure и Journal Home в UX smoke на `390×844` / `320×568`.
+- **Проверено локально:** `npm run test:unit` 31/31, `npm run lint`, `npm run build`, `npm run docs:check` (109 Markdown, 29 canonical IDs, 0 errors), `npm run ux:check`, `git diff --check` — PASS. Визуальные кадры и граница проверки сохранены в `docs/testing/MXL-JOURNAL-PERSISTENCE-001_VERIFICATION.md`.
+- **Следующий gate:** ручная проверка владельцем на реальном iPhone внутри Telegram: Journal Home → 4 фазы → выход/повторное открытие → legacy-prompt (если применимо) → keyboard/safe area. До неё slice не называть полностью принятым для production.
+- **Нужно решить/зафиксировать до следующих подэтапов:** entry ID, server schema, calendar day/timezone в backend, edit/delete across devices, sync conflicts, offline behavior, export и retention.
+- **Не входит:** копирование Stoic storage, media attachments, AI отправка по умолчанию, backend endpoint, cloud sync или обещание кросс-девайсного journal sync.
+- **Готово для всего эпика, когда:** запись можно начать, продолжить, сохранить, изменить, удалить и восстановить после повторного входа с понятным ownership данных.
 
 ### MXL-JOURNAL-HISTORY-001 — Единая история журнала
 

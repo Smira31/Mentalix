@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 27.08.2026 — MXL-JOURNAL-PERSISTENCE-001: local-first slice
+
+- Journal Home теперь хранит новые записи в профильно изолированном local store; старую browser-wide запись пользователь переносит только явно и без затирания уже созданных фаз.
+- При недоступном local storage интерфейс показывает ошибку и не выдаёт ложное сохранение; добавлены unit-контракты и UX smoke Journal Home на двух мобильных viewport.
+- Backend/API, cloud sync, payment, primary navigation и privacy-claims не менялись. Локальные проверки зелёные; до принятия остаётся ручной Telegram/iPhone gate. Полное описание и границы — `TASKS.md` → `MXL-JOURNAL-PERSISTENCE-001`.
+
 ## 27.08.2026 — Приоритет v1.1.0 и testing plans
 
 - Владелец выбрал `MXL-UX-RESPONSIVE-001` первым приоритетом v1.1.0; глобальный P0-регистр не изменён.

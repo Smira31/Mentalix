@@ -155,7 +155,7 @@ export default function MentalixChat({ user, onPersonaChange }) {
   }, [onPersonaChange])
 
   if (!persona && journalOpen) {
-    return <JournalHome onOpenMentor={() => setJournalOpen(false)} />
+    return <JournalHome user={user} onOpenMentor={() => setJournalOpen(false)} />
   }
 
   if (!persona) {

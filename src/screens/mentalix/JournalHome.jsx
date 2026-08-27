@@ -1,8 +1,14 @@
-import { ArrowRight, BookOpen, Check, Compass, PenLine } from 'lucide-react'
+import { ArrowRight, BookOpen, Check, Compass } from 'lucide-react'
 import { useState } from 'react'
 import JournalTextarea from '../../components/JournalTextarea'
 import { platform } from '../../platform'
-import { readJournalEntry, saveJournalPhase, todayKey } from '../../lib/journalStorage'
+import {
+  hasLegacyJournalData,
+  migrateLegacyJournalToUser,
+  readJournalEntry,
+  saveJournalPhase,
+  todayKey,
+} from '../../lib/journalStorage'
 
 const PHASES = [
   {
@@ -31,8 +37,8 @@ const PHASES = [
   },
 ]
 
-function readSaved() {
-  const entry = readJournalEntry(todayKey())
+function readSaved(userId) {
+  const entry = readJournalEntry(todayKey(), userId)
   const drafts = Object.fromEntries(
     PHASES.map(({ key }) => [key, entry.cycle[key === 'next' ? 'newStep' : key]?.text || ''])
   )
@@ -43,10 +49,17 @@ function readSaved() {
   }
 }
 
-export default function JournalHome({ onOpenMentor }) {
-  const [initial] = useState(readSaved)
+function storageErrorMessage() {
+  return 'Не удалось сохранить запись на этом устройстве. Текст пока остаётся на экране — попробуй ещё раз после проверки места в браузере.'
+}
+
+export default function JournalHome({ user, onOpenMentor }) {
+  const userId = user?.id
+  const [initial] = useState(() => readSaved(userId))
   const [phaseIndex, setPhaseIndex] = useState(initial.phaseIndex || 0)
   const [drafts, setDrafts] = useState(initial.drafts || {})
+  const [storageError, setStorageError] = useState(null)
+  const [legacyMigrationVisible, setLegacyMigrationVisible] = useState(() => hasLegacyJournalData(userId))
   const phase = PHASES[phaseIndex]
   const isLast = phaseIndex === PHASES.length - 1
   const completed = PHASES.filter(item => drafts[item.key]?.trim()).length
@@ -56,23 +69,54 @@ export default function JournalHome({ onOpenMentor }) {
     return phase.key === 'next' ? 'newStep' : phase.key
   }
 
+  function persistPhase(nextValue, nextStatus = 'draft') {
+    try {
+      saveJournalPhase({
+        date: todayKey(),
+        phase: storagePhaseKey(),
+        text: nextValue,
+        status: nextStatus,
+        userId,
+      })
+      setStorageError(null)
+      return true
+    } catch (error) {
+      console.error(error)
+      setStorageError(storageErrorMessage())
+      platform.haptic('error')
+      return false
+    }
+  }
+
   function updateValue(nextValue) {
-    const nextDrafts = { ...drafts, [phase.key]: nextValue }
-    setDrafts(nextDrafts)
-    saveJournalPhase({ date: todayKey(), phase: storagePhaseKey(), text: nextValue })
+    setDrafts(current => ({ ...current, [phase.key]: nextValue }))
+    persistPhase(nextValue)
   }
 
   function continueFlow() {
     if (!value.trim()) return
+    if (!persistPhase(value, isLast ? 'final' : 'draft')) return
     platform.haptic('light')
-    saveJournalPhase({
-      date: todayKey(),
-      phase: storagePhaseKey(),
-      text: value,
-      status: isLast ? 'final' : 'draft',
-    })
     if (isLast) return
     setPhaseIndex(index => index + 1)
+  }
+
+  function migrateLegacyEntry() {
+    try {
+      const migrated = migrateLegacyJournalToUser(userId)
+      if (migrated) {
+        const saved = readSaved(userId)
+        setDrafts(saved.drafts)
+        setPhaseIndex(saved.phaseIndex)
+      }
+      setStorageError(null)
+      setLegacyMigrationVisible(false)
+      platform.haptic('success')
+    } catch (error) {
+      console.error(error)
+      setStorageError(storageErrorMessage())
+      platform.haptic('error')
+    }
   }
 
   return (
@@ -95,6 +139,27 @@ export default function JournalHome({ onOpenMentor }) {
         </button>
       </div>
 
+      {legacyMigrationVisible && (
+        <div className="mt-5 rounded-2xl border border-gold/20 bg-gold/[0.06] p-4">
+          <p className="text-[14px] font-semibold text-cream">На этом устройстве есть запись старого формата.</p>
+          <p className="mt-1.5 text-[12px] leading-snug text-muted">
+            Она не была привязана к профилю. Перенеси её в свой журнал, только если это твоя запись.
+          </p>
+          <div className="mt-3 flex items-center gap-4 text-[12px] font-semibold">
+            <button type="button" onClick={migrateLegacyEntry} className="text-gold active:text-cream">
+              Перенести
+            </button>
+            <button
+              type="button"
+              onClick={() => setLegacyMigrationVisible(false)}
+              className="text-muted active:text-cream"
+            >
+              Не сейчас
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="mt-7 grid grid-cols-4 gap-2" aria-label="Прогресс журнала">
         {PHASES.map((item, index) => (
           <button
@@ -105,9 +170,7 @@ export default function JournalHome({ onOpenMentor }) {
             className="text-left"
           >
             <div className={`h-1.5 ${index <= phaseIndex ? 'bg-gold' : 'bg-cream/15'}`} />
-            <div
-              className={`mt-2 text-[10px] ${index === phaseIndex ? 'text-gold' : 'text-faint'}`}
-            >
+            <div className={`mt-2 text-[10px] ${index === phaseIndex ? 'text-gold' : 'text-faint'}`}>
               {item.label}
             </div>
           </button>
@@ -116,12 +179,17 @@ export default function JournalHome({ onOpenMentor }) {
 
       <div className="pt-9">
         <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
-          <PenLine size={15} className="text-gold" />
           {phase.label}
         </div>
         <h1 className="mx-ai-title mt-4 text-cream font-display">{phase.title}</h1>
         <p className="mx-ai-body mt-4 max-w-[310px] text-muted">{phase.hint}</p>
       </div>
+
+      {storageError && (
+        <p role="alert" className="mt-5 rounded-2xl border border-red-400/25 bg-red-400/10 px-4 py-3 text-[13px] leading-snug text-cream">
+          {storageError}
+        </p>
+      )}
 
       <div className="mt-8 flex-1 min-h-[230px]">
         <JournalTextarea
@@ -145,19 +213,11 @@ export default function JournalHome({ onOpenMentor }) {
           {isLast ? 'Закрыть сегодняшний цикл' : 'Продолжить'}
         </button>
         <div className="mt-3 flex items-center justify-between text-[12px] text-faint">
-          <button
-            type="button"
-            onClick={onOpenMentor}
-            className="text-muted underline-offset-4 active:text-gold"
-          >
+          <button type="button" onClick={onOpenMentor} className="text-muted underline-offset-4 active:text-gold">
             Пойти глубже с наставником
           </button>
           {phaseIndex > 0 && (
-            <button
-              type="button"
-              onClick={() => setPhaseIndex(index => index - 1)}
-              className="active:text-gold"
-            >
+            <button type="button" onClick={() => setPhaseIndex(index => index - 1)} className="active:text-gold">
               Назад
             </button>
           )}

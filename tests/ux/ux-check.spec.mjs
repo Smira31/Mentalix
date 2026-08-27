@@ -458,6 +458,28 @@ test('локальный UX smoke по основному маршруту', asy
     expect(reflectionPayload.text).toBe('**Важное**')
     await page.getByRole('button', { name: 'Назад' }).click()
 
+    await page.getByRole('button', { name: 'Наставник' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal Home',
+      slug: '03b-journal-home',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByText('журнал.')).toBeVisible()
+        await expect(page.getByText('сегодня · 0/4 шага')).toBeVisible()
+        const editor = page.getByRole('textbox', { name: /Идея: Что сейчас занимает мои мысли\?/ })
+        await expect(editor).toBeVisible()
+        await editor.fill('Собрать мысли спокойно')
+        await assertClickable(page.getByRole('button', { name: 'Продолжить' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Продолжить' }).click()
+    await expect(page.getByText('Что из этого зависит от меня сегодня?')).toBeVisible()
+    await page.goto('/')
+    await expect(page.getByRole('button', { name: 'Практики' })).toBeVisible()
+
     await page.getByRole('button', { name: 'Практики' }).click()
     await captureScreen({
       page,

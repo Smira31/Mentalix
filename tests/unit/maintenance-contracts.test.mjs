@@ -11,6 +11,9 @@ import { withQuery } from '../../src/lib/apiQuery.js'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from '../../src/lib/moodCheckGate.js'
 import {
   clearJournalStore,
+  hasLegacyJournalData,
+  journalStorageKey,
+  migrateLegacyJournalToUser,
   readJournalEntry,
   saveJournalPhase,
 } from '../../src/lib/journalStorage.js'
@@ -250,6 +253,79 @@ test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различае�
   assert.equal(saved.cycle.newStep.text, 'Продолжить завтра')
   assert.match(saved.updatedAt, /^\d{4}-\d{2}-\d{2}T/)
   assert.equal(clearJournalStore(), true)
+})
+
+test('MXL-JOURNAL-PERSISTENCE-001 изолирует новые journal-записи по профилю', () => {
+  const memory = new Map()
+  globalThis.localStorage = {
+    getItem: key => memory.get(key) || null,
+    setItem: (key, value) => memory.set(key, value),
+    removeItem: key => memory.delete(key),
+  }
+
+  saveJournalPhase({
+    userId: 101,
+    date: '2026-08-27',
+    phase: 'idea',
+    text: 'Запись первого профиля',
+  })
+
+  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, 'Запись первого профиля')
+  assert.equal(readJournalEntry('2026-08-27', 202).cycle.idea.text, '')
+  assert.notEqual(journalStorageKey(101), journalStorageKey(202))
+  assert.equal(clearJournalStore(101), true)
+  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, '')
+})
+
+test('MXL-JOURNAL-PERSISTENCE-001 переносит legacy-запись только по явному действию', () => {
+  const memory = new Map()
+  globalThis.localStorage = {
+    getItem: key => memory.get(key) || null,
+    setItem: (key, value) => memory.set(key, value),
+    removeItem: key => memory.delete(key),
+  }
+
+  saveJournalPhase({
+    userId: 101,
+    date: '2026-08-27',
+    phase: 'action',
+    text: 'Новая запись профиля',
+  })
+
+  memory.set(
+    'mx-journal-v2',
+    JSON.stringify({
+      version: 1,
+      entries: {
+        '2026-08-27': {
+          cycle: { idea: { text: 'Старая запись', status: 'draft' } },
+        },
+      },
+    })
+  )
+
+  assert.equal(hasLegacyJournalData(101), true)
+  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, '')
+  const migrated = migrateLegacyJournalToUser(101)
+  assert.equal(migrated.entries['2026-08-27'].cycle.idea.text, 'Старая запись')
+  assert.equal(migrated.entries['2026-08-27'].cycle.action.text, 'Новая запись профиля')
+  assert.equal(readJournalEntry('2026-08-27', 101).cycle.idea.text, 'Старая запись')
+  assert.equal(memory.has('mx-journal-v2'), false)
+})
+
+test('MXL-JOURNAL-PERSISTENCE-001 сообщает ошибку вместо ложного локального сохранения', () => {
+  globalThis.localStorage = {
+    getItem: () => null,
+    setItem: () => {
+      throw new Error('quota exceeded')
+    },
+    removeItem: () => undefined,
+  }
+
+  assert.throws(
+    () => saveJournalPhase({ userId: 101, date: '2026-08-27', phase: 'idea', text: 'Не теряй меня' }),
+    /Локальное хранилище недоступно/
+  )
 })
 
 test('MXL-009 ограничивает insights описательными наблюдениями', () => {
