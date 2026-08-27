@@ -690,3 +690,28 @@ Workflow `Журнал состояния Mentalix` добавляет запи�
 | Дата | Commit | Автор | Изменённые области                                  | CI / backend                      | Preview / ручной gate     |
 | ---- | ------ | ----- | --------------------------------------------------- | --------------------------------- | ------------------------- |
 | —    | —      | —     | Заполняется workflow после следующего push в `main` | Ссылки на checks добавляются в PR | Подтверждается владельцем |
+
+## 7. Глубокий мониторинг проекта
+
+Для каждого релиза и значимого изменения рекомендуется фиксировать не только факт успешного CI, но и наблюдаемые показатели системы.
+
+| Область               | Что фиксировать                               | Порог или ожидаемое значение                 | Источник                  |
+| --------------------- | --------------------------------------------- | -------------------------------------------- | ------------------------- |
+| Backend availability  | HTTP-код `/api/health`                        | `200` и `{"status":"ok"}`                    | GitHub Actions / Render   |
+| Backend latency       | Время ответа health endpoint                  | Отдельно отмечать cold start и обычный ответ | GitHub Actions            |
+| Frontend availability | HTTP-код production и Preview                 | `200`                                        | Vercel deployment         |
+| Deploy provenance     | Git commit, PR, Vercel deployment             | SHA должен совпадать с ожидаемым             | GitHub / Vercel / Render  |
+| CI quality            | Unit, lint, build, docs и health              | Все обязательные проверки успешны            | GitHub Actions            |
+| Preview quality       | Preview URL и дата истечения                  | URL открывается до ручного gate              | Vercel                    |
+| Telegram delivery     | Отправка, chat scope, время доставки          | Успешный Bot API response                    | GitHub Actions / Telegram |
+| Data safety           | Схема, миграции, backup и число записей       | Без destructive changes без подтверждения    | Render / Neon             |
+| Security              | Secrets, auth contract и зависимости          | Секреты не попадают в логи                   | GitHub / Render           |
+| Product gate          | iPhone, Telegram Mini App и ключевой сценарий | Подтверждено владельцем                      | PR checklist              |
+
+### Инциденты и отклонения
+
+Если проверка не проходит, в журнале нужно указать дату, commit, URL запуска, неисправный слой, пользовательский эффект, временное решение и следующий шаг. Значения токенов, пароли, приватные URL баз данных и содержимое персональных данных в журнал не записываются.
+
+### Release readiness
+
+Перед публикацией релиза ответственный проверяет четыре независимых gate: frontend build, внешний Render health, deployment provenance и ручной продуктовый сценарий. Релиз не считается полностью подтверждённым только на основании зелёного CI: ручная проверка интерфейса и data-dependent сценариев остаётся обязательной.

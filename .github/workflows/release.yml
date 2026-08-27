@@ -34,6 +34,17 @@ jobs:
           esac
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
+      - name: Проверить Render backend перед релизом
+        env:
+          RENDER_BACKEND_URL: https://mentalix-bot.onrender.com
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error \
+            --retry 10 --retry-delay 5 --retry-all-errors --max-time 20 \
+            "$RENDER_BACKEND_URL/api/health")"
+          printf '%s\n' "$response"
+          printf '%s\n' "$response" | jq -e '.status == "ok"' >/dev/null
+
       - name: Создать релиз
         env:
           GH_TOKEN: ${{ github.token }}
