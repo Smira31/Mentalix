@@ -1,7 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ArrowLeft, Check, Plus, Search, Trash2 } from 'lucide-react'
-
 import JournalTextarea from '../components/JournalTextarea'
+import {
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+  FULLSCREEN_SHELL_CLASS,
+  useFullscreenSurface,
+} from '../lib/fullscreenSurface'
 import { api } from '../lib/api'
 import { platform } from '../platform'
 
@@ -97,6 +103,122 @@ function StepInput({ step, value, onChange }) {
       editorClassName="min-h-[16rem]"
       formatting={step.type !== 'emotion'}
     />
+  )
+}
+
+function formatArchiveDate(value) {
+  if (!value) return 'Дата не указана'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return 'Дата не указана'
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
+
+function ReadOnlyAnswer({ step, value }) {
+  const hasAnswer = stepAnswerIsPresent(value) || typeof value === 'number'
+  if (!hasAnswer) {
+    return <p className="mt-3 text-[13px] text-faint">Без ответа</p>
+  }
+
+  if (Array.isArray(value)) {
+    return (
+      <ul className="mt-3 space-y-2" aria-label={`Сохранённый ответ: ${step.title}`}>
+        {value.map(item => (
+          <li key={item} className="rounded-xl bg-emerald-light px-3 py-2 text-[14px] text-cream">
+            {String(item)}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  if (step.type === 'scale') {
+    return <p className="mt-3 text-[15px] font-semibold text-gold">Значение: {String(value)}</p>
+  }
+
+  return (
+    <p className="mt-3 whitespace-pre-wrap break-words text-[14px] leading-relaxed text-cream">
+      {String(value)}
+    </p>
+  )
+}
+
+function CompletedSessionViewer({ completedSession, onClose }) {
+  const { style: surfaceStyle } = useFullscreenSurface()
+  const template = completedSession.template || {}
+  const steps = Array.isArray(template.steps) ? template.steps : []
+
+  useEffect(() => {
+    const onKeyDown = event => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
+  return createPortal(
+    <section
+      role="dialog"
+      aria-modal="true"
+      aria-label="Архив завершённой направленной записи"
+      className={FULLSCREEN_SHELL_CLASS}
+      style={surfaceStyle}
+    >
+      <header className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex min-h-11 items-center gap-2 rounded-full px-2 text-[13px] font-semibold text-muted active:text-gold"
+        >
+          <ArrowLeft size={16} /> К архиву
+        </button>
+      </header>
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div className="w-full max-w-md px-5 pb-8">
+          <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Архив записи</p>
+          <h3 className="mt-3 font-display text-[28px] leading-tight text-cream">
+            {template.title || 'Направленная запись'}
+          </h3>
+          <p className="mt-3 text-[13px] leading-relaxed text-muted">
+            Завершено:{' '}
+            {formatArchiveDate(completedSession.completedAt || completedSession.updatedAt)}
+            {' · '}версия {completedSession.templateVersion || template.version || '—'}
+          </p>
+          {template.description && (
+            <p className="mt-3 text-[14px] leading-relaxed text-muted">{template.description}</p>
+          )}
+          <div className="mt-6 space-y-3">
+            {steps.map((step, index) => (
+              <article key={step.id || index} className="rounded-3xl bg-emerald p-4">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-gold">
+                  Шаг {index + 1} ·{' '}
+                  {STEP_TYPES.find(([type]) => type === step.type)?.[1] || 'Ответ'}
+                </p>
+                <h4 className="mt-2 text-[15px] font-semibold leading-snug text-cream">
+                  {step.title}
+                </h4>
+                <ReadOnlyAnswer step={step} value={completedSession.answers?.[step.id]} />
+              </article>
+            ))}
+          </div>
+          {steps.length === 0 && (
+            <p className="mt-6 rounded-2xl bg-emerald p-4 text-[14px] text-muted">
+              В сохранённом снимке не осталось вопросов для отображения.
+            </p>
+          )}
+          <p className="mt-7 rounded-2xl border border-cream/10 p-4 text-[12px] leading-relaxed text-faint">
+            Это архив направленной записи. Он не создаёт отдельную запись в Journey и пока не
+            интегрирован с History.
+          </p>
+        </div>
+      </div>
+    </section>,
+    document.body
   )
 }
 
@@ -289,6 +411,10 @@ export default function GuidedJournals({ user }) {
   const [templates, setTemplates] = useState(null)
   const [allCategories, setAllCategories] = useState([])
   const [activeSessions, setActiveSessions] = useState([])
+  const [completedSessions, setCompletedSessions] = useState(null)
+  const [completedSessionsLoading, setCompletedSessionsLoading] = useState(true)
+  const [completedSessionsError, setCompletedSessionsError] = useState('')
+  const [completedSession, setCompletedSession] = useState(null)
   const [selected, setSelected] = useState(null)
   const [session, setSession] = useState(null)
   const [stepIndex, setStepIndex] = useState(0)
@@ -355,6 +481,29 @@ export default function GuidedJournals({ user }) {
     }
   }, [user.id])
 
+  const loadCompletedSessions = useCallback(async () => {
+    setCompletedSessionsLoading(true)
+    setCompletedSessionsError('')
+    try {
+      const items = await api.journalTemplates.sessions(user.id, 'completed')
+      setCompletedSessions(Array.isArray(items) ? items : [])
+    } catch {
+      setCompletedSessions([])
+      setCompletedSessionsError(
+        'Не удалось загрузить архив. Попробуй ещё раз, когда появится связь.'
+      )
+    } finally {
+      setCompletedSessionsLoading(false)
+    }
+  }, [user.id])
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadCompletedSessions()
+    }, 0)
+    return () => window.clearTimeout(timeoutId)
+  }, [loadCompletedSessions])
+
   async function openTemplate(template) {
     setLoading(true)
     setError('')
@@ -411,7 +560,14 @@ export default function GuidedJournals({ user }) {
         complete
       )
       setSession(nextSession)
-      if (complete) return
+      if (complete) {
+        setActiveSessions(items => items.filter(item => item.id !== nextSession.id))
+        setCompletedSessions(current => [
+          nextSession,
+          ...(current || []).filter(item => item.id !== nextSession.id),
+        ])
+        return
+      }
       setStepIndex(index => Math.min(index + 1, steps.length - 1))
     } catch {
       setError('Не удалось сохранить ответ. Остаёмся на этом шаге, чтобы текст не потерялся.')
@@ -465,6 +621,15 @@ export default function GuidedJournals({ user }) {
     } finally {
       setDeletingTemplate(false)
     }
+  }
+
+  if (completedSession) {
+    return (
+      <CompletedSessionViewer
+        completedSession={completedSession}
+        onClose={() => setCompletedSession(null)}
+      />
+    )
   }
 
   if (builderOpen) {
@@ -651,6 +816,64 @@ export default function GuidedJournals({ user }) {
           </div>
         </div>
       )}
+      <div className="mt-5 rounded-3xl border border-cream/10 bg-emerald p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Архив</p>
+            <p className="mt-1 text-[13px] text-muted">Завершённые направленные записи</p>
+          </div>
+          {completedSessions !== null && (
+            <span className="rounded-full bg-cream/5 px-2.5 py-1 text-[12px] font-semibold text-cream">
+              {completedSessions.length}
+            </span>
+          )}
+        </div>
+        {completedSessionsLoading && completedSessions === null ? (
+          <p className="mt-3 text-[13px] text-muted">Загружаем архив…</p>
+        ) : completedSessionsError ? (
+          <div className="mt-3">
+            <p role="alert" className="text-[13px] leading-relaxed text-muted">
+              {completedSessionsError}
+            </p>
+            <button
+              type="button"
+              disabled={completedSessionsLoading}
+              onClick={loadCompletedSessions}
+              className="mt-3 min-h-10 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream active:text-gold disabled:opacity-50"
+            >
+              {completedSessionsLoading ? 'Повторяем…' : 'Повторить'}
+            </button>
+          </div>
+        ) : completedSessions.length === 0 ? (
+          <p className="mt-3 text-[13px] leading-relaxed text-muted">
+            Завершённые направленные записи появятся здесь.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {completedSessions.map(item => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setCompletedSession(item)}
+                className="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-emerald-light px-4 text-left"
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-[14px] font-semibold text-cream">
+                    {item.template?.title || 'Направленная запись'}
+                  </span>
+                  <span className="mt-1 block text-[12px] text-faint">
+                    {formatArchiveDate(item.completedAt || item.updatedAt)}
+                  </span>
+                </span>
+                <span className="shrink-0 text-[12px] text-gold">Смотреть</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <p className="mt-3 text-[12px] leading-relaxed text-faint">
+          Архив не создаёт записи в Journey и пока не интегрирован с History.
+        </p>
+      </div>
       <label className="mt-5 flex min-h-12 items-center gap-3 rounded-2xl bg-emerald px-4 text-muted">
         <Search size={18} />
         <input
