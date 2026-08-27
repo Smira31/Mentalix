@@ -418,6 +418,11 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
+        const journalContent = page.getByTestId('journal-day-content')
+        await expect(journalContent).toHaveCSS('text-align', 'left')
+        await expect(page.getByLabel('Дни журнала')).toBeVisible()
+        await expect(page.getByText('Тема недели', { exact: true })).toHaveCount(0)
+
         const editor = page.getByRole('textbox', { name: 'Мысль по теме недели' })
         await expect(editor).toBeVisible()
         await expect(editor).toHaveAttribute('contenteditable', 'true')

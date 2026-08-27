@@ -682,3 +682,13 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(brainTrainer, /text-\[16px\]/)
   assert.match(focus, /text-\[13px\]/)
 })
+
+test('MXL-JOURNAL-UI-247 выравнивает Journal слева и не показывает метку «Тема недели»', () => {
+  const themeScreen = readFileSync(new URL('../../src/screens/ThemeScreen.jsx', import.meta.url), 'utf8')
+
+  assert.match(themeScreen, /data-testid="journal-day-content"/)
+  assert.match(themeScreen, /aria-label="Дни журнала"/)
+  assert.match(themeScreen, /className="font-display text-\[24px\] text-cream lowercase leading-tight text-left"/)
+  assert.doesNotMatch(themeScreen, />\s*Тема недели\s*</)
+  assert.doesNotMatch(themeScreen, /Тема недели · День/)
+})
