@@ -13,6 +13,19 @@ test('Guided Journals запрашивает только поддерживае
   assert.doesNotMatch(source, /journalTemplates\s*\.sessions\(user\.id,\s*'active'\)/)
 })
 
+test('Guided Journals закрывает private API для legacy web-ID до server-side sessions', () => {
+  assert.match(
+    source,
+    /const canUseGuidedJournals = platformName === 'telegram' && Number\(user\?\.id\) > 0/
+  )
+  assert.match(source, /if \(!canUseGuidedJournals\) return undefined/)
+  assert.match(
+    source,
+    /Личные шаблоны и сохранённые ответы доступны в Telegram Mini App с проверенной подписью\./
+  )
+  assert.match(source, /пока для неё не появятся server-side\s+sessions\./)
+})
+
 test('private template builder использует update contract и объясняет versioning', () => {
   assert.match(source, /api\.journalTemplates\.update\(initialTemplate\.id, user\.id, draft\)/)
   assert.match(source, /Сохранить новую версию/)
