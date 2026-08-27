@@ -11,7 +11,7 @@
     "preview:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test:unit": "node --test tests/unit/maintenance-contracts.test.mjs tests/unit/journal-markdown.test.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs",
     "docs:check": "node scripts/docs-check.mjs",
     "ux:check": "playwright test --config=playwright.ux.config.mjs",
     "check:core": "npm run test:unit && npm run lint && npm run build && npm run docs:check",
@@ -20,6 +20,7 @@
     "preview:stop:dry-run": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1 -DryRun"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.102.8",
     "@twa-dev/sdk": "7.10.1",
     "lucide-react": "0.454.0",
     "react": "18.3.1",
