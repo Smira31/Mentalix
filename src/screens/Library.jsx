@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { platform } from '../platform'
 import Articles from './Articles'
 import Courses from './Courses'
+import GuidedJournals from './GuidedJournals'
 
 // Вкладка «Библиотека»: статьи (GET /api/articles) и практикумы (бэкенд).
 // Заголовок экрана живёт здесь, внутри Courses остаются свои подзаголовки.
@@ -16,6 +17,7 @@ import Courses from './Courses'
 
 const TABS = [
   { key: 'articles', label: 'Статьи' },
+  { key: 'journals', label: 'Записи' },
   { key: 'courses', label: 'Практикумы', soon: true },
 ]
 
@@ -62,7 +64,7 @@ export default function Library({ user }) {
         })}
       </div>
 
-      {tab === 'articles' ? <Articles /> : <Courses user={user} />}
+      {tab === 'articles' ? <Articles /> : tab === 'journals' ? <GuidedJournals user={user} /> : <Courses user={user} />}
     </div>
   )
 }

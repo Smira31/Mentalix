@@ -183,6 +183,46 @@ export const api = {
       }),
   },
 
+  journalTemplates: {
+    list: (userId, { q, category } = {}) =>
+      request(withQuery('/journal/templates', { user_id: userId, q, category })),
+
+    get: (templateId, userId) =>
+      request(withQuery(`/journal/templates/${templateId}`, { user_id: userId })),
+
+    create: (userId, template) =>
+      request('/journal/templates', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, ...template }),
+      }),
+
+    update: (templateId, userId, template) =>
+      request(`/journal/templates/${templateId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ user_id: userId, ...template }),
+      }),
+
+    remove: (templateId, userId) =>
+      request(withQuery(`/journal/templates/${templateId}`, { user_id: userId }), {
+        method: 'DELETE',
+      }),
+
+    startOrResume: (templateId, userId) =>
+      request(`/journal/templates/${templateId}/sessions`, {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId }),
+      }),
+
+    updateSession: (sessionId, userId, answers, complete = false) =>
+      request(`/journal/templates/sessions/${sessionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ user_id: userId, answers, complete }),
+      }),
+
+    sessions: (userId, status) =>
+      request(withQuery('/journal/templates/sessions/mine', { user_id: userId, status })),
+  },
+
   goals: {
     list: userId => request(withQuery('/goals', { user_id: userId })),
 

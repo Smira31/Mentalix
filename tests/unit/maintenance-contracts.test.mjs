@@ -275,6 +275,21 @@ test('MXL-P0-CORE-JOURNAL-001 содержит режимы записи, confir
   assert.match(history, /content=\{checkin\.note\}/)
 })
 
+test('MXL-JOURNAL-GUIDED-001 добавляет guided catalog и private template builder внутрь Library', () => {
+  const library = readFileSync(new URL('../../src/screens/Library.jsx', import.meta.url), 'utf8')
+  const guided = readFileSync(new URL('../../src/screens/GuidedJournals.jsx', import.meta.url), 'utf8')
+  const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
+
+  assert.match(library, /GuidedJournals/)
+  assert.match(library, /key: 'journals'/)
+  assert.match(guided, /Начать или продолжить/)
+  assert.match(guided, /Личный шаблон виден только тебе/)
+  assert.match(guided, /stepAnswerIsPresent/)
+  assert.match(api, /journalTemplates/)
+  assert.match(api, /startOrResume/)
+  assert.match(api, /updateSession/)
+})
+
 test('MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат', () => {
   const memory = new Map()
   globalThis.localStorage = {
