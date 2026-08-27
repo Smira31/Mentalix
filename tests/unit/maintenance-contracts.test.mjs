@@ -87,6 +87,18 @@ test('withQuery пропускает только null/undefined и не доб�
   )
 })
 
+test('MXL-JOURNAL-ORGANIZE-001 сериализует несколько tag-параметров и включает server-side Journey UI', () => {
+  const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
+  const journeySearch = readFileSync(new URL('../../src/screens/JourneySearch.jsx', import.meta.url), 'utf8')
+  const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
+
+  assert.equal(withQuery('/journey/entries', { tag_id: [4, 9] }), '/journey/entries?tag_id=4&tag_id=9')
+  assert.match(history, /JourneySearch/)
+  assert.match(journeySearch, /Поиск работает только по твоим сохранённым записям/)
+  assert.match(journeySearch, /Показать ещё/)
+  assert.match(api, /replaceTags/)
+})
+
 test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при неизвестном check-in state', () => {
   const base = {
     user: { id: 1 },

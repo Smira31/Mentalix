@@ -184,43 +184,24 @@ export const api = {
   },
 
   journalTemplates: {
-    list: (userId, { q, category } = {}) =>
-      request(withQuery('/journal/templates', { user_id: userId, q, category })),
+    list: (userId, { q, category } = {}) => request(withQuery('/journal/templates', { user_id: userId, q, category })),
+    get: (templateId, userId) => request(withQuery(`/journal/templates/${templateId}`, { user_id: userId })),
+    create: (userId, template) => request('/journal/templates', { method: 'POST', body: JSON.stringify({ user_id: userId, ...template }) }),
+    update: (templateId, userId, template) => request(`/journal/templates/${templateId}`, { method: 'PATCH', body: JSON.stringify({ user_id: userId, ...template }) }),
+    remove: (templateId, userId) => request(withQuery(`/journal/templates/${templateId}`, { user_id: userId }), { method: 'DELETE' }),
+    startOrResume: (templateId, userId) => request(`/journal/templates/${templateId}/sessions`, { method: 'POST', body: JSON.stringify({ user_id: userId }) }),
+    updateSession: (sessionId, userId, answers, complete = false) => request(`/journal/templates/sessions/${sessionId}`, { method: 'PATCH', body: JSON.stringify({ user_id: userId, answers, complete }) }),
+    sessions: (userId, status) => request(withQuery('/journal/templates/sessions/mine', { user_id: userId, status })),
+  },
 
-    get: (templateId, userId) =>
-      request(withQuery(`/journal/templates/${templateId}`, { user_id: userId })),
-
-    create: (userId, template) =>
-      request('/journal/templates', {
-        method: 'POST',
-        body: JSON.stringify({ user_id: userId, ...template }),
-      }),
-
-    update: (templateId, userId, template) =>
-      request(`/journal/templates/${templateId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ user_id: userId, ...template }),
-      }),
-
-    remove: (templateId, userId) =>
-      request(withQuery(`/journal/templates/${templateId}`, { user_id: userId }), {
-        method: 'DELETE',
-      }),
-
-    startOrResume: (templateId, userId) =>
-      request(`/journal/templates/${templateId}/sessions`, {
-        method: 'POST',
-        body: JSON.stringify({ user_id: userId }),
-      }),
-
-    updateSession: (sessionId, userId, answers, complete = false) =>
-      request(`/journal/templates/sessions/${sessionId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ user_id: userId, answers, complete }),
-      }),
-
-    sessions: (userId, status) =>
-      request(withQuery('/journal/templates/sessions/mine', { user_id: userId, status })),
+  journey: {
+    tags: userId => request(withQuery('/journey/tags', { user_id: userId })),
+    createTag: (userId, tag) => request('/journey/tags', { method: 'POST', body: JSON.stringify({ user_id: userId, ...tag }) }),
+    updateTag: (tagId, userId, tag) => request(`/journey/tags/${tagId}`, { method: 'PATCH', body: JSON.stringify({ user_id: userId, ...tag }) }),
+    removeTag: (tagId, userId) => request(withQuery(`/journey/tags/${tagId}`, { user_id: userId }), { method: 'DELETE' }),
+    entries: (userId, filters = {}) => request(withQuery('/journey/entries', { user_id: userId, ...filters })),
+    entry: (userId, date) => request(withQuery(`/journey/entries/${date}`, { user_id: userId })),
+    replaceTags: (userId, date, tagIds) => request(`/journey/entries/${date}/tags`, { method: 'PUT', body: JSON.stringify({ user_id: userId, tag_ids: tagIds }) }),
   },
 
   goals: {

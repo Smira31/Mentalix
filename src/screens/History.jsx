@@ -4,6 +4,7 @@ import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
+import JourneySearch from './JourneySearch'
 
 // ── История: лента дней из чек-инов и активности, как history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
@@ -121,6 +122,7 @@ export default function History({ user }) {
   const [badges, setBadges] = useState(null)
   const [themeEntries, setThemeEntries] = useState(null)
   const [selectedDay, setSelectedDay] = useState(null)
+  const [journeySearchOpen, setJourneySearchOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -194,6 +196,10 @@ export default function History({ user }) {
     return <HistoryDetail day={selectedDay} onBack={() => setSelectedDay(null)} />
   }
 
+  if (journeySearchOpen) {
+    return <><button type="button" onClick={() => setJourneySearchOpen(false)} className="mb-3 min-h-10 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted">К обычной истории</button><JourneySearch user={user} /></>
+  }
+
   const milestonesBlock = badges && badges.length > 0 && (
     <div className="mt-8">
       <div className="text-[13px] text-muted font-semibold mb-2 px-1">Вехи пути</div>
@@ -251,6 +257,7 @@ export default function History({ user }) {
 
   return (
     <div className="space-y-5 mt-1">
+      <button type="button" onClick={() => setJourneySearchOpen(true)} className="min-h-11 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted">Искать и фильтровать записи</button>
       {days.map(d => {
         const wins = d.checkin?.wins || []
         return (
