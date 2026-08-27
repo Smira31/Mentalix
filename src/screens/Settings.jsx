@@ -828,7 +828,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
             <Row
               icon={Download}
               title="Экспорт JSON"
-              subtitle="Полная машиночитаемая копия"
+              subtitle="Сохранённые данные и завершённые направленные записи"
               onClick={() => downloadPersonalExport('json')}
             />
             <Row
