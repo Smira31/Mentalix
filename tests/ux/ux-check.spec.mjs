@@ -200,6 +200,8 @@ async function assertCommonScreenChecks(page, runtimeErrors) {
     const criticalCtas = page.locator('button.cta-pill:visible:not(:disabled)')
     const count = await criticalCtas.count()
 
+    await assertBottomNavigationLabelsFit(page)
+
     for (let index = 0; index < count; index += 1) {
       const ctaBox = await criticalCtas.nth(index).boundingBox()
 
@@ -228,6 +230,47 @@ async function assertClickable(locator) {
   const box = await locator.boundingBox()
   expect(box?.width || 0, 'Кликабельный элемент должен иметь ширину').toBeGreaterThan(0)
   expect(box?.height || 0, 'Кликабельный элемент должен иметь высоту').toBeGreaterThan(0)
+}
+
+async function assertBottomNavigationLabelsFit(page) {
+  const labels = await page.locator('nav[aria-hidden="false"] > button').evaluateAll(buttons =>
+    buttons.map(button => {
+      const buttonRect = button.getBoundingClientRect()
+      const label = button.querySelector('span')
+      const labelRect = label?.getBoundingClientRect()
+
+      return {
+        name: button.getAttribute('aria-label'),
+        buttonLeft: buttonRect.left,
+        buttonRight: buttonRect.right,
+        labelLeft: labelRect?.left ?? null,
+        labelRight: labelRect?.right ?? null,
+      }
+    })
+  )
+
+  const epsilon = 0.5
+
+  for (const label of labels) {
+    expect(label.labelLeft, `Подпись «${label.name}» должна иметь геометрию`).not.toBeNull()
+    expect(label.labelRight, `Подпись «${label.name}» должна иметь геометрию`).not.toBeNull()
+    expect(label.labelLeft, `Подпись «${label.name}» выходит за левую границу кнопки`).toBeGreaterThanOrEqual(
+      label.buttonLeft - epsilon
+    )
+    expect(label.labelRight, `Подпись «${label.name}» выходит за правую границу кнопки`).toBeLessThanOrEqual(
+      label.buttonRight + epsilon
+    )
+  }
+
+  for (let index = 1; index < labels.length; index += 1) {
+    const previous = labels[index - 1]
+    const current = labels[index]
+
+    expect(
+      current.labelLeft,
+      `Подписи «${previous.name}» и «${current.name}» не должны пересекаться`
+    ).toBeGreaterThanOrEqual(previous.labelRight - epsilon)
+  }
 }
 
 async function assertSoonControls(page) {

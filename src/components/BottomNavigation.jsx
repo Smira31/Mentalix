@@ -1,13 +1,7 @@
-import {
-  AlignJustify,
-  House,
-  Sparkles,
-  BookOpen,
-} from 'lucide-react'
+import { AlignJustify, House, Sparkles, BookOpen } from 'lucide-react'
 
 import MazeLogo from './MazeLogo'
 import { platform } from '../platform'
-
 
 const TABS = [
   {
@@ -37,16 +31,9 @@ const TABS = [
   },
 ]
 
+const MOTION = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
-const MOTION =
-  'cubic-bezier(0.22, 1, 0.36, 1)'
-
-
-function TabIcon({
-  item,
-  active,
-  size = 21,
-}) {
+function TabIcon({ item, active, size = 21 }) {
   if (item.icon === 'monogram') {
     return (
       <MazeLogo
@@ -54,41 +41,18 @@ function TabIcon({
         progress={1}
         showDot={false}
         baseClass="text-transparent"
-        trailClass={
-          active
-            ? 'text-gold'
-            : 'text-muted'
-        }
+        trailClass={active ? 'text-gold' : 'text-muted'}
       />
     )
   }
 
   const Icon = item.icon
 
-  return (
-    <Icon
-      size={size}
-      strokeWidth={1.9}
-      className={
-        active
-          ? 'text-cream'
-          : 'text-muted'
-      }
-    />
-  )
+  return <Icon size={size} strokeWidth={1.9} className={active ? 'text-cream' : 'text-muted'} />
 }
 
-
-export default function BottomNavigation({
-  tab,
-  collapsed,
-  onCollapseChange,
-  onTabChange,
-}) {
-  const activeItem =
-    TABS.find((item) => item.key === tab) ||
-    TABS[0]
-
+export default function BottomNavigation({ tab, collapsed, onCollapseChange, onTabChange }) {
+  const activeItem = TABS.find(item => item.key === tab) || TABS[0]
 
   return (
     /*
@@ -111,12 +75,9 @@ export default function BottomNavigation({
         pointer-events-none
       "
       style={{
-        left:
-          'max(20px, var(--app-safe-left))',
-        right:
-          'max(20px, var(--app-safe-right))',
-        bottom:
-          'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
+        left: 'max(20px, var(--app-safe-left))',
+        right: 'max(20px, var(--app-safe-right))',
+        bottom: 'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
       }}
     >
       {/* ==========================================================
@@ -148,34 +109,20 @@ export default function BottomNavigation({
           will-change-[width,height,border-radius,transform]
         "
         style={{
-          width: collapsed
-            ? 'var(--bottom-nav-collapsed-size)'
-            : 'calc(100vw - 40px)',
+          width: collapsed ? 'var(--bottom-nav-collapsed-size)' : 'calc(100vw - 40px)',
 
-          maxWidth: collapsed
-            ? 'var(--bottom-nav-collapsed-size)'
-            : '400px',
+          maxWidth: collapsed ? 'var(--bottom-nav-collapsed-size)' : '400px',
 
-          height: collapsed
-            ? 'var(--bottom-nav-collapsed-size)'
-            : 'var(--bottom-nav-height)',
+          height: collapsed ? 'var(--bottom-nav-collapsed-size)' : 'var(--bottom-nav-height)',
 
-          borderRadius: collapsed
-            ? '9999px'
-            : '34px',
+          borderRadius: collapsed ? '9999px' : '34px',
 
           /* Цвета берутся из системных токенов, а не задаются вручную. */
-          backgroundColor: collapsed
-            ? 'rgb(var(--c-card2) / 0.90)'
-            : 'rgb(var(--c-card2) / 0.92)',
+          backgroundColor: collapsed ? 'rgb(var(--c-card2) / 0.90)' : 'rgb(var(--c-card2) / 0.92)',
 
-          borderColor: collapsed
-            ? 'rgb(var(--c-border) / 0.9)'
-            : 'rgb(var(--c-border) / 0.75)',
+          borderColor: collapsed ? 'rgb(var(--c-border) / 0.9)' : 'rgb(var(--c-border) / 0.75)',
 
-          boxShadow: collapsed
-            ? 'var(--shadow-float-compact)'
-            : 'var(--shadow-float)',
+          boxShadow: collapsed ? 'var(--shadow-float-compact)' : 'var(--shadow-float)',
 
           transition: [
             `width 420ms ${MOTION}`,
@@ -219,17 +166,12 @@ export default function BottomNavigation({
               ? 'translate3d(-8px, 5px, 0) scale(0.94)'
               : 'translate3d(0, 0, 0) scale(1)',
 
-            pointerEvents: collapsed
-              ? 'none'
-              : 'auto',
+            pointerEvents: collapsed ? 'none' : 'auto',
 
-            transition: [
-              `opacity 220ms ${MOTION}`,
-              `transform 420ms ${MOTION}`,
-            ].join(', '),
+            transition: [`opacity 220ms ${MOTION}`, `transform 420ms ${MOTION}`].join(', '),
           }}
         >
-          {TABS.map((item) => {
+          {TABS.map(item => {
             const active = tab === item.key
 
             return (
@@ -237,14 +179,8 @@ export default function BottomNavigation({
                 key={item.key}
                 type="button"
                 aria-label={item.label}
-                aria-current={
-                  active
-                    ? 'page'
-                    : undefined
-                }
-                tabIndex={
-                  collapsed ? -1 : 0
-                }
+                aria-current={active ? 'page' : undefined}
+                tabIndex={collapsed ? -1 : 0}
                 onClick={() => {
                   platform.haptic('light')
                   onTabChange(item.key)
@@ -260,9 +196,7 @@ export default function BottomNavigation({
                   'justify-center',
                   'gap-[2px]',
                   'active:scale-95',
-                  active
-                    ? 'bg-cream/[0.12]'
-                    : '',
+                  active ? 'bg-cream/[0.12]' : '',
                 ].join(' ')}
                 style={{
                   transition: [
@@ -271,20 +205,16 @@ export default function BottomNavigation({
                   ].join(', '),
                 }}
               >
-                <TabIcon
-                  item={item}
-                  active={active}
-                  size={21}
-                />
+                <TabIcon item={item} active={active} size={21} />
 
                 <span
                   className={[
                     'text-[10px]',
+                    'max-[360px]:text-[9px]',
+                    'max-[360px]:tracking-[-0.02em]',
                     'font-semibold',
                     'whitespace-nowrap',
-                    active
-                      ? 'text-cream'
-                      : 'text-muted',
+                    active ? 'text-cream' : 'text-muted',
                   ].join(' ')}
                 >
                   {item.label}
@@ -293,7 +223,6 @@ export default function BottomNavigation({
             )
           })}
         </nav>
-
 
         {/* ========================================================
             COLLAPSED STATE
@@ -333,11 +262,9 @@ export default function BottomNavigation({
             origin-center
           "
           style={{
-            width:
-              'var(--bottom-nav-collapsed-size)',
+            width: 'var(--bottom-nav-collapsed-size)',
 
-            height:
-              'var(--bottom-nav-collapsed-size)',
+            height: 'var(--bottom-nav-collapsed-size)',
 
             opacity: collapsed ? 1 : 0,
 
@@ -345,33 +272,22 @@ export default function BottomNavigation({
               ? 'translate3d(0, 0, 0) scale(1)'
               : 'translate3d(-5px, 0, 0) scale(0.72)',
 
-            pointerEvents: collapsed
-              ? 'auto'
-              : 'none',
+            pointerEvents: collapsed ? 'auto' : 'none',
 
             transition: [
-              `opacity 280ms ${MOTION} ${
-                collapsed ? '100ms' : '0ms'
-              }`,
+              `opacity 280ms ${MOTION} ${collapsed ? '100ms' : '0ms'}`,
               `transform 420ms ${MOTION}`,
             ].join(', '),
           }}
         >
           <span
             style={{
-              transform: collapsed
-                ? 'scale(1)'
-                : 'scale(0.82)',
+              transform: collapsed ? 'scale(1)' : 'scale(0.82)',
 
-              transition:
-                `transform 420ms ${MOTION}`,
+              transition: `transform 420ms ${MOTION}`,
             }}
           >
-            <TabIcon
-              item={activeItem}
-              active
-              size={25}
-            />
+            <TabIcon item={activeItem} active size={25} />
           </span>
         </button>
       </div>
