@@ -230,7 +230,11 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
   function finishSession() {
     platform.haptic('light')
     saveOneFinishEntry(userId, { outcome, reflection })
-    onComplete?.()
+    if (onComplete) {
+      onComplete()
+      return
+    }
+
     onClose()
   }
 

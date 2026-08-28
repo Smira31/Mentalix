@@ -225,7 +225,11 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
   function finish() {
     platform.haptic('light')
     saveNarrowFocusEntry(userId, { outcome, reflection })
-    onComplete?.()
+    if (onComplete) {
+      onComplete()
+      return
+    }
+
     onClose()
   }
 
