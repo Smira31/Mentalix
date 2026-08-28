@@ -42,11 +42,19 @@ const state = readFileSync('PROJECT_STATE.md', 'utf8')
 const documented = state.match(/Текущий `main`[^\n]*`([0-9a-f]{7,40})`/)?.[1]
 if (documented) {
   try {
+    execFileSync('git', ['cat-file', '-e', `${documented}^{commit}`], { stdio: 'ignore' })
     execFileSync('git', ['merge-base', '--is-ancestor', documented, mainRef])
   } catch {
-    findings.push(
-      `PROJECT_STATE.md: documented main ${documented} is not an ancestor of ${mainRef} ${actualMain.slice(0, 8)}`
-    )
+    try {
+      execFileSync('git', ['cat-file', '-e', `${documented}^{commit}`], { stdio: 'ignore' })
+      findings.push(
+        `PROJECT_STATE.md: documented main ${documented} is not an ancestor of ${mainRef} ${actualMain.slice(0, 8)}`
+      )
+    } catch {
+      console.warn(
+        `Docs drift warning: baseline ${documented} is not available in this checkout; skipped ancestry check.`
+      )
+    }
   }
 }
 if (findings.length) {
