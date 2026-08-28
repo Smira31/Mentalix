@@ -101,6 +101,7 @@ function JournalIntro({ completed, legacyVisible, onStart, onMigrate, onDismissL
       title={title}
       description={description}
       centered
+      verticallyCentered
       showGlyph={false}
       className="journal-flow__intro"
     >
@@ -139,6 +140,7 @@ function JournalComplete({ onClose, onOpen }) {
       title="Цикл сохранён"
       description="Идея, действие, анализ и следующий шаг останутся в твоём журнале на этом устройстве."
       centered
+      verticallyCentered
       showGlyph={false}
       className="journal-flow__complete"
     >
@@ -273,22 +275,13 @@ export default function JournalFlow({ userId, onClose }) {
             placeholder="Начни писать..."
             ariaLabel={`${phase.label}: ${phase.title}`}
             className="mt-7 min-h-[15rem]"
-            editorClassName="pb-28"
+            editorClassName="pb-24"
             floatingToolbar
-            formatting
+            formatting={false}
             onSubmit={continueFlow}
             submitLabel={isLast ? 'Сохранить и завершить' : 'Сохранить и продолжить'}
             submitDisabled={!value.trim()}
           />
-          {phaseIndex > 0 && (
-            <button
-              type="button"
-              onClick={() => setPhaseIndex(index => index - 1)}
-              className="mt-7 min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
-            >
-              Назад
-            </button>
-          )}
         </SceneLayout>
       )}
 
