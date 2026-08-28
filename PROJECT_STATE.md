@@ -37,3 +37,10 @@
 
 [1]: https://github.com/Smira31/Mentalix/pull/260 'Pull Request #260 — единый рабочий контур'
 [2]: https://github.com/Smira31/Mentalix/actions/runs/33113340803 'GitHub Actions — успешная базовая проверка `main`'
+
+## 2026-08-28 — reconciliation after Preview validation
+
+- PR #272 (`feat/mxl-journal-reference-preview`) was squashed into `main` as `0e01e5de`; the Practices Preview was validated before merge.
+- The remaining `automation/project-state-*` branches are historical state snapshots. Their contents are not merged wholesale because they conflict with the current `PROJECT_STATE.md`; the latest facts are recorded here instead.
+- No `provision/*` branches currently exist in GitHub. The active backend deployment documentation remains in `mentalix-bot/main` (`RENDER.md` and `backend-jobs.yml`).
+- Feature and documentation branches with unique patches remain preserved for individual review; branches whose patches are already equivalent to `main` are candidates for deletion only after the final audit.
