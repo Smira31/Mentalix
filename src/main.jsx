@@ -1,6 +1,5 @@
 import { StrictMode, Component, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
-import { AppProviders } from './app/AppProviders'
 import './index.css'
 import App from './App'
 
@@ -156,9 +155,7 @@ window.addEventListener('error', e => {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <AppProviders>
-        <RootScreen />
-      </AppProviders>
+      <RootScreen />
     </ErrorBoundary>
   </StrictMode>
 )
