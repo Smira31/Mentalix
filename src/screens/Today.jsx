@@ -624,52 +624,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
       <div className="mx-today-hero-breath" aria-hidden="true" />
 
-      {checkinDone && (
-        <button
-          onClick={() => {
-            platform.haptic('light')
-
-            changeSub('checkin')
-          }}
-          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
-        >
-          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] font-bold shrink-0">
-            ✓
-          </span>
-
-          <span className="flex-1 text-left">
-            <span className="block mx-type-list-title text-cream">
-              {todayState === 'dayClosed' ? 'День разобран' : 'Чек-ин выполнен'}
-            </span>
-
-            <span className="block mx-type-meta text-muted">
-              {checkin.emotion ? `${checkin.emotion} · ` : ''}
-              настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
-            </span>
-          </span>
-
-          <span className="mx-type-meta text-faint shrink-0">изменить</span>
-        </button>
-      )}
-
-      <MorningPilotCard
-        userId={user.id}
-        rituals={rituals}
-        onOpenRituals={() => onOpenPractice('rituals')}
-      />
-
-      {/* ======================================================
-          ПУЛЬС
-          ====================================================== */}
-
-      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
-        <p className="text-center mx-type-meta text-faint mt-4">
-          {activeToday < 20
-            ? `Сегодня в пути вместе с тобой: ${activeToday}`
-            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
-        </p>
-      )}
-
       {/* ======================================================
           ДЕНЬ
 
@@ -686,7 +640,9 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
       {!hiddenCards.includes('dayProgress') &&
         (isEmpty ? (
-          <EmptyState className="mt-8">
+          <EmptyState
+            className="mt-4 p-5 [&>div:first-child]:mb-3 [&>div:first-child]:h-12 [&>div:first-child]:w-12"
+          >
             <h3 className="font-display mx-type-card text-cream mb-1">Пока нет практик</h3>
             <p className="mx-type-list-body text-muted mb-4">
               Добавь ритуал или аскезу — здесь появится прогресс дня.
@@ -733,6 +689,54 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
             <ChevronRight size={18} className="text-faint shrink-0" />
           </button>
         ))}
+
+      {checkinDone && (
+        <button
+          onClick={() => {
+            platform.haptic('light')
+
+            changeSub('checkin')
+          }}
+          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+        >
+          <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] font-bold shrink-0">
+            ✓
+          </span>
+
+          <span className="flex-1 text-left">
+            <span className="block mx-type-list-title text-cream">
+              {todayState === 'dayClosed' ? 'День разобран' : 'Чек-ин выполнен'}
+            </span>
+
+            <span className="block mx-type-meta text-muted">
+              {checkin.emotion ? `${checkin.emotion} · ` : ''}
+              настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+            </span>
+          </span>
+
+          <span className="mx-type-meta text-faint shrink-0">изменить</span>
+        </button>
+      )}
+
+      <MorningPilotCard
+        userId={user.id}
+        rituals={rituals}
+        onOpenRituals={() => onOpenPractice('rituals')}
+      />
+
+      {/* ======================================================
+          ПУЛЬС
+          ====================================================== */}
+
+      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
+        <p className="text-center mx-type-meta text-faint mt-4">
+          {activeToday < 20
+            ? `Сегодня в пути вместе с тобой: ${activeToday}`
+            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+        </p>
+      )}
+
+
 
       {/* ======================================================
           ТЕМА НЕДЕЛИ
