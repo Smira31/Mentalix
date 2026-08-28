@@ -136,7 +136,7 @@ function OptionList({ options, onPick }) {
   )
 }
 
-export default function FinishFlow({ userId, onClose }) {
+export default function FinishFlow({ userId, onClose, onComplete }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
   const [step, setStep] = useState('intro')
@@ -230,6 +230,7 @@ export default function FinishFlow({ userId, onClose }) {
   function finishSession() {
     platform.haptic('light')
     saveOneFinishEntry(userId, { outcome, reflection })
+    onComplete?.()
     onClose()
   }
 
