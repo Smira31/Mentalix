@@ -31,6 +31,10 @@
 | `MXL-019` | M | product/UX/visual | verified | completed | Закрыта через PR #219; continuous Journey line опубликована |
 | `MXL-JOURNAL-001` | ML | product/UX | in progress | manual-gate | Вариант А: закреплённая карточка Journal над «Практиками» → вступление → 4 фазы → завершение/возврат/повторное открытие, локальное хранение; Preview-ветка `feat/mxl-journal-reference-preview` ждёт ручной Telegram/iPhone gate |
 | `MXL-020` | ? | product/payment | deferred | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
+| `MXL-LOOP-001` | L | product/UX/research | ready | manual-gate | Проверить полный loop Today → practice → next action → evening review → return; связующая задача для #122/#123 |
+| `MXL-PRACTICE-UX-001` | M | product/UX/content | backlog | needs-owner | Унифицировать четыре problem-led practice по шаблону problem → steps → measurable action → completion |
+| `MXL-INSIGHTS-001` | M | product/data/UX | discovery | backend-dependent + needs-owner | Проверить descriptive pattern insights после unified history |
+| `MXL-WTP-001` | M | product/research/payment | discovery | needs-owner | Fake-door/concept test платных outputs без checkout после подтверждения free loop |
 | `MXL-JOURNAL-PERSISTENCE-001` | XL | product/backend | in progress | local-first now; backend-dependent later | User-scoped versioned local storage, draft/final и explicit legacy migration реализованы; cloud sync остаётся отдельным backend gate |
 | `MXL-JOURNAL-HISTORY-001` | L | product/backend/UX | backlog | backend-dependent | Объединить датированную историю после persistence |
 | `MXL-JOURNAL-PRIVACY-001` | L | product/safety/backend | backlog | needs-owner + backend-dependent | Решить AI consent, retention, export и delete |
@@ -61,6 +65,7 @@
 | Backend/API | Приватный репозиторий | Не придумывать endpoint или схему |
 | Telegram/iPhone | Основной manual gate | Desktop smoke не считать заменой реальной проверки |
 | Stoic-аудит | Русская карта функций и design principles добавлена в `docs/product/` | Не копировать бренд, тексты и UI Stoic |
+| Competitive analysis execution | Согласованный отчёт переведён в `docs/research/mentalix_competitive_analysis_execution_backlog_2026-08-28.md`; сначала проверяется action loop, затем persistence/history/privacy/content, и только потом payment | Не создавать дубли существующих journal/UX/research задач и не запускать checkout до evidence |
 | Journal | Выбран вариант А: 4-фазный локальный поток имеет явный дом в верхней карточке «Практик»; эпик разбит на persistence, history, privacy, personalization и content layers | Не добавлять шестую вкладку, не скрывать Journal внутри Mentor, не смешивать с семидневной темой/PR #268 и не дублировать закрытые MXL-001/MXL-005/MXL-009/MXL-014/MXL-015/MXL-016/MXL-019 |
 
 ## Definition of Ready
