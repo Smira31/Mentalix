@@ -945,7 +945,7 @@ test('локальный UX smoke по основному маршруту', asy
 })
 
 
-test('Mentor PersonaPicker сохраняет границы на mobile, tablet и desktop без индикатора', async ({ browser, baseURL }) => {
+test('Mentor PersonaPicker сохраняет тематическую рамку и pager на mobile, tablet и desktop', async ({ browser, baseURL }) => {
   const layouts = [
     ...VIEWPORTS,
     { name: '768x1024', width: 768, height: 1024 },
@@ -990,10 +990,31 @@ test('Mentor PersonaPicker сохраняет границы на mobile, tablet
     const cards = page.getByTestId('mentor-persona-card')
     await expect(cards).toHaveCount(3)
     expect(await cards.evaluateAll(elements => elements.map(element => getComputedStyle(element).borderTopWidth))).toEqual([
-      '0px',
-      '0px',
-      '0px',
+      '1px',
+      '1px',
+      '1px',
     ])
+    const pager = page.getByLabel('Страница собеседника')
+    await expect(pager).toBeVisible()
+    await expect(pager.getByRole('button')).toHaveCount(3)
+    await expect(pager.getByRole('button', { name: 'Собеседник, страница 1 из 3' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+
+    if (viewport.width <= 430) {
+      const track = page.getByTestId('mentor-persona-track')
+      const cardWidth = await cards.first().evaluate(element => element.getBoundingClientRect().width)
+      await track.evaluate((element, scrollLeft) => {
+        element.scrollLeft = scrollLeft
+        element.dispatchEvent(new Event('scroll'))
+      }, cardWidth + 12)
+      await expect(pager.getByRole('button', { name: 'Наставник, страница 2 из 3' })).toHaveAttribute(
+        'aria-current',
+        'page'
+      )
+    }
+
     await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
 
     const mentorCard = cards.filter({ hasText: 'Наставник' })

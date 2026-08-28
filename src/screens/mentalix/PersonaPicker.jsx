@@ -39,8 +39,8 @@ import { PERSONAS } from './personas'
  * На телефоне min() ничего не меняет: там всегда выигрывает calc.
  */
 const CARD_HEIGHT = {
-  height: 'min(560px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 280px))',
-  minHeight: '360px',
+  height: 'min(620px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 220px))',
+  minHeight: '400px',
 }
 
 function trim(text, max = 90) {
@@ -108,11 +108,21 @@ export default function PersonaPicker({ user, onPick }) {
 
     const step = card.offsetWidth + 12
 
-    setActive(Math.round(track.scrollLeft / step))
+    setActive(Math.max(0, Math.min(PERSONAS.length - 1, Math.round(track.scrollLeft / step))))
+  }
+
+  function selectPage(index) {
+    const track = trackRef.current
+    const card = track?.firstElementChild
+
+    if (!track || !card) return
+
+    platform.haptic('light')
+    track.scrollTo({ left: index * (card.offsetWidth + 12), behavior: 'smooth' })
   }
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in">
+    <div className="w-full max-w-lg mx-auto px-4 animate-fade-in">
       <h2 className="font-display mx-type-page text-cream lowercase mt-0 mb-2">с кем говорим.</h2>
 
       <p className="mx-type-meta text-faint mb-4">три собеседника, три отдельных разговора</p>
@@ -120,12 +130,13 @@ export default function PersonaPicker({ user, onPick }) {
       <div className="mt-4">
         <div
           ref={trackRef}
+          data-testid="mentor-persona-track"
           onScroll={syncActive}
           className="
           flex
           gap-3
-          -mx-5
-          px-5
+          -mx-4
+          px-4
           pb-2
           overflow-x-auto
           overscroll-x-contain
@@ -156,12 +167,21 @@ export default function PersonaPicker({ user, onPick }) {
                   platform.haptic('light')
                   onPick(persona.key, '')
                 }}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault()
+                    platform.haptic('light')
+                    onPick(persona.key, '')
+                  }
+                }}
+                aria-label={`${persona.name}: открыть разговор`}
                 className={`
                   snap-center
                   shrink-0
-                  w-[82%]
-                  rounded-[28px]
-                  bg-emerald
+                  w-full
+                  rounded-[32px]
+                  border border-gold/20
+                  bg-gold/[0.04]
                   p-6
                   flex
                   flex-col
@@ -269,6 +289,21 @@ export default function PersonaPicker({ user, onPick }) {
               </div>
             )
           })}
+        </div>
+        <div className="mt-3 flex items-end justify-center gap-2" aria-label="Страница собеседника">
+          {PERSONAS.map((persona, index) => (
+            <button
+              type="button"
+              key={persona.key}
+              aria-label={`${persona.name}, страница ${index + 1} из ${PERSONAS.length}`}
+              aria-current={active === index ? 'page' : undefined}
+              onClick={() => selectPage(index)}
+              className={[
+                'w-1.5 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60',
+                active === index ? 'h-8 bg-gold' : 'h-4 bg-cream/20 hover:bg-cream/40',
+              ].join(' ')}
+            />
+          ))}
         </div>
       </div>
 
