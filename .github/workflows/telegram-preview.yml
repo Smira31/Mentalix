@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 concurrency:
   group: telegram-preview-${{ github.event.client_payload.gitCommitSha || inputs.url || github.run_id }}
@@ -88,6 +89,32 @@ jobs:
             "https://api.telegram.org/bot${telegram_token}/sendMessage")"
           printf '%s\n' "$response" | jq -e '.ok == true' >/dev/null
           echo "Telegram notification sent."
+
+      - name: Comment preview evidence on PR
+        if: success() && env.PR_NUMBER != 'n/a' && github.event_name == 'repository_dispatch'
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ env.PREVIEW_URL }}
+          PREVIEW_SHA: ${{ env.PREVIEW_SHA }}
+          PREVIEW_BRANCH: ${{ env.PREVIEW_BRANCH }}
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+        with:
+          script: |
+            const body = [
+              '## Telegram Preview evidence',
+              '',
+              `Preview: ${process.env.PREVIEW_URL}`,
+              `Branch: \\`${process.env.PREVIEW_BRANCH}\\``,
+              `Commit: \\`${process.env.PREVIEW_SHA.slice(0, 8)}\\``,
+              '',
+              'Vercel Preview и `/api/health` проверены; кнопка отправлена в Telegram.',
+            ].join('\\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: Number(process.env.PR_NUMBER),
+              body,
+            });
 
       - name: Publish preview summary
         if: always()
