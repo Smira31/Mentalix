@@ -29,15 +29,23 @@ for (const file of normative) {
   const text = readFileSync(file, 'utf8')
   if (forbidden.test(text)) findings.push(`${file}: stale platform or workflow wording`)
 }
-const actualMain = run('git', ['rev-parse', 'origin/main'])
+const mainRef = (() => {
+  try {
+    execFileSync('git', ['rev-parse', '--verify', 'origin/main'], { stdio: 'ignore' })
+    return 'origin/main'
+  } catch {
+    return 'HEAD'
+  }
+})()
+const actualMain = run('git', ['rev-parse', mainRef])
 const state = readFileSync('PROJECT_STATE.md', 'utf8')
 const documented = state.match(/Текущий `main`[^\n]*`([0-9a-f]{7,40})`/)?.[1]
 if (documented) {
   try {
-    execFileSync('git', ['merge-base', '--is-ancestor', documented, 'origin/main'])
+    execFileSync('git', ['merge-base', '--is-ancestor', documented, mainRef])
   } catch {
     findings.push(
-      `PROJECT_STATE.md: documented main ${documented} is not an ancestor of origin/main ${actualMain.slice(0, 8)}`
+      `PROJECT_STATE.md: documented main ${documented} is not an ancestor of ${mainRef} ${actualMain.slice(0, 8)}`
     )
   }
 }
