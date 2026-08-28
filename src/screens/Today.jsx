@@ -17,6 +17,7 @@ import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
+import SeriesBadges from './SeriesBadges'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
@@ -114,7 +115,14 @@ function formatRemainingActions(count) {
 // TODAY
 // ============================================================
 
-export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }) {
+export default function Today({
+  user,
+  onOpenPractice,
+  onGoMentor,
+  onFlowChange,
+  seriesOpen = false,
+  onCloseSeries,
+}) {
   const [initialTodaySnapshot] = useState(() => (user ? peekTodaySnapshot(user.id) : null))
 
   const [rituals, setRituals] = useState(() => initialTodaySnapshot?.rituals || [])
@@ -243,6 +251,14 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
       : checkin
         ? 'dayInProgress'
         : 'checkinPending'
+
+  // ============================================================
+  // SERIES & BADGES
+  // ============================================================
+
+  if (seriesOpen) {
+    return <SeriesBadges user={user} onBack={onCloseSeries} />
+  }
 
   // ============================================================
   // ЧЕК-ИН / АНАЛИЗ ДНЯ
