@@ -75,8 +75,7 @@ jobs:
             echo 'TELEGRAM_PREVIEW_CHAT_ID must be numeric.' >&2
             exit 1
           fi
-          short_sha="${PREVIEW_SHA:0:7}"
-          message="Mentalix Preview готов\n\nВетка: $PREVIEW_BRANCH\nCommit: $short_sha\nPR: #$PR_NUMBER\n\nPreview прошёл проверку /api/health."
+          message="Mentalix preview PR #${PR_NUMBER} готов к проверке.\nПроверьте сценарий: Today → открыть practice → завершить → убедиться, что приложение возвращает в Today. Отдельно проверьте Back и ранний выход."
           payload="$(jq -n \
             --arg chat_id "$chat_id" \
             --arg text "$message" \
