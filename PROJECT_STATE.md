@@ -11,7 +11,7 @@
 | Frontend repository | `Smira31/Mentalix`, ветка `main`                                                                                             | GitHub                                                                         |
 | Текущий `main`      | [`1f57511f`](https://github.com/Smira31/Mentalix/commit/1f57511f3b0d199ad6613fc205e1c782ec1fb347)                            | Squash-merge PR [#260](https://github.com/Smira31/Mentalix/pull/260)           |
 | Базовая CI-проверка | Успешный run «Автоматическая проверка Mentalix» для `1f57511f`                                                               | [GitHub Actions](https://github.com/Smira31/Mentalix/actions/runs/33113340803) |
-| Состав CI           | `npm run check:core`: unit, lint, production build и `docs:check`; затем health-check доступного Render backend              | [workflow](.github/workflows/ci.yml)                                  |
+| Состав CI           | `npm run check:core`: unit, lint, production build и `docs:check`; затем health-check доступного Render backend              | [workflow](.github/workflows/mentalix-ci.yml)                                  |
 | Frontend hosting    | Vercel, URL: <https://mentalix.vercel.app>                                                                                   | [README.md](README.md)                                                         |
 | Backend boundary    | Backend и Telegram bot находятся в приватном `Smira31/mentalix-bot`; их контракт и данные не предполагаются по frontend-коду | [AGENTS.md](AGENTS.md)                                                         |
 
