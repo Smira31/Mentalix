@@ -1,0 +1,44 @@
+name: Issue triage
+
+on:
+  issues:
+    types: [opened, edited, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  label:
+    name: Add deterministic labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label issue by explicit text
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const text = `${issue.title}\n${issue.body || ''}`.toLowerCase();
+            const rules = [
+              [['security', 'auth', 'privacy'], 'security'],
+              [['backend', 'api', 'database', 'render', 'neon'], 'backend-dependent'],
+              [['preview', 'ui lab', 'motion kit'], 'preview-only'],
+              [['design', 'ux', 'ui', 'visual'], 'ui'],
+              [['automation', 'workflow', 'github', 'agent'], 'automation'],
+              [['documentation', 'docs', 'readme'], 'docs'],
+              [['feature', 'function', 'функц'], 'feature'],
+              [['bug', 'ошиб', 'broken'], 'bug'],
+            ];
+            const labels = [];
+            for (const [keywords, label] of rules) {
+              if (keywords.some((keyword) => text.includes(keyword))) labels.push(label);
+            }
+            for (const label of labels) {
+              try {
+                await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
+              } catch {
+                await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: '6B7280', description: 'Deterministic Mentalix triage label' });
+              }
+            }
+            if (labels.length) {
+              await github.rest.issues.addLabels({ owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number, labels });
+            }

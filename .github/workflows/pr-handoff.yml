@@ -1,0 +1,73 @@
+name: PR handoff report
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+
+concurrency:
+  group: pr-handoff-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  handoff:
+    name: Build agent handoff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run docs drift check
+        id: docs
+        run: npm run docs:drift
+
+      - name: Publish handoff comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const body = [
+              '## Agent handoff',
+              '',
+              `**PR:** #${pr.number} — ${pr.title}`,
+              `**Commit:** \\`${context.sha.slice(0, 8)}\\``,
+              '',
+              '### Автоматически проверено',
+              '- `npm run docs:drift` — успешно',
+              '- Полный code gate — в workflow `Mentalix CI baseline`',
+              '',
+              '### Перед merge',
+              '- Указать изменённые и намеренно не изменённые области.',
+              '- Указать, что не проверено и нужен ли Telegram/iPhone gate.',
+              '- Для product, security, backend, deployment и production изменений получить решение владельца.',
+              '',
+              '_Комментарий обновляется автоматически при каждом новом commit._',
+            ].join('\\n');
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              per_page: 100,
+            });
+            const marker = '## Agent handoff';
+            const existing = comments.find((comment) => comment.user.type === 'Bot' && comment.body.startsWith(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body });
+            }

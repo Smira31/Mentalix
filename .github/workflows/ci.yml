@@ -40,6 +40,9 @@ jobs:
       - name: Run core checks
         run: npm run check:core
 
+      - name: Check documentation drift
+        run: npm run docs:drift
+
   ux:
     name: Playwright Chromium smoke
     runs-on: ubuntu-latest
