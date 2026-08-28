@@ -2,14 +2,14 @@
 
 > Этот файл фиксирует только проверяемое текущее состояние frontend-репозитория и известные release-факты. Он **не является backlog, журналом сессий или архивом решений**. Для следующей работы откройте [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md), [`AGENTS.md`](AGENTS.md), [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md) и связанный GitHub Issue/PR.
 
-**Последняя сверка:** 28.08.2026, 07:30 UTC.
+**Последняя сверка:** 28.08.2026, 08:08 UTC.
 
 ## Подтверждённые факты
 
 | Область                       | Подтверждённый факт                                                                                                          | Источник                                |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
 | Frontend repository           | `Smira31/Mentalix`, ветка `main`                                                                                             | GitHub                                  |
-| Текущий `main`                | [`ceb17efb`](https://github.com/Smira31/Mentalix/commit/ceb17efb065aed4d3c9ca32ad787781094f507aa)                            | Squash-merge PR #280                    |
+| Текущий `main`                | [`c356a40e`](https://github.com/Smira31/Mentalix/commit/c356a40ed44788344c4b031bb5abe54687f5ba17)                            | Squash-merge PR #282                    |
 | Последний product-scope merge | [`6a59926c`](https://github.com/Smira31/Mentalix/commit/6a59926c4c1a74bc2b8401ed711c69347bcfafdd)                            | Squash-merge PR #281                    |
 | Базовая CI-проверка           | 85/85 unit-тестов, lint, production build, docs-check и Playwright smoke                                                     | GitHub Actions                          |
 | Состав CI                     | `npm run check:core`: unit, lint, production build и `docs:check`; затем health-check доступного Render backend              | [workflow](.github/workflows/ci.yml)    |
@@ -42,7 +42,7 @@
 
 ## 2026-08-28 — reconciliation after final cleanup
 
-- PR #272 added the four-phase Practices Journal and was followed by PR #277, #278, #279, #280 and #281; all confirmed changes are represented in `main`.
+- PR #272 added the four-phase Practices Journal and was followed by PR #277, #278, #279, #280, #281 and #282; all confirmed changes are represented in `main`.
 - `Mentalix` and `mentalix-bot` have no open PRs and no remote branches besides `main`.
 - Historical `automation/project-state-*`, draft and experimental branches were closed and deleted after the owner confirmed that current `main` is the single working source.
 - Card Lab remains Preview/UI-lab-only; it does not define a production user flow or backend contract.
