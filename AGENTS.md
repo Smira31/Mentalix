@@ -1,52 +1,161 @@
 # AGENTS.md
 
-> **Общий контракт для любого ИИ-агента:** Manus, Claude Code, Codex, ChatGPT, GitHub Copilot и других. Этот файл содержит только обязательные границы. Для маршрута по проекту и экономии контекста сначала откройте [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md).
+Guidance for AI coding agents (Codex, Claude Code, and others) working in this
+repository. Claude Code loads this file automatically via the `@AGENTS.md` import in
+`CLAUDE.md`; Codex and other AGENTS.md-aware tools read it directly.
 
-## Язык и границы проекта
+## Language
 
-Человекочитаемый текст — ответы владельцу, Issues, Pull Requests, коммиты и комментарии в коде — пишется на русском. Код, идентификаторы, команды и имена файлов остаются на английском.
+Always respond to the user in Russian. The app's UI, copy, and in-app text are
+Russian-only — never introduce English strings into product-facing text.
 
-Mentalix — Telegram Mini App. Этот репозиторий содержит только frontend на React, Vite и Tailwind; деплой — Vercel. Backend и бот находятся в приватном `mentalix-bot`. Не предполагайте backend-контракт, состояние данных или инфраструктуры, если они не подтверждены в доступном коде или отдельной проверке.
+## Project
 
-## Минимальный старт
+Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
+This repo is the **frontend only**: React 18 + Vite 5 + Tailwind 3, deployed to Vercel
+(auto-build on push to `main`, prod at https://mentalix.vercel.app). The backend/bot
+(FastAPI + SQLAlchemy + aiogram + PostgreSQL on Railway) lives in a separate **private**
+repo, `mentalix-bot`, and is not visible here — do not invent its API shape; if a task
+needs backend files, say so instead of guessing.
 
-Перед любой задачей прочитайте `AGENTS.md`, `PROJECT_BRIEF.md`, связанный Issue/PR и **один** профильный документ. Не загружайте `TASKS.md`, `CHANGES.md` или старые handoff-файлы целиком, если они не нужны для конкретного вопроса.
+App is Russian-language, dark theme only, Telegram-first with a web fallback.
 
-| Если задача…                                                                    | Дополнительно прочитать                                       |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Меняет product scope, release, production, backend/API, данные или безопасность | `PROJECT_STATE.md`, затем свежий GitHub и профильный документ |
-| Планируется или выбирается из backlog                                           | `docs/TASK_INDEX.md`                                          |
-| Меняет продуктовую логику или тексты                                            | `PRODUCT.md`                                                  |
-| Меняет интерфейс                                                                | `DESIGN_SYSTEM.md` и связанные экран/стили                    |
-| Меняет frontend-слой или API-вызов                                              | `ARCHITECTURE.md` и связанные файлы кода                      |
-| Требует исторических причин                                                     | Нужный раздел `CHANGES.md`, `TASKS.md` или `docs/archive/`    |
+## Commands
 
-При конфликте источников соблюдайте порядок: явная команда владельца → актуальный код и GitHub → профильный нормативный документ → архив. Расхождение не исправляйте молча: покажите источники и запросите решение владельца.
+```bash
+npm install
+npm run dev        # vite dev server, http://localhost:5173
+npm run build       # vite build — run before every push, catches errors Vercel would hit
+npm run preview     # preview a production build
+npm run lint         # eslint .
+npm run lint:fix
+```
 
-## Один scope, одна роль, одна ветка
+There is no test suite, no typecheck script (project is JS despite a couple of stray
+`.tsx` files — see Gotchas below), and no CI config in this repo.
 
-В одном диалоге допустима только одна роль: координатор, исполнитель или ревьюер/QA. До изменений исполнитель фиксирует короткий scope: задача/PR, ветка, base SHA, список изменяемых файлов, out-of-scope, проверки и rollback. Один и тот же набор файлов, а также `PROJECT_STATE.md`, `docs/TASK_INDEX.md` и `CHANGES.md`, одновременно меняет только один writer.
+## Documentation map
 
-Работа с кодом выполняется только в feature-ветке и попадает в `main` только через Pull Request. Прямой push в `main`, force-push, rebase чужой ветки, удаление веток, merge, deploy, публикация, изменение secrets, production- или data-операция возможны исключительно после отдельного подтверждения владельца.
+Read before making non-trivial changes, in this order: `PRODUCT.md` (why/for whom),
+`DESIGN_SYSTEM.md` (actual tokens/UI rules — code + this doc are the source of truth),
+`ARCHITECTURE.md` (frontend structure and technical boundaries), `ROADMAP.md`, `TASKS.md`
+(current work), `AI_RULES.md` (mandatory process for AI agents working in this repo).
 
-Через GitHub CLI просматривайте и создавайте Issues/PR. Перед созданием Issue ищите дубликаты. Переиспользуйте существующие метки; новую метку не создавайте без решения владельца.
+Перед началом любой работы прочитай секцию "Передача между агентами" в конце
+`TASKS.md` — там рабочая папка, ветка, статус незакоммиченных изменений и что
+нельзя менять без согласования.
 
-## Что нельзя менять без явного решения владельца
+Before asking the owner to repeat prior Mentalix context, inspect the current
+`TASKS.md` handoff, `CHANGES.md`, the relevant normative document, and the existing
+UI Lab/Motion Kit implementation. Chat history is secondary evidence and never
+overrides current code or normative docs. Ask only when the choice is genuinely new
+or the sources conflict.
 
-Не меняйте самостоятельно product logic, navigation, brand copy, визуальные токены/шрифт, AI-персоны, API-контракты, оплату, безопасность, возрастные ограничения, зависимости, архитектурный слой, production hosting или данные. Документационная задача не разрешает менять код продукта.
+`docs/archive/CONTEXT.md` and `STOIC_FEATURES.md` are historical/legacy — context only,
+never source of truth. On conflict, priority is, in order:
 
-Не раскрывайте в чате, коммитах, логах или документах secrets, токены, персональные данные и raw auth payload.
+1. explicit user instruction;
+2. actual code (for current state);
+3. the relevant normative doc (for decisions/rules);
+4. historical docs.
 
-## Реализация и проверка
+`AI_RULES.md` is binding process, not optional reading — it defines what an agent may
+change without explicit sign-off (no unapproved product logic, visual language/tokens,
+brand text, AI persona, API contracts, payments/security/age-gating, or new
+dependency/architectural layer), the required verification checklist per change (build +
+scenario + loading/error/empty + mobile viewport + Telegram/web if platform layer
+touched), and the required after-work updates to `CHANGES.md`/`TASKS.md`/`ROADMAP.md`.
 
-Делайте один минимальный цельный diff. Не смешивайте функциональную, визуальную правку, рефакторинг, зависимость и cleanup в одной задаче. Не удаляйте legacy-код без проверки потребителей. Сохраняйте поддержку Telegram и web; для UI учитывайте safe areas, keyboard, fullscreen и bottom navigation.
+## Architecture
 
-Для изменения запускайте только релевантные проверки. Базовый минимум для кода — `npm run build` и проверка затронутого сценария. Для документации — `npm run docs:check`. Для UI добавляйте mobile viewport, loading/error/empty; для fixed/sticky/keyboard/fullscreen обязателен реальный Telegram/iPhone gate. Успешная сборка не доказывает работу backend, deployment или устройства.
+```
+src/
+  main.jsx                 entry point
+  App.jsx                  composition root: auth, Telegram chrome, tab/overlay
+                            navigation state, top/bottom safe-area padding
+  index.css                design tokens, safe areas, motion, Tailwind base
+  lib/
+    api.js                 single HTTP client — every backend contract lives here
+    fullscreenSurface.js   useFullscreenSurface hook — see Fullscreen contract below
+    tgFullscreen.js        Telegram fullscreen bootstrap
+    store.js                small synced-state helper (useSynced)
+  platform/
+    index.js               detects Telegram vs web, exports the active adapter
+    telegram.adapter.js    Telegram SDK-backed implementation
+    web.adapter.js          browser/localStorage-backed implementation
+    telegram.hooks.js
+  screens/                 one file per product screen; most screens fetch their
+                            own data directly via useEffect + api.js
+    mentalix/               AI persona picker, conversation, journal-start UI
+  components/              shared UI + illustration components
+  data/                     local static content (e.g. articles)
+```
 
-В одном тестовом цикле не смешивайте больше двух пользовательских функций. Критические исправления текущего цикла не являются новой функцией.
+There is no router package and no global state/query layer. Navigation is local
+component state in `App.jsx` (`tab`, `overlay`, `sub`, `persona`); the only URL-reflected
+piece is `?tab=`. Server data is fetched ad hoc per screen; there's no shared cache,
+loading/error state is handled inconsistently screen-to-screen, and errors mostly go to
+`console`. These are known, documented gaps (`ARCHITECTURE.md` §7) — don't "fix" them
+incidentally inside an unrelated change.
 
-## Завершение
+### Platform layer
 
-В Pull Request зафиксируйте цель, scope, out-of-scope, проверки, ограничения, риски и rollback. Обновляйте только тот источник документации, чей факт действительно изменился: активный backlog — `docs/TASK_INDEX.md`, подтверждённый production/release snapshot — `PROJECT_STATE.md`, историческая причина — `CHANGES.md`/архив. Не копируйте один статус во все документы.
+`src/platform/` is the **only** allowed entry point for `@twa-dev/sdk`. ESLint
+(`no-restricted-imports`) enforces this outside `src/platform/**` — importing the SDK
+directly elsewhere breaks the web build (no `WebApp` there) and fails lint. Consume
+Telegram behavior via `import { platform } from '../platform'`, never a local wrapper
+around `WebApp` (a prior incident produced eight divergent local `haptic` copies).
 
-Если задача завершена или контекст смешал несколько независимых работ, выдайте компактный handoff: что изменилось, где находится, что проверено, что не проверено, следующий decision gate, риски и rollback. Для следующей работы начинайте чистый диалог с `PROJECT_BRIEF.md` и ссылкой на конкретный Issue/PR.
+### Fullscreen surfaces
+
+Any full-screen overlay (`CheckIn`, `ThemeScreen`, `Onboarding` today) must go through
+`useFullscreenSurface` (`src/lib/fullscreenSurface.js`) — do not hand-roll height/offset
+math. Reason: `App.jsx`'s content container carries a `fill-mode: both` fade-in animation,
+so it ends with a permanent non-zero `transform`, which creates a CSS containing block —
+any `position: fixed` descendant anchors to that container instead of the viewport. The
+hook renders via `createPortal` into `document.body`, sizes off `visualViewport`, adds the
+56px Telegram-controls offset, and locks `body` scroll while open.
+
+Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; screens use
+`w-full max-w-md px-5` and nothing else, so all tabs share one visual scale.
+
+### Design tokens
+
+Colors, typography, and text-hierarchy rules live only in `src/index.css` +
+`tailwind.config.js` (documented in `DESIGN_SYSTEM.md` — don't duplicate values into other
+docs). Gold (`--c-gold` / `#EDBD60`) is the single color accent, used for progress/
+completion/significant actions only. Text hierarchy is three explicit classes —
+`text-cream` / `text-muted` / `text-faint` — not opacity; opacity on text is only valid as
+a transient animation, never a static hierarchy state (`text-cream/35` looks fine in code
+but renders at 2.8:1 contrast). Several Tailwind color names in the codebase are legacy
+aliases (`emerald-deep` = bg, `cream`/`sage`/`mint` = text, `gold`/`cognac` = the accent)
+— don't introduce new legacy-style aliases in new components.
+
+For every new or changed card, practice illustration, semantic SVG, or persona card,
+the `Mentalix Card System` section in `DESIGN_SYSTEM.md` is mandatory. Reuse or extend
+`CardSystemGlyph`/`SemanticGlyph`; do not create a parallel visual language. Prototype
+new visual directions in the existing lab or a separate Preview before changing real
+screens, and keep article cards unchanged unless the owner explicitly approves them.
+
+### Other invariants (from `AI_RULES.md` §9)
+
+- Timers count from a `Date.now()` timestamp, not accumulated `setInterval` ticks —
+  Telegram's webview throttles timers in the background. User-practice timers (breathing,
+  exercises) additionally pause on `visibilitychange` hidden.
+- Never call anything besides pure value computation inside a `setState(x => ...)`
+  updater (no API calls, no other setters, no `clearInterval`) — StrictMode invokes
+  updaters twice, which previously double-recorded focus-session stats. Side effects and
+  completion writes belong in a separate effect guarded with `useRef`.
+- Don't implement in-app gestures with document-level touch handlers inside the Telegram
+  Mini App — they conflict with Telegram's native gesture handling; use CSS instead.
+
+## Gotchas
+
+- `src/screens/Today.tsx` and `src/components/MorningPilotCard.tsx` are stale/unused —
+  Vite resolves the extensionless imports in `App.jsx` to the `.jsx` siblings
+  (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
+  TypeScript build configured (no tsconfig); don't assume the `.tsx` files are live or
+  extend them expecting them to compile/ship.
+- `vercel.json` rewrites `/api/*` to the Railway backend; `src/lib/api.js` always calls
+  the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
+  beyond running against that same rewrite (or a local backend serving the same paths).
