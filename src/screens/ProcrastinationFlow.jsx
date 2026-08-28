@@ -280,7 +280,11 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
   function finish() {
     platform.haptic('light')
     saveNoBlameEntry(userId, { outcome, reflection })
-    onComplete?.()
+    if (onComplete) {
+      onComplete()
+      return
+    }
+
     onClose()
   }
 

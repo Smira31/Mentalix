@@ -197,7 +197,11 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
   function finish() {
     platform.haptic('light')
     saveFirstStepEntry(userId, { outcome, reflection })
-    onComplete?.()
+    if (onComplete) {
+      onComplete()
+      return
+    }
+
     onClose()
   }
 
