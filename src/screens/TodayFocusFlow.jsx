@@ -148,7 +148,7 @@ export default function TodayFocusFlow({
       <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
         {step === 'input' && (
           <div className="w-full max-w-md mx-auto animate-fade-in">
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+            <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
               Разгрузить голову
             </span>
 
@@ -180,7 +180,7 @@ export default function TodayFocusFlow({
 
         {step === 'pick' && (
           <div className="w-full max-w-md mx-auto animate-fade-in">
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+            <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
               Разгрузить голову
             </span>
 
@@ -217,7 +217,7 @@ export default function TodayFocusFlow({
 
         {step === 'firstStep' && (
           <div className="w-full max-w-md mx-auto animate-fade-in">
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+            <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
               Разгрузить голову
             </span>
 

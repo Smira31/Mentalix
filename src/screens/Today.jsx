@@ -747,7 +747,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
           }}
           className="mx-today-theme-card w-full px-5 py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
-          <span className="block mx-type-meta text-faint uppercase tracking-wider mb-2">
+          <span className="block font-label mx-type-meta text-faint uppercase tracking-wider mb-2">
             Тема недели
           </span>
 

@@ -118,7 +118,7 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
 function PracticeCategory({ title, children }) {
   return (
     <section className="mt-7 first:mt-0">
-      <h3 className="mb-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">
+      <h3 className="mb-2 font-label text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">
         {title}
       </h3>
       <div>{children}</div>

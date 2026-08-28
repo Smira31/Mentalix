@@ -629,7 +629,53 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
   assert.match(analytics, /fontFamily="Onest"/)
   assert.doesNotMatch(journalFlow, /Georgia|Times New Roman/)
   assert.doesNotMatch(journalStart, /Georgia|Times New Roman/)
-  assert.doesNotMatch(analytics, /Manrope/)
+})
+
+/*
+ * MXL-DS-LABEL-FONT-001: Manrope (`font-label`) — вторичный шрифт,
+ * разрешённый исключительно на eyebrow-лейблах Analytics («Наблюдения»,
+ * «Цифры», «Данные»), а не на основных числовых значениях, графиках
+ * (recharts) или экране целиком. Контракт ниже проверяет канонический
+ * класс `font-label`, а не буквальное имя шрифта в JSX: имя гарнитуры —
+ * ответственность CSS/design-system слоя (`tailwind.config.js`,
+ * `src/index.css`, задокументировано в `DESIGN_SYSTEM.md` §3), а не
+ * отдельных экранов. Прежний assert.doesNotMatch(analytics, /Manrope/)
+ * удалён — он был бы формально зелёным для любого другого способа
+ * подключить Manrope, кроме буквальной строки, и прямо противоречил
+ * продуктовому решению MXL-DS-LABEL-FONT-001 разрешить Manrope на этих
+ * лейблах.
+ */
+test('MXL-DS-LABEL-FONT-001 разрешает font-label только на eyebrow-лейблах Analytics, не на числах/графиках/экране', () => {
+  const analytics = readFileSync(
+    new URL('../../src/screens/Analytics.jsx', import.meta.url),
+    'utf8'
+  )
+  const tailwindConfig = readFileSync(new URL('../../tailwind.config.js', import.meta.url), 'utf8')
+
+  // Manrope — ответственность design-system слоя, не отдельного экрана.
+  assert.match(tailwindConfig, /label:\s*\[\s*['"]Manrope['"]/)
+
+  const eyebrowLabels = ['Наблюдения', 'Цифры', 'Данные']
+  const eyebrowClassName =
+    'font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5'
+
+  for (const label of eyebrowLabels) {
+    assert.match(
+      analytics,
+      new RegExp(`className="${eyebrowClassName.replace(/[[\]().]/g, '\\$&')}">\\s*${label}`),
+      `эйбрауз "${label}" должен использовать канонический класс font-label`
+    )
+  }
+
+  // font-label встречается ровно на трёх eyebrow-лейблах — не расползается
+  // на Metric/графики/остальной экран.
+  const fontLabelOccurrences = (analytics.match(/font-label/g) || []).length
+  assert.equal(fontLabelOccurrences, eyebrowLabels.length)
+
+  const metricComponent = analytics.slice(analytics.indexOf('function Metric('))
+  const metricValueBlock = metricComponent.slice(0, metricComponent.indexOf('{value}'))
+  assert.doesNotMatch(metricValueBlock, /font-label/)
+  assert.match(metricValueBlock, /font-display/)
 })
 
 test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями', () => {

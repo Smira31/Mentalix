@@ -91,7 +91,7 @@ export default function MorningPilotCard({
   if (todayFocusPicked) {
     return (
       <div className="rounded-[24px] bg-emerald px-5 py-4 mb-4 border border-cream/10 animate-fade-in">
-        <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
+        <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
           Утро учтено
         </span>
 
@@ -107,7 +107,7 @@ export default function MorningPilotCard({
   if (resolution) {
     return (
       <div className="rounded-[24px] bg-emerald px-5 py-4 mb-4 border border-cream/10 animate-fade-in">
-        <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
+        <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-1">
           Утро учтено
         </span>
 
@@ -150,7 +150,7 @@ export default function MorningPilotCard({
 
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
-      <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+      <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
         Пилот · утро
       </span>
 

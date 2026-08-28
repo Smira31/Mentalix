@@ -32,6 +32,10 @@ export default {
         display: ['Onest', 'sans-serif'],
         body: ['Onest', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
+        // Manrope — вторичный шрифт, только для лейблов/эйбраузов
+        // над заголовками карточек и секционных caps-подписей.
+        // Заголовки и текст кнопок остаются на Onest.
+        label: ['Manrope', 'sans-serif'],
       },
       keyframes: {
         // Появление без сдвига layout: движение целого экрана дёргается в WKWebView.

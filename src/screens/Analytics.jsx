@@ -656,7 +656,7 @@ export default function Analytics({ user, onGoCheckin }) {
       </div>
       <p className="text-[12px] text-faint mb-7">за последние {data.period_days} дней</p>
 
-      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
         Наблюдения
       </div>
 
@@ -725,7 +725,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {/* ── Цифры ── */}
 
-      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
         Цифры
       </div>
 
@@ -744,7 +744,7 @@ export default function Analytics({ user, onGoCheckin }) {
 
       {/* ── Данные ── */}
 
-      <div className="text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
+      <div className="font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
         Данные
       </div>
 

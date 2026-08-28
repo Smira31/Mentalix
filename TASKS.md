@@ -1,5 +1,91 @@
 # Mentalix — задачи
 
+## MXL-DS-LABEL-FONT-001 — вторичный шрифт Manrope для лейблов/эйбраузов
+
+- **Статус: диф подтверждён владельцем 28.08.2026, готовится PR на
+  `origin/main` (`feat/label-font-manrope-001-v2` от `ab466093`).**
+  Решение — добавить Manrope как вторичный шрифт лейблов по аналогии со
+  Stoic — принято владельцем в Cowork; `display`/`body` (Onest) сознательно
+  не менялись.
+- **Контекст ветки:** первая попытка (`feat/label-font-manrope-001`) была
+  создана от локального `main`, который оказался на 170+ коммитов позади
+  `origin/main` — обнаружено при попытке проверить существование
+  `.github/workflows/telegram-preview.yml` (файл реально существовал на
+  `origin/main`, локальный `git log --all` его не видел из-за отсутствия
+  `git fetch`). Feature полностью пересобрана вручную поверх актуального
+  `origin/main`, а не перенесена rebase/cherry-pick — слишком многое
+  изменилось построчно в тех же файлах. Старая ветка и её диф сохранены
+  нетронутыми в `git stash` на `feat/label-font-manrope-001` (не удалены).
+- **1. Шрифт подключён самостоятельным хостингом**, не Google Fonts CDN:
+  npm-пакет `@fontsource/manrope@5.3.0`, веса 500/600, `src/index.css` —
+  `@import '@fontsource/manrope/500.css'` / `600.css'`. Кириллица включена
+  по unicode-range вместе с латиницей; подтверждена в собранном
+  `dist/assets` (`manrope-cyrillic-500/600-normal`). Onest по-прежнему
+  грузится через Google Fonts CDN — расхождение между двумя шрифтами
+  намеренное, следует из формулировки задачи.
+- **2. Новый токен `fontFamily.label`** в `tailwind.config.js`:
+  `label: ['Manrope', 'sans-serif']`, рядом с `display`/`body`/`mono`.
+- **3. `font-label` применён к 27 эйбраузам/caps-лейблам в 16 файлах**:
+  `MorningPilotCard.jsx` (3), `TodayFocusCard.jsx` (1),
+  `practices/SceneLayout.jsx` (1), `Analytics.jsx` (3 — «Наблюдения»,
+  «Цифры», «Данные»), `Ascezas.jsx` (1), `CheckIn.jsx` (1),
+  `FinishFlow.jsx` (1), `History.jsx` (4 — «Уроки дня»/«Чем горжусь»
+  теперь встречаются дважды на экране, апстрим добавил второй блок),
+  `NarrowFocusFlow.jsx` (1), `Practices.jsx` (1 — `PracticeCategory`),
+  `ProcrastinationFlow.jsx` (1), `Settings.jsx` (1 — `SectionLabel`, был
+  явный `font-body`), `ThemeScreen.jsx` (3), `Today.jsx` (1 — «Тема
+  недели», теперь на классе `mx-type-meta`), `TodayFocusFlow.jsx` (3),
+  `mentalix/JournalStart.jsx` (1 — `meta.asking`, класс `mx-ai-meta`).
+  Заголовки карточек и текст кнопок не тронуты.
+- **Сверка со свежей архитектурой (апстрим ввёл `mx-type-*`/`mx-ai-meta`
+  типографическую систему после первой попытки этой задачи):**
+  `.mx-type-meta`/`.mx-ai-meta` не задают `font-family` в CSS (только
+  размер/вес/трекинг) — `font-label` рядом с ними не конфликтует с
+  «проверяемым контрактом» размеров, зафиксированным в комментарии
+  `src/index.css`. `mx-type-meta` используется в `Today.jsx` 14 раз для
+  разных ролей — `font-label` применён только к единственному вхождению
+  с `uppercase tracking-wider` (реальный эйбрауз «Тема недели»), не ко
+  всем. `mx-ai-meta` используется 7 раз в `Conversation.jsx`/
+  `PersonaPicker.jsx`/`JournalStart.jsx` — применён только к `asking`
+  (эйбрауз над вопросом); заголовок экрана, тег отправителя в чате,
+  подписи **под** заголовком и текст кнопок — не в scope.
+- **Исключено осознанно:** эйбрауз «Тема недели» над intro-карточкой в
+  `ThemeScreen.jsx` — апстрим убрал его отдельной задачей
+  (`MXL-JOURNAL-UI-247`, подтверждено существующим тестом «не показывает
+  метку «Тема недели»»); не восстанавливается. `src/components/ui-lab/**`
+  (dev-песочница за query-флагами) — не production-экран.
+- **4. Контрактный тест `MXL-TYPE-SYSTEM-001` (`tests/unit/
+maintenance-contracts.test.mjs`) исправлен по прямому указанию
+  владельца.** Старый `assert.doesNotMatch(analytics, /Manrope/)`
+  формально проходил только потому, что в JSX нет буквального слова
+  «Manrope» (класс `font-label` этот regex не ловит) — по сути
+  противоречил самой задаче, которая явно называла «Цифры»/«Данные» в
+  Analytics примером эйбраузов для Manrope с первой формулировки.
+  Assert удалён, добавлен отдельный тест `MXL-DS-LABEL-FONT-001`:
+  проверяет, что `label: ['Manrope', ...]` объявлен в
+  `tailwind.config.js` (имя шрифта — ответственность design-system
+  слоя, не JSX), что все три эйбрауза Analytics используют канонический
+  класс `font-label`, что `font-label` в файле встречается ровно 3 раза
+  (не расползается на `Metric`/графики/экран), и что блок рендера
+  значения `Metric` остаётся на `font-display`.
+- **5. `DESIGN_SYSTEM.md` обновлён** — раздел «3. Типографика» дополнен
+  весом Manrope в списке фактически загружаемых шрифтов и новым
+  подразделом «Manrope — вторичный шрифт лейблов».
+- **Проверено (повторно, на пересобранной ветке):** `npm run test:unit`
+  — 86/86 (включая оба типографических контракта), `npm run lint` —
+  чисто, `npm run build` — успешно, `.font-label{font-family:Manrope,
+sans-serif}` и все woff2-варианты Manrope 500/600 (включая cyrillic) в
+  `dist/assets`, `npm run docs:check` — 130 markdown-файлов, 0 ошибок.
+  Живая mobile/light-dark/Telegram проверка выполняется отдельно через
+  Vercel Preview + `Telegram Preview` workflow (`docs/
+TELEGRAM_PREVIEW_ACTIONS.md`) после открытия PR — не подменяется этой
+  записью.
+- **Не менялось:** `font-display`/`font-body` (Onest), цвета, заголовки
+  карточек, текст кнопок, backend/API, `.github/workflows/
+telegram-preview.yml`, secrets, Vercel project, production. Ветка
+  `feat/label-font-manrope-001` с первой (устаревшей) попыткой и её
+  stash сохранены, не удалялись.
+
 ## MXL-PRACTICES-PROGRESS-BAR-UNIFY-001 — единый прогресс-бар «N из 6»
 
 - **Статус: реализовано локально 26.08.2026 на всех трёх файлах,
@@ -3958,6 +4044,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Цель:** напоминать о ритуале без давления, с quiet hours, consent и отключением.
 
 ## Приоритет большого продукта
+
 1. Провести ручной Telegram/iPhone gate нового 4-фазного Journal Flow в «Практиках» на Preview-ветке; не мержить без явного подтверждения владельца.
 2. Получить backend/storage contract для следующего подэтапа `MXL-JOURNAL-PERSISTENCE-001`.
 

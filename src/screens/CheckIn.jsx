@@ -755,7 +755,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
           <section className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}>
             <div
               className={[
-                'mb-2 text-[12px] font-semibold uppercase tracking-wide',
+                'mb-2 font-label text-[12px] font-semibold uppercase tracking-wide',
                 isMorningNoteStep ? 'text-gold' : 'text-faint',
               ].join(' ')}
             >

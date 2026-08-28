@@ -94,7 +94,7 @@ function HistoryDetail({
 
             {checkin.lessons && (
               <div className="rounded-2xl bg-emerald-light p-4">
-                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">
+                <div className="mb-2 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
                   Уроки дня
                 </div>
                 <MarkdownText
@@ -106,7 +106,7 @@ function HistoryDetail({
 
             {wins.length > 0 && (
               <div className="rounded-2xl bg-emerald-light p-4">
-                <div className="mb-2.5 text-[12px] font-bold uppercase tracking-wide text-muted">
+                <div className="mb-2.5 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
                   Чем горжусь
                 </div>
                 <ul className="space-y-2">
@@ -533,7 +533,7 @@ export default function History({ user }) {
 
                   {d.checkin.lessons && (
                     <div className="rounded-2xl bg-emerald-light p-4 mt-3">
-                      <div className="text-[12px] font-bold text-muted uppercase tracking-wide mb-2">
+                      <div className="font-label text-[12px] font-bold text-muted uppercase tracking-wide mb-2">
                         Уроки дня
                       </div>
                       <MarkdownText
@@ -545,7 +545,7 @@ export default function History({ user }) {
 
                   {wins.length > 0 && (
                     <div className="rounded-2xl bg-emerald-light p-4 mt-2.5">
-                      <div className="text-[12px] font-bold text-muted uppercase tracking-wide mb-2.5">
+                      <div className="font-label text-[12px] font-bold text-muted uppercase tracking-wide mb-2.5">
                         Чем горжусь
                       </div>
                       <ul className="space-y-2">

@@ -133,7 +133,9 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
 
         <div className="shrink-0 flex items-start justify-between gap-4 mb-2">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-gold mb-2">Аскеза</p>
+            <p className="font-label text-[11px] uppercase tracking-[0.18em] text-gold mb-2">
+              Аскеза
+            </p>
 
             <h2 className="font-display text-[22px] leading-tight text-cream">Что произошло?</h2>
           </div>

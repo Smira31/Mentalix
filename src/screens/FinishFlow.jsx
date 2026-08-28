@@ -84,7 +84,7 @@ const COMPLETION_COPY = {
 
 function Eyebrow() {
   return (
-    <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+    <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
       Один финиш
     </span>
   )
