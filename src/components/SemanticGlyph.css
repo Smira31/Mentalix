@@ -71,7 +71,19 @@
 
 .mx-semantic-glyph__ritual-orbit-main {
   stroke: rgb(var(--c-line));
-  stroke-width: 1.35;
+  stroke-width: 1.8;
+}
+
+.mx-semantic-glyph__ritual-orbit-layer--outer ellipse:not(.mx-semantic-glyph__ritual-orbit-main) {
+  stroke-width: 0.7;
+}
+
+.mx-semantic-glyph__ritual-orbit-layer--middle ellipse {
+  stroke-width: 0.65;
+}
+
+.mx-semantic-glyph__ritual-orbit-layer--cross ellipse {
+  stroke-width: 0.65;
 }
 
 .mx-semantic-glyph__ritual-orbit-faint {
@@ -118,7 +130,7 @@
 }
 
 .mx-semantic-glyph__guide {
-  opacity: 0.16;
+  opacity: 0.08;
 }
 
 .mx-semantic-glyph__point,
@@ -132,6 +144,16 @@
 .mx-semantic-glyph[data-highlighted='true'] .mx-semantic-glyph__point,
 .mx-semantic-glyph[data-highlighted='true'] .mx-semantic-glyph__path-point {
   fill: rgb(var(--c-gold));
+}
+
+/* Accent variant (secondary) — for visual differentiation (e.g. Mentor vs Ritual) */
+.mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__point,
+.mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__path-point {
+  fill: #c77d7a;
+}
+
+.mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__focus-ring {
+  stroke: #c77d7a;
 }
 
 .mx-semantic-glyph__network,
@@ -353,8 +375,14 @@
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual
-  .mx-semantic-glyph__ritual-runner {
+  .mx-semantic-glyph__ritual-orbits {
   animation: mx-semantic-orbit 9s linear infinite;
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual
+  .mx-semantic-glyph__ritual-orbits
+  ellipse {
+  stroke: rgb(var(--c-line-secondary)) !important;
 }
 
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--ritual
