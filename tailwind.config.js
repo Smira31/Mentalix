@@ -1,32 +1,29 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,jsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
         // Семантика темы. Старые имена сохранены, чтобы не переписывать
         // все экраны: они автоматически перекрашиваются в монохром + золото.
-        'emerald-deep':  'rgb(var(--c-bg) / <alpha-value>)',    // фон
-        'emerald':       'rgb(var(--c-card) / <alpha-value>)',  // карточка
+        'emerald-deep': 'rgb(var(--c-bg) / <alpha-value>)', // фон
+        emerald: 'rgb(var(--c-card) / <alpha-value>)', // карточка
         'emerald-light': 'rgb(var(--c-card2) / <alpha-value>)', // карточка-2
-        'cream':         'rgb(var(--c-text) / <alpha-value>)',  // текст
+        cream: 'rgb(var(--c-text) / <alpha-value>)', // текст
 
         // Шкала текста. Прозрачность больше не заменяет иерархию:
         // cream 15.1:1 → muted 5.69:1 → faint 3.55:1 (только крупный).
-        'muted':         'rgb(var(--c-muted) / <alpha-value>)',
-        'faint':         'rgb(var(--c-faint) / <alpha-value>)',
+        muted: 'rgb(var(--c-muted) / <alpha-value>)',
+        faint: 'rgb(var(--c-faint) / <alpha-value>)',
 
-        'sage':          'rgb(var(--c-text) / <alpha-value>)',  // → монохром
-        'mint':          'rgb(var(--c-text) / <alpha-value>)',  // → монохром
-        'gold':          'rgb(var(--c-gold) / <alpha-value>)',  // акцент
-        'cognac':        'rgb(var(--c-gold) / <alpha-value>)',  // → золото
+        sage: 'rgb(var(--c-text) / <alpha-value>)', // → монохром
+        mint: 'rgb(var(--c-text) / <alpha-value>)', // → монохром
+        gold: 'rgb(var(--c-gold) / <alpha-value>)', // акцент
+        cognac: 'rgb(var(--c-gold) / <alpha-value>)', // → золото
 
         // Подложка под иллюстрации. Тёмная в обеих темах —
         // см. комментарий у --c-artbed в index.css.
-        'artbed':        'rgb(var(--c-artbed) / <alpha-value>)',
+        artbed: 'rgb(var(--c-artbed) / <alpha-value>)',
       },
       fontFamily: {
         // Onest — шрифт из дизайн-системы Mentalix.

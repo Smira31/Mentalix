@@ -640,9 +640,7 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
 
       {!hiddenCards.includes('dayProgress') &&
         (isEmpty ? (
-          <EmptyState
-            className="mt-4 p-5 [&>div:first-child]:mb-3 [&>div:first-child]:h-12 [&>div:first-child]:w-12"
-          >
+          <EmptyState className="mt-4 p-5 [&>div:first-child]:mb-3 [&>div:first-child]:h-12 [&>div:first-child]:w-12">
             <h3 className="font-display mx-type-card text-cream mb-1">Пока нет практик</h3>
             <p className="mx-type-list-body text-muted mb-4">
               Добавь ритуал или аскезу — здесь появится прогресс дня.
@@ -735,8 +733,6 @@ export default function Today({ user, onOpenPractice, onGoMentor, onFlowChange }
             : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
         </p>
       )}
-
-
 
       {/* ======================================================
           ТЕМА НЕДЕЛИ

@@ -92,7 +92,9 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
         >
           {title}
         </span>
-        <span className="block mt-1 mx-type-list-body text-[12px] leading-[1.3] text-muted">{subtitle}</span>
+        <span className="block mt-1 mx-type-list-body text-[12px] leading-[1.3] text-muted">
+          {subtitle}
+        </span>
       </span>
 
       <span className="w-[48px] shrink-0 flex items-center justify-end gap-2">
@@ -138,7 +140,9 @@ function JournalEntry({ onOpen }) {
         <span className="absolute right-3 top-3 h-20 w-20 text-gold/45" aria-hidden="true">
           <JournalArt />
         </span>
-        <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Журнал</span>
+        <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+          Журнал
+        </span>
         <span className="mt-2 block max-w-[240px] font-display text-[23px] font-semibold leading-[1.08] tracking-[-0.03em] text-cream">
           Собери день в четыре шага
         </span>
@@ -147,7 +151,9 @@ function JournalEntry({ onOpen }) {
         </span>
         <span className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep">
           Открыть журнал
-          <span className="text-[19px] leading-none" aria-hidden="true">›</span>
+          <span className="text-[19px] leading-none" aria-hidden="true">
+            ›
+          </span>
         </span>
       </button>
     </section>
@@ -157,7 +163,14 @@ function JournalEntry({ onOpen }) {
 export default function Practices({ user, initialSub = null, onGameChange }) {
   const [sub, setSub] = useState(initialSub)
 
-  const focusedFlowOpen = ['first-step', 'no-blame', 'narrow-focus', 'one-finish', 'meditation', 'journal'].includes(sub)
+  const focusedFlowOpen = [
+    'first-step',
+    'no-blame',
+    'narrow-focus',
+    'one-finish',
+    'meditation',
+    'journal',
+  ].includes(sub)
 
   useEffect(() => {
     onGameChange?.(focusedFlowOpen)
