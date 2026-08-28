@@ -2,18 +2,20 @@
 
 > Этот файл фиксирует только проверяемое текущее состояние frontend-репозитория и известные release-факты. Он **не является backlog, журналом сессий или архивом решений**. Для следующей работы откройте [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md), [`AGENTS.md`](AGENTS.md), [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md) и связанный GitHub Issue/PR.
 
-**Последняя read-only сверка:** 27.08.2026, 20:27 UTC (23:27 GMT+3).
+**Последняя сверка:** 28.08.2026, 07:30 UTC.
 
 ## Подтверждённые факты
 
-| Область             | Подтверждённый факт                                                                                                          | Источник                                                                       |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Frontend repository | `Smira31/Mentalix`, ветка `main`                                                                                             | GitHub                                                                         |
-| Текущий `main`      | [`1f57511f`](https://github.com/Smira31/Mentalix/commit/1f57511f3b0d199ad6613fc205e1c782ec1fb347)                            | Squash-merge PR [#260](https://github.com/Smira31/Mentalix/pull/260)           |
-| Базовая CI-проверка | Успешный run «Автоматическая проверка Mentalix» для `1f57511f`                                                               | [GitHub Actions](https://github.com/Smira31/Mentalix/actions/runs/33113340803) |
-| Состав CI           | `npm run check:core`: unit, lint, production build и `docs:check`; затем health-check доступного Render backend              | [workflow](.github/workflows/ci.yml)                                  |
-| Frontend hosting    | Vercel, URL: <https://mentalix.vercel.app>                                                                                   | [README.md](README.md)                                                         |
-| Backend boundary    | Backend и Telegram bot находятся в приватном `Smira31/mentalix-bot`; их контракт и данные не предполагаются по frontend-коду | [AGENTS.md](AGENTS.md)                                                         |
+| Область                       | Подтверждённый факт                                                                                                          | Источник                                |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| Frontend repository           | `Smira31/Mentalix`, ветка `main`                                                                                             | GitHub                                  |
+| Текущий `main`                | [`ceb17efb`](https://github.com/Smira31/Mentalix/commit/ceb17efb065aed4d3c9ca32ad787781094f507aa)                            | Squash-merge PR #280                    |
+| Последний product-scope merge | [`6a59926c`](https://github.com/Smira31/Mentalix/commit/6a59926c4c1a74bc2b8401ed711c69347bcfafdd)                            | Squash-merge PR #281                    |
+| Базовая CI-проверка           | 85/85 unit-тестов, lint, production build, docs-check и Playwright smoke                                                     | GitHub Actions                          |
+| Состав CI                     | `npm run check:core`: unit, lint, production build и `docs:check`; затем health-check доступного Render backend              | [workflow](.github/workflows/ci.yml)    |
+| Frontend hosting              | Vercel, URL: <https://mentalix.vercel.app>                                                                                   | [README.md](README.md)                  |
+| Backend boundary              | Backend и Telegram bot находятся в приватном `Smira31/mentalix-bot`; их контракт и данные не предполагаются по frontend-коду | [AGENTS.md](AGENTS.md)                  |
+| Backend hosting               | Render + Neon; health: `https://mentalix-bot.onrender.com/api/health`                                                        | приватный `mentalix-bot/RENDER.md` и CI |
 
 ## Честные ограничения snapshot
 
@@ -38,9 +40,10 @@
 [1]: https://github.com/Smira31/Mentalix/pull/260 'Pull Request #260 — единый рабочий контур'
 [2]: https://github.com/Smira31/Mentalix/actions/runs/33113340803 'GitHub Actions — успешная базовая проверка `main`'
 
-## 2026-08-28 — reconciliation after Preview validation
+## 2026-08-28 — reconciliation after final cleanup
 
-- PR #272 (`feat/mxl-journal-reference-preview`) was squashed into `main` as `0e01e5de`; the Practices Preview was validated before merge.
-- The remaining `automation/project-state-*` branches are historical state snapshots. Their contents are not merged wholesale because they conflict with the current `PROJECT_STATE.md`; the latest facts are recorded here instead.
-- No `provision/*` branches currently exist in GitHub. The active backend deployment documentation remains in `mentalix-bot/main` (`RENDER.md` and `backend-jobs.yml`).
-- Feature and documentation branches with unique patches remain preserved for individual review; branches whose patches are already equivalent to `main` are candidates for deletion only after the final audit.
+- PR #272 added the four-phase Practices Journal and was followed by PR #277, #278, #279, #280 and #281; all confirmed changes are represented in `main`.
+- `Mentalix` and `mentalix-bot` have no open PRs and no remote branches besides `main`.
+- Historical `automation/project-state-*`, draft and experimental branches were closed and deleted after the owner confirmed that current `main` is the single working source.
+- Card Lab remains Preview/UI-lab-only; it does not define a production user flow or backend contract.
+- Backend deployment source of truth is private `mentalix-bot/main`, especially `RENDER.md` and `.github/workflows/backend-jobs.yml`.

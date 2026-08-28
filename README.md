@@ -17,8 +17,10 @@ Telegram Mini App и методология, помогающая превращ
 | [`ARCHITECTURE.md`](ARCHITECTURE.md)                                                       | Устройство frontend, platform layer и API-контракты                 |
 | [`ROADMAP.md`](ROADMAP.md)                                                                 | Что построено, что в работе                                         |
 | [`AI_RULES.md`](AI_RULES.md)                                                               | Обязательный процесс работы AI с Mentalix                           |
+| [`docs/AGENT_ONBOARDING.md`](docs/AGENT_ONBOARDING.md)                                     | Единый onboarding и handoff для Codex/Claude Code                   |
 | [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md)                                           | Как переводить референсы в Mentalix без копирования                 |
-| [`TASKS.md`](TASKS.md)                                                                     | Задачи на сейчас                                                    |
+| [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md)                                                 | Активный backlog и следующие decision gates                         |
+| [`TASKS.md`](TASKS.md)                                                                     | Исторический контекст и старые handoffs                             |
 | [`docs/core/README.md`](docs/core/README.md)                                               | Mentalix Core: связь проблем, законов, методов и продукта           |
 | [`docs/core/CORE_PRINCIPLES.md`](docs/core/CORE_PRINCIPLES.md)                             | Правила мышления, проверки и безопасности Core                      |
 | [`docs/core/MENTALIX_LAWS.md`](docs/core/MENTALIX_LAWS.md)                                 | Каталог первичных законов-гипотез                                   |
@@ -57,13 +59,19 @@ npm install
 npm run dev
 ```
 
-**Перед каждым пушем:**
+**Перед каждым Pull Request:**
 
 ```bash
-npm run build
+npm run check:core
 ```
 
-Ловит опечатки локально, до того как упадёт сборка на Vercel.
+Для изменений UI, safe area, keyboard, fullscreen или Telegram дополнительно выполните:
+
+```bash
+npm run ux:check
+```
+
+`check:core` запускает unit-тесты, lint, production build и `docs:check`. Реальный Telegram/iPhone gate остаётся обязательным для mobile-sensitive изменений.
 
 ## Дизайн
 
