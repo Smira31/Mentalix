@@ -1,5 +1,25 @@
 # Mentalix — задачи
 
+## MXL-INSIGHTS-001 — Discovery note: descriptive pattern insights
+
+- **Статус:** research/docs-only, готово к решению владельца. Issue #297. Product code, backend, API и payment не менялись — задача строго в scope research/docs.
+- **Результат:** `docs/research/MXL-INSIGHTS-001_DESCRIPTIVE_PATTERN_INSIGHTS_DISCOVERY.md`.
+- **Ключевая находка:** прототип descriptive insights уже реализован и закрыт (`MXL-009`, PR #221) на двух поверхностях — карточки «Наблюдения» в «Тренды» и реплика «Следопыта» (`ROADMAP.md` §3, `deriveConclusions`/`insightDigest.js`), 6 типов правил с sample-size guards (`MIN_GROUP=3`, `MIN_CHECKINS=5`) и regex-фильтром против диагностических/причинных формулировок (`descriptiveInsights.js`). Открытый вопрос issue — не «строить ли прототип», а «измерять ли ценность»: сейчас ни usefulness, ни return intent не измеряются вообще, хотя готовая инфраструктура (`api.events.log`, паттерн «Полезно»/«Не полезно» из `Conversation.jsx`) для этого уже есть.
+- **Расхождение зафиксировано:** источник, процитированный в issue
+  (`docs/research/mentalix_competitive_analysis_execution_backlog_2026-08-28.md`),
+  в репозитории не существует — не подставлял похожий документ молча,
+  указал в самой discovery note (§1).
+- **Найденный технический пробел (не исправлялся, вне scope):**
+  `sanitizeObservations` (`trendsDataSanitizer.js`) не проверяет нижнюю
+  границу `sampleSize` у backend-присланных наблюдений — только клампит
+  диапазон `[0, 10000]`. Наблюдение с `sampleSize: 1` от backend прошло бы
+  без предупреждения. Актуально только если backend начнёт присылать
+  `data.observations` независимо от клиентского `deriveConclusions`.
+- **Не входит:** новые события/метрики, backend-контракт, изменение UI,
+  какое-либо продуктовое решение — документ описывает и предлагает меню
+  вариантов (§9 discovery note), не выбирает.
+- **Проверено:** `npm run docs:check` — зелёный (ссылки/task ID валидны).
+
 ## MXL-DS-LABEL-FONT-001 — вторичный шрифт Manrope для лейблов/эйбраузов
 
 - **Статус: смёржено 28.08.2026.** PR #287 (`feat/label-font-manrope-001-v2`
