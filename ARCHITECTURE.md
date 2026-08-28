@@ -1,9 +1,9 @@
 # Mentalix — Architecture v1
 
-Статус: описание публичного frontend-репозитория `Smira31/Mentalix`,
-проверяемый baseline — ветка `main`, HEAD `2b731d4`. Предыдущий audit baseline:
-`6a0b4a70e57d38192ae4f95a04e5c886605b704b`. Приватный backend не
-проверялся.
+Статус: описание публичного frontend-репозитория `Smira31/Mentalix`.
+Проверяемый baseline — ветка `main`, HEAD `ceb17efb` (28.08.2026).
+Backend находится в приватном `Smira31/mentalix-bot`; его runtime и secrets
+не выводятся из frontend-кода.
 
 ## 1. Граница системы
 
@@ -18,7 +18,7 @@
 
 Деплой описан как Vercel с автосборкой `main`. API доступен frontend через относительный префикс `/api`.
 
-По документации отдельный приватный `mentalix-bot` содержит FastAPI, SQLAlchemy, aiogram и PostgreSQL на Railway. Это утверждение не подтверждено аудитом приватного кода.
+Отдельный приватный `mentalix-bot` содержит FastAPI, SQLAlchemy, aiogram и PostgreSQL; актуальный deployment-контур — Render + Neon. Подробности и текущие secrets/contracts должны проверяться только в `mentalix-bot/main` и его `RENDER.md`.
 
 ## 2. Основная структура frontend
 
@@ -31,13 +31,17 @@ src/
   data/                    локальный контент
   lib/
     api.js                 единый API-клиент
-    tgFullscreen.js        fullscreen и safe-area интеграция
+    fullscreenSurface.js   fullscreen surfaces, visualViewport и safe-area интеграция
+    apiQuery.js             централизованная сериализация query-параметров
+    journalStorage.js       local-first хранение четырёхфазного journal
   platform/
     index.js               определение Telegram/web
     telegram.adapter.js    Telegram SDK
     web.adapter.js         browser/localStorage адаптер
   screens/                 экраны продукта
-    mentalix/              AI-персоны, диалог, journal UI
+    mentalix/              AI-персоны и диалог
+    JournalFlow.jsx         четырёхфазный journal flow
+    GuidedJournals.jsx      Telegram-only guided templates и sessions
 ```
 
 ## 3. Поток запуска
@@ -99,9 +103,9 @@ main.jsx
 8. `habits` остаётся в API рядом с продуктовой моделью ритуалов — возможный legacy-контракт.
 9. Навигационные состояния не отражены в URL, deep-link ограничен только `?tab=`.
 10. Части дизайна задаются hardcoded значениями внутри компонентов. Частично исправлено 30.07.2026 (`BottomNavigation`/`QuickAdd`) и 16.08.2026 (`MXL-DESIGN-TOKENS-001` — ещё 10 файлов). Оставшиеся случаи без точного токена (`QuickAdd.jsx` тень, `Path.jsx` иллюстрация, error/danger-цвет) зафиксированы явно, не тронуты.
-11. Backend, безопасность Telegram `initData`, авторизация и права доступа — **проверены 16.08.2026 (`MXL-SECURITY-AUDIT-001`), находки критичны**: подписи `initData` нет нигде, все ~20 роутеров доверяют `user_id` из запроса без проверки. Конкретная находка — захват чужого аккаунта через `POST /api/auth/link/generate` — **точечно закрыта 16.08.2026**: эндпоинт удалён, код привязки теперь доставляется только личным сообщением бота. Полная авторизация остальных роутеров, initData-подпись глобально, rate-limiting-инфраструктура и незащищённый платный AI-эндпоинт (`mentalix.py`) остаются открытым долгом.
+11. Backend, безопасность Telegram `initData`, авторизация и права доступа требуют проверки по приватному `mentalix-bot` contract. Frontend-документация фиксирует только известные security findings и не должна объявлять backend исправленным без backend evidence. Security contract и оставшийся auth backlog описаны в связанном security-документе и `PROJECT_STATE.md`.
 
-Сводный список — см. `TASKS.md` → «Бэклог: аудит документации 16.08.2026».
+Активный backlog — только `docs/TASK_INDEX.md`. `TASKS.md` и `CHANGES.md` являются историческим слоем и не должны использоваться как текущий список работ.
 
 ## 8. Fullscreen-поверхности и отступы
 

@@ -14,9 +14,10 @@ Russian-only — never introduce English strings into product-facing text.
 Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
 This repo is the **frontend only**: React 18 + Vite 5 + Tailwind 3, deployed to Vercel
 (auto-build on push to `main`, prod at https://mentalix.vercel.app). The backend/bot
-(FastAPI + SQLAlchemy + aiogram + PostgreSQL on Railway) lives in a separate **private**
+(FastAPI + SQLAlchemy + aiogram + PostgreSQL on Render + Neon) lives in a separate **private**
 repo, `mentalix-bot`, and is not visible here — do not invent its API shape; if a task
-needs backend files, say so instead of guessing.
+needs backend files, say so instead of guessing. Use `mentalix-bot/main` and its `RENDER.md`
+as the backend/deployment source of truth.
 
 App is Russian-language, dark theme only, Telegram-first with a web fallback.
 
@@ -25,31 +26,34 @@ App is Russian-language, dark theme only, Telegram-first with a web fallback.
 ```bash
 npm install
 npm run dev        # vite dev server, http://localhost:5173
-npm run build       # vite build — run before every push, catches errors Vercel would hit
-npm run preview     # preview a production build
+npm run check:core # unit + lint + build + docs:check; required before every PR
+npm run ux:check    # Playwright smoke for UI/platform-sensitive changes
+npm run build       # vite build — included in check:core
+npm run preview     # local Windows/PowerShell Telegram Preview fallback
 npm run lint         # eslint .
 npm run lint:fix
 ```
 
-There is no test suite, no typecheck script (project is JS despite a couple of stray
-`.tsx` files — see Gotchas below), and no CI config in this repo.
+The unit suite is `npm run test:unit`; the aggregate gate is `npm run check:core`.
+Playwright smoke is `npm run ux:check`. There is no typecheck script because the project
+is JavaScript despite a couple of stale `.tsx` files — see Gotchas below. GitHub CI runs
+`check:core`, backend health, dependency audit and Playwright smoke.
 
 ## Documentation map
 
-Read before making non-trivial changes, in this order: `PRODUCT.md` (why/for whom),
-`DESIGN_SYSTEM.md` (actual tokens/UI rules — code + this doc are the source of truth),
-`ARCHITECTURE.md` (frontend structure and technical boundaries), `ROADMAP.md`, `TASKS.md`
-(current work), `AI_RULES.md` (mandatory process for AI agents working in this repo).
+Read before making non-trivial changes, in this order: `docs/AGENT_ONBOARDING.md` (how
+agents work together), `PROJECT_STATE.md` (current verified facts), `PRODUCT.md`
+(why/for whom), `DESIGN_SYSTEM.md` (actual tokens/UI rules), `ARCHITECTURE.md`
+(frontend structure and boundaries), `docs/TASK_INDEX.md` (active work), then
+`AI_RULES.md` (mandatory agent process). Read `TASKS.md` and `CHANGES.md` only when
+historical context is needed. Do not treat them as the current backlog.
 
-Перед началом любой работы прочитай секцию "Передача между агентами" в конце
-`TASKS.md` — там рабочая папка, ветка, статус незакоммиченных изменений и что
-нельзя менять без согласования.
-
-Before asking the owner to repeat prior Mentalix context, inspect the current
-`TASKS.md` handoff, `CHANGES.md`, the relevant normative document, and the existing
-UI Lab/Motion Kit implementation. Chat history is secondary evidence and never
-overrides current code or normative docs. Ask only when the choice is genuinely new
-or the sources conflict.
+Before asking the owner to repeat prior Mentalix context, inspect
+`docs/AGENT_ONBOARDING.md`, `PROJECT_STATE.md`, `docs/TASK_INDEX.md`, the relevant
+normative document, and the existing UI Lab/Motion Kit implementation. Use `TASKS.md`
+and `CHANGES.md` only for historical context. Chat history is secondary evidence and
+never overrides current code or normative docs. Ask only when the choice is genuinely
+new or the sources conflict.
 
 `docs/archive/CONTEXT.md` and `STOIC_FEATURES.md` are historical/legacy — context only,
 never source of truth. On conflict, priority is, in order:
@@ -62,9 +66,11 @@ never source of truth. On conflict, priority is, in order:
 `AI_RULES.md` is binding process, not optional reading — it defines what an agent may
 change without explicit sign-off (no unapproved product logic, visual language/tokens,
 brand text, AI persona, API contracts, payments/security/age-gating, or new
-dependency/architectural layer), the required verification checklist per change (build +
-scenario + loading/error/empty + mobile viewport + Telegram/web if platform layer
-touched), and the required after-work updates to `CHANGES.md`/`TASKS.md`/`ROADMAP.md`.
+dependency/architectural layer), the required verification checklist per change (check:core
+
+- scenario + loading/error/empty + mobile viewport + Telegram/web if platform layer
+  touched), and how to record active work in `docs/TASK_INDEX.md` and verified release facts
+  in `PROJECT_STATE.md`.
 
 ## Architecture
 
@@ -110,11 +116,10 @@ around `WebApp` (a prior incident produced eight divergent local `haptic` copies
 
 Any full-screen overlay (`CheckIn`, `ThemeScreen`, `Onboarding` today) must go through
 `useFullscreenSurface` (`src/lib/fullscreenSurface.js`) — do not hand-roll height/offset
-math. Reason: `App.jsx`'s content container carries a `fill-mode: both` fade-in animation,
-so it ends with a permanent non-zero `transform`, which creates a CSS containing block —
-any `position: fixed` descendant anchors to that container instead of the viewport. The
-hook renders via `createPortal` into `document.body`, sizes off `visualViewport`, adds the
-56px Telegram-controls offset, and locks `body` scroll while open.
+math. The fullscreen contract is centralized rather than reimplemented per screen. The hook
+renders via `createPortal` into `document.body`, sizes off `visualViewport`, adds the 56px
+Telegram-controls offset, and locks `body` scroll while open. The old fade-transform bug
+was removed; do not reintroduce transform-based containing blocks around fixed surfaces.
 
 Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; screens use
 `w-full max-w-md px-5` and nothing else, so all tabs share one visual scale.
@@ -156,6 +161,5 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
   TypeScript build configured (no tsconfig); don't assume the `.tsx` files are live or
   extend them expecting them to compile/ship.
-- `vercel.json` rewrites `/api/*` to the Railway backend; `src/lib/api.js` always calls
-  the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
+- `vercel.json` rewrites `/api/*` to the Render backend; `src/lib/api.js` always calls the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
   beyond running against that same rewrite (or a local backend serving the same paths).

@@ -73,7 +73,7 @@ fixtures/
 ```
 artifacts/
   visual-baselines/
-    {baseline-version}/         # e.g., main-2b731d4
+    {baseline-version}/         # e.g., main-<verified-short-sha>
       390x844/
         01-today.png
         02-checkin.png

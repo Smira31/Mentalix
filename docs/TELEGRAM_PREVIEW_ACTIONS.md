@@ -23,13 +23,19 @@ Workflow реагирует только на успешное событие `v
 
 Проект `mentalix-preview` подключён к `Smira31/Mentalix` через Vercel Git Integration. Vercel самостоятельно создаёт Preview, поэтому в GitHub нужно хранить только Telegram-секреты, перечисленные выше.
 
+## Основной ежедневный сценарий
+
+Основной способ отправить Preview — открыть GitHub Actions → **Telegram Preview** → **Run workflow** или открыть PR и дождаться автоматического события от Vercel. В ручной форме укажите готовый Vercel Preview URL в поле `Vercel Preview URL to verify and notify`. Workflow проверит deployment и `/api/health`, затем отправит в Telegram кнопку **«Открыть Preview»**.
+
+Не запускайте одновременно локальный PowerShell-сценарий и GitHub workflow для одного deployment: это может создать дублирующие сообщения и конкурирующие cleanup-действия.
+
 ## Ручной запуск с телефона
 
 После того как workflow попадёт в `main`, для ручной проверки откройте **Actions → Telegram Preview → Run workflow**. Вставьте готовый Vercel Preview URL в поле `Vercel Preview URL to verify and notify` и нажмите **Run workflow**. В обычном сценарии ручной запуск не нужен: Vercel сам отправляет событие после успешного deployment.
 
-## Ежедневный сценарий
+## Проверка Preview
 
-После настройки вам не нужно запускать PowerShell, Vercel CLI или Telegram-команду. Достаточно отправить feature-ветку в GitHub или открыть PR. Vercel создаст Preview самостоятельно, затем workflow **Telegram Preview** проверит deployment и отправит в Telegram кнопку **«Открыть Preview»**. Preview предназначен для ручной проверки интерфейса на телефоне.
+После настройки достаточно отправить feature-ветку в GitHub или открыть PR. Vercel создаст Preview самостоятельно, затем workflow **Telegram Preview** проверит deployment и отправит в Telegram кнопку **«Открыть Preview»**. Preview предназначен для ручной проверки интерфейса на телефоне.
 
 Для MXL-021 после открытия Preview нужно проверить Journey → `Продолжить сегодня` → Today, затем пройти ручной Telegram/iPhone gate. GitHub Actions может проверить сборку и health endpoint, но не заменяет визуальную проверку на реальном iPhone.
 
@@ -39,9 +45,9 @@ Workflow реагирует только на успешное событие `v
 
 Результаты merge и автоматических проверок фиксируются в [`PROJECT_STATE.md`](../PROJECT_STATE.md). Продуктовый статус и ручной iPhone/Telegram gate подтверждаются владельцем в Pull Request.
 
-## Локальный fallback
+## Локальный fallback (Windows/PowerShell)
 
-Существующий локальный сценарий остаётся доступным на машине с PowerShell и настроенным `.env.local`:
+Локальный сценарий не является основным production-процессом. Используйте его только на машине с PowerShell и настроенным `.env.local`, если GitHub Actions или Vercel временно недоступны:
 
 ```bash
 npm run preview
@@ -56,5 +62,6 @@ npm run preview:stop
 ## References
 
 - [GitHub Actions secrets](https://docs.github.com/actions/security-guides/using-secrets-in-github-actions)
+- [Vercel Git deployments](https://vercel.com/docs/deployments/git)
 - [Vercel deploy CLI](https://vercel.com/docs/cli/deploy)
 - [Telegram Bot API](https://core.telegram.org/bots/api)
