@@ -45,7 +45,7 @@ jobs:
               '## Agent handoff',
               '',
               `**PR:** #${pr.number} — ${pr.title}`,
-              `**Commit:** \\`${context.sha.slice(0, 8)}\\``,
+              `**Commit:** ${context.sha.slice(0, 8)}`,
               '',
               '### Автоматически проверено',
               '- `npm run docs:drift` — успешно',
@@ -57,7 +57,7 @@ jobs:
               '- Для product, security, backend, deployment и production изменений получить решение владельца.',
               '',
               '_Комментарий обновляется автоматически при каждом новом commit._',
-            ].join('\\n');
+            ].join('\n');
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
