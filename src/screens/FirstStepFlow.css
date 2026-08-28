@@ -1,11 +1,3 @@
-.practice-scene--centered {
-  text-align: center;
-}
-
-.practice-scene--centered .practice-scene__glyph {
-  margin-inline: auto;
-}
-
 .first-step-progress {
   width: 100%;
   display: grid;

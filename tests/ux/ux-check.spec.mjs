@@ -465,11 +465,88 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: /Журнал заметить своё, выбрать главное и продолжить спокойно 4 шага/ }))
+        const journalEntry = page.locator('section[aria-label="Журнал"] > button')
+        await assertClickable(journalEntry)
+        const practicesHeading = page.locator('h3').filter({ hasText: 'Практики' }).first()
+        await expect(practicesHeading).toBeVisible()
+        const journalBox = await journalEntry.boundingBox()
+        const practicesBox = await practicesHeading.boundingBox()
+        expect(journalBox?.y || 0).toBeLessThan(practicesBox?.y || Number.POSITIVE_INFINITY)
         await assertClickable(page.getByRole('button', { name: 'Ритуалы' }))
         await assertSoonControls(page)
       },
     })
+
+    await page.locator('section[aria-label="Журнал"] > button').click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal intro',
+      slug: '03b-journal-intro',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByText('Разложи день на четыре спокойных шага')).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Начать' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Начать' }).click()
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal writer',
+      slug: '03c-journal-writer',
+      runtimeErrors,
+      results,
+      check: async () => {
+        const editor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
+        await expect(editor).toBeVisible()
+        await expect(editor).toHaveAttribute('contenteditable', 'true')
+        await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1)
+        await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeVisible()
+      },
+    })
+    const journalSteps = [
+      ['Действие: Что из этого зависит от меня сегодня?', 'Сделать один спокойный шаг'],
+      ['Анализ: Что произошло и что я заметил?', 'Заметить, что изменилось'],
+      ['Новый шаг: Что я возьму с собой дальше?', 'Продолжить завтра'],
+    ]
+    const ideaEditor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
+    await ideaEditor.fill('Сегодня я замечаю главное')
+    await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Сохранить и продолжить' }).click()
+    for (const [label, text] of journalSteps) {
+      const editor = page.getByRole('textbox', { name: label })
+      await expect(editor).toBeVisible()
+      await editor.fill(text)
+      await page.getByRole('button', {
+        name: label.startsWith('Новый шаг') ? 'Сохранить и завершить' : 'Сохранить и продолжить',
+      }).click()
+    }
+    await captureScreen({
+      page,
+      viewport,
+      screen: 'Journal complete',
+      slug: '03d-journal-complete',
+      runtimeErrors,
+      results,
+      check: async () => {
+        await expect(page.getByText('Цикл сохранён')).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Вернуться к практикам' }))
+      },
+    })
+    await page.getByRole('button', { name: 'Вернуться к практикам' }).click()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+    const reopenedJournalEntry = page.locator('section[aria-label="Журнал"] > button')
+    await reopenedJournalEntry.scrollIntoViewIfNeeded()
+    await reopenedJournalEntry.click()
+    await expect(page.getByRole('heading', { name: 'Сегодняшняя запись сохранена' })).toBeVisible()
+    await assertClickable(page.getByRole('button', { name: 'Открыть запись' }))
+    await page.getByRole('button', { name: 'Открыть запись' }).click()
+    const reopenedEditor = page.getByRole('textbox', { name: 'Новый шаг: Что я возьму с собой дальше?' })
+    await expect(reopenedEditor).toHaveText('Продолжить завтра')
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Ритуалы' }).click()
     await captureScreen({

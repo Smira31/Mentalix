@@ -3958,9 +3958,9 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Цель:** напоминать о ритуале без давления, с quiet hours, consent и отключением.
 
 ## Приоритет большого продукта
-
-1. Провести ручной Telegram/iPhone gate Journal Flow в «Практиках» из PR #245; не мержить без явного подтверждения владельца.
+1. Провести ручной Telegram/iPhone gate нового 4-фазного Journal Flow в «Практиках» на Preview-ветке; не мержить без явного подтверждения владельца.
 2. Получить backend/storage contract для следующего подэтапа `MXL-JOURNAL-PERSISTENCE-001`.
+
 3. Реализовать `MXL-JOURNAL-HISTORY-001`.
 4. Зафиксировать `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
 5. Реализовать `MXL-JOURNAL-PERSONALIZE-001` и `MXL-JOURNAL-GUIDED-001`.
@@ -3968,7 +3968,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## MXL-JOURNAL-001 — Journal Flow в «Практиках»
 
-**Статус:** реализован в PR #245; ожидает повторный ручной Telegram/iPhone gate после переработки маршрута. Journal — видимая focused practice без новой вкладки: `Практики → Журнал → intro → Идея → Действие → Анализ → Новый шаг → Цикл сохранён → Вернуться к практикам`. Он использует существующие `SceneLayout`, `useFullscreenSurface` и `JournalTextarea`; «Наставник» снова начинается с PersonaPicker и не открывает журнал автоматически. Текст сохраняется только local-first для текущего профиля и устройства; backend schema, cloud persistence, теги, custom templates, audio, Memories, community, payment и обязательный streak в scope не входят. Не закрывать задачу и не мержить PR без явного подтверждения владельца после gate.
+**Статус:** текущая реализация подготовлена в отдельной Preview-ветке `feat/mxl-journal-reference-preview` от актуальной `origin/main`; ожидает ручной Telegram/iPhone gate. Journal — отдельная закреплённая верхняя карточка над каталогом «Практики», без новой вкладки: `Практики → Журнал → вступление → Идея → Действие → Анализ → Новый шаг → Цикл сохранён → Вернуться к практикам`. Внутри используются существующие `SceneLayout`, `useFullscreenSurface` и `JournalTextarea`; «Наставник» не открывает журнал автоматически. Текст сохраняется только локально для текущего профиля и устройства; серверная схема, облачная синхронизация, теги, шаблоны, аудио, медиа, сообщество, оплата и обязательная серия дней в scope не входят. Семидневная тема и отдельный PR #268 не изменяются этой задачей. Не закрывать задачу и не мержить PR без явного подтверждения владельца после ручного gate.
 
 ## MXL-UX-RESPONSIVE-001 — Responsive UI и fixed-element offsets для v1.1.0
 

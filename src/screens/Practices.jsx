@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { BookOpen } from 'lucide-react'
 import { platform } from '../platform'
-import { api } from '../lib/api'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability'
 
@@ -31,8 +29,6 @@ import JournalFlow from './JournalFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
 import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
-import JournalHome from './mentalix/JournalHome'
-import ThemeScreen from './ThemeScreen'
 
 function SubHeader({ title, onBack }) {
   return (
@@ -90,13 +86,13 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
       <span className="min-w-0 flex-1 py-3">
         <span
           className={[
-            'block font-display mx-type-list-title',
+            'block font-display mx-type-list-title text-[16px] font-semibold leading-tight tracking-[-0.02em]',
             soon ? 'text-muted' : 'text-cream',
           ].join(' ')}
         >
           {title}
         </span>
-        <span className="block mt-1 mx-type-list-body text-muted">{subtitle}</span>
+        <span className="block mt-1 mx-type-list-body text-[12px] leading-[1.3] text-muted">{subtitle}</span>
       </span>
 
       <span className="w-[48px] shrink-0 flex items-center justify-end gap-2">
@@ -120,8 +116,40 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
 function PracticeCategory({ title, children }) {
   return (
     <section className="mt-7 first:mt-0">
-      <h3 className="mb-2 mx-type-meta uppercase tracking-[0.12em] text-muted">{title}</h3>
+      <h3 className="mb-2 text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">
+        {title}
+      </h3>
       <div>{children}</div>
+    </section>
+  )
+}
+
+function JournalEntry({ onOpen }) {
+  return (
+    <section aria-label="Журнал" className="mb-9">
+      <button
+        type="button"
+        onClick={() => {
+          platform.haptic('light')
+          onOpen()
+        }}
+        className="relative w-full overflow-hidden rounded-[28px] border border-gold/25 bg-gold/[0.08] p-5 text-left transition-colors active:bg-gold/[0.13]"
+      >
+        <span className="absolute right-3 top-3 h-20 w-20 text-gold/45" aria-hidden="true">
+          <JournalArt />
+        </span>
+        <span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Журнал</span>
+        <span className="mt-2 block max-w-[240px] font-display text-[23px] font-semibold leading-[1.08] tracking-[-0.03em] text-cream">
+          Собери день в четыре шага
+        </span>
+        <span className="mt-3 block max-w-[270px] text-[13px] leading-relaxed text-muted">
+          Идея, действие, анализ и новый шаг — спокойно, в своём темпе.
+        </span>
+        <span className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep">
+          Открыть журнал
+          <span className="text-[19px] leading-none" aria-hidden="true">›</span>
+        </span>
+      </button>
     </section>
   )
 }
@@ -129,14 +157,7 @@ function PracticeCategory({ title, children }) {
 export default function Practices({ user, initialSub = null, onGameChange }) {
   const [sub, setSub] = useState(initialSub)
 
-  const focusedFlowOpen = [
-    'first-step',
-    'no-blame',
-    'narrow-focus',
-    'one-finish',
-    'meditation',
-    'journal',
-  ].includes(sub)
+  const focusedFlowOpen = ['first-step', 'no-blame', 'narrow-focus', 'one-finish', 'meditation', 'journal'].includes(sub)
 
   useEffect(() => {
     onGameChange?.(focusedFlowOpen)
@@ -147,8 +168,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
-  const [journalThemeId, setJournalThemeId] = useState(null)
-  const [journalThemesReady, setJournalThemesReady] = useState(false)
 
   /*
    * initialSub приходит из навигации (открыть Practices сразу на
@@ -160,29 +179,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
     setSeenInitialSub(initialSub)
     setSub(initialSub)
   }
-
-  useEffect(() => {
-    if (!user || sub !== 'journal') return
-
-    let active = true
-
-    api.themes
-      .list(user.id)
-      .then(list => {
-        if (!active) return
-        setJournalThemeId(list?.[0]?.id ?? null)
-        setJournalThemesReady(true)
-      })
-      .catch(() => {
-        if (!active) return
-        setJournalThemeId(null)
-        setJournalThemesReady(true)
-      })
-
-    return () => {
-      active = false
-    }
-  }, [user, sub])
 
   useEffect(() => {
     if (!user || sub !== null) return
@@ -202,28 +198,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
       active = false
     }
   }, [user, sub])
-
-  if (sub === 'journal') {
-    if (!journalThemesReady) {
-      return (
-        <div className="w-full flex flex-col items-center">
-          <SubHeader title="Журнал" onBack={() => setSub(null)} />
-          <p className="px-6 pt-8 text-center text-[13px] text-muted">Загрузка темы недели...</p>
-        </div>
-      )
-    }
-
-    if (journalThemeId) {
-      return <ThemeScreen user={user} themeId={journalThemeId} onBack={() => setSub(null)} />
-    }
-
-    return (
-      <div className="w-full flex flex-col items-center">
-        <SubHeader title="Журнал" onBack={() => setSub(null)} />
-        <JournalHome showIntro onOpenMentor={() => setSub(null)} />
-      </div>
-    )
-  }
 
   if (sub === 'rituals') {
     return <Rituals user={user} onBack={() => setSub(null)} />
@@ -313,17 +287,9 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
         <span aria-hidden="true" />
       </div>
 
-      <PracticeCategory title="Сначала сюда">
-        <PracticeRow
-          artwork={<BookOpen size={24} strokeWidth={1.7} />}
-          title="Журнал"
-          subtitle="заметить своё, выбрать главное и продолжить спокойно"
-          right="4 шага"
-          onOpen={() => setSub('journal')}
-        />
-      </PracticeCategory>
+      <JournalEntry onOpen={() => setSub('journal')} />
 
-      <PracticeCategory title="Доступно сейчас">
+      <PracticeCategory title="Практики">
         <PracticeRow
           artwork={<MeditationArt />}
           title="Медитация"
@@ -331,13 +297,6 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
           right="5–10 мин"
           soon={!isPracticeAvailable(PRACTICE_KEYS.meditation)}
           onOpen={() => setSub('meditation')}
-        />
-        <PracticeRow
-          artwork={<JournalArt />}
-          title="Журнал"
-          subtitle="идея, действие, анализ и новый шаг"
-          right="4 шага"
-          onOpen={() => setSub('journal')}
         />
         <PracticeRow
           artwork={<RitualsArt />}

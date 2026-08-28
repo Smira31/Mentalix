@@ -12,6 +12,7 @@ export default function SceneLayout({
   children,
   className = '',
   centered = false,
+  verticallyCentered = false,
   scrollRef = null,
   showGlyph = true,
   progress = null,
@@ -22,7 +23,10 @@ export default function SceneLayout({
         <BackButton onClick={onBack} />
       </div>
 
-      <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+      <div
+        ref={scrollRef}
+        className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8 ${verticallyCentered ? 'justify-center' : ''}`}
+      >
         <div
           className={`practice-scene w-full max-w-md mx-auto pt-8 pb-12 ${
             centered ? 'practice-scene--centered' : ''
@@ -40,14 +44,14 @@ export default function SceneLayout({
           <div className="practice-scene__body">
             {progress}
 
-            <span className="block mx-type-meta uppercase tracking-wider text-gold mb-3">
+            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-3">
               {label}
             </span>
 
-            <h2 className="font-display mx-type-flow-title text-cream">{title}</h2>
+            <h2 className="font-display text-[24px] text-cream leading-tight">{title}</h2>
 
             {description && (
-              <div className="practice-scene__description mx-type-flow-body text-muted mt-5">
+              <div className="practice-scene__description text-[13px] text-muted mt-5 leading-relaxed">
                 {description}
               </div>
             )}
