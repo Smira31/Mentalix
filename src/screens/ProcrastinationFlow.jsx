@@ -306,10 +306,10 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
                 Вернись к делу без давления
               </h2>
               <p className="mx-auto mt-4 max-w-[310px] text-center text-[13px] leading-relaxed text-muted">
-                Три минуты, чтобы заметить избегание и сделать один безопасный шаг.
+                Короткая сессия, чтобы заметить, что мешает, и найти один безопасный вход.
               </p>
               <p className="mt-4 text-center text-[12px] font-semibold text-faint">
-                3 минуты&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
+                2 минуты&nbsp;&nbsp;·&nbsp;&nbsp;короткая сессия
               </p>
               <NoBlameArtwork stage="knot" />
             </div>
@@ -317,9 +317,10 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={startPractice}
+              aria-label="Начать"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Начать
+              Снять лишнее давление
             </button>
           </div>
         )}
@@ -366,9 +367,10 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={goToPlan}
+              aria-label="Дальше"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Дальше
+              Найти безопасный вход
             </button>
           </div>
         )}
@@ -444,6 +446,9 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
               </h2>
               <p className="mx-auto mt-3 max-w-[310px] text-center text-[13px] text-muted leading-relaxed">
                 {COMPLETION_COPY[outcome]?.description}
+                <span className="mt-3 block text-[12px] text-faint">
+                  Следующий вход: вернуться к делу на две минуты после выбранного триггера.
+                </span>
               </p>
 
               <p className="mt-7 text-center text-[12px] font-semibold text-muted">
@@ -471,9 +476,10 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={finish}
+              aria-label="Завершить"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Завершить
+              Продолжить в Сегодня
             </button>
           </div>
         )}
