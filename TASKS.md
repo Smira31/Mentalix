@@ -2,8 +2,10 @@
 
 ## MXL-DS-LABEL-FONT-001 — вторичный шрифт Manrope для лейблов/эйбраузов
 
-- **Статус: диф подтверждён владельцем 28.08.2026, готовится PR на
-  `origin/main` (`feat/label-font-manrope-001-v2` от `ab466093`).**
+- **Статус: PR #287 открыт 28.08.2026** (`feat/label-font-manrope-001-v2`
+  от `origin/main` `ab466093`, два коммита — чистое prettier-форматирование
+  отдельно от смыслового дифа) — ждёт Vercel Preview + `Telegram Preview`
+  workflow и ручного Telegram/iPhone gate владельца перед squash-merge.
   Решение — добавить Manrope как вторичный шрифт лейблов по аналогии со
   Stoic — принято владельцем в Cowork; `display`/`body` (Onest) сознательно
   не менялись.
