@@ -284,9 +284,10 @@ export default function ThemeScreen({ user, themeId, onBack }) {
     loading: saving,
   })
 
-  const webAction = mainVisible && !writingDay
-    ? { text: mainText, onClick: mainOnClick, disabled: !mainEnabled }
-    : null
+  const webAction =
+    mainVisible && !writingDay
+      ? { text: mainText, onClick: mainOnClick, disabled: !mainEnabled }
+      : null
 
   if (!data) {
     return createPortal(
@@ -313,23 +314,17 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <Shell style={style} footer={<WebActionBar action={webAction} />}>
         <BackButton onClick={onBack} />
 
-        <div className="flex-1 flex flex-col justify-center py-4">
+        <div className="flex-1 flex flex-col pt-4 pb-6">
           <div className="-mx-5 h-[150px] text-gold mb-6">
             <Motif name="ryad" className="w-full h-full" />
           </div>
 
-          <div className="text-[12px] text-faint font-semibold uppercase tracking-wide text-center mb-2">
-            Тема недели
-          </div>
-
-          <h2 className="font-display text-[24px] text-cream lowercase leading-tight text-center">
+          <h2 className="font-display text-[24px] text-cream lowercase leading-tight text-left">
             {data.title}
           </h2>
 
           {data.subtitle && (
-            <p className="text-[14px] text-muted leading-relaxed text-center mt-4">
-              {data.subtitle}
-            </p>
+            <p className="text-[14px] text-muted leading-relaxed text-left mt-4">{data.subtitle}</p>
           )}
 
           <ul className="flex flex-col gap-3.5 mt-8">
@@ -361,7 +356,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <Shell style={style} footer={<WebActionBar action={webAction} />}>
         <BackButton onClick={back} />
 
-        <div className="text-center mt-4 mb-7">
+        <div className="text-left mt-4 mb-7">
           <div className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
             {finished ? 'Неделя пройдена' : 'Что уже написано'}
           </div>
@@ -543,7 +538,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         </button>
       </div>
 
-      <div className="mb-6 flex gap-1.5" aria-label="Дни темы недели">
+      <div className="mb-6 flex gap-1.5" aria-label="Дни журнала">
         {data.days.map(d => {
           const active = d.day === day
 
@@ -558,11 +553,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
               }}
               className={[
                 'h-1.5 flex-1 overflow-hidden rounded-full border-0 p-0 transition-colors',
-                active
-                  ? 'bg-gold'
-                  : d.reflection
-                    ? 'bg-gold/35'
-                    : 'bg-cream/10',
+                active ? 'bg-gold' : d.reflection ? 'bg-gold/35' : 'bg-cream/10',
               ].join(' ')}
             >
               <span className="sr-only">
@@ -596,9 +587,9 @@ export default function ThemeScreen({ user, themeId, onBack }) {
             </>
           </div>
         ) : (
-          <div className="text-left">
+          <div className="text-left" data-testid="journal-day-content">
             <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
-              Тема недели · День {day} из {data.days.length}
+              День {day} из {data.days.length}
             </div>
 
             <h3 className="font-display text-[24px] leading-[1.16] text-cream [@media(max-height:650px)]:text-[20px]">
