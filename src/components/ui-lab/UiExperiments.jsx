@@ -1785,7 +1785,14 @@ function RitualAscezaStylesExperiment({ mode }) {
               padding: '1.5rem',
               borderRadius: '0.75rem',
               border: '1px solid rgba(var(--c-line), 0.24)',
+              cursor: 'pointer',
             }}
+            onClick={() => setSelected(index)}
+            onKeyDown={event => {
+              if (event.key === 'Enter' || event.key === ' ') setSelected(index)
+            }}
+            role="button"
+            tabIndex={0}
           >
             <div style={{ width: '80px', height: '80px' }}>
               <SemanticGlyph
