@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Lock, Check, Sparkles } from 'lucide-react'
+import { Lock, MoreHorizontal, Tag, Check, Sparkles, X } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import MarkdownText from '../components/MarkdownText'
@@ -16,6 +16,7 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
+import './ThemeScreen.css'
 
 /*
  * ТЕМА НЕДЕЛИ — семь дней размышлений, по дню за раз.
@@ -41,9 +42,9 @@ import {
 
 const HOME_OFFERED_KEY = 'mx-home-offered'
 
-function Shell({ style, footer, children }) {
+function Shell({ style, footer, children, className = '' }) {
   return (
-    <div className={FULLSCREEN_SHELL_CLASS} style={style}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} ${className}`} style={style}>
       <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -485,142 +486,92 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   /* ── день ──────────────────────────────────────────────── */
 
   return createPortal(
-    <Shell style={style} footer={<WebActionBar action={webAction} />}>
-      <div className="flex items-center justify-between gap-3 mb-5">
+    <Shell
+      style={style}
+      className="mx-theme-writing-shell"
+      footer={<WebActionBar action={webAction} />}
+    >
+      <div className="flex items-center justify-between gap-3">
         <BackButton onClick={onBack} />
 
-        <button
-          type="button"
-          onClick={deepenReflection}
-          disabled={!canSave || saving}
-          className="flex h-11 items-center gap-2 rounded-full border border-cream/10 bg-emerald px-4 text-[12px] font-semibold text-cream transition-transform active:scale-95 disabled:opacity-35"
-        >
-          <Sparkles size={15} className="text-gold" />
-          Наставник
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Открыть разбор ответов"
+            onClick={() => {
+              platform.haptic('light')
+              setView('review')
+            }}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 transition-transform active:scale-95"
+          >
+            <MoreHorizontal size={20} strokeWidth={1.7} />
+          </button>
+          <button
+            type="button"
+            aria-label="Открыть тему недели"
+            onClick={() => {
+              platform.haptic('light')
+              setView('intro')
+            }}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/75 transition-transform active:scale-95"
+          >
+            <Tag size={18} strokeWidth={1.7} />
+          </button>
+        </div>
       </div>
 
-      <div className="mb-5 flex items-center justify-between gap-4 [@media(max-height:650px)]:hidden">
-        <div className="flex items-center gap-4">
-          {answered > 0 && (
-            <button
-              onClick={() => {
-                platform.haptic('light')
-                setView('review')
-              }}
-              className="border-0 bg-transparent p-0 text-[12px] text-gold active:opacity-60"
-            >
-              Мои ответы
-            </button>
-          )}
-
-          {themes.length > 1 && (
-            <button
-              onClick={() => {
-                platform.haptic('light')
-                setView('list')
-              }}
-              className="border-0 bg-transparent p-0 text-[12px] text-muted active:opacity-60"
-            >
-              Все темы
-            </button>
-          )}
+      <div className="mx-theme-writing__canvas flex min-h-0 flex-1 flex-col pt-8" data-testid="theme-writing-canvas">
+        <div className="mb-5 text-[11px] font-semibold uppercase tracking-[0.14em] text-white/45">
+          День {day} из {data.days.length}
         </div>
 
-        <button
-          onClick={() => {
-            platform.haptic('light')
-            setView('intro')
-          }}
-          className="border-0 bg-transparent p-0 text-[12px] text-faint active:opacity-60"
-        >
-          {data.title}
-        </button>
-      </div>
-
-      <div className="mb-6 flex gap-1.5" aria-label="Дни журнала">
-        {data.days.map(d => {
-          const active = d.day === day
-
-          return (
-            <button
-              key={d.day}
-              aria-label={`День ${d.day}`}
-              aria-current={active ? 'step' : undefined}
-              onClick={() => {
-                platform.haptic('light')
-                setDay(d.day)
-              }}
-              className={[
-                'h-1.5 flex-1 overflow-hidden rounded-full border-0 p-0 transition-colors',
-                active ? 'bg-gold' : d.reflection ? 'bg-gold/35' : 'bg-cream/10',
-              ].join(' ')}
-            >
-              <span className="sr-only">
-                {d.locked ? 'Закрыт' : d.reflection ? 'Заполнен' : 'Не заполнен'}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      <div className="shrink-0">
         {current?.locked ? (
-          <div className="rounded-[28px] bg-emerald px-6 py-8 text-center">
-            <>
-              <MotifArt name="povedenie" size={110} className="mx-auto mb-4" />
-
-              <h3 className="font-display text-[18px] text-cream leading-tight">
-                День {day} под замком
-              </h3>
-
-              <p className="text-[13px] text-muted mt-3 leading-relaxed">
-                Первые {data.free_days} дня открыты всем. Остальные — часть Библиотеки.
-              </p>
-
-              <button
-                onClick={() => platform.haptic('light')}
-                className="cta-pill text-[14px] px-9 py-3.5 mt-6"
-              >
-                Скоро откроется
-              </button>
-            </>
+          <div className="m-auto w-full bg-white/[0.06] px-6 py-8 text-center">
+            <MotifArt name="povedenie" size={110} className="mx-auto mb-4" />
+            <h3 className="font-display text-[18px] leading-tight text-white">День {day} под замком</h3>
+            <p className="mt-3 text-[13px] leading-relaxed text-white/55">
+              Первые {data.free_days} дня открыты всем. Остальные — часть Библиотеки.
+            </p>
+            <button
+              type="button"
+              onClick={() => platform.haptic('light')}
+              className="mt-6 bg-white px-9 py-3.5 text-[14px] font-semibold text-black"
+            >
+              Скоро откроется
+            </button>
           </div>
         ) : (
-          <div className="text-left" data-testid="journal-day-content">
-            <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
-              День {day} из {data.days.length}
-            </div>
-
-            <h3 className="font-display text-[24px] leading-[1.16] text-cream [@media(max-height:650px)]:text-[20px]">
+          <>
+            <div className="mx-theme-writing__prompt max-w-[22rem] text-[18px] leading-[1.35] text-white/72" data-testid="theme-writing-prompt">
               {current?.text}
-            </h3>
-
+            </div>
             {current?.prompt && (
-              <p className="mt-5 border-l border-gold pl-4 text-[14px] leading-relaxed text-muted">
-                {current.prompt}
-              </p>
+              <p className="mt-3 max-w-[20rem] text-[13px] leading-relaxed text-white/45">{current.prompt}</p>
             )}
-          </div>
+
+            <JournalTextarea
+              value={text}
+              onChange={setText}
+              placeholder="Начни писать..."
+              ariaLabel="Мысль по теме недели"
+              className="mt-7 min-h-0 flex-1"
+              editorClassName="pb-28 text-[18px] leading-[1.55] text-white caret-white"
+              floatingToolbar
+              formatting
+              onAdd={() => setText(value => (value ? `${value}\n` : value))}
+              addLabel="Добавить абзац"
+              onSubmit={save}
+              submitLabel={current?.reflection ? 'Обновить мысль' : 'Записать мысль'}
+              submitDisabled={!canSave}
+              submitLoading={saving}
+              submitIcon={X}
+              onDeepen={deepenReflection}
+              deepenLabel="Открыть AI-наставника"
+              deepenIcon={Sparkles}
+            />
+          </>
         )}
       </div>
-
-      {!current?.locked && (
-        <JournalTextarea
-          value={text}
-          onChange={setText}
-          placeholder="Записать мысль..."
-          ariaLabel="Мысль по теме недели"
-          className="mt-6 min-h-[18rem] flex-1"
-          editorClassName="pb-24"
-          floatingToolbar
-          onSubmit={save}
-          submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
-          submitDisabled={!canSave}
-          submitLoading={saving}
-          onDeepen={deepenReflection}
-        />
-      )}
     </Shell>,
     document.body
   )

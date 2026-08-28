@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bold, Check, Highlighter, Italic } from 'lucide-react'
+import { Bold, Check, Highlighter, Italic, Plus } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
@@ -158,6 +158,10 @@ export default function JournalTextarea({
   deepenLabel = 'Пойти глубже',
   deepenDisabled,
   deepenLoading = false,
+  deepenIcon: DeepenIcon = null,
+  onAdd,
+  addLabel = 'Добавить абзац',
+  submitIcon: SubmitIcon = Check,
   formatting = true,
   autoFocus = false,
 }) {
@@ -251,7 +255,27 @@ export default function JournalTextarea({
             </div>
           )}
 
-          <div className="fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-3">
+          <div
+            className={`journal-floating-toolbar fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] items-center gap-3 ${
+              onAdd ? 'grid-cols-[56px_56px_minmax(0,1fr)_56px]' : 'grid-cols-[56px_minmax(0,1fr)_56px]'
+            }`}
+          >
+            {onAdd && (
+              <button
+                type="button"
+                aria-label={addLabel}
+                title={addLabel}
+                onPointerDown={event => event.preventDefault()}
+                onClick={() => {
+                  platform.haptic('light')
+                  onAdd()
+                }}
+                className="journal-add-action flex h-14 w-14 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream transition-transform active:scale-95"
+              >
+                <Plus size={23} strokeWidth={1.8} />
+              </button>
+            )}
+
             {formatting ? (
               <button
                 type="button"
@@ -263,7 +287,7 @@ export default function JournalTextarea({
                   setFormatOpen(current => !current)
                 }}
                 className={[
-                  'flex h-14 w-14 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
+                  'journal-format-action flex h-14 w-14 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
                   formatOpen
                     ? 'border-gold/40 bg-gold/15 text-gold'
                     : 'border-cream/10 bg-emerald text-cream',
@@ -278,15 +302,20 @@ export default function JournalTextarea({
             {onDeepen ? (
               <button
                 type="button"
+                aria-label={deepenLabel}
+                title={deepenLabel}
                 onClick={onDeepen}
                 disabled={
                   (deepenDisabled ?? !String(value || '').trim()) ||
                   submitLoading ||
                   deepenLoading
                 }
-                className="h-14 min-w-0 rounded-full border border-cream/10 bg-emerald px-5 text-[14px] font-semibold text-cream transition-transform active:scale-[0.98] disabled:opacity-35"
+                className={[
+                  'journal-deepen-action flex h-14 min-w-0 items-center justify-center rounded-full border border-cream/10 bg-emerald text-[14px] font-semibold text-cream transition-transform active:scale-[0.98] disabled:opacity-35',
+                  DeepenIcon ? 'w-14 px-0' : 'px-5',
+                ].join(' ')}
               >
-                {deepenLabel}
+                {DeepenIcon ? <DeepenIcon size={22} strokeWidth={1.6} className="text-gold" /> : deepenLabel}
               </button>
             ) : (
               <span aria-hidden="true" />
@@ -301,9 +330,9 @@ export default function JournalTextarea({
                 onSubmit?.()
               }}
               disabled={submitDisabled || submitLoading || deepenLoading}
-              className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
+              className="journal-submit-action flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
             >
-              <Check size={25} strokeWidth={2.4} />
+              <SubmitIcon size={25} strokeWidth={2.4} />
             </button>
           </div>
         </>

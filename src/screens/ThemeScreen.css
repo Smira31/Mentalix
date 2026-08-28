@@ -1,0 +1,65 @@
+.mx-theme-writing-shell {
+  background: #000 !important;
+}
+
+.mx-theme-writing-shell .mx-theme-writing__canvas {
+  color: #fff;
+}
+
+.mx-theme-writing-shell [contenteditable='true'] {
+  min-height: 0;
+  color: #fff;
+  caret-color: #fff;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.mx-theme-writing-shell [contenteditable='true']:empty::before {
+  color: rgb(255 255 255 / 0.48);
+}
+
+.mx-theme-writing-shell .mx-theme-writing__prompt {
+  text-wrap: pretty;
+}
+
+.mx-theme-writing-shell .mx-theme-writing__canvas button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-height: 650px) {
+  .mx-theme-writing-shell .mx-theme-writing__canvas {
+    padding-top: 20px;
+  }
+
+  .mx-theme-writing-shell [contenteditable='true'] {
+    font-size: 17px;
+  }
+}
+
+.mx-theme-writing-shell .journal-floating-toolbar {
+  max-width: 360px;
+}
+
+.mx-theme-writing-shell .journal-add-action,
+.mx-theme-writing-shell .journal-format-action,
+.mx-theme-writing-shell .journal-deepen-action {
+  border-color: rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.08);
+  color: rgb(255 255 255 / 0.82);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.28);
+}
+
+.mx-theme-writing-shell .journal-submit-action {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+.mx-theme-writing-shell .journal-floating-toolbar button:disabled {
+  opacity: 0.34;
+}
+
+.mx-theme-writing-shell .journal-floating-toolbar button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}

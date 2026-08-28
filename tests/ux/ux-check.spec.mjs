@@ -419,9 +419,12 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        const journalContent = page.getByTestId('journal-day-content')
-        await expect(journalContent).toHaveCSS('text-align', 'left')
-        await expect(page.getByLabel('Дни журнала')).toBeVisible()
+        const writingCanvas = page.getByTestId('theme-writing-canvas')
+        await expect(writingCanvas).toBeVisible()
+        await expect(page.getByTestId('theme-writing-prompt')).toBeVisible()
+        await expect(page.getByLabel('Открыть разбор ответов')).toBeVisible()
+        await expect(page.getByLabel('Открыть тему недели')).toBeVisible()
+        await expect(page.getByLabel('Дни журнала')).toHaveCount(0)
         await expect(page.getByText('Тема недели', { exact: true })).toHaveCount(0)
 
         const editor = page.getByRole('textbox', { name: 'Мысль по теме недели' })
@@ -441,8 +444,9 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(editor).not.toContainText('**')
         await assertClickable(page.getByRole('button', { name: 'Жирный текст' }))
         await assertClickable(page.getByRole('button', { name: 'Выделение' }))
-        await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
-        await assertClickable(page.getByRole('button', { name: 'Сохранить мысль' }))
+        await assertClickable(page.getByRole('button', { name: 'Добавить абзац' }))
+        await assertClickable(page.getByRole('button', { name: 'Открыть AI-наставника' }))
+        await assertClickable(page.getByRole('button', { name: 'Записать мысль' }))
         await page.getByRole('button', { name: 'Скрыть форматирование' }).click()
       },
     })
@@ -450,7 +454,7 @@ test('локальный UX smoke по основному маршруту', asy
       const url = new URL(request.url())
       return request.method() === 'POST' && url.pathname === '/api/themes/701/reflect'
     })
-    await page.getByRole('button', { name: 'Сохранить мысль' }).click()
+    await page.getByRole('button', { name: 'Записать мысль' }).click()
     const reflectionPayload = (await reflectionRequest).postDataJSON()
     expect(reflectionPayload.text).toBe('**Важное**')
     await page.getByRole('button', { name: 'Назад' }).click()

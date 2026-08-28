@@ -735,9 +735,24 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
 test('MXL-JOURNAL-UI-247 выравнивает Journal слева и не показывает метку «Тема недели»', () => {
   const themeScreen = readFileSync(new URL('../../src/screens/ThemeScreen.jsx', import.meta.url), 'utf8')
 
-  assert.match(themeScreen, /data-testid="journal-day-content"/)
-  assert.match(themeScreen, /aria-label="Дни журнала"/)
-  assert.match(themeScreen, /className="font-display text-\[24px\] text-cream lowercase leading-tight text-left"/)
+  assert.match(themeScreen, /data-testid="theme-writing-canvas"/)
+  assert.match(themeScreen, /data-testid="theme-writing-prompt"/)
+  assert.match(themeScreen, /mx-theme-writing-shell/)
+  assert.match(themeScreen, /onDeepen=\{deepenReflection\}/)
+  assert.match(themeScreen, /deepenIcon=\{Sparkles\}/)
+  assert.match(themeScreen, /submitIcon=\{X\}/)
+  assert.doesNotMatch(themeScreen, /aria-label="Дни журнала"/)
   assert.doesNotMatch(themeScreen, />\s*Тема недели\s*</)
   assert.doesNotMatch(themeScreen, /Тема недели · День/)
+})
+
+
+test('MXL-JOURNAL-UI-REF-001 сохраняет reference-like floating toolbar без изменения default callers', () => {
+  const journalTextarea = readFileSync(new URL('../../src/components/JournalTextarea.jsx', import.meta.url), 'utf8')
+
+  assert.match(journalTextarea, /journal-floating-toolbar/)
+  assert.match(journalTextarea, /onAdd/)
+  assert.match(journalTextarea, /deepenIcon: DeepenIcon/)
+  assert.match(journalTextarea, /submitIcon: SubmitIcon/)
+  assert.match(journalTextarea, /grid-cols-\[56px_56px_minmax\(0,1fr\)_56px\]/)
 })
