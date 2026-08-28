@@ -128,7 +128,7 @@ function OptionList({ options, onPick }) {
   )
 }
 
-export default function NarrowFocusFlow({ userId, onClose }) {
+export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
   const [step, setStep] = useState('intro')
@@ -225,6 +225,7 @@ export default function NarrowFocusFlow({ userId, onClose }) {
   function finish() {
     platform.haptic('light')
     saveNarrowFocusEntry(userId, { outcome, reflection })
+    onComplete?.()
     onClose()
   }
 

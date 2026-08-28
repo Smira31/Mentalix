@@ -160,7 +160,7 @@ function JournalEntry({ onOpen }) {
   )
 }
 
-export default function Practices({ user, initialSub = null, onGameChange }) {
+export default function Practices({ user, initialSub = null, onGameChange, onReturnToToday }) {
   const [sub, setSub] = useState(initialSub)
 
   const focusedFlowOpen = [
@@ -221,7 +221,9 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
   }
 
   if (sub === 'first-step') {
-    return <FirstStepFlow userId={user.id} onClose={() => setSub(null)} />
+    return (
+      <FirstStepFlow userId={user.id} onClose={() => setSub(null)} onComplete={onReturnToToday} />
+    )
   }
 
   if (sub === 'meditation') {
@@ -233,15 +235,23 @@ export default function Practices({ user, initialSub = null, onGameChange }) {
   }
 
   if (sub === 'no-blame') {
-    return <ProcrastinationFlow userId={user.id} onClose={() => setSub(null)} />
+    return (
+      <ProcrastinationFlow
+        userId={user.id}
+        onClose={() => setSub(null)}
+        onComplete={onReturnToToday}
+      />
+    )
   }
 
   if (sub === 'narrow-focus') {
-    return <NarrowFocusFlow userId={user.id} onClose={() => setSub(null)} />
+    return (
+      <NarrowFocusFlow userId={user.id} onClose={() => setSub(null)} onComplete={onReturnToToday} />
+    )
   }
 
   if (sub === 'one-finish') {
-    return <FinishFlow userId={user.id} onClose={() => setSub(null)} />
+    return <FinishFlow userId={user.id} onClose={() => setSub(null)} onComplete={onReturnToToday} />
   }
 
   if (sub === 'brain') {

@@ -183,7 +183,7 @@ function OptionList({ options, onPick }) {
   )
 }
 
-export default function ProcrastinationFlow({ userId, onClose }) {
+export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
   const [step, setStep] = useState('intro')
@@ -280,6 +280,7 @@ export default function ProcrastinationFlow({ userId, onClose }) {
   function finish() {
     platform.haptic('light')
     saveNoBlameEntry(userId, { outcome, reflection })
+    onComplete?.()
     onClose()
   }
 

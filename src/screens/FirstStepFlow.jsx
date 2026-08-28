@@ -100,7 +100,7 @@ function OptionList({ options, onPick }) {
   )
 }
 
-export default function FirstStepFlow({ userId, onClose }) {
+export default function FirstStepFlow({ userId, onClose, onComplete }) {
   const { style: surfaceStyle } = useFullscreenSurface()
 
   const [step, setStep] = useState('intro')
@@ -197,6 +197,7 @@ export default function FirstStepFlow({ userId, onClose }) {
   function finish() {
     platform.haptic('light')
     saveFirstStepEntry(userId, { outcome, reflection })
+    onComplete?.()
     onClose()
   }
 

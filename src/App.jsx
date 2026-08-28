@@ -340,7 +340,9 @@ export default function App() {
 
   // Разрешён только один известный deep-link. Остальные query-параметры не
   // меняют состояние приложения и не могут открыть произвольный экран.
-  const [practicesSub, setPracticesSub] = useState(initialAction === 'breathing' ? 'breathing' : null)
+  const [practicesSub, setPracticesSub] = useState(
+    initialAction === 'breathing' ? 'breathing' : null
+  )
 
   /* ============================================================
      THEME
@@ -633,6 +635,17 @@ export default function App() {
 
     scrollAppToTop()
   }
+
+  const goToday = useCallback(() => {
+    platform.haptic('light')
+
+    setMentorPersonaOpen(false)
+    setPracticesSub(null)
+    setTab('today')
+    setNavCollapsed(false)
+    resetNavigationGesture()
+    scrollAppToTop()
+  }, [scrollAppToTop])
 
   const openPractice = useCallback(
     sub => {
@@ -1053,6 +1066,7 @@ export default function App() {
                     user={user}
                     initialSub={practicesSub}
                     onGameChange={setPracticeGameOpen}
+                    onReturnToToday={goToday}
                   />
                 )}
 
