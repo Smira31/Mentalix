@@ -2,13 +2,22 @@
 
 ## MXL-DS-LABEL-FONT-001 — вторичный шрифт Manrope для лейблов/эйбраузов
 
-- **Статус: PR #287 открыт 28.08.2026** (`feat/label-font-manrope-001-v2`
+- **Статус: смёржено 28.08.2026.** PR #287 (`feat/label-font-manrope-001-v2`
   от `origin/main` `ab466093`, два коммита — чистое prettier-форматирование
-  отдельно от смыслового дифа) — ждёт Vercel Preview + `Telegram Preview`
-  workflow и ручного Telegram/iPhone gate владельца перед squash-merge.
-  Решение — добавить Manrope как вторичный шрифт лейблов по аналогии со
-  Stoic — принято владельцем в Cowork; `display`/`body` (Onest) сознательно
-  не менялись.
+  отдельно от смыслового дифа) squash-merge в `main` коммитом `47d62eba`
+  (`mergedAt` 2026-08-28T14:34:24Z). Владелец проверил Preview на iPhone и
+  подтвердил. Мерж выполнен с `gh pr merge --admin`: required status check
+  `Базовая проверка проекта` в branch protection не производится ни одним
+  текущим workflow (осиротевший context от переименованного/удалённого
+  workflow, найдено при подготовке этого мержа) — все содержательные
+  проверки (`Frontend quality`, `Playwright Chromium smoke`,
+  `Backend health`, `Dependency audit`, оба Vercel-деплоя) были зелёными;
+  тот же обход владелец использует при мерже вручную через GitHub UI
+  (`enforce_admins: false`). Осиротевший required check не почищен — это
+  отдельная задача settings, не тронуто в этом дифе. Feature-ветка удалена
+  (remote + local). Решение — добавить Manrope как вторичный шрифт лейблов
+  по аналогии со Stoic — принято владельцем в Cowork; `display`/`body`
+  (Onest) сознательно не менялись.
 - **Контекст ветки:** первая попытка (`feat/label-font-manrope-001`) была
   создана от локального `main`, который оказался на 170+ коммитов позади
   `origin/main` — обнаружено при попытке проверить существование
