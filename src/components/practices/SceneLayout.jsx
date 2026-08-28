@@ -44,7 +44,7 @@ export default function SceneLayout({
           <div className="practice-scene__body">
             {progress}
 
-            <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-3">
+            <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-3">
               {label}
             </span>
 

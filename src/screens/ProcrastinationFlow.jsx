@@ -92,7 +92,7 @@ const COMPLETION_COPY = {
 function Eyebrow({ children = 'Без вины', centered = false }) {
   return (
     <span
-      className={`block text-[11px] font-bold uppercase tracking-wider text-gold mb-2 ${centered ? 'text-center' : ''}`}
+      className={`block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2 ${centered ? 'text-center' : ''}`}
     >
       {children}
     </span>

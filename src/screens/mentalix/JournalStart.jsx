@@ -62,7 +62,7 @@ export default function JournalStart({
       {/* ── персона спрашивает ── */}
 
       <div className="flex items-center gap-3 mt-1">
-        <span className="mx-ai-meta text-gold whitespace-nowrap">{meta.asking}</span>
+        <span className="font-label mx-ai-meta text-gold whitespace-nowrap">{meta.asking}</span>
 
         <div className="flex-1 h-px bg-gold/35" />
 

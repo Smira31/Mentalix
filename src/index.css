@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
+/* Manrope — вторичный шрифт для лейблов/эйбраузов, самостоятельный хостинг
+   (npm-пакет @fontsource/manrope, без Google Fonts CDN). Кириллица включена
+   в 500.css/600.css по unicode-range вместе с латиницей. */
+@import '@fontsource/manrope/500.css';
+@import '@fontsource/manrope/600.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

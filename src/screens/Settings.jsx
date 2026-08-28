@@ -42,7 +42,7 @@ import PrivacyNotice from './PrivacyNotice'
 
 function SectionLabel({ children }) {
   return (
-    <div className="px-1 mb-2 text-[11px] font-body uppercase tracking-wider text-muted">
+    <div className="px-1 mb-2 text-[11px] font-label uppercase tracking-wider text-muted">
       {children}
     </div>
   )

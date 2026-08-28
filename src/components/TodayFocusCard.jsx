@@ -35,7 +35,7 @@ export default function TodayFocusCard({ focus, onOpenFlow, onClearFocus, readOn
 
   return (
     <section className="rounded-[28px] bg-emerald px-5 py-5 mb-4 border border-cream/10 animate-fade-in">
-      <span className="block text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
+      <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
         {focus.firstStep ? 'Первый шаг · до 5 минут' : 'Точка внимания · сегодня'}
       </span>
 

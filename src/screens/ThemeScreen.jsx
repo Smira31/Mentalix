@@ -357,7 +357,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         <BackButton onClick={back} />
 
         <div className="text-left mt-4 mb-7">
-          <div className="text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
+          <div className="font-label text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
             {finished ? 'Неделя пройдена' : 'Что уже написано'}
           </div>
 
@@ -373,7 +373,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         <div className="flex flex-col gap-3">
           {written.map(d => (
             <div key={d.day} className="rounded-[24px] bg-emerald border border-cream/10 p-5">
-              <div className="text-[11px] text-gold font-bold uppercase tracking-wide mb-2">
+              <div className="font-label text-[11px] text-gold font-bold uppercase tracking-wide mb-2">
                 День {d.day}
               </div>
 
@@ -588,7 +588,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           </div>
         ) : (
           <div className="text-left" data-testid="journal-day-content">
-            <div className="mb-3 text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+            <div className="mb-3 font-label text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
               День {day} из {data.days.length}
             </div>
 
