@@ -92,3 +92,5 @@
 ### Агентский порядок выполнения
 
 Канонический порядок текущего цикла: `MXL-GIT-SYNC-001` → `MXL-TYPO-001` → `MXL-UI-AUDIT-001` → `MXL-DESIGN-STOIC-001`. Агент не объявляет задачу закрытой только по результату сборки: требуются целевая проверка, evidence, обновлённый handoff и соблюдение manual gate, если он предусмотрен.
+
+| `MXL-SERIES-001` | product/UX | ready after contract check | [#299](https://github.com/Smira31/Mentalix/issues/299) | Проверить источник общей серии и реализовать Today header → Series & Badges → detail → back |
