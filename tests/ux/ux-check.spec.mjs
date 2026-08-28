@@ -1157,3 +1157,102 @@ test('History показывает user-scoped local Journal на mobile и tabl
     await context.close()
   }
 })
+
+
+test('прямая web-ссылка объясняет Telegram Mini App и сохраняет OTP recovery', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  await context.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+
+  let verifyAttempts = 0
+  await context.route('**/api/**', async route => {
+    const request = route.request()
+    const pathname = new URL(request.url()).pathname
+
+    if (request.method() === 'POST' && pathname === '/api/auth/email/request-code') {
+      await new Promise(resolve => setTimeout(resolve, 75))
+      await route.fulfill(jsonResponse({ dev_code: '123456' }))
+      return
+    }
+
+    if (request.method() === 'POST' && pathname === '/api/auth/email/verify') {
+      verifyAttempts += 1
+      if (verifyAttempts === 1) {
+        await route.fulfill(jsonResponse({ ok: false }))
+      } else {
+        await route.fulfill(
+          jsonResponse({
+            ok: true,
+            user: {
+              app_user_id: 42,
+              web_user_id: 84,
+              first_name: 'Web',
+              email: 'person@example.com',
+              linked: true,
+            },
+          })
+        )
+      }
+      return
+    }
+
+    await route.fulfill(jsonResponse({ ok: true }))
+  })
+
+  const page = await context.newPage()
+  await page.goto('/')
+
+  await expect(
+    page.getByRole('heading', { name: 'Лучше открыть Mentalix через Telegram Mini App' })
+  ).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Вход через браузер' })).toBeVisible()
+  await expect(
+    page.getByText('Это поддерживаемый web-вход; он не обходит аутентификацию и не создаёт фиктивного пользователя.')
+  ).toBeVisible()
+
+  const emailInput = page.getByRole('textbox', { name: 'Email для входа' })
+  const requestButton = page.getByRole('button', { name: 'Получить одноразовый код на email' })
+  await expect(emailInput).toBeFocused()
+  await emailInput.fill('person@example.com')
+  await page.keyboard.press('Tab')
+  await expect(requestButton).toBeFocused()
+  await expect(requestButton).toBeEnabled()
+
+  await requestButton.press('Enter')
+  await expect(page.locator('form')).toHaveAttribute('aria-busy', 'true')
+  await expect(page.getByRole('status')).toHaveText('Подожди, выполняю запрос…')
+  await expect(page.getByRole('textbox', { name: 'Одноразовый код' })).toBeVisible()
+  await expect(page.locator('form')).toHaveAttribute('aria-busy', 'false')
+
+  const codeInput = page.getByRole('textbox', { name: 'Одноразовый код' })
+  const verifyButton = page.getByRole('button', { name: 'Проверить одноразовый код' })
+  await expect(codeInput).toHaveAttribute('autocomplete', 'one-time-code')
+  await expect(codeInput).toBeFocused()
+  await codeInput.fill('000000')
+  await verifyButton.press('Enter')
+
+  await expect(page.getByRole('alert')).toHaveText('Неверный или истёкший код. Проверь его и отправь ещё раз.')
+  await expect(codeInput).toHaveAttribute('aria-invalid', 'true')
+  await expect(verifyButton).toBeEnabled()
+  expect(verifyAttempts).toBe(1)
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).toBeNull()
+
+  await codeInput.fill('123456')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(codeInput).toHaveAttribute('aria-invalid', 'false')
+  await expect(verifyButton).toBeEnabled()
+  await verifyButton.press('Enter')
+  await expect(page.getByRole('heading', { name: 'Вход через браузер' })).toHaveCount(0)
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).id).toBe(42)
+  expect(verifyAttempts).toBe(2)
+
+  await context.close()
+})
