@@ -1,5 +1,22 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — Practice completion adapter: conflict note, унификация отложена
+
+- Задача «независимый local-first adapter для четырёх practice-completion
+  логов» (по образцу `journalEntryAdapter.js`) остановлена по собственному
+  требованию — существующий storage contract (`firstStepPractice.js`/
+  `noBlamePractice.js`/`oneFinishPractice.js`/`narrowFocusPractice.js`, уже
+  в проде с PR #61–#63) конфликтует с задачей: новый независимый модуль
+  стал бы пятой параллельной схемой вместо унификации.
+- Зафиксирован docs-only `docs/architecture/PRACTICE-COMPLETION-ADAPTER_CONFLICT_NOTE.md`
+  с двумя вариантами унификации; код не менялся.
+- **Решение владельца 29.08.2026:** вариант 2 (миграция `saveXxxEntry` на
+  upsert по `entry_id`/`schema_version`) откладывается в отдельную backlog-
+  задачу без приоритета — см. `TASKS.md`. PR #317 смёржен как есть, docs-only,
+  без кода.
+- `git diff --check`, `docs:check` — PASS (product-код не менялся). PR #317,
+  squash-merge `feat/mxl-practice-completion-adapter` → `main`.
+
 ## 29.08.2026 — MXL-date-policy: централизованная calendar-date/timezone политика
 
 - Добавлен `src/lib/dateTimezonePolicy.js`: `toUtcInstant`/`toLocalCalendarDate`
