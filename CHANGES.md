@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-JOURNAL-OWNER-DECISION-MEMO: owner-ready решение по минимальному публичному Journal
+
+- Добавлен `docs/product/MXL-JOURNAL-OWNER-DECISION-MEMO.md` — короткий decision memo для владельца о минимальном local-first Journal v1/v1.1, границах публичного обещания, privacy/AI consent, backend/storage gates и функциях, которые следует отложить.
+- Memo явно разделяет фактически реализованное в `origin/main`, открытые/discovery PR, draft-контракты, backend-dependent вопросы и непринятые продуктовые гипотезы. Cloud sync, AI-передача текста, media, reminders, payment и paid insights этим изменением не утверждаются и не реализуются.
+- Обновлён `TASKS.md`: ссылка на memo добавлена в `MXL-JOURNAL-PERSISTENCE-001`; статус остаётся owner/backend-dependent до принятия решений и ручных gates.
+- Код, `Smira31/mentalix-bot`, backend/API и `main` напрямую не менялись. PR содержит только документационные изменения.
+- Проверки будут выполнены до открытия PR.
+- Ветка перебазирована на `main` после фикса required-check (PR #332), без изменения сути задачи.
+
 ## 29.08.2026 — MXL-FULLSCREEN-SURFACE-RACE-001: shared fullscreen-store, устранение race condition
 
 - Причина: диагностика бага «кнопка "Пропустить" не работает на
