@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-STREAK-TIERS-001: status reconciliation
+
+- Статус сверён с фактическим `origin/main`: MXL-STREAK-TIERS-001 подтверждена как `verified/completed` через [PR #196](https://github.com/Smira31/Mentalix/pull/196), squash-merged коммитом `e46828df`; обновлены `TASKS.md` и `docs/TASK_INDEX.md`, код и `ROADMAP.md` не изменялись.
+
 ## 29.08.2026 — MXL-JOURNAL-OWNER-DECISION-MEMO: owner-ready решение по минимальному публичному Journal
 
 - Добавлен `docs/product/MXL-JOURNAL-OWNER-DECISION-MEMO.md` — короткий decision memo для владельца о минимальном local-first Journal v1/v1.1, границах публичного обещания, privacy/AI consent, backend/storage gates и функциях, которые следует отложить.

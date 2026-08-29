@@ -4162,6 +4162,13 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** backend schema, новые endpoints, восстановление пропущенных дней, управление streak — серия считается только по доступной 90-дневной истории check-in.
 - **Проверено:** `npm run check:core` (91/91 на момент PR), `npm run ux:check` (3/3), `git diff --check` — PASS.
 
+## MXL-STREAK-TIERS-001 — Именованные уровни текущей серии
+
+- **Статус: verified/completed.** Фактическое закрытие подтверждено через [PR #196](https://github.com/Smira31/Mentalix/pull/196), `feat: именованные уровни серии (MXL-STREAK-TIERS-001)`, squash-merged в `main` коммитом `e46828df` 26.08.2026.
+- **Что сделано:** добавлены именованные уровни текущего check-in streak; уровень считается от доступной серии на лету и не является постоянным достижением.
+- **Не входит:** новая reward-система, восстановление пропущенных дней, payment, reminders, cloud/backend schema и объединение badge-событий с History.
+- **Статусная сверка:** задача 10 очереди «Обновление 25.08.2026» в `ROADMAP.md` ранее оставалась без отдельной verified-записи, но фактическая реализация и merge PR #196 уже существуют в `origin/main`.
+
 ## MXL-VISUAL-RULES-LIBRARY-001 — Единый visual rules handoff
 
 - **Статус:** docs-only, зафиксировано 29.08.2026. Закрывает Issue #105.
