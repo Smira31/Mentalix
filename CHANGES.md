@@ -7,6 +7,7 @@
 - Обновлён `TASKS.md`: ссылка на memo добавлена в `MXL-JOURNAL-PERSISTENCE-001`; статус остаётся owner/backend-dependent до принятия решений и ручных gates.
 - Код, `Smira31/mentalix-bot`, backend/API и `main` напрямую не менялись. PR содержит только документационные изменения.
 - Проверки будут выполнены до открытия PR.
+- Ветка перебазирована на `main` после фикса required-check (PR #332), без изменения сути задачи.
 
 ## 29.08.2026 — MXL-FULLSCREEN-SURFACE-RACE-001: shared fullscreen-store, устранение race condition
 
