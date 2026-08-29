@@ -120,3 +120,24 @@ jobs:
             echo "::warning::npm audit found dependency findings; track remediation separately."
           fi
           exit 0
+
+  required-check:
+    name: Базовая проверка проекта
+    if: ${{ always() }}
+    needs:
+      - quality
+      - ux
+      - backend-health
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify required jobs
+        run: |
+          set -euo pipefail
+          quality='${{ needs.quality.result }}'
+          ux='${{ needs.ux.result }}'
+          backend_health='${{ needs.backend-health.result }}'
+          printf 'quality=%s\nux=%s\nbackend-health=%s\n' "$quality" "$ux" "$backend_health"
+          test "$quality" = success
+          test "$ux" = success
+          test "$backend_health" = success
