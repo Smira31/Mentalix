@@ -1,5 +1,26 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — Contract/regression harness: замыкает четыре трека
+
+- Добавлен `tests/unit/contract-regression.test.mjs` (см.
+  `docs/qa/CONTRACT-REGRESSION-HARNESS.md`) — автоматические regression-проверки
+  entry-контракта `MXL-JOURNAL-PERSISTENCE-001` и практик: entry schema/
+  required fields, idempotent `dedupeEntries`, детерминированный порядок
+  `readJournalEntries`, инварианты `MXL-date-policy`, malformed/legacy
+  handling, единый outcome/reflection allowlist четырёх practice-логов и
+  защита от пятого нерецензированного, отсутствие фиктивных backend-
+  эндпоинтов, отсутствие journal/practice текста в AI/Telegram payload.
+- Подключён к существующей команде `npm run test:unit` без изменений
+  `package.json` — только новые файлы в `tests/`/`docs/qa/`.
+- Ветка создавалась до мерджа #315/#316, поэтому 5 из 11 проверок делали
+  `t.skip` при отсутствии целевых модулей. После rebase на `main` (уже
+  включающий #315/#316/#317) все 11 реально исполняются: **11/11 pass, 0
+  skipped, 0 failed** — подтверждено напрямую, не предположительно.
+- `npm run test:unit` 117/117 (11 новых + существующие), lint, build,
+  `docs:check`, `git diff --check` — PASS. PR #318, squash-merge
+  `test/mxl-contract-regression-harness` → `main`. Четвёртый и последний
+  трек параллельной задачи закрыт.
+
 ## 29.08.2026 — Practice completion adapter: conflict note, унификация отложена
 
 - Задача «независимый local-first adapter для четырёх practice-completion

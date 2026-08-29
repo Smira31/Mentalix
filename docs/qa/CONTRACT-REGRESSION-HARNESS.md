@@ -8,18 +8,22 @@
 
 ## Зачем skip, а не fail
 
-Эта ветка создана от `main` независимо от `MXL-JOURNAL-PERSISTENCE-001` (frontend
-adapter) и `MXL-date-policy` — оба ещё открытые PR, не смёрженные. Часть проверок
-целится в модули из этих PR (`src/lib/journalEntryContract.js`,
-`src/lib/journalEntryAdapter.js`, `src/lib/dateTimezonePolicy.js`), которых пока нет на
+**Обновление 29.08.2026:** `MXL-JOURNAL-PERSISTENCE-001` (#315) и `MXL-date-policy`
+(#316) смёржены в `main`. После rebase этой ветки на актуальный `main` все 5 ранее
+`t.skip`-тестов реально исполняются и проходят — `node --test tests/unit/contract-regression.test.mjs`
+даёт 11/11 pass, 0 skipped, 0 failed. Секция ниже описана в прошедшем времени как
+контекст решения, не текущее состояние.
+
+Эта ветка была создана от `main` независимо от `MXL-JOURNAL-PERSISTENCE-001` (frontend
+adapter) и `MXL-date-policy` — оба тогда ещё открытые PR, не смёрженные. Часть проверок
+целилась в модули из этих PR (`src/lib/journalEntryContract.js`,
+`src/lib/journalEntryAdapter.js`, `src/lib/dateTimezonePolicy.js`), которых не было на
 `main`. Чтобы harness не ломал `npm run test:unit` до их мерджа и не требовал
-координации мерджа веток, такие проверки делают `t.skip(...)` через
+координации мерджа веток, такие проверки делали `t.skip(...)` через
 `node:test`, если `import()` целевого модуля возвращает `ERR_MODULE_NOT_FOUND` —
 это единственный код ошибки, который трактуется как «модуля ещё нет», любая другая
-ошибка при импорте остаётся настоящим failure. Как только соответствующий PR
-смёржен в `main`, эти проверки начинают реально исполняться без правки самого
-harness — проверено вручную (см. PR): при временной материализации файлов из обеих
-веток все 11 тестов проходят, 0 skipped.
+ошибка при импорте остаётся настоящим failure. Дизайн подтвердился: после мерджа
+обоих PR проверки заработали без единой правки самого harness.
 
 ## Что проверяется уже сейчас, без зависимости от неслитых PR
 
@@ -36,7 +40,7 @@ harness — проверено вручную (см. PR): при временн�
   идентификаторы journal/practice полей (`reflection`/`outcome`/`next_action`/
   `freeWrites`/...) как есть.
 
-## Что проверяется после мерджа Track 1/2
+## Что проверяется теперь, что раньше skip-алось до мерджа Track 1/2
 
 - Entry schema и обязательные поля (`ENTRY_KEY_ORDER`, `normalizeEntry` требует
   `entry_id`/`user_id`/`entry_type`).
