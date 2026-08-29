@@ -8,12 +8,17 @@ import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
 import { platformName } from '../platform'
 
-// ── История: лента дней из чек-инов и активности, как history. у stoic. ──
+// ── История: лента дней из чек-инов, активности и local-only journal, как
+// history. у stoic. ──
 // Утренняя мысль живёт в note, вечерний разбор — в lessons и wins.
 // Каждый блок показывается, только если в нём что-то есть.
 // Вехи и записи по темам — отдельные недатированные блоки ниже ленты:
 // у бейджей и тем нет даты в контракте бэкенда, честного слияния в общую
 // хронологию по датам без этого не сделать (MXL-HISTORY-UNIFIED-FEED-001).
+// Journal — другой случай: у него есть дата (ключ local store), просто
+// источник local-only, не backend — это не мешает слить его в общую
+// датированную ленту наравне с checkin/activity (расширение
+// MXL-HISTORY-UNIFIED-FEED-001, см. TASKS.md).
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
@@ -26,6 +31,48 @@ function dayTitle(iso) {
   if (diff === 0) return 'Сегодня'
   if (diff === 1) return 'Вчера'
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`
+}
+
+/*
+ * Локальный journal-фрагмент дня — переиспользуется и в карточке ленты, и
+ * в HistoryDetail. data-testid/тексты ниже намеренно совпадают с тем, что
+ * уже проверяет tests/unit/maintenance-contracts.test.mjs
+ * (MXL-JOURNAL-HISTORY-001) — тот тест ищет их по всему файлу, не по
+ * конкретному месту в разметке.
+ */
+function JournalDayCard({ entry }) {
+  return (
+    <div data-testid="local-journal-history" className="mt-3 border-t border-cream/10 pt-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[12px] font-semibold text-muted">Локальный журнал</span>
+        <span className="rounded-full bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
+          {entry.completedCount}/{entry.totalPhases} шага
+        </span>
+        <span className="text-[11px] text-faint">
+          {entry.status === 'final' ? 'завершено' : 'черновик'}
+        </span>
+      </div>
+      <p className="mt-1 text-[12px] leading-snug text-faint">
+        Записи сохранены на этом устройстве и доступны только в этом профиле.
+      </p>
+      <div className="mt-3 space-y-4">
+        {entry.phases.map(phase => (
+          <div key={phase.key}>
+            <div className="mb-1 flex items-center gap-2">
+              <span className="text-[12px] font-bold text-gold">{phase.label}</span>
+              <span className="text-[11px] text-faint">
+                {phase.status === 'final' ? 'завершено' : 'черновик'}
+              </span>
+            </div>
+            <MarkdownText
+              content={phase.text}
+              className="space-y-2 text-[14px] leading-snug text-muted"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function HistoryDetail({
@@ -146,6 +193,8 @@ function HistoryDetail({
           </p>
         )}
 
+        {day.journal && <JournalDayCard entry={day.journal} />}
+
         {checkin && (
           <div className="border-t border-cream/10 pt-4">
             <h3 className="text-[14px] font-semibold text-cream">Эта запись и AI</h3>
@@ -224,6 +273,25 @@ export default function History({ user }) {
       return []
     }
   }, [user, userId])
+
+  /*
+   * Единая датированная лента: days (checkin+activity, backend) слит с
+   * journalEntries (local-only) по дате. Оба источника уже независимо
+   * загружены/вычислены выше — здесь только компоновка, ни один из них не
+   * меняется. day.journal остаётся undefined для дней без local-записи —
+   * рендер решает, показывать ли JournalDayCard, по наличию поля.
+   */
+  const datedItems = useMemo(() => {
+    if (days === null) return null
+
+    const byDate = {}
+    for (const d of days) byDate[d.date] = { ...d }
+    for (const entry of journalEntries) {
+      byDate[entry.date] = { ...(byDate[entry.date] || { date: entry.date }), journal: entry }
+    }
+
+    return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
+  }, [days, journalEntries])
 
   useEffect(() => {
     if (!user) return
@@ -402,46 +470,6 @@ export default function History({ user }) {
     </div>
   )
 
-  const journalEntriesBlock = journalEntries.length > 0 && (
-    <div className="mt-8" data-testid="local-journal-history">
-      <div className="px-1 text-[13px] font-semibold text-muted">Локальный журнал</div>
-      <p className="mt-1 px-1 text-[12px] leading-snug text-faint">
-        Записи сохранены на этом устройстве и доступны только в этом профиле.
-      </p>
-      <div className="mt-3 space-y-3">
-        {journalEntries.map(entry => (
-          <article key={entry.date} className="rounded-3xl bg-emerald p-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-[13px] font-semibold text-cream">{dayTitle(entry.date)}</h3>
-              <span className="rounded-full bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
-                {entry.completedCount}/{entry.totalPhases} шага
-              </span>
-              <span className="text-[11px] text-faint">
-                {entry.status === 'final' ? 'завершено' : 'черновик'}
-              </span>
-            </div>
-            <div className="mt-4 space-y-4">
-              {entry.phases.map(phase => (
-                <div key={phase.key}>
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className="text-[12px] font-bold text-gold">{phase.label}</span>
-                    <span className="text-[11px] text-faint">
-                      {phase.status === 'final' ? 'завершено' : 'черновик'}
-                    </span>
-                  </div>
-                  <MarkdownText
-                    content={phase.text}
-                    className="space-y-2 text-[14px] leading-snug text-muted"
-                  />
-                </div>
-              ))}
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
-  )
-
   const themeEntriesBlock = themeEntries && themeEntries.length > 0 && (
     <div className="mt-8">
       <div className="text-[13px] text-muted font-semibold mb-2 px-1">Записи по темам</div>
@@ -461,7 +489,7 @@ export default function History({ user }) {
     </div>
   )
 
-  if (days.length === 0) {
+  if (datedItems.length === 0) {
     return (
       <>
         <EmptyState
@@ -474,7 +502,6 @@ export default function History({ user }) {
             <br />и здесь появится первая запись пути.
           </p>
         </EmptyState>
-        {journalEntriesBlock}
         {milestonesBlock}
         {themeEntriesBlock}
       </>
@@ -495,7 +522,7 @@ export default function History({ user }) {
       >
         Искать и фильтровать записи
       </button>
-      {days.map(d => {
+      {datedItems.map(d => {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
@@ -574,12 +601,13 @@ export default function History({ user }) {
                   )}
                 </div>
               )}
+
+              {d.journal && <JournalDayCard entry={d.journal} />}
             </button>
           </div>
         )
       })}
 
-      {journalEntriesBlock}
       {milestonesBlock}
       {themeEntriesBlock}
     </div>
