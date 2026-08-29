@@ -1,5 +1,18 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-JOURNAL-PERSISTENCE-001: entry-contract discovery doc в main
+
+- `docs/architecture/MXL-JOURNAL-PERSISTENCE-001_ENTRY_CONTRACT.md` наконец
+  добавлен в `main` — до этого код (`journalEntryContract.js`,
+  `dateTimezonePolicy.js`), уже смёрженный ранее, ссылался на путь,
+  которого в `main` не было. Документ включает исходный discovery и
+  коррекцию §2/§6/§10: исходный аудит ошибочно утверждал, что четыре
+  one-shot practice-flow не сохраняют факт завершения — на деле
+  `firstStepPractice.js`/`noBlamePractice.js`/`oneFinishPractice.js`/`narrowFocusPractice.js`
+  (PR #61-#63) уже делают это, независимо друг от друга, без idempotency.
+- `git diff --check`, `npm run docs:check` — PASS. PR #311, squash-merge
+  `docs/mxl-journal-persistence-001-entry-contract` → `main`.
+
 ## 29.08.2026 — MXL-SERIES-001: Today streak flame и Series & Badges
 
 - Добавлен огонёк серии в Today header и новый экран Series & Badges
