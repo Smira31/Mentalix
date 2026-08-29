@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-DATE-POLICY-UTC-FIX-001: локальная календарная дата
+
+- `src/lib/moodCheckDraft.js`, `src/screens/Analytics.jsx` и `src/screens/mentalix/insightDigest.js` переведены с UTC-среза `new Date().toISOString().slice(0, 10)` на централизованную `toLocalCalendarDate()` из `src/lib/dateTimezonePolicy.js`.
+- Исправлены пользовательские границы календарного дня: ограничение mood-check, выделение текущего дня в Analytics и дата последнего insight-дайджеста теперь используют локальную дату устройства. `src/lib/api.js` не менялся; его UTC-дата остаётся частью имени скачиваемого файла.
+- Добавлен unit-тест UTC+3 для последовательности 00:30 / 23:30 / 00:30 следующего локального дня. `CheckIn.jsx` и `History.jsx` не менялись.
+- Проверки и PR выполняются до закрытия задачи.
+
 ## 29.08.2026 — MXL-STREAK-TIERS-001: status reconciliation
 
 - Статус сверён с фактическим `origin/main`: MXL-STREAK-TIERS-001 подтверждена как `verified/completed` через [PR #196](https://github.com/Smira31/Mentalix/pull/196), squash-merged коммитом `e46828df`; обновлены `TASKS.md` и `docs/TASK_INDEX.md`, код и `ROADMAP.md` не изменялись.

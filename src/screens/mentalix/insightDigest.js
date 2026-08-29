@@ -1,6 +1,7 @@
 import { api } from '../../lib/api'
 import { readLocal, writeLocal } from '../../lib/store'
 import { cloud } from '../../platform/telegram.hooks'
+import { toLocalCalendarDate } from '../../lib/dateTimezonePolicy'
 import { deriveConclusions, MIN_CHECKINS } from '../Analytics'
 
 // ── «Дайджест от Следопыта» (ROADMAP.md, идея 3) ──
@@ -43,7 +44,7 @@ function daysSince(dateIso) {
 }
 
 function todayIso() {
-  return new Date().toISOString().slice(0, 10)
+  return toLocalCalendarDate()
 }
 
 /*
