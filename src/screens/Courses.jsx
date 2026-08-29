@@ -4,7 +4,10 @@ import ThemeScreen from './ThemeScreen'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
-import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
+import {
+  isLinkedWebWriteBlocked,
+  LINKED_WEB_WRITE_NOTICE,
+} from '../lib/webAuthLimits'
 
 const EMPTY_DRAFT = { title: '', source: '', duration_estimate_min: '', cover_url: '' }
 const FILTERS = [
@@ -137,10 +140,11 @@ function CourseCreateScreen({ onCreate, onCancel }) {
   )
 }
 
-function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
+function CourseDetail({ user, course, onBack, onDelete, onToggleStatus }) {
   const [notes, setNotes] = useState([])
   const [noteText, setNoteText] = useState('')
   const [confirming, setConfirming] = useState(false)
+  const [error, setError] = useState(null)
   const duration = formatDuration(course.duration_estimate_min)
 
   useEffect(() => {
@@ -149,9 +153,15 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
 
   async function addNote() {
     if (!noteText.trim()) return
-    const note = await api.courses.addNote(course.id, noteText.trim())
-    setNotes(prev => [note, ...prev])
-    setNoteText('')
+    try {
+      const note = await api.courses.addNote(course.id, noteText.trim())
+      setNotes(prev => [note, ...prev])
+      setNoteText('')
+      setError(null)
+    } catch (e) {
+      console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) setError(LINKED_WEB_WRITE_NOTICE)
+    }
   }
 
   return (
@@ -163,7 +173,10 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
         {confirming ? (
           <div className="flex items-center gap-2">
             <button
-              onClick={() => onDelete(course.id)}
+              onClick={async () => {
+                const result = await onDelete(course.id)
+                if (result?.error === 'linked_web_blocked') setError(LINKED_WEB_WRITE_NOTICE)
+              }}
               className="text-xs px-3 py-1.5 rounded-lg bg-red-900/60 text-cream"
             >
               Удалить
@@ -186,6 +199,8 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
         )}
       </div>
 
+      {error && <p role="alert" className="text-[12px] text-amber-200 mb-4 leading-relaxed">{error}</p>}
+
       <div className="rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-5">
         <div className="h-36 bg-emerald-light/20 flex items-center justify-center">
           {course.cover_url ? (
@@ -205,7 +220,10 @@ function CourseDetail({ course, onBack, onDelete, onToggleStatus }) {
             )}
           </div>
           <button
-            onClick={() => onToggleStatus(course)}
+            onClick={async () => {
+              const result = await onToggleStatus(course)
+              if (result?.error === 'linked_web_blocked') setError(LINKED_WEB_WRITE_NOTICE)
+            }}
             className={`w-full py-2.5 rounded-xl mx-type-flow-action flex items-center justify-center gap-2 transition-colors ${
               course.status === 'completed'
                 ? 'bg-emerald-light/30 text-muted'
@@ -308,6 +326,7 @@ export default function Courses({ user }) {
       setSelected(null)
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) return { error: 'linked_web_blocked' }
     }
   }
 
@@ -319,6 +338,7 @@ export default function Courses({ user }) {
       setSelected(updated)
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) return { error: 'linked_web_blocked' }
     }
   }
 
@@ -331,6 +351,7 @@ export default function Courses({ user }) {
   if (selected) {
     return (
       <CourseDetail
+        user={user}
         course={selected}
         onBack={() => setSelected(null)}
         onDelete={deleteCourse}

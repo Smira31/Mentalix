@@ -32,6 +32,9 @@ export function isUnverifiedTelegramWriteError(error) {
   return /\bfailed: 401\b/.test(error?.message || '')
 }
 
+export const LINKED_WEB_WRITE_NOTICE =
+  'Открой Mentalix в Telegram, чтобы выполнить это действие — привязанному аккаунту запись доступна только там.'
+
 export function isLinkedWebWriteBlocked(user, error) {
   return isLinkedWebAccount(user) && isUnverifiedTelegramWriteError(error)
 }
