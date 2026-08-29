@@ -3426,3 +3426,13 @@ Journal Home переведён с прямого prototype `localStorage` на 
 ## 29.08.2026 — PR #312: динамическая проверка gate на живом Telegram Preview
 
 Квота Vercel сбросилась; Telegram Preview развёрнут (`npm run preview`), ссылка отправлена владельцу через Telegram Bot API. Все 4 пункта ручного gate подтверждены динамически в браузере: баннер «открой в Telegram Mini App» вне Telegram (скриншот), рабочий email/OTP-флоу (`POST /api/auth/email/verify` 200, переход email→code), отсутствие фиктивного пользователя при неверном коде (`localStorage` пуст после ошибки), доступность (видимый focus-ring по `Tab`, `Enter` сабмитит форму, корректные `aria-label` в accessibility tree). Единственные console-сообщения — ожидаемые info-логи Telegram SDK вне Telegram-контекста, не относятся к PR. Gate пройден полностью (static + live); merge — решение владельца после его собственного просмотра preview, автоматически не мержится.
+
+## 29.08.2026 — MXL-DOCS-STATUS-AUDIT-001 закрыт: найдена и устранена настоящая причина блокировки merge
+
+Диагноз «merge PR #328/#325 блокирован правилом `require_extra_approval_for_unattributed_changes`» не подтвердился — это было ошибочное предположение по ходу расследования, зафиксированное здесь как исправленное, а не как факт. Реальная причина `mergeStateStatus: BLOCKED` на всех открытых PR: classic branch protection (`repos/Smira31/Mentalix/branches/main/protection`) требовал status-context `Базовая проверка проекта`, которого ни один workflow не публиковал с 28.08.2026 05:56 UTC — job `required-check` был случайно удалён коммитом `f844a7ee` («revert: restore main to 07:09 Preview state») вместе со всем `.github/workflows/ci.yml` и не восстановлен при последующем воссоздании файла.
+
+PR #332 (`fix/restore-required-status-check`) вернул job `required-check`/`Базовая проверка проекта` в `ci.yml`, идентично версии из `5ed850b0`. Смёржен squash-merge'ем **без `--admin`** — обычный merge прошёл сразу же после того, как job появился и отработал на самом PR #332, подтвердив диагноз эмпирически.
+
+После мерджа #332 все 4 ожидавших PR (#328, #288, #325, #312) перебазированы на новый `main`; required-чек прошёл у всех, `mergeStateStatus` перешёл в `CLEAN`/`UNSTABLE` (UNSTABLE — только из-за non-required Vercel-чеков на дневной квоте деплоев, не блокирует merge). Approve ни разу не понадобился. Все четыре смёржены squash-merge'ем в порядке #328 → #288 → #325 → #312 (без `--admin`), без конфликтов между собой — проверено индивидуально перед каждым мерджем через `mergeable`/`mergeStateStatus`.
+
+**Итог цикла MXL-DOCS-STATUS-AUDIT-001:** 5 PR (#332, #328, #288, #325, #312) смёржены в `main` обычным squash-merge, `--admin` не использовался ни разу за весь цикл.
