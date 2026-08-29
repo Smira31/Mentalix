@@ -847,3 +847,17 @@ test('preview cleanup verification waits for both channels across eventual-consi
   const onlyHttp = verifySequence(['200', '404'], ['ready', 'ready'])
   assert.equal(onlyHttp.at(-1).verifiedRemoved, false)
 })
+
+test('MXL-PREVIEW-DEMO-001 ограничивает demo mode явным Vercel Preview флагом', () => {
+  const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
+  const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
+
+  assert.match(demo, /params\.get\('demo'\) === '1'/)
+  assert.match(demo, /host\.endsWith\('\.vercel\.app'\)/)
+  assert.match(demo, /import\.meta\.env\.VERCEL_ENV === 'preview'/)
+  assert.match(demo, /preview-demo-user/)
+  assert.match(app, /useState\(\(\) => \(isPreviewDemoMode\(\) \? DEMO_USER : null\)\)/)
+  assert.match(app, /Preview Demo Mode/)
+  assert.match(api, /if \(isPreviewDemoMode\(\)\) return demoRequest\(path, options\)/)
+})
