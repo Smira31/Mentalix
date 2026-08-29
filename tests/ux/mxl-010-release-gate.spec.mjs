@@ -138,6 +138,7 @@ test.describe('MXL-010 automated technical gate', () => {
     const page = await context.newPage()
 
     await page.goto('/')
+    console.log(`MXL-010 auth initial state: ${JSON.stringify((await page.locator('body').innerText()).slice(0, 500))}`)
     await expect(page.getByRole('heading', { name: 'Вход в Mentalix' })).toBeVisible()
     await page.getByPlaceholder('you@example.com').fill('release-qa@example.invalid')
     await page.getByRole('button', { name: 'Получить код' }).click()
