@@ -1,5 +1,16 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-VISUAL-RULES-LIBRARY-001: единый visual rules handoff
+
+- Добавлен `docs/design/MXL-VISUAL-RULES-LIBRARY-001.md` — консолидированный
+  документ цветовых ролей, typography, spacing/safe-area, состояний
+  компонентов, accessibility/motion принципов и Do/Don't примеров. Каждое
+  правило помечено `verified`/`proposed`/`deprecated`; источник истины
+  (`src/index.css`/`tailwind.config.js`) не меняется и не дублируется как
+  отдельный набор значений — документ на него ссылается. Закрывает Issue #105.
+- `git diff --check`, `npm run docs:check` — PASS. PR #314, squash-merge
+  `docs/mxl-visual-rules-library` → `main`.
+
 ## 29.08.2026 — MXL-LOOP-002: QA regression matrix для action loop
 
 - Добавлен `docs/qa/MXL-LOOP-002_REGRESSION_MATRIX.md` — regression-матрица

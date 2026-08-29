@@ -4101,6 +4101,14 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/MXL-UX-RESPONSIVE-001_TEST_CASES.md`, `docs/testing/V1_1_TEST_PLAN.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
 - **Закрытый подэтап (29.08.2026):** на viewport 320×568 подписи «Наставник»/«Библиотека» пересекались в нижней навигации — добавлены narrow-only классы (`BottomNavigation.jsx`, до 360px: 9px шрифт, лёгкий отрицательный tracking; 375px+ не меняется). Добавлена regression-проверка геометрии label в `tests/ux/ux-check.spec.mjs`. `npm run test:unit`/`lint`/`build`/`docs:check` — PASS.
 
+## MXL-VISUAL-RULES-LIBRARY-001 — Единый visual rules handoff
+
+- **Статус:** docs-only, зафиксировано 29.08.2026. Закрывает Issue #105.
+- **Размер:** M.
+- **Что сделано:** `docs/design/MXL-VISUAL-RULES-LIBRARY-001.md` — единый handoff-документ для разработчиков/дизайна/QA: цветовые роли и production-токены, typography hierarchy, spacing/width/safe-area/radius, состояния кнопок/карточек/focus/disabled/error, accessibility/contrast/motion, Do/Don't примеры и чеклист UI-ревью. Каждое правило помечено `verified`/`proposed`/`deprecated` — не заменяет `src/index.css`/`tailwind.config.js` как источник истины, а собирает уже действующие правила в одном месте.
+- **Не входит:** новые токены, изменения `src/index.css`/компонентов — только консолидация документации.
+- **Проверено:** `git diff --check`, `npm run docs:check` — PASS.
+
 ## MXL-LOOP-002 — QA regression matrix для action loop
 
 - **Статус:** docs-only, зафиксировано 29.08.2026.
