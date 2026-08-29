@@ -1,5 +1,16 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-SERIES-001: Today streak flame и Series & Badges
+
+- Добавлен огонёк серии в Today header и новый экран Series & Badges
+  (текущая серия, статистика, unlocked/upcoming badges, detail state).
+  Серия считается через `currentCheckinStreak` (`src/lib/series.js`) из
+  `api.checkin.history(user.id, 90)` — непрерывность календарных дат по
+  завершённым check-in за доступные 90 дней; backend/schema не менялись.
+  Переиспользованы существующие `buildBadges`/`StreakBar`/`MotifArt`/`BackButton`.
+- `npm run check:core`, `npm run ux:check`, `git diff --check` — PASS.
+  Закрывает Issue #299. PR #301, squash-merge `feat/mxl-series-001` → `main`.
+
 ## 29.08.2026 — MXL-VISUAL-RULES-LIBRARY-001: единый visual rules handoff
 
 - Добавлен `docs/design/MXL-VISUAL-RULES-LIBRARY-001.md` — консолидированный

@@ -4101,6 +4101,14 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/MXL-UX-RESPONSIVE-001_TEST_CASES.md`, `docs/testing/V1_1_TEST_PLAN.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
 - **Закрытый подэтап (29.08.2026):** на viewport 320×568 подписи «Наставник»/«Библиотека» пересекались в нижней навигации — добавлены narrow-only классы (`BottomNavigation.jsx`, до 360px: 9px шрифт, лёгкий отрицательный tracking; 375px+ не меняется). Добавлена regression-проверка геометрии label в `tests/ux/ux-check.spec.mjs`. `npm run test:unit`/`lint`/`build`/`docs:check` — PASS.
 
+## MXL-SERIES-001 — Today streak flame и Series & Badges
+
+- **Статус:** реализовано 29.08.2026. Закрывает Issue #299.
+- **Размер:** M.
+- **Что сделано:** огонёк серии в левом слоте Today header; число серии — `currentCheckinStreak` (`src/lib/series.js`) из `api.checkin.history(user.id, 90)`, учитывает завершённые check-in и непрерывность календарных дат; новый экран `SeriesBadges.jsx` — текущая серия, статистика, unlocked/upcoming badges, detail state, loading/error/empty states, back navigation; переиспользованы `buildBadges`/`StreakBar`/`MotifArt`/`BackButton` вместо нового визуального языка.
+- **Не входит:** backend schema, новые endpoints, восстановление пропущенных дней, управление streak — серия считается только по доступной 90-дневной истории check-in.
+- **Проверено:** `npm run check:core` (91/91 на момент PR), `npm run ux:check` (3/3), `git diff --check` — PASS.
+
 ## MXL-VISUAL-RULES-LIBRARY-001 — Единый visual rules handoff
 
 - **Статус:** docs-only, зафиксировано 29.08.2026. Закрывает Issue #105.
