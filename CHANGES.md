@@ -3414,3 +3414,11 @@ Journal Home переведён с прямого prototype `localStorage` на 
 ## 27.08.2026 — Home/type quiet slice
 
 `MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001` реализованы в PR #241: главный hero Today поднят перед вторичными секциями, а пользовательские serif/Manrope overrides заменены на Onest baseline. Follow-up `MXL-HOME-QUIET-V2-002` добавил 10px нижнего воздуха перед fixed-навигацией и различимое active-состояние CTA; добавлен regression-контракт. CI/Vercel и повторный Telegram/iPhone gate пройдены. Backend, cloud sync, AI consent и proprietary Stoic assets не затронуты.
+
+## 29.08.2026 — MXL-DOCS-STATUS-AUDIT-001: сверка TASKS.md/TASK_INDEX.md с main, три PR на approve
+
+Сверка документации с `git log origin/main` и `gh pr list` по запросу владельца выявила статус-тексты, называвшие уже смёрженные PR открытыми: MXL-006 (PR #209), MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001 (PR #191), MXL-THEME-ACCENT-001 (PR #172) в `TASKS.md`, MXL-DS-LABEL-FONT-001 (PR #287) и MXL-SERIES-001 (PR #301) в `docs/TASK_INDEX.md`. Также добавлены пропущенные записи `TASKS.md`: MXL-MOOD-CHECK-001 (закрыто, PR #182), MXL-FULLSCREEN-SURFACE-RACE-001 (закрыто, PR #327), MXL-FULLSCREEN-HEADER-NATIVE-001 (черновик, не начата).
+
+Прямой push докс-коммита в `main` отклонён repository rule — оформлен как PR #328. Merge PR #328 и #325 заблокирован правилом `require_extra_approval_for_unattributed_changes`: оба ждут ручного approve владельца в GitHub UI, `--admin` не используется по прямому указанию владельца. Фикс MXL-SERIES-001 запушен отдельным коммитом в ветку PR #288, готов к approve.
+
+Для PR #312 (`feat/web-auth-fallback-copy`) проведён static-review всех 4 пунктов ручного gate из тела PR (Telegram-баннер вне Mini App, email/OTP-фоллбек, отсутствие фиктивного пользователя при неудачном OTP, доступность) — все 4 пройдены по коду, `check:core` зелёный. Развернуть Telegram Preview не удалось: Vercel вернул `api-deployments-free-per-day` — дневная квота бесплатных деплоев исчерпана. Реальный OTP-раундтрип и визуальная проверка на устройстве не выполнены, PR не смёржен.
