@@ -280,6 +280,8 @@ export default function BottomNavigation({
                 <span
                   className={[
                     'text-[10px]',
+                    'max-[360px]:text-[9px]',
+                    'max-[360px]:tracking-[-0.02em]',
                     'font-semibold',
                     'whitespace-nowrap',
                     active

@@ -1,5 +1,16 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-UX-RESPONSIVE-001: подписи нижней навигации на узком экране
+
+- На viewport 320×568 подписи «Наставник»/«Библиотека» пересекались внутри
+  нижней навигации. Добавлены narrow-only классы в `BottomNavigation.jsx`
+  (до 360px: 9px шрифт, лёгкий отрицательный tracking); на 375px и шире
+  базовая типографика не меняется.
+- Добавлена regression-проверка геометрии label-ов в
+  `tests/ux/ux-check.spec.mjs`.
+- `npm run test:unit`, `lint`, `build`, `docs:check`, `git diff --check` —
+  PASS. PR #285, squash-merge `feat/mxl-ux-responsive-001` → `main`.
+
 ## 29.08.2026 — AGENTS.md: явное правило "отвечай по-русски"
 
 - Раздел «Language» в `AGENTS.md` уже требовал отвечать пользователю
