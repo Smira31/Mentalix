@@ -3401,6 +3401,12 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## Требует продуктового решения
 
+- [ ] **MXL-PLUS-001 — Discovery платного слоя Mentalix Plus**
+  - **Статус:** discovery approved владельцем 29.08.2026; implementation не начата и не разрешена этим документом.
+  - **Рекомендованный free/paid boundary:** бесплатными навсегда остаются Journal core, local-first History, базовые практики, check-in, базовые descriptive observations, удаление и privacy controls. Первый Premium-кандидат — дополнительные curated guided packs; cloud/convenience и AI — только после отдельных backend/privacy/safety gates.
+  - **Не входит:** checkout, payment provider, paywall, backend/API, AI, персональные данные, fake-door и уменьшение бесплатного baseline.
+  - **Следующий шаг:** owner-approved discovery guided packs без checkout; измерять понятность дополнительной ценности, return intent и отсутствие вреда для free core.
+
 - [x] **MXL-021 — Зафиксировать палитру в `PRODUCT.md`**
   - Решить: текущий абсолютный чёрный или прежняя более тёплая тёмная палитра.
   - **Решение принято 14.08.2026 (`MXL-DEC-010`):** перейти с абсолютного чёрного `#000000` на тёплый тёмный фон — снижение усталости глаз и более спокойное ощущение вечером. Статус: решение принято, нужны конкретные токены — конкретные hex-значения ещё не выбраны, код/токены не менялись.
