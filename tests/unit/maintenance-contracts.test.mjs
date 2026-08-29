@@ -496,7 +496,7 @@ test('MXL-019 заменяет Journey mountain metaphor на continuous progres
   )
 
   assert.doesNotMatch(path, /WireframeMountain/)
-  assert.match(path, /JourneyLineArt progress=\{goal\.progress\}/)
+  assert.match(path, /JourneyLineArt\s+progress=\{goal\.progress\}/)
   assert.match(path, /Создай первую — и увидишь линию движения/)
   assert.match(line, /const PATH_D/)
   assert.equal((line.match(/<path/g) || []).length, 2)

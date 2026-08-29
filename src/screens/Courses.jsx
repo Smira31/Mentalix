@@ -4,6 +4,7 @@ import ThemeScreen from './ThemeScreen'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
+import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
 
 const EMPTY_DRAFT = { title: '', source: '', duration_estimate_min: '', cover_url: '' }
 const FILTERS = [
@@ -42,7 +43,9 @@ function CourseCard({ course, onOpen }) {
         </span>
       </div>
       <div className="p-4">
-        <h3 className="font-display mx-type-list-title text-cream leading-snug mb-1">{course.title}</h3>
+        <h3 className="font-display mx-type-list-title text-cream leading-snug mb-1">
+          {course.title}
+        </h3>
         {course.source && <p className="text-xs text-muted mb-2">{course.source}</p>}
         <div className="flex items-center gap-3 text-xs text-muted">
           {duration && (
@@ -59,6 +62,7 @@ function CourseCard({ course, onOpen }) {
 function CourseCreateScreen({ onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
 
   function set(field) {
     return e => setDraft(d => ({ ...d, [field]: e.target.value }))
@@ -67,7 +71,8 @@ function CourseCreateScreen({ onCreate, onCancel }) {
   async function submit() {
     if (!draft.title.trim() || saving) return
     setSaving(true)
-    await onCreate({
+    setError(null)
+    const result = await onCreate({
       title: draft.title,
       source: draft.source || null,
       cover_url: draft.cover_url || null,
@@ -75,6 +80,13 @@ function CourseCreateScreen({ onCreate, onCancel }) {
         ? Number(draft.duration_estimate_min)
         : null,
     })
+    if (result?.error === 'linked_web_blocked') {
+      setError(
+        'Открой Mentalix в Telegram, чтобы добавить материал — привязанному аккаунту это пока доступно только там.'
+      )
+    } else if (!result) {
+      setError('Не получилось добавить материал. Проверь соединение и попробуй ещё раз.')
+    }
     setSaving(false)
   }
 
@@ -107,6 +119,12 @@ function CourseCreateScreen({ onCreate, onCancel }) {
           className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
       </div>
+
+      {error && (
+        <p role="alert" className="text-[13px] text-red-300 leading-relaxed mb-3">
+          {error}
+        </p>
+      )}
 
       <button
         onClick={submit}
@@ -275,8 +293,11 @@ export default function Courses({ user }) {
       const course = await api.courses.create(user.id, draft)
       setCourses(prev => [course, ...prev])
       setShowCreate(false)
+      return course
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) return { error: 'linked_web_blocked' }
+      return null
     }
   }
 
@@ -340,9 +361,7 @@ export default function Courses({ user }) {
                 <span className="block font-display mx-type-card text-cream lowercase leading-tight">
                   {t.title}
                 </span>
-                <span className="block text-[12px] text-muted mt-1 leading-snug">
-                  {t.subtitle}
-                </span>
+                <span className="block text-[12px] text-muted mt-1 leading-snug">{t.subtitle}</span>
                 <span className="flex items-center gap-1.5 mt-3">
                   {Array.from({ length: t.total_days }).map((_, i) => (
                     <span

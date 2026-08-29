@@ -16,6 +16,7 @@ import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
+import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
 
 /*
@@ -193,6 +194,7 @@ function CreateRitualScreen({ onCreate, onCancel }) {
 
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
 
   function set(field) {
     return e => setDraft(d => ({ ...d, [field]: e.target.value }))
@@ -201,8 +203,16 @@ function CreateRitualScreen({ onCreate, onCancel }) {
   async function submit() {
     if (!draft.name.trim() || saving) return
     setSaving(true)
+    setError(null)
     try {
-      await onCreate(draft)
+      const result = await onCreate(draft)
+      if (result?.error === 'linked_web_blocked') {
+        setError(
+          'Открой Mentalix в Telegram, чтобы создать ритуал — привязанному аккаунту это пока доступно только там.'
+        )
+      } else if (!result) {
+        setError('Не получилось создать ритуал. Проверь соединение и попробуй ещё раз.')
+      }
     } finally {
       setSaving(false)
     }
@@ -280,6 +290,12 @@ function CreateRitualScreen({ onCreate, onCancel }) {
               className={inputCls}
             />
           </div>
+
+          {error && (
+            <p role="alert" className="text-[13px] text-red-300 leading-relaxed mb-2">
+              {error}
+            </p>
+          )}
         </div>
       </div>
 
@@ -352,6 +368,7 @@ export default function Rituals({ user, onBack }) {
       return ritual
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) return { error: 'linked_web_blocked' }
       return null
     }
   }
