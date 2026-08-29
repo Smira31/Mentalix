@@ -1,13 +1,19 @@
+import { toLocalCalendarDate } from './dateTimezonePolicy.js'
+
 const STORAGE_KEY = 'mx-journal-v2'
 const PROTOTYPE_STORAGE_KEY = 'mx-journal-prototype-v1'
 const STORAGE_VERSION = 2
 
 const PHASE_KEYS = ['idea', 'action', 'analysis', 'newStep']
 
+/*
+ * Delegates to the centralized calendar-date policy (see
+ * dateTimezonePolicy.js) instead of a local getTimezoneOffset() copy —
+ * behavior is unchanged (verified equivalent in
+ * tests/unit/date-timezone-policy.test.mjs), signature is unchanged.
+ */
 function todayKey() {
-  const date = new Date()
-  const offset = date.getTimezoneOffset() * 60_000
-  return new Date(date.getTime() - offset).toISOString().slice(0, 10)
+  return toLocalCalendarDate()
 }
 
 function normalizeUserId(userId) {
@@ -18,7 +24,9 @@ function normalizeUserId(userId) {
 
 function journalStorageKey(userId) {
   const normalizedUserId = normalizeUserId(userId)
-  return normalizedUserId ? `${STORAGE_KEY}:user:${encodeURIComponent(normalizedUserId)}` : STORAGE_KEY
+  return normalizedUserId
+    ? `${STORAGE_KEY}:user:${encodeURIComponent(normalizedUserId)}`
+    : STORAGE_KEY
 }
 
 function emptyPhase() {
@@ -112,7 +120,8 @@ function removeRaw(key) {
 
 function prototypeEntry() {
   const prototype = readRaw(PROTOTYPE_STORAGE_KEY)
-  if (!isObject(prototype) || typeof prototype.date !== 'string' || !isObject(prototype.drafts)) return null
+  if (!isObject(prototype) || typeof prototype.date !== 'string' || !isObject(prototype.drafts))
+    return null
   const entry = emptyEntry(prototype.date)
   for (const key of PHASE_KEYS) {
     entry.cycle[key] = normalizePhase({ text: prototype.drafts[key] || '', status: 'draft' })
@@ -122,8 +131,8 @@ function prototypeEntry() {
 }
 
 function hasJournalContent(store) {
-  return Object.values(store.entries).some(entry =>
-    PHASE_KEYS.some(key => entry.cycle[key]?.text?.trim()) || entry.freeWrites.length > 0
+  return Object.values(store.entries).some(
+    entry => PHASE_KEYS.some(key => entry.cycle[key]?.text?.trim()) || entry.freeWrites.length > 0
   )
 }
 

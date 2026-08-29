@@ -1,16 +1,17 @@
+import { toLocalCalendarDate } from './dateTimezonePolicy.js'
+
 const STORAGE_PREFIX = 'mx-checkin-draft-v1'
 
-export const MORNING_WRITING_MODES = [
-  'brief',
-  'reflect',
-  'free',
-]
+export const MORNING_WRITING_MODES = ['brief', 'reflect', 'free']
 
+/*
+ * Delegates to the centralized calendar-date policy (see
+ * dateTimezonePolicy.js) instead of a local getTimezoneOffset() copy —
+ * behavior is unchanged (verified equivalent in
+ * tests/unit/date-timezone-policy.test.mjs), signature is unchanged.
+ */
 export function todayCheckinKey(now = new Date()) {
-  const offset = now.getTimezoneOffset() * 60_000
-  return new Date(now.getTime() - offset)
-    .toISOString()
-    .slice(0, 10)
+  return toLocalCalendarDate(now)
 }
 
 function draftKey(userId, date) {
