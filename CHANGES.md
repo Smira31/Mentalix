@@ -34,12 +34,12 @@
   безопасность без `window`/DOM, отсутствие side-эффектов при простом
   импорте модуля, legacy `initFullscreen` API.
 - `npm run test:unit` 144/144, `lint`, `build`, `docs:check`,
-  `git diff --check` — PASS. Разблокирует `MXL-MOOD-CHECK-001` (не мёржить
-  до этого фикса). Ручной Telegram/iPhone gate по `MoodCheckGate`/`AppLock`/
-  одному practice-flow/web-фоллбеку — обязателен перед merge, не выполнен
-  этим коммитом. Задача `MXL-FULLSCREEN-SURFACE-RACE-001` зафиксирована
-  только здесь и в истории чата — `TASKS.md` занят открытым PR #303,
-  впишу туда после его освобождения.
+  `git diff --check` — PASS. Разблокирует `MXL-MOOD-CHECK-001`.
+- **Закрыто 29.08.2026:** PR #327 смёржен squash-коммитом по прямому
+  запросу владельца (два temporary preview-деплоя развёрнуты и проверены
+  в ходе ревью). Задача `MXL-FULLSCREEN-SURFACE-RACE-001` зафиксирована
+  только здесь — `TASKS.md` всё ещё занят открытым PR #303, впишу туда
+  отдельным шагом после его освобождения.
 
 ## 29.08.2026 — MXL-JOURNAL-PERSISTENCE-001: entry-contract discovery doc в main
 
