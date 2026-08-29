@@ -9,6 +9,9 @@
 - Проверки будут выполнены до открытия PR.
 - Ветка перебазирована на `main` после фикса required-check (PR #332), без изменения сути задачи.
 
+- MXL-010: Playwright failure был вызван устаревшими locator-ами теста после изменения WebAuthScreen, а не регрессией кода; синхронизированы три test-only locator-а — direct-web заголовки (`Лучше открыть Mentalix через Telegram Mini App` и `Вход через браузер`), `Получить одноразовый код на email` и `Проверить одноразовый код`.
+
+
 ## 29.08.2026 — MXL-FULLSCREEN-SURFACE-RACE-001: shared fullscreen-store, устранение race condition
 
 - Причина: диагностика бага «кнопка "Пропустить" не работает на
