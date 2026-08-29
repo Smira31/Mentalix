@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { Target, ArrowUp, ArrowLeft, ArrowRight, Flame, TrendingUp, Trash2 } from 'lucide-react'
 import JourneyLineArt from '../components/JourneyLineArt'
+import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
-
 
 export function TickGauge({ value, max, sublabel, size = 160 }) {
   const percent = Math.max(0, Math.min(1, value / max))
@@ -74,6 +74,7 @@ function EmptyGoals({ onCreate }) {
 function GoalCreateScreen({ onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
 
   function set(field) {
     return e => setDraft(d => ({ ...d, [field]: e.target.value }))
@@ -82,7 +83,15 @@ function GoalCreateScreen({ onCreate, onCancel }) {
   async function submit() {
     if (!draft.title.trim() || saving) return
     setSaving(true)
-    await onCreate({ ...draft, target_date: draft.target_date || null })
+    setError(null)
+    const result = await onCreate({ ...draft, target_date: draft.target_date || null })
+    if (result?.error === 'linked_web_blocked') {
+      setError(
+        'Открой Mentalix в Telegram, чтобы создать цель — привязанному аккаунту это пока доступно только там.'
+      )
+    } else if (!result) {
+      setError('Не получилось создать цель. Проверь соединение и попробуй ещё раз.')
+    }
     setSaving(false)
   }
 
@@ -136,6 +145,12 @@ function GoalCreateScreen({ onCreate, onCancel }) {
         />
       </div>
 
+      {error && (
+        <p role="alert" className="text-[13px] text-red-300 leading-relaxed mb-3">
+          {error}
+        </p>
+      )}
+
       <button
         onClick={submit}
         disabled={!draft.title.trim() || saving}
@@ -153,7 +168,10 @@ function GoalCard({ goal, onOpen }) {
       onClick={() => onOpen(goal)}
       className="relative w-full text-left rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-4 h-40"
     >
-      <JourneyLineArt progress={goal.progress} className="absolute inset-0 w-full h-full opacity-80" />
+      <JourneyLineArt
+        progress={goal.progress}
+        className="absolute inset-0 w-full h-full opacity-80"
+      />
       <div className="absolute top-3 left-3">
         <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-[11px] font-body">
           <Target size={12} /> Цель
@@ -217,7 +235,10 @@ function GoalDetail({ goal, onBack, onDelete }) {
       </div>
 
       <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep h-44 mb-5">
-        <JourneyLineArt progress={goal.progress} className="absolute inset-0 w-full h-full opacity-80" />
+        <JourneyLineArt
+          progress={goal.progress}
+          className="absolute inset-0 w-full h-full opacity-80"
+        />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
           <div className="w-14 h-14 rounded-2xl bg-black/30 flex items-center justify-center mb-3">
             <Target size={26} className="text-gold" strokeWidth={1.5} />
@@ -227,7 +248,9 @@ function GoalDetail({ goal, onBack, onDelete }) {
       </div>
 
       {goal.description && (
-        <p className="text-[13px] text-muted text-center mb-5 leading-relaxed">{goal.description}</p>
+        <p className="text-[13px] text-muted text-center mb-5 leading-relaxed">
+          {goal.description}
+        </p>
       )}
 
       <div className="rounded-[28px] bg-emerald-light/20 border border-cream/10 p-6 mb-5 flex justify-center">
@@ -297,8 +320,11 @@ export default function Path({ user, onContinueToday }) {
       const goal = await api.goals.create(user.id, draft)
       setGoals(prev => [...prev, goal])
       setShowCreate(false)
+      return goal
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) return { error: 'linked_web_blocked' }
+      return null
     }
   }
 
