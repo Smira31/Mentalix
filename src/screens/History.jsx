@@ -6,7 +6,8 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
-import { platformName } from '../platform'
+import { platform, platformName } from '../platform'
+import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './mentalix/personas'
 
 // ── История: лента дней из чек-инов, активности и local-only journal, как
 // history. у stoic. ──
@@ -85,6 +86,7 @@ function HistoryDetail({
   onContextChange,
   savingContext,
   contextError,
+  onDiscuss,
 }) {
   const checkin = day.checkin
   const wins = checkin?.wins || []
@@ -226,6 +228,19 @@ function HistoryDetail({
             {contextError && (
               <p role="alert" className="mt-2 text-[12px] text-red-300">
                 {contextError}
+              </p>
+            )}
+            {checkin.ai_context_enabled ? (
+              <button
+                type="button"
+                onClick={onDiscuss}
+                className="mt-3 min-h-10 rounded-full bg-gold/10 px-3 text-left text-[12px] font-semibold text-gold"
+              >
+                Обсудить с AI
+              </button>
+            ) : (
+              <p className="mt-3 text-[12px] leading-relaxed text-faint">
+                Включи персональный контекст выше, чтобы обсудить эту запись с AI.
               </p>
             )}
             <p className="mb-3 mt-5 text-[12px] leading-relaxed text-muted">
@@ -420,6 +435,46 @@ export default function History({ user }) {
     }
   }
 
+  /*
+   * MXL-AI-REFRAME-001: «Обсудить с AI» на уже сохранённой записи —
+   * реактивный переход, не проактивная подсказка. Переиспользует тот же
+   * sessionStorage-хендофф, что openScout()/openListener()/
+   * deepenMorningNote() в CheckIn.jsx (MENTOR_PERSONA_KEY/MENTOR_DRAFT_KEY),
+   * плюс отдельный MENTOR_SAFETY_KEY — включает лид-дисклеймер и
+   * safety-проверку ответов в Mentalix.jsx только для этого хендоффа, не
+   * трогая остальные. Уважает contextConsent/setCheckinContext: кнопка
+   * доступна только если checkin.ai_context_enabled уже включён владельцем
+   * записи. Никакого нового backend-запроса и никакой записи обратно в
+   * checkin — итог живёт только в чате (mentalix.send).
+   */
+  function discussSelectedCheckinWithAI() {
+    const checkin = selectedDay?.checkin
+    if (!checkin?.ai_context_enabled) return
+
+    const parts = []
+    if (checkin.note) parts.push(checkin.note.trim())
+    if (checkin.lessons) parts.push(checkin.lessons.trim())
+    const text = parts.join('\n\n')
+    if (!text) return
+
+    platform.haptic('medium')
+
+    try {
+      sessionStorage.setItem(MENTOR_PERSONA_KEY, 'mayak')
+      sessionStorage.setItem(
+        MENTOR_DRAFT_KEY,
+        ['Хочу обсудить одну свою запись.', text].join('\n\n')
+      )
+      sessionStorage.setItem(MENTOR_SAFETY_KEY, '1')
+    } catch (error) {
+      console.error(error)
+    }
+
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', 'mentor')
+    window.location.href = url.toString()
+  }
+
   if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
 
   if (selectedDay) {
@@ -434,6 +489,7 @@ export default function History({ user }) {
         onContextChange={updateSelectedCheckinContext}
         savingContext={savingContext}
         contextError={contextError}
+        onDiscuss={discussSelectedCheckinWithAI}
       />
     )
   }

@@ -1,4 +1,6 @@
-const UNSAFE_INSIGHT_PATTERNS = [
+// Экспортируется для переиспользования вне контекста инсайтов —
+// см. src/lib/aiReframeSafety.js (MXL-AI-REFRAME-001).
+export const UNSAFE_INSIGHT_PATTERNS = [
   /диагноз/i,
   /расстройств/i,
   /депресс/i,
@@ -27,5 +29,8 @@ export function isDescriptiveInsight(value) {
 export function selectDescriptiveInsights(insights) {
   if (!Array.isArray(insights)) return []
 
-  return insights.filter(isDescriptiveInsight).map(text => text.trim()).slice(0, MAX_INSIGHTS)
+  return insights
+    .filter(isDescriptiveInsight)
+    .map(text => text.trim())
+    .slice(0, MAX_INSIGHTS)
 }

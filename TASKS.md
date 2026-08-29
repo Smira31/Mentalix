@@ -1,5 +1,16 @@
 # Mentalix — задачи
 
+## MXL-AI-REFRAME-001 — «Обсудить с AI» на сохранённой записи (задача 7, ROADMAP.md)
+
+- **Статус: реализовано 29.08.2026, ждёт PR/gate.** Задача 7 подтверждённой очереди `ROADMAP.md` («Обновление 25.08.2026») = идея 1 из «Конкурентный анализ: психологическое благополучие» («AI-помощник формулировки автоматических мыслей в чек-ине/дневнике»). Реализована по итогам pre-mortem (Tiger/Paper Tiger/Elephant) и трёх решений владельца (Q1/Q2/Q3).
+- **Q1 — что сделано:** кнопка «Обсудить с AI» в `src/screens/History.jsx` (`HistoryDetail`, блок «Эта запись и AI»), видна и активна только когда `checkin.ai_context_enabled === true` — уважает существующий `mentalix.contextConsent`/`setCheckinContext`, ничего нового в consent не добавляет. Открывает существующий чат с персоной `mayak` (Собеседник) через уже существующий sessionStorage-хендофф `MENTOR_PERSONA_KEY`/`MENTOR_DRAFT_KEY` (тот же паттерн, что `openScout()`/`openListener()`/`deepenMorningNote()` в `CheckIn.jsx`), с префиллом — собственным текстом пользователя (`checkin.note`/`checkin.lessons`) как первое сообщение в `input`, не отправленное автоматически. Никакой проактивности — только реактивная кнопка по нажатию. Новый backend endpoint не создавался, `api.mentalix.send` не менялся.
+- **Q2 — возрастной гейт:** зафиксирован `docs/core/PRODUCT_DECISIONS.md` → `MXL-DEC-021` — категория приложения 16+ (по аналогии со Stoic), снимает открытый вопрос `PRODUCT.md` §9 для этой и будущих задач. Текст `PRODUCT.md` §9 не переписан в этой задаче — отдельный последующий шаг.
+- **Q3 — куда идёт результат:** только в чат. Ответ AI не сохраняется обратно в checkin/journal entry, data-contract записи (`journalEntryContract.js`) не тронут.
+- **Safety-слой (переиспользует фильтр MXL-009):** новый `src/lib/aiReframeSafety.js` — `AI_REFRAME_LEAD_MESSAGE` (синтетическое лид-сообщение с оговоркой «не диагноз, не замена специалиста», тот же приём, что «Дайджест от Следопыта» в `insightDigest.js` — ничего не уходит в backend) и `withSafetyNote()` — дополняет (не переписывает и не отбрасывает) ответ AI короткой оговоркой, если он задел diagnostic/causal/therapeutic regex-паттерн из `descriptiveInsights.js` (`UNSAFE_INSIGHT_PATTERNS`, экспортирован для переиспользования). Активируется только для этого хендоффа через новый `MENTOR_SAFETY_KEY` в `personas.js` → проп `withSafetyNotice` в `Mentalix.jsx` — обычные чаты (`openScout`/`openListener`/`deepenMorningNote`/вход через `PersonaPicker`) не затронуты.
+- **Не входит (по прямому ограничению владельца):** live-подсказка во время печати, новый backend endpoint, изменение тона/промптов существующих 3 AI-персон (имя/роль/description), задачи 6 и 9 (параллельные).
+- **Проверено:** `npm run check:core` — 144/144 unit, lint, build, docs:check (150 файлов, 45 canonical task ID) — PASS.
+- **Следующий шаг:** PR с этим диффом, ручной Telegram/iPhone gate — не мержится автоматически.
+
 ## MXL-DOCS-STATUS-AUDIT-001 — Сверка TASKS.md/TASK_INDEX.md с фактическим состоянием main
 
 - **Статус: закрыто 29.08.2026.** По запросу владельца проведена сверка документации с `git log origin/main` и `gh pr list`; найдены и исправлены статус-тексты, называвшие уже смёрженные PR открытыми (MXL-006, MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001, MXL-THEME-ACCENT-001, MXL-DS-LABEL-FONT-001 и MXL-SERIES-001).
