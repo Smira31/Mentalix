@@ -181,10 +181,9 @@ telegram-preview.yml`, secrets, Vercel project, production. Ветка
 
 ## MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001 — единый intro/completion во всех практиках
 
-- **Статус: PR #191 открыт 26.08.2026 (ветка
-  `feat/practices-intro-completion-unify-001`, 6 коммитов — intro/completion
-  раздельно на файл), CI зелёный, Telegram Preview развёрнут — ждёт живого
-  iPhone gate владельца перед обычным squash-merge.** Приводит
+- **Статус: закрыто 26.08.2026.** PR #191 (`feat/practices-intro-completion-unify-001`,
+  6 коммитов — intro/completion раздельно на файл) squash-смёржен в `main`,
+  iPhone gate владельца пройден. Приводит
   `FirstStepFlow.jsx`, `FinishFlow.jsx`, `NarrowFocusFlow.jsx` к тому же
   паттерну подачи, что уже есть у «Без вины»
   (`MXL-PRACTICES-EXPERIENCE-PILOT-001`): вступительная карточка
@@ -1714,9 +1713,9 @@ href="?ui_lab=...">` ссылки (полная навигация, без кл�
 
 - [x] **MXL-THEME-ACCENT-001 — Выбор акцентного цвета (идея 13 конкурентного
       анализа Stoic)**
-  - **Статус: реализовано 25.08.2026, PR #172 открыт (CI зелёный), ждёт
-    ручной проверки в Settings → «Внешний вид» и live gate в Telegram перед
-    мёржем.** Источник — `ROADMAP.md` → «Конкурентный анализ: Stoic —
+  - **Статус: закрыто 25.08.2026.** PR #172 squash-смёржен в `main`, ручная
+    проверка в Settings → «Внешний вид» и live gate в Telegram пройдены
+    владельцем. Источник — `ROADMAP.md` → «Конкурентный анализ: Stoic —
     дополнительные экраны» → идея 13 «Смена фона/темы экрана».
   - Объём подтверждён владельцем 25.08.2026: только акцентный цвет
     (`--c-gold`), не фон — `--c-bg: #050403` не трогается, `MXL-DEC-010` не
@@ -3231,7 +3230,7 @@ entityType, entityId)`.
   - Утвердить размеры заголовков, основного текста, подписей и поля ввода.
   - **Baseline 26.08.2026:** title — `clamp(1.75rem, 7vw, 2.125rem)` / `1.15`; body — `1rem` / `1.62`; meta — `0.6875rem` / `1.2`, uppercase; caption — `0.8125rem` / `1.5`; input — `1rem` / `1.4`.
   - Роли применены к Conversation, PersonaPicker и JournalStart; backend/API, контент и поведение экранов не менялись.
-  - **Статус:** реализация завершена в feature-ветке; ожидаются PR, GitHub CI/Vercel и ручной Telegram/iPhone gate.
+  - **Статус:** закрыто 26.08.2026. PR #209 (`feat/mxl-006-ai-typography`) squash-смёржен в `main`, GitHub CI/Vercel и ручной Telegram/iPhone gate пройдены владельцем.
   - **Проверки:** 17/17 unit, lint, build, docs:check, diff-check и `npm run ux:check` проходят на 390×844 и 320×568.
   - **Критерии готовности:** шкала едина для AI-экранов; длинный текст переносится без горизонтального overflow; роли title/body/meta/caption/input видимы и проверяемы; ручная iPhone-проверка пройдена.
 
@@ -4132,5 +4131,25 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 Статус: реализовано в PR #241 на ветке `feat/mxl-home-quiet-type-001`; исходный Home/type slice и follow-up MXL-HOME-QUIET-V2-002 подготовлены к merge. Today перестроен так, чтобы главный hero-блок был первым фокусом перед вторичными секциями; пользовательские `Georgia`, `Times New Roman` и `Manrope` overrides заменены на единый Onest baseline.
 
 Follow-up MXL-HOME-QUIET-V2-002 добавляет 10px воздуха после последнего контента перед fixed-навигацией и делает active-состояние CTA различимым через спокойное изменение поверхности и внутренний контур. Добавлен regression-контракт в `tests/unit/maintenance-contracts.test.mjs`. Design note: `docs/product/MXL-HOME-TYPE-FOUNDATION-001_DESIGN.md`.
+
+## MXL-MOOD-CHECK-001 — Быстрый mood-check при запуске
+
+- **Статус: закрыто 25.08.2026.** PR #182 squash-смёржен в `main`.
+- **Размер:** S.
+- **Что сделано:** идея 12 конкурентного анализа Stoic (`ROADMAP.md`). Opt-in-тумблер в Settings → «Быстрый mood-check» (дефолт выключен). Когда включён и на сегодня ещё нет чек-ина — при запуске (после `AppLock`, до основного UI) показывается лёгкий гейт с той же шкалой настроения, что и в `CheckIn.jsx`: один тап или «Пропустить». Оверлей никогда не пишет напрямую в бэкенд — выбранный уровень сохраняется как session-черновик (`src/lib/moodCheckDraft.js`) и подхватывается `CheckIn.jsx` как prefill первого шага. Показывается не чаще одного раза в день (локальная дата-метка `shouldOfferMoodCheck`/`markMoodCheckShown`), независимо от того, дошёл ли пользователь до настоящего чек-ина.
+- **Pre-mortem:** два риска закрыты до/во время реализации — фиктивный чек-ин (митигация: оверлей не пишет на бэкенд, только draft) и повтор гейта на каждом запуске (митигация: дата-метка отдельно от состояния чек-ина).
+- **Не входит:** изменение самого `CheckIn.jsx`-флоу, новые бэкенд-поля/миграции.
+
+## MXL-FULLSCREEN-SURFACE-RACE-001 — Race condition в useFullscreenSurface
+
+- **Статус: закрыто 29.08.2026.** PR #327 squash-смёржен в `main`.
+- **Размер:** M.
+- **Причина:** диагностика бага «кнопка "Пропустить" не работает на `MoodCheckGate` в Telegram на iPhone» показала race condition в `useFullscreenSurface()` — 19 fullscreen-экранов независимо держали свой `useState`+`onEvent('fullscreenChanged')`, и первый рендер первого fullscreen-экрана холодного старта (систематически `MoodCheckGate`) синхронно читал ещё не подтверждённый `window.Telegram.WebApp.isFullscreen` как `false` до старта negotiation — кнопка на первом кадре рендерилась без отступа под нативные Telegram fullscreen-controls.
+- **Фикс:** `src/lib/tgFullscreen.js` — единый module-level `useSyncExternalStore`-совместимый store вместо N независимых копий negotiation; pessimistic default (`true` до подтверждения Telegram) вместо `false`; 2с fallback-таймаут для клиентов без поддержки negotiation. `src/lib/fullscreenSurface.js` переведён на `useSyncExternalStore`, публичный контракт (`{ style, tgFullscreen }`) не изменился — 19 потребителей не тронуты. 11 новых unit-тестов (`tests/unit/tg-fullscreen-store.test.mjs`).
+- **Разблокировало:** `MXL-MOOD-CHECK-001`.
+
+## MXL-FULLSCREEN-HEADER-NATIVE-001 — Нативный header для fullscreen-поверхностей
+
+- **Статус: черновик, не начата.** Нет ветки, PR или согласованного scope на 29.08.2026.
 
 Scope не включает backend, cloud sync, AI consent, новую вкладку, proprietary Stoic assets, tags, search или изменение смысла существующих flows. CI/Vercel и повторный Telegram/iPhone gate пройдены; следующий decision gate — merge PR #241 в `main`.
