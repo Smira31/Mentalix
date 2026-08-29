@@ -39,6 +39,7 @@
 }
 
 .mx-onboarding-option {
+  min-height: 48px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-text));
   transition:
@@ -128,6 +129,28 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@media (max-height: 700px) and (max-width: 640px) {
+  .mx-onboarding-step {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .mx-onboarding-intro-step {
+    transform: translateY(-8px);
+  }
+
+  .mx-onboarding-option,
+  .mx-onboarding-reminder {
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+  }
+
+  .mx-onboarding-option + .mx-onboarding-option,
+  .mx-onboarding-reminder + .mx-onboarding-reminder {
+    margin-top: 0.45rem;
   }
 }
 

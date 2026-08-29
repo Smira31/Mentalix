@@ -88,9 +88,11 @@ function Head({ step, total, onBack }) {
 function Option({ label, proof, selected, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className="mx-onboarding-option w-full rounded-[22px] px-5 py-4 text-center border-0"
       data-selected={selected}
+      aria-pressed={selected}
     >
       <span className="block text-[14px] font-bold">{label}</span>
       {proof && selected && (
@@ -220,6 +222,7 @@ export default function Onboarding({ user, onFinish }) {
               Выбор ничего не ограничивает — все функции остаются доступными.
             </p>
             <button
+              type="button"
               onClick={next}
               disabled={focuses.length === 0}
               className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
@@ -256,6 +259,7 @@ export default function Onboarding({ user, onFinish }) {
             </div>
             <p className="text-[12px] text-faint text-center mt-6">Это остаётся только у тебя.</p>
             <button
+              type="button"
               onClick={next}
               disabled={!age}
               className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
@@ -289,10 +293,12 @@ export default function Onboarding({ user, onFinish }) {
                       platform.haptic('light')
                       setReminder(r.key)
                     }}
+                    type="button"
                     className={[
                       'mx-onboarding-reminder w-full rounded-3xl px-5 py-4 flex items-center gap-4 border-0 text-left',
                       on ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
-                    ].join(' ')}
+                    ]}
+                    aria-pressed={on}
                   >
                     <span className="flex-1">
                       <span
@@ -320,7 +326,11 @@ export default function Onboarding({ user, onFinish }) {
               })}
             </div>
 
-            <button onClick={next} className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8">
+            <button
+              type="button"
+              onClick={next}
+              className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8"
+            >
               Дальше
             </button>
           </div>
@@ -367,6 +377,7 @@ export default function Onboarding({ user, onFinish }) {
 
             {/* лабиринт заполняется по мере готовности плана */}
             <button
+              type="button"
               onClick={finish}
               disabled={revealed < PLAN_CARDS.length}
               className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
