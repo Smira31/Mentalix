@@ -4,6 +4,28 @@
 
 - Статус сверён с фактическим `origin/main`: MXL-STREAK-TIERS-001 подтверждена как `verified/completed` через [PR #196](https://github.com/Smira31/Mentalix/pull/196), squash-merged коммитом `e46828df`; обновлены `TASKS.md` и `docs/TASK_INDEX.md`, код и `ROADMAP.md` не изменялись.
 
+## 29.08.2026 — MXL-HISTORY-UNIFIED-FEED-001: journal влит в датированную ленту (расширение)
+
+- Изначальное сужение 26.08.2026 («Merge только checkin+бейджи, темы —
+  отдельным блоком») не рассматривало journal — не забыто, а не было тогда
+  в scope. Отдельный pre-mortem по этому расширению: единственные реальные
+  риски — продуктовые (cross-device расхождение из-за local-only журнала,
+  пересечение с «Год пути»), оба явно решены владельцем построчно —
+  cross-device расхождение приемлемо, `Path.jsx` не трогаем.
+- `src/screens/History.jsx`: новый `datedItems` (`useMemo`) объединяет
+  существующие `days` (checkin+activity, backend) и `journalEntries`
+  (local-only) в одну ленту по дате. Новый `JournalDayCard` — общий рендер
+  journal-фрагмента дня, используется в карточке ленты и в `HistoryDetail`.
+  Раздельный недатированный блок «Локальный журнал» ниже ленты убран —
+  journal теперь встроен в карточку своего дня. `milestonesBlock`/
+  `themeEntriesBlock` (бейджи/темы) не менялись — решение 26.08.2026 для
+  них остаётся тем же. `journalHistory.js`, `badges.js`, `Path.jsx` не
+  менялись.
+- `npm run check:core` — PASS. PR, squash-merge
+  `feat/mxl-history-unified-feed-001-journal-merge` → `main`, не смёржен
+  автоматически. `TASKS.md` обновлён в этом же диффе (запись
+  `MXL-HISTORY-UNIFIED-FEED-001` дополнена, не новый ID).
+
 ## 29.08.2026 — MXL-JOURNAL-OWNER-DECISION-MEMO: owner-ready решение по минимальному публичному Journal
 
 - Добавлен `docs/product/MXL-JOURNAL-OWNER-DECISION-MEMO.md` — короткий decision memo для владельца о минимальном local-first Journal v1/v1.1, границах публичного обещания, privacy/AI consent, backend/storage gates и функциях, которые следует отложить.
