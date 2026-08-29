@@ -1,5 +1,46 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-FULLSCREEN-SURFACE-RACE-001: shared fullscreen-store, устранение race condition
+
+- Причина: диагностика бага «кнопка "Пропустить" не работает на
+  `MoodCheckGate` в Telegram на iPhone» показала race condition в
+  `useFullscreenSurface()` — 19 экранов независимо держали свой
+  `useState`+`onEvent('fullscreenChanged')`, и самый первый рендер самого
+  первого fullscreen-экрана холодного старта (систематически —
+  `MoodCheckGate`) синхронно читал ещё не подтверждённый
+  `window.Telegram.WebApp.isFullscreen` как `false`, до того как negotiation
+  вообще стартовала.
+- `src/lib/tgFullscreen.js` переписан на единый module-level
+  `useSyncExternalStore`-совместимый store (`subscribeFullscreen`/`getFullscreenSnapshot`)
+  вместо N независимых копий одного и того же Telegram-negotiation.
+  Negotiation стартует лениво при первом реальном использовании (в т.ч. из
+  `getSnapshot()`, не только `subscribe()` — иначе именно самый первый
+  рендер видел бы ещё не стартовавший store) и ровно один раз за весь
+  жизненный цикл страницы — идемпотентно относительно StrictMode
+  double-invoke. **Pessimistic default:** пока Telegram не подтвердил
+  fullscreen-состояние, снапшот внутри Telegram — `true` (резервирует
+  `TG_CONTROLS_HEIGHT`), а не `false` как раньше; fallback-таймаут 2с
+  подтверждает реальное значение, если событие не пришло. Legacy API
+  `initFullscreen(onChange)` сохранён как обёртка над store — `src/App.jsx`
+  не менялся.
+- `src/lib/fullscreenSurface.js` — `useFullscreenSurface()` использует
+  `useSyncExternalStore` вместо локального `useState`+listener. Публичный
+  контракт (`{ style, tgFullscreen }`) не изменился — 19 потребителей
+  (`AppLock.jsx`, `CheckIn.jsx`, `MoodCheckGate.jsx` и остальные) не тронуты.
+- 11 новых unit-тестов (`tests/unit/tg-fullscreen-store.test.mjs`):
+  pessimistic default, подтверждение через событие, web-фоллбек без
+  pessimism, идемпотентность при множественном subscribe (StrictMode),
+  уведомление всех подписчиков, `ALREADY_FULLSCREEN`, fallback-таймаут,
+  безопасность без `window`/DOM, отсутствие side-эффектов при простом
+  импорте модуля, legacy `initFullscreen` API.
+- `npm run test:unit` 144/144, `lint`, `build`, `docs:check`,
+  `git diff --check` — PASS. Разблокирует `MXL-MOOD-CHECK-001` (не мёржить
+  до этого фикса). Ручной Telegram/iPhone gate по `MoodCheckGate`/`AppLock`/
+  одному practice-flow/web-фоллбеку — обязателен перед merge, не выполнен
+  этим коммитом. Задача `MXL-FULLSCREEN-SURFACE-RACE-001` зафиксирована
+  только здесь и в истории чата — `TASKS.md` занят открытым PR #303,
+  впишу туда после его освобождения.
+
 ## 29.08.2026 — MXL-JOURNAL-PERSISTENCE-001: entry-contract discovery doc в main
 
 - `docs/architecture/MXL-JOURNAL-PERSISTENCE-001_ENTRY_CONTRACT.md` наконец
