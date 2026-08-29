@@ -104,6 +104,14 @@
   `error` и существующий объект не открывают гейт; он открывается
   только при достоверном `null` (CHANGES.md).
 
+## MXL-DATE-POLICY-UTC-FIX-001 — Локальная календарная дата вместо UTC-среза
+
+- **Статус:** реализовано в feature-ветке, ожидает проверки и PR.
+- **Причина:** `moodCheckDraft.js`, `Analytics.jsx` и `insightDigest.js` использовали `new Date().toISOString().slice(0, 10)` для пользовательского календарного дня. В ненулевых часовых поясах это могло дать двойной показ mood-check в локальный день, пропуск в начале следующего дня и неверное выделение/ограничение дневных UI-событий.
+- **Что сделано:** все три места переведены на существующую централизованную `toLocalCalendarDate()` из `src/lib/dateTimezonePolicy.js`. `src/lib/api.js` не менялся: его UTC-дата используется только в имени скачиваемого файла. `CheckIn.jsx` и `History.jsx` не менялись.
+- **Проверка:** добавлен unit-тест сценария `Europe/Moscow`: 00:30 и 23:30 одного локального дня дают одну дату, 00:30 следующего локального дня — следующую. Полный `check:core` выполняется перед PR.
+- **Не входит:** изменение backend-контракта, `ROADMAP.md`, `TASK_INDEX.md`, логики check-in/history или timestamp-форматов.
+
 ## MXL-FULLSCREEN-HEADER-NATIVE-001 — Нативный header для fullscreen-поверхностей
 
 - **Статус: needs-decision 29.08.2026.** Одна задача с двумя
@@ -561,6 +569,15 @@ telegram-preview.yml`, secrets, Vercel project, production. Ветка
 - [x] Telegram-уведомление отправляется только после подтверждённого HTTP
       404/410 или отсутствия deployment через `inspect`.
 - **Не менять:** production project `mentalix`, backend и Telegram-бот.
+
+## MXL-PREVIEW-STOP-DEADLINE-BACKOFF-001 — deadline и backoff для подтверждения удаления Preview
+
+- **Статус:** реализовано в feature-ветке, ожидает проверки и PR.
+- **Причина:** фиксированное окно 10 попыток × 3 секунды (27 секунд между проверками) систематически короче наблюдаемой Vercel edge propagation задержки; после успешного `vercel remove` HTTP мог оставаться 200, а `inspect` — находить deployment.
+- **Что сделано:** retry-verify переведён на deadline по умолчанию 90 секунд с начальной задержкой 3 секунды и экспоненциальным backoff до 15 секунд. Deadline и параметры backoff настраиваются через `.env.local`; dry-run остаётся без внешних операций.
+- **Guard сохранён:** успех возможен только после независимого подтверждения обоими каналами — публичный URL вернул HTTP 404/410 и `vercel inspect` подтвердил отсутствие deployment. До этого state не удаляется, команда завершается ошибкой, Telegram не уведомляется.
+- **Проверка:** добавлен детерминированный regression-тест с ответами HTTP 200/inspect ready на первых попытках и HTTP 404/inspect missing на последующей; тест проверяет, что успех наступает только после обоих подтверждений.
+- **Не входит:** `package.json`, продуктовый код, `src/lib/api.js`, Vercel project, backend, Telegram-бот и `TASK_INDEX.md`.
 
 ## MXL-MOOD-CHECK-ERROR-GUARD-001 — не блокировать запуск при ошибке check-in
 
