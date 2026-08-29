@@ -44,6 +44,16 @@
 | `MXL-JOURNAL-MEMORIES-001` | M/L | product/privacy/backend | deferred | backend-dependent | Media attachments только после privacy/storage review |
 | `MXL-JOURNAL-REMINDERS-001` | S/M | product/backend | deferred | needs-owner + backend-dependent | Quiet hours, consent и scheduler contract |
 
+## Новые owner-decision гипотезы — 29.08.2026
+
+| ID | Размер | Тип | Статус | Автономность | Следующий шаг |
+| --- | ---: | --- | --- | --- | --- |
+| [`MXL-PRODUCT-STRATEGY-001`](https://github.com/Smira31/Mentalix/issues/320) | M | product/research | discovery | needs-owner | Выбрать Scope A (Starter Set) или Scope B (+ «Разобраться сейчас»); не выбирать P0 автоматически |
+| [`MXL-STARTER-SET-001`](https://github.com/Smira31/Mentalix/issues/321) | M | product/UX/content | discovery | needs-owner + manual-gate | Проверить мягкий onboarding, добровольность аскез и выполнение первого шага |
+| [`MXL-SELF-DISCOVERY-001`](https://github.com/Smira31/Mentalix/issues/322) | M | product/UX/content | discovery | needs-owner + backend-dependent | Согласовать guided flow и границы AI-разбора поверх существующих Journal-задач |
+| [`MXL-AI-ROLES-001`](https://github.com/Smira31/Mentalix/issues/323) | M | product/research/safety | discovery | needs-owner + manual-gate | Утвердить naming и role playbooks; не менять текущих AI-персон автоматически |
+| [`MXL-GUIDED-REFLECTION-001`](https://github.com/Smira31/Mentalix/issues/324) | M | product/research/safety | blocked | needs-owner + manual-gate + backend-dependent | Провести safety-review; до решения не реализовывать «режим терапии» и medical claims |
+
 ## Автономная очередь
 
 Сейчас очередь `autonomous` пуста. Это намеренно: все оставшиеся активные записи либо требуют продуктового решения, ручного gate, backend-контракта или прямо помечены как не подлежащие исправлению. Новая автономная задача может появиться только через отдельную запись с однозначным scope и критериями готовности.
