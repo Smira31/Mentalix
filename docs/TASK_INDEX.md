@@ -33,7 +33,7 @@
 | `MXL-020` | ? | product/payment | deferred | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
 | `MXL-LOOP-001` | L | product/UX/research | ready | manual-gate | Проверить полный loop Today → practice → next action → evening review → return; связующая задача для #122/#123 |
 | `MXL-PRACTICE-UX-001` | M | product/UX/content | backlog | needs-owner | Унифицировать четыре problem-led practice по шаблону problem → steps → measurable action → completion |
-| `MXL-INSIGHTS-001` | M | product/data/UX | discovery | backend-dependent + needs-owner | Проверить descriptive pattern insights после unified history |
+| `MXL-INSIGHTS-001` | M | product/data/UX | discovery-ready | needs-owner | Discovery note готов (Issue #297); владелец решает, какие метрики usefulness/return intent заводить первыми |
 | `MXL-WTP-001` | M | product/research/payment | discovery | needs-owner | Fake-door/concept test платных outputs без checkout после подтверждения free loop |
 | `MXL-JOURNAL-PERSISTENCE-001` | XL | product/backend | in progress | local-first now; backend-dependent later | User-scoped versioned local storage, draft/final и explicit legacy migration реализованы; cloud sync остаётся отдельным backend gate |
 | `MXL-JOURNAL-HISTORY-001` | L | product/backend/UX | backlog | backend-dependent | Объединить датированную историю после persistence |
