@@ -1,10 +1,7 @@
-import {
-  useEffect,
-  useState,
-} from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 
+import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
 import { useVisualViewportHeight } from './visualViewport'
-
 
 /*
  * ОБЩИЙ КОНТРАКТ FULLSCREEN-ЭКРАНОВ MENTALIX
@@ -46,17 +43,12 @@ import { useVisualViewportHeight } from './visualViewport'
  * за него, что рендерить.
  */
 
-
 export const TG_CONTROLS_HEIGHT = 56
-
 
 export const FULLSCREEN_SHELL_CLASS =
   'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden animate-fade-in'
 
-
-export const FULLSCREEN_HEADER_SLOT_CLASS =
-  'h-[52px] shrink-0'
-
+export const FULLSCREEN_HEADER_SLOT_CLASS = 'h-[52px] shrink-0'
 
 /*
  * Одна прокручиваемая область на весь
@@ -69,81 +61,41 @@ export const FULLSCREEN_HEADER_SLOT_CLASS =
 export const FULLSCREEN_SCROLL_CLASS =
   'w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
 
-
 export function useFullscreenSurface() {
-  const viewportHeight =
-    useVisualViewportHeight()
+  const viewportHeight = useVisualViewportHeight()
 
-  const [
-    tgFullscreen,
-    setTgFullscreen,
-  ] = useState(() =>
-    Boolean(
-      window.Telegram
-        ?.WebApp
-        ?.isFullscreen,
-    ),
-  )
-
-
-  useEffect(() => {
-    const webApp =
-      window.Telegram?.WebApp
-
-    if (!webApp?.onEvent) return
-
-    const sync = () => {
-      setTgFullscreen(
-        Boolean(
-          webApp.isFullscreen,
-        ),
-      )
-    }
-
-    sync()
-
-    webApp.onEvent(
-      'fullscreenChanged',
-      sync,
-    )
-
-    return () => {
-      webApp.offEvent?.(
-        'fullscreenChanged',
-        sync,
-      )
-    }
-  }, [])
-
+  /*
+   * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
+   * держал свой useState+onEvent('fullscreenChanged') подписчик, что и
+   * давало race condition на самом первом кадре холодного старта (первый
+   * рендер синхронно читал ещё не подтверждённый window.Telegram.WebApp.isFullscreen
+   * как false, до того как negotiation вообще стартовала). Теперь — общий
+   * module-level store (src/lib/tgFullscreen.js) с pessimistic default:
+   * пока negotiation не подтверждена, внутри Telegram снапшот — true.
+   */
+  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
 
   useEffect(() => {
     const body = document.body
 
-    const previousOverflow =
-      body.style.overflow
+    const previousOverflow = body.style.overflow
 
     body.style.overflow = 'hidden'
 
     return () => {
-      body.style.overflow =
-        previousOverflow
+      body.style.overflow = previousOverflow
     }
   }, [])
-
 
   const style = {
     paddingTop: tgFullscreen
       ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
       : 'var(--app-safe-top)',
 
-    paddingBottom:
-      'var(--app-safe-bottom)',
+    paddingBottom: 'var(--app-safe-bottom)',
 
-    height: viewportHeight
-      ? `${viewportHeight}px`
-      : '100dvh',
+    height: viewportHeight ? `${viewportHeight}px` : '100dvh',
   }
-
 
   return {
     style,
