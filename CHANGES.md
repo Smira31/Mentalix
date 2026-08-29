@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-LOOP-002: QA regression matrix для action loop
+
+- Добавлен `docs/qa/MXL-LOOP-002_REGRESSION_MATRIX.md` — regression-матрица
+  QA-проверок для четырёх problem-led практик (успешное завершение,
+  Back/ранняя отмена, защита от дубликата завершения, Telegram/web/reload
+  контексты). Docs-only, продуктовый код не менялся.
+- `git diff --check`, `npm run docs:check` — PASS. PR #308, squash-merge
+  `qa/mxl-loop-regression-matrix` → `main`.
+
 ## 29.08.2026 — MXL-UX-RESPONSIVE-001: подписи нижней навигации на узком экране
 
 - На viewport 320×568 подписи «Наставник»/«Библиотека» пересекались внутри

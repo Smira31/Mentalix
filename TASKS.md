@@ -4101,6 +4101,15 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/MXL-UX-RESPONSIVE-001_TEST_CASES.md`, `docs/testing/V1_1_TEST_PLAN.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
 - **Закрытый подэтап (29.08.2026):** на viewport 320×568 подписи «Наставник»/«Библиотека» пересекались в нижней навигации — добавлены narrow-only классы (`BottomNavigation.jsx`, до 360px: 9px шрифт, лёгкий отрицательный tracking; 375px+ не меняется). Добавлена regression-проверка геометрии label в `tests/ux/ux-check.spec.mjs`. `npm run test:unit`/`lint`/`build`/`docs:check` — PASS.
 
+## MXL-LOOP-002 — QA regression matrix для action loop
+
+- **Статус:** docs-only, зафиксировано 29.08.2026.
+- **Размер:** S.
+- **Тип:** QA/documentation, продолжает `MXL-LOOP-001` (см. `docs/TASK_INDEX.md`).
+- **Что сделано:** `docs/qa/MXL-LOOP-002_REGRESSION_MATRIX.md` — regression-матрица для четырёх problem-led практик: успешное завершение до «Сегодня», Back/ранняя отмена с возвратом в «Практики», защита от дубликата завершения, Telegram Mini App context, web fallback, восстановление после reload.
+- **Не входит:** продуктовый код, backend, payment, Telegram workflow, изменения `docs/TASK_INDEX.md`.
+- **Проверено:** `git diff --check`, `npm run docs:check` — PASS. Ручной gate — за владельцем.
+
 ## MXL-HOME-QUIET-FOUNDATION-001 / MXL-TYPE-SYSTEM-001 — Home/type slice
 
 Статус: реализовано в PR #241 на ветке `feat/mxl-home-quiet-type-001`; исходный Home/type slice и follow-up MXL-HOME-QUIET-V2-002 подготовлены к merge. Today перестроен так, чтобы главный hero-блок был первым фокусом перед вторичными секциями; пользовательские `Georgia`, `Times New Roman` и `Manrope` overrides заменены на единый Onest baseline.
