@@ -1,5 +1,36 @@
 # Mentalix — задачи
 
+## MXL-DOCS-STATUS-AUDIT-001 — Сверка TASKS.md/TASK_INDEX.md с фактическим состоянием main
+
+- **Статус: закрыто 29.08.2026.** По запросу владельца проведена сверка документации с `git log origin/main` и `gh pr list`; найдены и исправлены статус-тексты, называвшие уже смёрженные PR открытыми (MXL-006, MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001, MXL-THEME-ACCENT-001, MXL-DS-LABEL-FONT-001 и MXL-SERIES-001).
+- **Первоначальный диагноз ошибочен, исправлен по ходу работы:** merge PR #328/#325 сначала выглядел заблокированным правилом `require_extra_approval_for_unattributed_changes` — это предположение не подтвердилось. Реальная причина `mergeStateStatus: BLOCKED` на всех открытых PR — classic branch protection требовал status-context `Базовая проверка проекта` (`repos/.../branches/main/protection`), которого ни один workflow не публиковал с 28.08.2026 05:56 UTC: job `required-check` был случайно удалён коммитом `f844a7ee` («revert: restore main to 07:09 Preview state») вместе со всем `ci.yml` и не восстановлен при последующем воссоздании файла (`14a0e639`, `0acd1f3b`).
+- **PR #332** (`fix/restore-required-status-check`) — восстановил job `required-check`/`Базовая проверка проекта` в `.github/workflows/ci.yml`, идентично версии из `5ed850b0`. Смёржен squash-merge'ем **без `--admin`** — обычный merge прошёл сразу, подтвердив диагноз. После мерджа все 4 ожидавших PR перебазированы на новый `main`; у всех появился проходящий required-чек, `mergeStateStatus` перешёл в `CLEAN`/`UNSTABLE` (последнее — только из-за non-required Vercel-чеков, упирающихся в дневную квоту деплоев, не блокирует merge) — approve ни разу не понадобился.
+- **PR #328** (`docs/tasks-status-sync-2026-08-29`) — статус-тексты выше в этом файле и в `docs/TASK_INDEX.md`. Смёржен первым (squash, без `--admin`) — самый «базовый» докс-коммит, на формулировки которого частично опирались остальные три.
+- **PR #288** (`docs/canonical-agent-entrypoint`) — canonical entrypoint для агентов + фикс строки `MXL-SERIES-001` в `docs/TASK_INDEX.md` (была `ready after contract check`, задача уже закрыта PR #301). Смёржен вторым, без конфликтов с #288.
+- **PR #325** (`chore/mxl-product-strategy-issues`) — 5 discovery/needs-owner записей в `docs/TASK_INDEX.md` (`MXL-PRODUCT-STRATEGY-001`, `MXL-STARTER-SET-001`, `MXL-SELF-DISCOVERY-001`, `MXL-AI-ROLES-001`, `MXL-GUIDED-REFLECTION-001`). Смёржен третьим, без конфликтов с #288.
+- **PR #312** (`feat/web-auth-fallback-copy`) — 4-пунктовый ручной gate пройден полностью, static-review по коду и динамическая проверка на живом Telegram Preview (см. запись выше). Смёржен последним, без конфликтов (не трогает doc-файлы).
+- **Итог:** все 5 PR цикла (#332, #328, #288, #325, #312) смёржены обычным squash-merge, `--admin` не использовался ни разу.
+
+## MXL-FULLSCREEN-SURFACE-RACE-001 — Race condition в useFullscreenSurface
+
+- **Статус: закрыто 29.08.2026.** PR #327 squash-смёржен в `main`.
+- **Размер:** M.
+- **Причина:** диагностика бага «кнопка "Пропустить" не работает на `MoodCheckGate` в Telegram на iPhone» показала race condition в `useFullscreenSurface()` — 19 fullscreen-экранов независимо держали свой `useState`+`onEvent('fullscreenChanged')`, и первый рендер первого fullscreen-экрана холодного старта (систематически `MoodCheckGate`) синхронно читал ещё не подтверждённый `window.Telegram.WebApp.isFullscreen` как `false` до старта negotiation — кнопка на первом кадре рендерилась без отступа под нативные Telegram fullscreen-controls.
+- **Фикс:** `src/lib/tgFullscreen.js` — единый module-level `useSyncExternalStore`-совместимый store вместо N независимых копий negotiation; pessimistic default (`true` до подтверждения Telegram) вместо `false`; 2с fallback-таймаут для клиентов без поддержки negotiation. `src/lib/fullscreenSurface.js` переведён на `useSyncExternalStore`, публичный контракт (`{ style, tgFullscreen }`) не изменился — 19 потребителей не тронуты. 11 новых unit-тестов (`tests/unit/tg-fullscreen-store.test.mjs`).
+- **Разблокировало:** `MXL-MOOD-CHECK-001`.
+
+## MXL-MOOD-CHECK-001 — Быстрый mood-check при запуске
+
+- **Статус: закрыто 25.08.2026.** PR #182 squash-смёржен в `main`.
+- **Размер:** S.
+- **Что сделано:** идея 12 конкурентного анализа Stoic (`ROADMAP.md`). Opt-in-тумблер в Settings → «Быстрый mood-check» (дефолт выключен). Когда включён и на сегодня ещё нет чек-ина — при запуске (после `AppLock`, до основного UI) показывается лёгкий гейт с той же шкалой настроения, что и в `CheckIn.jsx`: один тап или «Пропустить». Оверлей никогда не пишет напрямую в бэкенд — выбранный уровень сохраняется как session-черновик (`src/lib/moodCheckDraft.js`) и подхватывается `CheckIn.jsx` как prefill первого шага. Показывается не чаще одного раза в день (локальная дата-метка `shouldOfferMoodCheck`/`markMoodCheckShown`), независимо от того, дошёл ли пользователь до настоящего чек-ина.
+- **Pre-mortem:** два риска закрыты до/во время реализации — фиктивный чек-ин (митигация: оверлей не пишет на бэкенд, только draft) и повтор гейта на каждом запуске (митигация: дата-метка отдельно от состояния чек-ина).
+- **Не входит:** изменение самого `CheckIn.jsx`-флоу, новые бэкенд-поля/миграции.
+
+## MXL-FULLSCREEN-HEADER-NATIVE-001 — Нативный header для fullscreen-поверхностей
+
+- **Статус: черновик, не начата.** Нет ветки, PR или согласованного scope на 29.08.2026.
+
 ## MXL-INSIGHTS-001 — Discovery note: descriptive pattern insights
 
 - **Статус:** research/docs-only, готово к решению владельца. Issue #297. Product code, backend, API и payment не менялись — задача строго в scope research/docs.
@@ -4153,36 +4184,5 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 Статус: реализовано в PR #241 на ветке `feat/mxl-home-quiet-type-001`; исходный Home/type slice и follow-up MXL-HOME-QUIET-V2-002 подготовлены к merge. Today перестроен так, чтобы главный hero-блок был первым фокусом перед вторичными секциями; пользовательские `Georgia`, `Times New Roman` и `Manrope` overrides заменены на единый Onest baseline.
 
 Follow-up MXL-HOME-QUIET-V2-002 добавляет 10px воздуха после последнего контента перед fixed-навигацией и делает active-состояние CTA различимым через спокойное изменение поверхности и внутренний контур. Добавлен regression-контракт в `tests/unit/maintenance-contracts.test.mjs`. Design note: `docs/product/MXL-HOME-TYPE-FOUNDATION-001_DESIGN.md`.
-
-## MXL-MOOD-CHECK-001 — Быстрый mood-check при запуске
-
-- **Статус: закрыто 25.08.2026.** PR #182 squash-смёржен в `main`.
-- **Размер:** S.
-- **Что сделано:** идея 12 конкурентного анализа Stoic (`ROADMAP.md`). Opt-in-тумблер в Settings → «Быстрый mood-check» (дефолт выключен). Когда включён и на сегодня ещё нет чек-ина — при запуске (после `AppLock`, до основного UI) показывается лёгкий гейт с той же шкалой настроения, что и в `CheckIn.jsx`: один тап или «Пропустить». Оверлей никогда не пишет напрямую в бэкенд — выбранный уровень сохраняется как session-черновик (`src/lib/moodCheckDraft.js`) и подхватывается `CheckIn.jsx` как prefill первого шага. Показывается не чаще одного раза в день (локальная дата-метка `shouldOfferMoodCheck`/`markMoodCheckShown`), независимо от того, дошёл ли пользователь до настоящего чек-ина.
-- **Pre-mortem:** два риска закрыты до/во время реализации — фиктивный чек-ин (митигация: оверлей не пишет на бэкенд, только draft) и повтор гейта на каждом запуске (митигация: дата-метка отдельно от состояния чек-ина).
-- **Не входит:** изменение самого `CheckIn.jsx`-флоу, новые бэкенд-поля/миграции.
-
-## MXL-FULLSCREEN-SURFACE-RACE-001 — Race condition в useFullscreenSurface
-
-- **Статус: закрыто 29.08.2026.** PR #327 squash-смёржен в `main`.
-- **Размер:** M.
-- **Причина:** диагностика бага «кнопка "Пропустить" не работает на `MoodCheckGate` в Telegram на iPhone» показала race condition в `useFullscreenSurface()` — 19 fullscreen-экранов независимо держали свой `useState`+`onEvent('fullscreenChanged')`, и первый рендер первого fullscreen-экрана холодного старта (систематически `MoodCheckGate`) синхронно читал ещё не подтверждённый `window.Telegram.WebApp.isFullscreen` как `false` до старта negotiation — кнопка на первом кадре рендерилась без отступа под нативные Telegram fullscreen-controls.
-- **Фикс:** `src/lib/tgFullscreen.js` — единый module-level `useSyncExternalStore`-совместимый store вместо N независимых копий negotiation; pessimistic default (`true` до подтверждения Telegram) вместо `false`; 2с fallback-таймаут для клиентов без поддержки negotiation. `src/lib/fullscreenSurface.js` переведён на `useSyncExternalStore`, публичный контракт (`{ style, tgFullscreen }`) не изменился — 19 потребителей не тронуты. 11 новых unit-тестов (`tests/unit/tg-fullscreen-store.test.mjs`).
-- **Разблокировало:** `MXL-MOOD-CHECK-001`.
-
-## MXL-FULLSCREEN-HEADER-NATIVE-001 — Нативный header для fullscreen-поверхностей
-
-- **Статус: черновик, не начата.** Нет ветки, PR или согласованного scope на 29.08.2026.
-
-## MXL-DOCS-STATUS-AUDIT-001 — Сверка TASKS.md/TASK_INDEX.md с фактическим состоянием main
-
-- **Статус: закрыто 29.08.2026.** По запросу владельца проведена сверка документации с `git log origin/main` и `gh pr list`; найдены и исправлены статус-тексты, называвшие уже смёрженные PR открытыми (MXL-006, MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001, MXL-THEME-ACCENT-001, MXL-DS-LABEL-FONT-001 и MXL-SERIES-001).
-- **Первоначальный диагноз ошибочен, исправлен по ходу работы:** merge PR #328/#325 сначала выглядел заблокированным правилом `require_extra_approval_for_unattributed_changes` — это предположение не подтвердилось. Реальная причина `mergeStateStatus: BLOCKED` на всех открытых PR — classic branch protection требовал status-context `Базовая проверка проекта` (`repos/.../branches/main/protection`), которого ни один workflow не публиковал с 28.08.2026 05:56 UTC: job `required-check` был случайно удалён коммитом `f844a7ee` («revert: restore main to 07:09 Preview state») вместе со всем `ci.yml` и не восстановлен при последующем воссоздании файла (`14a0e639`, `0acd1f3b`).
-- **PR #332** (`fix/restore-required-status-check`) — восстановил job `required-check`/`Базовая проверка проекта` в `.github/workflows/ci.yml`, идентично версии из `5ed850b0`. Смёржен squash-merge'ем **без `--admin`** — обычный merge прошёл сразу, подтвердив диагноз. После мерджа все 4 ожидавших PR перебазированы на новый `main`; у всех появился проходящий required-чек, `mergeStateStatus` перешёл в `CLEAN`/`UNSTABLE` (последнее — только из-за non-required Vercel-чеков, упирающихся в дневную квоту деплоев, не блокирует merge) — approve ни разу не понадобился.
-- **PR #328** (`docs/tasks-status-sync-2026-08-29`) — статус-тексты выше в этом файле и в `docs/TASK_INDEX.md`. Смёржен первым (squash, без `--admin`) — самый «базовый» докс-коммит, на формулировки которого частично опирались остальные три.
-- **PR #288** (`docs/canonical-agent-entrypoint`) — canonical entrypoint для агентов + фикс строки `MXL-SERIES-001` в `docs/TASK_INDEX.md` (была `ready after contract check`, задача уже закрыта PR #301). Смёржен вторым, без конфликтов с #328.
-- **PR #325** (`chore/mxl-product-strategy-issues`) — 5 discovery/needs-owner записей в `docs/TASK_INDEX.md` (`MXL-PRODUCT-STRATEGY-001`, `MXL-STARTER-SET-001`, `MXL-SELF-DISCOVERY-001`, `MXL-AI-ROLES-001`, `MXL-GUIDED-REFLECTION-001`). Смёржен третьим, без конфликтов с #288.
-- **PR #312** (`feat/web-auth-fallback-copy`) — 4-пунктовый ручной gate пройден полностью, static-review по коду и динамическая проверка на живом Telegram Preview (см. запись выше). Смёржен последним, без конфликтов (не трогает doc-файлы).
-- **Итог:** все 5 PR цикла (#332, #328, #288, #325, #312) смёржены обычным squash-merge, `--admin` не использовался ни разу.
 
 Scope не включает backend, cloud sync, AI consent, новую вкладку, proprietary Stoic assets, tags, search или изменение смысла существующих flows. CI/Vercel и повторный Telegram/iPhone gate пройдены; следующий decision gate — merge PR #241 в `main`.
