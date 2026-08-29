@@ -1,5 +1,15 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-AI-REFRAME-001: «Обсудить с AI» на сохранённой записи (задача 7 ROADMAP.md)
+
+Реализована задача 7 подтверждённой очереди `ROADMAP.md` («AI-помощник формулировки автоматических мыслей») по итогам pre-mortem (Tiger/Paper Tiger/Elephant) и решений владельца. Кнопка «Обсудить с AI» на уже сохранённой записи чек-ина/дневника (`History.jsx`) — реактивная, не проактивная, видна только при включённом `checkin.ai_context_enabled`. Открывает существующий чат с персоной Собеседник через уже проверенный sessionStorage-хендофф (`openScout`/`openListener`-паттерн), с префиллом собственного текста пользователя. Backend не менялся, новый endpoint не создан, персоны/тон не тронуты, ответ AI не сохраняется в саму запись.
+
+Добавлен safety-слой `src/lib/aiReframeSafety.js`, переиспользующий regex-фильтр MXL-009 (`descriptiveInsights.js`) — лид-дисклеймер и оговорка при диагностической/причинной/терапевтической формулировке в ответе AI, активна только для этого хендоффа (`MENTOR_SAFETY_KEY`), обычные чаты не затронуты.
+
+Возрастная категория приложения зафиксирована как 16+ (`docs/core/PRODUCT_DECISIONS.md` → `MXL-DEC-021`) — снимает открытый вопрос `PRODUCT.md` §9, был блокером для этой задачи.
+
+`npm run check:core` — 144/144 unit, lint, build, docs:check — PASS. Оформлено отдельным PR, не смёржено — ждёт ручного Telegram/iPhone gate.
+
 ## 29.08.2026 — MXL-STREAK-TIERS-001: status reconciliation
 
 - Статус сверён с фактическим `origin/main`: MXL-STREAK-TIERS-001 подтверждена как `verified/completed` через [PR #196](https://github.com/Smira31/Mentalix/pull/196), squash-merged коммитом `e46828df`; обновлены `TASKS.md` и `docs/TASK_INDEX.md`, код и `ROADMAP.md` не изменялись.
