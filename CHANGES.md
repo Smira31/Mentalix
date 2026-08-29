@@ -1,5 +1,20 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-JOURNAL-PERSISTENCE-001: unified entry-contract adapter
+
+- Добавлены `src/lib/journalEntryContract.js` (pure normalize/serialize/dedupe
+  вокруг единого entry contract из `docs/architecture/MXL-JOURNAL-PERSISTENCE-001_ENTRY_CONTRACT.md`
+  §4) и `src/lib/journalEntryAdapter.js` (read-only проекция существующего
+  `journalStorage.js` на этот контракт для Journal Flow). `entry_id` —
+  детерминированный hash от `(schema, entry_type, user, дата)`, не random
+  UUID — открытое решение для backend review, не факт контракта.
+- Не подключены ни к одному UI-экрану — подтверждено grep по `src/**/*.jsx`.
+  `outcome` для `entry_type: 'journal'` всегда `null`; `sync_status` всегда
+  `local_only`; backend endpoint не выдуман.
+- `npm run test:unit` 19/19 новых (105/105 всего на момент merge), lint,
+  build, `docs:check`, `git diff --check` — PASS. PR #315, squash-merge
+  `feat/mxl-journal-persistence-001-frontend-adapter` → `main`.
+
 ## 28.08.2026 — MXL-DS-LABEL-FONT-001: закрытие
 
 - PR #287 смёржен squash-коммитом `47d62eba` в `main`, ветка удалена.
