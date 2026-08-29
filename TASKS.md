@@ -437,6 +437,15 @@ telegram-preview.yml`, secrets, Vercel project, production. Ветка
       404/410 или отсутствия deployment через `inspect`.
 - **Не менять:** production project `mentalix`, backend и Telegram-бот.
 
+## MXL-PREVIEW-STOP-DEADLINE-BACKOFF-001 — deadline и backoff для подтверждения удаления Preview
+
+- **Статус:** реализовано в feature-ветке, ожидает проверки и PR.
+- **Причина:** фиксированное окно 10 попыток × 3 секунды (27 секунд между проверками) систематически короче наблюдаемой Vercel edge propagation задержки; после успешного `vercel remove` HTTP мог оставаться 200, а `inspect` — находить deployment.
+- **Что сделано:** retry-verify переведён на deadline по умолчанию 90 секунд с начальной задержкой 3 секунды и экспоненциальным backoff до 15 секунд. Deadline и параметры backoff настраиваются через `.env.local`; dry-run остаётся без внешних операций.
+- **Guard сохранён:** успех возможен только после независимого подтверждения обоими каналами — публичный URL вернул HTTP 404/410 и `vercel inspect` подтвердил отсутствие deployment. До этого state не удаляется, команда завершается ошибкой, Telegram не уведомляется.
+- **Проверка:** добавлен детерминированный regression-тест с ответами HTTP 200/inspect ready на первых попытках и HTTP 404/inspect missing на последующей; тест проверяет, что успех наступает только после обоих подтверждений.
+- **Не входит:** `package.json`, продуктовый код, `src/lib/api.js`, Vercel project, backend, Telegram-бот и `TASK_INDEX.md`.
+
 ## MXL-MOOD-CHECK-ERROR-GUARD-001 — не блокировать запуск при ошибке check-in
 
 - **Статус: закрыто 25.08.2026 локально.**
