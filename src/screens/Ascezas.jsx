@@ -6,6 +6,7 @@ import { invalidatePracticesData } from '../lib/practicesDataCache'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
+import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
 import { createPortal } from 'react-dom'
 import { useVisualViewportHeight } from '../lib/visualViewport'
@@ -361,6 +362,7 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete }) {
 function CreateAscezaScreen({ onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
 
   function set(field) {
     return e => {
@@ -381,9 +383,17 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
     if (!draft.name.trim() || saving) return
 
     setSaving(true)
+    setError(null)
 
     try {
-      await onCreate(draft)
+      const result = await onCreate(draft)
+      if (result?.error === 'linked_web_blocked') {
+        setError(
+          'Открой Mentalix в Telegram, чтобы принять аскезу — привязанному аккаунту это пока доступно только там.'
+        )
+      } else if (!result) {
+        setError('Не получилось сохранить аскезу. Проверь соединение и попробуй ещё раз.')
+      }
     } finally {
       setSaving(false)
     }
@@ -458,6 +468,12 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
               className={inputCls}
             />
           </div>
+
+          {error && (
+            <p role="alert" className="text-[13px] text-red-300 leading-relaxed mb-2">
+              {error}
+            </p>
+          )}
         </div>
       </div>
       <WebActionBar action={webAction} />
@@ -537,6 +553,7 @@ export default function Ascezas({ user, onBack }) {
       return asceza
     } catch (error) {
       console.error(error)
+      if (isLinkedWebWriteBlocked(user, error)) return { error: 'linked_web_blocked' }
       return null
     }
   }

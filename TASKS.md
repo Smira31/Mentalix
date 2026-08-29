@@ -1,5 +1,21 @@
 # Mentalix — задачи
 
+## MXL-WEB-LINKED-WRITE-001 — тихий 401 при записи для привязанного web-аккаунта
+
+- **Статус: вариант C закрыт 29.08.2026 (честное сообщение); вариант B — known issue, follow-up backend review, не реализован.**
+- **Приоритетный баг-репорт:** «кнопка создания нового ритуала не работает» на web-версии. Диагностика показала архитектурное расхождение шире одной кнопки.
+- **Причина (полная цепочка, каждое звено проверено чтением кода):**
+  1. `mentalix-bot/backend/rituals.py` (и ещё 17 backend-роутеров — `ascezas`, `courses`, `goals`, `checkin`, `journey` и др.) защищены `require_verified_identity` для **всех** методов.
+  2. `mentalix-bot/backend/telegram_auth.py:require_verified_identity` — если `claimed_user_id > 0`, обязателен заголовок `Authorization: tma <initData>` с валидной Telegram-подписью, иначе 401.
+  3. `mentalix-bot/backend/auth.py:_serialize_user` — для непривязанного web-аккаунта `app_user_id = -user.id` (отрицательный, намеренно, чтобы обойти пункт 2). Но после привязки Telegram (`/link/confirm`) `app_user_id = user.linked_telegram_id` — становится положительным.
+  4. `src/screens/WebAuthScreen.jsx` корректно берёт `app_user_id` как `user.id` — контракт соблюдён верно на фронтенде.
+  5. `src/platform/web.adapter.js:getInitData()` всегда возвращает `''` — обычный браузер физически не может сгенерировать Telegram-подпись.
+  6. Итог: **любая запись (create/log/save) от привязанного web-аккаунта получает 401**, а `catch (e) { console.error(e); return null }` во всех задетых экранах глотал её молча — кнопка просто «отпускалась».
+- **Вариант C (реализовано):** `src/lib/webAuthLimits.js` (новый) — `isLinkedWebAccount(user)`/`isUnverifiedTelegramWriteError(error)`/`isLinkedWebWriteBlocked(user, error)`, различает именно этот случай от обычной сетевой ошибки (проверяет `401` в тексте `Error` из `src/lib/api.js:request()`, не любую ошибку). Подключено в 4 найденных экранах с идентичным «тихим catch» паттерном создания сущности: `src/screens/Rituals.jsx` (`createRitual`), `src/screens/Ascezas.jsx` (`createAsceza`), `src/screens/Path.jsx` (`createGoal` — заодно исправлен отсутствующий `return goal` при успехе, ложно триггеривший общую ошибку), `src/screens/Courses.jsx` (`createCourse`, тот же недостающий `return`). Каждый экран показывает понятное сообщение («Открой Mentalix в Telegram, чтобы создать ритуал/принять аскезу/создать цель/добавить материал — привязанному аккаунту это пока доступно только там») вместо тихого провала.
+- **Вариант B (НЕ сделано, отдельная backend-задача):** постоянный фикс — backend-side маппинг, позволяющий привязанному web-аккаунту продолжать использовать отрицательный `-web_user.id` для прохождения `require_verified_identity` (как непривязанному), но связывающий фактические данные с `linked_telegram_id` через server-side lookup `WebUser → linked_telegram_id`. Требует отдельного backend review (репозиторий `mentalix-bot`, не в этой сессии) — меняет модель того, чей ID реально используется для записи данных. Ссылка на полное расследование — история чата этой сессии (диагностика от «кнопка создания ритуала не работает» до цепочки выше).
+- **Не входит:** `src/screens/Courses.jsx`'s `addNote`/`CourseDetail` и другие вторичные write-пути в этих же экранах (например, `logRitual`/`logAsceza`/`deleteGoal`) — тот же баг актуален и там (тот же router, та же зависимость), но не показывает пользователю пустую форму «пропала» так же заметно, как create-flow; за пределами найденного и явно согласованного scope этого фикса.
+- **Проверено:** `npm run check:core` — PASS (unit/lint/build/docs:check).
+
 ## MXL-AI-REFRAME-001 — «Обсудить с AI» на сохранённой записи (задача 7, ROADMAP.md)
 
 - **Статус: реализовано 29.08.2026, ждёт PR/gate.** Задача 7 подтверждённой очереди `ROADMAP.md` («Обновление 25.08.2026») = идея 1 из «Конкурентный анализ: психологическое благополучие» («AI-помощник формулировки автоматических мыслей в чек-ине/дневнике»). Реализована по итогам pre-mortem (Tiger/Paper Tiger/Elephant) и трёх решений владельца (Q1/Q2/Q3).
