@@ -9,6 +9,9 @@ repository. Claude Code loads this file automatically via the `@AGENTS.md` impor
 Always respond to the user in Russian. The app's UI, copy, and in-app text are
 Russian-only — never introduce English strings into product-facing text.
 
+**Отвечай пользователю только по-русски** — во всех сессиях и во всех ответах,
+независимо от языка тикетов/кода/коммитов.
+
 ## Project
 
 Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
