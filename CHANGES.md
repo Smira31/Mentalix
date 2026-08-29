@@ -1,18 +1,18 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
-## 29.08.2026 — MXL-PREVIEW-STOP-DEADLINE-BACKOFF-001: deadline и backoff cleanup
-
-- `scripts/preview-stop.ps1` больше не ограничивает verify фиксированными 10 попытками: используется deadline 90 секунд, начальная задержка 3 секунды и экспоненциальный backoff до 15 секунд. Значения переопределяются через `MENTALIX_PREVIEW_STOP_VERIFY_DEADLINE_SECONDS`, `MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS` и `MENTALIX_PREVIEW_STOP_RETRY_MAX_DELAY_SECONDS`.
-- Guard удаления усилен до явного подтверждения обоими каналами: публичный deployment URL должен вернуть HTTP 404/410, а `vercel inspect` — подтвердить отсутствие deployment. До этого state сохраняется, команда завершается с ошибкой и Telegram не уведомляется.
-- Детерминированный regression-тест моделирует несколько ответов HTTP 200 и успешный inspect после `remove`, затем 404 и отсутствие deployment; успех разрешён только после обоих подтверждений.
-- `package.json`, продуктовый код, `src/lib/api.js`, Vercel project, backend и Telegram-бот не менялись.
-
 ## 29.08.2026 — MXL-DATE-POLICY-UTC-FIX-001: локальная календарная дата
 
 - `src/lib/moodCheckDraft.js`, `src/screens/Analytics.jsx` и `src/screens/mentalix/insightDigest.js` переведены с UTC-среза `new Date().toISOString().slice(0, 10)` на централизованную `toLocalCalendarDate()` из `src/lib/dateTimezonePolicy.js`.
 - Исправлены пользовательские границы календарного дня: ограничение mood-check, выделение текущего дня в Analytics и дата последнего insight-дайджеста теперь используют локальную дату устройства. `src/lib/api.js` не менялся; его UTC-дата остаётся частью имени скачиваемого файла.
 - Добавлен unit-тест UTC+3 для последовательности 00:30 / 23:30 / 00:30 следующего локального дня. `CheckIn.jsx` и `History.jsx` не менялись.
 - Проверки и PR выполняются до закрытия задачи.
+
+## 29.08.2026 — MXL-PREVIEW-STOP-DEADLINE-BACKOFF-001: deadline и backoff cleanup
+
+- `scripts/preview-stop.ps1` больше не ограничивает verify фиксированными 10 попытками: используется deadline 90 секунд, начальная задержка 3 секунды и экспоненциальный backoff до 15 секунд. Значения переопределяются через `MENTALIX_PREVIEW_STOP_VERIFY_DEADLINE_SECONDS`, `MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS` и `MENTALIX_PREVIEW_STOP_RETRY_MAX_DELAY_SECONDS`.
+- Guard удаления усилен до явного подтверждения обоими каналами: публичный deployment URL должен вернуть HTTP 404/410, а `vercel inspect` — подтвердить отсутствие deployment. До этого state сохраняется, команда завершается с ошибкой и Telegram не уведомляется.
+- Детерминированный regression-тест моделирует несколько ответов HTTP 200 и успешный inspect после `remove`, затем 404 и отсутствие deployment; успех разрешён только после обоих подтверждений.
+- `package.json`, продуктовый код, `src/lib/api.js`, Vercel project, backend и Telegram-бот не менялись.
 
 ## 29.08.2026 — MXL-WEB-LINKED-WRITE-001: честное сообщение вместо тихого 401 (вариант C)
 
