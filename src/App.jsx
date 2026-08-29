@@ -625,6 +625,19 @@ export default function App() {
     scrollDistance.current = 0
   }
 
+  function syncTabUrl(nextTab) {
+    const url = new URL(window.location.href)
+
+    if (nextTab === 'today') {
+      url.searchParams.delete('tab')
+    } else {
+      url.searchParams.set('tab', nextTab)
+    }
+
+    url.searchParams.delete('action')
+    window.history.replaceState(null, '', url)
+  }
+
   function switchTab(key) {
     /*
      * При уходе с вкладки Наставник
@@ -650,6 +663,7 @@ export default function App() {
 
     setPracticesSub(null)
 
+    syncTabUrl(key)
     setTab(key)
 
     setNavCollapsed(false)
@@ -664,6 +678,7 @@ export default function App() {
   const goToday = useCallback(() => {
     platform.haptic('light')
 
+    syncTabUrl('today')
     setMentorPersonaOpen(false)
     setPracticesSub(null)
     setTab('today')
@@ -676,6 +691,7 @@ export default function App() {
     sub => {
       platform.haptic('light')
 
+      syncTabUrl('practices')
       setMentorPersonaOpen(false)
 
       setPracticesSub(sub || null)
@@ -696,6 +712,7 @@ export default function App() {
   const goMentor = useCallback(() => {
     platform.haptic('light')
 
+    syncTabUrl('mentor')
     setMentorPersonaOpen(false)
 
     setTab('mentor')

@@ -1,0 +1,793 @@
+
+> mentalix@1.0.0 check:core
+> npm run test:unit && npm run lint && npm run build && npm run docs:check
+
+
+> mentalix@1.0.0 test:unit
+> node --test tests/unit/*.test.mjs
+
+TAP version 13
+# Subtest: per-entry AI API сохраняет enabled только для указанного check-in и user
+ok 1 - per-entry AI API сохраняет enabled только для указанного check-in и user
+  ---
+  duration_ms: 0.449576
+  ...
+# Subtest: History требует Telegram context и явное confirmation до передачи конкретной записи AI
+ok 2 - History требует Telegram context и явное confirmation до передачи конкретной записи AI
+  ---
+  duration_ms: 0.197897
+  ...
+# Subtest: AI privacy panel объясняет, что global consent не открывает все journal entries
+ok 3 - AI privacy panel объясняет, что global consent не открывает все journal entries
+  ---
+  duration_ms: 0.130096
+  ...
+# Subtest: AuthPort restores an authenticated session from an adapter user
+ok 4 - AuthPort restores an authenticated session from an adapter user
+  ---
+  duration_ms: 1.061768
+  ...
+# Subtest: AuthPort represents a missing adapter user as anonymous
+ok 5 - AuthPort represents a missing adapter user as anonymous
+  ---
+  duration_ms: 0.111377
+  ...
+# Subtest: AuthPort publishes changes and clear returns to anonymous
+ok 6 - AuthPort publishes changes and clear returns to anonymous
+  ---
+  duration_ms: 0.129353
+  ...
+# Subtest: AuthPort publishes an error state when restore fails
+ok 7 - AuthPort publishes an error state when restore fails
+  ---
+  duration_ms: 0.354333
+  ...
+# Subtest: contract: entry schema declares the required fields from the entry-contract doc §4
+ok 8 - contract: entry schema declares the required fields from the entry-contract doc §4
+  ---
+  duration_ms: 5.254993
+  ...
+# Subtest: contract: the four practice-completion logs declare the same outcome/reflection allowlist
+ok 9 - contract: the four practice-completion logs declare the same outcome/reflection allowlist
+  ---
+  duration_ms: 1.358663
+  ...
+# Subtest: contract: no unreviewed fifth practice-completion storage file has appeared
+ok 10 - contract: no unreviewed fifth practice-completion storage file has appeared
+  ---
+  duration_ms: 0.245328
+  ...
+# Subtest: contract: dedupeEntries collapses entries sharing an entry_id
+ok 11 - contract: dedupeEntries collapses entries sharing an entry_id
+  ---
+  duration_ms: 8.026431
+  ...
+# Subtest: contract: readJournalEntries returns a stable, deterministic order across repeated calls
+ok 12 - contract: readJournalEntries returns a stable, deterministic order across repeated calls
+  ---
+  duration_ms: 10.55279
+  ...
+# Subtest: contract: calendar-date policy never returns NaN-shaped output and has an explicit server placeholder
+ok 13 - contract: calendar-date policy never returns NaN-shaped output and has an explicit server placeholder
+  ---
+  duration_ms: 0.662376
+  ...
+# Subtest: contract: normalizeEntry degrades malformed/legacy input to null, never throws
+ok 14 - contract: normalizeEntry degrades malformed/legacy input to null, never throws
+  ---
+  duration_ms: 0.288163
+  ...
+# Subtest: contract: practice outcome/reflection allowlist values pass the existing descriptive-insight filter
+ok 15 - contract: practice outcome/reflection allowlist values pass the existing descriptive-insight filter
+  ---
+  duration_ms: 2.521522
+  ...
+# Subtest: contract: api.js does not invent endpoints for unconfirmed entry-contract concepts
+ok 16 - contract: api.js does not invent endpoints for unconfirmed entry-contract concepts
+  ---
+  duration_ms: 0.350568
+  ...
+# Subtest: contract: AI persona send() call sites do not pass journal/practice field names as the message
+ok 17 - contract: AI persona send() call sites do not pass journal/practice field names as the message
+  ---
+  duration_ms: 0.503327
+  ...
+# Subtest: contract: no WebApp.sendData call sends journal/practice field names to Telegram
+ok 18 - contract: no WebApp.sendData call sends journal/practice field names to Telegram
+  ---
+  duration_ms: 0.194242
+  ...
+# Subtest: MXL-date-policy toUtcInstant возвращает ISO-инстант, детерминирован
+ok 19 - MXL-date-policy toUtcInstant возвращает ISO-инстант, детерминирован
+  ---
+  duration_ms: 0.745721
+  ...
+# Subtest: MXL-date-policy toUtcInstant безопасен на невалидном вводе
+ok 20 - MXL-date-policy toUtcInstant безопасен на невалидном вводе
+  ---
+  duration_ms: 0.579271
+  ...
+# Subtest: MXL-date-policy toLocalCalendarDate безопасен на невалидном вводе (не NaN-NaN-NaN)
+ok 21 - MXL-date-policy toLocalCalendarDate безопасен на невалидном вводе (не NaN-NaN-NaN)
+  ---
+  duration_ms: 0.102204
+  ...
+# Subtest: MXL-date-policy toLocalCalendarDate без аргумента резолвит "сегодня" по устройству
+ok 22 - MXL-date-policy toLocalCalendarDate без аргумента резолвит "сегодня" по устройству
+  ---
+  duration_ms: 0.146471
+  ...
+# Subtest: MXL-date-policy toLocalCalendarDate детерминирован для одного и того же инстанта
+ok 23 - MXL-date-policy toLocalCalendarDate детерминирован для одного и того же инстанта
+  ---
+  duration_ms: 0.064017
+  ...
+# Subtest: MXL-date-policy toLocalCalendarDate совпадает с существующим getTimezoneOffset-приёмом в нескольких зонах
+ok 24 - MXL-date-policy toLocalCalendarDate совпадает с существующим getTimezoneOffset-приёмом в нескольких зонах
+  ---
+  duration_ms: 1.160265
+  ...
+# Subtest: MXL-date-policy DST spring-forward (America/New_York, 2026-03-08): граница дня без двойного сдвига
+ok 25 - MXL-date-policy DST spring-forward (America/New_York, 2026-03-08): граница дня без двойного сдвига
+  ---
+  duration_ms: 0.174743
+  ...
+# Subtest: MXL-date-policy DST fall-back (America/New_York, 2026-11-01): граница дня без двойного сдвига
+ok 26 - MXL-date-policy DST fall-back (America/New_York, 2026-11-01): граница дня без двойного сдвига
+  ---
+  duration_ms: 0.114173
+  ...
+# Subtest: MXL-date-policy resolveCalendarDate: device_local делегирует в toLocalCalendarDate
+ok 27 - MXL-date-policy resolveCalendarDate: device_local делегирует в toLocalCalendarDate
+  ---
+  duration_ms: 0.202174
+  ...
+# Subtest: MXL-date-policy resolveCalendarDate: server policy — явный placeholder, не выдуманный backend
+ok 28 - MXL-date-policy resolveCalendarDate: server policy — явный placeholder, не выдуманный backend
+  ---
+  duration_ms: 0.468495
+  ...
+# Subtest: MXL-date-policy resolveCalendarDate: неизвестная policy — явная ошибка, не тихий fallback
+ok 29 - MXL-date-policy resolveCalendarDate: неизвестная policy — явная ошибка, не тихий fallback
+  ---
+  duration_ms: 0.122224
+  ...
+# Subtest: MXL-date-policy isValidDate
+ok 30 - MXL-date-policy isValidDate
+  ---
+  duration_ms: 0.078087
+  ...
+# Subtest: guided session archive fetches completed sessions without obsolete active status
+ok 31 - guided session archive fetches completed sessions without obsolete active status
+  ---
+  duration_ms: 0.479782
+  ...
+# Subtest: completed session viewer renders persisted answers read-only
+ok 32 - completed session viewer renders persisted answers read-only
+  ---
+  duration_ms: 0.096935
+  ...
+# Subtest: archive copy does not claim automatic Journey or History integration
+ok 33 - archive copy does not claim automatic Journey or History integration
+  ---
+  duration_ms: 0.101232
+  ...
+# Subtest: completed answers are rendered as text rather than raw HTML
+ok 34 - completed answers are rendered as text rather than raw HTML
+  ---
+  duration_ms: 0.056275
+  ...
+# Subtest: JSON export entry honestly names completed guided sessions
+ok 35 - JSON export entry honestly names completed guided sessions
+  ---
+  duration_ms: 0.488074
+  ...
+# Subtest: privacy disclosure keeps completed guided sessions separate from Journey and History
+ok 36 - privacy disclosure keeps completed guided sessions separate from Journey and History
+  ---
+  duration_ms: 0.153681
+  ...
+# Subtest: privacy disclosure does not equate JSON archive with Markdown or metrics-only CSV
+ok 37 - privacy disclosure does not equate JSON archive with Markdown or metrics-only CSV
+  ---
+  duration_ms: 0.068413
+  ...
+# Subtest: sanitizeCheckins исключает malformed даты и удерживает одну последнюю валидную запись на дату
+ok 38 - sanitizeCheckins исключает malformed даты и удерживает одну последнюю валидную запись на дату
+  ---
+  duration_ms: 8.234784
+  ...
+# Subtest: Analytics UI использует единые периоды, раскрывает evidence dates и не считает неполные группы достаточной выборкой
+ok 39 - Analytics UI использует единые периоды, раскрывает evidence dates и не считает неполные группы достаточной выборкой
+  ---
+  duration_ms: 0.272
+  ...
+# Subtest: sanitizeTrendsData сохраняет только bounded metrics и evidence с валидными уникальными датами
+ok 40 - sanitizeTrendsData сохраняет только bounded metrics и evidence с валидными уникальными датами
+  ---
+  duration_ms: 0.624058
+  ...
+# Subtest: Settings persists descriptive Insights visibility with owner settings contract
+ok 41 - Settings persists descriptive Insights visibility with owner settings contract
+  ---
+  duration_ms: 0.608124
+  ...
+# Subtest: opt-out explains that deterministic observations are hidden without deleting data
+ok 42 - opt-out explains that deterministic observations are hidden without deleting data
+  ---
+  duration_ms: 0.211979
+  ...
+# Subtest: Analytics reads a persisted preference and falls back to shown observations on error
+ok 43 - Analytics reads a persisted preference and falls back to shown observations on error
+  ---
+  duration_ms: 0.156695
+  ...
+# Subtest: visibility setting remains separate from AI consent and diagnostic claims
+ok 44 - visibility setting remains separate from AI consent and diagnostic claims
+  ---
+  duration_ms: 0.091858
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 readJournalEntries проецирует завершённый цикл в unified contract
+ok 45 - MXL-JOURNAL-PERSISTENCE-001 readJournalEntries проецирует завершённый цикл в unified contract
+  ---
+  duration_ms: 1.379345
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 readJournalEntries: completed_at остаётся null пока newStep не final
+ok 46 - MXL-JOURNAL-PERSISTENCE-001 readJournalEntries: completed_at остаётся null пока newStep не final
+  ---
+  duration_ms: 0.269907
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 readJournalEntries: entry_id стабилен между вызовами (idempotency)
+ok 47 - MXL-JOURNAL-PERSISTENCE-001 readJournalEntries: entry_id стабилен между вызовами (idempotency)
+  ---
+  duration_ms: 0.187312
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 readJournalEntries изолирует записи по user_id
+ok 48 - MXL-JOURNAL-PERSISTENCE-001 readJournalEntries изолирует записи по user_id
+  ---
+  duration_ms: 0.22584
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 readJournalEntries пропускает дни без контента и сортирует по убыванию
+ok 49 - MXL-JOURNAL-PERSISTENCE-001 readJournalEntries пропускает дни без контента и сортирует по убыванию
+  ---
+  duration_ms: 4.859759
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 readJournalEntries на пустом/недоступном хранилище не падает
+ok 50 - MXL-JOURNAL-PERSISTENCE-001 readJournalEntries на пустом/недоступном хранилище не падает
+  ---
+  duration_ms: 0.657119
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 readJournalEntries не падает на битом JSON в сторе (legacy/malformed)
+ok 51 - MXL-JOURNAL-PERSISTENCE-001 readJournalEntries не падает на битом JSON в сторе (legacy/malformed)
+  ---
+  duration_ms: 0.170927
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 deriveEntryId детерминирован для одного и того же natural key
+ok 52 - MXL-JOURNAL-PERSISTENCE-001 deriveEntryId детерминирован для одного и того же natural key
+  ---
+  duration_ms: 0.621545
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 deriveEntryId различает пользователя и дату (idempotency boundary)
+ok 53 - MXL-JOURNAL-PERSISTENCE-001 deriveEntryId различает пользователя и дату (idempotency boundary)
+  ---
+  duration_ms: 0.889827
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 normalizeEntry принимает валидную запись как есть
+ok 54 - MXL-JOURNAL-PERSISTENCE-001 normalizeEntry принимает валидную запись как есть
+  ---
+  duration_ms: 0.249566
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 normalizeEntry безопасно отклоняет malformed/legacy вход
+ok 55 - MXL-JOURNAL-PERSISTENCE-001 normalizeEntry безопасно отклоняет malformed/legacy вход
+  ---
+  duration_ms: 0.096896
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 normalizeEntry ограничивает длину outcome/reflection/next_action
+ok 56 - MXL-JOURNAL-PERSISTENCE-001 normalizeEntry ограничивает длину outcome/reflection/next_action
+  ---
+  duration_ms: 0.367097
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 normalizeEntry отклоняет невалидные timestamp, но не падает
+ok 57 - MXL-JOURNAL-PERSISTENCE-001 normalizeEntry отклоняет невалидные timestamp, но не падает
+  ---
+  duration_ms: 0.203455
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 serializeEntry детерминирован (фиксированный порядок ключей)
+ok 58 - MXL-JOURNAL-PERSISTENCE-001 serializeEntry детерминирован (фиксированный порядок ключей)
+  ---
+  duration_ms: 0.310738
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 serialize/deserialize это round-trip без потерь
+ok 59 - MXL-JOURNAL-PERSISTENCE-001 serialize/deserialize это round-trip без потерь
+  ---
+  duration_ms: 0.785702
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 deserializeEntry не падает на битом JSON
+ok 60 - MXL-JOURNAL-PERSISTENCE-001 deserializeEntry не падает на битом JSON
+  ---
+  duration_ms: 0.213992
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 dedupeEntries схлопывает дубли по entry_id, оставляя более свежую запись
+ok 61 - MXL-JOURNAL-PERSISTENCE-001 dedupeEntries схлопывает дубли по entry_id, оставляя более свежую запись
+  ---
+  duration_ms: 5.037435
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 dedupeEntries игнорирует malformed элементы, не падает
+ok 62 - MXL-JOURNAL-PERSISTENCE-001 dedupeEntries игнорирует malformed элементы, не падает
+  ---
+  duration_ms: 0.141913
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 dedupeEntries безопасен на не-массиве
+ok 63 - MXL-JOURNAL-PERSISTENCE-001 dedupeEntries безопасен на не-массиве
+  ---
+  duration_ms: 0.071577
+  ...
+# Subtest: journal markdown разбирает жирный, курсив и выделение без HTML
+ok 64 - journal markdown разбирает жирный, курсив и выделение без HTML
+  ---
+  duration_ms: 1.301096
+  ...
+# Subtest: journal markdown сохраняет абзацы и списки как структурированные блоки
+ok 65 - journal markdown сохраняет абзацы и списки как структурированные блоки
+  ---
+  duration_ms: 2.19383
+  ...
+# Subtest: toolbar оборачивает выделение и повторным действием снимает формат
+ok 66 - toolbar оборачивает выделение и повторным действием снимает формат
+  ---
+  duration_ms: 0.188022
+  ...
+# Subtest: journal presentation группирует сообщения по последовательным календарным датам
+ok 67 - journal presentation группирует сообщения по последовательным календарным датам
+  ---
+  duration_ms: 13.093908
+  ...
+# Subtest: journal presentation сохраняет сообщения без даты в одном fallback-разделе
+ok 68 - journal presentation сохраняет сообщения без даты в одном fallback-разделе
+  ---
+  duration_ms: 0.267732
+  ...
+# Subtest: journal presentation определяет длинный ответ по безопасному порогу
+ok 69 - journal presentation определяет длинный ответ по безопасному порогу
+  ---
+  duration_ms: 0.153771
+  ...
+# Subtest: journal media принимает поддерживаемый audio только как pending consent draft
+ok 70 - journal media принимает поддерживаемый audio только как pending consent draft
+  ---
+  duration_ms: 0.486181
+  ...
+# Subtest: journal media отклоняет неподдерживаемый формат и слишком большой файл до upload
+ok 71 - journal media отклоняет неподдерживаемый формат и слишком большой файл до upload
+  ---
+  duration_ms: 0.093821
+  ...
+# Subtest: Journey API сохраняет owner id и дату entry при замене tags
+ok 72 - Journey API сохраняет owner id и дату entry при замене tags
+  ---
+  duration_ms: 0.463127
+  ...
+# Subtest: Journey search передаёт видимые emotion и date range filters при автоматическом поиске
+ok 73 - Journey search передаёт видимые emotion и date range filters при автоматическом поиске
+  ---
+  duration_ms: 0.088092
+  ...
+# Subtest: Journey закрывает private API для legacy web-ID до server-side sessions
+ok 74 - Journey закрывает private API для legacy web-ID до server-side sessions
+  ---
+  duration_ms: 0.165579
+  ...
+# Subtest: Journey предоставляет доступный inline editor tags без смены основной навигации
+ok 75 - Journey предоставляет доступный inline editor tags без смены основной навигации
+  ---
+  duration_ms: 0.078999
+  ...
+# Subtest: allowlist сохраняет текущие семь доступных практик
+ok 76 - allowlist сохраняет текущие семь доступных практик
+  ---
+  duration_ms: 8.913625
+  ...
+# Subtest: MXL-014 публикует короткую текстовую медитацию без backend changes
+ok 77 - MXL-014 публикует короткую текстовую медитацию без backend changes
+  ---
+  duration_ms: 0.535876
+  ...
+# Subtest: withQuery сохраняет порядок и кодирует значения
+ok 78 - withQuery сохраняет порядок и кодирует значения
+  ---
+  duration_ms: 0.196106
+  ...
+# Subtest: withQuery пропускает только null/undefined и не добавляет пустой query
+ok 79 - withQuery пропускает только null/undefined и не добавляет пустой query
+  ---
+  duration_ms: 0.081833
+  ...
+# Subtest: MXL-JOURNAL-ORGANIZE-001 сериализует несколько tag-параметров и включает server-side Journey UI
+ok 80 - MXL-JOURNAL-ORGANIZE-001 сериализует несколько tag-параметров и включает server-side Journey UI
+  ---
+  duration_ms: 0.640961
+  ...
+# Subtest: MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при неизвестном check-in state
+ok 81 - MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при неизвестном check-in state
+  ---
+  duration_ms: 0.125649
+  ...
+# Subtest: MXL-HOME-QUIET-V2-002 сохраняет нижний воздух и различимое active CTA-состояние
+ok 82 - MXL-HOME-QUIET-V2-002 сохраняет нижний воздух и различимое active CTA-состояние
+  ---
+  duration_ms: 0.222705
+  ...
+# Subtest: MXL-PREVIEW-STOP-DRY-RUN-001 связывает npm-алиас с безопасным DryRun
+ok 83 - MXL-PREVIEW-STOP-DRY-RUN-001 связывает npm-алиас с безопасным DryRun
+  ---
+  duration_ms: 0.197877
+  ...
+# Subtest: MXL-DOCS-BACKLOG-NORMALIZATION-001 публикует docs:check и task index
+ok 84 - MXL-DOCS-BACKLOG-NORMALIZATION-001 публикует docs:check и task index
+  ---
+  duration_ms: 0.311799
+  ...
+# Subtest: preview cleanup подтверждает удаление до очистки state и уведомления
+ok 85 - preview cleanup подтверждает удаление до очистки state и уведомления
+  ---
+  duration_ms: 0.384308
+  ...
+# Subtest: MXL-007 публикует дневные strips и убирает старый цикл из Today
+ok 86 - MXL-007 публикует дневные strips и убирает старый цикл из Today
+  ---
+  duration_ms: 0.371118
+  ...
+# Subtest: MXL-008 публикует Stoic-like Journey и объясняет метрику активных дней
+ok 87 - MXL-008 публикует Stoic-like Journey и объясняет метрику активных дней
+  ---
+  duration_ms: 0.134703
+  ...
+# Subtest: MXL-021 связывает Journey с продолжением Today
+ok 88 - MXL-021 связывает Journey с продолжением Today
+  ---
+  duration_ms: 0.07285
+  ...
+# Subtest: MXL-JOURNAL-001 открывает Journal Flow из «Практик» и не подменяет им вкладку «Наставник»
+ok 89 - MXL-JOURNAL-001 открывает Journal Flow из «Практик» и не подменяет им вкладку «Наставник»
+  ---
+  duration_ms: 0.852132
+  ...
+# Subtest: MXL-P0-CORE-JOURNAL-001 сохраняет local-only draft пользователя и формирует поддерживаемый note payload
+ok 90 - MXL-P0-CORE-JOURNAL-001 сохраняет local-only draft пользователя и формирует поддерживаемый note payload
+  ---
+  duration_ms: 0.563797
+  ...
+# Subtest: MXL-P0-CORE-JOURNAL-001 содержит режимы записи, confirmation и detail view без нового journal route
+ok 91 - MXL-P0-CORE-JOURNAL-001 содержит режимы записи, confirmation и detail view без нового journal route
+  ---
+  duration_ms: 0.267051
+  ...
+# Subtest: MXL-JOURNAL-GUIDED-001 добавляет guided catalog и private template builder внутрь Library
+ok 92 - MXL-JOURNAL-GUIDED-001 добавляет guided catalog и private template builder внутрь Library
+  ---
+  duration_ms: 0.156636
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат
+ok 93 - MXL-JOURNAL-PERSISTENCE-001 сохраняет фазы, различает draft/final и мигрирует прототипный формат
+  ---
+  duration_ms: 0.431779
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 изолирует новые journal-записи по профилю
+ok 94 - MXL-JOURNAL-PERSISTENCE-001 изолирует новые journal-записи по профилю
+  ---
+  duration_ms: 0.155674
+  ...
+# Subtest: MXL-JOURNAL-HISTORY-001 показывает только local journal текущего профиля без записи или миграции
+ok 95 - MXL-JOURNAL-HISTORY-001 показывает только local journal текущего профиля без записи или миграции
+  ---
+  duration_ms: 4.978957
+  ...
+# Subtest: MXL-JOURNAL-HISTORY-001 сохраняет History-only scope без fullscreen Journal или API
+ok 96 - MXL-JOURNAL-HISTORY-001 сохраняет History-only scope без fullscreen Journal или API
+  ---
+  duration_ms: 2.581142
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 переносит legacy-запись только по явному действию
+ok 97 - MXL-JOURNAL-PERSISTENCE-001 переносит legacy-запись только по явному действию
+  ---
+  duration_ms: 0.649838
+  ...
+# Subtest: MXL-JOURNAL-PERSISTENCE-001 сообщает ошибку вместо ложного локального сохранения
+ok 98 - MXL-JOURNAL-PERSISTENCE-001 сообщает ошибку вместо ложного локального сохранения
+  ---
+  duration_ms: 0.397067
+  ...
+# Subtest: MXL-009 ограничивает insights описательными наблюдениями
+ok 99 - MXL-009 ограничивает insights описательными наблюдениями
+  ---
+  duration_ms: 0.201113
+  ...
+# Subtest: MXL-019 заменяет Journey mountain metaphor на continuous progress line
+ok 100 - MXL-019 заменяет Journey mountain metaphor на continuous progress line
+  ---
+  duration_ms: 0.162004
+  ...
+# Subtest: MXL-016 публикует семь авторских мыслей без непроверенной атрибуции
+ok 101 - MXL-016 публикует семь авторских мыслей без непроверенной атрибуции
+  ---
+  duration_ms: 0.263516
+  ...
+# Subtest: MXL-015 публикует семь curated Stoic-inspired тем без backend предположений
+ok 102 - MXL-015 публикует семь curated Stoic-inspired тем без backend предположений
+  ---
+  duration_ms: 0.158838
+  ...
+# Subtest: MXL-001 сохраняет Stoic-inspired AI flow без backend изменений и без entry-strip в PersonaPicker
+ok 103 - MXL-001 сохраняет Stoic-inspired AI flow без backend изменений и без entry-strip в PersonaPicker
+  ---
+  duration_ms: 0.322585
+  ...
+# Subtest: MXL-MENTOR-UI-248 убирает внешнюю рамку и индикатор, сохраняя изоляцию историй персон
+ok 104 - MXL-MENTOR-UI-248 убирает внешнюю рамку и индикатор, сохраняя изоляцию историй персон
+  ---
+  duration_ms: 0.192741
+  ...
+# Subtest: MXL-006 публикует единый AI typography baseline без backend изменений
+ok 105 - MXL-006 публикует единый AI typography baseline без backend изменений
+  ---
+  duration_ms: 0.283857
+  ...
+# Subtest: MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides
+ok 106 - MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides
+  ---
+  duration_ms: 0.264127
+  ...
+# Subtest: MXL-DS-LABEL-FONT-001 разрешает font-label только на eyebrow-лейблах Analytics, не на числах/графиках/экране
+ok 107 - MXL-DS-LABEL-FONT-001 разрешает font-label только на eyebrow-лейблах Analytics, не на числах/графиках/экране
+  ---
+  duration_ms: 0.339721
+  ...
+# Subtest: MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями
+ok 108 - MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями
+  ---
+  duration_ms: 0.710729
+  ...
+# Subtest: MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale для пяти вкладок
+ok 109 - MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale для пяти вкладок
+  ---
+  duration_ms: 1.896502
+  ...
+# Subtest: MXL-JOURNAL-UI-247 выравнивает Journal слева и не показывает метку «Тема недели»
+ok 110 - MXL-JOURNAL-UI-247 выравнивает Journal слева и не показывает метку «Тема недели»
+  ---
+  duration_ms: 0.182225
+  ...
+# Subtest: MXL-021 возвращает из Journey в Today через CTA «Продолжить сегодня»
+ok 111 - MXL-021 возвращает из Journey в Today через CTA «Продолжить сегодня»
+  ---
+  duration_ms: 0.147723
+  ...
+# Subtest: Settings exposes the privacy and data disclosure to Telegram and web users
+ok 112 - Settings exposes the privacy and data disclosure to Telegram and web users
+  ---
+  duration_ms: 0.563036
+  ...
+# Subtest: privacy notice describes retention and deletion boundaries without a false timing promise
+ok 113 - privacy notice describes retention and deletion boundaries without a false timing promise
+  ---
+  duration_ms: 0.253021
+  ...
+# Subtest: privacy notice distinguishes local drafts and lock from cloud backup or encryption
+ok 114 - privacy notice distinguishes local drafts and lock from cloud backup or encryption
+  ---
+  duration_ms: 0.304468
+  ...
+# Subtest: privacy notice does not promise unimplemented iCloud, queue or conflict handling
+ok 115 - privacy notice does not promise unimplemented iCloud, queue or conflict handling
+  ---
+  duration_ms: 0.212799
+  ...
+# Subtest: privacy notice preserves verified Telegram-only sensitive action boundary
+ok 116 - privacy notice preserves verified Telegram-only sensitive action boundary
+  ---
+  duration_ms: 1.269759
+  ...
+# Subtest: privacy delete API всегда передаёт owner id и server-side confirmation
+ok 117 - privacy delete API всегда передаёт owner id и server-side confirmation
+  ---
+  duration_ms: 0.496857
+  ...
+# Subtest: History удаляет только выбранный check-in после явного confirmation и сохраняет activity
+ok 118 - History удаляет только выбранный check-in после явного confirmation и сохраняет activity
+  ---
+  duration_ms: 0.154783
+  ...
+# Subtest: Settings не обещают privacy actions для web identity без server-side session
+ok 119 - Settings не обещают privacy actions для web identity без server-side session
+  ---
+  duration_ms: 0.125669
+  ...
+# Subtest: Guided Journals запрашивает только поддерживаемые draft sessions для resume hub
+ok 120 - Guided Journals запрашивает только поддерживаемые draft sessions для resume hub
+  ---
+  duration_ms: 0.583387
+  ...
+# Subtest: Guided Journals закрывает private API для legacy web-ID до server-side sessions
+ok 121 - Guided Journals закрывает private API для legacy web-ID до server-side sessions
+  ---
+  duration_ms: 0.168002
+  ...
+# Subtest: private template builder использует update contract и объясняет versioning
+ok 122 - private template builder использует update contract и объясняет versioning
+  ---
+  duration_ms: 0.102263
+  ...
+# Subtest: private template detail требует подтверждение soft delete и сохраняет draft sessions
+ok 123 - private template detail требует подтверждение soft delete и сохраняет draft sessions
+  ---
+  duration_ms: 0.097206
+  ...
+# Subtest: completion text честно не обещает появления template session в Journey
+ok 124 - completion text честно не обещает появления template session в Journey
+  ---
+  duration_ms: 0.098798
+  ...
+# Subtest: currentCheckinStreak counts the completed tail in chronological order
+ok 125 - currentCheckinStreak counts the completed tail in chronological order
+  ---
+  duration_ms: 0.784049
+  ...
+# Subtest: currentCheckinStreak stops at the first incomplete check-in
+ok 126 - currentCheckinStreak stops at the first incomplete check-in
+  ---
+  duration_ms: 0.097356
+  ...
+# Subtest: buildSeriesViewModel keeps badges derived from existing stats and practice lists
+ok 127 - buildSeriesViewModel keeps badges derived from existing stats and practice lists
+  ---
+  duration_ms: 0.195625
+  ...
+# Subtest: buildSeriesViewModel is safe for empty API responses
+ok 128 - buildSeriesViewModel is safe for empty API responses
+  ---
+  duration_ms: 3.672699
+  ...
+# Subtest: currentCheckinStreak stops when completed check-ins have a calendar gap
+ok 129 - currentCheckinStreak stops when completed check-ins have a calendar gap
+  ---
+  duration_ms: 0.186151
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 pessimistic default: внутри Telegram снапшот true до подтверждения
+ok 130 - MXL-FULLSCREEN-SURFACE-RACE-001 pessimistic default: внутри Telegram снапшот true до подтверждения
+  ---
+  duration_ms: 5.138392
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 fullscreenChanged подтверждает реальное значение и снимает pessimism
+ok 131 - MXL-FULLSCREEN-SURFACE-RACE-001 fullscreenChanged подтверждает реальное значение и снимает pessimism
+  ---
+  duration_ms: 1.727728
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 web (не Telegram): сразу false, без pessimism
+ok 132 - MXL-FULLSCREEN-SURFACE-RACE-001 web (не Telegram): сразу false, без pessimism
+  ---
+  duration_ms: 2.179233
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 идемпотентность: множественный subscribe (StrictMode double-invoke) не дублирует Telegram-инициализацию
+ok 133 - MXL-FULLSCREEN-SURFACE-RACE-001 идемпотентность: множественный subscribe (StrictMode double-invoke) не дублирует Telegram-инициализацию
+  ---
+  duration_ms: 1.502099
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 уведомляет всех текущих подписчиков при смене состояния
+ok 134 - MXL-FULLSCREEN-SURFACE-RACE-001 уведомляет всех текущих подписчиков при смене состояния
+  ---
+  duration_ms: 2.075535
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 unsubscribe убирает только своего слушателя
+ok 135 - MXL-FULLSCREEN-SURFACE-RACE-001 unsubscribe убирает только своего слушателя
+  ---
+  duration_ms: 1.251162
+  ...
+# (node:9967) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 ALREADY_FULLSCREEN: requestFullscreen не вызывается, если уже fullscreen
+ok 136 - MXL-FULLSCREEN-SURFACE-RACE-001 ALREADY_FULLSCREEN: requestFullscreen не вызывается, если уже fullscreen
+  ---
+  duration_ms: 1.166825
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 fallback-таймаут подтверждает реальное значение, если событие не пришло
+ok 137 - MXL-FULLSCREEN-SURFACE-RACE-001 fallback-таймаут подтверждает реальное значение, если событие не пришло
+  ---
+  duration_ms: 2.666997
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 getFullscreenSnapshot безопасен без window (SSR/тестовое окружение)
+ok 138 - MXL-FULLSCREEN-SURFACE-RACE-001 getFullscreenSnapshot безопасен без window (SSR/тестовое окружение)
+  ---
+  duration_ms: 1.358673
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 импорт модуля без вызова subscribe/getSnapshot не трогает DOM/Telegram
+ok 139 - MXL-FULLSCREEN-SURFACE-RACE-001 импорт модуля без вызова subscribe/getSnapshot не трогает DOM/Telegram
+  ---
+  duration_ms: 1.05027
+  ...
+# Subtest: MXL-FULLSCREEN-SURFACE-RACE-001 initFullscreen (legacy API): вызывает onChange сразу и на каждое изменение
+ok 140 - MXL-FULLSCREEN-SURFACE-RACE-001 initFullscreen (legacy API): вызывает onChange сразу и на каждое изменение
+  ---
+  duration_ms: 1.709101
+  ...
+# Subtest: profile adapter exposes the bounded weekly writing-goal progress contract
+ok 141 - profile adapter exposes the bounded weekly writing-goal progress contract
+  ---
+  duration_ms: 0.44515
+  ...
+# Subtest: Settings loads and refreshes weekly writing-goal progress after a saved target
+ok 142 - Settings loads and refreshes weekly writing-goal progress after a saved target
+  ---
+  duration_ms: 0.855436
+  ...
+# Subtest: weekly goal progress is descriptive and does not penalize missed days
+ok 143 - weekly goal progress is descriptive and does not penalize missed days
+  ---
+  duration_ms: 0.326301
+  ...
+# Subtest: progress surface remains accessible and bounded to a percentage
+ok 144 - progress surface remains accessible and bounded to a percentage
+  ---
+  duration_ms: 0.083235
+  ...
+1..144
+# tests 144
+# suites 0
+# pass 144
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2295.815867
+
+> mentalix@1.0.0 lint
+> eslint .
+
+
+> mentalix@1.0.0 build
+> vite build
+
+vite v5.4.11 building for production...
+transforming...
+✓ 2557 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                             0.62 kB │ gzip:   0.34 kB
+dist/assets/manrope-vietnamese-500-normal-DCXiE_xi.woff2    4.32 kB
+dist/assets/manrope-vietnamese-600-normal-C1J5PCl_.woff2    4.47 kB
+dist/assets/manrope-greek-600-normal-BoRV6lzK.woff2         5.23 kB
+dist/assets/manrope-greek-500-normal-GeMIHyWm.woff2         5.25 kB
+dist/assets/manrope-vietnamese-500-normal-DaZ8i3XM.woff     6.06 kB
+dist/assets/manrope-vietnamese-600-normal-lA7a_7Ok.woff     6.14 kB
+dist/assets/manrope-greek-600-normal-CF2i9ZRY.woff          6.74 kB
+dist/assets/manrope-greek-500-normal-DyxYGEtJ.woff          6.76 kB
+dist/assets/manrope-cyrillic-500-normal-B1OEZity.woff2      7.87 kB
+dist/assets/manrope-cyrillic-600-normal-DvRl3Mj-.woff2      7.87 kB
+dist/assets/manrope-latin-ext-500-normal-dm74KBQw.woff2     8.19 kB
+dist/assets/manrope-latin-ext-600-normal-_gBojHdJ.woff2     8.30 kB
+dist/assets/manrope-cyrillic-500-normal-CNwnNrRC.woff      10.01 kB
+dist/assets/manrope-cyrillic-600-normal-It4mZcQk.woff      10.06 kB
+dist/assets/manrope-latin-ext-500-normal-EtoS1VaI.woff     11.25 kB
+dist/assets/manrope-latin-ext-600-normal-u5Pl7hTU.woff     11.25 kB
+dist/assets/manrope-latin-500-normal-BYYD-dBL.woff2        14.04 kB
+dist/assets/manrope-latin-600-normal-4f0koTD-.woff2        14.17 kB
+dist/assets/manrope-latin-500-normal-DMZssgOp.woff         18.24 kB
+dist/assets/manrope-latin-600-normal-BqgrALkZ.woff         18.38 kB
+dist/assets/Mentalix-7PFh15tA.css                           0.80 kB │ gzip:   0.29 kB
+dist/assets/Practices-IvpSlN5F.css                         10.12 kB │ gzip:   1.67 kB
+dist/assets/index-r9bnjHgp.css                             90.94 kB │ gzip:  23.18 kB
+dist/assets/shield-check-DcAWixH4.js                        0.49 kB │ gzip:   0.35 kB
+dist/assets/MoodCheckGate-BB6Vb_hh.js                       1.37 kB │ gzip:   0.73 kB
+dist/assets/Profile-4-xhL-5O.js                             6.18 kB │ gzip:   2.82 kB
+dist/assets/Mentalix-BmBE9GGf.js                           22.44 kB │ gzip:   8.82 kB
+dist/assets/Settings-4VgdkL2e.js                           37.06 kB │ gzip:  12.40 kB
+dist/assets/Library-C5RDU50l.js                            38.84 kB │ gzip:  11.10 kB
+dist/assets/Practices-DvX6VCZb.js                          96.29 kB │ gzip:  24.74 kB
+dist/assets/Analytics-OzzrQKQ7.js                         396.06 kB │ gzip: 111.28 kB
+dist/assets/index-1LuiqvFc.js                             422.90 kB │ gzip: 129.21 kB
+✓ built in 3.31s
+
+> mentalix@1.0.0 docs:check
+> node scripts/docs-check.mjs
+
+Documentation check passed: 146 Markdown files, 34 canonical task IDs, 0 errors.
+exit_code=
