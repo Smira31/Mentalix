@@ -4099,6 +4099,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Evidence:** для каждого дефекта обязательны устройство, viewport, экран, шаги воспроизведения, ожидаемое/фактическое поведение, повторяемость и screenshot или screen recording.
 - **Rollback:** отдельный узкий PR с revert без удаления данных и без production-операций; если проблема не воспроизводится, оставить задачу в backlog с отрицательным результатом проверки вместо изменения дизайна по предположению.
 - **Связанные материалы:** `docs/testing/UI_RESPONSIVE_CHECK.md`, `docs/testing/MXL-UX-RESPONSIVE-001_TEST_CASES.md`, `docs/testing/V1_1_TEST_PLAN.md`, `docs/testing/TELEGRAM_GATE.md`, ручные скриншоты владельца от 27.08.2026.
+- **Закрытый подэтап (29.08.2026):** на viewport 320×568 подписи «Наставник»/«Библиотека» пересекались в нижней навигации — добавлены narrow-only классы (`BottomNavigation.jsx`, до 360px: 9px шрифт, лёгкий отрицательный tracking; 375px+ не меняется). Добавлена regression-проверка геометрии label в `tests/ux/ux-check.spec.mjs`. `npm run test:unit`/`lint`/`build`/`docs:check` — PASS.
 
 ## MXL-HOME-QUIET-FOUNDATION-001 / MXL-TYPE-SYSTEM-001 — Home/type slice
 
