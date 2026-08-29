@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { Settings as SettingsIcon } from 'lucide-react'
+import { Flame, Settings as SettingsIcon } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -17,6 +17,7 @@ import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { api } from './lib/api'
+import { currentCheckinStreak } from './lib/series'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 
@@ -203,9 +204,33 @@ export default function App() {
 
   const [todayFlowOpen, setTodayFlowOpen] = useState(false)
 
+  const [todaySeriesOpen, setTodaySeriesOpen] = useState(false)
+
+  const [todayStreak, setTodayStreak] = useState(0)
+
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
 
-  const bottomNavigationHidden = mentorPersonaOpen || todayFlowOpen || practiceGameOpen
+  useEffect(() => {
+    if (!user) return
+
+    let active = true
+
+    api.checkin
+      .history(user.id, 90)
+      .then(checkins => {
+        if (active) setTodayStreak(currentCheckinStreak(checkins))
+      })
+      .catch(() => {
+        if (active) setTodayStreak(0)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [user])
+
+  const bottomNavigationHidden =
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
 
   /*
    * Последняя реальная позиция скролла.
@@ -767,7 +792,7 @@ export default function App() {
    * сообщает об этом через onFlowChange; раньше флаг
    * гасил только нижнюю навигацию.
    */
-  const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen
+  const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
   const topSafeArea = fullscreen ? 'calc(var(--app-safe-top) + 56px)' : 'var(--app-safe-top)'
 
@@ -885,11 +910,23 @@ export default function App() {
               gap-2
             "
             >
-              {/* Сохраняет приветствие по центру относительно аватара. */}
-              <span
-                id="mx-today-header-leading"
-                className="relative w-10 max-[359px]:w-6 h-10 shrink-0"
-              />
+              {/* Огонёк открывает общий экран серий и вех. */}
+              <button
+                type="button"
+                onClick={() => {
+                  platform.haptic('light')
+                  setTodaySeriesOpen(true)
+                }}
+                aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
+                className="relative flex w-10 max-[359px]:w-6 h-10 shrink-0 items-center justify-center rounded-full bg-emerald border border-cream/10 text-gold active:scale-95"
+              >
+                <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
+                {todayStreak > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 min-w-[15px] rounded-full bg-gold px-1 text-center text-[9px] font-bold leading-[15px] text-emerald-deep">
+                    {todayStreak}
+                  </span>
+                )}
+              </button>
 
               {/* Greeting */}
 
@@ -1058,6 +1095,8 @@ export default function App() {
                     onGoMentor={goMentor}
                     onFlowChange={setTodayFlowOpen}
                     onOpenSettings={() => setOverlay('settings')}
+                    seriesOpen={todaySeriesOpen}
+                    onCloseSeries={() => setTodaySeriesOpen(false)}
                   />
                 )}
 
