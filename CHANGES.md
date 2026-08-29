@@ -1,5 +1,25 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-date-policy: централизованная calendar-date/timezone политика
+
+- Добавлен `src/lib/dateTimezonePolicy.js`: `toUtcInstant`/`toLocalCalendarDate`
+  (местный календарный день через local `Date`-геттеры, без offset-арифметики)
+  и `resolveCalendarDate(input, {policy})`, где `policy: 'server'` кидает
+  `UnimplementedDatePolicyError` вместо выдуманного backend-контракта.
+- `journalStorage.js`'s `todayKey()` и `checkinDraft.js`'s `todayCheckinKey()`
+  делегируют в новый модуль вместо независимых копий одного и того же
+  `date.getTimezoneOffset()`-приёма (риск, зафиксированный в
+  `docs/architecture/MXL-JOURNAL-PERSISTENCE-001_ENTRY_CONTRACT.md` §5).
+  Экспортируемые сигнатуры не изменились.
+- Идентичность поведения подтверждена не только тестами, но и прямым
+  сравнением старой и новой формулы на 16 парах (таймзона, UTC-инстант),
+  включая обе границы DST 2026 года для `America/New_York` (spring-forward
+  и fall-back) и экстремальные смещения (`Pacific/Kiritimati` +14,
+  `Pacific/Midway` −11) — 0 расхождений.
+- `npm run test:unit` 12/12 новых, lint, build, `docs:check`,
+  `git diff --check` — PASS. PR #316, squash-merge `fix/mxl-date-policy` →
+  `main`. Исторические записи не переносились, backfill не делался.
+
 ## 29.08.2026 — MXL-JOURNAL-PERSISTENCE-001: unified entry-contract adapter
 
 - Добавлены `src/lib/journalEntryContract.js` (pure normalize/serialize/dedupe
