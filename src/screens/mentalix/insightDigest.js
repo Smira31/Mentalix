@@ -2,6 +2,7 @@ import { api } from '../../lib/api'
 import { readLocal, writeLocal } from '../../lib/store'
 import { cloud } from '../../platform/telegram.hooks'
 import { deriveConclusions, MIN_CHECKINS } from '../Analytics'
+import { toLocalCalendarDate } from '../../lib/dateTimezonePolicy.js'
 
 // ── «Дайджест от Следопыта» (ROADMAP.md, идея 3) ──
 //
@@ -42,8 +43,11 @@ function daysSince(dateIso) {
   return (now - then) / (1000 * 60 * 60 * 24)
 }
 
-function todayIso() {
-  return new Date().toISOString().slice(0, 10)
+// MXL-DATE-POLICY-UTC-FIX-001: было new Date().toISOString().slice(0, 10) —
+// UTC-дата, не локальная; ломало MIN_DAYS_BETWEEN_INSIGHTS-лимит на границе
+// полуночи в ненулевом часовом поясе. См. src/lib/dateTimezonePolicy.js.
+export function todayIso(now = new Date()) {
+  return toLocalCalendarDate(now)
 }
 
 /*

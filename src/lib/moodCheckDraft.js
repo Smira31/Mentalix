@@ -1,3 +1,5 @@
+import { toLocalCalendarDate } from './dateTimezonePolicy.js'
+
 // Быстрый mood-check при запуске (MXL-MOOD-CHECK-001, идея 12 ROADMAP.md).
 //
 // Тумблер — синхронизируемый флаг (useSynced в App.jsx/Settings.jsx), тот
@@ -23,8 +25,14 @@ const LAST_SHOWN_KEY = 'mx-mood-check-last-shown'
 // молча заняли бы место настоящего чек-ина (см. Today.jsx todayState).
 const DRAFT_KEY = 'mx-mood-check-draft'
 
-function today() {
-  return new Date().toISOString().slice(0, 10)
+// MXL-DATE-POLICY-UTC-FIX-001: было new Date().toISOString().slice(0, 10) —
+// UTC-дата, не локальная. На границе полуночи в любом ненулевом часовом
+// поясе это давало двойной показ гейта в один локальный день или пропуск в
+// начале следующего (LAST_SHOWN_KEY сравнивался с чужим, UTC-календарём).
+// toLocalCalendarDate — тот же единый паттерн, что checkinDraft.todayCheckinKey()
+// и journalStorage.todayKey() (src/lib/dateTimezonePolicy.js).
+export function today(now = new Date()) {
+  return toLocalCalendarDate(now)
 }
 
 export function shouldOfferMoodCheck() {

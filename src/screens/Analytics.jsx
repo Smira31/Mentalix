@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
 import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
+import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
@@ -46,7 +47,10 @@ function EmptyAnalytics() {
 
 function WeekChart({ dailyActivity }) {
   const last7 = dailyActivity.slice(-7)
-  const todayIso = new Date().toISOString().slice(0, 10)
+  // MXL-DATE-POLICY-UTC-FIX-001: было new Date().toISOString().slice(0, 10) —
+  // UTC-дата, не локальная; ломало подсветку "сегодня" в графике на границе
+  // полуночи в ненулевом часовом поясе. См. src/lib/dateTimezonePolicy.js.
+  const todayIso = toLocalCalendarDate()
 
   const chartData = last7.map(d => {
     const jsDate = new Date(d.date + 'T00:00:00')

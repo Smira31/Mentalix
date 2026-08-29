@@ -25,6 +25,16 @@
 - `npm run check:core` — PASS. PR, squash-merge
   `fix/ritual-create-bug` → `main`, не смёржен автоматически.
 
+## 29.08.2026 — MXL-DATE-POLICY-UTC-FIX-001: UTC vs локальная дата в трёх местах "сегодня"
+
+Баг подтверждён расследованием (Manus): `moodCheckDraft.js`, `Analytics.jsx` и `insightDigest.js` вычисляли «сегодня» через `new Date().toISOString().slice(0, 10)` — UTC-дату, а не локальную. В окне между локальной и UTC-полуночью (любой ненулевой часовой пояс) это давало двойной показ mood-check-гейта в один локальный день или пропуск в начале следующего, а также сдвиг «сегодня» в графике Analytics и в лимите показа дайджеста Следопыта.
+
+Заменено на `toLocalCalendarDate()` из `src/lib/dateTimezonePolicy.js` — уже централизованный паттерн, который используют `checkinDraft.todayCheckinKey()` и `journalStorage.todayKey()`. `CheckIn.jsx`/`History.jsx` не тронуты — уже делают это правильно. `src/lib/api.js` не тронут — там UTC-дата только в имени скачиваемого файла.
+
+Новый `tests/unit/mxl-date-policy-utc-fix.test.mjs`: поведенческий тест конкретного сценария рассинхронизации (UTC+3, 23:30 дня N vs 00:30 дня N+1) для `moodCheckDraft.today()`, плюс source-text проверки для `Analytics.jsx`/`insightDigest.js` (последний тянет чужие импорты без `.js`-расширения, не резолвится под `node --test` напрямую — их правка вне скоупа этой задачи).
+
+`npm run check:core` — 150/150 unit (было 144), lint, build, docs:check — PASS. Оформлено отдельным PR, не смёржено.
+
 ## 29.08.2026 — MXL-AI-REFRAME-001: «Обсудить с AI» на сохранённой записи (задача 7 ROADMAP.md)
 
 Реализована задача 7 подтверждённой очереди `ROADMAP.md` («AI-помощник формулировки автоматических мыслей») по итогам pre-mortem (Tiger/Paper Tiger/Elephant) и решений владельца. Кнопка «Обсудить с AI» на уже сохранённой записи чек-ина/дневника (`History.jsx`) — реактивная, не проактивная, видна только при включённом `checkin.ai_context_enabled`. Открывает существующий чат с персоной Собеседник через уже проверенный sessionStorage-хендофф (`openScout`/`openListener`-паттерн), с префиллом собственного текста пользователя. Backend не менялся, новый endpoint не создан, персоны/тон не тронуты, ответ AI не сохраняется в саму запись.
