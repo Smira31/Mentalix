@@ -75,3 +75,22 @@
 ## Definition of Done
 
 Задача считается закрытой после реализации согласованного scope, успешной сборки и целевых проверок, открытия отдельного PR с evidence и прохождения предусмотренного manual gate. `docs/TASK_INDEX.md` обновляется для активного backlog; `PROJECT_STATE.md` — только если изменился подтверждённый release/production факт. `TASKS.md`, `CHANGES.md` и архив пополняются только когда нужна историческая причина, а не как обязательная копия статуса.
+
+## Canonical agent workflow and current audit queue
+
+Эта секция связывает текущий GitHub-трекер с единой точкой входа [`docs/AGENT_ONBOARDING.md`](AGENT_ONBOARDING.md). Все агенты начинают с onboarding, затем находят существующую Issue по task ID и продолжают её. Новые Issues и ветки для уже существующей работы не создаются без явного решения владельца.
+
+| ID                     | Тип                     | Статус      | GitHub                                                 | Следующий шаг                                                                                       |
+| ---------------------- | ----------------------- | ----------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `MXL-GIT-SYNC-001`     | technical blocker       | ready       | [#289](https://github.com/Smira31/Mentalix/issues/289) | Завершить сравнение локального `main`, `origin/main` и stash; не удалять WIP до фиксации результата |
+| `MXL-TYPO-001`         | UX/typography           | blocked     | [#290](https://github.com/Smira31/Mentalix/issues/290) | Продолжить существующий typography-контекст после закрытия git-блокера                              |
+| `MXL-UI-AUDIT-001`     | QA/UX                   | ready       | [#291](https://github.com/Smira31/Mentalix/issues/291) | Пройти ключевой пользовательский маршрут и записать evidence в Issue                                |
+| `MXL-DESIGN-STOIC-001` | product/design decision | needs-owner | [#292](https://github.com/Smira31/Mentalix/issues/292) | После аудита принять решения по карточкам Practices и плотности Trends                              |
+
+Существующие задачи не дублируются: onboarding остаётся в [#117](https://github.com/Smira31/Mentalix/issues/117), Journal alignment — в [#247](https://github.com/Smira31/Mentalix/issues/247), а общий animation context — в [#103](https://github.com/Smira31/Mentalix/issues/103). Конкретные новые дефекты добавляются в `MXL-UI-AUDIT-001`, а отдельные follow-up Issues создаются только для подтверждённого уникального scope.
+
+### Агентский порядок выполнения
+
+Канонический порядок текущего цикла: `MXL-GIT-SYNC-001` → `MXL-TYPO-001` → `MXL-UI-AUDIT-001` → `MXL-DESIGN-STOIC-001`. Агент не объявляет задачу закрытой только по результату сборки: требуются целевая проверка, evidence, обновлённый handoff и соблюдение manual gate, если он предусмотрен.
+
+| `MXL-SERIES-001` | product/UX | verified/completed | [#299](https://github.com/Smira31/Mentalix/issues/299) | Закрыта через PR #301; Today streak flame и Series & Badges опубликованы |
