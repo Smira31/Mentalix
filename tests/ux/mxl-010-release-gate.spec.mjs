@@ -125,6 +125,15 @@ test.describe('MXL-010 automated technical gate', () => {
   test('web auth contract is deterministic and does not expose private data', async ({ browser, baseURL }) => {
     const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } })
     const fixtures = buildFixtureRouter()
+    await context.addInitScript(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+      try {
+        delete window.Telegram
+      } catch {
+        window.Telegram = undefined
+      }
+    })
     await context.route('**/api/**', route => fixtures.handle(route))
     const page = await context.newPage()
 
