@@ -3,6 +3,47 @@ import { withQuery } from './apiQuery'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
 
 const BASE = '/api'
+const API_TIMEOUT_MS = 10_000
+const API_MAX_RETRIES = 1
+const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
+const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
+
+export class ApiError extends Error {
+  constructor(message, { path, status = null, kind = 'unknown', cause = null } = {}) {
+    super(message, { cause })
+    this.name = 'ApiError'
+    this.path = path
+    this.status = status
+    this.kind = kind
+  }
+}
+
+function isRetryableStatus(status) {
+  return RETRYABLE_STATUS_CODES.has(status) || status >= 500
+}
+
+function backoffMs(attempt) {
+  return 150 * 2 ** attempt
+}
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(url, { ...options, signal: controller.signal })
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new ApiError(`API request timed out after ${timeoutMs}ms`, {
+        path: url,
+        kind: 'timeout',
+        cause: error,
+      })
+    }
+    throw new ApiError('API network request failed', { path: url, kind: 'network', cause: error })
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
 
 /*
  * MXL-SECURITY-AUDIT-001: подписанный Telegram initData едет в стандартном
@@ -35,30 +76,75 @@ async function request(path, options = {}) {
   if (isPreviewDemoMode()) return demoRequest(path, options)
 
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
+  const method = (options.method || 'GET').toUpperCase()
+  const canRetry = RETRYABLE_METHODS.has(method)
+  const timeoutMs = options.timeoutMs || API_TIMEOUT_MS
+  const fetchOptions = { ...options }
+  delete fetchOptions.timeoutMs
 
-  const res = await fetch(`${BASE}${path}`, {
-    headers: {
-      ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
-      ...authHeader(),
-      ...options.headers,
-    },
-    ...options,
-  })
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      const res = await fetchWithTimeout(
+        `${BASE}${path}`,
+        {
+          ...fetchOptions,
+          headers: {
+            ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
+            ...authHeader(),
+            ...options.headers,
+          },
+        },
+        timeoutMs
+      )
+      const raw = await res.text()
 
-  const raw = await res.text()
+      if (!res.ok) {
+        const error = new ApiError(`API ${path} failed: ${res.status}`, {
+          path,
+          status: res.status,
+          kind: 'http',
+        })
+        if (canRetry && attempt < API_MAX_RETRIES && isRetryableStatus(res.status)) {
+          await new Promise(resolve => setTimeout(resolve, backoffMs(attempt)))
+          continue
+        }
+        error.message += `. Ответ: ${raw.slice(0, 300)}`
+        throw error
+      }
 
-  if (!res.ok) {
-    throw new Error(`API ${path} failed: ${res.status}. Ответ: ${raw.slice(0, 300)}`)
-  }
+      if (!raw) {
+        throw new ApiError(`API ${path} вернул пустой ответ при статусе ${res.status}`, {
+          path,
+          status: res.status,
+          kind: 'protocol',
+        })
+      }
 
-  if (!raw) {
-    throw new Error(`API ${path} вернул пустой ответ при статусе ${res.status}`)
-  }
-
-  try {
-    return JSON.parse(raw)
-  } catch {
-    throw new Error(`API ${path} вернул не JSON: ${raw.slice(0, 300)}`)
+      try {
+        return JSON.parse(raw)
+      } catch (error) {
+        throw new ApiError(`API ${path} вернул не JSON`, {
+          path,
+          status: res.status,
+          kind: 'protocol',
+          cause: error,
+        })
+      }
+    } catch (error) {
+      const normalized =
+        error instanceof ApiError
+          ? error
+          : new ApiError(`API ${path} request failed`, { path, kind: 'unknown', cause: error })
+      if (
+        canRetry &&
+        attempt < API_MAX_RETRIES &&
+        (normalized.kind === 'network' || normalized.kind === 'timeout')
+      ) {
+        await new Promise(resolve => setTimeout(resolve, backoffMs(attempt)))
+        continue
+      }
+      throw normalized
+    }
   }
 }
 
