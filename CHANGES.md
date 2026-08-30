@@ -1,5 +1,38 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-246: Journal keyboard-safe action group на tablet/desktop
+
+- Проблема: `JournalTextarea` с `floatingToolbar` закреплял action group
+  (`Aa` / «Пойти глубже» / submit) через `position: fixed` относительно
+  всего viewport. На мобильных экранах это совпадало с центром
+  контентной колонки, но на tablet/desktop (768px+) кнопка сохранения
+  визуально отрывалась от редактора — в `JournalFlow` (Практики →
+  Журнал) и в `ThemeScreen` (weekly-theme day view) сохранение выглядело
+  "подвешенным" в углу экрана.
+- `src/components/JournalTextarea.jsx`: новый опциональный проп
+  `desktopInline` (по умолчанию `false`, поведение остальных экранов —
+  `CheckIn`, `FirstStepFlow`, `FinishFlow`, `MeditationFlow`,
+  `NarrowFocusFlow`, `ProcrastinationFlow`, `TodayFocusFlow` и
+  `GuidedJournals` — не менялось). При `desktopInline` на `md:` (768px+)
+  action group и format-popup становятся частью потока рядом с
+  редактором (`md:static`) вместо `fixed`; ниже 768px поведение
+  идентично прежнему.
+- `src/screens/JournalFlow.jsx`, `src/screens/ThemeScreen.jsx`: подключён
+  `desktopInline` для соответствующих вызовов `JournalTextarea`.
+- Добавлен `tests/ux/mxl-246-journal-responsive.spec.mjs` +
+  `playwright.mxl246.config.mjs` (`npm run ux:mxl246`) — viewport-матрица
+  320x568 (mobile regression), 768x1024, 1024x768, 1440x900 для
+  `JournalFlow` и `ThemeScreen`: нет horizontal overflow, submit-кнопка
+  остаётся в пределах колонки редактора на wide viewport, `position`
+  action group переключается `fixed` → `static` ровно на 768px,
+  font-size редактора ≥16px. Скриншоты — `qa-evidence/mxl-246/`.
+  `npm run check:core` и `npm run ux:check` (существующий smoke) — без
+  регрессий.
+- Не входило в эту итерацию: two-column композиция для intro/day/review
+  (текущий constrained single-column max-w-md уже соответствует
+  acceptance criteria issue) и ручная Telegram/iPhone проверка — веб
+  viewport-тесты не требуют реального устройства.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5

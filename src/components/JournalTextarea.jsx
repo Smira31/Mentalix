@@ -121,7 +121,10 @@ function serializeEditor(editor) {
     return serializeNode(node)
   })
 
-  return chunks.join('\n').replace(/\n{3,}/g, '\n\n').replace(/\u00a0/g, ' ')
+  return chunks
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/\u00a0/g, ' ')
 }
 
 function insertPlainText(documentRef, text) {
@@ -160,6 +163,7 @@ export default function JournalTextarea({
   deepenLoading = false,
   formatting = true,
   autoFocus = false,
+  desktopInline = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -229,7 +233,10 @@ export default function JournalTextarea({
         onInput={emitValue}
         onPaste={event => {
           event.preventDefault()
-          insertPlainText(event.currentTarget.ownerDocument, event.clipboardData.getData('text/plain'))
+          insertPlainText(
+            event.currentTarget.ownerDocument,
+            event.clipboardData.getData('text/plain')
+          )
           emitValue()
         }}
         className={[
@@ -246,12 +253,24 @@ export default function JournalTextarea({
       {floatingToolbar ? (
         <>
           {formatting && formatOpen && (
-            <div className="fixed bottom-[calc(var(--app-safe-bottom)+86px)] left-5 z-[71] flex items-center gap-2 rounded-full border border-cream/10 bg-emerald-deep/95 p-2 shadow-xl backdrop-blur-md">
+            <div
+              className={[
+                'fixed bottom-[calc(var(--app-safe-bottom)+86px)] left-5 z-[71] flex items-center gap-2 rounded-full border border-cream/10 bg-emerald-deep/95 p-2 shadow-xl backdrop-blur-md',
+                desktopInline ? 'md:static md:bottom-auto md:left-auto md:mb-3 md:ml-auto' : '',
+              ].join(' ')}
+            >
               {formatButtons}
             </div>
           )}
 
-          <div className="fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-3">
+          <div
+            className={[
+              'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-3',
+              desktopInline
+                ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'
+                : '',
+            ].join(' ')}
+          >
             {formatting ? (
               <button
                 type="button"
@@ -280,9 +299,7 @@ export default function JournalTextarea({
                 type="button"
                 onClick={onDeepen}
                 disabled={
-                  (deepenDisabled ?? !String(value || '').trim()) ||
-                  submitLoading ||
-                  deepenLoading
+                  (deepenDisabled ?? !String(value || '').trim()) || submitLoading || deepenLoading
                 }
                 className="h-14 min-w-0 rounded-full border border-cream/10 bg-emerald px-5 text-[14px] font-semibold text-cream transition-transform active:scale-[0.98] disabled:opacity-35"
               >
@@ -308,7 +325,9 @@ export default function JournalTextarea({
           </div>
         </>
       ) : formatting ? (
-        <div className={`${stickyToolbar ? 'sticky bottom-0 z-10' : 'relative z-0 journal-toolbar--inline'} mt-3 flex shrink-0 items-center gap-1.5 border-t border-cream/10 bg-emerald-deep/95 py-2 backdrop-blur-md`}>
+        <div
+          className={`${stickyToolbar ? 'sticky bottom-0 z-10' : 'relative z-0 journal-toolbar--inline'} mt-3 flex shrink-0 items-center gap-1.5 border-t border-cream/10 bg-emerald-deep/95 py-2 backdrop-blur-md`}
+        >
           <span className="mr-auto text-[11px] font-semibold text-faint">Формат</span>
           {formatButtons}
         </div>
