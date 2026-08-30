@@ -17,6 +17,11 @@
 - Проверены доступные в sandbox сценарии основного маршрута, Mentor PersonaPicker, History с local Journal и прямой web-ссылки с OTP recovery.
 - Ограничение: реальный Telegram/iPhone flow, production-аккаунт и физическое устройство в этом аудите не проверялись; product decisions и ранее зафиксированные manual gates не выдаются за PASS.
 
+## 30.08.2026 — MXL-API-RESILIENCE-001: timeout/retry/normalized errors (#354)
+
+- `src/lib/api.js` добавляет bounded timeout, нормализованный `ApiError` и один retry только для безопасных GET/HEAD/OPTIONS при transient network/5xx/408/425/429 ошибках; mutation-запросы не ретраятся.
+- Добавлен regression contract test; `npm run check:core` — 151 unit-тест passed, lint/build/docs:check passed.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
