@@ -144,6 +144,18 @@
   /* #5EB2ED — холодный акцент, контраст к --c-bg ≈8.8:1 */
 }
 
+/*
+ * Disposable diagnostic only: enabled by ?light-preview=1 in local dev or
+ * Vercel Preview. This intentionally changes only three tokens so the
+ * hairline contrast problem can be viewed before any L-scope redesign.
+ * It is not a production theme contract and must not be copied to :root.
+ */
+[data-theme='light-preview'] {
+  --c-bg: 245 240 232;
+  --c-card: 255 252 247;
+  --c-line: 49 49 49;
+}
+
 /* Локальные токены сохраняют единый контраст artbed-иллюстраций. --c-gold
    здесь раньше тоже фиксировался (40ed3f47, «иллюстрации всегда на тёмной
    подложке») — защита от светлой темы, удалённой в MXL-032. Значение
