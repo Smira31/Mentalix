@@ -1,5 +1,10 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
+
+- `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
+- Целевые backend-тесты: 25 passed.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
