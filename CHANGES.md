@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-353: history-by-day read contract for Journal tags (#388)
+
+- `docs/architecture/MXL-353_HISTORY_BY_DAY_CONTRACT.md` — контракт `GET /journal/history` (auth, range, privacy, idempotency, errors); не реализует endpoint и не меняет frontend до снятия backend blocker. PR #388, CI green.
+
 ## 30.08.2026 — MXL-98: visual card library governance schema (#394)
 
 - `docs/design/MXL-98_VISUAL_CARD_LIBRARY.md` — контракт метаданных для карточных ассетов (card_id, версии, alt text, light/dark, deprecation); сама библиотека карточек ещё не наполнена. PR #394, CI green.
