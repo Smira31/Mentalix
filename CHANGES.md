@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-271: canonical CI rollout documented (#380)
+
+- `docs/testing/MXL-271_CANONICAL_CI_ROLLOUT.md` — контракт frontend CI workflow (quality/UX/backend health/npm audit jobs). PR #380, CI green (кроме известного Vercel build-rate-limit).
+
 ## 30.08.2026 — MXL-246: Journal keyboard-safe action group на tablet/desktop
 
 - Проблема: `JournalTextarea` с `floatingToolbar` закреплял action group
