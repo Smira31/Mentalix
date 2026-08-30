@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-322: guided self-discovery flow утверждён в разработку (#376)
+
+- `docs/product/MXL-322_GUIDED_SELF_DISCOVERY_FLOW.md` — flow Context→Evidence→Pattern→Experiment→Review утверждён владельцем как фича в разработку, без backend/memory на первом этапе (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #376, CI green.
+
 ## 30.08.2026 — MXL-320: product strategy experiment brief утверждён (#370)
 
 - `docs/research/MXL-320_PRODUCT_STRATEGY_EXPERIMENT_BRIEF.md` — порядок тестирования H1→H2→H3→H4 утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Открытый пункт: H4 требует отдельного consent-review перед стартом. PR #370, CI green.
