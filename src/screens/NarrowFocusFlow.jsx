@@ -251,8 +251,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
                 Сузь всё до одного дела
               </h2>
               <p className="mx-auto mt-4 max-w-[310px] text-[13px] leading-relaxed text-muted">
-                Пять минут, чтобы выгрузить всё из головы и сделать шаг только по одному, самому
-                важному.
+                Короткая сессия, чтобы выгрузить лишнее и выбрать один проверяемый шаг на сегодня.
               </p>
               <p className="mt-4 text-[12px] font-semibold text-faint">
                 5 минут&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
@@ -265,9 +264,10 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={startPractice}
+              aria-label="Начать"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Начать
+              Освободить голову
             </button>
           </div>
         )}
@@ -336,7 +336,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
         {step === 'plan' && (
           <div className="narrow-focus-stage narrow-focus-stage--writing animate-fade-in">
             <Progress step={step} />
-            <StageHeading>Что можно сделать по этому одному прямо сейчас?</StageHeading>
+            <StageHeading>Какой один шаг можно увидеть готовым через пять минут?</StageHeading>
 
             <JournalTextarea
               autoFocus
@@ -394,6 +394,10 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
               </h2>
               <p className="mx-auto mt-3 max-w-[310px] text-[13px] text-muted leading-relaxed">
                 {COMPLETION_COPY[outcome]?.description}
+                <span className="mt-3 block text-[12px] text-faint">
+                  Следующий шаг: {plan || 'один небольшой фрагмент выбранного дела'} — готово, когда
+                  результат можно увидеть.
+                </span>
               </p>
 
               <p className="mt-7 text-[12px] font-semibold text-muted">Помогло сейчас?</p>
@@ -429,9 +433,10 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={finish}
+              aria-label="Завершить"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Завершить
+              Продолжить в Сегодня
             </button>
           </div>
         )}

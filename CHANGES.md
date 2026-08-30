@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 29.08.2026 — MXL-PLUS-001: discovery платного слоя Mentalix Plus
+
+- Зафиксировано решение владельца: Mentalix сохраняет полноценный бесплатный core — Journal, local-first History, базовые практики/check-in, базовые descriptive observations, удаление и privacy controls.
+- Добавлен `docs/research/MXL-PLUS-001_MENTALIX_PLUS_DISCOVERY.md` с рекомендуемой границей Free/Premium. Первый кандидат для дальнейшего исследования — дополнительные curated guided packs; cloud/convenience и AI отложены до отдельных backend/privacy/safety gates.
+- Discovery-only: checkout, payment provider, paywall, backend/API, AI, fake-door, персональные данные и уменьшение бесплатного baseline не добавлялись.
+- `TASKS.md` обновлён записью `MXL-PLUS-001`; реализация не начата и PR не является approval payment implementation.
+- PR #330 по Journal owner memo остаётся отдельной задачей; `Smira31/mentalix-bot` и код не затрагивались.
+
 ## 29.08.2026 — MXL-DATE-POLICY-UTC-FIX-001: локальная календарная дата
 
 - `src/lib/moodCheckDraft.js`, `src/screens/Analytics.jsx` и `src/screens/mentalix/insightDigest.js` переведены с UTC-среза `new Date().toISOString().slice(0, 10)` на централизованную `toLocalCalendarDate()` из `src/lib/dateTimezonePolicy.js`.

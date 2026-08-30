@@ -6,7 +6,10 @@ import { invalidatePracticesData } from '../lib/practicesDataCache'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
-import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
+import {
+  isLinkedWebWriteBlocked,
+  LINKED_WEB_WRITE_NOTICE,
+} from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
 import { createPortal } from 'react-dom'
 import { useVisualViewportHeight } from '../lib/visualViewport'
@@ -88,6 +91,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
   const [trigger, setTrigger] = useState('')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
   const viewportHeight = useVisualViewportHeight()
 
   /*
@@ -103,7 +107,11 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
     setSaving(true)
 
     try {
-      await onSave(asceza.id, 'broke', trigger, note.trim() || null)
+      const result = await onSave(asceza.id, 'broke', trigger, note.trim() || null)
+      if (result?.error === 'linked_web_blocked') {
+        setError(LINKED_WEB_WRITE_NOTICE)
+        return
+      }
 
       platform.haptic('warning')
       onClose()
@@ -199,6 +207,8 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
               <p className="text-[13px] text-cream">{asceza.replacement}</p>
             </div>
           )}
+
+          {error && <p role="alert" className="text-[12px] text-amber-200 mt-3 leading-relaxed">{error}</p>}
 
           <button
             onClick={submit}
@@ -490,6 +500,8 @@ export default function Ascezas({ user, onBack }) {
   const [breakTarget, setBreakTarget] = useState(null)
 
   const [active, setActive] = useState(0)
+  const [writeError, setWriteError] = useState(null)
+
   const trackRef = useRef(null)
 
   useEffect(() => {
@@ -520,6 +532,7 @@ export default function Ascezas({ user, onBack }) {
   async function logAsceza(ascezaId, status, breakTrigger = null, breakNote = null) {
     try {
       const updated = await api.ascezas.log(ascezaId, user.id, status, breakTrigger, breakNote)
+      setWriteError(null)
 
       setAscezas(previous =>
         previous.map(asceza =>
@@ -540,6 +553,10 @@ export default function Ascezas({ user, onBack }) {
       invalidatePracticesData(user.id)
     } catch (error) {
       console.error(error)
+      if (isLinkedWebWriteBlocked(user, error)) {
+        setWriteError(LINKED_WEB_WRITE_NOTICE)
+        return { error: 'linked_web_blocked' }
+      }
       throw error
     }
   }
@@ -563,8 +580,10 @@ export default function Ascezas({ user, onBack }) {
       await api.ascezas.remove(ascezaId)
 
       setAscezas(previous => previous.filter(asceza => asceza.id !== ascezaId))
+      setWriteError(null)
     } catch (error) {
       console.error(error)
+      if (isLinkedWebWriteBlocked(user, error)) setWriteError(LINKED_WEB_WRITE_NOTICE)
     }
   }
 
@@ -597,6 +616,8 @@ export default function Ascezas({ user, onBack }) {
         <p className="text-[12px] text-muted mb-5 px-1">
           {total > 0 ? `${heldToday} из ${total} удержано сегодня` : 'от чего ты отказываешься'}
         </p>
+
+        {writeError && <p role="alert" className="text-[12px] text-amber-200 mb-4 px-1 leading-relaxed">{writeError}</p>}
 
         {loading ? (
           <p className="text-muted text-[13px]">Загрузка...</p>

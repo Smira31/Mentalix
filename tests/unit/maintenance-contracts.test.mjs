@@ -852,7 +852,6 @@ test('MXL-PREVIEW-DEMO-001 ограничивает demo mode явным Vercel 
   const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
   const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
-
   assert.match(demo, /params\.get\('demo'\) === '1'/)
   assert.match(demo, /host\.endsWith\('\.vercel\.app'\)/)
   assert.match(demo, /import\.meta\.env\.VERCEL_ENV === 'preview'/)
@@ -860,4 +859,21 @@ test('MXL-PREVIEW-DEMO-001 ограничивает demo mode явным Vercel 
   assert.match(app, /useState\(\(\) => \(isPreviewDemoMode\(\) \? DEMO_USER : null\)\)/)
   assert.match(app, /Preview Demo Mode/)
   assert.match(api, /if \(isPreviewDemoMode\(\)\) return demoRequest\(path, options\)/)
+})
+
+test('MXL-WEB-LINKED-WRITE-001 guards every secondary frontend write path', () => {
+  const sources = Object.fromEntries(
+    ['Rituals', 'Ascezas', 'Path', 'Courses'].map(name => [
+      name,
+      readFileSync(new URL(`../../src/screens/${name}.jsx`, import.meta.url), 'utf8'),
+    ])
+  )
+  assert.match(sources.Rituals, /api\.rituals\.log[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Rituals, /api\.rituals\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Ascezas, /api\.ascezas\.log[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Ascezas, /api\.ascezas\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Path, /api\.goals\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Courses, /api\.courses\.addNote[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Courses, /api\.courses\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Courses, /api\.courses\.updateStatus[\s\S]*isLinkedWebWriteBlocked/)
 })

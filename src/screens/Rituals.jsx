@@ -16,7 +16,10 @@ import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
-import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
+import {
+  isLinkedWebWriteBlocked,
+  LINKED_WEB_WRITE_NOTICE,
+} from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
 
 /*
@@ -310,6 +313,7 @@ export default function Rituals({ user, onBack }) {
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
   const [active, setActive] = useState(0)
+  const [writeError, setWriteError] = useState(null)
   const trackRef = useRef(null)
 
   /*
@@ -340,6 +344,7 @@ export default function Rituals({ user, onBack }) {
   async function logRitual(ritualId, level) {
     try {
       const updated = await api.rituals.log(ritualId, user.id, level)
+      setWriteError(null)
       setRituals(prev =>
         prev.map(r =>
           r.id === ritualId
@@ -356,6 +361,7 @@ export default function Rituals({ user, onBack }) {
       invalidatePracticesData(user.id)
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) setWriteError(LINKED_WEB_WRITE_NOTICE)
       return null
     }
   }
@@ -377,8 +383,10 @@ export default function Rituals({ user, onBack }) {
     try {
       await api.rituals.remove(ritualId)
       setRituals(prev => prev.filter(r => r.id !== ritualId))
+      setWriteError(null)
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) setWriteError(LINKED_WEB_WRITE_NOTICE)
     }
   }
 
@@ -400,6 +408,12 @@ export default function Rituals({ user, onBack }) {
           ? `${doneCount} из ${rituals.length} закрыто сегодня`
           : 'обряды, что держат твой день'}
       </p>
+
+      {writeError && (
+        <p role="alert" className="text-[12px] text-amber-200 mb-4 px-1 leading-relaxed">
+          {writeError}
+        </p>
+      )}
 
       {loading ? (
         <p className="text-muted text-[13px]">Загрузка...</p>
