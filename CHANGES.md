@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-DOC-HYGIENE-001: разделены роли TASKS и CHANGES (#361)
+
+- `AI_RULES.md` §6.1 теперь требует краткую историческую запись в `CHANGES.md`, а подробные шаги, evidence и ограничения хранит в GitHub issue/PR; `TASKS.md` не дублирует журнал изменений.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
