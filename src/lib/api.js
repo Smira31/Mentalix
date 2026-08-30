@@ -3,6 +3,121 @@ import { withQuery } from './apiQuery'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
 
 const BASE = '/api'
+const DEFAULT_TIMEOUT_MS = 10_000
+const DEFAULT_RETRIES = 2
+const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
+
+export class ApiError extends Error {
+  constructor({ path, code, message, status = null, details = '', cause = undefined }) {
+    super(message, cause === undefined ? undefined : { cause })
+    this.name = 'ApiError'
+    this.path = path
+    this.code = code
+    this.status = status
+    this.details = details
+    this.retryable = code === 'NETWORK_ERROR' || code === 'TIMEOUT' || RETRYABLE_STATUS_CODES.has(status) || (status >= 500 && status <= 599)
+  }
+}
+
+function abortError(message) {
+  const error = new Error(message)
+  error.name = 'AbortError'
+  return error
+}
+
+function isRetryableMethod(method) {
+  return ['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase())
+}
+
+function isRetryableResponse(status) {
+  return RETRYABLE_STATUS_CODES.has(status) || (status >= 500 && status <= 599)
+}
+
+function wait(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms)
+    if (!signal) return
+    const cancel = () => {
+      clearTimeout(timer)
+      signal.removeEventListener('abort', cancel)
+      reject(signal.reason || abortError('Запрос отменён'))
+    }
+    if (signal.aborted) cancel()
+    else signal.addEventListener('abort', cancel, { once: true })
+  })
+}
+
+async function fetchWithPolicy(path, options = {}) {
+  const {
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    retries = DEFAULT_RETRIES,
+    signal: callerSignal,
+    ...fetchOptions
+  } = options
+  const method = String(fetchOptions.method || 'GET').toUpperCase()
+  const attempts = isRetryableMethod(method) ? Math.max(0, Number(retries) || 0) + 1 : 1
+  let activeController = null
+  let timedOut = false
+  let timeoutId
+  const onCallerAbort = () =>
+    activeController?.abort(callerSignal.reason || abortError('Запрос отменён'))
+
+  if (callerSignal) {
+    if (callerSignal.aborted) onCallerAbort()
+    else callerSignal.addEventListener('abort', onCallerAbort, { once: true })
+  }
+
+  try {
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      activeController = new AbortController()
+      if (callerSignal?.aborted) onCallerAbort()
+      timedOut = false
+      timeoutId = setTimeout(() => {
+        timedOut = true
+        activeController.abort(abortError(`Превышен timeout ${timeoutMs} мс`))
+      }, timeoutMs)
+
+      try {
+        const response = await fetch(`${BASE}${path}`, {
+          ...fetchOptions,
+          headers: fetchOptions.headers,
+          signal: activeController.signal,
+        })
+        clearTimeout(timeoutId)
+        timeoutId = undefined
+        const raw = await response.text()
+
+        if (isRetryableResponse(response.status) && attempt < attempts - 1) {
+          await wait(250 * 2 ** attempt, callerSignal)
+          continue
+        }
+
+        return { response, raw }
+      } catch (error) {
+        clearTimeout(timeoutId)
+        timeoutId = undefined
+        if (activeController.signal.aborted && !callerSignal?.aborted && !timedOut) throw error
+        if (attempt < attempts - 1 && !callerSignal?.aborted && (timedOut || error?.name !== 'AbortError')) {
+          await wait(250 * 2 ** attempt, callerSignal)
+          continue
+        }
+        if (callerSignal?.aborted) {
+          throw new ApiError({ path, code: 'ABORTED', message: 'Запрос отменён', cause: error })
+        }
+        if (timedOut) {
+          throw new ApiError({ path, code: 'TIMEOUT', message: `API ${path}: превышен timeout ${timeoutMs} мс`, cause: error })
+        }
+        throw new ApiError({ path, code: 'NETWORK_ERROR', message: `API ${path}: ошибка сети`, cause: error })
+      }
+    }
+  } finally {
+    clearTimeout(timeoutId)
+    activeController = null
+    callerSignal?.removeEventListener('abort', onCallerAbort)
+  }
+
+  throw new ApiError({ path, code: 'NETWORK_ERROR', message: `API ${path}: запрос не выполнен` })
+}
 
 /*
  * MXL-SECURITY-AUDIT-001: подписанный Telegram initData едет в стандартном
@@ -31,34 +146,49 @@ async function download(path, filename) {
   URL.revokeObjectURL(href)
 }
 
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   if (isPreviewDemoMode()) return demoRequest(path, options)
 
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
-
-  const res = await fetch(`${BASE}${path}`, {
+  const { response: res, raw } = await fetchWithPolicy(path, {
+    ...options,
     headers: {
       ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
       ...authHeader(),
       ...options.headers,
     },
-    ...options,
   })
 
-  const raw = await res.text()
-
   if (!res.ok) {
-    throw new Error(`API ${path} failed: ${res.status}. Ответ: ${raw.slice(0, 300)}`)
+    throw new ApiError({
+      path,
+      code: 'HTTP_ERROR',
+      status: res.status,
+      message: `API ${path} вернул HTTP ${res.status}`,
+      details: raw.slice(0, 300),
+    })
   }
 
   if (!raw) {
-    throw new Error(`API ${path} вернул пустой ответ при статусе ${res.status}`)
+    throw new ApiError({
+      path,
+      code: 'EMPTY_RESPONSE',
+      status: res.status,
+      message: `API ${path} вернул пустой ответ при статусе ${res.status}`,
+    })
   }
 
   try {
     return JSON.parse(raw)
-  } catch {
-    throw new Error(`API ${path} вернул не JSON: ${raw.slice(0, 300)}`)
+  } catch (error) {
+    throw new ApiError({
+      path,
+      code: 'INVALID_JSON',
+      status: res.status,
+      message: `API ${path} вернул не JSON`,
+      details: raw.slice(0, 300),
+      cause: error,
+    })
   }
 }
 
