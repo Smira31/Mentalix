@@ -1,5 +1,6 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+<<<<<<< HEAD
 ## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
 
 - `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
@@ -28,6 +29,11 @@
 - `Today.jsx` открывает существующий Check-in с режимом `evening` для `action=evening`; произвольные action-параметры не открывают экраны.
 - Добавлен frontend regression-тест contextual action contract. `npm run check:core` — 150 unit-тестов passed, lint/build/docs:check passed.
 - Полный end-to-end Telegram/iPhone gate в sandbox не выполнялся; требуется ручная проверка владельцем.
+=======
+## 30.08.2026 — MXL-STARTER-SET-001: starter-set decision artifact (#321)
+
+- Добавлен research artifact для контекстного starter set: 3–5 контекстов, лёгкие версии, добровольность, один главный шаг, evening review и измеримые concept-test критерии. Product code, backend, платежи и AI-персоны не менялись; owner decision и manual gate обязательны.
+>>>>>>> origin/research/issue-321-starter-set
 
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
