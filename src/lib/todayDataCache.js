@@ -90,6 +90,7 @@ function sanitizeThemes(themes) {
     subtitle: typeof theme?.subtitle === 'string' ? theme.subtitle : '',
     total_days: finiteNumber(theme?.total_days) ? theme.total_days : 0,
     reflected_days: finiteNumber(theme?.reflected_days) ? theme.reflected_days : 0,
+    is_current: Boolean(theme?.is_current),
   }))
 }
 

@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-DEC-022: прогрессия «Тема недели» по пользователю (#404)
+
+- `src/screens/Today.jsx`, `src/lib/todayDataCache.js` — карточка «Тема недели» на Today больше не берёт статичный `themes[0]`; выбирается тема с флагом `is_current` (backend `mentalix-bot#themes.py`, отдельный PR), с fallback на `themes[0]` для обратной совместимости. Решение владельца — прогрессия по пользователю через существующий `ThemeProgress`, без календарной ротации и без ручного флага; см. `docs/core/PRODUCT_DECISIONS.md` → `MXL-DEC-022`.
+- Нейминг карточки («Тема недели» vs «Текущая тема») — открытый пункт, ждёт решения владельца, текст не менялся.
+- Не трогает Journal (issue #247, уже закрыт отдельно — другой экран, к этой задаче отношения не имеет).
+- **Проверено:** `npm run check:core` — 156 unit passed, lint чисто, build успешно, docs:check чисто; `npm run ux:check` — 4/4 passed. Backend: `pytest -q backend/tests/` в mentalix-bot — 80 passed (3 unrelated fails без `aiogram` в тестовом окружении).
+- Не смёржено, ждёт подтверждения владельца.
+
 ## 30.08.2026 — MXL-290: typography audit contract утверждён (#390)
 
 - `docs/design/MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md` — маппинг Onest (body/headings/inputs) / Manrope (label/eyebrow) утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Открытый пункт: код типографики лежит в отдельной, не синхронизированной с main feature-ветке — сведение с этим контрактом остаётся отдельной задачей. PR #390, CI green.

@@ -111,6 +111,12 @@ function formatRemainingActions(count) {
   return `После этого останется ещё ${count} ${noun}`
 }
 
+function pickCurrentTheme(themes) {
+  if (!Array.isArray(themes) || themes.length === 0) return null
+
+  return themes.find(t => t?.is_current) || themes[0] || null
+}
+
 // ============================================================
 // TODAY
 // ============================================================
@@ -147,7 +153,7 @@ export default function Today({
     () => initialTodaySnapshot?.settings?.review_hour ?? 19
   )
 
-  const [theme, setTheme] = useState(() => initialTodaySnapshot?.themes?.[0] || null)
+  const [theme, setTheme] = useState(() => pickCurrentTheme(initialTodaySnapshot?.themes))
 
   const [activeToday, setActiveToday] = useState(null)
 
@@ -213,7 +219,7 @@ export default function Today({
 
         if (!active) return
 
-        setTheme((themesData || [])[0] || null)
+        setTheme(pickCurrentTheme(themesData))
 
         api.pulse
           .today()
