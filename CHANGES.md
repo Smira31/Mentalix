@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-360: testing infrastructure rollout plan (#373)
+
+- `docs/testing/MXL-360_TESTING_INFRASTRUCTURE_ROLLOUT.md` — план независимых проверяемых slices (design guard, contract harness, Playwright states, performance, a11y); не объявляет ручные device gates пройденными. PR #373, CI green.
+
 ## 30.08.2026 — MXL-271: canonical CI rollout documented (#380)
 
 - `docs/testing/MXL-271_CANONICAL_CI_ROLLOUT.md` — контракт frontend CI workflow (quality/UX/backend health/npm audit jobs). PR #380, CI green (кроме известного Vercel build-rate-limit).
