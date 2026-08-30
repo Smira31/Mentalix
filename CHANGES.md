@@ -11,6 +11,12 @@
 - `npm audit --omit=dev` показывает 0 уязвимостей для production-зависимостей. Оставшиеся 2 advisory относятся к `vite`/`esbuild`, которые являются dev-only инструментами сборки и не входят в production runtime; исправление требует major-upgrade Vite 8 и отдельной проверки совместимости.
 - `npm run check:core` — 148 unit-тестов passed, lint, build и docs:check passed.
 
+## 30.08.2026 — MXL-UI-AUDIT-001: автоматизированный аудит ключевых сценариев (#291)
+
+- На чистом `main` пройдены `npm run check:core` (148 unit-тестов, lint, build, docs:check) и `npm run ux:check` (4/4 Playwright smoke-теста).
+- Проверены доступные в sandbox сценарии основного маршрута, Mentor PersonaPicker, History с local Journal и прямой web-ссылки с OTP recovery.
+- Ограничение: реальный Telegram/iPhone flow, production-аккаунт и физическое устройство в этом аудите не проверялись; product decisions и ранее зафиксированные manual gates не выдаются за PASS.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
