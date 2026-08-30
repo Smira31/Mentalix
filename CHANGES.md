@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-290: typography audit contract утверждён (#390)
+
+- `docs/design/MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md` — маппинг Onest (body/headings/inputs) / Manrope (label/eyebrow) утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Открытый пункт: код типографики лежит в отдельной, не синхронизированной с main feature-ветке — сведение с этим контрактом остаётся отдельной задачей. PR #390, CI green.
+
 ## 30.08.2026 — MXL-297: descriptive insight guards утверждены (#379)
 
 - `docs/research/MXL-297_DESCRIPTIVE_INSIGHT_GUARDS.md` — пороги 7/14 наблюдений и запрет causality-языка утверждены владельцем; показ insights пользователю разрешён уже сейчас, контракт не блокирует его до реализации Journal history (#310) (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #379, CI green.
