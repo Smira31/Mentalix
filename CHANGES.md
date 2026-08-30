@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-99: canonical character library contract (#382)
+
+- `docs/product/MXL-99_CHARACTER_LIBRARY.md` — voice/reasoning/action/safety-контракт для канонического персонажа Mentalix; не авторизует смену production-персон. PR #382, CI green.
+
 ## 30.08.2026 — MXL-100: prompt library governance schema (#381)
 
 - `docs/product/MXL-100_PROMPT_LIBRARY.md` — схема метаданных и safety-границы для будущей библиотеки промптов (prompt_id, families Clarify/Compass/Step/Review); не меняет production-персону или реальные промпты. PR #381, CI green.
