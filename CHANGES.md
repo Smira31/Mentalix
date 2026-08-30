@@ -1,6 +1,7 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
 
 - `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
@@ -34,6 +35,11 @@
 
 - Добавлен research artifact для контекстного starter set: 3–5 контекстов, лёгкие версии, добровольность, один главный шаг, evening review и измеримые concept-test критерии. Product code, backend, платежи и AI-персоны не менялись; owner decision и manual gate обязательны.
 >>>>>>> origin/research/issue-321-starter-set
+=======
+## 30.08.2026 — MXL-AI-ROLES-001: role contract and playbook draft (#323)
+
+- Добавлен research draft для ролей Ясность/Компас/Шаг: сценарии, границы, Telegram → Mini App handoff, safety и evaluation. Production AI, backend и память не менялись; owner approval и manual gate обязательны.
+>>>>>>> origin/research/issue-323-role-playbook
 
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
