@@ -2,6 +2,7 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
 
 - `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
@@ -40,6 +41,11 @@
 
 - Добавлен research draft для ролей Ясность/Компас/Шаг: сценарии, границы, Telegram → Mini App handoff, safety и evaluation. Production AI, backend и память не менялись; owner approval и manual gate обязательны.
 >>>>>>> origin/research/issue-323-role-playbook
+=======
+## 30.08.2026 — MXL-GUIDED-REFLECTION-001: safety review artifact (#324)
+
+- Добавлен bounded safety-review checklist для «Сессии ясности»: stop conditions, crisis/escalation boundaries, consent/privacy gates и red-team сценарии. Production AI и backend не менялись; owner approval и manual Telegram/iPhone gate обязательны.
+>>>>>>> origin/research/issue-324-safety-review
 
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
