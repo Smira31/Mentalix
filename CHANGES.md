@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-GUIDED-REFLECTION-001: safety review artifact (#324)
+
+- Добавлен bounded safety-review checklist для «Сессии ясности»: stop conditions, crisis/escalation boundaries, consent/privacy gates и red-team сценарии. Production AI и backend не менялись; owner approval и manual Telegram/iPhone gate обязательны.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
