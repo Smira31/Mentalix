@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-359: iPhone performance gate evidence form (#386)
+
+- `docs/testing/MXL-359_IPHONE_PERFORMANCE_GATE_PREP.md` — воспроизводимая evidence-форма для ручной проверки на iPhone (launch, Journal editor, Today/Practice, completion, return); manual gate НЕ заявлен пройденным. PR #386, CI green.
+
 ## 30.08.2026 — MXL-360: testing infrastructure rollout plan (#373)
 
 - `docs/testing/MXL-360_TESTING_INFRASTRUCTURE_ROLLOUT.md` — план независимых проверяемых slices (design guard, contract harness, Playwright states, performance, a11y); не объявляет ручные device gates пройденными. PR #373, CI green.
