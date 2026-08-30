@@ -4,6 +4,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
 
 - `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
@@ -52,6 +53,52 @@
 
 - Добавлена research-спецификация ролей, cadence, opt-in/quiet hours, contextual handoff, метрик и safety-границ. Production AI, scheduler и backend не менялись; owner decision и Telegram/iPhone gate остаются обязательными.
 >>>>>>> origin/research/issue-326-daily-loop
+=======
+## 30.08.2026 — MXL-246: Journal keyboard-safe action group на tablet/desktop
+
+- Проблема: `JournalTextarea` с `floatingToolbar` закреплял action group
+  (`Aa` / «Пойти глубже» / submit) через `position: fixed` относительно
+  всего viewport. На мобильных экранах это совпадало с центром
+  контентной колонки, но на tablet/desktop (768px+) кнопка сохранения
+  визуально отрывалась от редактора — в `JournalFlow` (Практики →
+  Журнал) и в `ThemeScreen` (weekly-theme day view) сохранение выглядело
+  "подвешенным" в углу экрана.
+- `src/components/JournalTextarea.jsx`: новый опциональный проп
+  `desktopInline` (по умолчанию `false`, поведение остальных экранов —
+  `CheckIn`, `FirstStepFlow`, `FinishFlow`, `MeditationFlow`,
+  `NarrowFocusFlow`, `ProcrastinationFlow`, `TodayFocusFlow` и
+  `GuidedJournals` — не менялось). При `desktopInline` на `md:` (768px+)
+  action group и format-popup становятся частью потока рядом с
+  редактором (`md:static`) вместо `fixed`; ниже 768px поведение
+  идентично прежнему.
+- `src/screens/JournalFlow.jsx`, `src/screens/ThemeScreen.jsx`: подключён
+  `desktopInline` для соответствующих вызовов `JournalTextarea`.
+- Добавлен `tests/ux/mxl-246-journal-responsive.spec.mjs` +
+  `playwright.mxl246.config.mjs` (`npm run ux:mxl246`) — viewport-матрица
+  320x568 (mobile regression), 768x1024, 1024x768, 1440x900 для
+  `JournalFlow` и `ThemeScreen`: нет horizontal overflow, submit-кнопка
+  остаётся в пределах колонки редактора на wide viewport, `position`
+  action group переключается `fixed` → `static` ровно на 768px,
+  font-size редактора ≥16px. Скриншоты — `qa-evidence/mxl-246/`.
+  `npm run check:core` и `npm run ux:check` (существующий smoke) — без
+  регрессий.
+- Compatibility-проверка с открытым PR #371 (fix/issue-247, тоже правит
+  `JournalFlow.jsx`): найден и подтверждён тестовым merge реальный
+  конфликт по строкам `JournalIntro`/`JournalComplete` (`main` для этого
+  файла не prettier-clean, поэтому любой коммит по нему форматирует те
+  же строки, что правит #371) и падение его нового unit-теста из-за
+  жёсткой проверки `editorClassName="pb-24"`. `editorClassName="pb-24
+md:pb-4"` в `JournalFlow.jsx` откачен обратно к `"pb-24"` (был чисто
+  косметическим, не нужен для исправления бага) — это снимает конфликт
+  с тестом; конфликт по форматированию/alignment-строкам остаётся и
+  требует rebase той из двух PR, что мёржится второй (стандартный git
+  merge, без потери кода). `ThemeScreen.jsx` (не пересекается с #371)
+  сохраняет `pb-24 md:pb-4`.
+- Не входило в эту итерацию: two-column композиция для intro/day/review
+  (текущий constrained single-column max-w-md уже соответствует
+  acceptance criteria issue) и ручная Telegram/iPhone проверка — веб
+  viewport-тесты не требуют реального устройства.
+>>>>>>> origin/feat/246-journal-tablet-desktop
 
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
