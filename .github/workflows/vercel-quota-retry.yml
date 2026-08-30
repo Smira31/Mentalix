@@ -32,6 +32,7 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_DEPLOY_HOOK_MENTALIX: ${{ secrets.VERCEL_DEPLOY_HOOK_MENTALIX }}
       VERCEL_TEAM_ID: team_5PXF6CDMzVwO9tn2bYqwHGX5
+      VERCEL_PROJECT_ID: prj_5I04N62lIoLxV37F4dppdQWRcRB5
       TELEGRAM_MAIN_BOT_TOKEN: ${{ secrets.TELEGRAM_MAIN_BOT_TOKEN }}
       TELEGRAM_PREVIEW_CHAT_ID: ${{ secrets.TELEGRAM_PREVIEW_CHAT_ID }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,7 +88,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          job_id="${{ steps.trigger.outputs.job_id }}"
+          # The Deploy Hook response's job.id is not a deployment id usable
+          # with GET /v13/deployments/{id} (confirmed: that call 404s with
+          # "Deployment not found"). Instead, list the project's most recent
+          # deployment and wait until its commit sha matches what we just
+          # triggered — this also protects against reading a stale deployment
+          # from before the hook call if the new one hasn't been listed yet.
+          expected_sha="${{ steps.head.outputs.sha }}"
           state="UNKNOWN"
           deployed_sha=""
           deployment_url=""
@@ -95,11 +102,17 @@ jobs:
             sleep 15
             info="$(curl --silent --show-error --max-time 20 \
               --header "Authorization: Bearer $VERCEL_TOKEN" \
-              "https://api.vercel.com/v13/deployments/${job_id}?teamId=${VERCEL_TEAM_ID}")"
-            state="$(printf '%s' "$info" | jq -r '.readyState // .status // "UNKNOWN"')"
-            deployed_sha="$(printf '%s' "$info" | jq -r '.meta.githubCommitSha // .gitSource.sha // empty')"
-            deployment_url="$(printf '%s' "$info" | jq -r '.url // empty')"
-            echo "Attempt $attempt: readyState=$state sha=${deployed_sha:-unknown}"
+              "https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&teamId=${VERCEL_TEAM_ID}&limit=1")"
+            state="$(printf '%s' "$info" | jq -r '.deployments[0].readyState // .deployments[0].state // "UNKNOWN"')"
+            deployed_sha="$(printf '%s' "$info" | jq -r '.deployments[0].meta.githubCommitSha // empty')"
+            deployment_url="$(printf '%s' "$info" | jq -r '.deployments[0].url // empty')"
+            echo "Attempt $attempt: readyState=$state sha=${deployed_sha:-unknown} (expecting $expected_sha)"
+            if [ "$deployed_sha" != "$expected_sha" ]; then
+              # Most recent deployment isn't the one we just triggered yet
+              # (or is a stale one) — keep polling regardless of its state.
+              state="UNKNOWN"
+              continue
+            fi
             if [ "$state" = "READY" ] || [ "$state" = "ERROR" ] || [ "$state" = "CANCELED" ]; then
               break
             fi
