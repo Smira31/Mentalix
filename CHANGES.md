@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-AI-TELEGRAM-LOOP-001: daily-cycle research contract (#326)
+
+- Добавлена research-спецификация ролей, cadence, opt-in/quiet hours, contextual handoff, метрик и safety-границ. Production AI, scheduler и backend не менялись; owner decision и Telegram/iPhone gate остаются обязательными.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
