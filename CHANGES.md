@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-98: visual card library governance schema (#394)
+
+- `docs/design/MXL-98_VISUAL_CARD_LIBRARY.md` — контракт метаданных для карточных ассетов (card_id, версии, alt text, light/dark, deprecation); сама библиотека карточек ещё не наполнена. PR #394, CI green.
+
 ## 30.08.2026 — MXL-103: animation library governance schema (#393)
 
 - `docs/design/MXL-103_ANIMATION_LIBRARY.md` — контракт метаданных для анимаций (motion_id, duration, easing, reduced-motion); запрещает looping/parallax/surprise-движение. PR #393, CI green.
