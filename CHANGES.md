@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-104: reference library governance schema (#392)
+
+- `docs/design/MXL-104_REFERENCE_LIBRARY.md` — source-of-truth индекс референсов (layout/typography/motion/illustration/Telegram) с rights/approval-полями; сама библиотека ещё не наполнена. PR #392, CI green.
+
 ## 30.08.2026 — MXL-99: canonical character library contract (#382)
 
 - `docs/product/MXL-99_CHARACTER_LIBRARY.md` — voice/reasoning/action/safety-контракт для канонического персонажа Mentalix; не авторизует смену production-персон. PR #382, CI green.
