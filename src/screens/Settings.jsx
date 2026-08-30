@@ -246,6 +246,8 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
   }
 
   async function saveWritingGoal(nextEnabled = writingGoalOn, nextCount = writingGoalCount) {
+    const previousEnabled = writingGoalOn
+    const previousCount = writingGoalCount
     setWritingGoalOn(nextEnabled)
     setWritingGoalCount(nextCount)
     try {
@@ -255,7 +257,9 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       })
       await loadWritingGoalProgress()
     } catch {
-      setReminderStatus('Не удалось сохранить цель записи.')
+      setWritingGoalOn(previousEnabled)
+      setWritingGoalCount(previousCount)
+      setReminderStatus('Не удалось сохранить цель записи. Настройка возвращена без изменений.')
     }
   }
 
