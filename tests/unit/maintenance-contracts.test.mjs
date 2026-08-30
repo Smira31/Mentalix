@@ -877,3 +877,21 @@ test('MXL-WEB-LINKED-WRITE-001 guards every secondary frontend write path', () =
   assert.match(sources.Courses, /api\.courses\.remove[\s\S]*isLinkedWebWriteBlocked/)
   assert.match(sources.Courses, /api\.courses\.updateStatus[\s\S]*isLinkedWebWriteBlocked/)
 })
+
+test('MXL-310 показывает завершённые разовые практики без streak и day-progress интеграции', () => {
+  const helper = readFileSync(new URL('../../src/lib/oneOffPracticeHistory.js', import.meta.url), 'utf8')
+  const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
+  const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
+
+  assert.match(helper, /readFirstStepLog/)
+  assert.match(helper, /readNoBlameLog/)
+  assert.match(helper, /readNarrowFocusLog/)
+  assert.match(helper, /readOneFinishLog/)
+  assert.match(helper, /localDayId/)
+  assert.match(practices, /readOneOffPracticeHistory/)
+  assert.match(practices, /completedToday/)
+  assert.match(history, /oneOffPracticesByDay/)
+  assert.match(history, /one-off-practice-history/)
+  assert.match(history, /не влияет на\s*прогресс дня/)
+  assert.doesNotMatch(helper, /api\./)
+})

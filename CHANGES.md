@@ -2,7 +2,7 @@
 
 ## 30.08.2026 — MXL-290: typography audit contract утверждён (#390)
 
-- `docs/design/MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md` — маппинг Onest (body/headings/inputs) / Manrope (label/eyebrow) утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Открытый пункт: код типографики лежит в отдельной, не синхронизированной с main feature-ветке — сведение с этим контрактом остаётся отдельной задачей. PR #390, CI green.
+- `docs/design/MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md` — маппинг Onest (body/headings/inputs) / Manrope (label/eyebrow) утверждён владельцем и уже реализован в `main` (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Контракт-тест проверяет отсутствие утечек `font-label` в body, headings, buttons и inputs. PR #390, CI green.
 
 ## 30.08.2026 — MXL-297: descriptive insight guards утверждены (#379)
 
@@ -18,7 +18,7 @@
 
 ## 30.08.2026 — MXL-320: product strategy experiment brief утверждён (#370)
 
-- `docs/research/MXL-320_PRODUCT_STRATEGY_EXPERIMENT_BRIEF.md` — порядок тестирования H1→H2→H3→H4 утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Открытый пункт: H4 требует отдельного consent-review перед стартом. PR #370, CI green.
+- `docs/research/MXL-320_PRODUCT_STRATEGY_EXPERIMENT_BRIEF.md` — порядок тестирования H1→H2→H3→H4 утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). H4 остаётся заблокирован до отдельного consent-review: disclosure до opt-in, согласие на конкретное действие, opt-in только после завершённого check-in/практики, без persistent memory и автопрофилирования; crisis/hypothesis stop rules должны быть техническими guardrails. PR #370, CI green.
 
 ## 30.08.2026 — MXL-353: history-by-day read contract for Journal tags (#388)
 
