@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-298: willingness-to-pay experiment protocol утверждён (#378)
+
+- `docs/research/MXL-298_WTP_EXPERIMENT_PROTOCOL.md` — fake-door concept-test всех трёх платных концепций утверждён владельцем как есть, без сокращения до одной (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #378, CI green.
+
 ## 30.08.2026 — MXL-322: guided self-discovery flow утверждён в разработку (#376)
 
 - `docs/product/MXL-322_GUIDED_SELF_DISCOVERY_FLOW.md` — flow Context→Evidence→Pattern→Experiment→Review утверждён владельцем как фича в разработку, без backend/memory на первом этапе (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #376, CI green.
