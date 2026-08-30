@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-103: animation library governance schema (#393)
+
+- `docs/design/MXL-103_ANIMATION_LIBRARY.md` — контракт метаданных для анимаций (motion_id, duration, easing, reduced-motion); запрещает looping/parallax/surprise-движение. PR #393, CI green.
+
 ## 30.08.2026 — MXL-104: reference library governance schema (#392)
 
 - `docs/design/MXL-104_REFERENCE_LIBRARY.md` — source-of-truth индекс референсов (layout/typography/motion/illustration/Telegram) с rights/approval-полями; сама библиотека ещё не наполнена. PR #392, CI green.
