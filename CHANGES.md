@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-320: product strategy experiment brief утверждён (#370)
+
+- `docs/research/MXL-320_PRODUCT_STRATEGY_EXPERIMENT_BRIEF.md` — порядок тестирования H1→H2→H3→H4 утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Открытый пункт: H4 требует отдельного consent-review перед стартом. PR #370, CI green.
+
 ## 30.08.2026 — MXL-353: history-by-day read contract for Journal tags (#388)
 
 - `docs/architecture/MXL-353_HISTORY_BY_DAY_CONTRACT.md` — контракт `GET /journal/history` (auth, range, privacy, idempotency, errors); не реализует endpoint и не меняет frontend до снятия backend blocker. PR #388, CI green.
