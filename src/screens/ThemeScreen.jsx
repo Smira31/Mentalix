@@ -612,8 +612,9 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           placeholder="Записать мысль..."
           ariaLabel="Мысль по теме недели"
           className="mt-6 min-h-[18rem] flex-1"
-          editorClassName="pb-24"
+          editorClassName="pb-24 md:pb-4"
           floatingToolbar
+          desktopInline
           onSubmit={save}
           submitLabel={current?.reflection ? 'Обновить мысль' : 'Сохранить мысль'}
           submitDisabled={!canSave}
