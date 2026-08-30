@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-010: contextual Bot ↔ Mini App deep links (#121)
+
+- `App.jsx` принимает allowlisted `action=checkin|evening` и передаёт его в существующий Today → Check-in flow; `action=breathing` сохраняет прежний Practices handoff.
+- `Today.jsx` открывает существующий Check-in с режимом `evening` для `action=evening`; произвольные action-параметры не открывают экраны.
+- Добавлен frontend regression-тест contextual action contract. `npm run check:core` — 150 unit-тестов passed, lint/build/docs:check passed.
+- Полный end-to-end Telegram/iPhone gate в sandbox не выполнялся; требуется ручная проверка владельцем.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
