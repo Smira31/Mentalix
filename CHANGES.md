@@ -1,5 +1,147 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-298: willingness-to-pay experiment protocol утверждён (#378)
+
+- `docs/research/MXL-298_WTP_EXPERIMENT_PROTOCOL.md` — fake-door concept-test всех трёх платных концепций утверждён владельцем как есть, без сокращения до одной (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #378, CI green.
+
+## 30.08.2026 — MXL-322: guided self-discovery flow утверждён в разработку (#376)
+
+- `docs/product/MXL-322_GUIDED_SELF_DISCOVERY_FLOW.md` — flow Context→Evidence→Pattern→Experiment→Review утверждён владельцем как фича в разработку, без backend/memory на первом этапе (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #376, CI green.
+
+## 30.08.2026 — MXL-320: product strategy experiment brief утверждён (#370)
+
+- `docs/research/MXL-320_PRODUCT_STRATEGY_EXPERIMENT_BRIEF.md` — порядок тестирования H1→H2→H3→H4 утверждён владельцем (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). Открытый пункт: H4 требует отдельного consent-review перед стартом. PR #370, CI green.
+
+## 30.08.2026 — MXL-353: history-by-day read contract for Journal tags (#388)
+
+- `docs/architecture/MXL-353_HISTORY_BY_DAY_CONTRACT.md` — контракт `GET /journal/history` (auth, range, privacy, idempotency, errors); не реализует endpoint и не меняет frontend до снятия backend blocker. PR #388, CI green.
+
+## 30.08.2026 — MXL-98: visual card library governance schema (#394)
+
+- `docs/design/MXL-98_VISUAL_CARD_LIBRARY.md` — контракт метаданных для карточных ассетов (card_id, версии, alt text, light/dark, deprecation); сама библиотека карточек ещё не наполнена. PR #394, CI green.
+
+## 30.08.2026 — MXL-103: animation library governance schema (#393)
+
+- `docs/design/MXL-103_ANIMATION_LIBRARY.md` — контракт метаданных для анимаций (motion_id, duration, easing, reduced-motion); запрещает looping/parallax/surprise-движение. PR #393, CI green.
+
+## 30.08.2026 — MXL-104: reference library governance schema (#392)
+
+- `docs/design/MXL-104_REFERENCE_LIBRARY.md` — source-of-truth индекс референсов (layout/typography/motion/illustration/Telegram) с rights/approval-полями; сама библиотека ещё не наполнена. PR #392, CI green.
+
+## 30.08.2026 — MXL-99: canonical character library contract (#382)
+
+- `docs/product/MXL-99_CHARACTER_LIBRARY.md` — voice/reasoning/action/safety-контракт для канонического персонажа Mentalix; не авторизует смену production-персон. PR #382, CI green.
+
+## 30.08.2026 — MXL-100: prompt library governance schema (#381)
+
+- `docs/product/MXL-100_PROMPT_LIBRARY.md` — схема метаданных и safety-границы для будущей библиотеки промптов (prompt_id, families Clarify/Compass/Step/Review); не меняет production-персону или реальные промпты. PR #381, CI green.
+
+## 30.08.2026 — MXL-358: Android gate evidence form (#387)
+
+- `docs/testing/MXL-358_ANDROID_GATE_EVIDENCE.md` — воспроизводимая evidence-форма для ручной проверки на Android (entry, theme, keyboard, back, persistence, network); manual gate НЕ заявлен пройденным. PR #387, CI green.
+
+## 30.08.2026 — MXL-359: iPhone performance gate evidence form (#386)
+
+- `docs/testing/MXL-359_IPHONE_PERFORMANCE_GATE_PREP.md` — воспроизводимая evidence-форма для ручной проверки на iPhone (launch, Journal editor, Today/Practice, completion, return); manual gate НЕ заявлен пройденным. PR #386, CI green.
+
+## 30.08.2026 — MXL-360: testing infrastructure rollout plan (#373)
+
+- `docs/testing/MXL-360_TESTING_INFRASTRUCTURE_ROLLOUT.md` — план независимых проверяемых slices (design guard, contract harness, Playwright states, performance, a11y); не объявляет ручные device gates пройденными. PR #373, CI green.
+
+## 30.08.2026 — MXL-271: canonical CI rollout documented (#380)
+
+- `docs/testing/MXL-271_CANONICAL_CI_ROLLOUT.md` — контракт frontend CI workflow (quality/UX/backend health/npm audit jobs). PR #380, CI green (кроме известного Vercel build-rate-limit).
+
+## 30.08.2026 — MXL-246: Journal keyboard-safe action group на tablet/desktop
+
+- Проблема: `JournalTextarea` с `floatingToolbar` закреплял action group
+  (`Aa` / «Пойти глубже» / submit) через `position: fixed` относительно
+  всего viewport. На мобильных экранах это совпадало с центром
+  контентной колонки, но на tablet/desktop (768px+) кнопка сохранения
+  визуально отрывалась от редактора — в `JournalFlow` (Практики →
+  Журнал) и в `ThemeScreen` (weekly-theme day view) сохранение выглядело
+  "подвешенным" в углу экрана.
+- `src/components/JournalTextarea.jsx`: новый опциональный проп
+  `desktopInline` (по умолчанию `false`, поведение остальных экранов —
+  `CheckIn`, `FirstStepFlow`, `FinishFlow`, `MeditationFlow`,
+  `NarrowFocusFlow`, `ProcrastinationFlow`, `TodayFocusFlow` и
+  `GuidedJournals` — не менялось). При `desktopInline` на `md:` (768px+)
+  action group и format-popup становятся частью потока рядом с
+  редактором (`md:static`) вместо `fixed`; ниже 768px поведение
+  идентично прежнему.
+- `src/screens/JournalFlow.jsx`, `src/screens/ThemeScreen.jsx`: подключён
+  `desktopInline` для соответствующих вызовов `JournalTextarea`.
+- Добавлен `tests/ux/mxl-246-journal-responsive.spec.mjs` +
+  `playwright.mxl246.config.mjs` (`npm run ux:mxl246`) — viewport-матрица
+  320x568 (mobile regression), 768x1024, 1024x768, 1440x900 для
+  `JournalFlow` и `ThemeScreen`: нет horizontal overflow, submit-кнопка
+  остаётся в пределах колонки редактора на wide viewport, `position`
+  action group переключается `fixed` → `static` ровно на 768px,
+  font-size редактора ≥16px. Скриншоты — `qa-evidence/mxl-246/`.
+  `npm run check:core` и `npm run ux:check` (существующий smoke) — без
+  регрессий.
+- Compatibility-проверка с открытым PR #371 (fix/issue-247, тоже правит
+  `JournalFlow.jsx`): найден и подтверждён тестовым merge реальный
+  конфликт по строкам `JournalIntro`/`JournalComplete` (`main` для этого
+  файла не prettier-clean, поэтому любой коммит по нему форматирует те
+  же строки, что правит #371) и падение его нового unit-теста из-за
+  жёсткой проверки `editorClassName="pb-24"`. `editorClassName="pb-24
+md:pb-4"` в `JournalFlow.jsx` откачен обратно к `"pb-24"` (был чисто
+  косметическим, не нужен для исправления бага) — это снимает конфликт
+  с тестом; конфликт по форматированию/alignment-строкам остаётся и
+  требует rebase той из двух PR, что мёржится второй (стандартный git
+  merge, без потери кода). `ThemeScreen.jsx` (не пересекается с #371)
+  сохраняет `pb-24 md:pb-4`.
+- Не входило в эту итерацию: two-column композиция для intro/day/review
+  (текущий constrained single-column max-w-md уже соответствует
+  acceptance criteria issue) и ручная Telegram/iPhone проверка — веб
+  viewport-тесты не требуют реального устройства.
+
+## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
+
+- `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
+- Целевые backend-тесты: 25 passed.
+
+## 30.08.2026 — MXL-010: dependency hygiene по npm audit (#357)
+
+- `vite` обновлён с 5.4.11 до 5.4.21, `postcss` — с 8.4.47 до 8.5.26; lockfile пересоздан npm.
+- `npm audit --omit=dev` показывает 0 уязвимостей для production-зависимостей. Оставшиеся 2 advisory относятся к `vite`/`esbuild`, которые являются dev-only инструментами сборки и не входят в production runtime; исправление требует major-upgrade Vite 8 и отдельной проверки совместимости.
+- `npm run check:core` — 148 unit-тестов passed, lint, build и docs:check passed.
+
+## 30.08.2026 — MXL-UI-AUDIT-001: автоматизированный аудит ключевых сценариев (#291)
+
+- На чистом `main` пройдены `npm run check:core` (148 unit-тестов, lint, build, docs:check) и `npm run ux:check` (4/4 Playwright smoke-теста).
+- Проверены доступные в sandbox сценарии основного маршрута, Mentor PersonaPicker, History с local Journal и прямой web-ссылки с OTP recovery.
+- Ограничение: реальный Telegram/iPhone flow, production-аккаунт и физическое устройство в этом аудите не проверялись; product decisions и ранее зафиксированные manual gates не выдаются за PASS.
+
+## 30.08.2026 — MXL-010: contextual Bot ↔ Mini App deep links (#121)
+
+- `App.jsx` принимает allowlisted `action=checkin|evening` и передаёт его в существующий Today → Check-in flow; `action=breathing` сохраняет прежний Practices handoff.
+- `Today.jsx` открывает существующий Check-in с режимом `evening` для `action=evening`; произвольные action-параметры не открывают экраны.
+- Добавлен frontend regression-тест contextual action contract. `npm run check:core` — 150 unit-тестов passed, lint/build/docs:check passed.
+- Полный end-to-end Telegram/iPhone gate в sandbox не выполнялся; требуется ручная проверка владельцем.
+
+## 30.08.2026 — MXL-API-RESILIENCE-001: timeout/retry/normalized errors (#354)
+
+- `src/lib/api.js` добавляет bounded timeout, нормализованный `ApiError` и один retry только для безопасных GET/HEAD/OPTIONS при transient network/5xx/408/425/429 ошибках; mutation-запросы не ретраятся.
+- Добавлен regression contract test; `npm run check:core` — 151 unit-тест passed, lint/build/docs:check passed.
+
+## 30.08.2026 — MXL-STARTER-SET-001: starter-set decision artifact (#321)
+
+- Добавлен research artifact для контекстного starter set: 3–5 контекстов, лёгкие версии, добровольность, один главный шаг, evening review и измеримые concept-test критерии. Product code, backend, платежи и AI-персоны не менялись; owner decision и manual gate обязательны.
+
+## 30.08.2026 — MXL-AI-ROLES-001: role contract and playbook draft (#323)
+
+- Добавлен research draft для ролей Ясность/Компас/Шаг: сценарии, границы, Telegram → Mini App handoff, safety и evaluation. Production AI, backend и память не менялись; owner approval и manual gate обязательны.
+
+## 30.08.2026 — MXL-GUIDED-REFLECTION-001: safety review artifact (#324)
+
+- Добавлен bounded safety-review checklist для «Сессии ясности»: stop conditions, crisis/escalation boundaries, consent/privacy gates и red-team сценарии. Production AI и backend не менялись; owner approval и manual Telegram/iPhone gate обязательны.
+
+## 30.08.2026 — MXL-AI-TELEGRAM-LOOP-001: daily-cycle research contract (#326)
+
+- Добавлена research-спецификация ролей, cadence, opt-in/quiet hours, contextual handoff, метрик и safety-границ. Production AI, scheduler и backend не менялись; owner decision и Telegram/iPhone gate остаются обязательными.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
