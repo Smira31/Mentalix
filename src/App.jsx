@@ -20,6 +20,7 @@ import { api } from './lib/api'
 import { currentCheckinStreak } from './lib/series'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
+import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -177,9 +178,9 @@ function applyDarkTheme() {
    ============================================================ */
 
 export default function App() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState(() => (isPreviewDemoMode() ? DEMO_USER : null))
 
-  const [authChecked, setAuthChecked] = useState(false)
+  const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
 
   const [overlay, setOverlay] = useState(null)
 
@@ -399,8 +400,12 @@ export default function App() {
      AUTH
      ============================================================ */
 
+  const previewDemoMode = isPreviewDemoMode()
+
   useEffect(() => {
     platform.init()
+
+    if (previewDemoMode) return
 
     ;(async () => {
       const existing = await platform.requestAuth()
@@ -411,7 +416,7 @@ export default function App() {
 
       setAuthChecked(true)
     })()
-  }, [])
+  }, [previewDemoMode])
 
   /* ============================================================
      БЛОКИРОВКА ПРИЛОЖЕНИЯ
@@ -861,6 +866,15 @@ export default function App() {
         paddingLeft: 'var(--app-safe-left)',
       }}
     >
+      {previewDemoMode && (
+        <div
+          role="status"
+          className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-gold/40 bg-emerald px-3 py-1 text-[10px] font-semibold tracking-wide text-gold shadow-lg"
+        >
+          Preview Demo Mode · данные только в этом браузере
+        </div>
+      )}
+
       {/* ========================================================
           MENTALIX WORDMARK
           Только Сегодня.

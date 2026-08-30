@@ -1,5 +1,6 @@
 import { platform } from '../platform'
 import { withQuery } from './apiQuery'
+import { demoRequest, isPreviewDemoMode } from './demoMode'
 
 const BASE = '/api'
 
@@ -31,6 +32,8 @@ async function download(path, filename) {
 }
 
 async function request(path, options = {}) {
+  if (isPreviewDemoMode()) return demoRequest(path, options)
+
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
 
   const res = await fetch(`${BASE}${path}`, {
