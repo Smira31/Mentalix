@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-358: Android gate evidence form (#387)
+
+- `docs/testing/MXL-358_ANDROID_GATE_EVIDENCE.md` — воспроизводимая evidence-форма для ручной проверки на Android (entry, theme, keyboard, back, persistence, network); manual gate НЕ заявлен пройденным. PR #387, CI green.
+
 ## 30.08.2026 — MXL-359: iPhone performance gate evidence form (#386)
 
 - `docs/testing/MXL-359_IPHONE_PERFORMANCE_GATE_PREP.md` — воспроизводимая evidence-форма для ручной проверки на iPhone (launch, Journal editor, Today/Practice, completion, return); manual gate НЕ заявлен пройденным. PR #386, CI green.
