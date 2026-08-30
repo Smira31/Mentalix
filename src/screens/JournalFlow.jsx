@@ -305,6 +305,7 @@ export default function JournalFlow({ userId, onClose }) {
             className="mt-7 min-h-[15rem]"
             editorClassName="pb-24"
             floatingToolbar
+            desktopInline
             formatting={false}
             onSubmit={continueFlow}
             submitLabel={isLast ? 'Сохранить и завершить' : 'Сохранить и продолжить'}
