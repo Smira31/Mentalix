@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-UI-AUDIT-001: автоматизированный аудит ключевых сценариев (#291)
+
+- На чистом `main` пройдены `npm run check:core` (148 unit-тестов, lint, build, docs:check) и `npm run ux:check` (4/4 Playwright smoke-теста).
+- Проверены доступные в sandbox сценарии основного маршрута, Mentor PersonaPicker, History с local Journal и прямой web-ссылки с OTP recovery.
+- Ограничение: реальный Telegram/iPhone flow, production-аккаунт и физическое устройство в этом аудите не проверялись; product decisions и ранее зафиксированные manual gates не выдаются за PASS.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
