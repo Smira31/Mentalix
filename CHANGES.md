@@ -28,6 +28,18 @@
   font-size редактора ≥16px. Скриншоты — `qa-evidence/mxl-246/`.
   `npm run check:core` и `npm run ux:check` (существующий smoke) — без
   регрессий.
+- Compatibility-проверка с открытым PR #371 (fix/issue-247, тоже правит
+  `JournalFlow.jsx`): найден и подтверждён тестовым merge реальный
+  конфликт по строкам `JournalIntro`/`JournalComplete` (`main` для этого
+  файла не prettier-clean, поэтому любой коммит по нему форматирует те
+  же строки, что правит #371) и падение его нового unit-теста из-за
+  жёсткой проверки `editorClassName="pb-24"`. `editorClassName="pb-24
+md:pb-4"` в `JournalFlow.jsx` откачен обратно к `"pb-24"` (был чисто
+  косметическим, не нужен для исправления бага) — это снимает конфликт
+  с тестом; конфликт по форматированию/alignment-строкам остаётся и
+  требует rebase той из двух PR, что мёржится второй (стандартный git
+  merge, без потери кода). `ThemeScreen.jsx` (не пересекается с #371)
+  сохраняет `pb-24 md:pb-4`.
 - Не входило в эту итерацию: two-column композиция для intro/day/review
   (текущий constrained single-column max-w-md уже соответствует
   acceptance criteria issue) и ручная Telegram/iPhone проверка — веб
