@@ -91,3 +91,19 @@ No video was generated because the real authenticated/Telegram flow was blocked 
 
 [1]: https://github.com/Smira31/Mentalix/pull/312 'PR #312 — clarify direct web auth fallback'
 [2]: https://github.com/Smira31/Mentalix/commit/29f156180941d5dc326f3e965124c42c2f6e1f3d 'Tested origin/main commit'
+
+## Automated technical gate v2
+
+После исходного ручного triage добавлен отдельный production-like Playwright gate:
+
+```text
+npm run ux:mxl010
+```
+
+Он собирает production build, запускает `vite preview`, выполняет deterministic fixture-backed web auth и основной frontend journey. Два теста прошли: web auth contract и fixture-backed journey от Today через morning Check-in, evening review, Следопыт handoff, длинный AI fixture response, возврат к Today, URL normalization и reload/reopen. Existing `npm run ux:check` также прошёл 3/3.
+
+Новая автоматизация не подменяет real backend/Telegram evidence. Real OTP delivery, Telegram initData, physical Telegram WebView fullscreen/safe areas, iPhone keyboard, production AI, live ritual/asceza data, server-side review acknowledgement, server calendar rollover, cross-session persistence и backend idempotency остаются BLOCKED до отдельного environment-backed прогона.
+
+В ходе gate найдено и исправлено минимальное frontend issue: после возврата из AI URL мог оставаться `?tab=mentor`, поэтому reload открывал Mentor вместо Today. `src/App.jsx` теперь синхронизирует `tab` через `history.replaceState`, удаляет `tab` при возврате к Today и удаляет obsolete `action` query.
+
+Изменения автоматизации находятся в отдельной ветке `manus/mxl-010-automated-gate`: `tests/ux/mxl-010-release-gate.spec.mjs`, `playwright.mxl010.config.mjs`, `package.json`, `.github/workflows/ci.yml`, `src/App.jsx` и `qa-evidence/mxl-010/automated-gate.md`. Backend и `Smira31/mentalix-bot` не изменялись.

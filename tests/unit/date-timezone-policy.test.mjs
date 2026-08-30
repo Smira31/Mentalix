@@ -130,3 +130,15 @@ test('MXL-date-policy isValidDate', () => {
   assert.equal(isValidDate('2026-08-27'), false)
   assert.equal(isValidDate(null), false)
 })
+
+test('MXL-MOOD-CHECK-001 UTC+3 boundary keeps 00:30 and 23:30 in one local day', () => {
+  withTz('Europe/Moscow', () => {
+    const localDaySequence = [
+      '2026-08-27T21:30:00.000Z', // 28 Aug, 00:30 local
+      '2026-08-28T20:30:00.000Z', // 28 Aug, 23:30 local
+      '2026-08-28T21:30:00.000Z', // 29 Aug, 00:30 local
+    ].map(instant => toLocalCalendarDate(instant))
+
+    assert.deepEqual(localDaySequence, ['2026-08-28', '2026-08-28', '2026-08-29'])
+  })
+})

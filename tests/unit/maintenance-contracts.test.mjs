@@ -171,19 +171,22 @@ test('preview cleanup подтверждает удаление до очист�
   assert.ok(successMessage > telegramNotification)
   assert.match(source, /\$httpCode -match '\^\(404\|410\)\$'/)
   assert.match(source, /\$inspectExit -ne 0 -and \$inspectMissing/)
+  assert.match(source, /\$httpVerifiedRemoved -and \$inspectVerifiedRemoved/)
   assert.match(source, /\[regex\]::IsMatch\(/)
   assert.match(source, /RegexOptions\]::IgnoreCase/)
   assert.doesNotMatch(source, /-match '\(\?i\)/)
   assert.doesNotMatch(source, /-notmatch '\(\?i\)/)
   assert.match(source, /\[switch\]\$DryRun/)
-  assert.match(source, /MENTALIX_PREVIEW_STOP_RETRY_ATTEMPTS/)
+  assert.match(source, /MENTALIX_PREVIEW_STOP_VERIFY_DEADLINE_SECONDS/)
   assert.match(source, /MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS/)
-  assert.match(source, /retry attempts=\{0\}, delay seconds=\{1\}/)
+  assert.match(source, /MENTALIX_PREVIEW_STOP_RETRY_MAX_DELAY_SECONDS/)
+  assert.match(source, /verify deadline seconds=\{0\}, initial delay seconds=\{1\}, max delay seconds=\{2\}/)
   const dryRunGuard = source.indexOf('if ($DryRun -or $dryRunFromEnv)')
   assert.ok(dryRunGuard > 0)
   assert.ok(dryRunGuard < source.indexOf('vercel@latest list'))
-  assert.match(source, /-le \$retryAttempts/)
-  assert.match(source, /Start-Sleep -Seconds \$retryDelaySeconds/)
+  assert.match(source, /while \(\(Get-Date\) -lt \$verificationDeadline/)
+  assert.match(source, /\$currentDelaySeconds = \[math\]::Min\(\$currentDelaySeconds \* 2, \$retryMaxDelaySeconds\)/)
+  assert.match(source, /Start-Sleep -Seconds \$sleepSeconds/)
   assert.match(source, /State сохранён для повторной попытки/)
   assert.match(launcher, /Join-Path \$PSScriptRoot 'preview-stop\.ps1'/)
   assert.doesNotMatch(launcher, /Start-Sleep -Seconds 3600; npx vercel@latest remove/)
@@ -493,7 +496,7 @@ test('MXL-019 заменяет Journey mountain metaphor на continuous progres
   )
 
   assert.doesNotMatch(path, /WireframeMountain/)
-  assert.match(path, /JourneyLineArt progress=\{goal\.progress\}/)
+  assert.match(path, /JourneyLineArt\s+progress=\{goal\.progress\}/)
   assert.match(path, /Создай первую — и увидишь линию движения/)
   assert.match(line, /const PATH_D/)
   assert.equal((line.match(/<path/g) || []).length, 2)
@@ -801,4 +804,46 @@ test('MXL-021 возвращает из Journey в Today через CTA «Про
   assert.match(path, /Продолжить сегодня/)
   assert.match(path, /onClick=\{onContinueToday\}/)
   assert.match(today, /<Path user=\{user\} onContinueToday=\{\(\) => changeSub\(null\)\} \/>/)
+})
+
+test('preview cleanup verification waits for both channels across eventual-consistency retries', () => {
+  function verifySequence(httpCodes, inspectStates) {
+    let httpVerifiedRemoved = false
+    let inspectVerifiedRemoved = false
+    const observations = []
+
+    for (let attempt = 0; attempt < Math.max(httpCodes.length, inspectStates.length); attempt += 1) {
+      if (!httpVerifiedRemoved && /^(404|410)$/.test(String(httpCodes[attempt] ?? ''))) {
+        httpVerifiedRemoved = true
+      }
+      if (!inspectVerifiedRemoved && inspectStates[attempt] === 'missing') {
+        inspectVerifiedRemoved = true
+      }
+      observations.push({
+        attempt: attempt + 1,
+        httpVerifiedRemoved,
+        inspectVerifiedRemoved,
+        verifiedRemoved: httpVerifiedRemoved && inspectVerifiedRemoved,
+      })
+      if (httpVerifiedRemoved && inspectVerifiedRemoved) break
+    }
+
+    return observations
+  }
+
+  const observations = verifySequence(
+    ['200', '200', '404'],
+    ['ready', 'ready', 'missing']
+  )
+
+  assert.deepEqual(observations.map(({ verifiedRemoved }) => verifiedRemoved), [false, false, true])
+  assert.deepEqual(observations[2], {
+    attempt: 3,
+    httpVerifiedRemoved: true,
+    inspectVerifiedRemoved: true,
+    verifiedRemoved: true,
+  })
+
+  const onlyHttp = verifySequence(['200', '404'], ['ready', 'ready'])
+  assert.equal(onlyHttp.at(-1).verifiedRemoved, false)
 })

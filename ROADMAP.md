@@ -158,16 +158,16 @@ check-in → следующий шаг → практика → вечерний
 
 ### Новые крупные эпики
 
-| ID                            | Эпик                                                                          | Размер | Зависимость                                 | Статус                                                  |
-| ----------------------------- | ----------------------------------------------------------------------------- | -----: | ------------------------------------------- | ------------------------------------------------------- |
+| ID                            | Эпик                                                                          | Размер | Зависимость                                 | Статус                                                              |
+| ----------------------------- | ----------------------------------------------------------------------------- | -----: | ------------------------------------------- | ------------------------------------------------------------------- |
 | `MXL-JOURNAL-PERSISTENCE-001` | Production-хранение Journal Flow и честный daily-entry contract               |     XL | приватный backend/storage contract          | in progress: user-scoped local-first slice; cloud persistence later |
-| `MXL-JOURNAL-HISTORY-001`     | Единая датированная история записей и возврат к сегодняшнему шагу             |      L | persistence и единая date/timezone модель   | backlog                                                 |
-| `MXL-JOURNAL-PRIVACY-001`     | Центр приватности: AI consent, retention, export, delete и telemetry boundary |      L | safety/legal и backend contract             | needs-owner                                             |
-| `MXL-JOURNAL-GUIDED-001`      | Guided journals и library поверх проверенного авторского контента             |      M | content governance и taxonomy               | backlog                                                 |
-| `MXL-JOURNAL-PERSONALIZE-001` | Настройка cadence: один check-in или morning/evening, prompt/free write/AI    |      M | persistence и product copy                  | needs-owner                                             |
-| `MXL-JOURNAL-ORGANIZE-001`    | Tags, search и favorites для записей и практик                                |      M | schema, indexing и persistence              | deferred                                                |
-| `MXL-JOURNAL-MEMORIES-001`    | Photos, videos и memories                                                     |    M/L | attachment storage, privacy и upload limits | deferred                                                |
-| `MXL-JOURNAL-REMINDERS-001`   | Gentle reminders и quiet hours                                                |    S/M | consent, scheduler и backend                | deferred                                                |
+| `MXL-JOURNAL-HISTORY-001`     | Единая датированная история записей и возврат к сегодняшнему шагу             |      L | persistence и единая date/timezone модель   | backlog                                                             |
+| `MXL-JOURNAL-PRIVACY-001`     | Центр приватности: AI consent, retention, export, delete и telemetry boundary |      L | safety/legal и backend contract             | needs-owner                                                         |
+| `MXL-JOURNAL-GUIDED-001`      | Guided journals и library поверх проверенного авторского контента             |      M | content governance и taxonomy               | backlog                                                             |
+| `MXL-JOURNAL-PERSONALIZE-001` | Настройка cadence: один check-in или morning/evening, prompt/free write/AI    |      M | persistence и product copy                  | needs-owner                                                         |
+| `MXL-JOURNAL-ORGANIZE-001`    | Tags, search и favorites для записей и практик                                |      M | schema, indexing и persistence              | deferred                                                            |
+| `MXL-JOURNAL-MEMORIES-001`    | Photos, videos и memories                                                     |    M/L | attachment storage, privacy и upload limits | deferred                                                            |
+| `MXL-JOURNAL-REMINDERS-001`   | Gentle reminders и quiet hours                                                |    S/M | consent, scheduler и backend                | deferred                                                            |
 
 ### Порядок реализации
 
@@ -445,7 +445,13 @@ starters чата), давление на структуру продукта н
 5. Теги на записях — идея 9 (Stoic, доп. экраны).
 6. Персонализация тона контента — идея 7 (Stoic, доп. экраны).
 7. AI-помощник формулировки автоматических мыслей — идея 1 (психологическое
-   благополучие).
+   благополучие). Реализовано 29.08.2026 как `MXL-AI-REFRAME-001` (`TASKS.md`)
+   по итогам pre-mortem и трёх решений владельца: Q1 — реактивная кнопка
+   «Обсудить с AI» на уже сохранённой записи (не live-подсказка), открывает
+   существующий чат персоны, без нового backend endpoint; Q2 — возрастная
+   категория приложения зафиксирована 16+ (`docs/core/PRODUCT_DECISIONS.md` →
+   `MXL-DEC-021`), снимает открытый вопрос `PRODUCT.md` §9; Q3 — результат
+   только в чат, сама запись не меняется. PR открыт, ждёт ручного gate.
 8. Короткие статьи, привязанные к состоянию/ритуалу — идея 3
    (психологическое благополучие).
 9. Единая лента истории — merge check-in'ов, журнальных записей и

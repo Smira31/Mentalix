@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
 import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
+import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
@@ -46,7 +47,7 @@ function EmptyAnalytics() {
 
 function WeekChart({ dailyActivity }) {
   const last7 = dailyActivity.slice(-7)
-  const todayIso = new Date().toISOString().slice(0, 10)
+  const todayIso = toLocalCalendarDate()
 
   const chartData = last7.map(d => {
     const jsDate = new Date(d.date + 'T00:00:00')

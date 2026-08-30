@@ -1,3 +1,5 @@
+import { toLocalCalendarDate } from './dateTimezonePolicy.js'
+
 // Быстрый mood-check при запуске (MXL-MOOD-CHECK-001, идея 12 ROADMAP.md).
 //
 // Тумблер — синхронизируемый флаг (useSynced в App.jsx/Settings.jsx), тот
@@ -24,7 +26,7 @@ const LAST_SHOWN_KEY = 'mx-mood-check-last-shown'
 const DRAFT_KEY = 'mx-mood-check-draft'
 
 function today() {
-  return new Date().toISOString().slice(0, 10)
+  return toLocalCalendarDate()
 }
 
 export function shouldOfferMoodCheck() {

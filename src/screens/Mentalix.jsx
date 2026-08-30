@@ -5,6 +5,7 @@ import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
 
 import { readPendingMentor } from './mentalix/personas'
 import { maybeBuildInsightMessage } from './mentalix/insightDigest'
+import { AI_REFRAME_LEAD_MESSAGE, withSafetyNote } from '../lib/aiReframeSafety'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
@@ -14,7 +15,14 @@ import AiPrivacyControls from './mentalix/AiPrivacyControls'
 // ЧАТ
 // ============================================================
 
-function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
+function Chat({
+  user,
+  persona,
+  initialText = '',
+  viaHandoff = false,
+  withSafetyNotice = false,
+  onBack,
+}) {
   const [messages, setMessages] = useState([])
 
   const [input, setInput] = useState(initialText)
@@ -45,6 +53,14 @@ function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
           }
         }
 
+        // MXL-AI-REFRAME-001: лид-дисклеймер только для хендоффа «Обсудить
+        // с AI» (History.jsx) — синтетическое сообщение, тот же приём, что
+        // у «Дайджеста от Следопыта» выше. Ничего не отправляется в
+        // backend, не персистится, не влияет на обычный вход в чат.
+        if (withSafetyNotice && !cancelled) {
+          combined = [AI_REFRAME_LEAD_MESSAGE, ...combined]
+        }
+
         if (!cancelled) setMessages(combined)
       })
       .catch(error => {
@@ -57,7 +73,7 @@ function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
     return () => {
       cancelled = true
     }
-  }, [user, persona, viaHandoff])
+  }, [user, persona, viaHandoff, withSafetyNotice])
 
   async function send(overrideText) {
     const isVoiceMessage = typeof overrideText === 'string'
@@ -86,7 +102,16 @@ function Chat({ user, persona, initialText = '', viaHandoff = false, onBack }) {
     try {
       const reply = await api.mentalix.send(user.id, text, persona)
 
-      setMessages(previous => [...previous, reply])
+      // MXL-AI-REFRAME-001: не доверяем сырому выводу модели в этом
+      // хендоффе — переиспользует regex-паттерн фильтра MXL-009. Не
+      // отбрасывает и не переписывает ответ, только дополняет оговоркой
+      // при совпадении с диагностической/причинной/терапевтической
+      // формулировкой. Не влияет на обычные чаты (withSafetyNotice=false).
+      const safeReply = withSafetyNotice
+        ? { ...reply, content: withSafetyNote(reply.content) }
+        : reply
+
+      setMessages(previous => [...previous, safeReply])
 
       invalidateHistory(user.id, persona)
     } catch (error) {
@@ -177,6 +202,7 @@ export default function MentalixChat({ user, onPersonaChange }) {
       persona={persona}
       initialText={draft}
       viaHandoff={Boolean(pending.persona)}
+      withSafetyNotice={Boolean(pending.safety)}
       onBack={() => {
         setDraft('')
         setPersona(null)

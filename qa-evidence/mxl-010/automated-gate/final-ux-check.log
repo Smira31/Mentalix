@@ -1,0 +1,11 @@
+
+> mentalix@1.0.0 ux:check
+> playwright test --config=playwright.ux.config.mjs
+
+
+Running 3 tests using 1 worker
+
+[1/3] tests/ux/ux-check.spec.mjs:357:1 › локальный UX smoke по основному маршруту
+[2/3] tests/ux/ux-check.spec.mjs:991:1 › Mentor PersonaPicker сохраняет тематическую рамку и pager на mobile, tablet и desktop
+[3/3] tests/ux/ux-check.spec.mjs:1076:1 › History показывает user-scoped local Journal на mobile и tablet
+  3 passed (27.8s)

@@ -40,12 +40,13 @@ function Get-PositiveInt {
   return $Default
 }
 
-$retryAttempts = Get-PositiveInt $envValues['MENTALIX_PREVIEW_STOP_RETRY_ATTEMPTS'] 10
+$verifyDeadlineSeconds = Get-PositiveInt $envValues['MENTALIX_PREVIEW_STOP_VERIFY_DEADLINE_SECONDS'] 90
 $retryDelaySeconds = Get-PositiveInt $envValues['MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS'] 3
+$retryMaxDelaySeconds = Get-PositiveInt $envValues['MENTALIX_PREVIEW_STOP_RETRY_MAX_DELAY_SECONDS'] 15
 $dryRunFromEnv = $envValues['MENTALIX_PREVIEW_STOP_DRY_RUN'] -match '^(1|true|yes)$'
 
 if ($DryRun -or $dryRunFromEnv) {
-  Write-Output ("Preview stop dry-run: retry attempts={0}, delay seconds={1}. No Vercel, state, process, or Telegram operations will run." -f $retryAttempts, $retryDelaySeconds)
+  Write-Output ("Preview stop dry-run: verify deadline seconds={0}, initial delay seconds={1}, max delay seconds={2}. No Vercel, state, process, or Telegram operations will run." -f $verifyDeadlineSeconds, $retryDelaySeconds, $retryMaxDelaySeconds)
   exit 0
 }
 
@@ -107,11 +108,18 @@ if (-not $removedSuccessfully -or ($removeExit -ne 0 -and -not $removeNotFound))
 
 # Vercel CLI может напечатать сообщение об удалении до фактического исчезновения
 # deployment. Не очищаем state и не уведомляем Telegram, пока отсутствие не
-# подтверждено независимо через публичный URL или Vercel inspect.
+# подтверждено обоими независимыми каналами: публичным URL и Vercel inspect.
+$httpVerifiedRemoved = $false
+$inspectVerifiedRemoved = $false
 $verifiedRemoved = $false
 $verificationDetails = @()
-for ($attempt = 1; $attempt -le $retryAttempts -and -not $verifiedRemoved; $attempt++) {
-  if (-not [string]::IsNullOrWhiteSpace($deploymentUrl)) {
+$verificationDeadline = (Get-Date).AddSeconds($verifyDeadlineSeconds)
+$attempt = 0
+$currentDelaySeconds = $retryDelaySeconds
+while ((Get-Date) -lt $verificationDeadline -and -not $verifiedRemoved) {
+  $attempt++
+
+  if (-not [string]::IsNullOrWhiteSpace($deploymentUrl) -and -not $httpVerifiedRemoved) {
     $oldPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     $httpCode = (& curl.exe --noproxy '*' --http1.1 --max-time 20 -sS -o NUL -w '%{http_code}' $deploymentUrl 2>$null | Out-String).Trim()
@@ -119,11 +127,11 @@ for ($attempt = 1; $attempt -le $retryAttempts -and -not $verifiedRemoved; $atte
     $ErrorActionPreference = $oldPreference
     $verificationDetails += "HTTP attempt $attempt`: exit=$curlExit status=$httpCode"
     if ($curlExit -eq 0 -and $httpCode -match '^(404|410)$') {
-      $verifiedRemoved = $true
+      $httpVerifiedRemoved = $true
     }
   }
 
-  if (-not $verifiedRemoved -and -not [string]::IsNullOrWhiteSpace($deploymentId)) {
+  if (-not [string]::IsNullOrWhiteSpace($deploymentId) -and -not $inspectVerifiedRemoved) {
     $oldPreference = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     $inspectOutput = & npx vercel@latest inspect $deploymentId --scope $scope 2>&1 | Out-String
@@ -136,19 +144,28 @@ for ($attempt = 1; $attempt -le $retryAttempts -and -not $verifiedRemoved; $atte
     )
     $verificationDetails += "Inspect attempt $attempt`: exit=$inspectExit missing=$inspectMissing"
     if ($inspectExit -ne 0 -and $inspectMissing) {
-      $verifiedRemoved = $true
+      $inspectVerifiedRemoved = $true
     }
   }
 
-  if (-not $verifiedRemoved -and $attempt -lt $retryAttempts) {
-    Start-Sleep -Seconds $retryDelaySeconds
+  $verifiedRemoved = $httpVerifiedRemoved -and $inspectVerifiedRemoved
+  if (-not $verifiedRemoved) {
+    $remainingSeconds = ($verificationDeadline - (Get-Date)).TotalSeconds
+    if ($remainingSeconds -le 0) { break }
+    $sleepSeconds = [math]::Min($currentDelaySeconds, [math]::Floor($remainingSeconds))
+    if ($sleepSeconds -gt 0) {
+      Start-Sleep -Seconds $sleepSeconds
+    }
+    $currentDelaySeconds = [math]::Min($currentDelaySeconds * 2, $retryMaxDelaySeconds)
   }
 }
 
 if (-not $verifiedRemoved) {
   Write-Error (
-    "Vercel принял cleanup, но удаление Preview не подтверждено после {0} попыток. State сохранён для повторной попытки.`n{1}" -f
-    $retryAttempts,
+    "Vercel принял cleanup, но удаление Preview не подтверждено за deadline {0} секунд. State сохранён для повторной попытки.`nHTTP confirmed={1}; inspect confirmed={2}`n{3}" -f
+    $verifyDeadlineSeconds,
+    $httpVerifiedRemoved,
+    $inspectVerifiedRemoved,
     ($verificationDetails -join "`n")
   )
   exit 1

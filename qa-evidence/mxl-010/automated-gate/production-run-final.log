@@ -1,0 +1,15 @@
+
+> mentalix@1.0.0 ux:mxl010
+> playwright test --config=playwright.mxl010.config.mjs
+
+
+Running 2 tests using 1 worker
+
+[1/2] tests/ux/mxl-010-release-gate.spec.mjs:125:3 › MXL-010 automated technical gate › web auth contract is deterministic and does not expose private data
+[2/2] tests/ux/mxl-010-release-gate.spec.mjs:145:3 › MXL-010 automated technical gate › fixture-backed journey covers check-in, completion, evening review, handoff, AI response and reopen
+tests/ux/mxl-010-release-gate.spec.mjs:145:3 › MXL-010 automated technical gate › fixture-backed journey covers check-in, completion, evening review, handoff, AI response and reopen
+MXL-010 handoff diagnostic: {"persona":"dnevnik","draft":"Разбери мой сегодняшний день. Опирайся только на реальные данные Mentalix: моё состояние, ритуалы, аскезы, срывы, их причины, вечерние выводы и то, чем я горжусь. Дай один главный вывод, максимум две закономерности и один конкретный эксперимент на завтра. Если данных для вывода недостаточно — скажи об этом прямо.","body":""}
+
+MXL-010 runtime diagnostic: ["console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0","console.error: [Telegram.WebApp] CloudStorage is not supported in version 6.0"]
+
+  2 passed (8.1s)

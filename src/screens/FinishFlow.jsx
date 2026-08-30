@@ -256,8 +256,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
                 Доведи один маленький кусок до конца
               </h2>
               <p className="mx-auto mt-4 max-w-[310px] text-[13px] leading-relaxed text-muted">
-                Пять минут, чтобы завершить не всё, а что-то одно — и получить то самое чувство
-                завершённости.
+                Короткая сессия, чтобы выбрать один кусок, который можно честно проверить сегодня.
               </p>
               <p className="mt-4 text-[12px] font-semibold text-faint">
                 5 минут&nbsp;&nbsp;·&nbsp;&nbsp;6 шагов
@@ -270,9 +269,10 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={startPractice}
+              aria-label="Начать: найти один финиш"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Начать
+              Найти один финиш
             </button>
           </div>
         )}
@@ -384,6 +384,10 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
               </h2>
               <p className="mx-auto mt-3 max-w-[310px] text-[13px] text-muted leading-relaxed">
                 {COMPLETION_COPY[outcome]?.description}
+                <span className="mt-3 block text-[12px] text-faint">
+                  Следующий шаг: {finish || 'один отдельный кусок проекта'} — финиш наступил, когда
+                  результат можно проверить.
+                </span>
               </p>
 
               <p className="mt-7 text-[12px] font-semibold text-muted">Помогло сейчас?</p>
@@ -419,9 +423,10 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={finishSession}
+              aria-label="Завершить: продолжить в Сегодня"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Завершить
+              Продолжить в Сегодня
             </button>
           </div>
         )}

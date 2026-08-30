@@ -1,5 +1,206 @@
 # Mentalix — задачи
 
+## MXL-DATE-POLICY-UTC-FIX-001 — Локальная календарная дата вместо UTC-среза
+
+- **Статус:** реализовано в feature-ветке, ожидает проверки и PR.
+- **Причина:** `moodCheckDraft.js`, `Analytics.jsx` и `insightDigest.js` использовали `new Date().toISOString().slice(0, 10)` для пользовательского календарного дня. В ненулевых часовых поясах это могло дать двойной показ mood-check в локальный день, пропуск в начале следующего дня и неверное выделение/ограничение дневных UI-событий.
+- **Что сделано:** все три места переведены на существующую централизованную `toLocalCalendarDate()` из `src/lib/dateTimezonePolicy.js`. `src/lib/api.js` не менялся: его UTC-дата используется только в имени скачиваемого файла. `CheckIn.jsx` и `History.jsx` не менялись.
+- **Проверка:** добавлен unit-тест сценария `Europe/Moscow`: 00:30 и 23:30 одного локального дня дают одну дату, 00:30 следующего локального дня — следующую. Полный `check:core` выполняется перед PR.
+- **Не входит:** изменение backend-контракта, `ROADMAP.md`, `TASK_INDEX.md`, логики check-in/history или timestamp-форматов.
+
+## MXL-PREVIEW-STOP-DEADLINE-BACKOFF-001 — deadline и backoff для подтверждения удаления Preview
+
+- **Статус:** реализовано в feature-ветке, ожидает проверки и PR.
+- **Причина:** фиксированное окно 10 попыток × 3 секунды (27 секунд между проверками) систематически короче наблюдаемой Vercel edge propagation задержки; после успешного `vercel remove` HTTP мог оставаться 200, а `inspect` — находить deployment.
+- **Что сделано:** retry-verify переведён на deadline по умолчанию 90 секунд с начальной задержкой 3 секунды и экспоненциальным backoff до 15 секунд. Deadline и параметры backoff настраиваются через `.env.local`; dry-run остаётся без внешних операций.
+- **Guard сохранён:** успех возможен только после независимого подтверждения обоими каналами — публичный URL вернул HTTP 404/410 и `vercel inspect` подтвердил отсутствие deployment. До этого state не удаляется, команда завершается ошибкой, Telegram не уведомляется.
+- **Проверка:** добавлен детерминированный regression-тест с ответами HTTP 200/inspect ready на первых попытках и HTTP 404/inspect missing на последующей; тест проверяет, что успех наступает только после обоих подтверждений.
+- **Не входит:** `package.json`, продуктовый код, `src/lib/api.js`, Vercel project, backend, Telegram-бот и `TASK_INDEX.md`.
+
+## MXL-WEB-LINKED-WRITE-001 — тихий 401 при записи для привязанного web-аккаунта
+
+- **Статус: вариант C закрыт 29.08.2026 (честное сообщение); вариант B — known issue, follow-up backend review, не реализован.**
+- **Приоритетный баг-репорт:** «кнопка создания нового ритуала не работает» на web-версии. Диагностика показала архитектурное расхождение шире одной кнопки.
+- **Причина (полная цепочка, каждое звено проверено чтением кода):**
+  1. `mentalix-bot/backend/rituals.py` (и ещё 17 backend-роутеров — `ascezas`, `courses`, `goals`, `checkin`, `journey` и др.) защищены `require_verified_identity` для **всех** методов.
+  2. `mentalix-bot/backend/telegram_auth.py:require_verified_identity` — если `claimed_user_id > 0`, обязателен заголовок `Authorization: tma <initData>` с валидной Telegram-подписью, иначе 401.
+  3. `mentalix-bot/backend/auth.py:_serialize_user` — для непривязанного web-аккаунта `app_user_id = -user.id` (отрицательный, намеренно, чтобы обойти пункт 2). Но после привязки Telegram (`/link/confirm`) `app_user_id = user.linked_telegram_id` — становится положительным.
+  4. `src/screens/WebAuthScreen.jsx` корректно берёт `app_user_id` как `user.id` — контракт соблюдён верно на фронтенде.
+  5. `src/platform/web.adapter.js:getInitData()` всегда возвращает `''` — обычный браузер физически не может сгенерировать Telegram-подпись.
+  6. Итог: **любая запись (create/log/save) от привязанного web-аккаунта получает 401**, а `catch (e) { console.error(e); return null }` во всех задетых экранах глотал её молча — кнопка просто «отпускалась».
+- **Вариант C (реализовано):** `src/lib/webAuthLimits.js` (новый) — `isLinkedWebAccount(user)`/`isUnverifiedTelegramWriteError(error)`/`isLinkedWebWriteBlocked(user, error)`, различает именно этот случай от обычной сетевой ошибки (проверяет `401` в тексте `Error` из `src/lib/api.js:request()`, не любую ошибку). Подключено в 4 найденных экранах с идентичным «тихим catch» паттерном создания сущности: `src/screens/Rituals.jsx` (`createRitual`), `src/screens/Ascezas.jsx` (`createAsceza`), `src/screens/Path.jsx` (`createGoal` — заодно исправлен отсутствующий `return goal` при успехе, ложно триггеривший общую ошибку), `src/screens/Courses.jsx` (`createCourse`, тот же недостающий `return`). Каждый экран показывает понятное сообщение («Открой Mentalix в Telegram, чтобы создать ритуал/принять аскезу/создать цель/добавить материал — привязанному аккаунту это пока доступно только там») вместо тихого провала.
+- **Вариант B (НЕ сделано, отдельная backend-задача):** постоянный фикс — backend-side маппинг, позволяющий привязанному web-аккаунту продолжать использовать отрицательный `-web_user.id` для прохождения `require_verified_identity` (как непривязанному), но связывающий фактические данные с `linked_telegram_id` через server-side lookup `WebUser → linked_telegram_id`. Требует отдельного backend review (репозиторий `mentalix-bot`, не в этой сессии) — меняет модель того, чей ID реально используется для записи данных. Ссылка на полное расследование — история чата этой сессии (диагностика от «кнопка создания ритуала не работает» до цепочки выше).
+- **Не входит:** `src/screens/Courses.jsx`'s `addNote`/`CourseDetail` и другие вторичные write-пути в этих же экранах (например, `logRitual`/`logAsceza`/`deleteGoal`) — тот же баг актуален и там (тот же router, та же зависимость), но не показывает пользователю пустую форму «пропала» так же заметно, как create-flow; за пределами найденного и явно согласованного scope этого фикса.
+- **Проверено:** `npm run check:core` — PASS (unit/lint/build/docs:check).
+
+## MXL-AI-REFRAME-001 — «Обсудить с AI» на сохранённой записи (задача 7, ROADMAP.md)
+
+- **Статус: реализовано 29.08.2026, ждёт PR/gate.** Задача 7 подтверждённой очереди `ROADMAP.md` («Обновление 25.08.2026») = идея 1 из «Конкурентный анализ: психологическое благополучие» («AI-помощник формулировки автоматических мыслей в чек-ине/дневнике»). Реализована по итогам pre-mortem (Tiger/Paper Tiger/Elephant) и трёх решений владельца (Q1/Q2/Q3).
+- **Q1 — что сделано:** кнопка «Обсудить с AI» в `src/screens/History.jsx` (`HistoryDetail`, блок «Эта запись и AI»), видна и активна только когда `checkin.ai_context_enabled === true` — уважает существующий `mentalix.contextConsent`/`setCheckinContext`, ничего нового в consent не добавляет. Открывает существующий чат с персоной `mayak` (Собеседник) через уже существующий sessionStorage-хендофф `MENTOR_PERSONA_KEY`/`MENTOR_DRAFT_KEY` (тот же паттерн, что `openScout()`/`openListener()`/`deepenMorningNote()` в `CheckIn.jsx`), с префиллом — собственным текстом пользователя (`checkin.note`/`checkin.lessons`) как первое сообщение в `input`, не отправленное автоматически. Никакой проактивности — только реактивная кнопка по нажатию. Новый backend endpoint не создавался, `api.mentalix.send` не менялся.
+- **Q2 — возрастной гейт:** зафиксирован `docs/core/PRODUCT_DECISIONS.md` → `MXL-DEC-021` — категория приложения 16+ (по аналогии со Stoic), снимает открытый вопрос `PRODUCT.md` §9 для этой и будущих задач. Текст `PRODUCT.md` §9 не переписан в этой задаче — отдельный последующий шаг.
+- **Q3 — куда идёт результат:** только в чат. Ответ AI не сохраняется обратно в checkin/journal entry, data-contract записи (`journalEntryContract.js`) не тронут.
+- **Safety-слой (переиспользует фильтр MXL-009):** новый `src/lib/aiReframeSafety.js` — `AI_REFRAME_LEAD_MESSAGE` (синтетическое лид-сообщение с оговоркой «не диагноз, не замена специалиста», тот же приём, что «Дайджест от Следопыта» в `insightDigest.js` — ничего не уходит в backend) и `withSafetyNote()` — дополняет (не переписывает и не отбрасывает) ответ AI короткой оговоркой, если он задел diagnostic/causal/therapeutic regex-паттерн из `descriptiveInsights.js` (`UNSAFE_INSIGHT_PATTERNS`, экспортирован для переиспользования). Активируется только для этого хендоффа через новый `MENTOR_SAFETY_KEY` в `personas.js` → проп `withSafetyNotice` в `Mentalix.jsx` — обычные чаты (`openScout`/`openListener`/`deepenMorningNote`/вход через `PersonaPicker`) не затронуты.
+- **Не входит (по прямому ограничению владельца):** live-подсказка во время печати, новый backend endpoint, изменение тона/промптов существующих 3 AI-персон (имя/роль/description), задачи 6 и 9 (параллельные).
+- **Проверено:** `npm run check:core` — 144/144 unit, lint, build, docs:check (150 файлов, 45 canonical task ID) — PASS.
+- **Следующий шаг:** PR с этим диффом, ручной Telegram/iPhone gate — не мержится автоматически.
+
+## MXL-DOCS-STATUS-AUDIT-001 — Сверка TASKS.md/TASK_INDEX.md с фактическим состоянием main
+
+- **Статус: закрыто 29.08.2026.** По запросу владельца проведена сверка документации с `git log origin/main` и `gh pr list`; найдены и исправлены статус-тексты, называвшие уже смёрженные PR открытыми (MXL-006, MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001, MXL-THEME-ACCENT-001, MXL-DS-LABEL-FONT-001 и MXL-SERIES-001).
+- **Первоначальный диагноз ошибочен, исправлен по ходу работы:** merge PR #328/#325 сначала выглядел заблокированным правилом `require_extra_approval_for_unattributed_changes` — это предположение не подтвердилось. Реальная причина `mergeStateStatus: BLOCKED` на всех открытых PR — classic branch protection требовал status-context `Базовая проверка проекта` (`repos/.../branches/main/protection`), которого ни один workflow не публиковал с 28.08.2026 05:56 UTC: job `required-check` был случайно удалён коммитом `f844a7ee` («revert: restore main to 07:09 Preview state») вместе со всем `ci.yml` и не восстановлен при последующем воссоздании файла (`14a0e639`, `0acd1f3b`).
+- **PR #332** (`fix/restore-required-status-check`) — восстановил job `required-check`/`Базовая проверка проекта` в `.github/workflows/ci.yml`, идентично версии из `5ed850b0`. Смёржен squash-merge'ем **без `--admin`** — обычный merge прошёл сразу, подтвердив диагноз. После мерджа все 4 ожидавших PR перебазированы на новый `main`; у всех появился проходящий required-чек, `mergeStateStatus` перешёл в `CLEAN`/`UNSTABLE` (последнее — только из-за non-required Vercel-чеков, упирающихся в дневную квоту деплоев, не блокирует merge) — approve ни разу не понадобился.
+- **PR #328** (`docs/tasks-status-sync-2026-08-29`) — статус-тексты выше в этом файле и в `docs/TASK_INDEX.md`. Смёржен первым (squash, без `--admin`) — самый «базовый» докс-коммит, на формулировки которого частично опирались остальные три.
+- **PR #288** (`docs/canonical-agent-entrypoint`) — canonical entrypoint для агентов + фикс строки `MXL-SERIES-001` в `docs/TASK_INDEX.md` (была `ready after contract check`, задача уже закрыта PR #301). Смёржен вторым, без конфликтов с #288.
+- **PR #325** (`chore/mxl-product-strategy-issues`) — 5 discovery/needs-owner записей в `docs/TASK_INDEX.md` (`MXL-PRODUCT-STRATEGY-001`, `MXL-STARTER-SET-001`, `MXL-SELF-DISCOVERY-001`, `MXL-AI-ROLES-001`, `MXL-GUIDED-REFLECTION-001`). Смёржен третьим, без конфликтов с #288.
+- **PR #312** (`feat/web-auth-fallback-copy`) — 4-пунктовый ручной gate пройден полностью, static-review по коду и динамическая проверка на живом Telegram Preview (см. запись выше). Смёржен последним, без конфликтов (не трогает doc-файлы).
+- **Итог:** все 5 PR цикла (#332, #328, #288, #325, #312) смёржены обычным squash-merge, `--admin` не использовался ни разу.
+
+## MXL-FULLSCREEN-SURFACE-RACE-001 — Race condition в useFullscreenSurface
+
+- **Статус: verified 29.08.2026.** PR #327 (fix: устранить race
+  condition в useFullscreenSurface) squash-смёржен в `main`; два
+  temporary preview-деплоя развёрнуты и проверены в ходе ревью.
+- **Размер:** M.
+- **Summary:** Диагностика бага «Пропустить» на `MoodCheckGate` в
+  Telegram на iPhone выявила race condition: 19 fullscreen-экранов
+  независимо хранили собственные `useState` и
+  `onEvent('fullscreenChanged')`, а первый рендер первого
+  fullscreen-экрана холодного старта систематически читал
+  неподтверждённый `window.Telegram.WebApp.isFullscreen` как `false`
+  до начала negotiation. Из-за этого первый кадр рендерировался без
+  отступа под нативные Telegram fullscreen-controls.
+- **Фикс:** `src/lib/tgFullscreen.js` переведён на единый module-level
+  store, совместимый с `useSyncExternalStore`, с
+  `subscribeFullscreen`/`getFullscreenSnapshot`; negotiation
+  запускается лениво при первом реальном использовании и ровно один
+  раз за жизненный цикл страницы, включая защиту от StrictMode
+  double-invoke. До подтверждения Telegram используется pessimistic
+  default `true`, резервирующий `TG_CONTROLS_HEIGHT`; если событие не
+  пришло, через 2 секунды применяется fallback к фактическому
+  значению. Legacy API `initFullscreen(onChange)` сохранён как
+  обёртка, `src/App.jsx` не менялся.
+- **Потребители:** `src/lib/fullscreenSurface.js` использует
+  `useSyncExternalStore`; публичный контракт `{ style, tgFullscreen }`
+  не изменён, 19 потребителей (`AppLock.jsx`, `CheckIn.jsx`,
+  `MoodCheckGate.jsx` и остальные) не требовали изменений.
+- **Проверки:** добавлены 11 unit-тестов для pessimistic default,
+  событийного подтверждения, web-fallback, StrictMode-идемпотентности,
+  уведомления подписчиков, `ALREADY_FULLSCREEN`, fallback-таймера,
+  отсутствия `window`/DOM, отсутствия import side effects и legacy
+  API. `npm run test:unit` — 144/144, `lint`, `build`, `docs:check`,
+  `git diff --check` — PASS.
+- **Разблокировало:** `MXL-MOOD-CHECK-001`.
+- **Ссылка на фактическое описание:** CHANGES.md, раздел от
+  29.08.2026.
+
+## MXL-MOOD-CHECK-001 — Быстрый mood-check при запуске
+
+- **Статус: done 25.08.2026.** PR #182 (feat: быстрый mood-check при
+  запуске) squash-смёржен в `main`.
+- **Размер:** S.
+- **Summary:** Реализована идея 12 конкурентного анализа Stoic из
+  `ROADMAP.md`: opt-in-тумблер в Settings → «Быстрый mood-check» (по
+  умолчанию выключен). При включённой настройке, если за текущую дату
+  ещё нет чек-ина, после `AppLock` и до основного UI показывается
+  лёгкий гейт с той же шкалой настроения, что и в `CheckIn.jsx`;
+  пользователь может выбрать уровень одним тапом или нажать
+  «Пропустить». Оверлей не пишет напрямую в backend: выбранный уровень
+  сохраняется как session-драфт в `src/lib/moodCheckDraft.js` и
+  подхватывается `CheckIn.jsx` как prefill первого шага. Показ
+  ограничен одним разом в день по локальной дате через
+  `shouldOfferMoodCheck`/`markMoodCheckShown`, независимо от того,
+  дошёл ли пользователь до полноценного чек-ина.
+- **Pre-mortem / safeguards:** закрыты два риска — фиктивный чек-ин
+  предотвращён тем, что оверлей сохраняет только draft, а повторный
+  показ на каждом запуске предотвращён отдельной датой показа, не
+  связанной с состоянием чек-ина.
+- **Не входит:** изменение основного flow `CheckIn.jsx`, новые
+  backend-поля и миграции.
+- **Связанные изменения:** ошибка `api.checkin.today()` обрабатывается
+  отдельно в `MXL-MOOD-CHECK-ERROR-GUARD-001`: состояния `undefined`,
+  `error` и существующий объект не открывают гейт; он открывается
+  только при достоверном `null` (CHANGES.md).
+
+## MXL-FULLSCREEN-HEADER-NATIVE-001 — Нативный header для fullscreen-поверхностей
+
+- **Статус: needs-decision 29.08.2026.** Одна задача с двумя
+  последовательными независимыми частями; ветка и PR отсутствуют,
+  общий implementation scope ещё требует решения владельца.
+- **Размер:** M–L, уточнить после решений по обеим частям.
+- **Summary:** Объединяет два discovery/pre-mortem направления: узкий
+  структурный fullscreen-scope для `Conversation.jsx` и более широкий
+  анализ семантики header/back-навигации для 15 потребителей
+  `FULLSCREEN_HEADER_SLOT_CLASS`. Части независимы: их можно решать и
+  реализовывать в любом порядке, а решение по одной части не является
+  предусловием для другой.
+- **Часть 1 (2a/2b) — `Conversation.jsx`: portal/body-lock/клавиатура.**
+  Основание — `docs/archive/ui/mxl-ui-005-conversation-premortem.md`,
+  16.08.2026. Discovery выявил три связанные проблемы Telegram
+  fullscreen на iPhone: (1) сочетание открытой клавиатуры, скролла
+  истории и развёрнутого fullscreen может увести поле ввода за экран
+  или перекрыть его клавиатурой; (2) верхняя зона диалога может
+  перекрываться нативными Telegram controls из-за отсутствия
+  компенсации `TG_CONTROLS_HEIGHT`; (3) `body`-скролл может утекать за
+  пределы диалога.
+- **Часть 1 — предлагаемый scope 2a:** перенести fullscreen-поверхность
+  на `createPortal` и общий контракт
+  `FULLSCREEN_SHELL_CLASS`/`FULLSCREEN_HEADER_SLOT_CLASS`/`FULLSCREEN_SCROLL_CLASS`
+  с `useFullscreenSurface` для body-lock и `tgFullscreen`-offset. Второй
+  `fixed inset-0 z-[75]` overlay в 2a не включать.
+- **Часть 1 — открытые решения 2b:** отдельно решить, входит ли второй
+  overlay в контракт `useFullscreenSurface`; проверить, дублирует ли
+  собственный `visualViewport` listener с `scroll`/`viewportTop`
+  поведение хука, и удалить его только при подтверждённом дублировании
+  либо явно задокументировать необходимость. Backend/data changes и
+  voice input не входят без прямой связи с portal/body-lock.
+- **Часть 1 — manual gate:** на реальном iPhone в Telegram проверить в
+  сочетании (а) клавиатура + скролл истории + развёрнутый fullscreen,
+  (б) видимость и нажатие имени персоны и «Назад» под нативными
+  controls, (в) отсутствие body-scroll при свайпе внутри истории;
+  отдельно выполнить voice-input sanity-check. Шаг 2a должен быть одним
+  обратимым коммитом на отдельной ветке; при провале live-gate —
+  полный `git revert`.
+- **Часть 2 — BackButton-семантика для `CheckIn` и исключений.**
+  Основание — discovery/pre-mortem от 29.08.2026 о замене X/back на
+  нативный Telegram `BackButton` API. Анализ охватывает 15
+  потребителей `FULLSCREEN_HEADER_SLOT_CLASS`; ключевой риск находится
+  в `CheckIn`, где символы ← и X обозначают разные действия и не
+  должны автоматически сливаться в одну навигационную семантику.
+- **Часть 2 — вывод discovery:** массовая замена не нужна. `BackButton`
+  уже является адаптером для большинства обычных возвратов, а нативный
+  Telegram `BackButton` следует применять только там, где действие
+  действительно является возвратом по навигации. `CheckIn` и другие
+  исключения сначала требуют отдельного решения по семантике каждого
+  действия, после чего возможен точечный, а не механический rollout.
+- **Часть 2 — открытые решения:** подтвердить для `CheckIn`, что
+  означает ←, что означает X, какое действие должно вызывать нативный
+  Telegram `BackButton`, и какие fullscreen-потребители являются
+  исключениями. Не менять визуальный или навигационный контракт
+  массово до этого решения.
+- **Discovery links:** часть 1 — pre-mortem от 16.08.2026 по
+  `MXL-UI-005`; часть 2 — сегодняшний discovery/pre-mortem по Telegram
+  `BackButton` и 15 потребителям.
+
+## MXL-INSIGHTS-001 — Discovery note: descriptive pattern insights
+
+- **Статус:** research/docs-only, готово к решению владельца. Issue #297. Product code, backend, API и payment не менялись — задача строго в scope research/docs.
+- **Результат:** `docs/research/MXL-INSIGHTS-001_DESCRIPTIVE_PATTERN_INSIGHTS_DISCOVERY.md`.
+- **Ключевая находка:** прототип descriptive insights уже реализован и закрыт (`MXL-009`, PR #221) на двух поверхностях — карточки «Наблюдения» в «Тренды» и реплика «Следопыта» (`ROADMAP.md` §3, `deriveConclusions`/`insightDigest.js`), 6 типов правил с sample-size guards (`MIN_GROUP=3`, `MIN_CHECKINS=5`) и regex-фильтром против диагностических/причинных формулировок (`descriptiveInsights.js`). Открытый вопрос issue — не «строить ли прототип», а «измерять ли ценность»: сейчас ни usefulness, ни return intent не измеряются вообще, хотя готовая инфраструктура (`api.events.log`, паттерн «Полезно»/«Не полезно» из `Conversation.jsx`) для этого уже есть.
+- **Расхождение зафиксировано:** источник, процитированный в issue
+  (`docs/research/mentalix_competitive_analysis_execution_backlog_2026-08-28.md`),
+  в репозитории не существует — не подставлял похожий документ молча,
+  указал в самой discovery note (§1).
+- **Найденный технический пробел (не исправлялся, вне scope):**
+  `sanitizeObservations` (`trendsDataSanitizer.js`) не проверяет нижнюю
+  границу `sampleSize` у backend-присланных наблюдений — только клампит
+  диапазон `[0, 10000]`. Наблюдение с `sampleSize: 1` от backend прошло бы
+  без предупреждения. Актуально только если backend начнёт присылать
+  `data.observations` независимо от клиентского `deriveConclusions`.
+- **Не входит:** новые события/метрики, backend-контракт, изменение UI,
+  какое-либо продуктовое решение — документ описывает и предлагает меню
+  вариантов (§9 discovery note), не выбирает.
+- **Проверено:** `npm run docs:check` — зелёный (ссылки/task ID валидны).
+
 ## MXL-DS-LABEL-FONT-001 — вторичный шрифт Manrope для лейблов/эйбраузов
 
 - **Статус: смёржено 28.08.2026.** PR #287 (`feat/label-font-manrope-001-v2`
@@ -1920,6 +2121,26 @@ supported in version 6.0`, который тест-харнесс проекта
     что `preview-stop.ps1` снова не подтвердил удаление за 10 попыток —
     та же известная ненадёжность retry-verify, что и раньше в этой
     сессии).
+  - **Расширение 29.08.2026 — journal влит в датированную ленту.**
+    Изначальное сужение 26.08.2026 («Merge только checkin+бейджи, темы —
+    отдельным блоком») не рассматривало journal вообще — не забыто, а
+    просто не было тогда в scope обсуждения. Отдельный pre-mortem
+    (владелец: «полностью тебе доверяю» дан только на прошлый заход;
+    на это расширение — явные пошаговые ответы по каждому риску) показал:
+    в отличие от бейджей/тем, у journal есть дата (ключ local-хранилища),
+    поэтому честное слияние по датам возможно технически — единственные
+    риски были продуктовые (cross-device расхождение из-за local-only
+    журнала, пересечение с «Год пути»/`Path.jsx`), оба явно решены
+    владельцем: cross-device расхождение приемлемо, `Path.jsx` не
+    трогаем, разводим на отдельное решение.
+    `src/screens/History.jsx`: новый `datedItems` (`useMemo`, объединяет
+    существующие `days` и `journalEntries` по дате) заменил раздельные
+    датированную ленту `days` + недатированный блок «Локальный журнал»
+    ниже неё. Новый `JournalDayCard` — общий рендер journal-фрагмента дня,
+    используется и в карточке ленты, и в `HistoryDetail`. `milestonesBlock`/
+    `themeEntriesBlock` (бейджи/темы) не менялись — там уже принятое
+    26.08.2026 решение. `src/lib/journalHistory.js`, `src/lib/badges.js`,
+    `src/screens/Path.jsx` не менялись. `npm run check:core` — PASS.
 
 - [x] Онбординг v2 — финальная полировка и визуальные обновления (Issue #117;
       закрыто PR #161 и #162, живой gate пройден 24.08.2026)
@@ -3290,6 +3511,7 @@ entityType, entityId)`.
   - [ ] переход к Следопыту;
   - [ ] переход на следующий день;
   - [ ] сохранение и повторное открытие данных.
+  - PR #335 добавил automated gate; синхронизированы три test-only locator-а с текущим UI: direct-web заголовки, `Получить одноразовый код на email` и `Проверить одноразовый код`. Полный manual release gate остаётся незавершённым.
 
 - [x] **[L] MXL-011 — Финальный тест на реальном iPhone**
   - [ ] Telegram fullscreen;
@@ -4026,6 +4248,7 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Contract/regression harness (29.08.2026):** `tests/unit/contract-regression.test.mjs` (см. `docs/qa/CONTRACT-REGRESSION-HARNESS.md`) — entry schema/required fields, idempotent `dedupeEntries`, deterministic `readJournalEntries` ordering, timezone-policy invariants, malformed/legacy handling, единый outcome/reflection allowlist четырёх practice-логов и защита от пятого нерецензированного, отсутствие фиктивных backend-эндпоинтов и отсутствие journal/practice текста в AI/Telegram payload. Подключён к существующему `npm run test:unit` без изменений `package.json`. После мерджа этого PR (последний из четырёх) — 11/11 pass, 0 skip.
 - **Проверено локально:** до финального commit выполнены `npm run test:unit` 31/31, `npm run lint`, `npm run build`, `npm run ux:check`, `git diff --check` — PASS. Визуальные кадры и граница проверки сохранены в `docs/testing/MXL-JOURNAL-PERSISTENCE-001_VERIFICATION.md`; финальный `docs:check` выполняется в составе commit-gate.
 - **Следующий gate:** ручная проверка владельцем на реальном iPhone внутри Telegram: `Практики → Журнал → Начать → 4 фазы → Цикл сохранён → Вернуться к практикам → Журнал → Открыть запись`; дополнительно проверить Back, legacy-prompt (если применимо) и keyboard/safe area. До неё slice не называть полностью принятым для production.
+- **Owner-ready decision memo (29.08.2026):** `docs/product/MXL-JOURNAL-OWNER-DECISION-MEMO.md` фиксирует рекомендуемый минимальный local-first публичный scope, explicit local-only promise, privacy/AI consent boundaries, backend contract gates и отложенные функции. Memo является материалом для решения владельца, а не утверждением cloud sync или production approval.
 - **Нужно решить/зафиксировать до следующих подэтапов:** entry ID, server schema, calendar day/timezone в backend (frontend-часть централизована `MXL-date-policy`, server policy остаётся placeholder), edit/delete across devices, sync conflicts, offline behavior, export и retention.
 - **Не входит:** копирование Stoic storage, media attachments, AI отправка по умолчанию, backend endpoint, cloud sync или обещание кросс-девайсного journal sync.
 - **Готово для всего эпика, когда:** запись можно начать, продолжить, сохранить, изменить, удалить и восстановить после повторного входа с понятным ownership данных.
@@ -4115,6 +4338,13 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 - **Не входит:** backend schema, новые endpoints, восстановление пропущенных дней, управление streak — серия считается только по доступной 90-дневной истории check-in.
 - **Проверено:** `npm run check:core` (91/91 на момент PR), `npm run ux:check` (3/3), `git diff --check` — PASS.
 
+## MXL-STREAK-TIERS-001 — Именованные уровни текущей серии
+
+- **Статус: verified/completed.** Фактическое закрытие подтверждено через [PR #196](https://github.com/Smira31/Mentalix/pull/196), `feat: именованные уровни серии (MXL-STREAK-TIERS-001)`, squash-merged в `main` коммитом `e46828df` 26.08.2026.
+- **Что сделано:** добавлены именованные уровни текущего check-in streak; уровень считается от доступной серии на лету и не является постоянным достижением.
+- **Не входит:** новая reward-система, восстановление пропущенных дней, payment, reminders, cloud/backend schema и объединение badge-событий с History.
+- **Статусная сверка:** задача 10 очереди «Обновление 25.08.2026» в `ROADMAP.md` ранее оставалась без отдельной verified-записи, но фактическая реализация и merge PR #196 уже существуют в `origin/main`.
+
 ## MXL-VISUAL-RULES-LIBRARY-001 — Единый visual rules handoff
 
 - **Статус:** docs-only, зафиксировано 29.08.2026. Закрывает Issue #105.
@@ -4137,36 +4367,5 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 Статус: реализовано в PR #241 на ветке `feat/mxl-home-quiet-type-001`; исходный Home/type slice и follow-up MXL-HOME-QUIET-V2-002 подготовлены к merge. Today перестроен так, чтобы главный hero-блок был первым фокусом перед вторичными секциями; пользовательские `Georgia`, `Times New Roman` и `Manrope` overrides заменены на единый Onest baseline.
 
 Follow-up MXL-HOME-QUIET-V2-002 добавляет 10px воздуха после последнего контента перед fixed-навигацией и делает active-состояние CTA различимым через спокойное изменение поверхности и внутренний контур. Добавлен regression-контракт в `tests/unit/maintenance-contracts.test.mjs`. Design note: `docs/product/MXL-HOME-TYPE-FOUNDATION-001_DESIGN.md`.
-
-## MXL-MOOD-CHECK-001 — Быстрый mood-check при запуске
-
-- **Статус: закрыто 25.08.2026.** PR #182 squash-смёржен в `main`.
-- **Размер:** S.
-- **Что сделано:** идея 12 конкурентного анализа Stoic (`ROADMAP.md`). Opt-in-тумблер в Settings → «Быстрый mood-check» (дефолт выключен). Когда включён и на сегодня ещё нет чек-ина — при запуске (после `AppLock`, до основного UI) показывается лёгкий гейт с той же шкалой настроения, что и в `CheckIn.jsx`: один тап или «Пропустить». Оверлей никогда не пишет напрямую в бэкенд — выбранный уровень сохраняется как session-черновик (`src/lib/moodCheckDraft.js`) и подхватывается `CheckIn.jsx` как prefill первого шага. Показывается не чаще одного раза в день (локальная дата-метка `shouldOfferMoodCheck`/`markMoodCheckShown`), независимо от того, дошёл ли пользователь до настоящего чек-ина.
-- **Pre-mortem:** два риска закрыты до/во время реализации — фиктивный чек-ин (митигация: оверлей не пишет на бэкенд, только draft) и повтор гейта на каждом запуске (митигация: дата-метка отдельно от состояния чек-ина).
-- **Не входит:** изменение самого `CheckIn.jsx`-флоу, новые бэкенд-поля/миграции.
-
-## MXL-FULLSCREEN-SURFACE-RACE-001 — Race condition в useFullscreenSurface
-
-- **Статус: закрыто 29.08.2026.** PR #327 squash-смёржен в `main`.
-- **Размер:** M.
-- **Причина:** диагностика бага «кнопка "Пропустить" не работает на `MoodCheckGate` в Telegram на iPhone» показала race condition в `useFullscreenSurface()` — 19 fullscreen-экранов независимо держали свой `useState`+`onEvent('fullscreenChanged')`, и первый рендер первого fullscreen-экрана холодного старта (систематически `MoodCheckGate`) синхронно читал ещё не подтверждённый `window.Telegram.WebApp.isFullscreen` как `false` до старта negotiation — кнопка на первом кадре рендерилась без отступа под нативные Telegram fullscreen-controls.
-- **Фикс:** `src/lib/tgFullscreen.js` — единый module-level `useSyncExternalStore`-совместимый store вместо N независимых копий negotiation; pessimistic default (`true` до подтверждения Telegram) вместо `false`; 2с fallback-таймаут для клиентов без поддержки negotiation. `src/lib/fullscreenSurface.js` переведён на `useSyncExternalStore`, публичный контракт (`{ style, tgFullscreen }`) не изменился — 19 потребителей не тронуты. 11 новых unit-тестов (`tests/unit/tg-fullscreen-store.test.mjs`).
-- **Разблокировало:** `MXL-MOOD-CHECK-001`.
-
-## MXL-FULLSCREEN-HEADER-NATIVE-001 — Нативный header для fullscreen-поверхностей
-
-- **Статус: черновик, не начата.** Нет ветки, PR или согласованного scope на 29.08.2026.
-
-## MXL-DOCS-STATUS-AUDIT-001 — Сверка TASKS.md/TASK_INDEX.md с фактическим состоянием main
-
-- **Статус: закрыто 29.08.2026.** По запросу владельца проведена сверка документации с `git log origin/main` и `gh pr list`; найдены и исправлены статус-тексты, называвшие уже смёрженные PR открытыми (MXL-006, MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001, MXL-THEME-ACCENT-001, MXL-DS-LABEL-FONT-001 и MXL-SERIES-001).
-- **Первоначальный диагноз ошибочен, исправлен по ходу работы:** merge PR #328/#325 сначала выглядел заблокированным правилом `require_extra_approval_for_unattributed_changes` — это предположение не подтвердилось. Реальная причина `mergeStateStatus: BLOCKED` на всех открытых PR — classic branch protection требовал status-context `Базовая проверка проекта` (`repos/.../branches/main/protection`), которого ни один workflow не публиковал с 28.08.2026 05:56 UTC: job `required-check` был случайно удалён коммитом `f844a7ee` («revert: restore main to 07:09 Preview state») вместе со всем `ci.yml` и не восстановлен при последующем воссоздании файла (`14a0e639`, `0acd1f3b`).
-- **PR #332** (`fix/restore-required-status-check`) — восстановил job `required-check`/`Базовая проверка проекта` в `.github/workflows/ci.yml`, идентично версии из `5ed850b0`. Смёржен squash-merge'ем **без `--admin`** — обычный merge прошёл сразу, подтвердив диагноз. После мерджа все 4 ожидавших PR перебазированы на новый `main`; у всех появился проходящий required-чек, `mergeStateStatus` перешёл в `CLEAN`/`UNSTABLE` (последнее — только из-за non-required Vercel-чеков, упирающихся в дневную квоту деплоев, не блокирует merge) — approve ни разу не понадобился.
-- **PR #328** (`docs/tasks-status-sync-2026-08-29`) — статус-тексты выше в этом файле и в `docs/TASK_INDEX.md`. Смёржен первым (squash, без `--admin`) — самый «базовый» докс-коммит, на формулировки которого частично опирались остальные три.
-- **PR #288** (`docs/canonical-agent-entrypoint`) — canonical entrypoint для агентов + фикс строки `MXL-SERIES-001` в `docs/TASK_INDEX.md` (была `ready after contract check`, задача уже закрыта PR #301). Смёржен вторым, без конфликтов с #328.
-- **PR #325** (`chore/mxl-product-strategy-issues`) — 5 discovery/needs-owner записей в `docs/TASK_INDEX.md` (`MXL-PRODUCT-STRATEGY-001`, `MXL-STARTER-SET-001`, `MXL-SELF-DISCOVERY-001`, `MXL-AI-ROLES-001`, `MXL-GUIDED-REFLECTION-001`). Смёржен третьим, без конфликтов с #288.
-- **PR #312** (`feat/web-auth-fallback-copy`) — 4-пунктовый ручной gate пройден полностью, static-review по коду и динамическая проверка на живом Telegram Preview (см. запись выше). Смёржен последним, без конфликтов (не трогает doc-файлы).
-- **Итог:** все 5 PR цикла (#332, #328, #288, #325, #312) смёржены обычным squash-merge, `--admin` не использовался ни разу.
 
 Scope не включает backend, cloud sync, AI consent, новую вкладку, proprietary Stoic assets, tags, search или изменение смысла существующих flows. CI/Vercel и повторный Telegram/iPhone gate пройдены; следующий decision gate — merge PR #241 в `main`.

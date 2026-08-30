@@ -219,8 +219,8 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
           centered
           description={
             <>
-              Пять минут, чтобы найти одно простое действие и просто начать — без давления сделать
-              всё сразу.
+              Пять минут, чтобы найти одно простое действие и начать — без давления сделать всё
+              сразу.
               <span className="mt-3 block text-[12px] font-semibold text-faint">
                 5 минут&nbsp;&nbsp;·&nbsp;&nbsp;5 шагов
               </span>
@@ -230,9 +230,10 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
           <button
             type="button"
             onClick={startPractice}
+            aria-label="Начать"
             className="cta-pill w-full text-[14px] px-6 py-4"
           >
-            Начать
+            Найти первый шаг
           </button>
         </SceneLayout>
       )}
@@ -304,7 +305,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
             onClick={onClose}
             className="practice-scene__cta cta-pill w-full text-[14px] px-6 py-3.5"
           >
-            Хорошо
+            Вернуться позже
           </button>
         </SceneLayout>
       )}
@@ -382,7 +383,14 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
           label="Первый шаг"
           title={COMPLETION_COPY[outcome]?.title}
           centered
-          description={COMPLETION_COPY[outcome]?.description}
+          description={
+            <>
+              {COMPLETION_COPY[outcome]?.description}
+              {plan && (
+                <span className="mt-3 block text-[12px] text-faint">Следующий шаг: {plan}</span>
+              )}
+            </>
+          }
         >
           <p className="mt-2 text-center text-[12px] font-semibold text-muted">Помогло сейчас?</p>
           <div className="first-step-feedback">
@@ -414,9 +422,10 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
           <button
             type="button"
             onClick={finish}
+            aria-label="Завершить"
             className="practice-scene__cta cta-pill w-full text-[14px] px-6 py-3.5"
           >
-            Завершить
+            Продолжить в Сегодня
           </button>
         </SceneLayout>
       )}

@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного backlog** на 27.08.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Stoic-inspired product baseline зафиксирован в [`PRODUCT.md`](../PRODUCT.md), но новые safety, backend и коммерческие решения по-прежнему требуют отдельного подтверждения.
+Статус индекса: каноническое представление **активного backlog** на 29.08.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Stoic-inspired product baseline зафиксирован в [`PRODUCT.md`](../PRODUCT.md), но новые safety, backend и коммерческие решения по-прежнему требуют отдельного подтверждения.
 
 ## Как читать индекс
 
@@ -33,7 +33,7 @@
 | `MXL-020` | ? | product/payment | deferred | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
 | `MXL-LOOP-001` | L | product/UX/research | ready | manual-gate | Проверить полный loop Today → practice → next action → evening review → return; связующая задача для #122/#123 |
 | `MXL-PRACTICE-UX-001` | M | product/UX/content | backlog | needs-owner | Унифицировать четыре problem-led practice по шаблону problem → steps → measurable action → completion |
-| `MXL-INSIGHTS-001` | M | product/data/UX | discovery | backend-dependent + needs-owner | Проверить descriptive pattern insights после unified history |
+| `MXL-INSIGHTS-001` | M | product/data/UX | discovery-ready | needs-owner | Discovery note готов (Issue #297); владелец решает, какие метрики usefulness/return intent заводить первыми |
 | `MXL-WTP-001` | M | product/research/payment | discovery | needs-owner | Fake-door/concept test платных outputs без checkout после подтверждения free loop |
 | `MXL-JOURNAL-PERSISTENCE-001` | XL | product/backend | in progress | local-first now; backend-dependent later | User-scoped versioned local storage, draft/final и explicit legacy migration реализованы; cloud sync остаётся отдельным backend gate |
 | `MXL-JOURNAL-HISTORY-001` | L | product/backend/UX | backlog | backend-dependent | Объединить датированную историю после persistence |
@@ -46,13 +46,13 @@
 
 ## Новые owner-decision гипотезы — 29.08.2026
 
-| ID | Размер | Тип | Статус | Автономность | Следующий шаг |
-| --- | ---: | --- | --- | --- | --- |
-| [`MXL-PRODUCT-STRATEGY-001`](https://github.com/Smira31/Mentalix/issues/320) | M | product/research | discovery | needs-owner | Выбрать Scope A (Starter Set) или Scope B (+ «Разобраться сейчас»); не выбирать P0 автоматически |
-| [`MXL-STARTER-SET-001`](https://github.com/Smira31/Mentalix/issues/321) | M | product/UX/content | discovery | needs-owner + manual-gate | Проверить мягкий onboarding, добровольность аскез и выполнение первого шага |
-| [`MXL-SELF-DISCOVERY-001`](https://github.com/Smira31/Mentalix/issues/322) | M | product/UX/content | discovery | needs-owner + backend-dependent | Согласовать guided flow и границы AI-разбора поверх существующих Journal-задач |
-| [`MXL-AI-ROLES-001`](https://github.com/Smira31/Mentalix/issues/323) | M | product/research/safety | discovery | needs-owner + manual-gate | Утвердить naming и role playbooks; не менять текущих AI-персон автоматически |
-| [`MXL-GUIDED-REFLECTION-001`](https://github.com/Smira31/Mentalix/issues/324) | M | product/research/safety | blocked | needs-owner + manual-gate + backend-dependent | Провести safety-review; до решения не реализовывать «режим терапии» и medical claims |
+| ID                                                                            | Размер | Тип                     | Статус    | Автономность                                  | Следующий шаг                                                                                    |
+| ----------------------------------------------------------------------------- | -----: | ----------------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [`MXL-PRODUCT-STRATEGY-001`](https://github.com/Smira31/Mentalix/issues/320)  |      M | product/research        | discovery | needs-owner                                   | Выбрать Scope A (Starter Set) или Scope B (+ «Разобраться сейчас»); не выбирать P0 автоматически |
+| [`MXL-STARTER-SET-001`](https://github.com/Smira31/Mentalix/issues/321)       |      M | product/UX/content      | discovery | needs-owner + manual-gate                     | Проверить мягкий onboarding, добровольность аскез и выполнение первого шага                      |
+| [`MXL-SELF-DISCOVERY-001`](https://github.com/Smira31/Mentalix/issues/322)    |      M | product/UX/content      | discovery | needs-owner + backend-dependent               | Согласовать guided flow и границы AI-разбора поверх существующих Journal-задач                   |
+| [`MXL-AI-ROLES-001`](https://github.com/Smira31/Mentalix/issues/323)          |      M | product/research/safety | discovery | needs-owner + manual-gate                     | Утвердить naming и role playbooks; не менять текущих AI-персон автоматически                     |
+| [`MXL-GUIDED-REFLECTION-001`](https://github.com/Smira31/Mentalix/issues/324) |      M | product/research/safety | blocked   | needs-owner + manual-gate + backend-dependent | Провести safety-review; до решения не реализовывать «режим терапии» и medical claims             |
 
 ## Автономная очередь
 
@@ -103,4 +103,7 @@
 
 Канонический порядок текущего цикла: `MXL-GIT-SYNC-001` → `MXL-TYPO-001` → `MXL-UI-AUDIT-001` → `MXL-DESIGN-STOIC-001`. Агент не объявляет задачу закрытой только по результату сборки: требуются целевая проверка, evidence, обновлённый handoff и соблюдение manual gate, если он предусмотрен.
 
-| `MXL-SERIES-001` | product/UX | verified/completed | [#299](https://github.com/Smira31/Mentalix/issues/299) | Закрыта через PR #301; Today streak flame и Series & Badges опубликованы |
+| ID                     | Тип        | Статус             | GitHub                                                 | Следующий шаг                                                            |
+| ---------------------- | ---------- | ------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `MXL-SERIES-001`       | product/UX | verified/completed | [#299](https://github.com/Smira31/Mentalix/issues/299) | Закрыта через PR #301; Today streak flame и Series & Badges опубликованы |
+| `MXL-STREAK-TIERS-001` | product/UX | verified/completed | [#196](https://github.com/Smira31/Mentalix/pull/196)   | Закрыта через PR #196; именованные уровни текущей серии опубликованы     |
