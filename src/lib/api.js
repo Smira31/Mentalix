@@ -11,10 +11,15 @@ const BASE = '/api'
  * отдельных эндпоинтов, когда появится проверка подписи. Backend её пока
  * не проверяет (см. TASKS.md/CHANGES.md) — заголовок сам по себе от подмены
  * user_id не защищает, это только фронтенд-часть контракта.
+ * Для web-клиента дополнительно передаём web_user_id отдельным заголовком:
+ * backend проверяет его server-side через WebUser.linked_telegram_id.
  */
 function authHeader() {
   const initData = platform.getInitData?.()
-  return initData ? { Authorization: `tma ${initData}` } : {}
+  if (initData) return { Authorization: `tma ${initData}` }
+
+  const webUserId = platform.getUser?.()?.web_user_id
+  return webUserId ? { 'X-Web-User-ID': String(webUserId) } : {}
 }
 
 async function download(path, filename) {
