@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-297: descriptive insight guards утверждены (#379)
+
+- `docs/research/MXL-297_DESCRIPTIVE_INSIGHT_GUARDS.md` — пороги 7/14 наблюдений и запрет causality-языка утверждены владельцем; показ insights пользователю разрешён уже сейчас, контракт не блокирует его до реализации Journal history (#310) (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #379, CI green.
+
 ## 30.08.2026 — MXL-298: willingness-to-pay experiment protocol утверждён (#378)
 
 - `docs/research/MXL-298_WTP_EXPERIMENT_PROTOCOL.md` — fake-door concept-test всех трёх платных концепций утверждён владельцем как есть, без сокращения до одной (см. `docs/core/PRODUCT_DECISIONS.md`, «Обновление 30.08.2026»). PR #378, CI green.
