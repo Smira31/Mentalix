@@ -103,12 +103,11 @@ function JournalIntro({ completed, legacyVisible, onStart, onMigrate, onDismissL
       label="Журнал"
       title={title}
       description={description}
-      centered
       verticallyCentered
       showGlyph={false}
       className="journal-flow__intro"
     >
-      <div className="mx-auto mt-8 flex h-[96px] w-[96px] items-center justify-center rounded-[32px] border border-gold/25 bg-gold/[0.06] text-gold">
+      <div className="mt-8 flex h-[96px] w-[96px] items-center justify-center rounded-[32px] border border-gold/25 bg-gold/[0.06] text-gold">
         <BookOpen size={40} strokeWidth={1.45} aria-hidden="true" />
       </div>
       {legacyVisible && (
@@ -133,7 +132,7 @@ function JournalIntro({ completed, legacyVisible, onStart, onMigrate, onDismissL
           </div>
         </div>
       )}
-      <p className="mt-7 text-center text-[12px] font-semibold text-faint">
+      <p className="mt-7 text-[12px] font-semibold text-faint">
         4 коротких шага&nbsp;&nbsp;·&nbsp;&nbsp;без спешки
       </p>
       <button
@@ -154,17 +153,14 @@ function JournalComplete({ onClose, onOpen }) {
       label="Журнал"
       title="Цикл сохранён"
       description="Идея, действие, анализ и следующий шаг останутся в твоём журнале на этом устройстве."
-      centered
       verticallyCentered
       showGlyph={false}
       className="journal-flow__complete"
     >
-      <div className="mx-auto mt-8 flex h-[96px] w-[96px] items-center justify-center rounded-[32px] border border-gold/30 bg-gold/[0.08] text-gold">
+      <div className="mt-8 flex h-[96px] w-[96px] items-center justify-center rounded-[32px] border border-gold/30 bg-gold/[0.08] text-gold">
         <Check size={44} strokeWidth={1.7} aria-hidden="true" />
       </div>
-      <p className="mt-7 text-center text-[12px] font-semibold text-faint">
-        4 из 4 шагов сохранены
-      </p>
+      <p className="mt-7 text-[12px] font-semibold text-faint">4 из 4 шагов сохранены</p>
       <button
         type="button"
         onClick={onClose}
@@ -175,7 +171,7 @@ function JournalComplete({ onClose, onOpen }) {
       <button
         type="button"
         onClick={onOpen}
-        className="mx-auto mt-3 flex min-h-11 items-center gap-2 px-3 text-[13px] font-semibold text-muted active:text-gold"
+        className="mr-auto mt-3 flex min-h-11 items-center gap-2 px-3 text-[13px] font-semibold text-muted active:text-gold"
       >
         <PencilLine size={16} strokeWidth={1.8} />
         Открыть запись

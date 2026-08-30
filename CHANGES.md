@@ -1,59 +1,5 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
-
-- `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
-- Целевые backend-тесты: 25 passed.
-
-## 30.08.2026 — MXL-010: dependency hygiene по npm audit (#357)
-
-- `vite` обновлён с 5.4.11 до 5.4.21, `postcss` — с 8.4.47 до 8.5.26; lockfile пересоздан npm.
-- `npm audit --omit=dev` показывает 0 уязвимостей для production-зависимостей. Оставшиеся 2 advisory относятся к `vite`/`esbuild`, которые являются dev-only инструментами сборки и не входят в production runtime; исправление требует major-upgrade Vite 8 и отдельной проверки совместимости.
-- `npm run check:core` — 148 unit-тестов passed, lint, build и docs:check passed.
-
-## 30.08.2026 — MXL-UI-AUDIT-001: автоматизированный аудит ключевых сценариев (#291)
-
-- На чистом `main` пройдены `npm run check:core` (148 unit-тестов, lint, build, docs:check) и `npm run ux:check` (4/4 Playwright smoke-теста).
-- Проверены доступные в sandbox сценарии основного маршрута, Mentor PersonaPicker, History с local Journal и прямой web-ссылки с OTP recovery.
-- Ограничение: реальный Telegram/iPhone flow, production-аккаунт и физическое устройство в этом аудите не проверялись; product decisions и ранее зафиксированные manual gates не выдаются за PASS.
-
-## 30.08.2026 — MXL-API-RESILIENCE-001: timeout/retry/normalized errors (#354)
-
-- `src/lib/api.js` добавляет bounded timeout, нормализованный `ApiError` и один retry только для безопасных GET/HEAD/OPTIONS при transient network/5xx/408/425/429 ошибках; mutation-запросы не ретраятся.
-- Добавлен regression contract test; `npm run check:core` — 151 unit-тест passed, lint/build/docs:check passed.
-
-## 30.08.2026 — MXL-010: contextual Bot ↔ Mini App deep links (#121)
-
-- `App.jsx` принимает allowlisted `action=checkin|evening` и передаёт его в существующий Today → Check-in flow; `action=breathing` сохраняет прежний Practices handoff.
-- `Today.jsx` открывает существующий Check-in с режимом `evening` для `action=evening`; произвольные action-параметры не открывают экраны.
-- Добавлен frontend regression-тест contextual action contract. `npm run check:core` — 150 unit-тестов passed, lint/build/docs:check passed.
-- Полный end-to-end Telegram/iPhone gate в sandbox не выполнялся; требуется ручная проверка владельцем.
-=======
-## 30.08.2026 — MXL-STARTER-SET-001: starter-set decision artifact (#321)
-
-- Добавлен research artifact для контекстного starter set: 3–5 контекстов, лёгкие версии, добровольность, один главный шаг, evening review и измеримые concept-test критерии. Product code, backend, платежи и AI-персоны не менялись; owner decision и manual gate обязательны.
->>>>>>> origin/research/issue-321-starter-set
-=======
-## 30.08.2026 — MXL-AI-ROLES-001: role contract and playbook draft (#323)
-
-- Добавлен research draft для ролей Ясность/Компас/Шаг: сценарии, границы, Telegram → Mini App handoff, safety и evaluation. Production AI, backend и память не менялись; owner approval и manual gate обязательны.
->>>>>>> origin/research/issue-323-role-playbook
-=======
-## 30.08.2026 — MXL-GUIDED-REFLECTION-001: safety review artifact (#324)
-
-- Добавлен bounded safety-review checklist для «Сессии ясности»: stop conditions, crisis/escalation boundaries, consent/privacy gates и red-team сценарии. Production AI и backend не менялись; owner approval и manual Telegram/iPhone gate обязательны.
->>>>>>> origin/research/issue-324-safety-review
-=======
-## 30.08.2026 — MXL-AI-TELEGRAM-LOOP-001: daily-cycle research contract (#326)
-
-- Добавлена research-спецификация ролей, cadence, opt-in/quiet hours, contextual handoff, метрик и safety-границ. Production AI, scheduler и backend не менялись; owner decision и Telegram/iPhone gate остаются обязательными.
->>>>>>> origin/research/issue-326-daily-loop
-=======
 ## 30.08.2026 — MXL-246: Journal keyboard-safe action group на tablet/desktop
 
 - Проблема: `JournalTextarea` с `floatingToolbar` закреплял action group
@@ -98,7 +44,51 @@ md:pb-4"` в `JournalFlow.jsx` откачен обратно к `"pb-24"` (бы�
   (текущий constrained single-column max-w-md уже соответствует
   acceptance criteria issue) и ручная Telegram/iPhone проверка — веб
   viewport-тесты не требуют реального устройства.
->>>>>>> origin/feat/246-journal-tablet-desktop
+
+## 30.08.2026 — MXL-WEB-LINKED-WRITE-001: backend mapping для linked web-аккаунта
+
+- `src/lib/api.js` передаёт `X-Web-User-ID` для web-запросов; backend PR в `mentalix-bot` проверяет server-side соответствие `WebUser.id → linked_telegram_id`, не ослабляя Telegram-подпись для обычных Telegram-запросов.
+- Целевые backend-тесты: 25 passed.
+
+## 30.08.2026 — MXL-010: dependency hygiene по npm audit (#357)
+
+- `vite` обновлён с 5.4.11 до 5.4.21, `postcss` — с 8.4.47 до 8.5.26; lockfile пересоздан npm.
+- `npm audit --omit=dev` показывает 0 уязвимостей для production-зависимостей. Оставшиеся 2 advisory относятся к `vite`/`esbuild`, которые являются dev-only инструментами сборки и не входят в production runtime; исправление требует major-upgrade Vite 8 и отдельной проверки совместимости.
+- `npm run check:core` — 148 unit-тестов passed, lint, build и docs:check passed.
+
+## 30.08.2026 — MXL-UI-AUDIT-001: автоматизированный аудит ключевых сценариев (#291)
+
+- На чистом `main` пройдены `npm run check:core` (148 unit-тестов, lint, build, docs:check) и `npm run ux:check` (4/4 Playwright smoke-теста).
+- Проверены доступные в sandbox сценарии основного маршрута, Mentor PersonaPicker, History с local Journal и прямой web-ссылки с OTP recovery.
+- Ограничение: реальный Telegram/iPhone flow, production-аккаунт и физическое устройство в этом аудите не проверялись; product decisions и ранее зафиксированные manual gates не выдаются за PASS.
+
+## 30.08.2026 — MXL-010: contextual Bot ↔ Mini App deep links (#121)
+
+- `App.jsx` принимает allowlisted `action=checkin|evening` и передаёт его в существующий Today → Check-in flow; `action=breathing` сохраняет прежний Practices handoff.
+- `Today.jsx` открывает существующий Check-in с режимом `evening` для `action=evening`; произвольные action-параметры не открывают экраны.
+- Добавлен frontend regression-тест contextual action contract. `npm run check:core` — 150 unit-тестов passed, lint/build/docs:check passed.
+- Полный end-to-end Telegram/iPhone gate в sandbox не выполнялся; требуется ручная проверка владельцем.
+
+## 30.08.2026 — MXL-API-RESILIENCE-001: timeout/retry/normalized errors (#354)
+
+- `src/lib/api.js` добавляет bounded timeout, нормализованный `ApiError` и один retry только для безопасных GET/HEAD/OPTIONS при transient network/5xx/408/425/429 ошибках; mutation-запросы не ретраятся.
+- Добавлен regression contract test; `npm run check:core` — 151 unit-тест passed, lint/build/docs:check passed.
+
+## 30.08.2026 — MXL-STARTER-SET-001: starter-set decision artifact (#321)
+
+- Добавлен research artifact для контекстного starter set: 3–5 контекстов, лёгкие версии, добровольность, один главный шаг, evening review и измеримые concept-test критерии. Product code, backend, платежи и AI-персоны не менялись; owner decision и manual gate обязательны.
+
+## 30.08.2026 — MXL-AI-ROLES-001: role contract and playbook draft (#323)
+
+- Добавлен research draft для ролей Ясность/Компас/Шаг: сценарии, границы, Telegram → Mini App handoff, safety и evaluation. Production AI, backend и память не менялись; owner approval и manual gate обязательны.
+
+## 30.08.2026 — MXL-GUIDED-REFLECTION-001: safety review artifact (#324)
+
+- Добавлен bounded safety-review checklist для «Сессии ясности»: stop conditions, crisis/escalation boundaries, consent/privacy gates и red-team сценарии. Production AI и backend не менялись; owner approval и manual Telegram/iPhone gate обязательны.
+
+## 30.08.2026 — MXL-AI-TELEGRAM-LOOP-001: daily-cycle research contract (#326)
+
+- Добавлена research-спецификация ролей, cadence, opt-in/quiet hours, contextual handoff, метрик и safety-границ. Production AI, scheduler и backend не менялись; owner decision и Telegram/iPhone gate остаются обязательными.
 
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
