@@ -361,10 +361,12 @@ export default function App() {
   const initialAction = searchParams.get('action')
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
   const actionTab = initialAction === 'breathing' ? 'practices' : 'today'
+  const initialTodaySub =
+    initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
 
-  // Разрешён только один известный deep-link. Остальные query-параметры не
+  // Разрешены только известные contextual deep-links. Остальные query-параметры не
   // меняют состояние приложения и не могут открыть произвольный экран.
   const [practicesSub, setPracticesSub] = useState(
     initialAction === 'breathing' ? 'breathing' : null
@@ -1123,6 +1125,7 @@ export default function App() {
                   <Today
                     user={user}
                     onOpenPractice={openPractice}
+                    initialSub={initialTodaySub}
                     onGoMentor={goMentor}
                     onFlowChange={setTodayFlowOpen}
                     onOpenSettings={() => setOverlay('settings')}
