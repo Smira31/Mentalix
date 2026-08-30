@@ -10,7 +10,7 @@
 - **#376 (issue #322, guided self-discovery flow).** Flow «Context → Evidence → Pattern → Experiment → Review» утверждён как фича в разработку. Ограничение принято: на первом этапе — без backend и без persistent memory.
 - **#378 (issue #298, willingness-to-pay experiment protocol).** Fake-door/concept-test **всех трёх** платных концепций (extended track, personal pattern summary, explicit AI deepen) утверждён как есть, на реальных пользователях, без сокращения до одной концепции.
 - **#379 (issue #297, descriptive insight guards).** Guard-контракт утверждён: минимум 7 наблюдений для простого descriptive count, минимум 14 для subgroup-заявлений, запрет causality-языка. Показ insights пользователю **разрешён уже сейчас** — контракт не блокирует показ до реализации Journal history (issue #310); ограничения guard-контракта действуют независимо от готовности #310.
-- **#390 (issue #290, typography audit contract).** Маппинг шрифтов **Onest (body/headings/inputs) / Manrope (label/eyebrow)** утверждён. **Открытый пункт:** сам код типографики лежит в отдельной, не синхронизированной с `main` feature-ветке — эту ветку предстоит найти и свести с принятым контрактом отдельной задачей; сведение веток в это обновление не входит.
+- **#390 (issue #290, typography audit contract).** Маппинг шрифтов **Onest (body/headings/inputs) / Manrope (label/eyebrow)** утверждён и реализован в `main`. Контракт-тест проверяет, что `font-label` используется только для label/eyebrow и не проникает в body, headings, buttons или inputs.
 
 ## MXL-DEC-001 — Организовать методологию вокруг проблем пользователя
 

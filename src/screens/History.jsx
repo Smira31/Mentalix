@@ -5,6 +5,7 @@ import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { readJournalHistory } from '../lib/journalHistory'
+import { oneOffPracticesByDay, oneOffPracticeNamesForDay } from '../lib/oneOffPracticeHistory'
 import JourneySearch from './JourneySearch'
 import { platform, platformName } from '../platform'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './mentalix/personas'
@@ -72,6 +73,27 @@ function JournalDayCard({ entry }) {
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function OneOffPracticeDayCard({ entries }) {
+  const names = oneOffPracticeNamesForDay(entries)
+  if (names.length === 0) return null
+
+  return (
+    <div data-testid="one-off-practice-history" className="mt-3 border-t border-cream/10 pt-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[12px] font-semibold text-muted">Разовые практики</span>
+        <span className="rounded-full bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
+          {names.length} выполнено
+        </span>
+      </div>
+      <p className="mt-1 text-[12px] leading-snug text-faint">
+        Сохранено на этом устройстве и доступно только в этом профиле. Это не серия и не влияет на
+        прогресс дня.
+      </p>
+      <p className="mt-2 text-[13px] leading-snug text-cream">{names.join(' · ')}</p>
     </div>
   )
 }
@@ -182,7 +204,7 @@ function HistoryDetail({
           </>
         ) : (
           <p className="text-[14px] leading-relaxed text-muted">
-            В этот день отмечена активность, но check-in не сохранён.
+            В этот день сохранена активность или практика, но check-in не сохранён.
           </p>
         )}
 
@@ -196,6 +218,7 @@ function HistoryDetail({
         )}
 
         {day.journal && <JournalDayCard entry={day.journal} />}
+        {day.oneOffPractices && <OneOffPracticeDayCard entries={day.oneOffPractices} />}
 
         {checkin && (
           <div className="border-t border-cream/10 pt-4">
@@ -280,6 +303,7 @@ export default function History({ user }) {
   const [contextError, setContextError] = useState('')
   const userId = user?.id
   const canManageAiContext = platformName === 'telegram' && Number(user?.id) > 0
+  const oneOffByDay = useMemo(() => oneOffPracticesByDay(userId), [userId])
   const journalEntries = useMemo(() => {
     if (!userId) return []
     try {
@@ -304,9 +328,12 @@ export default function History({ user }) {
     for (const entry of journalEntries) {
       byDate[entry.date] = { ...(byDate[entry.date] || { date: entry.date }), journal: entry }
     }
+    for (const [date, entries] of Object.entries(oneOffByDay)) {
+      byDate[date] = { ...(byDate[date] || { date }), oneOffPractices: entries }
+    }
 
     return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
-  }, [days, journalEntries])
+  }, [days, journalEntries, oneOffByDay])
 
   useEffect(() => {
     if (!user) return
@@ -659,6 +686,7 @@ export default function History({ user }) {
               )}
 
               {d.journal && <JournalDayCard entry={d.journal} />}
+              {d.oneOffPractices && <OneOffPracticeDayCard entries={d.oneOffPractices} />}
             </button>
           </div>
         )

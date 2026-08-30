@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability'
+import { readOneOffPracticeHistory } from '../lib/oneOffPracticeHistory'
+import { localDayId } from '../lib/morningPilot'
 
 import BackButton from '../components/BackButton'
 
@@ -56,7 +58,15 @@ function SubHeader({ title, onBack }) {
   )
 }
 
-function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) {
+function PracticeRow({
+  artwork,
+  title,
+  subtitle,
+  right,
+  completedToday = false,
+  soon = false,
+  onOpen,
+}) {
   return (
     <button
       type="button"
@@ -105,6 +115,11 @@ function PracticeRow({ artwork, title, subtitle, right, soon = false, onOpen }) 
         ) : (
           <>
             {right && <span className="font-mono text-[11px] text-gold">{right}</span>}
+            {completedToday && (
+              <span className="rounded-full bg-gold/10 px-2 py-1 text-[10px] font-semibold text-gold">
+                сегодня
+              </span>
+            )}
             <span className="text-[23px] leading-none text-gold" aria-hidden="true">
               ›
             </span>
@@ -181,6 +196,11 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
+  const completedToday = new Set(
+    readOneOffPracticeHistory(user?.id)
+      .filter(entry => entry.day === localDayId(new Date()))
+      .map(entry => entry.practiceKey)
+  )
 
   /*
    * initialSub приходит из навигации (открыть Practices сразу на
@@ -344,6 +364,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
           artwork={<FirstStepArt />}
           title="Первый шаг"
           subtitle="маленький шаг, когда трудно начать"
+          completedToday={completedToday.has('first-step')}
           soon={!isPracticeAvailable(PRACTICE_KEYS.firstStep)}
           onOpen={() => setSub('first-step')}
         />
@@ -351,6 +372,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
           artwork={<ReleaseArt />}
           title="Без вины"
           subtitle="когда откладываешь и знаешь это"
+          completedToday={completedToday.has('no-blame')}
           soon={!isPracticeAvailable(PRACTICE_KEYS.noBlame)}
           onOpen={() => setSub('no-blame')}
         />
@@ -358,6 +380,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
           artwork={<NarrowFocusArt />}
           title="Одно из всех"
           subtitle="когда всё сразу — слишком много"
+          completedToday={completedToday.has('narrow-focus')}
           soon={!isPracticeAvailable(PRACTICE_KEYS.narrowFocus)}
           onOpen={() => setSub('narrow-focus')}
         />
@@ -365,6 +388,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
           artwork={<OneFinishArt />}
           title="Один финиш"
           subtitle="маленький кусок, доведённый до конца"
+          completedToday={completedToday.has('one-finish')}
           soon={!isPracticeAvailable(PRACTICE_KEYS.oneFinish)}
           onOpen={() => setSub('one-finish')}
         />
