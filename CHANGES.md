@@ -8,6 +8,114 @@
 - `TASKS.md` обновлён записью `MXL-PLUS-001`; реализация не начата и PR не является approval payment implementation.
 - PR #330 по Journal owner memo остаётся отдельной задачей; `Smira31/mentalix-bot` и код не затрагивались.
 
+## 29.08.2026 — MXL-DATE-POLICY-UTC-FIX-001: локальная календарная дата
+
+- `src/lib/moodCheckDraft.js`, `src/screens/Analytics.jsx` и `src/screens/mentalix/insightDigest.js` переведены с UTC-среза `new Date().toISOString().slice(0, 10)` на централизованную `toLocalCalendarDate()` из `src/lib/dateTimezonePolicy.js`.
+- Исправлены пользовательские границы календарного дня: ограничение mood-check, выделение текущего дня в Analytics и дата последнего insight-дайджеста теперь используют локальную дату устройства. `src/lib/api.js` не менялся; его UTC-дата остаётся частью имени скачиваемого файла.
+- Добавлен unit-тест UTC+3 для последовательности 00:30 / 23:30 / 00:30 следующего локального дня. `CheckIn.jsx` и `History.jsx` не менялись.
+- Проверки и PR выполняются до закрытия задачи.
+
+## 29.08.2026 — MXL-PREVIEW-STOP-DEADLINE-BACKOFF-001: deadline и backoff cleanup
+
+- `scripts/preview-stop.ps1` больше не ограничивает verify фиксированными 10 попытками: используется deadline 90 секунд, начальная задержка 3 секунды и экспоненциальный backoff до 15 секунд. Значения переопределяются через `MENTALIX_PREVIEW_STOP_VERIFY_DEADLINE_SECONDS`, `MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS` и `MENTALIX_PREVIEW_STOP_RETRY_MAX_DELAY_SECONDS`.
+- Guard удаления усилен до явного подтверждения обоими каналами: публичный deployment URL должен вернуть HTTP 404/410, а `vercel inspect` — подтвердить отсутствие deployment. До этого state сохраняется, команда завершается с ошибкой и Telegram не уведомляется.
+- Детерминированный regression-тест моделирует несколько ответов HTTP 200 и успешный inspect после `remove`, затем 404 и отсутствие deployment; успех разрешён только после обоих подтверждений.
+- `package.json`, продуктовый код, `src/lib/api.js`, Vercel project, backend и Telegram-бот не менялись.
+
+## 29.08.2026 — MXL-WEB-LINKED-WRITE-001: честное сообщение вместо тихого 401 (вариант C)
+
+- Диагностика приоритетного бага «кнопка создания ритуала не работает на
+  web» вскрыла архитектурное расхождение шире одной кнопки: backend
+  (`mentalix-bot`) требует Telegram-подпись (`require_verified_identity`)
+  для любого положительного `user.id`, а привязанный (`linked`) web-аккаунт
+  получает именно такой ID после `/link/confirm` — обычный браузер не может
+  сгенерировать эту подпись (`web.adapter.js.getInitData()` всегда `''`).
+  Итог: любая запись (создание/лог/сохранение) от привязанного web-аккаунта
+  тихо падала с 401, ошибка глоталась в `catch`, кнопка просто
+  «отпускалась» без объяснения.
+- Новый `src/lib/webAuthLimits.js` различает именно этот случай (401 +
+  привязанный web-аккаунт) от обычной сетевой ошибки. Подключён в 4 экранах
+  с идентичным паттерном создания сущности: `Rituals.jsx`, `Ascezas.jsx`,
+  `Path.jsx`, `Courses.jsx` — каждый теперь показывает понятное сообщение
+  («Открой Mentalix в Telegram, чтобы...») вместо тихого провала. Заодно
+  исправлен отсутствующий `return` при успехе в `createGoal`/`createCourse`,
+  из-за которого общая ошибка ложно показывалась бы и при успешном создании.
+- Постоянный фикс (backend-side маппинг через `linked_telegram_id`, вариант
+  B) не реализован — отдельная backend-задача, зафиксирована как known
+  issue в `TASKS.md` (`MXL-WEB-LINKED-WRITE-001`) со ссылкой на полное
+  расследование.
+- `npm run check:core` — PASS. PR, squash-merge
+  `fix/ritual-create-bug` → `main`, не смёржен автоматически.
+
+## 29.08.2026 — MXL-AI-REFRAME-001: «Обсудить с AI» на сохранённой записи (задача 7 ROADMAP.md)
+
+Реализована задача 7 подтверждённой очереди `ROADMAP.md` («AI-помощник формулировки автоматических мыслей») по итогам pre-mortem (Tiger/Paper Tiger/Elephant) и решений владельца. Кнопка «Обсудить с AI» на уже сохранённой записи чек-ина/дневника (`History.jsx`) — реактивная, не проактивная, видна только при включённом `checkin.ai_context_enabled`. Открывает существующий чат с персоной Собеседник через уже проверенный sessionStorage-хендофф (`openScout`/`openListener`-паттерн), с префиллом собственного текста пользователя. Backend не менялся, новый endpoint не создан, персоны/тон не тронуты, ответ AI не сохраняется в саму запись.
+
+Добавлен safety-слой `src/lib/aiReframeSafety.js`, переиспользующий regex-фильтр MXL-009 (`descriptiveInsights.js`) — лид-дисклеймер и оговорка при диагностической/причинной/терапевтической формулировке в ответе AI, активна только для этого хендоффа (`MENTOR_SAFETY_KEY`), обычные чаты не затронуты.
+
+Возрастная категория приложения зафиксирована как 16+ (`docs/core/PRODUCT_DECISIONS.md` → `MXL-DEC-021`) — снимает открытый вопрос `PRODUCT.md` §9, был блокером для этой задачи.
+
+`npm run check:core` — 144/144 unit, lint, build, docs:check — PASS. Оформлено отдельным PR, не смёржено — ждёт ручного Telegram/iPhone gate.
+
+## 29.08.2026 — MXL-STREAK-TIERS-001: status reconciliation
+
+- Статус сверён с фактическим `origin/main`: MXL-STREAK-TIERS-001 подтверждена как `verified/completed` через [PR #196](https://github.com/Smira31/Mentalix/pull/196), squash-merged коммитом `e46828df`; обновлены `TASKS.md` и `docs/TASK_INDEX.md`, код и `ROADMAP.md` не изменялись.
+
+## 29.08.2026 — MXL-HISTORY-UNIFIED-FEED-001: journal влит в датированную ленту (расширение)
+
+- Изначальное сужение 26.08.2026 («Merge только checkin+бейджи, темы —
+  отдельным блоком») не рассматривало journal — не забыто, а не было тогда
+  в scope. Отдельный pre-mortem по этому расширению: единственные реальные
+  риски — продуктовые (cross-device расхождение из-за local-only журнала,
+  пересечение с «Год пути»), оба явно решены владельцем построчно —
+  cross-device расхождение приемлемо, `Path.jsx` не трогаем.
+- `src/screens/History.jsx`: новый `datedItems` (`useMemo`) объединяет
+  существующие `days` (checkin+activity, backend) и `journalEntries`
+  (local-only) в одну ленту по дате. Новый `JournalDayCard` — общий рендер
+  journal-фрагмента дня, используется в карточке ленты и в `HistoryDetail`.
+  Раздельный недатированный блок «Локальный журнал» ниже ленты убран —
+  journal теперь встроен в карточку своего дня. `milestonesBlock`/
+  `themeEntriesBlock` (бейджи/темы) не менялись — решение 26.08.2026 для
+  них остаётся тем же. `journalHistory.js`, `badges.js`, `Path.jsx` не
+  менялись.
+- `npm run check:core` — PASS. PR, squash-merge
+  `feat/mxl-history-unified-feed-001-journal-merge` → `main`, не смёржен
+  автоматически. `TASKS.md` обновлён в этом же диффе (запись
+  `MXL-HISTORY-UNIFIED-FEED-001` дополнена, не новый ID).
+
+## 29.08.2026 — MXL-JOURNAL-OWNER-DECISION-MEMO: owner-ready решение по минимальному публичному Journal
+
+- Добавлен `docs/product/MXL-JOURNAL-OWNER-DECISION-MEMO.md` — короткий decision memo для владельца о минимальном local-first Journal v1/v1.1, границах публичного обещания, privacy/AI consent, backend/storage gates и функциях, которые следует отложить.
+- Memo явно разделяет фактически реализованное в `origin/main`, открытые/discovery PR, draft-контракты, backend-dependent вопросы и непринятые продуктовые гипотезы. Cloud sync, AI-передача текста, media, reminders, payment и paid insights этим изменением не утверждаются и не реализуются.
+- Обновлён `TASKS.md`: ссылка на memo добавлена в `MXL-JOURNAL-PERSISTENCE-001`; статус остаётся owner/backend-dependent до принятия решений и ручных gates.
+- Код, `Smira31/mentalix-bot`, backend/API и `main` напрямую не менялись. PR содержит только документационные изменения.
+- Проверки будут выполнены до открытия PR.
+- Ветка перебазирована на `main` после фикса required-check (PR #332), без изменения сути задачи.
+
+- MXL-010: Playwright failure был вызван устаревшими locator-ами теста после изменения WebAuthScreen, а не регрессией кода; синхронизированы три test-only locator-а — direct-web заголовки (`Лучше открыть Mentalix через Telegram Mini App` и `Вход через браузер`), `Получить одноразовый код на email` и `Проверить одноразовый код`.
+
+## 29.08.2026 — MXL-DOCS-STATUS-AUDIT-001 закрыт: найдена и устранена настоящая причина блокировки merge
+
+Диагноз «merge PR #328/#325 блокирован правилом `require_extra_approval_for_unattributed_changes`» не подтвердился — это было ошибочное предположение по ходу расследования, зафиксированное здесь как исправленное, а не как факт. Реальная причина `mergeStateStatus: BLOCKED` на всех открытых PR: classic branch protection (`repos/Smira31/Mentalix/branches/main/protection`) требовал status-context `Базовая проверка проекта`, которого ни один workflow не публиковал с 28.08.2026 05:56 UTC — job `required-check` был случайно удалён коммитом `f844a7ee` («revert: restore main to 07:09 Preview state») вместе со всем `.github/workflows/ci.yml` и не восстановлен при последующем воссоздании файла.
+
+PR #332 (`fix/restore-required-status-check`) вернул job `required-check`/`Базовая проверка проекта` в `ci.yml`, идентично версии из `5ed850b0`. Смёржен squash-merge'ем **без `--admin`** — обычный merge прошёл сразу же после того, как job появился и отработал на самом PR #332, подтвердив диагноз эмпирически.
+
+После мерджа #332 все 4 ожидавших PR (#328, #288, #325, #312) перебазированы на новый `main`; required-чек прошёл у всех, `mergeStateStatus` перешёл в `CLEAN`/`UNSTABLE` (UNSTABLE — только из-за non-required Vercel-чеков на дневной квоте деплоев, не блокирует merge). Approve ни разу не понадобился. Все четыре смёржены squash-merge'ем в порядке #328 → #288 → #325 → #312 (без `--admin`), без конфликтов между собой — проверено индивидуально перед каждым мерджем через `mergeable`/`mergeStateStatus`.
+
+**Итог цикла MXL-DOCS-STATUS-AUDIT-001:** 5 PR (#332, #328, #288, #325, #312) смёржены в `main` обычным squash-merge, `--admin` не использовался ни разу за весь цикл.
+
+## 29.08.2026 — PR #312: динамическая проверка gate на живом Telegram Preview
+
+Квота Vercel сбросилась; Telegram Preview развёрнут (`npm run preview`), ссылка отправлена владельцу через Telegram Bot API. Все 4 пункта ручного gate подтверждены динамически в браузере: баннер «открой в Telegram Mini App» вне Telegram (скриншот), рабочий email/OTP-флоу (`POST /api/auth/email/verify` 200, переход email→code), отсутствие фиктивного пользователя при неверном коде (`localStorage` пуст после ошибки), доступность (видимый focus-ring по `Tab`, `Enter` сабмитит форму, корректные `aria-label` в accessibility tree). Единственные console-сообщения — ожидаемые info-логи Telegram SDK вне Telegram-контекста, не относятся к PR. Gate пройден полностью (static + live); merge — решение владельца после его собственного просмотра preview, автоматически не мержится.
+
+## 29.08.2026 — MXL-DOCS-STATUS-AUDIT-001: сверка TASKS.md/TASK_INDEX.md с main, три PR на approve
+
+Сверка документации с `git log origin/main` и `gh pr list` по запросу владельца выявила статус-тексты, называвшие уже смёрженные PR открытыми: MXL-006 (PR #209), MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001 (PR #191), MXL-THEME-ACCENT-001 (PR #172) в `TASKS.md`, MXL-DS-LABEL-FONT-001 (PR #287) и MXL-SERIES-001 (PR #301) в `docs/TASK_INDEX.md`. Также добавлены пропущенные записи `TASKS.md`: MXL-MOOD-CHECK-001 (закрыто, PR #182), MXL-FULLSCREEN-SURFACE-RACE-001 (закрыто, PR #327), MXL-FULLSCREEN-HEADER-NATIVE-001 (черновик, не начата).
+
+Прямой push докс-коммита в `main` отклонён repository rule — оформлен как PR #328. Merge PR #328 и #325 заблокирован правилом `require_extra_approval_for_unattributed_changes`: оба ждут ручного approve владельца в GitHub UI, `--admin` не используется по прямому указанию владельца. Фикс MXL-SERIES-001 запушен отдельным коммитом в ветку PR #288, готов к approve.
+
+Для PR #312 (`feat/web-auth-fallback-copy`) проведён static-review всех 4 пунктов ручного gate из тела PR — все 4 пройдены по коду, `check:core` зелёный. Развернуть Telegram Preview сразу не удалось: Vercel вернул `api-deployments-free-per-day` — дневная квота бесплатных деплоев исчерпана.
+
 ## 29.08.2026 — MXL-FULLSCREEN-SURFACE-RACE-001: shared fullscreen-store, устранение race condition
 
 - Причина: диагностика бага «кнопка "Пропустить" не работает на
@@ -3422,25 +3530,3 @@ Journal Home переведён с прямого prototype `localStorage` на 
 ## 27.08.2026 — Home/type quiet slice
 
 `MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001` реализованы в PR #241: главный hero Today поднят перед вторичными секциями, а пользовательские serif/Manrope overrides заменены на Onest baseline. Follow-up `MXL-HOME-QUIET-V2-002` добавил 10px нижнего воздуха перед fixed-навигацией и различимое active-состояние CTA; добавлен regression-контракт. CI/Vercel и повторный Telegram/iPhone gate пройдены. Backend, cloud sync, AI consent и proprietary Stoic assets не затронуты.
-
-## 29.08.2026 — MXL-DOCS-STATUS-AUDIT-001: сверка TASKS.md/TASK_INDEX.md с main, три PR на approve
-
-Сверка документации с `git log origin/main` и `gh pr list` по запросу владельца выявила статус-тексты, называвшие уже смёрженные PR открытыми: MXL-006 (PR #209), MXL-PRACTICES-INTRO-COMPLETION-UNIFY-001 (PR #191), MXL-THEME-ACCENT-001 (PR #172) в `TASKS.md`, MXL-DS-LABEL-FONT-001 (PR #287) и MXL-SERIES-001 (PR #301) в `docs/TASK_INDEX.md`. Также добавлены пропущенные записи `TASKS.md`: MXL-MOOD-CHECK-001 (закрыто, PR #182), MXL-FULLSCREEN-SURFACE-RACE-001 (закрыто, PR #327), MXL-FULLSCREEN-HEADER-NATIVE-001 (черновик, не начата).
-
-Прямой push докс-коммита в `main` отклонён repository rule — оформлен как PR #328. Merge PR #328 и #325 заблокирован правилом `require_extra_approval_for_unattributed_changes`: оба ждут ручного approve владельца в GitHub UI, `--admin` не используется по прямому указанию владельца. Фикс MXL-SERIES-001 запушен отдельным коммитом в ветку PR #288, готов к approve.
-
-Для PR #312 (`feat/web-auth-fallback-copy`) проведён static-review всех 4 пунктов ручного gate из тела PR — все 4 пройдены по коду, `check:core` зелёный. Развернуть Telegram Preview сразу не удалось: Vercel вернул `api-deployments-free-per-day` — дневная квота бесплатных деплоев исчерпана.
-
-## 29.08.2026 — PR #312: динамическая проверка gate на живом Telegram Preview
-
-Квота Vercel сбросилась; Telegram Preview развёрнут (`npm run preview`), ссылка отправлена владельцу через Telegram Bot API. Все 4 пункта ручного gate подтверждены динамически в браузере: баннер «открой в Telegram Mini App» вне Telegram (скриншот), рабочий email/OTP-флоу (`POST /api/auth/email/verify` 200, переход email→code), отсутствие фиктивного пользователя при неверном коде (`localStorage` пуст после ошибки), доступность (видимый focus-ring по `Tab`, `Enter` сабмитит форму, корректные `aria-label` в accessibility tree). Единственные console-сообщения — ожидаемые info-логи Telegram SDK вне Telegram-контекста, не относятся к PR. Gate пройден полностью (static + live); merge — решение владельца после его собственного просмотра preview, автоматически не мержится.
-
-## 29.08.2026 — MXL-DOCS-STATUS-AUDIT-001 закрыт: найдена и устранена настоящая причина блокировки merge
-
-Диагноз «merge PR #328/#325 блокирован правилом `require_extra_approval_for_unattributed_changes`» не подтвердился — это было ошибочное предположение по ходу расследования, зафиксированное здесь как исправленное, а не как факт. Реальная причина `mergeStateStatus: BLOCKED` на всех открытых PR: classic branch protection (`repos/Smira31/Mentalix/branches/main/protection`) требовал status-context `Базовая проверка проекта`, которого ни один workflow не публиковал с 28.08.2026 05:56 UTC — job `required-check` был случайно удалён коммитом `f844a7ee` («revert: restore main to 07:09 Preview state») вместе со всем `.github/workflows/ci.yml` и не восстановлен при последующем воссоздании файла.
-
-PR #332 (`fix/restore-required-status-check`) вернул job `required-check`/`Базовая проверка проекта` в `ci.yml`, идентично версии из `5ed850b0`. Смёржен squash-merge'ем **без `--admin`** — обычный merge прошёл сразу же после того, как job появился и отработал на самом PR #332, подтвердив диагноз эмпирически.
-
-После мерджа #332 все 4 ожидавших PR (#328, #288, #325, #312) перебазированы на новый `main`; required-чек прошёл у всех, `mergeStateStatus` перешёл в `CLEAN`/`UNSTABLE` (UNSTABLE — только из-за non-required Vercel-чеков на дневной квоте деплоев, не блокирует merge). Approve ни разу не понадобился. Все четыре смёржены squash-merge'ем в порядке #328 → #288 → #325 → #312 (без `--admin`), без конфликтов между собой — проверено индивидуально перед каждым мерджем через `mergeable`/`mergeStateStatus`.
-
-**Итог цикла MXL-DOCS-STATUS-AUDIT-001:** 5 PR (#332, #328, #288, #325, #312) смёржены в `main` обычным squash-merge, `--admin` не использовался ни разу за весь цикл.
