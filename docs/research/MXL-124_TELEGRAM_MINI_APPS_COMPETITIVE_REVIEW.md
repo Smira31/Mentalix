@@ -33,7 +33,21 @@ Telegram landing-страница обычно показывает назван
 | [Анна / @calm_mind_bot][7] | Публично заявлены AI-психолог, 24/7 support, голос, файлы, канал. | Одна `Start Bot` CTA и ссылка на канал. | **Не брать feature set; safety reference.** | Прямое позиционирование как психолог и claims о поддержке требуют отдельной safety/privacy/medical policy; можно изучать только ясность chat entry. |
 | [Mira][8] | Telegram-native AI agent для action, reminders, workspaces и integrations. | Одна `Message Mira` CTA на `@mira`; public site показывает личный и group use cases. | **Взять ограниченно.** | Сильный reference для контекстного handoff «чат → действие → результат в чате». Не брать autonomy/integrations/group-memory без отдельного security/consent scope. |
 
-## 3. Пять наиболее полезных references
+## 3. Официальный platform baseline
+
+Публичная документация Telegram подтверждает, что Mini Apps могут запускаться из нескольких контекстов, поддерживают seamless authorization, динамические theme parameters, fullscreen и safe-area события, а также нативные bottom buttons. Это важнее для Mentalix, чем копирование отдельных vendor features: capability сама по себе не является рекомендацией к включению.
+
+| Capability | Подтверждённый platform fact | Безопасное решение для Mentalix |
+|---|---|---|
+| Entry points | Mini App может быть запущен через bot button, menu button или direct link.[10] | Сохранять один ясный intent на entry; не добавлять новый entry без измеримого сценария. |
+| Theme and layout | Telegram передаёт theme data и safe-area/content-safe-area параметры; fullscreen имеет отдельные события.[10] | Продолжать использовать существующие safe-area/fullscreen hooks; не дублировать контейнерную навигацию. |
+| Native CTA | Telegram предоставляет BottomButton и SecondaryButton.[10] | Использовать native CTA только там, где действие одно и очевидно; не заменять все web-кнопки автоматически. |
+| Persistence | DeviceStorage и SecureStorage доступны на поддерживаемых версиях.[10] | Не переносить private Journal data в device storage без отдельного privacy/backend решения. |
+| Data responsibility | Mini App является сторонним сервисом, а обработка данных и support лежат на Service Provider.[11] | Не формулировать claims о privacy, security или support на основании самого факта запуска внутри Telegram. |
+
+Эта baseline-таблица отделяет **что платформа позволяет** от **что Mentalix следует делать**. Последний столбец — ограниченная product recommendation для будущих decision gates, а не разрешение на изменение production flow.
+
+## 4. Пять наиболее полезных references
 
 | Ранг | Reference | Что подтверждено | Что проверять в Mentalix, не создавая новую функцию |
 |---|---|---|---|
@@ -43,7 +57,7 @@ Telegram landing-страница обычно показывает назван
 | 4 | Плати по миру | Публичная витрина отделяет основной product entry от support path.[3] | Проверить, понятны ли в Mentalix основной bot CTA и маршрут помощи, не смешиваются ли они в одном шаге. |
 | 5 | RebootMe | Наглядно показывает, какие широкие механики — streaks, социальное давление и premium feature set — могут перегрузить personal system.[5] | Использовать как контрольный anti-pattern: не расширять core loop поверхностями, которые не сокращают путь до текущего действия. |
 
-## 4. Сопоставление с текущими решениями Mentalix
+## 5. Сопоставление с текущими решениями Mentalix
 
 Исследование подтверждает существующую формулу Mentalix: персональная action system внутри Telegram, где Mini App ведёт к одному действию, а bot возвращает человека в релевантный контекст. Это соответствует указанным в действующей research board принципам «одна сессия ≈ одно понятное действие» и «Bot → конкретное действие в Mini App → completion → следующий контакт».[9]
 
@@ -55,7 +69,7 @@ Telegram landing-страница обычно показывает назван
 | Privacy / AI framing | Wise и Анна публично формулируют claims о психологической роли и data controls. | Только safety/privacy review: не обещать memory, export, deletion, support или диагнозы, пока это не подтверждено кодом и политикой. |
 | Retention | Wise и RebootMe используют ежедневный ритм; RebootMe усиливает его streak/social mechanics. | Сохранять полезное возвращение к контексту, не добавлять penalty, streak или social pressure. |
 
-## 5. Ручные research gates
+## 6. Ручные research gates
 
 Полный competitive review невозможен только через публичный web: следующий проход выполняется владельцем или на выделенном тестовом Telegram-аккаунте, без оплаты и чувствительных личных данных. Для каждого идентифицированного бота нужно зафиксировать скриншоты public profile, первой реплики, первого action, входа Mini App, empty/loading/error state, keyboard-safe editor, visible paywall и возвращения в bot.
 
@@ -68,7 +82,7 @@ Telegram landing-страница обычно показывает назван
 | Анна | Видимая crisis/safety routing, privacy notice и выход из чата. | Не выдавать себя за человека в кризисе и не отправлять персональные данные/файлы. |
 | Mira | Onboarding, первый task prompt, запросы на integrations/permissions и cancel path. | Не подключать внешние сервисы и не давать доступ к данным. |
 
-## 6. Что не является результатом этой задачи
+## 7. Что не является результатом этой задачи
 
 Этот документ не создаёт ни одной новой функции, не утверждает качество или безопасность сторонних сервисов, не подтверждает их фактические data practices и не разрешает копировать их claims. Неидентифицированные позиции Kora, PsychologyAI и Habit Tracker остаются сознательно неполными: для них нужен точный URL или username. Следующее product decision должно опираться на текущие Issues #117, #121, #122 и #123, а не на расширение backlog из конкурентных идей.
 
@@ -83,3 +97,6 @@ Telegram landing-страница обычно показывает назван
 [7]: https://t.me/calm_mind_bot "Анна — публичная Telegram-витрина"
 [8]: https://mira.tg/ "Mira — официальный сайт"
 [9]: telegram-ux-competitive-board.md "Действующая research board Mentalix"
+[10]: https://core.telegram.org/bots/webapps "Telegram Mini Apps — official platform documentation"
+[11]: https://telegram.org/tos/mini-apps "Telegram Mini Apps Terms of Service"
+[12]: https://turumburum.com/blog/telegram-mini-app-beyond-the-standard-ui-designing-a-truly-native-experience "Telegram Mini App native UX analysis"

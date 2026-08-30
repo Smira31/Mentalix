@@ -118,6 +118,7 @@ function formatRemainingActions(count) {
 export default function Today({
   user,
   onOpenPractice,
+  initialSub = null,
   onGoMentor,
   onFlowChange,
   seriesOpen = false,
@@ -150,7 +151,7 @@ export default function Today({
 
   const [activeToday, setActiveToday] = useState(null)
 
-  const [sub, setSub] = useState(null)
+  const [sub, setSub] = useState(initialSub)
 
   const [pathTab, setPathTab] = useState('path')
 
@@ -269,7 +270,11 @@ export default function Today({
       <CheckIn
         user={user}
         existing={checkin}
-        mode={todayState === 'reviewPending' || todayState === 'dayClosed' ? 'evening' : 'checkin'}
+        mode={
+          initialSub === 'evening' || todayState === 'reviewPending' || todayState === 'dayClosed'
+            ? 'evening'
+            : 'checkin'
+        }
         onDone={async () => {
           await refreshCheckin()
 
