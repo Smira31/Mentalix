@@ -847,3 +847,21 @@ test('preview cleanup verification waits for both channels across eventual-consi
   const onlyHttp = verifySequence(['200', '404'], ['ready', 'ready'])
   assert.equal(onlyHttp.at(-1).verifiedRemoved, false)
 })
+
+test('MXL-WEB-LINKED-WRITE-001 guards every secondary frontend write path', () => {
+  const sources = Object.fromEntries(
+    ['Rituals', 'Ascezas', 'Path', 'Courses'].map(name => [
+      name,
+      readFileSync(new URL(`../../src/screens/${name}.jsx`, import.meta.url), 'utf8'),
+    ])
+  )
+
+  assert.match(sources.Rituals, /api\.rituals\.log[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Rituals, /api\.rituals\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Ascezas, /api\.ascezas\.log[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Ascezas, /api\.ascezas\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Path, /api\.goals\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Courses, /api\.courses\.addNote[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Courses, /api\.courses\.remove[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(sources.Courses, /api\.courses\.updateStatus[\s\S]*isLinkedWebWriteBlocked/)
+})

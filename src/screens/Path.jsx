@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { Target, ArrowUp, ArrowLeft, ArrowRight, Flame, TrendingUp, Trash2 } from 'lucide-react'
 import JourneyLineArt from '../components/JourneyLineArt'
-import { isLinkedWebWriteBlocked } from '../lib/webAuthLimits'
+import {
+  isLinkedWebWriteBlocked,
+  LINKED_WEB_WRITE_NOTICE,
+} from '../lib/webAuthLimits'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
@@ -193,10 +196,12 @@ function GoalCard({ goal, onOpen }) {
 function GoalDetail({ goal, onBack, onDelete }) {
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [error, setError] = useState(null)
 
   async function handleDelete() {
     setDeleting(true)
-    await onDelete(goal.id)
+    const result = await onDelete(goal.id)
+    if (result?.error === 'linked_web_blocked') setError(LINKED_WEB_WRITE_NOTICE)
     setDeleting(false)
   }
 
@@ -206,6 +211,8 @@ function GoalDetail({ goal, onBack, onDelete }) {
         <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-[13px]">
           <ArrowLeft size={16} /> Назад
         </button>
+
+        {error && <p role="alert" className="absolute left-5 right-5 top-14 text-[12px] text-amber-200 leading-relaxed">{error}</p>}
 
         {confirming ? (
           <div className="flex items-center gap-2">
@@ -335,6 +342,7 @@ export default function Path({ user, onContinueToday }) {
       setSelectedGoal(null)
     } catch (e) {
       console.error(e)
+      if (isLinkedWebWriteBlocked(user, e)) return { error: 'linked_web_blocked' }
     }
   }
 
