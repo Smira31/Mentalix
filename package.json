@@ -18,6 +18,7 @@
     "doctor": "node scripts/project-doctor.mjs",
     "ux:check": "playwright test --config=playwright.ux.config.mjs",
     "ux:mxl010": "playwright test --config=playwright.mxl010.config.mjs",
+    "ux:mxl246": "playwright test --config=playwright.mxl246.config.mjs",
     "check:core": "npm run test:unit && npm run lint && npm run build && npm run docs:check",
     "format": "prettier --write .",
     "prepare": "husky",

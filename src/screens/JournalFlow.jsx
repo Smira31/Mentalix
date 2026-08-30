@@ -45,7 +45,8 @@ function readSaved(userId) {
   const entry = readJournalEntry(todayKey(), userId)
   const drafts = Object.fromEntries(PHASES.map(({ key }) => [key, entry.cycle[key]?.text || '']))
   const firstUnfinished = PHASES.findIndex(({ key }) => !drafts[key].trim())
-  const complete = entry.cycle.newStep?.status === 'final' && PHASES.every(({ key }) => drafts[key].trim())
+  const complete =
+    entry.cycle.newStep?.status === 'final' && PHASES.every(({ key }) => drafts[key].trim())
 
   return {
     complete,
@@ -71,7 +72,9 @@ function JournalProgress({ current, onSelect, completed }) {
           className="text-left"
         >
           <span className={`block h-1.5 ${index < completed ? 'bg-gold' : 'bg-cream/15'}`} />
-          <span className={`mt-2 block text-[10px] ${index === current ? 'text-gold' : 'text-faint'}`}>
+          <span
+            className={`mt-2 block text-[10px] ${index === current ? 'text-gold' : 'text-faint'}`}
+          >
             {item.label}
           </span>
         </button>
@@ -110,7 +113,9 @@ function JournalIntro({ completed, legacyVisible, onStart, onMigrate, onDismissL
       </div>
       {legacyVisible && (
         <div className="mt-7 rounded-2xl border border-gold/20 bg-gold/[0.06] p-4 text-left">
-          <p className="text-[14px] font-semibold text-cream">На этом устройстве есть запись старого формата.</p>
+          <p className="text-[14px] font-semibold text-cream">
+            На этом устройстве есть запись старого формата.
+          </p>
           <p className="mt-1.5 text-[12px] leading-snug text-muted">
             Она не была привязана к профилю. Переноси её, только если это твоя запись.
           </p>
@@ -118,14 +123,24 @@ function JournalIntro({ completed, legacyVisible, onStart, onMigrate, onDismissL
             <button type="button" onClick={onMigrate} className="text-gold active:text-cream">
               Перенести
             </button>
-            <button type="button" onClick={onDismissLegacy} className="text-muted active:text-cream">
+            <button
+              type="button"
+              onClick={onDismissLegacy}
+              className="text-muted active:text-cream"
+            >
               Не сейчас
             </button>
           </div>
         </div>
       )}
-      <p className="mt-7 text-center text-[12px] font-semibold text-faint">4 коротких шага&nbsp;&nbsp;·&nbsp;&nbsp;без спешки</p>
-      <button type="button" onClick={onStart.open} className="cta-pill mt-8 w-full px-6 py-4 text-[15px]">
+      <p className="mt-7 text-center text-[12px] font-semibold text-faint">
+        4 коротких шага&nbsp;&nbsp;·&nbsp;&nbsp;без спешки
+      </p>
+      <button
+        type="button"
+        onClick={onStart.open}
+        className="cta-pill mt-8 w-full px-6 py-4 text-[15px]"
+      >
         {complete ? 'Открыть запись' : continuing ? 'Продолжить запись' : 'Начать'}
       </button>
     </SceneLayout>
@@ -147,8 +162,14 @@ function JournalComplete({ onClose, onOpen }) {
       <div className="mx-auto mt-8 flex h-[96px] w-[96px] items-center justify-center rounded-[32px] border border-gold/30 bg-gold/[0.08] text-gold">
         <Check size={44} strokeWidth={1.7} aria-hidden="true" />
       </div>
-      <p className="mt-7 text-center text-[12px] font-semibold text-faint">4 из 4 шагов сохранены</p>
-      <button type="button" onClick={onClose} className="cta-pill mt-8 w-full px-6 py-4 text-[15px]">
+      <p className="mt-7 text-center text-[12px] font-semibold text-faint">
+        4 из 4 шагов сохранены
+      </p>
+      <button
+        type="button"
+        onClick={onClose}
+        className="cta-pill mt-8 w-full px-6 py-4 text-[15px]"
+      >
         Вернуться к практикам
       </button>
       <button
@@ -171,7 +192,9 @@ export default function JournalFlow({ userId, onClose }) {
   const [phaseIndex, setPhaseIndex] = useState(initial.phaseIndex)
   const [drafts, setDrafts] = useState(initial.drafts)
   const [storageError, setStorageError] = useState(null)
-  const [legacyMigrationVisible, setLegacyMigrationVisible] = useState(() => hasLegacyJournalData(userId))
+  const [legacyMigrationVisible, setLegacyMigrationVisible] = useState(() =>
+    hasLegacyJournalData(userId)
+  )
   const phase = PHASES[phaseIndex]
   const value = drafts[phase.key] || ''
   const writtenCount = PHASES.filter(({ key }) => drafts[key]?.trim()).length
@@ -260,11 +283,20 @@ export default function JournalFlow({ userId, onClose }) {
           title={phase.title}
           description={phase.hint}
           showGlyph={false}
-          progress={<JournalProgress current={phaseIndex} completed={writtenCount} onSelect={setPhaseIndex} />}
+          progress={
+            <JournalProgress
+              current={phaseIndex}
+              completed={writtenCount}
+              onSelect={setPhaseIndex}
+            />
+          }
           className="journal-flow__writing"
         >
           {storageError && (
-            <p role="alert" className="mt-5 rounded-2xl border border-red-400/25 bg-red-400/10 px-4 py-3 text-[13px] leading-snug text-cream">
+            <p
+              role="alert"
+              className="mt-5 rounded-2xl border border-red-400/25 bg-red-400/10 px-4 py-3 text-[13px] leading-snug text-cream"
+            >
               {storageError}
             </p>
           )}
@@ -277,6 +309,7 @@ export default function JournalFlow({ userId, onClose }) {
             className="mt-7 min-h-[15rem]"
             editorClassName="pb-24"
             floatingToolbar
+            desktopInline
             formatting={false}
             onSubmit={continueFlow}
             submitLabel={isLast ? 'Сохранить и завершить' : 'Сохранить и продолжить'}
