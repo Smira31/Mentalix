@@ -307,7 +307,7 @@ export default function JournalFlow({ userId, onClose }) {
             placeholder="Начни писать..."
             ariaLabel={`${phase.label}: ${phase.title}`}
             className="mt-7 min-h-[15rem]"
-            editorClassName="pb-24 md:pb-4"
+            editorClassName="pb-24"
             floatingToolbar
             desktopInline
             formatting={false}
