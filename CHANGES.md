@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-010: dependency hygiene по npm audit (#357)
+
+- `vite` обновлён с 5.4.11 до 5.4.21, `postcss` — с 8.4.47 до 8.5.26; lockfile пересоздан npm.
+- `npm audit --omit=dev` показывает 0 уязвимостей для production-зависимостей. Оставшиеся 2 advisory относятся к `vite`/`esbuild`, которые являются dev-only инструментами сборки и не входят в production runtime; исправление требует major-upgrade Vite 8 и отдельной проверки совместимости.
+- `npm run check:core` — 148 unit-тестов passed, lint, build и docs:check passed.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
