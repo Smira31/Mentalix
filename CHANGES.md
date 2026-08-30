@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 30.08.2026 — MXL-AI-ROLES-001: role contract and playbook draft (#323)
+
+- Добавлен research draft для ролей Ясность/Компас/Шаг: сценарии, границы, Telegram → Mini App handoff, safety и evaluation. Production AI, backend и память не менялись; owner approval и manual gate обязательны.
+
 ## 30.08.2026 — MXL-UX-RESPONSIVE-001: manual gate пройден, PR #347 смёржен
 
 - Ручная проверка на iPhone 16 Pro Max в Telegram (30.08.2026), все 5
