@@ -9,8 +9,8 @@ test('API client defines a bounded timeout and normalized error shape', () => {
   assert.match(source, /const API_TIMEOUT_MS = 10_000/)
   assert.match(source, /new AbortController\(\)/)
   assert.match(source, /kind = 'unknown'/)
-  assert.match(source, /kind: 'timeout'/)
   assert.match(source, /kind: 'network'/)
+  assert.match(source, /kind: abortedByCaller \? 'aborted' : 'timeout'/)
   assert.match(source, /kind: 'protocol'/)
 })
 
@@ -26,4 +26,7 @@ test('API client never retries mutation methods by default', () => {
   assert.doesNotMatch(source, /RETRYABLE_METHODS = new Set\(\['POST'/)
   assert.match(source, /delete fetchOptions\.timeoutMs/)
   assert.match(source, /throw normalized/)
+  assert.match(source, /callerSignal = options\.signal/)
+  assert.match(source, /callerSignal\?\.removeEventListener\('abort', abortFromCaller\)/)
+  assert.doesNotMatch(source, /normalized\.kind === 'aborted'/)
 })
