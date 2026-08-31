@@ -1,4 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Onest и JetBrains Mono — локальная загрузка без внешнего Google Fonts запроса. */
+@import '@fontsource/onest/400.css';
+@import '@fontsource/onest/500.css';
+@import '@fontsource/onest/600.css';
+@import '@fontsource/onest/700.css';
+@import '@fontsource/onest/800.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
 
 /* Manrope — вторичный шрифт для лейблов/эйбраузов, самостоятельный хостинг
    (npm-пакет @fontsource/manrope, без Google Fonts CDN). Кириллица включена
