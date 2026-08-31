@@ -1,5 +1,14 @@
 # Mentalix — задачи
 
+## MXL-010 — Release gate: снять BLOCKED (issue #356)
+
+- **Статус:** чек-лист подготовлен, ждёт preview и живой проверки владельцем на реальном iPhone/аккаунте.
+- **Причина:** `qa-evidence/mxl-010/release-gate-report.md` (2026-08-29) зафиксировал итог BLOCKED — не frontend-дефект, а недоказанность: fixture/automated evidence не может подтвердить реальный auth, AI-диалог, backend persistence, Telegram runtime.
+- **Что сделано:** создан `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` — 10-шаговый цикл MXL-010 + Telegram/iPhone fullscreen/safe-area/keyboard/WebView раздел. Один из трёх исходных P1-блокеров (недоступный Preview PR #312) снят сам собой — PR уже смёржен в `main`.
+- **Открытый вопрос:** day rollover (шаг 9) практически не пройти за одну сессию без backend test-режима смены даты — можно дозаполнить отдельно на следующий день.
+- **Ограничение:** preview не задеплоен — Vercel quota на `mentalix-preview` подтверждена ещё исчерпанной при последней проверке. Будет отправлен в Telegram после восстановления квоты.
+- **Не входит:** сам проход чек-листа с реальным аккаунтом — ручная проверка, Claude Code не может её выполнить.
+
 ## MXL-JOURNAL-001 — Telegram/iPhone manual gate (issue #355) — закрыто, PASS
 
 - **Статус:** закрыто. Владелец прошёл чек-лист на реальном iPhone в Telegram, вердикт PASS. `docs/qa/MXL-JOURNAL-001_TELEGRAM_IPHONE_GATE.md`, раздел 8.
