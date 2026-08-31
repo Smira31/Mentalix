@@ -39,6 +39,7 @@ import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
 import AppLock from './AppLock'
 import PrivacyNotice from './PrivacyNotice'
+import WillingnessToPayTest from './WillingnessToPayTest'
 
 function SectionLabel({ children }) {
   return (
@@ -440,7 +441,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
     setScreen('app-lock-setup')
   }
 
-  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup'
+  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
   const [tier, setTier] = useState('base')
   const go = key => onNavigate?.(key)
 
@@ -483,6 +484,10 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
         }}
       />
     )
+  }
+
+  if (screen === 'wtp-test') {
+    return <WillingnessToPayTest user={user} onBack={() => setScreen(null)} />
   }
 
   const tierLabel = tier === 'pro' ? 'Про' : 'Базовый'
@@ -1011,6 +1016,17 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
           icon={Heart}
           title="Поддержать проект"
           onClick={() => setScreen('donate')}
+          divider={false}
+        />
+      </Card>
+
+      <SectionLabel>Помочь Mentalix</SectionLabel>
+      <Card>
+        <Row
+          icon={Heart}
+          title="Что было бы полезно?"
+          subtitle="Короткий concept test — без оплаты и подписки"
+          onClick={() => setScreen('wtp-test')}
           divider={false}
         />
       </Card>
