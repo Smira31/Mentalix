@@ -6,6 +6,14 @@
 - Оба сценария (пустое состояние → «Создать ритуал», карточка «+ Новый ритуал» в snap-scroll ленте) снова отработали корректно.
 - **Код не менялся.** Проверка в двух движках (Chromium и WebKit), тремя сценариями клика, реальными touch-событиями — исчерпывает разумные попытки репро без конкретики от репортера.
 
+## 31.08.2026 — MXL-SECURITY-AUDIT-001: post-release проверка прод-backend (#351)
+
+- Выполнена живая проверка прод-backend (`mentalix-bot.onrender.com`) после `mentalix-bot` PR #36 (per-user progression «Тема недели», затрагивал только `themes.py`, не auth-код) — требование из `docs/security/MXL-SECURITY-AUDIT-001-INITDATA-BACKEND.md` → «Последующие действия».
+- **Все проверки PASS:** production health (`200 ok`); неподписанный GET/POST-запрос с positive `user_id` → `401 missing_telegram_auth`, не `200`; поддельная подпись → `401 invalid_telegram_auth`; чужой `X-Web-User-ID` → `401`; email OTP request-code → `200`, `dev_code` корректно скрыт на проде; неверный код при verify → `ok:false`, не логинит.
+- Полный разбор с таблицей запрос/ожидание/результат — в `docs/security/MXL-SECURITY-AUDIT-001-INITDATA-BACKEND.md`, новый раздел «Post-release проверка 31.08.2026».
+- **Не проверено:** финальный успешный email OTP login (нужен доступ к реальной почте) и живое поведение реального Telegram-клиента (WebView) — только HTTP-контракт backend проверен напрямую, не сквозной Telegram-flow.
+- Relevant для issue #351 (первый из двух пунктов — production health/routes/login) — прокомментировано в issue, не закрывала issue сама, второй пункт (global rate limiting) уже реализован отдельно (`mentalix-bot` PR #41, смёржен ранее).
+
 ## 31.08.2026 — Идея-кандидат 16 зафиксирована: «Лила» как DISCOVER-вход (issue #434)
 
 - `ROADMAP.md` → добавлена «Идея-кандидат 16 — Лила: адаптация игры как DISCOVER-вход», тем же форматом, что идея-кандидат 14/15 (`**Статус.**`/`**Идея.**`/оценка сложности).
