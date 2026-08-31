@@ -28,6 +28,7 @@ import Breathing from './Breathing'
 import FirstStepFlow from './FirstStepFlow'
 import MeditationFlow from './MeditationFlow'
 import JournalFlow from './JournalFlow'
+import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
 import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
@@ -185,6 +186,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
     'one-finish',
     'meditation',
     'journal',
+    'self-discovery',
   ].includes(sub)
 
   useEffect(() => {
@@ -251,7 +253,17 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   }
 
   if (sub === 'journal') {
-    return <JournalFlow userId={user.id} onClose={() => setSub(null)} />
+    return (
+      <JournalFlow
+        userId={user.id}
+        onClose={() => setSub(null)}
+        onOpenGuided={() => setSub('self-discovery')}
+      />
+    )
+  }
+
+  if (sub === 'self-discovery') {
+    return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub('journal')} />
   }
 
   if (sub === 'no-blame') {

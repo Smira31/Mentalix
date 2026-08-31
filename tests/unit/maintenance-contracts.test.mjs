@@ -249,7 +249,7 @@ test('MXL-JOURNAL-001 открывает Journal Flow из «Практик» и
   assert.match(practices, /Открыть журнал/)
   assert.match(practices, /<PracticeCategory title="Практики">/)
   assert.match(practices, /setSub\('journal'\)/)
-  assert.match(practices, /<JournalFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\}/)
+  assert.match(practices, /<JournalFlow[\s\S]*userId=\{user\.id\}[\s\S]*onClose=\{\(\) => setSub\(null\)\}/)
   assert.doesNotMatch(mentalix, /JournalHome|journalOpen/)
   assert.match(mentalix, /PersonaPicker/)
 })
