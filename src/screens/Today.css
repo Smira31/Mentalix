@@ -68,6 +68,26 @@
 }
 
 /*
+ * Diagnostic-only (light-preview, MXL-THEME-015). These three cards keep
+ * a dark surface on purpose even in light-preview:
+ * .mx-today-primary-card only until data-complete='true' switches it to
+ * the theme-following --c-card (that state's text is already correct and
+ * excluded via :not() below); .mx-today-theme-card and
+ * .mx-today-affirmation-card always (background: --c-card2, not part of
+ * the light-preview override in index.css). Their text-cream content
+ * inherited the darkened --c-text from that override and went unreadable
+ * on its own still-dark background. Pin it back to --c-text-on-dark
+ * (index.css, always equal to production --c-text) only inside these
+ * containers, only in light-preview — production/default dark theme is
+ * untouched since --c-text-on-dark equals --c-text there.
+ */
+[data-theme='light-preview'] .mx-today-primary-card:not([data-complete='true']) .text-cream,
+[data-theme='light-preview'] .mx-today-theme-card .text-cream,
+[data-theme='light-preview'] .mx-today-affirmation-card .text-cream {
+  --c-text: var(--c-text-on-dark);
+}
+
+/*
  * MXL-UI-CTA-OVERLAP-001
  *
  * На viewport высотой ≤650px (iPhone SE-класс, 320×568) декоративный SVG-глиф
