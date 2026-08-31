@@ -68,7 +68,7 @@ function Splash() {
         font-body
       "
     >
-      <MazeLogo size={132} progress={0.55} className="animate-pulse-once" />
+      <MazeLogo size={132} progress={0.55} />
 
       <div
         className="

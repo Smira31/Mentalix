@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — Убрана анимация лого на загрузочном экране (UI-фидбек)
+
+- `src/App.jsx::Splash` — убран класс `animate-pulse-once` с `MazeLogo` (единственное место в кодовой базе, где эта анимация применялась — проверено grep по `src/`). Сам логотип и его прогресс (`progress={0.55}`) не менялись, только убрана пульсация масштаба (`scale(1)→1.02→1` за 0.5с).
+- Tailwind-токен `pulse-once`/`pulseOnce` в `tailwind.config.js` не трогала — не в скоупе задачи, удаление неиспользуемого token-а не запрошено.
+- **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
+
 ## 31.08.2026 — MXL-010: release gate чек-лист подготовлен, ждёт preview и живой проверки (#356)
 
 - `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` — новый файл (`qa-evidence/mxl-010/` содержал только fixture/automated evidence и `release-gate-report.md` с итогом BLOCKED от 2026-08-29, без ручного чек-листа под owner). Консолидирует 10 шагов полного аутентифицированного цикла MXL-010 (вход → check-in → ritual/asceza → AI-диалог → вечерний анализ → handoff → возврат к Today → day rollover → save/reopen) и отдельный раздел под Telegram/iPhone fullscreen/safe-area/keyboard/WebView — то, что fixture-режим принципиально не может доказать.
