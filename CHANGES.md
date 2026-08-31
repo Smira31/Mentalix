@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — Contextual CTA на return-flow сообщениях, частичный scope (#123)
+
+- Backend-only, без Vercel: `mentalix-bot` PR #40 (не смёржен) добавляет `reply_markup=quick_actions_kb()` в `comeback_loop` и `weekly_digest_loop` (`bot/bot.py`) — раньше эти сообщения не имели ни одной кнопки, что не соответствовало acceptance criteria #123 («CTA ведёт на конкретный экран, а не в главное меню»). `reminder_loop` (пропущенный ритуал) уже использовал этот паттерн раньше.
+- Это **частичный scope** #123, не весь issue — утренний контакт и другие пункты списка не тронуты. Issue не закрыт.
+- Также по #121 (deep links, ранее закрыт): зафиксировано в issue — closure не подтверждён живой проверкой на iPhone в Telegram, только код с обеих сторон. Добавлено в общий список live-проверок вместе с #356 и #417.
+
 ## 31.08.2026 — MXL-010: release gate чек-лист подготовлен, ждёт preview и живой проверки (#356)
 
 - `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` — новый файл (`qa-evidence/mxl-010/` содержал только fixture/automated evidence и `release-gate-report.md` с итогом BLOCKED от 2026-08-29, без ручного чек-листа под owner). Консолидирует 10 шагов полного аутентифицированного цикла MXL-010 (вход → check-in → ritual/asceza → AI-диалог → вечерний анализ → handoff → возврат к Today → day rollover → save/reopen) и отдельный раздел под Telegram/iPhone fullscreen/safe-area/keyboard/WebView — то, что fixture-режим принципиально не может доказать.
