@@ -140,12 +140,14 @@ export default function TodayFocusFlow({
   }
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-5`}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
+      >
         <BackButton onClick={onClose} />
       </div>
 
-      <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+      <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
         {step === 'input' && (
           <div className="w-full max-w-md mx-auto animate-fade-in">
             <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">

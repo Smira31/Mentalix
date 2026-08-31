@@ -619,7 +619,7 @@ export default function Today({
   }
 
   return (
-    <div className="w-full max-w-md px-5">
+    <div className="mx-screen-shell">
       <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (

@@ -15,11 +15,14 @@ export function isPreviewDemoMode() {
   const host = window.location.hostname
   const params = new URLSearchParams(window.location.search)
 
-  return (
-    params.get('demo') === '1' &&
-    host.endsWith('.vercel.app') &&
-    import.meta.env.VERCEL_ENV === 'preview'
-  )
+  const isAllowedHost =
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.endsWith('.vercel.app') ||
+    host.endsWith('.manus.computer')
+  const isPreviewRuntime = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+
+  return params.get('demo') === '1' && isAllowedHost && isPreviewRuntime
 }
 
 function seedState() {
@@ -147,9 +150,7 @@ export function demoRequest(path, options = {}) {
   if (pathname.match(/^\/ascezas\/\d+\/log$/) && method === 'POST') {
     const id = numericId(pathname)
     const ascezas = state.ascezas.map(item =>
-      item.id === id
-        ? { ...item, today_status: body.status, streak: (item.streak || 0) + 1 }
-        : item
+      item.id === id ? { ...item, today_status: body.status, streak: (item.streak || 0) + 1 } : item
     )
     const asceza = ascezas.find(item => item.id === id)
     writeState({ ...state, ascezas })
@@ -181,7 +182,9 @@ export function demoRequest(path, options = {}) {
   }
   if (pathname.match(/^\/courses\/\d+\/status$/) && method === 'PATCH') {
     const id = numericId(pathname)
-    const courses = state.courses.map(item => (item.id === id ? { ...item, status: body.status } : item))
+    const courses = state.courses.map(item =>
+      item.id === id ? { ...item, status: body.status } : item
+    )
     writeState({ ...state, courses })
     return json(courses.find(item => item.id === id))
   }

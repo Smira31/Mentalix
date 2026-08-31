@@ -4,6 +4,20 @@ import path from 'node:path'
 
 const ARTIFACT_ROOT = path.resolve('artifacts/ux-check')
 
+// Anchor states: достаточно компактный набор для быстрого release gate.
+// Полный UX-report продолжает снимать все состояния, а эти экраны
+// дополнительно сравниваются с сохранёнными визуальными эталонами.
+const VISUAL_ANCHOR_SLUGS = new Set([
+  '01-today',
+  '02-check-in',
+  '03-practices',
+  '03b-journal-intro',
+  '06-first-step-intro',
+  '06f0-narrow-focus-intro',
+  '07-library',
+  '08-trends',
+])
+
 const VIEWPORTS = [
   { name: '320x568', width: 320, height: 568 },
   { name: '375x812', width: 375, height: 812 },
@@ -305,6 +319,14 @@ async function captureScreen({ page, viewport, screen, slug, runtimeErrors, resu
   try {
     await check()
     await assertCommonScreenChecks(page, runtimeErrors)
+
+    if (VISUAL_ANCHOR_SLUGS.has(slug)) {
+      await expect(page).toHaveScreenshot(`${viewport.name}/${slug}.png`, {
+        animations: 'disabled',
+        caret: 'hide',
+        maxDiffPixelRatio: 0.012,
+      })
+    }
   } catch (error) {
     status = 'fail'
     reason = sanitizeReason(error)
@@ -349,7 +371,8 @@ function buildReport(results) {
     `- отсутствие пересечения видимых критических CTA с нижней навигацией;\n` +
     `- отсутствие page runtime errors и console.error;\n` +
     `- доступность ожидаемых интерактивных элементов;\n` +
-    `- disabled/«Скоро» элементы в Practices и Library не открываются.\n\n` +
+    `- disabled/«Скоро» элементы в Practices и Library не открываются;\n` +
+    `- визуальное сравнение восьми anchor-состояний на четырёх mobile viewport.\n\n` +
     `## Обязательный ручной iPhone gate\n\n` +
     `Этот отчёт не является доказательством корректности Telegram safe-area, iOS keyboard, fullscreen Telegram, swipe physics или WebView performance. Эти пять областей нужно проверять вручную на реальном iPhone внутри Telegram.\n`
 }

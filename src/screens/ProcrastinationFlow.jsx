@@ -292,12 +292,14 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
   const seconds = String(secondsLeft % 60).padStart(2, '0')
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-5`}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
+      >
         <BackButton onClick={onClose} />
       </div>
 
-      <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+      <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
         {step === 'intro' && (
           <div className="no-blame-stage no-blame-stage--intro animate-fade-in">
             <div className="no-blame-stage__center">

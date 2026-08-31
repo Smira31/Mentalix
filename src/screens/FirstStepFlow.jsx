@@ -209,7 +209,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
   const seconds = String(secondsLeft % 60).padStart(2, '0')
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
       {step === 'intro' && (
         <SceneLayout
           scrollRef={sceneScrollRef}

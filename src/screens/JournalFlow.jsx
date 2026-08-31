@@ -261,7 +261,7 @@ export default function JournalFlow({ userId, onClose }) {
   }
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
       {stage === 'intro' && (
         <JournalIntro
           completed={writtenCount}
