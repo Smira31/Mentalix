@@ -163,9 +163,12 @@
 
 ## MXL-FULLSCREEN-HEADER-NATIVE-001 — Нативный header для fullscreen-поверхностей
 
-- **Статус: needs-decision 29.08.2026.** Одна задача с двумя
-  последовательными независимыми частями; ветка и PR отсутствуют,
-  общий implementation scope ещё требует решения владельца.
+- **Статус: needs-decision, часть 2 частично сделана 31.08.2026.**
+  Одна задача с двумя последовательными независимыми частями. Часть 1
+  (`Conversation.jsx` portal/body-lock/клавиатура) не начата — всё ещё
+  needs-decision, ветки/PR нет. Часть 2 — безопасный точечный перевод
+  сделан (PR ниже, не смёржен), CheckIn/исключения по-прежнему ждут
+  решения владельца.
 - **Размер:** M–L, уточнить после решений по обеим частям.
 - **Summary:** Объединяет два discovery/pre-mortem направления: узкий
   структурный fullscreen-scope для `Conversation.jsx` и более широкий
@@ -217,6 +220,27 @@
   Telegram `BackButton`, и какие fullscreen-потребители являются
   исключениями. Не менять визуальный или навигационный контракт
   массово до этого решения.
+- **Часть 2 — обновление 31.08.2026:** проверены все 15 потребителей
+  `FULLSCREEN_HEADER_SLOT_CLASS` по факту кода. 11 из 15 уже используют
+  общий `BackButton` (который сам вызывает `useBackButton()` —
+  нативный Telegram API — и рисует кастомную кнопку только вне
+  Telegram): `Rituals`, `ProcrastinationFlow`, `NarrowFocusFlow`,
+  `FinishFlow`, `Ascezas` (главный экран), `TodayFocusFlow`,
+  `SceneLayout`, `Conversation`, `QuoteView`, `AppLock`, `Onboarding`
+  (через внутренний `Head`) — правок не требовали. Сделан один
+  точечный, безопасный перевод: `GuidedJournals.jsx` →
+  `CompletedSessionViewer` — кнопка «← К архиву» была кастомной, без
+  конкурирующего действия рядом (никакого X), заменена на общий
+  `BackButton` (`label="К архиву"`). `ThemeScreen` — заголовок пуст,
+  кнопки вообще нет, вне scope этой правки (отдельный, не связанный
+  пробел). `CheckIn` (двойная ←/X-семантика) и `MoodCheckGate`
+  («Пропустить» — вперёд, не назад) оставлены нетронутыми — massовая
+  замена по-прежнему не запускалась, решение по ним остаётся за
+  владельцем.
+- **Проверка (31.08.2026):** `npm run check:core` (158 unit,
+  lint/build/docs:check), `npm run ux:check` (4/4). Реальный iPhone/
+  Telegram (manual gate части 1 и подтверждение семантики части 2) —
+  не проверено, требует владельца.
 - **Discovery links:** часть 1 — pre-mortem от 16.08.2026 по
   `MXL-UI-005`; часть 2 — сегодняшний discovery/pre-mortem по Telegram
   `BackButton` и 15 потребителям.

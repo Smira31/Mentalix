@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft, Check, Plus, Search, Trash2 } from 'lucide-react'
+import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import {
   FULLSCREEN_HEADER_SLOT_CLASS,
@@ -170,13 +171,7 @@ function CompletedSessionViewer({ completedSession, onClose }) {
       style={surfaceStyle}
     >
       <header className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex min-h-11 items-center gap-2 rounded-full px-2 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          <ArrowLeft size={16} /> К архиву
-        </button>
+        <BackButton onClick={onClose} label="К архиву" />
       </header>
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="w-full max-w-md px-5 pb-8">
