@@ -8,6 +8,13 @@
 - Не создавалось новой функциональности; `todayFocusPicked` (уже существующий, но нигде не вызываемый prop для схлопывания карточки) не трогала — он относится к отдельному незавершённому Focus-flow (`TodayFocusCard.jsx`/`TodayFocusFlow.jsx`, не подключён к Today.jsx), пере-использование его под другую цель было бы domain-guessing, а не переиспользованием.
 - **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
 - **Не проверено:** реальный iPhone/Telegram (acceptance criteria #122 требует это явно) — визуальный аудит и локальные проверки не заменяют это.
+## 31.08.2026 — MXL-SECURITY-AUDIT-001 follow-up: статический аудит backend (#351)
+
+- Frontend не может проверить backend сама — аудит выполнен статическим анализом кода `mentalix-bot` (полный разбор: `mentalix-bot` PR #37, не смёржен).
+- Подтверждено: initData verification подключена на всех 19 роутерах с приватными данными; rate limiting **не глобальный** (только точечный лимитер на `/api/auth/link/confirm`).
+- Найдена непокрытая уязвимость вне исходного scope: `GET /api/user/{user_id}` без auth-проверки, отдаёт username/first_name для любого id (похоже на dead code). Требует решения владельца — фикс не сделан, auth-контракт не меняется без подтверждения.
+- Тесты `test_telegram_auth.py` не перезапускались в этой сессии (окружение без Python 3.12) — код с 30.08.2026 не менялся, предыдущий зафиксированный прогон (`mentalix-bot` CHANGES.md, 30.08.2026) — 25 passed.
+- **Issue #351 остаётся открытым:** production-значение `TELEGRAM_AUTH_VALIDATION_ENABLED`, живое поведение Telegram-клиента/web-login и реальный CORS `Origin` из Telegram WebView — код это доказать не может, нужна живая проверка владельца.
 
 ## 31.08.2026 — MXL-010: release gate чек-лист подготовлен, ждёт preview и живой проверки (#356)
 
