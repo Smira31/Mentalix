@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — Отцентрирована анимация «созвездия» на экране ритуалов (UI-фидбек)
+
+- `src/components/SemanticGlyph.css` — вращающаяся констелляция (`kind="ritual"`, используется и в пустом состоянии Rituals, и в illustration каждой `RitualCard`) визуально уезжала в сторону при вращении. Причина: `.mx-semantic-glyph__ritual-orbit-layer`/`-runner`/`-orbits` использовали `transform-box: view-box; transform-origin: 110px 78px` — это координаты `cx/cy` самих эллипсов, но `transform-box: view-box` интерпретирует их в абсолютной системе координат SVG viewBox, а не в локальной системе группы, которая уже завёрнута в родительский `transform="translate(3 0) scale(.7)"` (`SemanticGlyph.jsx`, `Drawing()` case `'ritual'`). Пивот вращения не совпадал с фактическим центром фигур.
+- Заменено на `transform-box: fill-box; transform-origin: center` — тот же паттерн, что уже работает в этом файле для `.mx-semantic-glyph__point`: браузер сам берёт центр фактической геометрии, не завязано на ручной пересчёт координат через ancestor-трансформы.
+- Проверено визуально через `npm run dev` + Playwright screenshot в 5 точках анимационного цикла (0/1.5/3/4.5/6с) — и в пустом состоянии Rituals, и внутри реальной `RitualCard` (другие пропорции контейнера) — во всех кадрах констелляция стабильно центрирована.
+- **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
+
 ## 31.08.2026 — Убрана анимация лого на загрузочном экране (UI-фидбек)
 
 - `src/App.jsx::Splash` — убран класс `animate-pulse-once` с `MazeLogo` (единственное место в кодовой базе, где эта анимация применялась — проверено grep по `src/`). Сам логотип и его прогресс (`progress={0.55}`) не менялись, только убрана пульсация масштаба (`scale(1)→1.02→1` за 0.5с).
