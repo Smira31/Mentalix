@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — MXL-THEME-015: S-M light-preview diagnostic закрыт
+
+`--c-text-on-dark` добавлен в `src/index.css` и точечно применён на `.text-cream` внутри трёх намеренно тёмных карточек Today (`.mx-today-primary-card` до `data-complete`, `.mx-today-theme-card`, `.mx-today-affirmation-card`) через `Today.css` — заголовок «Как ты?» и блок «Мысль дня» снова читаются на светлом diagnostic-фоне (`?light-preview=1`), не ломая уже исправленный `--c-text` для обычных светлых поверхностей. Подтверждено визуально на Vercel preview. PR #415 (squash-merge `35927c0e`, CI green) — владелец смёржил его уже после того, как оба доп. коммита (`1c18135a`, `b78dcc14`) были дописаны в ветку, поэтому squash захватил весь diagnostic целиком; отдельного PR под эти коммиты не требуется. Три итерации точечного патчинга токенов подтвердили риск исходного пре-мортема (`ROADMAP.md` → «Идея-кандидат 15»): полноценная светлая тема — L-scope, не смена CSS-переменных. `MXL-DEC-023` (`docs/core/PRODUCT_DECISIONS.md`) фиксирует это решение; issue #416 остаётся открытым для будущего L-scope и не закрывается этим изменением. Diagnostic-код по-прежнему за gate `[data-theme='light-preview']`, недоступен на проде.
+
 ## 30.08.2026 — MXL-DEC-022: прогрессия «Тема недели» по пользователю (#404)
 
 - `src/screens/Today.jsx`, `src/lib/todayDataCache.js` — карточка «Тема недели» на Today больше не берёт статичный `themes[0]`; выбирается тема с флагом `is_current` (backend `mentalix-bot#themes.py`, отдельный PR), с fallback на `themes[0]` для обратной совместимости. Решение владельца — прогрессия по пользователю через существующий `ThemeProgress`, без календарной ротации и без ручного флага; см. `docs/core/PRODUCT_DECISIONS.md` → `MXL-DEC-022`.
