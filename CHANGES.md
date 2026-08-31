@@ -1,5 +1,9 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — MXL-STARTER-SET-001 v1 закрыт: picker без gate по решению владельца
+
+`StarterSetPicker` (Focus/Calm/Energy, `MXL-DEC-024`) смёржен в `main` PR #419 (squash `ae2cc714`) в 12:37 МСК — контекстный picker в Today empty-state, accept создаёт реальный ritual через `api.rituals.create`, `isLinkedWebWriteBlocked` покрыт тестом `MXL-STARTER-SET-001`. Владелец параллельно попросил заменить `STARTER_SET_ENABLED = true` на env-gated default-off флаг (`VITE_STARTER_SET_ENABLED`); фикс был готов и запушен в 12:46 МСК — на 9 минут позже прямого мержа через GitHub UI, поэтому в squash не попал. `main` сейчас показывает picker всем пользователям без gate. Проверено с владельцем явно после факта: **оставить как есть**, gate не добавлять постфактум. Ручная сквозная проверка flow (choose→accept/replace/skip для всех трёх контекстов) через Vercel preview не проводилась — заблокирована дневной квотой Vercel (`api-deployments-free-per-day`, тот же код ошибки, что и в PR #312).
+
 ## 31.08.2026 — MXL-DEC-025/026: research-планы pattern insights и willingness-to-pay
 
 - `docs/research/MXL-DEC-025-pattern-insights-plan.md` — execution plan для issue #297: sample-size guard (стартовая гипотеза ≥7 наблюдений), provenance-механизм, 2–3 типа descriptive observations, измерение perceived usefulness и return intent. Research-спринт, не продуктовая фича.
