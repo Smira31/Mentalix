@@ -708,6 +708,22 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
 })
 
+test('MXL-THEME-015 light-preview keeps Mentalix warmth and remains preview-only', () => {
+  const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
+  const todayStyles = readFileSync(new URL('../../src/screens/Today.css', import.meta.url), 'utf8')
+  const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
+
+  assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-bg: 244 239 230/)
+  assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-card2: 235 227 216/)
+  assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-gold: 157 86 32/)
+  assert.match(styles, /\[data-theme='light-preview'\] \.bg-artbed[\s\S]*--c-gold: 225 166 79/)
+  assert.match(styles, /\[data-theme='light-preview'\] \.mx-today-primary-card:not\(\[data-complete='true'\]\)[\s\S]*background: #30322e/)
+  assert.match(todayStyles, /\[data-theme='light-preview'\] \.mx-today-theme-card[\s\S]*background: rgb\(var\(--c-card2\)\)/)
+  assert.match(todayStyles, /\[data-theme='light-preview'\] \.mx-today-primary-card:not\(\[data-complete='true'\]\) \.text-cream/)
+  assert.match(app, /const LIGHT_THEME_PREVIEW_PARAM = 'light-preview'/)
+  assert.match(app, /return previewBuild && requested === '1'/)
+})
+
 test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale для пяти вкладок', () => {
   const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')

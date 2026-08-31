@@ -81,10 +81,22 @@
  * containers, only in light-preview — production/default dark theme is
  * untouched since --c-text-on-dark equals --c-text there.
  */
-[data-theme='light-preview'] .mx-today-primary-card:not([data-complete='true']) .text-cream,
-[data-theme='light-preview'] .mx-today-theme-card .text-cream,
-[data-theme='light-preview'] .mx-today-affirmation-card .text-cream {
+[data-theme='light-preview'] .mx-today-primary-card:not([data-complete='true']) .text-cream {
   --c-text: var(--c-text-on-dark);
+}
+
+/* Secondary Today cards become paper surfaces in the light direction; only
+   the hero remains the dark visual anchor. */
+[data-theme='light-preview'] .mx-today-theme-card,
+[data-theme='light-preview'] .mx-today-affirmation-card {
+  border-color: rgb(var(--c-border));
+  background: rgb(var(--c-card2));
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset;
+}
+
+[data-theme='light-preview'] .mx-today-theme-card .text-gold,
+[data-theme='light-preview'] .mx-today-affirmation-card .text-gold {
+  color: rgb(var(--c-gold));
 }
 
 /*
