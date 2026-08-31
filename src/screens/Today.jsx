@@ -17,6 +17,7 @@ import QuoteView from './QuoteView'
 import MorningPilotCard from '../components/MorningPilotCard'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
+import StarterSetPicker from '../components/StarterSetPicker'
 import SeriesBadges from './SeriesBadges'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
@@ -28,6 +29,11 @@ const TODAY_COMPARE_REQUESTED =
 
 const INITIAL_TODAY_VARIANT =
   new URLSearchParams(window.location.search).get('today_variant') === 'before' ? 'before' : 'after'
+
+// MXL-STARTER-SET-001 (issue #417): kill-switch для первого продакшен-раската.
+// false полностью отключает picker и возвращает старый empty-state
+// («Пока нет практик» + «Выбрать практику») без других изменений кода.
+const STARTER_SET_ENABLED = true
 
 // ── календарь недели + отдельные дневные streak strips ──
 
@@ -162,6 +168,11 @@ export default function Today({
   const [pathTab, setPathTab] = useState('path')
 
   const [todayVariant, setTodayVariant] = useState(INITIAL_TODAY_VARIANT)
+
+  // MXL-STARTER-SET-001 v1 (issue #417): показываем picker только пока
+  // пользователь явно не пропустил его в этой сессии — «пропустить» не
+  // должно повторно всплывать при каждом ре-рендере Today.
+  const [starterSetSkipped, setStarterSetSkipped] = useState(false)
 
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
@@ -668,20 +679,33 @@ export default function Today({
       {!hiddenCards.includes('dayProgress') &&
         (isEmpty ? (
           <EmptyState className="mt-4 p-5 [&>div:first-child]:mb-3 [&>div:first-child]:h-12 [&>div:first-child]:w-12">
-            <h3 className="font-display mx-type-card text-cream mb-1">Пока нет практик</h3>
-            <p className="mx-type-list-body text-muted mb-4">
-              Добавь ритуал или аскезу — здесь появится прогресс дня.
-            </p>
-            <button
-              onClick={() => {
-                platform.haptic('light')
+            {!STARTER_SET_ENABLED || starterSetSkipped ? (
+              <>
+                <h3 className="font-display mx-type-card text-cream mb-1">Пока нет практик</h3>
+                <p className="mx-type-list-body text-muted mb-4">
+                  Добавь ритуал или аскезу — здесь появится прогресс дня.
+                </p>
+                <button
+                  onClick={() => {
+                    platform.haptic('light')
 
-                onOpenPractice?.()
-              }}
-              className="cta-pill mx-type-flow-action px-9 py-3.5"
-            >
-              Выбрать практику
-            </button>
+                    onOpenPractice?.()
+                  }}
+                  className="cta-pill mx-type-flow-action px-9 py-3.5"
+                >
+                  Выбрать практику
+                </button>
+              </>
+            ) : (
+              <StarterSetPicker
+                user={user}
+                onSkip={() => setStarterSetSkipped(true)}
+                onCreated={ritual => {
+                  setRituals(prev => [...prev, ritual])
+                  invalidateTodayData(user.id)
+                }}
+              />
+            )}
           </EmptyState>
         ) : (
           <button
