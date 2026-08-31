@@ -168,12 +168,24 @@ jobs:
             --arg text "$message" \
             --arg url "$PREVIEW_URL" \
             '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Preview", web_app: {url: $url}}]]}}')"
-          response="$(curl --fail --silent --show-error \
+          # No --fail here on purpose: it discards the response body on a
+          # non-2xx status, which previously left failed runs with only
+          # "curl: (22) ... error 403" in the log and no way to see what
+          # Telegram actually said. Split status/body via a trailing
+          # %{http_code} line instead, so a failure logs the real body.
+          http_response="$(curl --silent --show-error --max-time 20 \
             --request POST \
             --header 'Content-Type: application/json; charset=utf-8' \
             --data "$payload" \
+            --write-out $'\n%{http_code}' \
             "https://api.telegram.org/bot${telegram_token}/sendMessage")"
-          printf '%s\n' "$response" | jq -e '.ok == true' >/dev/null
+          http_status="${http_response##*$'\n'}"
+          response="${http_response%$'\n'*}"
+          if [ "$http_status" != "200" ] || ! printf '%s' "$response" | jq -e '.ok == true' >/dev/null 2>&1; then
+            echo "Telegram sendMessage failed (HTTP $http_status):" >&2
+            printf '%s\n' "$response" >&2
+            exit 1
+          fi
           echo "Telegram notification sent."
 
       - name: Comment preview evidence on PR
