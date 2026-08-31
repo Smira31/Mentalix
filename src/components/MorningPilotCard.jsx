@@ -205,10 +205,15 @@ export default function MorningPilotCard({
         </div>
       )}
 
+      {/*
+        MXL-122: не gold cta-pill — Today уже показывает один gold CTA
+        в hero-карточке выше (единственное «главное действие» экрана,
+        DESIGN_SYSTEM.md). Второй gold pill здесь конкурировал с ним.
+      */}
       <button
         type="button"
         onClick={openRituals}
-        className="cta-pill w-full text-[13px] px-6 py-3.5 mt-4 flex items-center justify-center gap-2"
+        className="w-full rounded-full bg-cream/10 border border-cream/15 text-cream text-[13px] font-bold px-6 py-3.5 mt-4 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
       >
         {visibleRituals.length > 0
           ? 'Открыть первый шаг'
