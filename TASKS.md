@@ -52,13 +52,13 @@
 - **Ограничение:** `pytest backend/tests bot/tests` не запускался — окружение сессии только с Python 3.14, нет toolchain для сборки `pydantic-core`/`asyncpg` из исходников. `python -m compileall` чисто. `quick_actions_kb()` уже покрыт существующим тестом, сами loop-функции (включая `reminder_loop`, по образцу которого сделано изменение) собственных тестов не имели и раньше.
 - **Не входит:** живая проверка доставки сообщения в Telegram — не требует Vercel, но требует владельца.
 
-## MXL-SECURITY-AUDIT-001 follow-up — статический аудит backend (issue #351)
+## MXL-SECURITY-AUDIT-001 follow-up — статический аудит + post-release live-проверка (issue #351)
 
-- **Статус:** код-часть проверена статическим анализом; issue открыт, ждёт живой production-проверки владельцем.
+- **Статус:** статический аудит + live post-release проверка сделаны. Issue #351 открыт — не закрывала сама, решение за владельцем.
 - **Причина:** issue #351 требовал подтвердить global initData verification и rate limiting на backend — scope backend-only (`mentalix-bot`, приватный), frontend не мог проверить сама.
-- **Что сделано:** аудит `mentalix-bot` @ `main` (`4bf0413`) — initData verification подтверждена на всех 19 приватных роутерах; rate limiting подтверждён НЕ глобальным (только `/api/auth/link/confirm`). Найдена отдельная уязвимость (`GET /api/user/{user_id}` без auth) — не входила в исходный scope, зафиксирована отдельно, ждёт решения владельца. Полный разбор — `mentalix-bot` PR #37 (CHANGES.md), не смёржен.
-- **Ограничение:** тесты `backend/tests/test_telegram_auth.py` не запускались в этой сессии — среда только с Python 3.14, нет toolchain для сборки `pydantic-core`/`asyncpg` из исходников под 3.12-зависимости.
-- **Не входит:** живая проверка production (`TELEGRAM_AUTH_VALIDATION_ENABLED`, реальный Telegram-клиент/web-login, CORS `Origin` из живого WebView) — это может сделать только владелец.
+- **Что сделано (статика, раньше):** аудит `mentalix-bot` @ `main` (`4bf0413`) — initData verification подтверждена на всех 19 приватных роутерах. Найдена и устранена отдельная уязвимость (`GET /api/user/{user_id}` без auth, `mentalix-bot` PR #38, смёржен). Global rate limiting реализован (`mentalix-bot` PR #41, смёржен, closes issue #39).
+- **Что сделано (live, 31.08.2026, после `mentalix-bot` PR #36):** прод health `200 ok`; неподписанный/поддельный/чужой-user запрос на GET и write-эндпоинты → `401`, не `200`; email OTP request-code работает, `dev_code` скрыт на проде; неверный код при verify корректно отклоняется. Полный разбор — `docs/security/MXL-SECURITY-AUDIT-001-INITDATA-BACKEND.md` → «Post-release проверка 31.08.2026».
+- **Не входит:** финальный успешный email OTP login (нужен доступ к реальной почте) и живое поведение реального Telegram-клиента (WebView, CORS `Origin`) — только HTTP-контракт backend проверен напрямую, не сквозной Telegram-flow. Это может сделать только владелец.
 
 ## MXL-010 — Release gate: PASS (issue #356) — закрыто
 
