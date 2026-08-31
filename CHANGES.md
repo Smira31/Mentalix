@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — MXL-010 release gate: PASS, issue #356 закрыт
+
+- Vercel free-tier quota восстановилась (подтверждено реальным успешным деплоем, не по памяти) — preview `main` @ `38edd10d` задеплоен, health-check `status: ok` перед отправкой.
+- Preview-ссылка разослана в Telegram Bot API (`https://mentalix-preview-p8039v9gr-...vercel.app`), поле Preview URL в `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` заполнено.
+- Независимо перепроверены #121 и #417 через `gh issue view`: оба уже CLOSED (не требуют довода до закрытия) — только #356 реально открыт и ждал живой проверки.
+- Владелец прошёл чек-лист (10-шаговый цикл + Telegram/iPhone fullscreen/safe-area/keyboard/WebView) на реальном iPhone в Telegram — **вердикт PASS, блокеров не найдено**. Зафиксировано в разделе 4 файла. Issue #356 закрыт.
+- **Ограничение записи:** пошаговые результаты разделов 2–3 не были продиктованы построчно — устройство/iOS/скриншоты не приложены. Общий вердикт PASS зафиксирован со слов владельца; не блокирует релиз, можно дозаполнить отдельно при необходимости.
+
 ## 31.08.2026 — MXL-STARTER-SET-001 v1 закрыт: picker без gate по решению владельца
 
 `StarterSetPicker` (Focus/Calm/Energy, `MXL-DEC-024`) смёржен в `main` PR #419 (squash `ae2cc714`) в 12:37 МСК — контекстный picker в Today empty-state, accept создаёт реальный ritual через `api.rituals.create`, `isLinkedWebWriteBlocked` покрыт тестом `MXL-STARTER-SET-001`. Владелец параллельно попросил заменить `STARTER_SET_ENABLED = true` на env-gated default-off флаг (`VITE_STARTER_SET_ENABLED`); фикс был готов и запушен в 12:46 МСК — на 9 минут позже прямого мержа через GitHub UI, поэтому в squash не попал. `main` сейчас показывает picker всем пользователям без gate. Проверено с владельцем явно после факта: **оставить как есть**, gate не добавлять постфактум. Ручная сквозная проверка flow (choose→accept/replace/skip для всех трёх контекстов) через Vercel preview не проводилась — заблокирована дневной квотой Vercel (`api-deployments-free-per-day`, тот же код ошибки, что и в PR #312).

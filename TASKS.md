@@ -54,14 +54,13 @@
 - **Ограничение:** тесты `backend/tests/test_telegram_auth.py` не запускались в этой сессии — среда только с Python 3.14, нет toolchain для сборки `pydantic-core`/`asyncpg` из исходников под 3.12-зависимости.
 - **Не входит:** живая проверка production (`TELEGRAM_AUTH_VALIDATION_ENABLED`, реальный Telegram-клиент/web-login, CORS `Origin` из живого WebView) — это может сделать только владелец.
 
-## MXL-010 — Release gate: снять BLOCKED (issue #356)
+## MXL-010 — Release gate: PASS (issue #356) — закрыто
 
-- **Статус:** чек-лист подготовлен, ждёт preview и живой проверки владельцем на реальном iPhone/аккаунте.
+- **Статус:** закрыто. Владелец прошёл чек-лист на реальном iPhone в Telegram, вердикт PASS, блокеров не найдено. `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md`, раздел 4.
 - **Причина:** `qa-evidence/mxl-010/release-gate-report.md` (2026-08-29) зафиксировал итог BLOCKED — не frontend-дефект, а недоказанность: fixture/automated evidence не может подтвердить реальный auth, AI-диалог, backend persistence, Telegram runtime.
-- **Что сделано:** создан `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` — 10-шаговый цикл MXL-010 + Telegram/iPhone fullscreen/safe-area/keyboard/WebView раздел. Один из трёх исходных P1-блокеров (недоступный Preview PR #312) снят сам собой — PR уже смёржен в `main`.
-- **Открытый вопрос:** day rollover (шаг 9) практически не пройти за одну сессию без backend test-режима смены даты — можно дозаполнить отдельно на следующий день.
-- **Ограничение:** preview не задеплоен — Vercel quota на `mentalix-preview` подтверждена ещё исчерпанной при последней проверке. Будет отправлен в Telegram после восстановления квоты.
-- **Не входит:** сам проход чек-листа с реальным аккаунтом — ручная проверка, Claude Code не может её выполнить.
+- **Что сделано:** создан `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` — 10-шаговый цикл MXL-010 + Telegram/iPhone fullscreen/safe-area/keyboard/WebView раздел. Один из трёх исходных P1-блокеров (недоступный Preview PR #312) снят сам собой — PR уже смёржен в `main`. Vercel quota восстановилась, preview `main` @ `38edd10d` задеплоен и отправлен в Telegram. Владелец подтвердил PASS.
+- **Ограничение записи:** пошаговые результаты разделов 2–3 не продиктованы построчно, устройство/iOS/скриншоты не приложены — файл явно это помечает. Не блокирует релиз, можно дозаполнить отдельно при необходимости.
+- **Открытый вопрос:** day rollover (шаг 9) практически не пройти за одну сессию без backend test-режима смены даты — можно дозаполнить отдельно на следующий день, не блокирует общий PASS.
 
 ## MXL-JOURNAL-001 — Telegram/iPhone manual gate (issue #355) — закрыто, PASS
 
