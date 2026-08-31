@@ -282,11 +282,10 @@ export default function App() {
    */
   const [onboardedFlag, setOnboardedFlag] = useSynced(ONBOARDED_KEY, '0')
 
-  // Synthetic pre-onboarded state for the diagnostic Preview only. It does
-  // not write the user's synced onboarding flag and is unreachable in the
-  // production default because isLightThemePreviewEnabled requires a local
-  // dev or Vercel Preview build plus the explicit query gate.
-  const onboarded = onboardedFlag === '1' || (isPreviewDemoMode() && isLightThemePreviewEnabled())
+  // Demo builds are synthetic users only: they skip onboarding in DEV or
+  // Vercel Preview, without writing the user's synced onboarding flag.
+  // isPreviewDemoMode itself requires ?demo=1 and an allowed preview host.
+  const onboarded = onboardedFlag === '1' || isPreviewDemoMode()
 
   /*
    * Блокировка приложения (PIN/биометрия). Синхронизируется только факт

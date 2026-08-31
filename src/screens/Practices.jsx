@@ -36,9 +36,7 @@ function SubHeader({ title, onBack }) {
   return (
     <div
       className="
-        w-full
-        max-w-md
-        px-5
+        mx-screen-shell
         pb-[8px]
 
         grid
@@ -79,7 +77,7 @@ function PracticeRow({
         onOpen?.()
       }}
       className={[
-        'w-full min-h-[72px] flex items-center gap-3 border-b text-left transition-colors',
+        'mx-practice-row w-full flex items-center gap-3 text-left',
         soon ? 'border-cream/[0.06] cursor-default' : 'border-cream/[0.10] active:bg-cream/[0.03]',
       ].join(' ')}
     >
@@ -133,9 +131,7 @@ function PracticeRow({
 function PracticeCategory({ title, children }) {
   return (
     <section className="mt-7 first:mt-0">
-      <h3 className="mb-2 font-label text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">
-        {title}
-      </h3>
+      <h3 className="mx-section-label mb-2">{title}</h3>
       <div>{children}</div>
     </section>
   )
@@ -150,7 +146,7 @@ function JournalEntry({ onOpen }) {
           platform.haptic('light')
           onOpen()
         }}
-        className="relative w-full overflow-hidden rounded-[28px] border border-gold/25 bg-gold/[0.08] p-5 text-left transition-colors active:bg-gold/[0.13]"
+        className="mx-journal-entry relative w-full overflow-hidden p-5 text-left active:bg-gold/[0.13]"
       >
         <span className="absolute right-3 top-3 h-20 w-20 text-gold/45" aria-hidden="true">
           <JournalArt />

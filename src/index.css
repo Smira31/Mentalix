@@ -5,6 +5,7 @@
    в 500.css/600.css по unicode-range вместе с латиницей. */
 @import '@fontsource/manrope/500.css';
 @import '@fontsource/manrope/600.css';
+@import '@fontsource/manrope/700.css';
 
 @tailwind base;
 @tailwind components;
@@ -143,6 +144,27 @@
   /* Подложка под иллюстрации: окно в ночь внутри карточки. */
 
   --c-artbed: 9 9 9;
+
+  /* Единый ритм Mentalix: один масштаб вместо локальных случайных значений. */
+  --mx-space-1: 4px;
+  --mx-space-2: 8px;
+  --mx-space-3: 12px;
+  --mx-space-4: 16px;
+  --mx-space-5: 20px;
+  --mx-space-6: 24px;
+  --mx-space-7: 28px;
+  --mx-space-8: 32px;
+  --mx-space-10: 40px;
+
+  --mx-radius-control: 16px;
+  --mx-radius-card: 24px;
+  --mx-radius-hero: 32px;
+  --mx-radius-pill: 999px;
+
+  --mx-motion-fast: 160ms;
+  --mx-motion-base: 220ms;
+  --mx-motion-slow: 320ms;
+  --mx-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Альтернативный акцент (MXL-THEME-ACCENT-001) — переключается атрибутом
@@ -211,12 +233,181 @@ svg .animate-celebrate-pop {
 }
 
 /* ============================================================
+   SHARED SURFACES & CONTROLS
+
+   Эти примитивы — визуальный контракт для новых и постепенно
+   выровненных экранов. Смысл компонентов остаётся в JSX, а
+   геометрия и интерактивное поведение не дублируются по файлам.
+   ============================================================ */
+
+.mx-screen-shell {
+  width: 100%;
+  max-width: 430px;
+  margin-inline: auto;
+  padding-inline: var(--mx-space-5);
+}
+
+.mx-card-surface {
+  border: 1px solid rgb(var(--c-border) / 0.72);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2) / 0.84);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.018);
+}
+
+.mx-card-surface--quiet {
+  background: rgb(var(--c-card) / 0.72);
+}
+
+.mx-card-surface--hero {
+  border-radius: var(--mx-radius-hero);
+  background: rgb(var(--c-card2));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.024),
+    0 18px 44px rgb(0 0 0 / 0.16);
+}
+
+.mx-section-label {
+  color: rgb(var(--c-muted));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.mx-cta-primary,
+.mx-cta-secondary {
+  min-height: 52px;
+  border-radius: var(--mx-radius-pill);
+  padding-inline: var(--mx-space-6);
+  font-size: var(--mx-type-control-size);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mx-cta-primary {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+}
+
+.mx-cta-secondary {
+  border: 1px solid rgb(var(--c-border));
+  background: transparent;
+  color: rgb(var(--c-text));
+}
+
+.mx-cta-primary:hover,
+.mx-cta-secondary:hover {
+  filter: brightness(1.06);
+}
+
+.mx-cta-primary:active,
+.mx-cta-secondary:active {
+  transform: scale(0.975);
+}
+
+.mx-cta-primary:focus-visible,
+.mx-cta-secondary:focus-visible,
+button:focus-visible,
+a:focus-visible,
+textarea:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid rgb(var(--c-gold));
+  outline-offset: 3px;
+}
+
+.mx-choice-surface {
+  border: 1px solid rgb(var(--c-border) / 0.8);
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  transition:
+    transform var(--mx-motion-fast) var(--mx-ease-out),
+    background-color var(--mx-motion-base) ease,
+    border-color var(--mx-motion-base) ease,
+    color var(--mx-motion-base) ease;
+}
+
+.mx-choice-surface:active {
+  transform: scale(0.985);
+}
+
+.mx-choice-surface[data-selected='true'] {
+  border-color: rgb(var(--c-gold) / 0.7);
+  background: rgb(var(--c-gold) / 0.12);
+}
+
+.mx-practice-row {
+  min-height: 76px;
+  border-bottom: 1px solid rgb(var(--c-border) / 0.66);
+  transition:
+    background-color var(--mx-motion-base) ease,
+    transform var(--mx-motion-fast) var(--mx-ease-out);
+}
+
+.mx-practice-row:not(:disabled):hover {
+  background: rgb(var(--c-text) / 0.025);
+}
+
+.mx-practice-row:not(:disabled):active {
+  transform: scale(0.99);
+}
+
+.mx-journal-entry {
+  border: 1px solid rgb(var(--c-gold) / 0.28);
+  border-radius: var(--mx-radius-hero);
+  background: linear-gradient(135deg, rgb(var(--c-gold) / 0.12), rgb(var(--c-card2) / 0.72));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.024);
+  transition:
+    background-color var(--mx-motion-base) ease,
+    border-color var(--mx-motion-base) ease,
+    transform var(--mx-motion-fast) var(--mx-ease-out);
+}
+
+.mx-journal-entry:hover {
+  border-color: rgb(var(--c-gold) / 0.42);
+}
+
+.mx-journal-entry:active {
+  transform: scale(0.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-practice-row,
+  .mx-journal-entry {
+    transition: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .mx-screen-shell {
+    padding-inline: var(--mx-space-4);
+  }
+
+  .mx-cta-primary,
+  .mx-cta-secondary {
+    min-height: 48px;
+    padding-inline: var(--mx-space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-card-surface,
+  .mx-choice-surface,
+  .mx-cta-primary,
+  .mx-cta-secondary {
+    transition: none;
+  }
+}
+
+/* ============================================================
    BASE
    ============================================================ */
 
 :root {
   font-family:
-    'Onest',
+    'Manrope',
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -264,8 +455,8 @@ body {
   color: rgb(var(--c-text));
 
   transition:
-    background 0.4s ease,
-    color 0.4s ease;
+    background-color var(--mx-motion-slow) var(--mx-ease-out),
+    color var(--mx-motion-base) ease;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -277,6 +468,8 @@ body {
 
 button {
   -webkit-tap-highlight-color: transparent;
+
+  border: 0;
 
   cursor: pointer;
 
@@ -295,14 +488,14 @@ button {
    ============================================================ */
 
 .font-display {
-  font-weight: 800;
+  font-weight: 700;
 
   letter-spacing: -0.02em;
 }
 
 /*
  * MXL-TYPE-CONSISTENCY-001 — единая оптическая шкала верхнеуровневых экранов.
- * Onest остаётся единственной пользовательской гарнитурой: здесь задаются роли,
+ * Manrope остаётся единственной пользовательской гарнитурой: здесь задаются роли,
  * а не новый шрифт. Размеры фиксированы намеренно — они являются проверяемым
  * контрактом для пяти основных вкладок на узких Telegram viewport.
  */
@@ -509,23 +702,41 @@ button {
    ============================================================ */
 
 .cta-pill {
+  min-height: 52px;
+  padding-inline: var(--mx-space-6);
   background: var(--btn-bg);
 
   color: var(--btn-text);
 
   border: none;
 
-  border-radius: 999px;
+  border-radius: var(--mx-radius-pill);
 
-  font-weight: 800;
+  font-weight: 700;
 
-  transition: transform 0.15s ease;
+  transition:
+    transform var(--mx-motion-fast) var(--mx-ease-out),
+    background-color var(--mx-motion-base) ease,
+    box-shadow var(--mx-motion-base) ease;
 }
 
 .cta-pill:active {
   background: rgb(var(--btn-bg) / 0.88);
   box-shadow: inset 0 0 0 2px rgb(var(--btn-text) / 0.12);
-  transform: scale(0.96);
+  transform: scale(0.975);
+}
+
+@media (max-width: 359px) {
+  .cta-pill {
+    min-height: 48px;
+    padding-inline: var(--mx-space-5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-pill {
+    transition: none;
+  }
 }
 
 /* ============================================================
