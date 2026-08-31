@@ -1,5 +1,14 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — MXL-122: Today — убрана конкурирующая CTA (#122)
+
+- Аудит Today.jsx подтвердил: hero-карточка уже имеет единственный явный `cta-pill` (gold) на каждое состояние дня (`heroContentByState`/`heroCheckinContent`, контракт MXL-UX-U07) — второго такого же по весу CTA на экране не было, кроме одного места.
+- `MorningPilotCard` (утреннее окно 5:00–12:00) рендерил свою собственную кнопку `cta-pill` («Открыть первый шаг»/«Открыть ритуалы»/«Добавить ритуал») **безусловно**, независимо от состояния hero — то есть в любом состоянии дня на экране одновременно оказывались два golden pill CTA, конкурирующих за внимание. Это прямое нарушение и правила #122 («одно очевидное primary action»), и `DESIGN_SYSTEM.md` (gold — только для главного действия).
+- Исправлено точечно: кнопка `MorningPilotCard` переведена с `cta-pill` на нейтральный вторичный стиль (`bg-cream/10` + `border-cream/15`, без gold) — функциональность и назначение кнопки не менялись, только визуальный вес относительно hero.
+- Не создавалось новой функциональности; `todayFocusPicked` (уже существующий, но нигде не вызываемый prop для схлопывания карточки) не трогала — он относится к отдельному незавершённому Focus-flow (`TodayFocusCard.jsx`/`TodayFocusFlow.jsx`, не подключён к Today.jsx), пере-использование его под другую цель было бы domain-guessing, а не переиспользованием.
+- **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
+- **Не проверено:** реальный iPhone/Telegram (acceptance criteria #122 требует это явно) — визуальный аудит и локальные проверки не заменяют это.
+
 ## 31.08.2026 — MXL-010: release gate чек-лист подготовлен, ждёт preview и живой проверки (#356)
 
 - `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` — новый файл (`qa-evidence/mxl-010/` содержал только fixture/automated evidence и `release-gate-report.md` с итогом BLOCKED от 2026-08-29, без ручного чек-листа под owner). Консолидирует 10 шагов полного аутентифицированного цикла MXL-010 (вход → check-in → ritual/asceza → AI-диалог → вечерний анализ → handoff → возврат к Today → day rollover → save/reopen) и отдельный раздел под Telegram/iPhone fullscreen/safe-area/keyboard/WebView — то, что fixture-режим принципиально не может доказать.
