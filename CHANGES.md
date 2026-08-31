@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — MXL-JOURNAL-001: gate подготовлен, ждёт живой проверки владельца (#355)
+
+- `docs/qa/MXL-JOURNAL-001_TELEGRAM_IPHONE_GATE.md` — чек-лист был написан под PR #224 и с тех пор устарел (Journal-код в `main` менялся ещё несколько раз: #247 левое выравнивание + убрана «Тема недели», #246 tablet/desktop, #338 unified History feed, #315/#339 persistence/AI handoff). Добавлен раздел «2а» с явной регресс-проверкой #247 (левый край, отсутствие «Тема недели»), обновлена шапка с указанием, что проверять нужно текущий `main` (`01e7a56e`), а не историю PR #224.
+- Развёрнут preview (`main` @ `01e7a56e`, путь `?tab=mentor`) и разослан владельцу через Telegram Bot API (`npm run preview` эквивалент, не как ссылка в чате) — см. `docs/qa/MXL-JOURNAL-001_TELEGRAM_IPHONE_GATE.md`, поле Preview URL.
+- Vercel free-tier deploy quota (100/day) была исчерпана сразу после этого одного успешного деплоя — повторный передеплой недоступен ближайшие 24ч, если понадобится новый preview.
+- **Не закрыто:** сам чек-лист (подготовка → release-решение) не пройден — это ручная проверка на реальном iPhone в Telegram, которую выполняет владелец. Issue #355 остаётся открытым.
+- Попутно обнаружено: PR #419 (Starter Set v1, issue #417) оказался уже смёржен в `main` при сверке состояния в начале сессии, хотя в его описании стояло «Do not merge — жду подтверждения владельца» и в треде PR нет подтверждающего review. Флаг `VITE_STARTER_SET_ENABLED=false` — риска для прода нет. Issue #417 оставлен открытым, добавлен уточняющий комментарий; закрывать его нельзя до отдельной живой проверки flow Focus/Calm/Energy.
+
 ## 31.08.2026 — MXL-DEC-025/026: research-планы pattern insights и willingness-to-pay
 
 - `docs/research/MXL-DEC-025-pattern-insights-plan.md` — execution plan для issue #297: sample-size guard (стартовая гипотеза ≥7 наблюдений), provenance-механизм, 2–3 типа descriptive observations, измерение perceived usefulness и return intent. Research-спринт, не продуктовая фича.
