@@ -70,12 +70,12 @@ UX smoke (`npm run check:core`, `npm run ux:check`, `npm run ux:mxl010`) уже 
 **BLOCKED** остаётся, если реального аккаунта/backend test-режима не было предоставлено —
 это не FAIL и не доказательство frontend-дефекта.
 
-| Поле                         | Значение |
-| ---------------------------- | -------- |
-| Устройство / iOS / Telegram  |          |
-| Preview URL                  |          |
-| Дата и часовой пояс          |          |
-| PASS / FAIL / BLOCKED        |          |
-| Blockers                     |          |
-| Скриншоты / screen recording |          |
-| Решение владельца            |          |
+| Поле                         | Значение                                                                                                                                                           |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Устройство / iOS / Telegram  |                                                                                                                                                                    |
+| Preview URL                  | https://mentalix-preview-p8039v9gr-smiraandre2-8311s-projects.vercel.app (main @ 38edd10d, разослан в Telegram 31.08.2026, health-check status:ok перед отправкой) |
+| Дата и часовой пояс          |                                                                                                                                                                    |
+| PASS / FAIL / BLOCKED        |                                                                                                                                                                    |
+| Blockers                     |                                                                                                                                                                    |
+| Скриншоты / screen recording |                                                                                                                                                                    |
+| Решение владельца            |                                                                                                                                                                    |
