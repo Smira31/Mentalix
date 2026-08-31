@@ -1,5 +1,11 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — Contextual CTA на return-flow сообщениях, частичный scope (#123)
+
+- Backend-only, без Vercel: `mentalix-bot` PR #40 (не смёржен) добавляет `reply_markup=quick_actions_kb()` в `comeback_loop` и `weekly_digest_loop` (`bot/bot.py`) — раньше эти сообщения не имели ни одной кнопки, что не соответствовало acceptance criteria #123 («CTA ведёт на конкретный экран, а не в главное меню»). `reminder_loop` (пропущенный ритуал) уже использовал этот паттерн раньше.
+- Это **частичный scope** #123, не весь issue — утренний контакт и другие пункты списка не тронуты. Issue не закрыт.
+- Также по #121 (deep links, ранее закрыт): зафиксировано в issue — closure не подтверждён живой проверкой на iPhone в Telegram, только код с обеих сторон. Добавлено в общий список live-проверок вместе с #356 и #417.
+
 ## 31.08.2026 — MXL-SECURITY-AUDIT-001 follow-up: статический аудит backend (#351)
 
 - Frontend не может проверить backend сама — аудит выполнен статическим анализом кода `mentalix-bot` (полный разбор: `mentalix-bot` PR #37, не смёржен).

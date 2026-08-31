@@ -1,5 +1,13 @@
 # Mentalix — задачи
 
+## Telegram return flows — contextual CTA, частичный scope (issue #123)
+
+- **Статус:** частичный scope сделан (backend-only), ждёт review владельца. Issue #123 не закрыт — весь остальной scope (утренний контакт и т.д.) не тронут.
+- **Причина:** #123 зависел от #121 (Bot↔Mini App deep links), теперь код-часть #121 в `main` с обеих сторон. Аудит существующего backend (`mentalix-bot/bot/bot.py`) показал: `reminder_loop` (пропущенный ритуал) уже использует контекстные CTA-кнопки, но `comeback_loop` (выпадение из ритма) и `weekly_digest_loop` (недельный разбор) слали голый текст без единой кнопки — не соответствовало acceptance criteria #123.
+- **Что сделано:** `mentalix-bot` PR #40 (не смёржен) — оба loop теперь передают `reply_markup=quick_actions_kb()`, тот же паттерн, что уже в `reminder_loop`. Backend-only, без Vercel/деплоя.
+- **Ограничение:** `pytest backend/tests bot/tests` не запускался — окружение сессии только с Python 3.14, нет toolchain для сборки `pydantic-core`/`asyncpg` из исходников. `python -m compileall` чисто. `quick_actions_kb()` уже покрыт существующим тестом, сами loop-функции (включая `reminder_loop`, по образцу которого сделано изменение) собственных тестов не имели и раньше.
+- **Не входит:** живая проверка доставки сообщения в Telegram — не требует Vercel, но требует владельца.
+
 ## MXL-SECURITY-AUDIT-001 follow-up — статический аудит backend (issue #351)
 
 - **Статус:** код-часть проверена статическим анализом; issue открыт, ждёт живой production-проверки владельцем.
