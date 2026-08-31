@@ -119,10 +119,22 @@
   opacity: 0.24;
 }
 
+/*
+ * UI-фидбек (экран ритуалов): `transform-box: view-box` читает
+ * transform-origin в абсолютных координатах SVG viewBox, а не в
+ * локальной системе группы — для слоёв, завёрнутых в родительский
+ * `transform="translate(3 0) scale(.7)"` (Drawing() case 'ritual'),
+ * это давало точку вращения там, где фигур уже нет, и вся
+ * констелляция при вращении уезжала вбок вместо вращения на месте.
+ * fill-box + center — тот же паттерн, что уже работает ниже для
+ * `.mx-semantic-glyph__point`: браузер сам берёт центр фактической
+ * геометрии элемента, независимо от предков transform.
+ */
+.mx-semantic-glyph__ritual-orbits,
 .mx-semantic-glyph__ritual-runner,
 .mx-semantic-glyph__ritual-orbit-layer {
-  transform-box: view-box;
-  transform-origin: 110px 78px;
+  transform-box: fill-box;
+  transform-origin: center;
 }
 
 .mx-semantic-glyph__exercise-nodes circle {

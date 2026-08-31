@@ -9,6 +9,50 @@
 - **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
 - **Не входит:** часть 1 задачи (`Conversation.jsx`), решение по CheckIn/MoodCheckGate — оба остаются needs-decision.
 
+## 31.08.2026 — Отцентрирована анимация «созвездия» на экране ритуалов (UI-фидбек)
+
+- `src/components/SemanticGlyph.css` — вращающаяся констелляция (`kind="ritual"`, используется и в пустом состоянии Rituals, и в illustration каждой `RitualCard`) визуально уезжала в сторону при вращении. Причина: `.mx-semantic-glyph__ritual-orbit-layer`/`-runner`/`-orbits` использовали `transform-box: view-box; transform-origin: 110px 78px` — это координаты `cx/cy` самих эллипсов, но `transform-box: view-box` интерпретирует их в абсолютной системе координат SVG viewBox, а не в локальной системе группы, которая уже завёрнута в родительский `transform="translate(3 0) scale(.7)"` (`SemanticGlyph.jsx`, `Drawing()` case `'ritual'`). Пивот вращения не совпадал с фактическим центром фигур.
+- Заменено на `transform-box: fill-box; transform-origin: center` — тот же паттерн, что уже работает в этом файле для `.mx-semantic-glyph__point`: браузер сам берёт центр фактической геометрии, не завязано на ручной пересчёт координат через ancestor-трансформы.
+- Проверено визуально через `npm run dev` + Playwright screenshot в 5 точках анимационного цикла (0/1.5/3/4.5/6с) — и в пустом состоянии Rituals, и внутри реальной `RitualCard` (другие пропорции контейнера) — во всех кадрах констелляция стабильно центрирована.
+- **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
+
+## 31.08.2026 — Убрана анимация лого на загрузочном экране (UI-фидбек)
+
+- `src/App.jsx::Splash` — убран класс `animate-pulse-once` с `MazeLogo` (единственное место в кодовой базе, где эта анимация применялась — проверено grep по `src/`). Сам логотип и его прогресс (`progress={0.55}`) не менялись, только убрана пульсация масштаба (`scale(1)→1.02→1` за 0.5с).
+- Tailwind-токен `pulse-once`/`pulseOnce` в `tailwind.config.js` не трогала — не в скоупе задачи, удаление неиспользуемого token-а не запрошено.
+- **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
+
+## 31.08.2026 — Bug-фидбек «кнопка создания ритуала не работает» — не воспроизведён (#429)
+
+- UI-фидбек с веб-версии (приоритетный, до этого не заводился как issue) — issue #429 создан с полным описанием репро-попыток.
+- Проверено через `npm run dev` (проксирует `/api` на реальный prod backend) + Playwright с мокнутым `/api/**` (не трогал прод-данные): пустое состояние → «Создать ритуал» (не-linked аккаунт), карточка «+ Новый ритуал» в snap-scroll ленте через реальный touch tap (не mouse click — это самый вероятный кандидат на «тап съедается скроллом»), linked-аккаунт с реальным 401 от backend (`missing_telegram_auth`) — везде сработало корректно, включая честное сообщение об ошибке для linked-случая.
+- Также проверено: `StarterSetPicker` («Принять», #417) код-ревью без проблем; `QuickAdd` подтверждён как мёртвый код (нигде не рендерится).
+- **Код не менялся** — фикса нет, потому что не нашла подтверждённого дефекта. Гипотеза: фидбек мог быть о поведении до недавних backend-фиксов (`MXL-WEB-LINKED-WRITE-001`, `MXL-SECURITY-AUDIT-001`) или о другом устройстве/браузере/экране, который я не смогла проверить.
+- Issue #429 остаётся открытым, ждёт репро-деталей от репортера.
+
+## 31.08.2026 — MXL-122: Today — убрана конкурирующая CTA (#122)
+
+- Аудит Today.jsx подтвердил: hero-карточка уже имеет единственный явный `cta-pill` (gold) на каждое состояние дня (`heroContentByState`/`heroCheckinContent`, контракт MXL-UX-U07) — второго такого же по весу CTA на экране не было, кроме одного места.
+- `MorningPilotCard` (утреннее окно 5:00–12:00) рендерил свою собственную кнопку `cta-pill` («Открыть первый шаг»/«Открыть ритуалы»/«Добавить ритуал») **безусловно**, независимо от состояния hero — то есть в любом состоянии дня на экране одновременно оказывались два golden pill CTA, конкурирующих за внимание. Это прямое нарушение и правила #122 («одно очевидное primary action»), и `DESIGN_SYSTEM.md` (gold — только для главного действия).
+- Исправлено точечно: кнопка `MorningPilotCard` переведена с `cta-pill` на нейтральный вторичный стиль (`bg-cream/10` + `border-cream/15`, без gold) — функциональность и назначение кнопки не менялись, только визуальный вес относительно hero.
+- Не создавалось новой функциональности; `todayFocusPicked` (уже существующий, но нигде не вызываемый prop для схлопывания карточки) не трогала — он относится к отдельному незавершённому Focus-flow (`TodayFocusCard.jsx`/`TodayFocusFlow.jsx`, не подключён к Today.jsx), пере-использование его под другую цель было бы domain-guessing, а не переиспользованием.
+- **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
+- **Не проверено:** реальный iPhone/Telegram (acceptance criteria #122 требует это явно) — визуальный аудит и локальные проверки не заменяют это.
+
+## 31.08.2026 — Contextual CTA на return-flow сообщениях, частичный scope (#123)
+
+- Backend-only, без Vercel: `mentalix-bot` PR #40 (не смёржен) добавляет `reply_markup=quick_actions_kb()` в `comeback_loop` и `weekly_digest_loop` (`bot/bot.py`) — раньше эти сообщения не имели ни одной кнопки, что не соответствовало acceptance criteria #123 («CTA ведёт на конкретный экран, а не в главное меню»). `reminder_loop` (пропущенный ритуал) уже использовал этот паттерн раньше.
+- Это **частичный scope** #123, не весь issue — утренний контакт и другие пункты списка не тронуты. Issue не закрыт.
+- Также по #121 (deep links, ранее закрыт): зафиксировано в issue — closure не подтверждён живой проверкой на iPhone в Telegram, только код с обеих сторон. Добавлено в общий список live-проверок вместе с #356 и #417.
+
+## 31.08.2026 — MXL-SECURITY-AUDIT-001 follow-up: статический аудит backend (#351)
+
+- Frontend не может проверить backend сама — аудит выполнен статическим анализом кода `mentalix-bot` (полный разбор: `mentalix-bot` PR #37, не смёржен).
+- Подтверждено: initData verification подключена на всех 19 роутерах с приватными данными; rate limiting **не глобальный** (только точечный лимитер на `/api/auth/link/confirm`).
+- Найдена непокрытая уязвимость вне исходного scope: `GET /api/user/{user_id}` без auth-проверки, отдаёт username/first_name для любого id (похоже на dead code). Требует решения владельца — фикс не сделан, auth-контракт не меняется без подтверждения.
+- Тесты `test_telegram_auth.py` не перезапускались в этой сессии (окружение без Python 3.12) — код с 30.08.2026 не менялся, предыдущий зафиксированный прогон (`mentalix-bot` CHANGES.md, 30.08.2026) — 25 passed.
+- **Issue #351 остаётся открытым:** production-значение `TELEGRAM_AUTH_VALIDATION_ENABLED`, живое поведение Telegram-клиента/web-login и реальный CORS `Origin` из Telegram WebView — код это доказать не может, нужна живая проверка владельца.
+
 ## 31.08.2026 — MXL-010: release gate чек-лист подготовлен, ждёт preview и живой проверки (#356)
 
 - `docs/qa/MXL-010_RELEASE_GATE_CHECKLIST.md` — новый файл (`qa-evidence/mxl-010/` содержал только fixture/automated evidence и `release-gate-report.md` с итогом BLOCKED от 2026-08-29, без ручного чек-листа под owner). Консолидирует 10 шагов полного аутентифицированного цикла MXL-010 (вход → check-in → ritual/asceza → AI-диалог → вечерний анализ → handoff → возврат к Today → day rollover → save/reopen) и отдельный раздел под Telegram/iPhone fullscreen/safe-area/keyboard/WebView — то, что fixture-режим принципиально не может доказать.
