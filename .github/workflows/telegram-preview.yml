@@ -82,10 +82,49 @@ jobs:
           echo "number=$resolved" >> "$GITHUB_OUTPUT"
           echo "Resolved PR number: $resolved (client_payload had: $PR_NUMBER, branch: $PREVIEW_BRANCH)"
 
+      - name: Resolve preview checklist from PR body
+        id: checklist
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Explicit, documented format (docs/TELEGRAM_PREVIEW_ACTIONS.md):
+          # the PR body must have a "## Preview checklist" section; its
+          # content becomes the Telegram scenario text. Deliberately not a
+          # file-changed heuristic and not a separate manual parameter per
+          # dispatch — the checklist is authored once, git-tracked in the
+          # PR itself, and reused for every automatic notification.
+          pr_number="${{ steps.pr.outputs.number }}"
+          text=""
+          if [ "$pr_number" != "n/a" ]; then
+            body="$(gh pr view "$pr_number" --repo "${{ github.repository }}" --json body --jq '.body // ""' | tr -d '\r')"
+            text="$(printf '%s\n' "$body" | awk '
+              /^## Preview checklist[[:space:]]*$/ { capture=1; next }
+              /^## / { if (capture) exit }
+              capture { print }
+            ')"
+          fi
+          if [ -n "$(printf '%s' "$text" | tr -d '[:space:]')" ]; then
+            found="true"
+          else
+            found="false"
+            text=""
+          fi
+          echo "found=$found" >> "$GITHUB_OUTPUT"
+          {
+            echo "text<<PREVIEW_CHECKLIST_EOF"
+            printf '%s\n' "$text"
+            echo "PREVIEW_CHECKLIST_EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Preview checklist found: $found (PR #$pr_number)"
+
       - name: Notify Telegram
         shell: bash
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
+          CHECKLIST_FOUND: ${{ steps.checklist.outputs.found }}
+          CHECKLIST_TEXT: ${{ steps.checklist.outputs.text }}
         run: |
           set -euo pipefail
           telegram_token="$(printf '%s' "$TELEGRAM_MAIN_BOT_TOKEN" | tr -d '[:space:]')"
@@ -98,10 +137,17 @@ jobs:
             echo 'TELEGRAM_PREVIEW_CHAT_ID must be numeric.' >&2
             exit 1
           fi
+          if [ "$CHECKLIST_FOUND" = "true" ]; then
+            scenario="$CHECKLIST_TEXT"
+          elif [ "$PR_NUMBER" = "n/a" ]; then
+            scenario="Сценарий проверки не указан в PR — проверьте вручную."
+          else
+            scenario="$(printf 'Сценарий проверки не указан в PR — проверьте вручную.\nDiff: https://github.com/%s/pull/%s/files' "$GITHUB_REPOSITORY" "$PR_NUMBER")"
+          fi
           # printf interprets \n in its format string as a real newline byte;
           # a plain "..." bash assignment does not — the old code put the two
           # literal characters "\" and "n" into the Telegram message text.
-          message="$(printf 'Mentalix preview PR #%s готов к проверке.\nПроверьте сценарий: Today → открыть practice → завершить → убедиться, что приложение возвращает в Today. Отдельно проверьте Back и ранний выход.' "$PR_NUMBER")"
+          message="$(printf 'Mentalix preview PR #%s готов к проверке.\n\n%s' "$PR_NUMBER" "$scenario")"
           payload="$(jq -n \
             --arg chat_id "$chat_id" \
             --arg text "$message" \
