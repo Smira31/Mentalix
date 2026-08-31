@@ -1,5 +1,21 @@
 # Mentalix — задачи
 
+## MXL-DEC-025 — Pattern insights research (issue #297)
+
+- **Статус:** research-план утверждён владельцем, ждёт PR/execution.
+- **Вопрос:** готовы ли пользователи возвращаться в приложение ради осторожных pattern insights над накопленной историей записей.
+- **План:** `docs/research/MXL-DEC-025-pattern-insights-plan.md` — sample-size guard, provenance, 2–3 типа descriptive observations, измерение perceived usefulness и return intent.
+- **Зависимости:** MXL-JOURNAL-PERSISTENCE-001, MXL-JOURNAL-HISTORY-001, корректная модель даты/timezone.
+- **Не входит:** диагнозы, причинные заявления, ML/статистические модели, персонализация формулировок — только эвристики для теста гипотезы.
+
+## MXL-DEC-026 — Willingness-to-pay concept test (issue #298)
+
+- **Статус:** research-план утверждён владельцем, ждёт PR/execution.
+- **Вопрос:** за какой конкретный результат пользователи готовы платить после полноценного бесплатного daily loop.
+- **План:** `docs/research/MXL-DEC-026-wtp-concept-test-plan.md` — fake-door/concept-test трёх paid output concepts, без checkout и payment provider.
+- **Ограничение:** базовый daily loop (check-in, free write, сохранение, один next action) остаётся полностью бесплатным и не завязан на тест.
+- **Не входит:** реальный биллинг, ценообразование.
+
 ## MXL-THEME-015 — S-M light-preview diagnostic: hero/artbed-карточки на светлом фоне
 
 - **Статус:** S-M diagnostic закрыт, смёржено в `main` (PR #415, squash `35927c0e`, CI green). L-scope редизайн отложен — см. issue #416, `MXL-DEC-023`.

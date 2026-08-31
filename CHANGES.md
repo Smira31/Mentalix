@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — MXL-DEC-025/026: research-планы pattern insights и willingness-to-pay
+
+- `docs/research/MXL-DEC-025-pattern-insights-plan.md` — execution plan для issue #297: sample-size guard (стартовая гипотеза ≥7 наблюдений), provenance-механизм, 2–3 типа descriptive observations, измерение perceived usefulness и return intent. Research-спринт, не продуктовая фича.
+- `docs/research/MXL-DEC-026-wtp-concept-test-plan.md` — execution plan для issue #298: fake-door/concept-test трёх paid output concepts (расширенный problem-led track, personal pattern summary, explicit AI-deepen), без checkout и payment provider. Базовый бесплатный daily loop не блокируется.
+- Оба ADR-блока добавлены в `docs/core/PRODUCT_DECISIONS.md` («Обновление 31.08.2026»). Renumbered с исходных MXL-DEC-024/025 на 025/026, чтобы не столкнуться с MXL-DEC-024 (Стартовый набор v1, PR #419, ещё не смёржен).
+- Не смёржено, ждёт подтверждения владельца.
+
 ## 31.08.2026 — MXL-THEME-015: S-M light-preview diagnostic закрыт
 
 `--c-text-on-dark` добавлен в `src/index.css` и точечно применён на `.text-cream` внутри трёх намеренно тёмных карточек Today (`.mx-today-primary-card` до `data-complete`, `.mx-today-theme-card`, `.mx-today-affirmation-card`) через `Today.css` — заголовок «Как ты?» и блок «Мысль дня» снова читаются на светлом diagnostic-фоне (`?light-preview=1`), не ломая уже исправленный `--c-text` для обычных светлых поверхностей. Подтверждено визуально на Vercel preview. PR #415 (squash-merge `35927c0e`, CI green) — владелец смёржил его уже после того, как оба доп. коммита (`1c18135a`, `b78dcc14`) были дописаны в ветку, поэтому squash захватил весь diagnostic целиком; отдельного PR под эти коммиты не требуется. Три итерации точечного патчинга токенов подтвердили риск исходного пре-мортема (`ROADMAP.md` → «Идея-кандидат 15»): полноценная светлая тема — L-scope, не смена CSS-переменных. `MXL-DEC-023` (`docs/core/PRODUCT_DECISIONS.md`) фиксирует это решение; issue #416 остаётся открытым для будущего L-scope и не закрывается этим изменением. Diagnostic-код по-прежнему за gate `[data-theme='light-preview']`, недоступен на проде.

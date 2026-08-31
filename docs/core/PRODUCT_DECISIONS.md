@@ -2,6 +2,55 @@
 
 Формат ADR-lite. Статус `предложено` означает, что решение подготовлено в draft PR и не считается принятым в `main` до merge.
 
+## Обновление 31.08.2026 — MXL-DEC-025: pattern insights research (#297)
+
+**Вопрос:** готовы ли пользователи возвращаться в приложение ради
+осторожных pattern insights (наблюдений над накопленной историей записей)?
+
+**Решение:** провести research-спринт, не продуктовую фичу. Строим
+прототип 2–3 типов descriptive observations (например: «в последние N
+дней вы чаще отмечали X по вечерам» — без причинных связей и диагнозов).
+
+**Ограничения:**
+
+- никаких диагнозов, причинных заявлений, выводов по маленькой выборке;
+- observations должны иметь sample-size guard (не показывать insight,
+  если данных недостаточно) и provenance (видно, на основе каких именно
+  записей сделан вывод).
+
+**Зависимости:** MXL-JOURNAL-PERSISTENCE-001, MXL-JOURNAL-HISTORY-001,
+корректная модель даты/timezone.
+
+**Acceptance criteria:**
+
+- sample-size guards и provenance определены и задокументированы;
+- прототип 2–3 типов observations готов;
+- измерены perceived usefulness и return intent.
+
+**Статус:** research, не разработка. План —
+[`docs/research/MXL-DEC-025-pattern-insights-plan.md`](../research/MXL-DEC-025-pattern-insights-plan.md).
+
+## Обновление 31.08.2026 — MXL-DEC-026: willingness-to-pay research (#298)
+
+**Вопрос:** за какой конкретный результат пользователи готовы платить
+после полноценного бесплатного daily loop?
+
+**Решение:** fake-door / concept test трёх paid output concepts:
+расширенный problem-led track, персональный pattern summary, explicit
+AI-deepen. Без checkout, без выбора payment provider.
+
+**Ограничения:** не блокировать базовый check-in, free write,
+сохранение и один next action — это остаётся бесплатным в любом случае.
+
+**Acceptance criteria:**
+
+- пользователь может своими словами объяснить, за что платит;
+- сравнены минимум 3 paid output concepts;
+- зафиксированы conversion intent, perceived value, trust objections.
+
+**Статус:** research, не разработка. План —
+[`docs/research/MXL-DEC-026-wtp-concept-test-plan.md`](../research/MXL-DEC-026-wtp-concept-test-plan.md).
+
 ## Обновление 30.08.2026
 
 Владелец рассмотрел 5 research/product-документов из PR #370, #376, #378, #379, #390 (домен «Product/research decisions» release-очереди) и принял по ним следующие решения. PR #389 (issue #292, Practices/Trends) в это обновление не входит — решение по нему не принято, PR остаётся нетронутым.
