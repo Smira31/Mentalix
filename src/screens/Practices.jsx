@@ -20,6 +20,8 @@ import ReleaseArt from '../components/practice-art/ReleaseArt'
 import NarrowFocusArt from '../components/practice-art/NarrowFocusArt'
 import OneFinishArt from '../components/practice-art/OneFinishArt'
 
+import './PracticeFlow.css'
+
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import BrainTrainer from './BrainTrainer'

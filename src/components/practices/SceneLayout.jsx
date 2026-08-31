@@ -19,13 +19,15 @@ export default function SceneLayout({
 }) {
   return (
     <>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-5`}>
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
+      >
         <BackButton onClick={onBack} />
       </div>
 
       <div
         ref={scrollRef}
-        className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8 ${verticallyCentered ? 'justify-center' : ''}`}
+        className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body ${verticallyCentered ? 'justify-center' : ''}`}
       >
         <div
           className={`practice-scene w-full max-w-md mx-auto pt-8 pb-12 ${

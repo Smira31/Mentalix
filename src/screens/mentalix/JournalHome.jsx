@@ -56,11 +56,11 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
 
   if (showIntro && !journalStarted) {
     return (
-      <div className="mx-journal-intro w-full max-w-md mx-auto px-5 flex min-h-[calc(100dvh-160px)] flex-col justify-center text-center animate-fade-in">
-        <div className="mx-journal-intro__art mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] border border-[#5EB2ED]/35 bg-[#5EB2ED]/[0.05] text-[#5EB2ED]">
+      <div className="mx-practice-flow__body mx-journal-intro flex min-h-[calc(100dvh-160px)] flex-col justify-center text-center animate-fade-in">
+        <div className="mx-journal-intro__art mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-[22px] border border-gold/35 bg-gold/[0.05] text-gold">
           <BookOpen size={30} strokeWidth={1.6} />
         </div>
-        <span className="mx-type-meta uppercase tracking-[0.14em] text-[#5EB2ED]">Журнал</span>
+        <span className="mx-type-meta uppercase tracking-[0.14em] text-gold">Журнал</span>
         <h1 className="mx-type-flow-title mt-4 font-display text-cream">
           Вернись к тому, что важно сегодня
         </h1>
@@ -106,16 +106,16 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
   }
 
   return (
-    <div className="mx-journal-screen w-full max-w-md mx-auto px-5 flex min-h-[calc(100dvh-160px)] flex-col animate-fade-in">
+    <div className="mx-practice-flow__body mx-journal-screen flex min-h-[calc(100dvh-160px)] flex-col animate-fade-in">
       <div className="mx-journal-day-header flex items-center gap-3">
-        <div className="mx-journal-day-header__mark flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-[#5EB2ED]/35 bg-[#5EB2ED]/[0.05] text-[#5EB2ED]">
+        <div className="mx-journal-day-header__mark flex h-11 w-11 shrink-0 items-center justify-center rounded-[15px] border border-gold/35 bg-gold/[0.05] text-gold">
           <BookOpen size={22} strokeWidth={1.7} />
         </div>
         <div className="min-w-0">
           <div className="mx-journal-day-header__title font-display text-[25px] leading-none text-cream">
             журнал.
           </div>
-          <div className="mx-journal-day-header__meta mx-type-meta mt-1 text-[#5EB2ED]">
+          <div className="mx-journal-day-header__meta mx-type-meta mt-1 text-gold">
             сегодня · {completed}/4 шага
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
 
       <div className="mx-journal-prompt pt-7">
         <div className="flex items-center gap-3 mx-type-meta uppercase tracking-[0.14em] text-faint">
-          <PenLine size={15} className="text-[#5EB2ED]" />
+          <PenLine size={15} className="text-gold" />
           {phase.label}
         </div>
         <h1 className="mx-type-flow-title mt-4 font-display text-cream">{phase.title}</h1>
@@ -163,7 +163,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
           type="button"
           onClick={continueFlow}
           disabled={!value.trim()}
-          className="mx-journal-primary-action flex min-h-[56px] w-full items-center justify-center gap-2 rounded-full bg-[#5EB2ED] px-5 mx-type-control font-semibold text-[#07131c] disabled:opacity-35"
+          className="mx-journal-primary-action mx-cta-primary flex min-h-[56px] w-full items-center justify-center gap-2 px-5 mx-type-control disabled:opacity-35"
         >
           {isLast ? <Check size={19} /> : <ArrowRight size={19} />}
           {isLast ? 'Завершить запись' : 'Продолжить'}
@@ -172,7 +172,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
           <button
             type="button"
             onClick={onOpenMentor}
-            className="text-left text-muted underline-offset-4 active:text-[#5EB2ED]"
+            className="text-left text-muted underline-offset-4 active:text-gold"
           >
             Пойти глубже с наставником
           </button>
@@ -180,7 +180,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
             <button
               type="button"
               onClick={() => setPhaseIndex(index => index - 1)}
-              className="shrink-0 active:text-[#5EB2ED]"
+              className="shrink-0 active:text-gold"
             >
               Назад
             </button>
