@@ -878,6 +878,16 @@ test('MXL-WEB-LINKED-WRITE-001 guards every secondary frontend write path', () =
   assert.match(sources.Courses, /api\.courses\.updateStatus[\s\S]*isLinkedWebWriteBlocked/)
 })
 
+test('MXL-STARTER-SET-001 guards its api.rituals.create write path the same way', () => {
+  const source = readFileSync(
+    new URL('../../src/components/StarterSetPicker.jsx', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(source, /api\.rituals\.create[\s\S]*isLinkedWebWriteBlocked/)
+  assert.match(source, /LINKED_WEB_WRITE_NOTICE/)
+})
+
 test('MXL-310 показывает завершённые разовые практики без streak и day-progress интеграции', () => {
   const helper = readFileSync(new URL('../../src/lib/oneOffPracticeHistory.js', import.meta.url), 'utf8')
   const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
