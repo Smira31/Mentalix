@@ -61,8 +61,31 @@ jobs:
             --retry-connrefused --max-time 20 "$PREVIEW_URL/api/health")"
           printf '%s\n' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
 
+      - name: Resolve PR number
+        id: pr
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # client_payload.gitPullRequestId from Vercel's repository_dispatch is
+          # not populated in practice (confirmed on real vercel.deployment.success
+          # events, not just workflow_dispatch) — resolve independently from the
+          # branch name instead, which does arrive correctly.
+          resolved="$PR_NUMBER"
+          if [ "$resolved" = "n/a" ] && [ -n "$PREVIEW_BRANCH" ] && [ "$PREVIEW_BRANCH" != "unknown" ] && [ "$PREVIEW_BRANCH" != "main" ]; then
+            found="$(gh pr list --repo "${{ github.repository }}" --head "$PREVIEW_BRANCH" --state open --json number --jq '.[0].number // empty' || true)"
+            if [ -n "$found" ]; then
+              resolved="$found"
+            fi
+          fi
+          echo "number=$resolved" >> "$GITHUB_OUTPUT"
+          echo "Resolved PR number: $resolved (client_payload had: $PR_NUMBER, branch: $PREVIEW_BRANCH)"
+
       - name: Notify Telegram
         shell: bash
+        env:
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         run: |
           set -euo pipefail
           telegram_token="$(printf '%s' "$TELEGRAM_MAIN_BOT_TOKEN" | tr -d '[:space:]')"
@@ -75,7 +98,10 @@ jobs:
             echo 'TELEGRAM_PREVIEW_CHAT_ID must be numeric.' >&2
             exit 1
           fi
-          message="Mentalix preview PR #${PR_NUMBER} готов к проверке.\nПроверьте сценарий: Today → открыть practice → завершить → убедиться, что приложение возвращает в Today. Отдельно проверьте Back и ранний выход."
+          # printf interprets \n in its format string as a real newline byte;
+          # a plain "..." bash assignment does not — the old code put the two
+          # literal characters "\" and "n" into the Telegram message text.
+          message="$(printf 'Mentalix preview PR #%s готов к проверке.\nПроверьте сценарий: Today → открыть practice → завершить → убедиться, что приложение возвращает в Today. Отдельно проверьте Back и ранний выход.' "$PR_NUMBER")"
           payload="$(jq -n \
             --arg chat_id "$chat_id" \
             --arg text "$message" \
@@ -90,13 +116,13 @@ jobs:
           echo "Telegram notification sent."
 
       - name: Comment preview evidence on PR
-        if: success() && env.PR_NUMBER != 'n/a' && github.event_name == 'repository_dispatch'
+        if: success() && steps.pr.outputs.number != 'n/a' && github.event_name == 'repository_dispatch'
         uses: actions/github-script@v7
         env:
           PREVIEW_URL: ${{ env.PREVIEW_URL }}
           PREVIEW_SHA: ${{ env.PREVIEW_SHA }}
           PREVIEW_BRANCH: ${{ env.PREVIEW_BRANCH }}
-          PR_NUMBER: ${{ env.PR_NUMBER }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
         with:
           script: |
             const body = [
