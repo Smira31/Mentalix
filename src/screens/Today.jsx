@@ -117,6 +117,57 @@ function pickCurrentTheme(themes) {
   return themes.find(t => t?.is_current) || themes[0] || null
 }
 
+const STARTER_SET = [
+  {
+    id: 'focus',
+    label: 'Фокус',
+    prompt: 'Сделать следующий шаг видимым',
+    purpose: 'Выбери одно действие, которое приблизит важное дело до полудня.',
+    usualVersion: 'Запиши один следующий шаг и начни его в течение 10 минут.',
+    lightVersion: 'Запиши один следующий шаг.',
+    ritual: {
+      name: 'Один следующий шаг',
+      category: 'psycho',
+      goal: 'Сделать одно важное действие видимым и начать без лишнего разгона.',
+      min_version: 'Записать один следующий шаг',
+      optimal_version: 'Записать шаг и уделить ему 10 минут',
+      skip_consequence: '',
+    },
+  },
+  {
+    id: 'calm',
+    label: 'Спокойствие',
+    prompt: 'Создать короткую паузу',
+    purpose: 'Перед следующим делом можно остановиться и заметить, что происходит сейчас.',
+    usualVersion: 'Две минуты спокойного дыхания без задачи что-либо исправить.',
+    lightVersion: 'Сделать три спокойных вдоха и выдоха.',
+    ritual: {
+      name: 'Короткая пауза',
+      category: 'psycho',
+      goal: 'Вернуть себе немного пространства перед следующим действием.',
+      min_version: 'Сделать три спокойных вдоха и выдоха',
+      optimal_version: 'Две минуты спокойного дыхания',
+      skip_consequence: '',
+    },
+  },
+  {
+    id: 'energy',
+    label: 'Энергия',
+    prompt: 'Сделать физический шаг меньше',
+    purpose: 'Начни с простого действия для тела, не превращая его в обязательство.',
+    usualVersion: 'Выпей стакан воды или подвигайся две минуты.',
+    lightVersion: 'Выпей стакан воды.',
+    ritual: {
+      name: 'Маленький шаг для тела',
+      category: 'psycho',
+      goal: 'Мягко включить тело через одно простое действие.',
+      min_version: 'Выпить стакан воды',
+      optimal_version: 'Выпить стакан воды и подвигаться две минуты',
+      skip_consequence: '',
+    },
+  },
+]
+
 // ============================================================
 // TODAY
 // ============================================================
@@ -156,6 +207,16 @@ export default function Today({
   const [theme, setTheme] = useState(() => pickCurrentTheme(initialTodaySnapshot?.themes))
 
   const [activeToday, setActiveToday] = useState(null)
+
+  const [starterOpen, setStarterOpen] = useState(false)
+
+  const [starterContextId, setStarterContextId] = useState(null)
+
+  const [starterSuggestionIndex, setStarterSuggestionIndex] = useState(0)
+
+  const [starterSaving, setStarterSaving] = useState(false)
+
+  const [starterError, setStarterError] = useState(null)
 
   const [sub, setSub] = useState(initialSub)
 
@@ -381,6 +442,14 @@ export default function Today({
 
   const isEmpty = total === 0
 
+  const starterContext = STARTER_SET.find(item => item.id === starterContextId) || null
+
+  const starterSuggestion = starterContext
+    ? STARTER_SET[
+        (STARTER_SET.indexOf(starterContext) + starterSuggestionIndex) % STARTER_SET.length
+      ]
+    : null
+
   const checkinDone = !!checkin
 
   const checkinAsHero = todayState === 'checkinPending' || todayState === 'reviewPending'
@@ -597,6 +666,60 @@ export default function Today({
     ),
   }
 
+  function openStarterSet() {
+    setStarterError(null)
+    setStarterSuggestionIndex(0)
+    setStarterContextId(null)
+    setStarterOpen(true)
+  }
+
+  function closeStarterSet() {
+    setStarterError(null)
+    setStarterContextId(null)
+    setStarterSuggestionIndex(0)
+    setStarterOpen(false)
+  }
+
+  function chooseStarterContext(contextId) {
+    platform.haptic('light')
+    setStarterError(null)
+    setStarterSuggestionIndex(0)
+    setStarterContextId(contextId)
+  }
+
+  function replaceStarterSuggestion() {
+    platform.haptic('light')
+    setStarterError(null)
+    const currentIndex = STARTER_SET.findIndex(item => item.id === starterContextId)
+    const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % STARTER_SET.length : 0
+    setStarterContextId(STARTER_SET[nextIndex].id)
+  }
+
+  async function acceptStarterSuggestion() {
+    if (!user || !starterSuggestion || starterSaving) return
+
+    platform.haptic('medium')
+    setStarterSaving(true)
+    setStarterError(null)
+
+    try {
+      const created = await api.rituals.create(user.id, starterSuggestion.ritual)
+
+      if (!created) {
+        throw new Error('Starter ritual was not returned by the API')
+      }
+
+      setRituals(current => [...current, created])
+      invalidateTodayData(user.id)
+      closeStarterSet()
+    } catch (error) {
+      console.error(error)
+      setStarterError('Не получилось создать ритуал. Проверь соединение и попробуй ещё раз.')
+    } finally {
+      setStarterSaving(false)
+    }
+  }
+
   function changeTodayVariant(nextVariant) {
     setTodayVariant(nextVariant)
 
@@ -668,20 +791,111 @@ export default function Today({
       {!hiddenCards.includes('dayProgress') &&
         (isEmpty ? (
           <EmptyState className="mt-4 p-5 [&>div:first-child]:mb-3 [&>div:first-child]:h-12 [&>div:first-child]:w-12">
-            <h3 className="font-display mx-type-card text-cream mb-1">Пока нет практик</h3>
-            <p className="mx-type-list-body text-muted mb-4">
-              Добавь ритуал или аскезу — здесь появится прогресс дня.
-            </p>
-            <button
-              onClick={() => {
-                platform.haptic('light')
-
-                onOpenPractice?.()
-              }}
-              className="cta-pill mx-type-flow-action px-9 py-3.5"
-            >
-              Выбрать практику
-            </button>
+            {!starterOpen ? (
+              <>
+                <h3 className="font-display mx-type-card text-cream mb-1">Пока нет практик</h3>
+                <p className="mx-type-list-body text-muted mb-4">
+                  Выбери, что сейчас важнее, — предложим один необязательный первый шаг.
+                </p>
+                <button
+                  onClick={openStarterSet}
+                  className="cta-pill mx-type-flow-action px-9 py-3.5"
+                >
+                  Подобрать первый шаг
+                </button>
+                <button
+                  onClick={() => {
+                    platform.haptic('light')
+                    onOpenPractice?.('rituals')
+                  }}
+                  className="mt-3 border-0 bg-transparent px-4 py-2 text-[12px] text-muted"
+                >
+                  Выбрать в каталоге
+                </button>
+              </>
+            ) : !starterContext ? (
+              <>
+                <h3 className="font-display mx-type-card text-cream mb-1">Выбери контекст</h3>
+                <p className="mx-type-list-body text-muted mb-4">
+                  Что сейчас важнее? Предложение можно принять, заменить или пропустить.
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {STARTER_SET.map(context => (
+                    <button
+                      key={context.id}
+                      onClick={() => chooseStarterContext(context.id)}
+                      className="rounded-2xl border border-cream/15 bg-cream/5 px-2 py-3 text-[12px] text-cream"
+                    >
+                      {context.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => {
+                    platform.haptic('light')
+                    onOpenPractice?.('rituals')
+                  }}
+                  className="mt-3 border-0 bg-transparent px-4 py-2 text-[12px] text-muted"
+                >
+                  Выбрать в каталоге
+                </button>
+              </>
+            ) : !starterSuggestion ? null : (
+              <>
+                <div className="mx-type-meta text-gold mb-2">
+                  {starterContext.label} · необязательно
+                </div>
+                <h3 className="font-display mx-type-card text-cream mb-1">
+                  {starterSuggestion.prompt}
+                </h3>
+                <p className="mx-type-list-body text-muted mb-4">{starterSuggestion.purpose}</p>
+                <div className="rounded-2xl bg-cream/5 px-4 py-3 text-left mb-3">
+                  <p className="mx-type-meta text-faint mb-1">Лёгкая версия</p>
+                  <p className="text-[13px] leading-relaxed text-cream">
+                    {starterSuggestion.lightVersion}
+                  </p>
+                  <p className="mx-type-meta text-faint mt-3 mb-1">Обычная версия</p>
+                  <p className="text-[13px] leading-relaxed text-cream">
+                    {starterSuggestion.usualVersion}
+                  </p>
+                </div>
+                {starterError && (
+                  <p role="alert" className="text-[12px] leading-relaxed text-amber-200 mb-3">
+                    {starterError}
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    onClick={acceptStarterSuggestion}
+                    disabled={starterSaving}
+                    className="cta-pill mx-type-flow-action px-7 py-3.5 disabled:opacity-50"
+                  >
+                    {starterSaving ? 'Сохраняю...' : 'Принять'}
+                  </button>
+                  <button
+                    onClick={replaceStarterSuggestion}
+                    disabled={starterSaving}
+                    className="rounded-full border border-cream/15 bg-transparent px-4 py-3 text-[12px] text-muted disabled:opacity-50"
+                  >
+                    Заменить
+                  </button>
+                  <button
+                    onClick={closeStarterSet}
+                    disabled={starterSaving}
+                    className="rounded-full border-0 bg-transparent px-4 py-3 text-[12px] text-muted disabled:opacity-50"
+                  >
+                    Пропустить
+                  </button>
+                </div>
+                <button
+                  onClick={closeStarterSet}
+                  disabled={starterSaving}
+                  className="mt-2 border-0 bg-transparent px-4 py-2 text-[12px] text-faint disabled:opacity-50"
+                >
+                  Назад к Today
+                </button>
+              </>
+            )}
           </EmptyState>
         ) : (
           <button
