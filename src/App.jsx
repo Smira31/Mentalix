@@ -151,6 +151,17 @@ function getThemeBackground() {
   return `#${channels.map(channel => channel.toString(16).padStart(2, '0')).join('')}`
 }
 
+const LIGHT_THEME_PREVIEW_PARAM = 'light-preview'
+
+function isLightThemePreviewEnabled() {
+  if (typeof window === 'undefined') return false
+
+  const previewBuild = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+  const requested = new URLSearchParams(window.location.search).get(LIGHT_THEME_PREVIEW_PARAM)
+
+  return previewBuild && requested === '1'
+}
+
 function applyDarkTheme() {
   // Снимаем legacy-класс и при HMR, и после старой открытой сессии.
   document.body.classList.remove('light')
@@ -271,7 +282,11 @@ export default function App() {
    */
   const [onboardedFlag, setOnboardedFlag] = useSynced(ONBOARDED_KEY, '0')
 
-  const onboarded = onboardedFlag === '1'
+  // Synthetic pre-onboarded state for the diagnostic Preview only. It does
+  // not write the user's synced onboarding flag and is unreachable in the
+  // production default because isLightThemePreviewEnabled requires a local
+  // dev or Vercel Preview build plus the explicit query gate.
+  const onboarded = onboardedFlag === '1' || (isPreviewDemoMode() && isLightThemePreviewEnabled())
 
   /*
    * Блокировка приложения (PIN/биометрия). Синхронизируется только факт
@@ -377,6 +392,15 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
+    // Hidden developer gate: ?light-preview=1 works only in local dev or
+    // Vercel Preview builds. Production defaults to the existing dark theme.
+    const root = document.documentElement
+    if (isLightThemePreviewEnabled()) {
+      root.setAttribute('data-theme', 'light-preview')
+    } else {
+      root.removeAttribute('data-theme')
+    }
+
     applyDarkTheme()
   }, [])
 
