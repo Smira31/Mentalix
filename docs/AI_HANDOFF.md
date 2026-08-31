@@ -1,10 +1,10 @@
 # Mentalix — AI handoff
 
-This file is the canonical handoff for Claude Code and other AI agents working in this repository. Read it before changing code, documentation, GitHub Issues or pull requests. The file describes project decisions and operational boundaries; the repository and GitHub remain the source of truth for actual code and current PR status.
+This file is the canonical handoff for Claude Code and other AI agents working in this repository. Read it before changing code, documentation, GitHub Issues or pull requests. The file describes project decisions and operational boundaries; the repository and GitHub remain the source of truth for actual code and current PR status. For product decisions specifically, `docs/core/PRODUCT_DECISIONS.md` is the source of truth — this file summarizes and links to it, and never states a decision on its own authority.
 
 ## Product direction
 
-Mentalix serves a working audience of **16–35 years old**. Analyse 16–17, 18–24 and 25–35 as separate cohorts. The first problem statement is narrow: a person cannot start an important task. Mentalix is a reflection-and-action product, not therapy, diagnosis, emergency response or a substitute for a qualified professional.
+Mentalix serves the working audience defined in `docs/core/PRODUCT_DECISIONS.md` → **MXL-DEC-021** (Обновление 31.08.2026): **16–35 years old**, analysed as 16–17, 18–24 and 25–35 separate cohorts. Treat that entry, not this paragraph, as authoritative if the two ever diverge. The first problem statement is narrow: a person cannot start an important task. Mentalix is a reflection-and-action product, not therapy, diagnosis, emergency response or a substitute for a qualified professional.
 
 The primary loop is:
 
@@ -12,14 +12,16 @@ The primary loop is:
 
 Today is the primary entry point. Journal, Practices and AI support this loop; do not add a sixth tab or turn the product into a catalogue of features or an endless chat. Preserve one clear primary action and keep exploration secondary.
 
-## Confirmed product decisions
+## Product decisions this file relies on
+
+Each item below restates a decision already recorded in `docs/core/PRODUCT_DECISIONS.md`. This list exists so an agent does not have to open that file for routine scoping; it is not an independent confirmation, and a mismatch means this file is stale, not that this file wins.
 
 - The first core experiment is the daily loop, not payment, AI depth or visual expansion.
 - Guided self-discovery first uses a prompt-only flow; no AI deepening, cloud memory or new backend contract is implied.
 - WTP research compares problem-led track, descriptive pattern summary and AI deepen without checkout; responses in the current prototype are local-only.
 - The light theme remains preview-only until the owner separately reviews and approves it.
 - Descriptive insights must show provenance, uncertainty and user correction; they must not diagnose or claim causality.
-- The 16–17 cohort requires a safety/privacy gate before testing: age-appropriate language, minimal data, Journal privacy, AI boundaries and sensitive-message handling.
+- The 16–17 cohort requires a safety/privacy gate before testing (age-appropriate language, minimal data, Journal privacy, AI boundaries, sensitive-message handling) — see `docs/core/PRODUCT_DECISIONS.md` → MXL-DEC-021, Обновление 31.08.2026, for the current wording; that entry is where this requirement became a decision, not this file.
 
 ## Rules for parallel agents
 
@@ -64,9 +66,12 @@ Check live GitHub status before acting; the list below records the workstream an
 | [#446](https://github.com/Smira31/Mentalix/pull/446) | Prompt library        | Canonical Clarify/Compass/Step/Review records      | Docs-only                                      |
 | [#447](https://github.com/Smira31/Mentalix/pull/447) | Animation library     | Motion records and reduced-motion rules            | Docs-only                                      |
 | [#448](https://github.com/Smira31/Mentalix/pull/448) | Character canon       | Voice, visual invariants and banned patterns       | Docs-only                                      |
-| [#449](https://github.com/Mentalix/pull/449)         | Visual-card library   | Asset metadata and approval workflow               | Docs-only; verify repository owner in live URL |
-| [#450](https://github.com/Smira31/Mentalix/pull/450) | Product strategy      | Confirmed audience, core loop and experiment order | Docs-only                                      |
+| [#449](https://github.com/Smira31/Mentalix/pull/449) | Visual-card library   | Asset metadata and approval workflow               | Docs-only                                      |
+| [#450](https://github.com/Smira31/Mentalix/pull/450) | Product strategy      | Audience, core loop and experiment order; wording matches `docs/core/PRODUCT_DECISIONS.md` → MXL-DEC-021 as of 31.08.2026 | Docs-only |
 | [#451](https://github.com/Smira31/Mentalix/pull/451) | Insights protocol     | Provenance, sample guards and safe observations    | Docs-only; backend remains a dependency        |
+| [#453](https://github.com/Smira31/Mentalix/pull/453) | Lila discover ADR     | Pre-mortem/ADR gate; no runtime, AI, persistence or navigation authorized | Docs-only                |
+| [#454](https://github.com/Smira31/Mentalix/pull/454) | API request cancellation | Caller-driven `AbortSignal` support in `src/lib/api.js`; distinguishes cancel from timeout | API client only, isolated |
+| [#455](https://github.com/Smira31/Mentalix/pull/455) | Font self-hosting perf | Replaces render-blocking Google Fonts `@import` with `@fontsource/onest` + `@fontsource/jetbrains-mono` | Touches `src/index.css`, `package.json` — coordinate merge order with #441 and #442 |
 
 PR #443 belongs to another agent and must not be modified without checking its live owner and files first. The PR list is intentionally not a merge queue; review each diff independently.
 
