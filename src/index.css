@@ -95,6 +95,16 @@
   --c-text: 243 243 243;
   /* #F3F3F3 — основной текст */
 
+  --c-text-on-dark: 243 243 243;
+  /* #F3F3F3 — diagnostic-only (light-preview, MXL-THEME-015): текст на
+     hero/artbed-поверхностях, которые сознательно остаются тёмными в
+     light-preview (.mx-today-primary-card до data-complete,
+     .mx-today-theme-card, .mx-today-affirmation-card — их фон не следует
+     --c-bg/--c-card; см. Today.css). Тождественен --c-text здесь и не
+     меняется в light-preview override ниже, поэтому в production и
+     обычной тёмной теме это просто синоним --c-text — расходится с ним
+     только внутри диагностики, только внутри этих контейнеров. */
+
   --c-muted: 133 133 133;
   /* #858585 — вторичный текст */
 
@@ -146,14 +156,36 @@
 
 /*
  * Disposable diagnostic only: enabled by ?light-preview=1 in local dev or
- * Vercel Preview. This intentionally changes only three tokens so the
+ * Vercel Preview. This intentionally changes only four tokens so the
  * hairline contrast problem can be viewed before any L-scope redesign.
  * It is not a production theme contract and must not be copied to :root.
+ *
+ * --c-text added after the first S-M pass: it is the single CSS variable
+ * behind the text-cream/text-sage/text-mint Tailwind aliases (all three
+ * point at --c-text, see tailwind.config.js) and the default `body` text
+ * color — screen/card headings, empty-state titles and the inverted
+ * bg-cream/text-emerald-deep CTA pill all read this one token. Left at
+ * its near-white production value it stayed unreadable on the new light
+ * --c-bg/--c-card even though --c-muted/--c-faint (body text) were
+ * already fine, matching the reported pattern precisely.
+ *
+ * That fix then broke the opposite case: Today's hero card
+ * (.mx-today-primary-card, until data-complete='true'), the theme card
+ * (.mx-today-theme-card) and the "Мысль дня" card
+ * (.mx-today-affirmation-card) have their own hardcoded/untouched-by-
+ * this-block dark backgrounds (#2a2a2a and --c-card2) and stayed dark on
+ * purpose — but their text-cream content now inherits the darkened
+ * --c-text and went unreadable on its own dark surface. Fixed with a
+ * companion token, --c-text-on-dark (defined near --c-text above, always
+ * equal to production --c-text) re-scoped onto .text-cream only inside
+ * those three containers in Today.css — not part of this override block
+ * since --c-text-on-dark itself must not change here.
  */
 [data-theme='light-preview'] {
   --c-bg: 245 240 232;
   --c-card: 255 252 247;
   --c-line: 49 49 49;
+  --c-text: 20 17 14;
 }
 
 /* Локальные токены сохраняют единый контраст artbed-иллюстраций. --c-gold
