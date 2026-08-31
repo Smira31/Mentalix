@@ -33,6 +33,7 @@ jobs:
     env:
       TELEGRAM_MAIN_BOT_TOKEN: ${{ secrets.TELEGRAM_MAIN_BOT_TOKEN }}
       TELEGRAM_PREVIEW_CHAT_ID: ${{ secrets.TELEGRAM_PREVIEW_CHAT_ID }}
+      VERCEL_PROTECTION_BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
       PREVIEW_URL: ${{ github.event.client_payload.url || inputs.url }}
       PREVIEW_ENVIRONMENT: ${{ github.event.client_payload.environment || 'preview' }}
       PREVIEW_BRANCH: ${{ github.event.client_payload.gitBranch || inputs.branch || 'unknown' }}
@@ -57,8 +58,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [ -z "${VERCEL_PROTECTION_BYPASS:-}" ]; then
+            echo 'VERCEL_PROTECTION_BYPASS secret is missing — health check would hit the Vercel SSO wall instead of the app.' >&2
+            exit 1
+          fi
+          # Project has Vercel Deployment Protection (SSO) on all
+          # *.vercel.app preview URLs — an unauthenticated request 302s to
+          # vercel.com/sso-api instead of reaching the app. The project
+          # already has a "Protection Bypass for Automation" secret
+          # configured; send it as a header so this check (and any other
+          # automated caller) reaches the real response instead of the SSO
+          # wall. Confirmed live: same URL returns the SSO redirect without
+          # this header and {"status":"ok"} with it.
           response="$(curl --fail --silent --show-error --retry 10 --retry-delay 3 \
-            --retry-connrefused --max-time 20 "$PREVIEW_URL/api/health")"
+            --retry-connrefused --max-time 20 \
+            --header "x-vercel-protection-bypass: $VERCEL_PROTECTION_BYPASS" \
+            "$PREVIEW_URL/api/health")"
           printf '%s\n' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
 
       - name: Resolve PR number
