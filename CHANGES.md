@@ -1,5 +1,13 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — MXL-SECURITY-AUDIT-001: post-release проверка прод-backend (#351)
+
+- Выполнена живая проверка прод-backend (`mentalix-bot.onrender.com`) после `mentalix-bot` PR #36 (per-user progression «Тема недели», затрагивал только `themes.py`, не auth-код) — требование из `docs/security/MXL-SECURITY-AUDIT-001-INITDATA-BACKEND.md` → «Последующие действия».
+- **Все проверки PASS:** production health (`200 ok`); неподписанный GET/POST-запрос с positive `user_id` → `401 missing_telegram_auth`, не `200`; поддельная подпись → `401 invalid_telegram_auth`; чужой `X-Web-User-ID` → `401`; email OTP request-code → `200`, `dev_code` корректно скрыт на проде; неверный код при verify → `ok:false`, не логинит.
+- Полный разбор с таблицей запрос/ожидание/результат — в `docs/security/MXL-SECURITY-AUDIT-001-INITDATA-BACKEND.md`, новый раздел «Post-release проверка 31.08.2026».
+- **Не проверено:** финальный успешный email OTP login (нужен доступ к реальной почте) и живое поведение реального Telegram-клиента (WebView) — только HTTP-контракт backend проверен напрямую, не сквозной Telegram-flow.
+- Relevant для issue #351 (первый из двух пунктов — production health/routes/login) — прокомментировано в issue, не закрывала issue сама, второй пункт (global rate limiting) уже реализован отдельно (`mentalix-bot` PR #41, смёржен ранее).
+
 ## 31.08.2026 — MXL-010 release gate: PASS, issue #356 закрыт
 
 - Vercel free-tier quota восстановилась (подтверждено реальным успешным деплоем, не по памяти) — preview `main` @ `38edd10d` задеплоен, health-check `status: ok` перед отправкой.
