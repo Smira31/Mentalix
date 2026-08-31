@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — Performance-фикс 2/2: MazeLogo — убран forced reflow
+
+- `src/components/MazeLogo.jsx` — `path.getTotalLength()`/`getPointAtLength()` читались с `trailRef.current` (реально смонтированный в дереве страницы элемент) — подтверждено Chrome DevTools trace как forced reflow (101мс в момент `commitMount`). MazeLogo смонтирован в BottomNavigation всегда, повторялось на каждый рендер с новым `progress`.
+- `LABYRINTH_PATH` — константа модуля, геометрия одинакова для любого инстанса/рендера. Заменено на один detached `<path>` на модуль (`createElementNS`, никогда не добавляется в document) — `getTotalLength`/`getPointAtLength` определены спецификацией как чистая геометрия по атрибуту `d`, не форсируют reflow живой страницы. `trailRef` стал не нужен — убран вместе с неиспользуемым `useRef`.
+- **Проверено эмпирически (Lighthouse, локальный прод-билд, честный A/B baseline vs оба фикса вместе на одном окружении):** score 97→100, **LCP 1195ms→711ms (−41%)**, Speed Index 944ms→441ms (−53%), FCP 667ms→441ms. Font-related opportunity из Фикса 1 полностью исчезла из отчёта.
+- `check:core` зелёный, 0 warnings (добавлен `eslint-disable-next-line react-hooks/set-state-in-effect` с обоснованием — тот же паттерн, что уже в `MorningPilotCard.jsx`, warning появился именно от рефактора, подтверждено сравнением с исходником через `git stash`).
+
 ## 31.08.2026 — Bug #429: повторная проверка через WebKit — снова не воспроизведён
 
 - Issue не изменился с прошлой проверки (0 новых комментариев) — прежде чем повторять пройденное, добавила реально новый угол: движок **WebKit (Safari)**, не только Chromium — установлен (`npx playwright install webkit`), протестирован с реалистичным iOS Safari user-agent и настоящим touch-тапом.

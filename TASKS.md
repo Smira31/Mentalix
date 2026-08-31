@@ -1,5 +1,12 @@
 # Mentalix — задачи
 
+## Performance-фикс 2/2 — MazeLogo forced reflow (из аудита этой сессии)
+
+- **Статус:** сделано, ждёт review владельца. Оба performance-фикса из сегодняшнего аудита теперь готовы (см. PR #455 для фикса 1).
+- **Причина:** Chrome DevTools trace подтвердил forced reflow (101мс) от `path.getTotalLength()`/`getPointAtLength()` на смонтированном `trailRef.current` — MazeLogo всегда в BottomNavigation.
+- **Что сделано:** один detached `<path>` на модуль вместо смонтированного элемента — геометрия константна (`LABYRINTH_PATH`), не требует layout.
+- **Проверка:** Lighthouse A/B на локальном прод-билде (baseline vs оба фикса) — LCP −41% (1195→711ms), Speed Index −53%. `check:core` зелёный, 0 warnings.
+
 ## Идея-кандидат 16 — «Лила» как DISCOVER-вход (issue #434)
 
 - **Статус:** зафиксирована в `ROADMAP.md`, не в код-очереди. Не задача для этой сессии — backlog-запись.
