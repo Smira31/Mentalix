@@ -274,6 +274,44 @@
   padding: var(--mx-space-4);
 }
 
+.mx-practice-flow .practice-form__inner {
+  max-width: 430px;
+  padding-top: var(--mx-space-8);
+  padding-bottom: var(--mx-space-8);
+}
+
+.mx-practice-flow .practice-form__fields {
+  gap: var(--mx-space-3);
+}
+
+.mx-practice-flow .practice-form__fields input,
+.mx-practice-flow .practice-form__fields textarea {
+  min-height: 56px;
+  border-color: rgb(var(--c-border));
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card));
+  transition:
+    border-color var(--mx-motion-base) ease,
+    box-shadow var(--mx-motion-base) ease;
+}
+
+.mx-practice-flow .practice-form__fields input:focus,
+.mx-practice-flow .practice-form__fields textarea:focus {
+  border-color: rgb(var(--c-gold) / 0.66);
+  box-shadow: 0 0 0 3px rgb(var(--c-gold) / 0.11);
+}
+
+.mx-practice-flow .mx-practice-sheet {
+  border-radius: var(--mx-radius-hero) var(--mx-radius-hero) 0 0;
+  border-color: rgb(var(--c-border) / 0.8);
+  background: rgb(var(--c-card2));
+  padding-bottom: calc(var(--mx-space-8) + var(--app-safe-bottom));
+}
+
+.mx-practice-flow .practice-sheet__body {
+  padding-top: var(--mx-space-3);
+}
+
 @media (max-width: 359px) {
   .mx-practice-flow__body {
     padding-inline: var(--mx-space-4);

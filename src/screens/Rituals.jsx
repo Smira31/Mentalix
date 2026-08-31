@@ -16,10 +16,7 @@ import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
-import {
-  isLinkedWebWriteBlocked,
-  LINKED_WEB_WRITE_NOTICE,
-} from '../lib/webAuthLimits'
+import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
 
 /*
@@ -246,14 +243,14 @@ function CreateRitualScreen({ onCreate, onCancel }) {
    * общему fullscreen-контракту: занимает весь экран целиком.
    */
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} px-5`}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-5`}>
         <div className="w-full max-w-md mx-auto">
           <BackButton onClick={onCancel} />
         </div>
       </div>
 
-      <div className={`${FULLSCREEN_SCROLL_CLASS} practice-form__scroll`}>
+      <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body practice-form__scroll`}>
         <div className="practice-form__inner w-full max-w-md mx-auto px-5 flex flex-col">
           <div className="mb-8">
             <h2 className="font-display text-[24px] font-semibold text-cream lowercase">

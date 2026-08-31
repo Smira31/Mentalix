@@ -6,10 +6,7 @@ import { invalidatePracticesData } from '../lib/practicesDataCache'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
-import {
-  isLinkedWebWriteBlocked,
-  LINKED_WEB_WRITE_NOTICE,
-} from '../lib/webAuthLimits'
+import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
 import { createPortal } from 'react-dom'
 import { useVisualViewportHeight } from '../lib/visualViewport'
@@ -127,7 +124,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
    * где должна.
    */
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex items-end justify-center">
+    <div className="mx-practice-flow fixed inset-0 z-[100] flex items-end justify-center">
       <button
         aria-label="Закрыть"
         onClick={onClose}
@@ -135,7 +132,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
       />
 
       <div
-        className="relative z-10 w-full max-w-sm max-h-[88dvh] rounded-t-[32px] bg-emerald border border-cream/10 px-5 pt-3 pb-8 animate-fade-in flex flex-col overflow-hidden"
+        className="mx-practice-sheet relative z-10 w-full max-w-sm max-h-[88dvh] rounded-t-[32px] bg-emerald border border-cream/10 px-5 pt-3 pb-8 animate-fade-in flex flex-col overflow-hidden"
         style={viewportHeight ? { maxHeight: `min(88dvh, ${viewportHeight}px)` } : undefined}
       >
         <div className="shrink-0 w-10 h-1 rounded-full bg-cream/20 mx-auto mb-5" />
@@ -208,7 +205,11 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
             </div>
           )}
 
-          {error && <p role="alert" className="text-[12px] text-amber-200 mt-3 leading-relaxed">{error}</p>}
+          {error && (
+            <p role="alert" className="text-[12px] text-amber-200 mt-3 leading-relaxed">
+              {error}
+            </p>
+          )}
 
           <button
             onClick={submit}
@@ -431,14 +432,14 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
    * занимает весь экран и не борется с нижней навигацией.
    */
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} px-5`}>
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-5`}>
         <div className="w-full max-w-md mx-auto">
           <BackButton onClick={onCancel} />
         </div>
       </div>
 
-      <div className={`${FULLSCREEN_SCROLL_CLASS} practice-form__scroll`}>
+      <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body practice-form__scroll`}>
         <div className="practice-form__inner w-full max-w-md mx-auto px-5 flex flex-col">
           <div className="mb-8">
             <h2 className="font-display text-[24px] font-semibold text-cream lowercase">
@@ -617,7 +618,11 @@ export default function Ascezas({ user, onBack }) {
           {total > 0 ? `${heldToday} из ${total} удержано сегодня` : 'от чего ты отказываешься'}
         </p>
 
-        {writeError && <p role="alert" className="text-[12px] text-amber-200 mb-4 px-1 leading-relaxed">{writeError}</p>}
+        {writeError && (
+          <p role="alert" className="text-[12px] text-amber-200 mb-4 px-1 leading-relaxed">
+            {writeError}
+          </p>
+        )}
 
         {loading ? (
           <p className="text-muted text-[13px]">Загрузка...</p>
