@@ -8,6 +8,14 @@
 - **Ограничение:** `pytest backend/tests bot/tests` не запускался — окружение сессии только с Python 3.14, нет toolchain для сборки `pydantic-core`/`asyncpg` из исходников. `python -m compileall` чисто. `quick_actions_kb()` уже покрыт существующим тестом, сами loop-функции (включая `reminder_loop`, по образцу которого сделано изменение) собственных тестов не имели и раньше.
 - **Не входит:** живая проверка доставки сообщения в Telegram — не требует Vercel, но требует владельца.
 
+## MXL-SECURITY-AUDIT-001 follow-up — статический аудит backend (issue #351)
+
+- **Статус:** код-часть проверена статическим анализом; issue открыт, ждёт живой production-проверки владельцем.
+- **Причина:** issue #351 требовал подтвердить global initData verification и rate limiting на backend — scope backend-only (`mentalix-bot`, приватный), frontend не мог проверить сама.
+- **Что сделано:** аудит `mentalix-bot` @ `main` (`4bf0413`) — initData verification подтверждена на всех 19 приватных роутерах; rate limiting подтверждён НЕ глобальным (только `/api/auth/link/confirm`). Найдена отдельная уязвимость (`GET /api/user/{user_id}` без auth) — не входила в исходный scope, зафиксирована отдельно, ждёт решения владельца. Полный разбор — `mentalix-bot` PR #37 (CHANGES.md), не смёржен.
+- **Ограничение:** тесты `backend/tests/test_telegram_auth.py` не запускались в этой сессии — среда только с Python 3.14, нет toolchain для сборки `pydantic-core`/`asyncpg` из исходников под 3.12-зависимости.
+- **Не входит:** живая проверка production (`TELEGRAM_AUTH_VALIDATION_ENABLED`, реальный Telegram-клиент/web-login, CORS `Origin` из живого WebView) — это может сделать только владелец.
+
 ## MXL-010 — Release gate: снять BLOCKED (issue #356)
 
 - **Статус:** чек-лист подготовлен, ждёт preview и живой проверки владельцем на реальном iPhone/аккаунте.
