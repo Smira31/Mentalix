@@ -15,7 +15,11 @@ export function isPreviewDemoMode() {
   const host = window.location.hostname
   const params = new URLSearchParams(window.location.search)
 
-  const isAllowedHost = host === 'localhost' || host === '127.0.0.1' || host.endsWith('.vercel.app')
+  const isAllowedHost =
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.endsWith('.vercel.app') ||
+    host.endsWith('.manus.computer')
   const isPreviewRuntime = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 
   return params.get('demo') === '1' && isAllowedHost && isPreviewRuntime
