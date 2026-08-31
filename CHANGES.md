@@ -8,6 +8,13 @@
 - Не создавалось новой функциональности; `todayFocusPicked` (уже существующий, но нигде не вызываемый prop для схлопывания карточки) не трогала — он относится к отдельному незавершённому Focus-flow (`TodayFocusCard.jsx`/`TodayFocusFlow.jsx`, не подключён к Today.jsx), пере-использование его под другую цель было бы domain-guessing, а не переиспользованием.
 - **Проверено:** `npm run check:core` — 158 unit passed, lint/build/docs:check чисто; `npm run ux:check` — 4/4 Playwright smoke passed.
 - **Не проверено:** реальный iPhone/Telegram (acceptance criteria #122 требует это явно) — визуальный аудит и локальные проверки не заменяют это.
+
+## 31.08.2026 — Contextual CTA на return-flow сообщениях, частичный scope (#123)
+
+- Backend-only, без Vercel: `mentalix-bot` PR #40 (не смёржен) добавляет `reply_markup=quick_actions_kb()` в `comeback_loop` и `weekly_digest_loop` (`bot/bot.py`) — раньше эти сообщения не имели ни одной кнопки, что не соответствовало acceptance criteria #123 («CTA ведёт на конкретный экран, а не в главное меню»). `reminder_loop` (пропущенный ритуал) уже использовал этот паттерн раньше.
+- Это **частичный scope** #123, не весь issue — утренний контакт и другие пункты списка не тронуты. Issue не закрыт.
+- Также по #121 (deep links, ранее закрыт): зафиксировано в issue — closure не подтверждён живой проверкой на iPhone в Telegram, только код с обеих сторон. Добавлено в общий список live-проверок вместе с #356 и #417.
+
 ## 31.08.2026 — MXL-SECURITY-AUDIT-001 follow-up: статический аудит backend (#351)
 
 - Frontend не может проверить backend сама — аудит выполнен статическим анализом кода `mentalix-bot` (полный разбор: `mentalix-bot` PR #37, не смёржен).
