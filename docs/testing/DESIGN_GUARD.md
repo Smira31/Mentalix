@@ -24,6 +24,12 @@
 
 ---
 
+## Реализованный foundation (Phase 1)
+
+В проекте уже доступен детерминированный статический guard: `npm run test:design-guard` запускает `scripts/design-guard.mjs`. Он проверяет наличие обязательных design tokens, сохраняет `?light-preview=1` за dev/Vercel Preview gate, запрещает pure-white surfaces/text в CSS и контролирует hardcoded production gold в CSS. Для input, textarea и select действует правило минимального размера 16px.
+
+Эта проверка намеренно не заявляет, что заменяет визуальный Playwright gate, real-device review, CLS или полноценный WCAG audit. Это первый независимый слой, который быстро ловит очевидный design debt до запуска более дорогих проверок.
+
 ## Автоматические проверки (Playwright)
 
 ### 1. Background Color Compliance
