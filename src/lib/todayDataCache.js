@@ -187,13 +187,22 @@ export async function fetchTodayData(userId, { force = false } = {}) {
     return inFlight.get(userId)
   }
 
+  /*
+   * Ритуалы, аскезы, check-in и review_hour определяют состояние дня и
+   * primary CTA. Их нельзя подменять пустыми значениями: иначе сбой сети
+   * выглядит как «нет практик» или как незаполненный check-in. Promise.all
+   * не вызовет cache/snapshot запись, пока все критичные данные не получены.
+   *
+   * Цитата и тема недели не меняют следующий шаг: у них есть локальный
+   * fallback, поэтому их временная недоступность не блокирует Today.
+   */
   const request = Promise.all([
     api.rituals.list(userId),
     api.ascezas.list(userId),
-    api.quotes.today(userId),
-    api.checkin.today(userId).catch(() => null),
+    api.quotes.today(userId).catch(() => null),
+    api.checkin.today(userId),
     api.themes.list(userId).catch(() => []),
-    api.profile.getSettings(userId).catch(() => null),
+    api.profile.getSettings(userId),
   ])
     .then(([rituals, ascezas, quote, checkin, themes, settings]) => {
       const data = { rituals, ascezas, quote, checkin, themes, settings }

@@ -144,6 +144,10 @@ export default function Today({
 
   const [loading, setLoading] = useState(() => !initialTodaySnapshot)
 
+  const [loadError, setLoadError] = useState(false)
+
+  const [reloadToken, setReloadToken] = useState(0)
+
   const [dailyQuote, setDailyQuote] = useState(() => initialTodaySnapshot?.quote?.text || null)
 
   const [dailyThought] = useState(() => getDailyThought())
@@ -190,6 +194,15 @@ export default function Today({
     setSub(nextSub)
   }
 
+  function retryTodayData() {
+    if (!user) return
+
+    invalidateTodayData(user.id)
+    setLoadError(false)
+    setLoading(true)
+    setReloadToken(token => token + 1)
+  }
+
   useEffect(() => {
     return () => {
       onFlowChange?.(false)
@@ -230,6 +243,7 @@ export default function Today({
 
         if (!active) return
 
+        setLoadError(false)
         setTheme(pickCurrentTheme(themesData))
 
         api.pulse
@@ -248,6 +262,7 @@ export default function Today({
         setReviewHour(settingsData?.review_hour ?? 19)
       } catch (error) {
         console.error(error)
+        if (active) setLoadError(true)
       } finally {
         if (active) setLoading(false)
       }
@@ -256,7 +271,7 @@ export default function Today({
     return () => {
       active = false
     }
-  }, [user, sub, initialTodaySnapshot])
+  }, [user, sub, initialTodaySnapshot, reloadToken])
 
   const hourNow = new Date().getHours()
 
@@ -371,6 +386,22 @@ export default function Today({
 
   if (loading) {
     return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
+  }
+
+  if (loadError) {
+    return (
+      <div className="w-full max-w-md px-5 pt-8">
+        <EmptyState className="p-5" glyph={<div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />}>
+          <h2 className="font-display mx-type-card text-cream mb-1">Не удалось загрузить день</h2>
+          <p className="mx-type-list-body text-muted mb-4" role="alert">
+            Проверь соединение и попробуй ещё раз. Данные дня не были заменены пустым состоянием.
+          </p>
+          <button onClick={retryTodayData} className="cta-pill mx-type-control px-7 py-3">
+            Повторить
+          </button>
+        </EmptyState>
+      </div>
+    )
   }
 
   // ============================================================

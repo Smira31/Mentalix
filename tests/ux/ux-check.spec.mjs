@@ -1279,3 +1279,40 @@ test('прямая web-ссылка объясняет Telegram Mini App и со
 
   await context.close()
 })
+
+test('Today не маскирует ошибку критичного API под пустой список практик', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, TEST_USER)
+
+  await context.route('**/api/**', route => {
+    const pathname = new URL(route.request().url()).pathname
+
+    if (pathname === '/api/rituals') {
+      return route.fulfill(jsonResponse({ error: 'fixture failure' }, 503))
+    }
+
+    return route.fulfill(fixtureFor(route.request()))
+  })
+
+  const page = await context.newPage()
+  await page.goto('/')
+
+  await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
+  await expect(page.getByText('Добавь первый ритуал')).not.toBeVisible()
+  await expect(page.getByRole('button', { name: 'Повторить' })).toBeEnabled()
+
+  await context.close()
+})
