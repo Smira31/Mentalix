@@ -321,7 +321,12 @@ async function captureScreen({ page, viewport, screen, slug, runtimeErrors, resu
     await assertCommonScreenChecks(page, runtimeErrors)
 
     if (VISUAL_ANCHOR_SLUGS.has(slug)) {
-      await expect(page).toHaveScreenshot(`${viewport.name}/${slug}.png`, {
+      const starterSetEnabled = process.env.VITE_STARTER_SET_ENABLED === 'true'
+      const snapshotName =
+        starterSetEnabled && viewport.name === '430x932' && slug === '01-today'
+          ? `${viewport.name}/${slug}-starter-enabled.png`
+          : `${viewport.name}/${slug}.png`
+      await expect(page).toHaveScreenshot(snapshotName, {
         animations: 'disabled',
         caret: 'hide',
         maxDiffPixelRatio: 0.012,
