@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ChevronDown, Plus, Search, X } from 'lucide-react'
 
 import MarkdownText from '../components/MarkdownText'
+import TagPicker from '../components/TagPicker'
 import { api } from '../lib/api'
 import { platformName } from '../platform'
 
@@ -396,24 +397,13 @@ export default function JourneySearch({ user }) {
                     Выбери до 8 личных тегов. Этот выбор меняет только эту запись.
                   </p>
                   {tags.length > 0 ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {tags.map(tag => {
-                        const selected = entryTagIds.includes(tag.id)
-                        return (
-                          <button
-                            key={tag.id}
-                            type="button"
-                            aria-pressed={selected}
-                            onClick={() => toggleEntryTag(tag.id)}
-                            className={[
-                              'min-h-9 rounded-full px-3 text-[12px] font-semibold',
-                              selected ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted',
-                            ].join(' ')}
-                          >
-                            {tag.name}
-                          </button>
-                        )
-                      })}
+                    <div className="mt-3">
+                      <TagPicker
+                        tags={tags}
+                        selectedTagIds={entryTagIds}
+                        onToggle={toggleEntryTag}
+                        label={`Теги для записи ${entry.date}`}
+                      />
                     </div>
                   ) : (
                     <p className="mt-3 text-[12px] text-faint">

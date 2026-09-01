@@ -7,6 +7,22 @@ const API_TIMEOUT_MS = 10_000
 const API_MAX_RETRIES = 1
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
+export const MAX_JOURNEY_TAGS_PER_ENTRY = 8
+
+function normalizeJourneyTagIds(tagIds) {
+  if (!Array.isArray(tagIds)) throw new TypeError('tagIds must be an array')
+  const normalized = tagIds.map(Number)
+  if (
+    normalized.some(tagId => !Number.isInteger(tagId) || tagId <= 0) ||
+    new Set(normalized).size !== normalized.length
+  ) {
+    throw new TypeError('tagIds must contain unique positive integers')
+  }
+  if (normalized.length > MAX_JOURNEY_TAGS_PER_ENTRY) {
+    throw new RangeError(`A journal entry can have up to ${MAX_JOURNEY_TAGS_PER_ENTRY} tags`)
+  }
+  return normalized
+}
 
 export class ApiError extends Error {
   constructor(message, { path, status = null, kind = 'unknown', cause = null } = {}) {
@@ -361,7 +377,7 @@ export const api = {
     replaceTags: (userId, date, tagIds) =>
       request(`/journey/entries/${date}/tags`, {
         method: 'PUT',
-        body: JSON.stringify({ user_id: userId, tag_ids: tagIds }),
+        body: JSON.stringify({ user_id: userId, tag_ids: normalizeJourneyTagIds(tagIds) }),
       }),
   },
 
