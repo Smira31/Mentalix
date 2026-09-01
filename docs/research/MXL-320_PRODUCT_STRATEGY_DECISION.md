@@ -1,10 +1,10 @@
 # MXL-320 — Mentalix product strategy decision artifact
 
-This artifact records the current owner-confirmed product direction. It prevents parallel agents from reopening the same decisions and keeps implementation work aligned with one measurable loop.
+This artifact summarizes the product direction recorded by the owner. The source of truth for age segmentation is `docs/core/PRODUCT_DECISIONS.md` → **MXL-DEC-021**, `Обновление 31.08.2026`; this document does not independently confirm that decision. It prevents parallel agents from reopening the same decisions and keeps implementation work aligned with one measurable loop.
 
-## Confirmed direction
+## Direction aligned with the current owner decision
 
-Mentalix serves a broad working audience of **16–35 years old**, while analysis separates 16–17, 18–24 and 25–35 cohorts. The first problem statement is narrow: **a person cannot start an important task**. Mentalix is a reflection-and-action product, not a therapy, diagnostic or emergency-response service.
+Mentalix serves a broad working audience of **16–35 years old**, while analysis separates 16–17, 18–24 and 25–35 cohorts. This wording follows the current owner sign-off in MXL-DEC-021. The first problem statement is narrow: **a person cannot start an important task**. Mentalix is a reflection-and-action product, not a therapy, diagnostic or emergency-response service.
 
 The primary loop is:
 
@@ -29,7 +29,7 @@ For paid-outcome research, the free daily loop remains available. The first conc
 
 ## Safety gates
 
-The 16–17 cohort requires a separate review before user testing: age-appropriate language, minimal data collection, Journal privacy, AI boundaries, sensitive-message handling and clear routes to human help when necessary. No age cohort receives diagnosis, therapy claims, coercive streak pressure or hidden memory.
+The 16–17 cohort requires the safety/privacy gate defined in MXL-DEC-021 before user testing: age-appropriate language, minimal data collection, Journal privacy, AI boundaries and sensitive-message handling. The gate must be completed before testing begins. No age cohort receives diagnosis, therapy claims, coercive streak pressure or hidden memory.
 
 No feature in this artifact authorizes a production change, new AI persona, backend contract, payment flow, data retention policy or navigation change. Such changes require a separate owner decision and a narrowly scoped PR.
 
