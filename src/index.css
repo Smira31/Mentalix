@@ -177,10 +177,9 @@
 }
 
 /*
- * Disposable diagnostic only: enabled by ?light-preview=1 in local dev or
- * Vercel Preview. This intentionally changes only four tokens so the
- * hairline contrast problem can be viewed before any L-scope redesign.
- * It is not a production theme contract and must not be copied to :root.
+ * Preview-only light theme: enabled by ?light-preview=1 in local dev or
+ * Vercel Preview. This is a complete visual direction for review, not a
+ * production theme contract; it deliberately remains behind the preview gate.
  *
  * --c-text added after the first S-M pass: it is the single CSS variable
  * behind the text-cream/text-sage/text-mint Tailwind aliases (all three
@@ -204,10 +203,63 @@
  * since --c-text-on-dark itself must not change here.
  */
 [data-theme='light-preview'] {
-  --c-bg: 245 240 232;
-  --c-card: 255 252 247;
-  --c-line: 49 49 49;
-  --c-text: 20 17 14;
+  /* warm paper, not sterile white — Mentalix keeps its quiet editorial tone */
+  --c-bg: 244 239 230;
+  --c-card: 255 251 244;
+  --c-card2: 235 227 216;
+
+  /* ink hierarchy: comfortable on paper, still expressive in cards */
+  --c-text: 35 30 25;
+  --c-muted: 105 92 79;
+  --c-faint: 126 111 96;
+
+  /* warm graphite lines instead of blue-grey UI chrome */
+  --c-border: 209 196 180;
+  --c-line: 49 43 36;
+  --c-line-secondary: 122 108 93;
+
+  /* cognac-gold accent: the same Mentalix warmth with readable contrast */
+  --c-gold: 157 86 32;
+
+  --btn-bg: #302a24;
+  --btn-text: #fffaf2;
+  --shadow-float: 0 12px 34px rgba(76, 55, 35, 0.16);
+  --shadow-float-compact: 0 8px 24px rgba(76, 55, 35, 0.18);
+  --c-artbed: 39 42 38;
+}
+
+/* Illustrations retain their dark atelier-like window and warm luminous ink. */
+[data-theme='light-preview'] .bg-artbed {
+  --c-text: 242 239 233;
+  --c-gold: 225 166 79;
+  --c-line: 232 229 220;
+  --c-line-secondary: 128 137 119;
+}
+
+/* The primary Today card is intentionally a dark anchor inside the paper UI. */
+[data-theme='light-preview'] .mx-today-primary-card:not([data-complete='true']) {
+  --btn-bg: #f6e5c9;
+  --btn-text: #2b2118;
+  border-color: rgb(255 255 255 / 0.12);
+  background: #30322e;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 18px 44px rgb(67 50 34 / 0.16);
+}
+
+/* A warm surface separation keeps long screens calm without hard borders. */
+[data-theme='light-preview'] .bg-emerald-deep {
+  background-color: rgb(var(--c-bg));
+}
+
+[data-theme='light-preview'] .bg-emerald {
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.55) inset;
+}
+
+[data-theme='light-preview'] input,
+[data-theme='light-preview'] textarea,
+[data-theme='light-preview'] select {
+  color-scheme: light;
 }
 
 /* Локальные токены сохраняют единый контраст artbed-иллюстраций. --c-gold
