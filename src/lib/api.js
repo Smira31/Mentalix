@@ -658,4 +658,17 @@ export const api = {
         }),
       }),
   },
+
+  returnFlow: {
+    log: (event, idempotencyKey, occurredAt = new Date().toISOString()) =>
+      request('/return-flow/events', {
+        method: 'POST',
+        body: JSON.stringify({
+          flow: 'morning_v1',
+          event,
+          idempotency_key: idempotencyKey,
+          occurred_at: occurredAt,
+        }),
+      }),
+  },
 }

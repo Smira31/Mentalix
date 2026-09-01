@@ -46,6 +46,10 @@ export const telegramAdapter = {
     return WebApp.initData || ''
   },
 
+  getStartParam() {
+    return WebApp.initDataUnsafe?.start_param || ''
+  },
+
   async requestAuth() {
     // в Telegram пользователь уже известен через initData, отдельного входа не требуется
     return this.getUser()
