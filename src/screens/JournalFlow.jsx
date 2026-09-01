@@ -83,7 +83,14 @@ function JournalProgress({ current, onSelect, completed }) {
   )
 }
 
-function JournalIntro({ completed, legacyVisible, onStart, onMigrate, onDismissLegacy }) {
+function JournalIntro({
+  completed,
+  legacyVisible,
+  onStart,
+  onMigrate,
+  onDismissLegacy,
+  onOpenGuided,
+}) {
   const complete = completed === PHASES.length
   const continuing = completed > 0 && !complete
   const title = complete
@@ -142,6 +149,15 @@ function JournalIntro({ completed, legacyVisible, onStart, onMigrate, onDismissL
       >
         {complete ? 'Открыть запись' : continuing ? 'Продолжить запись' : 'Начать'}
       </button>
+      {onOpenGuided && (
+        <button
+          type="button"
+          onClick={onOpenGuided}
+          className="mx-auto mt-3 min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
+        >
+          Не понимаю, что делать → разобраться сейчас
+        </button>
+      )}
     </SceneLayout>
   )
 }
@@ -180,7 +196,7 @@ function JournalComplete({ onClose, onOpen }) {
   )
 }
 
-export default function JournalFlow({ userId, onClose }) {
+export default function JournalFlow({ userId, onClose, onOpenGuided }) {
   const { style: surfaceStyle } = useFullscreenSurface()
   const [initial] = useState(() => readSaved(userId))
   const [stage, setStage] = useState('intro')
@@ -269,6 +285,7 @@ export default function JournalFlow({ userId, onClose }) {
           onStart={{ open: () => setStage('writing'), close: onClose }}
           onMigrate={migrateLegacyEntry}
           onDismissLegacy={() => setLegacyMigrationVisible(false)}
+          onOpenGuided={onOpenGuided}
         />
       )}
 
