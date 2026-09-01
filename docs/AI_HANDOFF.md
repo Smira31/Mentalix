@@ -31,7 +31,7 @@ Prefer one issue, one purpose and one PR. If a task touches files already change
 
 ## Safe execution contract
 
-It is acceptable to inspect files, run tests, add narrowly scoped code or docs, create a branch, push it and open a PR without waiting for another product confirmation when the scope is already confirmed here. Do not merge, deploy, bypass branch protection, change secrets, payment flows, privacy/retention contracts, database schemas or production flags without an explicit owner instruction for that exact operation.
+It is acceptable to inspect files, run tests, add narrowly scoped code or docs, create a branch, push it and open a PR without waiting for another product confirmation when the scope is already documented here. Do not merge, deploy, bypass branch protection, change secrets, payment flows, privacy/retention contracts, database schemas or production flags without an explicit owner instruction for that exact operation.
 
 Green automation does not replace Telegram/iPhone/Android device gates. If a manual gate is not available, leave the PR open and write `manual gate pending`; do not claim the feature is fully verified. Vercel deployment rate-limit failures should be reported separately from code checks and must not be silently treated as a product failure.
 
@@ -67,11 +67,12 @@ Check live GitHub status before acting; the list below records the workstream an
 | [#447](https://github.com/Smira31/Mentalix/pull/447) | Animation library     | Motion records and reduced-motion rules            | Docs-only                                      |
 | [#448](https://github.com/Smira31/Mentalix/pull/448) | Character canon       | Voice, visual invariants and banned patterns       | Docs-only                                      |
 | [#449](https://github.com/Smira31/Mentalix/pull/449) | Visual-card library   | Asset metadata and approval workflow               | Docs-only                                      |
-| [#450](https://github.com/Smira31/Mentalix/pull/450) | Product strategy      | Audience, core loop and experiment order; wording matches `docs/core/PRODUCT_DECISIONS.md` → MXL-DEC-021 as of 31.08.2026 | Docs-only |
+| [#450](https://github.com/Smira31/Mentalix/pull/450) | Product strategy      | Historical product-strategy artifact; age segmentation now follows MXL-DEC-021, Обновление 31.08.2026 | Merged; this file is not the source of truth |
 | [#451](https://github.com/Smira31/Mentalix/pull/451) | Insights protocol     | Provenance, sample guards and safe observations    | Docs-only; backend remains a dependency        |
-| [#453](https://github.com/Smira31/Mentalix/pull/453) | Lila discover ADR     | Pre-mortem/ADR gate; no runtime, AI, persistence or navigation authorized | Docs-only                |
-| [#454](https://github.com/Smira31/Mentalix/pull/454) | API request cancellation | Caller-driven `AbortSignal` support in `src/lib/api.js`; distinguishes cancel from timeout | API client only, isolated |
-| [#455](https://github.com/Smira31/Mentalix/pull/455) | Font self-hosting perf | Replaces render-blocking Google Fonts `@import` with `@fontsource/onest` + `@fontsource/jetbrains-mono` | Touches `src/index.css`, `package.json` — coordinate merge order with #441 and #442 |
+| [#452](https://github.com/Smira31/Mentalix/pull/452) | AI handoff            | Agent handoff, current PR map and links to owner decisions | Merged; references MXL-DEC-021 rather than deciding age segmentation |
+| [#453](https://github.com/Smira31/Mentalix/pull/453) | Lila discover ADR     | Pre-mortem/ADR gate; no runtime, AI, persistence or navigation authorized | Merged; docs-only                |
+| [#454](https://github.com/Smira31/Mentalix/pull/454) | API request cancellation | Caller-driven `AbortSignal` support in `src/lib/api.js`; distinguishes cancel from timeout | Merged; API client only, isolated |
+| [#455](https://github.com/Smira31/Mentalix/pull/455) | Font self-hosting perf | Replaces render-blocking Google Fonts `@import` with `@fontsource/onest` + `@fontsource/jetbrains-mono` | Merged; touches `src/index.css`, `package.json` |
 
 PR #443 belongs to another agent and must not be modified without checking its live owner and files first. The PR list is intentionally not a merge queue; review each diff independently.
 
