@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного backlog** на 29.08.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Stoic-inspired product baseline зафиксирован в [`PRODUCT.md`](../PRODUCT.md), но новые safety, backend и коммерческие решения по-прежнему требуют отдельного подтверждения.
+Статус индекса: каноническое представление **активного backlog** на 01.09.2026. Подробные handoff и исторические записи остаются в [`TASKS.md`](../TASKS.md). Stoic-inspired product baseline зафиксирован в [`PRODUCT.md`](../PRODUCT.md), но новые safety, backend и коммерческие решения по-прежнему требуют отдельного подтверждения.
 
 ## Как читать индекс
 
@@ -21,7 +21,7 @@
 | `MXL-008` | ML | product/UX | verified | completed | Закрыта через PR #200; Vercel/телефонный gate пройден |
 | `MXL-021` | M | product/UX | verified | completed | Закрыта через PR #203; Telegram/iPhone gate пройден владельцем |
 | `MXL-009` | ML | product/data/UX | verified | completed + backend-follow-up | Закрыта через PR #221; frontend safety slice опубликован, backend contract остаётся отдельным follow-up |
-| `MXL-010` | L | release | backlog | manual-gate + backend-dependent | Согласовать E2E test account и фактические backend данные |
+| `MXL-010` | L | release | verified/completed | owner-confirmed PASS + backend follow-up | Закрыта по owner-confirmed PASS в Issue #356; release gate пройден на реальном iPhone в Telegram, backend/data follow-up не объявляется закрытым |
 | `MXL-011` | L | release | verified | completed | Закрыта после Telegram/iPhone release gate владельца |
 | `MXL-012` | L | release | backlog | manual-gate | Провести Android gate |
 | `MXL-014` | M | product/content/UX | verified | completed | Закрыта через PR #217; 4-сценная text meditation опубликована |
@@ -29,7 +29,7 @@
 | `MXL-016` | M | content/product/UX | verified | completed | Закрыта через PR #215; curated fallback и reflective metadata опубликованы |
 | `MXL-STRICTMODE-PERSONA-001` | ? | technical | documented | blocked | В TASKS.md явно отмечено «не чинить»; не запускать автоматически |
 | `MXL-019` | M | product/UX/visual | verified | completed | Закрыта через PR #219; continuous Journey line опубликована |
-| `MXL-JOURNAL-001` | ML | product/UX | in progress | manual-gate | Вариант А: закреплённая карточка Journal над «Практиками» → вступление → 4 фазы → завершение/возврат/повторное открытие, локальное хранение; Preview-ветка `feat/mxl-journal-reference-preview` ждёт ручной Telegram/iPhone gate |
+| `MXL-JOURNAL-001` | ML | product/UX | in progress | manual-gate | Journal core и reusable tag picker представлены в текущем `main` через PR #472; не объявлять весь Journal закрытым, пока не пройден реальный iPhone/Telegram UX gate текущего core loop |
 | `MXL-020` | ? | product/payment | deferred | needs-owner + backend-dependent | Не начинать до подтверждения повторяемой ценности и бесплатного ядра |
 | `MXL-LOOP-001` | L | product/UX/research | ready | manual-gate | Проверить полный loop Today → practice → next action → evening review → return; связующая задача для #122/#123 |
 | `MXL-PRACTICE-UX-001` | M | product/UX/content | backlog | needs-owner | Унифицировать четыре problem-led practice по шаблону problem → steps → measurable action → completion |
@@ -46,13 +46,13 @@
 
 ## Новые owner-decision гипотезы — 29.08.2026
 
-| ID                                                                            | Размер | Тип                     | Статус    | Автономность                                  | Следующий шаг                                                                                    |
-| ----------------------------------------------------------------------------- | -----: | ----------------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| [`MXL-PRODUCT-STRATEGY-001`](https://github.com/Smira31/Mentalix/issues/320)  |      M | product/research        | discovery | needs-owner                                   | Выбрать Scope A (Starter Set) или Scope B (+ «Разобраться сейчас»); не выбирать P0 автоматически |
-| [`MXL-STARTER-SET-001`](https://github.com/Smira31/Mentalix/issues/321)       |      M | product/UX/content      | discovery | needs-owner + manual-gate                     | Проверить мягкий onboarding, добровольность аскез и выполнение первого шага                      |
-| [`MXL-SELF-DISCOVERY-001`](https://github.com/Smira31/Mentalix/issues/322)    |      M | product/UX/content      | discovery | needs-owner + backend-dependent               | Согласовать guided flow и границы AI-разбора поверх существующих Journal-задач                   |
-| [`MXL-AI-ROLES-001`](https://github.com/Smira31/Mentalix/issues/323)          |      M | product/research/safety | discovery | needs-owner + manual-gate                     | Утвердить naming и role playbooks; не менять текущих AI-персон автоматически                     |
-| [`MXL-GUIDED-REFLECTION-001`](https://github.com/Smira31/Mentalix/issues/324) |      M | product/research/safety | blocked   | needs-owner + manual-gate + backend-dependent | Провести safety-review; до решения не реализовывать «режим терапии» и medical claims             |
+| ID                                                                            | Размер | Тип                     | Статус    | Автономность                                  | Следующий шаг                                                                                                                                                       |
+| ----------------------------------------------------------------------------- | -----: | ----------------------- | --------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`MXL-PRODUCT-STRATEGY-001`](https://github.com/Smira31/Mentalix/issues/320)  |      M | product/research        | discovery | needs-owner                                   | Выбрать Scope A (Starter Set) или Scope B (+ «Разобраться сейчас»); не выбирать P0 автоматически                                                                    |
+| [`MXL-STARTER-SET-001`](https://github.com/Smira31/Mentalix/issues/321)       |      M | product/UX/content      | discovery | needs-owner + manual-gate                     | Owner-decision hypothesis остаётся отдельной от реализованного frontend Starter Set; PR #473 зафиксировал default-off gate, но не утверждает новый onboarding scope |
+| [`MXL-SELF-DISCOVERY-001`](https://github.com/Smira31/Mentalix/issues/322)    |      M | product/UX/content      | discovery | needs-owner + backend-dependent               | Согласовать guided flow и границы AI-разбора поверх существующих Journal-задач                                                                                      |
+| [`MXL-AI-ROLES-001`](https://github.com/Smira31/Mentalix/issues/323)          |      M | product/research/safety | discovery | needs-owner + manual-gate                     | Утвердить naming и role playbooks; не менять текущих AI-персон автоматически                                                                                        |
+| [`MXL-GUIDED-REFLECTION-001`](https://github.com/Smira31/Mentalix/issues/324) |      M | product/research/safety | blocked   | needs-owner + manual-gate + backend-dependent | Провести safety-review; до решения не реализовывать «режим терапии» и medical claims                                                                                |
 
 ## Автономная очередь
 
@@ -76,7 +76,7 @@
 | Telegram/iPhone | Основной manual gate | Desktop smoke не считать заменой реальной проверки |
 | Stoic-аудит | Русская карта функций и design principles добавлена в `docs/product/` | Не копировать бренд, тексты и UI Stoic |
 | Competitive analysis execution | Согласованный отчёт переведён в `docs/research/mentalix_competitive_analysis_execution_backlog_2026-08-28.md`; сначала проверяется action loop, затем persistence/history/privacy/content, и только потом payment | Не создавать дубли существующих journal/UX/research задач и не запускать checkout до evidence |
-| Journal | Выбран вариант А: 4-фазный локальный поток имеет явный дом в верхней карточке «Практик»; эпик разбит на persistence, history, privacy, personalization и content layers | Не добавлять шестую вкладку, не скрывать Journal внутри Mentor, не смешивать с семидневной темой/PR #268 и не дублировать закрытые MXL-001/MXL-005/MXL-009/MXL-014/MXL-015/MXL-016/MXL-019 |
+| Journal | Вариант А и текущий frontend core представлены в `main`; PR #472 добавил reusable tag picker. Остальные persistence/history/privacy/personalization/content layers остаются отдельным scope | Не добавлять шестую вкладку, не скрывать Journal внутри Mentor и не объявлять визуальный редизайн утверждённым до единого реального iPhone/Telegram UX gate текущего core loop |
 
 ## Definition of Ready
 
@@ -86,24 +86,25 @@
 
 Задача считается закрытой после реализации согласованного scope, успешной сборки и целевых проверок, открытия отдельного PR с evidence и прохождения предусмотренного manual gate. `docs/TASK_INDEX.md` обновляется для активного backlog; `PROJECT_STATE.md` — только если изменился подтверждённый release/production факт. `TASKS.md`, `CHANGES.md` и архив пополняются только когда нужна историческая причина, а не как обязательная копия статуса.
 
-## Canonical agent workflow and current audit queue
+## Completed maintenance and audit outcomes
 
-Эта секция связывает текущий GitHub-трекер с единой точкой входа [`docs/AGENT_ONBOARDING.md`](AGENT_ONBOARDING.md). Все агенты начинают с onboarding, затем находят существующую Issue по task ID и продолжают её. Новые Issues и ветки для уже существующей работы не создаются без явного решения владельца.
+Эта секция хранит завершённые технические и документационные результаты и не является активной очередью. Закрытые Issues не называются активными задачами; нерешённые product hypotheses остаются в своих discovery/backlog строках.
 
-| ID                     | Тип                     | Статус      | GitHub                                                 | Следующий шаг                                                                                       |
-| ---------------------- | ----------------------- | ----------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `MXL-GIT-SYNC-001`     | technical blocker       | ready       | [#289](https://github.com/Smira31/Mentalix/issues/289) | Завершить сравнение локального `main`, `origin/main` и stash; не удалять WIP до фиксации результата |
-| `MXL-TYPO-001`         | UX/typography           | blocked     | [#290](https://github.com/Smira31/Mentalix/issues/290) | Продолжить существующий typography-контекст после закрытия git-блокера                              |
-| `MXL-UI-AUDIT-001`     | QA/UX                   | ready       | [#291](https://github.com/Smira31/Mentalix/issues/291) | Пройти ключевой пользовательский маршрут и записать evidence в Issue                                |
-| `MXL-DESIGN-STOIC-001` | product/design decision | needs-owner | [#292](https://github.com/Smira31/Mentalix/issues/292) | После аудита принять решения по карточкам Practices и плотности Trends                              |
+| ID / scope                          | Статус               | Подтверждение                                                                                                                                           |
+| ----------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MXL-GIT-SYNC-001` и branch cleanup | verified/completed   | Issue #289 закрыта; `origin/main` синхронизирован, старые remote branches удалены по owner-confirmed read-only аудиту, на GitHub осталась только `main` |
+| `MXL-TYPO-001`                      | historical/completed | Issue #290 закрыта; не является активной очередью                                                                                                       |
+| `MXL-DESIGN-STOIC-001`              | historical/completed | Issue #292 закрыта; решения аудита отражены в существующей документации, новый Stoic backlog не создаётся                                               |
+| GitHub Pages cleanup                | verified/completed   | PR #474 удалил устаревший `.github/workflows/pages.yml`; канонический frontend production — Vercel                                                      |
+| `MXL-SERIES-001`                    | verified/completed   | Issue #299, PR #301; Today streak flame и Series & Badges опубликованы                                                                                  |
+| `MXL-STREAK-TIERS-001`              | verified/completed   | PR #196; именованные уровни текущей серии опубликованы                                                                                                  |
 
-Существующие задачи не дублируются: onboarding остаётся в [#117](https://github.com/Smira31/Mentalix/issues/117), Journal alignment — в [#247](https://github.com/Smira31/Mentalix/issues/247), а общий animation context — в [#103](https://github.com/Smira31/Mentalix/issues/103). Конкретные новые дефекты добавляются в `MXL-UI-AUDIT-001`, а отдельные follow-up Issues создаются только для подтверждённого уникального scope.
+## Canonical agent workflow and next decision gate
 
-### Агентский порядок выполнения
+Эта секция связывает активные задачи с единой точкой входа [`docs/AGENT_ONBOARDING.md`](AGENT_ONBOARDING.md). Новые Issues и ветки для уже существующей работы не создаются без явного решения владельца. Устаревший порядок `#289 → #292` удалён из active/audit queue.
 
-Канонический порядок текущего цикла: `MXL-GIT-SYNC-001` → `MXL-TYPO-001` → `MXL-UI-AUDIT-001` → `MXL-DESIGN-STOIC-001`. Агент не объявляет задачу закрытой только по результату сборки: требуются целевая проверка, evidence, обновлённый handoff и соблюдение manual gate, если он предусмотрен.
+| Текущий gate                                                                    | Scope                                                    | Ограничение                                                                                                                         |
+| ------------------------------------------------------------------------------- | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Реальный iPhone/Telegram UX gate текущего core loop перед визуальным редизайном | Today → practice → next action → evening review → return | CI, desktop smoke, HTTP health и Vercel Preview не заменяют ручную проверку; редизайн не объявляется реализованным или утверждённым |
 
-| ID                     | Тип        | Статус             | GitHub                                                 | Следующий шаг                                                            |
-| ---------------------- | ---------- | ------------------ | ------------------------------------------------------ | ------------------------------------------------------------------------ |
-| `MXL-SERIES-001`       | product/UX | verified/completed | [#299](https://github.com/Smira31/Mentalix/issues/299) | Закрыта через PR #301; Today streak flame и Series & Badges опубликованы |
-| `MXL-STREAK-TIERS-001` | product/UX | verified/completed | [#196](https://github.com/Smira31/Mentalix/pull/196)   | Закрыта через PR #196; именованные уровни текущей серии опубликованы     |
+Оставшиеся product hypotheses и backend-dependent задачи продолжают жить в основных таблицах выше. Они не становятся completed только потому, что связанный Issue закрыт; статус и следующий шаг должны соответствовать текущему Issue, PR, коду и решению владельца.
