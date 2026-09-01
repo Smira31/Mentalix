@@ -147,6 +147,9 @@
   --c-gold: 237 189 96;
   /* #EDBD60 — золотой акцент Mentalix */
 
+  /* Semantic glyph secondary accent: explicit token, not a fixed hex. */
+  --c-glyph-secondary: 199 125 122;
+
   /* CTA */
 
   --btn-bg: #ededed;
@@ -236,6 +239,7 @@
 
   /* cognac-gold accent: the same Mentalix warmth with readable contrast */
   --c-gold: 157 86 32;
+  --c-glyph-secondary: 126 71 66;
 
   --btn-bg: #302a24;
   --btn-text: #fffaf2;

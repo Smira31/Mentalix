@@ -161,11 +161,11 @@
 /* Accent variant (secondary) — for visual differentiation (e.g. Mentor vs Ritual) */
 .mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__point,
 .mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__path-point {
-  fill: #c77d7a;
+  fill: rgb(var(--c-glyph-secondary));
 }
 
 .mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__focus-ring {
-  stroke: #c77d7a;
+  stroke: rgb(var(--c-glyph-secondary));
 }
 
 .mx-semantic-glyph__network,
