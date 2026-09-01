@@ -37,6 +37,7 @@ export default function MazeLogo({
 }) {
   const p = Math.max(0, Math.min(1, progress))
   const trailRef = useRef(null)
+  const trailLengthRef = useRef(null)
   const [dot, setDot] = useState(null)
   const [animatedProgress, setAnimatedProgress] = useState(0)
   const [dotVisible, setDotVisible] = useState(!animateOnMount)
@@ -77,8 +78,9 @@ export default function MazeLogo({
     const path = trailRef.current
     if (!path || typeof path.getTotalLength !== 'function') return
     try {
-      const len = path.getTotalLength()
+      const len = trailLengthRef.current ?? path.getTotalLength()
       if (!len) return
+      trailLengthRef.current = len
       const pt = path.getPointAtLength(len * displayProgress)
       setDot({ x: pt.x, y: pt.y })
     } catch {
