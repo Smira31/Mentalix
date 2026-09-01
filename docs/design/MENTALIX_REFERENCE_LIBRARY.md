@@ -1,0 +1,33 @@
+# Mentalix reference library
+
+This index is a source of design principles and review references, not a random moodboard and not a place to redistribute third-party assets. External brands and products are references only; Mentalix keeps its own voice, tokens and interaction model.
+
+## Review contract
+
+Every record has an owner, a capture date, a narrow approved use and an explicit rejected use. A reference may guide hierarchy, timing, accessibility or platform fit, but it must not silently replace a Mentalix decision. Before release, the reviewer checks relevance, rights, accessibility and fit with the current design system.
+
+| Reference ID       | Title and source                                                                                                                         | Captured   | Category     | Approved use                                                                                                 | Rejected use                                                                                | Rights note                                                          | Related token                                  | Reviewer status               |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------- |
+| `REF-LAYOUT-001`   | Apple Human Interface Guidelines — Layout ([source](https://developer.apple.com/design/human-interface-guidelines/layout))               | 2026-08-31 | layout       | Group related controls, preserve hierarchy, use progressive disclosure, adapt layouts to device context      | Copying Apple components, materials or platform-specific visual styling                     | Official documentation used as a citation; no asset redistributed    | `--c-card`, `--c-card2`, spacing scale         | approved for principle review |
+| `REF-MOTION-001`   | Apple Human Interface Guidelines — Motion ([source](https://developer.apple.com/design/human-interface-guidelines/motion))               | 2026-08-31 | motion       | Purposeful, brief, optional and cancellable feedback motion; reduced-motion alternatives                     | Decorative motion on every interaction or motion as the only state signal                   | Official documentation used as a citation; no asset redistributed    | `--motion-fast`, semantic motion rules         | approved for principle review |
+| `REF-A11Y-001`     | Apple Human Interface Guidelines — Accessibility ([source](https://developer.apple.com/design/human-interface-guidelines/accessibility)) | 2026-08-31 | typography   | Larger text support, sufficient contrast, labels and non-color-only state cues                               | Treating a contrast guideline as a substitute for testing Mentalix on real devices          | Official documentation used as a citation; no asset redistributed    | `--c-text`, `--c-muted`, `--c-faint`           | approved for principle review |
+| `REF-TELEGRAM-001` | Telegram Mini Apps — Designing Mini Apps ([source](https://core.telegram.org/bots/webapps))                                              | 2026-08-31 | Telegram     | Mobile-first responsive layout, native-feeling controls, dynamic theme awareness and safe/content safe areas | Assuming Telegram UI should dictate Mentalix's product hierarchy or copying Telegram chrome | Official platform documentation; no Telegram asset redistributed     | `--tg-safe-area-*`, `--tg-content-safe-area-*` | approved for platform review  |
+| `REF-MENTALIX-001` | Mentalix dark atelier surface                                                                                                            | 2026-08-31 | illustration | Keep dark hero/artbed surfaces as a deliberate anchor, with gold reserved for meaningful emphasis            | Turning every card into a hero or using gold as decoration without semantic meaning         | Owned implementation pattern in `src/index.css` and screen styles    | `--c-bg`, `--c-card2`, `--c-gold`              | approved                      |
+| `REF-MENTALIX-002` | Mentalix light preview parchment layer                                                                                                   | 2026-08-31 | layout       | Preview-only warm parchment surfaces, ink hierarchy and dark hero contrast                                   | Enabling the preview palette in production before separate product approval                 | Owned implementation pattern in PR #441; no external asset           | light-preview overrides, `--c-bg`, `--c-card`  | preview-only                  |
+| `REF-MENTALIX-003` | Mentalix practice scene composition                                                                                                      | 2026-08-31 | illustration | Calm composition, breathing room and semantic visual motion around one practice action                       | Generic gamification, decorative badges competing with the primary action                   | Owned implementation in `src/components/practices` and `src/screens` | `--c-gold`, spacing scale, radius scale        | approved for internal review  |
+
+## Decision log
+
+The default Mentalix rule is **one primary action, one clear visual anchor, and enough quiet space to understand the next step**. Platform references may inform safe areas, control sizing and accessibility, but the user's core loop remains the source of truth.
+
+The light theme is intentionally recorded as `preview-only`. It is not a production design decision until its separate PR is reviewed and the product owner confirms the visual direction. External references are cited for principles, while all production assets must be owned, licensed or generated for Mentalix.
+
+## Review checklist
+
+- [ ] Relevance to the current Mentalix problem is written down.
+- [ ] Approved and rejected uses are explicit.
+- [ ] Rights or ownership note is present.
+- [ ] Related token or system rule is named.
+- [ ] Accessibility and safe-area implications are considered.
+- [ ] Deprecated records remain in history with a reason rather than being silently deleted.
+- [ ] A reviewer has marked the record approved, preview-only or rejected.
