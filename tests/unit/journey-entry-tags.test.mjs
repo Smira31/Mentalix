@@ -7,11 +7,16 @@ const journeySource = await readFile(
   new URL('../../src/screens/JourneySearch.jsx', import.meta.url),
   'utf8'
 )
+const tagPickerSource = await readFile(
+  new URL('../../src/components/TagPicker.jsx', import.meta.url),
+  'utf8'
+)
 
 test('Journey API сохраняет owner id и дату entry при замене tags', () => {
   assert.match(apiSource, /replaceTags: \(userId, date, tagIds\)/)
   assert.match(apiSource, /\/journey\/entries\/\$\{date\}\/tags/)
-  assert.match(apiSource, /user_id: userId, tag_ids: tagIds/)
+  assert.match(apiSource, /user_id: userId, tag_ids: normalizeJourneyTagIds\(tagIds\)/)
+  assert.match(apiSource, /MAX_JOURNEY_TAGS_PER_ENTRY = 8/)
 })
 
 test('Journey search передаёт видимые emotion и date range filters при автоматическом поиске', () => {
@@ -40,4 +45,11 @@ test('Journey предоставляет доступный inline editor tags �
   assert.match(journeySource, /aria-pressed=\{selected\}/)
   assert.match(journeySource, /api\.journey\.replaceTags\(user\.id, entry\.date, entryTagIds\)/)
   assert.match(journeySource, /Запись не была изменена/)
+})
+
+test('TagPicker ограничивает выбор восемью тегами и сохраняет доступность', () => {
+  assert.match(tagPickerSource, /MAX_TAGS_PER_ENTRY = 8/)
+  assert.match(tagPickerSource, /aria-pressed=\{selected\}/)
+  assert.match(tagPickerSource, /disabled=\{unavailable\}/)
+  assert.match(tagPickerSource, /onToggle\?\.\(tag\.id\)/)
 })
