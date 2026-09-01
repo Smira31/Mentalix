@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
@@ -196,6 +196,8 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
+  const [isLoading, setIsLoading] = useState(!initialPracticesData)
+  const [loadError, setLoadError] = useState(null)
   const completedToday = new Set(
     readOneOffPracticeHistory(user?.id)
       .filter(entry => entry.day === localDayId(new Date()))
@@ -213,24 +215,31 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
     setSub(initialSub)
   }
 
-  useEffect(() => {
-    if (!user || sub !== null) return
+  const loadPractices = useCallback(
+    async (force = false) => {
+      if (!user) return
 
-    let active = true
-
-    fetchPracticesData(user.id)
-      .then(({ rituals: ritualsData, ascezas: ascezasData }) => {
-        if (!active) return
-
+      setIsLoading(true)
+      setLoadError(null)
+      try {
+        const { rituals: ritualsData, ascezas: ascezasData } = await fetchPracticesData(user.id, {
+          force,
+        })
         setRituals(ritualsData)
         setAscezas(ascezasData)
-      })
-      .catch(console.error)
+      } catch (error) {
+        setLoadError(error)
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [user],
+  )
 
-    return () => {
-      active = false
-    }
-  }, [user, sub])
+  useEffect(() => {
+    if (!user || sub !== null || initialPracticesData) return
+    Promise.resolve().then(() => loadPractices())
+  }, [initialPracticesData, loadPractices, sub, user])
 
   if (sub === 'rituals') {
     return <Rituals user={user} onBack={() => setSub(null)} />
@@ -298,6 +307,33 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
         <SubHeader title="фокус." onBack={() => setSub(null)} />
 
         <Focus user={user} />
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-md px-5" role="status" aria-live="polite">
+        <h2 className="font-display mx-type-page text-cream lowercase">практики.</h2>
+        <p className="mt-6 text-[13px] leading-relaxed text-muted">Загружаю практики…</p>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div className="w-full max-w-md px-5" role="alert">
+        <h2 className="font-display mx-type-page text-cream lowercase">практики.</h2>
+        <p className="mt-6 text-[13px] leading-relaxed text-muted">
+          Не удалось загрузить практики. Попробуйте ещё раз.
+        </p>
+        <button
+          type="button"
+          onClick={() => loadPractices(true)}
+          className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+        >
+          Повторить
+        </button>
       </div>
     )
   }
