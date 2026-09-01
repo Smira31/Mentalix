@@ -31,6 +31,7 @@ import FirstStepFlow from './FirstStepFlow'
 import MeditationFlow from './MeditationFlow'
 import JournalFlow from './JournalFlow'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
+import LilaDiscoverFlow from './LilaDiscoverFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
 import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
@@ -185,6 +186,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
     'meditation',
     'journal',
     'self-discovery',
+    'lila-discover',
   ].includes(sub)
 
   useEffect(() => {
@@ -233,7 +235,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
         setIsLoading(false)
       }
     },
-    [user],
+    [user]
   )
 
   useEffect(() => {
@@ -271,6 +273,16 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
 
   if (sub === 'self-discovery') {
     return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub('journal')} />
+  }
+
+  if (sub === 'lila-discover') {
+    return (
+      <LilaDiscoverFlow
+        userId={user.id}
+        onBack={() => setSub(null)}
+        onOpenJournal={() => setSub('journal')}
+      />
+    )
   }
 
   if (sub === 'no-blame') {
@@ -406,6 +418,12 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
       </PracticeCategory>
 
       <PracticeCategory title="Психологические практики">
+        <PracticeRow
+          title="Разобраться через Лилу"
+          subtitle="карта, несколько вопросов и один рабочий шаг"
+          right="1–3 мин"
+          onOpen={() => setSub('lila-discover')}
+        />
         <PracticeRow
           artwork={<FirstStepArt />}
           title="Первый шаг"
