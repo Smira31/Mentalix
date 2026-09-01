@@ -131,6 +131,8 @@ export default function Today({
   user,
   onOpenPractice,
   initialSub = null,
+  returnFlowActive = false,
+  onReturnFlowEvent,
   onGoMentor,
   onFlowChange,
   seriesOpen = false,
@@ -190,6 +192,10 @@ export default function Today({
    */
   function changeSub(nextSub) {
     onFlowChange?.(Boolean(nextSub))
+
+    if (returnFlowActive && nextSub === 'checkin') {
+      onReturnFlowEvent?.('morning_action_started')
+    }
 
     setSub(nextSub)
   }
@@ -310,6 +316,10 @@ export default function Today({
         onDone={async () => {
           await refreshCheckin()
 
+          if (returnFlowActive) {
+            await onReturnFlowEvent?.('morning_action_completed')
+          }
+
           changeSub(null)
         }}
       />
@@ -391,7 +401,12 @@ export default function Today({
   if (loadError) {
     return (
       <div className="w-full max-w-md px-5 pt-8">
-        <EmptyState className="p-5" glyph={<div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />}>
+        <EmptyState
+          className="p-5"
+          glyph={
+            <div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />
+          }
+        >
           <h2 className="font-display mx-type-card text-cream mb-1">Не удалось загрузить день</h2>
           <p className="mx-type-list-body text-muted mb-4" role="alert">
             Проверь соединение и попробуй ещё раз. Данные дня не были заменены пустым состоянием.

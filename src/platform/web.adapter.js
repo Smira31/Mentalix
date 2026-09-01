@@ -17,6 +17,11 @@ export const webAdapter = {
     return ''
   },
 
+  getStartParam() {
+    if (typeof window === 'undefined') return ''
+    return new URLSearchParams(window.location.search).get('startapp') || ''
+  },
+
   async requestAuth() {
     // реальный флоу подключим на шаге email OTP — пока просто читаем сохранённого пользователя
     return this.getUser()

@@ -17,6 +17,7 @@ import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { api } from './lib/api'
+import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { currentCheckinStreak } from './lib/series'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
@@ -371,7 +372,8 @@ export default function App() {
   })
 
   const searchParams = new URLSearchParams(window.location.search)
-  const initialTab = searchParams.get('tab')
+  const initialReturnFlow = parseReturnFlow(platform.getStartParam?.())
+  const initialTab = initialReturnFlow ? null : searchParams.get('tab')
   const initialAction = searchParams.get('action')
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
   const actionTab = initialAction === 'breathing' ? 'practices' : 'today'
@@ -385,6 +387,25 @@ export default function App() {
   const [practicesSub, setPracticesSub] = useState(
     initialAction === 'breathing' ? 'breathing' : null
   )
+
+  const reportReturnFlowEvent = useCallback(
+    async event => {
+      if (!user || !initialReturnFlow) return
+
+      try {
+        await api.returnFlow.log(event, returnFlowEventKey(user.id, event), returnFlowOccurredAt())
+      } catch (error) {
+        console.warn('Не удалось записать событие утреннего flow', error)
+      }
+    },
+    [initialReturnFlow, user]
+  )
+
+  useEffect(() => {
+    if (user && initialReturnFlow) {
+      reportReturnFlowEvent('morning_flow_opened')
+    }
+  }, [initialReturnFlow, reportReturnFlowEvent, user])
 
   /* ============================================================
      THEME
@@ -1149,6 +1170,8 @@ export default function App() {
                     user={user}
                     onOpenPractice={openPractice}
                     initialSub={initialTodaySub}
+                    returnFlowActive={Boolean(initialReturnFlow)}
+                    onReturnFlowEvent={reportReturnFlowEvent}
                     onGoMentor={goMentor}
                     onFlowChange={setTodayFlowOpen}
                     onOpenSettings={() => setOverlay('settings')}
