@@ -33,7 +33,7 @@ const INITIAL_TODAY_VARIANT =
 // MXL-STARTER-SET-001 (issue #417): kill-switch для первого продакшен-раската.
 // false полностью отключает picker и возвращает старый empty-state
 // («Пока нет практик» + «Выбрать практику») без других изменений кода.
-const STARTER_SET_ENABLED = true
+const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 
 // ── календарь недели + отдельные дневные streak strips ──
 
