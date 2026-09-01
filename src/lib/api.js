@@ -29,19 +29,34 @@ function backoffMs(attempt) {
 async function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  const callerSignal = options.signal
+  const abortFromCaller = () => controller.abort(callerSignal.reason)
+
+  if (callerSignal) {
+    if (callerSignal.aborted) abortFromCaller()
+    else callerSignal.addEventListener('abort', abortFromCaller, { once: true })
+  }
+
   try {
     return await fetch(url, { ...options, signal: controller.signal })
   } catch (error) {
     if (error?.name === 'AbortError') {
-      throw new ApiError(`API request timed out after ${timeoutMs}ms`, {
-        path: url,
-        kind: 'timeout',
-        cause: error,
-      })
+      const abortedByCaller = callerSignal?.aborted
+      throw new ApiError(
+        abortedByCaller
+          ? 'API request aborted by caller'
+          : `API request timed out after ${timeoutMs}ms`,
+        {
+          path: url,
+          kind: abortedByCaller ? 'aborted' : 'timeout',
+          cause: error,
+        }
+      )
     }
     throw new ApiError('API network request failed', { path: url, kind: 'network', cause: error })
   } finally {
     clearTimeout(timeoutId)
+    callerSignal?.removeEventListener('abort', abortFromCaller)
   }
 }
 
