@@ -19,6 +19,7 @@ import {
 import SemanticGlyph, { semanticKindForAsceza } from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import StreakBar from '../components/StreakBar'
+import StreakRestoreSheet from '../components/StreakRestoreSheet'
 import { Shield, ShieldOff, Cigarette, Brain, Users, Smartphone, Cookie, X } from 'lucide-react'
 
 /*
@@ -227,7 +228,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
   )
 }
 
-function AscezaCard({ asceza, onLog, onBreak, onDelete }) {
+function AscezaCard({ asceza, onLog, onBreak, onDelete, onRestore }) {
   const status = asceza.today_status
   const [confirming, setConfirming] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
@@ -365,6 +366,13 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete }) {
         {!status && asceza.trigger && (
           <p className="text-[11px] text-faint mt-2 italic">Триггер: {asceza.trigger}</p>
         )}
+
+        <button
+          onClick={() => onRestore(asceza)}
+          className="practice-scene__choice w-full py-2 mt-3 text-[11px] text-muted border-0"
+        >
+          Восстановить пропущенный день
+        </button>
       </div>
     </div>
   )
@@ -499,6 +507,7 @@ export default function Ascezas({ user, onBack }) {
   const [showCreate, setShowCreate] = useState(false)
 
   const [breakTarget, setBreakTarget] = useState(null)
+  const [restoreTarget, setRestoreTarget] = useState(null)
 
   const [active, setActive] = useState(0)
   const [writeError, setWriteError] = useState(null)
@@ -530,9 +539,22 @@ export default function Ascezas({ user, onBack }) {
     }
   }, [breakTarget])
 
-  async function logAsceza(ascezaId, status, breakTrigger = null, breakNote = null) {
+  async function logAsceza(
+    ascezaId,
+    status,
+    breakTrigger = null,
+    breakNote = null,
+    restoreDaysAgo = null
+  ) {
     try {
-      const updated = await api.ascezas.log(ascezaId, user.id, status, breakTrigger, breakNote)
+      const updated = await api.ascezas.log(
+        ascezaId,
+        user.id,
+        status,
+        breakTrigger,
+        breakNote,
+        restoreDaysAgo
+      )
       setWriteError(null)
 
       setAscezas(previous =>
@@ -552,6 +574,7 @@ export default function Ascezas({ user, onBack }) {
       )
       invalidateTodayData(user.id)
       invalidatePracticesData(user.id)
+      return updated
     } catch (error) {
       console.error(error)
       if (isLinkedWebWriteBlocked(user, error)) {
@@ -560,6 +583,11 @@ export default function Ascezas({ user, onBack }) {
       }
       throw error
     }
+  }
+
+  async function restoreAsceza({ restoreDaysAgo }) {
+    if (!restoreTarget) return null
+    return logAsceza(restoreTarget.id, 'held', null, null, restoreDaysAgo)
   }
 
   async function createAsceza(draft) {
@@ -663,6 +691,7 @@ export default function Ascezas({ user, onBack }) {
                   onLog={logAsceza}
                   onBreak={setBreakTarget}
                   onDelete={deleteAsceza}
+                  onRestore={setRestoreTarget}
                 />
               ))}
 
@@ -698,6 +727,17 @@ export default function Ascezas({ user, onBack }) {
           asceza={breakTarget}
           onSave={logAsceza}
           onClose={() => setBreakTarget(null)}
+        />
+      )}
+
+      {restoreTarget && (
+        <StreakRestoreSheet
+          itemName={restoreTarget.name}
+          choices={[
+            { value: 'held', label: 'Удержался', description: 'Восстановить день без срыва.' },
+          ]}
+          onSave={restoreAsceza}
+          onClose={() => setRestoreTarget(null)}
         />
       )}
     </>
