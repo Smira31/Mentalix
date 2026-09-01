@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ── Символ Mentalix: лабиринт ──
 // Круговой однопутный лабиринт, по которому золотом заполняется пройденный путь.
@@ -24,6 +24,34 @@ export const LABYRINTH_PATH = `
   L 100 100
 `
 
+/*
+ * MXL-PERF-AUDIT-31-08: path.getTotalLength()/getPointAtLength() на
+ * trailRef.current (элемент, реально смонтированный в дереве страницы)
+ * подтверждены Chrome DevTools trace как forced reflow (101мс в момент
+ * commitMount) — MazeLogo смонтирован в BottomNavigation всегда, так что
+ * это повторяется на каждый рендер с новым progress, на каждом экране.
+ *
+ * LABYRINTH_PATH — константа модуля, геометрия одна и та же для любого
+ * инстанса и любого рендера. Меряем её один раз на detached <path>
+ * (создан через createElementNS, никогда не добавлен в document) —
+ * getTotalLength/getPointAtLength определены спецификацией как чистая
+ * геометрия по атрибуту d, не требуют layout или присоединения к дереву,
+ * поэтому не форсируют reflow живой страницы. Один элемент на модуль,
+ * не на инстанс — тот же путь у всех MazeLogo сразу.
+ */
+let memoizedLabyrinthPath = null
+
+function getMemoizedLabyrinthPath() {
+  if (memoizedLabyrinthPath) return memoizedLabyrinthPath
+  if (typeof document === 'undefined') return null
+
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+  path.setAttribute('d', LABYRINTH_PATH)
+  memoizedLabyrinthPath = path
+
+  return memoizedLabyrinthPath
+}
+
 export default function MazeLogo({
   size = 64,
   progress = 1,
@@ -36,7 +64,6 @@ export default function MazeLogo({
   motionDuration = 700,
 }) {
   const p = Math.max(0, Math.min(1, progress))
-  const trailRef = useRef(null)
   const [dot, setDot] = useState(null)
   const [animatedProgress, setAnimatedProgress] = useState(0)
   const [dotVisible, setDotVisible] = useState(!animateOnMount)
@@ -48,9 +75,7 @@ export default function MazeLogo({
   useEffect(() => {
     if (!animateOnMount) return undefined
 
-    const reducedMotion = Boolean(
-      window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
-    )
+    const reducedMotion = Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches)
 
     if (reducedMotion) {
       const frame = window.requestAnimationFrame(() => {
@@ -61,10 +86,7 @@ export default function MazeLogo({
     }
 
     const frame = window.requestAnimationFrame(() => setAnimatedProgress(p))
-    const dotTimer = window.setTimeout(
-      () => setDotVisible(true),
-      Math.round(motionDuration * 0.68)
-    )
+    const dotTimer = window.setTimeout(() => setDotVisible(true), Math.round(motionDuration * 0.68))
 
     return () => {
       window.cancelAnimationFrame(frame)
@@ -74,12 +96,17 @@ export default function MazeLogo({
 
   // Точка «ты здесь» едет по маршруту вместе с прогрессом.
   useEffect(() => {
-    const path = trailRef.current
+    const path = getMemoizedLabyrinthPath()
     if (!path || typeof path.getTotalLength !== 'function') return
     try {
       const len = path.getTotalLength()
       if (!len) return
       const pt = path.getPointAtLength(len * displayProgress)
+      // setState здесь не может быть отложен в колбэк: точка должна
+      // синхронно следовать за displayProgress на том же рендере,
+      // значение приходит из чистой геометрии (detached path), не из
+      // промиса/таймера.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDot({ x: pt.x, y: pt.y })
     } catch {
       // окружение без поддержки SVG-геометрии — просто без точки
@@ -119,7 +146,6 @@ export default function MazeLogo({
 
       {/* пройденный путь */}
       <path
-        ref={trailRef}
         d={LABYRINTH_PATH}
         pathLength="1"
         stroke="currentColor"
