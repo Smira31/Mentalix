@@ -217,12 +217,13 @@ export const api = {
         }),
       }),
 
-    log: (ritualId, userId, level) =>
+    log: (ritualId, userId, level, restoreDaysAgo = null) =>
       request(`/rituals/${ritualId}/log`, {
         method: 'POST',
         body: JSON.stringify({
           user_id: userId,
           level,
+          ...(restoreDaysAgo === null ? {} : { restore_days_ago: restoreDaysAgo }),
         }),
       }),
 
@@ -253,7 +254,7 @@ export const api = {
         }),
       }),
 
-    log: (ascezaId, userId, status, breakTrigger = null, breakNote = null) =>
+    log: (ascezaId, userId, status, breakTrigger = null, breakNote = null, restoreDaysAgo = null) =>
       request(`/ascezas/${ascezaId}/log`, {
         method: 'POST',
         body: JSON.stringify({
@@ -261,6 +262,7 @@ export const api = {
           status,
           break_trigger: breakTrigger,
           break_note: breakNote,
+          ...(restoreDaysAgo === null ? {} : { restore_days_ago: restoreDaysAgo }),
         }),
       }),
 

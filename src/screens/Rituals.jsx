@@ -15,6 +15,7 @@ import StreakBar from '../components/StreakBar'
 import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
+import StreakRestoreSheet from '../components/StreakRestoreSheet'
 import { useMainButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
@@ -39,7 +40,7 @@ const EMPTY_DRAFT = {
   skip_consequence: '',
 }
 
-function RitualCard({ ritual, onLog, onDelete }) {
+function RitualCard({ ritual, onLog, onDelete, onRestore }) {
   const level = ritual.today_level
   const [confirming, setConfirming] = useState(false)
   const [celebrate, setCelebrate] = useState(false)
@@ -184,6 +185,13 @@ function RitualCard({ ritual, onLog, onDelete }) {
             {level ? 'Сделано' : 'Отметить'}
           </button>
         )}
+
+        <button
+          onClick={() => onRestore(ritual)}
+          className="practice-scene__choice w-full py-2 text-[11px] text-muted border-0"
+        >
+          Восстановить пропущенный день
+        </button>
       </div>
     </div>
   )
@@ -311,6 +319,7 @@ export default function Rituals({ user, onBack }) {
   const [showCreate, setShowCreate] = useState(false)
   const [active, setActive] = useState(0)
   const [writeError, setWriteError] = useState(null)
+  const [restoreTarget, setRestoreTarget] = useState(null)
   const trackRef = useRef(null)
 
   /*
@@ -338,9 +347,9 @@ export default function Rituals({ user, onBack }) {
       .finally(() => setLoading(false))
   }, [user])
 
-  async function logRitual(ritualId, level) {
+  async function logRitual(ritualId, level, restoreDaysAgo = null) {
     try {
-      const updated = await api.rituals.log(ritualId, user.id, level)
+      const updated = await api.rituals.log(ritualId, user.id, level, restoreDaysAgo)
       setWriteError(null)
       setRituals(prev =>
         prev.map(r =>
@@ -356,11 +365,17 @@ export default function Rituals({ user, onBack }) {
       )
       invalidateTodayData(user.id)
       invalidatePracticesData(user.id)
+      return updated
     } catch (e) {
       console.error(e)
       if (isLinkedWebWriteBlocked(user, e)) setWriteError(LINKED_WEB_WRITE_NOTICE)
       return null
     }
+  }
+
+  async function restoreRitual({ restoreDaysAgo, value }) {
+    if (!restoreTarget) return null
+    return logRitual(restoreTarget.id, value, restoreDaysAgo)
   }
 
   async function createRitual(draft) {
@@ -440,7 +455,13 @@ export default function Rituals({ user, onBack }) {
             style={{ scrollbarWidth: 'none' }}
           >
             {rituals.map(r => (
-              <RitualCard key={r.id} ritual={r} onLog={logRitual} onDelete={deleteRitual} />
+              <RitualCard
+                key={r.id}
+                ritual={r}
+                onLog={logRitual}
+                onDelete={deleteRitual}
+                onRestore={setRestoreTarget}
+              />
             ))}
 
             {/* последней карточкой — создание нового */}
@@ -468,6 +489,28 @@ export default function Rituals({ user, onBack }) {
             ))}
           </div>
         </>
+      )}
+
+      {restoreTarget && (
+        <StreakRestoreSheet
+          itemName={restoreTarget.name}
+          choices={[
+            restoreTarget.min_version && {
+              value: 'min',
+              label: 'Минимум',
+              description: restoreTarget.min_version,
+            },
+            restoreTarget.optimal_version && {
+              value: 'optimal',
+              label: 'Оптимум',
+              description: restoreTarget.optimal_version,
+            },
+            !restoreTarget.min_version &&
+              !restoreTarget.optimal_version && { value: 'optimal', label: 'Сделано' },
+          ].filter(Boolean)}
+          onSave={restoreRitual}
+          onClose={() => setRestoreTarget(null)}
+        />
       )}
     </div>
   )
