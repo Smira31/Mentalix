@@ -1316,3 +1316,39 @@ test('Today не маскирует ошибку критичного API под
 
   await context.close()
 })
+
+test('Today retry после критичного сбоя повторно загружает данные без пустого cache snapshot', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, TEST_USER)
+  let ritualsRequests = 0
+  await context.route('**/api/**', route => {
+    const pathname = new URL(route.request().url()).pathname
+    if (route.request().method() === 'GET' && pathname === '/api/rituals') {
+      ritualsRequests += 1
+      if (ritualsRequests <= 3) {
+        return route.fulfill(jsonResponse({ error: 'temporary fixture failure' }, 503))
+      }
+    }
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
+  await page.getByRole('button', { name: 'Повторить' }).click()
+  await expect.poll(() => ritualsRequests).toBe(4)
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Практики' })).toBeVisible()
+  await context.close()
+})
