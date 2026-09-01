@@ -165,9 +165,12 @@ export default function Profile({ user }) {
   const [stats, setStats] = useState(null)
   const [path, setPath] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     if (!user) return
+    let active = true
 
     Promise.all([
       api.profile.get(user.id),
@@ -178,8 +181,9 @@ export default function Profile({ user }) {
       api.analytics.get(user.id, 90).catch(() => null),
     ])
       .then(([profile, checkins, ascezas, rituals, themes, analytics]) => {
+        if (!active) return
         setStats(profile)
-
+        setLoadError(false)
         setPath(
           buildPath({
             checkins: checkins || [],
@@ -190,9 +194,23 @@ export default function Profile({ user }) {
           }),
         )
       })
-      .catch((e) => console.error(e))
-      .finally(() => setLoading(false))
-  }, [user])
+      .catch(() => {
+        if (active) setLoadError(true)
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [reloadToken, user])
+
+  function retryProfile() {
+    setLoadError(false)
+    setLoading(true)
+    setReloadToken(token => token + 1)
+  }
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
@@ -225,7 +243,22 @@ export default function Profile({ user }) {
         <p className="text-muted text-[13px] mb-8">Собираю историю...</p>
       )}
 
-      {!loading && path.length === 0 && (
+      {!loading && loadError && (
+        <div className="mb-8" role="alert">
+          <p className="text-[13px] leading-relaxed text-muted">
+            Не удалось загрузить профиль и историю пути. Попробуйте ещё раз.
+          </p>
+          <button
+            type="button"
+            onClick={retryProfile}
+            className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+          >
+            Повторить
+          </button>
+        </div>
+      )}
+
+      {!loading && !loadError && path.length === 0 && (
         <p className="text-[13px] text-muted leading-relaxed mb-8">
           Путь начнётся с первого чек-ина. Здесь появятся серии,
           удержанные аскезы и пройденные темы — всё, что было на
@@ -233,7 +266,7 @@ export default function Profile({ user }) {
         </p>
       )}
 
-      {!loading && path.length > 0 && (
+      {!loading && !loadError && path.length > 0 && (
         <div className="mb-8">
           {path.map((event, index) => (
             <PathEvent
@@ -245,7 +278,7 @@ export default function Profile({ user }) {
         </div>
       )}
 
-      {!loading && stats?.best_streak > 0 && (
+      {!loading && !loadError && stats?.best_streak > 0 && (
         <div className="rounded-[22px] border border-gold/25 bg-emerald px-5 py-4 mb-8">
           <div className="text-[11px] text-faint mb-1">личный максимум</div>
 
