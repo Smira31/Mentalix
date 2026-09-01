@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 31.08.2026 — Performance-фикс 1/2: Onest/JetBrains Mono самостоятельный хостинг
+
+- `src/index.css` — убран внешний `@import url('https://fonts.googleapis.com/...')` для Onest/JetBrains Mono, заменён на `@fontsource/onest` + `@fontsource/jetbrains-mono` (тот же паттерн, что уже был у Manrope) — те же веса, что были в исходном Google Fonts URL (400/500/600/700/800 и 400/500), не весь диапазон пакета.
+- Причина: performance-аудит этой сессии подтвердил трейсом Chrome DevTools, что эта цепочка (localhost → fonts.googleapis.com → fonts.gstatic.com, без preconnect) давала 1280 из 1374мс LCP на dev-сборке.
+- **Проверено:** прод-CSS (`dist/assets/index-*.css`) — 0 вхождений `fonts.googleapis`/`fonts.gstatic`, все шрифты теперь same-origin (`/assets/onest-*.woff2` и т.п.). Визуально — скриншот Today, `getComputedStyle` подтверждает `font-family: Onest`, кириллица и лейблы рендерятся без изменений, 0 failed requests. `npm run check:core` — 158 unit, lint/build/docs:check чисто.
+- Новая зависимость (`@fontsource/onest`, `@fontsource/jetbrains-mono`) — в рамках прямого запроса владельца на этот конкретный фикс, не самостоятельное решение.
+
 ## 31.08.2026 — Bug #429: повторная проверка через WebKit — снова не воспроизведён
 
 - Issue не изменился с прошлой проверки (0 новых комментариев) — прежде чем повторять пройденное, добавила реально новый угол: движок **WebKit (Safari)**, не только Chromium — установлен (`npx playwright install webkit`), протестирован с реалистичным iOS Safari user-agent и настоящим touch-тапом.

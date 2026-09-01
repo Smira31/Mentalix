@@ -1,4 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Onest — основной шрифт (заголовки/текст/кнопки) и JetBrains Mono —
+   моноширинный акцент, самостоятельный хостинг (npm-пакеты
+   @fontsource/onest, @fontsource/jetbrains-mono), без Google Fonts CDN.
+   Раньше грузились через внешний @import url(fonts.googleapis.com) —
+   render-blocking цепочка на 2 внешних origin (googleapis.com →
+   gstatic.com) без preconnect, подтверждено performance-трейсом как
+   основной вклад в LCP. Веса — та же пятёрка/пара, что была в исходном
+   Google Fonts URL (400/500/600/700/800 и 400/500), не весь диапазон
+   пакета. Кириллица включена в каждый вес по unicode-range, тот же
+   паттерн, что уже был у Manrope ниже. */
+@import '@fontsource/onest/400.css';
+@import '@fontsource/onest/500.css';
+@import '@fontsource/onest/600.css';
+@import '@fontsource/onest/700.css';
+@import '@fontsource/onest/800.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
 
 /* Manrope — вторичный шрифт для лейблов/эйбраузов, самостоятельный хостинг
    (npm-пакет @fontsource/manrope, без Google Fonts CDN). Кириллица включена

@@ -1,5 +1,12 @@
 # Mentalix — задачи
 
+## Performance-фикс 1/2 — Onest/JetBrains Mono self-hosted (из аудита этой сессии)
+
+- **Статус:** сделано, ждёт review владельца. Второй фикс (MazeLogo forced reflow) — следующий.
+- **Причина:** performance-аудит трейсом Chrome DevTools подтвердил — внешний `@import` Google Fonts (без preconnect) давал 1280 из 1374мс LCP на dev-сборке; подтверждено, что тот же `@import` есть и в прод-CSS.
+- **Что сделано:** `@fontsource/onest` + `@fontsource/jetbrains-mono`, тот же паттерн, что уже у Manrope. Те же веса, что в исходном Google Fonts URL.
+- **Проверка:** прод-CSS — 0 внешних ссылок на fonts.googleapis/gstatic. Визуально (скриншот + getComputedStyle) — рендер не изменился. `check:core` зелёный.
+
 ## Идея-кандидат 16 — «Лила» как DISCOVER-вход (issue #434)
 
 - **Статус:** зафиксирована в `ROADMAP.md`, не в код-очереди. Не задача для этой сессии — backlog-запись.
