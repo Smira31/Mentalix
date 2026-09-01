@@ -58,12 +58,98 @@ function PreviewWeek() {
   )
 }
 
+const TODAY_STATES = [
+  {
+    key: 'morning',
+    label: 'Утро',
+    eyebrow: 'Состояние дня',
+    title: 'Сначала понять, как ты сегодня',
+    description: 'Коротко зафиксируй состояние, чтобы выбрать бережный первый шаг.',
+    cta: 'Начать чек-ин',
+    glyph: 'journal',
+    context: 'утренний вход',
+  },
+  {
+    key: 'day',
+    label: 'День',
+    eyebrow: 'Один следующий шаг',
+    title: 'Записать главную мысль',
+    description: 'Один небольшой шаг, который поддерживает то, что сейчас важно.',
+    cta: 'Начать',
+    glyph: 'next-step',
+    context: 'ритуал · 5 минут',
+  },
+  {
+    key: 'evening',
+    label: 'Вечер',
+    eyebrow: 'Сверить день',
+    title: 'Что получилось заметить и сделать?',
+    description: 'Сопоставь план и фактический результат без отчётности и оценки.',
+    cta: 'Разобрать день',
+    glyph: 'release',
+    context: 'вечерний разбор',
+  },
+  {
+    key: 'closed',
+    label: 'Закрыт',
+    eyebrow: 'День завершён',
+    title: 'Оставить вывод и увидеть завтрашний шаг',
+    description: 'Сегодня уже завершён. Спокойно сохрани главное и вернись завтра.',
+    cta: 'Посмотреть завтрашний шаг',
+    glyph: 'finish',
+    context: 'итог дня',
+  },
+]
+
+function TodayStatePicker({ activeKey, onChange }) {
+  return (
+    <div className="mx-lab-today__state-picker" role="tablist" aria-label="Состояния ежедневного цикла">
+      {TODAY_STATES.map(state => (
+        <button
+          key={state.key}
+          type="button"
+          role="tab"
+          aria-selected={activeKey === state.key}
+          className="mx-lab-today__state-tab"
+          data-active={activeKey === state.key}
+          onClick={() => onChange(state.key)}
+        >
+          <span>{state.label}</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function TodayStateHero({ state }) {
+  return (
+    <div className="mx-lab-today__state-hero" data-state={state.key}>
+      <div className="mx-lab-today__state-art" aria-hidden="true">
+        <SemanticGlyph kind={state.glyph} animated highlighted />
+      </div>
+
+      <div className="mx-lab-today__state-copy">
+        <small>{state.eyebrow}</small>
+        <h3>{state.title}</h3>
+        <p>{state.description}</p>
+        <button type="button" className="mx-lab-today__state-cta">
+          <span>{state.cta}</span>
+          <ArrowRight size={16} aria-hidden="true" />
+        </button>
+        <span className="mx-lab-today__state-context">{state.context}</span>
+      </div>
+    </div>
+  )
+}
+
 function TodayScreenPreview({ mode }) {
   const [threadOpen, setThreadOpen] = useState(false)
+  const [selectedState, setSelectedState] = useState('morning')
   const next = {
     title: 'Записать главную мысль',
     meta: 'ритуал',
   }
+  const state = TODAY_STATES.find(item => item.key === selectedState) || TODAY_STATES[0]
 
   return (
     <section className="mx-lab-today-context">
@@ -71,7 +157,7 @@ function TodayScreenPreview({ mode }) {
         <span>В контексте приложения</span>
         <h2>Экран «Сегодня»</h2>
         <p>
-          Переключатель выше меняет текущую композицию на экспериментальную без изменения данных.
+          После переключения открывается прототип единого hero для четырёх состояний дня. Данные и production-поведение не меняются.
         </p>
       </div>
 
@@ -92,6 +178,10 @@ function TodayScreenPreview({ mode }) {
 
         <PreviewWeek />
 
+        {mode === 'after' && (
+          <TodayStatePicker activeKey={selectedState} onChange={setSelectedState} />
+        )}
+
         {mode === 'after' && threadOpen && (
           <DayThread
             checkinDone
@@ -105,23 +195,20 @@ function TodayScreenPreview({ mode }) {
 
         <div className="mx-lab-today__hero">
           {mode === 'after' ? (
-            <FocusMark />
+            <TodayStateHero state={state} />
           ) : (
-            <div className="mx-lab-today__art">
-              <DayArc state="dayInProgress" done={1} total={3} className="w-full h-full" />
-            </div>
-          )}
-
-          {mode === 'after' ? (
-            <NextActionReveal next={next} remainAfter={2} onStart={() => {}} />
-          ) : (
-            <div className="mx-lab-today__before-action">
-              <small>Самое важное</small>
-              <strong>{next.title}</strong>
-              <span>{next.meta}</span>
-              <button type="button">Начать</button>
-              <p>После этого останется: 2</p>
-            </div>
+            <>
+              <div className="mx-lab-today__art">
+                <DayArc state="dayInProgress" done={1} total={3} className="w-full h-full" />
+              </div>
+              <div className="mx-lab-today__before-action">
+                <small>Самое важное</small>
+                <strong>{next.title}</strong>
+                <span>{next.meta}</span>
+                <button type="button">Начать</button>
+                <p>После этого останется: 2</p>
+              </div>
+            </>
           )}
         </div>
 
