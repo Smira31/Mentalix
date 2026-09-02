@@ -200,7 +200,8 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
 
   assert.match(launcher, /\[int\]\$PullRequest = 0/)
-  assert.match(launcher, /gh pr view --repo Smira31\/Mentalix --json number/)
+  assert.match(launcher, /Legacy Telegram Preview requires -PullRequest/)
+  assert.doesNotMatch(launcher, /PR #n\/a/)
   assert.match(launcher, /Открыть Preview · \$prLabel/)
   assert.match(launcher, /stateUrl = \$previewUrl \+ '\?demo=1&today_state='/)
   for (const state of ['checkinPending', 'dayInProgress', 'reviewPending', 'dayClosed']) {
@@ -226,22 +227,35 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   assert.match(demo, /return params\.get\('demo'\) === '1' && isAllowedHost && isPreviewRuntime/)
 })
 
-test('MXL-TELEGRAM-PREVIEW-WORKFLOW-001 не маскирует main/unknown deployment под PR или UI Lab', () => {
+test('MXL-PREVIEW-ROUTING-CLEANUP-001 использует manual existing Preview gate', () => {
   const workflow = readFileSync(
     new URL('../../.github/workflows/telegram-preview.yml', import.meta.url),
     'utf8'
   )
 
-  assert.match(workflow, /PREVIEW_BRANCH: .*github\.ref_name/)
-  assert.match(workflow, /echo "context=main"/)
-  assert.match(workflow, /echo "context=pr"/)
-  assert.match(workflow, /echo "context=unknown"/)
-  assert.match(workflow, /Mentalix main Preview готов к проверке/)
-  assert.match(workflow, /Mentalix Preview PR #%s готов к проверке/)
-  assert.match(workflow, /Mentalix Preview готов к проверке/)
-  assert.match(workflow, /button_label="Открыть Preview"/)
-  assert.match(workflow, /button_label="Открыть Preview · UI Lab"/)
-  assert.match(workflow, /--arg button_label "\$button_label"/)
+  const packageJson = readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+  const legacy = readFileSync(new URL('../../scripts/preview-telegram.ps1', import.meta.url), 'utf8')
+
+  assert.match(workflow, /workflow_dispatch:/)
+  assert.match(workflow, /pr_number:/)
+  assert.match(workflow, /preview_title:/)
+  assert.match(workflow, /commit_sha:/)
+  assert.match(workflow, /ui_lab_route:/)
+  assert.match(workflow, /experiment_label:/)
+  assert.match(workflow, /if: github\.event_name == 'workflow_dispatch'/)
+  assert.match(workflow, /Mentalix main Preview\\nCommit: %s/)
+  assert.match(workflow, /Mentalix Preview PR #%s%s\\nBranch: %s\\nCommit: %s/)
+  assert.match(workflow, /Mentalix Preview\\nBranch: %s\\nCommit: %s/)
+  assert.match(workflow, /Открыть Preview/)
+  assert.match(workflow, /Открыть \$EXPERIMENT_LABEL/)
+  assert.match(workflow, /Route: \$EXPERIMENT_LABEL/)
+  assert.match(workflow, /ui_lab=\$\{UI_LAB_ROUTE\}/)
+  assert.match(workflow, /inline_keyboard: \[\[\{text: \$button_label/)
+  assert.doesNotMatch(workflow, /PR #n\/a/)
+  assert.doesNotMatch(workflow, /vercel(@latest)? deploy/)
+  assert.match(packageJson, /"preview": "npm run preview:web"/)
+  assert.match(legacy, /Legacy Telegram Preview requires -PullRequest/)
+  assert.doesNotMatch(legacy, /\$prLabel.*PR #n\/a/)
   assert.doesNotMatch(workflow, /text: "Открыть Preview · UI Lab"/)
 })
 

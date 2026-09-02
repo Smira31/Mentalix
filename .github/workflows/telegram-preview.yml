@@ -1,30 +1,45 @@
 name: Telegram Preview
 
 on:
+  # Kept as a compatibility trigger for existing Vercel callbacks. It is
+  # intentionally a no-op: only workflow_dispatch may send Telegram messages.
   repository_dispatch:
     types:
       - vercel.deployment.success
   workflow_dispatch:
     inputs:
       url:
-        description: 'Vercel Preview URL to verify and notify'
+        description: 'Existing Vercel Preview URL to verify and notify'
         required: true
         type: string
       branch:
-        description: 'Branch name shown in Telegram'
-        required: false
-        default: 'manual'
+        description: 'Branch name shown in Telegram (main for the main Preview)'
+        required: true
         type: string
-      ui_lab:
-        description: 'Optional UI Lab route to open from Telegram'
+      pr_number:
+        description: 'PR number; leave empty only for main or unknown Preview'
         required: false
         default: ''
-        type: choice
-        options:
-          - ''
-          - baseline
-          - experiments
-          - compare
+        type: string
+      preview_title:
+        description: 'Short Preview title, for example Today, Practices, or Evening Review'
+        required: false
+        default: ''
+        type: string
+      commit_sha:
+        description: 'Commit SHA of the existing Preview deployment'
+        required: true
+        type: string
+      ui_lab_route:
+        description: 'Existing UI Lab route, for example experiments or compare'
+        required: false
+        default: ''
+        type: string
+      experiment_label:
+        description: 'Exact route/experiment label shown in Telegram'
+        required: false
+        default: ''
+        type: string
       diagnostics:
         description: 'Append Preview-only route diagnostics to the Telegram URL'
         required: false
@@ -33,43 +48,57 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
+  pull-requests: read
 
 concurrency:
-  group: telegram-preview-${{ github.event.client_payload.gitCommitSha || inputs.url || github.run_id }}
+  group: telegram-preview-manual-${{ inputs.commit_sha || github.run_id }}-${{ inputs.ui_lab_route || 'default' }}
   cancel-in-progress: true
 
 jobs:
   notify:
-    name: Verify Vercel preview and notify Telegram
-    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'repository_dispatch' && github.event.action == 'vercel.deployment.success' && github.event.client_payload.environment == 'preview')
+    name: Verify existing Vercel preview and notify Telegram
+    # repository_dispatch is deliberately accepted but never reaches this job.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       TELEGRAM_MAIN_BOT_TOKEN: ${{ secrets.TELEGRAM_MAIN_BOT_TOKEN }}
       TELEGRAM_PREVIEW_CHAT_ID: ${{ secrets.TELEGRAM_PREVIEW_CHAT_ID }}
       VERCEL_PROTECTION_BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
-      PREVIEW_URL: ${{ github.event.client_payload.url || inputs.url }}
-      PREVIEW_ENVIRONMENT: ${{ github.event.client_payload.environment || 'preview' }}
-      PREVIEW_BRANCH: ${{ github.event.client_payload.gitBranch || inputs.branch || github.ref_name || 'unknown' }}
-      PREVIEW_SHA: ${{ github.event.client_payload.gitCommitSha || github.sha }}
-      PR_NUMBER: ${{ github.event.client_payload.gitPullRequestId || 'n/a' }}
-      UI_LAB_ROUTE: ${{ inputs.ui_lab || '' }}
-      PREVIEW_DIAGNOSTICS: ${{ inputs.diagnostics || false }}
+      PREVIEW_URL: ${{ inputs.url }}
+      PREVIEW_BRANCH: ${{ inputs.branch }}
+      PR_NUMBER: ${{ inputs.pr_number }}
+      PREVIEW_TITLE: ${{ inputs.preview_title }}
+      PREVIEW_SHA: ${{ inputs.commit_sha }}
+      UI_LAB_ROUTE: ${{ inputs.ui_lab_route }}
+      EXPERIMENT_LABEL: ${{ inputs.experiment_label }}
+      PREVIEW_DIAGNOSTICS: ${{ inputs.diagnostics }}
 
     steps:
-      - name: Validate Vercel preview payload
+      - name: Validate existing Vercel preview metadata
         shell: bash
         run: |
           set -euo pipefail
-          if [ "$PREVIEW_ENVIRONMENT" != "preview" ]; then
-            echo "Ignoring non-preview deployment: $PREVIEW_ENVIRONMENT"
+          if [ -z "$PREVIEW_URL" ] || [ -z "$PREVIEW_BRANCH" ] || [ -z "$PREVIEW_SHA" ]; then
+            echo 'url, branch, and commit_sha are required.' >&2
             exit 1
           fi
           case "$PREVIEW_URL" in
             https://*.vercel.app|https://*.vercel.sh) ;;
             *) echo "Unexpected Preview URL: $PREVIEW_URL" >&2; exit 1 ;;
           esac
+          if [ "$PREVIEW_BRANCH" != "main" ] && [ -z "$PR_NUMBER" ]; then
+            echo 'pr_number is required for a non-main Preview; unknown Preview must be explicitly sent with branch=unknown.' >&2
+            exit 1
+          fi
+          if [ -n "$PR_NUMBER" ] && ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo 'pr_number must be numeric when provided.' >&2
+            exit 1
+          fi
+          if [ "$PREVIEW_BRANCH" = "main" ] && [ -n "$PR_NUMBER" ]; then
+            echo 'main Preview must not include pr_number.' >&2
+            exit 1
+          fi
 
       - name: Verify preview health
         shell: bash
@@ -79,174 +108,72 @@ jobs:
             echo 'VERCEL_PROTECTION_BYPASS secret is missing — health check would hit the Vercel SSO wall instead of the app.' >&2
             exit 1
           fi
-          # Project has Vercel Deployment Protection (SSO) on all
-          # *.vercel.app preview URLs — an unauthenticated request 302s to
-          # vercel.com/sso-api instead of reaching the app. The project
-          # already has a "Protection Bypass for Automation" secret
-          # configured; send it as a header so this check (and any other
-          # automated caller) reaches the real response instead of the SSO
-          # wall. Confirmed live: same URL returns the SSO redirect without
-          # this header and {"status":"ok"} with it.
           response="$(curl --fail --silent --show-error --retry 10 --retry-delay 3 \
             --retry-connrefused --max-time 20 \
             --header "x-vercel-protection-bypass: $VERCEL_PROTECTION_BYPASS" \
             "$PREVIEW_URL/api/health")"
           printf '%s\n' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
 
-      - name: Resolve PR number
-        id: pr
+      - name: Build canonical Telegram message
+        id: message
         shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # client_payload.gitPullRequestId from Vercel's repository_dispatch is
-          # not populated in practice (confirmed on real vercel.deployment.success
-          # events, not just workflow_dispatch) — resolve independently from the
-          # branch name instead, which does arrive correctly.
-          resolved="$PR_NUMBER"
-          if [ "$resolved" = "n/a" ] && [ -n "$PREVIEW_BRANCH" ] && [ "$PREVIEW_BRANCH" != "unknown" ] && [ "$PREVIEW_BRANCH" != "main" ]; then
-            found="$(gh pr list --repo "${{ github.repository }}" --head "$PREVIEW_BRANCH" --state open --json number --jq '.[0].number // empty' || true)"
-            if [ -n "$found" ]; then
-              resolved="$found"
-            fi
+          short_sha="${PREVIEW_SHA:0:8}"
+          preview_app_url="${PREVIEW_URL%/}"
+          route_line=""
+          button_label="Открыть Preview"
+          if [ -n "$EXPERIMENT_LABEL" ]; then
+            route_line="Route: $EXPERIMENT_LABEL"
+            button_label="Открыть $EXPERIMENT_LABEL"
+          elif [ -n "$PREVIEW_TITLE" ]; then
+            route_line="Route: $PREVIEW_TITLE"
+            button_label="Открыть $PREVIEW_TITLE"
           fi
-          echo "number=$resolved" >> "$GITHUB_OUTPUT"
+          if [ -n "$UI_LAB_ROUTE" ]; then
+            preview_app_url="${preview_app_url}/?ui_lab=${UI_LAB_ROUTE}"
+          fi
+          if [ "$PREVIEW_DIAGNOSTICS" = "true" ]; then
+            separator='&'
+            if [[ "$preview_app_url" != *\?* ]]; then separator='?'; fi
+            preview_app_url="${preview_app_url}${separator}preview_diagnostics=1"
+          fi
           if [ "$PREVIEW_BRANCH" = "main" ]; then
-            echo "context=main" >> "$GITHUB_OUTPUT"
-          elif [ "$resolved" != "n/a" ]; then
-            echo "context=pr" >> "$GITHUB_OUTPUT"
+            message="$(printf 'Mentalix main Preview\nCommit: %s' "$short_sha")"
+          elif [ -n "$PR_NUMBER" ]; then
+            title_suffix=""
+            if [ -n "$PREVIEW_TITLE" ]; then title_suffix=" · $PREVIEW_TITLE"; fi
+            message="$(printf 'Mentalix Preview PR #%s%s\nBranch: %s\nCommit: %s' "$PR_NUMBER" "$title_suffix" "$PREVIEW_BRANCH" "$short_sha")"
+            if [ -n "$route_line" ]; then message="$(printf '%s\n%s' "$message" "$route_line")"; fi
           else
-            echo "context=unknown" >> "$GITHUB_OUTPUT"
+            message="$(printf 'Mentalix Preview\nBranch: %s\nCommit: %s' "$PREVIEW_BRANCH" "$short_sha")"
+            if [ -n "$route_line" ]; then message="$(printf '%s\n%s' "$message" "$route_line")"; fi
           fi
-          echo "Resolved PR number: $resolved (client_payload had: $PR_NUMBER, branch: $PREVIEW_BRANCH)"
-
-      - name: Resolve preview checklist from PR body
-        id: checklist
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          # Explicit, documented format (docs/TELEGRAM_PREVIEW_ACTIONS.md):
-          # the PR body must have a "## Preview checklist" section; its
-          # content becomes the Telegram scenario text. Deliberately not a
-          # file-changed heuristic and not a separate manual parameter per
-          # dispatch — the checklist is authored once, git-tracked in the
-          # PR itself, and reused for every automatic notification.
-          pr_number="${{ steps.pr.outputs.number }}"
-          text=""
-          if [ "$pr_number" != "n/a" ]; then
-            body="$(gh pr view "$pr_number" --repo "${{ github.repository }}" --json body --jq '.body // ""' | tr -d '\r')"
-            text="$(printf '%s\n' "$body" | awk '
-              /^## Preview checklist[[:space:]]*$/ { capture=1; next }
-              /^## / { if (capture) exit }
-              capture { print }
-            ')"
-          fi
-          if [ -n "$(printf '%s' "$text" | tr -d '[:space:]')" ]; then
-            found="true"
-          else
-            found="false"
-            text=""
-          fi
-          echo "found=$found" >> "$GITHUB_OUTPUT"
-          {
-            echo "text<<PREVIEW_CHECKLIST_EOF"
-            printf '%s\n' "$text"
-            echo "PREVIEW_CHECKLIST_EOF"
-          } >> "$GITHUB_OUTPUT"
-          echo "Preview checklist found: $found (PR #$pr_number)"
+          printf 'message<<PREVIEW_MESSAGE_EOF\n%s\nPREVIEW_MESSAGE_EOF\n' "$message" >> "$GITHUB_OUTPUT"
+          printf 'url=%s\nbutton_label=%s\n' "$preview_app_url" "$button_label" >> "$GITHUB_OUTPUT"
 
       - name: Notify Telegram
         shell: bash
         env:
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-          PREVIEW_CONTEXT: ${{ steps.pr.outputs.context }}
-          CHECKLIST_FOUND: ${{ steps.checklist.outputs.found }}
-          CHECKLIST_TEXT: ${{ steps.checklist.outputs.text }}
+          MESSAGE: ${{ steps.message.outputs.message }}
+          PREVIEW_APP_URL: ${{ steps.message.outputs.url }}
+          BUTTON_LABEL: ${{ steps.message.outputs.button_label }}
         run: |
           set -euo pipefail
-          # Vercel often omits gitPullRequestId from repository_dispatch.
-          # Use the PR number resolved from the branch above for routing.
           telegram_token="$(printf '%s' "$TELEGRAM_MAIN_BOT_TOKEN" | tr -d '[:space:]')"
           chat_id="$(printf '%s' "$TELEGRAM_PREVIEW_CHAT_ID" | tr -d '[:space:]')"
           if [[ ! "$telegram_token" =~ ^[0-9]+:[A-Za-z0-9_-]+$ ]]; then
-            echo 'TELEGRAM_MAIN_BOT_TOKEN has an invalid format.' >&2
-            exit 1
+            echo 'TELEGRAM_MAIN_BOT_TOKEN has an invalid format.' >&2; exit 1
           fi
           if [[ ! "$chat_id" =~ ^-?[0-9]+$ ]]; then
-            echo 'TELEGRAM_PREVIEW_CHAT_ID must be numeric.' >&2
-            exit 1
+            echo 'TELEGRAM_PREVIEW_CHAT_ID must be numeric.' >&2; exit 1
           fi
-          if [ "$CHECKLIST_FOUND" = "true" ]; then
-            scenario="$CHECKLIST_TEXT"
-          elif [ "$PR_NUMBER" = "n/a" ]; then
-            scenario="Сценарий проверки не указан в PR — проверьте вручную."
-          else
-            scenario="$(printf 'Сценарий проверки не указан в PR — проверьте вручную.\nDiff: https://github.com/%s/pull/%s/files' "$GITHUB_REPOSITORY" "$PR_NUMBER")"
-          fi
-          preview_app_url="$PREVIEW_URL"
-          ui_lab_route="$UI_LAB_ROUTE"
-          button_label="Открыть Preview"
-          if [ -z "$ui_lab_route" ]; then
-            case "$PR_NUMBER" in
-              485|488) ui_lab_route="baseline" ;;
-              486|487) ui_lab_route="compare" ;;
-            esac
-          fi
-          case "$ui_lab_route" in
-            baseline)
-              preview_app_url="${PREVIEW_URL%/}/?ui_lab=baseline"
-              button_label="Открыть Preview · UI Lab"
-              scenario="UI Lab · Эталон\n\n$scenario"
-              ;;
-            experiments)
-              preview_app_url="${PREVIEW_URL%/}/?ui_lab=experiments"
-              button_label="Открыть Preview · UI Lab"
-              scenario="UI Lab · Эксперименты\n\n$scenario"
-              ;;
-            compare)
-              preview_app_url="${PREVIEW_URL%/}/?ui_lab=compare"
-              button_label="Открыть Preview · UI Lab"
-              scenario="UI Lab · Compare\n\n$scenario"
-              ;;
-          esac
-          if [ "$PREVIEW_DIAGNOSTICS" = "true" ]; then
-            preview_app_url="${preview_app_url}&preview_diagnostics=1"
-          fi
-          echo "Telegram web_app.url: $preview_app_url"
-          # printf interprets \n in its format string as a real newline byte;
-          # a plain "..." bash assignment does not — the old code put the two
-          # literal characters "\" and "n" into the Telegram message text.
-          case "$PREVIEW_CONTEXT" in
-            main)
-              message="$(printf 'Mentalix main Preview готов к проверке.\n\nCommit: %s\n\n%s' "${PREVIEW_SHA:0:8}" "$scenario")"
-              ;;
-            pr)
-              message="$(printf 'Mentalix Preview PR #%s готов к проверке.\n\nBranch: %s\nCommit: %s\n\n%s' "$PR_NUMBER" "$PREVIEW_BRANCH" "${PREVIEW_SHA:0:8}" "$scenario")"
-              ;;
-            *)
-              message="$(printf 'Mentalix Preview готов к проверке.\n\nCommit: %s\n\n%s' "${PREVIEW_SHA:0:8}" "$scenario")"
-              ;;
-          esac
-          payload="$(jq -n \
-            --arg chat_id "$chat_id" \
-            --arg text "$message" \
-            --arg url "$preview_app_url" \
-            --arg button_label "$button_label" \
+          payload="$(jq -n --arg chat_id "$chat_id" --arg text "$MESSAGE" \
+            --arg url "$PREVIEW_APP_URL" --arg button_label "$BUTTON_LABEL" \
             '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: $button_label, web_app: {url: $url}}]]}}')"
-          # No --fail here on purpose: it discards the response body on a
-          # non-2xx status, which previously left failed runs with only
-          # "curl: (22) ... error 403" in the log and no way to see what
-          # Telegram actually said. Split status/body via a trailing
-          # %{http_code} line instead, so a failure logs the real body.
-          http_response="$(curl --silent --show-error --max-time 20 \
-            --request POST \
-            --header 'Content-Type: application/json; charset=utf-8' \
-            --data "$payload" \
-            --write-out $'\n%{http_code}' \
-            "https://api.telegram.org/bot${telegram_token}/sendMessage")"
+          http_response="$(curl --silent --show-error --max-time 20 --request POST \
+            --header 'Content-Type: application/json; charset=utf-8' --data "$payload" \
+            --write-out $'\n%{http_code}' "https://api.telegram.org/bot${telegram_token}/sendMessage")"
           http_status="${http_response##*$'\n'}"
           response="${http_response%$'\n'*}"
           if [ "$http_status" != "200" ] || ! printf '%s' "$response" | jq -e '.ok == true' >/dev/null 2>&1; then
@@ -254,41 +181,15 @@ jobs:
             printf '%s\n' "$response" >&2
             exit 1
           fi
-          echo "Telegram notification sent."
-
-      - name: Comment preview evidence on PR
-        if: success() && steps.pr.outputs.number != 'n/a' && github.event_name == 'repository_dispatch'
-        uses: actions/github-script@v7
-        env:
-          PREVIEW_URL: ${{ env.PREVIEW_URL }}
-          PREVIEW_SHA: ${{ env.PREVIEW_SHA }}
-          PREVIEW_BRANCH: ${{ env.PREVIEW_BRANCH }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
-        with:
-          script: |
-            const body = [
-              '## Telegram Preview evidence',
-              '',
-              `Preview: ${process.env.PREVIEW_URL}`,
-              `Branch: \\`${process.env.PREVIEW_BRANCH}\\``,
-              `Commit: \\`${process.env.PREVIEW_SHA.slice(0, 8)}\\``,
-              '',
-              'Vercel Preview и `/api/health` проверены; кнопка отправлена в Telegram.',
-            ].join('\\n');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: Number(process.env.PR_NUMBER),
-              body,
-            });
+          echo 'Telegram notification sent.'
 
       - name: Publish preview summary
         if: always()
         run: |
           {
-            echo "### Telegram Preview"
-            echo "Preview: ${PREVIEW_URL}"
-            echo "Telegram web_app.url: ${preview_app_url}"
+            echo '### Telegram Preview'
+            echo "Existing Preview: ${PREVIEW_URL}"
             echo "Branch: ${PREVIEW_BRANCH}"
             echo "Commit: ${PREVIEW_SHA}"
+            echo 'Vercel deployment: not created by this workflow'
           } >> "$GITHUB_STEP_SUMMARY"
