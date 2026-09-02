@@ -192,6 +192,28 @@ test('preview cleanup подтверждает удаление до очист�
   assert.doesNotMatch(launcher, /Start-Sleep -Seconds 3600; npx vercel@latest remove/)
 })
 
+test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixtures без production controls', () => {
+  const launcher = readFileSync(
+    new URL('../../scripts/preview-telegram.ps1', import.meta.url),
+    'utf8'
+  )
+  const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
+
+  assert.match(launcher, /\[int\]\$PullRequest = 0/)
+  assert.match(launcher, /gh pr view --repo Smira31\/Mentalix --json number/)
+  assert.match(launcher, /Открыть Preview · \$prLabel/)
+  assert.match(launcher, /stateUrl = \$previewUrl \+ '\?demo=1&today_state='/)
+  for (const state of ['checkinPending', 'dayInProgress', 'reviewPending', 'dayClosed']) {
+    assert.match(demo, new RegExp(`'${state}'`))
+  }
+  assert.match(demo, /params\.get\('demo'\)/)
+  assert.match(demo, /checkin\/today.*state\.checkins\[0\]/)
+  assert.match(
+    demo,
+    /previewTodayState\(\) === 'reviewPending' \|\| previewTodayState\(\) === 'dayClosed' \? 0 : 24/
+  )
+})
+
 test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const conversation = readFileSync(

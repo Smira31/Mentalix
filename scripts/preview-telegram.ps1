@@ -1,5 +1,6 @@
 param(
-  [string]$Path = ''
+  [string]$Path = '',
+  [int]$PullRequest = 0
 )
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -46,6 +47,14 @@ $deploymentId = if ($deploymentIdMatch.Success) { $deploymentIdMatch.Value } els
 $branch = (& git -C $root branch --show-current).Trim()
 $shortSha = (& git -C $root rev-parse --short HEAD).Trim()
 
+if ($PullRequest -le 0) {
+  $prOutput = & gh pr view --repo Smira31/Mentalix --json number 2>$null | Out-String
+  $prMatch = [regex]::Match($prOutput, '"number"\s*:\s*(\d+)')
+  if ($prMatch.Success) {
+    $PullRequest = [int]$prMatch.Groups[1].Value
+  }
+}
+
 $health = & curl.exe --noproxy '*' --http1.1 --max-time 20 -sS ($previewUrl + '/api/health')
 if ($health -notmatch '"status"\s*:\s*"ok"') {
   Write-Error 'Preview was created, but /api/health did not return status=ok.'
@@ -56,19 +65,32 @@ $targetUrl = $previewUrl + $Path
 
 $expiresAt = (Get-Date).ToUniversalTime().AddHours(1).ToString('yyyy-MM-dd HH:mm:ss') + ' UTC'
 $header = ConvertFrom-Json '"Mentalix Preview \u0433\u043e\u0442\u043e\u0432"'
-$openLabel = ConvertFrom-Json '"\u041e\u0442\u043a\u0440\u044b\u0442\u044c Preview"'
+$prLabel = if ($PullRequest -gt 0) { "PR #$PullRequest" } else { 'PR #n/a' }
+$openLabel = "Открыть Preview · $prLabel"
 $availability = ConvertFrom-Json '"\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e 1 \u0447\u0430\u0441"'
 $branchLabel = ConvertFrom-Json '"\u0412\u0435\u0442\u043a\u0430:"'
 $commitLabel = ConvertFrom-Json '"Commit:"'
 $note = ConvertFrom-Json '"\u042d\u0442\u043e \u0442\u0435\u0441\u0442\u043e\u0432\u0430\u044f \u0432\u0435\u0440\u0441\u0438\u044f, production \u043d\u0435 \u0438\u0437\u043c\u0435\u043d\u0451\u043d."'
 $pathLine = if ($Path) { "`n" + $targetUrl } else { '' }
-$message = "$header`n`n$openLabel`n$availability`n`n$branchLabel $branch`n$commitLabel $shortSha$pathLine`n`n$note"
-$button = @{ text = $openLabel; web_app = @{ url = $targetUrl } }
+$message = "$header · $prLabel`n`n$openLabel`n$availability`n`n$branchLabel $branch`n$commitLabel $shortSha$pathLine`n`nЧетыре состояния Today открываются отдельными кнопками ниже.`n`n$note"
+$states = @(
+  @{ key = 'checkinPending'; label = 'Today · checkinPending' },
+  @{ key = 'dayInProgress'; label = 'Today · dayInProgress' },
+  @{ key = 'reviewPending'; label = 'Today · reviewPending' },
+  @{ key = 'dayClosed'; label = 'Today · dayClosed' }
+)
+$buttons = @(
+  ,@(@{ text = $openLabel; web_app = @{ url = $targetUrl } })
+)
+foreach ($state in $states) {
+  $stateUrl = $previewUrl + '?demo=1&today_state=' + $state.key
+  $buttons += ,@(@{ text = $state.label; web_app = @{ url = $stateUrl } })
+}
 $payload = @{
   chat_id = $envValues['TELEGRAM_PREVIEW_CHAT_ID']
   text = $message
   disable_web_page_preview = $false
-  reply_markup = @{ inline_keyboard = @(,@($button)) }
+  reply_markup = @{ inline_keyboard = $buttons }
 } | ConvertTo-Json -Depth 8 -Compress
 $payloadBytes = [System.Text.Encoding]::UTF8.GetBytes($payload)
 
