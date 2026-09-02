@@ -242,18 +242,18 @@ export function demoRequest(path, options = {}) {
     return json(checkin)
   }
 
+  if (pathname === '/profile/settings' && method === 'GET') {
+    return json({
+      review_hour:
+        previewTodayState() === 'reviewPending' || previewTodayState() === 'dayClosed' ? 0 : 24,
+    })
+  }
   if (pathname === '/profile' && method === 'GET') return json(state.profile)
   if (pathname.startsWith('/profile/') && method === 'GET') return json(state.profile)
   if (pathname.startsWith('/profile/') && ['POST', 'PATCH'].includes(method)) {
     const profile = { ...state.profile, ...body }
     writeState({ ...state, profile })
     return json(profile)
-  }
-  if (pathname === '/profile/settings' && method === 'GET') {
-    return json({
-      review_hour:
-        previewTodayState() === 'reviewPending' || previewTodayState() === 'dayClosed' ? 0 : 24,
-    })
   }
   if (pathname === '/analytics' && method === 'GET') return json({ daily: [], summary: {} })
   if (pathname === '/articles' && method === 'GET') return json([])
