@@ -137,8 +137,12 @@ export default function Today({
   onFlowChange,
   seriesOpen = false,
   onCloseSeries,
+  previewFixture = null,
+  previewState = null,
 }) {
-  const [initialTodaySnapshot] = useState(() => (user ? peekTodaySnapshot(user.id) : null))
+  const [initialTodaySnapshot] = useState(
+    () => previewFixture || (user ? peekTodaySnapshot(user.id) : null)
+  )
 
   const [rituals, setRituals] = useState(() => initialTodaySnapshot?.rituals || [])
 
@@ -230,6 +234,7 @@ export default function Today({
   }
 
   useEffect(() => {
+    if (previewFixture) return undefined
     if (!user || sub !== null) {
       return
     }
@@ -277,19 +282,21 @@ export default function Today({
     return () => {
       active = false
     }
-  }, [user, sub, initialTodaySnapshot, reloadToken])
+  }, [user, sub, initialTodaySnapshot, previewFixture, reloadToken])
 
   const hourNow = new Date().getHours()
 
   const isReviewTime = hourNow >= reviewHour
 
-  const todayState = checkin?.review_completed_at
+  const derivedTodayState = checkin?.review_completed_at
     ? 'dayClosed'
     : isReviewTime
       ? 'reviewPending'
       : checkin
         ? 'dayInProgress'
         : 'checkinPending'
+
+  const todayState = previewState || derivedTodayState
 
   // ============================================================
   // SERIES & BADGES

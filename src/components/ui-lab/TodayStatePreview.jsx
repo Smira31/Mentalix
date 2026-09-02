@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react'
-import { DayArc } from '../Motif'
 import SemanticGlyph from '../SemanticGlyph'
-import StreakBar from '../StreakBar'
+import Today from '../../screens/Today'
+import { getTodayLabFixture, UI_LAB_USER } from './todayLabFixture'
 import './TodayStatePreview.css'
 
 export const TODAY_STATES = [
@@ -70,47 +70,18 @@ function StatePicker({ value, onChange }) {
   )
 }
 
-function WeekFixture() {
-  return (
-    <div className="mx-lab-baseline-week" aria-label="Фикстура недели">
-      {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
-        <span key={day} data-today={index === 2}>
-          <small>{day}</small>
-          <strong>{12 + index}</strong>
-        </span>
-      ))}
-    </div>
-  )
-}
-
 function BaselineToday({ state }) {
   return (
     <div className="mx-lab-today-baseline" data-state={state.key}>
-      <header className="mx-lab-baseline-head">
-        <div>
-          <strong>добрый день.</strong>
-          <span>шаг за шагом — выход находится</span>
-        </div>
-        <span className="mx-lab-baseline-settings" aria-hidden="true" />
-      </header>
-      <WeekFixture />
-      <div className="mx-lab-baseline-streak">
-        <StreakBar streak={4} />
-      </div>
-      <div className="mx-lab-baseline-hero">
-        <div className="mx-lab-baseline-art" aria-label="Фактическая композиция Today из main">
-          <DayArc {...state.dayArc} className="w-full h-full" />
-        </div>
-        <div className="mx-lab-baseline-copy">
-          <small>{state.eyebrow}</small>
-          <h3>{state.title}</h3>
-          <p>Фактический порядок Today из текущего main; данные заменены preview-fixture.</p>
-          <button type="button" className="mx-lab-baseline-cta">
-            {state.cta}
-            <ArrowRight size={16} />
-          </button>
-        </div>
-      </div>
+      <Today
+        key={state.key}
+        user={UI_LAB_USER}
+        previewFixture={getTodayLabFixture(state.key)}
+        previewState={state.key}
+        onOpenPractice={() => {}}
+        onGoMentor={() => {}}
+        onFlowChange={() => {}}
+      />
     </div>
   )
 }
@@ -147,8 +118,8 @@ export default function TodayStatePreview({
         <span>Первый собранный маршрут</span>
         <h2 id="today-preview-title">Today · четыре состояния</h2>
         <p>
-          Одна фикстура состояния применяется к эталону и эксперименту. Production и API не
-          подключены.
+          Одна фикстура состояния применяется к production-компоненту эталона и эксперименту. API не
+          подключен.
         </p>
       </div>
       <StatePicker value={state.key} onChange={setState} />
