@@ -2,6 +2,16 @@
 
 Формат ADR-lite. Статус `предложено` означает, что решение подготовлено в draft PR и не считается принятым в `main` до merge.
 
+## Обновление 02.09.2026 — MXL-DEC-027: UI Lab как постоянная рабочая доска
+
+**Решение:** канонический production Mentalix сохраняется без изменений. UI Lab оформляется как постоянная рабочая доска для UI-экспериментов, сравнений и выводов.
+
+**Границы:** Preview и baseline не являются production и не дают автоматического разрешения на перенос результата. Каждый перенос оформляется отдельным PR с evidence и предусмотренным manual gate. Реальный Telegram/iPhone UX gate не заменяется desktop smoke или обычным мобильным браузером.
+
+**Рабочие источники:** [`docs/working/ui-lab/README.md`](../working/ui-lab/README.md), [`EXPERIMENT_JOURNAL.md`](../working/ui-lab/EXPERIMENT_JOURNAL.md) и [`DECISION_LOG.md`](../working/ui-lab/DECISION_LOG.md).
+
+**Текущий gate:** для UI Lab из PR #483 остаётся ручная проверка на реальном iPhone внутри Telegram в ширинах 320×568, 390×844 и 430×932, включая safe areas и reduced motion.
+
 ## Обновление 31.08.2026 — MXL-DEC-025: pattern insights research (#297)
 
 **Вопрос:** готовы ли пользователи возвращаться в приложение ради
