@@ -65,7 +65,8 @@
   min-width: 0;
   flex: 0 0 calc((100% - 12px) / 2);
   min-height: 250px;
-  scroll-snap-align: start;
+  scroll-snap-align: none;
+  scroll-snap-stop: always;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgb(var(--c-border));
@@ -76,6 +77,11 @@
   transition:
     transform 160ms var(--mx-ease-out),
     border-color 220ms ease;
+}
+
+/* The interaction advances by the same two-card unit that is visible at once. */
+.mx-practice-catalog__card:nth-child(odd) {
+  scroll-snap-align: start;
 }
 
 .mx-practice-catalog__card:active {

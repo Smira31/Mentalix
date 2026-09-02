@@ -64,7 +64,8 @@ export default function PracticeCatalogExperiment() {
     if (!rail) return
 
     const cardWidth = rail.firstElementChild?.getBoundingClientRect().width || 1
-    setPage(Math.min(CARDS.length / 2 - 1, Math.round(rail.scrollLeft / (cardWidth + 12))))
+    const pairWidth = (cardWidth + 12) * 2
+    setPage(Math.min(CARDS.length / 2 - 1, Math.round(rail.scrollLeft / pairWidth)))
   }
 
   return (
