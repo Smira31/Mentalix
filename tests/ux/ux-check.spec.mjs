@@ -1395,3 +1395,50 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   await expect(page.getByRole('button', { name: 'Разобрать день' }).last()).toBeVisible()
   await context.close()
 })
+
+
+test('Morning Check-in сохраняет первый шаг в simulated Today на 390x844', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    baseURL: baseURL || 'http://127.0.0.1:4173',
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, TEST_USER)
+  const apiRequests = []
+  await context.route('**/api/**', route => {
+    apiRequests.push(route.request().url())
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/?ui_lab=experiments')
+  apiRequests.length = 0
+
+  const experiment = page.locator('.mx-morning')
+  await expect(page.getByRole('button', { name: 'Дальше' })).toBeDisabled()
+  await expect(page.getByText('Настроение: 1 из 5')).toHaveCount(0)
+  for (const metric of ['Настроение', 'Энергия', 'Шум в голове', 'Фокус / собранность']) {
+    await page.getByRole('radio', { name: new RegExp(`${metric}: 3 из 5`) }).tap()
+  }
+  await page.getByRole('button', { name: 'Дальше' }).tap()
+  await page.getByRole('radio', { name: 'Сделать главное' }).tap()
+  await page.getByRole('button', { name: 'Выбрать шаг' }).tap()
+  const firstStep = 'Открыть документ и написать первый абзац'
+  await page.getByRole('textbox', { name: 'Первый шаг' }).fill(firstStep)
+  await page.getByRole('button', { name: 'Начать день' }).tap()
+  await expect(page.getByText(firstStep)).toBeVisible()
+  await page.getByRole('button', { name: 'Подтвердить' }).tap()
+  await expect(page.getByText('Today · dayInProgress · simulated')).toBeVisible()
+  await expect(page.locator('.mx-morning__action strong')).toHaveText(firstStep)
+  expect(apiRequests).toEqual([])
+  await context.close()
+})
