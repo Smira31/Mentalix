@@ -212,6 +212,10 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
     demo,
     /previewTodayState\(\) === 'reviewPending' \|\| previewTodayState\(\) === 'dayClosed' \? 0 : 24/
   )
+  assert.ok(
+    demo.indexOf("pathname === '/profile/settings' && method === 'GET'") <
+      demo.indexOf("pathname.startsWith('/profile/') && method === 'GET'")
+  )
 })
 
 test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
