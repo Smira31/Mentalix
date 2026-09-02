@@ -4,12 +4,12 @@ UI Lab — изолированный рабочий слой Mentalix для UI
 
 ## Канонические ссылки
 
-| Назначение | Ссылка |
-| --- | --- |
-| Compare | [Vercel Preview — Compare](https://mentalix-preview-181u1ppdq-smiraandre2-8311s-projects.vercel.app/?ui_lab=compare) |
-| Baseline | [Vercel Preview — Baseline](https://mentalix-preview-181u1ppdq-smiraandre2-8311s-projects.vercel.app/?ui_lab=baseline) |
+| Назначение  | Ссылка                                                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Compare     | [Vercel Preview — Compare](https://mentalix-preview-181u1ppdq-smiraandre2-8311s-projects.vercel.app/?ui_lab=compare)         |
+| Baseline    | [Vercel Preview — Baseline](https://mentalix-preview-181u1ppdq-smiraandre2-8311s-projects.vercel.app/?ui_lab=baseline)       |
 | Experiments | [Vercel Preview — Experiments](https://mentalix-preview-181u1ppdq-smiraandre2-8311s-projects.vercel.app/?ui_lab=experiments) |
-| PR | [PR #483](https://github.com/Smira31/Mentalix/pull/483) |
+| PR          | [PR #483](https://github.com/Smira31/Mentalix/pull/483)                                                                      |
 
 Ссылка выше — зафиксированный Preview для текущего UI Lab; новый Preview становится каноническим только после явного обновления этой записи.
 
@@ -38,4 +38,4 @@ UI Lab — изолированный рабочий слой Mentalix для UI
 
 ## Текущий статус
 
-**02.09.2026:** UI Lab принят как постоянная рабочая доска. Production сохраняется без изменений. Текущий Compare Preview связан с PR #483; ручная проверка на реальном iPhone внутри Telegram остаётся открытым gate для владельца.
+**02.09.2026:** UI Lab принят как постоянная рабочая доска. Production сохраняется без изменений. Manual Telegram/iPhone gate подтверждён владельцем как **PASS** на Preview PR #489: Baseline, Experiments, Compare, синхронное состояние в режиме «Рядом», scroll, safe area Telegram header и отсутствие явного horizontal overflow проверены на реальном iPhone. Диагностический overlay `preview_diagnostics=1` после фиксации evidence удалён из Preview UI.
