@@ -1357,3 +1357,41 @@ test('Today retry после критичного сбоя повторно за
   await expect(page.getByRole('button', { name: 'Практики' })).toBeVisible()
   await context.close()
 })
+
+
+test('Evening Review проходится real touch tap на 390x844', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    isMobile: true,
+    hasTouch: true,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, TEST_USER)
+  await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+  const page = await context.newPage()
+  await page.goto('/?ui_lab=experiments')
+
+  const entryCta = page.getByRole('button', { name: 'Разобрать день' }).last()
+  await expect(entryCta).toBeVisible()
+  await entryCta.tap()
+  await expect(page.getByText('Фактический результат')).toBeVisible()
+
+  for (const option of ['Сделал главное', 'Ясность', 'Маленький шаг помогает', 'Начать с пяти минут']) {
+    await page.getByRole('radio', { name: option }).tap()
+    await page.getByRole('button', { name: /Дальше|Закрыть день/ }).tap()
+  }
+
+  await expect(page.getByText('День закрыт')).toBeVisible()
+  await page.locator('.mx-evening-review__closed').getByRole('button', { name: 'Продолжить' }).tap()
+  await expect(page.getByRole('button', { name: 'Разобрать день' }).last()).toBeVisible()
+  await context.close()
+})
