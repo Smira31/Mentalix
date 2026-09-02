@@ -1,4 +1,10 @@
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v1'
+const TODAY_PREVIEW_STATES = new Set([
+  'checkinPending',
+  'dayInProgress',
+  'reviewPending',
+  'dayClosed',
+])
 
 export const DEMO_USER = {
   id: 900001,
@@ -25,7 +31,26 @@ export function isPreviewDemoMode() {
   return params.get('demo') === '1' && isAllowedHost && isPreviewRuntime
 }
 
-function seedState() {
+function previewTodayState() {
+  if (typeof window === 'undefined') return null
+
+  const requested = new URLSearchParams(window.location.search).get('today_state')
+
+  return TODAY_PREVIEW_STATES.has(requested) ? requested : null
+}
+
+function seedState(todayState = null) {
+  const checkin =
+    todayState && todayState !== 'checkinPending'
+      ? {
+          id: 900501,
+          date: new Date().toISOString().slice(0, 10),
+          mood: 3,
+          emotion: 'ровно',
+          review_completed_at: todayState === 'dayClosed' ? new Date().toISOString() : null,
+        }
+      : null
+
   return {
     rituals: [
       {
@@ -69,7 +94,7 @@ function seedState() {
       },
     ],
     notes: { 900401: [] },
-    checkins: [],
+    checkins: checkin ? [checkin] : [],
     profile: {
       id: DEMO_USER.id,
       first_name: DEMO_USER.first_name,
@@ -81,16 +106,21 @@ function seedState() {
 }
 
 function readState() {
+  const todayState = previewTodayState()
+  const stateKey = todayState ? `${DEMO_STATE_KEY}:${todayState}` : DEMO_STATE_KEY
+
   try {
-    const raw = localStorage.getItem(DEMO_STATE_KEY)
-    return raw ? JSON.parse(raw) : seedState()
+    const raw = localStorage.getItem(stateKey)
+    return raw ? JSON.parse(raw) : seedState(todayState)
   } catch {
-    return seedState()
+    return seedState(todayState)
   }
 }
 
 function writeState(state) {
-  localStorage.setItem(DEMO_STATE_KEY, JSON.stringify(state))
+  const todayState = previewTodayState()
+  const stateKey = todayState ? `${DEMO_STATE_KEY}:${todayState}` : DEMO_STATE_KEY
+  localStorage.setItem(stateKey, JSON.stringify(state))
   return state
 }
 
@@ -204,7 +234,7 @@ export function demoRequest(path, options = {}) {
     return json({ ok: true })
   }
 
-  if (pathname === '/checkin/today' && method === 'GET') return json(null)
+  if (pathname === '/checkin/today' && method === 'GET') return json(state.checkins[0] || null)
   if (pathname === '/checkin/history' && method === 'GET') return json(state.checkins)
   if (pathname === '/checkin' && method === 'POST') {
     const checkin = { id: Date.now(), date: new Date().toISOString().slice(0, 10), ...body }
@@ -218,6 +248,12 @@ export function demoRequest(path, options = {}) {
     const profile = { ...state.profile, ...body }
     writeState({ ...state, profile })
     return json(profile)
+  }
+  if (pathname === '/profile/settings' && method === 'GET') {
+    return json({
+      review_hour:
+        previewTodayState() === 'reviewPending' || previewTodayState() === 'dayClosed' ? 0 : 19,
+    })
   }
   if (pathname === '/analytics' && method === 'GET') return json({ daily: [], summary: {} })
   if (pathname === '/articles' && method === 'GET') return json([])
