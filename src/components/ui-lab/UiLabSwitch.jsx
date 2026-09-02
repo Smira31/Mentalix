@@ -1,11 +1,12 @@
 const TABS = [
-  { key: 'experiments', label: 'Эксперименты (25)', href: '?ui_lab=1' },
-  { key: 'showcase', label: 'Витрина', href: '?ui_lab=showcase' },
+  { key: 'baseline', label: 'Эталон', href: '?ui_lab=baseline' },
+  { key: 'experiments', label: 'Эксперименты', href: '?ui_lab=experiments' },
+  { key: 'compare', label: 'Сравнение', href: '?ui_lab=compare' },
 ]
 
 export default function UiLabSwitch({ active }) {
   return (
-    <nav className="mx-ui-lab-switch" aria-label="Разделы ui-lab">
+    <nav className="mx-ui-lab-switch" aria-label="Разделы UI Lab">
       {TABS.map(tab => (
         <a key={tab.key} href={tab.href} aria-current={tab.key === active ? 'page' : undefined}>
           {tab.label}
