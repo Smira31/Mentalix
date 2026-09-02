@@ -15,6 +15,16 @@ on:
         required: false
         default: 'manual'
         type: string
+      ui_lab:
+        description: 'Optional UI Lab route to open from Telegram'
+        required: false
+        default: ''
+        type: choice
+        options:
+          - ''
+          - baseline
+          - experiments
+          - compare
 
 permissions:
   contents: read
@@ -39,6 +49,7 @@ jobs:
       PREVIEW_BRANCH: ${{ github.event.client_payload.gitBranch || inputs.branch || 'unknown' }}
       PREVIEW_SHA: ${{ github.event.client_payload.gitCommitSha || github.sha }}
       PR_NUMBER: ${{ github.event.client_payload.gitPullRequestId || 'n/a' }}
+      UI_LAB_ROUTE: ${{ inputs.ui_lab || '' }}
 
     steps:
       - name: Validate Vercel preview payload
@@ -142,6 +153,8 @@ jobs:
           CHECKLIST_TEXT: ${{ steps.checklist.outputs.text }}
         run: |
           set -euo pipefail
+          # Vercel often omits gitPullRequestId from repository_dispatch.
+          # Use the PR number resolved from the branch above for routing.
           telegram_token="$(printf '%s' "$TELEGRAM_MAIN_BOT_TOKEN" | tr -d '[:space:]')"
           chat_id="$(printf '%s' "$TELEGRAM_PREVIEW_CHAT_ID" | tr -d '[:space:]')"
           if [[ ! "$telegram_token" =~ ^[0-9]+:[A-Za-z0-9_-]+$ ]]; then
@@ -160,13 +173,27 @@ jobs:
             scenario="$(printf 'Сценарий проверки не указан в PR — проверьте вручную.\nDiff: https://github.com/%s/pull/%s/files' "$GITHUB_REPOSITORY" "$PR_NUMBER")"
           fi
           preview_app_url="$PREVIEW_URL"
-          if [ "$PR_NUMBER" = "485" ]; then
-            preview_app_url="${PREVIEW_URL%/}/?ui_lab=baseline"
-            scenario="UI Lab · Эталон\n\n$scenario"
-          elif [ "$PR_NUMBER" = "486" ]; then
-            preview_app_url="${PREVIEW_URL%/}/?ui_lab=compare"
-            scenario="UI Lab · Compare\n\n$scenario"
+          ui_lab_route="$UI_LAB_ROUTE"
+          if [ -z "$ui_lab_route" ]; then
+            case "$PR_NUMBER" in
+              485|488) ui_lab_route="baseline" ;;
+              486|487) ui_lab_route="compare" ;;
+            esac
           fi
+          case "$ui_lab_route" in
+            baseline)
+              preview_app_url="${PREVIEW_URL%/}/?ui_lab=baseline"
+              scenario="UI Lab · Эталон\n\n$scenario"
+              ;;
+            experiments)
+              preview_app_url="${PREVIEW_URL%/}/?ui_lab=experiments"
+              scenario="UI Lab · Эксперименты\n\n$scenario"
+              ;;
+            compare)
+              preview_app_url="${PREVIEW_URL%/}/?ui_lab=compare"
+              scenario="UI Lab · Compare\n\n$scenario"
+              ;;
+          esac
           # printf interprets \n in its format string as a real newline byte;
           # a plain "..." bash assignment does not — the old code put the two
           # literal characters "\" and "n" into the Telegram message text.
@@ -175,7 +202,7 @@ jobs:
             --arg chat_id "$chat_id" \
             --arg text "$message" \
             --arg url "$preview_app_url" \
-            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Preview · Эталон", web_app: {url: $url}}]]}}')"
+            '{chat_id: $chat_id, text: $message, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Preview · UI Lab", web_app: {url: $url}}]]}}')"
           # No --fail here on purpose: it discards the response body on a
           # non-2xx status, which previously left failed runs with only
           # "curl: (22) ... error 403" in the log and no way to see what
