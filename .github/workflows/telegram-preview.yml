@@ -25,6 +25,11 @@ on:
           - baseline
           - experiments
           - compare
+      diagnostics:
+        description: 'Append Preview-only route diagnostics to the Telegram URL'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -50,6 +55,7 @@ jobs:
       PREVIEW_SHA: ${{ github.event.client_payload.gitCommitSha || github.sha }}
       PR_NUMBER: ${{ github.event.client_payload.gitPullRequestId || 'n/a' }}
       UI_LAB_ROUTE: ${{ inputs.ui_lab || '' }}
+      PREVIEW_DIAGNOSTICS: ${{ inputs.diagnostics || false }}
 
     steps:
       - name: Validate Vercel preview payload
@@ -194,6 +200,9 @@ jobs:
               scenario="UI Lab · Compare\n\n$scenario"
               ;;
           esac
+          if [ "$PREVIEW_DIAGNOSTICS" = "true" ]; then
+            preview_app_url="${preview_app_url}&preview_diagnostics=1"
+          fi
           echo "Telegram web_app.url: $preview_app_url"
           # printf interprets \n in its format string as a real newline byte;
           # a plain "..." bash assignment does not — the old code put the two

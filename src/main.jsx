@@ -20,6 +20,9 @@ const uiLabRequested =
 const uiLabSection =
   uiLabParam === '1' ? 'experiments' : uiLabParam === 'showcase' ? 'baseline' : uiLabParam
 
+const previewDiagnosticsRequested =
+  uiLabEnabled && new URLSearchParams(window.location.search).get('preview_diagnostics') === '1'
+
 const UiLab = uiLabEnabled ? lazy(() => import('./components/ui-lab/UiLab')) : null
 
 const motionKitEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
@@ -49,6 +52,43 @@ const CardDirectionsLab = cardLabEnabled
   : null
 
 const OnboardingPreview = import.meta.env.DEV ? lazy(() => import('./screens/Onboarding')) : null
+
+function PreviewRouteDiagnostics() {
+  if (!previewDiagnosticsRequested) return null
+
+  const evidence = {
+    href: window.location.href,
+    search: window.location.search,
+    uiLabParam,
+    uiLabEnabled,
+    uiLabRequested,
+    selectedRoute: uiLabRequested ? `UiLab:${uiLabSection}` : 'App',
+  }
+
+  return (
+    <pre
+      data-testid="preview-route-diagnostics"
+      style={{
+        position: 'fixed',
+        top: 8,
+        left: 8,
+        right: 8,
+        zIndex: 200,
+        margin: 0,
+        padding: 10,
+        overflow: 'auto',
+        color: '#F6EBD2',
+        background: 'rgba(5, 4, 3, 0.94)',
+        border: '1px solid #EDBD60',
+        borderRadius: 8,
+        font: '11px/1.4 monospace',
+        whiteSpace: 'pre-wrap',
+      }}
+    >
+      {JSON.stringify(evidence, null, 2)}
+    </pre>
+  )
+}
 
 function RootScreen() {
   if (cardLabRequested && CardDirectionsLab) {
@@ -147,6 +187,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <AppProviders>
+        <PreviewRouteDiagnostics />
         <RootScreen />
       </AppProviders>
     </ErrorBoundary>
