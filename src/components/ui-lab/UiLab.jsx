@@ -3,6 +3,7 @@ import UiLabSwitch from './UiLabSwitch'
 import UiExperiments from './UiExperiments'
 import TodayStatePreview from './TodayStatePreview'
 import PracticeCatalogExperiment from './PracticeCatalogExperiment'
+import EveningReviewExperiment from './EveningReviewExperiment'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -84,6 +85,7 @@ export default function UiLab({ initialSection = 'baseline' }) {
               </div>
             </section>
             <PracticeCatalogExperiment />
+            <EveningReviewExperiment />
             <UiExperiments embedded />
           </>
         )}
