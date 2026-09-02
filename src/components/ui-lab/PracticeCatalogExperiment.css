@@ -135,44 +135,6 @@
   line-height: 1.35;
 }
 
-.mx-practice-catalog__hint {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin: 2px 2px 0 auto;
-  color: rgb(var(--c-faint));
-  font-family: 'Manrope', system-ui, sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.mx-practice-catalog__hint i {
-  display: block;
-  width: 26px;
-  height: 1px;
-  background: rgb(var(--c-line-secondary));
-}
-
-.mx-practice-catalog__pager {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin: 1px 0 2px;
-}
-
-.mx-practice-catalog__pager span {
-  width: 18px;
-  height: 3px;
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-border));
-}
-
-.mx-practice-catalog__pager span[data-active='true'] {
-  background: rgb(var(--c-line));
-}
-
 .mx-practice-catalog__nav {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

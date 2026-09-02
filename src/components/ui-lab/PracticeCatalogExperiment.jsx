@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 
 import SemanticGlyph from '../SemanticGlyph'
 
@@ -57,16 +57,6 @@ function PreviewNavigation() {
 
 export default function PracticeCatalogExperiment() {
   const railRef = useRef(null)
-  const [page, setPage] = useState(0)
-
-  function handleScroll() {
-    const rail = railRef.current
-    if (!rail) return
-
-    const cardWidth = rail.firstElementChild?.getBoundingClientRect().width || 1
-    const pairWidth = (cardWidth + 12) * 2
-    setPage(Math.min(CARDS.length / 2 - 1, Math.round(rail.scrollLeft / pairWidth)))
-  }
 
   return (
     <section className="mx-practice-catalog" aria-labelledby="practice-catalog-title">
@@ -74,8 +64,7 @@ export default function PracticeCatalogExperiment() {
         <span>Практики · Preview-only</span>
         <h2 id="practice-catalog-title">Шесть способов вернуться к себе</h2>
         <p>
-          Две крупные карточки остаются в поле зрения, а следующий ряд мягко выглядывает справа —
-          направление свайпа считывается без лишнего управления.
+          Две крупные карточки остаются в поле зрения, а следующий ряд мягко выглядывает справа.
         </p>
       </div>
 
@@ -83,7 +72,6 @@ export default function PracticeCatalogExperiment() {
         <div
           ref={railRef}
           className="mx-practice-catalog__rail"
-          onScroll={handleScroll}
           aria-label="Каталог практик. Проведи в сторону, чтобы увидеть следующие карточки."
         >
           {CARDS.map(card => (
@@ -97,17 +85,6 @@ export default function PracticeCatalogExperiment() {
                 <span>{card.description}</span>
               </span>
             </button>
-          ))}
-        </div>
-
-        <div className="mx-practice-catalog__hint" aria-hidden="true">
-          <span>следующие практики</span>
-          <i />
-        </div>
-
-        <div className="mx-practice-catalog__pager" aria-label={`Страница ${page + 1} из 3`}>
-          {[0, 1, 2].map(index => (
-            <span key={index} data-active={page === index} />
           ))}
         </div>
 
