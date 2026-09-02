@@ -26,6 +26,7 @@ export default function UiLab({ initialSection = 'baseline' }) {
 
   return (
     <main className="mx-ui-lab">
+      <div className="mx-ui-lab__scroll">
       <header className="mx-ui-lab__header">
         <p className="mx-ui-lab__kicker">Mentalix · Preview-only</p>
         <h1>Эталон → Эксперименты → Сравнение</h1>
@@ -95,6 +96,7 @@ export default function UiLab({ initialSection = 'baseline' }) {
       <footer className="mx-ui-lab__footer">
         Preview-only · реальные пользовательские данные и product logic не подключены
       </footer>
+      </div>
     </main>
   )
 }

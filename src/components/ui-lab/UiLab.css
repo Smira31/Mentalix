@@ -1,9 +1,19 @@
 .mx-ui-lab {
-  min-height: 100dvh;
-  overflow-x: hidden;
+  box-sizing: border-box;
+  height: 100dvh;
+  overflow: hidden;
+  padding-top: var(--app-safe-top);
+  padding-right: var(--app-safe-right);
+  padding-left: var(--app-safe-left);
   background: rgb(var(--c-bg));
   color: rgb(var(--c-text));
   font-family: 'Onest', system-ui, sans-serif;
+}
+.mx-ui-lab__scroll {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
 }
 .mx-ui-lab__header,
 .mx-ui-lab__content {
