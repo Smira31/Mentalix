@@ -218,6 +218,14 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   )
 })
 
+test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только через Preview demo gate', () => {
+  const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
+
+  assert.match(demo, /host\.endsWith\('\.trycloudflare\.com'\)/)
+  assert.match(demo, /const isPreviewRuntime = import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview'/)
+  assert.match(demo, /return params\.get\('demo'\) === '1' && isAllowedHost && isPreviewRuntime/)
+})
+
 test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const conversation = readFileSync(
