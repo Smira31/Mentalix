@@ -159,6 +159,11 @@ jobs:
           else
             scenario="$(printf 'Сценарий проверки не указан в PR — проверьте вручную.\nDiff: https://github.com/%s/pull/%s/files' "$GITHUB_REPOSITORY" "$PR_NUMBER")"
           fi
+          preview_app_url="$PREVIEW_URL"
+          if [ "$PR_NUMBER" = "485" ]; then
+            preview_app_url="${PREVIEW_URL%/}/?ui_lab=baseline"
+            scenario="UI Lab · Эталон\n\n$scenario"
+          fi
           # printf interprets \n in its format string as a real newline byte;
           # a plain "..." bash assignment does not — the old code put the two
           # literal characters "\" and "n" into the Telegram message text.
@@ -166,8 +171,8 @@ jobs:
           payload="$(jq -n \
             --arg chat_id "$chat_id" \
             --arg text "$message" \
-            --arg url "$PREVIEW_URL" \
-            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Preview", web_app: {url: $url}}]]}}')"
+            --arg url "$preview_app_url" \
+            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Preview · Эталон", web_app: {url: $url}}]]}}')"
           # No --fail here on purpose: it discards the response body on a
           # non-2xx status, which previously left failed runs with only
           # "curl: (22) ... error 403" in the log and no way to see what
