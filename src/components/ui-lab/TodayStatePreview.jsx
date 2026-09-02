@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
 import Today from '../../screens/Today'
@@ -111,7 +112,7 @@ export default function TodayStatePreview({
 }) {
   const state = TODAY_STATES.find(item => item.key === selectedState) || TODAY_STATES[0]
   const setState = onStateChange || (() => {})
-
+  const [compareLayout, setCompareLayout] = useState('side-by-side')
   return (
     <section className="mx-lab-today-route" aria-labelledby="today-preview-title">
       <div className="mx-lab-route-heading">
@@ -126,22 +127,46 @@ export default function TodayStatePreview({
       {mode === 'baseline' && <BaselineToday state={state} />}
       {mode === 'experiments' && <ExperimentToday state={state} />}
       {mode === 'compare' && (
-        <div className="mx-lab-compare-grid">
-          <article>
-            <header>
-              <strong>Эталон</strong>
-              <span>из текущего main</span>
-            </header>
-            <BaselineToday state={state} />
-          </article>
-          <article>
-            <header>
-              <strong>Эксперимент</strong>
-              <span>Preview-only гипотеза</span>
-            </header>
-            <ExperimentToday state={state} />
-          </article>
-        </div>
+        <>
+          <div className="mx-lab-compare-mode" role="tablist" aria-label="Режим сравнения">
+            {[
+              ['side-by-side', 'Рядом'],
+              ['sequential', 'По очереди'],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={compareLayout === key}
+                data-active={compareLayout === key}
+                onClick={() => setCompareLayout(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="mx-lab-compare-mode-help">
+            {compareLayout === 'side-by-side'
+              ? 'Компактный обзор двух версий одновременно.'
+              : 'Полный вертикальный просмотр каждой версии.'}
+          </p>
+          <div className="mx-lab-compare-grid" data-layout={compareLayout}>
+            <article>
+              <header>
+                <strong>Эталон</strong>
+                <span>из текущего main</span>
+              </header>
+              <BaselineToday state={state} />
+            </article>
+            <article>
+              <header>
+                <strong>Эксперимент</strong>
+                <span>Preview-only гипотеза</span>
+              </header>
+              <ExperimentToday state={state} />
+            </article>
+          </div>
+        </>
       )}
     </section>
   )
