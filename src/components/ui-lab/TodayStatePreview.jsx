@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { ArrowRight } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
 import Today from '../../screens/Today'
@@ -87,6 +87,54 @@ function BaselineToday({ state }) {
   )
 }
 
+const COMPARE_SCREEN_WIDTH = 430
+
+function ScaledCompareScreen({ children }) {
+  const frameRef = useRef(null)
+  const screenRef = useRef(null)
+  const [metrics, setMetrics] = useState({ scale: 1, height: 0 })
+
+  useLayoutEffect(() => {
+    const frame = frameRef.current
+    const screen = screenRef.current
+
+    if (!frame || !screen) return undefined
+
+    const updateMetrics = () => {
+      const scale = Math.min(1, frame.clientWidth / COMPARE_SCREEN_WIDTH)
+      const height = screen.scrollHeight * scale
+
+      setMetrics(current =>
+        current.scale === scale && current.height === height ? current : { scale, height }
+      )
+    }
+
+    updateMetrics()
+
+    const observer = new ResizeObserver(updateMetrics)
+    observer.observe(frame)
+    observer.observe(screen)
+
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={frameRef}
+      className="mx-lab-compare-screen-frame"
+      style={{ height: metrics.height ? `${metrics.height}px` : undefined }}
+    >
+      <div
+        ref={screenRef}
+        className="mx-lab-compare-screen"
+        style={{ transform: `scale(${metrics.scale})` }}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function ExperimentToday({ state }) {
   return (
     <div className="mx-lab-today-experiment" data-state={state.key}>
@@ -156,14 +204,26 @@ export default function TodayStatePreview({
                 <strong>Эталон</strong>
                 <span>из текущего main</span>
               </header>
-              <BaselineToday state={state} />
+              {compareLayout === 'side-by-side' ? (
+                <ScaledCompareScreen>
+                  <BaselineToday state={state} />
+                </ScaledCompareScreen>
+              ) : (
+                <BaselineToday state={state} />
+              )}
             </article>
             <article>
               <header>
                 <strong>Эксперимент</strong>
                 <span>Preview-only гипотеза</span>
               </header>
-              <ExperimentToday state={state} />
+              {compareLayout === 'side-by-side' ? (
+                <ScaledCompareScreen>
+                  <ExperimentToday state={state} />
+                </ScaledCompareScreen>
+              ) : (
+                <ExperimentToday state={state} />
+              )}
             </article>
           </div>
         </>
