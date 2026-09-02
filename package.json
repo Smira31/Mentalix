@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "npm run preview:telegram",
+    "preview": "npm run preview:web",
     "preview:web": "vite preview --host 127.0.0.1 --port 4174",
     "preview:telegram": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-telegram.ps1",
     "preview:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1",

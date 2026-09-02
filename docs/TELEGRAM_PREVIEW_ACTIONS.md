@@ -1,12 +1,12 @@
 # Telegram Preview через GitHub Actions
 
-Этот workflow создаёт отдельный Vercel Preview для каждого pull request в `main`, проверяет `GET /api/health` и после успешной проверки отправляет в основной Mentalix-бот Telegram-сообщение с кнопкой **«Открыть Preview»**. Production-домен, backend и основной Vercel project не изменяются.
+Этот workflow проверяет уже существующий Vercel Preview через `GET /api/health` и после явного ручного запуска отправляет в основной Mentalix-бот одно однозначное Telegram-сообщение с одной кнопкой. Workflow не создаёт Vercel deployment. Production-домен, backend и основной Vercel project не изменяются.
 
 ## Как это работает
 
-Vercel Git Integration запускает deployment для каждого push и PR в подключённом репозитории. После успешного Preview Vercel отправляет `repository_dispatch` в GitHub, а workflow проверяет `https://<preview>/api/health` и только затем вызывает Telegram Bot API. Если deployment или health-check завершается ошибкой, сообщение с Preview не отправляется. GitHub Actions не выполняет Vercel CLI: деплой полностью выполняет сама Vercel Git Integration.
+Vercel Git Integration может запускать deployment для push и PR в подключённом репозитории. `repository_dispatch` от Vercel сохраняется только для совместимости и не отправляет Telegram. Канонический путь — `workflow_dispatch` с URL уже существующего Preview и явными `branch`, `pr_number`, `preview_title`, `commit_sha` и, при необходимости, `ui_lab_route`/`experiment_label`. Workflow проверяет `https://<preview>/api/health` и только затем вызывает Telegram Bot API. GitHub Actions не выполняет Vercel CLI.
 
-Workflow реагирует только на успешное событие `vercel.deployment.success` и ручной `workflow_dispatch` с URL. Preview создаётся подключённой Vercel Git Integration; PR из fork не получает доступ к Telegram-секретам. Одновременно для одного deployment выполняется только последний запуск; старый запуск отменяется.
+Workflow принимает `vercel.deployment.success`, но job для этого события намеренно не запускается. Только `workflow_dispatch` может отправить Telegram. PR из fork не получает доступ к Telegram-секретам. Concurrency отменяет конкурирующий manual run для того же commit/route; persistent deduplication здесь не используется.
 
 ## Сценарий проверки в Telegram-сообщении
 
@@ -39,17 +39,17 @@ Workflow реагирует только на успешное событие `v
 
 ## Основной ежедневный сценарий
 
-Основной способ отправить Preview — открыть GitHub Actions → **Telegram Preview** → **Run workflow** или открыть PR и дождаться автоматического события от Vercel. В ручной форме укажите готовый Vercel Preview URL в поле `Vercel Preview URL to verify and notify`. Workflow проверит deployment и `/api/health`, затем отправит в Telegram кнопку **«Открыть Preview»**.
+Основной способ отправить Preview — открыть GitHub Actions → **Telegram Preview** → **Run workflow**. В ручной форме укажите готовый Vercel Preview URL, branch, commit SHA и metadata PR. Для PR #490 используйте title `Today` и route `Today`; для PR #494 — `Practices`, `ui_lab_route=experiments`, `experiment_label=UI Lab / Practices`; для PR #496 — `Evening Review`, `ui_lab_route=experiments`, `experiment_label=UI Lab / Evening Review`. Workflow проверит существующий URL и отправит ровно одну кнопку с точным route.
 
 Не запускайте одновременно локальный PowerShell-сценарий и GitHub workflow для одного deployment: это может создать дублирующие сообщения и конкурирующие cleanup-действия.
 
 ## Ручной запуск с телефона
 
-После того как workflow попадёт в `main`, для ручной проверки откройте **Actions → Telegram Preview → Run workflow**. Вставьте готовый Vercel Preview URL в поле `Vercel Preview URL to verify and notify` и нажмите **Run workflow**. В обычном сценарии ручной запуск не нужен: Vercel сам отправляет событие после успешного deployment.
+После того как workflow попадёт в `main`, откройте **Actions → Telegram Preview → Run workflow**. Вставьте готовый Vercel Preview URL и заполните metadata. Нажмите **Run workflow** только после local → CI → review и явного разрешения на manual iPhone/Telegram gate. Этот запуск не создаёт новый Vercel deployment.
 
 ## Проверка Preview
 
-После настройки достаточно отправить feature-ветку в GitHub или открыть PR. Vercel создаст Preview самостоятельно, затем workflow **Telegram Preview** проверит deployment и отправит в Telegram кнопку **«Открыть Preview»**. Preview предназначен для ручной проверки интерфейса на телефоне.
+После настройки Vercel Preview создаётся обычным подключённым процессом. Затем workflow **Telegram Preview** запускается вручную с уже существующим URL, проверяет health и отправляет одну кнопку. Preview предназначен для ручной проверки интерфейса на телефоне.
 
 Для MXL-021 после открытия Preview нужно проверить Journey → `Продолжить сегодня` → Today, затем пройти ручной Telegram/iPhone gate. GitHub Actions может проверить сборку и health endpoint, но не заменяет визуальную проверку на реальном iPhone.
 
@@ -61,7 +61,7 @@ Workflow реагирует только на успешное событие `v
 
 ## Локальный fallback (Windows/PowerShell)
 
-Локальный сценарий не является основным production-процессом. Используйте его только на машине с PowerShell и настроенным `.env.local`, если GitHub Actions или Vercel временно недоступны:
+Legacy-скрипт не является обычным Preview-путём и не должен использоваться для Telegram gate. Обычная команда `npm run preview` запускает только локальный web preview. Legacy-скрипт требует явный PR metadata и завершается до deployment/Telegram, если `-PullRequest` не указан.
 
 ```bash
 npm run preview
