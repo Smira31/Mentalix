@@ -208,6 +208,10 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   }
   assert.match(demo, /params\.get\('demo'\)/)
   assert.match(demo, /checkin\/today.*state\.checkins\[0\]/)
+  assert.match(
+    demo,
+    /previewTodayState\(\) === 'reviewPending' \|\| previewTodayState\(\) === 'dayClosed' \? 0 : 24/
+  )
 })
 
 test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {

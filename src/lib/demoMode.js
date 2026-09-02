@@ -252,7 +252,7 @@ export function demoRequest(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     return json({
       review_hour:
-        previewTodayState() === 'reviewPending' || previewTodayState() === 'dayClosed' ? 0 : 19,
+        previewTodayState() === 'reviewPending' || previewTodayState() === 'dayClosed' ? 0 : 24,
     })
   }
   if (pathname === '/analytics' && method === 'GET') return json({ daily: [], summary: {} })
