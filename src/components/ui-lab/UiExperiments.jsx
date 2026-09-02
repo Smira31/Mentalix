@@ -4,6 +4,7 @@ import { ArrowRight, Check, ChevronDown, Pause, Play, RotateCcw, X } from 'lucid
 
 import { DayArc } from '../Motif'
 import SemanticGlyph from '../SemanticGlyph'
+import StreakBar from '../StreakBar'
 import { DayThread, DayThreadTrigger, FocusMark, NextActionReveal } from '../TodayMotionExperiment'
 import MyPathGlyph from './MyPathGlyph'
 import UiLabSwitch from './UiLabSwitch'
@@ -188,6 +189,10 @@ function TodayScreenPreview({ mode }) {
         </div>
 
         <p className="mx-lab-today__tagline">шаг за шагом — выход находится</p>
+
+        <div className="mx-lab-today__streak" aria-label="Preview streak: 1 день подряд">
+          <StreakBar streak={1} />
+        </div>
 
         <PreviewWeek />
 
