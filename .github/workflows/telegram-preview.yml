@@ -163,6 +163,9 @@ jobs:
           if [ "$PR_NUMBER" = "485" ]; then
             preview_app_url="${PREVIEW_URL%/}/?ui_lab=baseline"
             scenario="UI Lab · Эталон\n\n$scenario"
+          elif [ "$PR_NUMBER" = "486" ]; then
+            preview_app_url="${PREVIEW_URL%/}/?ui_lab=compare"
+            scenario="UI Lab · Compare\n\n$scenario"
           fi
           # printf interprets \n in its format string as a real newline byte;
           # a plain "..." bash assignment does not — the old code put the two
