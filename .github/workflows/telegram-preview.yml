@@ -194,6 +194,7 @@ jobs:
               scenario="UI Lab · Compare\n\n$scenario"
               ;;
           esac
+          echo "Telegram web_app.url: $preview_app_url"
           # printf interprets \n in its format string as a real newline byte;
           # a plain "..." bash assignment does not — the old code put the two
           # literal characters "\" and "n" into the Telegram message text.
@@ -255,6 +256,7 @@ jobs:
           {
             echo "### Telegram Preview"
             echo "Preview: ${PREVIEW_URL}"
+            echo "Telegram web_app.url: ${preview_app_url}"
             echo "Branch: ${PREVIEW_BRANCH}"
             echo "Commit: ${PREVIEW_SHA}"
           } >> "$GITHUB_STEP_SUMMARY"
