@@ -226,6 +226,25 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   assert.match(demo, /return params\.get\('demo'\) === '1' && isAllowedHost && isPreviewRuntime/)
 })
 
+test('MXL-TELEGRAM-PREVIEW-WORKFLOW-001 не маскирует main/unknown deployment под PR или UI Lab', () => {
+  const workflow = readFileSync(
+    new URL('../../.github/workflows/telegram-preview.yml', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(workflow, /PREVIEW_BRANCH: .*github\.ref_name/)
+  assert.match(workflow, /echo "context=main"/)
+  assert.match(workflow, /echo "context=pr"/)
+  assert.match(workflow, /echo "context=unknown"/)
+  assert.match(workflow, /Mentalix main Preview готов к проверке/)
+  assert.match(workflow, /Mentalix Preview PR #%s готов к проверке/)
+  assert.match(workflow, /Mentalix Preview готов к проверке/)
+  assert.match(workflow, /button_label="Открыть Preview"/)
+  assert.match(workflow, /button_label="Открыть Preview · UI Lab"/)
+  assert.match(workflow, /--arg button_label "\$button_label"/)
+  assert.doesNotMatch(workflow, /text: "Открыть Preview · UI Lab"/)
+})
+
 test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const conversation = readFileSync(

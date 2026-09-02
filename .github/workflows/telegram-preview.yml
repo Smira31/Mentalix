@@ -51,7 +51,7 @@ jobs:
       VERCEL_PROTECTION_BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
       PREVIEW_URL: ${{ github.event.client_payload.url || inputs.url }}
       PREVIEW_ENVIRONMENT: ${{ github.event.client_payload.environment || 'preview' }}
-      PREVIEW_BRANCH: ${{ github.event.client_payload.gitBranch || inputs.branch || 'unknown' }}
+      PREVIEW_BRANCH: ${{ github.event.client_payload.gitBranch || inputs.branch || github.ref_name || 'unknown' }}
       PREVIEW_SHA: ${{ github.event.client_payload.gitCommitSha || github.sha }}
       PR_NUMBER: ${{ github.event.client_payload.gitPullRequestId || 'n/a' }}
       UI_LAB_ROUTE: ${{ inputs.ui_lab || '' }}
@@ -112,6 +112,13 @@ jobs:
             fi
           fi
           echo "number=$resolved" >> "$GITHUB_OUTPUT"
+          if [ "$PREVIEW_BRANCH" = "main" ]; then
+            echo "context=main" >> "$GITHUB_OUTPUT"
+          elif [ "$resolved" != "n/a" ]; then
+            echo "context=pr" >> "$GITHUB_OUTPUT"
+          else
+            echo "context=unknown" >> "$GITHUB_OUTPUT"
+          fi
           echo "Resolved PR number: $resolved (client_payload had: $PR_NUMBER, branch: $PREVIEW_BRANCH)"
 
       - name: Resolve preview checklist from PR body
@@ -155,6 +162,7 @@ jobs:
         shell: bash
         env:
           PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PREVIEW_CONTEXT: ${{ steps.pr.outputs.context }}
           CHECKLIST_FOUND: ${{ steps.checklist.outputs.found }}
           CHECKLIST_TEXT: ${{ steps.checklist.outputs.text }}
         run: |
@@ -180,6 +188,7 @@ jobs:
           fi
           preview_app_url="$PREVIEW_URL"
           ui_lab_route="$UI_LAB_ROUTE"
+          button_label="Открыть Preview"
           if [ -z "$ui_lab_route" ]; then
             case "$PR_NUMBER" in
               485|488) ui_lab_route="baseline" ;;
@@ -189,14 +198,17 @@ jobs:
           case "$ui_lab_route" in
             baseline)
               preview_app_url="${PREVIEW_URL%/}/?ui_lab=baseline"
+              button_label="Открыть Preview · UI Lab"
               scenario="UI Lab · Эталон\n\n$scenario"
               ;;
             experiments)
               preview_app_url="${PREVIEW_URL%/}/?ui_lab=experiments"
+              button_label="Открыть Preview · UI Lab"
               scenario="UI Lab · Эксперименты\n\n$scenario"
               ;;
             compare)
               preview_app_url="${PREVIEW_URL%/}/?ui_lab=compare"
+              button_label="Открыть Preview · UI Lab"
               scenario="UI Lab · Compare\n\n$scenario"
               ;;
           esac
@@ -207,12 +219,23 @@ jobs:
           # printf interprets \n in its format string as a real newline byte;
           # a plain "..." bash assignment does not — the old code put the two
           # literal characters "\" and "n" into the Telegram message text.
-          message="$(printf 'Mentalix preview PR #%s готов к проверке.\n\n%s' "$PR_NUMBER" "$scenario")"
+          case "$PREVIEW_CONTEXT" in
+            main)
+              message="$(printf 'Mentalix main Preview готов к проверке.\n\nCommit: %s\n\n%s' "${PREVIEW_SHA:0:8}" "$scenario")"
+              ;;
+            pr)
+              message="$(printf 'Mentalix Preview PR #%s готов к проверке.\n\nBranch: %s\nCommit: %s\n\n%s' "$PR_NUMBER" "$PREVIEW_BRANCH" "${PREVIEW_SHA:0:8}" "$scenario")"
+              ;;
+            *)
+              message="$(printf 'Mentalix Preview готов к проверке.\n\nCommit: %s\n\n%s' "${PREVIEW_SHA:0:8}" "$scenario")"
+              ;;
+          esac
           payload="$(jq -n \
             --arg chat_id "$chat_id" \
             --arg text "$message" \
             --arg url "$preview_app_url" \
-            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Preview · UI Lab", web_app: {url: $url}}]]}}')"
+            --arg button_label "$button_label" \
+            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: $button_label, web_app: {url: $url}}]]}}')"
           # No --fail here on purpose: it discards the response body on a
           # non-2xx status, which previously left failed runs with only
           # "curl: (22) ... error 403" in the log and no way to see what
