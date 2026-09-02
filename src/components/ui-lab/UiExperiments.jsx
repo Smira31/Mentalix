@@ -1816,47 +1816,48 @@ function RitualAscezaStylesExperiment({ mode }) {
   )
 }
 
-export default function UiExperiments() {
+export default function UiExperiments({ embedded = false }) {
   const [mode, setMode] = useState('after')
-
   return (
     <main className="mx-lab" data-mode={mode}>
-      <header className="mx-lab-header">
-        <div className="mx-lab-header__mark" aria-hidden="true">
-          <span />
-        </div>
+      {!embedded && (
+        <header className="mx-lab-header">
+          <div className="mx-lab-header__mark" aria-hidden="true">
+            <span />
+          </div>
+          <p className="mx-lab-kicker">Mentalix · лаборатория интерфейса</p>
+          <UiLabSwitch active="experiments" />
+          <h1>Движение, которое помогает сделать шаг.</h1>
 
-        <p className="mx-lab-kicker">Mentalix · лаборатория интерфейса</p>
+          <p className="mx-lab-intro">
+            Двадцать пять изолированных прототипов. Они не меняют продуктовые данные и доступны
+            только в режиме разработки.
+          </p>
 
-        <UiLabSwitch active="experiments" />
+          <div className="mx-lab-toggle" role="group" aria-label="Сравнение вариантов">
+            <span className="mx-lab-toggle__indicator" data-side={mode} aria-hidden="true" />
 
-        <h1>Движение, которое помогает сделать шаг.</h1>
+            <button
+              type="button"
+              aria-pressed={mode === 'before'}
+              onClick={() => setMode('before')}
+            >
+              Текущий
+            </button>
 
-        <p className="mx-lab-intro">
-          Двадцать пять изолированных прототипов. Они не меняют продуктовые данные и доступны только
-          в режиме разработки.
-        </p>
+            <button type="button" aria-pressed={mode === 'after'} onClick={() => setMode('after')}>
+              Эксперимент
+            </button>
+          </div>
 
-        <div className="mx-lab-toggle" role="group" aria-label="Сравнение вариантов">
-          <span className="mx-lab-toggle__indicator" data-side={mode} aria-hidden="true" />
-
-          <button type="button" aria-pressed={mode === 'before'} onClick={() => setMode('before')}>
-            Текущий
-          </button>
-
-          <button type="button" aria-pressed={mode === 'after'} onClick={() => setMode('after')}>
-            Эксперимент
-          </button>
-        </div>
-
-        <p className="mx-lab-mode-note" aria-live="polite">
-          {mode === 'after'
-            ? 'Анимация объясняет состояние и подтверждает действие.'
-            : 'Состояния переключаются без пространственного и тактильного контекста.'}
-        </p>
-      </header>
-
-      <TodayScreenPreview mode={mode} />
+          <p className="mx-lab-mode-note" aria-live="polite">
+            {mode === 'after'
+              ? 'Анимация объясняет состояние и подтверждает действие.'
+              : 'Состояния переключаются без пространственного и тактильного контекста.'}
+          </p>
+        </header>
+      )}
+      {!embedded && <TodayScreenPreview mode={mode} />}
 
       <div className="mx-lab-list">
         <ExpansionExperiment mode={mode} />
