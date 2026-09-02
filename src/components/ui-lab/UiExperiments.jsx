@@ -61,6 +61,8 @@ function PreviewWeek() {
 const TODAY_STATES = [
   {
     key: 'morning',
+    todayState: 'checkinPending',
+    done: 0,
     label: 'Утро',
     eyebrow: 'Состояние дня',
     title: 'Сначала понять, как ты сегодня',
@@ -71,6 +73,8 @@ const TODAY_STATES = [
   },
   {
     key: 'day',
+    todayState: 'dayInProgress',
+    done: 1,
     label: 'День',
     eyebrow: 'Один следующий шаг',
     title: 'Записать главную мысль',
@@ -81,6 +85,8 @@ const TODAY_STATES = [
   },
   {
     key: 'evening',
+    todayState: 'reviewPending',
+    done: 3,
     label: 'Вечер',
     eyebrow: 'Сверить день',
     title: 'Что получилось заметить и сделать?',
@@ -91,6 +97,8 @@ const TODAY_STATES = [
   },
   {
     key: 'closed',
+    todayState: 'dayClosed',
+    done: 3,
     label: 'Закрыт',
     eyebrow: 'День завершён',
     title: 'Оставить вывод и увидеть завтрашний шаг',
@@ -103,7 +111,11 @@ const TODAY_STATES = [
 
 function TodayStatePicker({ activeKey, onChange }) {
   return (
-    <div className="mx-lab-today__state-picker" role="tablist" aria-label="Состояния ежедневного цикла">
+    <div
+      className="mx-lab-today__state-picker"
+      role="tablist"
+      aria-label="Состояния ежедневного цикла"
+    >
       {TODAY_STATES.map(state => (
         <button
           key={state.key}
@@ -157,7 +169,8 @@ function TodayScreenPreview({ mode }) {
         <span>В контексте приложения</span>
         <h2>Экран «Сегодня»</h2>
         <p>
-          После переключения открывается прототип единого hero для четырёх состояний дня. Данные и production-поведение не меняются.
+          После переключения открывается прототип единого hero для четырёх состояний дня. Данные и
+          production-поведение не меняются.
         </p>
       </div>
 
@@ -184,12 +197,12 @@ function TodayScreenPreview({ mode }) {
 
         {mode === 'after' && threadOpen && (
           <DayThread
-            checkinDone
-            done={1}
+            checkinDone={state.key !== 'morning'}
+            done={state.done}
             open={threadOpen}
             onOpenChange={setThreadOpen}
             total={3}
-            todayState="dayInProgress"
+            todayState={state.todayState}
           />
         )}
 
