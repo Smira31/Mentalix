@@ -2,6 +2,7 @@ import { useState } from 'react'
 import UiLabSwitch from './UiLabSwitch'
 import UiExperiments from './UiExperiments'
 import TodayStatePreview from './TodayStatePreview'
+import PracticeCatalogExperiment from './PracticeCatalogExperiment'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -82,6 +83,7 @@ export default function UiLab({ initialSection = 'baseline' }) {
                 ))}
               </div>
             </section>
+            <PracticeCatalogExperiment />
             <UiExperiments embedded />
           </>
         )}
