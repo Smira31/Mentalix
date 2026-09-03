@@ -16,7 +16,15 @@ const uiLabParam = new URLSearchParams(window.location.search).get('ui_lab')
 // сохраняются как совместимые алиасы в новом маршруте UiLab.
 const uiLabRequested =
   uiLabEnabled &&
-  ['1', 'showcase', 'baseline', 'experiments', 'compare', 'daily-canonical'].includes(uiLabParam)
+  [
+    '1',
+    'showcase',
+    'baseline',
+    'experiments',
+    'compare',
+    'daily-canonical',
+    'practice-catalog',
+  ].includes(uiLabParam)
 
 const uiLabSection =
   uiLabParam === '1' ? 'experiments' : uiLabParam === 'showcase' ? 'baseline' : uiLabParam
