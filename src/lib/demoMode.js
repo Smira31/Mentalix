@@ -25,7 +25,8 @@ export function isPreviewDemoMode() {
     host === 'localhost' ||
     host === '127.0.0.1' ||
     host.endsWith('.vercel.app') ||
-    host.endsWith('.manus.computer')
+    host.endsWith('.manus.computer') ||
+    host.endsWith('.trycloudflare.com')
   const isPreviewRuntime = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 
   return params.get('demo') === '1' && isAllowedHost && isPreviewRuntime

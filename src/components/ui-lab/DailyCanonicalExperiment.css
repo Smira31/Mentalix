@@ -1,0 +1,223 @@
+.mx-daily {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgb(var(--c-border));
+}
+.mx-daily__head {
+  display: grid;
+  gap: 8px;
+  padding-inline: 2px;
+}
+.mx-daily__head > span {
+  color: rgb(var(--c-gold));
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mx-daily__head h2 {
+  margin: 0;
+  font-size: clamp(24px, 5vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+.mx-daily__head p {
+  max-width: 560px;
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mx-daily__debug {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px;
+  border: 1px dashed rgb(var(--c-border));
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+}
+.mx-daily__debug button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-pill);
+  background: transparent;
+  color: rgb(var(--c-faint));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.mx-daily__debug button[data-active='true'] {
+  border-color: rgb(var(--c-gold));
+  color: rgb(var(--c-text));
+  background: rgb(var(--c-gold) / 0.14);
+}
+.mx-daily__debug-reset {
+  margin-left: auto;
+  color: rgb(var(--c-muted));
+}
+
+.mx-daily__stage {
+  display: grid;
+  gap: 14px;
+}
+.mx-daily__phase {
+  display: grid;
+  gap: 12px;
+}
+
+/*
+ * Today.jsx (реальный prod-компонент, отрисован через TodayBaseline) сам
+ * рисует кнопку «Разобрать день» на reviewPending, которая ведёт в реальный
+ * CheckIn.jsx — не в наш EveningReviewExperiment. У Today.jsx нет пропа для
+ * переопределения этого действия, а трогать production Today.jsx вне scope
+ * этой ветки — см. комментарий у ReviewPendingScreen в
+ * DailyCanonicalExperiment.jsx и UI-DEC-003 в DECISION_LOG.md. Прячем именно
+ * эту кнопку через уже существующий data-state на .mx-daily__surface — на
+ * reviewPending остаётся ровно один явный путь в разбор дня: bridge-кнопка
+ * .mx-daily__bridge ниже.
+ */
+.mx-daily__surface[data-state='reviewPending'] .mx-today-primary-card .cta-pill {
+  display: none;
+}
+
+.mx-daily__surface {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  background: rgb(var(--c-card));
+}
+
+.mx-daily__primary {
+  display: inline-flex;
+  min-height: 50px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.mx-daily__primary:active {
+  transform: scale(0.98);
+}
+.mx-daily__bridge {
+  max-width: 320px;
+  margin-inline: auto;
+}
+
+.mx-daily__welcome {
+  display: grid;
+  gap: 16px;
+  padding: 32px 22px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  background: rgb(var(--c-card));
+  text-align: center;
+  justify-items: center;
+}
+.mx-daily__wordmark {
+  color: rgb(var(--c-gold));
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.mx-daily__welcome h2 {
+  max-width: 360px;
+  margin: 0;
+  font-size: clamp(26px, 7vw, 36px);
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+}
+.mx-daily__welcome p {
+  max-width: 340px;
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+.mx-daily__welcome .mx-daily__primary {
+  max-width: 220px;
+}
+
+.mx-daily__completion {
+  display: grid;
+  gap: 12px;
+  padding: 32px 22px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  background: rgb(var(--c-card));
+  text-align: center;
+  justify-items: center;
+}
+.mx-daily__completion-art {
+  display: grid;
+  width: min(56vw, 200px);
+  height: 120px;
+  place-items: center;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 24px;
+  background: rgb(var(--c-artbed));
+}
+.mx-daily__completion-art .mx-semantic-glyph {
+  width: 90%;
+  height: 90%;
+}
+.mx-daily__eyebrow {
+  color: rgb(var(--c-gold));
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mx-daily__completion h2 {
+  max-width: 340px;
+  margin: 0;
+  font-size: clamp(24px, 6vw, 32px);
+  letter-spacing: -0.04em;
+}
+.mx-daily__completion p {
+  max-width: 320px;
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+.mx-daily__completion .mx-daily__primary {
+  max-width: 260px;
+}
+
+.mx-daily__footer {
+  padding-top: 10px;
+  border-top: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-faint));
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-daily__primary:active {
+    transform: none;
+  }
+}
+
+@media (max-width: 350px) {
+  .mx-daily__welcome,
+  .mx-daily__completion {
+    padding: 24px 16px;
+  }
+}

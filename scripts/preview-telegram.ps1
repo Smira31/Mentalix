@@ -3,6 +3,13 @@ param(
   [int]$PullRequest = 0
 )
 
+# Legacy fallback is not the ordinary Preview path. Never create a deployment
+# or send Telegram when its PR metadata is incomplete; use the manual GitHub
+# Actions workflow with an existing Vercel Preview URL instead.
+if ($PullRequest -le 0) {
+  throw 'Legacy Telegram Preview requires -PullRequest; use GitHub Actions workflow_dispatch for the canonical manual gate.'
+}
+
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding = [System.Text.Encoding]::UTF8
 $ErrorActionPreference = 'Stop'
@@ -47,14 +54,6 @@ $deploymentId = if ($deploymentIdMatch.Success) { $deploymentIdMatch.Value } els
 $branch = (& git -C $root branch --show-current).Trim()
 $shortSha = (& git -C $root rev-parse --short HEAD).Trim()
 
-if ($PullRequest -le 0) {
-  $prOutput = & gh pr view --repo Smira31/Mentalix --json number 2>$null | Out-String
-  $prMatch = [regex]::Match($prOutput, '"number"\s*:\s*(\d+)')
-  if ($prMatch.Success) {
-    $PullRequest = [int]$prMatch.Groups[1].Value
-  }
-}
-
 $health = & curl.exe --noproxy '*' --http1.1 --max-time 20 -sS ($previewUrl + '/api/health')
 if ($health -notmatch '"status"\s*:\s*"ok"') {
   Write-Error 'Preview was created, but /api/health did not return status=ok.'
@@ -65,7 +64,7 @@ $targetUrl = $previewUrl + $Path
 
 $expiresAt = (Get-Date).ToUniversalTime().AddHours(1).ToString('yyyy-MM-dd HH:mm:ss') + ' UTC'
 $header = ConvertFrom-Json '"Mentalix Preview \u0433\u043e\u0442\u043e\u0432"'
-$prLabel = if ($PullRequest -gt 0) { "PR #$PullRequest" } else { 'PR #n/a' }
+$prLabel = "PR #$PullRequest"
 $openLabel = "Открыть Preview · $prLabel"
 $availability = ConvertFrom-Json '"\u0414\u043e\u0441\u0442\u0443\u043f\u043d\u043e 1 \u0447\u0430\u0441"'
 $branchLabel = ConvertFrom-Json '"\u0412\u0435\u0442\u043a\u0430:"'

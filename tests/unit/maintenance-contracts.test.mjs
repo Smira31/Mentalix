@@ -200,7 +200,8 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
 
   assert.match(launcher, /\[int\]\$PullRequest = 0/)
-  assert.match(launcher, /gh pr view --repo Smira31\/Mentalix --json number/)
+  assert.match(launcher, /Legacy Telegram Preview requires -PullRequest/)
+  assert.doesNotMatch(launcher, /PR #n\/a/)
   assert.match(launcher, /Открыть Preview · \$prLabel/)
   assert.match(launcher, /stateUrl = \$previewUrl \+ '\?demo=1&today_state='/)
   for (const state of ['checkinPending', 'dayInProgress', 'reviewPending', 'dayClosed']) {
@@ -216,6 +217,46 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
     demo.indexOf("pathname === '/profile/settings' && method === 'GET'") <
       demo.indexOf("pathname.startsWith('/profile/') && method === 'GET'")
   )
+})
+
+test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только через Preview demo gate', () => {
+  const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
+
+  assert.match(demo, /host\.endsWith\('\.trycloudflare\.com'\)/)
+  assert.match(demo, /const isPreviewRuntime = import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview'/)
+  assert.match(demo, /return params\.get\('demo'\) === '1' && isAllowedHost && isPreviewRuntime/)
+})
+
+test('MXL-PREVIEW-ROUTING-CLEANUP-001 использует manual existing Preview gate', () => {
+  const workflow = readFileSync(
+    new URL('../../.github/workflows/telegram-preview.yml', import.meta.url),
+    'utf8'
+  )
+
+  const packageJson = readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+  const legacy = readFileSync(new URL('../../scripts/preview-telegram.ps1', import.meta.url), 'utf8')
+
+  assert.match(workflow, /workflow_dispatch:/)
+  assert.match(workflow, /pr_number:/)
+  assert.match(workflow, /preview_title:/)
+  assert.match(workflow, /commit_sha:/)
+  assert.match(workflow, /ui_lab_route:/)
+  assert.match(workflow, /experiment_label:/)
+  assert.match(workflow, /if: github\.event_name == 'workflow_dispatch'/)
+  assert.match(workflow, /Mentalix main Preview\\nCommit: %s/)
+  assert.match(workflow, /Mentalix Preview PR #%s%s\\nBranch: %s\\nCommit: %s/)
+  assert.match(workflow, /Mentalix Preview\\nBranch: %s\\nCommit: %s/)
+  assert.match(workflow, /Открыть Preview/)
+  assert.match(workflow, /Открыть \$EXPERIMENT_LABEL/)
+  assert.match(workflow, /Route: \$EXPERIMENT_LABEL/)
+  assert.match(workflow, /ui_lab=\$\{UI_LAB_ROUTE\}/)
+  assert.match(workflow, /inline_keyboard: \[\[\{text: \$button_label/)
+  assert.doesNotMatch(workflow, /PR #n\/a/)
+  assert.doesNotMatch(workflow, /vercel(@latest)? deploy/)
+  assert.match(packageJson, /"preview": "npm run preview:web"/)
+  assert.match(legacy, /Legacy Telegram Preview requires -PullRequest/)
+  assert.doesNotMatch(legacy, /\$prLabel.*PR #n\/a/)
+  assert.doesNotMatch(workflow, /text: "Открыть Preview · UI Lab"/)
 })
 
 test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {

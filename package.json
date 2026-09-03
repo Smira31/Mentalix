@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "npm run preview:telegram",
+    "preview": "npm run preview:web",
     "preview:web": "vite preview --host 127.0.0.1 --port 4174",
     "preview:telegram": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-telegram.ps1",
     "preview:stop": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preview-stop.ps1",
@@ -21,6 +21,7 @@
     "ux:mazelogo": "playwright test --config=playwright.mazelogo.config.mjs",
     "ux:mxl010": "playwright test --config=playwright.mxl010.config.mjs",
     "ux:mxl246": "playwright test --config=playwright.mxl246.config.mjs",
+    "ux:daily-canonical": "playwright test --config=playwright.mxl-daily-canonical-ui-lab-001.config.mjs",
     "test:gate": "npm run lint && npm run test:unit && npm run build && npm run ux:check",
     "test:visual:update": "playwright test --config=playwright.ux.config.mjs --update-snapshots",
     "check:core": "npm run test:unit && npm run lint && npm run build && npm run docs:check",
