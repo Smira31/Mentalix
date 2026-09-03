@@ -11,8 +11,10 @@ import './LayeredPracticeCatalogExperiment.css'
 const TEMPORARY_CATALOG_DATA = {
   hero: {
     date: '02–08 сентября',
-    title: 'Неделя мягкого фокуса',
-    description: 'Небольшая практика, чтобы заметить главное и сделать один спокойный шаг.',
+    title: 'Сезон медленных вечеров',
+    description:
+      'Замедлиться после длинного дня и вернуть внимание к тому, что действительно важно. Выбери одну тихую практику для себя.',
+    meta: '5 практик · 3–7 мин',
   },
   themes: [
     { number: '01', title: 'Замечать', question: 'Что уже происходит внутри?', kind: 'meditation' },
@@ -66,8 +68,13 @@ function HeroBanner({ accent, onOpenCheckin }) {
         <span>{TEMPORARY_CATALOG_DATA.hero.date}</span>
         <h3>{TEMPORARY_CATALOG_DATA.hero.title}</h3>
         <p>{TEMPORARY_CATALOG_DATA.hero.description}</p>
-        <button type="button" className="mx-layered-catalog__pill" onClick={onOpenCheckin}>
-          Попробовать <ArrowRight size={15} />
+        <small className="mx-layered-catalog__hero-meta">{TEMPORARY_CATALOG_DATA.hero.meta}</small>
+        <button
+          type="button"
+          className="mx-layered-catalog__pill mx-layered-catalog__hero-cta"
+          onClick={onOpenCheckin}
+        >
+          Попробовать <span aria-hidden="true">→</span>
         </button>
       </div>
     </article>
