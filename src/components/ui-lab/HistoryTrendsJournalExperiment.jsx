@@ -62,22 +62,24 @@ function Chart({ kind }) {
         aria-label="Календарь состояния"
       >
         {Array.from({ length: 35 }, (_, index) => (
-          <i key={index} data-level={(index * 3) % 5} />
+          <i key={index} data-filled={index === 17} data-tone={index % 2} />
         ))}
       </div>
     )
   if (kind === 'ring')
     return (
       <div className="mx-history-trends__chart mx-history-trends__chart--ring">
-        <span>
-          12<small>сессий</small>
-        </span>
+        <div className="mx-history-trends__ring" aria-hidden="true" />
+        <div className="mx-history-trends__ring-copy">
+          <strong>12</strong>
+          <span>сессий</span>
+        </div>
       </div>
     )
   return (
     <div className="mx-history-trends__chart mx-history-trends__chart--bars">
-      {[32, 58, 44, 74, 52].map(height => (
-        <i key={height} style={{ height: `${height}%` }} />
+      {[32, 58, 44, 74, 52].map((height, index) => (
+        <i key={height} data-active={index === 3} style={{ height: `${height}%` }} />
       ))}
     </div>
   )
