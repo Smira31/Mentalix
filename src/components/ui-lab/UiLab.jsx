@@ -14,7 +14,9 @@ const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
 export function resolveUiLabSection(value) {
   return (
     LEGACY_PARAM_MAP[value] ||
-    (['baseline', 'experiments', 'compare', 'daily-canonical'].includes(value) ? value : 'baseline')
+    (['baseline', 'experiments', 'compare', 'daily-canonical', 'practice-catalog'].includes(value)
+      ? value
+      : 'baseline')
   )
 }
 
@@ -119,6 +121,27 @@ export default function UiLab({ initialSection = 'baseline' }) {
             />
           )}
           {section === 'daily-canonical' && <DailyCanonicalExperiment />}
+          {section === 'practice-catalog' && (
+            <section
+              className="mx-practice-comparison"
+              aria-labelledby="practice-comparison-route-title"
+            >
+              <div className="mx-practice-comparison__intro">
+                <span>UI-EXP-003 · отдельный маршрут manual-gate</span>
+                <h2 id="practice-comparison-route-title">
+                  Практики: production и «Ярусный каталог»
+                </h2>
+                <p>
+                  Слева — текущий production baseline, справа — Preview-only эксперимент для ручной
+                  проверки на реальном Telegram/iPhone.
+                </p>
+              </div>
+              <div className="mx-practice-comparison__grid">
+                <ProductionBaseline />
+                <LayeredPracticeCatalogExperiment mode="after" />
+              </div>
+            </section>
+          )}
         </div>
         <footer className="mx-ui-lab__footer">
           Preview-only · реальные пользовательские данные и product logic не подключены
