@@ -135,7 +135,7 @@ function TodayScreenPreview({ mode }) {
   )
 }
 
-function ExperimentShell({ number, eyebrow, title, purpose, mode, children }) {
+export function ExperimentShell({ number, eyebrow, title, purpose, mode, children }) {
   return (
     <section className="mx-lab-experiment" data-mode={mode}>
       <div className="mx-lab-experiment__head">

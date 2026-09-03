@@ -3,6 +3,8 @@ import UiLabSwitch from './UiLabSwitch'
 import UiExperiments from './UiExperiments'
 import TodayStatePreview from './TodayStatePreview'
 import PracticeCatalogExperiment from './PracticeCatalogExperiment'
+import ProductionBaseline from './ProductionBaseline'
+import LayeredPracticeCatalogExperiment from './LayeredPracticeCatalogExperiment'
 import EveningReviewExperiment from './EveningReviewExperiment'
 import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import './UiLab.css'
@@ -41,11 +43,30 @@ export default function UiLab({ initialSection = 'baseline' }) {
         </header>
         <div className="mx-ui-lab__content">
           {section === 'baseline' && (
-            <TodayStatePreview
-              mode="baseline"
-              selectedState={todayState}
-              onStateChange={setTodayState}
-            />
+            <>
+              <TodayStatePreview
+                mode="baseline"
+                selectedState={todayState}
+                onStateChange={setTodayState}
+              />
+              <section
+                className="mx-practice-comparison"
+                aria-labelledby="practice-comparison-title"
+              >
+                <div className="mx-practice-comparison__intro">
+                  <span>UI-EXP-003 · сравнение каталога</span>
+                  <h2 id="practice-comparison-title">Практики: сейчас и «Ярусный каталог»</h2>
+                  <p>
+                    Слева — текущий production baseline, справа — Preview-only эксперимент. Данные
+                    практик используют тот же набор и формат, а новые ярусы помечены как временные.
+                  </p>
+                </div>
+                <div className="mx-practice-comparison__grid">
+                  <ProductionBaseline />
+                  <LayeredPracticeCatalogExperiment mode="after" />
+                </div>
+              </section>
+            </>
           )}
           {section === 'experiments' && (
             <>
