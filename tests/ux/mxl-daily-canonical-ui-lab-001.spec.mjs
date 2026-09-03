@@ -66,8 +66,19 @@ for (const viewport of VIEWPORTS) {
     await expect(experiment).toHaveAttribute('data-phase', 'reviewPending')
     await expect(experiment.locator('[data-state="reviewPending"]')).toContainText(FIRST_STEP)
 
+    // Today.jsx рисует свою собственную кнопку «Разобрать день» на reviewPending
+    // (ведёт в реальный CheckIn.jsx) рядом с нашей bridge-кнопкой (ведёт в
+    // EveningReviewExperiment) — она спрятана CSS-таргетингом
+    // (DailyCanonicalExperiment.css, [data-state='reviewPending'] .mx-today-primary-card
+    // .cta-pill). Проверяем не по тексту одной кнопки, а что видимая/кликабельная
+    // «Разобрать день» на экране ровно одна — иначе вернулся риск попасть в CheckIn.jsx.
+    const reviewButtons = experiment.getByRole('button', { name: 'Разобрать день' })
+    await expect(reviewButtons).toHaveCount(1)
+    await expect(reviewButtons).toBeVisible()
+    await expect(reviewButtons).toBeEnabled()
+
     // reviewPending -> Evening Review
-    await experiment.locator('.mx-daily__bridge').getByText('Разобрать день').click()
+    await reviewButtons.click()
     await expect(experiment).toHaveAttribute('data-phase', 'eveningReview')
 
     await page.getByRole('button', { name: 'Разобрать день', exact: true }).click()

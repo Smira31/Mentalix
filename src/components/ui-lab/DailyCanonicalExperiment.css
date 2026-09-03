@@ -73,6 +73,21 @@
   gap: 12px;
 }
 
+/*
+ * Today.jsx (реальный prod-компонент, отрисован через TodayBaseline) сам
+ * рисует кнопку «Разобрать день» на reviewPending, которая ведёт в реальный
+ * CheckIn.jsx — не в наш EveningReviewExperiment. У Today.jsx нет пропа для
+ * переопределения этого действия, а трогать production Today.jsx вне scope
+ * этой ветки — см. комментарий у ReviewPendingScreen в
+ * DailyCanonicalExperiment.jsx и UI-DEC-003 в DECISION_LOG.md. Прячем именно
+ * эту кнопку через уже существующий data-state на .mx-daily__surface — на
+ * reviewPending остаётся ровно один явный путь в разбор дня: bridge-кнопка
+ * .mx-daily__bridge ниже.
+ */
+.mx-daily__surface[data-state='reviewPending'] .mx-today-primary-card .cta-pill {
+  display: none;
+}
+
 .mx-daily__surface {
   min-width: 0;
   overflow: hidden;

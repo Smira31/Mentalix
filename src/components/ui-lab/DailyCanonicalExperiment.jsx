@@ -92,6 +92,20 @@ function CompletionScreen({ onReview }) {
 function ReviewPendingScreen({ mainRitualName, onStartReview }) {
   return (
     <div className="mx-daily__phase">
+      {/*
+       * TodayBaseline рендерит настоящий prod Today.jsx, у которого на
+       * reviewPending есть собственная кнопка «Разобрать день»
+       * (Today.jsx:547-556, `changeSub('checkin')` — открывает реальный
+       * CheckIn.jsx). Today.jsx не принимает пропа для переопределения этого
+       * действия (только onOpenPractice/onGoMentor/onFlowChange/onCloseSeries,
+       * ни один их них не покрывает internal changeSub) — трогать production
+       * Today.jsx вне scope этой ветки. Прячем именно эту кнопку CSS-таргетингом
+       * через уже существующий data-state на .mx-daily__surface
+       * (DailyCanonicalExperiment.css, `[data-state='reviewPending'] .mx-today-
+       * primary-card .cta-pill`), чтобы остался ровно один явный путь
+       * reviewPending → разбор дня — bridge-кнопка ниже, в EveningReviewExperiment,
+       * а не в реальный CheckIn.jsx (см. UI-DEC-003).
+       */}
       <TodayBaseline state="reviewPending" mainRitualName={mainRitualName} />
       <button type="button" className="mx-daily__primary mx-daily__bridge" onClick={onStartReview}>
         Разобрать день
