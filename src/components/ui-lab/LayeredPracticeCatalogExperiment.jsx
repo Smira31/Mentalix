@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, ChevronRight, Lock, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ChevronRight, Lock, X } from 'lucide-react'
 
 import SemanticGlyph from '../SemanticGlyph'
 import { ExperimentShell } from './UiExperiments'
@@ -49,6 +49,94 @@ const UI_EXP_003_RAIL_GLYPHS = {
   asceza: 'ui-exp-003-asceza',
   'next-step': 'ui-exp-003-next-step',
   release: 'ui-exp-003-release',
+}
+
+// TODO: временные данные для UI Lab; реальный список практик владелец продукта добавит сам.
+const TEMPORARY_CATEGORY_ITEMS = {
+  'На одну минуту': [
+    {
+      section: 'Основные практики',
+      title: 'Дыхание',
+      description: 'Короткая пауза, чтобы вернуться в момент',
+      kind: 'breath',
+    },
+    {
+      section: 'Основные практики',
+      title: 'Точка опоры',
+      description: 'Заметь, что уже поддерживает тебя',
+      kind: 'focus',
+    },
+    {
+      section: 'Дополнительно',
+      title: 'Мягкий старт',
+      description: 'Один спокойный шаг без спешки',
+      kind: 'next-step',
+      premium: true,
+    },
+  ],
+  'Когда трудно начать': [
+    {
+      section: 'Основные практики',
+      title: 'Первый шаг',
+      description: 'Уменьшить задачу до действия на минуту',
+      kind: 'next-step',
+    },
+    {
+      section: 'Основные практики',
+      title: 'Одно из всех',
+      description: 'Выбрать ровно одно направление внимания',
+      kind: 'focus',
+    },
+    {
+      section: 'Дополнительно',
+      title: 'Без вины',
+      description: 'Вернуться к делу без самокритики',
+      kind: 'release',
+      premium: true,
+    },
+  ],
+  'Вечерняя тишина': [
+    {
+      section: 'Основные практики',
+      title: 'Замечать',
+      description: 'Увидеть, как прошёл день',
+      kind: 'meditation',
+    },
+    {
+      section: 'Основные практики',
+      title: 'Отпустить',
+      description: 'Оставить незавершённое до завтра',
+      kind: 'release',
+    },
+    {
+      section: 'Дополнительно',
+      title: 'Тихий вопрос',
+      description: 'Небольшая рефлексия перед сном',
+      kind: 'journal',
+      premium: true,
+    },
+  ],
+  'Собрать день': [
+    {
+      section: 'Основные практики',
+      title: 'Запись дня',
+      description: 'Собрать мысли в несколько строк',
+      kind: 'journal',
+    },
+    {
+      section: 'Основные практики',
+      title: 'Следующий шаг',
+      description: 'Сформулировать действие на завтра',
+      kind: 'next-step',
+    },
+    {
+      section: 'Дополнительно',
+      title: 'Личная карта',
+      description: 'Увидеть повторяющийся паттерн',
+      kind: 'focus',
+      premium: true,
+    },
+  ],
 }
 
 function AccentToggle({ accent, onChange }) {
@@ -135,6 +223,12 @@ function RecommendedRail({ accent }) {
 function WeeklyTheme({ themeIndex, setThemeIndex, accent }) {
   const theme = TEMPORARY_CATALOG_DATA.themes[themeIndex]
   const nextTheme = () => setThemeIndex((themeIndex + 1) % TEMPORARY_CATALOG_DATA.themes.length)
+  const previousTheme =
+    TEMPORARY_CATALOG_DATA.themes[
+      (themeIndex - 1 + TEMPORARY_CATALOG_DATA.themes.length) % TEMPORARY_CATALOG_DATA.themes.length
+    ]
+  const followingTheme =
+    TEMPORARY_CATALOG_DATA.themes[(themeIndex + 1) % TEMPORARY_CATALOG_DATA.themes.length]
 
   return (
     <section className="mx-layered-catalog__section" aria-labelledby="theme-title">
@@ -147,31 +241,43 @@ function WeeklyTheme({ themeIndex, setThemeIndex, accent }) {
           {themeIndex + 1} / {TEMPORARY_CATALOG_DATA.themes.length}
         </small>
       </div>
-      <button
-        className="mx-layered-catalog__theme"
-        type="button"
-        data-accent={accent}
-        onClick={nextTheme}
-      >
-        <span className="mx-layered-catalog__theme-art" aria-hidden="true">
-          <SemanticGlyph kind={theme.kind} animated={false} highlighted={false} />
-        </span>
-        <span className="mx-layered-catalog__theme-copy">
-          <small>{theme.number}</small>
-          <strong>{theme.title}</strong>
-          <span>{theme.question}</span>
-        </span>
-        <span className="mx-layered-catalog__dots">
-          <i data-active="true" />
-          <i />
-          <i />
-        </span>
-      </button>
+      <div className="mx-layered-catalog__theme-peek">
+        {[previousTheme, followingTheme].map((peekTheme, index) => (
+          <div
+            className={`mx-layered-catalog__theme-side mx-layered-catalog__theme-side--${index ? 'next' : 'previous'}`}
+            key={peekTheme.number}
+            aria-hidden="true"
+          >
+            <span>{peekTheme.number}</span>
+            <strong>{peekTheme.title}</strong>
+          </div>
+        ))}
+        <button
+          className="mx-layered-catalog__theme"
+          type="button"
+          data-accent={accent}
+          onClick={nextTheme}
+        >
+          <span className="mx-layered-catalog__theme-art" aria-hidden="true">
+            <SemanticGlyph kind={theme.kind} animated={false} highlighted={false} />
+          </span>
+          <span className="mx-layered-catalog__theme-copy">
+            <small>{theme.number}</small>
+            <strong>{theme.title}</strong>
+            <span>{theme.question}</span>
+          </span>
+          <span className="mx-layered-catalog__dots">
+            <i data-active="true" />
+            <i />
+            <i />
+          </span>
+        </button>
+      </div>
     </section>
   )
 }
 
-function Collections() {
+function Collections({ onOpen }) {
   return (
     <section className="mx-layered-catalog__section" aria-labelledby="collections-title">
       <div className="mx-layered-catalog__section-head">
@@ -182,7 +288,12 @@ function Collections() {
       </div>
       <div className="mx-layered-catalog__collections">
         {TEMPORARY_CATALOG_DATA.collections.map(collection => (
-          <button className="mx-layered-catalog__collection" type="button" key={collection.title}>
+          <button
+            className="mx-layered-catalog__collection"
+            type="button"
+            key={collection.title}
+            onClick={() => onOpen(collection)}
+          >
             {collection.description && (
               <span className="mx-layered-catalog__collection-art" aria-hidden="true">
                 <SemanticGlyph kind={collection.kind} animated={false} highlighted={false} />
@@ -196,6 +307,49 @@ function Collections() {
               aria-hidden="true"
             />
           </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function CategoryScreen({ category, onBack }) {
+  const grouped = TEMPORARY_CATEGORY_ITEMS[category.title].reduce((result, item) => {
+    result[item.section] ||= []
+    result[item.section].push(item)
+    return result
+  }, {})
+
+  return (
+    <section className="mx-layered-category" aria-labelledby="layered-category-title">
+      <header className="mx-layered-category__header">
+        <button type="button" aria-label="Назад к коллекциям" onClick={onBack}>
+          <ArrowLeft size={19} />
+        </button>
+        <h3 id="layered-category-title">{category.title}</h3>
+        <span aria-hidden="true" />
+      </header>
+      <div className="mx-layered-category__body">
+        {Object.entries(grouped).map(([section, items]) => (
+          <section key={section} className="mx-layered-category__section">
+            <span className="mx-layered-category__label">{section}</span>
+            <div className="mx-layered-category__grid">
+              {items.map(item => (
+                <button className="mx-layered-category__card" type="button" key={item.title}>
+                  {item.premium && <span className="mx-layered-category__premium">PREMIUM</span>}
+                  <span className="mx-layered-category__art" aria-hidden="true">
+                    {/* TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта. */}
+                    <SemanticGlyph kind={item.kind} animated={false} highlighted={false} />
+                  </span>
+                  <strong>{item.title}</strong>
+                  {item.description && <small>{item.description}</small>}
+                  {item.premium && (
+                    <Lock className="mx-layered-category__lock" size={15} aria-label="Premium" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </section>
         ))}
       </div>
     </section>
@@ -265,6 +419,7 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
   const [accent, setAccent] = useState('gold')
   const [themeIndex, setThemeIndex] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [selectedCollection, setSelectedCollection] = useState(null)
 
   return (
     <ExperimentShell
@@ -279,7 +434,14 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
         <HeroBanner accent={accent} onOpenCheckin={() => setSheetOpen(true)} />
         <RecommendedRail accent={accent} />
         <WeeklyTheme themeIndex={themeIndex} setThemeIndex={setThemeIndex} accent={accent} />
-        <Collections />
+        {selectedCollection ? (
+          <CategoryScreen
+            category={selectedCollection}
+            onBack={() => setSelectedCollection(null)}
+          />
+        ) : (
+          <Collections onOpen={setSelectedCollection} />
+        )}
         <button
           type="button"
           className="mx-layered-catalog__checkin-trigger"
