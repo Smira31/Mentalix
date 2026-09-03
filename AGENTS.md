@@ -166,3 +166,13 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   extend them expecting them to compile/ship.
 - `vercel.json` rewrites `/api/*` to the Render backend; `src/lib/api.js` always calls the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
   beyond running against that same rewrite (or a local backend serving the same paths).
+
+## Context economy
+
+- Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
+  DESIGN_SYSTEM.md → ARCHITECTURE.md → TASK_INDEX.md → AI_RULES.md), не сканируй
+  весь репозиторий заново без причины.
+- Держи PROJECT_STATE.md и docs/working/ui-lab/* актуальными в конце каждой значимой
+  сессии — это экономит перечитывание/передоказательство контекста в следующей сессии.
+- Sonnet — модель по умолчанию для этого репозитория; эскалация до Opus только
+  на явную архитектурную неоднозначность, отмечай это в коммите/PR-описании.
