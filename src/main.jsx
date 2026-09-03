@@ -24,6 +24,7 @@ const uiLabRequested =
     'compare',
     'daily-canonical',
     'practice-catalog',
+    'focus-check',
   ].includes(uiLabParam)
 
 const uiLabSection =

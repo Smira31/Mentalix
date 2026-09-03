@@ -7,6 +7,7 @@ import ProductionBaseline from './ProductionBaseline'
 import LayeredPracticeCatalogExperiment from './LayeredPracticeCatalogExperiment'
 import EveningReviewExperiment from './EveningReviewExperiment'
 import DailyCanonicalExperiment from './DailyCanonicalExperiment'
+import FocusCheck from './FocusCheck'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -14,7 +15,14 @@ const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
 export function resolveUiLabSection(value) {
   return (
     LEGACY_PARAM_MAP[value] ||
-    (['baseline', 'experiments', 'compare', 'daily-canonical', 'practice-catalog'].includes(value)
+    ([
+      'baseline',
+      'experiments',
+      'compare',
+      'daily-canonical',
+      'practice-catalog',
+      'focus-check',
+    ].includes(value)
       ? value
       : 'baseline')
   )
@@ -142,6 +150,7 @@ export default function UiLab({ initialSection = 'baseline' }) {
               </div>
             </section>
           )}
+          {section === 'focus-check' && <FocusCheck />}
         </div>
         <footer className="mx-ui-lab__footer">
           Preview-only · реальные пользовательские данные и product logic не подключены
