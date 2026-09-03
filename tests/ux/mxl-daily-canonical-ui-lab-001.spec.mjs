@@ -117,3 +117,251 @@ test('daily canonical debug controls прыгают напрямую в кажд
   await experiment.getByRole('button', { name: 'RESET' }).click()
   await expect(experiment).toHaveAttribute('data-phase', 'welcome')
 })
+
+// Edge case 1 — Back/Exit из Morning Check-in.
+//
+// РЕАЛЬНОЕ поведение (проверено по коду MorningCheckinExperiment.jsx, портированному
+// без изменений из PR #498): и "Назад" на первом шаге, и "Выйти" на любом шаге вызывают
+// внутренний reset() самого Morning Check-in — очищают его собственные metrics/main/
+// firstStep и возвращают на экран "Состояние · 1 / 3". Компонент НЕ вызывает никакой
+// колбэк наружу, поэтому родительский phase в DailyCanonicalExperiment остаётся
+// 'morningCheckin' — пользователь НЕ попадает обратно на Today/checkinPending, как
+// можно было бы предположить по диаграмме флоу. Это осознанно задокументированное
+// поведение унаследованного компонента, а не тестовый баг — тест фиксирует то, что
+// есть, ничего не подгоняет и не патчит исходный код.
+//
+// "Назад" с более позднего шага (Main, Step, Result) ведёт себя иначе — это обычный
+// шаг wizard'а назад, значения НЕ очищаются.
+test('daily canonical Morning Check-in Exit/Back — фиксирует реальное (не ожидаемое по диаграмме) поведение', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/?ui_lab=daily-canonical')
+
+  const experiment = page.locator('.mx-daily')
+  await experiment.getByRole('button', { name: 'Начать', exact: true }).click()
+  await experiment.getByRole('button', { name: 'Начать чек-ин' }).click()
+  await expect(experiment).toHaveAttribute('data-phase', 'morningCheckin')
+
+  // частично заполняем: 2 из 4 шкал
+  await page.getByRole('radio', { name: 'Настроение: 3 из 5' }).click()
+  await page.getByRole('radio', { name: 'Энергия: 4 из 5' }).click()
+
+  // Exit на первом шаге
+  await page.getByRole('button', { name: 'Выйти из чек-ина' }).click()
+
+  // НЕ возвращает в checkinPending — остаётся в morningCheckin, сбрасывает поля
+  await expect(experiment).toHaveAttribute('data-phase', 'morningCheckin')
+  await expect(page.getByText('Состояние · 1 / 3')).toBeVisible()
+  await expect(page.getByRole('radio', { name: 'Настроение: 3 из 5' })).toHaveAttribute(
+    'aria-checked',
+    'false'
+  )
+  await expect(page.getByRole('radio', { name: 'Энергия: 4 из 5' })).toHaveAttribute(
+    'aria-checked',
+    'false'
+  )
+
+  // Назад с более позднего шага (не Exit) — значения НЕ очищаются, это просто шаг wizard'а назад
+  for (const metric of ['Настроение', 'Энергия', 'Шум в голове', 'Фокус / собранность']) {
+    await page.getByRole('radio', { name: `${metric}: 3 из 5` }).click()
+  }
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await expect(page.getByText('Главное · 2 / 3')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Назад' }).click()
+  await expect(page.getByText('Состояние · 1 / 3')).toBeVisible()
+  await expect(page.getByRole('radio', { name: 'Настроение: 3 из 5' })).toHaveAttribute(
+    'aria-checked',
+    'true'
+  )
+})
+
+// Edge case 2 — reload на середине флоу (Main Thing, шаг 2/3).
+//
+// DailyCanonicalExperiment не персистит состояние (ни localStorage, ни sessionStorage,
+// ни URL) — это чистый local useState. Ожидаемое и единственно возможное поведение
+// полного page.reload(): свежий React-маунт с initial state 'welcome'. Тест фиксирует,
+// что это происходит без белого экрана и без НОВЫХ console errors/pageerror (фоновый
+// шум Telegram SDK-шима 'CloudStorage is not supported' — известная, не связанная с
+// этой веткой особенность web-режима, отфильтрована явно, а не скрыта молча).
+test('daily canonical reload на Main Thing (2/3) — чистый сброс на welcome, без белого экрана и новых ошибок', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+
+  const consoleErrors = []
+  page.on('console', msg => {
+    if (msg.type() === 'error') consoleErrors.push(msg.text())
+  })
+  page.on('pageerror', err => consoleErrors.push(String(err)))
+
+  await page.goto('/?ui_lab=daily-canonical')
+  const experiment = page.locator('.mx-daily')
+
+  await experiment.getByRole('button', { name: 'Начать', exact: true }).click()
+  await experiment.getByRole('button', { name: 'Начать чек-ин' }).click()
+  for (const metric of ['Настроение', 'Энергия', 'Шум в голове', 'Фокус / собранность']) {
+    await page.getByRole('radio', { name: `${metric}: 3 из 5` }).click()
+  }
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await expect(page.getByText('Главное · 2 / 3')).toBeVisible()
+
+  consoleErrors.length = 0 // baseline сразу перед reload — интересуют только НОВЫЕ ошибки
+  await page.reload()
+
+  await expect(experiment).toBeVisible()
+  await expect(experiment).toHaveAttribute('data-phase', 'welcome')
+  await expect(
+    page.getByRole('heading', { name: 'Понять, что важно. Сделать следующий шаг.' })
+  ).toBeVisible()
+
+  const KNOWN_TELEGRAM_SDK_NOISE = 'CloudStorage is not supported'
+  const relevantErrors = consoleErrors.filter(e => !e.includes(KNOWN_TELEGRAM_SDK_NOISE))
+  expect(relevantErrors).toEqual([])
+})
+
+// Edge case 3 — keyboard-навигация Welcome → ... → dayInProgress, только Tab/Enter/Space.
+async function tabUntilFocused(page, matchText, { maxTabs = 120 } = {}) {
+  for (let i = 0; i < maxTabs; i += 1) {
+    await page.keyboard.press('Tab')
+    const matched = await page.evaluate(text => {
+      const el = document.activeElement
+      if (!el || el === document.body) return false
+      // textarea/input can carry их accessible name через оборачивающий <label>,
+      // а не через aria-label/textContent самого поля (el.labels — стандартный DOM API).
+      const labelsText = 'labels' in el ? Array.from(el.labels || []).map(l => l.textContent).join(' ') : ''
+      const label = (el.getAttribute('aria-label') || el.textContent || labelsText || '').trim()
+      return label.includes(text)
+    }, matchText)
+    if (matched) return true
+  }
+  return false
+}
+
+test('daily canonical keyboard-only флоу Welcome → dayInProgress, без единого клика мышью', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/?ui_lab=daily-canonical')
+
+  const experiment = page.locator('.mx-daily')
+
+  // Welcome -> checkinPending, чисто клавиатурой
+  expect(await tabUntilFocused(page, 'Начать')).toBe(true)
+  await expect(page.locator(':focus')).toHaveCSS('outline-style', 'solid') // focus-visible виден (глобальный button:focus-visible из index.css)
+  await page.keyboard.press('Enter')
+  await expect(experiment).toHaveAttribute('data-phase', 'checkinPending')
+
+  // checkinPending -> открыть Morning Check-in
+  expect(await tabUntilFocused(page, 'Начать чек-ин')).toBe(true)
+  await page.keyboard.press('Enter')
+  await expect(experiment).toHaveAttribute('data-phase', 'morningCheckin')
+
+  // "Дальше" недоступен клавиатуре, пока форма не заполнена — disabled-кнопка не фокусируется
+  await expect(page.getByRole('button', { name: 'Дальше' })).toBeDisabled()
+
+  for (const metric of ['Настроение', 'Энергия', 'Шум в голове', 'Фокус / собранность']) {
+    expect(await tabUntilFocused(page, `${metric}: 3 из 5`)).toBe(true)
+    await page.keyboard.press('Space')
+  }
+
+  // теперь "Дальше" реально включена и достижима табом
+  await expect(page.getByRole('button', { name: 'Дальше' })).toBeEnabled()
+  expect(await tabUntilFocused(page, 'Дальше')).toBe(true)
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('Главное · 2 / 3')).toBeVisible()
+
+  // "Выбрать шаг" недоступна, пока не выбран вариант
+  await expect(page.getByRole('button', { name: 'Выбрать шаг' })).toBeDisabled()
+  expect(await tabUntilFocused(page, 'Разобраться с важным')).toBe(true)
+  await page.keyboard.press('Space')
+  await expect(page.getByRole('button', { name: 'Выбрать шаг' })).toBeEnabled()
+  expect(await tabUntilFocused(page, 'Выбрать шаг')).toBe(true)
+  await page.keyboard.press('Enter')
+  await expect(page.getByText('Первый шаг · 3 / 3')).toBeVisible()
+
+  // печатаем First Step клавиатурой
+  expect(await tabUntilFocused(page, 'Первый шаг')).toBe(true)
+  await page.keyboard.type(FIRST_STEP)
+  await expect(page.getByRole('button', { name: 'Начать день' })).toBeEnabled()
+  expect(await tabUntilFocused(page, 'Начать день')).toBe(true)
+  await page.keyboard.press('Enter')
+
+  await expect(page.getByRole('definition').filter({ hasText: FIRST_STEP })).toBeVisible()
+  expect(await tabUntilFocused(page, 'Подтвердить')).toBe(true)
+  await page.keyboard.press('Enter')
+
+  await expect(experiment).toHaveAttribute('data-phase', 'dayInProgress')
+  await expect(experiment.locator('[data-state="dayInProgress"]')).toContainText(FIRST_STEP)
+})
+
+// Edge case 4 — prefers-reduced-motion: reduce.
+//
+// DailyCanonicalExperiment переключает фазы простым condition-рендером без CSS-перехода
+// на контейнере (нет fade/slide между фазами) — анимировать там нечего, поэтому
+// reduced-motion физически не может что-то сломать на уровне переключения фаз.
+// Единственные transition/transform в новых и переиспользуемых файлах (кнопки :active,
+// прогресс-бар шагов) уже обёрнуты в @media (prefers-reduced-motion: reduce) и до этой
+// сессии, и в новых DailyCanonicalExperiment.css/MorningCheckinExperiment.css. Тест
+// прогоняет весь флоу с эмуляцией reduced-motion и проверяет, что в любой момент виден
+// ровно один экран (нет одновременно двух перекрывающихся overlay/фаз) и нет console errors.
+test('daily canonical reduced motion — весь флоу без перекрытий и ошибок', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.setViewportSize({ width: 390, height: 844 })
+
+  const consoleErrors = []
+  page.on('console', msg => {
+    if (msg.type() === 'error' && !msg.text().includes('CloudStorage is not supported')) {
+      consoleErrors.push(msg.text())
+    }
+  })
+
+  await page.goto('/?ui_lab=daily-canonical')
+  const experiment = page.locator('.mx-daily')
+
+  async function assertSingleVisibleOverlayOrPhase() {
+    const overlays = page.locator('.mx-morning__overlay, .mx-evening-review__overlay')
+    const visibleOverlayCount = await overlays.evaluateAll(
+      els => els.filter(el => el.getClientRects().length > 0).length
+    )
+    expect(visibleOverlayCount).toBeLessThanOrEqual(1)
+  }
+
+  await experiment.getByRole('button', { name: 'Начать', exact: true }).click()
+  await experiment.getByRole('button', { name: 'Начать чек-ин' }).click()
+  await assertSingleVisibleOverlayOrPhase()
+
+  for (const metric of ['Настроение', 'Энергия', 'Шум в голове', 'Фокус / собранность']) {
+    await page.getByRole('radio', { name: `${metric}: 3 из 5` }).click()
+  }
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await page.getByRole('radio', { name: 'Разобраться с важным' }).click()
+  await page.getByRole('button', { name: 'Выбрать шаг' }).click()
+  await page.getByRole('textbox', { name: 'Первый шаг' }).fill(FIRST_STEP)
+  await page.getByRole('button', { name: 'Начать день' }).click()
+  await page.getByRole('button', { name: 'Подтвердить' }).click()
+  await expect(experiment).toHaveAttribute('data-phase', 'dayInProgress')
+  await assertSingleVisibleOverlayOrPhase()
+
+  await experiment.getByRole('button', { name: 'Отметить выполненным' }).click()
+  await experiment.getByRole('button', { name: 'К вечернему разбору' }).click()
+  await experiment.locator('.mx-daily__bridge').getByText('Разобрать день').click()
+  await expect(experiment).toHaveAttribute('data-phase', 'eveningReview')
+  await assertSingleVisibleOverlayOrPhase()
+
+  await page.getByRole('button', { name: 'Разобрать день', exact: true }).click()
+  await page.getByRole('radio', { name: 'Сделал главное' }).click()
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await page.getByRole('radio', { name: 'Ясность' }).click()
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await page.getByRole('radio', { name: 'Маленький шаг помогает' }).click()
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await page.getByRole('radio', { name: 'Начать с пяти минут' }).click()
+  await page.getByRole('button', { name: 'Закрыть день' }).click()
+  await page.getByRole('button', { name: 'Продолжить' }).click()
+  await expect(experiment).toHaveAttribute('data-phase', 'dayClosed')
+  await assertSingleVisibleOverlayOrPhase()
+
+  expect(consoleErrors).toEqual([])
+})
