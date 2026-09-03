@@ -221,7 +221,7 @@ function TodayScreen({ main, firstStep, onReset }) {
   )
 }
 
-export default function MorningCheckinExperiment({ onComplete } = {}) {
+export default function MorningCheckinExperiment({ onComplete, onExit } = {}) {
   const [screen, setScreen] = useState('state')
   const [metrics, setMetrics] = useState({})
   const [main, setMain] = useState('')
@@ -235,6 +235,11 @@ export default function MorningCheckinExperiment({ onComplete } = {}) {
     setCustomMain('')
     setFirstStep('')
   }
+
+  // "Выйти" (и "Назад" с первого шага, где отступать больше некуда) — это выход из
+  // чек-ина целиком, а не шаг подмастера назад. Без onExit ведёт себя как раньше
+  // (internal reset, остаёмся в этом же компоненте); с onExit отдаёт выход наружу.
+  const exitOrReset = onExit || reset
 
   const selectedMain = customMain.trim() || main
 
@@ -252,8 +257,8 @@ export default function MorningCheckinExperiment({ onComplete } = {}) {
           values={metrics}
           onChange={(key, value) => setMetrics(current => ({ ...current, [key]: value }))}
           onNext={() => setScreen('main')}
-          onBack={reset}
-          onExit={reset}
+          onBack={exitOrReset}
+          onExit={exitOrReset}
         />
       </section>
     )
@@ -267,7 +272,7 @@ export default function MorningCheckinExperiment({ onComplete } = {}) {
         onCustom={setCustomMain}
         onNext={() => setScreen('step')}
         onBack={() => setScreen('state')}
-        onExit={reset}
+        onExit={exitOrReset}
       />
     )
   }
@@ -278,7 +283,7 @@ export default function MorningCheckinExperiment({ onComplete } = {}) {
         onChange={setFirstStep}
         onNext={() => setScreen('result')}
         onBack={() => setScreen('main')}
-        onExit={reset}
+        onExit={exitOrReset}
       />
     )
   }
@@ -294,7 +299,7 @@ export default function MorningCheckinExperiment({ onComplete } = {}) {
         }
       }}
       onBack={() => setScreen('step')}
-      onExit={reset}
+      onExit={exitOrReset}
     />
   )
 }

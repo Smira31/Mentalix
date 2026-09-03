@@ -159,6 +159,7 @@ export default function DailyCanonicalExperiment() {
               setFirstStep(step)
               setPhase('dayInProgress')
             }}
+            onExit={() => setPhase('checkinPending')}
           />
         )}
         {phase === 'dayInProgress' && (

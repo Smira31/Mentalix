@@ -120,19 +120,19 @@ test('daily canonical debug controls прыгают напрямую в кажд
 
 // Edge case 1 — Back/Exit из Morning Check-in.
 //
-// РЕАЛЬНОЕ поведение (проверено по коду MorningCheckinExperiment.jsx, портированному
-// без изменений из PR #498): и "Назад" на первом шаге, и "Выйти" на любом шаге вызывают
-// внутренний reset() самого Morning Check-in — очищают его собственные metrics/main/
-// firstStep и возвращают на экран "Состояние · 1 / 3". Компонент НЕ вызывает никакой
-// колбэк наружу, поэтому родительский phase в DailyCanonicalExperiment остаётся
-// 'morningCheckin' — пользователь НЕ попадает обратно на Today/checkinPending, как
-// можно было бы предположить по диаграмме флоу. Это осознанно задокументированное
-// поведение унаследованного компонента, а не тестовый баг — тест фиксирует то, что
-// есть, ничего не подгоняет и не патчит исходный код.
+// MorningCheckinExperiment.jsx получил опциональный проп onExit (по тому же паттерну,
+// что onComplete/onDayClosed): "Выйти" и "Назад" с первого шага (где отступать
+// внутри компонента больше некуда) теперь зовут onExit, если он передан, вместо
+// внутреннего reset(). DailyCanonicalExperiment прокидывает
+// onExit={() => setPhase('checkinPending')} — Exit реально возвращает пользователя на
+// Today/checkinPending, оверлей Morning Check-in закрывается (компонент размонтируется,
+// т.к. рендерится только при phase === 'morningCheckin'). Без onExit (гипотетическое
+// будущее использование компонента отдельно, вне этого флоу) старое поведение —
+// internal reset — сохраняется, ничего не сломано для других потребителей.
 //
-// "Назад" с более позднего шага (Main, Step, Result) ведёт себя иначе — это обычный
-// шаг wizard'а назад, значения НЕ очищаются.
-test('daily canonical Morning Check-in Exit/Back — фиксирует реальное (не ожидаемое по диаграмме) поведение', async ({
+// "Назад" с более позднего шага (Main, Step, Result) по-прежнему обычный шаг
+// wizard'а назад — не Exit, значения не очищаются, phase не меняется.
+test('daily canonical Morning Check-in Exit — реально возвращает на Today/checkinPending', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
@@ -147,22 +147,43 @@ test('daily canonical Morning Check-in Exit/Back — фиксирует реал
   await page.getByRole('radio', { name: 'Настроение: 3 из 5' }).click()
   await page.getByRole('radio', { name: 'Энергия: 4 из 5' }).click()
 
-  // Exit на первом шаге
+  // Exit с первого шага
   await page.getByRole('button', { name: 'Выйти из чек-ина' }).click()
 
-  // НЕ возвращает в checkinPending — остаётся в morningCheckin, сбрасывает поля
-  await expect(experiment).toHaveAttribute('data-phase', 'morningCheckin')
-  await expect(page.getByText('Состояние · 1 / 3')).toBeVisible()
+  await expect(experiment).toHaveAttribute('data-phase', 'checkinPending')
+  await expect(page.locator('.mx-morning__overlay')).toHaveCount(0)
+  await expect(experiment.getByRole('button', { name: 'Начать чек-ин' })).toBeVisible()
+
+  // Повторный вход начинается с чистого листа (компонент размонтировался — не
+  // потому что где-то остался internal reset, а потому что React убрал его из дерева)
+  await experiment.getByRole('button', { name: 'Начать чек-ин' }).click()
   await expect(page.getByRole('radio', { name: 'Настроение: 3 из 5' })).toHaveAttribute(
     'aria-checked',
     'false'
   )
-  await expect(page.getByRole('radio', { name: 'Энергия: 4 из 5' })).toHaveAttribute(
-    'aria-checked',
-    'false'
-  )
 
-  // Назад с более позднего шага (не Exit) — значения НЕ очищаются, это просто шаг wizard'а назад
+  // Exit с более позднего шага (Main, 2/3) — тоже возвращает на checkinPending
+  for (const metric of ['Настроение', 'Энергия', 'Шум в голове', 'Фокус / собранность']) {
+    await page.getByRole('radio', { name: `${metric}: 3 из 5` }).click()
+  }
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await expect(page.getByText('Главное · 2 / 3')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Выйти из чек-ина' }).click()
+  await expect(experiment).toHaveAttribute('data-phase', 'checkinPending')
+  await expect(page.locator('.mx-morning__overlay')).toHaveCount(0)
+})
+
+test('daily canonical Morning Check-in Back с более позднего шага остаётся wizard-шагом назад, не Exit', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/?ui_lab=daily-canonical')
+
+  const experiment = page.locator('.mx-daily')
+  await experiment.getByRole('button', { name: 'Начать', exact: true }).click()
+  await experiment.getByRole('button', { name: 'Начать чек-ин' }).click()
+
   for (const metric of ['Настроение', 'Энергия', 'Шум в голове', 'Фокус / собранность']) {
     await page.getByRole('radio', { name: `${metric}: 3 из 5` }).click()
   }
@@ -170,6 +191,10 @@ test('daily canonical Morning Check-in Exit/Back — фиксирует реал
   await expect(page.getByText('Главное · 2 / 3')).toBeVisible()
 
   await page.getByRole('button', { name: 'Назад' }).click()
+
+  // Back с шага 2 — обычный шаг wizard'а назад: остаёмся внутри Morning Check-in,
+  // значения сохранены, это не Exit
+  await expect(experiment).toHaveAttribute('data-phase', 'morningCheckin')
   await expect(page.getByText('Состояние · 1 / 3')).toBeVisible()
   await expect(page.getByRole('radio', { name: 'Настроение: 3 из 5' })).toHaveAttribute(
     'aria-checked',
