@@ -15,7 +15,8 @@ const uiLabParam = new URLSearchParams(window.location.search).get('ui_lab')
 // UI Lab доступен только в dev/Vercel Preview. Старые значения query
 // сохраняются как совместимые алиасы в новом маршруте UiLab.
 const uiLabRequested =
-  uiLabEnabled && ['1', 'showcase', 'baseline', 'experiments', 'compare'].includes(uiLabParam)
+  uiLabEnabled &&
+  ['1', 'showcase', 'baseline', 'experiments', 'compare', 'daily-canonical'].includes(uiLabParam)
 
 const uiLabSection =
   uiLabParam === '1' ? 'experiments' : uiLabParam === 'showcase' ? 'baseline' : uiLabParam
