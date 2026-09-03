@@ -83,9 +83,15 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByText('День закрыт')).toBeVisible()
     await page.getByRole('button', { name: 'Продолжить' }).click()
 
-    // Evening Review -> Today/dayClosed, First Step всё ещё дословно
+    // Evening Review -> Today/dayClosed. Continuity уже доказана на dayInProgress и
+    // reviewPending выше через hero ("Следующее действие: ...") — это time-independent
+    // путь. На dayClosed сам hero ("День закрыт") текст ритуала не повторяет; единственное
+    // место, где он мог бы всё ещё быть виден, — MorningPilotCard ("До других дел"), а тот
+    // показывается только в реальном окне 5:00–11:59 (src/lib/morningPilot.js,
+    // isMorningPilotTime) — это настоящее prod-поведение, не то, что мы построили, и
+    // тест не должен зависеть от времени суток запуска.
     await expect(experiment).toHaveAttribute('data-phase', 'dayClosed')
-    await expect(experiment.locator('[data-state="dayClosed"]')).toContainText(FIRST_STEP)
+    await expect(experiment.locator('[data-state="dayClosed"]')).toContainText('День закрыт')
 
     // Day Closed -> Next Day -> назад к Welcome
     await experiment.getByRole('button', { name: 'Следующий день' }).click()

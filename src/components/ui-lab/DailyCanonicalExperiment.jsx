@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 
 import Today from '../../screens/Today'
 import SemanticGlyph from '../SemanticGlyph'
 import MorningCheckinExperiment from './MorningCheckinExperiment'
 import EveningReviewExperiment from './EveningReviewExperiment'
 import { getTodayLabFixture, UI_LAB_USER } from './todayLabFixture'
+import { getFullscreenSnapshot, subscribeFullscreen } from '../../lib/tgFullscreen'
+import { TG_CONTROLS_HEIGHT } from '../../lib/fullscreenSurface'
 
 import './DailyCanonicalExperiment.css'
 
@@ -115,6 +117,20 @@ export default function DailyCanonicalExperiment() {
   const [phase, setPhase] = useState('welcome')
   const [firstStep, setFirstStep] = useState('')
 
+  // ?ui_lab=* никогда не монтирует App.jsx (main.jsx рендерит <UiLab> вместо него), а
+  // Telegram fullscreen/safe-area negotiation (src/lib/tgFullscreen.js) сама по себе
+  // стартует только из App.jsx или из первого вызова useFullscreenSurface() — то есть
+  // только когда пользователь открывает Morning Check-in. До этого --app-safe-top не
+  // учитывает высоту нативной Telegram-шапки, и этот заголовок, стоящий в обычном
+  // потоке страницы (не портал), успевает отрисоваться под ней. Подписка здесь и
+  // запускает тот же общий store заранее — без дублирования его логики.
+  const tgFullscreen = useSyncExternalStore(subscribeFullscreen, getFullscreenSnapshot)
+  const headStyle = {
+    paddingTop: tgFullscreen
+      ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
+      : 'var(--app-safe-top)',
+  }
+
   function resetAll() {
     setPhase('welcome')
     setFirstStep('')
@@ -122,7 +138,7 @@ export default function DailyCanonicalExperiment() {
 
   return (
     <section className="mx-daily" data-phase={phase} aria-labelledby="daily-canonical-title">
-      <div className="mx-daily__head">
+      <div className="mx-daily__head" style={headStyle}>
         <span>MXL-DAILY-CANONICAL-UI-LAB-001 · Preview-only</span>
         <h2 id="daily-canonical-title">Дневной цикл целиком</h2>
         <p>
