@@ -4,6 +4,7 @@ import { ArrowRight, ChevronRight, Lock, X } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
 import { ExperimentShell } from './UiExperiments'
 import { CURRENT_PRACTICES } from './ProductionBaseline'
+import { CollectionIllustration, RailIllustration } from './CatalogIllustrations'
 
 import './LayeredPracticeCatalogExperiment.css'
 
@@ -95,7 +96,11 @@ function RecommendedRail({ accent }) {
         {CURRENT_PRACTICES.slice(0, 5).map((practice, index) => (
           <button className="mx-layered-catalog__rail-card" type="button" key={practice.title}>
             <span className="mx-layered-catalog__avatar" aria-hidden="true">
-              <SemanticGlyph kind={practice.kind} animated={false} highlighted={false} />
+              {index < 2 ? (
+                <RailIllustration variant={index === 0 ? 'lilu' : 'smooth-day'} />
+              ) : (
+                <SemanticGlyph kind={practice.kind} animated={false} highlighted={false} />
+              )}
             </span>
             {index === 0 && (
               <span className="mx-layered-catalog__featured">
@@ -171,11 +176,19 @@ function Collections() {
               <strong>{collection.title}</strong>
               {collection.description && <small>{collection.description}</small>}
             </span>
-            {/* TODO: финальные иллюстрации коллекций будут нарисованы отдельно product/design. */}
+            {/* TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта — не менять сюжет при следующих правках без запроса. */}
             <span className="mx-layered-catalog__collection-art-slot" aria-hidden="true">
-              {collection.description && (
-                <SemanticGlyph kind={collection.kind} animated={false} highlighted={false} />
-              )}
+              <CollectionIllustration
+                variant={
+                  collection.kind === 'breath'
+                    ? 'boundaries'
+                    : collection.kind === 'next-step'
+                      ? 'first-step'
+                      : collection.kind === 'meditation'
+                        ? 'rituals'
+                        : 'finish'
+                }
+              />
             </span>
             <ChevronRight
               className="mx-layered-catalog__collection-chevron"

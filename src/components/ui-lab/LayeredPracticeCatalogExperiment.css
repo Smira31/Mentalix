@@ -405,7 +405,7 @@
 .mx-layered-catalog__collection {
   position: relative;
   display: grid;
-  grid-template-rows: auto 1fr 46px;
+  grid-template-rows: auto 1fr 80px;
   aspect-ratio: 169 / 236;
   min-height: 0;
   height: auto;
@@ -434,8 +434,8 @@
 }
 .mx-layered-catalog__collection-art-slot {
   display: grid;
-  width: 46px;
-  height: 46px;
+  width: 80px;
+  height: 80px;
   align-self: end;
   place-items: center;
   border-radius: 50%;
