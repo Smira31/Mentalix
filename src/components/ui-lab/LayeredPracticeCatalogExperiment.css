@@ -256,11 +256,15 @@
 }
 .mx-layered-catalog__rail {
   display: flex;
+  align-items: stretch;
   gap: 12px;
   overflow-x: auto;
   margin-inline: -20px;
   padding: 2px 20px 6px;
   scroll-snap-type: x mandatory;
+  scroll-padding-inline: 20px;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .mx-layered-catalog__rail::-webkit-scrollbar {
@@ -280,6 +284,7 @@
   padding: 12px;
   overflow: hidden;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   border: 1px solid rgb(var(--c-border));
   border-radius: 22px;
   background: rgb(var(--c-card));
