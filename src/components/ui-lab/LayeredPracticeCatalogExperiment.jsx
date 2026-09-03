@@ -167,13 +167,16 @@ function Collections() {
       <div className="mx-layered-catalog__collections">
         {TEMPORARY_CATALOG_DATA.collections.map(collection => (
           <button className="mx-layered-catalog__collection" type="button" key={collection.title}>
-            {collection.description && (
-              <span className="mx-layered-catalog__collection-art" aria-hidden="true">
+            <span className="mx-layered-catalog__collection-copy">
+              <strong>{collection.title}</strong>
+              {collection.description && <small>{collection.description}</small>}
+            </span>
+            {/* TODO: финальные иллюстрации коллекций будут нарисованы отдельно product/design. */}
+            <span className="mx-layered-catalog__collection-art-slot" aria-hidden="true">
+              {collection.description && (
                 <SemanticGlyph kind={collection.kind} animated={false} highlighted={false} />
-              </span>
-            )}
-            <strong>{collection.title}</strong>
-            {collection.description && <small>{collection.description}</small>}
+              )}
+            </span>
             <ChevronRight
               className="mx-layered-catalog__collection-chevron"
               size={17}
