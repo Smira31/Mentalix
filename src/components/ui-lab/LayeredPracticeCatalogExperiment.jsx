@@ -179,8 +179,23 @@ function Collections() {
   )
 }
 
-function EmotionSheet({ open, onClose, accent }) {
-  if (!open) return null
+function EmotionSheet({ open, onOpen, onClose, accent }) {
+  if (!open) {
+    return (
+      <button
+        className="mx-layered-catalog__sheet-peek"
+        type="button"
+        data-accent={accent}
+        onClick={onOpen}
+      >
+        <span>
+          <small>Чек-ин эмоций</small>
+          <strong>Как ты сейчас?</strong>
+        </span>
+        <ArrowRight size={17} aria-hidden="true" />
+      </button>
+    )
+  }
   return (
     <div className="mx-layered-catalog__sheet-layer">
       <button
@@ -249,7 +264,12 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
         >
           Открыть чек-ин эмоций <ArrowRight size={15} />
         </button>
-        <EmotionSheet open={sheetOpen} onClose={() => setSheetOpen(false)} accent={accent} />
+        <EmotionSheet
+          open={sheetOpen}
+          onOpen={() => setSheetOpen(true)}
+          onClose={() => setSheetOpen(false)}
+          accent={accent}
+        />
       </div>
     </ExperimentShell>
   )
