@@ -441,7 +441,7 @@
   aspect-ratio: 169 / 236;
   min-height: 0;
   height: auto;
-  align-content: end;
+  align-content: start;
   gap: 5px;
   padding: 20px;
   overflow: hidden;
@@ -462,10 +462,12 @@
 }
 .mx-layered-catalog__collection-art {
   position: absolute;
-  right: 4px;
-  bottom: 22px;
-  width: 70px;
-  height: 70px;
+  right: auto;
+  bottom: 150px;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  transform: translateX(-50%);
   opacity: 0.72;
 }
 .mx-layered-catalog__collection-chevron {
