@@ -22,16 +22,26 @@ const CHECKIN = { mood: 3, emotion: 'ровно', review_completed_at: null }
 
 export const UI_LAB_USER = { id: 'ui-lab-fixture-user' }
 
-export function getTodayLabFixture(state) {
-  if (state === 'checkinPending') return { ...BASE_FIXTURE, checkin: null }
+function withMainRitualName(fixture, mainRitualName) {
+  if (!mainRitualName || !mainRitualName.trim()) return fixture
+  const [firstRitual, ...restRituals] = fixture.rituals
+  return {
+    ...fixture,
+    rituals: [{ ...firstRitual, name: mainRitualName.trim() }, ...restRituals],
+  }
+}
+
+export function getTodayLabFixture(state, { mainRitualName } = {}) {
+  let fixture = { ...BASE_FIXTURE, checkin: CHECKIN }
+  if (state === 'checkinPending') fixture = { ...BASE_FIXTURE, checkin: null }
   if (state === 'reviewPending')
-    return { ...BASE_FIXTURE, checkin: CHECKIN, settings: { review_hour: 0 } }
+    fixture = { ...BASE_FIXTURE, checkin: CHECKIN, settings: { review_hour: 0 } }
   if (state === 'dayClosed') {
-    return {
+    fixture = {
       ...BASE_FIXTURE,
       checkin: { ...CHECKIN, review_completed_at: '2026-09-02T08:00:00.000Z' },
       settings: { review_hour: 0 },
     }
   }
-  return { ...BASE_FIXTURE, checkin: CHECKIN }
+  return withMainRitualName(fixture, mainRitualName)
 }

@@ -116,7 +116,7 @@ function ReviewClosed({ onContinue }) {
   )
 }
 
-export default function EveningReviewExperiment() {
+export default function EveningReviewExperiment({ onDayClosed } = {}) {
   const [screen, setScreen] = useState('entry')
   const [stepIndex, setStepIndex] = useState(0)
   const [answers, setAnswers] = useState({})
@@ -158,7 +158,7 @@ export default function EveningReviewExperiment() {
   if (screen === 'closed') {
     return (
       <div className="mx-evening-review__overlay">
-        <ReviewClosed onContinue={reset} />
+        <ReviewClosed onContinue={onDayClosed || reset} />
       </div>
     )
   }
