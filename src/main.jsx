@@ -18,6 +18,15 @@ const uiLabRequested =
   uiLabEnabled &&
   ['1', 'showcase', 'baseline', 'experiments', 'compare', 'daily-canonical'].includes(uiLabParam)
 
+// Реальные production-экраны внутри эталона должны использовать только
+// безопасный preview-demo адаптер, а не живой backend. Адрес меняется только
+// в dev/Preview и только для UI Lab.
+if (uiLabRequested && new URLSearchParams(window.location.search).get('demo') !== '1') {
+  const previewUrl = new URL(window.location.href)
+  previewUrl.searchParams.set('demo', '1')
+  window.history.replaceState(null, '', previewUrl)
+}
+
 const uiLabSection =
   uiLabParam === '1' ? 'experiments' : uiLabParam === 'showcase' ? 'baseline' : uiLabParam
 

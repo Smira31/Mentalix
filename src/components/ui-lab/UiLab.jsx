@@ -6,6 +6,7 @@ import PracticeCatalogExperiment from './PracticeCatalogExperiment'
 import EveningReviewExperiment from './EveningReviewExperiment'
 import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
+import ProductionBaseline from './ProductionBaseline'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -41,13 +42,7 @@ export default function UiLab({ initialSection = 'baseline' }) {
           <UiLabSwitch active={section} />
         </header>
         <div className="mx-ui-lab__content">
-          {section === 'baseline' && (
-            <TodayStatePreview
-              mode="baseline"
-              selectedState={todayState}
-              onStateChange={setTodayState}
-            />
-          )}
+          {section === 'baseline' && <ProductionBaseline />}
           {section === 'experiments' && (
             <>
               <TodayStatePreview
