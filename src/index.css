@@ -147,6 +147,9 @@
   --c-gold: 237 189 96;
   /* #EDBD60 — золотой акцент Mentalix */
 
+  --c-azure: 111 183 224;
+  /* #6FB7E0 — временный лазурный акцент; TODO: confirm exact azure token */
+
   /* Semantic glyph secondary accent: explicit token, not a fixed hex. */
   --c-glyph-secondary: 199 125 122;
 
