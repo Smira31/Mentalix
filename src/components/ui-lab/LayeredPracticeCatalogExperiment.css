@@ -260,6 +260,7 @@
   overflow-x: auto;
   margin-inline: -20px;
   padding: 2px 20px 6px;
+  scroll-padding-inline: 20px;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }

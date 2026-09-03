@@ -32,11 +32,23 @@ const TEMPORARY_CATALOG_DATA = {
     },
   ],
   collections: [
-    { title: 'На одну минуту', description: 'Дыхание и короткая пауза', kind: 'breath' },
-    { title: 'Когда трудно начать', description: 'Первый шаг и фокус', kind: 'next-step' },
-    { title: 'Вечерняя тишина', description: '', kind: 'meditation' },
-    { title: 'Собрать день', description: '', kind: 'journal' },
+    { title: 'На одну минуту', description: 'Дыхание и короткая пауза', kind: 'ui-exp-003-breath' },
+    {
+      title: 'Когда трудно начать',
+      description: 'Первый шаг и фокус',
+      kind: 'ui-exp-003-next-step',
+    },
+    { title: 'Вечерняя тишина', description: '', kind: 'ui-exp-003-evening' },
+    { title: 'Собрать день', description: '', kind: 'ui-exp-003-journal' },
   ],
+}
+
+const UI_EXP_003_RAIL_GLYPHS = {
+  meditation: 'ui-exp-003-meditation',
+  ritual: 'ui-exp-003-ritual',
+  asceza: 'ui-exp-003-asceza',
+  'next-step': 'ui-exp-003-next-step',
+  release: 'ui-exp-003-release',
 }
 
 function AccentToggle({ accent, onChange }) {
@@ -95,7 +107,11 @@ function RecommendedRail({ accent }) {
         {CURRENT_PRACTICES.slice(0, 5).map((practice, index) => (
           <button className="mx-layered-catalog__rail-card" type="button" key={practice.title}>
             <span className="mx-layered-catalog__avatar" aria-hidden="true">
-              <SemanticGlyph kind={practice.kind} animated={false} highlighted={false} />
+              <SemanticGlyph
+                kind={UI_EXP_003_RAIL_GLYPHS[practice.kind] || practice.kind}
+                animated={false}
+                highlighted={false}
+              />
             </span>
             {index === 0 && (
               <span className="mx-layered-catalog__featured">
