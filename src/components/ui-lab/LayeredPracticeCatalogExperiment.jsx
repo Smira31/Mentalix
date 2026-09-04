@@ -294,11 +294,9 @@ function Collections({ onOpen }) {
             key={collection.title}
             onClick={() => onOpen(collection)}
           >
-            {collection.description && (
-              <span className="mx-layered-catalog__collection-art" aria-hidden="true">
-                <SemanticGlyph kind={collection.kind} animated={false} highlighted={false} />
-              </span>
-            )}
+            <span className="mx-layered-catalog__collection-art" aria-hidden="true">
+              <SemanticGlyph kind={collection.kind} animated={false} highlighted={false} />
+            </span>
             <strong>{collection.title}</strong>
             {collection.description && <small>{collection.description}</small>}
             <ChevronRight
