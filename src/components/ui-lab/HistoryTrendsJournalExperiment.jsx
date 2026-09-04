@@ -252,6 +252,75 @@ function MoodHero({ state, summary, monthLabel }) {
   )
 }
 
+function MonthLineChart({ state, days, activeMonth, onMonthChange }) {
+  const points = days.filter(entry => entry.level != null)
+  const maxDay = days.length
+  const width = 300
+  const height = 100
+  const toX = day => ((day - 1) / (maxDay - 1)) * width
+  const toY = level => height - ((level - 1) / 4) * height
+  const path = points
+    .map(
+      (entry, index) =>
+        `${index === 0 ? 'M' : 'L'} ${toX(entry.day).toFixed(1)} ${toY(entry.level).toFixed(1)}`
+    )
+    .join(' ')
+  const ticks = [1, 5, 10, 15, 20, 25, maxDay]
+
+  return (
+    <div className="mx-history-trends__month">
+      <div className="mx-history-trends__month-head">
+        <strong>Настроение по дням</strong>
+        <div className="mx-history-trends__month-toggle" role="group" aria-label="Период">
+          {Object.entries(MONTH_FIXTURES).map(([key, fixture]) => (
+            <button
+              type="button"
+              key={key}
+              aria-pressed={activeMonth === key}
+              onClick={() => onMonthChange(key)}
+            >
+              {fixture.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {state === 'data' && points.length > 1 ? (
+        <>
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            className="mx-history-trends__month-chart"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <path d={path} />
+            {points.map(entry => (
+              <circle key={entry.day} cx={toX(entry.day)} cy={toY(entry.level)} r="1.6" />
+            ))}
+          </svg>
+          <div className="mx-history-trends__month-axis">
+            {ticks.map(day => (
+              <span key={day} style={{ left: `${((day - 1) / (maxDay - 1)) * 100}%` }}>
+                {day}
+              </span>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="mx-history-trends__empty">
+          <strong>
+            {state === 'empty' ? 'Пока нет ни одной отметки' : 'График соберётся из отметок'}
+          </strong>
+          <span>
+            {state === 'empty'
+              ? 'Отметь настроение — точки появятся день за днём.'
+              : 'Ещё несколько check-in — и линия станет заметной.'}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function TrendsPreview() {
   const [hidden, setHidden] = useState([])
   const [state, setState] = useState('data')
@@ -293,6 +362,12 @@ function TrendsPreview() {
         state={state}
         summary={moodSummary}
         monthLabel={MONTH_FIXTURES[activeMonth].label}
+      />
+      <MonthLineChart
+        state={state}
+        days={monthDays}
+        activeMonth={activeMonth}
+        onMonthChange={setActiveMonth}
       />
       <div className="mx-history-trends__activation">
         <SemanticGlyph kind="focus" animated={false} />
