@@ -385,51 +385,29 @@
   border-radius: 99px;
   background: rgb(var(--c-catalog-accent, var(--c-gold)));
 }
-.mx-layered-catalog__theme-peek {
-  position: relative;
-  display: grid;
+.mx-layered-catalog__theme-track {
+  display: flex;
   width: calc(100% + 40px);
-  min-height: 420px;
+  gap: 12px;
   margin-inline: -20px;
-  overflow: hidden;
-  place-items: center;
+  padding: 2px 20px 6px;
+  overflow-x: auto;
+  scroll-padding-inline: 20px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
 }
-.mx-layered-catalog__theme-side {
-  position: absolute;
-  top: 0;
-  display: grid;
-  width: 78%;
-  height: 420px;
-  align-content: end;
-  gap: 6px;
-  padding: 20px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 28px;
-  background: rgb(var(--c-card2));
-  opacity: 0.72;
-}
-.mx-layered-catalog__theme-side--previous {
-  left: -66%;
-}
-.mx-layered-catalog__theme-side--next {
-  right: -66%;
-}
-.mx-layered-catalog__theme-side span {
-  color: rgb(var(--c-faint));
-  font:
-    11px 'JetBrains Mono',
-    monospace;
-}
-.mx-layered-catalog__theme-side strong {
-  font-size: 22px;
+.mx-layered-catalog__theme-track::-webkit-scrollbar {
+  display: none;
 }
 .mx-layered-catalog__theme {
   position: relative;
   display: grid;
-  width: 78%;
+  flex: 0 0 100%;
+  width: 100%;
   height: 420px;
   min-height: 0;
   overflow: hidden;
+  scroll-snap-align: start;
   border: 1px solid rgb(var(--c-border));
   border-radius: 28px;
   background: rgb(var(--c-artbed));
@@ -473,11 +451,9 @@
   font-size: 13px;
   text-align: center;
 }
-.mx-layered-catalog__theme > .mx-layered-catalog__dots {
-  position: absolute;
-  right: 20px;
-  bottom: 27px;
-  z-index: 2;
+.mx-layered-catalog__section > .mx-layered-catalog__dots {
+  margin-top: 4px;
+  justify-content: center;
 }
 .mx-layered-catalog__collections {
   display: grid;
@@ -574,11 +550,11 @@
 }
 .mx-layered-category__recommended-art {
   display: grid;
-  width: 86px;
-  height: 86px;
+  width: 72px;
+  height: 108px;
   place-items: center;
-  border-radius: 50%;
-  background: rgb(var(--c-artbed));
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgb(var(--c-bg)) 0%, rgb(var(--c-border)) 100%);
 }
 .mx-layered-category__recommended-art .mx-semantic-glyph {
   width: 82%;
@@ -813,7 +789,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mx-layered-catalog__rail {
+  .mx-layered-catalog__rail,
+  .mx-layered-catalog__theme-track {
     scroll-behavior: auto;
   }
 }

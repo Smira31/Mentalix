@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, ChevronRight, Lock, X } from 'lucide-react'
 
 import SemanticGlyph from '../SemanticGlyph'
@@ -214,14 +214,33 @@ function RecommendedRail({ accent }) {
 }
 
 function WeeklyTheme({ themeIndex, setThemeIndex, accent }) {
-  const theme = TEMPORARY_CATALOG_DATA.themes[themeIndex]
-  const nextTheme = () => setThemeIndex((themeIndex + 1) % TEMPORARY_CATALOG_DATA.themes.length)
-  const previousTheme =
-    TEMPORARY_CATALOG_DATA.themes[
-      (themeIndex - 1 + TEMPORARY_CATALOG_DATA.themes.length) % TEMPORARY_CATALOG_DATA.themes.length
-    ]
-  const followingTheme =
-    TEMPORARY_CATALOG_DATA.themes[(themeIndex + 1) % TEMPORARY_CATALOG_DATA.themes.length]
+  const themes = TEMPORARY_CATALOG_DATA.themes
+  const trackRef = useRef(null)
+  const scrollSettleRef = useRef(null)
+
+  const scrollToIndex = index => {
+    const track = trackRef.current
+    const slide = track?.children[index]
+    if (!slide) return
+    slide.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
+  }
+
+  const goToTheme = index => {
+    setThemeIndex(index)
+    scrollToIndex(index)
+  }
+
+  const nextTheme = () => goToTheme((themeIndex + 1) % themes.length)
+
+  const handleTrackScroll = () => {
+    if (scrollSettleRef.current) clearTimeout(scrollSettleRef.current)
+    scrollSettleRef.current = setTimeout(() => {
+      const track = trackRef.current
+      if (!track || !track.clientWidth) return
+      const index = Math.round(track.scrollLeft / track.clientWidth)
+      setThemeIndex(Math.min(themes.length - 1, Math.max(0, index)))
+    }, 100)
+  }
 
   return (
     <section className="mx-layered-catalog__section" aria-labelledby="theme-title">
@@ -231,41 +250,39 @@ function WeeklyTheme({ themeIndex, setThemeIndex, accent }) {
           <h3 id="theme-title">Один вопрос</h3>
         </div>
         <small>
-          {themeIndex + 1} / {TEMPORARY_CATALOG_DATA.themes.length}
+          {themeIndex + 1} / {themes.length}
         </small>
       </div>
-      <div className="mx-layered-catalog__theme-peek">
-        {[previousTheme, followingTheme].map((peekTheme, index) => (
-          <div
-            className={`mx-layered-catalog__theme-side mx-layered-catalog__theme-side--${index ? 'next' : 'previous'}`}
-            key={peekTheme.number}
-            aria-hidden="true"
+      <div
+        className="mx-layered-catalog__theme-track"
+        ref={trackRef}
+        onScroll={handleTrackScroll}
+        data-accent={accent}
+      >
+        {themes.map(theme => (
+          <button
+            className="mx-layered-catalog__theme"
+            type="button"
+            key={theme.number}
+            data-accent={accent}
+            onClick={nextTheme}
           >
-            <span>{peekTheme.number}</span>
-            <strong>{peekTheme.title}</strong>
-          </div>
+            <span className="mx-layered-catalog__theme-art" aria-hidden="true">
+              <SemanticGlyph kind={theme.kind} animated={false} highlighted={false} />
+            </span>
+            <span className="mx-layered-catalog__theme-copy">
+              <small>{theme.number}</small>
+              <strong>{theme.title}</strong>
+              <span>{theme.question}</span>
+            </span>
+          </button>
         ))}
-        <button
-          className="mx-layered-catalog__theme"
-          type="button"
-          data-accent={accent}
-          onClick={nextTheme}
-        >
-          <span className="mx-layered-catalog__theme-art" aria-hidden="true">
-            <SemanticGlyph kind={theme.kind} animated={false} highlighted={false} />
-          </span>
-          <span className="mx-layered-catalog__theme-copy">
-            <small>{theme.number}</small>
-            <strong>{theme.title}</strong>
-            <span>{theme.question}</span>
-          </span>
-          <span className="mx-layered-catalog__dots">
-            <i data-active="true" />
-            <i />
-            <i />
-          </span>
-        </button>
       </div>
+      <span className="mx-layered-catalog__dots" aria-hidden="true">
+        {themes.map((theme, index) => (
+          <i key={theme.number} data-active={index === themeIndex ? 'true' : undefined} />
+        ))}
+      </span>
     </section>
   )
 }
