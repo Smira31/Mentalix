@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   ArrowLeft,
   Check,
@@ -9,7 +9,74 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
+import { Face, SCALE_STEPS } from '../../screens/CheckIn'
 import './HistoryTrendsJournalExperiment.css'
+
+// Зеркало EMOTIONS из src/screens/CheckIn.jsx (там не экспортируется).
+// Единственный источник истины — CheckIn.jsx; список синхронизировать вручную при изменении.
+const EMOTIONS = {
+  1: ['подавлен', 'вымотан', 'тревожно', 'злюсь', 'пусто', 'одиноко', 'обидно', 'страшно'],
+  2: ['устал', 'раздражён', 'рассеян', 'вяло', 'скучно', 'неспокойно', 'недоволен', 'растерян'],
+  3: ['ровно', 'спокойно', 'задумчиво', 'нейтрально', 'собранно', 'терпимо', 'буднично'],
+  4: ['бодро', 'доволен', 'тепло', 'включён', 'благодарен', 'уверенно', 'легко', 'спокойная сила'],
+  5: ['воодушевлён', 'счастлив', 'свободен', 'горжусь', 'вдохновлён', 'силён', 'радостно', 'ясно'],
+}
+const MOOD_LABELS = SCALE_STEPS[0].labels
+const MOOD_LEVEL_BY_EMOTION = Object.entries(EMOTIONS).reduce((map, [level, words]) => {
+  words.forEach(word => {
+    map[word] = Number(level)
+  })
+  return map
+}, {})
+
+// TODO: временная фикстура для UI Lab — реальные данные придут из api.checkin.history.
+function buildMonthFixture(pattern) {
+  return pattern.map((level, index) => {
+    const day = index + 1
+    if (!level) return { day, level: null, emotion: null }
+    const words = EMOTIONS[level]
+    return { day, level, emotion: words[day % words.length] }
+  })
+}
+
+// Волна: спокойное начало → трудная середина месяца → восстановление к концу.
+const CURRENT_MONTH_PATTERN = [
+  4, 4, 3, 4, 5, 4, 3, 0, 2, 3, 2, 2, 1, 2, 3, 2, 0, 4, 3, 4, 4, 5, 4, 4, 5, 4, 5, 4, 5, 4,
+]
+// Предыдущий месяц: ровнее, без выраженного спада.
+const PREVIOUS_MONTH_PATTERN = [
+  3, 4, 3, 3, 4, 3, 4, 3, 3, 4, 3, 3, 4, 4, 3, 4, 3, 4, 3, 4, 4, 3, 4, 3, 4, 4, 3, 4, 4, 0,
+]
+const MONTH_FIXTURES = {
+  current: { label: 'Этот месяц', days: buildMonthFixture(CURRENT_MONTH_PATTERN) },
+  previous: { label: 'Предыдущий месяц', days: buildMonthFixture(PREVIOUS_MONTH_PATTERN) },
+}
+
+function average(values) {
+  if (!values.length) return null
+  return values.reduce((sum, value) => sum + value, 0) / values.length
+}
+
+// Тот же приём, что deriveConclusions в Analytics.jsx: делим период пополам
+// и сравниваем средние, чтобы честно сказать, вырос тренд или просел.
+function computeMoodSummary(days) {
+  const withMood = days.filter(entry => entry.level != null)
+  const avg = average(withMood.map(entry => entry.level))
+  if (avg == null || withMood.length < 3) return { avg, count: withMood.length, trend: null }
+  const half = Math.floor(withMood.length / 2)
+  const delta =
+    average(withMood.slice(half).map(entry => entry.level)) -
+    average(withMood.slice(0, half).map(entry => entry.level))
+  const trend = delta > 0.3 ? 'up' : delta < -0.3 ? 'down' : 'flat'
+  return { avg, count: withMood.length, trend }
+}
+
+function heroInsightText(summary) {
+  if (summary.trend === 'up') return 'К концу месяца настроение заметно выросло.'
+  if (summary.trend === 'down')
+    return 'К концу месяца настроение немного просело — стоит присмотреться, что изменилось.'
+  return 'Настроение держится ровно весь месяц.'
+}
 
 const historyEntries = [
   {
@@ -158,9 +225,39 @@ function HistoryPreview() {
   )
 }
 
+function MoodHero({ state, summary, monthLabel }) {
+  if (state !== 'data' || summary.count === 0) {
+    return (
+      <div className="mx-history-trends__hero">
+        <span>Среднее за месяц</span>
+        <h2>среднее настроение.</h2>
+        <p>
+          {state === 'progress'
+            ? 'Пока рано считать среднее — сделай ещё несколько check-in, чтобы картина стала честной.'
+            : 'Здесь появится честное среднее, как только наберётся пара отметок настроения.'}
+        </p>
+      </div>
+    )
+  }
+  return (
+    <div className="mx-history-trends__hero">
+      <span>Среднее за месяц · {monthLabel.toLowerCase()}</span>
+      <h2>среднее настроение.</h2>
+      <div className="mx-history-trends__hero-value">
+        <strong>{summary.avg.toFixed(1)}</strong>
+        <span>из 5 · {MOOD_LABELS[Math.round(summary.avg) - 1]}</span>
+      </div>
+      <p>{heroInsightText(summary)}</p>
+    </div>
+  )
+}
+
 function TrendsPreview() {
   const [hidden, setHidden] = useState([])
   const [state, setState] = useState('data')
+  const [activeMonth, setActiveMonth] = useState('current')
+  const monthDays = MONTH_FIXTURES[activeMonth].days
+  const moodSummary = useMemo(() => computeMoodSummary(monthDays), [monthDays])
   const visibleCards = insightCards.filter((_, index) => !hidden.includes(index))
   const activation =
     state === 'data'
@@ -175,6 +272,7 @@ function TrendsPreview() {
         title="Тренды"
         copy="Модульный дашборд: каждый блок можно скрыть, а состояние всегда объясняет, что делать дальше."
       />
+      {/* Dev-only переключатель для ручного review трёх состояний данных — не для прод-версии. */}
       <div className="mx-history-trends__states" role="group" aria-label="Состояние данных">
         {[
           ['data', 'Есть данные'],
@@ -191,6 +289,11 @@ function TrendsPreview() {
           </button>
         ))}
       </div>
+      <MoodHero
+        state={state}
+        summary={moodSummary}
+        monthLabel={MONTH_FIXTURES[activeMonth].label}
+      />
       <div className="mx-history-trends__activation">
         <SemanticGlyph kind="focus" animated={false} />
         <div>
