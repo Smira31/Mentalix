@@ -446,6 +446,7 @@
   letter-spacing: -0.05em;
 }
 .mx-layered-catalog__theme-copy > span {
+  justify-self: center;
   max-width: 280px;
   color: rgb(var(--c-muted));
   font-size: 13px;
@@ -489,13 +490,11 @@
 }
 .mx-layered-catalog__collection-art {
   position: absolute;
-  right: auto;
-  bottom: 150px;
-  left: 50%;
-  width: 96px;
-  height: 96px;
-  transform: translateX(-50%);
-  opacity: 0.72;
+  bottom: 6px;
+  left: 16px;
+  width: 30px;
+  height: 30px;
+  opacity: 0.75;
 }
 .mx-layered-catalog__collection-chevron {
   position: absolute;

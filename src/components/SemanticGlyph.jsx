@@ -625,10 +625,9 @@ function Drawing({ kind, debugSource }) {
             d="M30 70 C42 66 50 54 58 34"
             fill="none"
             stroke="#E6E6E6"
-            strokeWidth="1.5"
-            opacity="0.6"
+            strokeWidth="2"
+            opacity="0.75"
             strokeLinecap="round"
-            strokeDasharray="1 7"
           />
           <circle cx="58" cy="34" r="3.5" fill="#EDBD60" />
         </g>
