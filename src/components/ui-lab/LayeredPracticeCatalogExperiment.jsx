@@ -317,7 +317,10 @@ function CategoryScreen({ category, onBack }) {
         <button type="button" aria-label="Назад к коллекциям" onClick={onBack}>
           <ArrowLeft size={19} />
         </button>
-        <h3 id="layered-category-title">{category.title}</h3>
+        <div className="mx-layered-category__heading">
+          <h3 id="layered-category-title">{category.title.toLowerCase()}.</h3>
+          <p>{category.description || 'Практики, чтобы спокойно вернуть внимание к себе'}</p>
+        </div>
         <span aria-hidden="true" />
       </header>
       <div className="mx-layered-category__body">
@@ -329,8 +332,11 @@ function CategoryScreen({ category, onBack }) {
                 <button className="mx-layered-category__card" type="button" key={item.title}>
                   {item.premium && <span className="mx-layered-category__premium">PREMIUM</span>}
                   <span className="mx-layered-category__art" aria-hidden="true">
-                    {/* TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта. */}
-                    <SemanticGlyph kind={item.kind} animated={false} highlighted={false} />
+                    <span className="mx-layered-category__art-glyph">
+                      {/* TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта. */}
+                      <SemanticGlyph kind={item.kind} animated={false} highlighted={false} />
+                    </span>
+                    <span className="mx-layered-category__art-base" />
                   </span>
                   <strong>{item.title}</strong>
                   {item.description && <small>{item.description}</small>}
