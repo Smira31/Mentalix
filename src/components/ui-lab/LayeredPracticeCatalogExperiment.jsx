@@ -1,11 +1,34 @@
 import { useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, ChevronRight, Lock, X } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  ChevronRight,
+  Frown,
+  Lock,
+  Meh,
+  Plus,
+  Smile,
+  Sparkles,
+  X,
+} from 'lucide-react'
 
 import SemanticGlyph from '../SemanticGlyph'
 import { ExperimentShell } from './UiExperiments'
 import { CURRENT_PRACTICES } from './ProductionBaseline'
+import { WEEKLY_THEME_CATALOG } from '../../data/weeklyThemes'
 
 import './LayeredPracticeCatalogExperiment.css'
+
+// TODO: подобрать глиф по смыслу темы после отдельного product/design-решения.
+const WEEKLY_THEME_GLYPH_KIND = {
+  'control-and-influence': 'focus',
+  attention: 'meditation',
+  friction: 'next-step',
+  courage: 'release',
+  temperance: 'breath',
+  perspective: 'journal',
+  renewal: 'ritual',
+}
 
 // TODO: заменить на финальный сюжет глифа после отдельного product/design-решения.
 const TEMPORARY_CATALOG_DATA = {
@@ -16,21 +39,13 @@ const TEMPORARY_CATALOG_DATA = {
       'Замедлиться после длинного дня и вернуть внимание к тому, что действительно важно. Выбери одну тихую практику для себя.',
     meta: '5 практик · 3–7 мин',
   },
-  themes: [
-    { number: '01', title: 'Замечать', question: 'Что уже происходит внутри?', kind: 'meditation' },
-    {
-      number: '02',
-      title: 'Собирать',
-      question: 'Куда сейчас можно вернуть внимание?',
-      kind: 'focus',
-    },
-    {
-      number: '03',
-      title: 'Продолжать',
-      question: 'Какой следующий шаг достаточно мал?',
-      kind: 'next-step',
-    },
-  ],
+  themes: WEEKLY_THEME_CATALOG.map((entry, index) => ({
+    number: String(index + 1).padStart(2, '0'),
+    title: entry.title,
+    question: entry.stoicQuestion,
+    subtitle: entry.subtitle,
+    kind: WEEKLY_THEME_GLYPH_KIND[entry.key] || 'meditation',
+  })),
   collections: [
     { title: 'На одну минуту', description: 'Дыхание и короткая пауза', kind: 'ui-exp-003-breath' },
     {
@@ -213,24 +228,11 @@ function RecommendedRail({ accent }) {
   )
 }
 
-function WeeklyTheme({ themeIndex, setThemeIndex, accent }) {
+function WeeklyTheme({ themeIndex, setThemeIndex, accent, onStartJournal }) {
   const themes = TEMPORARY_CATALOG_DATA.themes
+  const activeTheme = themes[themeIndex]
   const trackRef = useRef(null)
   const scrollSettleRef = useRef(null)
-
-  const scrollToIndex = index => {
-    const track = trackRef.current
-    const slide = track?.children[index]
-    if (!slide) return
-    slide.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
-  }
-
-  const goToTheme = index => {
-    setThemeIndex(index)
-    scrollToIndex(index)
-  }
-
-  const nextTheme = () => goToTheme((themeIndex + 1) % themes.length)
 
   const handleTrackScroll = () => {
     if (scrollSettleRef.current) clearTimeout(scrollSettleRef.current)
@@ -264,16 +266,12 @@ function WeeklyTheme({ themeIndex, setThemeIndex, accent }) {
             className="mx-layered-catalog__theme"
             type="button"
             key={theme.number}
-            data-accent={accent}
-            onClick={nextTheme}
+            onClick={() => onStartJournal(theme)}
           >
-            <span className="mx-layered-catalog__theme-art" aria-hidden="true">
-              <SemanticGlyph kind={theme.kind} animated={false} highlighted={false} />
-            </span>
             <span className="mx-layered-catalog__theme-copy">
-              <small>{theme.number}</small>
-              <strong>{theme.title}</strong>
-              <span>{theme.question}</span>
+              <span className="mx-layered-catalog__theme-number">{theme.number}</span>
+              <strong className="mx-layered-catalog__theme-question">{theme.question}</strong>
+              <span className="mx-layered-catalog__theme-subtitle">{theme.subtitle}</span>
             </span>
           </button>
         ))}
@@ -283,6 +281,22 @@ function WeeklyTheme({ themeIndex, setThemeIndex, accent }) {
           <i key={theme.number} data-active={index === themeIndex ? 'true' : undefined} />
         ))}
       </span>
+      <div className="mx-layered-catalog__theme-actions">
+        <button
+          type="button"
+          className="mx-layered-catalog__pill"
+          onClick={() => onStartJournal(activeTheme)}
+        >
+          Начать дневник
+        </button>
+        {/* TODO: реальный переход к списку всех тем — вне рамок этого прототипа. */}
+        <button
+          type="button"
+          className="mx-layered-catalog__pill mx-layered-catalog__pill--outline"
+        >
+          Все темы
+        </button>
+      </div>
     </section>
   )
 }
@@ -444,11 +458,133 @@ function EmotionSheet({ open, onOpen, onClose, accent }) {
   )
 }
 
+function ThemeJournalEntry({ theme, draft, onDraftChange, onBack, onSubmit }) {
+  return (
+    <section className="mx-layered-catalog__entry" aria-labelledby="entry-question-title">
+      <header className="mx-layered-catalog__entry-header">
+        <button type="button" aria-label="Назад" onClick={onBack}>
+          <ArrowLeft size={19} />
+        </button>
+        {/* TODO: реальная подсказка/наставник — вне рамок этого прототипа. */}
+        <button type="button" className="mx-layered-catalog__pill mx-layered-catalog__entry-hint">
+          <Sparkles size={13} aria-hidden="true" /> Подсказка
+        </button>
+      </header>
+      <h2 id="entry-question-title" className="mx-layered-catalog__entry-question">
+        {theme.question}
+      </h2>
+      <p className="mx-layered-catalog__entry-note">{theme.subtitle}</p>
+      <textarea
+        className="mx-layered-catalog__entry-textarea"
+        placeholder="Начни писать..."
+        aria-label={theme.question}
+        value={draft}
+        onChange={event => onDraftChange(event.target.value)}
+      />
+      <div className="mx-layered-catalog__entry-toolbar">
+        <div className="mx-layered-catalog__entry-toolbar-group">
+          {/* TODO: реальные вставка вложений/форматирование — вне рамок этого прототипа. */}
+          <button type="button" aria-label="Добавить" className="mx-layered-catalog__entry-tool">
+            <Plus size={17} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label="Форматирование"
+            className="mx-layered-catalog__entry-tool"
+          >
+            Aa
+          </button>
+        </div>
+        {/* TODO: реальный переход к «Наставнику» — вне рамок этого прототипа. */}
+        <button type="button" className="mx-layered-catalog__entry-deepen">
+          Глубже
+        </button>
+        <button
+          type="button"
+          aria-label="Завершить запись"
+          className="mx-layered-catalog__entry-close"
+          onClick={onSubmit}
+        >
+          <X size={19} aria-hidden="true" />
+        </button>
+      </div>
+    </section>
+  )
+}
+
+const MOOD_OPTIONS = [
+  { key: 'no', label: 'Нет', Icon: Frown },
+  { key: 'a-bit', label: 'Немного', Icon: Meh },
+  { key: 'yes', label: 'Да', Icon: Smile },
+]
+
+function ThemeJournalComplete({ theme, outcome, onOutcomeChange, onFinish }) {
+  return (
+    <section className="mx-layered-catalog__complete" aria-labelledby="complete-title">
+      <span className="mx-layered-catalog__complete-art" aria-hidden="true">
+        <SemanticGlyph kind="ritual" animated={false} highlighted={false} />
+      </span>
+      <h2 id="complete-title">Готово! Ты завершил(а) практику «{theme.title}»</h2>
+      {/* TODO: реальный тег-пикер (см. src/components/TagPicker.jsx) — вне рамок этого прототипа. */}
+      <button
+        type="button"
+        className="mx-layered-catalog__pill mx-layered-catalog__pill--outline mx-layered-catalog__complete-tags"
+      >
+        <Plus size={13} aria-hidden="true" /> Добавить теги
+      </button>
+      <p className="mx-layered-catalog__complete-prompt">Эта практика показалась тебе полезной?</p>
+      <div className="mx-layered-catalog__complete-moods" role="group" aria-label="Оценка практики">
+        {MOOD_OPTIONS.map(({ key, label, Icon }) => (
+          <button
+            key={key}
+            type="button"
+            className="mx-layered-catalog__mood"
+            aria-pressed={outcome === key}
+            onClick={() => onOutcomeChange(key)}
+          >
+            <Icon size={20} aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        className="mx-layered-catalog__pill mx-layered-catalog__complete-save"
+        onClick={onFinish}
+      >
+        Сохранить и завершить
+      </button>
+    </section>
+  )
+}
+
 export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
   const [accent, setAccent] = useState('gold')
   const [themeIndex, setThemeIndex] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedCollection, setSelectedCollection] = useState(null)
+  const [journalStage, setJournalStage] = useState('catalog')
+  const [journalDraft, setJournalDraft] = useState('')
+  const [journalOutcome, setJournalOutcome] = useState(null)
+
+  const activeTheme = TEMPORARY_CATALOG_DATA.themes[themeIndex]
+
+  function openJournal(theme) {
+    const index = TEMPORARY_CATALOG_DATA.themes.indexOf(theme)
+    if (index !== -1) setThemeIndex(index)
+    setJournalDraft('')
+    setJournalStage('entry')
+  }
+
+  function finishEntry() {
+    setJournalStage('complete')
+  }
+
+  function finishPractice() {
+    setJournalStage('catalog')
+    setJournalOutcome(null)
+    setJournalDraft('')
+  }
 
   return (
     <ExperimentShell
@@ -460,30 +596,54 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
     >
       <div className="mx-layered-catalog" data-accent={accent}>
         <AccentToggle accent={accent} onChange={setAccent} />
-        <HeroBanner accent={accent} onOpenCheckin={() => setSheetOpen(true)} />
-        <RecommendedRail accent={accent} />
-        <WeeklyTheme themeIndex={themeIndex} setThemeIndex={setThemeIndex} accent={accent} />
-        {selectedCollection ? (
-          <CategoryScreen
-            category={selectedCollection}
-            onBack={() => setSelectedCollection(null)}
+        {journalStage === 'entry' ? (
+          <ThemeJournalEntry
+            theme={activeTheme}
+            draft={journalDraft}
+            onDraftChange={setJournalDraft}
+            onBack={() => setJournalStage('catalog')}
+            onSubmit={finishEntry}
+          />
+        ) : journalStage === 'complete' ? (
+          <ThemeJournalComplete
+            theme={activeTheme}
+            outcome={journalOutcome}
+            onOutcomeChange={setJournalOutcome}
+            onFinish={finishPractice}
           />
         ) : (
-          <Collections onOpen={setSelectedCollection} />
+          <>
+            <HeroBanner accent={accent} onOpenCheckin={() => setSheetOpen(true)} />
+            <RecommendedRail accent={accent} />
+            <WeeklyTheme
+              themeIndex={themeIndex}
+              setThemeIndex={setThemeIndex}
+              accent={accent}
+              onStartJournal={openJournal}
+            />
+            {selectedCollection ? (
+              <CategoryScreen
+                category={selectedCollection}
+                onBack={() => setSelectedCollection(null)}
+              />
+            ) : (
+              <Collections onOpen={setSelectedCollection} />
+            )}
+            <button
+              type="button"
+              className="mx-layered-catalog__checkin-trigger"
+              onClick={() => setSheetOpen(true)}
+            >
+              Открыть чек-ин эмоций <ArrowRight size={15} />
+            </button>
+            <EmotionSheet
+              open={sheetOpen}
+              onOpen={() => setSheetOpen(true)}
+              onClose={() => setSheetOpen(false)}
+              accent={accent}
+            />
+          </>
         )}
-        <button
-          type="button"
-          className="mx-layered-catalog__checkin-trigger"
-          onClick={() => setSheetOpen(true)}
-        >
-          Открыть чек-ин эмоций <ArrowRight size={15} />
-        </button>
-        <EmotionSheet
-          open={sheetOpen}
-          onOpen={() => setSheetOpen(true)}
-          onClose={() => setSheetOpen(false)}
-          accent={accent}
-        />
       </div>
     </ExperimentShell>
   )
