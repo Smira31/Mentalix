@@ -241,6 +241,9 @@
   display: grid;
   gap: 11px;
 }
+.mx-layered-catalog__rail-section {
+  gap: 18px;
+}
 .mx-layered-catalog__section-head {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -300,8 +303,8 @@
   top: 12px;
   left: 50%;
   display: grid;
-  width: 62px;
-  height: 62px;
+  width: 68px;
+  height: 68px;
   place-items: center;
   border-radius: 50%;
   background: rgb(var(--c-artbed));

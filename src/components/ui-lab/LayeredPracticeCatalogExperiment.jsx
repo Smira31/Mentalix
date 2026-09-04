@@ -183,14 +183,10 @@ function HeroBanner({ accent, onOpenCheckin }) {
 
 function RecommendedRail({ accent }) {
   return (
-    <section className="mx-layered-catalog__section" aria-labelledby="recommended-title">
-      <div className="mx-layered-catalog__section-head">
-        <div>
-          <span>Для тебя</span>
-          <h3 id="recommended-title">Новое и рекомендованное</h3>
-        </div>
-        <small>свайп</small>
-      </div>
+    <section
+      className="mx-layered-catalog__section mx-layered-catalog__rail-section"
+      aria-label="Новое и рекомендованное"
+    >
       <div className="mx-layered-catalog__rail" data-accent={accent}>
         {CURRENT_PRACTICES.slice(0, 5).map((practice, index) => (
           <button className="mx-layered-catalog__rail-card" type="button" key={practice.title}>
