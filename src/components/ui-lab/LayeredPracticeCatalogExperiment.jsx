@@ -197,13 +197,15 @@ function RecommendedRail({ accent }) {
                 highlighted={false}
               />
             </span>
-            {index === 0 && (
-              <span className="mx-layered-catalog__featured">
-                <Lock size={10} /> FEATURED
-              </span>
-            )}
+            <span className="mx-layered-catalog__rail-badge">
+              {index === 0 && <Lock size={10} />}
+              {index === 0 ? 'FEATURED' : 'РЕКОМЕНДОВАНО'}
+            </span>
+            <span className="mx-layered-catalog__rail-category">
+              {index < 3 ? 'Практики' : 'Психологические практики'}
+            </span>
             <strong>{practice.title}</strong>
-            <small>{index % 2 ? '5 минут' : '1–3 минуты'}</small>
+            <small>{practice.subtitle}</small>
           </button>
         ))}
       </div>
