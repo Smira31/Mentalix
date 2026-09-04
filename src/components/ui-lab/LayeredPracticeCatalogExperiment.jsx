@@ -209,11 +209,6 @@ function RecommendedRail({ accent }) {
           </button>
         ))}
       </div>
-      <div className="mx-layered-catalog__dots" aria-label="Страница 1 из 3">
-        <span data-active="true" />
-        <span />
-        <span />
-      </div>
     </section>
   )
 }
