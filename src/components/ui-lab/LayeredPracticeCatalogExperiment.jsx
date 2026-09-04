@@ -310,6 +310,7 @@ function CategoryScreen({ category, onBack }) {
     result[item.section].push(item)
     return result
   }, {})
+  const recommendedPractice = TEMPORARY_CATEGORY_ITEMS[category.title][0]
 
   return (
     <section className="mx-layered-category" aria-labelledby="layered-category-title">
@@ -323,6 +324,20 @@ function CategoryScreen({ category, onBack }) {
         </div>
         <span aria-hidden="true" />
       </header>
+      <section
+        className="mx-layered-category__recommended"
+        aria-labelledby="recommended-practice-title"
+      >
+        <span className="mx-layered-category__recommended-art" aria-hidden="true">
+          <SemanticGlyph kind={recommendedPractice.kind} animated highlighted={false} />
+        </span>
+        <strong id="recommended-practice-title">{recommendedPractice.title}</strong>
+        <p>{recommendedPractice.description}</p>
+        <button className="mx-layered-category__start" type="button">
+          {recommendedPractice.premium && <Lock size={14} aria-hidden="true" />}
+          Начать
+        </button>
+      </section>
       <div className="mx-layered-category__body">
         {Object.entries(grouped).map(([section, items]) => (
           <section key={section} className="mx-layered-category__section">
