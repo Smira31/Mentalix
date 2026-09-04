@@ -567,6 +567,115 @@
   height: 100%;
   background: var(--quiet-gold);
 }
+.mx-history-trends__emotions {
+  display: grid;
+  gap: 24px;
+  padding-top: 10px;
+  border-top: 1px solid var(--quiet-line);
+}
+.mx-history-trends__emotions-heading {
+  display: grid;
+  gap: 4px;
+}
+.mx-history-trends__emotions-heading strong {
+  font-size: 18px;
+}
+.mx-history-trends__emotions-heading span {
+  color: var(--quiet-sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mx-history-trends__emotions-top {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.mx-history-trends__emotions-top > div {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.mx-history-trends__emotions-top > div > strong {
+  color: var(--quiet-label);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.mx-history-trends__donut {
+  width: 76px;
+  height: 76px;
+}
+.mx-history-trends__donut-track {
+  fill: none;
+  stroke: var(--quiet-line);
+  stroke-width: 7;
+}
+.mx-history-trends__donut-segment {
+  fill: none;
+  stroke: var(--quiet-muted);
+  stroke-width: 7;
+}
+.mx-history-trends__donut-segment[data-rank='0'] {
+  stroke: var(--quiet-gold);
+}
+.mx-history-trends__emotions-list {
+  display: grid;
+  flex: 1;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mx-history-trends__emotions-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mx-history-trends__emotions-list svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.mx-history-trends__emotions-list span {
+  flex: 1;
+  color: var(--quiet-title);
+  font-size: 13px;
+}
+.mx-history-trends__emotions-list em {
+  color: var(--quiet-label);
+  font-family: monospace;
+  font-size: 11px;
+  font-style: normal;
+}
+.mx-history-trends__emotions-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.mx-history-trends__emotions-cards article {
+  display: grid;
+  gap: 8px;
+}
+.mx-history-trends__emotions-cards strong {
+  font-size: 12px;
+}
+.mx-history-trends__emotions-cards ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mx-history-trends__emotions-cards li {
+  color: var(--quiet-sub);
+  font-size: 12px;
+}
+.mx-history-trends__emotions-empty {
+  color: var(--quiet-label);
+  font-size: 11px;
+}
 .mx-history-trends__restore {
   width: max-content;
   padding: 0;

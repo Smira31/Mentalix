@@ -79,6 +79,37 @@ function moodLevelBreakdown(days) {
   return counts
 }
 
+function topEmotions(days, limit = 5) {
+  const counts = new Map()
+  days.forEach(entry => {
+    if (!entry.emotion) return
+    counts.set(entry.emotion, (counts.get(entry.emotion) || 0) + 1)
+  })
+  const total = [...counts.values()].reduce((sum, value) => sum + value, 0)
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([emotion, count]) => ({
+      emotion,
+      count,
+      percent: total ? Math.round((count / total) * 100) : 0,
+      level: MOOD_LEVEL_BY_EMOTION[emotion],
+    }))
+}
+
+function emotionsByLevelRange(days, minLevel, maxLevel, limit = 3) {
+  const counts = new Map()
+  days.forEach(entry => {
+    if (!entry.emotion || !entry.level) return
+    if (entry.level < minLevel || entry.level > maxLevel) return
+    counts.set(entry.emotion, (counts.get(entry.emotion) || 0) + 1)
+  })
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([emotion]) => emotion)
+}
+
 function heroInsightText(summary) {
   if (summary.trend === 'up') return 'К концу месяца настроение заметно выросло.'
   if (summary.trend === 'down')
@@ -351,6 +382,106 @@ function MonthLineChart({ state, days, activeMonth, onMonthChange }) {
   )
 }
 
+function EmotionDonut({ items }) {
+  const total = items.reduce((sum, item) => sum + item.count, 0)
+  const radius = 30
+  const circumference = 2 * Math.PI * radius
+  const segments = items.reduce((accumulated, item, index) => {
+    const previous = accumulated[index - 1]
+    const start = previous ? previous.start + previous.length : 0
+    const length = total ? (item.count / total) * circumference : 0
+    return [...accumulated, { emotion: item.emotion, length, start }]
+  }, [])
+
+  return (
+    <svg viewBox="0 0 76 76" className="mx-history-trends__donut" aria-hidden="true">
+      <g transform="rotate(-90 38 38)">
+        <circle cx="38" cy="38" r={radius} className="mx-history-trends__donut-track" />
+        {segments.map((segment, index) => (
+          <circle
+            key={segment.emotion}
+            cx="38"
+            cy="38"
+            r={radius}
+            className="mx-history-trends__donut-segment"
+            data-rank={index}
+            strokeDasharray={`${segment.length} ${circumference - segment.length}`}
+            strokeDashoffset={-segment.start}
+          />
+        ))}
+      </g>
+    </svg>
+  )
+}
+
+function EmotionsSection({ state, emotions, risers, fallers }) {
+  const hasData = state === 'data' && emotions.length > 0
+  return (
+    <div className="mx-history-trends__emotions" role="region" aria-labelledby="emotions-title">
+      <div className="mx-history-trends__emotions-heading">
+        <strong id="emotions-title">Эмоции</strong>
+        <span>Те же слова из check-in, собранные в частоты за месяц — без эмодзи-рожиц.</span>
+      </div>
+      {hasData ? (
+        <>
+          <div className="mx-history-trends__emotions-top">
+            <div>
+              <strong>Топ эмоций месяца</strong>
+              <EmotionDonut items={emotions} />
+            </div>
+            <ul className="mx-history-trends__emotions-list">
+              {emotions.map(item => (
+                <li key={item.emotion}>
+                  <Face level={item.level} active={false} size={16} />
+                  <span>{item.emotion}</span>
+                  <em>{item.percent}%</em>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mx-history-trends__emotions-cards">
+            <article>
+              <strong>Что поднимает</strong>
+              {risers.length ? (
+                <ul>
+                  {risers.map(word => (
+                    <li key={word}>{word}</li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="mx-history-trends__emotions-empty">Пока не набралось данных</span>
+              )}
+            </article>
+            <article>
+              <strong>Что понижает</strong>
+              {fallers.length ? (
+                <ul>
+                  {fallers.map(word => (
+                    <li key={word}>{word}</li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="mx-history-trends__emotions-empty">Пока не набралось данных</span>
+              )}
+            </article>
+          </div>
+        </>
+      ) : (
+        <div className="mx-history-trends__empty">
+          <strong>
+            {state === 'empty' ? 'Пока нет ни одной эмоции' : 'Эмоции ещё собираются'}
+          </strong>
+          <span>
+            {state === 'empty'
+              ? 'Выбери слово в check-in — здесь появится первая точка.'
+              : 'Ещё немного отметок — и появится честная картина.'}
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function TrendsPreview() {
   const [hidden, setHidden] = useState([])
   const [state, setState] = useState('data')
@@ -358,6 +489,9 @@ function TrendsPreview() {
   const monthDays = MONTH_FIXTURES[activeMonth].days
   const moodSummary = useMemo(() => computeMoodSummary(monthDays), [monthDays])
   const moodBreakdown = useMemo(() => moodLevelBreakdown(monthDays), [monthDays])
+  const emotions = useMemo(() => topEmotions(monthDays), [monthDays])
+  const risers = useMemo(() => emotionsByLevelRange(monthDays, 4, 5), [monthDays])
+  const fallers = useMemo(() => emotionsByLevelRange(monthDays, 1, 2), [monthDays])
   const visibleCards = insightCards.filter((_, index) => !hidden.includes(index))
   const activation =
     state === 'data'
@@ -453,6 +587,7 @@ function TrendsPreview() {
           Вернуть скрытые карточки ({hidden.length})
         </button>
       )}
+      <EmotionsSection state={state} emotions={emotions} risers={risers} fallers={fallers} />
     </section>
   )
 }
