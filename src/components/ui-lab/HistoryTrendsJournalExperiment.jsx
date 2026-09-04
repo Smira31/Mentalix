@@ -71,6 +71,14 @@ function computeMoodSummary(days) {
   return { avg, count: withMood.length, trend }
 }
 
+function moodLevelBreakdown(days) {
+  const counts = [0, 0, 0, 0, 0]
+  days.forEach(entry => {
+    if (entry.level) counts[entry.level - 1] += 1
+  })
+  return counts
+}
+
 function heroInsightText(summary) {
   if (summary.trend === 'up') return 'К концу месяца настроение заметно выросло.'
   if (summary.trend === 'down')
@@ -106,10 +114,11 @@ const historyEntries = [
 ]
 
 const insightCards = [
-  { title: 'Распределение настроения', note: 'За этот месяц', kind: 'bars' },
+  { title: 'Разбивка по настроению', note: 'За этот месяц', kind: 'mood-bars' },
   { title: 'Календарь состояния', note: 'Одна точка — один день', kind: 'heatmap' },
   { title: 'Практики, которые поддерживают', note: 'На основе отмеченных дней', kind: 'ring' },
 ]
+const WEEKDAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 function SectionHeading({ eyebrow, title, copy }) {
   return (
@@ -121,16 +130,23 @@ function SectionHeading({ eyebrow, title, copy }) {
   )
 }
 
-function Chart({ kind }) {
+function Chart({ kind, breakdown }) {
   if (kind === 'heatmap')
     return (
-      <div
-        className="mx-history-trends__chart mx-history-trends__chart--heatmap"
-        aria-label="Календарь состояния"
-      >
-        {Array.from({ length: 35 }, (_, index) => (
-          <i key={index} data-filled={index === 17} data-tone={index % 2} />
-        ))}
+      <div className="mx-history-trends__calendar">
+        <div
+          className="mx-history-trends__chart mx-history-trends__chart--heatmap"
+          aria-label="Календарь состояния"
+        >
+          {Array.from({ length: 35 }, (_, index) => (
+            <i key={index} data-filled={index === 17} data-tone={index % 2} />
+          ))}
+        </div>
+        <div className="mx-history-trends__weekdays" aria-hidden="true">
+          {WEEKDAY_LABELS.map(day => (
+            <span key={day}>{day}</span>
+          ))}
+        </div>
       </div>
     )
   if (kind === 'ring')
@@ -143,13 +159,27 @@ function Chart({ kind }) {
         </div>
       </div>
     )
-  return (
-    <div className="mx-history-trends__chart mx-history-trends__chart--bars">
-      {[32, 58, 44, 74, 52].map((height, index) => (
-        <i key={height} data-active={index === 3} style={{ height: `${height}%` }} />
-      ))}
-    </div>
-  )
+  if (kind === 'mood-bars') {
+    const max = Math.max(1, ...breakdown)
+    return (
+      <div className="mx-history-trends__chart mx-history-trends__chart--mood">
+        {breakdown.map((count, index) => {
+          const level = index + 1
+          const isTop = count > 0 && count === max
+          return (
+            <div className="mx-history-trends__mood-col" key={level}>
+              <div className="mx-history-trends__mood-stick-track">
+                <i data-active={isTop} style={{ height: `${Math.max((count / max) * 100, 6)}%` }} />
+              </div>
+              <Face level={level} active={isTop} size={18} />
+              <span>{count}</span>
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+  return null
 }
 
 function HistoryPreview() {
@@ -327,6 +357,7 @@ function TrendsPreview() {
   const [activeMonth, setActiveMonth] = useState('current')
   const monthDays = MONTH_FIXTURES[activeMonth].days
   const moodSummary = useMemo(() => computeMoodSummary(monthDays), [monthDays])
+  const moodBreakdown = useMemo(() => moodLevelBreakdown(monthDays), [monthDays])
   const visibleCards = insightCards.filter((_, index) => !hidden.includes(index))
   const activation =
     state === 'data'
@@ -398,7 +429,7 @@ function TrendsPreview() {
               </button>
             </header>
             {state === 'data' ? (
-              <Chart kind={card.kind} />
+              <Chart kind={card.kind} breakdown={moodBreakdown} />
             ) : (
               <div className="mx-history-trends__empty">
                 <strong>
