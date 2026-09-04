@@ -149,6 +149,9 @@ jobs:
             message="$(printf 'Mentalix Preview\nBranch: %s\nCommit: %s' "$PREVIEW_BRANCH" "$short_sha")"
             if [ -n "$route_line" ]; then message="$(printf '%s\n%s' "$message" "$route_line")"; fi
           fi
+          if [ "$UI_LAB_ROUTE" = "practice-catalog" ]; then
+            message="$(printf '%s\n\nПроверить manual-gate:\n• rail: карточки ~165px, FEATURED/lock, peek+dots, реальный swipe\n• «Тема недели»: ~420px и pagination\n• «Коллекции»: статичная сетка 2 колонки\n• bottom-sheet «Чек-ин эмоций»\n• safe area и нижняя навигация в Telegram/iPhone' "$message")"
+          fi
           printf 'message<<PREVIEW_MESSAGE_EOF\n%s\nPREVIEW_MESSAGE_EOF\n' "$message" >> "$GITHUB_OUTPUT"
           printf 'url=%s\nbutton_label=%s\n' "$preview_app_url" "$button_label" >> "$GITHUB_OUTPUT"
 
