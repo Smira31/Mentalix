@@ -3,10 +3,12 @@ import UiLabSwitch from './UiLabSwitch'
 import UiExperiments from './UiExperiments'
 import TodayStatePreview from './TodayStatePreview'
 import PracticeCatalogExperiment from './PracticeCatalogExperiment'
+import ProductionBaseline from './ProductionBaseline'
+import LayeredPracticeCatalogExperiment from './LayeredPracticeCatalogExperiment'
 import EveningReviewExperiment from './EveningReviewExperiment'
 import DailyCanonicalExperiment from './DailyCanonicalExperiment'
+import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
-import ProductionBaseline from './ProductionBaseline'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -14,7 +16,16 @@ const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
 export function resolveUiLabSection(value) {
   return (
     LEGACY_PARAM_MAP[value] ||
-    (['baseline', 'experiments', 'compare', 'daily-canonical'].includes(value) ? value : 'baseline')
+    ([
+      'baseline',
+      'experiments',
+      'compare',
+      'daily-canonical',
+      'practice-catalog',
+      'focus-check',
+    ].includes(value)
+      ? value
+      : 'baseline')
   )
 }
 
@@ -42,7 +53,32 @@ export default function UiLab({ initialSection = 'baseline' }) {
           <UiLabSwitch active={section} />
         </header>
         <div className="mx-ui-lab__content">
-          {section === 'baseline' && <ProductionBaseline />}
+          {section === 'baseline' && (
+            <>
+              <TodayStatePreview
+                mode="baseline"
+                selectedState={todayState}
+                onStateChange={setTodayState}
+              />
+              <section
+                className="mx-practice-comparison"
+                aria-labelledby="practice-comparison-title"
+              >
+                <div className="mx-practice-comparison__intro">
+                  <span>UI-EXP-003 · сравнение каталога</span>
+                  <h2 id="practice-comparison-title">Практики: сейчас и «Ярусный каталог»</h2>
+                  <p>
+                    Слева — текущий production baseline, справа — Preview-only эксперимент. Данные
+                    практик используют тот же набор и формат, а новые ярусы помечены как временные.
+                  </p>
+                </div>
+                <div className="mx-practice-comparison__grid">
+                  <ProductionBaseline />
+                  <LayeredPracticeCatalogExperiment mode="after" />
+                </div>
+              </section>
+            </>
+          )}
           {section === 'experiments' && (
             <>
               <TodayStatePreview
@@ -95,6 +131,28 @@ export default function UiLab({ initialSection = 'baseline' }) {
             />
           )}
           {section === 'daily-canonical' && <DailyCanonicalExperiment />}
+          {section === 'practice-catalog' && (
+            <section
+              className="mx-practice-comparison"
+              aria-labelledby="practice-comparison-route-title"
+            >
+              <div className="mx-practice-comparison__intro">
+                <span>UI-EXP-003 · отдельный маршрут manual-gate</span>
+                <h2 id="practice-comparison-route-title">
+                  Практики: production и «Ярусный каталог»
+                </h2>
+                <p>
+                  Слева — текущий production baseline, справа — Preview-only эксперимент для ручной
+                  проверки на реальном Telegram/iPhone.
+                </p>
+              </div>
+              <div className="mx-practice-comparison__grid">
+                <ProductionBaseline />
+                <LayeredPracticeCatalogExperiment mode="after" />
+              </div>
+            </section>
+          )}
+          {section === 'focus-check' && <FocusCheck />}
         </div>
         <footer className="mx-ui-lab__footer">
           Preview-only · реальные пользовательские данные и product logic не подключены

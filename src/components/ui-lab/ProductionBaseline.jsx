@@ -1,78 +1,48 @@
-import { useState } from 'react'
-import Analytics from '../../screens/Analytics'
-import Library from '../../screens/Library'
-import MentalixChat from '../../screens/Mentalix'
-import Practices from '../../screens/Practices'
-import Today from '../../screens/Today'
-import { DEMO_USER } from '../../lib/demoMode'
-import './ProductionBaseline.css'
+import SemanticGlyph from '../SemanticGlyph'
 
-const screens = [
-  { key: 'today', label: 'Сегодня', source: 'src/screens/Today.jsx' },
-  { key: 'practices', label: 'Практики', source: 'src/screens/Practices.jsx' },
-  { key: 'mentor', label: 'Наставник', source: 'src/screens/Mentalix.jsx' },
-  { key: 'library', label: 'Библиотека', source: 'src/screens/Library.jsx' },
-  { key: 'trends', label: 'Аналитика', source: 'src/screens/Analytics.jsx' },
+const CURRENT_PRACTICES = [
+  {
+    title: 'Медитация',
+    subtitle: 'заметить своё и выбрать один спокойный шаг',
+    kind: 'meditation',
+  },
+  { title: 'Ритуалы', subtitle: 'обряды, что держат твой день', kind: 'ritual' },
+  { title: 'Аскезы', subtitle: 'от чего ты отказываешься', kind: 'asceza' },
+  { title: 'Первый шаг', subtitle: 'маленький шаг, когда трудно начать', kind: 'next-step' },
+  { title: 'Без вины', subtitle: 'когда откладываешь и знаешь это', kind: 'release' },
+  { title: 'Один финиш', subtitle: 'маленький кусок, доведённый до конца', kind: 'finish' },
 ]
 
 export default function ProductionBaseline() {
-  const [screen, setScreen] = useState('today')
-  const active = screens.find(item => item.key === screen)
-
   return (
-    <section className="mx-production-baseline" aria-labelledby="production-baseline-title">
-      <header className="mx-production-baseline__header">
-        <span>Эталон · production components</span>
-        <h2 id="production-baseline-title">Основные экраны Mentalix</h2>
-        <p>
-          Один и тот же production-компонент, который используется в приложении. Переключатель ниже
-          заменяет production bottom navigation только внутри эталона — данные берутся из
-          безопасного preview-demo, не из пользовательского аккаунта.
-        </p>
-      </header>
-
-      <nav className="mx-production-baseline__tabs" aria-label="Экраны production-эталона">
-        {screens.map(item => (
-          <button
-            key={item.key}
-            type="button"
-            aria-pressed={screen === item.key}
-            onClick={() => setScreen(item.key)}
-          >
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      <div className="mx-production-baseline__meta">
-        <span>{active.source}</span>
-        <strong>живой рендер · read-only baseline</strong>
-      </div>
-
-      <div className="mx-production-baseline__stage">
-        {screen === 'today' && (
-          <Today
-            user={DEMO_USER}
-            onOpenPractice={() => {}}
-            onGoMentor={() => setScreen('mentor')}
-            onFlowChange={() => {}}
-            onReturnFlowEvent={() => {}}
-            onCloseSeries={() => {}}
-          />
-        )}
-        {screen === 'practices' && (
-          <Practices
-            user={DEMO_USER}
-            onGameChange={() => {}}
-            onReturnToToday={() => setScreen('today')}
-          />
-        )}
-        {screen === 'mentor' && <MentalixChat user={DEMO_USER} onPersonaChange={() => {}} />}
-        {screen === 'library' && <Library user={DEMO_USER} />}
-        {screen === 'trends' && (
-          <Analytics user={DEMO_USER} onGoCheckin={() => setScreen('today')} />
-        )}
-      </div>
+    <section className="mx-practice-baseline" aria-labelledby="practice-baseline-title">
+      <div className="mx-practice-baseline__label">Эталон · production</div>
+      <h2 id="practice-baseline-title">практики.</h2>
+      <p className="mx-practice-baseline__note">
+        Текущий прод-экран: вертикальные категории и последовательный список практик.
+      </p>
+      <div className="mx-practice-baseline__journal">Запись дня · Открыть журнал</div>
+      {['Практики', 'Психологические практики', 'Дальше / Скоро'].map((category, categoryIndex) => (
+        <div className="mx-practice-baseline__category" key={category}>
+          <h3>{category}</h3>
+          {CURRENT_PRACTICES.slice(categoryIndex * 2, categoryIndex * 2 + 2).map(practice => (
+            <button className="mx-practice-baseline__row" type="button" key={practice.title}>
+              <span className="mx-practice-baseline__art" aria-hidden="true">
+                <SemanticGlyph kind={practice.kind} animated={false} highlighted={false} />
+              </span>
+              <span>
+                <strong>{practice.title}</strong>
+                <small>{practice.subtitle}</small>
+              </span>
+              <span className="mx-practice-baseline__chevron" aria-hidden="true">
+                ›
+              </span>
+            </button>
+          ))}
+        </div>
+      ))}
     </section>
   )
 }
+
+export { CURRENT_PRACTICES }

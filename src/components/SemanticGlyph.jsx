@@ -210,7 +210,10 @@ function Drawing({ kind, debugSource }) {
             <path d="M36 30H75C83 30 87 34 87 42V86C87 78 83 74 75 74H36Z" />
             <path d="M124 30H85C77 30 73 34 73 42V86C73 78 77 74 85 74H124Z" />
           </g>
-          <path className="mx-semantic-glyph__journal-line" d="M48 46H70M48 56H70M90 46H112M90 56H112" />
+          <path
+            className="mx-semantic-glyph__journal-line"
+            d="M48 46H70M48 56H70M90 46H112M90 56H112"
+          />
           <circle className="mx-semantic-glyph__point" cx="80" cy="86" r="4" />
         </>
       )
@@ -547,6 +550,164 @@ function Drawing({ kind, debugSource }) {
         </>
       )
 
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-meditation':
+      return (
+        <g transform="translate(30 6)">
+          <path
+            d="M20 40 C30 30 40 30 50 40 C60 50 70 50 80 40"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.8"
+            strokeLinecap="round"
+          />
+          <path
+            d="M20 55 C30 45 40 45 50 55 C60 65 70 65 80 55"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.5"
+            strokeLinecap="round"
+          />
+          <circle cx="76" cy="38" r="3" fill="#EDBD60" />
+        </g>
+      )
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-ritual':
+      return (
+        <g transform="translate(30 6)">
+          <circle
+            cx="50"
+            cy="50"
+            r="30"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="1.5"
+            opacity="0.5"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="19"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="1.5"
+            opacity="0.7"
+          />
+          <circle cx="50" cy="50" r="8" fill="#E6E6E6" opacity="0.85" />
+          <circle cx="50" cy="50" r="2.5" fill="#EDBD60" />
+        </g>
+      )
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-asceza':
+      return (
+        <g transform="translate(30 6)">
+          <rect
+            x="26"
+            y="20"
+            width="48"
+            height="60"
+            rx="2"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.85"
+          />
+          <line x1="50" y1="20" x2="50" y2="80" stroke="#E6E6E6" strokeWidth="1.5" opacity="0.5" />
+          <circle cx="50" cy="50" r="3" fill="#EDBD60" />
+        </g>
+      )
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-next-step':
+      return (
+        <g transform="translate(30 6)">
+          <circle cx="30" cy="70" r="3" fill="#E6E6E6" opacity="0.6" />
+          <path
+            d="M30 70 C42 66 50 54 58 34"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.75"
+            strokeLinecap="round"
+          />
+          <circle cx="58" cy="34" r="3.5" fill="#EDBD60" />
+        </g>
+      )
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-release':
+      return (
+        <g transform="translate(30 6)">
+          <path
+            d="M30 78 C30 60 36 40 46 26 C50 20 58 16 66 18"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="1.5"
+            opacity="0.7"
+            strokeLinecap="round"
+          />
+          <path
+            d="M44 30 C50 26 58 26 64 20"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="1.5"
+            opacity="0.5"
+            strokeLinecap="round"
+          />
+          <circle cx="66" cy="18" r="3" fill="#EDBD60" />
+        </g>
+      )
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-breath':
+      return (
+        <g transform="translate(30 6)">
+          <circle
+            cx="50"
+            cy="50"
+            r="26"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.5"
+          />
+          <path
+            d="M50 50 L50 26"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.85"
+            strokeLinecap="round"
+          />
+          <path
+            d="M50 50 L68 62"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.85"
+            strokeLinecap="round"
+          />
+          <circle cx="50" cy="50" r="3" fill="#EDBD60" />
+        </g>
+      )
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-evening':
+      return (
+        <g transform="translate(30 6)">
+          <path d="M62 26 A26 26 0 1 0 62 74 A20 20 0 1 1 62 26 Z" fill="#E6E6E6" opacity="0.75" />
+          <circle cx="66" cy="30" r="2.5" fill="#EDBD60" />
+        </g>
+      )
+    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
+    case 'ui-exp-003-journal':
+      return (
+        <g transform="translate(30 6)">
+          <path
+            d="M25 60 A25 25 0 1 1 65 76"
+            fill="none"
+            stroke="#E6E6E6"
+            strokeWidth="2"
+            opacity="0.75"
+            strokeLinecap="round"
+          />
+          <circle cx="65" cy="76" r="4" fill="#EDBD60" />
+        </g>
+      )
     default:
       if (import.meta.env.DEV) {
         console.error(
