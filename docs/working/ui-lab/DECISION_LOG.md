@@ -94,3 +94,11 @@
 - **Evidence:** ветка `feat/ui-lab-history-trends-journal`; Preview-ссылки отправлены в Telegram через workflow `telegram-preview.yml` по ходу разработки и фиксов (в т.ч. итоговый деплой на коммит `e10a8679`, включающий мердж UI Lab Hub из `main`); PR #502 (`feat/ui-lab-history-trends-journal` → `main`) — исходный рабочий PR для этой ветки.
 - **Не следует из решения:** это не production promotion само по себе. PR #502 не мержится напрямую — перенос оформлен отдельным чистым promotion-PR из `feat/ui-lab-history-trends-journal` в `main`, по тому же принципу, что `UI-DEC-007` для UI-EXP-003 (там аналогично не мержился исходный PR #505).
 - **Следующий шаг:** review и merge promotion-PR в `main`.
+
+### `UI-DEC-010` — PracticeFlow «Без вины» собран как manual-gate
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; не утверждено и не является production-решением.
+- **Решение:** добавить в UI Lab Preview-only эксперимент `PracticeFlow` из шести интерактивных состояний: вход, выбор, осмысление, свободный редактор, таймер и завершение. Использованы fixture-данные, Onest, тёмный фон `#050403`, один ice-акцент, тонкая линия-путь и существующий `SemanticGlyph`.
+- **Граница:** production-экраны, API, роутинг production и feature flags не менялись.
+- **Следующий шаг:** ручная проверка в реальном Telegram/iPhone на ширинах 390×844 и 320×568: safe areas, клавиатура редактора, reduced motion, touch targets и отсутствие horizontal overflow. До этого никаких утверждений и promotion в production.
