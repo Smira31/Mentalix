@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import approvedNoBlameRelease from '../../assets/ui-lab/approved-no-blame-release.png'
 import { NoBlameKnotGlyph } from './NoBlameGlyphs'
 import './PracticeFlow.css'
@@ -103,7 +103,9 @@ export default function PracticeFlow() {
   const [endsAt, setEndsAt] = useState(null)
   const [secondsLeft, setSecondsLeft] = useState(120)
   const [editorFocused, setEditorFocused] = useState(false)
-  const layoutViewportHeight = useRef(typeof window !== 'undefined' ? window.innerHeight : null)
+  const [layoutViewportHeight] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight : null
+  )
   const [visualViewportMetrics, setVisualViewportMetrics] = useState({
     height: null,
     offsetTop: 0,
@@ -165,8 +167,8 @@ export default function PracticeFlow() {
   const keyboardOpen =
     editorFocused &&
     visualViewportMetrics.height !== null &&
-    layoutViewportHeight.current !== null &&
-    visualViewportMetrics.height < layoutViewportHeight.current - 80
+    layoutViewportHeight !== null &&
+    visualViewportMetrics.height < layoutViewportHeight - 80
   const screenStyle = visualViewportMetrics.height
     ? {
         '--pf-viewport-height': `${visualViewportMetrics.height}px`,
