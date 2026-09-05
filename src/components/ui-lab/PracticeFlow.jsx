@@ -109,6 +109,7 @@ export default function PracticeFlow() {
   const [visualViewportMetrics, setVisualViewportMetrics] = useState({
     height: null,
     offsetTop: 0,
+    pageTop: 0,
   })
 
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function PracticeFlow() {
       setVisualViewportMetrics({
         height: Math.round(viewport.height),
         offsetTop: Math.round(viewport.offsetTop),
+        pageTop: Math.round(viewport.pageTop),
       })
     }
 
@@ -174,6 +176,8 @@ export default function PracticeFlow() {
         '--pf-viewport-height': `${visualViewportMetrics.height}px`,
         '--pf-visual-viewport-height': `${visualViewportMetrics.height}px`,
         '--pf-visual-viewport-offset-top': `${visualViewportMetrics.offsetTop}px`,
+        '--pf-visual-viewport-page-top': `${visualViewportMetrics.pageTop}px`,
+        '--pf-visual-viewport-top': `${visualViewportMetrics.pageTop + visualViewportMetrics.offsetTop}px`,
       }
     : undefined
 
@@ -183,6 +187,7 @@ export default function PracticeFlow() {
       style={screenStyle}
       aria-labelledby="practice-flow-title"
       data-state={step}
+      data-keyboard-open={keyboardOpen}
     >
       <div className="practice-flow__viewport">
         {step === 'intro' && (

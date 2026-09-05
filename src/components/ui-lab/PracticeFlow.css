@@ -5,7 +5,7 @@
   --pf-faint: #625d54;
   --pf-line: #36322c;
   --pf-ice: #c9e7e5;
-  --pf-ios-input-accessory-gap: 44px;
+  --pf-ios-input-accessory-gap: 48px;
   box-sizing: border-box;
   width: 100%;
   height: var(--pf-viewport-height, 100dvh);
@@ -197,30 +197,52 @@
   z-index: 3;
 }
 .practice-flow__editor-bar--keyboard {
-  bottom: calc(
-    var(--pf-ios-input-accessory-gap) -
-      max(20px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)))
+  position: fixed;
+  top: calc(
+    var(--pf-visual-viewport-top, 0px) + var(--pf-visual-viewport-height, 100dvh) -
+      var(--pf-visual-viewport-page-top, 0px) - var(--pf-ios-input-accessory-gap) - 64px
   );
-  min-height: 64px;
-  padding: 8px 0;
+  right: max(16px, var(--app-safe-right, env(safe-area-inset-right, 0px)));
+  bottom: auto;
+  left: auto;
+  width: 56px;
+  min-height: 56px;
+  padding: 0;
+  background: transparent;
+  pointer-events: none;
+  z-index: 20;
 }
 .practice-flow__editor-bar--keyboard .practice-flow__editor-tools {
   display: none;
 }
 .practice-flow__editor-bar--keyboard .practice-flow__round-action {
-  width: 48px;
-  height: 48px;
-  margin: 0 0 0 auto;
+  display: inline-grid;
+  width: 56px;
+  height: 56px;
+  margin: 0;
   border: 1px solid var(--pf-text) !important;
   border-radius: 50%;
   color: var(--pf-bg) !important;
   background: var(--pf-text) !important;
-  font-size: 20px;
+  font-size: 22px;
+  pointer-events: auto;
 }
 .practice-flow__editor-bar--keyboard .practice-flow__round-action:disabled {
   border-color: var(--pf-line) !important;
   color: var(--pf-faint) !important;
   background: transparent !important;
+  pointer-events: none;
+}
+.practice-flow[data-keyboard-open='true'] .practice-flow__topbar--editor {
+  visibility: hidden;
+}
+.practice-flow[data-keyboard-open='true'] .practice-flow__screen--reference-editor {
+  padding-top: max(58px, calc(var(--pf-visual-viewport-offset-top, 0px) + 20px));
+}
+/* Keep the fallback flow unchanged when visualViewport is unavailable. */
+.practice-flow__editor-bar--keyboard {
+  min-height: 64px;
+  padding: 0;
 }
 .practice-flow__editor-bar button,
 .practice-flow__editor-tools button {
