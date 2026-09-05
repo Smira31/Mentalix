@@ -13,7 +13,7 @@ import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
 
-export function resolveUiLabSection(value) {
+export function resolveUiLabSection(value = 'hub') {
   return (
     LEGACY_PARAM_MAP[value] ||
     ([
@@ -26,11 +26,11 @@ export function resolveUiLabSection(value) {
       'focus-check',
     ].includes(value)
       ? value
-      : 'baseline')
+      : 'hub')
   )
 }
 
-export default function UiLab({ initialSection = 'baseline' }) {
+export default function UiLab({ initialSection = 'hub' }) {
   const [section, setSection] = useState(resolveUiLabSection(initialSection))
   const [todayState, setTodayState] = useState('checkinPending')
 
