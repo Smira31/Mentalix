@@ -493,8 +493,8 @@
 }
 .mx-history-trends__weekdays {
   display: grid;
+  width: 100%;
   grid-template-columns: repeat(7, 1fr);
-  max-width: 300px;
   gap: 12px;
 }
 .mx-history-trends__weekdays span {
@@ -504,9 +504,9 @@
 }
 .mx-history-trends__chart--heatmap {
   display: grid;
+  width: 100%;
   grid-template-columns: repeat(7, 1fr);
   gap: 12px;
-  max-width: 300px;
 }
 .mx-history-trends__chart--heatmap i {
   aspect-ratio: 1;
