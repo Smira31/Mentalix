@@ -102,3 +102,12 @@
 - **Решение:** добавить в UI Lab Preview-only эксперимент `PracticeFlow` из шести интерактивных состояний: вход, выбор, осмысление, свободный редактор, таймер и завершение. Использованы fixture-данные, Onest, тёмный фон `#050403`, один ice-акцент, тонкая линия-путь и существующий `SemanticGlyph`.
 - **Граница:** production-экраны, API, роутинг production и feature flags не менялись.
 - **Следующий шаг:** ручная проверка в реальном Telegram/iPhone на ширинах 390×844 и 320×568: safe areas, клавиатура редактора, reduced motion, touch targets и отсутствие horizontal overflow. До этого никаких утверждений и promotion в production.
+
+### `UI-DEC-011` — PracticeFlow синхронизирован с production state order без production изменений
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; веб-Preview-only, не утверждено и не является promotion.
+- **Решение:** UI Lab повторяет полный порядок `ProcrastinationFlow`: `intro → task → feeling → release → plan/distraction → plan/agreement → run → outcome → complete`. Тексты и варианты выбора приведены к production источнику; сохранение результата остаётся fixture-only.
+- **Графика:** добавлен новый `SemanticGlyph` registry kind `no-blame` — неподвижная клетка и птица, вылетающая один раз; существующие glyph cases не менялись.
+- **Editor ownership:** production `JournalTextarea` использует floating toolbar только при `floatingToolbar`; UI Lab PracticeFlow не рендерит этот toolbar, а оставляет одну собственную круглую галочку над visualViewport. Чёрная плавающая кнопка в PracticeFlow DOM не обнаружена (`fixed/sticky` элементов нет); системный Safari/WebView UI не изменялся.
+- **Следующий шаг:** прямой HTTPS Preview проверить в обычном Safari на 390×844 и 320×568; Telegram/iPhone WebView остаётся отдельным финальным gate.

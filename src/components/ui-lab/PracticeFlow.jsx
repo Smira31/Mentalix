@@ -3,70 +3,38 @@ import SemanticGlyph from '../SemanticGlyph'
 import { useVisualViewportHeight } from '../../lib/visualViewport'
 import './PracticeFlow.css'
 
-const CHOICES = [
-  'Боюсь ошибиться',
-  'Не понимаю, с чего начать',
-  'Слишком много всего',
-  'Не хочу себя заставлять',
-  'Другое',
+const FEELING_OPTIONS = [
+  'Скучно',
+  'Тревожно',
+  'Боюсь сделать плохо',
+  'Просто не хочется',
+  'Не знаю почему',
 ]
-const STATE_TITLES = {
-  entry: 'Вернись к делу без давления',
-  choice: 'Что в этом неприятного?',
-  reflection: 'Можно посмотреть мягче',
-  write: 'Назови то, что сейчас есть',
-  timer: 'Только эти две минуты',
-  done: 'Ты выбрал безопасность',
+const DISTRACTION_OPTIONS = ['Телефон', 'Соцсети', 'Другие дела', 'Уборка', 'Своё']
+const OUTCOME_OPTIONS = ['Начал(а)', 'Не начал(а)', 'Остановился — было небезопасно']
+const RELEASE_PHRASE =
+  'Ты не подводишь себя — это просто мозг защищается от неприятного чувства. Тут не за что себя винить.'
+const COMPLETION_COPY = {
+  'Начал(а)': ['Первый шаг сделан', 'Ты не давил на себя — ты вернулся к делу.'],
+  'Не начал(а)': ['Ты заметил, что мешает', 'Это уже честнее, чем продолжать винить себя.'],
+  'Остановился — было небезопасно': [
+    'Ты выбрал безопасность',
+    'Остановиться вовремя — тоже бережный шаг.',
+  ],
 }
 
-function PathLine({ state, pulse = false }) {
-  return (
-    <div
-      className={`practice-flow__path practice-flow__path--${state} ${pulse ? 'is-pulsing' : ''}`}
-      aria-hidden="true"
-    >
-      <span className="practice-flow__path-dot practice-flow__path-dot--start" />
-      <span className="practice-flow__path-stroke" />
-      <span className="practice-flow__path-dot practice-flow__path-dot--end" />
-    </div>
-  )
-}
-
-function BirdCage({ open = false, entry = false }) {
-  return (
-    <div
-      className={`practice-flow__scene ${open ? 'is-open' : ''} ${entry ? 'is-entry' : ''}`}
-      aria-hidden="true"
-    >
-      <div className="practice-flow__cage">
-        <i />
-        <i />
-        <i />
-        <i />
-        <b />
-      </div>
-      <div className="practice-flow__bird">
-        <span />
-        <i />
-        <b />
-      </div>
-      <SemanticGlyph kind={open ? 'release' : 'asceza'} animated={false} highlighted={false} />
-    </div>
-  )
-}
-
-function ChoiceList({ selected, onSelect }) {
+function OptionList({ options, selected, onPick }) {
   return (
     <div className="practice-flow__choices" role="list">
-      {CHOICES.map(choice => (
+      {options.map(option => (
         <button
-          key={choice}
+          key={option}
           type="button"
-          className={selected === choice ? 'is-selected' : ''}
-          aria-pressed={selected === choice}
-          onClick={() => onSelect(choice)}
+          className={selected === option ? 'is-selected' : ''}
+          aria-pressed={selected === option}
+          onClick={() => onPick(option)}
         >
-          <span>{choice}</span>
+          <span>{option}</span>
           <span className="practice-flow__choice-mark" aria-hidden="true">
             ↗
           </span>
@@ -76,38 +44,51 @@ function ChoiceList({ selected, onSelect }) {
   )
 }
 
+function NoBlameGlyph({ animated = false }) {
+  return <SemanticGlyph kind="no-blame" animated={animated} highlighted />
+}
+
 export default function PracticeFlow() {
-  const [state, setState] = useState('entry')
-  const [choice, setChoice] = useState('')
-  const [text, setText] = useState('')
-  const [feedback, setFeedback] = useState('')
-  const [pulse, setPulse] = useState(false)
-  const [startedAt, setStartedAt] = useState(null)
-  const [remaining, setRemaining] = useState(120)
+  const [step, setStep] = useState('intro')
+  const [task, setTask] = useState('')
+  const [feeling, setFeeling] = useState('')
+  const [distraction, setDistraction] = useState('')
+  const [outcome, setOutcome] = useState('')
+  const [reflection, setReflection] = useState('')
+  const [endsAt, setEndsAt] = useState(null)
+  const [secondsLeft, setSecondsLeft] = useState(120)
   const viewportHeight = useVisualViewportHeight()
 
-  function go(next) {
-    setPulse(true)
-    window.setTimeout(() => setPulse(false), 420)
-    setState(next)
-    if (next === 'timer') {
-      setStartedAt(Date.now())
-      setRemaining(120)
+  useEffect(() => {
+    if (!endsAt) return undefined
+    const tick = () => {
+      const next = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))
+      setSecondsLeft(next)
+      if (next === 0) {
+        setEndsAt(null)
+        setStep('outcome')
+      }
     }
+    tick()
+    const timer = window.setInterval(tick, 250)
+    return () => window.clearInterval(timer)
+  }, [endsAt])
+
+  function startTimer() {
+    setSecondsLeft(120)
+    setEndsAt(Date.now() + 120000)
+    setStep('run')
   }
 
-  useEffect(() => {
-    if (state !== 'timer' || !startedAt) return undefined
-    const interval = window.setInterval(() => {
-      const next = Math.max(0, 120 - Math.floor((Date.now() - startedAt) / 1000))
-      setRemaining(next)
-      if (next === 0) window.clearInterval(interval)
-    }, 250)
-    return () => window.clearInterval(interval)
-  }, [state, startedAt])
+  function stopTimer() {
+    setEndsAt(null)
+    setStep('outcome')
+  }
 
-  const minutes = String(Math.floor(remaining / 60)).padStart(2, '0')
-  const seconds = String(remaining % 60).padStart(2, '0')
+  const [completionTitle, completionDescription] =
+    COMPLETION_COPY[outcome] || COMPLETION_COPY['Не начал(а)']
+  const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
+  const seconds = String(secondsLeft % 60).padStart(2, '0')
   const screenStyle = viewportHeight ? { '--pf-viewport-height': `${viewportHeight}px` } : undefined
 
   return (
@@ -115,144 +96,170 @@ export default function PracticeFlow() {
       className="practice-flow"
       style={screenStyle}
       aria-labelledby="practice-flow-title"
-      data-state={state}
+      data-state={step}
     >
       <div className="practice-flow__viewport">
-        {state === 'entry' && (
+        {step === 'intro' && (
           <div className="practice-flow__screen practice-flow__screen--entry">
-            <BirdCage entry />
-            <p className="practice-flow__kicker">Короткая практика</p>
-            <h1 id="practice-flow-title">{STATE_TITLES.entry}</h1>
+            <NoBlameGlyph animated />
+            <p className="practice-flow__kicker">Без вины</p>
+            <h1 id="practice-flow-title">Вернись к делу без давления</h1>
             <p className="practice-flow__lead">
-              Не нужно быть готовым. Достаточно дать себе две спокойные минуты.
+              Короткая сессия, чтобы заметить, что мешает, и найти один безопасный вход.
             </p>
-            <button className="practice-flow__primary" type="button" onClick={() => go('choice')}>
-              Начать практику <span>→</span>
-            </button>
-          </div>
-        )}
-
-        {state === 'choice' && (
-          <div className="practice-flow__screen">
-            <p className="practice-flow__kicker">Сначала — заметить</p>
-            <h1 id="practice-flow-title">{STATE_TITLES.choice}</h1>
-            <p className="practice-flow__lead">
-              Выбери то, что ближе. Здесь нет неправильного ответа.
-            </p>
-            <ChoiceList selected={choice} onSelect={setChoice} />
+            <p className="practice-flow__meta">2 минуты · короткая сессия</p>
             <button
-              className="practice-flow__round-action"
+              className="practice-flow__primary"
               type="button"
-              disabled={!choice}
-              onClick={() => go('reflection')}
-              aria-label="Продолжить"
+              onClick={() => setStep('task')}
             >
-              →
+              Снять лишнее давление <span>→</span>
             </button>
           </div>
         )}
 
-        {state === 'reflection' && (
-          <div className="practice-flow__screen practice-flow__screen--reflection">
-            <SemanticGlyph kind="release" animated={false} highlighted />
-            <PathLine state="reflection" pulse={pulse} />
-            <p className="practice-flow__kicker">Один взгляд изнутри</p>
-            <h1 id="practice-flow-title">{STATE_TITLES.reflection}</h1>
-            <p className="practice-flow__quote">
-              «{choice || 'То, что ты заметил'}» — это сигнал, а не приговор. Можно не чинить всё
-              сразу. Можно выбрать маленький безопасный шаг.
-            </p>
-            <button
-              className="practice-flow__round-action"
-              type="button"
-              onClick={() => go('write')}
-              aria-label="Перейти к записи"
-            >
-              →
-            </button>
-          </div>
-        )}
-
-        {state === 'write' && (
+        {step === 'task' && (
           <div className="practice-flow__screen practice-flow__screen--write">
-            <p className="practice-flow__kicker">Дай этому место</p>
-            <h1 id="practice-flow-title">{STATE_TITLES.write}</h1>
-            <p className="practice-flow__hint">
-              Пара слов или целый поток — пиши так, как получается.
-            </p>
+            <p className="practice-flow__kicker">Без вины</p>
+            <h1 id="practice-flow-title">Что откладываешь?</h1>
+            <p className="practice-flow__hint">Назови одно дело, к которому хочешь вернуться.</p>
             <textarea
-              value={text}
-              onChange={event => setText(event.target.value)}
-              placeholder="Что ты замечаешь прямо сейчас?"
-              aria-label="Текст практики"
+              value={task}
+              onChange={event => setTask(event.target.value)}
+              placeholder="Например: разобрать почту"
+              aria-label="Дело, которое откладываешь"
+              autoFocus
             />
-            {/* UI Lab owns this editor dock and circular continuation action; iOS/WebView owns only the keyboard chrome. */}
-            <div className="practice-flow__editor-bar" aria-label="Инструменты редактора">
-              <button type="button" aria-label="Добавить">
-                +
-              </button>
-              <button type="button" aria-label="Форматирование">
-                Aa
-              </button>
+            <div className="practice-flow__editor-bar" aria-label="Продолжить">
               <button
                 className="practice-flow__round-action"
                 type="button"
-                onClick={() => go('timer')}
-                aria-label="Начать две минуты"
+                disabled={!task.trim()}
+                onClick={() => setStep('feeling')}
+                aria-label="Дальше"
               >
-                →
+                ✓
               </button>
             </div>
           </div>
         )}
 
-        {state === 'timer' && (
+        {step === 'feeling' && (
+          <div className="practice-flow__screen">
+            <p className="practice-flow__kicker">Без вины</p>
+            <h1 id="practice-flow-title">Что в этом неприятного?</h1>
+            <OptionList
+              options={FEELING_OPTIONS}
+              selected={feeling}
+              onPick={value => {
+                setFeeling(value)
+                setStep('release')
+              }}
+            />
+          </div>
+        )}
+
+        {step === 'release' && (
+          <div className="practice-flow__screen practice-flow__screen--reflection">
+            <NoBlameGlyph animated={false} />
+            <p className="practice-flow__kicker">Можно посмотреть мягче</p>
+            <h1 id="practice-flow-title">Здесь не за что себя винить</h1>
+            <p className="practice-flow__quote">{RELEASE_PHRASE}</p>
+            <button
+              className="practice-flow__round-action"
+              type="button"
+              onClick={() => setStep('plan')}
+              aria-label="Найти безопасный вход"
+            >
+              →
+            </button>
+          </div>
+        )}
+
+        {step === 'plan' && !distraction && (
+          <div className="practice-flow__screen">
+            <p className="practice-flow__kicker">Один честный взгляд</p>
+            <h1 id="practice-flow-title">Что обычно отвлекает вместо этого?</h1>
+            <OptionList
+              options={DISTRACTION_OPTIONS}
+              selected={distraction}
+              onPick={value => setDistraction(value)}
+            />
+          </div>
+        )}
+
+        {step === 'plan' && distraction && (
+          <div className="practice-flow__screen practice-flow__screen--agreement">
+            <p className="practice-flow__kicker">Договор с собой</p>
+            <h1 id="practice-flow-title">Договорись с собой</h1>
+            <p className="practice-flow__lead">
+              Как только снова потянет отвлечься — вернись к делу на две минуты.
+            </p>
+            <button className="practice-flow__primary" type="button" onClick={startTimer}>
+              Начать две минуты <span>→</span>
+            </button>
+          </div>
+        )}
+
+        {step === 'run' && (
           <div className="practice-flow__screen practice-flow__screen--timer">
             <p className="practice-flow__kicker">Без рывка</p>
-            <h1 id="practice-flow-title">{STATE_TITLES.timer}</h1>
+            <h1 id="practice-flow-title">Только эти две минуты</h1>
             <div className="practice-flow__timer" aria-live="polite">
               {minutes}:{seconds}
             </div>
-            <PathLine state="timer" pulse={pulse} />
-            <p className="practice-flow__lead">
-              Можно просто оставаться рядом с тем, что уже появилось.
-            </p>
-            <button
-              className="practice-flow__quiet-action"
-              type="button"
-              onClick={() => go('done')}
-            >
+            <NoBlameGlyph animated={false} />
+            <p className="practice-flow__lead">Не идеально. Просто начни.</p>
+            <button className="practice-flow__quiet-action" type="button" onClick={stopTimer}>
               Остановить
             </button>
           </div>
         )}
 
-        {state === 'done' && (
+        {step === 'outcome' && (
+          <div className="practice-flow__screen">
+            <p className="practice-flow__kicker">Без вины</p>
+            <h1 id="practice-flow-title">Как прошло?</h1>
+            <OptionList
+              options={OUTCOME_OPTIONS}
+              selected={outcome}
+              onPick={value => {
+                setOutcome(value)
+                setStep('complete')
+              }}
+            />
+          </div>
+        )}
+
+        {step === 'complete' && (
           <div className="practice-flow__screen practice-flow__screen--done">
-            <BirdCage open />
+            <NoBlameGlyph animated />
             <p className="practice-flow__kicker">Практика завершена</p>
-            <h1 id="practice-flow-title">{STATE_TITLES.done}</h1>
-            <p className="practice-flow__lead">
-              Ты не стал давить на себя. Это уже забота о том, что важно.
+            <h1 id="practice-flow-title">{completionTitle}</h1>
+            <p className="practice-flow__lead">{completionDescription}</p>
+            <p className="practice-flow__next">
+              Следующий вход: вернуться к делу на две минуты после выбранного триггера.
             </p>
-            <div className="practice-flow__feedback" role="group" aria-label="Обратная связь">
-              {['Стало легче', 'Просто заметил', 'Хочу повторить'].map(item => (
+            <p className="practice-flow__question">Помогло сейчас?</p>
+            <div className="practice-flow__feedback" role="group" aria-label="Помогло сейчас">
+              {['Нет', 'Немного', 'Да'].map(value => (
                 <button
-                  key={item}
+                  key={value}
                   type="button"
-                  className={feedback === item ? 'is-selected' : ''}
-                  onClick={() => setFeedback(item)}
+                  className={reflection === value ? 'is-selected' : ''}
+                  onClick={() => setReflection(value)}
                 >
-                  {item}
+                  {value}
                 </button>
               ))}
             </div>
-            <button className="practice-flow__primary" type="button" onClick={() => go('entry')}>
-              Вернуться к практикам <span>→</span>
+            <button
+              className="practice-flow__primary"
+              type="button"
+              onClick={() => setStep('intro')}
+            >
+              Продолжить в Сегодня <span>→</span>
             </button>
-            <a href="?ui_lab=hub" className="practice-flow__secondary">
-              В Сегодня
-            </a>
           </div>
         )}
       </div>
