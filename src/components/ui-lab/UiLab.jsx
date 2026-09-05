@@ -8,6 +8,7 @@ import LayeredPracticeCatalogExperiment from './LayeredPracticeCatalogExperiment
 import EveningReviewExperiment from './EveningReviewExperiment'
 import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import FocusCheck from './FocusCheck'
+import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
 import './UiLab.css'
 
@@ -122,6 +123,7 @@ export default function UiLab({ initialSection = 'hub' }) {
               <PracticeCatalogExperiment />
               <EveningReviewExperiment />
               <UiExperiments embedded />
+              <HistoryTrendsJournalExperiment />
             </>
           )}
           {section === 'compare' && (
