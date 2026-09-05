@@ -506,10 +506,12 @@
   display: grid;
   width: 100%;
   grid-template-columns: repeat(7, 1fr);
+  place-items: center;
   gap: 12px;
 }
 .mx-history-trends__chart--heatmap i {
-  aspect-ratio: 1;
+  width: 24px;
+  height: 24px;
   border: 1px solid var(--quiet-line);
   border-radius: 50%;
   background: transparent;
