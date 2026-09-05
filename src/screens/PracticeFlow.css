@@ -949,3 +949,392 @@
   border-color: var(--pf-line);
   pointer-events: none;
 }
+
+/* No-blame visual system v2 — visual layer only; state, handlers and persistence unchanged. */
+.practice-flow {
+  --pf-bg: #050403;
+  --pf-text: #f3f0e9;
+  --pf-muted: #8c8983;
+  --pf-faint: #56534e;
+  --pf-azure: #79b9ff;
+  --pf-line: rgba(243, 240, 233, 0.18);
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: max(18px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 22px
+    max(22px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  overflow: hidden;
+  background: #050403;
+  color: var(--pf-text);
+  transition: none !important;
+  animation: none !important;
+}
+.practice-flow *,
+.practice-flow *::before,
+.practice-flow *::after {
+  box-sizing: border-box;
+  transition: none !important;
+  animation: none !important;
+}
+.practice-flow__viewport {
+  width: 100%;
+  min-height: calc(var(--pf-viewport-height, 100dvh) - 22px);
+}
+.practice-flow__screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: calc(var(--pf-viewport-height, 100dvh) - 44px);
+  padding: 18px 0 4px;
+  text-align: left;
+}
+.practice-flow__screen h1 {
+  max-width: 100%;
+  margin: 0;
+  color: var(--pf-text);
+  font-size: clamp(30px, 8.5vw, 42px);
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  text-wrap: balance;
+}
+.practice-flow__screen .practice-flow__lead,
+.practice-flow__screen .practice-flow__hint,
+.practice-flow__screen .practice-flow__quote {
+  max-width: 31ch;
+  color: var(--pf-muted);
+  font-size: 15px;
+  line-height: 1.52;
+}
+.practice-flow__kicker {
+  margin: 0 0 14px;
+  color: var(--pf-azure);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.practice-flow__round-action,
+.practice-flow__next-action {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  min-width: 56px;
+  min-height: 56px;
+  margin: 0;
+  border: 1px solid var(--pf-line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--pf-text);
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+}
+.practice-flow__round-action:disabled,
+.practice-flow__next-action:disabled {
+  color: var(--pf-faint);
+  border-color: rgba(243, 240, 233, 0.12);
+  cursor: default;
+}
+.practice-flow__entry-action,
+.practice-flow__screen > .practice-flow__next-action,
+.practice-flow__screen > .practice-flow__round-action {
+  margin-top: auto;
+  align-self: flex-end;
+}
+.practice-flow__close {
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  color: var(--pf-muted);
+  background: transparent;
+  border: 0;
+  font-size: 20px;
+}
+
+/* Entry: compact editorial art and one text block. */
+.practice-flow[data-state='intro'] .practice-flow__screen--reference-entry {
+  align-items: center;
+  padding-top: clamp(28px, 8vh, 72px);
+  text-align: center;
+}
+.practice-flow[data-state='intro'] .practice-flow__release-scene {
+  width: min(100%, 238px);
+  height: 178px;
+  margin: 0 auto 18px;
+  object-fit: contain;
+}
+.practice-flow[data-state='intro'] .practice-flow__screen h1 {
+  max-width: 340px;
+}
+.practice-flow[data-state='intro'] .practice-flow__screen .practice-flow__lead {
+  max-width: 29ch;
+  margin: 16px auto 0;
+}
+.practice-flow[data-state='intro'] .practice-flow__entry-action {
+  align-self: flex-end;
+}
+
+/* Editor: high left column, free surface, keyboard CTA only. */
+.practice-flow[data-state='task'] .practice-flow__screen--reference-editor {
+  align-items: stretch;
+  padding-top: max(52px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
+}
+.practice-flow[data-state='task'] .practice-flow__topbar--editor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+.practice-flow[data-state='task'] .practice-flow__screen h1 {
+  max-width: 12ch;
+}
+.practice-flow[data-state='task'] .practice-flow__hint {
+  max-width: 28ch;
+  margin: 18px 0 0;
+  padding-left: 13px;
+  border-left: 1px solid var(--pf-azure);
+  font-size: 13px;
+}
+.practice-flow[data-state='task'] .practice-flow__screen textarea {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 180px;
+  margin: 30px 0 0;
+  padding: 0;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--pf-text);
+  font-size: 19px;
+  line-height: 1.55;
+}
+.practice-flow[data-state='task'] .practice-flow__screen textarea::placeholder {
+  color: var(--pf-faint);
+}
+.practice-flow[data-state='task'] .practice-flow__editor-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  min-height: 56px;
+  margin-top: 18px;
+}
+.practice-flow[data-state='task'] .practice-flow__editor-tools {
+  display: none;
+}
+.practice-flow[data-state='task'] .practice-flow__editor-bar--keyboard {
+  position: fixed;
+  right: 22px;
+  bottom: auto;
+  left: auto;
+  z-index: 80;
+  width: 56px;
+  min-height: 56px;
+  margin: 0;
+}
+.practice-flow[data-state='task']
+  .practice-flow__editor-bar--keyboard
+  .practice-flow__round-action {
+  width: 56px;
+  height: 56px;
+  background: var(--pf-text);
+  color: var(--pf-bg);
+  border-color: var(--pf-text);
+}
+.practice-flow[data-state='task']
+  .practice-flow__editor-bar--keyboard
+  .practice-flow__round-action:disabled {
+  background: transparent;
+  color: var(--pf-faint);
+  border-color: var(--pf-line);
+}
+
+/* Choices: independent rows, air, Azure dot only. */
+.practice-flow[data-state='feeling'] .practice-flow__screen,
+.practice-flow[data-state='plan'] .practice-flow__screen,
+.practice-flow[data-state='outcome'] .practice-flow__screen {
+  padding-top: 24px;
+}
+.practice-flow__choices {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 0;
+  margin-top: 28px;
+}
+.practice-flow__choices button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 58px;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  color: var(--pf-muted);
+  font-size: 22px;
+  line-height: 1.2;
+  text-align: left;
+}
+.practice-flow__choices button.is-selected {
+  color: var(--pf-text);
+}
+.practice-flow__choice-mark {
+  width: 8px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 50%;
+  color: transparent;
+  background: transparent;
+  font-size: 0;
+}
+.practice-flow__choices button.is-selected .practice-flow__choice-mark {
+  background: var(--pf-azure);
+}
+.practice-flow[data-state='feeling'] .practice-flow__next-action,
+.practice-flow[data-state='plan'] .practice-flow__next-action,
+.practice-flow[data-state='outcome'] .practice-flow__next-action {
+  margin-top: auto;
+}
+
+/* Insight: only centered meaning screen. */
+.practice-flow[data-state='release'] .practice-flow__screen--reflection {
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: clamp(30px, 8vh, 72px);
+  text-align: center;
+}
+.practice-flow[data-state='release'] .practice-flow__knot {
+  width: 180px;
+  height: 100px;
+  margin: 0 auto 8px;
+}
+.practice-flow[data-state='release'] .practice-flow__screen h1 {
+  max-width: 330px;
+}
+.practice-flow[data-state='release'] .practice-flow__quote {
+  max-width: 31ch;
+  margin: 18px auto 0;
+}
+.practice-flow[data-state='release'] .practice-flow__next-action {
+  align-self: flex-end;
+  margin-top: auto;
+}
+
+/* Agreement: quiet left page. */
+.practice-flow[data-state='plan-ready'] .practice-flow__screen {
+  padding-top: 24px;
+}
+.practice-flow[data-state='plan-ready'] .practice-flow__screen h1 {
+  max-width: 12ch;
+}
+.practice-flow[data-state='plan-ready'] .practice-flow__lead {
+  max-width: 28ch;
+  margin-top: 22px;
+}
+.practice-flow[data-state='plan-ready'] .practice-flow__next-action {
+  margin-top: auto;
+}
+
+/* Timer: typographic poster. */
+.practice-flow[data-state='run'] .practice-flow__screen--timer {
+  align-items: center;
+  justify-content: center;
+  padding-top: 0;
+  text-align: center;
+}
+.practice-flow[data-state='run'] .practice-flow__screen h1 {
+  max-width: 11ch;
+}
+.practice-flow[data-state='run'] .practice-flow__timer {
+  margin: 34px 0 6px;
+  color: var(--pf-azure);
+  font-size: clamp(66px, 19vw, 94px);
+  font-variant-numeric: tabular-nums;
+  font-weight: 300;
+  letter-spacing: -0.08em;
+  line-height: 0.92;
+}
+.practice-flow[data-state='run'] .practice-flow__lead {
+  margin: 0;
+}
+.practice-flow[data-state='run'] .practice-flow__next-action {
+  position: absolute;
+  right: 0;
+  bottom: 4px;
+}
+
+/* Final: centered outcome and unboxed feedback. */
+.practice-flow[data-state='complete'] .practice-flow__screen--reference-complete {
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: clamp(48px, 12vh, 110px);
+  text-align: center;
+}
+.practice-flow[data-state='complete'] .practice-flow__screen h1 {
+  max-width: 12ch;
+}
+.practice-flow[data-state='complete'] .practice-flow__lead {
+  max-width: 28ch;
+  margin: 18px auto 0;
+}
+.practice-flow[data-state='complete'] .practice-flow__question {
+  margin: 54px 0 14px;
+  color: var(--pf-muted);
+  font-size: 13px;
+}
+.practice-flow[data-state='complete'] .practice-flow__feedback {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  gap: 28px;
+}
+.practice-flow[data-state='complete'] .practice-flow__feedback button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 56px;
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--pf-muted);
+  font-size: 14px;
+}
+.practice-flow[data-state='complete'] .practice-flow__feedback button.is-selected {
+  color: var(--pf-text);
+}
+.practice-flow[data-state='complete'] .practice-flow__feedback button.is-selected svg {
+  color: var(--pf-azure);
+}
+.practice-flow[data-state='complete'] .practice-flow__finish-action {
+  align-self: stretch;
+  width: 100%;
+  min-height: 54px;
+  margin-top: auto !important;
+  border: 1px solid var(--pf-line);
+  border-radius: 2px;
+  background: var(--pf-text);
+  color: var(--pf-bg);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+@media (max-width: 350px) {
+  .practice-flow {
+    padding-right: 22px;
+    padding-left: 22px;
+  }
+  .practice-flow__screen h1 {
+    font-size: clamp(28px, 8.5vw, 38px);
+  }
+  .practice-flow__choices button {
+    min-height: 52px;
+    font-size: 19px;
+  }
+}
