@@ -1,6 +1,6 @@
 const TABS = [
+  { key: 'hub', label: 'Хаб', href: '?ui_lab=hub' },
   { key: 'baseline', label: 'Эталон', href: '?ui_lab=baseline' },
-  { key: 'experiments', label: 'Эксперименты', href: '?ui_lab=experiments' },
   { key: 'compare', label: 'Сравнение', href: '?ui_lab=compare' },
   { key: 'daily-canonical', label: 'Дневной цикл', href: '?ui_lab=daily-canonical' },
 ]
