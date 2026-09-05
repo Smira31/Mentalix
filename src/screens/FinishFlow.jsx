@@ -286,7 +286,6 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
 
             <JournalTextarea
               writingCanvas
-              writingCanvas
               autoFocus
               value={project}
               onChange={setProject}

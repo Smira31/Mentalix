@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-
 import './PracticeWritingCanvas.css'
 
 function useVisualViewportMetrics() {
@@ -46,9 +45,10 @@ export default function PracticeWritingCanvas({
   submitLabel = 'Дальше',
   submitDisabled = false,
   submitLoading = false,
-  deepenLabel = 'Разобрать глубже',
-  contextLabel = 'Mentalix',
-  onClose,
+  onDeepen,
+  deepenLabel = 'Пойти глубже',
+  deepenDisabled,
+  deepenLoading = false,
   autoFocus = false,
   className = '',
 }) {
@@ -57,7 +57,8 @@ export default function PracticeWritingCanvas({
   const keyboardOpen =
     focused && metrics.height !== null && metrics.height < metrics.layoutHeight - 80
   const hasText = Boolean(String(value).trim())
-  const disabled = submitDisabled || submitLoading || !hasText
+  const submitIsDisabled = submitDisabled || submitLoading || !hasText
+  const deepenIsDisabled = (deepenDisabled ?? !hasText) || submitLoading || deepenLoading
   const dockStyle = useMemo(() => {
     if (!keyboardOpen || metrics.height === null) return undefined
     return {
@@ -69,24 +70,6 @@ export default function PracticeWritingCanvas({
     <section
       className={`practice-writing-canvas ${keyboardOpen ? 'is-keyboard-open' : ''} ${className}`}
     >
-      <header className="practice-writing-canvas__chrome">
-        <div className="practice-writing-canvas__context-actions">
-          <button type="button" aria-label="Дополнительные действия">
-            …
-          </button>
-          <button type="button" aria-label="Добавить тег">
-            ◇
-          </button>
-        </div>
-        <div className="practice-writing-canvas__identity">
-          <span>{contextLabel}</span>
-          {onClose && (
-            <button type="button" onClick={onClose} aria-label="Закрыть">
-              ×
-            </button>
-          )}
-        </div>
-      </header>
       <h1 className="practice-writing-canvas__question">{question}</h1>
       {description && <p className="practice-writing-canvas__description">{description}</p>}
       <textarea
@@ -100,31 +83,25 @@ export default function PracticeWritingCanvas({
         className="practice-writing-canvas__field"
       />
       <div className="practice-writing-canvas__dock" style={dockStyle} aria-label="Действия ввода">
-        <button
-          type="button"
-          aria-label="Добавить заметку"
-          className="practice-writing-canvas__circle"
-        >
-          +
-        </button>
-        <button
-          type="button"
-          aria-label="Изменить формат текста"
-          className="practice-writing-canvas__circle"
-        >
-          Aa
-        </button>
-        <button type="button" aria-label={deepenLabel} className="practice-writing-canvas__deepen">
-          {deepenLabel}
-        </button>
+        {onDeepen && (
+          <button
+            type="button"
+            aria-label={deepenLabel}
+            disabled={deepenIsDisabled}
+            onClick={onDeepen}
+            className="practice-writing-canvas__deepen"
+          >
+            {deepenLabel}
+          </button>
+        )}
         <button
           type="button"
           aria-label={submitLabel}
-          disabled={disabled}
+          disabled={submitIsDisabled}
           onClick={onSubmit}
           className="practice-writing-canvas__submit"
         >
-          →
+          ✓
         </button>
       </div>
     </section>

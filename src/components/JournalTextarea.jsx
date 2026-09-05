@@ -193,7 +193,10 @@ export default function JournalTextarea({
         submitLabel={submitLabel}
         submitDisabled={submitDisabled}
         submitLoading={submitLoading}
+        onDeepen={onDeepen}
         deepenLabel={deepenLabel}
+        deepenDisabled={deepenDisabled}
+        deepenLoading={deepenLoading}
         autoFocus={autoFocus}
         className={className}
       />

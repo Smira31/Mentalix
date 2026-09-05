@@ -103,8 +103,6 @@ export default function MeditationFlow({ onClose }) {
         >
           <JournalTextarea
             writingCanvas
-            writingCanvas
-            writingCanvas
             autoFocus
             value={observation}
             onChange={setObservation}

@@ -281,8 +281,6 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
 
             <JournalTextarea
               writingCanvas
-              writingCanvas
-              writingCanvas
               autoFocus
               value={dump}
               onChange={setDump}

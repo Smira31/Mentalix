@@ -879,11 +879,6 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
                         <JournalTextarea
                           writingCanvas
-                          writingCanvas
-                          writingCanvas
-                          writingCanvas
-                          writingCanvas
-                          writingCanvas
                           value={lessons[field.key] || ''}
                           onChange={value =>
                             setLessons(current => ({

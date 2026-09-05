@@ -106,9 +106,9 @@
   bottom: max(12px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
   left: 22px;
   z-index: 80;
-  display: grid;
-  grid-template-columns: 56px 56px minmax(0, 1fr) 56px;
+  display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 12px;
   min-height: 56px;
 }
@@ -136,6 +136,7 @@
 }
 .practice-writing-canvas__deepen {
   min-width: 0;
+  margin-left: auto;
   height: 56px;
   overflow: hidden;
   border: 0;

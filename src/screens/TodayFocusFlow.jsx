@@ -165,7 +165,6 @@ export default function TodayFocusFlow({
 
             <JournalTextarea
               writingCanvas
-              writingCanvas
               autoFocus
               value={text}
               onChange={setText}
