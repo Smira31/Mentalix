@@ -35,7 +35,7 @@ function parsePatterns() {
   return Array.from(experimentsSource.matchAll(patternSource), match => ({
     number: match[1].padStart(2, '0'),
     title: match[2],
-    href: '?ui_lab=experiments',
+    href: `?ui_lab=experiments#ui-lab-sketch-${match[1].padStart(2, '0')}`,
   }))
 }
 

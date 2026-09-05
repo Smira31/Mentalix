@@ -137,7 +137,7 @@ function TodayScreenPreview({ mode }) {
 
 export function ExperimentShell({ number, eyebrow, title, purpose, mode, children }) {
   return (
-    <section className="mx-lab-experiment" data-mode={mode}>
+    <section id={`ui-lab-sketch-${number}`} className="mx-lab-experiment" data-mode={mode}>
       <div className="mx-lab-experiment__head">
         <span className="mx-lab-experiment__number">{number}</span>
 
@@ -1818,6 +1818,23 @@ function RitualAscezaStylesExperiment({ mode }) {
 
 export default function UiExperiments({ embedded = false }) {
   const [mode, setMode] = useState('after')
+
+  useEffect(() => {
+    const targetId = window.location.hash.slice(1)
+    if (!targetId) return undefined
+
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById(targetId)
+      if (!target) return
+
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      target.dataset.highlight = 'true'
+      window.setTimeout(() => delete target.dataset.highlight, 1800)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
+
   return (
     <main className="mx-lab" data-mode={mode}>
       {!embedded && (

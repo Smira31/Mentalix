@@ -407,6 +407,11 @@
   gap: 18px;
 }
 
+.mx-lab-experiment[data-highlight='true'] .mx-lab-stage {
+  border-color: rgb(var(--c-gold));
+  box-shadow: 0 0 0 3px rgb(var(--c-gold) / 0.14);
+}
+
 .mx-lab-experiment__head {
   display: grid;
   grid-template-columns: 34px 1fr;
