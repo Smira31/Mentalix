@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useVisualViewportHeight } from '../../lib/visualViewport'
 import approvedNoBlameRelease from '../../assets/ui-lab/approved-no-blame-release.png'
-import { NoBlameKnotGlyph, NoBlamePerchGlyph } from './NoBlameGlyphs'
+import { NoBlameKnotGlyph } from './NoBlameGlyphs'
 import './PracticeFlow.css'
 
 const FEELING_OPTIONS = [
@@ -37,7 +37,7 @@ function OptionList({ options, selected, onPick }) {
         >
           <span>{option}</span>
           <span className="practice-flow__choice-mark" aria-hidden="true">
-            ↗
+            •
           </span>
         </button>
       ))}
@@ -189,7 +189,7 @@ export default function PracticeFlow() {
                 <span className="practice-flow__deeper">Разобрать глубже</span>
               </div>
               <button
-                className="practice-flow__round-action"
+                className="practice-flow__round-action practice-flow__next-action"
                 type="button"
                 disabled={!task.trim()}
                 onClick={() => setStep('feeling')}
@@ -259,7 +259,6 @@ export default function PracticeFlow() {
             <div className="practice-flow__timer" aria-live="polite">
               {minutes}:{seconds}
             </div>
-            <NoBlamePerchGlyph />
             <p className="practice-flow__lead">Не идеально. Просто начни.</p>
             <NextAction onClick={stopTimer} label="Остановить" />
           </div>
@@ -285,7 +284,6 @@ export default function PracticeFlow() {
         {step === 'complete' && (
           <div className="practice-flow__screen practice-flow__screen--done practice-flow__screen--reference-complete">
             <ReferenceChrome />
-            <NoBlameReleaseScene />
             <h1 id="practice-flow-title">{completionTitle}</h1>
             <p className="practice-flow__lead">{completionDescription}</p>
             <p className="practice-flow__question">Эта практика была полезна?</p>

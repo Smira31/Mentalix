@@ -88,36 +88,38 @@
 .practice-flow__choices {
   display: grid;
   width: 100%;
-  margin-top: 28px;
-  border-top: 1px solid var(--pf-line);
+  margin-top: 36px;
+  gap: 4px;
 }
 .practice-flow__choices button {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  min-height: 56px;
-  padding: 0 4px;
+  justify-content: flex-start;
+  min-height: 58px;
+  gap: 12px;
+  padding: 8px 0;
   border: 0;
-  border-bottom: 1px solid var(--pf-line);
-  color: var(--pf-text);
+  color: var(--pf-muted);
   background: transparent;
   text-align: left;
   font:
-    15px Onest,
+    18px Onest,
     sans-serif;
   cursor: pointer;
 }
 .practice-flow__choices button:focus-visible,
 .practice-flow__choices button.is-selected {
-  color: var(--pf-ice);
+  color: var(--pf-text);
 }
 .practice-flow__choice-mark {
-  color: var(--pf-faint);
-  font-size: 20px;
-}
-.practice-flow__choices button:focus-visible .practice-flow__choice-mark,
-.practice-flow__choices button.is-selected .practice-flow__choice-mark {
+  width: 8px;
   color: var(--pf-ice);
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0;
+}
+.practice-flow__choices button.is-selected .practice-flow__choice-mark {
+  opacity: 1;
 }
 .practice-flow__round-action {
   display: inline-grid;
@@ -184,7 +186,7 @@
 .practice-flow__editor-bar {
   position: absolute;
   right: 0;
-  bottom: 0;
+  bottom: calc(-1 * max(20px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px))));
   left: 0;
   display: flex;
   align-items: center;
@@ -426,8 +428,7 @@
   object-fit: contain;
   flex: 0 0 auto;
 }
-.practice-flow__knot-glyph,
-.practice-flow__perch-glyph {
+.practice-flow__knot-glyph {
   display: block;
   flex: 0 0 auto;
   background: transparent;
@@ -436,11 +437,6 @@
   width: min(100%, 240px);
   height: 128px;
   margin: 0 auto 28px;
-}
-.practice-flow__perch-glyph {
-  width: min(100%, 260px);
-  height: 150px;
-  margin: 28px auto 14px;
 }
 @media (max-width: 520px) {
   .practice-flow {
