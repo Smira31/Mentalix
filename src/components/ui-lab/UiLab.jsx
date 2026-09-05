@@ -8,6 +8,7 @@ import LayeredPracticeCatalogExperiment from './LayeredPracticeCatalogExperiment
 import EveningReviewExperiment from './EveningReviewExperiment'
 import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import FocusCheck from './FocusCheck'
+import UiLabHub from './UiLabHub'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -17,6 +18,7 @@ export function resolveUiLabSection(value) {
     LEGACY_PARAM_MAP[value] ||
     ([
       'baseline',
+      'hub',
       'experiments',
       'compare',
       'daily-canonical',
@@ -52,6 +54,7 @@ export default function UiLab({ initialSection = 'baseline' }) {
           <UiLabSwitch active={section} />
         </header>
         <div className="mx-ui-lab__content">
+          {section === 'hub' && <UiLabHub />}
           {section === 'baseline' && (
             <>
               <TodayStatePreview
