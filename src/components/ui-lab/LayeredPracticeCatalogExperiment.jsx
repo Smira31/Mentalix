@@ -1,224 +1,103 @@
-import { useRef, useState } from 'react'
-import {
-  ArrowLeft,
-  ArrowRight,
-  ChevronRight,
-  Frown,
-  Lock,
-  Meh,
-  Plus,
-  Smile,
-  Sparkles,
-  X,
-} from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowLeft, ArrowRight, ChevronRight, RefreshCw } from 'lucide-react'
 
+import { api } from '../../lib/api'
+import { readOneOffPracticeHistory } from '../../lib/oneOffPracticeHistory'
+import { localDayId } from '../../lib/morningPilot'
+import { platform } from '../../platform'
+import ThemeScreen from '../../screens/ThemeScreen'
+import JournalFlow from '../../screens/JournalFlow'
+import JournalArt from '../practice-art/JournalArt'
 import SemanticGlyph from '../SemanticGlyph'
 import { ExperimentShell } from './UiExperiments'
-import { CURRENT_PRACTICES } from './ProductionBaseline'
-import { WEEKLY_THEME_CATALOG } from '../../data/weeklyThemes'
+import {
+  buildPracticeViewModels,
+  getPracticeByKey,
+  PRACTICE_COLLECTIONS as LAYERED_COLLECTIONS,
+  PRACTICE_RAIL_KEYS as LAYERED_RAIL_KEYS,
+} from '../../lib/practiceCatalogRegistry'
+import {
+  LAYERED_CATALOG_DEMO_COMPLETED_KEYS,
+  LAYERED_CATALOG_DEMO_DATA,
+} from './layeredPracticeCatalogDemoData'
 
 import './LayeredPracticeCatalogExperiment.css'
 
-// TODO: подобрать глиф по смыслу темы после отдельного product/design-решения.
-const WEEKLY_THEME_GLYPH_KIND = {
-  'control-and-influence': 'focus',
-  attention: 'meditation',
-  friction: 'next-step',
-  courage: 'release',
-  temperance: 'breath',
-  perspective: 'journal',
-  renewal: 'ritual',
-}
-
-// TODO: заменить на финальный сюжет глифа после отдельного product/design-решения.
-const TEMPORARY_CATALOG_DATA = {
-  hero: {
-    date: '02–08 сентября',
-    title: 'Сезон медленных вечеров',
-    description:
-      'Замедлиться после длинного дня и вернуть внимание к тому, что действительно важно. Выбери одну тихую практику для себя.',
-    meta: '5 практик · 3–7 мин',
-  },
-  themes: WEEKLY_THEME_CATALOG.map((entry, index) => ({
-    number: String(index + 1).padStart(2, '0'),
-    title: entry.title,
-    question: entry.stoicQuestion,
-    subtitle: entry.subtitle,
-    kind: WEEKLY_THEME_GLYPH_KIND[entry.key] || 'meditation',
-  })),
-  collections: [
-    { title: 'На одну минуту', description: 'Дыхание и короткая пауза', kind: 'ui-exp-003-breath' },
-    {
-      title: 'Когда трудно начать',
-      description: 'Первый шаг и фокус',
-      kind: 'ui-exp-003-next-step',
-    },
-    { title: 'Вечерняя тишина', description: '', kind: 'ui-exp-003-evening' },
-    { title: 'Собрать день', description: '', kind: 'ui-exp-003-journal' },
-  ],
-}
-
-const UI_EXP_003_RAIL_GLYPHS = {
-  meditation: 'ui-exp-003-meditation',
-  ritual: 'ui-exp-003-ritual',
-  asceza: 'ui-exp-003-asceza',
-  'next-step': 'ui-exp-003-next-step',
-  release: 'ui-exp-003-release',
-}
-
-// TODO: временные данные для UI Lab; реальный список практик владелец продукта добавит сам.
-const TEMPORARY_CATEGORY_ITEMS = {
-  'На одну минуту': [
-    {
-      section: 'Основные практики',
-      title: 'Дыхание',
-      description: 'Короткая пауза, чтобы вернуться в момент',
-      kind: 'breath',
-    },
-    {
-      section: 'Основные практики',
-      title: 'Точка опоры',
-      description: 'Заметь, что уже поддерживает тебя',
-      kind: 'focus',
-    },
-    {
-      section: 'Дополнительно',
-      title: 'Мягкий старт',
-      description: 'Один спокойный шаг без спешки',
-      kind: 'next-step',
-      premium: true,
-    },
-  ],
-  'Когда трудно начать': [
-    {
-      section: 'Основные практики',
-      title: 'Первый шаг',
-      description: 'Уменьшить задачу до действия на минуту',
-      kind: 'next-step',
-    },
-    {
-      section: 'Основные практики',
-      title: 'Одно из всех',
-      description: 'Выбрать ровно одно направление внимания',
-      kind: 'focus',
-    },
-    {
-      section: 'Дополнительно',
-      title: 'Без вины',
-      description: 'Вернуться к делу без самокритики',
-      kind: 'release',
-      premium: true,
-    },
-  ],
-  'Вечерняя тишина': [
-    {
-      section: 'Основные практики',
-      title: 'Замечать',
-      description: 'Увидеть, как прошёл день',
-      kind: 'meditation',
-    },
-    {
-      section: 'Основные практики',
-      title: 'Отпустить',
-      description: 'Оставить незавершённое до завтра',
-      kind: 'release',
-    },
-    {
-      section: 'Дополнительно',
-      title: 'Тихий вопрос',
-      description: 'Небольшая рефлексия перед сном',
-      kind: 'journal',
-      premium: true,
-    },
-  ],
-  'Собрать день': [
-    {
-      section: 'Основные практики',
-      title: 'Запись дня',
-      description: 'Собрать мысли в несколько строк',
-      kind: 'journal',
-    },
-    {
-      section: 'Основные практики',
-      title: 'Следующий шаг',
-      description: 'Сформулировать действие на завтра',
-      kind: 'next-step',
-    },
-    {
-      section: 'Дополнительно',
-      title: 'Личная карта',
-      description: 'Увидеть повторяющийся паттерн',
-      kind: 'focus',
-      premium: true,
-    },
-  ],
-}
-
-function AccentToggle({ accent, onChange }) {
-  return (
-    <div className="mx-layered-catalog__accent" role="group" aria-label="Цвет акцента">
-      <span>Акцент</span>
-      {['gold', 'azure'].map(value => (
-        <button
-          type="button"
-          key={value}
-          aria-pressed={accent === value}
-          data-accent={value}
-          onClick={() => onChange(value)}
-        >
-          {value === 'gold' ? 'Gold' : 'Azure'}
-        </button>
-      ))}
-    </div>
+function usePreviewData(user) {
+  const [data, setData] = useState(
+    user ? { rituals: [], ascezas: [], themes: [] } : LAYERED_CATALOG_DEMO_DATA
   )
+  const [status, setStatus] = useState(user ? 'loading' : 'demo')
+  const [error, setError] = useState(null)
+
+  async function load() {
+    if (!user?.id) {
+      setData(LAYERED_CATALOG_DEMO_DATA)
+      setStatus('demo')
+      return
+    }
+
+    setStatus('loading')
+    setError(null)
+    try {
+      const [rituals, ascezas, themes] = await Promise.all([
+        api.rituals.list(user.id),
+        api.ascezas.list(user.id),
+        api.themes.list(user.id),
+      ])
+      setData({
+        rituals: Array.isArray(rituals) ? rituals : [],
+        ascezas: Array.isArray(ascezas) ? ascezas : [],
+        themes: Array.isArray(themes) ? themes : [],
+      })
+      setStatus('ready')
+    } catch (nextError) {
+      setError(nextError)
+      setStatus('error')
+    }
+  }
+
+  useEffect(() => {
+    load()
+  }, [user?.id])
+
+  return { ...data, status, error, reload: load }
 }
 
-function HeroBanner({ accent, onOpenCheckin }) {
-  return (
-    <article className="mx-layered-catalog__hero" data-accent={accent}>
-      <div className="mx-layered-catalog__hero-art" aria-hidden="true">
-        <SemanticGlyph kind="focus" animated={false} highlighted={false} />
-      </div>
-      <div className="mx-layered-catalog__hero-copy">
-        <span>{TEMPORARY_CATALOG_DATA.hero.date}</span>
-        <h3>{TEMPORARY_CATALOG_DATA.hero.title}</h3>
-        <p>{TEMPORARY_CATALOG_DATA.hero.description}</p>
-        <small className="mx-layered-catalog__hero-meta">{TEMPORARY_CATALOG_DATA.hero.meta}</small>
-        <button
-          type="button"
-          className="mx-layered-catalog__pill mx-layered-catalog__hero-cta"
-          onClick={onOpenCheckin}
-        >
-          Попробовать <span aria-hidden="true">→</span>
-        </button>
-      </div>
-    </article>
+function PracticeGlyph({ kind, highlighted = false }) {
+  return <SemanticGlyph kind={kind} animated={false} highlighted={highlighted} />
+}
+
+function PracticeRail({ practices, onOpen }) {
+  const railPractices = LAYERED_RAIL_KEYS.map(key => getPracticeByKey(practices, key)).filter(
+    Boolean
   )
-}
 
-function RecommendedRail({ accent }) {
   return (
     <section
       className="mx-layered-catalog__section mx-layered-catalog__rail-section"
       aria-label="Новое и рекомендованное"
     >
-      <div className="mx-layered-catalog__rail" data-accent={accent}>
-        {CURRENT_PRACTICES.slice(0, 5).map((practice, index) => (
-          <button className="mx-layered-catalog__rail-card" type="button" key={practice.title}>
+      <div className="mx-layered-catalog__rail-label">Выбери новое или рекомендованное</div>
+      <div className="mx-layered-catalog__rail" data-accent="gold">
+        {railPractices.map((practice, index) => (
+          <button
+            className="mx-layered-catalog__rail-card"
+            type="button"
+            key={practice.key}
+            disabled={!practice.available}
+            onClick={() => onOpen(practice)}
+          >
             <span className="mx-layered-catalog__avatar" aria-hidden="true">
-              <SemanticGlyph
-                kind={UI_EXP_003_RAIL_GLYPHS[practice.kind] || practice.kind}
-                animated={false}
-                highlighted={false}
-              />
+              <PracticeGlyph kind={practice.kind} highlighted={index === 0} />
+            </span>
+            <span className="mx-layered-catalog__rail-menu" aria-hidden="true">
+              •••
             </span>
             <span className="mx-layered-catalog__rail-badge">
-              {index === 0 && <Lock size={10} />}
-              {index === 0 ? 'FEATURED' : 'РЕКОМЕНДОВАНО'}
+              {index === 0 ? 'НОВОЕ' : 'РЕКОМЕНДОВАНО'}
             </span>
-            <span className="mx-layered-catalog__rail-category">
-              {index < 3 ? 'Практики' : 'Психологические практики'}
-            </span>
+            <span className="mx-layered-catalog__rail-category">{practice.section}</span>
             <strong>{practice.title}</strong>
             <small>{practice.subtitle}</small>
           </button>
@@ -228,21 +107,37 @@ function RecommendedRail({ accent }) {
   )
 }
 
-function WeeklyTheme({ themeIndex, setThemeIndex, accent, onStartJournal }) {
-  const themes = TEMPORARY_CATALOG_DATA.themes
-  const activeTheme = themes[themeIndex]
+function ThemeCarousel({ themes, onOpen }) {
+  const [themeIndex, setThemeIndex] = useState(0)
   const trackRef = useRef(null)
-  const scrollSettleRef = useRef(null)
 
-  const handleTrackScroll = () => {
-    if (scrollSettleRef.current) clearTimeout(scrollSettleRef.current)
-    scrollSettleRef.current = setTimeout(() => {
-      const track = trackRef.current
-      if (!track || !track.clientWidth) return
-      const index = Math.round(track.scrollLeft / track.clientWidth)
-      setThemeIndex(Math.min(themes.length - 1, Math.max(0, index)))
-    }, 100)
+  useEffect(() => {
+    setThemeIndex(index => Math.min(index, Math.max(0, themes.length - 1)))
+  }, [themes.length])
+
+  function handleScroll() {
+    const track = trackRef.current
+    if (!track || !track.clientWidth) return
+    setThemeIndex(Math.round(track.scrollLeft / track.clientWidth))
   }
+
+  if (themes.length === 0) {
+    return (
+      <section className="mx-layered-catalog__section" aria-labelledby="theme-title">
+        <div className="mx-layered-catalog__section-head">
+          <div>
+            <span>Тема недели</span>
+            <h3 id="theme-title">Пока нет тем</h3>
+          </div>
+        </div>
+        <p className="mx-layered-catalog__empty-copy">
+          Карусель появится, когда backend вернёт опубликованные темы для этого пользователя.
+        </p>
+      </section>
+    )
+  }
+
+  const activeTheme = themes[themeIndex]
 
   return (
     <section className="mx-layered-catalog__section" aria-labelledby="theme-title">
@@ -255,49 +150,66 @@ function WeeklyTheme({ themeIndex, setThemeIndex, accent, onStartJournal }) {
           {themeIndex + 1} / {themes.length}
         </small>
       </div>
-      <div
-        className="mx-layered-catalog__theme-track"
-        ref={trackRef}
-        onScroll={handleTrackScroll}
-        data-accent={accent}
-      >
+      <div className="mx-layered-catalog__theme-track" ref={trackRef} onScroll={handleScroll}>
         {themes.map(theme => (
           <button
             className="mx-layered-catalog__theme"
             type="button"
-            key={theme.number}
-            onClick={() => onStartJournal(theme)}
+            key={theme.id}
+            onClick={() => onOpen(theme)}
           >
             <span className="mx-layered-catalog__theme-copy">
-              <span className="mx-layered-catalog__theme-number">{theme.number}</span>
-              <strong className="mx-layered-catalog__theme-question">{theme.question}</strong>
+              <span className="mx-layered-catalog__theme-number">
+                {String(theme.sortOrder || themes.indexOf(theme) + 1).padStart(2, '0')}
+              </span>
+              <strong className="mx-layered-catalog__theme-question">{theme.title}</strong>
               <span className="mx-layered-catalog__theme-subtitle">{theme.subtitle}</span>
+              <span className="mx-layered-catalog__theme-progress">
+                {theme.reflected_days || 0}/{theme.total_days || 0} дней
+              </span>
             </span>
           </button>
         ))}
       </div>
       <span className="mx-layered-catalog__dots" aria-hidden="true">
-        {themes.map((theme, index) => (
-          <i key={theme.number} data-active={index === themeIndex ? 'true' : undefined} />
+        {themes.map(theme => (
+          <i
+            key={theme.id}
+            data-active={themes.indexOf(theme) === themeIndex ? 'true' : undefined}
+          />
         ))}
       </span>
       <div className="mx-layered-catalog__theme-actions">
         <button
           type="button"
           className="mx-layered-catalog__pill"
-          onClick={() => onStartJournal(activeTheme)}
+          onClick={() => onOpen(activeTheme)}
         >
-          Начать дневник
-        </button>
-        {/* TODO: реальный переход к списку всех тем — вне рамок этого прототипа. */}
-        <button
-          type="button"
-          className="mx-layered-catalog__pill mx-layered-catalog__pill--outline"
-        >
-          Все темы
+          Открыть тему <ArrowRight size={15} />
         </button>
       </div>
     </section>
+  )
+}
+
+function CollectionTile({ collection, onOpen }) {
+  return (
+    <button
+      className="mx-layered-catalog__collection"
+      type="button"
+      onClick={() => onOpen(collection)}
+    >
+      <span className="mx-layered-catalog__collection-art" aria-hidden="true">
+        <PracticeGlyph kind={collection.kind} />
+      </span>
+      <strong>{collection.title}</strong>
+      <small>{collection.description}</small>
+      <ChevronRight
+        className="mx-layered-catalog__collection-chevron"
+        size={17}
+        aria-hidden="true"
+      />
+    </button>
   )
 }
 
@@ -309,39 +221,28 @@ function Collections({ onOpen }) {
           <span>Собрано для тебя</span>
           <h3 id="collections-title">Коллекции</h3>
         </div>
+        <small>5</small>
       </div>
       <div className="mx-layered-catalog__collections">
-        {TEMPORARY_CATALOG_DATA.collections.map(collection => (
-          <button
-            className="mx-layered-catalog__collection"
-            type="button"
-            key={collection.title}
-            onClick={() => onOpen(collection)}
-          >
-            <span className="mx-layered-catalog__collection-art" aria-hidden="true">
-              <SemanticGlyph kind={collection.kind} animated={false} highlighted={false} />
-            </span>
-            <strong>{collection.title}</strong>
-            {collection.description && <small>{collection.description}</small>}
-            <ChevronRight
-              className="mx-layered-catalog__collection-chevron"
-              size={17}
-              aria-hidden="true"
-            />
-          </button>
+        {LAYERED_COLLECTIONS.map(collection => (
+          <CollectionTile key={collection.key} collection={collection} onOpen={onOpen} />
         ))}
       </div>
     </section>
   )
 }
 
-function CategoryScreen({ category, onBack }) {
-  const grouped = TEMPORARY_CATEGORY_ITEMS[category.title].reduce((result, item) => {
-    result[item.section] ||= []
-    result[item.section].push(item)
-    return result
-  }, {})
-  const recommendedPractice = TEMPORARY_CATEGORY_ITEMS[category.title][0]
+function itemLabel(item) {
+  return item?.name || item?.title || item?.text || 'Без названия'
+}
+
+function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onOpenPractice }) {
+  const practiceItems = (collection.practiceKeys || [])
+    .map(key => getPracticeByKey(practices, key))
+    .filter(Boolean)
+  const liveItems =
+    collection.source === 'rituals' ? rituals : collection.source === 'ascezas' ? ascezas : []
+  const items = liveItems.length > 0 ? liveItems : practiceItems
 
   return (
     <section className="mx-layered-category" aria-labelledby="layered-category-title">
@@ -350,299 +251,284 @@ function CategoryScreen({ category, onBack }) {
           <ArrowLeft size={19} />
         </button>
         <div className="mx-layered-category__heading">
-          <h3 id="layered-category-title">{category.title.toLowerCase()}.</h3>
-          <p>{category.description || 'Практики, чтобы спокойно вернуть внимание к себе'}</p>
+          <h3 id="layered-category-title">{collection.title}.</h3>
+          <p>{collection.description}</p>
         </div>
         <span aria-hidden="true" />
       </header>
-      <section
-        className="mx-layered-category__recommended"
-        aria-labelledby="recommended-practice-title"
-      >
-        <span className="mx-layered-category__recommended-art" aria-hidden="true">
-          <SemanticGlyph kind={recommendedPractice.kind} animated highlighted={false} />
-        </span>
-        <strong id="recommended-practice-title">{recommendedPractice.title}</strong>
-        <p>{recommendedPractice.description}</p>
-        <button className="mx-layered-category__start" type="button">
-          {recommendedPractice.premium && <Lock size={14} aria-hidden="true" />}
-          Начать
-        </button>
-      </section>
       <div className="mx-layered-category__body">
-        {Object.entries(grouped).map(([section, items]) => (
-          <section key={section} className="mx-layered-category__section">
-            <span className="mx-layered-category__label">{section}</span>
-            <div className="mx-layered-category__grid">
-              {items.map(item => (
-                <button className="mx-layered-category__card" type="button" key={item.title}>
-                  {item.premium && <span className="mx-layered-category__premium">PREMIUM</span>}
+        <section className="mx-layered-category__section">
+          <span className="mx-layered-category__label">
+            {collection.source ? 'Твои данные' : 'Практики'}
+          </span>
+          <div className="mx-layered-category__grid">
+            {items.map(item => {
+              const practice = item.key ? item : null
+              const key = practice?.key || `${collection.key}-${item.id || itemLabel(item)}`
+              return (
+                <button
+                  className="mx-layered-category__card"
+                  type="button"
+                  key={key}
+                  onClick={() => practice && onOpenPractice(practice)}
+                  disabled={!practice}
+                >
                   <span className="mx-layered-category__art" aria-hidden="true">
                     <span className="mx-layered-category__art-glyph">
-                      {/* TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта. */}
-                      <SemanticGlyph kind={item.kind} animated={false} highlighted={false} />
+                      <PracticeGlyph kind={practice?.kind || collection.kind} />
                     </span>
                     <span className="mx-layered-category__art-base" />
                   </span>
-                  <strong>{item.title}</strong>
-                  {item.description && <small>{item.description}</small>}
-                  {item.premium && (
-                    <Lock className="mx-layered-category__lock" size={15} aria-label="Premium" />
+                  <strong>{practice?.title || itemLabel(item)}</strong>
+                  <small>
+                    {practice?.subtitle ||
+                      (collection.source === 'rituals'
+                        ? item.today_level
+                          ? 'сегодня выполнено'
+                          : 'открыть ритуалы'
+                        : item.today_status === 'held'
+                          ? 'сегодня удержано'
+                          : 'открыть аскезы')}
+                  </small>
+                  {practice?.completedToday && (
+                    <span className="mx-layered-category__completion">сегодня</span>
                   )}
                 </button>
-              ))}
-            </div>
-          </section>
-        ))}
+              )
+            })}
+          </div>
+        </section>
       </div>
     </section>
   )
 }
 
-function EmotionSheet({ open, onOpen, onClose, accent }) {
-  if (!open) {
-    return (
-      <button
-        className="mx-layered-catalog__sheet-peek"
-        type="button"
-        data-accent={accent}
-        onClick={onOpen}
-      >
-        <span>
-          <small>Чек-ин эмоций</small>
-          <strong>Как ты сейчас?</strong>
-        </span>
-        <ArrowRight size={17} aria-hidden="true" />
+function JournalDemoScreen({ onBack }) {
+  const [draft, setDraft] = useState('')
+
+  return (
+    <section className="mx-layered-journal-demo" aria-labelledby="journal-demo-title">
+      <button type="button" className="mx-layered-journal-demo__back" onClick={onBack}>
+        <ArrowLeft size={18} /> Назад в каталог
       </button>
+      <span className="mx-layered-journal-demo__eyebrow">Preview-only · без сохранения</span>
+      <h3 id="journal-demo-title">Собери день в четыре шага</h3>
+      <p>
+        В Telegram-сессии эта кнопка откроет настоящий JournalFlow. Здесь можно посмотреть только
+        форму и ритм записи.
+      </p>
+      <textarea
+        value={draft}
+        onChange={event => setDraft(event.target.value)}
+        placeholder="Начни писать…"
+        aria-label="Демонстрационная запись журнала"
+      />
+      <button type="button" className="mx-layered-catalog__pill" onClick={onBack}>
+        Закрыть preview
+      </button>
+    </section>
+  )
+}
+
+function JournalBanner({ onOpen }) {
+  return (
+    <article className="mx-layered-catalog__journal-hero">
+      <div className="mx-layered-catalog__journal-hero-art" aria-hidden="true">
+        <JournalArt />
+      </div>
+      <div className="mx-layered-catalog__journal-hero-copy">
+        <span>Журнал</span>
+        <h3>Собери день в четыре шага</h3>
+        <p>Идея, действие, анализ и новый шаг — спокойно, в своём темпе.</p>
+        <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
+          Открыть журнал <ArrowRight size={15} />
+        </button>
+      </div>
+    </article>
+  )
+}
+
+function ThemeDemoScreen({ theme, onBack }) {
+  return (
+    <section className="mx-layered-theme-demo" aria-labelledby="theme-demo-title">
+      <button type="button" className="mx-layered-journal-demo__back" onClick={onBack}>
+        <ArrowLeft size={18} /> Назад в каталог
+      </button>
+      <span className="mx-layered-journal-demo__eyebrow">
+        Демонстрационные данные · без сохранения
+      </span>
+      <h3 id="theme-demo-title">{theme.title}</h3>
+      <p>{theme.subtitle}</p>
+      <div className="mx-layered-theme-demo__progress">
+        <strong>
+          {theme.reflected_days}/{theme.total_days} дней
+        </strong>
+        <span>В Telegram-сессии здесь откроется настоящий ThemeScreen с backend themeId.</span>
+      </div>
+      <button type="button" className="mx-layered-catalog__pill" onClick={onBack}>
+        Вернуться к каталогу
+      </button>
+    </section>
+  )
+}
+
+function PreviewStatus({ status, error, onReload }) {
+  if (status === 'ready') return null
+
+  if (status === 'demo') {
+    return (
+      <div
+        className="mx-layered-catalog__data-note mx-layered-catalog__data-note--demo"
+        role="status"
+      >
+        <strong>Демонстрационные данные · без сохранения</strong>
+        <span>
+          Каталог показывает реальные структуры API и flow-связи. Введённый текст и действия не
+          записываются в аккаунт.
+        </span>
+      </div>
     )
   }
+
+  if (status === 'loading') {
+    return <div className="mx-layered-catalog__data-note">Загружаю реальные практики и темы…</div>
+  }
+
   return (
-    <div className="mx-layered-catalog__sheet-layer">
-      <button
-        className="mx-layered-catalog__sheet-backdrop"
-        type="button"
-        aria-label="Закрыть чек-ин"
-        onClick={onClose}
-      />
-      <section
-        className="mx-layered-catalog__sheet"
-        data-accent={accent}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="emotion-title"
-      >
-        <button
-          className="mx-layered-catalog__sheet-close"
-          type="button"
-          aria-label="Закрыть"
-          onClick={onClose}
-        >
-          <X size={18} />
-        </button>
-        <span
-          className="mx-layered-catalog__sheet-figure mx-layered-catalog__sheet-figure--one"
-          aria-hidden="true"
-        />
-        <span
-          className="mx-layered-catalog__sheet-figure mx-layered-catalog__sheet-figure--two"
-          aria-hidden="true"
-        />
-        <span>Чек-ин эмоций</span>
-        <h3 id="emotion-title">Как ты сейчас?</h3>
-        <p>Назови состояние без необходимости что-либо исправлять.</p>
-        <button type="button" className="mx-layered-catalog__pill" onClick={onClose}>
-          Отметить состояние <ArrowRight size={15} />
-        </button>
-      </section>
+    <div className="mx-layered-catalog__data-note" role="alert">
+      <strong>Не удалось загрузить live-данные</strong>
+      <span>{error?.message || 'Проверь API-сессию и повтори загрузку.'}</span>
+      <button type="button" className="mx-layered-catalog__pill" onClick={onReload}>
+        <RefreshCw size={14} /> Повторить
+      </button>
     </div>
   )
 }
 
-function ThemeJournalEntry({ theme, draft, onDraftChange, onBack, onSubmit }) {
-  return (
-    <section className="mx-layered-catalog__entry" aria-labelledby="entry-question-title">
-      <header className="mx-layered-catalog__entry-header">
-        <button type="button" aria-label="Назад" onClick={onBack}>
-          <ArrowLeft size={19} />
-        </button>
-        {/* TODO: реальная подсказка/наставник — вне рамок этого прототипа. */}
-        <button type="button" className="mx-layered-catalog__pill mx-layered-catalog__entry-hint">
-          <Sparkles size={13} aria-hidden="true" /> Подсказка
-        </button>
-      </header>
-      <h2 id="entry-question-title" className="mx-layered-catalog__entry-question">
-        {theme.question}
-      </h2>
-      <p className="mx-layered-catalog__entry-note">{theme.subtitle}</p>
-      <textarea
-        className="mx-layered-catalog__entry-textarea"
-        placeholder="Начни писать..."
-        aria-label={theme.question}
-        value={draft}
-        onChange={event => onDraftChange(event.target.value)}
-      />
-      <div className="mx-layered-catalog__entry-toolbar">
-        <div className="mx-layered-catalog__entry-toolbar-group">
-          {/* TODO: реальные вставка вложений/форматирование — вне рамок этого прототипа. */}
-          <button type="button" aria-label="Добавить" className="mx-layered-catalog__entry-tool">
-            <Plus size={17} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            aria-label="Форматирование"
-            className="mx-layered-catalog__entry-tool"
-          >
-            Aa
-          </button>
-        </div>
-        {/* TODO: реальный переход к «Наставнику» — вне рамок этого прототипа. */}
-        <button type="button" className="mx-layered-catalog__entry-deepen">
-          Глубже
-        </button>
-        <button
-          type="button"
-          aria-label="Завершить запись"
-          className="mx-layered-catalog__entry-close"
-          onClick={onSubmit}
-        >
-          <X size={19} aria-hidden="true" />
-        </button>
-      </div>
-    </section>
-  )
-}
-
-const MOOD_OPTIONS = [
-  { key: 'no', label: 'Нет', Icon: Frown },
-  { key: 'a-bit', label: 'Немного', Icon: Meh },
-  { key: 'yes', label: 'Да', Icon: Smile },
-]
-
-function ThemeJournalComplete({ theme, outcome, onOutcomeChange, onFinish }) {
-  return (
-    <section className="mx-layered-catalog__complete" aria-labelledby="complete-title">
-      <span className="mx-layered-catalog__complete-art" aria-hidden="true">
-        <SemanticGlyph kind="ritual" animated={false} highlighted={false} />
-      </span>
-      <h2 id="complete-title">Готово! Ты завершил(а) практику «{theme.title}»</h2>
-      {/* TODO: реальный тег-пикер (см. src/components/TagPicker.jsx) — вне рамок этого прототипа. */}
-      <button
-        type="button"
-        className="mx-layered-catalog__pill mx-layered-catalog__pill--outline mx-layered-catalog__complete-tags"
-      >
-        <Plus size={13} aria-hidden="true" /> Добавить теги
-      </button>
-      <p className="mx-layered-catalog__complete-prompt">Эта практика показалась тебе полезной?</p>
-      <div className="mx-layered-catalog__complete-moods" role="group" aria-label="Оценка практики">
-        {MOOD_OPTIONS.map(({ key, label, Icon }) => (
-          <button
-            key={key}
-            type="button"
-            className="mx-layered-catalog__mood"
-            aria-pressed={outcome === key}
-            onClick={() => onOutcomeChange(key)}
-          >
-            <Icon size={20} aria-hidden="true" />
-            <span>{label}</span>
-          </button>
-        ))}
-      </div>
-      <button
-        type="button"
-        className="mx-layered-catalog__pill mx-layered-catalog__complete-save"
-        onClick={onFinish}
-      >
-        Сохранить и завершить
-      </button>
-    </section>
-  )
-}
-
 export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
-  const [accent, setAccent] = useState('gold')
-  const [themeIndex, setThemeIndex] = useState(0)
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const previewUser = useMemo(() => platform.getUser?.() || null, [])
+  const { rituals, ascezas, themes, status, error, reload } = usePreviewData(previewUser)
   const [selectedCollection, setSelectedCollection] = useState(null)
-  const [journalStage, setJournalStage] = useState('catalog')
-  const [journalDraft, setJournalDraft] = useState('')
-  const [journalOutcome, setJournalOutcome] = useState(null)
+  const [selectedTheme, setSelectedTheme] = useState(null)
+  const [journalOpen, setJournalOpen] = useState(false)
+  const [openedPractice, setOpenedPractice] = useState(null)
+  const completedToday = useMemo(() => {
+    if (!previewUser) return new Set(LAYERED_CATALOG_DEMO_COMPLETED_KEYS)
 
-  const activeTheme = TEMPORARY_CATALOG_DATA.themes[themeIndex]
+    return new Set(
+      readOneOffPracticeHistory(previewUser.id)
+        .filter(entry => entry.day === localDayId(new Date()))
+        .map(entry => entry.practiceKey)
+    )
+  }, [previewUser?.id])
+  const practices = useMemo(
+    () => buildPracticeViewModels({ rituals, ascezas, completedToday }),
+    [rituals, ascezas, completedToday]
+  )
 
-  function openJournal(theme) {
-    const index = TEMPORARY_CATALOG_DATA.themes.indexOf(theme)
-    if (index !== -1) setThemeIndex(index)
-    setJournalDraft('')
-    setJournalStage('entry')
+  if (journalOpen && previewUser) {
+    return (
+      <ExperimentShell
+        number="26"
+        eyebrow="UI-EXP-003 · live journal preview"
+        title="Журнал"
+        purpose="Реальный JournalFlow открывается из крупного journal-banner."
+        mode={mode}
+      >
+        <JournalFlow
+          userId={previewUser.id}
+          onClose={() => setJournalOpen(false)}
+          onOpenGuided={() => setJournalOpen(false)}
+        />
+      </ExperimentShell>
+    )
   }
 
-  function finishEntry() {
-    setJournalStage('complete')
+  if (journalOpen) {
+    return (
+      <ExperimentShell
+        number="26"
+        eyebrow="UI-EXP-003 · anonymous journal preview"
+        title="Журнал"
+        purpose="Демонстрация крупного journal-banner без пользователя; запись не сохраняется."
+        mode={mode}
+      >
+        <JournalDemoScreen onBack={() => setJournalOpen(false)} />
+      </ExperimentShell>
+    )
   }
 
-  function finishPractice() {
-    setJournalStage('catalog')
-    setJournalOutcome(null)
-    setJournalDraft('')
+  if (selectedTheme && !previewUser) {
+    return (
+      <ExperimentShell
+        number="26"
+        eyebrow="UI-EXP-003 · demo theme preview"
+        title="Тема недели"
+        purpose="Демонстрационная тема в форме реального API-объекта; сохранения нет."
+        mode={mode}
+      >
+        <ThemeDemoScreen theme={selectedTheme} onBack={() => setSelectedTheme(null)} />
+      </ExperimentShell>
+    )
+  }
+
+  if (selectedTheme && previewUser) {
+    return (
+      <ExperimentShell
+        number="26"
+        eyebrow="UI-EXP-003 · live theme preview"
+        title="Тема недели"
+        purpose="Реальный ThemeScreen с backend themeId; UI Lab не подменяет тематический flow мокапом."
+        mode={mode}
+      >
+        <ThemeScreen
+          user={previewUser}
+          themeId={selectedTheme.id}
+          onBack={() => setSelectedTheme(null)}
+        />
+      </ExperimentShell>
+    )
   }
 
   return (
     <ExperimentShell
       number="26"
-      eyebrow="UI-EXP-003 · каталожный паттерн"
-      title="Ярусный каталог"
-      purpose="Сравнение текущего вертикального каталога Практик с многоярусной композицией: промо, рельс, тематический фокус, коллекции и контекстный чек-ин."
+      eyebrow="UI-EXP-003 · live catalog preview"
+      title="практики."
+      purpose="Preview-only композиция из реальных practice keys, live themes и пяти production-коллекций."
       mode={mode}
     >
-      <div className="mx-layered-catalog" data-accent={accent}>
-        <AccentToggle accent={accent} onChange={setAccent} />
-        {journalStage === 'entry' ? (
-          <ThemeJournalEntry
-            theme={activeTheme}
-            draft={journalDraft}
-            onDraftChange={setJournalDraft}
-            onBack={() => setJournalStage('catalog')}
-            onSubmit={finishEntry}
+      <div className="mx-layered-catalog" data-accent="gold">
+        <JournalBanner onOpen={() => setJournalOpen(true)} />
+        <PreviewStatus status={status} error={error} onReload={reload} />
+        <PracticeRail practices={practices} onOpen={practice => setOpenedPractice(practice)} />
+        <ThemeCarousel themes={themes} onOpen={theme => setSelectedTheme(theme)} />
+        <Collections onOpen={collection => setSelectedCollection(collection)} />
+        {selectedCollection && (
+          <CollectionScreen
+            collection={selectedCollection}
+            practices={practices}
+            rituals={rituals}
+            ascezas={ascezas}
+            onBack={() => setSelectedCollection(null)}
+            onOpenPractice={practice => setOpenedPractice(practice)}
           />
-        ) : journalStage === 'complete' ? (
-          <ThemeJournalComplete
-            theme={activeTheme}
-            outcome={journalOutcome}
-            onOutcomeChange={setJournalOutcome}
-            onFinish={finishPractice}
-          />
-        ) : (
-          <>
-            <HeroBanner accent={accent} onOpenCheckin={() => setSheetOpen(true)} />
-            <RecommendedRail accent={accent} />
-            <WeeklyTheme
-              themeIndex={themeIndex}
-              setThemeIndex={setThemeIndex}
-              accent={accent}
-              onStartJournal={openJournal}
-            />
-            {selectedCollection ? (
-              <CategoryScreen
-                category={selectedCollection}
-                onBack={() => setSelectedCollection(null)}
-              />
-            ) : (
-              <Collections onOpen={setSelectedCollection} />
-            )}
+        )}
+        {openedPractice && (
+          <div className="mx-layered-catalog__mapping-note" role="status">
+            <strong>{openedPractice.title}</strong>
+            <span>
+              Реальный mapping: <code>practiceKey={openedPractice.key}</code> →{' '}
+              <code>setSub('{openedPractice.sub}')</code>
+            </span>
             <button
               type="button"
-              className="mx-layered-catalog__checkin-trigger"
-              onClick={() => setSheetOpen(true)}
+              className="mx-layered-catalog__pill"
+              onClick={() => setOpenedPractice(null)}
             >
-              Открыть чек-ин эмоций <ArrowRight size={15} />
+              Закрыть
             </button>
-            <EmotionSheet
-              open={sheetOpen}
-              onOpen={() => setSheetOpen(true)}
-              onClose={() => setSheetOpen(false)}
-              accent={accent}
-            />
-          </>
+          </div>
         )}
       </div>
     </ExperimentShell>
