@@ -5,6 +5,7 @@
   --pf-faint: #625d54;
   --pf-line: #36322c;
   --pf-ice: #c9e7e5;
+  --pf-ios-input-accessory-gap: 44px;
   box-sizing: border-box;
   width: 100%;
   height: var(--pf-viewport-height, 100dvh);
@@ -193,6 +194,33 @@
   min-height: 62px;
   padding: 8px 0 max(8px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
   background: var(--pf-bg);
+  z-index: 3;
+}
+.practice-flow__editor-bar--keyboard {
+  bottom: calc(
+    var(--pf-ios-input-accessory-gap) -
+      max(20px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)))
+  );
+  min-height: 64px;
+  padding: 8px 0;
+}
+.practice-flow__editor-bar--keyboard .practice-flow__editor-tools {
+  display: none;
+}
+.practice-flow__editor-bar--keyboard .practice-flow__round-action {
+  width: 48px;
+  height: 48px;
+  margin: 0 0 0 auto;
+  border: 1px solid var(--pf-text) !important;
+  border-radius: 50%;
+  color: var(--pf-bg) !important;
+  background: var(--pf-text) !important;
+  font-size: 20px;
+}
+.practice-flow__editor-bar--keyboard .practice-flow__round-action:disabled {
+  border-color: var(--pf-line) !important;
+  color: var(--pf-faint) !important;
+  background: transparent !important;
 }
 .practice-flow__editor-bar button,
 .practice-flow__editor-tools button {

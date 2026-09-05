@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { useVisualViewportHeight } from '../../lib/visualViewport'
+import { useEffect, useRef, useState } from 'react'
 import approvedNoBlameRelease from '../../assets/ui-lab/approved-no-blame-release.png'
 import { NoBlameKnotGlyph } from './NoBlameGlyphs'
 import './PracticeFlow.css'
@@ -103,7 +102,35 @@ export default function PracticeFlow() {
   const [reflection, setReflection] = useState('')
   const [endsAt, setEndsAt] = useState(null)
   const [secondsLeft, setSecondsLeft] = useState(120)
-  const viewportHeight = useVisualViewportHeight()
+  const [editorFocused, setEditorFocused] = useState(false)
+  const layoutViewportHeight = useRef(typeof window !== 'undefined' ? window.innerHeight : null)
+  const [visualViewportMetrics, setVisualViewportMetrics] = useState({
+    height: null,
+    offsetTop: 0,
+  })
+
+  useEffect(() => {
+    const viewport = window.visualViewport
+    if (!viewport) return undefined
+
+    const update = () => {
+      setVisualViewportMetrics({
+        height: Math.round(viewport.height),
+        offsetTop: Math.round(viewport.offsetTop),
+      })
+    }
+
+    update()
+    viewport.addEventListener('resize', update)
+    viewport.addEventListener('scroll', update)
+    window.addEventListener('resize', update)
+
+    return () => {
+      viewport.removeEventListener('resize', update)
+      viewport.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [])
 
   useEffect(() => {
     if (!endsAt) return undefined
@@ -135,7 +162,18 @@ export default function PracticeFlow() {
     COMPLETION_COPY[outcome] || COMPLETION_COPY['Не начал(а)']
   const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
   const seconds = String(secondsLeft % 60).padStart(2, '0')
-  const screenStyle = viewportHeight ? { '--pf-viewport-height': `${viewportHeight}px` } : undefined
+  const keyboardOpen =
+    editorFocused &&
+    visualViewportMetrics.height !== null &&
+    layoutViewportHeight.current !== null &&
+    visualViewportMetrics.height < layoutViewportHeight.current - 80
+  const screenStyle = visualViewportMetrics.height
+    ? {
+        '--pf-viewport-height': `${visualViewportMetrics.height}px`,
+        '--pf-visual-viewport-height': `${visualViewportMetrics.height}px`,
+        '--pf-visual-viewport-offset-top': `${visualViewportMetrics.offsetTop}px`,
+      }
+    : undefined
 
   return (
     <main
@@ -177,8 +215,13 @@ export default function PracticeFlow() {
               placeholder="Начни писать…"
               aria-label="Что сейчас занимает мои мысли"
               autoFocus
+              onFocus={() => setEditorFocused(true)}
+              onBlur={() => setEditorFocused(false)}
             />
-            <div className="practice-flow__editor-bar" aria-label="Действия редактора">
+            <div
+              className={`practice-flow__editor-bar${keyboardOpen ? ' practice-flow__editor-bar--keyboard' : ''}`}
+              aria-label="Действия редактора"
+            >
               <div className="practice-flow__editor-tools">
                 <button type="button" aria-label="Добавить заметку">
                   •
