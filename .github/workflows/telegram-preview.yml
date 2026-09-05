@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      TELEGRAM_MAIN_BOT_TOKEN: ${{ secrets.TELEGRAM_MAIN_BOT_TOKEN }}
+      TELEGRAM_MAIN_BOT_TOKEN: ${{ secrets.TELEGRAM_PRODUCTION_BOT_TOKEN }}
       TELEGRAM_PREVIEW_CHAT_ID: ${{ secrets.TELEGRAM_PREVIEW_CHAT_ID }}
       VERCEL_PROTECTION_BYPASS: ${{ secrets.VERCEL_PROTECTION_BYPASS }}
       PREVIEW_URL: ${{ inputs.url }}
@@ -154,6 +154,14 @@ jobs:
           fi
           printf 'message<<PREVIEW_MESSAGE_EOF\n%s\nPREVIEW_MESSAGE_EOF\n' "$message" >> "$GITHUB_OUTPUT"
           printf 'url=%s\nbutton_label=%s\n' "$preview_app_url" "$button_label" >> "$GITHUB_OUTPUT"
+
+      - name: Identify Telegram notifier bot
+        shell: bash
+        run: |
+          set -euo pipefail
+          telegram_token="$(printf '%s' "$TELEGRAM_MAIN_BOT_TOKEN" | tr -d '[:space:]')"
+          response="$(curl --silent --show-error --max-time 20 "https://api.telegram.org/bot${telegram_token}/getMe")"
+          printf '%s\n' "$response" | jq '{ok, result: {id: .result.id, username: .result.username, first_name: .result.first_name}}'
 
       - name: Notify Telegram
         shell: bash

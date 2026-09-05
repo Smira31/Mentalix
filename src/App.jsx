@@ -13,6 +13,7 @@ import AppLock from './screens/AppLock'
 import MazeLogo from './components/MazeLogo'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
+import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
@@ -1233,6 +1234,8 @@ export default function App() {
           onTabChange={switchTab}
         />
       )}
+
+      <PreviewApiDiagnostic />
     </div>
   )
 }
