@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import SemanticGlyph from '../SemanticGlyph'
 import { useVisualViewportHeight } from '../../lib/visualViewport'
 import './PracticeFlow.css'
+
+let noBlameFlightPlayed = false
 
 const FEELING_OPTIONS = [
   'Скучно',
@@ -44,8 +45,47 @@ function OptionList({ options, selected, onPick }) {
   )
 }
 
-function NoBlameGlyph({ animated = false }) {
-  return <SemanticGlyph kind="no-blame" animated={animated} highlighted />
+function NoBlameReleaseScene({ animate = false }) {
+  const reducedMotion =
+    typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  const shouldFly = animate && !reducedMotion && !noBlameFlightPlayed
+  const [phase, setPhase] = useState(shouldFly ? 'inside' : 'outside')
+
+  useEffect(() => {
+    if (!shouldFly) return undefined
+    const launch = window.setTimeout(() => setPhase('flying'), 250)
+    const finish = window.setTimeout(() => {
+      noBlameFlightPlayed = true
+      setPhase('outside')
+    }, 1100)
+    return () => {
+      window.clearTimeout(launch)
+      window.clearTimeout(finish)
+    }
+  }, [shouldFly])
+
+  return (
+    <div
+      className={`practice-flow__release-scene practice-flow__release-scene--${phase}`}
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 180 130" role="presentation">
+        <g className="practice-flow__release-cage">
+          <path d="M46 96V48a38 38 0 0 1 76 0v48" />
+          <path d="M61 96V50M76 96V46M92 96V44M108 96V48M38 96h92" />
+        </g>
+        <g className="practice-flow__release-bird">
+          <path
+            className="practice-flow__release-body"
+            d="M70 67c8-13 24-14 35-5-7 16-23 22-35 15Z"
+          />
+          <path className="practice-flow__release-wing" d="M79 64c7-6 14-5 20 0-8 0-14 5-18 10" />
+          <path className="practice-flow__release-beak" d="m104 62 12 4-11 5" />
+        </g>
+        <circle className="practice-flow__release-accent" cx="133" cy="41" r="3" />
+      </svg>
+    </div>
+  )
 }
 
 function ReferenceChrome({ editor = false }) {
@@ -127,7 +167,7 @@ export default function PracticeFlow() {
         {step === 'intro' && (
           <div className="practice-flow__screen practice-flow__screen--entry practice-flow__screen--reference-entry">
             <ReferenceChrome />
-            <NoBlameGlyph animated />
+            <NoBlameReleaseScene animate />
             <h1 id="practice-flow-title">Вернись к делу без давления</h1>
             <p className="practice-flow__lead">
               Начни с одного безопасного шага. Не нужно сделать всё сразу.
@@ -197,7 +237,7 @@ export default function PracticeFlow() {
 
         {step === 'release' && (
           <div className="practice-flow__screen practice-flow__screen--reflection">
-            <NoBlameGlyph animated={false} />
+            <NoBlameReleaseScene />
             <p className="practice-flow__kicker">Можно посмотреть мягче</p>
             <h1 id="practice-flow-title">Здесь не за что себя винить</h1>
             <p className="practice-flow__quote">{RELEASE_PHRASE}</p>
@@ -244,7 +284,7 @@ export default function PracticeFlow() {
             <div className="practice-flow__timer" aria-live="polite">
               {minutes}:{seconds}
             </div>
-            <NoBlameGlyph animated={false} />
+            <NoBlameReleaseScene />
             <p className="practice-flow__lead">Не идеально. Просто начни.</p>
             <button className="practice-flow__quiet-action" type="button" onClick={stopTimer}>
               Остановить
@@ -270,7 +310,7 @@ export default function PracticeFlow() {
         {step === 'complete' && (
           <div className="practice-flow__screen practice-flow__screen--done practice-flow__screen--reference-complete">
             <ReferenceChrome />
-            <NoBlameGlyph animated />
+            <NoBlameReleaseScene />
             <h1 id="practice-flow-title">{completionTitle}</h1>
             <p className="practice-flow__lead">{completionDescription}</p>
             <p className="practice-flow__question">Эта практика была полезна?</p>

@@ -33,7 +33,7 @@
   height: 100%;
   min-height: 0;
   padding: clamp(28px, 7vh, 72px) 0 8px;
-  animation: pf-screen-in 240ms ease-out both;
+  animation: pf-screen-in 200ms ease-out both;
 }
 .practice-flow__screen--entry,
 .practice-flow__screen--reflection,
@@ -86,11 +86,6 @@
   font-size: 20px;
   font-weight: 400;
 }
-.practice-flow__primary:hover,
-.practice-flow__primary:focus-visible {
-  border-color: var(--pf-text);
-  background: var(--pf-text);
-}
 .practice-flow__choices {
   display: grid;
   width: 100%;
@@ -113,7 +108,6 @@
     sans-serif;
   cursor: pointer;
 }
-.practice-flow__choices button:hover,
 .practice-flow__choices button:focus-visible,
 .practice-flow__choices button.is-selected {
   color: var(--pf-ice);
@@ -121,12 +115,10 @@
 .practice-flow__choice-mark {
   color: var(--pf-faint);
   font-size: 20px;
-  transition: transform 180ms ease;
 }
-.practice-flow__choices button:hover .practice-flow__choice-mark,
+.practice-flow__choices button:focus-visible .practice-flow__choice-mark,
 .practice-flow__choices button.is-selected .practice-flow__choice-mark {
   color: var(--pf-ice);
-  transform: translate(2px, -2px);
 }
 .practice-flow__round-action {
   display: inline-grid;
@@ -143,43 +135,14 @@
   font-weight: 300;
   cursor: pointer;
 }
-.practice-flow__round-action:hover,
 .practice-flow__round-action:focus-visible {
-  color: var(--pf-bg);
-  background: var(--pf-ice);
+  outline: 2px solid var(--pf-text);
+  outline-offset: 3px;
 }
 .practice-flow__round-action:disabled {
   border-color: var(--pf-line);
   color: var(--pf-faint);
   cursor: not-allowed;
-}
-.practice-flow__path {
-  display: flex;
-  align-items: center;
-  width: 56px;
-  height: 14px;
-  margin: 12px 0 6px;
-}
-.practice-flow__path-stroke {
-  width: 100%;
-  height: 1px;
-  background: var(--pf-line);
-  transform-origin: left;
-}
-.practice-flow__path-dot {
-  width: 5px;
-  height: 5px;
-  flex: 0 0 5px;
-  border: 1px solid var(--pf-line);
-  border-radius: 50%;
-}
-.practice-flow__path-dot--end {
-  border-color: var(--pf-ice);
-  background: var(--pf-ice);
-  box-shadow: 0 0 0 4px rgba(201, 231, 229, 0.06);
-}
-.practice-flow__path.is-pulsing .practice-flow__path-stroke {
-  animation: pf-path 420ms ease-out;
 }
 .practice-flow__quote {
   max-width: 480px;
@@ -188,14 +151,6 @@
   font-size: 18px;
   line-height: 1.55;
   text-align: left;
-}
-.practice-flow__screen--reflection .mx-semantic-glyph {
-  width: 138px;
-  height: 96px;
-  opacity: 0.8;
-}
-.practice-flow__screen--reflection .practice-flow__round-action {
-  margin-top: auto;
 }
 .practice-flow__hint {
   width: 100%;
@@ -234,13 +189,12 @@
   left: 0;
   display: flex;
   align-items: center;
-  gap: 18px;
   min-height: 62px;
   padding: 8px 0 max(8px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
-  border-top: 1px solid var(--pf-line);
   background: var(--pf-bg);
 }
-.practice-flow__editor-bar button {
+.practice-flow__editor-bar button,
+.practice-flow__editor-tools button {
   border: 0;
   color: var(--pf-muted);
   background: transparent;
@@ -249,18 +203,31 @@
     sans-serif;
   cursor: pointer;
 }
-.practice-flow__editor-bar button:hover,
-.practice-flow__editor-bar button:focus-visible {
-  color: var(--pf-ice);
-}
-.practice-flow__editor-bar .practice-flow__deeper {
-  font-size: 12px;
-}
 .practice-flow__editor-bar .practice-flow__round-action {
   width: 48px;
   height: 48px;
   margin: 0 0 0 auto;
   font-size: 20px;
+}
+.practice-flow__editor-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.practice-flow__editor-tools button {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(245, 241, 234, 0.14);
+  border-radius: 50%;
+  font-size: 17px;
+}
+.practice-flow__editor-tools .practice-flow__deeper {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--pf-muted);
+  font-size: 12px;
 }
 .practice-flow__timer {
   margin: 28px 0 0;
@@ -269,9 +236,6 @@
     500 clamp(58px, 14vw, 112px)/1 Onest,
     sans-serif;
   letter-spacing: -0.06em;
-}
-.practice-flow__screen--timer .practice-flow__path {
-  margin-top: 24px;
 }
 .practice-flow__screen--timer .practice-flow__lead {
   font-size: 14px;
@@ -288,22 +252,23 @@
     sans-serif;
   cursor: pointer;
 }
-.practice-flow__quiet-action:hover {
-  color: var(--pf-ice);
-  border-color: var(--pf-ice);
-}
 .practice-flow__feedback {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 26px;
+  margin-top: 12px;
 }
 .practice-flow__feedback button {
-  min-height: 38px;
-  padding: 0 13px;
+  display: flex;
+  min-height: 70px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 4px;
   border: 1px solid var(--pf-line);
-  border-radius: 999px;
+  border-radius: 12px;
   color: var(--pf-muted);
   background: transparent;
   font:
@@ -311,222 +276,22 @@
     sans-serif;
   cursor: pointer;
 }
-.practice-flow__feedback button:hover,
+.practice-flow__feedback button span {
+  color: var(--pf-ice);
+  font-size: 18px;
+  line-height: 1;
+}
+.practice-flow__feedback button:focus-visible,
 .practice-flow__feedback button.is-selected {
   border-color: var(--pf-ice);
   color: var(--pf-ice);
 }
-.practice-flow__screen--done .practice-flow__primary {
-  margin-top: 28px;
-}
-.practice-flow__secondary {
-  margin-top: 18px;
-  color: var(--pf-muted);
-  font-size: 13px;
-  text-decoration: none;
-}
-.practice-flow__secondary:hover {
-  color: var(--pf-ice);
-}
-.practice-flow__scene {
-  position: relative;
-  width: 230px;
-  height: 170px;
-  margin-bottom: 24px;
-}
-.practice-flow__scene .mx-semantic-glyph {
-  position: absolute;
-  inset: 16px 0 0;
+.practice-flow__finish-action {
   width: 100%;
-  height: 150px;
-  opacity: 0.16;
+  justify-content: center;
+  margin-top: auto !important;
+  border-radius: 15px;
 }
-.practice-flow__cage {
-  position: absolute;
-  z-index: 2;
-  left: 53px;
-  top: 24px;
-  width: 104px;
-  height: 116px;
-  border: 1px solid var(--pf-muted);
-  border-bottom: 0;
-  border-radius: 52px 52px 0 0;
-}
-.practice-flow__cage i {
-  position: absolute;
-  top: 8px;
-  bottom: 0;
-  width: 1px;
-  background: var(--pf-line);
-}
-.practice-flow__cage i:nth-child(1) {
-  left: 25%;
-}
-.practice-flow__cage i:nth-child(2) {
-  left: 50%;
-}
-.practice-flow__cage i:nth-child(3) {
-  left: 75%;
-}
-.practice-flow__cage i:nth-child(4) {
-  left: 0;
-  height: 70%;
-  transform: rotate(-18deg);
-  transform-origin: bottom;
-}
-.practice-flow__cage b {
-  position: absolute;
-  right: -8px;
-  bottom: 0;
-  left: -8px;
-  height: 1px;
-  background: var(--pf-muted);
-}
-.practice-flow__bird {
-  position: absolute;
-  z-index: 3;
-  left: 97px;
-  top: 78px;
-  width: 36px;
-  height: 24px;
-  border-radius: 55% 50% 45% 35%;
-  background: var(--pf-ice);
-  transform: translateX(0);
-}
-.practice-flow__bird span {
-  position: absolute;
-  right: -8px;
-  top: 5px;
-  width: 0;
-  height: 0;
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 9px solid var(--pf-ice);
-}
-.practice-flow__bird i {
-  position: absolute;
-  left: 7px;
-  top: 7px;
-  width: 14px;
-  height: 8px;
-  border-bottom: 1px solid var(--pf-bg);
-  border-radius: 50%;
-  transform: rotate(-25deg);
-}
-.practice-flow__bird b {
-  position: absolute;
-  left: 5px;
-  top: -10px;
-  width: 20px;
-  height: 17px;
-  border-left: 1px solid var(--pf-ice);
-  border-radius: 50%;
-  transform: rotate(-18deg);
-}
-.practice-flow__scene.is-entry .practice-flow__bird {
-  animation: pf-bird-entry 620ms 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.practice-flow__scene.is-open .practice-flow__bird {
-  animation: pf-bird-exit 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-@keyframes pf-screen-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes pf-path {
-  from {
-    transform: scaleX(0.08);
-    opacity: 0.3;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-@keyframes pf-bird-entry {
-  from {
-    opacity: 0;
-    transform: translate(0, 18px) rotate(0);
-  }
-  to {
-    opacity: 1;
-    transform: translate(80px, -40px) rotate(-8deg);
-  }
-}
-@keyframes pf-bird-exit {
-  from {
-    opacity: 0;
-    transform: translate(0, 18px) rotate(0);
-  }
-  to {
-    opacity: 1;
-    transform: translate(80px, -40px) rotate(-8deg);
-  }
-}
-@media (max-width: 520px) {
-  .practice-flow {
-    padding-top: max(20px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
-    padding-right: max(16px, var(--app-safe-right, env(safe-area-inset-right, 0px)));
-    padding-left: max(16px, var(--app-safe-left, env(safe-area-inset-left, 0px)));
-  }
-  .practice-flow__screen {
-    padding-top: clamp(20px, 5vh, 44px);
-  }
-  .practice-flow h1 {
-    font-size: clamp(30px, 9vw, 42px);
-  }
-  .practice-flow__lead {
-    font-size: 14px;
-  }
-  .practice-flow__editor-bar {
-    gap: 13px;
-  }
-  .practice-flow__editor-bar .practice-flow__deeper {
-    max-width: 120px;
-    text-align: left;
-  }
-}
-@media (max-width: 350px) {
-  .practice-flow {
-    padding-right: 13px;
-    padding-left: 13px;
-  }
-  .practice-flow__scene {
-    transform: scale(0.82);
-    margin-bottom: 8px;
-  }
-  .practice-flow__editor-bar .practice-flow__deeper {
-    max-width: 92px;
-    font-size: 11px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .practice-flow *,
-  .practice-flow *::before,
-  .practice-flow *::after {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-.practice-flow .mx-semantic-glyph--no-blame {
-  width: min(100%, 250px);
-  height: 170px;
-  margin: 0 auto 18px;
-}
-
-.practice-flow__screen--timer .mx-semantic-glyph--no-blame {
-  width: 128px;
-  height: 88px;
-  margin: 18px auto 6px;
-}
-
 .practice-flow__meta,
 .practice-flow__next,
 .practice-flow__question {
@@ -534,31 +299,10 @@
   font-size: 12px;
   line-height: 1.5;
 }
-
-.practice-flow__meta {
-  margin: 16px 0 0;
-}
-
-.practice-flow__next {
-  max-width: 310px;
-  margin: 14px 0 0;
-  color: var(--pf-faint);
-}
-
 .practice-flow__question {
-  margin: 24px 0 0;
+  margin: 28px 0 0;
   font-weight: 600;
 }
-
-.practice-flow__screen--agreement .practice-flow__primary {
-  margin-top: auto;
-}
-
-.practice-flow__screen--done .mx-semantic-glyph--no-blame {
-  height: 132px;
-  margin-bottom: 0;
-}
-
 .practice-flow__close,
 .practice-flow__identity a {
   display: inline-grid;
@@ -574,13 +318,11 @@
   line-height: 1;
   text-decoration: none;
 }
-
 .practice-flow__close {
   position: absolute;
   top: 0;
   right: 0;
 }
-
 .practice-flow__topbar {
   position: absolute;
   top: 0;
@@ -591,14 +333,12 @@
   justify-content: space-between;
   height: 38px;
 }
-
 .practice-flow__top-actions,
 .practice-flow__identity {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-
 .practice-flow__top-actions button {
   display: inline-grid;
   place-items: center;
@@ -612,24 +352,20 @@
     18px/1 Onest,
     sans-serif;
 }
-
 .practice-flow__identity span {
   color: var(--pf-muted);
   font-size: 12px;
   letter-spacing: 0.02em;
 }
-
 .practice-flow__screen--reference-entry {
   position: relative;
   padding-top: clamp(58px, 10vh, 98px);
 }
-
-.practice-flow__screen--reference-entry .mx-semantic-glyph--no-blame {
+.practice-flow__screen--reference-entry .practice-flow__release-scene {
   width: min(100%, 286px);
   height: 214px;
   margin: 0 auto 30px;
 }
-
 .practice-flow__screen--reference-entry h1,
 .practice-flow__screen--reference-complete h1 {
   max-width: 330px;
@@ -638,24 +374,20 @@
   line-height: 1.12;
   letter-spacing: -0.035em;
 }
-
 .practice-flow__screen--reference-entry .practice-flow__lead {
   max-width: 285px;
   margin-top: 16px;
   font-size: 14px;
   line-height: 1.5;
 }
-
 .practice-flow__entry-action {
   margin-top: auto;
 }
-
 .practice-flow__screen--reference-editor {
   position: relative;
   align-items: stretch;
   padding-top: 58px;
 }
-
 .practice-flow__screen--reference-editor h1 {
   max-width: 330px;
   margin: 8px 0 14px;
@@ -663,116 +395,182 @@
   line-height: 1.12;
   letter-spacing: -0.035em;
 }
-
 .practice-flow__screen--reference-editor .practice-flow__hint {
   max-width: 330px;
-  padding-left: 13px;
   font-size: 13px;
   line-height: 1.45;
 }
-
 .practice-flow__screen--reference-editor textarea {
   margin-top: 30px;
   font-size: 18px;
   line-height: 1.55;
 }
-
-.practice-flow__screen--reference-editor .practice-flow__editor-bar {
-  border-top: 0;
-}
-
-.practice-flow__editor-tools {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.practice-flow__editor-tools button {
-  display: inline-grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(245, 241, 234, 0.14);
-  border-radius: 50%;
-  color: var(--pf-muted);
-  font-size: 17px;
-}
-
-.practice-flow__editor-tools .practice-flow__deeper {
-  display: inline-block;
-  margin-left: 8px;
-  color: var(--pf-muted);
-  font-size: 12px;
-}
-
 .practice-flow__screen--reference-complete {
   position: relative;
   padding-top: clamp(48px, 8vh, 76px);
 }
-
-.practice-flow__screen--reference-complete .mx-semantic-glyph--no-blame {
+.practice-flow__screen--reference-complete .practice-flow__release-scene {
   width: min(100%, 220px);
   height: 150px;
   margin: 0 auto 14px;
 }
-
 .practice-flow__screen--reference-complete .practice-flow__lead {
   max-width: 300px;
   margin-top: 14px;
   font-size: 14px;
 }
-
-.practice-flow__screen--reference-complete .practice-flow__question {
-  margin-top: 28px;
-}
-
-.practice-flow__screen--reference-complete .practice-flow__feedback {
-  width: 100%;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.practice-flow__screen--reference-complete .practice-flow__feedback button {
-  display: flex;
-  min-height: 70px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 4px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-.practice-flow__screen--reference-complete .practice-flow__feedback button span {
-  color: var(--pf-ice);
-  font-size: 18px;
-  line-height: 1;
-}
-
 .practice-flow__finish-action {
-  width: 100%;
-  justify-content: center;
   margin-top: auto !important;
-  border-radius: 15px;
 }
-
+.practice-flow__release-scene {
+  flex: 0 0 auto;
+}
+.practice-flow__release-scene svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.practice-flow__release-cage {
+  fill: none;
+  stroke: var(--pf-muted);
+  stroke-width: 1.1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.practice-flow__release-bird {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.practice-flow__release-body,
+.practice-flow__release-beak {
+  fill: var(--pf-text);
+  stroke: var(--pf-text);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.practice-flow__release-wing {
+  fill: none;
+  stroke: var(--pf-muted);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+.practice-flow__release-accent {
+  fill: var(--pf-ice);
+  stroke: var(--pf-ice);
+}
+.practice-flow__release-scene--inside .practice-flow__release-bird {
+  transform: translate(0, 0);
+}
+.practice-flow__release-scene--outside .practice-flow__release-bird {
+  transform: translate(62px, -28px) rotate(-8deg);
+}
+.practice-flow__release-scene--flying .practice-flow__release-bird {
+  animation: pf-release-flight 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.practice-flow__release-scene--flying .practice-flow__release-wing {
+  animation: pf-release-wing 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes pf-screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pf-release-flight {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  35% {
+    transform: translate(23px, -10px) rotate(-3deg);
+  }
+  70% {
+    transform: translate(46px, -25px) rotate(-6deg);
+  }
+  100% {
+    transform: translate(62px, -28px) rotate(-8deg);
+  }
+}
+@keyframes pf-release-wing {
+  0%,
+  38% {
+    transform: rotate(0deg);
+  }
+  62%,
+  100% {
+    transform: rotate(-7deg);
+  }
+}
+@media (max-width: 520px) {
+  .practice-flow {
+    padding-top: max(20px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
+    padding-right: max(16px, var(--app-safe-right, env(safe-area-inset-right, 0px)));
+    padding-left: max(16px, var(--app-safe-left, env(safe-area-inset-left, 0px)));
+  }
+  .practice-flow__screen {
+    padding-top: clamp(20px, 5vh, 44px);
+  }
+  .practice-flow__screen--reference-entry {
+    padding-top: 58px;
+  }
+  .practice-flow h1 {
+    font-size: clamp(30px, 9vw, 42px);
+  }
+  .practice-flow__lead {
+    font-size: 14px;
+  }
+}
+@media (max-width: 350px) {
+  .practice-flow {
+    padding-right: 13px;
+    padding-left: 13px;
+  }
+  .practice-flow__screen--reference-entry .practice-flow__release-scene {
+    height: 172px;
+    margin-bottom: 16px;
+  }
+  .practice-flow__screen--reference-complete .practice-flow__release-scene {
+    height: 110px;
+  }
+  .practice-flow__editor-tools .practice-flow__deeper {
+    margin-left: 4px;
+    font-size: 11px;
+  }
+}
 @media (max-height: 650px) {
   .practice-flow__screen--reference-entry {
     padding-top: 44px;
   }
-  .practice-flow__screen--reference-entry .mx-semantic-glyph--no-blame {
+  .practice-flow__screen--reference-entry .practice-flow__release-scene {
     height: 142px;
     margin-bottom: 16px;
   }
   .practice-flow__screen--reference-complete {
     padding-top: 42px;
   }
-  .practice-flow__screen--reference-complete .mx-semantic-glyph--no-blame {
+  .practice-flow__screen--reference-complete .practice-flow__release-scene {
     height: 92px;
   }
   .practice-flow__screen--reference-complete .practice-flow__question {
     margin-top: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .practice-flow *,
+  .practice-flow *::before,
+  .practice-flow *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .practice-flow__release-scene--inside .practice-flow__release-bird,
+  .practice-flow__release-scene--flying .practice-flow__release-bird,
+  .practice-flow__release-scene--outside .practice-flow__release-bird {
+    transform: translate(62px, -28px) rotate(-8deg);
   }
 }
