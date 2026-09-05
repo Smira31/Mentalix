@@ -899,3 +899,52 @@
     transition: none !important;
   }
 }
+
+.mx-semantic-glyph__no-blame-cage {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mx-semantic-glyph__no-blame-bird {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.mx-semantic-glyph__no-blame-bird path:not(:first-child) {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mx-semantic-glyph__no-blame-accent {
+  fill: rgb(var(--c-azure));
+  stroke: rgb(var(--c-azure));
+}
+
+.mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--no-blame
+  .mx-semantic-glyph__no-blame-bird {
+  animation: mx-semantic-no-blame-flight 760ms 120ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes mx-semantic-no-blame-flight {
+  from {
+    opacity: 0;
+    transform: translate(0, 9px) rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    transform: translate(62px, -28px) rotate(-8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-semantic-glyph--no-blame .mx-semantic-glyph__no-blame-bird {
+    animation: none !important;
+    transform: none !important;
+  }
+}

@@ -10,6 +10,7 @@ import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
+import PracticeFlow from './PracticeFlow'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -25,6 +26,7 @@ export function resolveUiLabSection(value = 'hub') {
       'daily-canonical',
       'practice-catalog',
       'focus-check',
+      'practice-flow',
     ].includes(value)
       ? value
       : 'hub')
@@ -42,8 +44,10 @@ export default function UiLab({ initialSection = 'hub' }) {
     window.history.replaceState({}, '', url)
   }
 
-  return (
-    <main className="mx-ui-lab">
+  return section === 'practice-flow' ? (
+    <PracticeFlow />
+  ) : (
+    <main className={`mx-ui-lab mx-ui-lab--${section}`}>
       <div className="mx-ui-lab__scroll">
         <header className="mx-ui-lab__header">
           <p className="mx-ui-lab__kicker">Mentalix · Preview-only</p>
@@ -156,6 +160,7 @@ export default function UiLab({ initialSection = 'hub' }) {
             </section>
           )}
           {section === 'focus-check' && <FocusCheck />}
+          {section === 'practice-flow' && <PracticeFlow />}
         </div>
         <footer className="mx-ui-lab__footer">
           Preview-only · реальные пользовательские данные и product logic не подключены

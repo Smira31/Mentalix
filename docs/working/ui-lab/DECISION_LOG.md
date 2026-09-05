@@ -94,3 +94,43 @@
 - **Evidence:** ветка `feat/ui-lab-history-trends-journal`; Preview-ссылки отправлены в Telegram через workflow `telegram-preview.yml` по ходу разработки и фиксов (в т.ч. итоговый деплой на коммит `e10a8679`, включающий мердж UI Lab Hub из `main`); PR #502 (`feat/ui-lab-history-trends-journal` → `main`) — исходный рабочий PR для этой ветки.
 - **Не следует из решения:** это не production promotion само по себе. PR #502 не мержится напрямую — перенос оформлен отдельным чистым promotion-PR из `feat/ui-lab-history-trends-journal` в `main`, по тому же принципу, что `UI-DEC-007` для UI-EXP-003 (там аналогично не мержился исходный PR #505).
 - **Следующий шаг:** review и merge promotion-PR в `main`.
+
+### `UI-DEC-010` — PracticeFlow «Без вины» собран как manual-gate
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; не утверждено и не является production-решением.
+- **Решение:** добавить в UI Lab Preview-only эксперимент `PracticeFlow` из шести интерактивных состояний: вход, выбор, осмысление, свободный редактор, таймер и завершение. Использованы fixture-данные, Onest, тёмный фон `#050403`, один ice-акцент, тонкая линия-путь и существующий `SemanticGlyph`.
+- **Граница:** production-экраны, API, роутинг production и feature flags не менялись.
+- **Следующий шаг:** ручная проверка в реальном Telegram/iPhone на ширинах 390×844 и 320×568: safe areas, клавиатура редактора, reduced motion, touch targets и отсутствие horizontal overflow. До этого никаких утверждений и promotion в production.
+
+### `UI-DEC-011` — PracticeFlow синхронизирован с production state order без production изменений
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; веб-Preview-only, не утверждено и не является promotion.
+- **Решение:** UI Lab повторяет полный порядок `ProcrastinationFlow`: `intro → task → feeling → release → plan/distraction → plan/agreement → run → outcome → complete`. Тексты и варианты выбора приведены к production источнику; сохранение результата остаётся fixture-only.
+- **Графика:** добавлен новый `SemanticGlyph` registry kind `no-blame` — неподвижная клетка и птица, вылетающая один раз; существующие glyph cases не менялись.
+- **Editor ownership:** production `JournalTextarea` использует floating toolbar только при `floatingToolbar`; UI Lab PracticeFlow не рендерит этот toolbar, а оставляет одну собственную круглую галочку над visualViewport. Чёрная плавающая кнопка в PracticeFlow DOM не обнаружена (`fixed/sticky` элементов нет); системный Safari/WebView UI не изменялся.
+- **Следующий шаг:** прямой HTTPS Preview проверить в обычном Safari на 390×844 и 320×568; Telegram/iPhone WebView остаётся отдельным финальным gate.
+
+### `UI-DEC-012` — Reference gate для трёх экранов PracticeFlow
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; обычный web Preview-only, без Telegram workflow и без production promotion.
+- **Решение:** для визуального одобрения обновлены только `intro`, `task` editor и `complete`. Остальные UI Lab состояния flow не перестраивались.
+- **Композиция:** добавлен editorial-style close control, компактные editor actions, белая круглая стрелка на opening, visualViewport-aware editor dock и широкая CTA «Сохранить и завершить» на completion. Референсные изображения в приложении к задаче не были доступны в sandbox, поэтому сравнение выполнено по текстовой спецификации, без копирования Stoic assets.
+- **Следующий шаг:** ручное одобрение трёх экранов в обычном Safari Preview; только после этого разрешается продолжать остальные состояния.
+
+### `UI-DEC-013` — Mentalix UI Lab: static-first
+
+- **Дата:** 05.09.2026
+- **Статус:** принято как общее правило для будущих UI Lab карточек.
+- **Правило:** **Mentalix UI Lab: static-first. Иллюстрация — статичная смысловая метафора. Любая анимация запрещена, пока не будет отдельно утверждена пользователем для конкретной карточки.**
+- **PracticeFlow:** one-shot motion птицы полностью отменён; вход, осмысление, таймер и завершение используют один статичный финальный кадр с открытой клеткой и птицей снаружи. CSS animation/transition и motion state logic удалены из PracticeFlow.
+- **Evidence:** motion video/GIF и связанные motion observations удалены; статичные screenshots сохранены. Статус эксперимента `MXL-UI-LAB-PRACTICE-FLOW-001` остаётся `manual-gate`, production и Telegram workflow не затрагивались.
+
+### `UI-DEC-014` — единый round-arrow action pattern для PracticeFlow
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; UI Lab only.
+- **Решение:** на промежуточных экранах PracticeFlow переход выполняет одна белая круглая стрелка вправо в нижнем правом углу safe-area. На editor она остаётся в нижней строке над visual viewport; выборы только отмечают ответ, а переход выполняется отдельной стрелкой. Финальный экран сохраняет широкую CTA «Сохранить и завершить» как единственное исключение.
+- **Граница:** тексты, композиция, статичные иллюстрации, production flow, Hub route и Telegram workflow не менялись.

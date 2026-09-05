@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -350,7 +350,7 @@ function CategoryScreen({ category, onBack }) {
           <ArrowLeft size={19} />
         </button>
         <div className="mx-layered-category__heading">
-          <h3 id="layered-category-title">{category.title.toLowerCase()}.</h3>
+          <h3 id="layered-category-title">Психологические практики</h3>
           <p>{category.description || 'Практики, чтобы спокойно вернуть внимание к себе'}</p>
         </div>
         <span aria-hidden="true" />
@@ -372,7 +372,9 @@ function CategoryScreen({ category, onBack }) {
       <div className="mx-layered-category__body">
         {Object.entries(grouped).map(([section, items]) => (
           <section key={section} className="mx-layered-category__section">
-            <span className="mx-layered-category__label">{section}</span>
+            {section !== 'Основные практики' && (
+              <span className="mx-layered-category__label">{section}</span>
+            )}
             <div className="mx-layered-category__grid">
               {items.map(item => (
                 <button className="mx-layered-category__card" type="button" key={item.title}>
@@ -563,6 +565,11 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
   const [themeIndex, setThemeIndex] = useState(0)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [selectedCollection, setSelectedCollection] = useState(null)
+
+  useEffect(() => {
+    if (!selectedCollection) return
+    document.querySelector('.mx-ui-lab__scroll')?.scrollTo({ top: 0, behavior: 'auto' })
+  }, [selectedCollection])
   const [journalStage, setJournalStage] = useState('catalog')
   const [journalDraft, setJournalDraft] = useState('')
   const [journalOutcome, setJournalOutcome] = useState(null)
@@ -584,6 +591,20 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
     setJournalStage('catalog')
     setJournalOutcome(null)
     setJournalDraft('')
+  }
+
+  if (selectedCollection && journalStage === 'catalog') {
+    return (
+      <ExperimentShell
+        number="26"
+        eyebrow="UI-EXP-003 · каталожный паттерн"
+        title="Психологические практики"
+        purpose="Спокойный список практик, чтобы вернуть внимание к себе без лишнего давления."
+        mode={mode}
+      >
+        <CategoryScreen category={selectedCollection} onBack={() => setSelectedCollection(null)} />
+      </ExperimentShell>
+    )
   }
 
   return (
