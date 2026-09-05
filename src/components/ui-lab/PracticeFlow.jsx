@@ -43,6 +43,20 @@ function OptionList({ options, selected, onPick }) {
   )
 }
 
+function NextAction({ onClick, disabled = false, label = 'Дальше' }) {
+  return (
+    <button
+      className="practice-flow__round-action practice-flow__next-action"
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+    >
+      →
+    </button>
+  )
+}
+
 function NoBlameReleaseScene() {
   return (
     <div className="practice-flow__release-scene" aria-hidden="true">
@@ -191,7 +205,7 @@ export default function PracticeFlow() {
                 onClick={() => setStep('feeling')}
                 aria-label="Дальше"
               >
-                ✓
+                →
               </button>
             </div>
           </div>
@@ -204,11 +218,9 @@ export default function PracticeFlow() {
             <OptionList
               options={FEELING_OPTIONS}
               selected={feeling}
-              onPick={value => {
-                setFeeling(value)
-                setStep('release')
-              }}
+              onPick={value => setFeeling(value)}
             />
+            <NextAction onClick={() => setStep('release')} disabled={!feeling} label="Продолжить" />
           </div>
         )}
 
@@ -218,18 +230,11 @@ export default function PracticeFlow() {
             <p className="practice-flow__kicker">Можно посмотреть мягче</p>
             <h1 id="practice-flow-title">Здесь не за что себя винить</h1>
             <p className="practice-flow__quote">{RELEASE_PHRASE}</p>
-            <button
-              className="practice-flow__round-action"
-              type="button"
-              onClick={() => setStep('plan')}
-              aria-label="Найти безопасный вход"
-            >
-              →
-            </button>
+            <NextAction onClick={() => setStep('plan')} label="Найти безопасный вход" />
           </div>
         )}
 
-        {step === 'plan' && !distraction && (
+        {step === 'plan' && (
           <div className="practice-flow__screen">
             <p className="practice-flow__kicker">Один честный взгляд</p>
             <h1 id="practice-flow-title">Что обычно отвлекает вместо этого?</h1>
@@ -238,19 +243,22 @@ export default function PracticeFlow() {
               selected={distraction}
               onPick={value => setDistraction(value)}
             />
+            <NextAction
+              onClick={() => setStep('agreement')}
+              disabled={!distraction}
+              label="Продолжить"
+            />
           </div>
         )}
 
-        {step === 'plan' && distraction && (
+        {step === 'agreement' && (
           <div className="practice-flow__screen practice-flow__screen--agreement">
             <p className="practice-flow__kicker">Договор с собой</p>
             <h1 id="practice-flow-title">Договорись с собой</h1>
             <p className="practice-flow__lead">
               Как только снова потянет отвлечься — вернись к делу на две минуты.
             </p>
-            <button className="practice-flow__primary" type="button" onClick={startTimer}>
-              Начать две минуты <span>→</span>
-            </button>
+            <NextAction onClick={startTimer} label="Начать две минуты" />
           </div>
         )}
 
@@ -263,9 +271,7 @@ export default function PracticeFlow() {
             </div>
             <NoBlameReleaseScene />
             <p className="practice-flow__lead">Не идеально. Просто начни.</p>
-            <button className="practice-flow__quiet-action" type="button" onClick={stopTimer}>
-              Остановить
-            </button>
+            <NextAction onClick={stopTimer} label="Остановить" />
           </div>
         )}
 
@@ -276,10 +282,12 @@ export default function PracticeFlow() {
             <OptionList
               options={OUTCOME_OPTIONS}
               selected={outcome}
-              onPick={value => {
-                setOutcome(value)
-                setStep('complete')
-              }}
+              onPick={value => setOutcome(value)}
+            />
+            <NextAction
+              onClick={() => setStep('complete')}
+              disabled={!outcome}
+              label="Продолжить"
             />
           </div>
         )}

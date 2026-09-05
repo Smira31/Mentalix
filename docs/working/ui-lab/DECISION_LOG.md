@@ -127,3 +127,10 @@
 - **Правило:** **Mentalix UI Lab: static-first. Иллюстрация — статичная смысловая метафора. Любая анимация запрещена, пока не будет отдельно утверждена пользователем для конкретной карточки.**
 - **PracticeFlow:** one-shot motion птицы полностью отменён; вход, осмысление, таймер и завершение используют один статичный финальный кадр с открытой клеткой и птицей снаружи. CSS animation/transition и motion state logic удалены из PracticeFlow.
 - **Evidence:** motion video/GIF и связанные motion observations удалены; статичные screenshots сохранены. Статус эксперимента `MXL-UI-LAB-PRACTICE-FLOW-001` остаётся `manual-gate`, production и Telegram workflow не затрагивались.
+
+### `UI-DEC-014` — единый round-arrow action pattern для PracticeFlow
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; UI Lab only.
+- **Решение:** на промежуточных экранах PracticeFlow переход выполняет одна белая круглая стрелка вправо в нижнем правом углу safe-area. На editor она остаётся в нижней строке над visual viewport; выборы только отмечают ответ, а переход выполняется отдельной стрелкой. Финальный экран сохраняет широкую CTA «Сохранить и завершить» как единственное исключение.
+- **Граница:** тексты, композиция, статичные иллюстрации, production flow, Hub route и Telegram workflow не менялись.
