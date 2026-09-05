@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useVisualViewportHeight } from '../../lib/visualViewport'
+import approvedNoBlameRelease from '../../assets/ui-lab/approved-no-blame-release.png'
 import './PracticeFlow.css'
 
 const FEELING_OPTIONS = [
@@ -59,29 +60,11 @@ function NextAction({ onClick, disabled = false, label = 'Дальше' }) {
 
 function NoBlameReleaseScene() {
   return (
-    <div className="practice-flow__release-scene" aria-hidden="true">
-      <svg viewBox="0 0 180 130" role="presentation">
-        <g className="practice-flow__release-cage">
-          <path d="M46 96V48a38 38 0 0 1 76 0" />
-          <path d="M61 96V50M76 96V46M92 96V44M108 96V48M38 96h92" />
-          <path d="M122 96V70l16 10v16" />
-        </g>
-        <path className="practice-flow__release-arc" d="M124 61q10-13 24-7" />
-        <g className="practice-flow__release-bird">
-          <path
-            className="practice-flow__release-body"
-            d="M78 72c3-12 14-18 26-15 12 2 18 9 14 17-4 12-22 18-34 11-6-3-8-8-6-13Z"
-          />
-          <path className="practice-flow__release-tail" d="m80 73-14-6 8 8-8 6 15-3Z" />
-          <path
-            className="practice-flow__release-wing"
-            d="M85 65c9-7 18-6 25 0M87 69c7-3 13-2 18 2"
-          />
-          <path className="practice-flow__release-beak" d="m116 61 13 5-13 5" />
-          <circle className="practice-flow__release-eye" cx="112" cy="59" r="2" />
-        </g>
-      </svg>
-    </div>
+    <img
+      className="practice-flow__release-scene"
+      src={approvedNoBlameRelease}
+      alt="Открытая клетка и птица, вылетевшая наружу"
+    />
   )
 }
 

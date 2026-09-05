@@ -422,46 +422,9 @@
   margin-top: auto !important;
 }
 .practice-flow__release-scene {
-  flex: 0 0 auto;
-}
-.practice-flow__release-scene svg {
   display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.practice-flow__release-cage {
-  fill: none;
-  stroke: var(--pf-muted);
-  stroke-width: 1.1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.practice-flow__release-bird {
-  transform: translate(45px, -4px);
-}
-.practice-flow__release-body,
-.practice-flow__release-beak,
-.practice-flow__release-tail {
-  fill: var(--pf-text);
-  stroke: none;
-}
-.practice-flow__release-wing {
-  fill: none;
-  stroke: var(--pf-bg);
-  stroke-width: 1;
-  stroke-linecap: round;
-}
-.practice-flow__release-eye {
-  fill: var(--pf-ice);
-  stroke: var(--pf-ice);
-}
-.practice-flow__release-arc {
-  fill: none;
-  stroke: var(--pf-faint);
-  stroke-width: 1;
-  stroke-linecap: round;
-  stroke-dasharray: 1 4;
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 @media (max-width: 520px) {
   .practice-flow {
