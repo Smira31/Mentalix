@@ -426,6 +426,22 @@
   object-fit: contain;
   flex: 0 0 auto;
 }
+.practice-flow__knot-glyph,
+.practice-flow__perch-glyph {
+  display: block;
+  flex: 0 0 auto;
+  background: transparent;
+}
+.practice-flow__knot-glyph {
+  width: min(100%, 240px);
+  height: 128px;
+  margin: 0 auto 28px;
+}
+.practice-flow__perch-glyph {
+  width: min(100%, 260px);
+  height: 150px;
+  margin: 28px auto 14px;
+}
 @media (max-width: 520px) {
   .practice-flow {
     padding-top: max(20px, var(--app-safe-top, env(safe-area-inset-top, 0px)));

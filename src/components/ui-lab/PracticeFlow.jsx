@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useVisualViewportHeight } from '../../lib/visualViewport'
 import approvedNoBlameRelease from '../../assets/ui-lab/approved-no-blame-release.png'
+import { NoBlameKnotGlyph, NoBlamePerchGlyph } from './NoBlameGlyphs'
 import './PracticeFlow.css'
 
 const FEELING_OPTIONS = [
@@ -215,7 +216,7 @@ export default function PracticeFlow() {
 
         {step === 'release' && (
           <div className="practice-flow__screen practice-flow__screen--reflection">
-            <NoBlameReleaseScene />
+            <NoBlameKnotGlyph />
             <p className="practice-flow__kicker">Можно посмотреть мягче</p>
             <h1 id="practice-flow-title">Здесь не за что себя винить</h1>
             <p className="practice-flow__quote">{RELEASE_PHRASE}</p>
@@ -258,7 +259,7 @@ export default function PracticeFlow() {
             <div className="practice-flow__timer" aria-live="polite">
               {minutes}:{seconds}
             </div>
-            <NoBlameReleaseScene />
+            <NoBlamePerchGlyph />
             <p className="practice-flow__lead">Не идеально. Просто начни.</p>
             <NextAction onClick={stopTimer} label="Остановить" />
           </div>
