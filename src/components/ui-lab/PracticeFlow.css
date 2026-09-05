@@ -469,9 +469,6 @@
 .practice-flow__release-scene--flying .practice-flow__release-bird {
   animation: pf-release-flight 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.practice-flow__release-scene--flying .practice-flow__release-wing {
-  animation: pf-release-wing 650ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
 @keyframes pf-screen-in {
   from {
     opacity: 0;
@@ -495,16 +492,6 @@
   }
   100% {
     transform: translate(62px, -28px) rotate(-8deg);
-  }
-}
-@keyframes pf-release-wing {
-  0%,
-  38% {
-    transform: rotate(0deg);
-  }
-  62%,
-  100% {
-    transform: rotate(-7deg);
   }
 }
 @media (max-width: 520px) {
