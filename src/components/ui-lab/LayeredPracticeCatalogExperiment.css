@@ -503,13 +503,15 @@
 }
 .mx-layered-category {
   display: grid;
-  gap: 26px;
+  gap: 20px;
+  padding-top: max(16px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
 }
 .mx-layered-category__header {
   display: grid;
   grid-template-columns: 40px 1fr 40px;
   align-items: center;
-  min-height: 44px;
+  min-height: 40px;
+  margin-top: 0;
 }
 .mx-layered-category__header button {
   display: grid;
@@ -527,7 +529,7 @@
 }
 .mx-layered-category__header h3 {
   margin: 0;
-  font-size: 32px;
+  font-size: clamp(26px, 7vw, 32px);
   font-weight: 800;
   letter-spacing: -0.05em;
   line-height: 1;
@@ -585,7 +587,7 @@
 }
 .mx-layered-category__body {
   display: grid;
-  gap: 26px;
+  gap: 20px;
 }
 .mx-layered-category__section {
   display: grid;

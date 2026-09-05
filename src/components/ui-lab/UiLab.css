@@ -23,7 +23,7 @@
 .mx-ui-lab__header {
   display: grid;
   gap: 10px;
-  padding: 28px 0 18px;
+  padding: max(12px, var(--app-safe-top)) 0 18px;
 }
 .mx-ui-lab__kicker,
 .mx-ui-lab__catalog > div > span {
@@ -213,6 +213,25 @@
   color: rgb(var(--c-text));
   font-size: 10px;
 }
+.mx-ui-lab-card-grid > .mx-ui-lab-card:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(100%, calc((100% - 10px) / 2));
+}
+.mx-ui-lab--practice-catalog:has(.mx-layered-category) .mx-ui-lab__header,
+.mx-ui-lab--practice-catalog:has(.mx-layered-category) .mx-ui-lab__footer,
+.mx-ui-lab--practice-catalog:has(.mx-layered-category) .mx-practice-comparison__intro,
+.mx-ui-lab--practice-catalog:has(.mx-layered-category) .mx-practice-baseline,
+.mx-ui-lab--practice-catalog:has(.mx-layered-category) .mx-lab-experiment__head {
+  display: none;
+}
+.mx-ui-lab--practice-catalog:has(.mx-layered-category) .mx-ui-lab__content {
+  width: min(100% - 32px, 600px);
+  gap: 0;
+}
+.mx-ui-lab--practice-catalog:has(.mx-layered-category) .mx-practice-comparison__grid {
+  display: block;
+}
 .mx-ui-lab-empty {
   display: grid;
   gap: 6px;
@@ -267,6 +286,11 @@
   }
   .mx-ui-lab-card-grid {
     grid-template-columns: 1fr;
+  }
+  .mx-ui-lab-card-grid > .mx-ui-lab-card:last-child:nth-child(odd) {
+    grid-column: auto;
+    justify-self: stretch;
+    width: auto;
   }
   .mx-ui-lab-catalog-section__heading,
   .mx-ui-lab-archive summary {

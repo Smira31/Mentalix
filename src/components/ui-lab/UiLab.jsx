@@ -47,7 +47,7 @@ export default function UiLab({ initialSection = 'hub' }) {
   return section === 'practice-flow' ? (
     <PracticeFlow />
   ) : (
-    <main className="mx-ui-lab">
+    <main className={`mx-ui-lab mx-ui-lab--${section}`}>
       <div className="mx-ui-lab__scroll">
         <header className="mx-ui-lab__header">
           <p className="mx-ui-lab__kicker">Mentalix · Preview-only</p>

@@ -245,7 +245,7 @@ export default function PracticeFlow() {
                 onClick={() => setStep('feeling')}
                 aria-label="Дальше"
               >
-                →
+                {keyboardOpen ? '✓' : '→'}
               </button>
             </div>
           </div>
