@@ -19,6 +19,7 @@ const uiLabRequested =
   [
     '1',
     'showcase',
+    'hub',
     'baseline',
     'experiments',
     'compare',
