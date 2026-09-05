@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
   ArrowLeft,
   Check,
@@ -144,6 +144,23 @@ const historyEntries = [
   },
 ]
 
+function pluralizeEvents(count) {
+  const mod10 = count % 10
+  const mod100 = count % 100
+  if (mod10 === 1 && mod100 !== 11) return `${count} событие`
+  if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) return `${count} события`
+  return `${count} событий`
+}
+
+function groupHistoryByDate(entries) {
+  return entries.reduce((groups, entry) => {
+    const group = groups.find(item => item.date === entry.date)
+    if (group) group.entries.push(entry)
+    else groups.push({ date: entry.date, entries: [entry] })
+    return groups
+  }, [])
+}
+
 const insightCards = [
   { title: 'Разбивка по настроению', note: 'За этот месяц', kind: 'mood-bars' },
   { title: 'Календарь состояния', note: 'Одна точка — один день', kind: 'heatmap' },
@@ -215,6 +232,7 @@ function Chart({ kind, breakdown }) {
 
 function HistoryPreview() {
   const [selected, setSelected] = useState(null)
+  const historyByDate = useMemo(() => groupHistoryByDate(historyEntries), [])
   return (
     <section className="mx-history-trends__section" aria-labelledby="history-preview-title">
       <SectionHeading
@@ -234,35 +252,39 @@ function HistoryPreview() {
         </button>
       </div>
       <div className="mx-history-trends__history" id="history-preview-title">
-        {historyEntries.map((entry, index) => (
-          <div className="mx-history-trends__day" key={`${entry.date}-${entry.type}`}>
+        {historyByDate.map(group => (
+          <div className="mx-history-trends__day" key={group.date}>
             <div className="mx-history-trends__date">
-              <strong>{entry.date}</strong>
-              <span>{index === 0 ? '3 события' : '1 событие'}</span>
+              <strong>{group.date}</strong>
+              <span>{pluralizeEvents(group.entries.length)}</span>
               <ChevronDown size={14} />
             </div>
-            <button
-              type="button"
-              className="mx-history-trends__entry"
-              onClick={() => setSelected(entry)}
-            >
-              <span>
-                <strong>{entry.type}</strong>
-                <time>{entry.time}</time>
-              </span>
-              <em>{entry.preview}</em>
-              <small>{entry.tag}</small>
-            </button>
-            {index === 1 && (
-              <div className="mx-history-trends__milestone">
-                <SemanticGlyph kind="purpose" animated={false} />
-                <div>
-                  <strong>Первый следующий шаг</strong>
-                  <span>Ты возвращаешься к действию уже 7 дней.</span>
-                </div>
-                <Check size={16} />
-              </div>
-            )}
+            {group.entries.map(entry => (
+              <Fragment key={entry.type}>
+                <button
+                  type="button"
+                  className="mx-history-trends__entry"
+                  onClick={() => setSelected(entry)}
+                >
+                  <span>
+                    <strong>{entry.type}</strong>
+                    <time>{entry.time}</time>
+                  </span>
+                  <em>{entry.preview}</em>
+                  <small>{entry.tag}</small>
+                </button>
+                {entry.type === 'Дыхание' && (
+                  <div className="mx-history-trends__milestone">
+                    <SemanticGlyph kind="purpose" animated={false} />
+                    <div>
+                      <strong>Первый следующий шаг</strong>
+                      <span>Ты возвращаешься к действию уже 7 дней.</span>
+                    </div>
+                    <Check size={16} />
+                  </div>
+                )}
+              </Fragment>
+            ))}
           </div>
         ))}
       </div>

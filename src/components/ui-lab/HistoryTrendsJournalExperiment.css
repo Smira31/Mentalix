@@ -693,10 +693,19 @@
 }
 .mx-history-trends__modes {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 25px;
+  overflow-x: auto;
+  scrollbar-width: none;
   border-bottom: 1px solid var(--quiet-line);
   padding-bottom: 10px;
+}
+.mx-history-trends__modes::-webkit-scrollbar {
+  display: none;
+}
+.mx-history-trends__modes button {
+  flex: none;
+  white-space: nowrap;
 }
 .mx-history-trends__journal textarea {
   min-height: 110px;
