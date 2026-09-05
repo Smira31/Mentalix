@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 import approvedNoBlameRelease from '../assets/ui-lab/approved-no-blame-release.png'
+import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 
 import { platform } from '../platform'
 import { useFullscreenSurface, FULLSCREEN_SCROLL_CLASS } from '../lib/fullscreenSurface'
@@ -417,45 +418,20 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
               </div>
             )}
             {step === 'task' && (
-              <div className="practice-flow__screen practice-flow__screen--write practice-flow__screen--reference-editor">
-                <ReferenceChrome editor onClose={onClose} />
-                <h1 id="practice-flow-title">Что сейчас занимает мои мысли?</h1>
-                <p className="practice-flow__hint">
-                  Запиши всё как есть. Не пытайся сразу найти правильный ответ.
-                </p>
-                <textarea
-                  value={task}
-                  onChange={event => setTask(event.target.value)}
-                  placeholder="Начни писать…"
-                  aria-label="Что сейчас занимает мои мысли"
-                  autoFocus
-                  onFocus={() => setEditorFocused(true)}
-                  onBlur={() => setEditorFocused(false)}
-                />
-                <div
-                  className={`practice-flow__editor-bar${keyboardOpen ? ' practice-flow__editor-bar--keyboard' : ''}`}
-                  aria-label="Действия редактора"
-                >
-                  <div className="practice-flow__editor-tools">
-                    <button type="button" aria-label="Добавить заметку">
-                      •
-                    </button>
-                    <button type="button" aria-label="Спокойный режим">
-                      ∿
-                    </button>
-                    <span className="practice-flow__deeper">Разобрать глубже</span>
-                  </div>
-                  <button
-                    className="practice-flow__round-action practice-flow__next-action"
-                    type="button"
-                    disabled={!task.trim()}
-                    onClick={goToFeeling}
-                    aria-label="Дальше"
-                  >
-                    {keyboardOpen ? '✓' : '→'}
-                  </button>
-                </div>
-              </div>
+              <PracticeWritingCanvas
+                value={task}
+                onChange={setTask}
+                question="Что сейчас занимает мои мысли?"
+                description="Запиши всё как есть. Не пытайся сразу найти правильный ответ."
+                placeholder="Начни писать…"
+                ariaLabel="Что сейчас занимает мои мысли"
+                onSubmit={goToFeeling}
+                submitLabel="Дальше"
+                contextLabel="Mentalix"
+                onClose={onClose}
+                autoFocus
+                className="practice-flow__writing-canvas"
+              />
             )}
             {step === 'feeling' && (
               <div className="practice-flow__screen">

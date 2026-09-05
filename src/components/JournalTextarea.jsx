@@ -3,6 +3,7 @@ import { Bold, Check, Highlighter, Italic } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
+import PracticeWritingCanvas from './PracticeWritingCanvas'
 
 const FORMATS = [
   { command: 'bold', label: 'Жирный текст', Icon: Bold },
@@ -164,6 +165,7 @@ export default function JournalTextarea({
   formatting = true,
   autoFocus = false,
   desktopInline = false,
+  writingCanvas = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -178,6 +180,25 @@ export default function JournalTextarea({
 
     emittedValueRef.current = value
   }, [formatting, value])
+
+  if (writingCanvas) {
+    return (
+      <PracticeWritingCanvas
+        value={value}
+        onChange={onChange}
+        question={ariaLabel}
+        placeholder={placeholder}
+        ariaLabel={ariaLabel}
+        onSubmit={onSubmit}
+        submitLabel={submitLabel}
+        submitDisabled={submitDisabled}
+        submitLoading={submitLoading}
+        deepenLabel={deepenLabel}
+        autoFocus={autoFocus}
+        className={className}
+      />
+    )
+  }
 
   function emitValue() {
     const editor = editorRef.current

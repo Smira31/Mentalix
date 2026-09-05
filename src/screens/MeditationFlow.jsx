@@ -102,6 +102,9 @@ export default function MeditationFlow({ onClose }) {
           description="Назови ситуацию так, как она выглядит сейчас. Без объяснений и обвинений — только то, что ты можешь заметить."
         >
           <JournalTextarea
+            writingCanvas
+            writingCanvas
+            writingCanvas
             autoFocus
             value={observation}
             onChange={setObservation}

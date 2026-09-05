@@ -280,6 +280,9 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
             <StageHeading>Выпиши всё, что крутится в голове</StageHeading>
 
             <JournalTextarea
+              writingCanvas
+              writingCanvas
+              writingCanvas
               autoFocus
               value={dump}
               onChange={setDump}

@@ -1,0 +1,171 @@
+.practice-writing-canvas {
+  --pwc-bg: #050403;
+  --pwc-text: #f3f0e9;
+  --pwc-muted: #8c8983;
+  --pwc-faint: #56534e;
+  --pwc-azure: #79b9ff;
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  padding: max(18px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 22px
+    max(22px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  background: var(--pwc-bg);
+  color: var(--pwc-text);
+}
+.practice-writing-canvas *,
+.practice-writing-canvas *::before,
+.practice-writing-canvas *::after {
+  box-sizing: border-box;
+  animation: none !important;
+  transition: none !important;
+}
+.practice-writing-canvas__chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+}
+.practice-writing-canvas__context-actions,
+.practice-writing-canvas__identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.practice-writing-canvas__context-actions button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pwc-text);
+  font-size: 26px;
+  line-height: 1;
+}
+.practice-writing-canvas__context-actions button + button {
+  font-size: 27px;
+}
+.practice-writing-canvas__identity span {
+  padding: 10px 22px;
+  border-radius: 15px;
+  background: #222120;
+  color: var(--pwc-text);
+  font-size: 16px;
+}
+.practice-writing-canvas__identity button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: #222120;
+  color: var(--pwc-text);
+  font-size: 28px;
+  line-height: 1;
+}
+.practice-writing-canvas__question {
+  max-width: 100%;
+  margin: 54px 0 0;
+  color: var(--pwc-text);
+  font-size: clamp(30px, 8vw, 38px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+}
+.practice-writing-canvas__description {
+  max-width: 31ch;
+  margin: 22px 0 0;
+  padding-left: 22px;
+  border-left: 2px solid var(--pwc-azure);
+  color: var(--pwc-muted);
+  font-size: 17px;
+  line-height: 1.45;
+}
+.practice-writing-canvas__field {
+  flex: 1;
+  width: 100%;
+  min-height: 180px;
+  margin: 24px 0 0;
+  padding: 0 0 80px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--pwc-text);
+  caret-color: var(--pwc-azure);
+  font:
+    19px/1.55 Onest,
+    sans-serif;
+}
+.practice-writing-canvas__field::placeholder {
+  color: var(--pwc-muted);
+}
+.practice-writing-canvas__dock {
+  position: absolute;
+  right: 22px;
+  bottom: max(12px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  left: 22px;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: 56px 56px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+}
+.practice-writing-canvas.is-keyboard-open .practice-writing-canvas__dock {
+  position: fixed;
+  bottom: auto;
+}
+.practice-writing-canvas__circle,
+.practice-writing-canvas__submit {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font: inherit;
+}
+.practice-writing-canvas__circle {
+  border: 1px solid var(--pwc-text);
+  background: transparent;
+  color: var(--pwc-text);
+  font-size: 24px;
+}
+.practice-writing-canvas__circle:nth-child(2) {
+  font-size: 18px;
+}
+.practice-writing-canvas__deepen {
+  min-width: 0;
+  height: 56px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 28px;
+  background: #222120;
+  color: var(--pwc-text);
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.practice-writing-canvas__submit {
+  border: 1px solid var(--pwc-text);
+  background: var(--pwc-text);
+  color: var(--pwc-bg);
+  font-size: 30px;
+}
+.practice-writing-canvas__submit:disabled {
+  border-color: var(--pwc-muted);
+  background: transparent;
+  color: var(--pwc-muted);
+}
+@media (max-width: 350px) {
+  .practice-writing-canvas {
+    padding-right: 22px;
+    padding-left: 22px;
+  }
+  .practice-writing-canvas__dock {
+    gap: 7px;
+  }
+  .practice-writing-canvas__deepen {
+    font-size: 13px;
+  }
+}
