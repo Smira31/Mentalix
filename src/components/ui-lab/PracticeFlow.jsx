@@ -48,6 +48,31 @@ function NoBlameGlyph({ animated = false }) {
   return <SemanticGlyph kind="no-blame" animated={animated} highlighted />
 }
 
+function ReferenceChrome({ editor = false }) {
+  return editor ? (
+    <div className="practice-flow__topbar practice-flow__topbar--editor">
+      <div className="practice-flow__top-actions" aria-label="Действия редактора">
+        <button type="button" aria-label="Добавить заметку">
+          •
+        </button>
+        <button type="button" aria-label="Спокойный режим">
+          ∿
+        </button>
+      </div>
+      <div className="practice-flow__identity">
+        <span>Mentalix</span>
+        <a href="?ui_lab=hub" aria-label="Закрыть">
+          ×
+        </a>
+      </div>
+    </div>
+  ) : (
+    <a className="practice-flow__close" href="?ui_lab=hub" aria-label="Закрыть">
+      ×
+    </a>
+  )
+}
+
 export default function PracticeFlow() {
   const [step, setStep] = useState('intro')
   const [task, setTask] = useState('')
@@ -100,37 +125,48 @@ export default function PracticeFlow() {
     >
       <div className="practice-flow__viewport">
         {step === 'intro' && (
-          <div className="practice-flow__screen practice-flow__screen--entry">
+          <div className="practice-flow__screen practice-flow__screen--entry practice-flow__screen--reference-entry">
+            <ReferenceChrome />
             <NoBlameGlyph animated />
-            <p className="practice-flow__kicker">Без вины</p>
             <h1 id="practice-flow-title">Вернись к делу без давления</h1>
             <p className="practice-flow__lead">
-              Короткая сессия, чтобы заметить, что мешает, и найти один безопасный вход.
+              Начни с одного безопасного шага. Не нужно сделать всё сразу.
             </p>
-            <p className="practice-flow__meta">2 минуты · короткая сессия</p>
             <button
-              className="practice-flow__primary"
+              className="practice-flow__round-action practice-flow__entry-action"
               type="button"
               onClick={() => setStep('task')}
+              aria-label="Начать практику"
             >
-              Снять лишнее давление <span>→</span>
+              →
             </button>
           </div>
         )}
 
         {step === 'task' && (
-          <div className="practice-flow__screen practice-flow__screen--write">
-            <p className="practice-flow__kicker">Без вины</p>
-            <h1 id="practice-flow-title">Что откладываешь?</h1>
-            <p className="practice-flow__hint">Назови одно дело, к которому хочешь вернуться.</p>
+          <div className="practice-flow__screen practice-flow__screen--write practice-flow__screen--reference-editor">
+            <ReferenceChrome editor />
+            <h1 id="practice-flow-title">Что сейчас занимает мои мысли?</h1>
+            <p className="practice-flow__hint">
+              Запиши всё как есть. Не пытайся сразу найти правильный ответ.
+            </p>
             <textarea
               value={task}
               onChange={event => setTask(event.target.value)}
-              placeholder="Например: разобрать почту"
-              aria-label="Дело, которое откладываешь"
+              placeholder="Начни писать…"
+              aria-label="Что сейчас занимает мои мысли"
               autoFocus
             />
-            <div className="practice-flow__editor-bar" aria-label="Продолжить">
+            <div className="practice-flow__editor-bar" aria-label="Действия редактора">
+              <div className="practice-flow__editor-tools">
+                <button type="button" aria-label="Добавить заметку">
+                  •
+                </button>
+                <button type="button" aria-label="Спокойный режим">
+                  ∿
+                </button>
+                <span className="practice-flow__deeper">Разобрать глубже</span>
+              </div>
               <button
                 className="practice-flow__round-action"
                 type="button"
@@ -232,33 +268,31 @@ export default function PracticeFlow() {
         )}
 
         {step === 'complete' && (
-          <div className="practice-flow__screen practice-flow__screen--done">
+          <div className="practice-flow__screen practice-flow__screen--done practice-flow__screen--reference-complete">
+            <ReferenceChrome />
             <NoBlameGlyph animated />
-            <p className="practice-flow__kicker">Практика завершена</p>
             <h1 id="practice-flow-title">{completionTitle}</h1>
             <p className="practice-flow__lead">{completionDescription}</p>
-            <p className="practice-flow__next">
-              Следующий вход: вернуться к делу на две минуты после выбранного триггера.
-            </p>
-            <p className="practice-flow__question">Помогло сейчас?</p>
+            <p className="practice-flow__question">Эта практика была полезна?</p>
             <div className="practice-flow__feedback" role="group" aria-label="Помогло сейчас">
-              {['Нет', 'Немного', 'Да'].map(value => (
+              {['Нет', 'Немного', 'Да'].map((value, index) => (
                 <button
                   key={value}
                   type="button"
                   className={reflection === value ? 'is-selected' : ''}
                   onClick={() => setReflection(value)}
                 >
+                  <span aria-hidden="true">{['·', '∿', '＋'][index]}</span>
                   {value}
                 </button>
               ))}
             </div>
             <button
-              className="practice-flow__primary"
+              className="practice-flow__primary practice-flow__finish-action"
               type="button"
               onClick={() => setStep('intro')}
             >
-              Продолжить в Сегодня <span>→</span>
+              Сохранить и завершить
             </button>
           </div>
         )}

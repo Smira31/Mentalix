@@ -558,3 +558,221 @@
   height: 132px;
   margin-bottom: 0;
 }
+
+.practice-flow__close,
+.practice-flow__identity a {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(245, 241, 234, 0.14);
+  border-radius: 50%;
+  color: var(--pf-text);
+  background: rgba(16, 15, 13, 0.9);
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.practice-flow__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.practice-flow__topbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+}
+
+.practice-flow__top-actions,
+.practice-flow__identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.practice-flow__top-actions button {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(245, 241, 234, 0.12);
+  border-radius: 50%;
+  color: var(--pf-muted);
+  background: transparent;
+  font:
+    18px/1 Onest,
+    sans-serif;
+}
+
+.practice-flow__identity span {
+  color: var(--pf-muted);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.practice-flow__screen--reference-entry {
+  position: relative;
+  padding-top: clamp(58px, 10vh, 98px);
+}
+
+.practice-flow__screen--reference-entry .mx-semantic-glyph--no-blame {
+  width: min(100%, 286px);
+  height: 214px;
+  margin: 0 auto 30px;
+}
+
+.practice-flow__screen--reference-entry h1,
+.practice-flow__screen--reference-complete h1 {
+  max-width: 330px;
+  margin: 0;
+  font-size: clamp(28px, 7.8vw, 38px);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.practice-flow__screen--reference-entry .practice-flow__lead {
+  max-width: 285px;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.practice-flow__entry-action {
+  margin-top: auto;
+}
+
+.practice-flow__screen--reference-editor {
+  position: relative;
+  align-items: stretch;
+  padding-top: 58px;
+}
+
+.practice-flow__screen--reference-editor h1 {
+  max-width: 330px;
+  margin: 8px 0 14px;
+  font-size: clamp(27px, 7.2vw, 36px);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+
+.practice-flow__screen--reference-editor .practice-flow__hint {
+  max-width: 330px;
+  padding-left: 13px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.practice-flow__screen--reference-editor textarea {
+  margin-top: 30px;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.practice-flow__screen--reference-editor .practice-flow__editor-bar {
+  border-top: 0;
+}
+
+.practice-flow__editor-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.practice-flow__editor-tools button {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(245, 241, 234, 0.14);
+  border-radius: 50%;
+  color: var(--pf-muted);
+  font-size: 17px;
+}
+
+.practice-flow__editor-tools .practice-flow__deeper {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--pf-muted);
+  font-size: 12px;
+}
+
+.practice-flow__screen--reference-complete {
+  position: relative;
+  padding-top: clamp(48px, 8vh, 76px);
+}
+
+.practice-flow__screen--reference-complete .mx-semantic-glyph--no-blame {
+  width: min(100%, 220px);
+  height: 150px;
+  margin: 0 auto 14px;
+}
+
+.practice-flow__screen--reference-complete .practice-flow__lead {
+  max-width: 300px;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.practice-flow__screen--reference-complete .practice-flow__question {
+  margin-top: 28px;
+}
+
+.practice-flow__screen--reference-complete .practice-flow__feedback {
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.practice-flow__screen--reference-complete .practice-flow__feedback button {
+  display: flex;
+  min-height: 70px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 4px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.practice-flow__screen--reference-complete .practice-flow__feedback button span {
+  color: var(--pf-ice);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.practice-flow__finish-action {
+  width: 100%;
+  justify-content: center;
+  margin-top: auto !important;
+  border-radius: 15px;
+}
+
+@media (max-height: 650px) {
+  .practice-flow__screen--reference-entry {
+    padding-top: 44px;
+  }
+  .practice-flow__screen--reference-entry .mx-semantic-glyph--no-blame {
+    height: 142px;
+    margin-bottom: 16px;
+  }
+  .practice-flow__screen--reference-complete {
+    padding-top: 42px;
+  }
+  .practice-flow__screen--reference-complete .mx-semantic-glyph--no-blame {
+    height: 92px;
+  }
+  .practice-flow__screen--reference-complete .practice-flow__question {
+    margin-top: 14px;
+  }
+}

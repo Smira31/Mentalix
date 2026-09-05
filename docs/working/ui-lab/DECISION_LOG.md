@@ -111,3 +111,11 @@
 - **Графика:** добавлен новый `SemanticGlyph` registry kind `no-blame` — неподвижная клетка и птица, вылетающая один раз; существующие glyph cases не менялись.
 - **Editor ownership:** production `JournalTextarea` использует floating toolbar только при `floatingToolbar`; UI Lab PracticeFlow не рендерит этот toolbar, а оставляет одну собственную круглую галочку над visualViewport. Чёрная плавающая кнопка в PracticeFlow DOM не обнаружена (`fixed/sticky` элементов нет); системный Safari/WebView UI не изменялся.
 - **Следующий шаг:** прямой HTTPS Preview проверить в обычном Safari на 390×844 и 320×568; Telegram/iPhone WebView остаётся отдельным финальным gate.
+
+### `UI-DEC-012` — Reference gate для трёх экранов PracticeFlow
+
+- **Дата:** 05.09.2026
+- **Статус:** `manual-gate`; обычный web Preview-only, без Telegram workflow и без production promotion.
+- **Решение:** для визуального одобрения обновлены только `intro`, `task` editor и `complete`. Остальные UI Lab состояния flow не перестраивались.
+- **Композиция:** добавлен editorial-style close control, компактные editor actions, белая круглая стрелка на opening, visualViewport-aware editor dock и широкая CTA «Сохранить и завершить» на completion. Референсные изображения в приложении к задаче не были доступны в sandbox, поэтому сравнение выполнено по текстовой спецификации, без копирования Stoic assets.
+- **Следующий шаг:** ручное одобрение трёх экранов в обычном Safari Preview; только после этого разрешается продолжать остальные состояния.
