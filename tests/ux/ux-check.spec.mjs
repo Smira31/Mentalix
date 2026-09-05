@@ -433,12 +433,12 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        const checkin = page.getByRole('button', { name: /Пройти чек-ин|Разобрать день/ })
+        const checkin = page.getByRole('button', { name: /Начать чек-ин|Разобрать день/ })
         await assertClickable(checkin)
       },
     })
 
-    await page.getByRole('button', { name: /Пройти чек-ин|Разобрать день/ }).click()
+    await page.getByRole('button', { name: /Начать чек-ин|Разобрать день/ }).click()
     await captureScreen({
       page,
       viewport,

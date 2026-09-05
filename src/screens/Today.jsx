@@ -552,7 +552,7 @@ export default function Today({
         }}
         className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
-        {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
+        {todayState === 'reviewPending' ? 'Разобрать день' : 'Начать чек-ин'}
       </button>
 
       {next && <p className="mx-type-meta text-faint mt-5">Следующее действие: {next.title}</p>}
@@ -566,18 +566,7 @@ export default function Today({
 
         <h2 className="font-display mx-type-hero text-cream">День закрыт</h2>
 
-        <p className="mx-type-body text-muted mt-2">Вечерний разбор завершён</p>
-
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            changeSub('checkin')
-          }}
-          className="cta-pill mx-type-control px-9 py-4 mx-auto mt-7"
-        >
-          Открыть разбор снова
-        </button>
+        <p className="mx-type-body text-muted mt-2">Сегодняшний цикл завершён</p>
       </>
     ),
 
