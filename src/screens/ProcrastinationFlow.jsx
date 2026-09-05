@@ -1,490 +1,411 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
-
 import { platform } from '../platform'
-import BackButton from '../components/BackButton'
-import JournalTextarea from '../components/JournalTextarea'
-import {
-  useFullscreenSurface,
-  FULLSCREEN_SHELL_CLASS,
-  FULLSCREEN_HEADER_SLOT_CLASS,
-  FULLSCREEN_SCROLL_CLASS,
-} from '../lib/fullscreenSurface'
 import { saveNoBlameEntry } from '../lib/noBlamePractice'
-import './ProcrastinationFlow.css'
-
-/*
- * MXL-PRB-001, MXL-DEC-014: разовая практика «Без вины» — не серия, не
- * привязана к дню. Шаги: task → feeling → release → plan → run → outcome →
- * reflect. Работает не с планом действия (это делает «Первый шаг»,
- * FirstStepFlow.jsx), а с эмоцией избегания и петлёй кратковременного
- * облегчения — поэтому вместо конкретизации шага здесь фраза-разрядка без
- * давления и короткий разрыв паттерна «отвлёкся → вернись на 2 минуты».
- * Переиспользует структуру FirstStepFlow.jsx (fullscreen portal, стейт-машина
- * step) и таймер-паттерн Focus.jsx (endsAt по Date.now(), не тики
- * setInterval — вебвью Telegram душит таймеры в фоне, см. AI_RULES.md §9
- * «Время»).
- */
+import { useFullscreenSurface, FULLSCREEN_SCROLL_CLASS } from '../lib/fullscreenSurface'
+import approvedNoBlameRelease from '../assets/ui-lab/approved-no-blame-release.png'
+import './PracticeFlow.css'
 
 const FEELING_OPTIONS = [
-  { key: 'boring', label: 'Скучно' },
-  { key: 'anxious', label: 'Тревожно' },
-  { key: 'fear_of_bad_result', label: 'Боюсь сделать плохо' },
-  { key: 'no_desire', label: 'Просто не хочется' },
-  { key: 'unknown', label: 'Не знаю почему' },
+  'Скучно',
+  'Тревожно',
+  'Боюсь сделать плохо',
+  'Просто не хочется',
+  'Не знаю почему',
 ]
-
-// Ротация — намеренно не одна статичная фраза, чтобы разрядка не звучала
-// формулой при повторном использовании практики.
-const RELEASE_PHRASES = [
-  'Ты не тянешь время назло себе — это мозг уводит от неприятного. Бывает у всех.',
-  'Ты не подводишь себя — это просто мозг защищается от неприятного чувства. Тут не за что себя винить.',
-  'Дело не в силе воли — мозг искал, где полегче. С кем угодно случается.',
-]
-
-const DISTRACTION_OPTIONS = [
-  { key: 'phone', label: 'Телефон' },
-  { key: 'social', label: 'Соцсети' },
-  { key: 'other_tasks', label: 'Другие дела' },
-  { key: 'cleaning', label: 'Уборка' },
-  { key: 'own', label: 'Своё' },
-]
-
-const RUN_SECONDS = 2 * 60
-
-const OUTCOME_OPTIONS = [
-  { key: 'started', label: 'Начал(а)' },
-  { key: 'not_started', label: 'Не начал(а)' },
-  { key: 'stopped_for_safety', label: 'Остановился — было небезопасно' },
-]
-
-const REFLECTION_OPTIONS = [
-  { key: 'harder', label: 'Нет', Icon: ThumbsDown },
-  { key: 'same', label: 'Немного', Icon: Hand },
-  { key: 'easier', label: 'Да', Icon: ThumbsUp },
-]
-
-const STEP_PROGRESS = {
-  task: 1,
-  feeling: 2,
-  release: 3,
-  plan: 4,
-  run: 5,
-  outcome: 6,
-}
-
+const DISTRACTION_OPTIONS = ['Телефон', 'Соцсети', 'Другие дела', 'Уборка', 'Своё']
+const OUTCOME_OPTIONS = ['Начал(а)', 'Не начал(а)', 'Остановился — было небезопасно']
+const RELEASE_PHRASE =
+  'Ты не подводишь себя — это просто мозг защищается от неприятного чувства. Тут не за что себя винить.'
 const COMPLETION_COPY = {
-  started: {
-    title: 'Первый шаг сделан',
-    description: 'Ты не давил на себя — ты вернулся к делу.',
-  },
-  not_started: {
-    title: 'Ты заметил, что мешает',
-    description: 'Это уже честнее, чем продолжать винить себя.',
-  },
-  stopped_for_safety: {
-    title: 'Ты выбрал безопасность',
-    description: 'Остановиться вовремя — тоже бережный шаг.',
-  },
+  'Начал(а)': ['Первый шаг сделан', 'Ты не давил на себя — ты вернулся к делу.'],
+  'Не начал(а)': ['Ты заметил, что мешает', 'Это уже честнее, чем продолжать винить себя.'],
+  'Остановился — было небезопасно': [
+    'Ты выбрал безопасность',
+    'Остановиться вовремя — тоже бережный шаг.',
+  ],
 }
 
-function Eyebrow({ children = 'Без вины', centered = false }) {
+function OptionList({ options, selected, onPick }) {
   return (
-    <span
-      className={`block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2 ${centered ? 'text-center' : ''}`}
-    >
-      {children}
-    </span>
-  )
-}
-
-function StageHeading({ children }) {
-  return (
-    <div className="no-blame-stage__anchor">
-      <Eyebrow centered />
-      <h2 className="no-blame-stage__title font-display text-cream">{children}</h2>
-    </div>
-  )
-}
-
-function Progress({ step }) {
-  const current = STEP_PROGRESS[step]
-
-  if (!current) return null
-
-  return (
-    <div className="no-blame-progress" aria-label={`Шаг ${current} из 6`}>
-      <div className="no-blame-progress__rail" aria-hidden="true">
-        {Array.from({ length: 6 }, (_, index) => (
-          <span
-            key={index}
-            className={index < current ? 'no-blame-progress__segment--active' : ''}
-          />
-        ))}
-      </div>
-      <span className="no-blame-progress__label">{current} из 6</span>
-    </div>
-  )
-}
-
-function NoBlameArtwork({ stage }) {
-  return (
-    <svg viewBox="0 0 240 132" className={`no-blame-art no-blame-art--${stage}`} aria-hidden="true">
-      {stage === 'knot' && (
-        <>
-          <path d="M48 72c8-36 38 16 55-25 15-36 51 12 29 34-22 22-59-30-84-9Z" />
-          <path d="M55 88c30-69 61 31 107-28" />
-          <path d="M70 42c28-22 66 4 57 34-7 24-42 34-63 13" />
-          <circle cx="164" cy="59" r="4" />
-        </>
-      )}
-
-      {stage === 'release' && (
-        <>
-          <path d="M31 73c8-31 35 14 48-21 12-31 41 10 24 29-18 20-50-25-72-8Z" />
-          <path d="M39 87c23-58 49 21 78-13 17-20 34-13 48-8 15 5 29 2 44-13" />
-          <circle cx="210" cy="52" r="4" />
-        </>
-      )}
-
-      {stage === 'line' && (
-        <>
-          <path d="M24 75c31-8 48 11 78 3 31-9 50-23 83-12 12 4 21 2 31-4" />
-          <circle cx="216" cy="62" r="4" />
-        </>
-      )}
-
-      {stage === 'complete' && (
-        <>
-          <path d="M24 86c35-6 51 7 79-2 34-12 43-43 78-36 13 3 23-2 34-15" />
-          <path className="no-blame-art__star" d="m216 23 3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8Z" />
-          <circle cx="216" cy="34" r="3.5" />
-        </>
-      )}
-    </svg>
-  )
-}
-
-function OptionList({ options, onPick }) {
-  return (
-    <div className="mt-6 space-y-2.5">
+    <div className="practice-flow__choices" role="list">
       {options.map(option => (
         <button
-          key={option.key}
+          key={option}
           type="button"
-          onClick={() => onPick(option.key)}
-          className="w-full min-h-14 rounded-2xl px-4 py-3.5 bg-cream/5 border border-cream/10 text-left text-[14px] font-semibold text-cream active:scale-[0.98] transition-transform"
+          className={selected === option ? 'is-selected' : ''}
+          aria-pressed={selected === option}
+          onClick={() => onPick(option)}
         >
-          {option.label}
+          <span>{option}</span>
+          <span className="practice-flow__choice-mark" aria-hidden="true">
+            •
+          </span>
         </button>
       ))}
     </div>
   )
 }
 
-export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
-  const { style: surfaceStyle } = useFullscreenSurface()
+function NextAction({ onClick, disabled = false, label = 'Дальше' }) {
+  return (
+    <button
+      className="practice-flow__round-action practice-flow__next-action"
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+    >
+      →
+    </button>
+  )
+}
 
+function NoBlameReleaseScene() {
+  return (
+    <img
+      className="practice-flow__release-scene"
+      src={approvedNoBlameRelease}
+      alt="Открытая клетка и птица, вылетевшая наружу"
+    />
+  )
+}
+
+function NoBlameKnotGlyph() {
+  return (
+    <svg className="practice-flow__knot" viewBox="0 0 240 132" aria-hidden="true">
+      <path d="M48 72c8-36 38 16 55-25 15-36 51 12 29 34-22 22-59-30-84-9Z" />
+      <path d="M55 88c30-69 61 31 107-28" />
+      <path d="M70 42c28-22 66 4 57 34-7 24-42 34-63 13" />
+      <circle cx="164" cy="59" r="4" />
+    </svg>
+  )
+}
+
+function ReferenceChrome({ editor = false, onClose }) {
+  return editor ? (
+    <div className="practice-flow__topbar practice-flow__topbar--editor">
+      <div className="practice-flow__top-actions" aria-label="Действия редактора">
+        <button type="button" aria-label="Добавить заметку">
+          •
+        </button>
+        <button type="button" aria-label="Спокойный режим">
+          ∿
+        </button>
+      </div>
+      <div className="practice-flow__identity">
+        <span>Mentalix</span>
+        <button type="button" onClick={onClose} aria-label="Закрыть">
+          ×
+        </button>
+      </div>
+    </div>
+  ) : (
+    <button className="practice-flow__close" type="button" onClick={onClose} aria-label="Закрыть">
+      ×
+    </button>
+  )
+}
+
+export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
   const [step, setStep] = useState('intro')
   const [task, setTask] = useState('')
-  const [distraction, setDistraction] = useState(null)
-  const [outcome, setOutcome] = useState(null)
-  const [reflection, setReflection] = useState(null)
-
-  const [releasePhrase] = useState(
-    () => RELEASE_PHRASES[Math.floor(Math.random() * RELEASE_PHRASES.length)]
-  )
-
-  const [secondsLeft, setSecondsLeft] = useState(RUN_SECONDS)
+  const [feeling, setFeeling] = useState('')
+  const [distraction, setDistraction] = useState('')
+  const [outcome, setOutcome] = useState('')
+  const [reflection, setReflection] = useState('')
+  const { style: surfaceStyle } = useFullscreenSurface()
+  const flowSurfaceStyle = { ...surfaceStyle, paddingTop: '0px' }
   const [endsAt, setEndsAt] = useState(null)
-  const finishedRef = useRef(false)
+  const [secondsLeft, setSecondsLeft] = useState(120)
+  const [editorFocused, setEditorFocused] = useState(false)
+  const [layoutViewportHeight] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight : null
+  )
+  const [visualViewportMetrics, setVisualViewportMetrics] = useState({
+    height: null,
+    offsetTop: 0,
+    pageTop: 0,
+  })
+
+  useLayoutEffect(() => {
+    const scrollContainer = document.querySelector('.practice-flow__body')
+    scrollContainer?.scrollTo(0, 0)
+    window.scrollTo(0, 0)
+  }, [])
 
   useEffect(() => {
-    if (!endsAt) return
+    const viewport = window.visualViewport
+    if (!viewport) return undefined
 
-    const tick = () => setSecondsLeft(Math.max(0, Math.ceil((endsAt - Date.now()) / 1000)))
-
-    tick()
-    const id = setInterval(tick, 250)
-
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') tick()
+    const update = () => {
+      setVisualViewportMetrics({
+        height: Math.round(viewport.height),
+        offsetTop: Math.round(viewport.offsetTop),
+        pageTop: Math.round(viewport.pageTop),
+      })
     }
 
-    document.addEventListener('visibilitychange', onVisible)
+    update()
+    viewport.addEventListener('resize', update)
+    viewport.addEventListener('scroll', update)
+    window.addEventListener('resize', update)
 
     return () => {
-      clearInterval(id)
-      document.removeEventListener('visibilitychange', onVisible)
+      viewport.removeEventListener('resize', update)
+      viewport.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
     }
+  }, [])
+
+  useEffect(() => {
+    if (!endsAt) return undefined
+    const tick = () => {
+      const next = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000))
+      setSecondsLeft(next)
+      if (next === 0) {
+        setEndsAt(null)
+        setStep('outcome')
+      }
+    }
+    tick()
+    const timer = window.setInterval(tick, 250)
+    return () => window.clearInterval(timer)
   }, [endsAt])
 
-  // Завершение — отдельным эффектом с защитой через ref, как в Focus.jsx:
-  // в StrictMode апдейтер вызывается дважды.
-  useEffect(() => {
-    if (!endsAt || secondsLeft > 0 || finishedRef.current) return
-
-    finishedRef.current = true
-    platform.haptic('success')
-    setStep('outcome')
-  }, [secondsLeft, endsAt])
-
-  function goToFeeling() {
-    if (!task.trim()) return
-
-    platform.haptic('light')
-    setStep('feeling')
-  }
-
-  function startPractice() {
-    platform.haptic('light')
-    setStep('task')
-  }
-
-  function chooseFeeling() {
-    platform.haptic('light')
-    setStep('release')
-  }
-
-  function goToPlan() {
-    platform.haptic('light')
-    setStep('plan')
-  }
-
-  function chooseDistraction(key) {
-    platform.haptic('light')
-    setDistraction(key)
-  }
-
-  function startRun() {
-    platform.haptic('medium')
-    finishedRef.current = false
-    setSecondsLeft(RUN_SECONDS)
-    setEndsAt(Date.now() + RUN_SECONDS * 1000)
+  function startTimer() {
+    setSecondsLeft(120)
+    setEndsAt(Date.now() + 120000)
     setStep('run')
   }
 
-  function stopRun() {
-    platform.haptic('light')
+  function stopTimer() {
     setEndsAt(null)
     setStep('outcome')
   }
 
-  function chooseOutcome(key) {
-    platform.haptic('medium')
-    setOutcome(key)
-    setStep('complete')
-  }
+  const [completionTitle, completionDescription] =
+    COMPLETION_COPY[outcome] || COMPLETION_COPY['Не начал(а)']
+  const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
+  const seconds = String(secondsLeft % 60).padStart(2, '0')
+  const keyboardOpen =
+    editorFocused &&
+    visualViewportMetrics.height !== null &&
+    layoutViewportHeight !== null &&
+    visualViewportMetrics.height < layoutViewportHeight - 80
+  const screenStyle = visualViewportMetrics.height
+    ? {
+        '--pf-viewport-height': `${visualViewportMetrics.height}px`,
+        '--pf-visual-viewport-height': `${visualViewportMetrics.height}px`,
+        '--pf-visual-viewport-offset-top': `${visualViewportMetrics.offsetTop}px`,
+        '--pf-visual-viewport-page-top': `${visualViewportMetrics.pageTop}px`,
+        '--pf-visual-viewport-top': `${visualViewportMetrics.pageTop + visualViewportMetrics.offsetTop}px`,
+      }
+    : undefined
+
+  useLayoutEffect(() => {
+    if (!keyboardOpen) return
+    const scrollContainer = document.querySelector('.practice-flow__body')
+    scrollContainer?.scrollTo(0, 0)
+    window.scrollTo(0, 0)
+  }, [keyboardOpen])
 
   function finish() {
     platform.haptic('light')
     saveNoBlameEntry(userId, { outcome, reflection })
-    if (onComplete) {
-      onComplete()
-      return
-    }
-
-    onClose()
+    if (onComplete) onComplete()
+    else onClose()
   }
 
-  const minutes = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
-  const seconds = String(secondsLeft % 60).padStart(2, '0')
-
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
-      <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
-      >
-        <BackButton onClick={onClose} />
-      </div>
-
-      <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
-        {step === 'intro' && (
-          <div className="no-blame-stage no-blame-stage--intro animate-fade-in">
-            <div className="no-blame-stage__center">
-              <Eyebrow centered />
-              <h2 className="font-display text-[24px] text-cream text-center leading-[1.08] tracking-[-0.035em]">
-                Вернись к делу без давления
-              </h2>
-              <p className="mx-auto mt-4 max-w-[310px] text-center text-[13px] leading-relaxed text-muted">
-                Короткая сессия, чтобы заметить, что мешает, и найти один безопасный вход.
-              </p>
-              <p className="mt-4 text-center text-[12px] font-semibold text-faint">
-                2 минуты&nbsp;&nbsp;·&nbsp;&nbsp;короткая сессия
-              </p>
-              <NoBlameArtwork stage="knot" />
-            </div>
-
-            <button
-              type="button"
-              onClick={startPractice}
-              aria-label="Начать"
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
-            >
-              Снять лишнее давление
-            </button>
-          </div>
-        )}
-
-        {step === 'task' && (
-          <div className="no-blame-stage no-blame-stage--writing animate-fade-in">
-            <Progress step={step} />
-            <StageHeading>Что откладываешь?</StageHeading>
-
-            <JournalTextarea
-              autoFocus
-              value={task}
-              onChange={setTask}
-              placeholder="Например: разобрать почту"
-              ariaLabel="Дело, которое откладываешь"
-              className="no-blame-stage__writer min-h-[12rem]"
-              editorClassName="pb-24"
-              floatingToolbar
-              formatting={false}
-              onSubmit={goToFeeling}
-              submitLabel="Дальше"
-              submitDisabled={!task.trim()}
-            />
-          </div>
-        )}
-
-        {step === 'feeling' && (
-          <div className="no-blame-stage animate-fade-in">
-            <Progress step={step} />
-            <StageHeading>Что в этом неприятного?</StageHeading>
-            <div className="no-blame-stage__scene no-blame-stage__scene--choices">
-              <OptionList options={FEELING_OPTIONS} onPick={chooseFeeling} />
-            </div>
-          </div>
-        )}
-
-        {step === 'release' && (
-          <div className="no-blame-stage animate-fade-in">
-            <Progress step={step} />
-            <StageHeading>{releasePhrase}</StageHeading>
-            <div className="no-blame-stage__scene">
-              <NoBlameArtwork stage="release" />
-            </div>
-            <button
-              type="button"
-              onClick={goToPlan}
-              aria-label="Дальше"
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
-            >
-              Найти безопасный вход
-            </button>
-          </div>
-        )}
-
-        {step === 'plan' && !distraction && (
-          <div className="no-blame-stage animate-fade-in">
-            <Progress step={step} />
-            <StageHeading>Что обычно отвлекает вместо этого?</StageHeading>
-            <div className="no-blame-stage__scene no-blame-stage__scene--choices">
-              <OptionList options={DISTRACTION_OPTIONS} onPick={chooseDistraction} />
-            </div>
-          </div>
-        )}
-
-        {step === 'plan' && distraction && (
-          <div className="no-blame-stage animate-fade-in">
-            <Progress step={step} />
-            <StageHeading>Договорись с собой</StageHeading>
-            <div className="no-blame-stage__scene">
-              <p className="mx-auto mt-3 max-w-[310px] text-center text-[13px] text-muted leading-relaxed">
-                Как только снова потянет отвлечься — вернись к делу на две минуты.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={startRun}
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
-            >
-              Начать две минуты
-            </button>
-          </div>
-        )}
-
-        {step === 'run' && (
-          <div className="no-blame-stage animate-fade-in text-center">
-            <Progress step={step} />
-            <StageHeading>Только эти две минуты</StageHeading>
-            <div className="no-blame-stage__scene">
-              <div className="font-display text-[68px] text-gold tabular-nums leading-none">
-                {minutes}:{seconds}
+    <div
+      className="fixed inset-0 z-[60] flex flex-col overflow-hidden bg-emerald-deep"
+      style={flowSurfaceStyle}
+    >
+      <div className={`${FULLSCREEN_SCROLL_CLASS} practice-flow__body`}>
+        <main
+          className="practice-flow"
+          style={screenStyle}
+          aria-labelledby="practice-flow-title"
+          data-state={step}
+          data-keyboard-open={keyboardOpen}
+        >
+          <div className="practice-flow__viewport">
+            {step === 'intro' && (
+              <div className="practice-flow__screen practice-flow__screen--entry practice-flow__screen--reference-entry">
+                <ReferenceChrome onClose={onClose} />
+                <NoBlameReleaseScene />
+                <h1 id="practice-flow-title">Вернись к делу без давления</h1>
+                <p className="practice-flow__lead">
+                  Начни с одного безопасного шага. Не нужно сделать всё сразу.
+                </p>
+                <button
+                  className="practice-flow__round-action practice-flow__entry-action"
+                  type="button"
+                  onClick={() => setStep('task')}
+                  aria-label="Начать практику"
+                >
+                  →
+                </button>
               </div>
-              <NoBlameArtwork stage="line" />
-              <p className="mt-3 text-[13px] text-muted">Не идеально. Просто начни.</p>
-            </div>
+            )}
 
-            <button
-              type="button"
-              onClick={stopRun}
-              className="mx-auto text-[12px] font-semibold text-muted -m-2 p-3 active:opacity-60 mt-6"
-            >
-              Остановить
-            </button>
-          </div>
-        )}
-
-        {step === 'outcome' && (
-          <div className="no-blame-stage animate-fade-in">
-            <Progress step={step} />
-            <StageHeading>Как прошло?</StageHeading>
-            <div className="no-blame-stage__scene no-blame-stage__scene--choices">
-              <OptionList options={OUTCOME_OPTIONS} onPick={chooseOutcome} />
-            </div>
-          </div>
-        )}
-
-        {step === 'complete' && (
-          <div className="no-blame-stage no-blame-stage--complete animate-fade-in">
-            <div className="no-blame-stage__center">
-              <NoBlameArtwork stage="complete" />
-              <h2 className="font-display text-[24px] text-center text-cream leading-tight">
-                {COMPLETION_COPY[outcome]?.title}
-              </h2>
-              <p className="mx-auto mt-3 max-w-[310px] text-center text-[13px] text-muted leading-relaxed">
-                {COMPLETION_COPY[outcome]?.description}
-                <span className="mt-3 block text-[12px] text-faint">
-                  Следующий вход: вернуться к делу на две минуты после выбранного триггера.
-                </span>
-              </p>
-
-              <p className="mt-7 text-center text-[12px] font-semibold text-muted">
-                Помогло сейчас?
-              </p>
-              <div className="no-blame-feedback">
-                {REFLECTION_OPTIONS.map(({ key, label, Icon }) => (
+            {step === 'task' && (
+              <div className="practice-flow__screen practice-flow__screen--write practice-flow__screen--reference-editor">
+                <ReferenceChrome editor onClose={onClose} />
+                <h1 id="practice-flow-title">Что сейчас занимает мои мысли?</h1>
+                <p className="practice-flow__hint">
+                  Запиши всё как есть. Не пытайся сразу найти правильный ответ.
+                </p>
+                <textarea
+                  value={task}
+                  onChange={event => setTask(event.target.value)}
+                  placeholder="Начни писать…"
+                  aria-label="Что сейчас занимает мои мысли"
+                  autoFocus
+                  onFocus={() => setEditorFocused(true)}
+                  onBlur={() => setEditorFocused(false)}
+                />
+                <div
+                  className={`practice-flow__editor-bar${keyboardOpen ? ' practice-flow__editor-bar--keyboard' : ''}`}
+                  aria-label="Действия редактора"
+                >
+                  <div className="practice-flow__editor-tools">
+                    <button type="button" aria-label="Добавить заметку">
+                      •
+                    </button>
+                    <button type="button" aria-label="Спокойный режим">
+                      ∿
+                    </button>
+                    <span className="practice-flow__deeper">Разобрать глубже</span>
+                  </div>
                   <button
-                    key={key}
+                    className="practice-flow__round-action practice-flow__next-action"
                     type="button"
-                    aria-pressed={reflection === key}
-                    onClick={() => {
-                      platform.haptic('light')
-                      setReflection(key)
-                    }}
-                    className="no-blame-feedback__option"
+                    disabled={!task.trim()}
+                    onClick={() => setStep('feeling')}
+                    aria-label="Дальше"
                   >
-                    <Icon size={23} strokeWidth={1.8} />
-                    <span>{label}</span>
+                    {keyboardOpen ? '✓' : '→'}
                   </button>
-                ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            <button
-              type="button"
-              onClick={finish}
-              aria-label="Завершить"
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
-            >
-              Продолжить в Сегодня
-            </button>
+            {step === 'feeling' && (
+              <div className="practice-flow__screen">
+                <p className="practice-flow__kicker">Без вины</p>
+                <h1 id="practice-flow-title">Что в этом неприятного?</h1>
+                <OptionList
+                  options={FEELING_OPTIONS}
+                  selected={feeling}
+                  onPick={value => setFeeling(value)}
+                />
+                <NextAction
+                  onClick={() => setStep('release')}
+                  disabled={!feeling}
+                  label="Продолжить"
+                />
+              </div>
+            )}
+
+            {step === 'release' && (
+              <div className="practice-flow__screen practice-flow__screen--reflection">
+                <NoBlameKnotGlyph />
+                <p className="practice-flow__kicker">Можно посмотреть мягче</p>
+                <h1 id="practice-flow-title">Здесь не за что себя винить</h1>
+                <p className="practice-flow__quote">{RELEASE_PHRASE}</p>
+                <NextAction onClick={() => setStep('plan')} label="Найти безопасный вход" />
+              </div>
+            )}
+
+            {step === 'plan' && (
+              <div className="practice-flow__screen">
+                <p className="practice-flow__kicker">Один честный взгляд</p>
+                <h1 id="practice-flow-title">Что обычно отвлекает вместо этого?</h1>
+                <OptionList
+                  options={DISTRACTION_OPTIONS}
+                  selected={distraction}
+                  onPick={value => setDistraction(value)}
+                />
+                <NextAction
+                  onClick={() => setStep('agreement')}
+                  disabled={!distraction}
+                  label="Продолжить"
+                />
+              </div>
+            )}
+
+            {step === 'agreement' && (
+              <div className="practice-flow__screen practice-flow__screen--agreement">
+                <p className="practice-flow__kicker">Договор с собой</p>
+                <h1 id="practice-flow-title">Договорись с собой</h1>
+                <p className="practice-flow__lead">
+                  Как только снова потянет отвлечься — вернись к делу на две минуты.
+                </p>
+                <NextAction onClick={startTimer} label="Начать две минуты" />
+              </div>
+            )}
+
+            {step === 'run' && (
+              <div className="practice-flow__screen practice-flow__screen--timer">
+                <p className="practice-flow__kicker">Без рывка</p>
+                <h1 id="practice-flow-title">Только эти две минуты</h1>
+                <div className="practice-flow__timer" aria-live="polite">
+                  {minutes}:{seconds}
+                </div>
+                <p className="practice-flow__lead">Не идеально. Просто начни.</p>
+                <NextAction onClick={stopTimer} label="Остановить" />
+              </div>
+            )}
+
+            {step === 'outcome' && (
+              <div className="practice-flow__screen">
+                <p className="practice-flow__kicker">Без вины</p>
+                <h1 id="practice-flow-title">Как прошло?</h1>
+                <OptionList
+                  options={OUTCOME_OPTIONS}
+                  selected={outcome}
+                  onPick={value => setOutcome(value)}
+                />
+                <NextAction
+                  onClick={() => setStep('complete')}
+                  disabled={!outcome}
+                  label="Продолжить"
+                />
+              </div>
+            )}
+
+            {step === 'complete' && (
+              <div className="practice-flow__screen practice-flow__screen--done practice-flow__screen--reference-complete">
+                <ReferenceChrome onClose={onClose} />
+                <h1 id="practice-flow-title">{completionTitle}</h1>
+                <p className="practice-flow__lead">{completionDescription}</p>
+                <p className="practice-flow__question">Эта практика была полезна?</p>
+                <div className="practice-flow__feedback" role="group" aria-label="Помогло сейчас">
+                  {['Нет', 'Немного', 'Да'].map((value, index) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={reflection === value ? 'is-selected' : ''}
+                      onClick={() => setReflection(value)}
+                    >
+                      <span aria-hidden="true">{['·', '∿', '＋'][index]}</span>
+                      {value}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  className="practice-flow__primary practice-flow__finish-action"
+                  type="button"
+                  onClick={finish}
+                >
+                  Сохранить и завершить
+                </button>
+              </div>
+            )}
           </div>
-        )}
+        </main>
       </div>
     </div>,
     document.body

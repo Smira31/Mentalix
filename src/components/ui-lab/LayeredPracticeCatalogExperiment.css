@@ -1360,3 +1360,18 @@
   font-size: 12px;
   line-height: 1.45;
 }
+
+/* Real PR #509 catalog: keep psychological collection centered without changing neighboring cards. */
+.mx-production-catalog .mx-layered-catalog__collection[data-collection-key='psychological'] {
+  text-align: center;
+}
+.mx-production-catalog .mx-layered-category {
+  padding-top: max(14px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
+  gap: 20px;
+}
+.mx-production-catalog .mx-layered-category__header {
+  margin-top: 0;
+}
+.mx-production-catalog .mx-layered-category__header h3 {
+  font-size: clamp(26px, 7vw, 32px);
+}

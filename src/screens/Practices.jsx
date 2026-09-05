@@ -386,8 +386,8 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
 
   if (PRACTICE_CATALOG_V2_ENABLED) {
     return (
-      <div className="w-full max-w-md px-5">
-        <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
+      <div className="mx-practices-catalog-shell w-full max-w-md px-5">
+        <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
           <span aria-hidden="true" />
           <h2 className="font-display mx-type-page text-cream lowercase">практики.</h2>
           <span aria-hidden="true" />

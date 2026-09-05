@@ -158,6 +158,7 @@ function CollectionTile({ collection, onOpen }) {
   return (
     <button
       className="mx-layered-catalog__collection"
+      data-collection-key={collection.key}
       type="button"
       onClick={() => onOpen(collection)}
     >
@@ -279,14 +280,16 @@ export default function PracticeCatalogV2({
 
   if (selectedCollection) {
     return (
-      <CollectionScreen
-        collection={selectedCollection}
-        practices={visiblePractices}
-        rituals={rituals}
-        ascezas={ascezas}
-        onBack={() => setSelectedCollection(null)}
-        onOpenPractice={onOpenPractice}
-      />
+      <div className="mx-production-catalog mx-production-catalog--category">
+        <CollectionScreen
+          collection={selectedCollection}
+          practices={visiblePractices}
+          rituals={rituals}
+          ascezas={ascezas}
+          onBack={() => setSelectedCollection(null)}
+          onOpenPractice={onOpenPractice}
+        />
+      </div>
     )
   }
 
