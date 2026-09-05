@@ -195,17 +195,6 @@ export default function PracticeFlow() {
                 Aa
               </button>
               <button
-                type="button"
-                className="practice-flow__deeper"
-                onClick={() =>
-                  setText(value =>
-                    value ? `${value}\n\nЧто ещё важно не потерять?` : 'Что ещё важно не потерять?'
-                  )
-                }
-              >
-                Разобрать глубже
-              </button>
-              <button
                 className="practice-flow__round-action"
                 type="button"
                 onClick={() => go('timer')}

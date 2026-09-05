@@ -74,7 +74,7 @@
   margin-top: 36px;
   padding: 0 18px 0 22px;
   border: 1px solid var(--pf-ice);
-  border-radius: 2px;
+  border-radius: 16px;
   color: var(--pf-bg);
   background: var(--pf-ice);
   font:
@@ -134,6 +134,7 @@
   width: 54px;
   height: 54px;
   margin-top: auto;
+  align-self: flex-end;
   border: 1px solid var(--pf-ice);
   border-radius: 50%;
   color: var(--pf-ice);
@@ -155,9 +156,9 @@
 .practice-flow__path {
   display: flex;
   align-items: center;
-  width: min(100%, 280px);
-  height: 20px;
-  margin: 16px 0 8px;
+  width: 56px;
+  height: 14px;
+  margin: 12px 0 6px;
 }
 .practice-flow__path-stroke {
   width: 100%;
@@ -270,7 +271,7 @@
   letter-spacing: -0.06em;
 }
 .practice-flow__screen--timer .practice-flow__path {
-  margin-top: 32px;
+  margin-top: 24px;
 }
 .practice-flow__screen--timer .practice-flow__lead {
   font-size: 14px;
