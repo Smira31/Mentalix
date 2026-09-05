@@ -448,6 +448,26 @@ function Drawing({ kind, debugSource }) {
         </>
       )
 
+    case 'no-blame':
+      return (
+        <>
+          <g className="mx-semantic-glyph__no-blame-cage">
+            <path d="M48 82V42A32 32 0 0 1 112 42V82" />
+            <path d="M62 82V43M80 82V39M98 82V43M42 82H118" />
+          </g>
+          <g className="mx-semantic-glyph__no-blame-bird">
+            <path
+              d="M62 62C69 51 83 50 92 57C85 70 72 75 62 70Z"
+              fill="rgb(var(--c-line))"
+              stroke="rgb(var(--c-line))"
+            />
+            <path d="M71 59C77 55 83 56 87 60C81 60 76 64 73 68" />
+            <path d="M92 57L101 60L93 64" fill="rgb(var(--c-line))" stroke="rgb(var(--c-line))" />
+          </g>
+          <circle className="mx-semantic-glyph__no-blame-accent" cx="124" cy="37" r="3" />
+        </>
+      )
+
     case 'ritual':
       return (
         <>

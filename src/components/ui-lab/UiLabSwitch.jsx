@@ -3,6 +3,7 @@ const TABS = [
   { key: 'baseline', label: 'Эталон', href: '?ui_lab=baseline' },
   { key: 'compare', label: 'Сравнение', href: '?ui_lab=compare' },
   { key: 'daily-canonical', label: 'Дневной цикл', href: '?ui_lab=daily-canonical' },
+  { key: 'practice-flow', label: 'PracticeFlow', href: '?ui_lab=practice-flow' },
 ]
 
 export default function UiLabSwitch({ active }) {
