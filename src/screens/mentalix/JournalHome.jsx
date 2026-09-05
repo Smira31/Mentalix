@@ -147,6 +147,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
 
       <div className="mx-journal-editor-wrap mt-7 flex min-h-0 flex-1" data-keyboard-safe="true">
         <JournalTextarea
+          writingCanvas
           value={value}
           onChange={updateValue}
           placeholder="Начни писать..."

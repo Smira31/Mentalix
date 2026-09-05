@@ -607,6 +607,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
       {!current?.locked && (
         <JournalTextarea
+          writingCanvas
           value={text}
           onChange={setText}
           placeholder="Записать мысль..."

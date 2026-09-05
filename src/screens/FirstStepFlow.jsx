@@ -255,6 +255,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
           }
         >
           <JournalTextarea
+            writingCanvas
             autoFocus
             value={task}
             onChange={setTask}

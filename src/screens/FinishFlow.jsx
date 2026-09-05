@@ -285,6 +285,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
             <StageHeading>Что зависло на середине?</StageHeading>
 
             <JournalTextarea
+              writingCanvas
               autoFocus
               value={project}
               onChange={setProject}

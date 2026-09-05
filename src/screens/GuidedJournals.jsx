@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { ArrowLeft, Check, Plus, Search, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
+import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
@@ -96,6 +97,7 @@ function StepInput({ step, value, onChange }) {
 
   return (
     <JournalTextarea
+      writingCanvas
       value={typeof value === 'string' ? value : ''}
       onChange={onChange}
       placeholder={step.helper || 'Напиши столько, сколько сейчас нужно.'}
@@ -296,12 +298,12 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
           aria-label="Название шаблона"
           className="min-h-12 w-full rounded-2xl bg-emerald px-4 text-[16px] text-cream outline-none placeholder:text-muted"
         />
-        <textarea
+        <PracticeWritingCanvas
           value={draft.description}
-          onChange={event => setDraft(current => ({ ...current, description: event.target.value }))}
+          onChange={value => setDraft(current => ({ ...current, description: value }))}
+          question="Описание шаблона"
           placeholder="Коротко: для чего этот шаблон?"
-          aria-label="Описание шаблона"
-          className="min-h-24 w-full resize-y rounded-2xl bg-emerald p-4 text-[16px] text-cream outline-none placeholder:text-muted"
+          ariaLabel="Описание шаблона"
         />
         <input
           value={draft.category}

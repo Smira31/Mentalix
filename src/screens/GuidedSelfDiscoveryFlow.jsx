@@ -235,6 +235,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
             <ContextStep value={answers.context} onChange={next => updateAnswer('context', next)} />
           )}
           <JournalTextarea
+            writingCanvas
             autoFocus
             value={value}
             onChange={next => updateAnswer(step.key, next)}
