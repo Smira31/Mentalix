@@ -49,6 +49,11 @@ export default function PracticeWritingCanvas({
   deepenLabel = 'Пойти глубже',
   deepenDisabled,
   deepenLoading = false,
+  formatting = false,
+  onFormat,
+  formatOpen = false,
+  formatActions = null,
+  onClose,
   autoFocus = false,
   className = '',
 }) {
@@ -70,7 +75,17 @@ export default function PracticeWritingCanvas({
     <section
       className={`practice-writing-canvas ${keyboardOpen ? 'is-keyboard-open' : ''} ${className}`}
     >
-      <h1 className="practice-writing-canvas__question">{question}</h1>
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Закрыть"
+          className="practice-writing-canvas__close"
+        >
+          ×
+        </button>
+      )}
+      <h1 className="practice-writing-canvas__question font-display">{question}</h1>
       {description && <p className="practice-writing-canvas__description">{description}</p>}
       <textarea
         value={value}
@@ -80,9 +95,20 @@ export default function PracticeWritingCanvas({
         placeholder={placeholder}
         aria-label={ariaLabel || question}
         autoFocus={autoFocus}
-        className="practice-writing-canvas__field"
+        className="practice-writing-canvas__field font-body"
       />
       <div className="practice-writing-canvas__dock" style={dockStyle} aria-label="Действия ввода">
+        {formatting && onFormat && (
+          <button
+            type="button"
+            aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
+            aria-expanded={formatOpen}
+            onClick={onFormat}
+            className={`practice-writing-canvas__format ${formatOpen ? 'is-open' : ''}`}
+          >
+            Aa
+          </button>
+        )}
         {onDeepen && (
           <button
             type="button"
@@ -94,16 +120,19 @@ export default function PracticeWritingCanvas({
             {deepenLabel}
           </button>
         )}
-        <button
-          type="button"
-          aria-label={submitLabel}
-          disabled={submitIsDisabled}
-          onClick={onSubmit}
-          className="practice-writing-canvas__submit"
-        >
-          ✓
-        </button>
+        {onSubmit && (
+          <button
+            type="button"
+            aria-label={submitLabel}
+            disabled={submitIsDisabled}
+            onClick={onSubmit}
+            className="practice-writing-canvas__submit"
+          >
+            ✓
+          </button>
+        )}
       </div>
+      {formatting && formatOpen && formatActions}
     </section>
   )
 }

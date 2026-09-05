@@ -1,9 +1,9 @@
 .practice-writing-canvas {
-  --pwc-bg: #050403;
-  --pwc-text: #f3f0e9;
-  --pwc-muted: #8c8983;
-  --pwc-faint: #56534e;
-  --pwc-azure: #79b9ff;
+  --pwc-bg: rgb(var(--c-bg));
+  --pwc-text: rgb(var(--c-text));
+  --pwc-muted: rgb(var(--c-muted));
+  --pwc-faint: rgb(var(--c-faint));
+  --pwc-azure: rgb(var(--c-azure));
   position: relative;
   display: flex;
   min-height: 100%;
@@ -72,6 +72,17 @@
   line-height: 1.08;
   letter-spacing: -0.045em;
 }
+.practice-writing-canvas__close {
+  align-self: flex-end;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 50%;
+  background: transparent;
+  color: var(--pwc-text);
+  font-size: 28px;
+  line-height: 1;
+}
 .practice-writing-canvas__description {
   max-width: 31ch;
   margin: 22px 0 0;
@@ -93,9 +104,8 @@
   background: transparent;
   color: var(--pwc-text);
   caret-color: var(--pwc-azure);
-  font:
-    19px/1.55 Onest,
-    sans-serif;
+  font-size: 19px;
+  line-height: 1.55;
 }
 .practice-writing-canvas__field::placeholder {
   color: var(--pwc-muted);
@@ -116,7 +126,7 @@
   position: fixed;
   bottom: auto;
 }
-.practice-writing-canvas__circle,
+.practice-writing-canvas__format,
 .practice-writing-canvas__submit {
   display: grid;
   place-items: center;
@@ -125,14 +135,17 @@
   border-radius: 50%;
   font: inherit;
 }
-.practice-writing-canvas__circle {
+.practice-writing-canvas__format {
   border: 1px solid var(--pwc-text);
   background: transparent;
   color: var(--pwc-text);
-  font-size: 24px;
-}
-.practice-writing-canvas__circle:nth-child(2) {
   font-size: 18px;
+  font-style: italic;
+}
+.practice-writing-canvas__format.is-open {
+  border-color: rgb(var(--c-gold));
+  background: rgb(var(--c-gold) / 0.15);
+  color: rgb(var(--c-gold));
 }
 .practice-writing-canvas__deepen {
   min-width: 0;
@@ -141,7 +154,7 @@
   overflow: hidden;
   border: 0;
   border-radius: 28px;
-  background: #222120;
+  background: rgb(var(--c-card2));
   color: var(--pwc-text);
   font-size: 15px;
   text-overflow: ellipsis;

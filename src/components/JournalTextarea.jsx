@@ -163,6 +163,7 @@ export default function JournalTextarea({
   deepenDisabled,
   deepenLoading = false,
   formatting = true,
+  onClose,
   autoFocus = false,
   desktopInline = false,
   writingCanvas = false,
@@ -181,7 +182,7 @@ export default function JournalTextarea({
     emittedValueRef.current = value
   }, [formatting, value])
 
-  if (writingCanvas) {
+  if (writingCanvas && !formatting) {
     return (
       <PracticeWritingCanvas
         value={value}
@@ -197,6 +198,7 @@ export default function JournalTextarea({
         deepenLabel={deepenLabel}
         deepenDisabled={deepenDisabled}
         deepenLoading={deepenLoading}
+        onClose={onClose}
         autoFocus={autoFocus}
         className={className}
       />

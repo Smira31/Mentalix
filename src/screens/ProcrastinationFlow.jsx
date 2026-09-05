@@ -197,25 +197,8 @@ function NoBlameKnotGlyph() {
   )
 }
 
-function ReferenceChrome({ editor = false, onClose }) {
-  return editor ? (
-    <div className="practice-flow__topbar practice-flow__topbar--editor">
-      <div className="practice-flow__top-actions" aria-label="Действия редактора">
-        <button type="button" aria-label="Добавить заметку">
-          •
-        </button>
-        <button type="button" aria-label="Спокойный режим">
-          ∿
-        </button>
-      </div>
-      <div className="practice-flow__identity">
-        <span>Mentalix</span>
-        <button type="button" onClick={onClose} aria-label="Закрыть">
-          ×
-        </button>
-      </div>
-    </div>
-  ) : (
+function ReferenceChrome({ onClose }) {
+  return (
     <button className="practice-flow__close" type="button" onClick={onClose} aria-label="Закрыть">
       ×
     </button>
@@ -427,7 +410,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
                 ariaLabel="Что сейчас занимает мои мысли"
                 onSubmit={goToFeeling}
                 submitLabel="Дальше"
-                contextLabel="Mentalix"
+                formatting={false}
                 onClose={onClose}
                 autoFocus
                 className="practice-flow__writing-canvas"
