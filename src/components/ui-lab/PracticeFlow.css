@@ -438,27 +438,30 @@
   stroke-linejoin: round;
 }
 .practice-flow__release-bird {
-  transform-box: fill-box;
-  transform-origin: center;
-  transform: translate(62px, -28px) rotate(-8deg);
+  transform: translate(45px, -4px);
 }
 .practice-flow__release-body,
-.practice-flow__release-beak {
+.practice-flow__release-beak,
+.practice-flow__release-tail {
   fill: var(--pf-text);
-  stroke: var(--pf-text);
-  stroke-width: 1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke: none;
 }
 .practice-flow__release-wing {
   fill: none;
-  stroke: var(--pf-muted);
+  stroke: var(--pf-bg);
   stroke-width: 1;
   stroke-linecap: round;
 }
-.practice-flow__release-accent {
+.practice-flow__release-eye {
   fill: var(--pf-ice);
   stroke: var(--pf-ice);
+}
+.practice-flow__release-arc {
+  fill: none;
+  stroke: var(--pf-faint);
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-dasharray: 1 4;
 }
 @media (max-width: 520px) {
   .practice-flow {
