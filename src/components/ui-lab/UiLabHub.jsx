@@ -6,10 +6,21 @@ import {
   statusLabel,
 } from './uiLabCatalog'
 
-function CatalogCard({ eyebrow, title, description, href, meta }) {
+function StatusBadge({ status }) {
+  return (
+    <span className={`mx-ui-lab-status mx-ui-lab-status--${status.replace(/\s+/g, '-')}`}>
+      {statusLabel(status)}
+    </span>
+  )
+}
+
+function CatalogCard({ eyebrow, status, title, description, href, meta }) {
   return (
     <a className="mx-ui-lab-card" href={href}>
-      <span className="mx-ui-lab-card__eyebrow">{eyebrow}</span>
+      <span className="mx-ui-lab-card__eyebrow-row">
+        <span className="mx-ui-lab-card__eyebrow">{eyebrow}</span>
+        {status && <StatusBadge status={status} />}
+      </span>
       <strong>{title}</strong>
       <span className="mx-ui-lab-card__description">{description}</span>
       <span className="mx-ui-lab-card__meta">{meta}</span>
@@ -51,7 +62,8 @@ export default function UiLabHub() {
             {activeExperiments.map(entry => (
               <CatalogCard
                 key={entry.id}
-                eyebrow={`${entry.id} · ${statusLabel(entry.status)}`}
+                eyebrow={entry.id}
+                status={entry.status}
                 title={formatScope(entry.scope)}
                 description={entry.variants}
                 href={entry.href}
@@ -98,7 +110,8 @@ export default function UiLabHub() {
           {archivedExperiments.map(entry => (
             <CatalogCard
               key={entry.id}
-              eyebrow={`${entry.id} · ${statusLabel(entry.status)}`}
+              eyebrow={entry.id}
+              status={entry.status}
               title={formatScope(entry.scope)}
               description={entry.variants}
               href={entry.href}

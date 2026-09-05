@@ -163,6 +163,12 @@
   border-color: rgb(var(--c-muted));
   transform: translateY(-2px);
 }
+.mx-ui-lab-card__eyebrow-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
 .mx-ui-lab-card__eyebrow,
 .mx-ui-lab-card__meta {
   color: rgb(var(--c-muted));
@@ -170,6 +176,29 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+.mx-ui-lab-status {
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.mx-ui-lab-status--manual-gate,
+.mx-ui-lab-status--pending-review {
+  border-color: rgb(var(--c-gold) / 0.5);
+  background: rgb(var(--c-gold) / 0.12);
+  color: rgb(var(--c-gold));
+}
+.mx-ui-lab-status--concluded,
+.mx-ui-lab-status--promoted,
+.mx-ui-lab-status--archived {
+  border-color: rgb(var(--c-azure) / 0.45);
+  background: rgb(var(--c-azure) / 0.1);
+  color: rgb(var(--c-azure));
 }
 .mx-ui-lab-card strong {
   font-size: 15px;
