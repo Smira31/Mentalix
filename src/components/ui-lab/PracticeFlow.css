@@ -5,72 +5,35 @@
   --pf-faint: #625d54;
   --pf-line: #36322c;
   --pf-ice: #c9e7e5;
-  width: min(100%, 720px);
-  min-height: min(760px, calc(100svh - 120px));
-  margin: 0 auto;
-  padding: 24px clamp(16px, 4vw, 40px) 32px;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--pf-viewport-height, 100dvh);
+  min-height: 100dvh;
   overflow: hidden;
+  padding: max(24px, var(--app-safe-top, env(safe-area-inset-top, 0px)))
+    max(20px, var(--app-safe-right, env(safe-area-inset-right, 0px)))
+    max(20px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)))
+    max(20px, var(--app-safe-left, env(safe-area-inset-left, 0px)));
   color: var(--pf-text);
   background: var(--pf-bg);
   font-family: Onest, sans-serif;
 }
-.practice-flow__topline {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-}
-.practice-flow__eyebrow,
-.practice-flow__kicker {
-  color: var(--pf-muted);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-.practice-flow__state-label {
-  color: var(--pf-faint);
-  font:
-    11px/1 JetBrains Mono,
-    monospace;
-}
-.practice-flow__path {
-  display: flex;
-  align-items: center;
-  height: 34px;
-  margin: 12px 0 10px;
-}
-.practice-flow__path-stroke {
-  width: 100%;
-  height: 1px;
-  background: var(--pf-line);
-  transform-origin: left;
-}
-.practice-flow__path-dot {
-  width: 5px;
-  height: 5px;
-  flex: 0 0 5px;
-  border: 1px solid var(--pf-line);
-  border-radius: 50%;
-}
-.practice-flow__path-dot--end {
-  border-color: var(--pf-ice);
-  background: var(--pf-ice);
-  box-shadow: 0 0 0 4px rgba(201, 231, 229, 0.06);
-}
-.practice-flow__path.is-pulsing .practice-flow__path-stroke {
-  animation: pf-path 420ms ease-out;
-}
 .practice-flow__viewport {
   position: relative;
-  min-height: 600px;
+  width: min(100%, 600px);
+  height: 100%;
+  margin: 0 auto;
 }
 .practice-flow__screen {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-height: 570px;
-  padding: 44px 0 24px;
-  animation: pf-in 260ms ease-out both;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: clamp(28px, 7vh, 72px) 0 8px;
+  animation: pf-screen-in 240ms ease-out both;
 }
 .practice-flow__screen--entry,
 .practice-flow__screen--reflection,
@@ -79,13 +42,21 @@
   align-items: center;
   text-align: center;
 }
-.practice-flow h2 {
+.practice-flow h1 {
   max-width: 590px;
   margin: 12px 0 16px;
-  font-size: clamp(31px, 7vw, 54px);
+  color: var(--pf-text);
+  font-size: clamp(31px, 8vw, 54px);
   font-weight: 500;
   line-height: 1.04;
   letter-spacing: -0.045em;
+}
+.practice-flow__kicker {
+  margin: 0;
+  color: var(--pf-muted);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 .practice-flow__lead {
   max-width: 460px;
@@ -117,8 +88,8 @@
 }
 .practice-flow__primary:hover,
 .practice-flow__primary:focus-visible {
-  background: var(--pf-text);
   border-color: var(--pf-text);
+  background: var(--pf-text);
 }
 .practice-flow__choices {
   display: grid;
@@ -181,6 +152,34 @@
   color: var(--pf-faint);
   cursor: not-allowed;
 }
+.practice-flow__path {
+  display: flex;
+  align-items: center;
+  width: min(100%, 280px);
+  height: 20px;
+  margin: 16px 0 8px;
+}
+.practice-flow__path-stroke {
+  width: 100%;
+  height: 1px;
+  background: var(--pf-line);
+  transform-origin: left;
+}
+.practice-flow__path-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 5px;
+  border: 1px solid var(--pf-line);
+  border-radius: 50%;
+}
+.practice-flow__path-dot--end {
+  border-color: var(--pf-ice);
+  background: var(--pf-ice);
+  box-shadow: 0 0 0 4px rgba(201, 231, 229, 0.06);
+}
+.practice-flow__path.is-pulsing .practice-flow__path-stroke {
+  animation: pf-path 420ms ease-out;
+}
 .practice-flow__quote {
   max-width: 480px;
   margin: 10px 0 0;
@@ -190,10 +189,12 @@
   text-align: left;
 }
 .practice-flow__screen--reflection .mx-semantic-glyph {
-  width: 150px;
-  height: 105px;
-  margin-bottom: 18px;
+  width: 138px;
+  height: 96px;
   opacity: 0.8;
+}
+.practice-flow__screen--reflection .practice-flow__round-action {
+  margin-top: auto;
 }
 .practice-flow__hint {
   width: 100%;
@@ -204,9 +205,12 @@
   font-size: 13px;
   line-height: 1.5;
 }
+.practice-flow__screen--write {
+  padding-bottom: 86px;
+}
 .practice-flow textarea {
   width: 100%;
-  min-height: 275px;
+  min-height: 0;
   flex: 1;
   margin-top: 28px;
   padding: 0;
@@ -223,13 +227,17 @@
   color: var(--pf-faint);
 }
 .practice-flow__editor-bar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: flex;
   align-items: center;
-  width: 100%;
   gap: 18px;
-  margin-top: 18px;
-  padding-top: 14px;
+  min-height: 62px;
+  padding: 8px 0 max(8px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
   border-top: 1px solid var(--pf-line);
+  background: var(--pf-bg);
 }
 .practice-flow__editor-bar button {
   border: 0;
@@ -262,8 +270,7 @@
   letter-spacing: -0.06em;
 }
 .practice-flow__screen--timer .practice-flow__path {
-  width: min(100%, 390px);
-  margin: 32px 0 18px;
+  margin-top: 32px;
 }
 .practice-flow__screen--timer .practice-flow__lead {
   font-size: 14px;
@@ -316,17 +323,15 @@
   color: var(--pf-muted);
   font-size: 13px;
   text-decoration: none;
-  border-bottom: 1px solid transparent;
 }
 .practice-flow__secondary:hover {
   color: var(--pf-ice);
-  border-color: var(--pf-ice);
 }
 .practice-flow__scene {
   position: relative;
   width: 230px;
   height: 170px;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 .practice-flow__scene .mx-semantic-glyph {
   position: absolute;
@@ -370,9 +375,9 @@
 }
 .practice-flow__cage b {
   position: absolute;
-  left: -8px;
   right: -8px;
   bottom: 0;
+  left: -8px;
   height: 1px;
   background: var(--pf-muted);
 }
@@ -386,7 +391,6 @@
   border-radius: 55% 50% 45% 35%;
   background: var(--pf-ice);
   transform: translateX(0);
-  transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .practice-flow__bird span {
   position: absolute;
@@ -418,42 +422,62 @@
   border-radius: 50%;
   transform: rotate(-18deg);
 }
-.practice-flow__scene.is-open .practice-flow__bird {
-  transform: translate(80px, -40px) rotate(-8deg);
+.practice-flow__scene.is-entry .practice-flow__bird {
+  animation: pf-bird-entry 620ms 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-@keyframes pf-in {
+.practice-flow__scene.is-open .practice-flow__bird {
+  animation: pf-bird-exit 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes pf-screen-in {
   from {
     opacity: 0;
     transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: none;
+    transform: translateY(0);
   }
 }
 @keyframes pf-path {
-  0% {
-    transform: scaleX(0.06);
-    opacity: 0.25;
+  from {
+    transform: scaleX(0.08);
+    opacity: 0.3;
   }
-  100% {
+  to {
     transform: scaleX(1);
     opacity: 1;
   }
 }
+@keyframes pf-bird-entry {
+  from {
+    opacity: 0;
+    transform: translate(0, 18px) rotate(0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(80px, -40px) rotate(-8deg);
+  }
+}
+@keyframes pf-bird-exit {
+  from {
+    opacity: 0;
+    transform: translate(0, 18px) rotate(0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(80px, -40px) rotate(-8deg);
+  }
+}
 @media (max-width: 520px) {
   .practice-flow {
-    min-height: calc(100svh - 72px);
-    padding-top: 18px;
-  }
-  .practice-flow__viewport {
-    min-height: 510px;
+    padding-top: max(20px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
+    padding-right: max(16px, var(--app-safe-right, env(safe-area-inset-right, 0px)));
+    padding-left: max(16px, var(--app-safe-left, env(safe-area-inset-left, 0px)));
   }
   .practice-flow__screen {
-    min-height: 500px;
-    padding-top: 28px;
+    padding-top: clamp(20px, 5vh, 44px);
   }
-  .practice-flow h2 {
+  .practice-flow h1 {
     font-size: clamp(30px, 9vw, 42px);
   }
   .practice-flow__lead {
@@ -469,15 +493,8 @@
 }
 @media (max-width: 350px) {
   .practice-flow {
-    padding-left: 13px;
     padding-right: 13px;
-  }
-  .practice-flow__screen {
-    min-height: 470px;
-  }
-  .practice-flow__choices button {
-    min-height: 50px;
-    font-size: 14px;
+    padding-left: 13px;
   }
   .practice-flow__scene {
     transform: scale(0.82);
@@ -492,7 +509,7 @@
   .practice-flow *,
   .practice-flow *::before,
   .practice-flow *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
   }
 }

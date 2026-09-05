@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import SemanticGlyph from '../SemanticGlyph'
+import { useVisualViewportHeight } from '../../lib/visualViewport'
 import './PracticeFlow.css'
 
-const STATES = ['entry', 'choice', 'reflection', 'write', 'timer', 'done']
 const CHOICES = [
   'Боюсь ошибиться',
   'Не понимаю, с чего начать',
@@ -19,7 +19,7 @@ const STATE_TITLES = {
   done: 'Ты выбрал безопасность',
 }
 
-function PathLine({ state, pulse }) {
+function PathLine({ state, pulse = false }) {
   return (
     <div
       className={`practice-flow__path practice-flow__path--${state} ${pulse ? 'is-pulsing' : ''}`}
@@ -32,9 +32,12 @@ function PathLine({ state, pulse }) {
   )
 }
 
-function BirdCage({ open = false }) {
+function BirdCage({ open = false, entry = false }) {
   return (
-    <div className={`practice-flow__scene ${open ? 'is-open' : ''}`} aria-hidden="true">
+    <div
+      className={`practice-flow__scene ${open ? 'is-open' : ''} ${entry ? 'is-entry' : ''}`}
+      aria-hidden="true"
+    >
       <div className="practice-flow__cage">
         <i />
         <i />
@@ -81,6 +84,7 @@ export default function PracticeFlow() {
   const [pulse, setPulse] = useState(false)
   const [startedAt, setStartedAt] = useState(null)
   const [remaining, setRemaining] = useState(120)
+  const viewportHeight = useVisualViewportHeight()
 
   function go(next) {
     setPulse(true)
@@ -104,21 +108,21 @@ export default function PracticeFlow() {
 
   const minutes = String(Math.floor(remaining / 60)).padStart(2, '0')
   const seconds = String(remaining % 60).padStart(2, '0')
+  const screenStyle = viewportHeight ? { '--pf-viewport-height': `${viewportHeight}px` } : undefined
 
   return (
-    <section className="practice-flow" aria-labelledby="practice-flow-title" data-state={state}>
-      <div className="practice-flow__topline">
-        <span className="practice-flow__eyebrow">PracticeFlow · Без вины</span>
-        <span className="practice-flow__state-label">Preview-only</span>
-      </div>
-      <PathLine state={state} pulse={pulse} />
-
+    <main
+      className="practice-flow"
+      style={screenStyle}
+      aria-labelledby="practice-flow-title"
+      data-state={state}
+    >
       <div className="practice-flow__viewport">
         {state === 'entry' && (
           <div className="practice-flow__screen practice-flow__screen--entry">
-            <BirdCage />
+            <BirdCage entry />
             <p className="practice-flow__kicker">Короткая практика</p>
-            <h2 id="practice-flow-title">{STATE_TITLES.entry}</h2>
+            <h1 id="practice-flow-title">{STATE_TITLES.entry}</h1>
             <p className="practice-flow__lead">
               Не нужно быть готовым. Достаточно дать себе две спокойные минуты.
             </p>
@@ -131,7 +135,7 @@ export default function PracticeFlow() {
         {state === 'choice' && (
           <div className="practice-flow__screen">
             <p className="practice-flow__kicker">Сначала — заметить</p>
-            <h2 id="practice-flow-title">{STATE_TITLES.choice}</h2>
+            <h1 id="practice-flow-title">{STATE_TITLES.choice}</h1>
             <p className="practice-flow__lead">
               Выбери то, что ближе. Здесь нет неправильного ответа.
             </p>
@@ -150,9 +154,10 @@ export default function PracticeFlow() {
 
         {state === 'reflection' && (
           <div className="practice-flow__screen practice-flow__screen--reflection">
-            <SemanticGlyph kind="release" animated highlighted />
+            <SemanticGlyph kind="release" animated={false} highlighted />
+            <PathLine state="reflection" pulse={pulse} />
             <p className="practice-flow__kicker">Один взгляд изнутри</p>
-            <h2 id="practice-flow-title">{STATE_TITLES.reflection}</h2>
+            <h1 id="practice-flow-title">{STATE_TITLES.reflection}</h1>
             <p className="practice-flow__quote">
               «{choice || 'То, что ты заметил'}» — это сигнал, а не приговор. Можно не чинить всё
               сразу. Можно выбрать маленький безопасный шаг.
@@ -171,7 +176,7 @@ export default function PracticeFlow() {
         {state === 'write' && (
           <div className="practice-flow__screen practice-flow__screen--write">
             <p className="practice-flow__kicker">Дай этому место</p>
-            <h2 id="practice-flow-title">{STATE_TITLES.write}</h2>
+            <h1 id="practice-flow-title">{STATE_TITLES.write}</h1>
             <p className="practice-flow__hint">
               Пара слов или целый поток — пиши так, как получается.
             </p>
@@ -181,7 +186,8 @@ export default function PracticeFlow() {
               placeholder="Что ты замечаешь прямо сейчас?"
               aria-label="Текст практики"
             />
-            <div className="practice-flow__editor-bar">
+            {/* UI Lab owns this editor dock and circular continuation action; iOS/WebView owns only the keyboard chrome. */}
+            <div className="practice-flow__editor-bar" aria-label="Инструменты редактора">
               <button type="button" aria-label="Добавить">
                 +
               </button>
@@ -214,11 +220,11 @@ export default function PracticeFlow() {
         {state === 'timer' && (
           <div className="practice-flow__screen practice-flow__screen--timer">
             <p className="practice-flow__kicker">Без рывка</p>
-            <h2 id="practice-flow-title">{STATE_TITLES.timer}</h2>
+            <h1 id="practice-flow-title">{STATE_TITLES.timer}</h1>
             <div className="practice-flow__timer" aria-live="polite">
               {minutes}:{seconds}
             </div>
-            <PathLine state="timer" pulse={false} />
+            <PathLine state="timer" pulse={pulse} />
             <p className="practice-flow__lead">
               Можно просто оставаться рядом с тем, что уже появилось.
             </p>
@@ -236,7 +242,7 @@ export default function PracticeFlow() {
           <div className="practice-flow__screen practice-flow__screen--done">
             <BirdCage open />
             <p className="practice-flow__kicker">Практика завершена</p>
-            <h2 id="practice-flow-title">{STATE_TITLES.done}</h2>
+            <h1 id="practice-flow-title">{STATE_TITLES.done}</h1>
             <p className="practice-flow__lead">
               Ты не стал давить на себя. Это уже забота о том, что важно.
             </p>
@@ -261,10 +267,6 @@ export default function PracticeFlow() {
           </div>
         )}
       </div>
-    </section>
+    </main>
   )
 }
-
-export { STATES }
-
-// Fixture-only: intentionally no API, routing, feature flags, or production state is used here.

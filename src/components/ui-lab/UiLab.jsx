@@ -44,7 +44,9 @@ export default function UiLab({ initialSection = 'hub' }) {
     window.history.replaceState({}, '', url)
   }
 
-  return (
+  return section === 'practice-flow' ? (
+    <PracticeFlow />
+  ) : (
     <main className="mx-ui-lab">
       <div className="mx-ui-lab__scroll">
         <header className="mx-ui-lab__header">
