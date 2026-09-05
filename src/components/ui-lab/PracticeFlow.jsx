@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { useVisualViewportHeight } from '../../lib/visualViewport'
 import './PracticeFlow.css'
 
-let noBlameFlightPlayed = false
-
 const FEELING_OPTIONS = [
   'Скучно',
   'Тревожно',
@@ -45,30 +43,9 @@ function OptionList({ options, selected, onPick }) {
   )
 }
 
-function NoBlameReleaseScene({ animate = false }) {
-  const reducedMotion =
-    typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-  const shouldFly = animate && !reducedMotion && !noBlameFlightPlayed
-  const [phase, setPhase] = useState(shouldFly ? 'inside' : 'outside')
-
-  useEffect(() => {
-    if (!shouldFly) return undefined
-    const launch = window.setTimeout(() => setPhase('flying'), 250)
-    const finish = window.setTimeout(() => {
-      noBlameFlightPlayed = true
-      setPhase('outside')
-    }, 1100)
-    return () => {
-      window.clearTimeout(launch)
-      window.clearTimeout(finish)
-    }
-  }, [shouldFly])
-
+function NoBlameReleaseScene() {
   return (
-    <div
-      className={`practice-flow__release-scene practice-flow__release-scene--${phase}`}
-      aria-hidden="true"
-    >
+    <div className="practice-flow__release-scene" aria-hidden="true">
       <svg viewBox="0 0 180 130" role="presentation">
         <g className="practice-flow__release-cage">
           <path d="M46 96V48a38 38 0 0 1 76 0v48" />
@@ -167,7 +144,7 @@ export default function PracticeFlow() {
         {step === 'intro' && (
           <div className="practice-flow__screen practice-flow__screen--entry practice-flow__screen--reference-entry">
             <ReferenceChrome />
-            <NoBlameReleaseScene animate />
+            <NoBlameReleaseScene />
             <h1 id="practice-flow-title">Вернись к делу без давления</h1>
             <p className="practice-flow__lead">
               Начни с одного безопасного шага. Не нужно сделать всё сразу.
