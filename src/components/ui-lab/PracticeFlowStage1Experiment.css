@@ -234,22 +234,40 @@
 }
 
 .mx-stage1__choices button {
+  position: relative;
   display: flex;
-  min-height: 3.6rem;
+  min-height: 3.75rem;
   align-items: center;
   justify-content: space-between;
   border: 0;
   border-bottom: 1px solid rgb(var(--c-border) / 0.34);
   background: transparent;
   color: rgb(var(--c-muted));
-  padding: 0.7rem 0;
+  padding: 0.75rem 0.25rem;
   text-align: left;
   font-size: 1rem;
   line-height: 1.25;
 }
 
+.mx-stage1__choices button:active {
+  background: rgb(var(--c-gold) / 0.08);
+}
+
+.mx-stage1__choices button:focus-visible {
+  outline: 2px solid rgb(var(--c-gold) / 0.72);
+  outline-offset: 3px;
+}
+
 .mx-stage1__choices button.is-selected {
-  color: rgb(var(--c-text));
+  background: rgb(var(--c-gold) / 0.08);
+  border-bottom-color: rgb(var(--c-gold) / 0.58) !important;
+  color: rgb(var(--c-text) / 0.98) !important;
+  -webkit-text-fill-color: rgb(var(--c-text) / 0.98);
+}
+
+.mx-stage1__choices button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .mx-stage1__choice-dot {
@@ -270,23 +288,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 0.875rem;
+  min-height: 16rem;
   text-align: center;
 }
 
 .mx-stage1__timer strong {
   color: rgb(var(--c-gold));
-  font-family: var(--font-display, inherit);
-  font-size: clamp(4rem, 18vw, 6rem);
+  font-size: clamp(3.75rem, 17vw, 5.25rem);
   font-variant-numeric: tabular-nums;
-  font-weight: 400;
-  letter-spacing: -0.08em;
-  line-height: 0.9;
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
 }
 
 .mx-stage1__timer span {
+  max-width: 16rem;
   color: rgb(var(--c-muted));
   font-size: 0.8125rem;
+  line-height: 1.5;
 }
 
 .mx-stage1__feedback {
