@@ -165,6 +165,9 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
         open: keyboardHeight > 120,
         bottom: Math.max(10, keyboardHeight + 10),
       })
+      if (keyboardHeight > 120 && document.activeElement instanceof HTMLElement) {
+        document.activeElement.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+      }
     }
 
     syncViewport()
@@ -190,7 +193,10 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
   }
 
   return (
-    <section className="mx-stage1__canvas" aria-label={`${flow.label}: ${stage.label}`}>
+    <section
+      className={`mx-stage1__canvas ${keyboard.open ? 'is-keyboard-open' : ''}`}
+      aria-label={`${flow.label}: ${stage.label}`}
+    >
       <header className="mx-stage1__topbar">
         <button type="button" className="mx-stage1__back" onClick={previous} aria-label="Назад">
           <ArrowLeft size={18} />
