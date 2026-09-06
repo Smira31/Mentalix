@@ -223,6 +223,16 @@ export default function App() {
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
 
+  const isPracticeFocusPreview = (() => {
+    if (typeof window === 'undefined') return false
+    const params = new URLSearchParams(window.location.search)
+    return (
+      isPreviewDemoMode() &&
+      params.get('ui_lab') === 'experiments' &&
+      ['first-step', 'no-blame'].includes(params.get('practice_focus'))
+    )
+  })()
+
   useEffect(() => {
     if (!user) return
 
@@ -243,7 +253,11 @@ export default function App() {
   }, [user])
 
   const bottomNavigationHidden =
-    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
+    mentorPersonaOpen ||
+    todayFlowOpen ||
+    todaySeriesOpen ||
+    practiceGameOpen ||
+    isPracticeFocusPreview
 
   /*
    * Последняя реальная позиция скролла.
