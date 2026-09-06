@@ -37,6 +37,7 @@
 }
 
 .mx-stage1__flow-switch,
+.mx-stage1__surface-switch,
 .mx-stage1__stage-strip {
   display: flex;
   flex-wrap: wrap;
@@ -45,6 +46,7 @@
 }
 
 .mx-stage1__flow-switch button,
+.mx-stage1__surface-switch button,
 .mx-stage1__stage-strip button {
   min-height: 2.5rem;
   border: 1px solid rgb(var(--c-border));
@@ -57,6 +59,7 @@
 }
 
 .mx-stage1__flow-switch button.is-active,
+.mx-stage1__surface-switch button.is-active,
 .mx-stage1__stage-strip button.is-active {
   border-color: rgb(var(--c-gold) / 0.65);
   background: rgb(var(--c-gold) / 0.12);
@@ -330,6 +333,26 @@
 
 .mx-stage1__baseline-body {
   padding: 2.5rem 1rem;
+}
+
+.mx-stage1__baseline-unavailable {
+  display: grid;
+  gap: 1rem;
+  padding: 2.5rem 1rem;
+}
+
+.mx-stage1__baseline-unavailable h3 {
+  margin: 0;
+  color: rgb(var(--c-text));
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.mx-stage1__baseline-unavailable p {
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 0.8125rem;
+  line-height: 1.55;
 }
 
 .mx-stage1__baseline-body h3 {

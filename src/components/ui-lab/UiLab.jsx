@@ -129,14 +129,11 @@ export default function UiLab({ initialSection = 'hub' }) {
             </>
           )}
           {section === 'compare' && (
-            <>
-              <TodayStatePreview
-                mode="compare"
-                selectedState={todayState}
-                onStateChange={setTodayState}
-              />
-              <PracticeFlowStage1Experiment mode="compare" />
-            </>
+            <TodayStatePreview
+              mode="compare"
+              selectedState={todayState}
+              onStateChange={setTodayState}
+            />
           )}
           {section === 'daily-canonical' && <DailyCanonicalExperiment />}
           {section === 'practice-catalog' && (
