@@ -199,7 +199,7 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
         <span className="mx-stage1__stage-label">{stage.label}</span>
       </header>
 
-      <div className="mx-stage1__content">
+      <div className={`mx-stage1__content ${stage.feedback ? 'mx-stage1__content--complete' : ''}`}>
         {stage.visualZone && (
           <div className="mx-stage1__visual-zone" aria-hidden="true">
             <span />
@@ -247,7 +247,7 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
         )}
 
         {stage.feedback && (
-          <div className="mx-stage1__feedback" role="group" aria-label="Помогло сейчас?">
+          <div className="mx-stage1__feedback font-body" role="group" aria-label="Помогло сейчас?">
             {['Нет', 'Немного', 'Да'].map(value => (
               <button
                 key={value}
