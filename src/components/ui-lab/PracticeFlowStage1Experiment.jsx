@@ -126,6 +126,157 @@ const FLOWS = {
       },
     ],
   },
+  narrowFocus: {
+    label: 'Одно из всех',
+    stages: [
+      {
+        key: 'intro',
+        label: 'Вход',
+        title: 'Сузь всё до одного дела',
+        copy: 'Короткая сессия, чтобы выгрузить лишнее и выбрать один проверяемый шаг на сегодня.',
+        visualZone: true,
+      },
+      {
+        key: 'dump',
+        label: 'Ввод',
+        title: 'Выпиши всё, что крутится в голове',
+        copy: 'Сначала выгрузи список — без разбора и порядка.',
+        input: true,
+        placeholder: 'Без разбора и порядка — просто всё подряд',
+        inputLabel: 'Всё, что крутится в голове',
+      },
+      {
+        key: 'pick',
+        label: 'Выбор',
+        title: 'Что из этого важнее всего сейчас?',
+        copy: 'Назови только одно.',
+        input: true,
+        placeholder: 'Одно дело',
+        inputLabel: 'Одно самое важное дело',
+      },
+      {
+        key: 'release',
+        label: 'Разбор',
+        title: 'Остальное подождёт. Правда.',
+        copy: 'Всё не помещается в одну голову сразу. И не должно.',
+        visualZone: true,
+      },
+      {
+        key: 'plan',
+        label: 'План',
+        title: 'Какой один шаг можно увидеть готовым через пять минут?',
+        copy: 'Не весь проект, а один результат, который можно проверить.',
+        input: true,
+        placeholder: 'Например: написать первое сообщение',
+        inputLabel: 'Первое действие по выбранному делу',
+      },
+      { key: 'timer', label: 'Таймер', title: 'Только это одно', timer: true, duration: '05:00' },
+      {
+        key: 'outcome',
+        label: 'Результат',
+        title: 'Как прошло?',
+        choices: ['Начал(а)', 'Не начал(а)', 'Остановился — было небезопасно'],
+      },
+      {
+        key: 'complete',
+        label: 'Завершение',
+        title: 'Ты сузил(а) фокус',
+        copy: 'Не всё сразу, а что-то одно — этого достаточно.',
+        completionByChoice: {
+          'Начал(а)': {
+            title: 'Ты сузил(а) фокус',
+            copy: 'Не всё сразу, а что-то одно — этого достаточно.',
+          },
+          'Не начал(а)': {
+            title: 'Ты заметил(а), что отвлекает',
+            copy: 'Это уже честнее, чем продолжать держать всё в голове.',
+          },
+          'Остановился — было небезопасно': {
+            title: 'Ты выбрал(а) безопасность',
+            copy: 'Остановиться вовремя — тоже бережный шаг.',
+          },
+        },
+        feedback: true,
+      },
+    ],
+  },
+  oneFinish: {
+    label: 'Один финиш',
+    stages: [
+      {
+        key: 'intro',
+        label: 'Вход',
+        title: 'Доведи один маленький кусок до конца',
+        copy: 'Короткая сессия, чтобы выбрать один кусок, который можно честно проверить сегодня.',
+        visualZone: true,
+      },
+      {
+        key: 'project',
+        label: 'Ввод',
+        title: 'Что зависло на середине?',
+        copy: 'Назови проект, который давно просит маленького завершения.',
+        input: true,
+        placeholder: 'Например: ремонт в комнате',
+        inputLabel: 'Проект, который завис на середине',
+      },
+      {
+        key: 'state',
+        label: 'Выбор',
+        title: 'На чём застряло?',
+        choices: [
+          'Стало скучно',
+          'Появилось что-то новее',
+          'Не вижу конца',
+          'Устал(а)',
+          'Не знаю почему',
+        ],
+      },
+      {
+        key: 'reframe',
+        label: 'Разбор',
+        title: 'Один маленький финиш — уже победа.',
+        copy: 'Не обязательно закончить всё — важно закончить что-то одно.',
+        visualZone: true,
+      },
+      {
+        key: 'finish',
+        label: 'План',
+        title: 'Какой маленький кусок можно завершить сегодня?',
+        copy: 'Выбери результат, который можно проверить, а не весь проект целиком.',
+        input: true,
+        placeholder: 'Например: докрасить один угол, а не всю комнату',
+        inputLabel: 'Маленький кусок для завершения',
+      },
+      { key: 'timer', label: 'Таймер', title: 'Только этот кусок', timer: true, duration: '05:00' },
+      {
+        key: 'outcome',
+        label: 'Результат',
+        title: 'Как прошло?',
+        choices: ['Начал(а)', 'Не начал(а)', 'Остановился — было небезопасно'],
+      },
+      {
+        key: 'complete',
+        label: 'Завершение',
+        title: 'Кусок завершён',
+        copy: 'Ты не пытался(ась) закрыть всё — и именно поэтому получилось.',
+        completionByChoice: {
+          'Начал(а)': {
+            title: 'Кусок завершён',
+            copy: 'Ты не пытался(ась) закрыть всё — и именно поэтому получилось.',
+          },
+          'Не начал(а)': {
+            title: 'Ты заметил(а), что мешает закончить',
+            copy: 'Понять, что мешает, — уже честнее, чем снова отложить.',
+          },
+          'Остановился — было небезопасно': {
+            title: 'Ты выбрал(а) безопасность',
+            copy: 'Остановиться вовремя — тоже бережный шаг.',
+          },
+        },
+        feedback: true,
+      },
+    ],
+  },
 }
 
 function RoundAction({ onClick, disabled = false, label = 'Дальше', direction = 'right' }) {
@@ -217,8 +368,14 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
           </div>
         )}
         <div className="mx-stage1__meta font-label">{flow.label}</div>
-        <h3 className="font-display">{stage.title}</h3>
-        {stage.copy && <p className="mx-stage1__copy font-body">{stage.copy}</p>}
+        <h3 className="font-display">
+          {stage.completionByChoice?.[selected]?.title || stage.title}
+        </h3>
+        {(stage.completionByChoice?.[selected]?.copy || stage.copy) && (
+          <p className="mx-stage1__copy font-body">
+            {stage.completionByChoice?.[selected]?.copy || stage.copy}
+          </p>
+        )}
 
         {stage.input && (
           <label className="mx-stage1__input-wrap">
@@ -226,9 +383,9 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
             <textarea
               value={draft}
               onChange={event => setDraft(event.target.value)}
-              placeholder="Начни писать…"
+              placeholder={stage.placeholder || 'Начни писать…'}
               rows={5}
-              aria-label="Текст ответа"
+              aria-label={stage.inputLabel || 'Текст ответа'}
             />
           </label>
         )}
@@ -326,7 +483,14 @@ function BaselineUnavailable() {
 }
 
 export default function PracticeFlowStage1Experiment({ mode = 'candidate', focusPractice = null }) {
-  const initialFlowKey = focusPractice === 'no-blame' ? 'noBlame' : 'firstStep'
+  const initialFlowKey =
+    focusPractice === 'no-blame'
+      ? 'noBlame'
+      : focusPractice === 'narrow-focus'
+        ? 'narrowFocus'
+        : focusPractice === 'one-finish'
+          ? 'oneFinish'
+          : 'firstStep'
   const [flowKey, setFlowKey] = useState(initialFlowKey)
   const [stageIndex, setStageIndex] = useState(0)
   const [surfaceMode, setSurfaceMode] = useState(mode === 'compare' ? 'compare' : 'candidate')

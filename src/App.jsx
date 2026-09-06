@@ -229,7 +229,9 @@ export default function App() {
     return (
       isPreviewDemoMode() &&
       params.get('ui_lab') === 'experiments' &&
-      ['first-step', 'no-blame'].includes(params.get('practice_focus'))
+      ['first-step', 'no-blame', 'narrow-focus', 'one-finish'].includes(
+        params.get('practice_focus')
+      )
     )
   })()
 
