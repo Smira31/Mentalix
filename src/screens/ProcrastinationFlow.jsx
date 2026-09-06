@@ -168,7 +168,7 @@ function NoBlameArtwork({ stage }) {
 
 function OptionList({ options, onPick }) {
   return (
-    <div className="mt-6 space-y-2.5">
+    <div className="mx-practice-flow__choice-list mt-6 space-y-2.5">
       {options.map(option => (
         <button
           key={option.key}
@@ -292,7 +292,10 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
   const seconds = String(secondsLeft % 60).padStart(2, '0')
 
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided`}
+      style={surfaceStyle}
+    >
       <div
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
       >
@@ -320,7 +323,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
               type="button"
               onClick={startPractice}
               aria-label="Начать"
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
+              className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-4 mt-6"
             >
               Снять лишнее давление
             </button>
@@ -342,6 +345,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
+              guidedFlow
               onSubmit={goToFeeling}
               submitLabel="Дальше"
               submitDisabled={!task.trim()}
@@ -370,7 +374,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
               type="button"
               onClick={goToPlan}
               aria-label="Дальше"
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
+              className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-4 mt-6"
             >
               Найти безопасный вход
             </button>
@@ -400,7 +404,8 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={startRun}
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
+              aria-label="Начать две минуты"
+              className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-4 mt-6"
             >
               Начать две минуты
             </button>
@@ -412,7 +417,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
             <Progress step={step} />
             <StageHeading>Только эти две минуты</StageHeading>
             <div className="no-blame-stage__scene">
-              <div className="font-display text-[68px] text-gold tabular-nums leading-none">
+              <div className="mx-practice-flow__timer font-display text-[68px] text-gold tabular-nums leading-none">
                 {minutes}:{seconds}
               </div>
               <NoBlameArtwork stage="line" />
@@ -440,7 +445,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
         )}
 
         {step === 'complete' && (
-          <div className="no-blame-stage no-blame-stage--complete animate-fade-in">
+          <div className="no-blame-stage no-blame-stage--complete mx-practice-flow__completion animate-fade-in">
             <div className="no-blame-stage__center">
               <NoBlameArtwork stage="complete" />
               <h2 className="font-display text-[24px] text-center text-cream leading-tight">
@@ -481,7 +486,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
               aria-label="Завершить"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Продолжить в Сегодня
+              Вернуться к практикам
             </button>
           </div>
         )}

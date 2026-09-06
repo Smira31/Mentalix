@@ -28,8 +28,9 @@ export function isPreviewDemoMode() {
     host.endsWith('.manus.computer') ||
     host.endsWith('.trycloudflare.com')
   const isPreviewRuntime = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+  const isQaProductionHost = host === 'mentalix-preview.vercel.app'
 
-  return params.get('demo') === '1' && isAllowedHost && isPreviewRuntime
+  return params.get('demo') === '1' && isAllowedHost && (isPreviewRuntime || isQaProductionHost)
 }
 
 function previewTodayState() {

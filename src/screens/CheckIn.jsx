@@ -878,6 +878,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                         <div className="text-[13px] font-bold text-cream mb-2">{field.label}</div>
 
                         <JournalTextarea
+                          writingCanvas
                           value={lessons[field.key] || ''}
                           onChange={value =>
                             setLessons(current => ({

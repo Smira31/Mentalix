@@ -121,7 +121,7 @@ function Progress({ step }) {
 
 function OptionList({ options, onPick }) {
   return (
-    <div className="mt-5 space-y-2">
+    <div className="mx-practice-flow__choice-list mt-5 space-y-2">
       {options.map(option => (
         <button
           key={option.key}
@@ -242,7 +242,10 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
   const seconds = String(secondsLeft % 60).padStart(2, '0')
 
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided`}
+      style={surfaceStyle}
+    >
       <div
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
       >
@@ -272,7 +275,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
               type="button"
               onClick={startPractice}
               aria-label="Начать: найти один финиш"
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
+              className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-4 mt-6"
             >
               Найти один финиш
             </button>
@@ -294,6 +297,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
+              guidedFlow
               onSubmit={goToState}
               submitLabel="Дальше"
               submitDisabled={!project.trim()}
@@ -318,7 +322,8 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={goToFinish}
-              className="cta-pill w-full text-[14px] px-6 py-3.5 mt-5"
+              aria-label="Дальше"
+              className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-3.5 mt-5"
             >
               Дальше
             </button>
@@ -340,6 +345,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
+              guidedFlow
               onSubmit={startRun}
               submitLabel="Начать пять минут"
               submitDisabled={!finish.trim()}
@@ -352,7 +358,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
             <Progress step={step} />
             <StageHeading>Только этот кусок</StageHeading>
 
-            <div className="font-display text-[64px] text-cream mt-8 tabular-nums">
+            <div className="mx-practice-flow__timer font-display text-[64px] text-cream mt-8 tabular-nums">
               {minutes}:{seconds}
             </div>
 
@@ -376,7 +382,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
         )}
 
         {step === 'complete' && (
-          <div className="one-finish-stage one-finish-stage--complete animate-fade-in">
+          <div className="one-finish-stage one-finish-stage--complete mx-practice-flow__completion animate-fade-in">
             <div className="one-finish-stage__center text-center">
               <div className="one-finish-art" aria-hidden="true">
                 <OneFinishArt />
@@ -428,7 +434,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
               aria-label="Завершить: продолжить в Сегодня"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Продолжить в Сегодня
+              Вернуться к практикам
             </button>
           </div>
         )}

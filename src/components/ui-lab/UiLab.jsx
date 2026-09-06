@@ -71,8 +71,8 @@ export default function UiLab({ initialSection = 'hub' }) {
                   <span>UI-EXP-003 · сравнение каталога</span>
                   <h2 id="practice-comparison-title">Практики: сейчас и «Ярусный каталог»</h2>
                   <p>
-                    Слева — текущий production baseline, справа — Preview-only эксперимент. Данные
-                    практик используют тот же набор и формат, а новые ярусы помечены как временные.
+                    Слева — текущий production baseline, справа — Preview-only прототип с
+                    live-источниками. Production Practices.jsx пока не изменён.
                   </p>
                 </div>
                 <div className="mx-practice-comparison__grid">
@@ -145,8 +145,8 @@ export default function UiLab({ initialSection = 'hub' }) {
                   Практики: production и «Ярусный каталог»
                 </h2>
                 <p>
-                  Слева — текущий production baseline, справа — Preview-only эксперимент для ручной
-                  проверки на реальном Telegram/iPhone.
+                  Слева — текущий production baseline, справа — Preview-only прототип с
+                  live-источниками для ручной проверки на реальном Telegram/iPhone.
                 </p>
               </div>
               <div className="mx-practice-comparison__grid">
@@ -158,7 +158,8 @@ export default function UiLab({ initialSection = 'hub' }) {
           {section === 'focus-check' && <FocusCheck />}
         </div>
         <footer className="mx-ui-lab__footer">
-          Preview-only · реальные пользовательские данные и product logic не подключены
+          Preview-only · live sources подключаются в Telegram-сессии; production Practices.jsx не
+          изменён
         </footer>
       </div>
     </main>
