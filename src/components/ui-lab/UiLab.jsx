@@ -10,6 +10,7 @@ import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
+import PracticeFlowStage1Experiment from './PracticeFlowStage1Experiment'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -121,17 +122,21 @@ export default function UiLab({ initialSection = 'hub' }) {
                 </div>
               </section>
               <PracticeCatalogExperiment />
+              <PracticeFlowStage1Experiment mode="candidate" />
               <EveningReviewExperiment />
               <UiExperiments embedded />
               <HistoryTrendsJournalExperiment />
             </>
           )}
           {section === 'compare' && (
-            <TodayStatePreview
-              mode="compare"
-              selectedState={todayState}
-              onStateChange={setTodayState}
-            />
+            <>
+              <TodayStatePreview
+                mode="compare"
+                selectedState={todayState}
+                onStateChange={setTodayState}
+              />
+              <PracticeFlowStage1Experiment mode="compare" />
+            </>
           )}
           {section === 'daily-canonical' && <DailyCanonicalExperiment />}
           {section === 'practice-catalog' && (
