@@ -10,6 +10,7 @@ import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
+import PracticeFlowStage1Experiment from './PracticeFlowStage1Experiment'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -34,6 +35,14 @@ export function resolveUiLabSection(value = 'hub') {
 export default function UiLab({ initialSection = 'hub' }) {
   const [section, setSection] = useState(resolveUiLabSection(initialSection))
   const [todayState, setTodayState] = useState('checkinPending')
+  const focusPractice = new URLSearchParams(window.location.search).get('practice_focus')
+
+  if (
+    section === 'experiments' &&
+    ['first-step', 'no-blame', 'narrow-focus', 'one-finish'].includes(focusPractice)
+  ) {
+    return <PracticeFlowStage1Experiment focusPractice={focusPractice} />
+  }
 
   function selectSection(next) {
     setSection(next)
@@ -121,6 +130,7 @@ export default function UiLab({ initialSection = 'hub' }) {
                 </div>
               </section>
               <PracticeCatalogExperiment />
+              <PracticeFlowStage1Experiment mode="candidate" />
               <EveningReviewExperiment />
               <UiExperiments embedded />
               <HistoryTrendsJournalExperiment />
