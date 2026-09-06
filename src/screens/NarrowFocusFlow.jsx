@@ -113,7 +113,7 @@ function Progress({ step }) {
 
 function OptionList({ options, onPick }) {
   return (
-    <div className="mt-5 space-y-2">
+    <div className="mx-practice-flow__choice-list mt-5 space-y-2">
       {options.map(option => (
         <button
           key={option.key}
@@ -237,7 +237,10 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
   const seconds = String(secondsLeft % 60).padStart(2, '0')
 
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided`}
+      style={surfaceStyle}
+    >
       <div
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
       >
@@ -267,7 +270,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
               type="button"
               onClick={startPractice}
               aria-label="Начать"
-              className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
+              className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-4 mt-6"
             >
               Освободить голову
             </button>
@@ -280,7 +283,6 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
             <StageHeading>Выпиши всё, что крутится в голове</StageHeading>
 
             <JournalTextarea
-              writingCanvas
               autoFocus
               value={dump}
               onChange={setDump}
@@ -290,6 +292,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
+              guidedFlow
               onSubmit={goToPick}
               submitLabel="Дальше"
               submitDisabled={!dump.trim()}
@@ -314,6 +317,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
+              guidedFlow
               onSubmit={goToRelease}
               submitLabel="Дальше"
               submitDisabled={!pick.trim()}
@@ -329,7 +333,8 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
             <button
               type="button"
               onClick={goToPlan}
-              className="cta-pill w-full text-[14px] px-6 py-3.5 mt-5"
+              aria-label="Дальше"
+              className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-3.5 mt-5"
             >
               Дальше
             </button>
@@ -351,6 +356,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
               editorClassName="pb-24"
               floatingToolbar
               formatting={false}
+              guidedFlow
               onSubmit={startRun}
               submitLabel="Начать пять минут"
               submitDisabled={!plan.trim()}
@@ -363,7 +369,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
             <Progress step={step} />
             <StageHeading>Только это одно</StageHeading>
 
-            <div className="font-display text-[64px] text-cream mt-8 tabular-nums">
+            <div className="mx-practice-flow__timer font-display text-[64px] text-cream mt-8 tabular-nums">
               {minutes}:{seconds}
             </div>
 

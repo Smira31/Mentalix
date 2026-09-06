@@ -572,7 +572,7 @@ test('локальный UX smoke по основному маршруту', asy
       check: async () => {
         const editor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
         await expect(editor).toBeVisible()
-        await expect(editor).toHaveAttribute('contenteditable', 'true')
+        await expect(editor).toHaveAttribute('placeholder', 'Начни писать...')
         await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1)
         await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeVisible()
       },
