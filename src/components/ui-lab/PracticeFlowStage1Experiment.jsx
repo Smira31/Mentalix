@@ -147,10 +147,15 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
   const [draft, setDraft] = useState('')
   const [selected, setSelected] = useState(null)
   const [feedback, setFeedback] = useState(null)
+  const [completed, setCompleted] = useState(false)
   const [keyboard, setKeyboard] = useState({ open: false, bottom: 10 })
   const isFirst = stageIndex === 0
   const isLast = stageIndex === flow.stages.length - 1
   const canAdvance = stage.input ? Boolean(draft.trim()) : stage.choices ? Boolean(selected) : true
+
+  useEffect(() => {
+    setCompleted(false)
+  }, [stageIndex])
 
   useEffect(() => {
     const viewport = window.visualViewport
@@ -252,7 +257,7 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
           </div>
         )}
 
-        {stage.feedback && (
+        {stage.feedback && !completed && (
           <div className="mx-stage1__feedback font-body" role="group" aria-label="Помогло сейчас?">
             {['Нет', 'Немного', 'Да'].map(value => (
               <button
@@ -267,6 +272,11 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
             ))}
           </div>
         )}
+        {completed && (
+          <div className="mx-stage1__completion-status" role="status" aria-live="polite">
+            Завершено в Preview. Можно вернуться к началу практики.
+          </div>
+        )}
       </div>
 
       <div
@@ -276,7 +286,18 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
         <span className="mx-stage1__progress">
           {stageIndex + 1} / {flow.stages.length}
         </span>
-        <RoundAction onClick={next} disabled={!canAdvance || isLast} label="Продолжить" />
+        {isLast ? (
+          <button
+            type="button"
+            className="mx-stage1__completion-action"
+            onClick={() => setCompleted(true)}
+            disabled={!feedback || completed}
+          >
+            {completed ? 'Завершено' : 'Сохранить и завершить'}
+          </button>
+        ) : (
+          <RoundAction onClick={next} disabled={!canAdvance} label="Продолжить" />
+        )}
       </div>
     </section>
   )
