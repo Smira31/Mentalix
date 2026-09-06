@@ -379,6 +379,39 @@
   -webkit-text-fill-color: rgb(var(--c-gold));
 }
 
+.mx-stage1__completion-status {
+  max-width: 24rem;
+  margin-top: 2rem;
+  color: rgb(var(--c-muted));
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.mx-stage1__completion-action {
+  min-height: 3.5rem;
+  border: 1px solid rgb(var(--c-text));
+  border-radius: 999px;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  padding: 0.75rem 1.25rem;
+  font-family: Onest, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.mx-stage1__completion-action:focus-visible {
+  outline: 2px solid rgb(var(--c-gold) / 0.72);
+  outline-offset: 3px;
+}
+
+.mx-stage1__completion-action:disabled {
+  border-color: rgb(var(--c-muted) / 0.45);
+  background: transparent;
+  color: rgb(var(--c-muted));
+  cursor: not-allowed;
+}
+
 .mx-stage1__footer {
   display: flex;
   align-items: center;
