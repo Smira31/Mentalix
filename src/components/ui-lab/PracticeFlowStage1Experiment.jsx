@@ -39,7 +39,7 @@ const FLOWS = {
         copy: 'Не «написать отчёт», а «открыть документ и записать три пункта».',
         input: true,
       },
-      { key: 'timer', label: 'Таймер', title: 'Только этот шаг', timer: true },
+      { key: 'timer', label: 'Таймер', title: 'Только этот шаг', timer: true, duration: '05:00' },
       {
         key: 'outcome',
         label: 'Результат',
@@ -101,7 +101,13 @@ const FLOWS = {
         title: 'Договорись с собой',
         copy: 'Как только снова потянет отвлечься — вернись к делу на две минуты.',
       },
-      { key: 'timer', label: 'Таймер', title: 'Только эти две минуты', timer: true },
+      {
+        key: 'timer',
+        label: 'Таймер',
+        title: 'Только эти две минуты',
+        timer: true,
+        duration: '02:00',
+      },
       {
         key: 'outcome',
         label: 'Результат',
@@ -226,8 +232,8 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
         )}
 
         {stage.timer && (
-          <div className="mx-stage1__timer" aria-label="Две минуты">
-            <strong>02:00</strong>
+          <div className="mx-stage1__timer" aria-label={stage.duration}>
+            <strong>{stage.duration}</strong>
             <span>Не идеально. Просто начни.</span>
           </div>
         )}
@@ -262,36 +268,24 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
   )
 }
 
-function BaselineCard({ flow, stageIndex }) {
-  const stage = flow.stages[stageIndex]
+function BaselineUnavailable() {
   return (
-    <div className="mx-stage1__baseline-card">
+    <div className="mx-stage1__baseline-card" role="note">
       <div className="mx-stage1__baseline-header">
-        <span>Baseline · production</span>
-        <strong>{stage.label}</strong>
+        <span>Baseline</span>
+        <strong>Unavailable</strong>
       </div>
-      <div className="mx-stage1__baseline-body">
-        <span className="mx-stage1__baseline-eyebrow">{flow.label}</span>
-        <h3>{stage.title}</h3>
-        {stage.copy && <p>{stage.copy}</p>}
-        {stage.input && <div className="mx-stage1__baseline-field">Например: написать отчёт</div>}
-        {stage.choices && (
-          <div className="mx-stage1__baseline-choices">
-            {stage.choices.slice(0, 3).map(choice => (
-              <span key={choice}>{choice}</span>
-            ))}
-          </div>
-        )}
-        {stage.timer && <strong className="mx-stage1__baseline-timer">05:00</strong>}
-        {stage.feedback && (
-          <div className="mx-stage1__baseline-feedback">
-            <span>Нет</span>
-            <span>Немного</span>
-            <span>Да</span>
-          </div>
-        )}
+      <div className="mx-stage1__baseline-unavailable">
+        <h3>Baseline недоступен для live-preview</h3>
+        <p>
+          Production flow использует portal, user context, сохранение и Telegram shell. Безопасная
+          extraction boundary для монтирования здесь ещё не выделена.
+        </p>
+        <p>
+          Минимальная граница: вынести pure flow state machine и read-only callbacks, затем
+          подключить production renderer без `save*Entry`, haptics и внешней навигации.
+        </p>
       </div>
-      <div className="mx-stage1__baseline-cta">Продолжить</div>
     </div>
   )
 }
@@ -299,6 +293,7 @@ function BaselineCard({ flow, stageIndex }) {
 export default function PracticeFlowStage1Experiment({ mode = 'candidate' }) {
   const [flowKey, setFlowKey] = useState('firstStep')
   const [stageIndex, setStageIndex] = useState(0)
+  const [surfaceMode, setSurfaceMode] = useState(mode === 'compare' ? 'compare' : 'candidate')
   const flow = FLOWS[flowKey]
 
   function changeFlow(nextFlow) {
@@ -327,11 +322,29 @@ export default function PracticeFlowStage1Experiment({ mode = 'candidate' }) {
           </button>
         ))}
       </div>
-      <div className={mode === 'compare' ? 'mx-stage1__compare' : 'mx-stage1__single'}>
-        {mode === 'compare' && (
+      <div
+        className="mx-stage1__surface-switch"
+        role="tablist"
+        aria-label="Поверхность эксперимента"
+      >
+        {['candidate', 'compare'].map(nextMode => (
+          <button
+            key={nextMode}
+            type="button"
+            role="tab"
+            aria-selected={surfaceMode === nextMode}
+            className={surfaceMode === nextMode ? 'is-active' : ''}
+            onClick={() => setSurfaceMode(nextMode)}
+          >
+            {nextMode === 'candidate' ? 'Candidate' : 'Compare'}
+          </button>
+        ))}
+      </div>
+      <div className={surfaceMode === 'compare' ? 'mx-stage1__compare' : 'mx-stage1__single'}>
+        {surfaceMode === 'compare' && (
           <div>
             <div className="mx-stage1__column-label">Baseline</div>
-            <BaselineCard flow={flow} stageIndex={stageIndex} />
+            <BaselineUnavailable />
           </div>
         )}
         <div>
@@ -344,7 +357,7 @@ export default function PracticeFlowStage1Experiment({ mode = 'candidate' }) {
           />
         </div>
       </div>
-      {mode === 'candidate' && (
+      {surfaceMode === 'candidate' && (
         <div className="mx-stage1__stage-strip" aria-label="Шаги сценария">
           {flow.stages.map((item, index) => (
             <button
@@ -358,7 +371,7 @@ export default function PracticeFlowStage1Experiment({ mode = 'candidate' }) {
           ))}
         </div>
       )}
-      {mode === 'compare' && (
+      {surfaceMode === 'compare' && (
         <p className="mx-stage1__compare-note">
           <Check size={16} /> Один и тот же сценарий и контент; изменены только shell, grid, CTA и
           interaction grammar.
