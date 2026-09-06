@@ -164,6 +164,7 @@ export default function JournalTextarea({
   formatting = true,
   autoFocus = false,
   desktopInline = false,
+  guidedFlow = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -220,7 +221,9 @@ export default function JournalTextarea({
   ))
 
   return (
-    <div className={`flex min-h-0 flex-col ${className}`}>
+    <div
+      className={`flex min-h-0 flex-col ${guidedFlow ? 'journal-textarea--guided' : ''} ${className}`}
+    >
       <div
         ref={editorRef}
         role="textbox"
@@ -231,6 +234,21 @@ export default function JournalTextarea({
         suppressContentEditableWarning
         data-placeholder={placeholder}
         onInput={emitValue}
+        onFocus={() => {
+          const viewport = window.visualViewport
+          if (!guidedFlow || !viewport) return
+
+          const revealEditor = () => {
+            if (viewport.height >= window.innerHeight) return
+
+            window.requestAnimationFrame(() => {
+              editorRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' })
+            })
+          }
+
+          revealEditor()
+          viewport.addEventListener('resize', revealEditor, { once: true })
+        }}
         onPaste={event => {
           event.preventDefault()
           insertPlainText(
@@ -269,6 +287,7 @@ export default function JournalTextarea({
               desktopInline
                 ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'
                 : '',
+              guidedFlow ? 'journal-textarea__floating-actions--guided' : '',
             ].join(' ')}
           >
             {formatting ? (

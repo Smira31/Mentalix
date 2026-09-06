@@ -85,7 +85,7 @@ function Progress({ step }) {
 
 function OptionList({ options, onPick }) {
   return (
-    <div className="space-y-3">
+    <div className="mx-practice-flow__choice-list space-y-3">
       {options.map(option => (
         <button
           key={option.key}
@@ -209,7 +209,10 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
   const seconds = String(secondsLeft % 60).padStart(2, '0')
 
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided`}
+      style={surfaceStyle}
+    >
       {step === 'intro' && (
         <SceneLayout
           scrollRef={sceneScrollRef}
@@ -231,7 +234,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
             type="button"
             onClick={startPractice}
             aria-label="Начать"
-            className="cta-pill w-full text-[14px] px-6 py-4"
+            className="cta-pill mx-practice-flow__continue w-full text-[14px] px-6 py-4"
           >
             Найти первый шаг
           </button>
@@ -264,6 +267,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
             editorClassName="pb-24"
             floatingToolbar
             formatting={false}
+            guidedFlow
             onSubmit={goToState}
             submitLabel="Дальше"
             submitDisabled={!task.trim()}
@@ -331,6 +335,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
             editorClassName="pb-24"
             floatingToolbar
             formatting={false}
+            guidedFlow
             onSubmit={startRun}
             submitLabel="Начать пять минут"
             submitDisabled={!plan.trim()}
@@ -349,7 +354,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
           centered
           className="min-h-[58vh] text-center"
         >
-          <div className="font-display text-[64px] text-cream tabular-nums">
+          <div className="mx-practice-flow__timer font-display text-[64px] text-cream tabular-nums">
             {minutes}:{seconds}
           </div>
           <button
