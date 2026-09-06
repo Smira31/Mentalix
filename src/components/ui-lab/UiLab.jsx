@@ -35,6 +35,11 @@ export function resolveUiLabSection(value = 'hub') {
 export default function UiLab({ initialSection = 'hub' }) {
   const [section, setSection] = useState(resolveUiLabSection(initialSection))
   const [todayState, setTodayState] = useState('checkinPending')
+  const focusPractice = new URLSearchParams(window.location.search).get('practice_focus')
+
+  if (section === 'experiments' && ['first-step', 'no-blame'].includes(focusPractice)) {
+    return <PracticeFlowStage1Experiment focusPractice={focusPractice} />
+  }
 
   function selectSection(next) {
     setSection(next)

@@ -290,8 +290,9 @@ function BaselineUnavailable() {
   )
 }
 
-export default function PracticeFlowStage1Experiment({ mode = 'candidate' }) {
-  const [flowKey, setFlowKey] = useState('firstStep')
+export default function PracticeFlowStage1Experiment({ mode = 'candidate', focusPractice = null }) {
+  const initialFlowKey = focusPractice === 'no-blame' ? 'noBlame' : 'firstStep'
+  const [flowKey, setFlowKey] = useState(initialFlowKey)
   const [stageIndex, setStageIndex] = useState(0)
   const [surfaceMode, setSurfaceMode] = useState(mode === 'compare' ? 'compare' : 'candidate')
   const flow = FLOWS[flowKey]
@@ -299,6 +300,19 @@ export default function PracticeFlowStage1Experiment({ mode = 'candidate' }) {
   function changeFlow(nextFlow) {
     setFlowKey(nextFlow)
     setStageIndex(0)
+  }
+
+  if (focusPractice) {
+    return (
+      <main className="mx-stage1 mx-stage1--focus" aria-label={flow.label}>
+        <StageCanvas
+          flow={flow}
+          stageIndex={stageIndex}
+          setStageIndex={setStageIndex}
+          onExit={() => setStageIndex(0)}
+        />
+      </main>
+    )
   }
 
   return (
@@ -354,6 +368,7 @@ export default function PracticeFlowStage1Experiment({ mode = 'candidate' }) {
             flow={flow}
             stageIndex={stageIndex}
             setStageIndex={setStageIndex}
+            onExit={() => setStageIndex(0)}
           />
         </div>
       </div>
