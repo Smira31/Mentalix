@@ -282,7 +282,11 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
 
   if (sub === 'first-step') {
     return (
-      <FirstStepFlow userId={user.id} onClose={() => setSub(null)} onComplete={onReturnToToday} />
+      <FirstStepFlow
+        userId={user.id}
+        onClose={() => setSub(null)}
+        onComplete={() => setSub(null)}
+      />
     )
   }
 
@@ -319,19 +323,25 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
       <ProcrastinationFlow
         userId={user.id}
         onClose={() => setSub(null)}
-        onComplete={onReturnToToday}
+        onComplete={() => setSub(null)}
       />
     )
   }
 
   if (sub === 'narrow-focus') {
     return (
-      <NarrowFocusFlow userId={user.id} onClose={() => setSub(null)} onComplete={onReturnToToday} />
+      <NarrowFocusFlow
+        userId={user.id}
+        onClose={() => setSub(null)}
+        onComplete={() => setSub(null)}
+      />
     )
   }
 
   if (sub === 'one-finish') {
-    return <FinishFlow userId={user.id} onClose={() => setSub(null)} onComplete={onReturnToToday} />
+    return (
+      <FinishFlow userId={user.id} onClose={() => setSub(null)} onComplete={() => setSub(null)} />
+    )
   }
 
   if (sub === 'brain') {

@@ -1557,3 +1557,36 @@
     font-size: 19px;
   }
 }
+
+/* Consolidated guided-family contract: shared grid, input surface, and completion actions. */
+.mx-practice-flow--guided .practice-scene,
+.mx-practice-flow--guided .no-blame-stage,
+.mx-practice-flow--guided .narrow-focus-stage,
+.mx-practice-flow--guided .one-finish-stage {
+  max-width: 430px;
+  margin-inline: auto;
+}
+.mx-practice-flow--guided .journal-textarea--guided {
+  min-height: 12rem;
+}
+.mx-practice-flow--guided .practice-scene__description,
+.mx-practice-flow--guided .text-faint {
+  color: rgb(var(--c-muted) / 0.86);
+}
+.mx-practice-flow--guided .mx-practice-flow__completion {
+  min-height: min(640px, calc(100dvh - 112px));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: var(--mx-space-6);
+}
+.mx-practice-flow--guided .mx-practice-flow__completion > .practice-scene__body,
+.mx-practice-flow--guided .mx-practice-flow__completion > .no-blame-stage__center,
+.mx-practice-flow--guided .mx-practice-flow__completion > .narrow-focus-stage__center,
+.mx-practice-flow--guided .mx-practice-flow__completion > .one-finish-stage__center {
+  width: 100%;
+}
+.mx-practice-flow--guided .mx-practice-flow__completion .practice-scene__cta,
+.mx-practice-flow--guided .mx-practice-flow__completion > .cta-pill {
+  margin-top: auto;
+}

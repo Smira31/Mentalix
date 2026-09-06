@@ -393,7 +393,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
         )}
 
         {step === 'complete' && (
-          <div className="narrow-focus-stage narrow-focus-stage--complete animate-fade-in">
+          <div className="narrow-focus-stage narrow-focus-stage--complete mx-practice-flow__completion animate-fade-in">
             <div className="narrow-focus-stage__center text-center">
               <div className="narrow-focus-art" aria-hidden="true">
                 <NarrowFocusArt />
@@ -445,7 +445,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
               aria-label="Завершить"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Продолжить в Сегодня
+              Вернуться к практикам
             </button>
           </div>
         )}

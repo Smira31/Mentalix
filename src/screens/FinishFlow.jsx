@@ -382,7 +382,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
         )}
 
         {step === 'complete' && (
-          <div className="one-finish-stage one-finish-stage--complete animate-fade-in">
+          <div className="one-finish-stage one-finish-stage--complete mx-practice-flow__completion animate-fade-in">
             <div className="one-finish-stage__center text-center">
               <div className="one-finish-art" aria-hidden="true">
                 <OneFinishArt />
@@ -434,7 +434,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
               aria-label="Завершить: продолжить в Сегодня"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Продолжить в Сегодня
+              Вернуться к практикам
             </button>
           </div>
         )}

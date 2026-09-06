@@ -445,7 +445,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
         )}
 
         {step === 'complete' && (
-          <div className="no-blame-stage no-blame-stage--complete animate-fade-in">
+          <div className="no-blame-stage no-blame-stage--complete mx-practice-flow__completion animate-fade-in">
             <div className="no-blame-stage__center">
               <NoBlameArtwork stage="complete" />
               <h2 className="font-display text-[24px] text-center text-cream leading-tight">
@@ -486,7 +486,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
               aria-label="Завершить"
               className="cta-pill w-full text-[14px] px-6 py-4 mt-6"
             >
-              Продолжить в Сегодня
+              Вернуться к практикам
             </button>
           </div>
         )}

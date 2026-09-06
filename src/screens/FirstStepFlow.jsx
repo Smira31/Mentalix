@@ -388,6 +388,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
           label="Первый шаг"
           title={COMPLETION_COPY[outcome]?.title}
           centered
+          className="practice-scene--completion"
           description={
             <>
               {COMPLETION_COPY[outcome]?.description}
@@ -430,7 +431,7 @@ export default function FirstStepFlow({ userId, onClose, onComplete }) {
             aria-label="Завершить"
             className="practice-scene__cta cta-pill w-full text-[14px] px-6 py-3.5"
           >
-            Продолжить в Сегодня
+            Вернуться к практикам
           </button>
         </SceneLayout>
       )}
