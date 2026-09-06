@@ -55,8 +55,7 @@
 .mx-stage1__intro h2 {
   margin: 0.5rem 0 0;
   color: rgb(var(--c-text));
-  font-family: var(--font-display, inherit);
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
   letter-spacing: -0.04em;
   line-height: 1.05;
 }
@@ -127,8 +126,10 @@
   display: flex;
   min-height: min(40rem, 76dvh);
   flex-direction: column;
-  padding: max(0.75rem, var(--app-safe-top, env(safe-area-inset-top, 0px))) 1.375rem
-    max(1rem, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  padding: max(0.75rem, var(--app-safe-top, env(safe-area-inset-top, 0px)))
+    max(1.375rem, var(--app-safe-right, env(safe-area-inset-right, 0px)))
+    max(1rem, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)))
+    max(1.375rem, var(--app-safe-left, env(safe-area-inset-left, 0px)));
 }
 
 .mx-stage1__topbar {
@@ -163,26 +164,44 @@
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding-top: clamp(2rem, 8vh, 4rem);
+  padding-top: clamp(1.75rem, 5vh, 3rem);
+  padding-bottom: 2rem;
 }
 
 .mx-stage1__content h3 {
-  max-width: 22rem;
+  max-width: 20rem;
   margin: 0.75rem 0 0;
   color: rgb(var(--c-text));
-  font-family: var(--font-display, inherit);
-  font-size: clamp(1.75rem, 7vw, 2.5rem);
-  letter-spacing: -0.045em;
-  line-height: 1.05;
+  font-size: clamp(1.5rem, 6.5vw, 2.15rem);
+  letter-spacing: -0.04em;
+  line-height: 1.12;
+  text-wrap: balance;
 }
 
 .mx-stage1__copy {
-  max-width: 29rem;
-  margin: 1.25rem 0 0;
+  max-width: 28rem;
+  margin: 1rem 0 0;
   color: rgb(var(--c-muted));
-  font-family: var(--font-body, inherit);
-  font-size: 0.9375rem;
-  line-height: 1.55;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.mx-stage1__visual-zone {
+  display: flex;
+  width: 100%;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgb(var(--c-border) / 0.42);
+  color: rgb(var(--c-faint));
+}
+
+.mx-stage1__visual-zone span {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 50%;
 }
 
 .mx-stage1__input-wrap {
@@ -199,8 +218,7 @@
   outline: 0;
   background: transparent;
   color: rgb(var(--c-text));
-  font-family: var(--font-body, inherit);
-  font-size: 1.0625rem;
+  font-size: 1rem;
   line-height: 1.65;
 }
 
@@ -226,7 +244,7 @@
   color: rgb(var(--c-muted));
   padding: 0.7rem 0;
   text-align: left;
-  font-size: 1.05rem;
+  font-size: 1rem;
   line-height: 1.25;
 }
 
@@ -296,7 +314,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-top: 1rem;
+  padding-top: 1.5rem;
 }
 
 .mx-stage1__footer.is-keyboard-open {

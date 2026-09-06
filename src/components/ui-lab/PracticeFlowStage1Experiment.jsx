@@ -12,6 +12,7 @@ const FLOWS = {
         label: 'Вход',
         title: 'Сделай маленький шаг, когда трудно начать',
         copy: 'Пять минут, чтобы найти одно простое действие и начать — без давления сделать всё сразу.',
+        visualZone: true,
       },
       {
         key: 'input',
@@ -63,6 +64,7 @@ const FLOWS = {
         label: 'Вход',
         title: 'Вернись к делу без давления',
         copy: 'Короткая сессия, чтобы заметить, что мешает, и найти один безопасный вход.',
+        visualZone: true,
       },
       {
         key: 'input',
@@ -88,6 +90,7 @@ const FLOWS = {
         label: 'Разбор',
         title: 'Здесь не за что себя винить',
         copy: 'Мозг искал, где полегче. С кем угодно случается.',
+        visualZone: true,
       },
       {
         key: 'distraction',
@@ -197,9 +200,14 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
       </header>
 
       <div className="mx-stage1__content">
-        <div className="mx-stage1__meta">{flow.label}</div>
-        <h3>{stage.title}</h3>
-        {stage.copy && <p className="mx-stage1__copy">{stage.copy}</p>}
+        {stage.visualZone && (
+          <div className="mx-stage1__visual-zone" aria-hidden="true">
+            <span />
+          </div>
+        )}
+        <div className="mx-stage1__meta font-label">{flow.label}</div>
+        <h3 className="font-display">{stage.title}</h3>
+        {stage.copy && <p className="mx-stage1__copy font-body">{stage.copy}</p>}
 
         {stage.input && (
           <label className="mx-stage1__input-wrap">
@@ -215,7 +223,7 @@ function StageCanvas({ flow, stageIndex, setStageIndex, onExit }) {
         )}
 
         {stage.choices && (
-          <div className="mx-stage1__choices" role="group" aria-label={stage.title}>
+          <div className="mx-stage1__choices font-body" role="group" aria-label={stage.title}>
             {stage.choices.map(choice => (
               <button
                 key={choice}
