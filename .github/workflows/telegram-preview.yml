@@ -9,11 +9,11 @@ on:
   workflow_dispatch:
     inputs:
       url:
-        description: 'Clean existing Vercel Preview URL to verify and notify'
+        description: 'Canonical owner QA URL only: https://mentalix-preview.vercel.app'
         required: true
         type: string
       open_url:
-        description: 'Exact URL to open in Telegram web_app; falls back to url'
+        description: 'Exact URL to open in Telegram web_app; same host as url, path/query allowed'
         required: false
         default: ''
         type: string
@@ -89,10 +89,24 @@ jobs:
             echo 'url, branch, and commit_sha are required.' >&2
             exit 1
           fi
-          case "$PREVIEW_URL" in
-            https://*.vercel.app|https://*.vercel.sh) ;;
-            *) echo "Unexpected Preview URL: $PREVIEW_URL" >&2; exit 1 ;;
-          esac
+          # Owner QA contract: only the canonical mentalix-preview host is accepted.
+          # Never accept arbitrary *.vercel.app / branch deployment URLs.
+          CANONICAL_PREVIEW='https://mentalix-preview.vercel.app'
+          if [ "$PREVIEW_URL" != "$CANONICAL_PREVIEW" ]; then
+            echo "Owner QA url must be exactly $CANONICAL_PREVIEW (got: $PREVIEW_URL)" >&2
+            exit 1
+          fi
+          if [ -n "$OPEN_URL" ]; then
+            open_host="$(printf '%s' "$OPEN_URL" | sed -E 's|^https?://([^/]+).*|\1|')"
+            if [ "$open_host" != 'mentalix-preview.vercel.app' ]; then
+              echo "open_url host must be mentalix-preview.vercel.app (got host: $open_host)" >&2
+              exit 1
+            fi
+            case "$OPEN_URL" in
+              https://mentalix-preview.vercel.app|https://mentalix-preview.vercel.app/*) ;;
+              *) echo "open_url must start with https://mentalix-preview.vercel.app (got: $OPEN_URL)" >&2; exit 1 ;;
+            esac
+          fi
           if [ "$PREVIEW_BRANCH" != "main" ] && [ -z "$PR_NUMBER" ]; then
             echo 'pr_number is required for a non-main Preview; unknown Preview must be explicitly sent with branch=unknown.' >&2
             exit 1
@@ -114,6 +128,7 @@ jobs:
             echo 'VERCEL_PROTECTION_BYPASS secret is missing — health check would hit the Vercel SSO wall instead of the app.' >&2
             exit 1
           fi
+          # Health always against the canonical owner QA URL.
           response="$(curl --fail --silent --show-error --retry 10 --retry-delay 3 \
             --retry-connrefused --max-time 20 \
             --header "x-vercel-protection-bypass: $VERCEL_PROTECTION_BYPASS" \
@@ -126,6 +141,7 @@ jobs:
         run: |
           set -euo pipefail
           short_sha="${PREVIEW_SHA:0:8}"
+          # open_url may add path/query; host already validated. Fall back to canonical url.
           preview_app_url="${OPEN_URL:-$PREVIEW_URL}"
           preview_app_url="${preview_app_url%/}"
           route_line=""
