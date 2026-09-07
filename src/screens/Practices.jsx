@@ -182,6 +182,9 @@ function JournalEntry({ onOpen }) {
 
 export default function Practices({ user, initialSub = null, onGameChange, onReturnToToday }) {
   const [sub, setSub] = useState(initialSub)
+  const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
+
+  const returnToPracticeOrigin = () => setSub(null)
 
   const focusedFlowOpen = [
     'first-step',
@@ -284,8 +287,8 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
     return (
       <FirstStepFlow
         userId={user.id}
-        onClose={() => setSub(null)}
-        onComplete={() => setSub(null)}
+        onClose={returnToPracticeOrigin}
+        onComplete={returnToPracticeOrigin}
       />
     )
   }
@@ -322,8 +325,8 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
     return (
       <ProcrastinationFlow
         userId={user.id}
-        onClose={() => setSub(null)}
-        onComplete={() => setSub(null)}
+        onClose={returnToPracticeOrigin}
+        onComplete={returnToPracticeOrigin}
       />
     )
   }
@@ -332,15 +335,19 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
     return (
       <NarrowFocusFlow
         userId={user.id}
-        onClose={() => setSub(null)}
-        onComplete={() => setSub(null)}
+        onClose={returnToPracticeOrigin}
+        onComplete={returnToPracticeOrigin}
       />
     )
   }
 
   if (sub === 'one-finish') {
     return (
-      <FinishFlow userId={user.id} onClose={() => setSub(null)} onComplete={() => setSub(null)} />
+      <FinishFlow
+        userId={user.id}
+        onClose={returnToPracticeOrigin}
+        onComplete={returnToPracticeOrigin}
+      />
     )
   }
 
@@ -407,8 +414,11 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
           rituals={rituals}
           ascezas={ascezas}
           themes={themes}
-          onOpenPractice={practice => {
+          selectedCollectionKey={selectedCollectionKey}
+          onCollectionChange={setSelectedCollectionKey}
+          onOpenPractice={(practice, collectionKey = null) => {
             platform.haptic('light')
+            setSelectedCollectionKey(collectionKey)
             setSub(practice.sub)
           }}
           onOpenJournal={() => {

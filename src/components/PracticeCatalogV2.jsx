@@ -234,7 +234,7 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
                   type="button"
                   key={key}
                   disabled={!practice}
-                  onClick={() => practice && onOpenPractice(practice)}
+                  onClick={() => practice && onOpenPractice(practice, collection.key)}
                 >
                   <span className="mx-layered-category__art" aria-hidden="true">
                     <span className="mx-layered-category__art-glyph">
@@ -272,10 +272,13 @@ export default function PracticeCatalogV2({
   ascezas,
   themes,
   onOpenPractice,
+  selectedCollectionKey = null,
+  onCollectionChange,
   onOpenJournal,
   onOpenTheme,
 }) {
-  const [selectedCollection, setSelectedCollection] = useState(null)
+  const selectedCollection =
+    PRACTICE_COLLECTIONS.find(collection => collection.key === selectedCollectionKey) || null
   const visiblePractices = useMemo(() => practices || [], [practices])
 
   if (selectedCollection) {
@@ -286,7 +289,7 @@ export default function PracticeCatalogV2({
           practices={visiblePractices}
           rituals={rituals}
           ascezas={ascezas}
-          onBack={() => setSelectedCollection(null)}
+          onBack={() => onCollectionChange?.(null)}
           onOpenPractice={onOpenPractice}
         />
       </div>
@@ -298,7 +301,7 @@ export default function PracticeCatalogV2({
       <JournalBanner onOpen={onOpenJournal} />
       <PracticeRail practices={visiblePractices} onOpen={onOpenPractice} />
       <ThemeCarousel themes={themes} onOpen={onOpenTheme} />
-      <CollectionGrid onOpen={setSelectedCollection} />
+      <CollectionGrid onOpen={collection => onCollectionChange?.(collection.key)} />
     </div>
   )
 }
