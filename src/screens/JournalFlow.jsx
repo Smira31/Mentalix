@@ -96,13 +96,13 @@ function JournalIntro({
   const title = complete
     ? 'Сегодняшняя запись сохранена'
     : continuing
-      ? 'Продолжи спокойный разговор с собой'
-      : 'Разложи день на четыре спокойных шага'
+      ? 'Продолжи запись'
+      : 'Когда непонятно, что делать'
   const description = complete
-    ? 'Все четыре шага уже сохранены. Можно перечитать запись или вернуться к практикам.'
+    ? 'Можно начать новую запись или вернуться к практикам.'
     : continuing
-      ? `Уже заполнено ${completed} из 4 шагов. Черновик ждёт здесь.`
-      : 'Идея, действие, анализ и следующий шаг. Не дневник «на оценку», а место, чтобы заметить главное.'
+      ? 'Черновик разбора уже есть — можно продолжить запись.'
+      : 'Отдели факты от предположений и выбери один небольшой эксперимент. Не дневник «на оценку».'
 
   return (
     <SceneLayout
@@ -140,24 +140,17 @@ function JournalIntro({
         </div>
       )}
       <p className="mt-7 text-[12px] font-semibold text-faint">
-        4 коротких шага&nbsp;&nbsp;·&nbsp;&nbsp;без спешки
+        Разбор ситуации&nbsp;&nbsp;·&nbsp;&nbsp;без спешки
       </p>
-      <button
-        type="button"
-        onClick={onStart.open}
-        className="cta-pill mt-8 w-full px-6 py-4 text-[15px]"
-      >
-        {complete ? 'Открыть запись' : continuing ? 'Продолжить запись' : 'Начать'}
-      </button>
-      {onOpenGuided && (
+      {onOpenGuided ? (
         <button
           type="button"
           onClick={onOpenGuided}
-          className="mx-auto mt-3 min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
+          className="cta-pill mt-8 w-full px-6 py-4 text-[15px]"
         >
-          Не понимаю, что делать → разобраться сейчас
+          Начать запись
         </button>
-      )}
+      ) : null}
     </SceneLayout>
   )
 }
