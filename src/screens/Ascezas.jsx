@@ -4,6 +4,7 @@ import { api } from '../lib/api'
 import { invalidateTodayData } from '../lib/todayDataCache'
 import { invalidatePracticesData } from '../lib/practicesDataCache'
 import BackButton from '../components/BackButton'
+import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
@@ -189,13 +190,15 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
 
           <label className="block text-[11px] text-muted mb-2">Хочешь добавить пару слов?</label>
 
-          <textarea
+          <PracticeWritingCanvas
             value={note}
-            onChange={e => setNote(e.target.value)}
-            maxLength={1000}
-            rows={4}
+            onChange={setNote}
+            question="Хочешь добавить пару слов?"
             placeholder="Например: вернулся после тяжёлого дня и автоматически открыл Reels"
-            className="w-full resize-none bg-black/20 border border-cream/10 rounded-2xl px-4 py-3 text-[16px] leading-relaxed text-cream placeholder-muted outline-none focus:border-gold/50 transition-colors"
+            ariaLabel="Комментарий к срыву"
+            submitLabel="Сохранить"
+            submitDisabled={!trigger || saving}
+            onSubmit={submit}
           />
 
           {asceza.replacement && (
@@ -211,14 +214,6 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
               {error}
             </p>
           )}
-
-          <button
-            onClick={submit}
-            disabled={!trigger || saving}
-            className="cta-pill w-full py-4 text-[16px] mt-5 disabled:opacity-35"
-          >
-            {saving ? 'Сохраняю...' : 'Сохранить'}
-          </button>
 
           <p className="text-[11px] text-center text-faint mt-3">Срыв — это данные, а не провал.</p>
         </div>

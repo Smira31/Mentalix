@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import BackButton from '../components/BackButton'
+import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
 import { platform } from '../platform'
@@ -134,49 +135,25 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
     const question = card.questions[questionIndex]
     return (
       <Shell onBack={onBack}>
-        <p className="mx-section-label">{card.title}</p>
-        <div
-          className="mt-5 h-1.5 rounded-full bg-cream/15"
-          aria-label={`Вопрос ${questionIndex + 1} из ${card.questions.length}`}
-        >
-          <div
-            className="h-full rounded-full bg-gold"
-            style={{ width: `${((questionIndex + 1) / card.questions.length) * 100}%` }}
-          />
-        </div>
-        <h1 className="mt-8 font-display text-[25px] font-semibold leading-tight text-cream">
-          {question}
-        </h1>
-        <p className="mt-3 text-[13px] leading-relaxed text-muted">
-          Ответь одним-двумя предложениями.
-        </p>
-        <textarea
-          autoFocus
+        <PracticeWritingCanvas
+          question={question}
+          description="Ответь одним-двумя предложениями."
           value={answers[questionIndex] || ''}
-          onChange={event => {
+          onChange={value => {
             const next = [...answers]
-            next[questionIndex] = event.target.value
+            next[questionIndex] = value
             setAnswers(next)
           }}
-          className="mt-7 min-h-36 w-full resize-none rounded-3xl border border-cream/[0.12] bg-emerald p-4 text-[15px] leading-relaxed text-cream outline-none placeholder:text-faint focus:border-gold/60"
           placeholder="Напиши здесь…"
-          aria-label={question}
-        />
-        <button
-          type="button"
-          disabled={!answers[questionIndex]?.trim() || saving}
-          onClick={() => {
+          ariaLabel={question}
+          autoFocus
+          submitLabel={questionIndex === card.questions.length - 1 ? 'Показать гипотезу' : 'Дальше'}
+          submitDisabled={saving}
+          onSubmit={() => {
             if (questionIndex < card.questions.length - 1) setQuestionIndex(index => index + 1)
             else void finishQuestions()
           }}
-          className="cta-pill mt-5 w-full px-6 py-4 text-[15px] disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {saving
-            ? 'Формирую гипотезу…'
-            : questionIndex === card.questions.length - 1
-              ? 'Показать гипотезу'
-              : 'Дальше'}
-        </button>
+        />
         {error && (
           <p className="mt-4 text-[13px] text-red-200" role="alert">
             {error}

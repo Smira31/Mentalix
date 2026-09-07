@@ -321,6 +321,13 @@ svg .animate-celebrate-pop {
   margin-inline: auto;
   padding-inline: var(--mx-space-5);
 }
+.mx-practices-catalog-shell:has(.mx-production-catalog > .mx-layered-category)
+  .mx-practices-catalog-title {
+  display: none;
+}
+.mx-practices-catalog-shell:has(.mx-production-catalog > .mx-layered-category) {
+  padding-top: max(0px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
+}
 
 .mx-card-surface {
   border: 1px solid rgb(var(--c-border) / 0.72);

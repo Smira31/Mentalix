@@ -572,7 +572,7 @@ test('локальный UX smoke по основному маршруту', asy
       check: async () => {
         const editor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
         await expect(editor).toBeVisible()
-        await expect(editor).toHaveAttribute('contenteditable', 'true')
+        await expect(editor).toHaveAttribute('placeholder', 'Начни писать...')
         await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1)
         await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeVisible()
       },
@@ -1393,5 +1393,53 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   await expect(page.getByText('День закрыт')).toBeVisible()
   await page.locator('.mx-evening-review__closed').getByRole('button', { name: 'Продолжить' }).tap()
   await expect(page.getByRole('button', { name: 'Разобрать день' }).last()).toBeVisible()
+  await context.close()
+})
+
+test('Practice Catalog v2 psychological collection сохраняет origin после guided flow', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, TEST_USER)
+  await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+  const page = await context.newPage()
+
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Практики' }).click()
+  await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+  await page.locator('[data-collection-key="psychological"]').click()
+  await expect(page.getByRole('heading', { name: 'Психологические практики.' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Первый шаг' }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Сделай маленький шаг, когда трудно начать' })
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Начать' }).click()
+  await page.getByRole('textbox', { name: 'Дело, которое не двигается' }).fill('Подготовить презентацию')
+  await page.getByRole('button', { name: 'Дальше' }).click()
+  await page.getByRole('button', { name: 'Не знаю, с чего начать' }).click()
+  await page.getByRole('textbox', { name: 'Первый шаг на пять минут' }).fill('Создать первый слайд')
+  await page.getByRole('button', { name: 'Начать пять минут' }).click()
+  await page.getByRole('button', { name: 'Остановить' }).click()
+  await page.getByRole('button', { name: 'Начал(а)', exact: true }).click()
+  await page.getByRole('button', { name: 'Завершить' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Психологические практики.' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Первый шаг' })).toBeVisible()
+  await page.getByRole('button', { name: 'Первый шаг' }).click()
+  await page.getByRole('button', { name: 'Назад' }).click()
+  await expect(page.getByRole('heading', { name: 'Психологические практики.' })).toBeVisible()
+  await page.getByRole('button', { name: 'Назад к коллекциям' }).click()
+  await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
   await context.close()
 })

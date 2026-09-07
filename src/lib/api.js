@@ -7,7 +7,22 @@ const API_TIMEOUT_MS = 10_000
 const API_MAX_RETRIES = 1
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
+const API_DIAGNOSTICS_ENABLED = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 export const MAX_JOURNEY_TAGS_PER_ENTRY = 8
+
+function emitApiDiagnostic(detail) {
+  if (!API_DIAGNOSTICS_ENABLED || typeof window === 'undefined') return
+
+  const sanitizedPath = String(detail.path || '').replace(/([?&]user_id=)[^&]*/g, '$1<redacted>')
+  const payload = {
+    ...detail,
+    path: sanitizedPath,
+    at: new Date().toISOString(),
+  }
+
+  console.error('[Mentalix API diagnostic]', payload)
+  window.dispatchEvent(new CustomEvent('mentalix:api-diagnostic', { detail: payload }))
+}
 
 function normalizeJourneyTagIds(tagIds) {
   if (!Array.isArray(tagIds)) throw new TypeError('tagIds must be an array')
@@ -135,6 +150,12 @@ async function request(path, options = {}) {
       const raw = await res.text()
 
       if (!res.ok) {
+        emitApiDiagnostic({
+          path,
+          status: res.status,
+          body: raw.slice(0, 500),
+          kind: 'http',
+        })
         const error = new ApiError(`API ${path} failed: ${res.status}`, {
           path,
           status: res.status,
@@ -171,6 +192,15 @@ async function request(path, options = {}) {
         error instanceof ApiError
           ? error
           : new ApiError(`API ${path} request failed`, { path, kind: 'unknown', cause: error })
+
+      if (normalized.kind !== 'http') {
+        emitApiDiagnostic({
+          path,
+          status: normalized.status,
+          body: normalized.message,
+          kind: normalized.kind,
+        })
+      }
       if (
         canRetry &&
         attempt < API_MAX_RETRIES &&

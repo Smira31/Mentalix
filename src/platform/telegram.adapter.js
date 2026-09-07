@@ -26,9 +26,10 @@ export const telegramAdapter = {
 
   getUser() {
     const tgUser = WebApp.initDataUnsafe?.user
-    if (!tgUser) return null
+    const id = Number(tgUser?.id)
+    if (!Number.isSafeInteger(id) || id <= 0) return null
     return {
-      id: tgUser.id,
+      id,
       first_name: tgUser.first_name,
       last_name: tgUser.last_name,
       username: tgUser.username,
@@ -50,9 +51,20 @@ export const telegramAdapter = {
     return WebApp.initDataUnsafe?.start_param || ''
   },
 
-  async requestAuth() {
-    // в Telegram пользователь уже известен через initData, отдельного входа не требуется
-    return this.getUser()
+  async requestAuth({ timeoutMs = 3000, intervalMs = 50 } = {}) {
+    // Telegram user обычно доступен сразу, но в некоторых WebView initDataUnsafe
+    // заполняется после первого bridge-цикла. Не отдаём управление App, пока
+    // user_id не появился: иначе Practices/Today/Analytics могут сделать запросы
+    // с undefined и получить 422 user_id is required.
+    const deadline = Date.now() + timeoutMs
+    let user = this.getUser()
+
+    while (!user && Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, intervalMs))
+      user = this.getUser()
+    }
+
+    return user
   },
 
   haptic(style = 'light') {

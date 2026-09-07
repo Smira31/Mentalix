@@ -2,10 +2,8 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { Target, ArrowUp, ArrowLeft, ArrowRight, Flame, TrendingUp, Trash2 } from 'lucide-react'
 import JourneyLineArt from '../components/JourneyLineArt'
-import {
-  isLinkedWebWriteBlocked,
-  LINKED_WEB_WRITE_NOTICE,
-} from '../lib/webAuthLimits'
+import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
+import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
@@ -133,12 +131,15 @@ function GoalCreateScreen({ onCreate, onCancel }) {
           placeholder="Название цели"
           className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
         />
-        <textarea
+        <PracticeWritingCanvas
           value={draft.description}
-          onChange={set('description')}
+          onChange={value => set('description')({ target: { value } })}
+          question="Описание цели"
           placeholder="Описание (необязательно)"
-          rows={3}
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors resize-none"
+          ariaLabel="Описание цели"
+          submitLabel="Создать цель"
+          submitDisabled={!draft.title.trim() || saving}
+          onSubmit={submit}
         />
         <input
           type="date"
@@ -212,7 +213,14 @@ function GoalDetail({ goal, onBack, onDelete }) {
           <ArrowLeft size={16} /> Назад
         </button>
 
-        {error && <p role="alert" className="absolute left-5 right-5 top-14 text-[12px] text-amber-200 leading-relaxed">{error}</p>}
+        {error && (
+          <p
+            role="alert"
+            className="absolute left-5 right-5 top-14 text-[12px] text-amber-200 leading-relaxed"
+          >
+            {error}
+          </p>
+        )}
 
         {confirming ? (
           <div className="flex items-center gap-2">

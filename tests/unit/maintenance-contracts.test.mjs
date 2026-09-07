@@ -224,7 +224,8 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
 
   assert.match(demo, /host\.endsWith\('\.trycloudflare\.com'\)/)
   assert.match(demo, /const isPreviewRuntime = import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview'/)
-  assert.match(demo, /return params\.get\('demo'\) === '1' && isAllowedHost && isPreviewRuntime/)
+  assert.match(demo, /const isQaProductionHost = host === 'mentalix-preview\.vercel\.app'/)
+  assert.match(demo, /return params\.get\('demo'\) === '1' && isAllowedHost && \(isPreviewRuntime \|\| isQaProductionHost\)/)
 })
 
 test('MXL-PREVIEW-ROUTING-CLEANUP-001 использует manual existing Preview gate', () => {

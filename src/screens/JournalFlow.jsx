@@ -314,6 +314,7 @@ export default function JournalFlow({ userId, onClose, onOpenGuided }) {
             </p>
           )}
           <JournalTextarea
+            writingCanvas
             autoFocus
             value={value}
             onChange={updateValue}
