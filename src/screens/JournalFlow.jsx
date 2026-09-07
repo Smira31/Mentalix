@@ -98,7 +98,7 @@ function JournalIntro({
   return (
     <>
       <FlowBack onClick={onClose} />
-      <main className="journal-flow__intro">
+      <main className={`journal-flow__intro${complete ? ' journal-flow__intro--completed' : ''}`}>
         <div className="journal-flow__hero" aria-hidden="true">
           <JournalArt />
         </div>
@@ -138,7 +138,7 @@ function JournalIntro({
           <button
             type="button"
             onClick={onStart}
-            className="journal-flow__intro-cta"
+            className={`journal-flow__intro-cta${complete ? ' journal-flow__intro-cta--completed' : ''}`}
             aria-label={complete ? 'Открыть запись' : continuing ? 'Продолжить' : 'Начать'}
           >
             {complete ? 'Открыть запись' : continuing ? 'Продолжить' : 'Начать'}

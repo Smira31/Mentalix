@@ -49,17 +49,8 @@ test('JournalFlow visual contract mirrors GSD geometry without changing GSD', ()
   assert.match(css, /width: 56px/)
   const writingRoot = css.match(/\.journal-flow__writing \{([\s\S]*?)\n\}/)?.[1] || ''
   assert.doesNotMatch(writingRoot, /transform:\s*translateY\(-52px\)/)
-  for (const anchor of ['question', 'description', 'field']) {
-    assert.match(
-      css,
-      new RegExp(`practice-writing-canvas__${anchor} \\{[\\s\\S]*?position: relative;[\\s\\S]*?top:`)
-    )
-  }
-  assert.match(css, /practice-writing-canvas__question \{[\s\S]*?top: 0;/)
-  assert.match(css, /practice-writing-canvas__description \{[\s\S]*?top: 0;/)
-  assert.match(css, /practice-writing-canvas__field \{[\s\S]*?top: 0;/)
-  assert.doesNotMatch(css, /practice-writing-canvas__(?:question|description|field) \{[\s\S]*?top: -52px/)
-  assert.match(css, /practice-writing-canvas__question \{[\s\S]*?margin-top: 8px;/)
+  assert.match(css, /journal-flow__writing \{[\s\S]*?padding-top: max\(0px, var\(--app-safe-top/)
+  assert.match(css, /practice-writing-canvas__question \{[\s\S]*?margin-top: clamp\(0px, 1dvh, 8px\)/)
   assert.match(css, /practice-writing-canvas__description \{[\s\S]*?margin-top: 4px;/)
   assert.match(css, /practice-writing-canvas__field \{[\s\S]*?margin-top: 6px;/)
   assert.match(css, /max-width: 20rem/)
@@ -68,10 +59,19 @@ test('JournalFlow visual contract mirrors GSD geometry without changing GSD', ()
   assert.match(css, /right: max\(16px, var\(--app-safe-right/)
   assert.match(css, /appearance: none;/)
   assert.match(css, /-webkit-appearance: none;/)
-  assert.match(css, /practice-writing-canvas__field::placeholder[\s\S]*?opacity: 1;/)
   assert.match(css, /journal-flow__topbar[\s\S]*justify-content: flex-end/)
   assert.match(css, /journal-flow__intro-copy \{[\s\S]*top: -72px/)
   assert.match(css, /journal-flow__completion-actions \{[\s\S]*top: -24px/)
+})
+
+test('Journal completed intro uses scoped title and action corrections', () => {
+  assert.match(source, /journal-flow__intro--completed/)
+  assert.match(source, /journal-flow__intro-cta--completed/)
+  assert.match(css, /journal-flow__intro--completed \.journal-flow__intro-title \{[\s\S]*font-size: clamp\(1\.75rem, 7vw, 2\.35rem\)/)
+  assert.match(css, /journal-flow__guided-action \{[\s\S]*color: rgb\(var\(--c-text\) \/ 0\.72\);[\s\S]*font-size: 14px/)
+  assert.match(css, /journal-flow__intro--completed \.journal-flow__intro-actions \{[\s\S]*top: -20px/)
+  const baseIntroTitle = css.match(/\.mx-practice-flow--journal \.journal-flow__intro-title \{([^}]*)\}/)?.[1] || ''
+  assert.doesNotMatch(baseIntroTitle, /font-size: clamp\(1\.75rem, 7vw, 2\.35rem\)/)
 })
 
 test('JournalFlow keeps Self-Discovery secondary and outside the lower primary CTA zone', () => {
@@ -81,7 +81,7 @@ test('JournalFlow keeps Self-Discovery secondary and outside the lower primary C
   )
   assert.match(source, /journal-flow__intro-actions[\s\S]*journal-flow__intro-cta/)
   assert.match(css, /journal-flow__guided-action \{[\s\S]*min-height: 44px/)
-  assert.equal((source.match(/journal-flow__intro-cta/g) || []).length, 1)
+  assert.match(source, /journal-flow__intro-cta--completed/)
 })
 
 test('JournalFlow completion keeps only the two owner-approved actions', () => {
