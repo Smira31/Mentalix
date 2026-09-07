@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom'
-import { Check, PencilLine } from 'lucide-react'
+import { BookOpen, Check, PencilLine } from 'lucide-react'
 import { useState } from 'react'
 
 import JournalTextarea from '../components/JournalTextarea'
@@ -84,22 +84,39 @@ function JournalProgress({ current, onSelect, completed }) {
 }
 
 function JournalIntro({
+  completed,
   legacyVisible,
-  onClose,
+  onStart,
   onMigrate,
   onDismissLegacy,
   onOpenGuided,
 }) {
+  const complete = completed === PHASES.length
+  const continuing = completed > 0 && !complete
+  const title = complete
+    ? 'Сегодняшняя запись сохранена'
+    : continuing
+      ? 'Продолжи спокойный разговор с собой'
+      : 'Разложи день на четыре спокойных шага'
+  const description = complete
+    ? 'Все четыре шага уже сохранены. Можно перечитать запись или вернуться к практикам.'
+    : continuing
+      ? `Уже заполнено ${completed} из 4 шагов. Черновик ждёт здесь.`
+      : 'Идея, действие, анализ и следующий шаг. Не дневник «на оценку», а место, чтобы заметить главное.'
+
   return (
     <SceneLayout
-      onBack={onClose}
+      onBack={onStart.close}
       label="Журнал"
-      title="Когда непонятно, что делать"
-      description="Отдели факты от предположений и выбери один небольшой эксперимент. Не дневник «на оценку» — спокойная запись."
+      title={title}
+      description={description}
       verticallyCentered
       showGlyph={false}
       className="journal-flow__intro"
     >
+      <div className="mt-8 flex h-[96px] w-[96px] items-center justify-center rounded-[32px] border border-gold/25 bg-gold/[0.06] text-gold">
+        <BookOpen size={40} strokeWidth={1.45} aria-hidden="true" />
+      </div>
       {legacyVisible && (
         <div className="mt-7 rounded-2xl border border-gold/20 bg-gold/[0.06] p-4 text-left">
           <p className="text-[14px] font-semibold text-cream">
@@ -122,15 +139,25 @@ function JournalIntro({
           </div>
         </div>
       )}
-      {onOpenGuided ? (
+      <p className="mt-7 text-[12px] font-semibold text-faint">
+        4 коротких шага&nbsp;&nbsp;·&nbsp;&nbsp;без спешки
+      </p>
+      <button
+        type="button"
+        onClick={onStart.open}
+        className="cta-pill mt-8 w-full px-6 py-4 text-[15px]"
+      >
+        {complete ? 'Открыть запись' : continuing ? 'Продолжить запись' : 'Начать'}
+      </button>
+      {onOpenGuided && (
         <button
           type="button"
           onClick={onOpenGuided}
-          className="cta-pill mt-10 w-full px-6 py-4 text-[15px]"
+          className="mx-auto mt-3 min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
         >
-          Начать запись
+          Не понимаю, что делать → разобраться сейчас
         </button>
-      ) : null}
+      )}
     </SceneLayout>
   )
 }
@@ -253,8 +280,9 @@ export default function JournalFlow({ userId, onClose, onOpenGuided }) {
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
       {stage === 'intro' && (
         <JournalIntro
+          completed={writtenCount}
           legacyVisible={legacyMigrationVisible}
-          onClose={onClose}
+          onStart={{ open: () => setStage('writing'), close: onClose }}
           onMigrate={migrateLegacyEntry}
           onDismissLegacy={() => setLegacyMigrationVisible(false)}
           onOpenGuided={onOpenGuided}

@@ -9,7 +9,7 @@
   min-height: 100%;
   flex-direction: column;
   overflow: hidden;
-  padding: max(12px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 22px
+  padding: max(18px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 22px
     max(22px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
   background: var(--pwc-bg);
   color: var(--pwc-text);
@@ -65,7 +65,7 @@
 }
 .practice-writing-canvas__question {
   max-width: 100%;
-  margin: 8px 0 0;
+  margin: 54px 0 0;
   color: var(--pwc-text);
   font-size: clamp(30px, 8vw, 38px);
   font-weight: 500;
@@ -84,70 +84,47 @@
   line-height: 1;
 }
 .practice-writing-canvas__description {
-  max-width: 34ch;
-  margin: 14px 0 0;
-  padding-left: 0;
-  border-left: 0;
+  max-width: 31ch;
+  margin: 22px 0 0;
+  padding-left: 22px;
+  border-left: 2px solid var(--pwc-azure);
   color: var(--pwc-muted);
-  font-size: 16px;
+  font-size: 17px;
   line-height: 1.45;
 }
 .practice-writing-canvas__field {
   flex: 1;
   width: 100%;
   min-height: 180px;
-  margin: 28px 0 0;
-  padding: 0 0 96px;
+  margin: 24px 0 0;
+  padding: 0 0 80px;
   resize: none;
   border: 0;
   outline: 0;
-  box-shadow: none;
-  appearance: none;
-  -webkit-appearance: none;
   background: transparent;
   color: var(--pwc-text);
   caret-color: var(--pwc-azure);
   font-size: 19px;
   line-height: 1.55;
 }
-.practice-writing-canvas__field:focus,
-.practice-writing-canvas__field:active,
-.practice-writing-canvas__field:focus-visible {
-  border: 0;
-  outline: 0;
-  box-shadow: none;
-  appearance: none;
-  -webkit-appearance: none;
-}
 .practice-writing-canvas__field::placeholder {
   color: var(--pwc-muted);
 }
 .practice-writing-canvas__dock {
   position: absolute;
-  right: max(16px, env(safe-area-inset-right, 0px));
+  right: 22px;
   bottom: max(12px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
-  left: max(16px, env(safe-area-inset-left, 0px));
+  left: 22px;
   z-index: 80;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
   min-height: 56px;
-  width: auto;
-  max-width: calc(100% - 32px);
-  pointer-events: none;
-}
-.practice-writing-canvas__dock > * {
-  pointer-events: auto;
 }
 .practice-writing-canvas.is-keyboard-open .practice-writing-canvas__dock {
   position: fixed;
   bottom: auto;
-  left: max(16px, env(safe-area-inset-left, 0px));
-  right: max(16px, env(safe-area-inset-right, 0px));
-  width: auto;
-  max-width: calc(100vw - 32px);
-  box-sizing: border-box;
 }
 .practice-writing-canvas__format,
 .practice-writing-canvas__submit {
@@ -155,7 +132,6 @@
   place-items: center;
   width: 56px;
   height: 56px;
-  flex-shrink: 0;
   border-radius: 50%;
   font: inherit;
 }
@@ -188,27 +164,20 @@
   border: 1px solid var(--pwc-text);
   background: var(--pwc-text);
   color: var(--pwc-bg);
-  font-size: 0;
+  font-size: 30px;
 }
 .practice-writing-canvas__submit:disabled {
   border-color: var(--pwc-muted);
   background: transparent;
   color: var(--pwc-muted);
 }
-.practice-writing-canvas__submit-icon {
-  width: 22px;
-  height: 22px;
-  stroke-width: 2.25;
-}
 @media (max-width: 350px) {
   .practice-writing-canvas {
-    padding-right: 16px;
-    padding-left: 16px;
+    padding-right: 22px;
+    padding-left: 22px;
   }
   .practice-writing-canvas__dock {
     gap: 7px;
-    right: max(16px, env(safe-area-inset-right, 0px));
-    left: max(16px, env(safe-area-inset-left, 0px));
   }
   .practice-writing-canvas__deepen {
     font-size: 13px;
