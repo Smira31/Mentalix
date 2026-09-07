@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import BackButton from '../components/BackButton'
@@ -145,7 +145,7 @@ function Complete({ onClose, onRestart, experiment, feedback, onFeedback }) {
           />
         </div>
         <div className="guided-self-discovery__completion-copy">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+          <p className="guided-self-discovery__completion-eyebrow text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
             Эксперимент готов
           </p>
           <h1 className="guided-self-discovery__completion-title font-display text-cream">
@@ -163,17 +163,20 @@ function Complete({ onClose, onRestart, experiment, feedback, onFeedback }) {
           <p>Помогло ли это?</p>
           <div className="guided-self-discovery__feedback-options">
             {[
-              ['no', 'Нет'],
-              ['a-little', 'Немного'],
-              ['yes', 'Да'],
-            ].map(([value, label]) => (
+              ['no', 'Нет', '−'],
+              ['a-little', 'Немного', '≈'],
+              ['yes', 'Да', '✓'],
+            ].map(([value, label, icon]) => (
               <button
                 key={value}
                 type="button"
                 aria-pressed={feedback === value}
                 onClick={() => onFeedback(value)}
               >
-                {label}
+                <span className="guided-self-discovery__feedback-icon" aria-hidden="true">
+                  {icon}
+                </span>
+                <span>{label}</span>
               </button>
             ))}
           </div>
@@ -214,10 +217,6 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
   const [answers, setAnswers] = useState(() => ({ ...emptyAnswers(), ...(initial?.answers || {}) }))
   const step = STEPS[stepIndex]
   const value = step ? answers[step.key] || '' : ''
-
-  useEffect(() => {
-    document.activeElement?.blur?.()
-  }, [stage, stepIndex])
 
   function updateAnswer(key, nextValue) {
     const nextAnswers = { ...answers, [key]: nextValue }
