@@ -32,7 +32,7 @@ on:
         default: ''
         type: string
       commit_sha:
-        description: 'Commit SHA of the existing Preview deployment'
+        description: 'Full 40-char commit SHA that must match a successful Vercel GitHub deployment for this repo'
         required: true
         type: string
       ui_lab_route:
@@ -54,6 +54,7 @@ on:
 permissions:
   contents: read
   pull-requests: read
+  deployments: read
 
 concurrency:
   group: telegram-preview-manual-${{ inputs.commit_sha || github.run_id }}-${{ inputs.ui_lab_route || 'default' }}
@@ -107,6 +108,10 @@ jobs:
               *) echo "open_url must start with https://mentalix-preview.vercel.app (got: $OPEN_URL)" >&2; exit 1 ;;
             esac
           fi
+          if ! [[ "$PREVIEW_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "commit_sha must be a full 40-char lowercase hex SHA (got: $PREVIEW_SHA)" >&2
+            exit 1
+          fi
           if [ "$PREVIEW_BRANCH" != "main" ] && [ -z "$PR_NUMBER" ]; then
             echo 'pr_number is required for a non-main Preview; unknown Preview must be explicitly sent with branch=unknown.' >&2
             exit 1
@@ -134,6 +139,49 @@ jobs:
             --header "x-vercel-protection-bypass: $VERCEL_PROTECTION_BYPASS" \
             "$PREVIEW_URL/api/health")"
           printf '%s\n' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
+
+      - name: Prove Preview SHA provenance (fail closed)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Canonical host does not embed git SHA in /api/health (rewritten to backend)
+          # or standard Vercel response headers. No VERCEL_TOKEN in this workflow.
+          # Available proof without new secrets: GitHub Deployments created by Vercel
+          # Git Integration for this repo must include a successful deployment for PREVIEW_SHA.
+          # If that cannot be shown, refuse Telegram — never claim an unproven SHA.
+          echo "Proving successful Vercel GitHub deployment for SHA $PREVIEW_SHA..."
+          deployments_json="$(gh api \
+            "repos/${{ github.repository }}/deployments?sha=${PREVIEW_SHA}&per_page=30" \
+            --jq '.')"
+          count="$(printf '%s' "$deployments_json" | jq 'length')"
+          if [ "$count" = "0" ]; then
+            echo "FAIL CLOSED: no GitHub Deployments for SHA $PREVIEW_SHA." >&2
+            echo "Cannot prove that https://mentalix-preview.vercel.app serves this commit." >&2
+            echo "Deploy this SHA via Vercel Git Integration first, or do not claim it in Telegram." >&2
+            exit 1
+          fi
+          # Require at least one deployment whose latest status is success.
+          proven=0
+          while IFS= read -r dep_id; do
+            [ -z "$dep_id" ] && continue
+            state="$(gh api \
+              "repos/${{ github.repository }}/deployments/${dep_id}/statuses?per_page=5" \
+              --jq '.[0].state // empty' 2>/dev/null || true)"
+            env_name="$(printf '%s' "$deployments_json" | jq -r --arg id "$dep_id" '.[] | select(.id|tostring==$id) | .environment // empty')"
+            echo "deployment id=$dep_id environment=$env_name latest_state=$state"
+            if [ "$state" = "success" ]; then
+              proven=1
+            fi
+          done < <(printf '%s' "$deployments_json" | jq -r '.[].id')
+          if [ "$proven" -ne 1 ]; then
+            echo "FAIL CLOSED: deployments exist for $PREVIEW_SHA but none have latest status success." >&2
+            echo "Refusing Telegram notify — would claim an unproven Preview SHA." >&2
+            exit 1
+          fi
+          echo "Proven: SHA $PREVIEW_SHA has at least one successful GitHub Deployment from Vercel."
+          echo "Owner URL remains only https://mentalix-preview.vercel.app (no branch deployment URL)."
 
       - name: Build canonical Telegram message
         id: message
@@ -226,4 +274,5 @@ jobs:
             echo "Branch: ${PREVIEW_BRANCH}"
             echo "Commit: ${PREVIEW_SHA}"
             echo 'Vercel deployment: not created by this workflow'
+            echo 'SHA provenance: required successful GitHub Deployment for commit_sha (fail closed)'
           } >> "$GITHUB_STEP_SUMMARY"
