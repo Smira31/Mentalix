@@ -1375,3 +1375,74 @@
 .mx-production-catalog .mx-layered-category__header h3 {
   font-size: clamp(26px, 7vw, 32px);
 }
+
+/* Bounded Catalog v2 visual pass: preserve existing glyphs, cards, copy and navigation. */
+.mx-production-catalog .mx-layered-catalog__journal-hero-art {
+  align-self: center;
+  display: grid;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 160 / 112;
+  place-items: center;
+}
+.mx-production-catalog .mx-layered-catalog__journal-hero-art svg {
+  width: 100%;
+  height: 100%;
+}
+.mx-production-catalog .mx-layered-catalog__rail-card {
+  padding-top: 126px;
+}
+.mx-production-catalog .mx-layered-catalog__avatar {
+  top: 22px;
+  width: 92px;
+  height: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.mx-production-catalog .mx-layered-catalog__collection-art {
+  top: auto;
+  right: auto;
+  bottom: 14px;
+  left: 50%;
+  z-index: 0;
+  display: grid;
+  width: clamp(72px, 58%, 96px);
+  height: auto;
+  aspect-ratio: 1;
+  place-items: center;
+  margin-inline: 0;
+  opacity: 0.32;
+  transform: translateX(-50%);
+}
+.mx-production-catalog .mx-layered-catalog__collection strong,
+.mx-production-catalog .mx-layered-catalog__collection small {
+  position: relative;
+  z-index: 1;
+}
+.mx-production-catalog .mx-layered-catalog__collection-chevron {
+  z-index: 2;
+}
+.w-full.flex-1.min-h-0.overflow-y-auto.overscroll-contain:has(> .mx-production-catalog) {
+  padding-bottom: calc(104px + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 360px) {
+  .mx-production-catalog--category .mx-layered-category__art {
+    margin-top: 8px;
+  }
+  .mx-production-catalog--category .mx-layered-category__card strong {
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .mx-production-catalog .mx-layered-catalog__rail-card {
+    flex-basis: 56%;
+    width: 56%;
+    min-width: 56%;
+  }
+  .mx-production-catalog .mx-layered-catalog__rail-card strong {
+    font-size: 17px;
+    line-height: 1.18;
+  }
+}
