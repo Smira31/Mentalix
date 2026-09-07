@@ -123,7 +123,8 @@ export default function PracticeWritingCanvas({
         )}
         {onSubmit && (
           <button
-            type="button"            aria-label={submitLabel}
+            type="button"
+            aria-label={submitLabel}
             disabled={submitIsDisabled}
             onClick={onSubmit}
             className="practice-writing-canvas__submit"
