@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 import './PracticeWritingCanvas.css'
 
 function useVisualViewportMetrics() {
@@ -66,9 +67,9 @@ export default function PracticeWritingCanvas({
   const deepenIsDisabled = (deepenDisabled ?? !hasText) || submitLoading || deepenLoading
   const dockStyle = useMemo(() => {
     if (!keyboardOpen || metrics.height === null) return undefined
-    return {
-      top: `${metrics.pageTop + metrics.offsetTop + metrics.height - 48 - 56 - 8}px`,
-    }
+    // 56px кнопка + 12px зазор над клавиатурой — полностью внутри visualViewport
+    const top = metrics.pageTop + metrics.offsetTop + metrics.height - 56 - 12
+    return { top: `${Math.max(8, top)}px` }
   }, [keyboardOpen, metrics])
 
   return (
@@ -122,13 +123,12 @@ export default function PracticeWritingCanvas({
         )}
         {onSubmit && (
           <button
-            type="button"
-            aria-label={submitLabel}
+            type="button"            aria-label={submitLabel}
             disabled={submitIsDisabled}
             onClick={onSubmit}
             className="practice-writing-canvas__submit"
           >
-            ✓
+            <ChevronRight className="practice-writing-canvas__submit-icon" aria-hidden="true" />
           </button>
         )}
       </div>
