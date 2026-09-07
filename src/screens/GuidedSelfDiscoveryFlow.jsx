@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 import BackButton from '../components/BackButton'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
+import SemanticGlyph from '../components/SemanticGlyph'
 import {
   FULLSCREEN_SHELL_CLASS,
   FULLSCREEN_HEADER_SLOT_CLASS,
@@ -14,6 +15,7 @@ import {
   saveGuidedSelfDiscoveryDraft,
 } from '../lib/guidedSelfDiscoveryDraft'
 import { platform, platformName } from '../platform'
+import './GuidedSelfDiscoveryFlow.css'
 
 const STEPS = [
   {
@@ -82,7 +84,9 @@ function FlowBack({ onClick }) {
     return <BackButton onClick={onClick} />
   }
   return (
-    <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+    <div
+      className={`${FULLSCREEN_HEADER_SLOT_CLASS} guided-self-discovery__topbar flex items-center px-5`}
+    >
       <BackButton onClick={onClick} />
     </div>
   )
@@ -92,61 +96,110 @@ function Intro({ hasDraft, onClose, onStart }) {
   return (
     <>
       <FlowBack onClick={onClose} />
-      <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-10">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Запись</p>
-        <h1 className="mt-3 max-w-[18rem] font-display text-[28px] font-semibold leading-[1.12] tracking-[-0.03em] text-cream">
-          {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
-        </h1>
-        <p className="mt-4 max-w-[22rem] text-[15px] leading-relaxed text-muted">
-          Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест личности и не диагноз.
-        </p>
-        <p className="mt-6 text-[13px] leading-relaxed text-faint">
-          Ответы остаются на этом устройстве. Можно остановиться в любой момент.
-        </p>
-        <button
-          type="button"
-          onClick={onStart}
-          className="cta-pill mt-10 w-full px-6 py-4 text-[15px]"
-        >
-          {hasDraft ? 'Продолжить' : 'Начать'}
-        </button>
+      <div className="guided-self-discovery__intro">
+        <div className="guided-self-discovery__hero" aria-hidden="true">
+          <SemanticGlyph
+            kind="next-step"
+            animated={false}
+            className="guided-self-discovery__glyph"
+          />
+        </div>
+        <div className="guided-self-discovery__intro-copy">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Запись</p>
+          <h1 className="guided-self-discovery__intro-title font-display text-cream">
+            {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
+          </h1>
+          <p className="guided-self-discovery__intro-description">
+            Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест
+            личности и не диагноз.
+          </p>
+          <p className="guided-self-discovery__intro-note">
+            Ответы остаются на этом устройстве. Можно остановиться в любой момент.
+          </p>
+        </div>
+        <div className="guided-self-discovery__intro-actions">
+          <button
+            type="button"
+            onClick={onStart}
+            className="guided-self-discovery__intro-cta"
+            aria-label={hasDraft ? 'Продолжить' : 'Начать'}
+          >
+            {hasDraft ? 'Продолжить' : 'Начать'}
+          </button>
+        </div>
       </div>
     </>
   )
 }
 
-function Complete({ onClose, onRestart, experiment }) {
+function Complete({ onClose, onRestart, experiment, feedback, onFeedback }) {
   return (
     <>
       <FlowBack onClick={onClose} />
-      <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-10">
-        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Эксперимент готов</p>
-        <h1 className="mt-3 max-w-[18rem] font-display text-[28px] font-semibold leading-[1.12] tracking-[-0.03em] text-cream">
-          У тебя есть следующий шаг
-        </h1>
-        <p className="mt-4 max-w-[22rem] text-[15px] leading-relaxed text-muted">
-          Проверь его в реальности, а не пытайся заранее получить идеальную ясность.
-        </p>
+      <div className="guided-self-discovery__completion">
+        <div className="guided-self-discovery__completion-art" aria-hidden="true">
+          <SemanticGlyph
+            kind="next-step"
+            animated={false}
+            className="guided-self-discovery__glyph"
+          />
+        </div>
+        <div className="guided-self-discovery__completion-copy">
+          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+            Эксперимент готов
+          </p>
+          <h1 className="guided-self-discovery__completion-title font-display text-cream">
+            Хорошо. Следующий шаг готов.
+          </h1>
+          <p className="guided-self-discovery__completion-description">
+            Проверь его в реальности, а не пытайся заранее получить идеальную ясность.
+          </p>
+        </div>
+        <div
+          className="guided-self-discovery__completion-feedback"
+          role="group"
+          aria-label="Помогло ли это?"
+        >
+          <p>Помогло ли это?</p>
+          <div className="guided-self-discovery__feedback-options">
+            {[
+              ['no', 'Нет'],
+              ['a-little', 'Немного'],
+              ['yes', 'Да'],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={feedback === value}
+                onClick={() => onFeedback(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
         {answered(experiment) && (
-          <div className="mt-8 rounded-[24px] bg-cream/[0.04] px-5 py-5 text-left">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
-              твой эксперимент
-            </span>
-            <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-cream/90">
-              {experiment}
-            </p>
+          <div className="guided-self-discovery__completion-result">
+            <span>твой эксперимент</span>
+            <p>{experiment}</p>
           </div>
         )}
-        <button type="button" onClick={onClose} className="cta-pill mt-10 w-full px-6 py-4 text-[15px]">
-          Вернуться в дневник
-        </button>
-        <button
-          type="button"
-          onClick={onRestart}
-          className="mx-auto mt-3 min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          Начать заново
-        </button>
+        <div className="guided-self-discovery__completion-actions">
+          <button
+            type="button"
+            onClick={onClose}
+            className="cta-pill guided-self-discovery__completion-primary"
+          >
+            Вернуться в дневник
+          </button>
+          <button
+            type="button"
+            onClick={onRestart}
+            className="guided-self-discovery__completion-secondary"
+          >
+            Начать заново
+          </button>
+        </div>
       </div>
     </>
   )
@@ -157,6 +210,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
   const [initial] = useState(() => readGuidedSelfDiscoveryDraft(userId))
   const [stage, setStage] = useState('intro')
   const [stepIndex, setStepIndex] = useState(0)
+  const [completionFeedback, setCompletionFeedback] = useState(null)
   const [answers, setAnswers] = useState(() => ({ ...emptyAnswers(), ...(initial?.answers || {}) }))
   const step = STEPS[stepIndex]
   const value = step ? answers[step.key] || '' : ''
@@ -217,18 +271,17 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
     clearGuidedSelfDiscoveryDraft(userId)
     setAnswers(emptyAnswers())
     setStepIndex(0)
+    setCompletionFeedback(null)
     platform.haptic('light')
     setStage('writing')
   }
 
   return createPortal(
     <div
-      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided flex flex-col`}
+      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided mx-practice-flow--self-discovery flex flex-col`}
       style={surfaceStyle}
     >
-      {stage === 'intro' && (
-        <Intro hasDraft={Boolean(initial)} onClose={onClose} onStart={start} />
-      )}
+      {stage === 'intro' && <Intro hasDraft={Boolean(initial)} onClose={onClose} onStart={start} />}
 
       {stage === 'writing' && step && (
         <>
@@ -246,13 +299,19 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
               stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить'
             }
             submitDisabled={!answered(value)}
-            className="min-h-0 flex-1"
+            className="guided-self-discovery__writing min-h-0 flex-1"
           />
         </>
       )}
 
       {stage === 'complete' && (
-        <Complete onClose={onClose} onRestart={restart} experiment={answers.experiment} />
+        <Complete
+          onClose={onClose}
+          onRestart={restart}
+          experiment={answers.experiment}
+          feedback={completionFeedback}
+          onFeedback={setCompletionFeedback}
+        />
       )}
     </div>,
     document.body
