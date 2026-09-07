@@ -435,3 +435,15 @@
     min-height: 72px;
   }
 }
+
+/* Owner reference lock: writing content only; dock and all other anchors stay frozen. */
+.mx-practice-flow--self-discovery
+  .guided-self-discovery__writing
+  .practice-writing-canvas__question,
+.mx-practice-flow--self-discovery
+  .guided-self-discovery__writing
+  .practice-writing-canvas__description,
+.mx-practice-flow--self-discovery .guided-self-discovery__writing .practice-writing-canvas__field {
+  position: relative;
+  top: -52px;
+}
