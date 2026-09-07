@@ -131,13 +131,14 @@ Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; s
 
 Colors, typography, and text-hierarchy rules live only in `src/index.css` +
 `tailwind.config.js` (documented in `DESIGN_SYSTEM.md` — don't duplicate values into other
-docs). Gold (`--c-gold` / `#EDBD60`) is the single color accent, used for progress/
-completion/significant actions only. Text hierarchy is three explicit classes —
-`text-cream` / `text-muted` / `text-faint` — not opacity; opacity on text is only valid as
-a transient animation, never a static hierarchy state (`text-cream/35` looks fine in code
-but renders at 2.8:1 contrast). Several Tailwind color names in the codebase are legacy
-aliases (`emerald-deep` = bg, `cream`/`sage`/`mint` = text, `gold`/`cognac` = the accent)
-— don't introduce new legacy-style aliases in new components.
+docs). Accent is the dynamic pair Gold (`--c-gold` / `#EDBD60`) ↔ Azure (`--c-azure` /
+`#6FB7E0`): progress, completion, significant digits or actions. Neither color is pure
+decoration. Text hierarchy is three explicit classes — `text-cream` / `text-muted` /
+`text-faint` — not opacity; opacity on text is only valid as a transient animation, never a
+static hierarchy state (`text-cream/35` looks fine in code but renders at 2.8:1 contrast).
+Several Tailwind color names in the codebase are legacy aliases (`emerald-deep` = bg,
+`cream`/`sage`/`mint` = text, `gold`/`cognac` = gold) — don't introduce new legacy-style
+aliases in new components.
 
 For every new or changed card, practice illustration, semantic SVG, or persona card,
 the `Mentalix Card System` section in `DESIGN_SYSTEM.md` is mandatory. Reuse or extend
