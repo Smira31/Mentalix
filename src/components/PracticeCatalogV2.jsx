@@ -9,6 +9,7 @@ import {
   PRACTICE_RAIL_KEYS,
 } from '../lib/practiceCatalogRegistry'
 import './ui-lab/LayeredPracticeCatalogExperiment.css'
+import './practices/CollectionScreenCards.css'
 
 function PracticeGlyph({ kind, highlighted = false }) {
   return <SemanticGlyph kind={kind} animated={false} highlighted={highlighted} />
