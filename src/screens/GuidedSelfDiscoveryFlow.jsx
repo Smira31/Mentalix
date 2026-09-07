@@ -172,7 +172,7 @@ function Complete({ onClose, onRestart, scrollRef, experiment }) {
       </div>
       <div className="mx-practice-flow__actions">
         <button type="button" onClick={onClose} className="cta-pill w-full px-6 py-4 text-[14px]">
-          Вернуться к практикам
+          Вернуться в дневник
         </button>
         <button
           type="button"
