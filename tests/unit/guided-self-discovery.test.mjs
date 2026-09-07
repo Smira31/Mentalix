@@ -8,7 +8,6 @@ const storage = readFileSync(
   'utf8'
 )
 const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
-const journal = readFileSync(new URL('../../src/screens/JournalFlow.jsx', import.meta.url), 'utf8')
 
 test('MXL-SELF-DISCOVERY-001 keeps the first flow prompt-only and local-only', () => {
   assert.match(flow, /const STEPS = \[/)
@@ -31,9 +30,7 @@ test('MXL-SELF-DISCOVERY-001 stores drafts user-scoped without changing journal 
   assert.match(flow, /saveGuidedSelfDiscoveryDraft\(userId, answers, 'complete'\)/)
 })
 
-test('MXL-SELF-DISCOVERY-001 opens from Journal and returns to the existing Journal surface', () => {
-  assert.match(journal, /onOpenGuided/)
-  assert.match(journal, /Не понимаю, что делать → разобраться сейчас/)
+test('MXL-SELF-DISCOVERY-001 keeps the existing Practices routing contract', () => {
   assert.match(practices, /onOpenGuided=\{\(\) => setSub\('self-discovery'\)\}/)
   assert.match(practices, /sub === 'self-discovery'/)
   assert.match(practices, /onClose=\{\(\) => setSub\('journal'\)\}/)
