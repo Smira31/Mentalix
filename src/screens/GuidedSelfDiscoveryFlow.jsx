@@ -1,17 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import JournalTextarea from '../components/JournalTextarea'
-import SceneLayout from '../components/practices/SceneLayout'
-import { FULLSCREEN_SHELL_CLASS, useFullscreenSurface } from '../lib/fullscreenSurface'
+import BackButton from '../components/BackButton'
+import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
+import {
+  FULLSCREEN_SHELL_CLASS,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  useFullscreenSurface,
+} from '../lib/fullscreenSurface'
 import {
   clearGuidedSelfDiscoveryDraft,
   readGuidedSelfDiscoveryDraft,
   saveGuidedSelfDiscoveryDraft,
 } from '../lib/guidedSelfDiscoveryDraft'
 import { platform } from '../platform'
-
-const CONTEXTS = ['задача', 'конфликт', 'усталость', 'тревога', 'выбор', 'потеря направления']
 
 const STEPS = [
   {
@@ -65,8 +67,6 @@ const STEPS = [
   },
 ]
 
-const STEP_COUNT = STEPS.length
-
 function answered(value) {
   return typeof value === 'string' && value.trim().length > 0
 }
@@ -75,120 +75,76 @@ function emptyAnswers() {
   return { context: '', ...Object.fromEntries(STEPS.map(step => [step.key, ''])) }
 }
 
-function GuidedProgress({ current }) {
-  const display = current + 1
-
+function Intro({ hasDraft, onClose, onStart }) {
   return (
-    <div className="mx-practice-flow__progress" aria-label={`Шаг ${display} из ${STEP_COUNT}`}>
-      <div className="mx-practice-flow__progress-rail" aria-hidden="true">
-        {Array.from({ length: STEP_COUNT }, (_, index) => (
-          <span key={index} data-active={index <= current ? 'true' : 'false'} />
-        ))}
+    <>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+        <BackButton onClick={onClose} />
       </div>
-      <span className="mx-practice-flow__progress-label">
-        {display} из {STEP_COUNT}
-      </span>
-    </div>
-  )
-}
-
-function Intro({ hasDraft, onClose, onStart, scrollRef }) {
-  return (
-    <SceneLayout
-      scrollRef={scrollRef}
-      onBack={onClose}
-      label="Разобраться сейчас"
-      title={hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
-      description="Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест личности и не диагноз."
-      centered
-      showGlyph={false}
-    >
-      <div className="mx-practice-flow__complete text-left">
-        <p className="text-[13px] leading-relaxed text-muted">
-          Ответы остаются на этом устройстве. Ты можешь изменить их, остановиться в любой момент или
-          удалить локальный черновик.
+      <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-10">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Запись</p>
+        <h1 className="mt-3 max-w-[18rem] font-display text-[28px] font-semibold leading-[1.12] tracking-[-0.03em] text-cream">
+          {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
+        </h1>
+        <p className="mt-4 max-w-[22rem] text-[15px] leading-relaxed text-muted">
+          Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест личности и не диагноз.
         </p>
-      </div>
-      <div className="mx-practice-flow__actions">
+        <p className="mt-6 text-[13px] leading-relaxed text-faint">
+          Ответы остаются на этом устройстве. Можно остановиться в любой момент.
+        </p>
         <button
           type="button"
           onClick={onStart}
-          className="cta-pill mx-practice-flow__continue w-full px-6 py-4 text-[14px]"
+          className="cta-pill mt-10 w-full px-6 py-4 text-[15px]"
         >
           {hasDraft ? 'Продолжить' : 'Начать'}
         </button>
       </div>
-    </SceneLayout>
+    </>
   )
 }
 
-function ContextStep({ value, onChange }) {
+function Complete({ onClose, onRestart, experiment }) {
   return (
-    <div className="mx-practice-flow__choices" aria-label="Контекст ситуации">
-      {CONTEXTS.map(context => (
-        <button
-          key={context}
-          type="button"
-          aria-pressed={value === context}
-          onClick={() => onChange(context)}
-          className="mx-practice-flow__choice"
-        >
-          {context}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function Complete({ onClose, onRestart, scrollRef, experiment }) {
-  return (
-    <SceneLayout
-      scrollRef={scrollRef}
-      onBack={onClose}
-      label="Эксперимент готов"
-      title="У тебя есть следующий шаг"
-      description="Проверь его в реальности, а не пытайся заранее получить идеальную ясность. Завтра можно отметить: помогло, частично помогло, не помогло или не пробовал."
-      centered
-      showGlyph={false}
-      className="mx-practice-flow__completion"
-    >
-      {answered(experiment) && (
-        <div className="mx-practice-flow__complete">
-          <span className="block text-[11px] uppercase tracking-[0.14em] text-gold">
-            твой эксперимент
-          </span>
-          <p className="mt-2 text-[14px] leading-relaxed text-cream whitespace-pre-wrap">
-            {experiment}
-          </p>
-        </div>
-      )}
-      <div className="rounded-3xl border border-gold/25 bg-gold/[0.07] p-5 text-left">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-gold">
-          Сохранено локально
-        </p>
-        <p className="mt-3 text-[13px] leading-relaxed text-muted">
-          Это рабочая карта текущей ситуации, а не утверждение о том, какой ты человек.
-        </p>
+    <>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+        <BackButton onClick={onClose} />
       </div>
-      <div className="mx-practice-flow__actions">
-        <button type="button" onClick={onClose} className="cta-pill w-full px-6 py-4 text-[14px]">
+      <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-10">
+        <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Эксперимент готов</p>
+        <h1 className="mt-3 max-w-[18rem] font-display text-[28px] font-semibold leading-[1.12] tracking-[-0.03em] text-cream">
+          У тебя есть следующий шаг
+        </h1>
+        <p className="mt-4 max-w-[22rem] text-[15px] leading-relaxed text-muted">
+          Проверь его в реальности, а не пытайся заранее получить идеальную ясность.
+        </p>
+        {answered(experiment) && (
+          <div className="mt-8 rounded-[28px] border border-gold/25 bg-gold/[0.07] px-5 py-5 text-left">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">
+              твой эксперимент
+            </span>
+            <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-cream">
+              {experiment}
+            </p>
+          </div>
+        )}
+        <button type="button" onClick={onClose} className="cta-pill mt-10 w-full px-6 py-4 text-[15px]">
           Вернуться в дневник
         </button>
         <button
           type="button"
           onClick={onRestart}
-          className="mx-auto min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
+          className="mx-auto mt-3 min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
         >
           Начать заново
         </button>
       </div>
-    </SceneLayout>
+    </>
   )
 }
 
 export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
   const { style: surfaceStyle } = useFullscreenSurface()
-  const sceneScrollRef = useRef(null)
   const [initial] = useState(() => readGuidedSelfDiscoveryDraft(userId))
   const [stage, setStage] = useState('intro')
   const [stepIndex, setStepIndex] = useState(0)
@@ -198,7 +154,6 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
 
   useEffect(() => {
     document.activeElement?.blur?.()
-    sceneScrollRef.current?.scrollTo({ top: 0, behavior: 'auto' })
   }, [stage, stepIndex])
 
   function updateAnswer(key, nextValue) {
@@ -241,6 +196,11 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       setStepIndex(index => index - 1)
       return
     }
+    if (stage === 'writing') {
+      platform.haptic('light')
+      setStage('intro')
+      return
+    }
     onClose()
   }
 
@@ -254,63 +214,38 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
 
   return createPortal(
     <div
-      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided`}
+      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided flex flex-col`}
       style={surfaceStyle}
     >
       {stage === 'intro' && (
-        <Intro
-          hasDraft={Boolean(initial)}
-          onClose={onClose}
-          onStart={start}
-          scrollRef={sceneScrollRef}
-        />
+        <Intro hasDraft={Boolean(initial)} onClose={onClose} onStart={start} />
       )}
 
       {stage === 'writing' && step && (
-        <SceneLayout
-          showGlyph={false}
-          scrollRef={sceneScrollRef}
-          onBack={goBack}
-          label={step.label}
-          title={step.title}
-          description={step.hint}
-          progress={<GuidedProgress current={stepIndex} />}
-          className="practice-scene--input practice-scene--input-centered"
-        >
-          {step.key === 'situation' && (
-            <ContextStep value={answers.context} onChange={next => updateAnswer('context', next)} />
-          )}
-          <JournalTextarea
-            writingCanvas
-            autoFocus
+        <>
+          <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+            <BackButton onClick={goBack} />
+          </div>
+          <PracticeWritingCanvas
             value={value}
             onChange={next => updateAnswer(step.key, next)}
+            question={step.title}
+            description={step.hint}
             placeholder={step.placeholder}
             ariaLabel={step.title}
-            className="min-h-[18rem]"
-            editorClassName="pb-24"
-            floatingToolbar
-            formatting={false}
-            guidedFlow
+            autoFocus
             onSubmit={continueFlow}
             submitLabel={
               stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить'
             }
             submitDisabled={!answered(value)}
+            className="min-h-0 flex-1"
           />
-          <p className="mt-4 text-[11px] leading-relaxed text-faint">
-            Ты можешь вернуться назад и изменить любой ответ. Здесь нет скрытого вывода о тебе.
-          </p>
-        </SceneLayout>
+        </>
       )}
 
       {stage === 'complete' && (
-        <Complete
-          onClose={onClose}
-          onRestart={restart}
-          scrollRef={sceneScrollRef}
-          experiment={answers.experiment}
-        />
+        <Complete onClose={onClose} onRestart={restart} experiment={answers.experiment} />
       )}
     </div>,
     document.body
