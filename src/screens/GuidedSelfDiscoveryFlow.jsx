@@ -69,6 +69,9 @@ const STEPS = [
   },
 ]
 
+const INTRO_DESCRIPTION =
+  'Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест личности и не диагноз.'
+
 function answered(value) {
   return typeof value === 'string' && value.trim().length > 0
 }
@@ -109,10 +112,7 @@ function Intro({ hasDraft, onClose, onStart }) {
           <h1 className="guided-self-discovery__intro-title font-display text-cream">
             {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
           </h1>
-          <p className="guided-self-discovery__intro-description">
-            Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест
-            личности и не диагноз.
-          </p>
+          <p className="guided-self-discovery__intro-description">{INTRO_DESCRIPTION}</p>
           <p className="guided-self-discovery__intro-note">
             Ответы остаются на этом устройстве. Можно остановиться в любой момент.
           </p>
