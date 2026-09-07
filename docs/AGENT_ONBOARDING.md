@@ -74,6 +74,18 @@ PR/commit: ...
 
 Card Lab, Motion Kit и другие UI-lab поверхности являются Preview-only, пока владелец отдельно не подтвердил production scope. Preview отправляется через GitHub Actions workflow `Telegram Preview`; локальный PowerShell сценарий — только fallback для Windows. Не отправляйте токены, raw `initData`, персональные данные или production URLs with credentials в PR, issue, chat или commit.
 
+### Preview contract (обязательно)
+
+| Роль | Vercel project | URL |
+| ---- | -------------- | --- |
+| **Production** | `mentalix` | https://mentalix.vercel.app |
+| **Owner QA / Preview** | `mentalix-preview` | **https://mentalix-preview.vercel.app** |
+
+- Владельцу QA отдаётся **только** `https://mentalix-preview.vercel.app`.
+- **Никогда** не отдавать владельцу branch URL, deployment URL (`*.vercel.app` с hash/branch), Preview URL конкретного PR или любой другой `*.vercel.app`.
+- Workflow `Telegram Preview` принимает для owner QA только canonical `url=https://mentalix-preview.vercel.app`; `open_url` может отличаться path/query, но host обязан быть тем же.
+- Health check и Telegram button используют canonical host.
+
 ## 6. Финальный чек-лист PR
 
 Перед merge агент должен проверить, что diff минимален и понятен, нет conflict markers, локальные Markdown-ссылки и task IDs проходят `npm run docs:check`, `npm run check:core` зелёный, а для UI выполнен `npm run ux:check`. В PR должны быть указаны ограничения, не покрытые автоматикой, и следующий ручной gate, если он нужен.
