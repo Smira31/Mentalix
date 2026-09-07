@@ -19,18 +19,13 @@ function Progress({ step }) {
   if (!current) return null
 
   return (
-    <div className="mb-5" aria-label={`Шаг ${current} из 4`}>
-      <div className="flex gap-1.5" aria-hidden="true">
+    <div className="mx-practice-flow__progress" aria-label={`Шаг ${current} из 4`}>
+      <div className="mx-practice-flow__progress-rail" aria-hidden="true">
         {Array.from({ length: 4 }, (_, index) => (
-          <span
-            key={index}
-            className={`h-1.5 flex-1 rounded-full ${index < current ? 'bg-gold' : 'bg-cream/15'}`}
-          />
+          <span key={index} data-active={index < current ? 'true' : 'false'} />
         ))}
       </div>
-      <span className="mt-2 block text-[10px] uppercase tracking-[0.14em] text-faint">
-        {current} из 4
-      </span>
+      <span className="mx-practice-flow__progress-label">{current} из 4</span>
     </div>
   )
 }
@@ -59,7 +54,10 @@ export default function MeditationFlow({ onClose }) {
   }
 
   return createPortal(
-    <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided`}
+      style={surfaceStyle}
+    >
       {step === 'intro' && (
         <SceneLayout
           scrollRef={sceneScrollRef}
@@ -80,13 +78,15 @@ export default function MeditationFlow({ onClose }) {
           <p className="mb-5 text-center text-[12px] leading-relaxed text-faint">
             Если становится тяжелее, остановись и вернись к себе позже.
           </p>
-          <button
-            type="button"
-            onClick={() => next('observe')}
-            className="cta-pill w-full px-6 py-4 text-[14px]"
-          >
-            Начать
-          </button>
+          <div className="mx-practice-flow__actions">
+            <button
+              type="button"
+              onClick={() => next('observe')}
+              className="cta-pill mx-practice-flow__continue w-full px-6 py-4 text-[14px]"
+            >
+              Начать
+            </button>
+          </div>
         </SceneLayout>
       )}
 
@@ -98,7 +98,7 @@ export default function MeditationFlow({ onClose }) {
           label="Медитация"
           title="Что сейчас происходит?"
           progress={<Progress step={step} />}
-          className="practice-scene--input practice-scene--input-centered practice-scene--no-blame"
+          className="practice-scene--input practice-scene--input-centered"
           description="Назови ситуацию так, как она выглядит сейчас. Без объяснений и обвинений — только то, что ты можешь заметить."
         >
           <JournalTextarea
@@ -108,10 +108,11 @@ export default function MeditationFlow({ onClose }) {
             onChange={setObservation}
             placeholder="Например: я жду ответа и постоянно проверяю телефон"
             ariaLabel="Что сейчас происходит"
-            className="min-h-[14rem]"
+            className="min-h-[18rem]"
             editorClassName="pb-24"
             floatingToolbar
             formatting={false}
+            guidedFlow
             onSubmit={() => next('influence')}
             submitLabel="Дальше"
             submitDisabled={!observation.trim()}
@@ -123,11 +124,11 @@ export default function MeditationFlow({ onClose }) {
         <SceneLayout
           showGlyph={false}
           scrollRef={sceneScrollRef}
-          onBack={() => setStep('observe')}
+          onBack={() => next('observe')}
           label="Медитация"
           title="Что из этого зависит от тебя?"
           progress={<Progress step={step} />}
-          className="practice-scene--input practice-scene--input-centered practice-scene--no-blame"
+          className="practice-scene--input practice-scene--input-centered"
           description="Отдели своё действие от чужой реакции, времени и обстоятельств. Здесь не нужно решить всё — достаточно найти свою часть."
         >
           <JournalTextarea
@@ -136,10 +137,11 @@ export default function MeditationFlow({ onClose }) {
             onChange={setInfluence}
             placeholder="Например: я могу отправить один ясный вопрос и перестать проверять телефон"
             ariaLabel="Что зависит от меня"
-            className="min-h-[14rem]"
+            className="min-h-[18rem]"
             editorClassName="pb-24"
             floatingToolbar
             formatting={false}
+            guidedFlow
             onSubmit={() => next('action')}
             submitLabel="Дальше"
             submitDisabled={!influence.trim()}
@@ -151,11 +153,11 @@ export default function MeditationFlow({ onClose }) {
         <SceneLayout
           showGlyph={false}
           scrollRef={sceneScrollRef}
-          onBack={() => setStep('influence')}
+          onBack={() => next('influence')}
           label="Медитация"
           title="Какой один шаг ты выбираешь?"
           progress={<Progress step={step} />}
-          className="practice-scene--input practice-scene--input-centered practice-scene--no-blame"
+          className="practice-scene--input practice-scene--input-centered"
           description="Сделай шаг маленьким и проверяемым. Не обещай себе изменить всё — выбери действие, которое можно выполнить сегодня."
         >
           <JournalTextarea
@@ -164,10 +166,11 @@ export default function MeditationFlow({ onClose }) {
             onChange={setAction}
             placeholder="Например: отправить сообщение до 18:00"
             ariaLabel="Один следующий шаг"
-            className="min-h-[14rem]"
+            className="min-h-[18rem]"
             editorClassName="pb-24"
             floatingToolbar
             formatting={false}
+            guidedFlow
             onSubmit={finish}
             submitLabel="Завершить"
             submitDisabled={!action.trim()}
@@ -182,6 +185,7 @@ export default function MeditationFlow({ onClose }) {
           label="Медитация завершена"
           title="Ты выбрал(а) свою часть"
           centered
+          className="mx-practice-flow__completion"
           description={
             <>
               Не всё нужно удерживать и не всё нужно решать прямо сейчас. Вернись к выбранному шагу
@@ -189,19 +193,21 @@ export default function MeditationFlow({ onClose }) {
             </>
           }
         >
-          <div className="rounded-3xl bg-emerald px-5 py-4 text-left">
+          <div className="mx-practice-flow__complete">
             <span className="block text-[11px] uppercase tracking-[0.14em] text-gold">
               твой шаг
             </span>
             <p className="mt-2 text-[14px] leading-relaxed text-cream">{action}</p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="cta-pill mt-5 w-full px-6 py-4 text-[14px]"
-          >
-            Вернуться к практикам
-          </button>
+          <div className="mx-practice-flow__actions">
+            <button
+              type="button"
+              onClick={onClose}
+              className="cta-pill w-full px-6 py-4 text-[14px]"
+            >
+              Вернуться к практикам
+            </button>
+          </div>
         </SceneLayout>
       )}
     </div>,
