@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 07.09.2026 (после MXL-PROJECT-CANON-001). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog** на 07.09.2026 (после merge #529 / close #521). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -10,17 +10,18 @@
 
 | Порядок | Issue                                                                                                           | ID / title                                                             | Примечание                             |
 | ------: | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------- |
-|       1 | [#521](https://github.com/Smira31/Mentalix/issues/521)                                                          | MXL-MEDITATION-UX-001 — привести Meditation к единой grammar Practices | Следующая feature; PR #529 уже открыт  |
-|       2 | [#510](https://github.com/Smira31/Mentalix/issues/510) / [#522](https://github.com/Smira31/Mentalix/issues/522) | Редизайн дневника / MXL-SELF-DISCOVERY-UX-002                          | После Meditation                       |
-|       3 | [#523](https://github.com/Smira31/Mentalix/issues/523)                                                          | MXL-LILA-UX-001 — Lila Discover → Practices system                     |                                        |
-|       4 | [#524](https://github.com/Smira31/Mentalix/issues/524)                                                          | MXL-RITUALS-ASCEZAS-UX-001 — Rituals и Ascezas                         |                                        |
-|       5 | [#525](https://github.com/Smira31/Mentalix/issues/525)                                                          | MXL-PRACTICES-CATALOG-POLISH-001 — финальная сборка каталога           |                                        |
-|       6 | [#526](https://github.com/Smira31/Mentalix/issues/526)                                                          | MXL-LIBRARY-UX-001 — продуктовый редизайн Библиотеки                   |                                        |
-|       7 | [#527](https://github.com/Smira31/Mentalix/issues/527)                                                          | MXL-PROGRESS-UX-001 — tab «Прогресс»                                   | PARKED ref на PR #502 head `3490406c…` |
+|       1 | [#510](https://github.com/Smira31/Mentalix/issues/510) / [#522](https://github.com/Smira31/Mentalix/issues/522) | Редизайн дневника / MXL-SELF-DISCOVERY-UX-002                          | Следующий product gate                 |
+|       2 | [#523](https://github.com/Smira31/Mentalix/issues/523)                                                          | MXL-LILA-UX-001 — Lila Discover → Practices system                     |                                        |
+|       3 | [#524](https://github.com/Smira31/Mentalix/issues/524)                                                          | MXL-RITUALS-ASCEZAS-UX-001 — Rituals и Ascezas                         |                                        |
+|       4 | [#525](https://github.com/Smira31/Mentalix/issues/525)                                                          | MXL-PRACTICES-CATALOG-POLISH-001 — финальная сборка каталога           |                                        |
+|       5 | [#526](https://github.com/Smira31/Mentalix/issues/526)                                                          | MXL-LIBRARY-UX-001 — продуктовый редизайн Библиотеки                   |                                        |
+|       6 | [#527](https://github.com/Smira31/Mentalix/issues/527)                                                          | MXL-PROGRESS-UX-001 — tab «Прогресс»                                   | PARKED ref на PR #502 head `3490406c…` |
+
+**Completed (07.09.2026):** [#521](https://github.com/Smira31/Mentalix/issues/521) MXL-MEDITATION-UX-001 via [PR #529](https://github.com/Smira31/Mentalix/pull/529) (owner QA PASS).
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active open PR:** только [#529](https://github.com/Smira31/Mentalix/pull/529) (`feat/meditation-guided-grammar`).
+**Active open PR:** нет.
 
 ## PARKED / NOT SCHEDULED
 
@@ -36,7 +37,7 @@
 | `MXL-JOURNAL-MEMORIES-001`    | product/privacy/backend | backend-dependent               | Media attachments только после privacy/storage review |
 | `MXL-JOURNAL-REMINDERS-001`   | product/backend         | needs-owner + backend-dependent | Quiet hours, consent, scheduler contract              |
 
-Прочие historically completed / closed (MXL-001…, practice-flow #513 via #520, catalog v2) — в [`TASKS.md`](../TASKS.md) / archive, не здесь.
+Прочие historically completed / closed (MXL-001…, practice-flow #513 via #520, catalog v2, Meditation #521 via #529) — в [`TASKS.md`](../TASKS.md) / archive, не здесь.
 
 ## Автономная очередь
 
