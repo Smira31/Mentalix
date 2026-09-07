@@ -76,14 +76,17 @@ Card Lab, Motion Kit и другие UI-lab поверхности являют�
 
 ### Preview contract (обязательно)
 
-| Роль | Vercel project | URL |
-| ---- | -------------- | --- |
-| **Production** | `mentalix` | https://mentalix.vercel.app |
+| Роль                   | Vercel project     | URL                                     |
+| ---------------------- | ------------------ | --------------------------------------- |
+| **Production**         | `mentalix`         | https://mentalix.vercel.app             |
 | **Owner QA / Preview** | `mentalix-preview` | **https://mentalix-preview.vercel.app** |
 
-- Владельцу QA отдаётся **только** `https://mentalix-preview.vercel.app`.
-- **Никогда** не отдавать владельцу branch URL, deployment URL (`*.vercel.app` с hash/branch), Preview URL конкретного PR или любой другой `*.vercel.app`.
+- Канонический QA-процесс: feature branch → Vercel deployment в project `mentalix-preview` → **PROMOTE exact deployment нужного SHA** в `mentalix-preview` → canonical alias `https://mentalix-preview.vercel.app` → verify alias provenance Vercel-side → Telegram owner QA → iPhone/browser → Telegram `web_app` → owner PASS → merge.
+- Production project `mentalix` не используется для feature QA.
+- Владельцу QA отдаётся **только** `https://mentalix-preview.vercel.app` с разрешённым path/query.
+- Branch URL и deployment URL никогда не являются owner QA URL: **не** отдавать владельцу branch URL, deployment URL (`*.vercel.app` с hash/branch), Preview URL конкретного PR или любой другой `*.vercel.app`.
 - Workflow `Telegram Preview` принимает для owner QA только canonical `url=https://mentalix-preview.vercel.app`; `open_url` может отличаться path/query, но host обязан быть тем же.
+- Без Vercel API/token workflow не может автоматически доказать alias→SHA. Поэтому перед workflow dispatch обязательны promote exact deployment и Vercel-side provenance verification; workflow fail-closed через `provenance_verified=true` и не использует GitHub Deployments как доказательство.
 - Health check и Telegram button используют canonical host.
 
 ## 6. Финальный чек-лист PR

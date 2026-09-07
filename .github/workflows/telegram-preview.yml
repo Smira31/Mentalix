@@ -32,7 +32,7 @@ on:
         default: ''
         type: string
       commit_sha:
-        description: 'Full 40-char commit SHA that must match a successful Vercel GitHub deployment for this repo'
+        description: 'Full 40-char requested commit SHA; alias provenance is verified Vercel-side before dispatch'
         required: true
         type: string
       ui_lab_route:
@@ -50,11 +50,15 @@ on:
         required: false
         default: false
         type: boolean
+      provenance_verified:
+        description: 'Owner confirms Vercel-side promotion and canonical alias provenance were verified before dispatch'
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
   pull-requests: read
-  deployments: read
 
 concurrency:
   group: telegram-preview-manual-${{ inputs.commit_sha || github.run_id }}-${{ inputs.ui_lab_route || 'default' }}
@@ -80,6 +84,7 @@ jobs:
       UI_LAB_ROUTE: ${{ inputs.ui_lab_route }}
       EXPERIMENT_LABEL: ${{ inputs.experiment_label }}
       PREVIEW_DIAGNOSTICS: ${{ inputs.diagnostics }}
+      PROVENANCE_VERIFIED: ${{ inputs.provenance_verified }}
 
     steps:
       - name: Validate existing Vercel preview metadata
@@ -124,6 +129,12 @@ jobs:
             echo 'main Preview must not include pr_number.' >&2
             exit 1
           fi
+          if [ "$PROVENANCE_VERIFIED" != "true" ]; then
+            echo 'FAIL CLOSED: canonical alias provenance is not verified.' >&2
+            echo 'Before dispatch, promote the exact deployment in Vercel project mentalix-preview and verify that https://mentalix-preview.vercel.app serves the requested SHA.' >&2
+            echo 'This workflow cannot prove alias-to-SHA provenance without Vercel API access and will not infer it from GitHub Deployments.' >&2
+            exit 1
+          fi
 
       - name: Verify preview health
         shell: bash
@@ -140,55 +151,16 @@ jobs:
             "$PREVIEW_URL/api/health")"
           printf '%s\n' "$response" | grep -Eq '"status"[[:space:]]*:[[:space:]]*"ok"'
 
-      - name: Prove Preview SHA provenance (fail closed)
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          # Canonical host does not embed git SHA in /api/health (rewritten to backend)
-          # or standard Vercel response headers. No VERCEL_TOKEN in this workflow.
-          # Available proof without new secrets: GitHub Deployments created by Vercel
-          # Git Integration for this repo must include a successful deployment for PREVIEW_SHA.
-          # If that cannot be shown, refuse Telegram — never claim an unproven SHA.
-          echo "Proving successful Vercel GitHub deployment for SHA $PREVIEW_SHA..."
-          deployments_json="$(gh api \
-            "repos/${{ github.repository }}/deployments?sha=${PREVIEW_SHA}&per_page=30" \
-            --jq '.')"
-          count="$(printf '%s' "$deployments_json" | jq 'length')"
-          if [ "$count" = "0" ]; then
-            echo "FAIL CLOSED: no GitHub Deployments for SHA $PREVIEW_SHA." >&2
-            echo "Cannot prove that https://mentalix-preview.vercel.app serves this commit." >&2
-            echo "Deploy this SHA via Vercel Git Integration first, or do not claim it in Telegram." >&2
-            exit 1
-          fi
-          # Require at least one deployment whose latest status is success.
-          proven=0
-          while IFS= read -r dep_id; do
-            [ -z "$dep_id" ] && continue
-            state="$(gh api \
-              "repos/${{ github.repository }}/deployments/${dep_id}/statuses?per_page=5" \
-              --jq '.[0].state // empty' 2>/dev/null || true)"
-            env_name="$(printf '%s' "$deployments_json" | jq -r --arg id "$dep_id" '.[] | select(.id|tostring==$id) | .environment // empty')"
-            echo "deployment id=$dep_id environment=$env_name latest_state=$state"
-            if [ "$state" = "success" ]; then
-              proven=1
-            fi
-          done < <(printf '%s' "$deployments_json" | jq -r '.[].id')
-          if [ "$proven" -ne 1 ]; then
-            echo "FAIL CLOSED: deployments exist for $PREVIEW_SHA but none have latest status success." >&2
-            echo "Refusing Telegram notify — would claim an unproven Preview SHA." >&2
-            exit 1
-          fi
-          echo "Proven: SHA $PREVIEW_SHA has at least one successful GitHub Deployment from Vercel."
-          echo "Owner URL remains only https://mentalix-preview.vercel.app (no branch deployment URL)."
+      # GitHub Deployments do not prove which SHA the canonical Vercel alias serves.
+      # The required provenance_verified input is an explicit owner precondition:
+      # promote and verify the exact deployment in Vercel before dispatching this workflow.
+      # No Vercel API/token is configured here, so this workflow never claims automatic SHA proof.
 
       - name: Build canonical Telegram message
         id: message
         shell: bash
         run: |
           set -euo pipefail
-          short_sha="${PREVIEW_SHA:0:8}"
           # open_url may add path/query; host already validated. Fall back to canonical url.
           preview_app_url="${OPEN_URL:-$PREVIEW_URL}"
           preview_app_url="${preview_app_url%/}"
@@ -210,14 +182,14 @@ jobs:
             preview_app_url="${preview_app_url}${separator}preview_diagnostics=1"
           fi
           if [ "$PREVIEW_BRANCH" = "main" ]; then
-            message="$(printf 'Mentalix main Preview\nCommit: %s' "$short_sha")"
+            message="Mentalix main Preview"
           elif [ -n "$PR_NUMBER" ]; then
             title_suffix=""
             if [ -n "$PREVIEW_TITLE" ]; then title_suffix=" · $PREVIEW_TITLE"; fi
-            message="$(printf 'Mentalix Preview PR #%s%s\nBranch: %s\nCommit: %s' "$PR_NUMBER" "$title_suffix" "$PREVIEW_BRANCH" "$short_sha")"
+            message="$(printf 'Mentalix Preview PR #%s%s\nBranch: %s' "$PR_NUMBER" "$title_suffix" "$PREVIEW_BRANCH")"
             if [ -n "$route_line" ]; then message="$(printf '%s\n%s' "$message" "$route_line")"; fi
           else
-            message="$(printf 'Mentalix Preview\nBranch: %s\nCommit: %s' "$PREVIEW_BRANCH" "$short_sha")"
+            message="$(printf 'Mentalix Preview\nBranch: %s' "$PREVIEW_BRANCH")"
             if [ -n "$route_line" ]; then message="$(printf '%s\n%s' "$message" "$route_line")"; fi
           fi
           if [ "$UI_LAB_ROUTE" = "practice-catalog" ]; then
@@ -272,7 +244,7 @@ jobs:
             echo '### Telegram Preview'
             echo "Existing Preview: ${PREVIEW_URL}"
             echo "Branch: ${PREVIEW_BRANCH}"
-            echo "Commit: ${PREVIEW_SHA}"
-            echo 'Vercel deployment: not created by this workflow'
-            echo 'SHA provenance: required successful GitHub Deployment for commit_sha (fail closed)'
+            echo 'Vercel deployment: must be promoted in project mentalix-preview before dispatch'
+            echo 'Alias provenance: owner-verified Vercel-side via provenance_verified=true; not proven by this workflow'
+            echo "Requested commit_sha: ${PREVIEW_SHA} (not independently verified here)"
           } >> "$GITHUB_STEP_SUMMARY"
