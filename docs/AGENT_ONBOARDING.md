@@ -60,8 +60,8 @@ merge → delete branch → next Issue
 
 Переход к следующей Issue из `TASK_INDEX` разрешён **только** когда:
 
-- CI green на merged PR;
-- exact QA candidate определён (SHA + deployment в `mentalix-preview`);
+- CI green на candidate PR перед merge;
+- exact QA candidate определён (SHA + deployment в `mentalix-preview`), если для задачи требуется manual QA;
 - manual QA владельца пройден, если требуется (Telegram/iPhone / `web_app`);
 - PR merged в `main`;
 - Issue closed/completed;
