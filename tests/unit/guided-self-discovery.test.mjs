@@ -33,7 +33,8 @@ test('MXL-SELF-DISCOVERY-001 stores drafts user-scoped without changing journal 
 
 test('MXL-SELF-DISCOVERY-001 opens from Journal and returns to the existing Journal surface', () => {
   assert.match(journal, /onOpenGuided/)
-  assert.match(journal, /Не понимаю, что делать → разобраться сейчас/)
+  assert.match(journal, /Начать запись/)
+  assert.doesNotMatch(journal, /Не понимаю, что делать/)
   assert.match(practices, /onOpenGuided=\{\(\) => setSub\('self-discovery'\)\}/)
   assert.match(practices, /sub === 'self-discovery'/)
   assert.match(practices, /onClose=\{\(\) => setSub\('journal'\)\}/)
