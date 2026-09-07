@@ -13,7 +13,7 @@ import {
   readGuidedSelfDiscoveryDraft,
   saveGuidedSelfDiscoveryDraft,
 } from '../lib/guidedSelfDiscoveryDraft'
-import { platform } from '../platform'
+import { platform, platformName } from '../platform'
 
 const STEPS = [
   {
@@ -75,19 +75,31 @@ function emptyAnswers() {
   return { context: '', ...Object.fromEntries(STEPS.map(step => [step.key, ''])) }
 }
 
+function FlowBack({ onClick }) {
+  // В Telegram — только native BackButton (компонент сам монтирует hook и не рисует UI).
+  // В web — видимый app-back в header slot.
+  if (platformName === 'telegram') {
+    return <BackButton onClick={onClick} />
+  }
+  return (
+    <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+      <BackButton onClick={onClick} />
+    </div>
+  )
+}
+
 function Intro({ hasDraft, onClose, onStart }) {
   return (
     <>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
-        <BackButton onClick={onClose} />
-      </div>
+      <FlowBack onClick={onClose} />
       <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-10">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Запись</p>
         <h1 className="mt-3 max-w-[18rem] font-display text-[28px] font-semibold leading-[1.12] tracking-[-0.03em] text-cream">
           {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
         </h1>
         <p className="mt-4 max-w-[22rem] text-[15px] leading-relaxed text-muted">
-          Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест личности и не диагноз.
+          Спокойно отдели факты от предположений и выбери один небольшой эксперимент. Это не тест
+          личности и не диагноз.
         </p>
         <p className="mt-6 text-[13px] leading-relaxed text-faint">
           Ответы остаются на этом устройстве. Можно остановиться в любой момент.
@@ -107,9 +119,7 @@ function Intro({ hasDraft, onClose, onStart }) {
 function Complete({ onClose, onRestart, experiment }) {
   return (
     <>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
-        <BackButton onClick={onClose} />
-      </div>
+      <FlowBack onClick={onClose} />
       <div className="flex min-h-0 flex-1 flex-col justify-center px-6 pb-10">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Эксперимент готов</p>
         <h1 className="mt-3 max-w-[18rem] font-display text-[28px] font-semibold leading-[1.12] tracking-[-0.03em] text-cream">
@@ -119,11 +129,11 @@ function Complete({ onClose, onRestart, experiment }) {
           Проверь его в реальности, а не пытайся заранее получить идеальную ясность.
         </p>
         {answered(experiment) && (
-          <div className="mt-8 rounded-[28px] border border-gold/25 bg-gold/[0.07] px-5 py-5 text-left">
-            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-gold">
+          <div className="mt-8 rounded-[24px] bg-cream/[0.04] px-5 py-5 text-left">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-faint">
               твой эксперимент
             </span>
-            <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-cream">
+            <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-cream/90">
               {experiment}
             </p>
           </div>
@@ -223,9 +233,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
 
       {stage === 'writing' && step && (
         <>
-          <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
-            <BackButton onClick={goBack} />
-          </div>
+          <FlowBack onClick={goBack} />
           <PracticeWritingCanvas
             value={value}
             onChange={next => updateAnswer(step.key, next)}
