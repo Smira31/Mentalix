@@ -288,18 +288,13 @@ async function assertBottomNavigationLabelsFit(page) {
 }
 
 async function assertSoonControls(page) {
-  const soonPractices = ['Нейротренажёр', 'Дыхание', 'Фокус']
-
-  for (const name of soonPractices) {
-    await expect(page.getByRole('button', { name })).toBeDisabled()
-  }
-
-  await expect(page.getByText('Скоро', { exact: true })).toHaveCount(soonPractices.length)
-  await expect(page.getByRole('button', { name: 'Медитация' })).toBeEnabled()
-  await page.getByRole('button', { name: 'Медитация' }).click()
+  const meditationCard = page
+    .locator('.mx-layered-catalog__rail-card')
+    .filter({ hasText: 'Медитация' })
+  await expect(meditationCard).toBeEnabled()
+  await meditationCard.click()
   await expect(page.getByRole('heading', { name: 'Вернись к тому, что действительно зависит от тебя' })).toBeVisible()
   await page.getByRole('button', { name: 'Назад' }).click()
-  await page.getByRole('button', { name: 'Нейротренажёр' }).evaluate(element => element.click())
   await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 }
 
@@ -536,19 +531,19 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-        const journalEntry = page.locator('section[aria-label="Журнал"] > button')
+        const journalEntry = page.locator('article.mx-layered-catalog__journal-hero button')
         await assertClickable(journalEntry)
-        const practicesHeading = page.locator('h3').filter({ hasText: 'Практики' }).first()
-        await expect(practicesHeading).toBeVisible()
+        const collectionsHeading = page.locator('section[aria-label="Коллекции"] h3')
+        await expect(collectionsHeading).toBeVisible()
         const journalBox = await journalEntry.boundingBox()
-        const practicesBox = await practicesHeading.boundingBox()
-        expect(journalBox?.y || 0).toBeLessThan(practicesBox?.y || Number.POSITIVE_INFINITY)
-        await assertClickable(page.getByRole('button', { name: 'Ритуалы' }))
+        const collectionsBox = await collectionsHeading.boundingBox()
+        expect(journalBox?.y || 0).toBeLessThan(collectionsBox?.y || Number.POSITIVE_INFINITY)
+        await assertClickable(page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Ритуалы' }))
         await assertSoonControls(page)
       },
     })
 
-    await page.locator('section[aria-label="Журнал"] > button').click()
+    await page.locator('article.mx-layered-catalog__journal-hero button').click()
     await captureScreen({
       page,
       viewport,
@@ -608,7 +603,7 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Вернуться к практикам' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    const reopenedJournalEntry = page.locator('section[aria-label="Журнал"] > button')
+    const reopenedJournalEntry = page.locator('article.mx-layered-catalog__journal-hero button')
     await reopenedJournalEntry.scrollIntoViewIfNeeded()
     await reopenedJournalEntry.click()
     await expect(page.getByRole('heading', { name: 'Сегодняшняя запись сохранена' })).toBeVisible()
@@ -619,7 +614,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Ритуалы' }).click()
+    await page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Ритуалы' }).click()
     await captureScreen({
       page,
       viewport,
@@ -634,7 +629,7 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Назад' }).click()
 
-    await page.getByRole('button', { name: 'Аскезы' }).click()
+    await page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Аскезы' }).click()
     await captureScreen({
       page,
       viewport,
@@ -720,7 +715,7 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-
+    await page.locator('[data-collection-key="psychological"]').click()
     await page.getByRole('button', { name: 'Одно из всех' }).click()
     await captureScreen({
       page,
@@ -808,7 +803,6 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-
     await page.getByRole('button', { name: 'Один финиш' }).click()
     await captureScreen({
       page,
@@ -882,7 +876,6 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-
     await page.getByRole('button', { name: 'Без вины' }).click()
     await captureScreen({
       page,

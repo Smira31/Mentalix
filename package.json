@@ -16,7 +16,7 @@
     "docs:check": "node scripts/docs-check.mjs",
     "docs:drift": "node scripts/docs-drift.mjs",
     "doctor": "node scripts/project-doctor.mjs",
-    "ux:check": "playwright test --config=playwright.ux.config.mjs --grep-invert='Practice Catalog v2 psychological collection сохраняет origin' && VITE_PRACTICES_CATALOG_V2=true playwright test --config=playwright.ux.config.mjs --grep='Practice Catalog v2 psychological collection сохраняет origin'",
+    "ux:check": "playwright test --config=playwright.ux.config.mjs",
     "test:design-guard": "node scripts/design-guard.mjs",
     "ux:mazelogo": "playwright test --config=playwright.mazelogo.config.mjs",
     "ux:mxl010": "playwright test --config=playwright.mxl010.config.mjs",
