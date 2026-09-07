@@ -18,16 +18,25 @@
 | 6 | [#526](https://github.com/Smira31/Mentalix/issues/526) | MXL-LIBRARY-UX-001 — продуктовый редизайн Библиотеки | |
 | 7 | [#527](https://github.com/Smira31/Mentalix/issues/527) | MXL-PROGRESS-UX-001 — tab «Прогресс» | PARKED ref на PR #502 head `3490406c…` |
 
-**Deferred (не в активной очереди):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
+**Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
 **Active open PR:** только [#529](https://github.com/Smira31/Mentalix/pull/529) (`feat/meditation-guided-grammar`).
 
-## Closed / completed (не backlog)
+## PARKED / NOT SCHEDULED
 
-- MXL-PRACTICE-FLOW-UX-001 (#513) — completed via merged PR #520 (`4e9ffcc2…`).
-- Practices Catalog v2 + guided flows — merged #520.
+Не текущая execution queue. Задачи без отдельной GitHub Issue и без owner-решения об отмене — сохранены, чтобы не потерять backlog. **Не создавать Issues сейчас.** Не поднимать в каноническую очередь без явного решения владельца.
 
-Исторические completed (MXL-001…MXL-019, Journal core slices, UX-responsive, design-system labels и т.д.) остаются в [`TASKS.md`](../TASKS.md) / archive и не дублируются здесь.
+| ID | Тип | Автономность | Следующий шаг (когда разморозят) |
+| -- | --- | ------------ | -------------------------------- |
+| `MXL-JOURNAL-HISTORY-001` | product/backend/UX | backend-dependent | Объединить датированную историю после persistence |
+| `MXL-JOURNAL-PRIVACY-001` | product/safety/backend | needs-owner + backend-dependent | AI consent, retention, export, delete |
+| `MXL-JOURNAL-PERSONALIZE-001` | product/UX | needs-owner | Cadence и режим prompt/free write/AI |
+| `MXL-JOURNAL-GUIDED-001` | product/content | needs-owner | Guided tracks после стабилизации core journal |
+| `MXL-JOURNAL-ORGANIZE-001` | product/backend/UX | backend-dependent | Tags, search, favorites после schema decision |
+| `MXL-JOURNAL-MEMORIES-001` | product/privacy/backend | backend-dependent | Media attachments только после privacy/storage review |
+| `MXL-JOURNAL-REMINDERS-001` | product/backend | needs-owner + backend-dependent | Quiet hours, consent, scheduler contract |
+
+Прочие historically completed / closed (MXL-001…, practice-flow #513 via #520, catalog v2) — в [`TASKS.md`](../TASKS.md) / archive, не здесь.
 
 ## Автономная очередь
 
