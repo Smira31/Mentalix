@@ -160,16 +160,16 @@
 
 .mx-practice-flow--journal .journal-flow__writing .practice-writing-canvas__question {
   position: relative;
-  top: calc(-52px + max(0px, var(--app-safe-top, env(safe-area-inset-top, 0px))));
+  top: 0;
   max-width: 20rem;
-  margin-top: clamp(0px, 1dvh, 8px);
+  margin-top: 8px;
   font-size: clamp(2rem, 8.6vw, 2.75rem);
   line-height: 1.05;
 }
 
 .mx-practice-flow--journal .journal-flow__writing .practice-writing-canvas__description {
   position: relative;
-  top: calc(-52px + max(0px, var(--app-safe-top, env(safe-area-inset-top, 0px))));
+  top: 0;
   max-width: 34ch;
   margin-top: 4px;
   padding-left: 0;
@@ -181,7 +181,7 @@
 
 .mx-practice-flow--journal .journal-flow__writing .practice-writing-canvas__field {
   position: relative;
-  top: -52px;
+  top: 0;
   min-height: 0;
   margin-top: 6px;
   padding-bottom: 104px;
@@ -193,6 +193,11 @@
   box-shadow: none;
   appearance: none;
   -webkit-appearance: none;
+}
+
+.mx-practice-flow--journal .journal-flow__writing .practice-writing-canvas__field::placeholder {
+  color: rgb(var(--c-muted) / 0.78);
+  opacity: 1;
 }
 
 .mx-practice-flow--journal .journal-flow__writing .practice-writing-canvas__field:focus,
@@ -315,7 +320,7 @@
     padding-top: 20px;
   }
   .mx-practice-flow--journal .journal-flow__writing .practice-writing-canvas__question {
-    margin-top: 8px;
+    margin-top: 4px;
   }
   .mx-practice-flow--journal .journal-flow__completion-art {
     min-height: 110px;
