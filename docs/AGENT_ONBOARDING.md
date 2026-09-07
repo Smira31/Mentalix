@@ -18,11 +18,27 @@
 
 `README.md` даёт карту репозитория, а `AGENTS.md` содержит обязательные operational rules. Ни один исторический документ не переопределяет код, явную команду владельца или актуальный нормативный документ.
 
-## 2. Правило начала работы
+## 2. BEFORE STARTING PRODUCT WORK (обязательный pre-flight)
 
-Перед изменениями проверьте текущий branch и рабочее дерево. Не удаляйте и не перезаписывайте незакоммиченные изменения другого агента. Если задача затрагивает backend, database, secrets, auth, privacy, payments или deployment, сначала остановитесь на frontend-границе и запросите подтверждённый contract из приватного `mentalix-bot/main`.
+Перед **любой** product work агент обязан:
 
-### Канонический маршрут задачи
+1. Прочитать `PROJECT_STATE.md` и `docs/TASK_INDEX.md`.
+2. Проверить open PRs на GitHub.
+3. Определить **одну** текущую Issue из канонической очереди `TASK_INDEX`.
+4. Если для неё уже есть active branch/PR — **продолжать его**, не создавать новый.
+5. Не начинать следующую Issue, пока текущая не merged или явно parked владельцем.
+6. Не создавать duplicate Issue / branch / PR.
+7. Явно ответить себе: «Это действительно следующий шаг к готовому Mentalix?»
+
+Если pre-flight не пройден — работа не начинается.
+
+### Канонический flow
+
+```text
+Issue → one branch → one PR → exact QA candidate →
+mentalix-preview (promote exact deployment) → owner PASS →
+merge → delete branch → next Issue
+```
 
 Рабочим источником активных задач является связка [`docs/TASK_INDEX.md`](TASK_INDEX.md) + GitHub Issues/PR. Перед началом агент должен найти существующую Issue по теме или task ID, прочитать её описание, комментарии и связанные PR, затем проверить код текущего `main`. Если подходящая Issue уже существует, агент продолжает её, а не создаёт новую. Если задача относится к нескольким направлениям, выбирается одна ведущая Issue, а остальные связываются ссылками или чек-листом.
 
@@ -40,7 +56,22 @@
 
 Сформулируйте в PR четыре вещи: цель, список изменяемых файлов, что намеренно не меняется и какие проверки являются достаточными. Не объединяйте рефакторинг, продуктовую гипотезу и визуальный эксперимент в один неописанный diff.
 
-## 3. Как выбирать источник истины
+## 3. BEFORE MOVING TO NEXT ISSUE (completion gate)
+
+Переход к следующей Issue из `TASK_INDEX` разрешён **только** когда:
+
+- CI green на candidate PR перед merge;
+- exact QA candidate определён (SHA + deployment в `mentalix-preview`), если для задачи требуется manual QA;
+- manual QA владельца пройден, если требуется (Telegram/iPhone / `web_app`);
+- PR merged в `main`;
+- Issue closed/completed;
+- feature branch удалена;
+- `TASK_INDEX` указывает на правильную следующую задачу;
+- нет duplicate open PR в этой же product area.
+
+Пока gate не закрыт — следующая Issue не стартует.
+
+## 4. Как выбирать источник истины
 
 | Вопрос                                | Источник                                        |
 | ------------------------------------- | ----------------------------------------------- |
@@ -52,7 +83,9 @@
 
 Если источники расходятся, не выбирайте молча. Зафиксируйте расхождение в PR и решите, нужен ли owner decision или достаточно обновить stale documentation.
 
-## 4. Handoff между агентами
+## 5. Handoff между агентами
+
+Если у агента закончились лимиты или работа передаётся другому агенту, **новый агент сначала** находит текущие Issue / PR / branch / head SHA и **продолжает их**. Он не получает задачу «как новую» и не создаёт новую ветку/PR без необходимости.
 
 Следующий агент должен получить ссылку на GitHub Issue и PR или commit, изменённые файлы, команды проверок и их результат, открытые риски, необходимый ручной gate и точный следующий шаг. Handoff записывается в существующую Issue или PR, а не в отдельный локальный файл агента. Статус «готово» нельзя использовать, если не выполнен обязательный CI или Telegram/iPhone gate.
 
@@ -70,7 +103,7 @@ PR/commit: ...
 
 Для Codex и Claude Code одинаково обязательны: `npm run check:core` для базового изменения, `npm run ux:check` для UI/platform-sensitive изменения и ручная проверка Telegram/iPhone для safe-area, keyboard, fullscreen или Telegram behavior. После merge `PROJECT_STATE.md` обновляется только для проверяемого release/deployment факта; активные задачи не записываются в исторические `TASKS.md` и `CHANGES.md`.
 
-## 5. Product and Preview boundaries
+## 6. Product and Preview boundaries
 
 Card Lab, Motion Kit и другие UI-lab поверхности являются Preview-only, пока владелец отдельно не подтвердил production scope. Preview отправляется через GitHub Actions workflow `Telegram Preview`; локальный PowerShell сценарий — только fallback для Windows. Не отправляйте токены, raw `initData`, персональные данные или production URLs with credentials в PR, issue, chat или commit.
 
@@ -89,6 +122,6 @@ Card Lab, Motion Kit и другие UI-lab поверхности являют�
 - Без Vercel API/token workflow не может автоматически доказать alias→SHA. Поэтому перед workflow dispatch обязательны promote exact deployment и Vercel-side provenance verification; workflow fail-closed через `provenance_verified=true` и не использует GitHub Deployments как доказательство.
 - Health check и Telegram button используют canonical host.
 
-## 6. Финальный чек-лист PR
+## 7. Финальный чек-лист PR
 
 Перед merge агент должен проверить, что diff минимален и понятен, нет conflict markers, локальные Markdown-ссылки и task IDs проходят `npm run docs:check`, `npm run check:core` зелёный, а для UI выполнен `npm run ux:check`. В PR должны быть указаны ограничения, не покрытые автоматикой, и следующий ручной gate, если он нужен.
