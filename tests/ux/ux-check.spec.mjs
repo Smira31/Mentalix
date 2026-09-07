@@ -556,6 +556,10 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Начать' }))
       },
     })
+    await page.getByRole('button', { name: 'Разобраться в ситуации' }).click()
+    await expect(page.getByRole('heading', { name: 'Когда непонятно, что делать' })).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByText('Разложи день на четыре спокойных шага')).toBeVisible()
     await page.getByRole('button', { name: 'Начать' }).click()
     await captureScreen({
       page,
@@ -580,6 +584,11 @@ test('локальный UX smoke по основному маршруту', asy
     const ideaEditor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
     await ideaEditor.fill('Сегодня я замечаю главное')
     await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeEnabled()
+    await page.getByRole('button', { name: 'Сохранить и продолжить' }).click()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })).toHaveValue(
+      'Сегодня я замечаю главное'
+    )
     await page.getByRole('button', { name: 'Сохранить и продолжить' }).click()
     for (const [label, text] of journalSteps) {
       const editor = page.getByRole('textbox', { name: label })
@@ -611,6 +620,10 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Открыть запись' }).click()
     const reopenedEditor = page.getByRole('textbox', { name: 'Новый шаг: Что я возьму с собой дальше?' })
     await expect(reopenedEditor).toHaveText('Продолжить завтра')
+    for (let index = 0; index < 4; index += 1) {
+      await page.getByRole('button', { name: 'Назад' }).click()
+    }
+    await expect(page.getByRole('heading', { name: 'Сегодняшняя запись сохранена' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 

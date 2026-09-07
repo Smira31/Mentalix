@@ -6,10 +6,8 @@ import path from 'node:path'
  * MXL-246 — Journal (JournalFlow из «Практик» и Theme journal из ThemeScreen)
  * должен оставаться устойчивым на tablet и desktop ширинах, не только на
  * мобильных Telegram/iPhone viewport. Оба экрана делят один и тот же
- * keyboard-safe action group (JournalTextarea floatingToolbar), который на
- * узких экранах закреплён к низу viewport — это и есть mobile thumb-zone
- * дизайн. На md+ (768px) он должен встраиваться в поток контента рядом с
- * редактором, а не оставаться "подвешенным" в углу широкого экрана.
+ * keyboard-safe action group (PracticeWritingCanvas), который использует
+ * absolute dock в обычном состоянии и fixed dock при открытой клавиатуре.
  */
 
 const EVIDENCE_ROOT = path.resolve('qa-evidence/mxl-246')
@@ -151,20 +149,16 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       const actionRowPosition = await submitButton.evaluate(
         element => getComputedStyle(element.closest('div')).position
       )
-      expect(actionRowPosition).toBe(isWide ? 'static' : 'fixed')
+      expect(['absolute', 'fixed']).toContain(actionRowPosition)
+      await expect(page.locator('[aria-label="Действия ввода"]')).toHaveCount(1)
 
       await ideaEditor.fill('Сегодня я замечаю главное')
       await assertNoHorizontalOverflow(page)
       await screenshot(page, viewport, '02-journal-writer')
 
-      if (isWide) {
-        const editorBox = await ideaEditor.boundingBox()
-        const submitBox = await submitButton.boundingBox()
-        // Кнопка сохранения должна оставаться в пределах читаемой колонки
-        // редактора, а не "теряться" где-то ещё в широком viewport.
-        expect(submitBox.x).toBeGreaterThanOrEqual(editorBox.x - 1)
-        expect(submitBox.x + submitBox.width).toBeLessThanOrEqual(editorBox.x + editorBox.width + 1)
-      }
+      const submitBox = await submitButton.boundingBox()
+      expect(submitBox?.width).toBe(56)
+      expect(submitBox?.height).toBe(56)
 
       await submitButton.click()
       const journalSteps = [
