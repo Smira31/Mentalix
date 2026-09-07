@@ -49,10 +49,13 @@ test('JournalFlow visual contract mirrors GSD geometry without changing GSD', ()
   assert.match(css, /width: 56px/)
   const writingRoot = css.match(/\.journal-flow__writing \{([\s\S]*?)\n\}/)?.[1] || ''
   assert.doesNotMatch(writingRoot, /transform:\s*translateY\(-52px\)/)
-  assert.equal(
-    (css.match(/practice-writing-canvas__(?:question|description|field) \{[\s\S]*?position: relative;[\s\S]*?top: -52px;/g) || []).length,
-    3
-  )
+  for (const anchor of ['question', 'description', 'field']) {
+    assert.match(
+      css,
+      new RegExp(`practice-writing-canvas__${anchor} \\{[\\s\\S]*?position: relative;[\\s\\S]*?top:`)
+    )
+  }
+  assert.match(css, /practice-writing-canvas__field \{[\s\S]*?top: -52px/)
   assert.match(css, /max-width: 20rem/)
   assert.match(css, /font-size: clamp\(2rem, 8\.6vw, 2\.75rem\)/)
   assert.match(css, /scroll-padding-bottom: 104px/)
@@ -60,6 +63,10 @@ test('JournalFlow visual contract mirrors GSD geometry without changing GSD', ()
   assert.match(css, /appearance: none;/)
   assert.match(css, /-webkit-appearance: none;/)
   assert.match(css, /journal-flow__topbar[\s\S]*justify-content: flex-end/)
+  assert.match(css, /journal-flow__intro-copy \{[\s\S]*top: -72px/)
+  assert.match(css, /practice-writing-canvas__question \{[\s\S]*safe-area-inset-top/)
+  assert.match(css, /practice-writing-canvas__description \{[\s\S]*safe-area-inset-top/)
+  assert.match(css, /journal-flow__completion-actions \{[\s\S]*top: -24px/)
 })
 
 test('JournalFlow keeps Self-Discovery secondary and outside the lower primary CTA zone', () => {
