@@ -109,6 +109,11 @@ function JournalIntro({
           <p className="journal-flow__intro-note">
             Ответы остаются на этом устройстве. Можно остановиться в любой момент.
           </p>
+          {onOpenGuided && (
+            <button type="button" onClick={onOpenGuided} className="journal-flow__guided-action">
+              Разобраться в ситуации →
+            </button>
+          )}
         </div>
         {legacyVisible && (
           <div className="journal-flow__legacy" role="status">
@@ -139,11 +144,6 @@ function JournalIntro({
             {complete ? 'Открыть запись' : continuing ? 'Продолжить' : 'Начать'}
           </button>
         </div>
-        {onOpenGuided && (
-          <button type="button" onClick={onOpenGuided} className="journal-flow__guided-action">
-            Разобраться в ситуации →
-          </button>
-        )}
       </main>
     </>
   )
