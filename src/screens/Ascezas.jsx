@@ -259,14 +259,10 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete, onRestore }) {
 
   return (
     <div
-      className={`practice-motion-card practice-detail-card relative rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col ${
+      className={`practice-motion-card practice-detail-card mx-ascezas-contract-card relative rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col ${
         celebrate ? 'animate-glow-pulse' : ''
       } ${
-        status === 'held'
-          ? 'bg-gold/10 border-gold/30'
-          : status === 'broke'
-            ? 'bg-emerald-light/40 border-cream/12'
-            : 'bg-emerald border-cream/12'
+        status === 'broke' ? 'bg-emerald-light/40 border-cream/12' : 'bg-emerald border-cream/12'
       }`}
     >
       {/* серия — вверху, там её ищут глазами первой */}
@@ -310,21 +306,21 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete, onRestore }) {
        * снаружи тот же материал в беспорядке.
        */}
       <div
-        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] mx-practice-detail-art ${
+        className={`-mx-5 shrink-0 min-h-0 mt-3 bg-artbed border-0 mx-practice-detail-art mx-ascezas-contract-art ${
           status === 'held' ? 'opacity-100' : 'opacity-70'
         }`}
       >
         <SemanticGlyph kind={semanticKindForAsceza(asceza)} className="w-full h-full" />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 mx-ascezas-contract-title">
         <div className="font-display text-[18px] text-cream leading-tight">{asceza.name}</div>
 
         <div className="text-[10px] text-muted mb-3">{meta.label}</div>
 
         {asceza.reason && <p className="text-[11px] text-muted mb-2">{asceza.reason}</p>}
 
-        <div className="flex gap-2 mt-3">
+        <div className="flex gap-2 mt-3 mx-ascezas-contract-actions">
           <button
             onClick={handleHeld}
             className={`practice-scene__choice flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 ${
@@ -630,14 +626,14 @@ export default function Ascezas({ user, onBack }) {
 
   return (
     <>
-      <div className="w-full max-w-md px-5 animate-fade-in">
-        <div className="flex items-center gap-3 mb-3">
+      <div className="w-full max-w-md px-5 animate-fade-in mx-ascezas-screen flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="flex items-center gap-3 mb-3 mx-ascezas-screen__header">
           <BackButton onClick={onBack} />
 
           <h2 className="font-display text-[20px] text-cream lowercase">аскезы.</h2>
         </div>
 
-        <p className="text-[12px] text-muted mb-5 px-1">
+        <p className="text-[12px] text-muted mb-5 px-1 mx-ascezas-screen__summary">
           {total > 0 ? `${heldToday} из ${total} удержано сегодня` : 'от чего ты отказываешься'}
         </p>
 
@@ -676,7 +672,7 @@ export default function Ascezas({ user, onBack }) {
             <div
               ref={trackRef}
               onScroll={syncActive}
-              className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden"
+              className="mx-ascezas-screen__carousel flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
               style={{ scrollbarWidth: 'none' }}
             >
               {ascezas.map(asceza => (
