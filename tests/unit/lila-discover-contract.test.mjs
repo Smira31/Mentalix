@@ -5,18 +5,28 @@ import { readFileSync } from 'node:fs'
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../../src/data/lilaDiscoverCards.js'
 import { normalizeHistory } from '../../src/lib/mentalixHistoryUtils.js'
 
-const flow = readFileSync(new URL('../../src/screens/LilaDiscoverFlow.jsx', import.meta.url), 'utf8')
+const flow = readFileSync(
+  new URL('../../src/screens/LilaDiscoverFlow.jsx', import.meta.url),
+  'utf8'
+)
 const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
 const conversation = readFileSync(
   new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
   'utf8'
 )
-const personas = readFileSync(new URL('../../src/screens/mentalix/personas.js', import.meta.url), 'utf8')
+const personas = readFileSync(
+  new URL('../../src/screens/mentalix/personas.js', import.meta.url),
+  'utf8'
+)
 const presentation = readFileSync(
   new URL('../../src/lib/journalPresentation.js', import.meta.url),
   'utf8'
 )
 const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
+const lilaCss = readFileSync(
+  new URL('../../src/screens/LilaDiscoverFlow.css', import.meta.url),
+  'utf8'
+)
 
 function between(source, start, end) {
   const startIndex = source.indexOf(start)
@@ -61,17 +71,14 @@ test('MXL-LILA-UX-001 renders dialog after theme selection with local Lila metad
   assert.match(dialogBranch, /<ConversationChat/)
   assert.match(dialogBranch, /persona="lila"/)
   assert.match(dialogBranch, /conversationMeta=\{LILA_CONVERSATION_META\}/)
-  assert.match(dialogBranch, /initialPrompt=\{dialogStarted \? null : internalPrompt\}/)
-  assert.match(dialogBranch, /initialDisplayText=\{query\}/)
   assert.match(dialogBranch, /contextSlot=/)
 })
 
-test('MXL-LILA-UX-001 keeps the enriched prompt separate from the visible query bubble', () => {
+test('MXL-LILA-UX-001 keeps query and theme as compact context without auto-sending', () => {
   const dialogBranch = between(flow, "if (stage === 'dialog' && card)", 'return <Completion')
-  assert.match(dialogBranch, /Исходный запрос пользователя: \$\{query\}/)
-  assert.match(dialogBranch, /Выбранная тема: \$\{card\.topic\}/)
-  assert.match(dialogBranch, /Символический контекст карты/)
-  assert.match(dialogBranch, /initialDisplayText=\{query\}/)
+  assert.match(dialogBranch, /contextSlot=\{<ContextSlot card=\{card\} query=\{query\} \/>\}/)
+  assert.match(dialogBranch, /initialPrompt=\{null\}/)
+  assert.doesNotMatch(dialogBranch, /internalPrompt/)
 
   assert.match(mentalix, /initialPrompt, initialDisplayText/)
   assert.match(mentalix, /send\(initialPrompt, initialDisplayText \|\| initialPrompt\)/)
@@ -101,10 +108,9 @@ test('MXL-LILA-UX-002 normalizes object message content before rendering', () =>
   assert.doesNotMatch(conversation, /String\(message\.content\)/)
 })
 
-test('MXL-LILA-UX-002 keeps initial query visible without resending after back/re-enter', () => {
-  assert.match(flow, /const \[dialogStarted, setDialogStarted\] = useState\(false\)/)
-  assert.match(flow, /initialPrompt=\{dialogStarted \? null : internalPrompt\}/)
-  assert.match(flow, /setDialogStarted\(true\)/)
+test('MXL-LILA-UX-002 keeps history visible without initialPrompt on back/re-enter', () => {
+  assert.doesNotMatch(flow, /dialogStarted/)
+  assert.match(flow, /initialPrompt=\{null\}/)
   assert.doesNotMatch(flow, /hideHistory/)
   assert.match(mentalix, /if \(!cancelled\) setMessages\(combined\)/)
   assert.match(mentalix, /send\(initialPrompt, initialDisplayText \|\| initialPrompt\)/)
@@ -128,7 +134,10 @@ test('MXL-LILA-UX-003 normalizes repeated history records without changing order
     { role: 'user', content: 'Запрос', created_at: '2026-09-08T10:01:00Z' },
   ]
   assert.deepEqual(normalizeHistory(history), [history[0], history[2], history[4]])
-  assert.match(readFileSync(new URL('../../src/lib/mentalixHistoryCache.js', import.meta.url), 'utf8'), /inFlight/)
+  assert.match(
+    readFileSync(new URL('../../src/lib/mentalixHistoryCache.js', import.meta.url), 'utf8'),
+    /inFlight/
+  )
 })
 
 test('MXL-LILA-UX-004 keeps retry inline, reuses request text, and suppresses duplicate user bubble', () => {
@@ -146,4 +155,22 @@ test('MXL-LILA-UX-005 routes completion to Journal and back to the canonical pra
   assert.match(practices, /if \(sub === 'lila-discover'\)/)
   assert.match(practices, /onOpenJournal=\{\(\) => setSub\('journal'\)\}/)
   assert.match(practices, /<PracticeCatalogV2/)
+})
+
+test('MXL-LILA-UX-006 uses the native Telegram BackButton without a duplicate Lila DOM back control', () => {
+  assert.match(flow, /import BackButton from ['"]\.\.\/components\/BackButton['"]/)
+  assert.match(flow, /<BackButton onClick=\{onBack\}/)
+  assert.match(flow, /<StageShell title="Лила" onBack=\{goBack\}>/)
+  assert.doesNotMatch(flow, /<button[\s\S]*>\s*Назад\s*<\/button>/)
+  assert.match(lilaCss, /height: 100dvh/)
+  assert.match(lilaCss, /max-height: 100dvh/)
+  assert.match(lilaCss, /box-sizing: border-box/)
+  assert.match(lilaCss, /min-height: 0/)
+})
+
+test('MXL-LILA-UX-007 keeps query input on Mentalix tokens and removes azure focus ring', () => {
+  assert.match(lilaCss, /font-size: var\(--mx-type-control-size\)/)
+  assert.match(lilaCss, /caret-color: rgb\(var\(--c-gold\) \/ 0\.35\)/)
+  assert.match(lilaCss, /practice-writing-canvas__field:focus-visible[\s\S]*outline: 0/)
+  assert.doesNotMatch(lilaCss, /font-size: 1rem/)
 })

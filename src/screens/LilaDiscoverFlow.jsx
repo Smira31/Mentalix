@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import BackButton from '../components/BackButton'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import { platform } from '../platform'
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../data/lilaDiscoverCards'
@@ -35,20 +36,13 @@ function ChoiceButton({ active, children, onClick }) {
 
 function StageShell({ children, title, onBack }) {
   return (
-    <div className="mx-lila-stage mx-screen-shell mx-auto flex h-[100dvh] min-h-0 w-full max-w-md flex-col px-5 pb-[max(24px,var(--app-safe-bottom,env(safe-area-inset-bottom,0px)))] pt-[max(12px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
-      <div className="mx-lila-header grid min-h-[42px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Назад"
-          className="min-h-11 justify-self-start px-2 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          Назад
-        </button>
+    <div className="mx-lila-stage mx-screen-shell mx-auto flex h-full min-h-0 w-full max-w-md flex-col px-5">
+      <div className="mx-lila-header grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
+        <BackButton onClick={onBack} className="justify-self-start" />
         <span className="mx-type-section text-cream">{title}</span>
         <span aria-hidden="true" />
       </div>
-      {children}
+      <div className="mx-lila-stage-content flex min-h-0 flex-1 flex-col pt-3">{children}</div>
     </div>
   )
 }
@@ -147,7 +141,6 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
   const [query, setQuery] = useState('')
   const [cardId, setCardId] = useState(null)
   const [selectedCardId, setSelectedCardId] = useState(null)
-  const [dialogStarted, setDialogStarted] = useState(false)
   const [topicProfile, setTopicProfile] = useSynced(LILA_TOPIC_PROFILE_KEY, {})
   const card = useMemo(() => findLilaCard(cardId), [cardId])
 
@@ -187,7 +180,6 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
     } else if (stage === 'theme') {
       setStage('query')
     } else if (stage === 'dialog') {
-      setDialogStarted(true)
       setStage('theme')
     } else {
       onBack()
@@ -199,16 +191,7 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
 
   if (stage === 'query') {
     return (
-      <div className="mx-lila-stage mx-screen-shell mx-auto flex h-[100dvh] min-h-0 w-full max-w-md flex-col pt-[max(12px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
-        <div className="mx-lila-query-header shrink-0 px-5">
-          <button
-            type="button"
-            onClick={goBack}
-            className="min-h-11 px-2 text-[13px] font-semibold text-muted active:text-gold"
-          >
-            Назад
-          </button>
-        </div>
+      <StageShell title="Лила" onBack={goBack}>
         <PracticeWritingCanvas
           question="Что сейчас хочешь разобрать?"
           description="Опиши ситуацию своими словами. Достаточно нескольких предложений — без правильной формулировки."
@@ -222,7 +205,7 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
           onSubmit={continueToTheme}
           className="mx-lila-query-canvas min-h-0 flex-1"
         />
-      </div>
+      </StageShell>
     )
   }
 
@@ -238,21 +221,12 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
   }
 
   if (stage === 'dialog' && card) {
-    const internalPrompt = [
-      'Начни бережный многотуровый разговор с пользователем.',
-      `Исходный запрос пользователя: ${query}`,
-      `Выбранная тема: ${card.topic}.`,
-      `Символический контекст карты: ${card.title} — ${card.dilemma}`,
-      'Ответь первым коротким сообщением: отрази запрос, задай один открытый вопрос и не ставь диагнозов.',
-    ].join(' ')
-
     return (
       <ConversationChat
         user={{ id: userId }}
         persona="lila"
         conversationMeta={LILA_CONVERSATION_META}
-        initialPrompt={dialogStarted ? null : internalPrompt}
-        initialDisplayText={query}
+        initialPrompt={null}
         contextSlot={<ContextSlot card={card} query={query} />}
         footerSlot={
           <div className="shrink-0 px-4 pb-2 pt-2">
