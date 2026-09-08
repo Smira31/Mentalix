@@ -68,10 +68,12 @@ Quick Tunnel — только быстрый визуальный просмот
 ## Vercel: закреплённое разделение проектов
 
 - `mentalix`: Git Integration автоматически собирает только production `main`;
-  feature-branch Preview в этом проекте пропускаются через Ignored Build Step.
-- `mentalix-preview`: автоматические Git deployments отключены. Один готовый
-  кандидат разворачивается явно из точного worktree/SHA и получает канонический
-  alias `https://mentalix-preview.vercel.app`.
+  `git.deploymentEnabled` в `vercel.json` не создаёт deployments для остальных
+  веток. Ignored Build Step остаётся дополнительной защитой, а не основным
+  способом экономии квоты.
+- `mentalix-preview`: Git-репозиторий отключён от проекта. Один готовый кандидат
+  разворачивается явно через Vercel CLI из точного worktree/SHA и получает
+  канонический alias `https://mentalix-preview.vercel.app`.
 - deploy-hook `auto-retry-quota-reset` — аварийный механизм после исчерпания
   квоты, а не обязательный второй deployment после каждого merge. Если Git
   Integration уже успешно собрала `main`, hook не вызывается.
@@ -139,9 +141,10 @@ Workflow принимает `vercel.deployment.success`, но job для это�
 
 Значения вводятся непосредственно в GitHub и после сохранения больше не отображаются. **Не присылайте токены в issue, PR, чат или commit и не добавляйте их в `.env`-файлы, которые могут попасть в Git.**
 
-Проект `mentalix-preview` связан с репозиторием для provenance, но автоматические
-Git deployments отключены для экономии квоты. Готовый exact-SHA QA deployment
-создаётся один раз явной командой Vercel, после чего GitHub хранит только
+Проект `mentalix-preview` отключён от Git Integration для экономии квоты. Готовый
+exact-SHA QA deployment создаётся один раз явной командой Vercel из проверенного
+worktree. Provenance подтверждается после deployment через Vercel metadata и
+сопоставление с локальным `git rev-parse HEAD`; GitHub хранит только
 Telegram-секреты, перечисленные выше.
 
 ## Основной ежедневный сценарий
