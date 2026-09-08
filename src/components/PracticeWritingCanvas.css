@@ -166,10 +166,18 @@
   color: var(--pwc-bg);
   font-size: 30px;
 }
+.practice-writing-canvas__submit svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
+}
 .practice-writing-canvas__submit:disabled {
-  border-color: var(--pwc-muted);
-  background: transparent;
-  color: var(--pwc-muted);
+  opacity: 0.42;
 }
 @media (max-width: 350px) {
   .practice-writing-canvas {
