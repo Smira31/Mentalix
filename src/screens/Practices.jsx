@@ -9,6 +9,7 @@ import { localDayId } from '../lib/morningPilot'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
+import BackButton from '../components/BackButton'
 
 import './PracticeFlow.css'
 
@@ -202,7 +203,13 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   if (sub === 'focus') {
     return (
       <div className="w-full flex flex-col items-center">
-        <SubHeader title="фокус." onBack={() => setSub(null)} />
+        {/* MXL-PRACTICES-FOCUS-CRASH: SubHeader был удалён при переводе
+            на PracticeCatalogV2 (dfa6c0e8) — здесь использовался
+            несуществующий компонент и «Фокус» падал с ReferenceError.
+            Возврат — через общий BackButton (Telegram: системная кнопка). */}
+        <div className="w-full max-w-md px-5 flex items-start">
+          <BackButton onClick={() => setSub(null)} label="Назад" />
+        </div>
 
         <Focus user={user} />
       </div>
