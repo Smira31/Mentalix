@@ -132,7 +132,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       const { context, page } = await newFixturePage(browser, baseURL, viewport)
 
       await page.goto('/')
-      await page.getByRole('button', { name: 'Практики' }).click()
+      await page.getByRole('button', { name: 'Шаги' }).click()
       await page.getByRole('button', { name: 'Журнал' }).click()
       await expect(page.getByText('Когда непонятно, что делать')).toBeVisible()
       await expect(page.getByText('Разложи день на четыре спокойных шага')).toHaveCount(0)
@@ -198,7 +198,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       await expect(dayEditor).toBeVisible()
       await assertNoHorizontalOverflow(page)
       await expect(page.getByLabel('Дни журнала')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Наставник' })).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Диалог' })).toBeVisible()
       await screenshot(page, viewport, '04-theme-journal-day')
 
       const submitButton = page.getByRole('button', { name: /Сохранить мысль|Обновить мысль/ })
