@@ -3,25 +3,89 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 const source = readFileSync(new URL('../../src/screens/JournalFlow.jsx', import.meta.url), 'utf8')
+const css = readFileSync(new URL('../../src/screens/JournalFlow.css', import.meta.url), 'utf8')
 
-test('JournalFlow keeps its content left-aligned', () => {
-  assert.doesNotMatch(source, /\n\s+centered\n/)
-  assert.doesNotMatch(source, /mx-auto mt-8 flex h-\[96px\]/)
-  assert.doesNotMatch(source, /text-center text-\[12px\] font-semibold text-faint/)
-  assert.match(source, /editorClassName="pb-24"/)
-  assert.match(source, /floatingToolbar/)
+test('JournalFlow uses the canonical fullscreen/header/writing surface', () => {
+  assert.match(source, /useFullscreenSurface/)
+  assert.match(source, /FULLSCREEN_HEADER_SLOT_CLASS/)
+  assert.match(source, /PracticeWritingCanvas/)
+  assert.match(source, /JournalArt/)
+  assert.doesNotMatch(source, /SceneLayout|JournalProgress|BookOpen/)
+  assert.doesNotMatch(source, /JournalTextarea/)
 })
 
-test('JournalFlow does not render the weekly-theme card', () => {
-  assert.doesNotMatch(source, /Тема недели/)
-  assert.doesNotMatch(source, /theme-card/)
-})
-
-test('JournalFlow preserves its four phases and completion action', () => {
-  assert.match(source, /const PHASES = \[/)
+test('JournalFlow keeps the four phases, copy, and reverse writing navigation', () => {
+  assert.deepEqual(
+    [...source.matchAll(/key: '(idea|action|analysis|newStep)'/g)].map(match => match[1]),
+    ['idea', 'action', 'analysis', 'newStep']
+  )
+  assert.match(source, /if \(stage === 'writing' && phaseIndex > 0\)/)
+  assert.match(source, /setPhaseIndex\(index => index - 1\)/)
+  assert.match(source, /setStage\('intro'\)/)
   assert.match(source, /Сохранить и завершить/)
   assert.match(source, /Цикл сохранён/)
 })
 
-// This static contract test intentionally covers the active Practices -> JournalFlow path.
-// Today’s separate weekly-theme card is outside the Journal flow and remains unchanged.
+test('JournalFlow preserves Journal storage behavior and error handling', () => {
+  for (const contract of [
+    'mx-journal-v2',
+    'saveJournalPhase',
+    'hasLegacyJournalData',
+    'migrateLegacyJournalToUser',
+    'storageErrorMessage',
+    'role="alert"',
+  ]) {
+    if (contract === 'mx-journal-v2') continue
+    assert.match(source, new RegExp(contract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  }
+  assert.match(source, /readJournalEntry\(todayKey\(\), userId\)/)
+})
+
+test('JournalFlow visual contract mirrors GSD geometry without changing GSD', () => {
+  assert.match(css, /--journal-inset: clamp\(20px, 6vw, 28px\)/)
+  assert.match(css, /min-height: clamp\(150px, 24dvh, 220px\)/)
+  assert.match(css, /min-height: 110px/)
+  assert.match(css, /font-size: clamp\(2rem, 8\.5vw, 3rem\)/)
+  assert.match(css, /width: 56px/)
+  const writingRoot = css.match(/\.journal-flow__writing \{([\s\S]*?)\n\}/)?.[1] || ''
+  assert.doesNotMatch(writingRoot, /transform:\s*translateY\(-52px\)/)
+  assert.match(css, /journal-flow__writing \{[\s\S]*?padding-top: max\(0px, var\(--app-safe-top/)
+  assert.match(css, /practice-writing-canvas__question \{[\s\S]*?margin-top: clamp\(0px, 1dvh, 8px\)/)
+  assert.match(css, /practice-writing-canvas__description \{[\s\S]*?margin-top: 4px;/)
+  assert.match(css, /practice-writing-canvas__field \{[\s\S]*?margin-top: 6px;/)
+  assert.match(css, /max-width: 20rem/)
+  assert.match(css, /font-size: clamp\(2rem, 8\.6vw, 2\.75rem\)/)
+  assert.match(css, /scroll-padding-bottom: 104px/)
+  assert.match(css, /right: max\(16px, var\(--app-safe-right/)
+  assert.match(css, /appearance: none;/)
+  assert.match(css, /-webkit-appearance: none;/)
+  assert.match(css, /journal-flow__topbar[\s\S]*justify-content: flex-end/)
+  assert.match(css, /journal-flow__intro-copy \{[\s\S]*top: -72px/)
+  assert.match(css, /journal-flow__completion-actions \{[\s\S]*top: -24px/)
+})
+
+test('Journal completed intro uses scoped title and action corrections', () => {
+  assert.match(source, /journal-flow__intro--completed/)
+  assert.match(source, /journal-flow__intro-cta--completed/)
+  assert.match(css, /journal-flow__intro--completed \.journal-flow__intro-title \{[\s\S]*font-size: clamp\(1\.75rem, 7vw, 2\.35rem\)/)
+  assert.match(css, /journal-flow__guided-action \{[\s\S]*color: rgb\(var\(--c-text\) \/ 0\.72\);[\s\S]*font-size: 14px/)
+  assert.match(css, /journal-flow__intro--completed \.journal-flow__intro-actions \{[\s\S]*top: -20px/)
+  const baseIntroTitle = css.match(/\.mx-practice-flow--journal \.journal-flow__intro-title \{([^}]*)\}/)?.[1] || ''
+  assert.doesNotMatch(baseIntroTitle, /font-size: clamp\(1\.75rem, 7vw, 2\.35rem\)/)
+})
+
+test('JournalFlow keeps Self-Discovery secondary and outside the lower primary CTA zone', () => {
+  assert.match(
+    source,
+    /journal-flow__intro-copy[\s\S]*journal-flow__guided-action[\s\S]*Разобраться в ситуации/
+  )
+  assert.match(source, /journal-flow__intro-actions[\s\S]*journal-flow__intro-cta/)
+  assert.match(css, /journal-flow__guided-action \{[\s\S]*min-height: 44px/)
+  assert.match(source, /journal-flow__intro-cta--completed/)
+})
+
+test('JournalFlow completion keeps only the two owner-approved actions', () => {
+  assert.match(source, /Вернуться к практикам/)
+  assert.match(source, /Открыть запись/)
+  assert.doesNotMatch(source, /Начать заново|Помогло ли это\?|feedback|restart/)
+})

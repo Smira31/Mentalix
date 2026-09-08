@@ -19,7 +19,6 @@ import Focus from './Focus'
 import Breathing from './Breathing'
 import FirstStepFlow from './FirstStepFlow'
 import MeditationFlow from './MeditationFlow'
-import JournalFlow from './JournalFlow'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
 import ProcrastinationFlow from './ProcrastinationFlow'
@@ -145,17 +144,11 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   }
 
   if (sub === 'journal') {
-    return (
-      <JournalFlow
-        userId={user.id}
-        onClose={() => setSub(null)}
-        onOpenGuided={() => setSub('self-discovery')}
-      />
-    )
+    return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'self-discovery') {
-    return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub('journal')} />
+    return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub(null)} />
   }
 
   if (sub === 'lila-discover') {

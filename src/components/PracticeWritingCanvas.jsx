@@ -128,7 +128,9 @@ export default function PracticeWritingCanvas({
             onClick={onSubmit}
             className="practice-writing-canvas__submit"
           >
-            ✓
+            <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+              <path d="M6 4.5 12 10 6 15.5" />
+            </svg>
           </button>
         )}
       </div>

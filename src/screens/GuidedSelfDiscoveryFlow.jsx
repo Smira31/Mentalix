@@ -124,7 +124,14 @@ function Intro({ hasDraft, onClose, onStart }) {
             className="guided-self-discovery__intro-cta"
             aria-label={hasDraft ? 'Продолжить' : 'Начать'}
           >
-            {hasDraft ? 'Продолжить' : 'Начать'}
+            <svg
+              aria-hidden="true"
+              className="guided-self-discovery__chevron"
+              viewBox="0 0 20 20"
+              focusable="false"
+            >
+              <path d="M6 4.5 12 10 6 15.5" />
+            </svg>
           </button>
         </div>
       </div>

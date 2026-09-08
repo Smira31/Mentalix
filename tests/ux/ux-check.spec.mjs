@@ -552,7 +552,8 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByText('Разложи день на четыре спокойных шага')).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'Когда непонятно, что делать' })).toBeVisible()
+        await expect(page.getByText('Разложи день на четыре спокойных шага')).toHaveCount(0)
         await assertClickable(page.getByRole('button', { name: 'Начать' }))
       },
     })
@@ -565,28 +566,27 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
+        const editor = page.getByRole('textbox', { name: 'Что сейчас происходит?' })
         await expect(editor).toBeVisible()
-        await expect(editor).toHaveAttribute('placeholder', 'Начни писать...')
         await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(1)
         await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeVisible()
       },
     })
-    const journalSteps = [
-      ['Действие: Что из этого зависит от меня сегодня?', 'Сделать один спокойный шаг'],
-      ['Анализ: Что произошло и что я заметил?', 'Заметить, что изменилось'],
-      ['Новый шаг: Что я возьму с собой дальше?', 'Продолжить завтра'],
+    const guidedSteps = [
+      ['Что сейчас происходит?', 'Сегодня я замечаю главное'],
+      ['Что здесь точно известно?', 'Известно, что я могу сделать один шаг'],
+      ['Что ты предполагаешь?', 'Я предполагаю, что разговор можно начать спокойно'],
+      ['Чего ты пока не знаешь?', 'Пока не знаю, какой будет ответ'],
+      ['Что ощущается самым тяжёлым?', 'Самым тяжёлым кажется неопределённость'],
+      ['Что зависит от тебя сегодня?', 'Сегодня я могу сделать первый небольшой шаг'],
+      ['Какой маленький эксперимент попробуешь?', 'Попробую начать с короткого сообщения'],
     ]
-    const ideaEditor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
-    await ideaEditor.fill('Сегодня я замечаю главное')
-    await expect(page.getByRole('button', { name: 'Сохранить и продолжить' })).toBeEnabled()
-    await page.getByRole('button', { name: 'Сохранить и продолжить' }).click()
-    for (const [label, text] of journalSteps) {
+    for (const [index, [label, text]] of guidedSteps.entries()) {
       const editor = page.getByRole('textbox', { name: label })
       await expect(editor).toBeVisible()
       await editor.fill(text)
       await page.getByRole('button', {
-        name: label.startsWith('Новый шаг') ? 'Сохранить и завершить' : 'Сохранить и продолжить',
+        name: index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
       }).click()
     }
     await captureScreen({
@@ -597,21 +597,28 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByText('Цикл сохранён')).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Вернуться к практикам' }))
+        await expect(page.getByRole('heading', { name: 'Хорошо. Следующий шаг готов.' })).toBeVisible()
+        await assertClickable(page.getByRole('button', { name: 'Вернуться в дневник' }))
       },
     })
-    await page.getByRole('button', { name: 'Вернуться к практикам' }).click()
+    await page.getByRole('button', { name: 'Вернуться в дневник' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    const reopenedJournalEntry = page.locator('article.mx-layered-catalog__journal-hero button')
-    await reopenedJournalEntry.scrollIntoViewIfNeeded()
-    await reopenedJournalEntry.click()
-    await expect(page.getByRole('heading', { name: 'Сегодняшняя запись сохранена' })).toBeVisible()
-    await assertClickable(page.getByRole('button', { name: 'Открыть запись' }))
-    await page.getByRole('button', { name: 'Открыть запись' }).click()
-    const reopenedEditor = page.getByRole('textbox', { name: 'Новый шаг: Что я возьму с собой дальше?' })
-    await expect(reopenedEditor).toHaveText('Продолжить завтра')
+    await page.locator('article.mx-layered-catalog__journal-hero button').click()
+    await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
+    await page.getByRole('button', { name: 'Продолжить' }).click()
+    await expect(page.getByRole('textbox', { name: 'Какой маленький эксперимент попробуешь?' })).toHaveValue(
+      'Попробую начать с короткого сообщения'
+    )
     await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('textbox', { name: 'Что зависит от тебя сегодня?' })).toHaveValue(
+      'Сегодня я могу сделать первый небольшой шаг'
+    )
+    for (let index = 0; index < 6; index += 1) {
+      await page.getByRole('button', { name: 'Назад' }).click()
+    }
+    await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
     await page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Ритуалы' }).click()

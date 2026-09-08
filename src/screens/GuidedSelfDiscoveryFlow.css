@@ -16,8 +16,9 @@
 
 .mx-practice-flow--self-discovery .guided-self-discovery__hero {
   display: flex;
-  min-height: clamp(150px, 24dvh, 220px);
+  min-height: clamp(180px, 30dvh, 260px);
   align-items: flex-end;
+  justify-content: center;
   padding-top: 12px;
 }
 
@@ -36,10 +37,10 @@
 .mx-practice-flow--self-discovery .guided-self-discovery__intro-title {
   max-width: 20rem;
   margin: 0;
-  font-size: clamp(2rem, 8.5vw, 3rem);
+  font-size: clamp(1.375rem, 5.6vw, 1.75rem);
   font-weight: 600;
   letter-spacing: -0.05em;
-  line-height: 1.04;
+  line-height: 1.12;
 }
 
 .mx-practice-flow--self-discovery .guided-self-discovery__intro-description {
@@ -78,10 +79,15 @@
   font-size: 0;
 }
 
-.mx-practice-flow--self-discovery .guided-self-discovery__intro-cta::after {
-  content: '→';
-  font-size: 22px;
-  line-height: 1;
+.mx-practice-flow--self-discovery .guided-self-discovery__chevron {
+  display: block;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: rgb(var(--c-bg));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.4;
 }
 
 .mx-practice-flow--self-discovery .guided-self-discovery__writing {
@@ -95,8 +101,8 @@
   .practice-writing-canvas__question {
   max-width: 20rem;
   margin-top: clamp(0px, 1dvh, 8px);
-  font-size: clamp(2rem, 8.6vw, 2.75rem);
-  line-height: 1.05;
+  font-size: clamp(1.375rem, 5.6vw, 1.75rem);
+  line-height: 1.12;
 }
 
 .mx-practice-flow--self-discovery
@@ -121,6 +127,8 @@
   outline: 0;
   background: transparent;
   box-shadow: none;
+  font-size: 16px;
+  line-height: 1.5;
   appearance: none;
   -webkit-appearance: none;
 }
@@ -166,14 +174,6 @@
 }
 
 .mx-practice-flow--self-discovery
-  .guided-self-discovery__writing
-  .practice-writing-canvas__submit::after {
-  content: '→';
-  font-size: 22px;
-  line-height: 1;
-}
-
-.mx-practice-flow--self-discovery
   .guided-self-discovery__writing.is-keyboard-open
   .practice-writing-canvas__dock {
   right: max(16px, var(--app-safe-right, env(safe-area-inset-right, 0px)));
@@ -184,7 +184,7 @@
 
 @media (max-height: 650px) {
   .mx-practice-flow--self-discovery .guided-self-discovery__hero {
-    min-height: 110px;
+    min-height: 160px;
   }
 
   .mx-practice-flow--self-discovery .guided-self-discovery__intro-copy {
@@ -234,10 +234,10 @@
 .mx-practice-flow--self-discovery .guided-self-discovery__completion-title {
   max-width: 21rem;
   margin: 12px 0 0;
-  font-size: clamp(2rem, 8.4vw, 3rem);
+  font-size: clamp(1.375rem, 5.6vw, 1.75rem);
   font-weight: 600;
   letter-spacing: -0.05em;
-  line-height: 1.04;
+  line-height: 1.12;
 }
 
 .mx-practice-flow--self-discovery .guided-self-discovery__completion-description {
