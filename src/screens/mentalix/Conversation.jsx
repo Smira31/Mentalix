@@ -1,17 +1,7 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import {
-  ArrowRight,
-  LoaderCircle,
-  Mic,
-  Square,
-} from 'lucide-react'
+import { ArrowRight, LoaderCircle, Mic, Square } from 'lucide-react'
 
 import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
@@ -30,13 +20,12 @@ import {
   groupJournalMessages,
   isLongJournalMessage,
   journalMessageKey,
+  messageContent,
 } from '../../lib/journalPresentation'
 import './Conversation.css'
 
-
 const VOICE_HINT_KEY = 'mx-voice-hint-v1'
 const VOICE_HINT_TIMEOUT = 4500
-
 
 export default function Conversation({
   userId,
@@ -55,12 +44,9 @@ export default function Conversation({
   sendError = '',
   onRetry,
 }) {
-  const meta = personaMeta || PERSONAS.find(
-    (item) => item.key === persona,
-  ) || PERSONAS[0]
+  const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
-  const { style: surfaceStyle } =
-    useFullscreenSurface()
+  const { style: surfaceStyle } = useFullscreenSurface()
 
   const scrollRef = useRef(null)
   const previousMessageCount = useRef(0)
@@ -71,21 +57,17 @@ export default function Conversation({
   const secondsTimerRef = useRef(null)
   const sendingRef = useRef(sending)
 
-  const [voiceState, setVoiceState] =
-    useState('idle')
-  const [voiceSeconds, setVoiceSeconds] =
-    useState(0)
-  const [voiceError, setVoiceError] =
-    useState('')
-  const [expandedMessages, setExpandedMessages] =
-    useState(() => new Set())
+  const [voiceState, setVoiceState] = useState('idle')
+  const [voiceSeconds, setVoiceSeconds] = useState(0)
+  const [voiceError, setVoiceError] = useState('')
+  const [expandedMessages, setExpandedMessages] = useState(() => new Set())
   const [feedbackByMessage, setFeedbackByMessage] = useState(() => new Set())
   const [feedbackError, setFeedbackError] = useState('')
 
   const voiceSupported =
-    typeof navigator !== 'undefined'
-    && Boolean(navigator.mediaDevices?.getUserMedia)
-    && typeof MediaRecorder !== 'undefined'
+    typeof navigator !== 'undefined' &&
+    Boolean(navigator.mediaDevices?.getUserMedia) &&
+    typeof MediaRecorder !== 'undefined'
 
   useEffect(() => {
     sendingRef.current = sending
@@ -102,20 +84,17 @@ export default function Conversation({
           ? 'send'
           : 'mic'
 
-  const [voicePressed, setVoicePressed] =
-    useState(false)
+  const [voicePressed, setVoicePressed] = useState(false)
 
-  const [voiceHintSeen, setVoiceHintSeen] =
-    useSynced(VOICE_HINT_KEY, '0')
-  const [voiceHintDismissed, setVoiceHintDismissed] =
-    useState(false)
+  const [voiceHintSeen, setVoiceHintSeen] = useSynced(VOICE_HINT_KEY, '0')
+  const [voiceHintDismissed, setVoiceHintDismissed] = useState(false)
 
   const showVoiceHint =
-    voiceSupported
-    && voiceHintSeen !== '1'
-    && !voiceHintDismissed
-    && !hasText
-    && voiceState === 'idle'
+    voiceSupported &&
+    voiceHintSeen !== '1' &&
+    !voiceHintDismissed &&
+    !hasText &&
+    voiceState === 'idle'
 
   const dismissVoiceHint = useCallback(() => {
     setVoiceHintDismissed(true)
@@ -125,14 +104,10 @@ export default function Conversation({
   useEffect(() => {
     if (!showVoiceHint) return
 
-    const timer = setTimeout(
-      dismissVoiceHint,
-      VOICE_HINT_TIMEOUT,
-    )
+    const timer = setTimeout(dismissVoiceHint, VOICE_HINT_TIMEOUT)
 
     return () => clearTimeout(timer)
   }, [showVoiceHint, dismissVoiceHint])
-
 
   async function leaveFeedback(messageId, rating) {
     if (!messageId || feedbackByMessage.has(messageId)) return
@@ -145,9 +120,7 @@ export default function Conversation({
     }
   }
 
-  function scrollToEnd(
-    behavior = 'smooth',
-  ) {
+  function scrollToEnd(behavior = 'smooth') {
     const scroll = scrollRef.current
 
     if (!scroll) return
@@ -157,7 +130,6 @@ export default function Conversation({
       behavior,
     })
   }
-
 
   useEffect(() => {
     return () => {
@@ -170,12 +142,9 @@ export default function Conversation({
         recorder.stop()
       }
 
-      streamRef.current
-        ?.getTracks()
-        .forEach((track) => track.stop())
+      streamRef.current?.getTracks().forEach(track => track.stop())
     }
   }, [])
-
 
   function stopVoiceRecording() {
     const recorder = recorderRef.current
@@ -185,45 +154,34 @@ export default function Conversation({
     }
   }
 
-
   async function startVoiceRecording() {
     setVoiceError('')
 
     if (!voiceSupported) {
-      setVoiceError(
-        'Запись голоса недоступна в этой версии Telegram.',
-      )
+      setVoiceError('Запись голоса недоступна в этой версии Telegram.')
       return
     }
 
     try {
-      const stream =
-        await navigator.mediaDevices.getUserMedia({
-          audio: {
-            channelCount: 1,
-            echoCancellation: true,
-            noiseSuppression: true,
-          },
-        })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      })
 
-      const mimeType = [
-        'audio/mp4',
-        'audio/webm;codecs=opus',
-        'audio/webm',
-      ].find((type) =>
-        MediaRecorder.isTypeSupported(type),
+      const mimeType = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(type =>
+        MediaRecorder.isTypeSupported(type)
       )
 
-      const recorder = new MediaRecorder(
-        stream,
-        mimeType ? { mimeType } : undefined,
-      )
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
 
       streamRef.current = stream
       recorderRef.current = recorder
       chunksRef.current = []
 
-      recorder.ondataavailable = (event) => {
+      recorder.ondataavailable = event => {
         if (event.data.size > 0) {
           chunksRef.current.push(event.data)
         }
@@ -238,14 +196,11 @@ export default function Conversation({
         clearTimeout(stopTimerRef.current)
         clearInterval(secondsTimerRef.current)
 
-        stream.getTracks().forEach((track) => track.stop())
+        stream.getTracks().forEach(track => track.stop())
         streamRef.current = null
         recorderRef.current = null
 
-        const audio = new Blob(
-          chunksRef.current,
-          { type: recorder.mimeType || 'audio/webm' },
-        )
+        const audio = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
 
         chunksRef.current = []
 
@@ -258,8 +213,7 @@ export default function Conversation({
         setVoiceState('transcribing')
 
         try {
-          const result =
-            await api.mentalix.transcribe(userId, audio)
+          const result = await api.mentalix.transcribe(userId, audio)
 
           const transcript = String(result?.text || '').trim()
 
@@ -268,9 +222,7 @@ export default function Conversation({
           }
 
           if (sendingRef.current) {
-            setVoiceError(
-              'Не удалось отправить голосовое сообщение, дождитесь отправки текущего.',
-            )
+            setVoiceError('Не удалось отправить голосовое сообщение, дождитесь отправки текущего.')
             return
           }
 
@@ -280,17 +232,11 @@ export default function Conversation({
         } catch (error) {
           console.error(error)
           const message = String(error?.message || '')
-          const voiceCode =
-            message.match(/VOICE_[A-Z0-9_]+/)?.[0]
-          const httpStatus =
-            message.match(/failed: (\d{3})/)?.[1]
-          const diagnosticCode =
-            voiceCode
-            || (httpStatus ? `HTTP_${httpStatus}` : 'NETWORK')
+          const voiceCode = message.match(/VOICE_[A-Z0-9_]+/)?.[0]
+          const httpStatus = message.match(/failed: (\d{3})/)?.[1]
+          const diagnosticCode = voiceCode || (httpStatus ? `HTTP_${httpStatus}` : 'NETWORK')
 
-          setVoiceError(
-            `Не удалось распознать голос. Код: ${diagnosticCode}.`,
-          )
+          setVoiceError(`Не удалось распознать голос. Код: ${diagnosticCode}.`)
         } finally {
           setVoiceState('idle')
           setVoiceSeconds(0)
@@ -310,11 +256,7 @@ export default function Conversation({
       const startedAt = Date.now()
 
       secondsTimerRef.current = setInterval(() => {
-        setVoiceSeconds(
-          Math.floor(
-            (Date.now() - startedAt) / 1000,
-          ),
-        )
+        setVoiceSeconds(Math.floor((Date.now() - startedAt) / 1000))
       }, 250)
 
       stopTimerRef.current = setTimeout(() => {
@@ -322,41 +264,26 @@ export default function Conversation({
       }, 60000)
     } catch (error) {
       console.error(error)
-      setVoiceError(
-        'Разреши Mentalix доступ к микрофону и попробуй ещё раз.',
-      )
+      setVoiceError('Разреши Mentalix доступ к микрофону и попробуй ещё раз.')
       setVoiceState('idle')
     }
   }
 
-
   useEffect(() => {
     if (loading) return
 
-    const firstPosition =
-      previousMessageCount.current === 0
+    const firstPosition = previousMessageCount.current === 0
 
-    previousMessageCount.current =
-      messages.length
+    previousMessageCount.current = messages.length
 
-    const frame =
-      window.requestAnimationFrame(() => {
-        scrollToEnd(
-          firstPosition
-            ? 'auto'
-            : 'smooth',
-        )
-      })
+    const frame = window.requestAnimationFrame(() => {
+      scrollToEnd(firstPosition ? 'auto' : 'smooth')
+    })
 
     return () => {
       window.cancelAnimationFrame(frame)
     }
-  }, [
-    loading,
-    messages.length,
-    sending,
-  ])
-
+  }, [loading, messages.length, sending])
 
   return createPortal(
     <div
@@ -364,11 +291,9 @@ export default function Conversation({
       style={{
         ...surfaceStyle,
 
-        paddingBottom:
-          'max(14px, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(14px, env(safe-area-inset-bottom))',
       }}
     >
-
       {/* ── шапка ── */}
 
       <div
@@ -385,38 +310,23 @@ export default function Conversation({
         <span aria-hidden="true" />
       </div>
 
-
       {/* ── история сообщений ── */}
 
-      <div
-        ref={scrollRef}
-        className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-6`}
-      >
-
+      <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-6`}>
         {!loading && privacyControls}
 
         {!loading && contextSlot}
 
-        {loading && (
-          <p className="text-muted text-[14px] text-center pt-4">
-            Загрузка...
+        {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
+
+        {!loading && messages.length === 0 && (
+          <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">
+            {meta.desc}
+            <br />
+            <br />
+            Напиши первым — {meta.name} ответит.
           </p>
         )}
-
-
-        {!loading &&
-          messages.length === 0 && (
-            <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">
-              {meta.desc}
-
-              <br />
-              <br />
-
-              Напиши первым —{' '}
-              {meta.name} ответит.
-            </p>
-          )}
-
 
         <div className="w-full max-w-md mx-auto space-y-5">
           {groupJournalMessages(messages).map(group => (
@@ -437,7 +347,7 @@ export default function Conversation({
                   return (
                     <div key={messageKey} className="flex justify-end">
                       <div className="w-fit max-w-[82%] rounded-[24px] bg-cognac px-5 py-4 text-[16px] leading-[1.5] font-normal text-cream break-words whitespace-pre-wrap">
-                        {message.content}
+                        {messageContent(message)}
                       </div>
                     </div>
                   )
@@ -445,22 +355,38 @@ export default function Conversation({
 
                 return (
                   <div key={messageKey} className="w-full mx-msg-in">
-                    <div className="mx-ai-meta text-gold mb-2.5">
-                      {meta.name}
+                    <div className="mx-ai-meta text-gold mb-2.5">{meta.name}</div>
+
+                    <div className="mx-ai-body text-cream break-words">
+                      <MessageText content={messageContent(message)} />
                     </div>
 
-                    <div
-                      className={`mx-ai-body text-cream break-words ${isLong && !isExpanded ? 'max-h-[280px] overflow-hidden' : ''}`}
-                    >
-                      <MessageText content={message.content} />
-                    </div>
-
-                    <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-faint">Ответ создан AI</p>
+                    <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-faint">
+                      Ответ создан AI
+                    </p>
                     {message.id && (
                       <div className="mt-2 flex items-center gap-2">
-                        <button type="button" onClick={() => leaveFeedback(message.id, 'up')} disabled={feedbackByMessage.has(message.id)} className="min-h-9 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50">Полезно</button>
-                        <button type="button" onClick={() => leaveFeedback(message.id, 'down')} disabled={feedbackByMessage.has(message.id)} className="min-h-9 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50">Не полезно</button>
-                        {feedbackByMessage.has(message.id) && <span role="status" className="text-[11px] text-faint">Отметка сохранена</span>}
+                        <button
+                          type="button"
+                          onClick={() => leaveFeedback(message.id, 'up')}
+                          disabled={feedbackByMessage.has(message.id)}
+                          className="min-h-9 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
+                        >
+                          Полезно
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => leaveFeedback(message.id, 'down')}
+                          disabled={feedbackByMessage.has(message.id)}
+                          className="min-h-9 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
+                        >
+                          Не полезно
+                        </button>
+                        {feedbackByMessage.has(message.id) && (
+                          <span role="status" className="text-[11px] text-faint">
+                            Отметка сохранена
+                          </span>
+                        )}
                       </div>
                     )}
 
@@ -486,13 +412,27 @@ export default function Conversation({
             </div>
           ))}
 
-
-          {feedbackError && <p role="status" className="text-[11px] text-red-300">{feedbackError}</p>}
+          {feedbackError && (
+            <p role="status" className="text-[11px] text-red-300">
+              {feedbackError}
+            </p>
+          )}
 
           {sendError && (
-            <div role="alert" className="flex items-center justify-between gap-3 rounded-2xl bg-cream/5 px-4 py-3 text-[12px] text-muted">
+            <div
+              role="alert"
+              className="flex items-center justify-between gap-3 rounded-2xl bg-cream/5 px-4 py-3 text-[12px] text-muted"
+            >
               <span>{sendError}</span>
-              {onRetry && <button type="button" onClick={onRetry} className="shrink-0 font-semibold text-gold">Повторить</button>}
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="shrink-0 font-semibold text-gold"
+                >
+                  Повторить
+                </button>
+              )}
             </div>
           )}
 
@@ -502,33 +442,23 @@ export default function Conversation({
                 {meta.name}
               </div>
 
-              <p className="text-[14px] text-faint">
-                {meta.typing}
-              </p>
+              <p className="text-[14px] text-faint">{meta.typing}</p>
             </div>
           )}
-
         </div>
       </div>
 
       {footerSlot}
 
-
       {/* ── composer ── */}
 
       <div
+        className="shrink-0 px-4 pt-3"
 
-  className="shrink-0 px-4 pt-3"
-
-  style={{
-
-    paddingBottom:
-
-      'max(10px, env(safe-area-inset-bottom))',
-
-  }}
-
->
+        style={{
+          paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
+        }}
+      >
         {(voiceState !== 'idle' || voiceError) && (
           <div className="w-full max-w-md mx-auto px-3 pb-2 text-center text-[12px]">
             {voiceState === 'recording' && (
@@ -537,9 +467,7 @@ export default function Conversation({
               </span>
             )}
 
-            {voiceState === 'transcribing' && (
-              <span className="text-muted">Распознаю голос…</span>
-            )}
+            {voiceState === 'transcribing' && <span className="text-muted">Распознаю голос…</span>}
 
             {voiceError && voiceState === 'idle' && (
               <span className="text-red-400">{voiceError}</span>
@@ -548,11 +476,10 @@ export default function Conversation({
         )}
 
         <div className="w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
-
           <input
             value={input}
 
-            onChange={(event) => {
+            onChange={event => {
               const value = event.target.value
 
               setInput(value)
@@ -572,10 +499,8 @@ export default function Conversation({
               }, 180)
             }}
 
-            onKeyDown={(event) => {
-              if (
-                event.key === 'Enter'
-              ) {
+            onKeyDown={event => {
+              if (event.key === 'Enter') {
                 onSend()
               }
             }}
@@ -584,7 +509,6 @@ export default function Conversation({
 
             className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-cream placeholder:text-faint"
           />
-
 
           <div className="relative shrink-0">
             {showVoiceHint && (
@@ -596,10 +520,7 @@ export default function Conversation({
                  * (pointer-events-none), чтобы тап по ней тоже
                  * попадал на этот слой.
                  */}
-                <div
-                  className="fixed inset-0 z-[75]"
-                  onClick={dismissVoiceHint}
-                />
+                <div className="fixed inset-0 z-[75]" onClick={dismissVoiceHint} />
 
                 <div className="absolute bottom-full right-0 mb-3 z-[76] pointer-events-none animate-fade-in">
                   <div className="w-[168px] rounded-2xl bg-cream text-emerald-deep text-[12px] font-semibold leading-snug px-4 py-2.5 text-center shadow-lg">
@@ -623,7 +544,7 @@ export default function Conversation({
                     onPointerCancel: () => setVoicePressed(false),
                   }
                 : {
-                    onPointerDown: (event) => {
+                    onPointerDown: event => {
                       event.preventDefault()
 
                       setVoicePressed(true)
@@ -657,7 +578,7 @@ export default function Conversation({
                       }
                     },
 
-                    onContextMenu: (event) => {
+                    onContextMenu: event => {
                       event.preventDefault()
                     },
 
@@ -690,10 +611,7 @@ export default function Conversation({
                       : 'Нажми и удерживай, чтобы записать голосовое'
               }
             >
-              <span
-                key={iconKey}
-                className="mx-voice-icon"
-              >
+              <span key={iconKey} className="mx-voice-icon">
                 {voiceState === 'recording' ? (
                   <Square size={20} fill="currentColor" />
                 ) : voiceState === 'transcribing' ? (
@@ -706,11 +624,9 @@ export default function Conversation({
               </span>
             </button>
           </div>
-
         </div>
       </div>
-
     </div>,
-    document.body,
+    document.body
   )
 }

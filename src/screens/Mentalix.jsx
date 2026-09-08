@@ -6,6 +6,7 @@ import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
 import { readPendingMentor } from './mentalix/personas'
 import { maybeBuildInsightMessage } from './mentalix/insightDigest'
 import { AI_REFRAME_LEAD_MESSAGE, withSafetyNote } from '../lib/aiReframeSafety'
+import { messageContent } from '../lib/journalPresentation'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
@@ -26,6 +27,7 @@ export function ConversationChat({
   conversationMeta = null,
   contextSlot = null,
   footerSlot = null,
+  hideHistory = false,
   onBack,
 }) {
   const [messages, setMessages] = useState([])
@@ -61,7 +63,13 @@ export function ConversationChat({
           combined = [AI_REFRAME_LEAD_MESSAGE, ...combined]
         }
 
-        if (!cancelled) setMessages(combined)
+        if (!cancelled) {
+          const freshVisibleStart =
+            hideHistory && !initialPrompt && initialDisplayText
+              ? [{ role: 'user', content: String(initialDisplayText) }]
+              : []
+          setMessages(hideHistory ? freshVisibleStart : combined)
+        }
       })
       .catch(error => {
         console.error(error)
@@ -73,7 +81,7 @@ export function ConversationChat({
     return () => {
       cancelled = true
     }
-  }, [user, persona, viaHandoff, withSafetyNotice])
+  }, [user, persona, viaHandoff, withSafetyNotice, hideHistory, initialPrompt, initialDisplayText])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'
@@ -94,9 +102,11 @@ export function ConversationChat({
 
     try {
       const reply = await api.mentalix.send(user.id, text, persona)
-      const safeReply = withSafetyNotice
-        ? { ...reply, content: withSafetyNote(reply.content) }
-        : reply
+      const replyContent = messageContent(reply)
+      const safeReply = {
+        ...reply,
+        content: withSafetyNotice ? withSafetyNote(replyContent) : replyContent,
+      }
 
       setMessages(previous => [...previous, safeReply])
       invalidateHistory(user.id, persona)

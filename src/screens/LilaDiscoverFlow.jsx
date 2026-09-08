@@ -34,7 +34,7 @@ function ChoiceButton({ active, children, onClick }) {
 
 function StageShell({ children, title, onBack }) {
   return (
-    <div className="mx-screen-shell mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-10 pt-[max(18px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
+    <div className="mx-screen-shell mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-[max(40px,var(--app-safe-bottom,env(safe-area-inset-bottom,0px)))] pt-[max(18px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
       <div className="mb-8 grid min-h-[42px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
         <button
           type="button"
@@ -78,7 +78,6 @@ function ThemePicker({ query, selectedCardId, onPick, onBack }) {
   return (
     <StageShell title="Тема" onBack={onBack}>
       <div className="flex flex-1 flex-col">
-        <p className="mx-section-label">ШАГ 2 ИЗ 3</p>
         <h1 className="mt-3 font-display text-[27px] font-semibold leading-tight text-cream">
           На что посмотрим внимательнее?
         </h1>
@@ -125,7 +124,7 @@ function Completion({ onOpenJournal, onBack }) {
           Разговор можно продолжить позже
         </h1>
         <p className="mt-4 text-[14px] leading-relaxed text-muted">
-          Сохрани разговор в журнале или вернись к списку практик.
+          Разговор завершён. Открой журнал отдельно или вернись к списку практик.
         </p>
         <div className="mt-auto pt-10">
           <button
@@ -153,6 +152,7 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
   const [query, setQuery] = useState('')
   const [cardId, setCardId] = useState(null)
   const [selectedCardId, setSelectedCardId] = useState(null)
+  const [dialogStarted, setDialogStarted] = useState(false)
   const [topicProfile, setTopicProfile] = useSynced(LILA_TOPIC_PROFILE_KEY, {})
   const card = useMemo(() => findLilaCard(cardId), [cardId])
 
@@ -192,6 +192,7 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
     } else if (stage === 'theme') {
       setStage('query')
     } else if (stage === 'dialog') {
+      setDialogStarted(true)
       setStage('theme')
     } else {
       onBack()
@@ -203,7 +204,7 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
 
   if (stage === 'query') {
     return (
-      <div className="mx-screen-shell mx-auto flex min-h-[100dvh] w-full max-w-md flex-col pt-[max(18px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
+      <div className="mx-screen-shell mx-auto flex min-h-[100dvh] w-full max-w-md flex-col pb-[max(40px,var(--app-safe-bottom,env(safe-area-inset-bottom,0px)))] pt-[max(18px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
         <div className="shrink-0 px-5">
           <button
             type="button"
@@ -255,8 +256,9 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
         user={{ id: userId }}
         persona="lila"
         conversationMeta={LILA_CONVERSATION_META}
-        initialPrompt={internalPrompt}
+        initialPrompt={dialogStarted ? null : internalPrompt}
         initialDisplayText={query}
+        hideHistory
         contextSlot={<ContextSlot card={card} query={query} />}
         footerSlot={
           <div className="shrink-0 px-4 pb-2 pt-2">

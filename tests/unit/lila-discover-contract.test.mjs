@@ -11,6 +11,10 @@ const conversation = readFileSync(
   'utf8'
 )
 const personas = readFileSync(new URL('../../src/screens/mentalix/personas.js', import.meta.url), 'utf8')
+const presentation = readFileSync(
+  new URL('../../src/lib/journalPresentation.js', import.meta.url),
+  'utf8'
+)
 
 function between(source, start, end) {
   const startIndex = source.indexOf(start)
@@ -55,7 +59,7 @@ test('MXL-LILA-UX-001 renders dialog after theme selection with local Lila metad
   assert.match(dialogBranch, /<ConversationChat/)
   assert.match(dialogBranch, /persona="lila"/)
   assert.match(dialogBranch, /conversationMeta=\{LILA_CONVERSATION_META\}/)
-  assert.match(dialogBranch, /initialPrompt=\{internalPrompt\}/)
+  assert.match(dialogBranch, /initialPrompt=\{dialogStarted \? null : internalPrompt\}/)
   assert.match(dialogBranch, /initialDisplayText=\{query\}/)
   assert.match(dialogBranch, /contextSlot=/)
 })
@@ -87,4 +91,18 @@ test('MXL-LILA-UX-001 does not add Lila to the Mentor persona picker', () => {
     ['mayak', 'kompas', 'dnevnik']
   )
   assert.doesNotMatch(personas, /key: 'lila'/)
+})
+
+test('MXL-LILA-UX-002 normalizes object message content before rendering', () => {
+  assert.match(presentation, /export function messageContent\(message\)/)
+  assert.match(conversation, /messageContent\(message\)/)
+  assert.doesNotMatch(conversation, /String\(message\.content\)/)
+})
+
+test('MXL-LILA-UX-002 keeps initial query visible without resending after back/re-enter', () => {
+  assert.match(flow, /const \[dialogStarted, setDialogStarted\] = useState\(false\)/)
+  assert.match(flow, /initialPrompt=\{dialogStarted \? null : internalPrompt\}/)
+  assert.match(flow, /setDialogStarted\(true\)/)
+  assert.match(mentalix, /hideHistory = false/)
+  assert.match(mentalix, /hideHistory && !initialPrompt && initialDisplayText/)
 })

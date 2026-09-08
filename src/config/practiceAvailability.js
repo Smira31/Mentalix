@@ -12,6 +12,7 @@ export const PRACTICE_KEYS = Object.freeze({
 })
 
 export const AVAILABLE_PRACTICES = Object.freeze([
+  'lila-discover',
   PRACTICE_KEYS.rituals,
   PRACTICE_KEYS.ascezas,
   PRACTICE_KEYS.firstStep,
