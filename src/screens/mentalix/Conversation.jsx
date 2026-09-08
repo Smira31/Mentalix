@@ -41,6 +41,7 @@ const VOICE_HINT_TIMEOUT = 4500
 export default function Conversation({
   userId,
   persona,
+  personaMeta = null,
   messages,
   input,
   setInput,
@@ -49,10 +50,14 @@ export default function Conversation({
   onSend,
   onBack,
   privacyControls,
+  contextSlot = null,
+  footerSlot = null,
+  sendError = '',
+  onRetry,
 }) {
-  const meta = PERSONAS.find(
+  const meta = personaMeta || PERSONAS.find(
     (item) => item.key === persona,
-  )
+  ) || PERSONAS[0]
 
   const { style: surfaceStyle } =
     useFullscreenSurface()
@@ -390,6 +395,8 @@ export default function Conversation({
 
         {!loading && privacyControls}
 
+        {!loading && contextSlot}
+
         {loading && (
           <p className="text-muted text-[14px] text-center pt-4">
             Загрузка...
@@ -482,6 +489,13 @@ export default function Conversation({
 
           {feedbackError && <p role="status" className="text-[11px] text-red-300">{feedbackError}</p>}
 
+          {sendError && (
+            <div role="alert" className="flex items-center justify-between gap-3 rounded-2xl bg-cream/5 px-4 py-3 text-[12px] text-muted">
+              <span>{sendError}</span>
+              {onRetry && <button type="button" onClick={onRetry} className="shrink-0 font-semibold text-gold">Повторить</button>}
+            </div>
+          )}
+
           {sending && (
             <div className="w-full py-2">
               <div className="text-[11px] uppercase tracking-[0.16em] text-gold font-semibold mb-3">
@@ -496,6 +510,8 @@ export default function Conversation({
 
         </div>
       </div>
+
+      {footerSlot}
 
 
       {/* ── composer ── */}
