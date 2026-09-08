@@ -9,7 +9,7 @@ const source = await readFile(
 
 test('MXL-525 (G2): hero-копия соответствует Guided Self-Discovery', () => {
   assert.match(source, /Разбери день на части/)
-  assert.match(source, /Семь простых вопросов: от того, что происходит, — к одному маленькому шагу\./)
+  assert.match(source, /Семь простых вопросов, чтобы увидеть главное/)
   assert.doesNotMatch(source, /Собери день в четыре шага/)
   assert.doesNotMatch(source, /Идея, действие, анализ и новый шаг/)
 })

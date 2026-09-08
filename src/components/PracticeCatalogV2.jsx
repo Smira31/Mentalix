@@ -23,7 +23,7 @@ function JournalBanner({ onOpen }) {
       <div className="mx-layered-catalog__journal-hero-copy">
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
         <h3>Разбери день на части</h3>
-        <p>Семь простых вопросов: от того, что происходит, — к одному маленькому шагу.</p>
+        <p>Семь простых вопросов, чтобы увидеть главное</p>
         <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
           Открыть журнал <ArrowRight size={15} />
         </button>
@@ -231,9 +231,7 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
       </header>
       <div className="mx-layered-category__body">
         <section className="mx-layered-category__section">
-          <span className="mx-layered-category__label">
-            {source ? 'Твои данные' : 'Практики'}
-          </span>
+          <span className="mx-layered-category__label">{source ? 'Твои данные' : 'Практики'}</span>
           {source && liveItems.length === 0 ? (
             <div className="mx-layered-category__body">
               <p className="text-muted text-[13px]">
@@ -256,7 +254,9 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
                     className="mx-layered-category__card"
                     type="button"
                     key={key}
-                    onClick={() => (isLive ? openSource() : practice && onOpenPractice(practice, collection.key))}
+                    onClick={() =>
+                      isLive ? openSource() : practice && onOpenPractice(practice, collection.key)
+                    }
                   >
                     <span className="mx-layered-category__art" aria-hidden="true">
                       <span className="mx-layered-category__art-glyph">
