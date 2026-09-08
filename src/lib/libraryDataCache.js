@@ -52,6 +52,10 @@ function sanitizeArticles(articles) {
     tag: typeof article?.tag === 'string' ? article.tag : null,
     minutes: finiteNumber(article?.minutes) ? article.minutes : 0,
     date: typeof article?.date === 'string' ? article.date : '',
+    // MXL-526: Reader использует body и source; иначе при холодном кеше
+    // (восстановление из sessionStorage) текст и ссылка «Первоисточник» терялись.
+    body: typeof article?.body === 'string' ? article.body : '',
+    source: typeof article?.source === 'string' ? article.source : null,
   }))
 }
 
