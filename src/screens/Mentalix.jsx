@@ -84,7 +84,7 @@ export function ConversationChat({
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'
     const text = (isVoiceMessage ? overrideText : input).trim()
-    const visibleText = String(displayText || text).trim()
+    const visibleText = (typeof displayText === 'string' ? displayText : text).trim() || text
 
     if (!text || sending) return
 

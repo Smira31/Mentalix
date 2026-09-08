@@ -535,7 +535,7 @@ export default function Conversation({
 
               {...(hasText && voiceState === 'idle'
                 ? {
-                    onClick: onSend,
+                    onClick: () => onSend(),
                     onPointerDown: () => setVoicePressed(true),
                     onPointerUp: () => setVoicePressed(false),
                     onPointerLeave: () => setVoicePressed(false),

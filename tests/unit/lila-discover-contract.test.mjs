@@ -106,6 +106,14 @@ test('MXL-LILA-UX-001 keeps multi-turn send and no-duplicate retry behavior', ()
   assert.match(conversation, /onRetry/)
 })
 
+test('MXL-LILA-UX-001 prevents click events from becoming user bubble content', () => {
+  assert.match(conversation, /onClick: \(\) => onSend\(\)/)
+  assert.match(mentalix, /const isVoiceMessage = typeof overrideText === 'string'/)
+  assert.match(mentalix, /typeof displayText === 'string' \? displayText : text/)
+  assert.match(mentalix, /visibleText[\s\S]*\.trim\(\) \|\| text/)
+  assert.doesNotMatch(mentalix, /String\(displayText \|\| text\)/)
+})
+
 test('MXL-LILA-UX-001 does not add Lila to the Mentor persona picker', () => {
   assert.deepEqual(
     [...personas.matchAll(/key: '(mayak|kompas|dnevnik)'/g)].map(match => match[1]),
