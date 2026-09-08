@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../../src/data/lilaDiscoverCards.js'
+import { normalizeHistory } from '../../src/lib/mentalixHistoryUtils.js'
 
 const flow = readFileSync(new URL('../../src/screens/LilaDiscoverFlow.jsx', import.meta.url), 'utf8')
 const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
@@ -15,6 +16,7 @@ const presentation = readFileSync(
   new URL('../../src/lib/journalPresentation.js', import.meta.url),
   'utf8'
 )
+const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
 
 function between(source, start, end) {
   const startIndex = source.indexOf(start)
@@ -115,4 +117,33 @@ test('MXL-LILA-UX-003 keeps persistent history visible and scrolls to current co
   assert.match(mentalix, /setMessages\(combined\)/)
   assert.match(conversation, /messages\.length/)
   assert.match(conversation, /scrollToEnd\(firstPosition \? 'auto' : 'smooth'\)/)
+})
+
+test('MXL-LILA-UX-003 normalizes repeated history records without changing order', () => {
+  const history = [
+    { id: 'u-1', role: 'user', content: 'Запрос' },
+    { id: 'u-1', role: 'user', content: 'Запрос' },
+    { role: 'assistant', content: 'Ответ', created_at: '2026-09-08T10:00:00Z' },
+    { role: 'assistant', content: 'Ответ', created_at: '2026-09-08T10:00:00Z' },
+    { role: 'user', content: 'Запрос', created_at: '2026-09-08T10:01:00Z' },
+  ]
+  assert.deepEqual(normalizeHistory(history), [history[0], history[2], history[4]])
+  assert.match(readFileSync(new URL('../../src/lib/mentalixHistoryCache.js', import.meta.url), 'utf8'), /inFlight/)
+})
+
+test('MXL-LILA-UX-004 keeps retry inline, reuses request text, and suppresses duplicate user bubble', () => {
+  assert.match(mentalix, /setSendError\(''\)/)
+  assert.match(mentalix, /lastFailedSend\.current = \{ text, visibleText \}/)
+  assert.match(mentalix, /send\(failed\.text, failed\.visibleText, \{ appendUser: false \}\)/)
+  assert.match(conversation, /role="alert"/)
+  assert.match(conversation, />\s*Повторить\s*</)
+})
+
+test('MXL-LILA-UX-005 routes completion to Journal and back to the canonical practice catalog', () => {
+  assert.match(flow, /onClick=\{onOpenJournal\}/)
+  assert.match(flow, /Открыть журнал/)
+  assert.match(flow, /Вернуться к практикам/)
+  assert.match(practices, /if \(sub === 'lila-discover'\)/)
+  assert.match(practices, /onOpenJournal=\{\(\) => setSub\('journal'\)\}/)
+  assert.match(practices, /<PracticeCatalogV2/)
 })
