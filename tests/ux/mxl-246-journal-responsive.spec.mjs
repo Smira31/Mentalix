@@ -128,21 +128,23 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
   for (const viewport of [MOBILE_VIEWPORT, ...WIDE_VIEWPORTS]) {
     const isWide = viewport.width >= 768
 
-    test(`JournalFlow (Практики → Журнал) на ${viewport.name}`, async ({ browser, baseURL }) => {
+    test(`Journal (Практики → Guided Self-Discovery) на ${viewport.name}`, async ({ browser, baseURL }) => {
       const { context, page } = await newFixturePage(browser, baseURL, viewport)
 
       await page.goto('/')
       await page.getByRole('button', { name: 'Практики' }).click()
       await page.getByRole('button', { name: 'Журнал' }).click()
-      await expect(page.getByText('Разложи день на четыре спокойных шага')).toBeVisible()
+      await expect(page.getByText('Когда непонятно, что делать')).toBeVisible()
+      await expect(page.getByText('Разложи день на четыре спокойных шага')).toHaveCount(0)
+      await expect(page.getByRole('button', { name: 'Начать' })).toBeVisible()
       await assertNoHorizontalOverflow(page)
       await screenshot(page, viewport, '01-journal-intro')
 
       await page.getByRole('button', { name: 'Начать' }).click()
-      const ideaEditor = page.getByRole('textbox', { name: 'Идея: Что сейчас занимает мои мысли?' })
-      await expect(ideaEditor).toBeVisible()
+      const firstEditor = page.getByRole('textbox', { name: 'Что сейчас происходит?' })
+      await expect(firstEditor).toBeVisible()
 
-      const fontSize = await ideaEditor.evaluate(element => parseFloat(getComputedStyle(element).fontSize))
+      const fontSize = await firstEditor.evaluate(element => parseFloat(getComputedStyle(element).fontSize))
       expect(fontSize).toBeGreaterThanOrEqual(16)
 
       const submitButton = page.getByRole('button', { name: 'Сохранить и продолжить' })
@@ -152,7 +154,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       expect(['absolute', 'fixed']).toContain(actionRowPosition)
       await expect(page.locator('[aria-label="Действия ввода"]')).toHaveCount(1)
 
-      await ideaEditor.fill('Сегодня я замечаю главное')
+      await firstEditor.fill('Сегодня я замечаю главное')
       await assertNoHorizontalOverflow(page)
       await screenshot(page, viewport, '02-journal-writer')
 
@@ -160,24 +162,27 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       expect(submitBox?.width).toBe(56)
       expect(submitBox?.height).toBe(56)
 
-      await submitButton.click()
-      const journalSteps = [
-        ['Действие: Что из этого зависит от меня сегодня?', 'Сделать один спокойный шаг'],
-        ['Анализ: Что произошло и что я заметил?', 'Заметить, что изменилось'],
-        ['Новый шаг: Что я возьму с собой дальше?', 'Продолжить завтра'],
+      const guidedSteps = [
+        ['Что сейчас происходит?', 'Сегодня я замечаю главное'],
+        ['Что здесь точно известно?', 'Известно, что я могу сделать один шаг'],
+        ['Что ты предполагаешь?', 'Я предполагаю, что разговор можно начать спокойно'],
+        ['Чего ты пока не знаешь?', 'Пока не знаю, какой будет ответ'],
+        ['Что ощущается самым тяжёлым?', 'Самым тяжёлым кажется неопределённость'],
+        ['Что зависит от тебя сегодня?', 'Сегодня я могу сделать первый небольшой шаг'],
+        ['Какой маленький эксперимент попробуешь?', 'Попробую начать с короткого сообщения'],
       ]
-      for (const [label, text] of journalSteps) {
+      for (const [index, [label, text]] of guidedSteps.entries()) {
         const editor = page.getByRole('textbox', { name: label })
         await expect(editor).toBeVisible()
-        await editor.fill(text)
+        if (index > 0) await editor.fill(text)
         await page
           .getByRole('button', {
-            name: label.startsWith('Новый шаг') ? 'Сохранить и завершить' : 'Сохранить и продолжить',
+            name: index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
           })
           .click()
       }
 
-      await expect(page.getByText('Цикл сохранён')).toBeVisible()
+      await expect(page.getByText('Хорошо. Следующий шаг готов.')).toBeVisible()
       await assertNoHorizontalOverflow(page)
       await screenshot(page, viewport, '03-journal-complete')
 

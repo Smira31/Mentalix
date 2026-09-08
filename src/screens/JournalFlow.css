@@ -141,7 +141,7 @@
 }
 
 .mx-practice-flow--journal .journal-flow__intro-cta::after {
-  content: '→';
+  content: '›';
   font-size: 22px;
   line-height: 1;
 }
@@ -230,7 +230,7 @@
 }
 
 .mx-practice-flow--journal .journal-flow__writing .practice-writing-canvas__submit::after {
-  content: '→';
+  content: '›';
   font-size: 22px;
   line-height: 1;
 }

@@ -301,7 +301,7 @@ test('MXL-021 связывает Journey с продолжением Today', () 
   assert.match(yearPath, /onContinueToday/)
 })
 
-test('MXL-JOURNAL-001 открывает Journal Flow из «Практик» и не подменяет им вкладку «Наставник»', () => {
+test('MXL-JOURNAL-001 открывает единственный Guided Self-Discovery Journal flow из «Практик»', () => {
   const journal = readFileSync(new URL('../../src/screens/JournalFlow.jsx', import.meta.url), 'utf8')
   const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
   const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
@@ -319,11 +319,13 @@ test('MXL-JOURNAL-001 открывает Journal Flow из «Практик» и
   assert.doesNotMatch(journal, /JournalTextarea|SceneLayout|JournalProgress/)
   assert.doesNotMatch(journal, /<button[\s\S]*>\s*Назад\s*<\/button>/)
   assert.match(practices, /import PracticeCatalogV2 from '\.\.\/components\/PracticeCatalogV2'/)
+  assert.match(practices, /import GuidedSelfDiscoveryFlow from '\.\/GuidedSelfDiscoveryFlow'/)
   assert.match(practices, /<PracticeCatalogV2[\s\S]*practices=\{catalogPractices\}/)
   assert.doesNotMatch(practices, /PRACTICE_CATALOG_V2_ENABLED|VITE_PRACTICES_CATALOG_V2/)
   assert.doesNotMatch(practices, /function PracticeRow\(|function PracticeCategory\(/)
   assert.match(practices, /setSub\('journal'\)/)
-  assert.match(practices, /<JournalFlow[\s\S]*userId=\{user\.id\}[\s\S]*onClose=\{\(\) => setSub\(null\)\}/)
+  assert.match(practices, /if \(sub === 'journal'\) \{[\s\S]*<GuidedSelfDiscoveryFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\} \/>/)
+  assert.doesNotMatch(practices, /<JournalFlow/)
   assert.doesNotMatch(mentalix, /JournalHome|journalOpen/)
   assert.match(mentalix, /PersonaPicker/)
 })

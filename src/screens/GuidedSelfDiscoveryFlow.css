@@ -36,7 +36,7 @@
 .mx-practice-flow--self-discovery .guided-self-discovery__intro-title {
   max-width: 20rem;
   margin: 0;
-  font-size: clamp(2rem, 8.5vw, 3rem);
+  font-size: clamp(1.75rem, 7vw, 2.35rem);
   font-weight: 600;
   letter-spacing: -0.05em;
   line-height: 1.04;
@@ -79,7 +79,7 @@
 }
 
 .mx-practice-flow--self-discovery .guided-self-discovery__intro-cta::after {
-  content: '→';
+  content: '›';
   font-size: 22px;
   line-height: 1;
 }
@@ -168,7 +168,7 @@
 .mx-practice-flow--self-discovery
   .guided-self-discovery__writing
   .practice-writing-canvas__submit::after {
-  content: '→';
+  content: '›';
   font-size: 22px;
   line-height: 1;
 }
@@ -234,7 +234,7 @@
 .mx-practice-flow--self-discovery .guided-self-discovery__completion-title {
   max-width: 21rem;
   margin: 12px 0 0;
-  font-size: clamp(2rem, 8.4vw, 3rem);
+  font-size: clamp(1.75rem, 7vw, 2.35rem);
   font-weight: 600;
   letter-spacing: -0.05em;
   line-height: 1.04;
