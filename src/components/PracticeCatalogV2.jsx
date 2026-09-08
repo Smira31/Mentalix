@@ -210,7 +210,12 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
   return (
     <section className="mx-layered-category" aria-labelledby="production-category-title">
       <header className="mx-layered-category__header">
-        <button type="button" aria-label="Назад к коллекциям" onClick={onBack}>
+        <button
+          type="button"
+          className="mx-layered-category__back"
+          aria-label="Назад к коллекциям"
+          onClick={onBack}
+        >
           <ArrowLeft size={19} />
         </button>
         <div className="mx-layered-category__heading">
