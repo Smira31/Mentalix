@@ -473,7 +473,7 @@ export default function Conversation({
           </div>
         )}
 
-        <div className="w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
+        <div className="mx-ai-composer w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
           <input
             value={input}
 

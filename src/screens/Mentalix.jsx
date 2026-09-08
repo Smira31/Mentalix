@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
+import { mergeConversationMessages } from '../lib/mentalixConversationUtils'
 
 import { readPendingMentor } from './mentalix/personas'
 import { maybeBuildInsightMessage } from './mentalix/insightDigest'
@@ -36,13 +37,15 @@ export function ConversationChat({
   const [sendError, setSendError] = useState('')
   const lastFailedSend = useRef(null)
   const initialPromptSent = useRef(false)
+  const localMessageSequence = useRef(0)
+  const userId = user?.id
 
   useEffect(() => {
-    if (!user) return
+    if (!userId) return
 
     let cancelled = false
 
-    fetchHistory(user.id, persona)
+    fetchHistory(userId, persona)
       .then(async history => {
         if (cancelled) return
 
@@ -62,7 +65,9 @@ export function ConversationChat({
           combined = [AI_REFRAME_LEAD_MESSAGE, ...combined]
         }
 
-        if (!cancelled) setMessages(combined)
+        if (!cancelled) {
+          setMessages(previous => mergeConversationMessages(combined, previous))
+        }
       })
       .catch(error => {
         console.error(error)
@@ -74,7 +79,7 @@ export function ConversationChat({
     return () => {
       cancelled = true
     }
-  }, [user, persona, viaHandoff, withSafetyNotice])
+  }, [userId, persona, viaHandoff, withSafetyNotice])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'
@@ -87,7 +92,15 @@ export function ConversationChat({
     setSendError('')
 
     if (appendUser) {
-      setMessages(previous => [...previous, { role: 'user', content: visibleText }])
+      localMessageSequence.current += 1
+      setMessages(previous => [
+        ...previous,
+        {
+          id: `local-user-${localMessageSequence.current}`,
+          role: 'user',
+          content: visibleText,
+        },
+      ])
     }
 
     setSending(true)

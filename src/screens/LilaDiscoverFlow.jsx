@@ -1,10 +1,12 @@
+import { createPortal } from 'react-dom'
 import { useMemo, useState } from 'react'
 
-import BackButton from '../components/BackButton'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import { platform } from '../platform'
+import { useBackButton } from '../platform/telegram.hooks'
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../data/lilaDiscoverCards'
 import { useSynced } from '../lib/store'
+import { FULLSCREEN_SHELL_CLASS, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { ConversationChat } from './Mentalix'
 import './LilaDiscoverFlow.css'
 
@@ -35,15 +37,25 @@ function ChoiceButton({ active, children, onClick }) {
 }
 
 function StageShell({ children, title, onBack }) {
-  return (
-    <div className="mx-lila-stage mx-screen-shell mx-auto flex h-full min-h-0 w-full max-w-md flex-col px-5">
-      <div className="mx-lila-header grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
-        <BackButton onClick={onBack} className="justify-self-start" />
-        <span className="mx-type-section text-cream">{title}</span>
-        <span aria-hidden="true" />
+  const { style } = useFullscreenSurface()
+
+  useBackButton(() => {
+    platform.haptic('light')
+    onBack?.()
+  })
+
+  return createPortal(
+    <div className={`${FULLSCREEN_SHELL_CLASS} mx-lila-stage`} style={style}>
+      <div className="mx-lila-screen mx-screen-shell mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-5">
+        <div className="mx-lila-header grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
+          <span aria-hidden="true" />
+          <span className="mx-type-section text-cream">{title}</span>
+          <span aria-hidden="true" />
+        </div>
+        <div className="mx-lila-stage-content flex min-h-0 flex-1 flex-col pt-3">{children}</div>
       </div>
-      <div className="mx-lila-stage-content flex min-h-0 flex-1 flex-col pt-3">{children}</div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -51,7 +63,6 @@ function Intro({ onStart, onBack }) {
   return (
     <StageShell title="Лила" onBack={onBack}>
       <div className="flex flex-1 flex-col">
-        <p className="mx-section-label">ПРАКТИКА · ЛИЛА</p>
         <h1 className="mx-type-flow-title mt-2 text-cream">Когда неясно, с чего начать</h1>
         <p className="mx-type-flow-body mt-3 max-w-[34ch] text-muted">
           Сначала опиши ситуацию своими словами. Затем выбери одну тему, чтобы начать разговор с
@@ -110,7 +121,6 @@ function Completion({ onOpenJournal, onBack }) {
   return (
     <StageShell title="Готово" onBack={onBack}>
       <div className="flex flex-1 flex-col">
-        <p className="mx-section-label">ПРАКТИКА · ЗАВЕРШЕНО</p>
         <h1 className="mx-type-flow-title mt-2 text-cream">Разговор можно продолжить позже</h1>
         <p className="mx-type-flow-body mt-3 text-muted">
           Разговор завершён. Открой журнал отдельно или вернись к списку практик.
