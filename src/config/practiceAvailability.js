@@ -20,6 +20,11 @@ export const AVAILABLE_PRACTICES = Object.freeze([
   PRACTICE_KEYS.narrowFocus,
   PRACTICE_KEYS.oneFinish,
   PRACTICE_KEYS.meditation,
+  // MXL-525 G6: «Живая линза» (brain/breathing/focus) — рабочие практики,
+  // признаны доступными (Focus починен #544); гейтинг должен быть честным.
+  PRACTICE_KEYS.brain,
+  PRACTICE_KEYS.breathing,
+  PRACTICE_KEYS.focus,
 ])
 
 export function isPracticeAvailable(practiceKey) {
