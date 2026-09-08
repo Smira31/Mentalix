@@ -51,6 +51,8 @@ test('MXL-SELF-DISCOVERY-001 uses the shared typography scale and chevron CTA', 
   assert.match(css, /guided-self-discovery__hero[\s\S]*min-height: clamp\(180px, 30dvh, 260px\)/)
   assert.match(css, /guided-self-discovery__intro-title[\s\S]*line-height: 1\.12/)
   assert.match(css, /guided-self-discovery__completion-title[\s\S]*line-height: 1\.12/)
+  assert.match(css, /guided-self-discovery__writing \.practice-writing-canvas__field[\s\S]*margin-top: 6px[\s\S]*font-size: 16px[\s\S]*line-height: 1\.5/)
+  assert.doesNotMatch(css, /practice-writing-canvas__field::placeholder[\s\S]*font-size/)
   assert.match(flow, /guided-self-discovery__chevron[\s\S]*viewBox="0 0 20 20"/)
   assert.match(css, /guided-self-discovery__chevron[\s\S]*width: 20px[\s\S]*stroke-width: 2\.4/)
   assert.match(canvasCss, /practice-writing-canvas__submit svg[\s\S]*width: 20px[\s\S]*stroke-width: 2\.4/)
