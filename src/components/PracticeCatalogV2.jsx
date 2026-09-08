@@ -76,7 +76,7 @@ function PracticeRail({ practices, onOpen }) {
   )
 }
 
-function ThemeCarousel({ themes, onOpen }) {
+function ThemeCarousel({ themes, themesError = false, onOpen }) {
   const [themeIndex, setThemeIndex] = useState(0)
   const trackRef = useRef(null)
 
@@ -94,11 +94,13 @@ function ThemeCarousel({ themes, onOpen }) {
         <div className="mx-layered-catalog__section-head">
           <div>
             <span>Тема недели</span>
-            <h3>Пока нет тем</h3>
+            <h3>{themesError ? 'Темы не загрузились' : 'Пока нет тем'}</h3>
           </div>
         </div>
         <p className="mx-layered-catalog__empty-copy">
-          Опубликованные темы появятся здесь, когда backend вернёт их для пользователя.
+          {themesError
+            ? 'Не удалось загрузить темы. Проверь соединение и попробуй ещё раз.'
+            : 'Опубликованные темы появятся здесь, когда backend вернёт их для пользователя.'}
         </p>
       </section>
     )
@@ -189,7 +191,7 @@ function CollectionGrid({ onOpen }) {
           <span>Собрано для тебя</span>
           <h3>Коллекции</h3>
         </div>
-        <small>5</small>
+        <small>{PRACTICE_COLLECTIONS.length}</small>
       </div>
       <div className="mx-layered-catalog__collections">
         {PRACTICE_COLLECTIONS.map(collection => (
@@ -295,6 +297,7 @@ export default function PracticeCatalogV2({
   rituals,
   ascezas,
   themes,
+  themesError = false,
   onOpenPractice,
   selectedCollectionKey = null,
   onCollectionChange,
@@ -324,7 +327,7 @@ export default function PracticeCatalogV2({
     <div className="mx-layered-catalog mx-production-catalog" data-accent="gold">
       <JournalBanner onOpen={onOpenJournal} />
       <PracticeRail practices={visiblePractices} onOpen={onOpenPractice} />
-      <ThemeCarousel themes={themes} onOpen={onOpenTheme} />
+      <ThemeCarousel themes={themes} themesError={themesError} onOpen={onOpenTheme} />
       <CollectionGrid onOpen={collection => onCollectionChange?.(collection.key)} />
     </div>
   )
