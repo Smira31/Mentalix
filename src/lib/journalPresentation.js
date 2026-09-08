@@ -1,12 +1,22 @@
 export const LONG_MESSAGE_CHAR_LIMIT = 720
 
+export function messageContent(message) {
+  const content = message?.content
+
+  if (content == null) return ''
+  if (typeof content === 'string') return content
+  if (typeof content === 'number' || typeof content === 'boolean') return String(content)
+
+  try {
+    return JSON.stringify(content, null, 2)
+  } catch {
+    return ''
+  }
+}
+
 export function messageTimestamp(message) {
   const value =
-    message?.created_at ??
-    message?.createdAt ??
-    message?.sent_at ??
-    message?.timestamp ??
-    null
+    message?.created_at ?? message?.createdAt ?? message?.sent_at ?? message?.timestamp ?? null
 
   if (!value) return null
 
@@ -33,7 +43,7 @@ export function formatJournalDate(message, locale = 'ru-RU') {
 }
 
 export function isLongJournalMessage(message, limit = LONG_MESSAGE_CHAR_LIMIT) {
-  return String(message?.content || '').length > limit
+  return messageContent(message).length > limit
 }
 
 export function journalMessageKey(message, index) {

@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
+import { mergeConversationMessages } from '../lib/mentalixConversationUtils'
 
 import { readPendingMentor } from './mentalix/personas'
 import { maybeBuildInsightMessage } from './mentalix/insightDigest'
 import { AI_REFRAME_LEAD_MESSAGE, withSafetyNote } from '../lib/aiReframeSafety'
+import { messageContent } from '../lib/journalPresentation'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
@@ -15,53 +17,57 @@ import AiPrivacyControls from './mentalix/AiPrivacyControls'
 // ЧАТ
 // ============================================================
 
-function Chat({
+export function ConversationChat({
   user,
   persona,
   initialText = '',
+  initialPrompt = null,
+  initialDisplayText = null,
   viaHandoff = false,
   withSafetyNotice = false,
+  conversationMeta = null,
+  contextSlot = null,
+  footerSlot = null,
   onBack,
 }) {
   const [messages, setMessages] = useState([])
-
   const [input, setInput] = useState(initialText)
-
   const [loading, setLoading] = useState(true)
-
   const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState('')
+  const lastFailedSend = useRef(null)
+  const initialPromptSent = useRef(false)
+  const localMessageSequence = useRef(0)
+  const userId = user?.id
 
   useEffect(() => {
-    if (!user) return
+    if (!userId) return
 
     let cancelled = false
 
-    fetchHistory(user.id, persona)
+    fetchHistory(userId, persona)
       .then(async history => {
         if (cancelled) return
 
         let combined = history
 
         // «Дайджест от Следопыта» (ROADMAP.md, идея 3): только при обычном
-        // входе в dnevnik, не через openScout()-хендофф вечернего разбора —
-        // они не должны конкурировать за первое сообщение.
+        // входе в dnevnik, не через openScout()-хендофф вечернего разбора.
         if (persona === 'dnevnik' && !viaHandoff) {
           const insight = await maybeBuildInsightMessage(user)
 
-          if (insight && !cancelled) {
-            combined = [insight, ...history]
-          }
+          if (insight && !cancelled) combined = [insight, ...history]
         }
 
         // MXL-AI-REFRAME-001: лид-дисклеймер только для хендоффа «Обсудить
-        // с AI» (History.jsx) — синтетическое сообщение, тот же приём, что
-        // у «Дайджеста от Следопыта» выше. Ничего не отправляется в
-        // backend, не персистится, не влияет на обычный вход в чат.
+        // с AI». Ничего не отправляется в backend.
         if (withSafetyNotice && !cancelled) {
           combined = [AI_REFRAME_LEAD_MESSAGE, ...combined]
         }
 
-        if (!cancelled) setMessages(combined)
+        if (!cancelled) {
+          setMessages(previous => mergeConversationMessages(combined, previous))
+        }
       })
       .catch(error => {
         console.error(error)
@@ -73,60 +79,63 @@ function Chat({
     return () => {
       cancelled = true
     }
-  }, [user, persona, viaHandoff, withSafetyNotice])
+  }, [userId, persona, viaHandoff, withSafetyNotice])
 
-  async function send(overrideText) {
+  async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'
-
     const text = (isVoiceMessage ? overrideText : input).trim()
+    const visibleText = (typeof displayText === 'string' ? displayText : text).trim() || text
 
-    if (!text || sending) {
-      return
+    if (!text || sending) return
+
+    if (!isVoiceMessage) setInput('')
+    setSendError('')
+
+    if (appendUser) {
+      localMessageSequence.current += 1
+      setMessages(previous => [
+        ...previous,
+        {
+          id: `local-user-${localMessageSequence.current}`,
+          role: 'user',
+          content: visibleText,
+        },
+      ])
     }
-
-    if (!isVoiceMessage) {
-      setInput('')
-    }
-
-    setMessages(previous => [
-      ...previous,
-      {
-        role: 'user',
-        content: text,
-      },
-    ])
 
     setSending(true)
     platform.haptic('light')
 
     try {
       const reply = await api.mentalix.send(user.id, text, persona)
-
-      // MXL-AI-REFRAME-001: не доверяем сырому выводу модели в этом
-      // хендоффе — переиспользует regex-паттерн фильтра MXL-009. Не
-      // отбрасывает и не переписывает ответ, только дополняет оговоркой
-      // при совпадении с диагностической/причинной/терапевтической
-      // формулировкой. Не влияет на обычные чаты (withSafetyNotice=false).
-      const safeReply = withSafetyNotice
-        ? { ...reply, content: withSafetyNote(reply.content) }
-        : reply
+      const replyContent = messageContent(reply)
+      const safeReply = {
+        ...reply,
+        content: withSafetyNotice ? withSafetyNote(replyContent) : replyContent,
+      }
 
       setMessages(previous => [...previous, safeReply])
-
       invalidateHistory(user.id, persona)
+      lastFailedSend.current = null
     } catch (error) {
       console.error(error)
-
-      setMessages(previous => [
-        ...previous,
-        {
-          role: 'assistant',
-          content: 'Не удалось получить ответ, попробуй ещё раз.',
-        },
-      ])
+      lastFailedSend.current = { text, visibleText }
+      setSendError('Не удалось получить ответ. Попробуй ещё раз.')
     } finally {
       setSending(false)
     }
+  }
+
+  useEffect(() => {
+    if (loading || !initialPrompt || initialPromptSent.current) return
+    initialPromptSent.current = true
+    void send(initialPrompt, initialDisplayText || initialPrompt)
+  }, [loading, initialPrompt, initialDisplayText])
+
+  function retryLastSend() {
+    const failed = lastFailedSend.current
+    if (!failed) return
+    void send(failed.text, failed.visibleText, { appendUser: false })
   }
 
   function handleAiDataDeleted() {
@@ -138,6 +147,7 @@ function Chat({
     <Conversation
       userId={user.id}
       persona={persona}
+      personaMeta={conversationMeta}
       messages={messages}
       input={input}
       setInput={setInput}
@@ -145,6 +155,10 @@ function Chat({
       sending={sending}
       onSend={send}
       onBack={onBack}
+      contextSlot={contextSlot}
+      footerSlot={footerSlot}
+      sendError={sendError}
+      onRetry={retryLastSend}
       privacyControls={<AiPrivacyControls userId={user.id} onDataDeleted={handleAiDataDeleted} />}
     />
   )
@@ -156,27 +170,13 @@ function Chat({
 
 export default function MentalixChat({ user, onPersonaChange }) {
   const [pending] = useState(() => readPendingMentor())
-
   const [persona, setPersona] = useState(pending.persona)
-
   const [draft, setDraft] = useState(pending.draft)
 
-  /*
-   * Сообщаем App.jsx,
-   * открыта ли конкретная персона.
-   *
-   * Благодаря этому App сам решает,
-   * показывать BottomNavigation или нет.
-   */
   useEffect(() => {
     onPersonaChange?.(Boolean(persona))
   }, [persona, onPersonaChange])
 
-  /*
-   * Если пользователь уйдёт с вкладки
-   * каким-либо внешним способом,
-   * navbar не должен остаться скрытым.
-   */
   useEffect(() => {
     return () => {
       onPersonaChange?.(false)
@@ -189,7 +189,6 @@ export default function MentalixChat({ user, onPersonaChange }) {
         user={user}
         onPick={(key, text) => {
           setDraft(text || '')
-
           setPersona(key)
         }}
       />
@@ -197,7 +196,7 @@ export default function MentalixChat({ user, onPersonaChange }) {
   }
 
   return (
-    <Chat
+    <ConversationChat
       user={user}
       persona={persona}
       initialText={draft}

@@ -1,0 +1,93 @@
+.mx-lila-stage {
+  box-sizing: border-box;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  overflow-y: hidden;
+}
+
+.mx-lila-header {
+  box-sizing: border-box;
+}
+
+.mx-lila-action-zone {
+  padding-bottom: max(0px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+.mx-lila-query-preview {
+  max-height: 3.2rem;
+  overflow: hidden;
+  padding: 10px 12px;
+  border-left: 2px solid rgb(var(--c-gold) / 0.62);
+  background: rgb(var(--c-cream) / 0.04);
+}
+
+.mx-lila-query-canvas {
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+.mx-lila-query-canvas .practice-writing-canvas {
+  height: 100%;
+  min-height: 0;
+  padding: 0 20px;
+}
+
+.mx-lila-query-canvas .practice-writing-canvas__question {
+  margin-top: 12px;
+  font-family: inherit;
+  font-size: var(--mx-type-hero-size);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.mx-lila-query-canvas .practice-writing-canvas__description {
+  max-width: 34ch;
+  margin-top: 10px;
+  padding-left: 0;
+  border-left: 0;
+  font-family: inherit;
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+}
+
+.mx-lila-query-canvas .practice-writing-canvas__field {
+  min-height: 0;
+  margin-top: 12px;
+  padding-bottom: 76px;
+  font-family: inherit;
+  font-size: var(--mx-type-control-size);
+  line-height: 1.45;
+  caret-color: rgb(var(--c-gold) / 0.35);
+}
+
+.mx-lila-query-canvas .practice-writing-canvas__field:focus,
+.mx-lila-query-canvas .practice-writing-canvas__field:focus-visible {
+  outline: 0;
+  box-shadow: none;
+}
+
+.mx-lila-query-canvas .practice-writing-canvas__dock {
+  right: 20px;
+  bottom: max(12px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  left: 20px;
+}
+
+.mx-lila-context {
+  max-height: 2.35rem;
+  overflow: hidden;
+  padding-left: 10px;
+  border-left: 2px solid rgb(var(--c-gold) / 0.62);
+}
+
+@media (max-height: 650px) {
+  .mx-lila-query-canvas .practice-writing-canvas__question {
+    font-size: var(--mx-type-section-size);
+  }
+
+  .mx-lila-query-canvas .practice-writing-canvas__description {
+    margin-top: 6px;
+  }
+}

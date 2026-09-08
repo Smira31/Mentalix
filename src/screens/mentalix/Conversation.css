@@ -32,6 +32,16 @@
   transform: scale(0.975);
 }
 
+.mx-ai-composer .mx-ai-input:focus,
+.mx-ai-composer .mx-ai-input:focus-visible {
+  outline: 0;
+  outline-offset: 0;
+  border: 0;
+  box-shadow: none;
+  -webkit-appearance: none;
+  caret-color: rgb(var(--c-gold) / 0.35);
+}
+
 .mx-msg-in {
   animation: mx-msg-in 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }

@@ -26,8 +26,9 @@ import {
   saveCheckinDraft,
 } from '../../src/lib/checkinDraft.js'
 
-test('allowlist сохраняет текущие семь доступных практик', () => {
+test('allowlist сохраняет доступные практики и активирует Lila entry', () => {
   assert.deepEqual(AVAILABLE_PRACTICES, [
+    'lila-discover',
     'rituals',
     'ascezas',
     'first-step',
@@ -662,7 +663,7 @@ test('MXL-MENTOR-UI-248 убирает внешнюю рамку и индика
   assert.match(picker, /У каждого своя история — разговоры не смешиваются\./)
   assert.match(historyCache, /return `\$\{userId\}:\$\{persona\}`/)
   assert.match(historyCache, /api\.mentalix\.history\(userId, persona\)/)
-  assert.match(container, /fetchHistory\(user\.id, persona\)/)
+  assert.match(container, /fetchHistory\(userId, persona\)/)
 })
 
 test('MXL-006 публикует единый AI typography baseline без backend изменений', () => {
