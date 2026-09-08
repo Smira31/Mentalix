@@ -22,8 +22,8 @@ function JournalBanner({ onOpen }) {
       </div>
       <div className="mx-layered-catalog__journal-hero-copy">
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
-        <h3>Собери день в четыре шага</h3>
-        <p>Идея, действие, анализ и новый шаг — спокойно, в своём темпе.</p>
+        <h3>Разбери день на части</h3>
+        <p>Семь простых вопросов: от того, что происходит, — к одному маленькому шагу.</p>
         <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
           Открыть журнал <ArrowRight size={15} />
         </button>
@@ -54,9 +54,6 @@ function PracticeRail({ practices, onOpen }) {
           >
             <span className="mx-layered-catalog__avatar" aria-hidden="true">
               <PracticeGlyph kind={practice.kind} highlighted={index === 0} />
-            </span>
-            <span className="mx-layered-catalog__rail-menu" aria-hidden="true">
-              •••
             </span>
             <span className="mx-layered-catalog__rail-badge">
               {index === 0 ? 'НОВОЕ' : 'РЕКОМЕНДОВАНО'}
