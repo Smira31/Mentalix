@@ -267,6 +267,12 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
   const [error, setError] = useState(false)
 
+  const [savedCheckinId, setSavedCheckinId] = useState(null)
+
+  const [scoutBusy, setScoutBusy] = useState(false)
+
+  const [scoutError, setScoutError] = useState('')
+
   const note = isEvening ? '' : morningDraftToNote(morningDraft)
 
   const morningWritingMode = morningDraft?.mode || 'brief'
@@ -406,6 +412,12 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
         throw new Error('Backend не подтвердил закрытие дня')
       }
 
+      // MXL-AI-HANDOFF-001: вечерний разбор сохраняется заранее, чтобы
+      // хендофф к Следопыту мог отметить сегодняшнюю запись для AI-контекста.
+      if (isEvening) {
+        setSavedCheckinId(savedCheckin?.id ?? null)
+      }
+
       if (!isEvening) {
         clearCheckinDraft({ userId: user.id })
         setSavedMorningNote(note)
@@ -436,8 +448,55 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
     }
   }
 
-  function openScout() {
+  /*
+   * MXL-AI-HANDOFF-001: «Разобрать со Следопытом» — явный запрос разобрать
+   * именно сегодняшний день. Перед переходом в чат хендофф подтверждает
+   * персональный контекст: включает мастер-согласие (если выключено, через
+   * явное подтверждение) и отмечает только сегодняшнюю запись check-in.
+   * Вне Telegram per-entry выбор backend не разрешён — там поведение
+   * остаётся прежним (прямой переход в чат).
+   */
+  async function openScout() {
     platform.haptic('medium')
+
+    const canGrantAiContext = platform.name === 'telegram' && Number(user?.id) > 0
+
+    if (canGrantAiContext) {
+      const checkinId = savedCheckinId ?? existing?.id
+
+      setScoutBusy(true)
+      setScoutError('')
+
+      try {
+        if (!checkinId) {
+          throw new Error('checkin_id_missing')
+        }
+
+        const consent = await api.mentalix.contextConsent(user.id)
+
+        if (!consent?.enabled) {
+          const granted = window.confirm(
+            'Следопыт получит доступ к персональному контексту. Передавать можно только записи, отмеченные тобой: сейчас разрешится сегодняшний разбор — состояние, уроки и победы. Разрешить?'
+          )
+
+          if (!granted) {
+            return
+          }
+
+          await api.mentalix.setContextConsent(user.id, true)
+        }
+
+        await api.mentalix.setCheckinContext(user.id, checkinId, true)
+      } catch (error) {
+        console.error(error)
+
+        setScoutError('Не удалось разрешить разбор дня. Проверь соединение и попробуй ещё раз.')
+
+        return
+      } finally {
+        setScoutBusy(false)
+      }
+    }
 
     try {
       sessionStorage.setItem(MENTOR_PERSONA_KEY, 'dnevnik')
@@ -589,8 +648,8 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       mainAction?.run()
     },
     visible: Boolean(mainAction) && !isMorningNoteStep,
-    enabled: !saving,
-    loading: saving,
+    enabled: !saving && !scoutBusy,
+    loading: saving || scoutBusy,
   })
 
   useSecondaryButton({
@@ -604,7 +663,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
   const webAction =
     mainAction && !isMorningNoteStep
-      ? { text: mainAction.text, onClick: mainAction.run, disabled: saving }
+      ? { text: mainAction.text, onClick: mainAction.run, disabled: saving || scoutBusy }
       : null
 
   const webSecondaryAction =
@@ -637,6 +696,12 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                   ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
                   : 'Ты услышал себя — это тоже шаг.'}
               </p>
+
+              {scoutError && (
+                <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
+                  {scoutError}
+                </p>
+              )}
 
               {!isEvening && (
                 <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
