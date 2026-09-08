@@ -54,6 +54,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
   const [themes, setThemes] = useState([])
+  const [themesError, setThemesError] = useState(false)
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
@@ -105,9 +106,17 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
 
     try {
       const themesData = await api.themes.list(user.id)
-      setThemes(Array.isArray(themesData) ? themesData : [])
+      const list = Array.isArray(themesData) ? themesData : []
+      // MXL-525 G5: текущая неделя (is_current) должна идти первой в карусели.
+      setThemes(
+        list
+          .slice()
+          .sort((a, b) => (b.is_current === true ? 1 : 0) - (a.is_current === true ? 1 : 0))
+      )
+      setThemesError(false)
     } catch {
       setThemes([])
+      setThemesError(true)
     }
   }, [user])
 
@@ -257,6 +266,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
         rituals={rituals}
         ascezas={ascezas}
         themes={themes}
+        themesError={themesError}
         selectedCollectionKey={selectedCollectionKey}
         onCollectionChange={setSelectedCollectionKey}
         onOpenPractice={(practice, collectionKey = null) => {
