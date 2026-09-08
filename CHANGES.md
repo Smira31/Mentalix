@@ -1,5 +1,12 @@
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 08.09.2026 — MXL-AI-HANDOFF-001: вечерний разбор доходит до Следопыта (PR #542)
+
+- Issue #480: хендофф «Разобрать со Следопытом» теперь подтверждает персональный AI-контекст перед переходом в чат: при выключенном мастер-согласии показывает явное подтверждение и включает его, затем делает per-entry opt-in только сегодняшней записи check-in. Вне Telegram (web/email identity) поведение не меняется — backend запрещает per-entry выбор вне Telegram.
+- Backend-контракт подтверждён по `mentalix-bot/main`: контекст dnevnik собирается на сервере из БД только для отмеченных записей; значения дня в текст сообщения не дублируются (privacy).
+- Тесты: новый `tests/unit/ai-handoff-contract.test.mjs` (7 проверок); unit-набор — 224 pass. Пре-существующие 3 fail (design-guard, Lila/PracticeCatalog, ritual art-zone) воспроизводятся и на чистом `main`.
+- **Проверено частично:** только unit. **Не проверено:** lint/build/docs/UX на реальном iPhone/Telegram — ждут CI и ручного gate. Issue #480 не закрыт (критерии issue: сквозная проверка после мержа).
+
 ## 31.08.2026 — Performance-фикс 1/2: Onest/JetBrains Mono самостоятельный хостинг
 
 - `src/index.css` — убран внешний `@import url('https://fonts.googleapis.com/...')` для Onest/JetBrains Mono, заменён на `@fontsource/onest` + `@fontsource/jetbrains-mono` (тот же паттерн, что уже был у Manrope) — те же веса, что были в исходном Google Fonts URL (400/500/600/700/800 и 400/500), не весь диапазон пакета.
