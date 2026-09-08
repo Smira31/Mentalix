@@ -36,11 +36,15 @@ test('allowlist сохраняет доступные практики и акт
     'narrow-focus',
     'one-finish',
     'meditation',
+    // MXL-525 G6: brain/breathing/focus признаны доступными.
+    'brain',
+    'breathing',
+    'focus',
   ])
 
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.brain), false)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.breathing), false)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.focus), false)
+  assert.equal(isPracticeAvailable(PRACTICE_KEYS.brain), true)
+  assert.equal(isPracticeAvailable(PRACTICE_KEYS.breathing), true)
+  assert.equal(isPracticeAvailable(PRACTICE_KEYS.focus), true)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), true)
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
