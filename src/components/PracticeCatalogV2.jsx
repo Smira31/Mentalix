@@ -22,8 +22,8 @@ function JournalBanner({ onOpen }) {
       </div>
       <div className="mx-layered-catalog__journal-hero-copy">
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
-        <h3>Разбери день на части</h3>
-        <p>Семь простых вопросов: от того, что происходит, — к одному маленькому шагу.</p>
+        <h3>Собери день в четыре шага</h3>
+        <p>Идея, действие, анализ и новый шаг — спокойно, в своём темпе.</p>
         <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
           Открыть журнал <ArrowRight size={15} />
         </button>
