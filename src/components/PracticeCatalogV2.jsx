@@ -191,7 +191,7 @@ function CollectionGrid({ onOpen }) {
           <span>Собрано для тебя</span>
           <h3>Коллекции</h3>
         </div>
-        <small>5</small>
+        <small>{PRACTICE_COLLECTIONS.length}</small>
       </div>
       <div className="mx-layered-catalog__collections">
         {PRACTICE_COLLECTIONS.map(collection => (
