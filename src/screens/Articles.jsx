@@ -118,15 +118,27 @@ export default function Articles() {
   const [open, setOpen] = useState(null)
   const [articles, setArticles] = useState(() => initialArticles ?? [])
   const [loading, setLoading] = useState(() => initialArticles === null)
+  const [error, setError] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
-    fetchArticles({ force: initialArticlesState.shouldRefresh })
-      .then(data => setArticles(data))
+    fetchArticles({ force: initialArticlesState.shouldRefresh || retryCount > 0 })
+      .then(data => {
+        setArticles(data)
+        setError(false)
+      })
       .catch(e => {
         console.error(e)
+        setError(true)
       })
       .finally(() => setLoading(false))
-  }, [initialArticlesState])
+  }, [initialArticlesState, retryCount])
+
+  function retryLoad() {
+    setError(false)
+    setLoading(true)
+    setRetryCount(c => c + 1)
+  }
 
   const list = useMemo(() => {
     const sorted = [...articles].sort((a, b) => String(b.date).localeCompare(String(a.date)))
@@ -139,6 +151,21 @@ export default function Articles() {
 
   if (loading) {
     return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
+  }
+
+  if (error && articles.length === 0) {
+    return (
+      <div className="px-6 pt-8 text-center" role="alert">
+        <p className="text-muted text-[13px]">Не удалось загрузить статьи. Проверь соединение.</p>
+        <button
+          type="button"
+          onClick={retryLoad}
+          className="mt-4 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+        >
+          Повторить
+        </button>
+      </div>
+    )
   }
 
   return (
