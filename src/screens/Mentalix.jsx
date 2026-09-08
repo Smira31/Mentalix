@@ -27,7 +27,6 @@ export function ConversationChat({
   conversationMeta = null,
   contextSlot = null,
   footerSlot = null,
-  hideHistory = false,
   onBack,
 }) {
   const [messages, setMessages] = useState([])
@@ -63,13 +62,7 @@ export function ConversationChat({
           combined = [AI_REFRAME_LEAD_MESSAGE, ...combined]
         }
 
-        if (!cancelled) {
-          const freshVisibleStart =
-            hideHistory && !initialPrompt && initialDisplayText
-              ? [{ role: 'user', content: String(initialDisplayText) }]
-              : []
-          setMessages(hideHistory ? freshVisibleStart : combined)
-        }
+        if (!cancelled) setMessages(combined)
       })
       .catch(error => {
         console.error(error)
@@ -81,7 +74,7 @@ export function ConversationChat({
     return () => {
       cancelled = true
     }
-  }, [user, persona, viaHandoff, withSafetyNotice, hideHistory, initialPrompt, initialDisplayText])
+  }, [user, persona, viaHandoff, withSafetyNotice])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
     const isVoiceMessage = typeof overrideText === 'string'

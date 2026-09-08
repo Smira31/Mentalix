@@ -448,8 +448,6 @@ export default function Conversation({
         </div>
       </div>
 
-      {footerSlot}
-
       {/* ── composer ── */}
 
       <div
@@ -625,6 +623,8 @@ export default function Conversation({
             </button>
           </div>
         </div>
+
+        {footerSlot}
       </div>
     </div>,
     document.body

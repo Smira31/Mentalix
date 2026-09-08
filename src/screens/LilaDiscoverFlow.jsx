@@ -5,6 +5,7 @@ import { platform } from '../platform'
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../data/lilaDiscoverCards'
 import { useSynced } from '../lib/store'
 import { ConversationChat } from './Mentalix'
+import './LilaDiscoverFlow.css'
 
 export const LILA_TOPIC_PROFILE_KEY = 'mx-lila-topic-profile-v1'
 
@@ -34,8 +35,8 @@ function ChoiceButton({ active, children, onClick }) {
 
 function StageShell({ children, title, onBack }) {
   return (
-    <div className="mx-screen-shell mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-5 pb-[max(40px,var(--app-safe-bottom,env(safe-area-inset-bottom,0px)))] pt-[max(18px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
-      <div className="mb-8 grid min-h-[42px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
+    <div className="mx-lila-stage mx-screen-shell mx-auto flex h-[100dvh] min-h-0 w-full max-w-md flex-col px-5 pb-[max(24px,var(--app-safe-bottom,env(safe-area-inset-bottom,0px)))] pt-[max(12px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
+      <div className="mx-lila-header grid min-h-[42px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
         <button
           type="button"
           onClick={onBack}
@@ -44,7 +45,7 @@ function StageShell({ children, title, onBack }) {
         >
           Назад
         </button>
-        <span className="font-display text-[18px] text-cream">{title}</span>
+        <span className="mx-type-section text-cream">{title}</span>
         <span aria-hidden="true" />
       </div>
       {children}
@@ -57,15 +58,17 @@ function Intro({ onStart, onBack }) {
     <StageShell title="Лила" onBack={onBack}>
       <div className="flex flex-1 flex-col">
         <p className="mx-section-label">ПРАКТИКА · ЛИЛА</p>
-        <h1 className="mt-3 font-display text-[29px] font-semibold leading-[1.05] tracking-[-0.03em] text-cream">
-          Когда неясно, с чего начать
-        </h1>
-        <p className="mt-4 max-w-[34ch] text-[14px] leading-relaxed text-muted">
+        <h1 className="mx-type-flow-title mt-2 text-cream">Когда неясно, с чего начать</h1>
+        <p className="mx-type-flow-body mt-3 max-w-[34ch] text-muted">
           Сначала опиши ситуацию своими словами. Затем выбери одну тему, чтобы начать разговор с
           Лилой. Это не тест и не диагноз.
         </p>
-        <div className="mt-auto pt-10">
-          <button type="button" onClick={onStart} className="cta-pill w-full px-6 py-4 text-[15px]">
+        <div className="mx-lila-action-zone mt-auto pt-6">
+          <button
+            type="button"
+            onClick={onStart}
+            className="cta-pill mx-type-flow-action w-full px-6 py-4"
+          >
             Описать ситуацию
           </button>
         </div>
@@ -78,25 +81,21 @@ function ThemePicker({ query, selectedCardId, onPick, onBack }) {
   return (
     <StageShell title="Тема" onBack={onBack}>
       <div className="flex flex-1 flex-col">
-        <h1 className="mt-3 font-display text-[27px] font-semibold leading-tight text-cream">
-          На что посмотрим внимательнее?
-        </h1>
-        <div className="mt-5 rounded-2xl bg-cream/[0.06] px-4 py-3 text-[13px] leading-relaxed text-muted">
-          {query}
-        </div>
-        <div className="mt-6 grid gap-3" role="group" aria-label="Темы Лилы">
+        <h1 className="mx-type-flow-title mt-2 text-cream">На что посмотрим внимательнее?</h1>
+        <div className="mx-lila-query-preview mx-type-flow-body mt-3 text-muted">{query}</div>
+        <div className="mt-4 grid gap-2" role="group" aria-label="Темы Лилы">
           {LILA_DISCOVER_CARDS.map(card => (
             <ChoiceButton
               key={card.id}
               active={selectedCardId === card.id}
               onClick={() => onPick(card.id)}
             >
-              <span className="block font-display text-[17px] text-cream">{card.title}</span>
-              <span className="mt-1 block leading-relaxed text-muted">{card.dilemma}</span>
+              <span className="mx-type-card block text-cream">{card.title}</span>
+              <span className="mx-type-list-body mt-1 block text-muted">{card.dilemma}</span>
             </ChoiceButton>
           ))}
         </div>
-        <p className="mt-auto pt-8 text-[12px] leading-relaxed text-faint">
+        <p className="mx-type-meta mt-auto pt-4 text-faint">
           Тема — только символический ориентир для разговора, не диагноз и не готовый ответ.
         </p>
       </div>
@@ -106,11 +105,9 @@ function ThemePicker({ query, selectedCardId, onPick, onBack }) {
 
 function ContextSlot({ card, query }) {
   return (
-    <div className="mx-auto mb-5 w-full max-w-md rounded-2xl border border-gold/20 bg-gold/[0.06] px-4 py-3">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gold">
-        Тема разговора · {card.title}
-      </div>
-      <div className="mt-1 line-clamp-3 text-[12px] leading-relaxed text-muted">{query}</div>
+    <div className="mx-lila-context mx-auto mb-3 w-full max-w-md">
+      <div className="mx-ai-meta text-gold">Тема разговора · {card.title}</div>
+      <div className="mx-ai-caption mt-1 line-clamp-1 text-muted">{query}</div>
     </div>
   )
 }
@@ -120,24 +117,22 @@ function Completion({ onOpenJournal, onBack }) {
     <StageShell title="Готово" onBack={onBack}>
       <div className="flex flex-1 flex-col">
         <p className="mx-section-label">ПРАКТИКА · ЗАВЕРШЕНО</p>
-        <h1 className="mt-3 font-display text-[27px] font-semibold leading-tight text-cream">
-          Разговор можно продолжить позже
-        </h1>
-        <p className="mt-4 text-[14px] leading-relaxed text-muted">
+        <h1 className="mx-type-flow-title mt-2 text-cream">Разговор можно продолжить позже</h1>
+        <p className="mx-type-flow-body mt-3 text-muted">
           Разговор завершён. Открой журнал отдельно или вернись к списку практик.
         </p>
-        <div className="mt-auto pt-10">
+        <div className="mx-lila-action-zone mt-auto pt-6">
           <button
             type="button"
             onClick={onOpenJournal}
-            className="cta-pill w-full px-6 py-4 text-[15px]"
+            className="cta-pill mx-type-flow-action w-full px-6 py-4"
           >
             Открыть журнал
           </button>
           <button
             type="button"
             onClick={onBack}
-            className="mx-auto mt-3 block min-h-11 px-3 text-[13px] font-semibold text-muted active:text-gold"
+            className="mx-type-flow-action mx-auto mt-2 block min-h-11 px-3 text-muted active:text-gold"
           >
             Вернуться к практикам
           </button>
@@ -204,8 +199,8 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
 
   if (stage === 'query') {
     return (
-      <div className="mx-screen-shell mx-auto flex min-h-[100dvh] w-full max-w-md flex-col pb-[max(40px,var(--app-safe-bottom,env(safe-area-inset-bottom,0px)))] pt-[max(18px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
-        <div className="shrink-0 px-5">
+      <div className="mx-lila-stage mx-screen-shell mx-auto flex h-[100dvh] min-h-0 w-full max-w-md flex-col pt-[max(12px,var(--app-safe-top,env(safe-area-inset-top,0px)))]">
+        <div className="mx-lila-query-header shrink-0 px-5">
           <button
             type="button"
             onClick={goBack}
@@ -225,7 +220,7 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
           submitLabel="Выбрать тему"
           submitDisabled={!query.trim()}
           onSubmit={continueToTheme}
-          className="min-h-0 flex-1"
+          className="mx-lila-query-canvas min-h-0 flex-1"
         />
       </div>
     )
@@ -258,7 +253,6 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
         conversationMeta={LILA_CONVERSATION_META}
         initialPrompt={dialogStarted ? null : internalPrompt}
         initialDisplayText={query}
-        hideHistory
         contextSlot={<ContextSlot card={card} query={query} />}
         footerSlot={
           <div className="shrink-0 px-4 pb-2 pt-2">

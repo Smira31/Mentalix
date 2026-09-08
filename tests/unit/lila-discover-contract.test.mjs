@@ -103,6 +103,16 @@ test('MXL-LILA-UX-002 keeps initial query visible without resending after back/r
   assert.match(flow, /const \[dialogStarted, setDialogStarted\] = useState\(false\)/)
   assert.match(flow, /initialPrompt=\{dialogStarted \? null : internalPrompt\}/)
   assert.match(flow, /setDialogStarted\(true\)/)
-  assert.match(mentalix, /hideHistory = false/)
-  assert.match(mentalix, /hideHistory && !initialPrompt && initialDisplayText/)
+  assert.doesNotMatch(flow, /hideHistory/)
+  assert.match(mentalix, /if \(!cancelled\) setMessages\(combined\)/)
+  assert.match(mentalix, /send\(initialPrompt, initialDisplayText \|\| initialPrompt\)/)
+  assert.match(conversation, /scrollToEnd\(/)
+  assert.match(flow, /mx-lila-context/)
+})
+
+test('MXL-LILA-UX-003 keeps persistent history visible and scrolls to current context', () => {
+  assert.match(mentalix, /fetchHistory\(user\.id, persona\)/)
+  assert.match(mentalix, /setMessages\(combined\)/)
+  assert.match(conversation, /messages\.length/)
+  assert.match(conversation, /scrollToEnd\(firstPosition \? 'auto' : 'smooth'\)/)
 })
