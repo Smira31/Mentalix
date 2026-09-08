@@ -254,6 +254,11 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
         onCollectionChange={setSelectedCollectionKey}
         onOpenPractice={(practice, collectionKey = null) => {
           platform.haptic('light')
+          if (practice.key === 'lila-discover') {
+            setSelectedCollectionKey(null)
+            setSub('lila-discover')
+            return
+          }
           setSelectedCollectionKey(collectionKey)
           setSub(practice.sub)
         }}

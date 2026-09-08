@@ -174,3 +174,15 @@ test('MXL-LILA-UX-007 keeps query input on Mentalix tokens and removes azure foc
   assert.match(lilaCss, /practice-writing-canvas__field:focus-visible[\s\S]*outline: 0/)
   assert.doesNotMatch(lilaCss, /font-size: 1rem/)
 })
+
+test('MXL-LILA-UX-008 opens Lila directly from PracticeCatalogV2 without an intermediate detail surface', () => {
+  assert.match(practices, /if \(practice\.key === 'lila-discover'\)/)
+  assert.match(practices, /setSelectedCollectionKey\(null\)/)
+  assert.match(practices, /setSub\('lila-discover'\)/)
+  assert.match(practices, /return\n\s+\}/)
+})
+
+test('MXL-LILA-UX-009 makes static stages non-scrollable while leaving conversation ownership intact', () => {
+  assert.match(lilaCss, /overflow-y: hidden/)
+  assert.match(conversation, /FULLSCREEN_SCROLL_CLASS/)
+})
