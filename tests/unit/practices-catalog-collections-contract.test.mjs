@@ -19,3 +19,8 @@ test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): пустое состояние р�
   assert.match(source, /Открыть ритуалы/)
   assert.match(source, /Открыть аскезы/)
 })
+
+test('MXL-PRACTICES-CATALOG-POLISH-001 (G4): rail-карточки показывают мини-счётчик completion', () => {
+  assert.match(source, /practice\.progress && /)
+  assert.match(source, /practice\.key === 'rituals' \? 'выполнено' : 'удержано'/)
+})

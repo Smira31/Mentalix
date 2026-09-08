@@ -63,6 +63,11 @@ function PracticeRail({ practices, onOpen }) {
             </span>
             <span className="mx-layered-catalog__rail-category">{practice.section}</span>
             <strong>{practice.title}</strong>
+            {practice.progress && (
+              <small>
+                {practice.key === 'rituals' ? 'выполнено' : 'удержано'} {practice.progress}
+              </small>
+            )}
             <small>{practice.subtitle}</small>
           </button>
         ))}
