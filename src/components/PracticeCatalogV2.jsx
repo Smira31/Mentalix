@@ -22,8 +22,8 @@ function JournalBanner({ onOpen }) {
       </div>
       <div className="mx-layered-catalog__journal-hero-copy">
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
-        <h3>Собери день в четыре шага</h3>
-        <p>Идея, действие, анализ и новый шаг — спокойно, в своём темпе.</p>
+        <h3>Разбери день на части</h3>
+        <p>Семь простых вопросов: от того, что происходит, — к одному маленькому шагу.</p>
         <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
           Открыть журнал <ArrowRight size={15} />
         </button>
@@ -203,9 +203,10 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
   const practiceItems = (collection.practiceKeys || [])
     .map(key => getPracticeByKey(practices, key))
     .filter(Boolean)
-  const liveItems =
-    collection.source === 'rituals' ? rituals : collection.source === 'ascezas' ? ascezas : []
+  const source = collection.source || null
+  const liveItems = source === 'rituals' ? rituals : source === 'ascezas' ? ascezas : []
   const items = liveItems.length ? liveItems : practiceItems
+  const openSource = () => onOpenPractice({ key: source, sub: source }, collection.key)
 
   return (
     <section className="mx-layered-category" aria-labelledby="production-category-title">
@@ -227,44 +228,57 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
       <div className="mx-layered-category__body">
         <section className="mx-layered-category__section">
           <span className="mx-layered-category__label">
-            {collection.source ? 'Твои данные' : 'Практики'}
+            {source ? 'Твои данные' : 'Практики'}
           </span>
-          <div className="mx-layered-category__grid">
-            {items.map(item => {
-              const practice = item.key ? item : null
-              const key = practice?.key || `${collection.key}-${item.id || itemLabel(item)}`
-              return (
-                <button
-                  className="mx-layered-category__card"
-                  type="button"
-                  key={key}
-                  disabled={!practice}
-                  onClick={() => practice && onOpenPractice(practice, collection.key)}
-                >
-                  <span className="mx-layered-category__art" aria-hidden="true">
-                    <span className="mx-layered-category__art-glyph">
-                      <PracticeGlyph kind={practice?.kind || collection.kind} />
+          {source && liveItems.length === 0 ? (
+            <div className="mx-layered-category__body">
+              <p className="text-muted text-[13px]">
+                {source === 'rituals'
+                  ? 'Здесь появятся твои ритуалы.'
+                  : 'Здесь появятся твои аскезы.'}
+              </p>
+              <button type="button" className="mx-layered-catalog__pill" onClick={openSource}>
+                {source === 'rituals' ? 'Открыть ритуалы' : 'Открыть аскезы'}
+              </button>
+            </div>
+          ) : (
+            <div className="mx-layered-category__grid">
+              {items.map(item => {
+                const isLive = !item.key
+                const practice = item.key ? item : null
+                const key = practice?.key || `${collection.key}-${item.id || itemLabel(item)}`
+                return (
+                  <button
+                    className="mx-layered-category__card"
+                    type="button"
+                    key={key}
+                    onClick={() => (isLive ? openSource() : practice && onOpenPractice(practice, collection.key))}
+                  >
+                    <span className="mx-layered-category__art" aria-hidden="true">
+                      <span className="mx-layered-category__art-glyph">
+                        <PracticeGlyph kind={practice?.kind || collection.kind} />
+                      </span>
+                      <span className="mx-layered-category__art-base" />
                     </span>
-                    <span className="mx-layered-category__art-base" />
-                  </span>
-                  <strong>{practice?.title || itemLabel(item)}</strong>
-                  <small>
-                    {practice?.subtitle ||
-                      (collection.source === 'rituals'
-                        ? item.today_level
-                          ? 'сегодня выполнено'
-                          : 'открыть ритуалы'
-                        : item.today_status === 'held'
-                          ? 'сегодня удержано'
-                          : 'открыть аскезы')}
-                  </small>
-                  {practice?.completedToday && (
-                    <span className="mx-layered-category__completion">сегодня</span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
+                    <strong>{practice?.title || itemLabel(item)}</strong>
+                    <small>
+                      {practice?.subtitle ||
+                        (source === 'rituals'
+                          ? item.today_level
+                            ? 'сегодня выполнено'
+                            : 'открыть ритуалы'
+                          : item.today_status === 'held'
+                            ? 'сегодня удержано'
+                            : 'открыть аскезы')}
+                    </small>
+                    {practice?.completedToday && (
+                      <span className="mx-layered-category__completion">сегодня</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </section>
       </div>
     </section>
