@@ -120,6 +120,82 @@
   flex-basis: 46%;
 }
 
+.mx-rituals-screen {
+  overscroll-behavior-y: none;
+}
+
+.mx-rituals-screen__carousel {
+  overscroll-behavior-y: none;
+}
+
+/* Issue #524 production contract: compact shell, frozen Variant A card geometry. */
+.mx-rituals-screen,
+.mx-ascezas-screen {
+  position: relative;
+}
+
+.mx-rituals-screen__header,
+.mx-ascezas-screen__header {
+  min-height: 20px;
+  margin-bottom: 0;
+}
+
+.mx-rituals-screen__summary,
+.mx-ascezas-screen__summary {
+  position: absolute;
+  top: 26px;
+  right: 0.25rem;
+  left: 0.25rem;
+  margin-bottom: 0;
+}
+
+.mx-rituals-screen__carousel,
+.mx-ascezas-screen__carousel {
+  padding-top: 24px;
+}
+
+.mx-rituals-contract-card,
+.mx-ascezas-contract-card {
+  position: relative;
+  height: 620px;
+  min-height: 620px;
+  max-height: 620px;
+  padding: 20px;
+}
+
+.mx-rituals-contract-art,
+.mx-ascezas-contract-art {
+  position: absolute;
+  top: 72px;
+  right: 18px;
+  left: 18px;
+  height: 250px;
+  margin: 0;
+  border: 0;
+}
+
+.mx-rituals-contract-title,
+.mx-ascezas-contract-title {
+  position: absolute;
+  top: 350px;
+  right: 20px;
+  left: 20px;
+  margin: 0;
+}
+
+.mx-rituals-contract-actions {
+  position: absolute;
+  top: 454px;
+  right: 20px;
+  left: 20px;
+  margin: 0;
+  padding-top: 0;
+}
+
+.mx-ascezas-contract-actions {
+  margin-top: 28px;
+}
+
 @media (max-height: 650px) {
   .practice-detail-card {
     min-height: 400px;

@@ -65,9 +65,9 @@ function RitualCard({ ritual, onLog, onDelete, onRestore }) {
 
   return (
     <div
-      className={`practice-motion-card practice-detail-card relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 ${
+      className={`practice-motion-card mx-practice-flow__surface practice-detail-card mx-rituals-contract-card relative rounded-[28px] overflow-y-auto overscroll-contain border flex flex-col shrink-0 snap-center w-[84%] p-5 ${
         celebrate ? 'animate-glow-pulse' : ''
-      } ${level ? 'bg-gold/10 border-gold/30' : 'bg-emerald border-cream/12'}`}
+      } bg-emerald border-cream/12`}
     >
       {/* серия — вверху, там её ищут глазами первой */}
       <div className="flex items-center justify-between gap-3 shrink-0">
@@ -109,7 +109,7 @@ function RitualCard({ ritual, onLog, onDelete, onRestore }) {
        * сразу, без правок в базе.
        */}
       <div
-        className={`-mx-5 basis-1/3 shrink-0 min-h-0 mt-3 bg-artbed border-y border-cream/[0.06] mx-practice-detail-art ${
+        className={`-mx-5 shrink-0 min-h-0 mt-3 bg-artbed border-0 mx-practice-detail-art mx-rituals-contract-art ${
           level ? 'opacity-100' : 'opacity-70'
         }`}
       >
@@ -117,7 +117,7 @@ function RitualCard({ ritual, onLog, onDelete, onRestore }) {
       </div>
 
       {/* название и смысл */}
-      <div className="mt-4">
+      <div className="mt-4 mx-rituals-contract-title">
         <h3 className="font-display text-[18px] text-cream leading-tight">{ritual.name}</h3>
 
         {ritual.goal && (
@@ -126,7 +126,7 @@ function RitualCard({ ritual, onLog, onDelete, onRestore }) {
       </div>
 
       {/* уровни */}
-      <div className="flex flex-col gap-3 pt-5 mt-auto">
+      <div className="flex flex-col gap-3 pt-5 mt-auto mx-rituals-contract-actions">
         {ritual.min_version && (
           <button
             onClick={() => handleLog('min')}
@@ -409,13 +409,13 @@ export default function Rituals({ user, onBack }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0">
-      <div className="flex items-center gap-3 mb-3 shrink-0">
+    <div className="mx-rituals-screen w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="flex items-center gap-3 mb-3 shrink-0 mx-rituals-screen__header">
         <BackButton onClick={onBack} />
         <h2 className="font-display text-[20px] text-cream lowercase">ритуалы.</h2>
       </div>
 
-      <p className="text-[12px] text-muted mb-4 px-1 shrink-0">
+      <p className="text-[12px] text-muted mb-4 px-1 shrink-0 mx-rituals-screen__summary">
         {rituals.length > 0
           ? `${doneCount} из ${rituals.length} закрыто сегодня`
           : 'обряды, что держат твой день'}
@@ -451,7 +451,7 @@ export default function Rituals({ user, onBack }) {
           <div
             ref={trackRef}
             onScroll={syncActive}
-            className="flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
+            className="mx-rituals-screen__carousel flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
             style={{ scrollbarWidth: 'none' }}
           >
             {rituals.map(r => (
