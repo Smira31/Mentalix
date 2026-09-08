@@ -418,7 +418,7 @@ test('локальный UX smoke по основному маршруту', asy
     })
 
     await page.goto('/')
-    await expect(page.getByRole('button', { name: 'Практики' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible()
 
     await captureScreen({
       page,
@@ -521,7 +521,7 @@ test('локальный UX smoke по основному маршруту', asy
     expect(reflectionPayload.text).toBe('**Важное**')
     await page.getByRole('button', { name: 'Назад' }).click()
 
-    await page.getByRole('button', { name: 'Практики' }).click()
+    await page.getByRole('button', { name: 'Шаги' }).click()
     await captureScreen({
       page,
       viewport,
@@ -987,7 +987,7 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
 
-    await page.getByRole('button', { name: 'Тренды' }).click()
+    await page.getByRole('button', { name: 'Прогресс' }).click()
     await captureScreen({
       page,
       viewport,
@@ -997,7 +997,7 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'Аналитика' })).toBeAttached()
-        await expect(page.getByRole('button', { name: 'Тренды' })).toHaveAttribute(
+        await expect(page.getByRole('button', { name: 'Прогресс' })).toHaveAttribute(
           'aria-current',
           'page'
         )
@@ -1055,7 +1055,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     })
 
     await page.goto('/')
-    await page.getByRole('button', { name: 'Наставник' }).click()
+    await page.getByRole('button', { name: 'Диалог' }).click()
     await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
     await expect(page.getByLabel('Выбранный собеседник')).toHaveCount(0)
     const cards = page.getByTestId('mentor-persona-card')
@@ -1354,7 +1354,7 @@ test('Today retry после критичного сбоя повторно за
   await page.getByRole('button', { name: 'Повторить' }).click()
   await expect.poll(() => ritualsRequests).toBe(4)
   await expect(page.getByRole('alert')).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Практики' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible()
   await context.close()
 })
 
@@ -1415,7 +1415,7 @@ test('Practice Catalog v2 psychological collection сохраняет origin п�
   const page = await context.newPage()
 
   await page.goto('/')
-  await page.getByRole('button', { name: 'Практики' }).click()
+  await page.getByRole('button', { name: 'Шаги' }).click()
   await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
   await page.locator('[data-collection-key="psychological"]').click()
   await expect(page.getByRole('heading', { name: 'Психологические практики.' })).toBeVisible()

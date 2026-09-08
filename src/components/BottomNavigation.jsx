@@ -3,6 +3,10 @@ import { AlignJustify, House, Sparkles, BookOpen } from 'lucide-react'
 import MazeLogo from './MazeLogo'
 import { platform } from '../platform'
 
+// MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
+// Библиотека · Прогресс». Ключи вкладок не меняются — только пользовательские
+// названия. Названия персон внутри «Диалога» (Наставник/Собеседник/Следопыт)
+// и заголовки экранов это переименование не трогает.
 const TABS = [
   {
     key: 'today',
@@ -11,12 +15,12 @@ const TABS = [
   },
   {
     key: 'practices',
-    label: 'Практики',
+    label: 'Шаги',
     icon: Sparkles,
   },
   {
     key: 'mentor',
-    label: 'Наставник',
+    label: 'Диалог',
     icon: 'monogram',
   },
   {
@@ -26,7 +30,7 @@ const TABS = [
   },
   {
     key: 'trends',
-    label: 'Тренды',
+    label: 'Прогресс',
     icon: AlignJustify,
   },
 ]
