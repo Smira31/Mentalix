@@ -120,6 +120,14 @@
   flex-basis: 46%;
 }
 
+.mx-rituals-screen {
+  overscroll-behavior-y: none;
+}
+
+.mx-rituals-screen__carousel {
+  overscroll-behavior-y: none;
+}
+
 @media (max-height: 650px) {
   .practice-detail-card {
     min-height: 400px;
