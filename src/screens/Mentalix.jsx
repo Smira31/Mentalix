@@ -35,6 +35,7 @@ export function ConversationChat({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+  const [resultMessage, setResultMessage] = useState(null)
   const lastFailedSend = useRef(null)
   const initialPromptSent = useRef(false)
   const localMessageSequence = useRef(0)
@@ -115,6 +116,7 @@ export function ConversationChat({
       }
 
       setMessages(previous => [...previous, safeReply])
+      if (persona === 'kompas') setResultMessage(safeReply)
       invalidateHistory(user.id, persona)
       lastFailedSend.current = null
     } catch (error) {
@@ -160,6 +162,7 @@ export function ConversationChat({
       sendError={sendError}
       onRetry={retryLastSend}
       privacyControls={<AiPrivacyControls userId={user.id} onDataDeleted={handleAiDataDeleted} />}
+      resultMessage={resultMessage}
     />
   )
 }
