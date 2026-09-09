@@ -45,6 +45,7 @@ const ROUTES = {
   'UI-EXP-003': '?ui_lab=practice-catalog',
   'UI-EXP-005': '?ui_lab=library',
   'MXL-UI-LAB-EVENING-REVIEW-001': '?ui_lab=experiments',
+  'MXL-PROGRESS-UX-002': '?ui_lab=progress-observation',
 }
 
 export const journalExperiments = parseJournal().map(entry => ({

@@ -8,15 +8,15 @@
 
 ## Каноническая продуктовая очередь (после cleanup)
 
-| Порядок | Issue | ID / title            | Примечание                                                       |
-| ------: | ----- | --------------------- | ---------------------------------------------------------------- |
-|       — | —     | Execution queue пуста | Следующая задача появится только после отдельного owner decision |
+| Порядок | Issue                                                  | ID / title                                                              | Примечание                                                                                                                                  |
+| ------: | ------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+|       1 | [#557](https://github.com/Smira31/Mentalix/issues/557) | MXL-PROGRESS-UX-002 — альтернативный режим «Наблюдение + следующий шаг» | UI Lab candidate: одна описательная карточка, evidence/caveat и безопасный CTA только при однозначном состоянии; production/API не меняются |
 
 **Последний completed gate (09.09.2026):** [#527](https://github.com/Smira31/Mentalix/issues/527) via [PR #559](https://github.com/Smira31/Mentalix/pull/559) — owner QA PASS, production SHA `5d4fd43678ded8be0c0634c0974e37514c33d3bf`.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active work:** нет. #527 / `MXL-PROGRESS-UX-001` закрыта через PR #559: выбранный Вариант A — «Один главный вывод» — реализован, проверен owner PASS и опубликован в production. #557 / `MXL-PROGRESS-UX-002` остаётся backlog-only.
+**Active work:** #557 / `MXL-PROGRESS-UX-002`. Вариант D запускается только как Preview-only UI Lab candidate после owner PASS по #527; production, backend/API и нижняя навигация не меняются. Следующий gate — Compare, Preview и ручная проверка Telegram/iPhone.
 
 ## PARKED / NOT SCHEDULED
 
