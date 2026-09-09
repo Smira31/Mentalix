@@ -20,8 +20,15 @@ test('MXL-525 (G5): тема недели ставит is_current первой',
 
 test('MXL-525 (G5): ошибка загрузки тем отделена от пустого состояния', () => {
   assert.match(practicesSource, /setThemesError\(true\)/)
-  assert.match(catalogSource, /themesError = false/)
-  assert.match(catalogSource, /Темы не загрузились/)
-  assert.match(catalogSource, /Не удалось загрузить темы\. Проверь соединение и попробуй ещё раз\./)
-  assert.match(catalogSource, /Пока нет тем/)
+  assert.match(catalogSource, /themeError = false/)
+  assert.match(catalogSource, /Вопросы не загрузились/)
+  assert.match(catalogSource, /Не удалось загрузить тему\. Проверь соединение и попробуй ещё раз\./)
+  assert.match(catalogSource, /Пока нет вопросов/)
+})
+
+test('MXL-547: каталог использует четыре реальных вопроса текущей темы', () => {
+  assert.match(practicesSource, /api\.themes\.get\(currentTheme\.id, user\.id\)/)
+  assert.match(catalogSource, /theme\.days\.slice\(0, 4\)/)
+  assert.match(catalogSource, /\{question\.day \?\? index \+ 1\}/)
+  assert.doesNotMatch(catalogSource, /padStart/)
 })

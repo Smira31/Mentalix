@@ -155,12 +155,7 @@ function sanitizeReason(error) {
 }
 
 function overlap(a, b) {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  )
+  return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y
 }
 
 async function assertCommonScreenChecks(page, runtimeErrors) {
@@ -190,19 +185,22 @@ async function assertCommonScreenChecks(page, runtimeErrors) {
   })
 
   expect(geometry.bodyTextLength, 'Экран не должен быть пустым').toBeGreaterThan(20)
-  expect(geometry.documentWidth, 'document не должен иметь горизонтальный overflow').toBeLessThanOrEqual(
-    geometry.viewportWidth + 1
-  )
+  expect(
+    geometry.documentWidth,
+    'document не должен иметь горизонтальный overflow'
+  ).toBeLessThanOrEqual(geometry.viewportWidth + 1)
   expect(geometry.bodyWidth, 'body не должен иметь горизонтальный overflow').toBeLessThanOrEqual(
     geometry.viewportWidth + 1
   )
   expect(geometry.app, 'Корневой контейнер приложения должен существовать').not.toBeNull()
-  expect(geometry.app.left, 'Основной контент не должен выходить за левую границу').toBeGreaterThanOrEqual(
-    -1
-  )
-  expect(geometry.app.right, 'Основной контент не должен выходить за правую границу').toBeLessThanOrEqual(
-    geometry.viewportWidth + 1
-  )
+  expect(
+    geometry.app.left,
+    'Основной контент не должен выходить за левую границу'
+  ).toBeGreaterThanOrEqual(-1)
+  expect(
+    geometry.app.right,
+    'Основной контент не должен выходить за правую границу'
+  ).toBeLessThanOrEqual(geometry.viewportWidth + 1)
   expect(geometry.app.height, 'Основной контейнер должен занимать экран').toBeGreaterThanOrEqual(
     geometry.viewportHeight - 1
   )
@@ -228,7 +226,9 @@ async function assertCommonScreenChecks(page, runtimeErrors) {
 
       if (ctaStartsAboveNav) {
         const ctaLabel = (await criticalCtas.nth(index).innerText()).trim()
-        expect(overlap(ctaBox, navBox), `Нижняя навигация перекрывает CTA «${ctaLabel}»`).toBe(false)
+        expect(overlap(ctaBox, navBox), `Нижняя навигация перекрывает CTA «${ctaLabel}»`).toBe(
+          false
+        )
       }
     }
   }
@@ -268,12 +268,14 @@ async function assertBottomNavigationLabelsFit(page) {
   for (const label of labels) {
     expect(label.labelLeft, `Подпись «${label.name}» должна иметь геометрию`).not.toBeNull()
     expect(label.labelRight, `Подпись «${label.name}» должна иметь геометрию`).not.toBeNull()
-    expect(label.labelLeft, `Подпись «${label.name}» выходит за левую границу кнопки`).toBeGreaterThanOrEqual(
-      label.buttonLeft - epsilon
-    )
-    expect(label.labelRight, `Подпись «${label.name}» выходит за правую границу кнопки`).toBeLessThanOrEqual(
-      label.buttonRight + epsilon
-    )
+    expect(
+      label.labelLeft,
+      `Подпись «${label.name}» выходит за левую границу кнопки`
+    ).toBeGreaterThanOrEqual(label.buttonLeft - epsilon)
+    expect(
+      label.labelRight,
+      `Подпись «${label.name}» выходит за правую границу кнопки`
+    ).toBeLessThanOrEqual(label.buttonRight + epsilon)
   }
 
   for (let index = 1; index < labels.length; index += 1) {
@@ -288,14 +290,17 @@ async function assertBottomNavigationLabelsFit(page) {
 }
 
 async function assertSoonControls(page) {
-  const meditationCard = page
+  const lilaCard = page
     .locator('.mx-layered-catalog__rail-card')
-    .filter({ hasText: 'Медитация' })
-  await expect(meditationCard).toBeEnabled()
-  await meditationCard.click()
-  await expect(page.getByRole('heading', { name: 'Вернись к тому, что действительно зависит от тебя' })).toBeVisible()
-  await page.getByRole('button', { name: 'Назад' }).click()
-  await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+    .filter({ hasText: 'Разобраться через Лилу' })
+  const motivationCard = page
+    .locator('.mx-layered-catalog__rail-card')
+    .filter({ hasText: 'Импульс к действию' })
+  const focusCard = page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Фокус' })
+
+  await expect(lilaCard).toBeEnabled()
+  await expect(motivationCard).toBeDisabled()
+  await expect(focusCard).toBeDisabled()
 }
 
 async function assertLibrarySoonControl(page) {
@@ -359,7 +364,8 @@ function buildReport(results) {
   )
   const failed = results.filter(result => result.status === 'fail').length
 
-  return `# Mentalix UX check\n\n` +
+  return (
+    `# Mentalix UX check\n\n` +
     `Результат: **${failed === 0 ? 'PASS' : 'FAIL'}** — ${results.length - failed}/${results.length} экранов прошли проверки.\n\n` +
     `| Экран | Viewport | Статус | Причина | Screenshot |\n` +
     `| --- | --- | --- | --- | --- |\n` +
@@ -375,6 +381,7 @@ function buildReport(results) {
     `- визуальное сравнение восьми anchor-состояний на четырёх mobile viewport.\n\n` +
     `## Обязательный ручной iPhone gate\n\n` +
     `Этот отчёт не является доказательством корректности Telegram safe-area, iOS keyboard, fullscreen Telegram, swipe physics или WebView performance. Эти пять областей нужно проверять вручную на реальном iPhone внутри Telegram.\n`
+  )
 }
 
 test('локальный UX smoke по основному маршруту', async ({ browser, baseURL }) => {
@@ -472,7 +479,9 @@ test('локальный UX smoke по основному маршруту', asy
     const checkinCloseButton = page.locator('button[aria-label="Закрыть"]')
     await checkinCloseButton.click()
 
-    const draftDialog = page.locator('[role="dialog"][aria-labelledby="checkin-draft-dialog-title"]')
+    const draftDialog = page.locator(
+      '[role="dialog"][aria-labelledby="checkin-draft-dialog-title"]'
+    )
     await expect(draftDialog).toBeVisible()
     await draftDialog.getByRole('button', { name: 'Закрыть' }).click()
 
@@ -538,7 +547,11 @@ test('локальный UX smoke по основному маршруту', asy
         const journalBox = await journalEntry.boundingBox()
         const collectionsBox = await collectionsHeading.boundingBox()
         expect(journalBox?.y || 0).toBeLessThan(collectionsBox?.y || Number.POSITIVE_INFINITY)
-        await assertClickable(page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Ритуалы' }))
+        await assertClickable(
+          page
+            .locator('.mx-layered-catalog__collection')
+            .filter({ hasText: 'Психологические практики' })
+        )
         await assertSoonControls(page)
       },
     })
@@ -552,7 +565,9 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'Когда непонятно, что делать' })).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Когда непонятно, что делать' })
+        ).toBeVisible()
         await expect(page.getByText('Разложи день на четыре спокойных шага')).toHaveCount(0)
         await assertClickable(page.getByRole('button', { name: 'Начать' }))
       },
@@ -585,9 +600,12 @@ test('локальный UX smoke по основному маршруту', asy
       const editor = page.getByRole('textbox', { name: label })
       await expect(editor).toBeVisible()
       await editor.fill(text)
-      await page.getByRole('button', {
-        name: index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
-      }).click()
+      await page
+        .getByRole('button', {
+          name:
+            index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
+        })
+        .click()
     }
     await captureScreen({
       page,
@@ -597,7 +615,9 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'Хорошо. Следующий шаг готов.' })).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Хорошо. Следующий шаг готов.' })
+        ).toBeVisible()
         await assertClickable(page.getByRole('button', { name: 'Вернуться в дневник' }))
       },
     })
@@ -606,9 +626,9 @@ test('локальный UX smoke по основному маршруту', asy
     await page.locator('article.mx-layered-catalog__journal-hero button').click()
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Продолжить' }).click()
-    await expect(page.getByRole('textbox', { name: 'Какой маленький эксперимент попробуешь?' })).toHaveValue(
-      'Попробую начать с короткого сообщения'
-    )
+    await expect(
+      page.getByRole('textbox', { name: 'Какой маленький эксперимент попробуешь?' })
+    ).toHaveValue('Попробую начать с короткого сообщения')
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('textbox', { name: 'Что зависит от тебя сегодня?' })).toHaveValue(
       'Сегодня я могу сделать первый небольшой шаг'
@@ -621,7 +641,8 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Ритуалы' }).click()
+    await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Ритуалы' }).click()
+    await page.getByRole('button', { name: 'Открыть ритуалы' }).click()
     await captureScreen({
       page,
       viewport,
@@ -635,8 +656,10 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
+    await page.getByRole('button', { name: 'Назад к коллекциям' }).click()
 
-    await page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Аскезы' }).click()
+    await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Аскезы' }).click()
+    await page.getByRole('button', { name: 'Открыть аскезы' }).click()
     await captureScreen({
       page,
       viewport,
@@ -650,7 +673,9 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
+    await page.getByRole('button', { name: 'Назад к коллекциям' }).click()
 
+    await page.locator('[data-collection-key="psychological"]').click()
     await page.getByRole('button', { name: 'Первый шаг' }).click()
     await captureScreen({
       page,
@@ -722,7 +747,6 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-    await page.locator('[data-collection-key="psychological"]').click()
     await page.getByRole('button', { name: 'Одно из всех' }).click()
     await captureScreen({
       page,
@@ -732,9 +756,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(
-          page.getByRole('heading', { name: 'Сузь всё до одного дела' })
-        ).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'Сузь всё до одного дела' })).toBeVisible()
         await assertClickable(page.getByRole('button', { name: 'Начать' }))
       },
     })
@@ -892,7 +914,9 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'Вернись к делу без давления' })).toBeVisible()
+        await expect(
+          page.getByRole('heading', { name: 'Вернись к делу без давления' })
+        ).toBeVisible()
         await assertClickable(page.getByRole('button', { name: 'Начать' }))
       },
     })
@@ -1010,13 +1034,16 @@ test('локальный UX smoke по основному маршруту', asy
   await writeFile(path.join(ARTIFACT_ROOT, 'report.md'), buildReport(results), 'utf8')
 
   const failed = results.filter(result => result.status === 'fail')
-  expect(failed, `UX check: ${failed.map(item => `${item.viewport}/${item.screen}`).join(', ')}`).toEqual(
-    []
-  )
+  expect(
+    failed,
+    `UX check: ${failed.map(item => `${item.viewport}/${item.screen}`).join(', ')}`
+  ).toEqual([])
 })
 
-
-test('Mentor PersonaPicker сохраняет тематическую рамку и pager на mobile, tablet и desktop', async ({ browser, baseURL }) => {
+test('Mentor PersonaPicker сохраняет тематическую рамку и pager на mobile, tablet и desktop', async ({
+  browser,
+  baseURL,
+}) => {
   const layouts = [
     ...VIEWPORTS,
     { name: '768x1024', width: 768, height: 1024 },
@@ -1060,30 +1087,30 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await expect(page.getByLabel('Выбранный собеседник')).toHaveCount(0)
     const cards = page.getByTestId('mentor-persona-card')
     await expect(cards).toHaveCount(3)
-    expect(await cards.evaluateAll(elements => elements.map(element => getComputedStyle(element).borderTopWidth))).toEqual([
-      '1px',
-      '1px',
-      '1px',
-    ])
+    expect(
+      await cards.evaluateAll(elements =>
+        elements.map(element => getComputedStyle(element).borderTopWidth)
+      )
+    ).toEqual(['1px', '1px', '1px'])
     const pager = page.getByLabel('Страница собеседника')
     await expect(pager).toBeVisible()
     await expect(pager.getByRole('button')).toHaveCount(3)
-    await expect(pager.getByRole('button', { name: 'Собеседник, страница 1 из 3' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    )
+    await expect(
+      pager.getByRole('button', { name: 'Собеседник, страница 1 из 3' })
+    ).toHaveAttribute('aria-current', 'page')
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
-      const cardWidth = await cards.first().evaluate(element => element.getBoundingClientRect().width)
+      const cardWidth = await cards
+        .first()
+        .evaluate(element => element.getBoundingClientRect().width)
       await track.evaluate((element, scrollLeft) => {
         element.scrollLeft = scrollLeft
         element.dispatchEvent(new Event('scroll'))
       }, cardWidth + 12)
-      await expect(pager.getByRole('button', { name: 'Наставник, страница 2 из 3' })).toHaveAttribute(
-        'aria-current',
-        'page'
-      )
+      await expect(
+        pager.getByRole('button', { name: 'Наставник, страница 2 из 3' })
+      ).toHaveAttribute('aria-current', 'page')
     }
 
     await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
@@ -1100,8 +1127,10 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
   }
 })
 
-
-test('History показывает user-scoped local Journal на mobile и tablet', async ({ browser, baseURL }) => {
+test('History показывает user-scoped local Journal на mobile и tablet', async ({
+  browser,
+  baseURL,
+}) => {
   const layouts = [
     { name: '390x844', width: 390, height: 844 },
     { name: '768x1024', width: 768, height: 1024 },
@@ -1186,8 +1215,10 @@ test('History показывает user-scoped local Journal на mobile и tabl
   }
 })
 
-
-test('прямая web-ссылка объясняет Telegram Mini App и сохраняет OTP recovery', async ({ browser, baseURL }) => {
+test('прямая web-ссылка объясняет Telegram Mini App и сохраняет OTP recovery', async ({
+  browser,
+  baseURL,
+}) => {
   const context = await browser.newContext({
     baseURL,
     viewport: { width: 390, height: 844 },
@@ -1243,7 +1274,9 @@ test('прямая web-ссылка объясняет Telegram Mini App и со
   ).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Вход через браузер' })).toBeVisible()
   await expect(
-    page.getByText('Это поддерживаемый web-вход; он не обходит аутентификацию и не создаёт фиктивного пользователя.')
+    page.getByText(
+      'Это поддерживаемый web-вход; он не обходит аутентификацию и не создаёт фиктивного пользователя.'
+    )
   ).toBeVisible()
 
   const emailInput = page.getByRole('textbox', { name: 'Email для входа' })
@@ -1267,7 +1300,9 @@ test('прямая web-ссылка объясняет Telegram Mini App и со
   await codeInput.fill('000000')
   await verifyButton.press('Enter')
 
-  await expect(page.getByRole('alert')).toHaveText('Неверный или истёкший код. Проверь его и отправь ещё раз.')
+  await expect(page.getByRole('alert')).toHaveText(
+    'Неверный или истёкший код. Проверь его и отправь ещё раз.'
+  )
   await expect(codeInput).toHaveAttribute('aria-invalid', 'true')
   await expect(verifyButton).toBeEnabled()
   expect(verifyAttempts).toBe(1)
@@ -1279,13 +1314,18 @@ test('прямая web-ссылка объясняет Telegram Mini App и со
   await expect(verifyButton).toBeEnabled()
   await verifyButton.press('Enter')
   await expect(page.getByRole('heading', { name: 'Вход через браузер' })).toHaveCount(0)
-  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).id).toBe(42)
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).id).toBe(
+    42
+  )
   expect(verifyAttempts).toBe(2)
 
   await context.close()
 })
 
-test('Today не маскирует ошибку критичного API под пустой список практик', async ({ browser, baseURL }) => {
+test('Today не маскирует ошибку критичного API под пустой список практик', async ({
+  browser,
+  baseURL,
+}) => {
   const context = await browser.newContext({
     baseURL,
     viewport: { width: 390, height: 844 },
@@ -1322,7 +1362,10 @@ test('Today не маскирует ошибку критичного API под
   await context.close()
 })
 
-test('Today retry после критичного сбоя повторно загружает данные без пустого cache snapshot', async ({ browser, baseURL }) => {
+test('Today retry после критичного сбоя повторно загружает данные без пустого cache snapshot', async ({
+  browser,
+  baseURL,
+}) => {
   const context = await browser.newContext({
     baseURL,
     viewport: { width: 390, height: 844 },
@@ -1358,7 +1401,6 @@ test('Today retry после критичного сбоя повторно за
   await context.close()
 })
 
-
 test('Evening Review проходится real touch tap на 390x844', async ({ browser, baseURL }) => {
   const context = await browser.newContext({
     baseURL,
@@ -1385,7 +1427,12 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   await entryCta.tap()
   await expect(page.getByText('Фактический результат')).toBeVisible()
 
-  for (const option of ['Сделал главное', 'Ясность', 'Маленький шаг помогает', 'Начать с пяти минут']) {
+  for (const option of [
+    'Сделал главное',
+    'Ясность',
+    'Маленький шаг помогает',
+    'Начать с пяти минут',
+  ]) {
     await page.getByRole('radio', { name: option }).tap()
     await page.getByRole('button', { name: /Дальше|Закрыть день/ }).tap()
   }
@@ -1396,7 +1443,10 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   await context.close()
 })
 
-test('Practice Catalog v2 psychological collection сохраняет origin после guided flow', async ({ browser, baseURL }) => {
+test('Practice Catalog v2 psychological collection сохраняет origin после guided flow', async ({
+  browser,
+  baseURL,
+}) => {
   const context = await browser.newContext({
     baseURL,
     viewport: { width: 390, height: 844 },
@@ -1425,7 +1475,9 @@ test('Practice Catalog v2 psychological collection сохраняет origin п�
     page.getByRole('heading', { name: 'Сделай маленький шаг, когда трудно начать' })
   ).toBeVisible()
   await page.getByRole('button', { name: 'Начать' }).click()
-  await page.getByRole('textbox', { name: 'Дело, которое не двигается' }).fill('Подготовить презентацию')
+  await page
+    .getByRole('textbox', { name: 'Дело, которое не двигается' })
+    .fill('Подготовить презентацию')
   await page.getByRole('button', { name: 'Дальше' }).click()
   await page.getByRole('button', { name: 'Не знаю, с чего начать' }).click()
   await page.getByRole('textbox', { name: 'Первый шаг на пять минут' }).fill('Создать первый слайд')

@@ -207,7 +207,7 @@ test('MXL-LILA-UX-008 opens Lila directly from PracticeCatalogV2 without an inte
   assert.match(practices, /if \(practice\.key === 'lila-discover'\)/)
   assert.match(practices, /setSelectedCollectionKey\(null\)/)
   assert.match(practices, /setSub\('lila-discover'\)/)
-  assert.match(practices, /return\n\s+\}/)
+  assert.match(practices, /return\r?\n\s+\}/)
 })
 
 test('MXL-LILA-UX-009 makes static stages non-scrollable while leaving conversation ownership intact', () => {

@@ -1449,7 +1449,7 @@
   }
 }
 
-/* MXL-547 UI Lab only: keep the candidate rail isolated from production catalog styles. */
+/* MXL-547 owner-approved catalog modifier, shared by UI Lab and production. */
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__rail-section {
   gap: 8px;
 }
@@ -1531,7 +1531,7 @@
   }
 }
 
-/* MXL-547 preview contract; production catalog selectors remain untouched. */
+/* MXL-547 owner-approved weekly-question composition. */
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-section {
   --mxl-question-card-width: clamp(240px, 71vw, 276px);
   gap: 14px;

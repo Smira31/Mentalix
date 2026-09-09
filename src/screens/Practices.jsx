@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
@@ -54,7 +54,9 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
   const [themes, setThemes] = useState([])
+  const [themeLoading, setThemeLoading] = useState(true)
   const [themesError, setThemesError] = useState(false)
+  const themeRequestRef = useRef(0)
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
@@ -104,25 +106,45 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   const loadThemes = useCallback(async () => {
     if (!user) return
 
+    const requestId = ++themeRequestRef.current
+    setThemeLoading(true)
+    setThemesError(false)
+
     try {
       const themesData = await api.themes.list(user.id)
       const list = Array.isArray(themesData) ? themesData : []
       // MXL-525 G5: текущая неделя (is_current) должна идти первой в карусели.
-      setThemes(
-        list
-          .slice()
-          .sort((a, b) => (b.is_current === true ? 1 : 0) - (a.is_current === true ? 1 : 0))
-      )
+      const sorted = list
+        .slice()
+        .sort((a, b) => (b.is_current === true ? 1 : 0) - (a.is_current === true ? 1 : 0))
+      const currentTheme = sorted[0]
+
+      if (!currentTheme) {
+        if (themeRequestRef.current === requestId) setThemes([])
+        return
+      }
+
+      const detail = await api.themes.get(currentTheme.id, user.id)
+      if (themeRequestRef.current !== requestId) return
+
+      setThemes([{ ...currentTheme, ...detail }])
       setThemesError(false)
     } catch {
+      if (themeRequestRef.current !== requestId) return
       setThemes([])
       setThemesError(true)
+    } finally {
+      if (themeRequestRef.current === requestId) setThemeLoading(false)
     }
   }, [user])
 
   useEffect(() => {
     if (!user || sub !== null) return
     Promise.resolve().then(loadThemes)
+
+    return () => {
+      themeRequestRef.current += 1
+    }
   }, [loadThemes, sub, user])
 
   if (selectedThemeId) {
@@ -266,6 +288,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
         rituals={rituals}
         ascezas={ascezas}
         themes={themes}
+        themeLoading={themeLoading}
         themesError={themesError}
         selectedCollectionKey={selectedCollectionKey}
         onCollectionChange={setSelectedCollectionKey}

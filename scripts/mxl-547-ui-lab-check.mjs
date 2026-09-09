@@ -1,7 +1,8 @@
 import { chromium } from '@playwright/test'
 import fs from 'node:fs/promises'
 
-const baseURL = 'http://127.0.0.1:5173/?ui_lab=practice-catalog'
+const baseURL =
+  process.env.UI_LAB_BASE_URL || 'http://127.0.0.1:5173/?ui_lab=practice-catalog'
 const output = 'artifacts/mxl-547-ui-lab'
 const viewports = [
   { name: '390x844-initial', width: 390, height: 844 },
