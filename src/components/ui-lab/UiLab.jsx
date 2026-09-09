@@ -10,6 +10,7 @@ import DailyCanonicalExperiment from './DailyCanonicalExperiment'
 import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
+import LibraryExperiment from './LibraryExperiment'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -24,6 +25,7 @@ export function resolveUiLabSection(value = 'hub') {
       'compare',
       'daily-canonical',
       'practice-catalog',
+      'library',
       'focus-check',
     ].includes(value)
       ? value
@@ -156,6 +158,7 @@ export default function UiLab({ initialSection = 'hub' }) {
             </section>
           )}
           {section === 'focus-check' && <FocusCheck />}
+          {section === 'library' && <LibraryExperiment />}
         </div>
         <footer className="mx-ui-lab__footer">
           Preview-only · live sources подключаются в Telegram-сессии; production Practices.jsx не

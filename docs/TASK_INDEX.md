@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 07.09.2026 (после merge #529 / close #521). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog** на 09.09.2026 (после merge #553 / close #547). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -8,20 +8,16 @@
 
 ## Каноническая продуктовая очередь (после cleanup)
 
-| Порядок | Issue                                                                                                           | ID / title                                                             | Примечание                             |
-| ------: | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------- |
-|       1 | [#510](https://github.com/Smira31/Mentalix/issues/510) / [#522](https://github.com/Smira31/Mentalix/issues/522) | Редизайн дневника / MXL-SELF-DISCOVERY-UX-002                          | Следующий product gate                 |
-|       2 | [#523](https://github.com/Smira31/Mentalix/issues/523)                                                          | MXL-LILA-UX-001 — Lila Discover → Practices system                     |                                        |
-|       3 | [#524](https://github.com/Smira31/Mentalix/issues/524)                                                          | MXL-RITUALS-ASCEZAS-UX-001 — Rituals и Ascezas                         |                                        |
-|       4 | [#525](https://github.com/Smira31/Mentalix/issues/525)                                                          | MXL-PRACTICES-CATALOG-POLISH-001 — финальная сборка каталога           |                                        |
-|       5 | [#526](https://github.com/Smira31/Mentalix/issues/526)                                                          | MXL-LIBRARY-UX-001 — продуктовый редизайн Библиотеки                   |                                        |
-|       6 | [#527](https://github.com/Smira31/Mentalix/issues/527)                                                          | MXL-PROGRESS-UX-001 — tab «Прогресс»                                   | PARKED ref на PR #502 head `3490406c…` |
+| Порядок | Issue                                                  | ID / title                                           | Примечание                                                                                             |
+| ------: | ------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+|       1 | [#526](https://github.com/Smira31/Mentalix/issues/526) | MXL-LIBRARY-UX-001 — продуктовый редизайн Библиотеки | **В работе:** `UI-EXP-005`, ветка `codex/mxl-526-library-visual-contract`, сначала Preview-only UI Lab |
+|       2 | [#527](https://github.com/Smira31/Mentalix/issues/527) | MXL-PROGRESS-UX-001 — tab «Прогресс»                 | Не начинать до закрытия #526; PARKED ref на PR #502 head `3490406c…`                                   |
 
-**Completed (07.09.2026):** [#521](https://github.com/Smira31/Mentalix/issues/521) MXL-MEDITATION-UX-001 via [PR #529](https://github.com/Smira31/Mentalix/pull/529) (owner QA PASS).
+**Последний completed gate (09.09.2026):** [#547](https://github.com/Smira31/Mentalix/issues/547) via [PR #553](https://github.com/Smira31/Mentalix/pull/553) — owner QA PASS, production SHA `27b78f725a38b68e046a7b6466157125fbb9f767`.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active open PR:** нет.
+**Active work:** #526 / `UI-EXP-005`; локальный UI Lab `?ui_lab=library`, PR ещё не открыт.
 
 ## PARKED / NOT SCHEDULED
 

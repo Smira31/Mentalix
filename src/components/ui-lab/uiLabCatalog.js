@@ -43,6 +43,7 @@ const ROUTES = {
   'UI-EXP-001': '?ui_lab=compare',
   'UI-EXP-002': '?ui_lab=experiments',
   'UI-EXP-003': '?ui_lab=practice-catalog',
+  'UI-EXP-005': '?ui_lab=library',
   'MXL-UI-LAB-EVENING-REVIEW-001': '?ui_lab=experiments',
 }
 
