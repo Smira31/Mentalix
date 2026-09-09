@@ -145,6 +145,35 @@ try {
     await context.close()
     console.log(`${viewport.name}: PASS`)
   }
+
+  const errorContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  const errorPage = await errorContext.newPage()
+  await errorPage.addInitScript(currentUser => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(currentUser))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  }, user)
+  await errorContext.route('**/api/**', route => {
+    const url = new URL(route.request().url())
+    if (url.pathname === '/api/profile') return route.fulfill(json(user))
+    if (url.pathname === '/api/articles') return route.fulfill(json({ detail: 'Ошибка' }, 503))
+    return route.fulfill(json([]))
+  })
+  await errorPage.goto(`${BASE_URL}/?tab=library`, { waitUntil: 'networkidle' })
+  await errorPage.getByText('Материалы не загрузились', { exact: true }).waitFor()
+  await errorPage.getByRole('button', { name: 'Открыть Статьи' }).click()
+  await errorPage.getByText('Не удалось загрузить статьи. Проверь соединение.').waitFor()
+  await errorPage.getByRole('button', { name: 'Вернуться в библиотеку' }).click()
+  await errorPage.getByRole('heading', { name: 'библиотека.' }).waitFor()
+  await errorContext.close()
+  console.log('error-return: PASS')
 } finally {
   await browser.close()
 }

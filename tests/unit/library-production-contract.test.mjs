@@ -24,6 +24,7 @@ test('MXL-526 сохраняет честные границы функций', 
   assert.match(library, /soon/)
   assert.match(library, /СКОРО/)
   assert.match(articles, /initialArticle = null, onExit/)
+  assert.match(articles, /ArticlesCollectionHeader onExit=\{onExit\}/)
   assert.match(journals, /GuidedJournals\(\{ user, onExit \}\)/)
   assert.match(journals, /platformName === 'telegram'/)
 })

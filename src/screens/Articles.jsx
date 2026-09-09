@@ -105,6 +105,28 @@ function Reader({ article, onBack }) {
   )
 }
 
+function ArticlesCollectionHeader({ onExit }) {
+  if (!onExit) return null
+
+  return (
+    <>
+      <button
+        type="button"
+        className="mx-library-collection-back"
+        aria-label="Вернуться в библиотеку"
+        onClick={onExit}
+      >
+        <ArrowLeft size={19} />
+      </button>
+      <header className="mx-library-collection-header">
+        <span>Коллекция</span>
+        <h2>Статьи.</h2>
+        <p>Короткие материалы, которые помогают перейти от мысли к действию.</p>
+      </header>
+    </>
+  )
+}
+
 export default function Articles({ initialArticle = null, onExit }) {
   const [initialArticlesState] = useState(() => {
     const memoryArticles = peekArticles()
@@ -160,43 +182,35 @@ export default function Articles({ initialArticle = null, onExit }) {
   }
 
   if (loading) {
-    return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
+    return (
+      <div className="animate-fade-in">
+        <ArticlesCollectionHeader onExit={onExit} />
+        <p className="px-6 pt-8 text-[13px] text-muted">Загрузка...</p>
+      </div>
+    )
   }
 
   if (error && articles.length === 0) {
     return (
-      <div className="px-6 pt-8 text-center" role="alert">
-        <p className="text-muted text-[13px]">Не удалось загрузить статьи. Проверь соединение.</p>
-        <button
-          type="button"
-          onClick={retryLoad}
-          className="mt-4 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
-        >
-          Повторить
-        </button>
+      <div className="animate-fade-in">
+        <ArticlesCollectionHeader onExit={onExit} />
+        <div className="px-6 pt-8 text-center" role="alert">
+          <p className="text-[13px] text-muted">Не удалось загрузить статьи. Проверь соединение.</p>
+          <button
+            type="button"
+            onClick={retryLoad}
+            className="mt-4 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+          >
+            Повторить
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="animate-fade-in">
-      {onExit && (
-        <>
-          <button
-            type="button"
-            className="mx-library-collection-back"
-            aria-label="Вернуться в библиотеку"
-            onClick={onExit}
-          >
-            <ArrowLeft size={19} />
-          </button>
-          <header className="mx-library-collection-header">
-            <span>Коллекция</span>
-            <h2>Статьи.</h2>
-            <p>Короткие материалы, которые помогают перейти от мысли к действию.</p>
-          </header>
-        </>
-      )}
+      <ArticlesCollectionHeader onExit={onExit} />
       <div className="relative mb-4">
         <Search size={16} className="text-faint absolute left-4 top-1/2 -translate-y-1/2" />
         <input
