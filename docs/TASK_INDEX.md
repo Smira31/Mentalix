@@ -8,15 +8,15 @@
 
 ## Каноническая продуктовая очередь (после cleanup)
 
-| Порядок | Issue | ID / title            | Примечание                                                                               |
-| ------: | ----- | --------------------- | ---------------------------------------------------------------------------------------- |
-|       — | —     | Execution queue пуста | #557 завершена через PR #561; следующая product-задача требует отдельного owner decision |
+| Порядок | Issue                                                  | ID / title                | Примечание                                                                                   |
+| ------: | ------------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------- |
+|       1 | [#563](https://github.com/Smira31/Mentalix/issues/563) | MXL-PROGRESS-REDESIGN-001 | **В работе:** отдельный Preview-only UI Lab полного визуального редизайна вкладки «Прогресс» |
 
 **Последний completed gate (09.09.2026):** [#557](https://github.com/Smira31/Mentalix/issues/557) via [PR #561](https://github.com/Smira31/Mentalix/pull/561) — owner QA PASS, merge commit `f2b0a1e203a4b65c79d6bfd182416dd2c90c999f`; production deployment после merge проверяется отдельно.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active work:** нет. #557 / `MXL-PROGRESS-UX-002` закрыта через PR #561: candidate принят в UI Lab после owner PASS; production `Analytics.jsx`, backend/API и нижняя навигация не менялись. Следующий product scope требует отдельного owner decision.
+**Active work:** `MXL-PROGRESS-REDESIGN-001` / ветка `codex/mxl-progress-redesign-ui-lab`. Первый этап меняет только Visual Contract и Preview-only маршрут `?ui_lab=progress-redesign`; production `Analytics.jsx`, backend/API и нижняя навигация не меняются. Следующий gate — targeted checks, canonical Preview и owner iPhone/Telegram PASS.
 
 ## PARKED / NOT SCHEDULED
 
