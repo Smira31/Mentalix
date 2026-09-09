@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 09.09.2026 (после owner PASS и merge production PR #559). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog** на 09.09.2026 (после owner PASS и merge PR #561). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -8,15 +8,15 @@
 
 ## Каноническая продуктовая очередь (после cleanup)
 
-| Порядок | Issue                                                  | ID / title                                                              | Примечание                                                                                                                                  |
-| ------: | ------------------------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-|       1 | [#557](https://github.com/Smira31/Mentalix/issues/557) | MXL-PROGRESS-UX-002 — альтернативный режим «Наблюдение + следующий шаг» | UI Lab candidate: одна описательная карточка, evidence/caveat и безопасный CTA только при однозначном состоянии; production/API не меняются |
+| Порядок | Issue | ID / title            | Примечание                                                                               |
+| ------: | ----- | --------------------- | ---------------------------------------------------------------------------------------- |
+|       — | —     | Execution queue пуста | #557 завершена через PR #561; следующая product-задача требует отдельного owner decision |
 
-**Последний completed gate (09.09.2026):** [#527](https://github.com/Smira31/Mentalix/issues/527) via [PR #559](https://github.com/Smira31/Mentalix/pull/559) — owner QA PASS, production SHA `5d4fd43678ded8be0c0634c0974e37514c33d3bf`.
+**Последний completed gate (09.09.2026):** [#557](https://github.com/Smira31/Mentalix/issues/557) via [PR #561](https://github.com/Smira31/Mentalix/pull/561) — owner QA PASS, merge commit `f2b0a1e203a4b65c79d6bfd182416dd2c90c999f`; production deployment после merge проверяется отдельно.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active work:** #557 / `MXL-PROGRESS-UX-002`. Вариант D запускается только как Preview-only UI Lab candidate после owner PASS по #527; production, backend/API и нижняя навигация не меняются. Следующий gate — Compare, Preview и ручная проверка Telegram/iPhone.
+**Active work:** нет. #557 / `MXL-PROGRESS-UX-002` закрыта через PR #561: candidate принят в UI Lab после owner PASS; production `Analytics.jsx`, backend/API и нижняя навигация не менялись. Следующий product scope требует отдельного owner decision.
 
 ## PARKED / NOT SCHEDULED
 
