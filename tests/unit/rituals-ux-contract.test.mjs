@@ -31,7 +31,7 @@ test('Ritual card сохраняет flat canonical surface и локальны�
 test('Ritual card имеет одну outer border и art-zone без внутренней рамки', () => {
   const card = componentSlice('RitualCard', 'CreateRitualScreen')
   const cardOpening = card.match(/className=\{`([^`]*)\$\{/)?.[1] || ''
-  const artOpening = card.match(/className=\{`([^`]*)\$\{\n\s*level/)?.[1] || ''
+  const artOpening = card.match(/className=\{`([^`]*)\$\{\r?\n\s*level/)?.[1] || ''
 
   assert.match(cardOpening, /border/)
   assert.doesNotMatch(cardOpening, /border-[yt]-/)

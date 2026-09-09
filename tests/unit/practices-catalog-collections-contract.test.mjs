@@ -8,9 +8,15 @@ const source = await readFile(
 )
 
 test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): live-ритуалы/аскезы открываются, а не disabled', () => {
-  assert.match(source, /const openSource = \(\) => onOpenPractice\(\{ key: source, sub: source \}, collection\.key\)/)
+  assert.match(
+    source,
+    /const openSource = \(\) => onOpenPractice\(\{ key: source, sub: source \}, collection\.key\)/
+  )
   assert.doesNotMatch(source, /disabled=\{!practice\}/)
-  assert.match(source, /isLive \? openSource\(\) : practice && onOpenPractice\(practice, collection\.key\)/)
+  assert.match(
+    source,
+    /isLive \? openSource\(\) : practice && onOpenPractice\(practice, collection\.key\)/
+  )
 })
 
 test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): пустое состояние ритуалов/аскез имеет CTA', () => {
@@ -20,7 +26,11 @@ test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): пустое состояние р�
   assert.match(source, /Открыть аскезы/)
 })
 
-test('MXL-PRACTICES-CATALOG-POLISH-001 (G4): rail-карточки показывают мини-счётчик completion', () => {
-  assert.match(source, /practice\.progress && /)
-  assert.match(source, /practice\.key === 'rituals' \? 'выполнено' : 'удержано'/)
+test('MXL-547: верхний rail сохраняет рабочую Лилу и честно блокирует будущие карточки', () => {
+  assert.match(source, /key: 'lila-discover'/)
+  assert.match(source, /title: 'Разобраться через Лилу'/)
+  assert.match(source, /title: 'Импульс к действию с Львом'/)
+  assert.match(source, /title: 'Фокус'/)
+  assert.match(source, /disabled=\{!card\.active\}/)
+  assert.match(source, /onClick=\{\(\) => card\.active && onOpen\(card\.practice\)\}/)
 })

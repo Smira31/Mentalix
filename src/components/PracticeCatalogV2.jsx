@@ -3,12 +3,10 @@ import { ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react'
 
 import JournalArt from './practice-art/JournalArt'
 import SemanticGlyph from './SemanticGlyph'
-import {
-  getPracticeByKey,
-  PRACTICE_COLLECTIONS,
-  PRACTICE_RAIL_KEYS,
-} from '../lib/practiceCatalogRegistry'
+import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
 import './ui-lab/LayeredPracticeCatalogExperiment.css'
+
+const VISIBLE_COLLECTIONS = PRACTICE_COLLECTIONS.filter(collection => collection.key !== 'lila')
 
 function PracticeGlyph({ kind, highlighted = false }) {
   return <SemanticGlyph kind={kind} animated={false} highlighted={highlighted} />
@@ -33,39 +31,67 @@ function JournalBanner({ onOpen }) {
 }
 
 function PracticeRail({ practices, onOpen }) {
-  const railPractices = PRACTICE_RAIL_KEYS.map(key => getPracticeByKey(practices, key)).filter(
-    Boolean
-  )
+  const lila = getPracticeByKey(practices, 'lila-discover') || {
+    key: 'lila-discover',
+    title: 'Разобраться через Лилу',
+    subtitle: 'Карта, несколько вопросов и один рабочий шаг',
+    kind: 'journal',
+    sub: 'lila-discover',
+  }
+  const railCards = [
+    {
+      key: 'lila-discover',
+      title: 'Разобраться через Лилу',
+      category: 'Лила',
+      description: 'Карта, несколько вопросов и один рабочий шаг',
+      status: 'НОВОЕ',
+      kind: 'journal',
+      active: true,
+      practice: lila,
+    },
+    {
+      key: 'lion-action',
+      title: 'Импульс к действию с Львом',
+      category: 'Мотивация',
+      description: 'Мягкий толчок к делу, которое давно откладываешь',
+      status: 'СКОРО',
+      kind: 'purpose',
+      active: false,
+    },
+    {
+      key: 'focus-preview',
+      title: 'Фокус',
+      category: 'Концентрация',
+      description: 'Освободи мысли и верни внимание к одному важному делу',
+      status: 'СКОРО',
+      kind: 'focus',
+      active: false,
+    },
+  ]
 
   return (
     <section
       className="mx-layered-catalog__section mx-layered-catalog__rail-section"
       aria-label="Новое и рекомендованное"
     >
-      <div className="mx-layered-catalog__rail-label">Выбери новое или рекомендованное</div>
+      <div className="mx-layered-catalog__rail-label">Новое и рекомендованное</div>
       <div className="mx-layered-catalog__rail" data-accent="gold">
-        {railPractices.map((practice, index) => (
+        {railCards.map(card => (
           <button
             className="mx-layered-catalog__rail-card"
             type="button"
-            key={practice.key}
-            disabled={!practice.available}
-            onClick={() => onOpen(practice)}
+            key={card.key}
+            disabled={!card.active}
+            aria-label={card.active ? `Открыть ${card.title}` : `${card.title}, скоро`}
+            onClick={() => card.active && onOpen(card.practice)}
           >
             <span className="mx-layered-catalog__avatar" aria-hidden="true">
-              <PracticeGlyph kind={practice.kind} highlighted={index === 0} />
+              <PracticeGlyph kind={card.kind} highlighted={card.active} />
             </span>
-            <span className="mx-layered-catalog__rail-badge">
-              {index === 0 ? 'НОВОЕ' : 'РЕКОМЕНДОВАНО'}
-            </span>
-            <span className="mx-layered-catalog__rail-category">{practice.section}</span>
-            <strong>{practice.title}</strong>
-            {practice.progress && (
-              <small>
-                {practice.key === 'rituals' ? 'выполнено' : 'удержано'} {practice.progress}
-              </small>
-            )}
-            <small>{practice.subtitle}</small>
+            <span className="mx-layered-catalog__rail-badge">{card.status}</span>
+            <span className="mx-layered-catalog__rail-category">{card.category}</span>
+            <strong>{card.title}</strong>
+            <small>{card.description}</small>
           </button>
         ))}
       </div>
@@ -73,85 +99,100 @@ function PracticeRail({ practices, onOpen }) {
   )
 }
 
-function ThemeCarousel({ themes, themesError = false, onOpen }) {
-  const [themeIndex, setThemeIndex] = useState(0)
+function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen }) {
+  const [questionIndex, setQuestionIndex] = useState(0)
   const trackRef = useRef(null)
-
-  const safeThemeIndex = Math.min(themeIndex, Math.max(0, themes.length - 1))
+  const questions = useMemo(
+    () => (Array.isArray(theme?.days) ? theme.days.slice(0, 4) : []),
+    [theme]
+  )
+  const safeQuestionIndex = Math.min(questionIndex, Math.max(0, questions.length - 1))
 
   function handleScroll() {
     const track = trackRef.current
     if (!track || !track.clientWidth) return
-    setThemeIndex(Math.round(track.scrollLeft / track.clientWidth))
+    const cards = [...track.querySelectorAll('.mx-layered-catalog__theme')]
+    if (!cards.length) return
+
+    const center = track.scrollLeft + track.clientWidth / 2
+    const nextIndex = cards.reduce((closest, card, index) => {
+      const distance = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
+      const closestDistance = Math.abs(
+        cards[closest].offsetLeft + cards[closest].offsetWidth / 2 - center
+      )
+      return distance < closestDistance ? index : closest
+    }, 0)
+
+    setQuestionIndex(nextIndex)
   }
 
-  if (!themes.length) {
+  if (themeLoading || themeError || !theme || questions.length === 0) {
+    const title = themeLoading
+      ? 'Загружаю вопросы'
+      : themeError
+        ? 'Вопросы не загрузились'
+        : 'Пока нет вопросов'
+    const copy = themeLoading
+      ? 'Текущая тема появится через несколько секунд.'
+      : themeError
+        ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
+        : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'
+
     return (
-      <section className="mx-layered-catalog__section" aria-label="Тема недели">
+      <section className="mx-layered-catalog__section" aria-label="Тема недели" aria-live="polite">
         <div className="mx-layered-catalog__section-head">
           <div>
-            <span>Тема недели</span>
-            <h3>{themesError ? 'Темы не загрузились' : 'Пока нет тем'}</h3>
+            <span>Тема недели:</span>
+            <h3>{title}</h3>
           </div>
         </div>
-        <p className="mx-layered-catalog__empty-copy">
-          {themesError
-            ? 'Не удалось загрузить темы. Проверь соединение и попробуй ещё раз.'
-            : 'Опубликованные темы появятся здесь, когда backend вернёт их для пользователя.'}
-        </p>
+        <p className="mx-layered-catalog__empty-copy">{copy}</p>
       </section>
     )
   }
 
-  const activeTheme = themes[safeThemeIndex]
-
   return (
-    <section className="mx-layered-catalog__section" aria-label="Тема недели">
+    <section
+      className="mx-layered-catalog__section mx-layered-catalog__theme-section"
+      aria-labelledby="production-theme-title"
+    >
       <div className="mx-layered-catalog__section-head">
         <div>
-          <span>Тема недели</span>
-          <h3>Один вопрос</h3>
+          <span>Тема недели:</span>
+          <h3 id="production-theme-title">Один вопрос.</h3>
         </div>
-        <small>
-          {safeThemeIndex + 1} / {themes.length}
-        </small>
       </div>
       <div className="mx-layered-catalog__theme-track" ref={trackRef} onScroll={handleScroll}>
-        {themes.map((theme, index) => (
-          <button
+        {questions.map((question, index) => (
+          <article
             className="mx-layered-catalog__theme"
-            type="button"
-            key={theme.id}
-            onClick={() => onOpen(theme)}
+            key={question.day ?? index}
+            aria-label={`Вопрос ${question.day ?? index + 1}: ${question.text}`}
           >
             <span className="mx-layered-catalog__theme-copy">
-              <span className="mx-layered-catalog__theme-number">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <strong className="mx-layered-catalog__theme-question">{theme.title}</strong>
-              <span className="mx-layered-catalog__theme-subtitle">{theme.subtitle}</span>
-              <span className="mx-layered-catalog__theme-progress">
-                {theme.reflected_days || 0}/{theme.total_days || 0} дней
-              </span>
+              <span className="mx-layered-catalog__theme-number">{question.day ?? index + 1}</span>
+              <strong className="mx-layered-catalog__theme-question">{question.text}</strong>
+              {question.prompt && (
+                <span className="mx-layered-catalog__theme-subtitle">{question.prompt}</span>
+              )}
             </span>
-          </button>
+          </article>
         ))}
       </div>
-      <span className="mx-layered-catalog__dots" aria-hidden="true">
-        {themes.map(theme => (
+      <span
+        className="mx-layered-catalog__dots"
+        aria-label={`Вопрос ${safeQuestionIndex + 1} из ${questions.length}`}
+      >
+        {questions.map((question, index) => (
           <i
-            key={theme.id}
-            data-active={themes.indexOf(theme) === safeThemeIndex ? 'true' : undefined}
+            key={question.day ?? index}
+            data-active={index === safeQuestionIndex ? 'true' : undefined}
           />
         ))}
       </span>
       <div className="mx-layered-catalog__theme-actions">
-        <button
-          type="button"
-          className="mx-layered-catalog__pill"
-          onClick={() => onOpen(activeTheme)}
-        >
-          Открыть тему <ArrowRight size={15} />
+        <button type="button" className="mx-layered-catalog__pill" onClick={() => onOpen(theme)}>
+          Начать запись <ArrowRight size={15} />
         </button>
       </div>
     </section>
@@ -188,10 +229,10 @@ function CollectionGrid({ onOpen }) {
           <span>Собрано для тебя</span>
           <h3>Коллекции</h3>
         </div>
-        <small>{PRACTICE_COLLECTIONS.length}</small>
+        <small>{VISIBLE_COLLECTIONS.length}</small>
       </div>
       <div className="mx-layered-catalog__collections">
-        {PRACTICE_COLLECTIONS.map(collection => (
+        {VISIBLE_COLLECTIONS.map(collection => (
           <CollectionTile key={collection.key} collection={collection} onOpen={onOpen} />
         ))}
       </div>
@@ -294,6 +335,7 @@ export default function PracticeCatalogV2({
   rituals,
   ascezas,
   themes,
+  themeLoading = false,
   themesError = false,
   onOpenPractice,
   selectedCollectionKey = null,
@@ -321,10 +363,19 @@ export default function PracticeCatalogV2({
   }
 
   return (
-    <div className="mx-layered-catalog mx-production-catalog" data-accent="gold">
+    <div
+      className="mx-layered-catalog mx-production-catalog mx-layered-catalog--mxl-547-preview"
+      data-accent="gold"
+    >
       <JournalBanner onOpen={onOpenJournal} />
       <PracticeRail practices={visiblePractices} onOpen={onOpenPractice} />
-      <ThemeCarousel themes={themes} themesError={themesError} onOpen={onOpenTheme} />
+      <ThemeCarousel
+        key={themes?.[0]?.id ?? (themeLoading ? 'loading' : themesError ? 'error' : 'empty')}
+        theme={themes?.[0] || null}
+        themeLoading={themeLoading}
+        themeError={themesError}
+        onOpen={onOpenTheme}
+      />
       <CollectionGrid onOpen={collection => onCollectionChange?.(collection.key)} />
     </div>
   )
