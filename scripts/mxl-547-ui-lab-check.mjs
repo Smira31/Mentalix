@@ -24,6 +24,7 @@ for (const viewport of viewports) {
     scrollWidth: element.scrollWidth,
     clientWidth: element.clientWidth,
     scrollLeft: element.scrollLeft,
+    railRight: element.getBoundingClientRect().right,
     cards: [...element.querySelectorAll('.mx-layered-catalog__rail-card')].map(card => ({
       title: card.querySelector('strong')?.textContent,
       disabled: card.disabled,
@@ -58,7 +59,7 @@ if (
       result.soonCount !== 2 ||
       !result.mappingVisible ||
       (result.viewport === '390x844-scrolled' && result.afterScroll.scrollLeft <= 0) ||
-      result.initial.cards[2].right <= result.initial.clientWidth
+      result.initial.cards[2].right <= result.initial.railRight
   )
 ) {
   process.exit(1)

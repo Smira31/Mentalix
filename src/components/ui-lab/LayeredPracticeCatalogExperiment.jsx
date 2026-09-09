@@ -527,7 +527,7 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
       purpose="Preview-only композиция из реальных practice keys, live themes и пяти production-коллекций."
       mode={mode}
     >
-      <div className="mx-layered-catalog" data-accent="gold">
+      <div className="mx-layered-catalog mx-layered-catalog--mxl-547-preview" data-accent="gold">
         <JournalBanner onOpen={() => setJournalOpen(true)} />
         <PreviewStatus status={status} error={error} onReload={reload} />
         <PracticeRail practices={practices} onOpen={practice => setOpenedPractice(practice)} />
