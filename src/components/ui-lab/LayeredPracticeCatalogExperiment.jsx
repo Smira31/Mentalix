@@ -14,7 +14,6 @@ import {
   buildPracticeViewModels,
   getPracticeByKey,
   PRACTICE_COLLECTIONS as LAYERED_COLLECTIONS,
-  PRACTICE_RAIL_KEYS as LAYERED_RAIL_KEYS,
 } from '../../lib/practiceCatalogRegistry'
 import {
   LAYERED_CATALOG_DEMO_COMPLETED_KEYS,
@@ -69,37 +68,67 @@ function PracticeGlyph({ kind, highlighted = false }) {
 }
 
 function PracticeRail({ practices, onOpen }) {
-  const railPractices = LAYERED_RAIL_KEYS.map(key => getPracticeByKey(practices, key)).filter(
-    Boolean
-  )
+  const lila = getPracticeByKey(practices, 'lila-discover') || {
+    key: 'lila-discover',
+    title: 'Разобраться через Лилу',
+    subtitle: 'Карта, несколько вопросов и один рабочий шаг',
+    kind: 'journal',
+    sub: 'lila-discover',
+  }
+  const railCards = [
+    {
+      key: 'lila-discover',
+      title: 'Разобраться через Лилу',
+      category: 'Лила',
+      description: 'Карта, несколько вопросов и один рабочий шаг',
+      status: 'НОВОЕ',
+      kind: 'journal',
+      active: true,
+      practice: lila,
+    },
+    {
+      key: 'lion-action',
+      title: 'Импульс к действию с Львом',
+      category: 'Мотивация',
+      description: 'Мягкий толчок к делу, которое давно откладываешь',
+      status: 'СКОРО',
+      kind: 'purpose',
+      active: false,
+    },
+    {
+      key: 'focus',
+      title: 'Фокус',
+      category: 'Концентрация',
+      description: 'Освободи мысли и верни внимание к одному важному делу',
+      status: 'СКОРО',
+      kind: 'focus',
+      active: false,
+    },
+  ]
 
   return (
     <section
       className="mx-layered-catalog__section mx-layered-catalog__rail-section"
       aria-label="Новое и рекомендованное"
     >
-      <div className="mx-layered-catalog__rail-label">Выбери новое или рекомендованное</div>
+      <div className="mx-layered-catalog__rail-label">Новое и рекомендованное</div>
       <div className="mx-layered-catalog__rail" data-accent="gold">
-        {railPractices.map((practice, index) => (
+        {railCards.map(card => (
           <button
             className="mx-layered-catalog__rail-card"
             type="button"
-            key={practice.key}
-            disabled={!practice.available}
-            onClick={() => onOpen(practice)}
+            key={card.key}
+            disabled={!card.active}
+            aria-label={card.active ? `Открыть ${card.title}` : `${card.title}, скоро`}
+            onClick={() => card.active && onOpen(card.practice)}
           >
             <span className="mx-layered-catalog__avatar" aria-hidden="true">
-              <PracticeGlyph kind={practice.kind} highlighted={index === 0} />
+              <PracticeGlyph kind={card.kind} highlighted={card.active} />
             </span>
-            <span className="mx-layered-catalog__rail-menu" aria-hidden="true">
-              •••
-            </span>
-            <span className="mx-layered-catalog__rail-badge">
-              {index === 0 ? 'НОВОЕ' : 'РЕКОМЕНДОВАНО'}
-            </span>
-            <span className="mx-layered-catalog__rail-category">{practice.section}</span>
-            <strong>{practice.title}</strong>
-            <small>{practice.subtitle}</small>
+            <span className="mx-layered-catalog__rail-badge">{card.status}</span>
+            <span className="mx-layered-catalog__rail-category">{card.category}</span>
+            <strong>{card.title}</strong>
+            <small>{card.description}</small>
           </button>
         ))}
       </div>
@@ -221,10 +250,10 @@ function Collections({ onOpen }) {
           <span>Собрано для тебя</span>
           <h3 id="collections-title">Коллекции</h3>
         </div>
-        <small>5</small>
+        <small>4</small>
       </div>
       <div className="mx-layered-catalog__collections">
-        {LAYERED_COLLECTIONS.map(collection => (
+        {LAYERED_COLLECTIONS.filter(collection => collection.key !== 'lila').map(collection => (
           <CollectionTile key={collection.key} collection={collection} onOpen={onOpen} />
         ))}
       </div>

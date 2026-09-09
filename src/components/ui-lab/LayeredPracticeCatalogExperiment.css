@@ -1192,65 +1192,65 @@
   padding-bottom: 8px;
 }
 .mx-layered-catalog__rail-card {
-  flex-basis: calc((100% - 14px) / 2);
-  width: calc((100% - 14px) / 2);
-  min-width: calc((100% - 14px) / 2);
-  height: 286px;
-  min-height: 286px;
-  max-height: 286px;
-  padding: 18px;
-  padding-top: 114px;
-  border-radius: 26px;
+  flex: 0 0 43%;
+  width: 43%;
+  min-width: 43%;
+  height: 238px;
+  min-height: 238px;
+  max-height: 238px;
+  padding: 14px;
+  padding-top: 92px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  border-radius: 22px;
   background: rgb(var(--c-card2));
 }
 .mx-layered-catalog__avatar {
-  top: 22px;
-  width: 92px;
-  height: 92px;
+  top: 14px;
+  width: 68px;
+  height: 68px;
   background: rgb(var(--c-artbed));
 }
-.mx-layered-catalog__rail-menu {
-  position: absolute;
-  top: 16px;
-  right: 15px;
-  display: grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-muted));
-  font-size: 15px;
-  letter-spacing: 1px;
-  line-height: 1;
-}
 .mx-layered-catalog__rail-badge {
-  min-height: 25px;
-  padding: 4px 13px;
-  border: 0;
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  min-height: 20px;
+  padding: 3px 9px;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  font-size: 9px;
+  letter-spacing: 0.1em;
 }
 .mx-layered-catalog__rail-card:first-child .mx-layered-catalog__rail-badge {
-  background: rgb(137 163 255);
-  color: rgb(19 22 35);
+  border-color: rgb(var(--c-gold));
+  color: rgb(var(--c-gold));
 }
 .mx-layered-catalog__rail-category {
-  margin-top: 8px;
-  font-size: 10px;
+  margin-top: 3px;
+  color: rgb(var(--c-faint));
+  font-size: 9px;
 }
 .mx-layered-catalog__rail-card strong {
-  margin-top: 4px;
-  font-size: 20px;
-  line-height: 1.16;
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 1.2;
 }
 .mx-layered-catalog__rail-card small {
-  max-width: 190px;
-  margin-top: 7px;
-  font-size: 12px;
-  line-height: 1.4;
+  margin-top: 3px;
+  color: rgb(var(--c-muted));
+  font-size: 10px;
+  line-height: 1.35;
+}
+.mx-layered-catalog__rail-card:disabled {
+  border-color: rgb(var(--c-border));
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-muted));
+  cursor: not-allowed;
+}
+.mx-layered-catalog__rail-card:disabled .mx-layered-catalog__avatar {
+  filter: grayscale(1);
+}
+.mx-layered-catalog__rail-card:disabled .mx-layered-catalog__rail-badge {
+  color: rgb(var(--c-faint));
 }
 .mx-layered-catalog__journal-hero {
   grid-template-columns: 112px minmax(0, 1fr);
