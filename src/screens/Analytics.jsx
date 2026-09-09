@@ -522,6 +522,45 @@ function Metric({ label, value }) {
   )
 }
 
+function PrimaryObservationCard({ observation }) {
+  if (!observation) {
+    return (
+      <div className="mb-7 rounded-[20px] bg-emerald px-4 py-3.5 text-[14px] leading-relaxed text-muted">
+        Пока недостаточно отметок для наблюдения. Продолжай в своём темпе — данные появятся сами.
+      </div>
+    )
+  }
+
+  return (
+    <div
+      data-primary-observation="true"
+      className="mx-type-insight mb-7 rounded-[20px] border border-gold/25 bg-emerald px-4 py-4"
+    >
+      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold">
+        Главное наблюдение
+      </div>
+      <p className="text-[16px] leading-snug text-cream">{observation.text}</p>
+      {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
+        <p className="mt-3 text-[11px] text-muted">
+          Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
+          {observation.sourceDates?.length ? ` · ${observation.sourceDates.length} дат` : ''}
+        </p>
+      )}
+      {observation.sourceDates?.length > 0 && (
+        <details className="mt-2 text-[11px] text-muted">
+          <summary className="cursor-pointer select-none text-gold">
+            Даты в основе наблюдения
+          </summary>
+          <p className="mt-1 leading-relaxed">
+            {observation.sourceDates.map(formatSourceDate).join(' · ')}
+          </p>
+        </details>
+      )}
+      <p className="mt-3 text-[11px] leading-relaxed text-faint">{observation.caveat}</p>
+    </div>
+  )
+}
+
 export default function Analytics({ user, onGoCheckin }) {
   const [initialTrendsState] = useState(() => {
     if (!user) return null
@@ -669,45 +708,7 @@ export default function Analytics({ user, onGoCheckin }) {
             причины; они также не являются прогнозами.
           </p>
 
-          {observations.length > 0 ? (
-            <div className="space-y-2 mb-7">
-              {observations.map((observation, index) => (
-                <div
-                  key={`${observation.kind || 'observation'}-${index}`}
-                  className="mx-type-insight rounded-[20px] border border-gold/25 bg-emerald px-4 py-3.5"
-                >
-                  <p className="text-[14px] leading-snug text-cream">{observation.text}</p>
-                  {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-                    <p className="mt-2 text-[11px] text-muted">
-                      Основа: {observation.sampleSize}{' '}
-                      {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
-                      {observation.sourceDates?.length
-                        ? ` · ${observation.sourceDates.length} дат`
-                        : ''}
-                    </p>
-                  )}
-                  {observation.sourceDates?.length > 0 && (
-                    <details className="mt-2 text-[11px] text-muted">
-                      <summary className="cursor-pointer select-none text-gold">
-                        Даты в основе наблюдения
-                      </summary>
-                      <p className="mt-1 leading-relaxed">
-                        {observation.sourceDates.map(formatSourceDate).join(' · ')}
-                      </p>
-                    </details>
-                  )}
-                  <p className="mt-2 text-[11px] leading-relaxed text-faint">
-                    {observation.caveat}
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="mb-7 rounded-[20px] bg-emerald px-4 py-3.5 text-[14px] leading-relaxed text-muted">
-              Пока недостаточно отметок для наблюдения. Продолжай в своём темпе — данные появятся
-              сами.
-            </div>
-          )}
+          <PrimaryObservationCard observation={observations[0] ?? null} />
         </>
       ) : (
         <div

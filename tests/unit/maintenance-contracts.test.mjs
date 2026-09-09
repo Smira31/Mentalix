@@ -762,6 +762,21 @@ test('MXL-DS-LABEL-FONT-001 разрешает font-label только на eyeb
   assert.match(metricValueBlock, /font-display/)
 })
 
+test('MXL-527 отображает один главный вывод с evidence и safety caveat', () => {
+  const analytics = readFileSync(
+    new URL('../../src/screens/Analytics.jsx', import.meta.url),
+    'utf8'
+  )
+
+  assert.match(analytics, /function PrimaryObservationCard\(\{ observation \}\)/)
+  assert.match(analytics, /data-primary-observation="true"/)
+  assert.match(analytics, /observations\[0\] \?\? null/)
+  assert.match(analytics, /sampleSize/)
+  assert.match(analytics, /sourceDates/)
+  assert.match(analytics, /observation\.caveat/)
+  assert.doesNotMatch(analytics, /observations\.map\(/)
+})
+
 test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const heroIndex = today.indexOf('ГЕРОЙ-КАРТОЧКА')

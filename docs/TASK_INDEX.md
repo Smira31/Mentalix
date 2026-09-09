@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 09.09.2026 (после owner PASS и merge UI Lab PR #554). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog** на 09.09.2026 (после owner PASS и merge production PR #555). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -8,16 +8,15 @@
 
 ## Каноническая продуктовая очередь (после cleanup)
 
-| Порядок | Issue                                                  | ID / title                                           | Примечание                                                                                             |
-| ------: | ------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-|       1 | [#526](https://github.com/Smira31/Mentalix/issues/526) | MXL-LIBRARY-UX-001 — продуктовый редизайн Библиотеки | **В работе:** production-интеграция одобренного `UI-EXP-005`, ветка `codex/mxl-526-library-production` |
-|       2 | [#527](https://github.com/Smira31/Mentalix/issues/527) | MXL-PROGRESS-UX-001 — tab «Прогресс»                 | Не начинать до закрытия #526; PARKED ref на PR #502 head `3490406c…`                                   |
+| Порядок | Issue                                                  | ID / title                           | Примечание                                                                                                              |
+| ------: | ------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+|       1 | [#527](https://github.com/Smira31/Mentalix/issues/527) | MXL-PROGRESS-UX-001 — tab «Прогресс» | **Выбран Вариант A:** «Один главный вывод»; следующий шаг — UI Lab candidate и Compare на существующем `/api/analytics` |
 
 **Последний completed gate (09.09.2026):** [#547](https://github.com/Smira31/Mentalix/issues/547) via [PR #553](https://github.com/Smira31/Mentalix/pull/553) — owner QA PASS, production SHA `27b78f725a38b68e046a7b6466157125fbb9f767`.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active work:** #526 / `UI-EXP-005`; UI Lab одобрен владельцем и влит через PR #554. Production-интеграция использует реальные статьи и существующие направленные записи; следующий gate — exact-SHA Preview и ручная owner-проверка до merge.
+**Active work:** #527 / `MXL-PROGRESS-UX-001`; #526 закрыта через PR #555. Для #527 выбран Вариант A — «Один главный вывод»: одна описательная карточка наблюдения, период, sample/source/caveat и честные loading/error/empty states; следующий gate — UI Lab/Compare.
 
 ## PARKED / NOT SCHEDULED
 
