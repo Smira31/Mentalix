@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import ArticleCover from '../components/ArticleCover'
 import BackButton from '../components/BackButton'
-import { Search, ExternalLink, ArrowRight } from 'lucide-react'
+import { Search, ExternalLink, ArrowLeft, ArrowRight } from 'lucide-react'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
 import EmptyState from '../components/EmptyState'
 
@@ -66,7 +66,7 @@ function Reader({ article, onBack }) {
     .filter(Boolean)
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in">
+    <div className="w-full max-w-md animate-fade-in">
       <div className="mt-4 mb-5">
         <BackButton onClick={onBack} />
       </div>
@@ -105,7 +105,7 @@ function Reader({ article, onBack }) {
   )
 }
 
-export default function Articles() {
+export default function Articles({ initialArticle = null, onExit }) {
   const [initialArticlesState] = useState(() => {
     const memoryArticles = peekArticles()
     if (memoryArticles !== null) return { data: memoryArticles, shouldRefresh: false }
@@ -115,7 +115,7 @@ export default function Articles() {
   })
   const initialArticles = initialArticlesState.data
   const [query, setQuery] = useState('')
-  const [open, setOpen] = useState(null)
+  const [open, setOpen] = useState(initialArticle)
   const [articles, setArticles] = useState(() => initialArticles ?? [])
   const [loading, setLoading] = useState(() => initialArticles === null)
   const [error, setError] = useState(false)
@@ -147,7 +147,17 @@ export default function Articles() {
     return sorted.filter(a => `${a.title} ${a.excerpt} ${a.tag || ''}`.toLowerCase().includes(q))
   }, [articles, query])
 
-  if (open) return <Reader article={open} onBack={() => setOpen(null)} />
+  if (open) {
+    return (
+      <Reader
+        article={open}
+        onBack={() => {
+          if (initialArticle) onExit?.()
+          else setOpen(null)
+        }}
+      />
+    )
+  }
 
   if (loading) {
     return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
@@ -170,6 +180,23 @@ export default function Articles() {
 
   return (
     <div className="animate-fade-in">
+      {onExit && (
+        <>
+          <button
+            type="button"
+            className="mx-library-collection-back"
+            aria-label="Вернуться в библиотеку"
+            onClick={onExit}
+          >
+            <ArrowLeft size={19} />
+          </button>
+          <header className="mx-library-collection-header">
+            <span>Коллекция</span>
+            <h2>Статьи.</h2>
+            <p>Короткие материалы, которые помогают перейти от мысли к действию.</p>
+          </header>
+        </>
+      )}
       <div className="relative mb-4">
         <Search size={16} className="text-faint absolute left-4 top-1/2 -translate-y-1/2" />
         <input

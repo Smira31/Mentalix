@@ -383,7 +383,7 @@ test('MXL-JOURNAL-GUIDED-001 добавляет guided catalog и private templa
   const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 
   assert.match(library, /GuidedJournals/)
-  assert.match(library, /key: 'journals'/)
+  assert.match(library, /screen === 'journals'/)
   assert.match(guided, /Начать или продолжить/)
   assert.match(guided, /Личный шаблон виден только тебе/)
   assert.match(guided, /stepAnswerIsPresent/)
@@ -861,7 +861,7 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(practices, /mx-type-page/)
   assert.match(practices, /mx-practices-catalog-shell/)
   assert.match(library, /mx-type-page/)
-  assert.match(library, /mx-type-segment/)
+  assert.match(library, /mx-library-catalog/)
   assert.match(articles, /mx-type-article-title/)
   assert.match(articles, /mx-type-article-body/)
   assert.match(analytics, /mx-type-page/)

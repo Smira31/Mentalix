@@ -20,6 +20,7 @@
     "docs:drift": "node scripts/docs-drift.mjs",
     "doctor": "node scripts/project-doctor.mjs",
     "ux:check": "playwright test --config=playwright.ux.config.mjs",
+    "ux:library-production": "node scripts/mxl-526-library-production-check.mjs",
     "test:design-guard": "node scripts/design-guard.mjs",
     "ux:mazelogo": "playwright test --config=playwright.mazelogo.config.mjs",
     "ux:mxl010": "playwright test --config=playwright.mxl010.config.mjs",
