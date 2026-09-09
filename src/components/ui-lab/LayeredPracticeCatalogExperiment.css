@@ -1530,3 +1530,81 @@
     scroll-behavior: auto;
   }
 }
+
+/* MXL-547 preview contract; production catalog selectors remain untouched. */
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-section {
+  gap: 14px;
+  padding: 20px 0 18px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  background: rgb(var(--c-card2));
+}
+.mx-layered-catalog--mxl-547-preview
+  .mx-layered-catalog__theme-section
+  > .mx-layered-catalog__section-head {
+  padding: 0 20px;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-track {
+  width: 100%;
+  gap: 12px;
+  margin-inline: 0;
+  padding: 2px calc((100% - clamp(160px, 50vw, 260px)) / 2) 8px;
+  scroll-padding-inline: calc((100% - clamp(160px, 50vw, 260px)) / 2);
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme {
+  flex: 0 0 clamp(160px, 50vw, 260px);
+  width: clamp(160px, 50vw, 260px);
+  scroll-snap-align: center;
+  cursor: default;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-copy {
+  width: 100%;
+  min-height: 280px;
+  aspect-ratio: auto;
+  align-content: center;
+  gap: 14px;
+  padding: 30px 18px;
+  background: rgb(var(--c-card));
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-number {
+  color: rgb(var(--c-catalog-accent, var(--c-gold)));
+  font:
+    11px 'JetBrains Mono',
+    monospace;
+  letter-spacing: 0.12em;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-question {
+  max-width: 220px;
+  font-size: clamp(18px, 5vw, 23px);
+  text-transform: uppercase;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-subtitle {
+  max-width: 220px;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-progress {
+  color: rgb(var(--c-faint));
+  font:
+    10px 'JetBrains Mono',
+    monospace;
+  letter-spacing: 0.08em;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-actions {
+  margin-top: 0;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__collection-art {
+  right: 50%;
+  bottom: 10px;
+  left: auto;
+  width: clamp(30px, 10vw, 42px);
+  height: clamp(30px, 10vw, 42px);
+  transform: translateX(50%);
+  opacity: 0.62;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__collection-chevron {
+  z-index: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-track {
+    scroll-behavior: auto;
+  }
+}

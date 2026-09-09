@@ -169,10 +169,13 @@ function ThemeCarousel({ themes, onOpen }) {
   const activeTheme = themes[themeIndex]
 
   return (
-    <section className="mx-layered-catalog__section" aria-labelledby="theme-title">
+    <section
+      className="mx-layered-catalog__section mx-layered-catalog__theme-section"
+      aria-labelledby="theme-title"
+    >
       <div className="mx-layered-catalog__section-head">
         <div>
-          <span>Тема недели</span>
+          <span>ТЕМА НЕДЕЛИ</span>
           <h3 id="theme-title">Один вопрос</h3>
         </div>
         <small>
@@ -185,7 +188,8 @@ function ThemeCarousel({ themes, onOpen }) {
             className="mx-layered-catalog__theme"
             type="button"
             key={theme.id}
-            onClick={() => onOpen(theme)}
+            aria-label={`Тема ${theme.title}`}
+            tabIndex={-1}
           >
             <span className="mx-layered-catalog__theme-copy">
               <span className="mx-layered-catalog__theme-number">
@@ -194,13 +198,16 @@ function ThemeCarousel({ themes, onOpen }) {
               <strong className="mx-layered-catalog__theme-question">{theme.title}</strong>
               <span className="mx-layered-catalog__theme-subtitle">{theme.subtitle}</span>
               <span className="mx-layered-catalog__theme-progress">
-                {theme.reflected_days || 0}/{theme.total_days || 0} дней
+                {theme.reflected_days || 0}/{theme.total_days || 0} ДНЕЙ
               </span>
             </span>
           </button>
         ))}
       </div>
-      <span className="mx-layered-catalog__dots" aria-hidden="true">
+      <span
+        className="mx-layered-catalog__dots"
+        aria-label={`Тема ${themeIndex + 1} из ${themes.length}`}
+      >
         {themes.map(theme => (
           <i
             key={theme.id}

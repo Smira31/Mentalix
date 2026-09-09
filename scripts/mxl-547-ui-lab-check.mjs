@@ -17,8 +17,19 @@ const results = []
 for (const viewport of viewports) {
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height }, reducedMotion: 'reduce' })
   await page.goto(baseURL, { waitUntil: 'networkidle' })
-  const rail = page.locator('.mx-layered-catalog__rail')
+  const catalog = page.locator('.mx-layered-catalog--mxl-547-preview')
+  const rail = catalog.locator('.mx-layered-catalog__rail')
   await rail.waitFor()
+  const themeSection = catalog.locator('.mx-layered-catalog__theme-section')
+  const themeTrack = themeSection.locator('.mx-layered-catalog__theme-track')
+  const themeCards = themeTrack.locator('.mx-layered-catalog__theme')
+  if (await themeCards.count() !== 2) throw new Error('Expected exactly two demo themes')
+  for (const text of ['ТЕМА НЕДЕЛИ', 'Один вопрос', 'О меньшем усилии', 'Неделя о том, что не всё нужно тащить силой', '2/7 ДНЕЙ', 'Открыть тему']) {
+    if (!(await themeSection.getByText(text, { exact: true }).count())) throw new Error(`Missing theme text: ${text}`)
+  }
+  const firstTheme = await themeCards.nth(0).evaluate(element => element.getBoundingClientRect())
+  const trackBox = await themeTrack.evaluate(element => element.getBoundingClientRect())
+  if (Math.abs((firstTheme.left + firstTheme.right) / 2 - (trackBox.left + trackBox.right) / 2) > 2) throw new Error('First theme is not centered')
   const cardCount = await rail.locator('.mx-layered-catalog__rail-card').count()
   const initial = await rail.evaluate(element => ({
     scrollWidth: element.scrollWidth,
@@ -34,19 +45,26 @@ for (const viewport of viewports) {
   await page.screenshot({ path: `${output}/${viewport.name}.png`, fullPage: true })
 
   if (viewport.name === '390x844-scrolled') {
-    await rail.evaluate(element => { element.scrollLeft = element.scrollWidth })
+    await themeTrack.evaluate(element => { element.scrollLeft = element.scrollWidth })
     await page.waitForTimeout(50)
     await page.screenshot({ path: `${output}/${viewport.name}.png`, fullPage: true })
   }
 
-  const afterScroll = await rail.evaluate(element => ({ scrollLeft: element.scrollLeft, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }))
+  const themeState = await themeSection.evaluate(element => ({
+    counter: element.querySelector('.mx-layered-catalog__section-head small')?.textContent?.trim(),
+    activeDot: element.querySelector('.mx-layered-catalog__dots [data-active="true"]') !== null,
+  }))
+  const afterScroll = await themeTrack.evaluate(element => ({ scrollLeft: element.scrollLeft, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }))
   const lila = page.getByRole('button', { name: 'Открыть Разобраться через Лилу' })
   await lila.click()
   const mappingVisible = await page.getByText(/practiceKey=lila-discover/).isVisible()
   await page.goto(baseURL, { waitUntil: 'networkidle' })
   const soonCards = page.locator('.mx-layered-catalog__rail-card:disabled')
   const soonCount = await soonCards.count()
-  results.push({ viewport: viewport.name, cardCount, soonCount, initial, afterScroll, mappingVisible })
+  const collections = page.locator('.mx-layered-catalog__collection')
+  const collectionCount = await collections.count()
+  const collectionTitles = await collections.allTextContents()
+  results.push({ viewport: viewport.name, cardCount, soonCount, collectionCount, collectionTitles, themeState, initial, afterScroll, mappingVisible })
   await page.close()
 }
 
@@ -57,6 +75,9 @@ if (
     result =>
       result.cardCount !== 3 ||
       result.soonCount !== 2 ||
+      result.collectionCount !== 4 ||
+      !result.collectionTitles.some(title => title.includes('Психологические практики')) ||
+      result.collectionTitles.some(title => title.includes('Лила')) ||
       !result.mappingVisible ||
       (result.viewport === '390x844-scrolled' && result.afterScroll.scrollLeft <= 0) ||
       result.initial.cards[2].right <= result.initial.railRight
