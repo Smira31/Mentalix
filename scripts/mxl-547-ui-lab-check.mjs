@@ -23,10 +23,13 @@ for (const viewport of viewports) {
   const themeSection = catalog.locator('.mx-layered-catalog__theme-section')
   const themeTrack = themeSection.locator('.mx-layered-catalog__theme-track')
   const themeCards = themeTrack.locator('.mx-layered-catalog__theme')
-  if (await themeCards.count() !== 2) throw new Error('Expected exactly two demo themes')
-  for (const text of ['ТЕМА НЕДЕЛИ', 'Один вопрос', 'О меньшем усилии', 'Неделя о том, что не всё нужно тащить силой', '2/7 ДНЕЙ', 'Открыть тему']) {
+  if (await themeCards.count() !== 4) throw new Error('Expected exactly four demo questions')
+  for (const text of ['Тема недели:', 'Один вопрос.', 'Что сегодня можно сделать с меньшим усилием?', 'Заметь, где достаточно одного простого шага.', 'Начать запись']) {
     if (!(await themeSection.getByText(text, { exact: true }).count())) throw new Error(`Missing theme text: ${text}`)
   }
+  const questionNumbers = await themeCards.locator('.mx-layered-catalog__theme-number').allTextContents()
+  if (JSON.stringify(questionNumbers.map(text => text.trim())) !== JSON.stringify(['1', '2', '3', '4'])) throw new Error('Question numbers must be 1, 2, 3, 4')
+  if (questionNumbers.some(text => /0[1-4]/.test(text))) throw new Error('Padded question number found')
   const firstTheme = await themeCards.nth(0).evaluate(element => element.getBoundingClientRect())
   const trackBox = await themeTrack.evaluate(element => element.getBoundingClientRect())
   if (Math.abs((firstTheme.left + firstTheme.right) / 2 - (trackBox.left + trackBox.right) / 2) > 2) throw new Error('First theme is not centered')
@@ -51,13 +54,15 @@ for (const viewport of viewports) {
   }
 
   const themeState = await themeSection.evaluate(element => ({
-    counter: element.querySelector('.mx-layered-catalog__section-head small')?.textContent?.trim(),
+    label: element.querySelector('.mx-layered-catalog__dots')?.getAttribute('aria-label'),
+    dots: element.querySelectorAll('.mx-layered-catalog__dots i').length,
     activeDot: element.querySelector('.mx-layered-catalog__dots [data-active="true"]') !== null,
   }))
   const afterScroll = await themeTrack.evaluate(element => ({ scrollLeft: element.scrollLeft, scrollWidth: element.scrollWidth, clientWidth: element.clientWidth }))
-  const lila = page.getByRole('button', { name: 'Открыть Разобраться через Лилу' })
-  await lila.click()
-  const mappingVisible = await page.getByText(/practiceKey=lila-discover/).isVisible()
+  const activeQuestionText = await themeCards.nth(viewport.name === '390x844-scrolled' ? 3 : 0).locator('.mx-layered-catalog__theme-question').textContent()
+  const cta = page.getByRole('button', { name: 'Начать запись' })
+  await cta.click()
+  const mappingVisible = await page.getByText(activeQuestionText, { exact: true }).isVisible()
   await page.goto(baseURL, { waitUntil: 'networkidle' })
   const soonCards = page.locator('.mx-layered-catalog__rail-card:disabled')
   const soonCount = await soonCards.count()
@@ -75,6 +80,8 @@ if (
     result =>
       result.cardCount !== 3 ||
       result.soonCount !== 2 ||
+      result.themeState.dots !== 4 ||
+      !result.themeState.activeDot ||
       result.collectionCount !== 4 ||
       !result.collectionTitles.some(title => title.includes('Психологические практики')) ||
       result.collectionTitles.some(title => title.includes('Лила')) ||

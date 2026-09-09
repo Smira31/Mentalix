@@ -1533,6 +1533,7 @@
 
 /* MXL-547 preview contract; production catalog selectors remain untouched. */
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-section {
+  --mxl-question-card-width: clamp(240px, 71vw, 276px);
   gap: 14px;
   padding: 20px 0 18px;
   border: 1px solid rgb(var(--c-border));
@@ -1548,38 +1549,39 @@
   width: 100%;
   gap: 12px;
   margin-inline: 0;
-  padding: 2px calc((100% - clamp(160px, 50vw, 260px)) / 2) 8px;
-  scroll-padding-inline: calc((100% - clamp(160px, 50vw, 260px)) / 2);
+  padding: 2px calc((100% - var(--mxl-question-card-width)) / 2) 8px;
+  scroll-padding-inline: calc((100% - var(--mxl-question-card-width)) / 2);
 }
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme {
-  flex: 0 0 clamp(160px, 50vw, 260px);
-  width: clamp(160px, 50vw, 260px);
+  flex: 0 0 var(--mxl-question-card-width);
+  width: var(--mxl-question-card-width);
   scroll-snap-align: center;
   cursor: default;
 }
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-copy {
   width: 100%;
-  min-height: 280px;
+  min-height: 330px;
   aspect-ratio: auto;
   align-content: center;
-  gap: 14px;
+  gap: 16px;
   padding: 30px 18px;
   background: rgb(var(--c-card));
 }
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-number {
   color: rgb(var(--c-catalog-accent, var(--c-gold)));
-  font:
-    11px 'JetBrains Mono',
-    monospace;
+  font-size: 40px;
+  font-weight: 400;
   letter-spacing: 0.12em;
 }
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-question {
-  max-width: 220px;
-  font-size: clamp(18px, 5vw, 23px);
-  text-transform: uppercase;
+  max-width: 240px;
+  font-size: clamp(16px, 4.5vw, 18px);
+  line-height: 1.25;
 }
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-subtitle {
-  max-width: 220px;
+  max-width: 240px;
+  font-size: clamp(13px, 3.5vw, 15px);
+  line-height: 1.4;
 }
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-progress {
   color: rgb(var(--c-faint));
