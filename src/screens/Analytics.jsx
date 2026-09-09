@@ -525,7 +525,7 @@ function Metric({ label, value }) {
 function PrimaryObservationCard({ observation }) {
   if (!observation) {
     return (
-      <div className="mb-7 rounded-[20px] bg-emerald px-4 py-3.5 text-[14px] leading-relaxed text-muted">
+      <div className="mb-7 rounded-[20px] bg-emerald px-4 py-3.5 text-[15px] leading-relaxed text-muted">
         Пока недостаточно отметок для наблюдения. Продолжай в своём темпе — данные появятся сами.
       </div>
     )
@@ -536,18 +536,18 @@ function PrimaryObservationCard({ observation }) {
       data-primary-observation="true"
       className="mx-type-insight mb-7 rounded-[20px] border border-gold/25 bg-emerald px-4 py-4"
     >
-      <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold">
+      <div className="font-body mb-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-gold">
         Главное наблюдение
       </div>
-      <p className="text-[16px] leading-snug text-cream">{observation.text}</p>
+      <p className="font-body text-[18px] leading-snug text-cream">{observation.text}</p>
       {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-        <p className="mt-3 text-[11px] text-muted">
+        <p className="font-body mt-3 text-[13px] leading-relaxed text-muted">
           Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
           {observation.sourceDates?.length ? ` · ${observation.sourceDates.length} дат` : ''}
         </p>
       )}
       {observation.sourceDates?.length > 0 && (
-        <details className="mt-2 text-[11px] text-muted">
+        <details className="font-body mt-2 text-[13px] leading-relaxed text-muted">
           <summary className="cursor-pointer select-none text-gold">
             Даты в основе наблюдения
           </summary>
@@ -556,7 +556,7 @@ function PrimaryObservationCard({ observation }) {
           </p>
         </details>
       )}
-      <p className="mt-3 text-[11px] leading-relaxed text-faint">{observation.caveat}</p>
+      <p className="font-body mt-3 text-[13px] leading-relaxed text-faint">{observation.caveat}</p>
     </div>
   )
 }
@@ -703,7 +703,7 @@ export default function Analytics({ user, onGoCheckin }) {
       {insightsEnabled ? (
         <>
           {/* Safety invariant: не диагнозы и не доказанные причины. */}
-          <p className="text-[12px] text-faint leading-relaxed mb-3">
+          <p className="font-body text-[13px] text-faint leading-relaxed mb-3">
             Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные
             причины; они также не являются прогнозами.
           </p>
