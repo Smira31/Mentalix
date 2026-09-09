@@ -402,7 +402,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
   )
 }
 
-export default function GuidedJournals({ user }) {
+export default function GuidedJournals({ user, onExit }) {
   const canUseGuidedJournals = platformName === 'telegram' && Number(user?.id) > 0
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
@@ -632,6 +632,16 @@ export default function GuidedJournals({ user }) {
   if (!canUseGuidedJournals) {
     return (
       <section className="mt-8 animate-fade-in">
+        {onExit && (
+          <button
+            type="button"
+            className="mx-library-collection-back"
+            aria-label="Вернуться в библиотеку"
+            onClick={onExit}
+          >
+            <ArrowLeft size={19} />
+          </button>
+        )}
         <div className="rounded-3xl bg-emerald p-5">
           <h2 className="font-display text-[25px] text-cream">Направленные записи</h2>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
@@ -802,9 +812,26 @@ export default function GuidedJournals({ user }) {
 
   return (
     <section className="animate-fade-in">
+      {onExit && (
+        <>
+          <button
+            type="button"
+            className="mx-library-collection-back"
+            aria-label="Вернуться в библиотеку"
+            onClick={onExit}
+          >
+            <ArrowLeft size={19} />
+          </button>
+          <header className="mx-library-collection-header">
+            <span>Коллекция</span>
+            <h2>Направленные записи.</h2>
+            <p>Готовые вопросы и личные шаблоны для спокойной рефлексии.</p>
+          </header>
+        </>
+      )}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="font-display text-[25px] text-cream">направленные записи.</h3>
+          <h3 className="font-display text-[20px] text-cream">Твои записи</h3>
           <p className="mt-1 text-[13px] text-muted">Выбери короткий трек или собери свой.</p>
         </div>
         <button
