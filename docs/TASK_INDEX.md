@@ -8,15 +8,15 @@
 
 ## Каноническая продуктовая очередь (после cleanup)
 
-| Порядок | Issue                                                  | ID / title                                           | Примечание                                                                                             |
-| ------: | ------------------------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-|       1 | [#527](https://github.com/Smira31/Mentalix/issues/527) | MXL-PROGRESS-UX-001 — tab «Прогресс»                 | **В работе:** audit текущего Trends и выбор минимального v1; backend-контракт проверен, UI Lab/Compare требует owner decision |
+| Порядок | Issue                                                  | ID / title                           | Примечание                                                                                                              |
+| ------: | ------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+|       1 | [#527](https://github.com/Smira31/Mentalix/issues/527) | MXL-PROGRESS-UX-001 — tab «Прогресс» | **Выбран Вариант A:** «Один главный вывод»; следующий шаг — UI Lab candidate и Compare на существующем `/api/analytics` |
 
 **Последний completed gate (09.09.2026):** [#547](https://github.com/Smira31/Mentalix/issues/547) via [PR #553](https://github.com/Smira31/Mentalix/pull/553) — owner QA PASS, production SHA `27b78f725a38b68e046a7b6466157125fbb9f767`.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active work:** #527 / `MXL-PROGRESS-UX-001`; #526 закрыта через PR #555. Текущий экран «Прогресс» — существующая аналитика на `/api/analytics` и истории check-in; следующий gate — owner choice минимального v1 после audit, затем UI Lab/Compare.
+**Active work:** #527 / `MXL-PROGRESS-UX-001`; #526 закрыта через PR #555. Для #527 выбран Вариант A — «Один главный вывод»: одна описательная карточка наблюдения, период, sample/source/caveat и честные loading/error/empty states; следующий gate — UI Lab/Compare.
 
 ## PARKED / NOT SCHEDULED
 
