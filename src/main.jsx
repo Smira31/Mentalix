@@ -8,7 +8,9 @@ const showcaseRequested =
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('showcase') === 'archetypes'
 
-const uiLabEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+const isCanonicalPreviewHost = window.location.hostname === 'mentalix-preview.vercel.app'
+const uiLabEnabled =
+  import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || isCanonicalPreviewHost
 
 const uiLabParam = new URLSearchParams(window.location.search).get('ui_lab')
 
