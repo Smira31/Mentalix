@@ -24,7 +24,8 @@ function SectionHeading({ eyebrow, title, id, meta }) {
 }
 
 function chartGeometry(checkins) {
-  const points = checkins.filter(item => Number.isInteger(item?.mood)).slice(-30)
+  const validPoints = checkins.filter(item => Number.isInteger(item?.mood))
+  const points = PROGRESS_LAYOUT_V2_ENABLED ? validPoints : validPoints.slice(-30)
   if (points.length < 2) return { points, polyline: '' }
 
   return {
@@ -110,6 +111,27 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
   )
 }
 
+function ObservationEvidence({ observation, preserveLegacyEmptyCaveat = false }) {
+  return (
+    <div>
+      {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
+        <p>
+          Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
+        </p>
+      )}
+      {observation.sourceDates?.length > 0 && (
+        <details>
+          <summary>Даты в основе наблюдения</summary>
+          <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
+        </details>
+      )}
+      {(observation.caveat || preserveLegacyEmptyCaveat) && (
+        <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
+      )}
+    </div>
+  )
+}
+
 function PrimaryObservationCard({ observation }) {
   if (!observation) {
     return (
@@ -130,21 +152,10 @@ function PrimaryObservationCard({ observation }) {
       {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
       <span>Главное наблюдение</span>
       <strong>{observation.text}</strong>
-      <div>
-        {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-          <p>
-            Основа: {observation.sampleSize}{' '}
-            {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
-          </p>
-        )}
-        {observation.sourceDates?.length > 0 && (
-          <details>
-            <summary>Даты в основе наблюдения</summary>
-            <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
-          </details>
-        )}
-        <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
-      </div>
+      <ObservationEvidence
+        observation={observation}
+        preserveLegacyEmptyCaveat={!PROGRESS_LAYOUT_V2_ENABLED}
+      />
     </article>
   )
 }
@@ -174,7 +185,11 @@ function ObservationRail({ observations, insightsEnabled, preferenceError }) {
               >
                 <span>Ещё одно наблюдение</span>
                 <strong>{observation.text}</strong>
-                <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
+                {PROGRESS_LAYOUT_V2_ENABLED ? (
+                  <ObservationEvidence observation={observation} />
+                ) : (
+                  <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
+                )}
               </article>
             ))}
           </>
@@ -198,12 +213,24 @@ function ObservationRail({ observations, insightsEnabled, preferenceError }) {
   )
 }
 
-function ActivityCalendar({ checkins, dailyActivity }) {
+function ActivityCalendar({ checkins, dailyActivity, period }) {
   const todayIso = toLocalCalendarDate()
   const today = new Date(`${todayIso}T00:00:00`)
+  const periodStart = new Date(today)
+  periodStart.setDate(periodStart.getDate() - period + 1)
+  const firstAllowedMonth = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1)
+  const lastAllowedMonth = new Date(today.getFullYear(), today.getMonth(), 1)
   const [monthCursor, setMonthCursor] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1)
   )
+  useEffect(() => {
+    if (!PROGRESS_LAYOUT_V2_ENABLED) return
+    setMonthCursor(value => {
+      if (value < firstAllowedMonth) return firstAllowedMonth
+      if (value > lastAllowedMonth) return lastAllowedMonth
+      return value
+    })
+  }, [period, firstAllowedMonth.getTime(), lastAllowedMonth.getTime()])
   const year = monthCursor.getFullYear()
   const month = monthCursor.getMonth()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
@@ -222,7 +249,13 @@ function ActivityCalendar({ checkins, dailyActivity }) {
   const monthLabel = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(
     monthCursor
   )
-  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth()
+  const isBeforePeriod = PROGRESS_LAYOUT_V2_ENABLED && monthCursor <= firstAllowedMonth
+  const isCurrentMonth = PROGRESS_LAYOUT_V2_ENABLED
+    ? monthCursor >= lastAllowedMonth
+    : year === today.getFullYear() && month === today.getMonth()
+  const hasActiveDatesInMonth = [...activeDates].some(date =>
+    date.startsWith(`${year}-${String(month + 1).padStart(2, '0')}-`)
+  )
 
   return (
     <section className="mx-progress-redesign__section" aria-labelledby="progress-calendar-title">
@@ -235,6 +268,7 @@ function ActivityCalendar({ checkins, dailyActivity }) {
           <button
             type="button"
             aria-label="Предыдущий месяц"
+            disabled={isBeforePeriod}
             onClick={() =>
               setMonthCursor(value => new Date(value.getFullYear(), value.getMonth() - 1, 1))
             }
@@ -278,9 +312,13 @@ function ActivityCalendar({ checkins, dailyActivity }) {
           })}
         </div>
         <p>
-          {activeDates.size
-            ? 'Отмеченные дни складываются в общий ритм.'
-            : 'Здесь появятся дни с отметками.'}
+          {PROGRESS_LAYOUT_V2_ENABLED
+            ? hasActiveDatesInMonth
+              ? 'Отмеченные дни складываются в общий ритм.'
+              : 'В этом месяце пока нет отметок.'
+            : activeDates.size
+              ? 'Отмеченные дни складываются в общий ритм.'
+              : 'Здесь появятся дни с отметками.'}
         </p>
       </div>
     </section>
@@ -293,7 +331,9 @@ function EmotionCloud({ checkins }) {
     if (checkin.emotion) counts.set(checkin.emotion, (counts.get(checkin.emotion) || 0) + 1)
   }
   const emotions = [...counts.entries()].sort((left, right) => right[1] - left[1]).slice(0, 4)
-  const total = emotions.reduce((sum, [, count]) => sum + count, 0)
+  const total = PROGRESS_LAYOUT_V2_ENABLED
+    ? [...counts.values()].reduce((sum, count) => sum + count, 0)
+    : emotions.reduce((sum, [, count]) => sum + count, 0)
 
   return (
     <section className="mx-progress-redesign__section" aria-labelledby="progress-emotions-title">
@@ -737,7 +777,11 @@ export default function Analytics({ user, onGoCheckin }) {
             insightsEnabled={insightsEnabled}
             preferenceError={insightsPreferenceError}
           />
-          <ActivityCalendar checkins={checkins} dailyActivity={safeData.daily_activity || []} />
+          <ActivityCalendar
+            checkins={checkins}
+            dailyActivity={safeData.daily_activity || []}
+            period={safeData.period_days}
+          />
           <EmotionCloud checkins={checkins} />
 
           <section
