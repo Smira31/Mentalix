@@ -373,7 +373,7 @@ function FreeDay({ onBack, onFinish }) {
         места.
       </p>
       <textarea aria-label="Твой ответ" placeholder="Можно начать с нескольких слов…" />
-      <p className="mx-library-programs__demo-note">Demo UI Lab: сохранение пока не подключено.</p>
+      <p className="mx-library-programs__demo-note">В этой демонстрации ответ не сохраняется.</p>
       <button type="button" className="mx-library-programs__primary" onClick={onFinish}>
         Сохранить и вернуться к программе
       </button>
@@ -433,6 +433,7 @@ function FakeDoor({ onClose, onConfirm }) {
         <button
           type="button"
           className="mx-library-programs__primary"
+          data-testid="fake-door-submit"
           disabled={!selected}
           onClick={onConfirm}
         >
@@ -449,8 +450,8 @@ function FakeDoorConfirmation({ onBack }) {
       <span className="mx-library-programs__confirmation-icon">
         <Check size={21} />
       </span>
-      <h2>Спасибо — ответ сохранён для исследования</h2>
-      <p>Мы сообщим, когда формат программы будет готов к проверке.</p>
+      <h2>Спасибо — теперь понятнее, чего ты ждёшь от программы</h2>
+      <p>Это демонстрация сценария. Ответ пока никуда не отправляется.</p>
       <button type="button" className="mx-library-programs__primary" onClick={onBack}>
         Вернуться в Библиотеку
       </button>
