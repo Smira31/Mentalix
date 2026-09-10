@@ -1,7 +1,9 @@
-import { House, Sparkles, BookOpen } from 'lucide-react'
+import { AlignJustify, House, Sparkles, BookOpen } from 'lucide-react'
 
 import MazeLogo from './MazeLogo'
 import { platform } from '../platform'
+
+const PROGRESS_LAYOUT_V2_ENABLED = import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
 
 // MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
 // Библиотека · Прогресс». Ключи вкладок не меняются — только пользовательские
@@ -32,7 +34,7 @@ const TABS = [
     key: 'trends',
     label: 'Прогресс',
     // TODO(owner): выбрать финальный SemanticGlyph для накопленного результата.
-    icon: 'progress-glyph-todo',
+    icon: PROGRESS_LAYOUT_V2_ENABLED ? 'progress-glyph-todo' : AlignJustify,
   },
 ]
 

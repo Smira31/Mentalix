@@ -11,10 +11,13 @@ const PROGRESS_LAYOUT_V2_ENABLED = import.meta.env.VITE_PROGRESS_LAYOUT_V2 === '
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-function SectionHeading({ eyebrow, meta }) {
+function SectionHeading({ eyebrow, title, id, meta }) {
   return (
     <div className="mx-progress-redesign__section-head">
-      <span className="font-label">{eyebrow}</span>
+      <div>
+        <span className="font-label">{eyebrow}</span>
+        {!PROGRESS_LAYOUT_V2_ENABLED && title && <h3 id={id}>{title}</h3>}
+      </div>
       {meta && <small>{meta}</small>}
     </div>
   )
@@ -111,7 +114,7 @@ function PrimaryObservationCard({ observation }) {
   if (!observation) {
     return (
       <article className="mx-progress-redesign__observation">
-        <h3 id="progress-observations-title">Что повторяется</h3>
+        {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
         <span>Данные собираются</span>
         <strong>Пока недостаточно отметок для наблюдения.</strong>
         <p>Продолжай в своём темпе — вывод появится только при достаточной выборке.</p>
@@ -124,7 +127,7 @@ function PrimaryObservationCard({ observation }) {
       className="mx-progress-redesign__observation mx-type-insight"
       data-primary-observation="true"
     >
-      <h3 id="progress-observations-title">Что повторяется</h3>
+      {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
       <span>Главное наблюдение</span>
       <strong>{observation.text}</strong>
       <div>
@@ -224,7 +227,10 @@ function ActivityCalendar({ checkins, dailyActivity }) {
   return (
     <section className="mx-progress-redesign__section" aria-labelledby="progress-calendar-title">
       <div className="mx-progress-redesign__section-head">
-        <span className="font-label">Данные</span>
+        <div>
+          <span className="font-label">Данные</span>
+          {!PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-calendar-title">Календарь</h3>}
+        </div>
         <div className="mx-progress-redesign__month-nav">
           <button
             type="button"
@@ -249,7 +255,7 @@ function ActivityCalendar({ checkins, dailyActivity }) {
         </div>
       </div>
       <div className="mx-progress-redesign__calendar-card">
-        <h3 id="progress-calendar-title">Календарь</h3>
+        {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-calendar-title">Календарь</h3>}
         <div className="mx-progress-redesign__weekdays">
           {CALENDAR_WEEKDAYS.map(day => (
             <span key={day}>{day}</span>
@@ -293,7 +299,7 @@ function EmotionCloud({ checkins }) {
     <section className="mx-progress-redesign__section" aria-labelledby="progress-emotions-title">
       <SectionHeading eyebrow="Цифры" title="Эмоции" id="progress-emotions-title" />
       <div className="mx-progress-redesign__emotion-card">
-        <h3 id="progress-emotions-title">Эмоции</h3>
+        {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-emotions-title">Эмоции</h3>}
         <div className="mx-progress-redesign__emotion-ring" aria-label={`${total} отметок эмоций`}>
           <span>{total || '—'}</span>
           <small>отметки</small>
@@ -745,7 +751,7 @@ export default function Analytics({ user, onGoCheckin }) {
               id="progress-activities-title"
             />
             <div className="mx-progress-redesign__activities">
-              <h3 id="progress-activities-title">Активности</h3>
+              {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-activities-title">Активности</h3>}
               <Metric
                 label="Ритуалы"
                 value={rituals.length ? `${avgRituals}%` : '—'}
