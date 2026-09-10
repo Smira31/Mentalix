@@ -11,7 +11,6 @@ import {
   Sparkles,
   X,
 } from 'lucide-react'
-
 import SemanticGlyph from '../SemanticGlyph'
 import './LibraryProgramsExperiment.css'
 
@@ -30,6 +29,7 @@ const ARTICLES = [
     'one-step',
     'Фокус',
     'Как начать с одного шага',
+    '6 минут',
     'Короткий материал о действии без лишнего давления.',
     'focus',
   ],
@@ -37,6 +37,7 @@ const ARTICLES = [
     'inner-support',
     'Поддержка',
     'Как говорить с собой бережнее',
+    '8 минут',
     'Заметь внутренний тон и выбери более точные слова.',
     'purpose',
   ],
@@ -44,6 +45,7 @@ const ARTICLES = [
     'evening-pause',
     'Рефлексия',
     'Спокойно завершить день',
+    '5 минут',
     'Несколько минут, чтобы отпустить незавершённое.',
     'journal',
   ],
@@ -56,18 +58,33 @@ const STATE_OPTIONS = [
   ['loading', 'Загрузка'],
   ['empty', 'Пусто'],
 ]
+const params = () => new URLSearchParams(window.location.search)
+
+function SafeArea() {
+  return (
+    <div className="mx-library-programs__safe" aria-hidden="true">
+      <span>MENTALIX</span>
+      <Menu size={17} />
+    </div>
+  )
+}
 
 function TopBar({ onSearch }) {
   return (
     <header className="mx-library-programs__topbar">
-      <div>
-        <span className="mx-library-programs__eyebrow">MENTALIX · БИБЛИОТЕКА</span>
-        <h2>библиотека.</h2>
-      </div>
+      <h2>библиотека.</h2>
       <button type="button" aria-label="Открыть поиск" onClick={onSearch}>
         <Search size={19} />
       </button>
     </header>
+  )
+}
+
+function ProgramGlyph() {
+  return (
+    <span className="mx-library-programs__program-glyph">
+      <SemanticGlyph kind="focus" animated={false} />
+    </span>
   )
 }
 
@@ -82,17 +99,11 @@ function ContinueCard({ completed, onOpen }) {
           {completed ? 'Программа завершена' : 'Продолжить'}
         </span>
         <strong>7 дней к ясному следующему шагу</strong>
-        <small>
-          {completed ? 'Можно вернуться к итоговой рефлексии' : 'День 3 из 7 · около 10 минут'}
-        </small>
+        <small>{completed ? 'Итоговая рефлексия доступна' : 'День 3 из 7 · около 10 минут'}</small>
       </span>
       <ArrowRight size={17} aria-hidden="true" />
     </button>
   )
-}
-
-function ProgramGlyph() {
-  return <SemanticGlyph kind="focus" animated={false} />
 }
 
 function FeaturedProgram({ active, completed, onOpen }) {
@@ -100,21 +111,25 @@ function FeaturedProgram({ active, completed, onOpen }) {
     <button type="button" className="mx-library-programs__featured" onClick={onOpen}>
       <div className="mx-library-programs__featured-art" aria-hidden="true">
         <ProgramGlyph />
-        <span className="mx-library-programs__featured-mark">07</span>
+        <span className="mx-library-programs__featured-mark">
+          одна задача
+          <br />
+          за раз
+        </span>
       </div>
       <div className="mx-library-programs__featured-copy">
         <span className="mx-library-programs__eyebrow">
-          {completed ? 'Пройдено' : 'Первая программа · 7 дней'}
+          {completed ? 'Пройдено' : 'Авторская программа'}
         </span>
         <strong>7 дней к ясному следующему шагу</strong>
-        <p>Разобрать перегруженную ситуацию и сформулировать одно реалистичное действие.</p>
-        <span className="mx-library-programs__meta">
-          {active
-            ? 'День 3 из 7'
-            : completed
-              ? 'Итоговая рефлексия доступна'
-              : 'Первый день бесплатно'}
-          <ArrowRight size={16} aria-hidden="true" />
+        <p>Разобрать перегруженную ситуацию и выбрать одно реалистичное действие.</p>
+        <div className="mx-library-programs__offer-meta">
+          <span>7 дней · 10 минут в день</span>
+          <span>Первый день бесплатно</span>
+          <b>790 ₽</b>
+        </div>
+        <span className="mx-library-programs__featured-cta">
+          Посмотреть программу <ArrowRight size={16} aria-hidden="true" />
         </span>
       </div>
     </button>
@@ -122,9 +137,13 @@ function FeaturedProgram({ active, completed, onOpen }) {
 }
 
 function ProgramRail({ onOpen }) {
+  const programs = [
+    ['Границы без лишнего напряжения', '7 дней', 'цена уточняется', 'journal'],
+    ['Неделя внимательного решения', '10 дней', 'первый день бесплатно', 'purpose'],
+  ]
   return (
     <div className="mx-library-programs__program-rail" aria-label="Другие программы">
-      {['Границы без лишнего напряжения', 'Неделя внимательного решения'].map((title, index) => (
+      {programs.map(([title, duration, price, kind]) => (
         <button
           type="button"
           key={title}
@@ -132,37 +151,46 @@ function ProgramRail({ onOpen }) {
           className="mx-library-programs__small-program"
         >
           <span className="mx-library-programs__small-art" aria-hidden="true">
-            <SemanticGlyph kind={index ? 'purpose' : 'journal'} animated={false} />
+            <SemanticGlyph kind={kind} animated={false} />
           </span>
-          <span className="mx-library-programs__eyebrow">{index ? '10 дней' : '7 дней'}</span>
+          <span className="mx-library-programs__eyebrow">Demo-концепт</span>
           <strong>{title}</strong>
-          <small>Авторская последовательность</small>
+          <small>
+            {duration} · {price}
+          </small>
         </button>
       ))}
     </div>
   )
 }
 
-function ArticleRail({ empty }) {
-  if (empty) {
+function ArticleRail({ empty, onRead, readIds }) {
+  if (empty)
     return (
       <div className="mx-library-programs__empty">
         <strong>Статьи появятся здесь</strong>
         <span>Бесплатные материалы уже в работе.</span>
       </div>
     )
-  }
   return (
     <div className="mx-library-programs__article-rail" aria-label="Бесплатные статьи">
-      {ARTICLES.map(([, eyebrow, title, description, kind]) => (
-        <article key={title} className="mx-library-programs__article">
+      {ARTICLES.map(([id, eyebrow, title, duration, description, kind]) => (
+        <button
+          type="button"
+          key={id}
+          className="mx-library-programs__article"
+          onClick={() => onRead(id)}
+        >
           <span className="mx-library-programs__article-art" aria-hidden="true">
             <SemanticGlyph kind={kind} animated={false} />
           </span>
-          <span className="mx-library-programs__eyebrow">{eyebrow} · бесплатно</span>
+          <span className="mx-library-programs__eyebrow">{eyebrow}</span>
           <strong>{title}</strong>
-          <small>{description}</small>
-        </article>
+          <small>
+            {duration} · бесплатно {readIds.has(id) ? '· Прочитано' : ''}
+          </small>
+          <span className="mx-library-programs__article-description">{description}</span>
+        </button>
       ))}
     </div>
   )
@@ -170,20 +198,20 @@ function ArticleRail({ empty }) {
 
 function BottomNav() {
   return (
-    <nav className="mx-library-programs__bottom" aria-label="Демо основной навигации">
+    <nav className="mx-library-programs__bottom" aria-label="Основная навигация">
       <span>Сегодня</span>
-      <span>Практики</span>
-      <span>Наставник</span>
+      <span>Шаги</span>
+      <span>Диалог</span>
       <span aria-current="page">Библиотека</span>
-      <span>Тренды</span>
+      <span>Прогресс</span>
     </nav>
   )
 }
 
 function Landing({ demoState, onOpenDetail }) {
+  const [readIds, setReadIds] = useState(new Set())
   const active = demoState === 'active'
   const completed = demoState === 'completed'
-  const empty = demoState === 'empty'
   if (demoState === 'loading')
     return (
       <div className="mx-library-programs__landing">
@@ -218,23 +246,27 @@ function Landing({ demoState, onOpenDetail }) {
           </div>
           <BookOpen size={18} aria-hidden="true" />
         </div>
-        <ArticleRail empty={empty} />
+        <ArticleRail
+          empty={demoState === 'empty'}
+          readIds={readIds}
+          onRead={id => setReadIds(current => new Set(current).add(id))}
+        />
       </section>
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
           <div>
-            <span className="mx-library-programs__eyebrow">Инструменты рефлексии</span>
+            <span className="mx-library-programs__eyebrow">Бесплатные инструменты</span>
             <h3>Направленные записи</h3>
           </div>
         </div>
-        <div className="mx-library-programs__journal-row">
+        <button type="button" className="mx-library-programs__journal-row">
           <span>
             <Sparkles size={18} />
             <strong>Разобраться в решении</strong>
             <small>4 вопроса · бесплатно</small>
           </span>
           <ArrowRight size={17} />
-        </div>
+        </button>
       </section>
     </div>
   )
@@ -255,37 +287,55 @@ function Detail({ demoState, onBack, onFreeDay, onPay }) {
       <div className="mx-library-programs__detail-art" aria-hidden="true">
         <ProgramGlyph />
         <span>
-          один шаг
+          одна задача
           <br />
           за раз
         </span>
       </div>
-      <span className="mx-library-programs__eyebrow">7 дней · 10 минут в день</span>
+      <span className="mx-library-programs__eyebrow">Авторская программа</span>
       <h2>7 дней к ясному следующему шагу</h2>
       <p className="mx-library-programs__lead">
-        Короткая последовательность заданий, которая помогает разобрать перегруженную ситуацию и
-        сформулировать один реалистичный следующий шаг.
+        Разобрать перегруженную ситуацию и сформулировать один реалистичный следующий шаг.
       </p>
-      <div className="mx-library-programs__fit">
-        <strong>Подойдёт, если</strong>
-        <span>в голове много незавершённого и хочется начать без рывка.</span>
+      <div className="mx-library-programs__detail-offer">
+        <strong>7 дней · 10 минут в день</strong>
+        <span>Первый день бесплатно</span>
+        <b>790 ₽</b>
+        <small>Разовая покупка программы · demo-copy</small>
       </div>
+      {!completed && (
+        <>
+          <button type="button" className="mx-library-programs__primary" onClick={onFreeDay}>
+            Попробовать первый день бесплатно
+          </button>
+          <button type="button" className="mx-library-programs__secondary" onClick={onPay}>
+            Получить программу за 790 ₽
+          </button>
+        </>
+      )}
       <section>
         <div className="mx-library-programs__detail-heading">
-          <h3>Семь дней</h3>
+          <h3>Как устроены 7 дней</h3>
           <span>постепенно</span>
         </div>
         <ol className="mx-library-programs__days">
-          {DAYS.map(([day, title, description]) => (
-            <li key={day} className={completed || day === '01' ? 'is-open' : ''}>
-              <span>{day}</span>
-              <div>
-                <strong>{title}</strong>
-                <small>{description}</small>
-              </div>
-              {completed || day === '01' ? <Check size={16} /> : <LockKeyhole size={15} />}
-            </li>
-          ))}
+          <li className="is-open">
+            <span>01</span>
+            <div>
+              <strong>{DAYS[0][1]}</strong>
+              <small>{DAYS[0][2]}</small>
+            </div>
+            <Check size={16} />
+          </li>
+          <li className="mx-library-programs__days-summary">
+            <div>
+              <strong>Дни 2–7 откроются после получения программы</strong>
+              <small>
+                Отделить факты · увидеть ограничения · выбрать следующий шаг · итоговая рефлексия
+              </small>
+            </div>
+            <LockKeyhole size={15} />
+          </li>
         </ol>
       </section>
       <section className="mx-library-programs__included">
@@ -296,19 +346,6 @@ function Detail({ demoState, onBack, onFreeDay, onPay }) {
           к нему напрямую.
         </small>
       </section>
-      {!completed && (
-        <>
-          <button type="button" className="mx-library-programs__primary" onClick={onFreeDay}>
-            Попробовать первый день
-          </button>
-          <button type="button" className="mx-library-programs__secondary" onClick={onPay}>
-            Получить программу за 790 ₽
-          </button>
-          <p className="mx-library-programs__purchase-note">
-            Разовая покупка · доступ остаётся у тебя
-          </p>
-        </>
-      )}
       {completed && (
         <div className="mx-library-programs__completed">
           <Check size={18} /> Программа завершена · итоговая рефлексия открыта
@@ -329,21 +366,29 @@ function FreeDay({ onBack, onFinish }) {
       >
         <ArrowLeft size={19} />
       </button>
-      <span className="mx-library-programs__eyebrow">День 1 · бесплатно</span>
+      <span className="mx-library-programs__eyebrow">День 1 из 7 · бесплатно</span>
       <h2>Что сейчас занимает больше всего внимания?</h2>
       <p className="mx-library-programs__lead">
         Запиши всё, что приходит в голову. Не нужно сразу искать решение — сначала освободим немного
         места.
       </p>
       <textarea aria-label="Твой ответ" placeholder="Можно начать с нескольких слов…" />
+      <p className="mx-library-programs__demo-note">Demo UI Lab: сохранение пока не подключено.</p>
       <button type="button" className="mx-library-programs__primary" onClick={onFinish}>
-        Сохранить и вернуться
+        Сохранить и вернуться к программе
       </button>
     </div>
   )
 }
 
-function FakeDoor({ onClose }) {
+function FakeDoor({ onClose, onConfirm }) {
+  const [selected, setSelected] = useState('')
+  const [custom, setCustom] = useState('')
+  const options = [
+    'Разобраться в одной ситуации',
+    'Собрать спокойный план',
+    'Дойти до следующего шага',
+  ]
   return (
     <div className="mx-library-programs__sheet-backdrop" role="presentation">
       <section
@@ -364,81 +409,131 @@ function FakeDoor({ onClose }) {
         <h2 id="fake-door-title">Что ты ожидаешь получить от программы?</h2>
         <p>Оплата пока не открыта. Мы проверяем, насколько понятен и ценен этот формат.</p>
         <div className="mx-library-programs__answers">
-          <button type="button" onClick={onClose}>
-            Разобраться в одной ситуации
-          </button>
-          <button type="button" onClick={onClose}>
-            Собрать спокойный план
-          </button>
-          <button type="button" onClick={onClose}>
-            Дойти до следующего шага
-          </button>
-          <button type="button" onClick={onClose}>
-            Свой вариант
-          </button>
+          {options.map(option => (
+            <button
+              type="button"
+              key={option}
+              aria-pressed={selected === option}
+              onClick={() => setSelected(option)}
+            >
+              {option}
+              <Check size={16} />
+            </button>
+          ))}
         </div>
-        <textarea aria-label="Дополнение" placeholder="Можно добавить своими словами…" />
+        <textarea
+          aria-label="Свой вариант"
+          value={custom}
+          onChange={event => {
+            setCustom(event.target.value)
+            setSelected('custom')
+          }}
+          placeholder="Свой вариант…"
+        />
+        <button
+          type="button"
+          className="mx-library-programs__primary"
+          disabled={!selected}
+          onClick={onConfirm}
+        >
+          Отправить ответ
+        </button>
       </section>
     </div>
   )
 }
 
+function FakeDoorConfirmation({ onBack }) {
+  return (
+    <div className="mx-library-programs__confirmation">
+      <span className="mx-library-programs__confirmation-icon">
+        <Check size={21} />
+      </span>
+      <h2>Спасибо — ответ сохранён для исследования</h2>
+      <p>Мы сообщим, когда формат программы будет готов к проверке.</p>
+      <button type="button" className="mx-library-programs__primary" onClick={onBack}>
+        Вернуться в Библиотеку
+      </button>
+    </div>
+  )
+}
+
 export default function LibraryProgramsExperiment() {
-  const [demoState, setDemoState] = useState('ready')
-  const [screen, setScreen] = useState('landing')
-  const [sheetOpen, setSheetOpen] = useState(false)
+  const review = params().get('review') === '1'
+  const [demoState, setDemoState] = useState(() => params().get('state') || 'ready')
+  const [screen, setScreen] = useState(() => params().get('screen') || 'landing')
+  const [sheetOpen, setSheetOpen] = useState(() => params().get('screen') === 'fake-door')
+  const [confirmation, setConfirmation] = useState(
+    () => params().get('screen') === 'fake-door-confirmation'
+  )
+  const setReviewScreen = next => {
+    setScreen(next)
+    setSheetOpen(next === 'fake-door')
+    setConfirmation(next === 'fake-door-confirmation')
+  }
   const reset = next => {
     setDemoState(next)
-    setScreen('landing')
-    setSheetOpen(false)
+    setReviewScreen('landing')
   }
+  const product =
+    screen === 'detail' ? (
+      <Detail
+        demoState={demoState}
+        onBack={() => setReviewScreen('landing')}
+        onFreeDay={() => setReviewScreen('free-day')}
+        onPay={() => setReviewScreen('fake-door')}
+      />
+    ) : screen === 'free-day' ? (
+      <FreeDay
+        onBack={() => setReviewScreen('detail')}
+        onFinish={() => setReviewScreen('detail')}
+      />
+    ) : confirmation ? (
+      <FakeDoorConfirmation onBack={() => setReviewScreen('landing')} />
+    ) : (
+      <Landing demoState={demoState} onOpenDetail={() => setReviewScreen('detail')} />
+    )
   return (
-    <section className="mx-library-programs" aria-labelledby="library-programs-title">
-      <div className="mx-library-programs__intro">
-        <span className="mx-library-programs__eyebrow">
-          MXL-LIBRARY-PROGRAMS-UI-LAB-001 · Preview-only
-        </span>
-        <h2 id="library-programs-title">Библиотека: программы</h2>
-        <p>
-          Канонический mobile-концепт: сначала понятная ценность, затем спокойное действие. Оплата и
-          сохранение состояния не подключены.
-        </p>
-      </div>
-      <div className="mx-library-programs__state-switch" aria-label="Demo-состояние">
-        {STATE_OPTIONS.map(([key, label]) => (
-          <button
-            type="button"
-            key={key}
-            aria-pressed={demoState === key}
-            onClick={() => reset(key)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+    <section
+      className={`mx-library-programs${review ? ' mx-library-programs--review' : ''}`}
+      aria-labelledby="library-programs-title"
+    >
+      {!review && (
+        <>
+          <div className="mx-library-programs__intro">
+            <span className="mx-library-programs__eyebrow">
+              MXL-LIBRARY-PROGRAMS-UI-LAB-001 · Preview-only
+            </span>
+            <h2 id="library-programs-title">Библиотека: программы</h2>
+            <p>
+              Канонический mobile-концепт: сначала понятная ценность, затем спокойное действие.
+              Оплата и сохранение состояния не подключены.
+            </p>
+          </div>
+          <div className="mx-library-programs__state-switch" aria-label="Demo-состояние">
+            {STATE_OPTIONS.map(([key, label]) => (
+              <button
+                type="button"
+                key={key}
+                aria-pressed={demoState === key}
+                onClick={() => reset(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       <div className="mx-library-programs__device">
-        <div className="mx-library-programs__safe">
-          <span>MENTALIX</span>
-          <Menu size={17} />
-        </div>
-        <div className="mx-library-programs__scroll">
-          {screen === 'landing' && (
-            <Landing demoState={demoState} onOpenDetail={() => setScreen('detail')} />
-          )}
-          {screen === 'detail' && (
-            <Detail
-              demoState={demoState}
-              onBack={() => setScreen('landing')}
-              onFreeDay={() => setScreen('free-day')}
-              onPay={() => setSheetOpen(true)}
-            />
-          )}
-          {screen === 'free-day' && (
-            <FreeDay onBack={() => setScreen('detail')} onFinish={() => setScreen('detail')} />
-          )}
-        </div>
+        {review ? null : <SafeArea />}
+        <div className="mx-library-programs__scroll">{product}</div>
         <BottomNav />
-        {sheetOpen && <FakeDoor onClose={() => setSheetOpen(false)} />}
+        {sheetOpen && !confirmation && (
+          <FakeDoor
+            onClose={() => setReviewScreen('detail')}
+            onConfirm={() => setReviewScreen('fake-door-confirmation')}
+          />
+        )}
       </div>
     </section>
   )

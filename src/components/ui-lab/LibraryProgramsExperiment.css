@@ -646,3 +646,271 @@
     max-width: 80px;
   }
 }
+
+/* Correction pass: clean owner-review composition and compact offer hierarchy. */
+.mx-library-programs__program-glyph {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+.mx-library-programs__program-glyph::after {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(var(--c-gold));
+  content: '';
+  transform: translate(42px, -25px);
+}
+.mx-library-programs__program-glyph svg {
+  width: 150px;
+  height: 112px;
+}
+.mx-library-programs__featured {
+  gap: 10px;
+  padding: 10px;
+  background: rgb(var(--c-card2));
+}
+.mx-library-programs__featured-art {
+  height: 108px;
+  border-radius: 18px;
+}
+.mx-library-programs__featured-art svg {
+  width: 134px;
+  height: 98px;
+}
+.mx-library-programs__featured-mark {
+  font-size: 10px;
+}
+.mx-library-programs__featured-copy {
+  gap: 6px;
+  padding: 0 4px 3px;
+}
+.mx-library-programs__featured-copy strong {
+  max-width: 310px;
+  font-size: 20px;
+}
+.mx-library-programs__featured-copy p {
+  font-size: 12px;
+  line-height: 1.35;
+}
+.mx-library-programs__offer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  align-items: center;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+}
+.mx-library-programs__offer-meta span:first-child {
+  flex-basis: 100%;
+  color: rgb(var(--c-text));
+  font-weight: 600;
+}
+.mx-library-programs__offer-meta span:nth-child(2) {
+  color: rgb(var(--c-gold));
+}
+.mx-library-programs__offer-meta b {
+  margin-left: auto;
+  color: rgb(var(--c-text));
+  font-size: 17px;
+}
+.mx-library-programs__featured-cta {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 13px;
+  border-radius: 999px;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  font-size: 13px;
+  font-weight: 650;
+}
+.mx-library-programs__small-program {
+  gap: 5px;
+}
+.mx-library-programs__small-program .mx-library-programs__eyebrow {
+  color: rgb(var(--c-muted));
+  font-size: 9px;
+}
+.mx-library-programs__small-art {
+  height: 64px;
+}
+.mx-library-programs__small-program small {
+  color: rgb(var(--c-gold));
+}
+.mx-library-programs__article {
+  display: grid;
+  cursor: pointer;
+}
+.mx-library-programs__article:focus-visible,
+.mx-library-programs__small-program:focus-visible {
+  outline: 2px solid rgb(var(--c-gold));
+  outline-offset: 2px;
+}
+.mx-library-programs__article-description {
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+  line-height: 1.35;
+}
+.mx-library-programs__detail-offer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 5px 12px;
+  padding: 14px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 20px;
+  background: rgb(var(--c-card));
+}
+.mx-library-programs__detail-offer strong {
+  font-size: 14px;
+}
+.mx-library-programs__detail-offer span {
+  color: rgb(var(--c-gold));
+  font-size: 12px;
+}
+.mx-library-programs__detail-offer b {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: rgb(var(--c-text));
+  font-size: 22px;
+}
+.mx-library-programs__detail-offer small {
+  grid-column: 1 / -1;
+  color: rgb(var(--c-faint));
+  font-size: 10px;
+}
+.mx-library-programs__detail .mx-library-programs__primary,
+.mx-library-programs__detail .mx-library-programs__secondary {
+  min-height: 48px;
+}
+.mx-library-programs__days-summary {
+  grid-template-columns: 1fr 18px !important;
+  color: rgb(var(--c-muted)) !important;
+}
+.mx-library-programs__days-summary strong {
+  color: rgb(var(--c-text));
+  font-size: 13px;
+}
+.mx-library-programs__days-summary svg {
+  color: rgb(var(--c-faint));
+}
+.mx-library-programs__demo-note {
+  margin: -10px 0 0;
+  color: rgb(var(--c-faint));
+  font-size: 11px;
+  text-align: center;
+}
+.mx-library-programs__sheet {
+  gap: 12px;
+}
+.mx-library-programs__answers button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+}
+.mx-library-programs__answers button svg {
+  opacity: 0;
+  color: rgb(var(--c-gold));
+}
+.mx-library-programs__answers button[aria-pressed='true'] {
+  border-color: rgb(var(--c-gold));
+  color: rgb(var(--c-text));
+}
+.mx-library-programs__answers button[aria-pressed='true'] svg {
+  opacity: 1;
+}
+.mx-library-programs__sheet .mx-library-programs__primary:disabled {
+  opacity: 0.38;
+}
+.mx-library-programs__confirmation {
+  display: grid;
+  min-height: calc(100dvh - 116px);
+  align-content: center;
+  gap: 16px;
+  padding: 18px 0 30px;
+  text-align: center;
+}
+.mx-library-programs__confirmation-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  margin: 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+}
+.mx-library-programs__confirmation h2,
+.mx-library-programs__confirmation p {
+  margin: 0;
+}
+.mx-library-programs__confirmation h2 {
+  font-size: 25px;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+.mx-library-programs__confirmation p {
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+.mx-library-programs--review {
+  min-height: 100dvh;
+}
+.mx-library-programs--review .mx-library-programs__device {
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.mx-library-programs--review .mx-library-programs__scroll {
+  padding: 66px 20px calc(92px + env(safe-area-inset-bottom));
+}
+.mx-library-programs--review .mx-library-programs__bottom {
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+.mx-library-programs--review .mx-library-programs__landing {
+  gap: 18px;
+}
+.mx-library-programs--review .mx-library-programs__topbar {
+  margin-bottom: 2px;
+}
+.mx-library-programs--review .mx-library-programs__topbar h2 {
+  font-size: 32px;
+}
+.mx-library-programs--review .mx-library-programs__featured-art {
+  height: 96px;
+}
+.mx-library-programs--review .mx-library-programs__program-rail {
+  margin-top: 0;
+}
+.mx-library-programs--review .mx-library-programs__section {
+  gap: 10px;
+}
+@media (max-width: 360px) {
+  .mx-library-programs--review .mx-library-programs__scroll {
+    padding-inline: 16px;
+  }
+  .mx-library-programs--review .mx-library-programs__topbar h2 {
+    font-size: 29px;
+  }
+  .mx-library-programs--review .mx-library-programs__featured-copy strong {
+    font-size: 18px;
+  }
+  .mx-library-programs--review .mx-library-programs__featured-copy p {
+    font-size: 11px;
+  }
+  .mx-library-programs--review .mx-library-programs__featured-art {
+    height: 80px;
+  }
+  .mx-library-programs--review .mx-library-programs__offer-meta {
+    font-size: 10px;
+  }
+}

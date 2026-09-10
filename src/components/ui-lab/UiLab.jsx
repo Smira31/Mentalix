@@ -42,6 +42,9 @@ export function resolveUiLabSection(value = 'hub') {
 export default function UiLab({ initialSection = 'hub' }) {
   const [section, setSection] = useState(resolveUiLabSection(initialSection))
   const [todayState, setTodayState] = useState('checkinPending')
+  const cleanReview =
+    section === 'library-programs' &&
+    new URLSearchParams(window.location.search).get('review') === '1'
 
   function selectSection(next) {
     setSection(next)
@@ -53,15 +56,17 @@ export default function UiLab({ initialSection = 'hub' }) {
   return (
     <main className="mx-ui-lab">
       <div className="mx-ui-lab__scroll">
-        <header className="mx-ui-lab__header">
-          <p className="mx-ui-lab__kicker">Mentalix · Preview-only</p>
-          <h1>Эталон → Эксперименты → Сравнение</h1>
-          <p>
-            Здесь можно посмотреть актуальный интерфейс, гипотезы и разницу между ними. Production
-            не изменён.
-          </p>
-          <UiLabSwitch active={section} />
-        </header>
+        {!cleanReview && (
+          <header className="mx-ui-lab__header">
+            <p className="mx-ui-lab__kicker">Mentalix · Preview-only</p>
+            <h1>Эталон → Эксперименты → Сравнение</h1>
+            <p>
+              Здесь можно посмотреть актуальный интерфейс, гипотезы и разницу между ними. Production
+              не изменён.
+            </p>
+            <UiLabSwitch active={section} />
+          </header>
+        )}
         <div className="mx-ui-lab__content">
           {section === 'hub' && <UiLabHub />}
           {section === 'baseline' && (
@@ -169,10 +174,12 @@ export default function UiLab({ initialSection = 'hub' }) {
           {section === 'progress-observation' && <ProgressObservationExperiment />}
           {section === 'progress-redesign' && <ProgressRedesignExperiment />}
         </div>
-        <footer className="mx-ui-lab__footer">
-          Preview-only · live sources подключаются в Telegram-сессии; production Practices.jsx не
-          изменён
-        </footer>
+        {!cleanReview && (
+          <footer className="mx-ui-lab__footer">
+            Preview-only · live sources подключаются в Telegram-сессии; production Practices.jsx не
+            изменён
+          </footer>
+        )}
       </div>
     </main>
   )
