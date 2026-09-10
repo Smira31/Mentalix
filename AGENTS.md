@@ -160,11 +160,13 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 
 ## Gotchas
 
-- `src/screens/Today.tsx` and `src/components/MorningPilotCard.tsx` are stale/unused —
+- The former TypeScript copies `src/screens/Today.tsx` and
+  `src/components/MorningPilotCard.tsx` were removed as unused in commit
+  [`b70c6126`](https://github.com/Smira31/Mentalix/commit/b70c61264b0fde9e9a7c5c4d6023e1e9ff8ff0ce9).
   Vite resolves the extensionless imports in `App.jsx` to the `.jsx` siblings
   (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
-  TypeScript build configured (no tsconfig); don't assume the `.tsx` files are live or
-  extend them expecting them to compile/ship.
+  TypeScript build configured (no tsconfig); do not recreate or extend the removed `.tsx`
+  copies expecting them to compile or ship.
 - `vercel.json` rewrites `/api/*` to the Render backend; `src/lib/api.js` always calls the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
   beyond running against that same rewrite (or a local backend serving the same paths).
 
