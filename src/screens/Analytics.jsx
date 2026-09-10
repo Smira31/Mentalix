@@ -561,9 +561,11 @@ function Metric({ label, value, note, progress, children }) {
       <span>{label}</span>
       <strong className="font-display">{value}</strong>
       <small>{note}</small>
-      <i aria-hidden="true">
-        <b style={{ width: `${Math.max(4, Math.min(progress || 0, 100))}%` }} />
-      </i>
+      {!PROGRESS_LAYOUT_V2_ENABLED && (
+        <i aria-hidden="true">
+          <b style={{ width: `${Math.max(4, Math.min(progress || 0, 100))}%` }} />
+        </i>
+      )}
       {children}
     </article>
   )
