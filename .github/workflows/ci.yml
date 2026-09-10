@@ -18,6 +18,7 @@ concurrency:
 
 env:
   NODE_VERSION: 20
+  BACKEND_SHA: 7fa1cc88d90935fada35bb2b5f6477979cb2cd31
 
 jobs:
   quality:
@@ -42,6 +43,18 @@ jobs:
 
       - name: Check documentation drift
         run: npm run docs:drift
+
+      - name: Contract test against backend SHA (advisory)
+        continue-on-error: true
+        env:
+          CONTRACT_FILE: ${{ runner.temp }}/API_CONTRACT.md
+        run: |
+          set -euo pipefail
+          echo "Backend SHA checked: $BACKEND_SHA"
+          curl --fail --silent --show-error \
+            "https://raw.githubusercontent.com/Smira31/mentalix-bot/$BACKEND_SHA/docs/API_CONTRACT.md" \
+            --output "$CONTRACT_FILE"
+          npm run test:contract
 
       - name: Check canonical documentation drift (advisory)
         continue-on-error: true
