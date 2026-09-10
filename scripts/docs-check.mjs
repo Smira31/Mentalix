@@ -13,6 +13,7 @@ const requiredFiles = [
   'AGENTS.md',
   'PROJECT_STATE.md',
   'docs/DOCUMENTATION_GUIDE.md',
+  'BASELINE_SNAPSHOT.md',
   'docs/TASK_INDEX.md',
 ]
 
