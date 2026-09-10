@@ -43,6 +43,10 @@ jobs:
       - name: Check documentation drift
         run: npm run docs:drift
 
+      - name: Check canonical documentation drift (advisory)
+        continue-on-error: true
+        run: npm run docs:canonical-drift
+
   ux:
     name: Playwright Chromium smoke
     runs-on: ubuntu-latest
