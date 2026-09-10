@@ -1,2 +1,1 @@
-// RESTORE_NEEDED - see PR comment
-export default function Settings() { return null }
+PLACEHOLDER_DO_NOT_USE
