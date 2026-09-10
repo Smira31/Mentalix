@@ -1,4 +1,5 @@
 # AGENTS.md
+Точка входа по документации: [`docs/INDEX.md`](docs/INDEX.md).
 
 Guidance for AI coding agents (Codex, Claude Code, and others) working in this
 repository. Claude Code loads this file automatically via the `@AGENTS.md` import in
