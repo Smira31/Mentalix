@@ -49,8 +49,8 @@ function WeekStrip() {
   })
 
   return (
-    <div className="mx-today-week" aria-label="Календарь недели">
-      <div className="mx-today-week__calendar" aria-label="Дни недели">
+    <div className="mx-today-week" role="group" aria-label="Календарь недели">
+      <div className="mx-today-week__calendar">
         {days.map(day => {
           const isToday = day.toDateString() === now.toDateString()
           return (
@@ -372,7 +372,7 @@ export default function Today({
                   setPathTab(key)
                 }}
                 className={[
-                  'flex-1 py-2 rounded-full text-[12px] font-bold border-0 transition-colors',
+                  'flex-1 min-h-11 py-2 rounded-full text-[12px] font-bold border-0 transition-colors',
                   pathTab === key ? 'bg-cream/10 text-cream' : 'bg-transparent text-muted',
                 ].join(' ')}
               >
@@ -555,7 +555,7 @@ export default function Today({
         {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
       </button>
 
-      {next && <p className="mx-type-meta text-faint mt-5">Следующее действие: {next.title}</p>}
+      {next && <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>}
     </>
   )
 
@@ -635,7 +635,7 @@ export default function Today({
             Начать
           </button>
 
-          <p className="mx-type-meta text-faint mt-5">{remainingActionsText}</p>
+          <p className="mx-type-meta text-muted mt-5">{remainingActionsText}</p>
         </>
       )),
 
@@ -673,6 +673,7 @@ export default function Today({
 
   return (
     <div className="mx-screen-shell">
+      <h1 className="sr-only">Сегодня</h1>
       <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (
@@ -771,7 +772,12 @@ export default function Today({
             }}
             className="w-full rounded-3xl bg-emerald px-5 py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
           >
-            <ArrowUpRight size={18} className="text-gold shrink-0" strokeWidth={2} />
+            <ArrowUpRight
+              size={18}
+              className="text-gold shrink-0"
+              strokeWidth={2}
+              aria-hidden="true"
+            />
 
             <span className="mx-type-list-title text-cream whitespace-nowrap">День</span>
 
@@ -788,7 +794,7 @@ export default function Today({
               {done} из {total}
             </span>
 
-            <ChevronRight size={18} className="text-faint shrink-0" />
+            <ChevronRight size={18} className="text-faint shrink-0" aria-hidden="true" />
           </button>
         ))}
 
@@ -816,7 +822,7 @@ export default function Today({
             </span>
           </span>
 
-          <span className="mx-type-meta text-faint shrink-0">изменить</span>
+          <span className="mx-type-meta text-muted shrink-0">изменить</span>
         </button>
       )}
 
@@ -831,7 +837,7 @@ export default function Today({
           ====================================================== */}
 
       {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
-        <p className="text-center mx-type-meta text-faint mt-4">
+        <p className="text-center mx-type-meta text-muted mt-4">
           {activeToday < 20
             ? `Сегодня в пути вместе с тобой: ${activeToday}`
             : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
@@ -851,7 +857,7 @@ export default function Today({
           }}
           className="mx-today-theme-card w-full px-5 py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
-          <span className="block font-label mx-type-meta text-faint uppercase tracking-wider mb-2">
+          <span className="block font-label mx-type-meta text-muted uppercase tracking-wider mb-2">
             Тема недели
           </span>
 
@@ -861,7 +867,7 @@ export default function Today({
 
           <span className="block mx-type-list-body text-muted mt-2">{theme.subtitle}</span>
 
-          <span className="flex items-center justify-center gap-1.5 mt-4">
+          <span className="flex items-center justify-center gap-1.5 mt-4" aria-hidden="true">
             {Array.from({
               length: theme.total_days,
             }).map((_, index) => (
@@ -874,7 +880,7 @@ export default function Today({
             ))}
           </span>
 
-          <span className="block mx-type-meta text-faint mt-3">
+          <span className="block mx-type-meta text-muted mt-3">
             {theme.reflected_days > 0
               ? `Пройдено дней: ${theme.reflected_days} из ${theme.total_days}`
               : 'Начать неделю'}
@@ -906,7 +912,7 @@ export default function Today({
 
           <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
 
-          <span className="block mx-type-meta text-faint mt-4">
+          <span className="block mx-type-meta text-muted mt-4">
             {thoughtOfDay.attribution} · открыть →
           </span>
         </button>
