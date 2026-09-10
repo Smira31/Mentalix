@@ -11,6 +11,7 @@ import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
 import LibraryExperiment from './LibraryExperiment'
+import LibraryProgramsExperiment from './LibraryProgramsExperiment'
 import ProgressObservationExperiment from './ProgressObservationExperiment'
 import ProgressRedesignExperiment from './ProgressRedesignExperiment'
 import './UiLab.css'
@@ -28,6 +29,7 @@ export function resolveUiLabSection(value = 'hub') {
       'daily-canonical',
       'practice-catalog',
       'library',
+      'library-programs',
       'focus-check',
       'progress-observation',
       'progress-redesign',
@@ -163,6 +165,7 @@ export default function UiLab({ initialSection = 'hub' }) {
           )}
           {section === 'focus-check' && <FocusCheck />}
           {section === 'library' && <LibraryExperiment />}
+          {section === 'library-programs' && <LibraryProgramsExperiment />}
           {section === 'progress-observation' && <ProgressObservationExperiment />}
           {section === 'progress-redesign' && <ProgressRedesignExperiment />}
         </div>
