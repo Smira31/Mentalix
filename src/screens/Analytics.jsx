@@ -559,7 +559,7 @@ function Metric({ label, value, note, progress, children }) {
       data-progress-label={PROGRESS_LAYOUT_V2_ENABLED ? value : undefined}
     >
       <span>{label}</span>
-      <strong className="font-display">{value}</strong>
+      {!PROGRESS_LAYOUT_V2_ENABLED && <strong className="font-display">{value}</strong>}
       <small>{note}</small>
       {!PROGRESS_LAYOUT_V2_ENABLED && (
         <i aria-hidden="true">
