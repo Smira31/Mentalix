@@ -50,11 +50,11 @@ function JournalDayCard({ entry }) {
         <span className="rounded-full bg-gold/10 px-2.5 py-1 text-[11px] font-bold text-gold">
           {entry.completedCount}/{entry.totalPhases} шага
         </span>
-        <span className="text-[11px] text-faint">
+        <span className="text-[11px] text-muted">
           {entry.status === 'final' ? 'завершено' : 'черновик'}
         </span>
       </div>
-      <p className="mt-1 text-[12px] leading-snug text-faint">
+      <p className="mt-1 text-[12px] leading-snug text-muted">
         Записи сохранены на этом устройстве и доступны только в этом профиле.
       </p>
       <div className="mt-3 space-y-4">
@@ -62,7 +62,7 @@ function JournalDayCard({ entry }) {
           <div key={phase.key}>
             <div className="mb-1 flex items-center gap-2">
               <span className="text-[12px] font-bold text-gold">{phase.label}</span>
-              <span className="text-[11px] text-faint">
+              <span className="text-[11px] text-muted">
                 {phase.status === 'final' ? 'завершено' : 'черновик'}
               </span>
             </div>
@@ -89,7 +89,7 @@ function OneOffPracticeDayCard({ entries }) {
           {names.length} выполнено
         </span>
       </div>
-      <p className="mt-1 text-[12px] leading-snug text-faint">
+      <p className="mt-1 text-[12px] leading-snug text-muted">
         Сохранено на этом устройстве и доступно только в этом профиле. Это не серия и не влияет на
         прогресс дня.
       </p>
@@ -119,11 +119,11 @@ function HistoryDetail({
         <button
           type="button"
           onClick={onBack}
-          className="justify-self-start rounded-full px-3 py-2 text-[13px] font-semibold text-muted active:text-gold"
+          className="min-h-11 justify-self-start rounded-full px-3 py-2 text-[13px] font-semibold text-muted active:text-gold"
         >
           Назад
         </button>
-        <h2 className="font-display text-[20px] text-cream">{dayTitle(day.date)}</h2>
+        <h2 className="font-display mx-type-section text-cream">{dayTitle(day.date)}</h2>
         <span aria-hidden="true" />
       </div>
 
@@ -212,7 +212,7 @@ function HistoryDetail({
           <p className="text-[13px] font-semibold text-muted">
             Ритуалов закрыто: {day.activity.count}
             {day.activity.breaks > 0 && (
-              <span className="text-faint"> · срывов аскез: {day.activity.breaks}</span>
+              <span className="text-muted"> · срывов аскез: {day.activity.breaks}</span>
             )}
           </p>
         )}
@@ -235,7 +235,7 @@ function HistoryDetail({
                 aria-label="Разрешение AI использовать эту запись"
                 onClick={() => onContextChange(!checkin.ai_context_enabled)}
                 disabled={savingContext}
-                className="mt-3 min-h-10 rounded-full bg-cream/5 px-3 text-left text-[12px] font-semibold text-gold disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-3 min-h-11 rounded-full bg-cream/5 px-3 text-left text-[12px] font-semibold text-gold disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {savingContext
                   ? 'Сохраняем…'
@@ -244,7 +244,7 @@ function HistoryDetail({
                     : 'Разрешить AI использовать эту запись'}
               </button>
             ) : (
-              <p className="mt-2 text-[12px] leading-relaxed text-faint">
+              <p className="mt-2 text-[12px] leading-relaxed text-muted">
                 Выбор контекста доступен в Telegram Mini App с проверенной подписью.
               </p>
             )}
@@ -257,12 +257,12 @@ function HistoryDetail({
               <button
                 type="button"
                 onClick={onDiscuss}
-                className="mt-3 min-h-10 rounded-full bg-gold/10 px-3 text-left text-[12px] font-semibold text-gold"
+                className="mt-3 min-h-11 rounded-full bg-gold/10 px-3 text-left text-[12px] font-semibold text-gold"
               >
                 Обсудить с AI
               </button>
             ) : (
-              <p className="mt-3 text-[12px] leading-relaxed text-faint">
+              <p className="mt-3 text-[12px] leading-relaxed text-muted">
                 Включи персональный контекст выше, чтобы обсудить эту запись с AI.
               </p>
             )}
@@ -527,7 +527,7 @@ export default function History({ user }) {
         <button
           type="button"
           onClick={() => setJourneySearchOpen(false)}
-          className="mb-3 min-h-10 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted"
+          className="mb-3 min-h-11 rounded-full bg-emerald px-4 text-[13px] font-semibold text-muted"
         >
           К обычной истории
         </button>
@@ -575,6 +575,7 @@ export default function History({ user }) {
   if (datedItems.length === 0) {
     return (
       <>
+        <h1 className="font-display mx-type-page text-cream lowercase">история.</h1>
         <EmptyState
           glyph={<MotifArt name="sledopyt" size={110} className="mx-auto mb-4" />}
           className="px-6 py-10 mt-2"
@@ -593,6 +594,7 @@ export default function History({ user }) {
 
   return (
     <div className="space-y-5 mt-1">
+      <h1 className="font-display mx-type-page text-cream lowercase">история.</h1>
       {historyStatus && (
         <p role="status" className="rounded-2xl bg-gold/10 px-4 py-3 text-[13px] text-gold">
           {historyStatus}
@@ -609,7 +611,7 @@ export default function History({ user }) {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            <div className="mx-type-section text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
             <button
               type="button"
               onClick={() => setSelectedDay(d)}
@@ -680,7 +682,7 @@ export default function History({ user }) {
                 <div className="text-[13px] font-semibold text-muted">
                   ✦ ритуалов закрыто: {d.activity.count}
                   {d.activity.breaks > 0 && (
-                    <span className="text-faint"> · срывов аскез: {d.activity.breaks}</span>
+                    <span className="text-muted"> · срывов аскез: {d.activity.breaks}</span>
                   )}
                 </div>
               )}
