@@ -55,8 +55,8 @@
 
 .mx-library-catalog__search button {
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   padding: 0;
   place-items: center;
   border: 0;
@@ -92,16 +92,17 @@
   text-transform: uppercase;
 }
 
+.mx-library-catalog__section-head h2,
 .mx-library-catalog__section-head h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--mx-type-section-size);
   font-weight: 500;
   line-height: 1.15;
   letter-spacing: -0.035em;
 }
 
 .mx-library-catalog__section-head > small {
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font:
     11px 'JetBrains Mono',
     monospace;
@@ -244,7 +245,7 @@
   padding: 3px 8px;
   border: 1px solid rgb(var(--c-border));
   border-radius: 999px;
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font:
     600 9px 'Manrope',
     sans-serif;
