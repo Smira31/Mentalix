@@ -1,0 +1,188 @@
+.mx-progress-layout-v2 {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin-inline: 0;
+  padding-inline: 16px;
+  overflow-x: clip;
+}
+
+.mx-progress-layout-v2,
+.mx-progress-layout-v2 * {
+  min-width: 0;
+}
+
+.mx-progress-layout-v2__period-control {
+  position: sticky;
+  top: 10px;
+  z-index: 10;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.mx-progress-layout-v2__period-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgb(var(--c-line) / 0.1);
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-ink));
+  white-space: nowrap;
+}
+
+.mx-progress-layout-v2__period-trigger span {
+  color: rgb(var(--c-muted));
+  font-size: 16px;
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+.mx-progress-layout-v2__period-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: grid;
+  width: max-content;
+  min-width: 132px;
+  padding: 5px;
+  border: 1px solid rgb(var(--c-line) / 0.12);
+  border-radius: 14px;
+  background: rgb(var(--c-card));
+  box-shadow: 0 14px 32px rgb(0 0 0 / 0.24);
+}
+
+.mx-progress-layout-v2__period-menu button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 34px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: rgb(var(--c-ink));
+  text-align: left;
+}
+
+.mx-progress-layout-v2__period-menu button:hover,
+.mx-progress-layout-v2__period-menu button[aria-checked='true'] {
+  background: rgb(var(--c-card2));
+}
+
+.mx-progress-layout-v2__period-menu button[aria-checked='true'] > span:last-child {
+  color: rgb(var(--c-gold));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__header {
+  align-items: center;
+  gap: 12px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section,
+.mx-progress-layout-v2 .mx-progress-redesign__hero,
+.mx-progress-layout-v2 .mx-progress-redesign__section-head,
+.mx-progress-layout-v2 .mx-progress-redesign__activities,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card,
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card {
+  width: 100%;
+  max-width: 100%;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__rail {
+  margin-right: 0;
+  padding-right: 0;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section {
+  margin-top: 32px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head > .font-label {
+  color: rgb(var(--c-faint));
+  font:
+    600 11px/1 'Manrope',
+    sans-serif;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head > small {
+  color: rgb(var(--c-faint));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation h3,
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
+  margin: 0;
+  color: rgb(var(--c-ink));
+  font-size: 21px;
+  font-weight: 570;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation h3 {
+  align-self: start;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card {
+  display: grid;
+  gap: 16px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation > span {
+  color: rgb(var(--c-faint));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities article > i > b {
+  background: rgb(var(--c-muted));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities summary {
+  color: rgb(var(--c-text));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities summary::after {
+  color: rgb(var(--c-faint));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
+  text-align: left;
+}
+
+@media (max-width: 359px) {
+  .mx-progress-layout-v2__period-trigger {
+    padding-inline: 9px;
+  }
+}
