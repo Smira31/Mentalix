@@ -611,7 +611,7 @@ export default function History({ user }) {
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="mx-type-section text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
             <button
               type="button"
               onClick={() => setSelectedDay(d)}
