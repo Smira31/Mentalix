@@ -4,6 +4,7 @@ import path from 'node:path'
 
 const BASE_URL = process.env.MXL_PROGRESS_BASE_URL || 'http://127.0.0.1:5173'
 const OUTPUT_DIR = path.resolve('artifacts/mxl-progress-production')
+const PROGRESS_LAYOUT_V2_ENABLED = process.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
 const VIEWPORTS = [
   { name: '320x568', width: 320, height: 568 },
   { name: '375x812', width: 375, height: 812 },
@@ -128,6 +129,7 @@ try {
         railRight: railRect?.right ?? window.innerWidth + 1,
         secondCardLeft: cards[1]?.getBoundingClientRect().left ?? 0,
         periods: document.querySelectorAll('.mx-progress-redesign__periods button').length,
+        layoutV2: Boolean(document.querySelector('.mx-progress-layout-v2')),
         activities: document.querySelectorAll('.mx-progress-redesign__activities article').length,
         observationBodySize: fontSize('.mx-progress-redesign__observation p'),
         calendarNoteSize: fontSize('.mx-progress-redesign__calendar-card > p'),
@@ -149,7 +151,11 @@ try {
     ) {
       throw new Error(`${viewport.name}: production-контент выходит за границу viewport`)
     }
-    if (geometry.periods !== 4 || geometry.activities !== 4) {
+    if (
+      (PROGRESS_LAYOUT_V2_ENABLED && (!geometry.layoutV2 || geometry.periods !== 0)) ||
+      (!PROGRESS_LAYOUT_V2_ENABLED && geometry.periods !== 4) ||
+      geometry.activities !== 4
+    ) {
       throw new Error(`${viewport.name}: неполная production-композиция`)
     }
     const smallTextSizes = [
@@ -163,7 +169,12 @@ try {
       throw new Error(`${viewport.name}: текст внутри карточек меньше 12px`)
     }
 
-    await page.getByRole('button', { name: '30 дней' }).click()
+    if (PROGRESS_LAYOUT_V2_ENABLED) {
+      await page.getByRole('button', { name: /14 дней/ }).click()
+      await page.getByRole('menuitemradio', { name: '30 дней' }).click()
+    } else {
+      await page.getByRole('button', { name: '30 дней' }).click()
+    }
     await page.getByText('Среднее настроение · 30 дней').waitFor()
     await page.getByText('Показать ритуалы').click()
     await page.getByText('Утренняя прогулка').waitFor()

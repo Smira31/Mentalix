@@ -5,6 +5,9 @@ import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
+import './Analytics.css'
+
+const PROGRESS_LAYOUT_V2_ENABLED = import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
@@ -533,6 +536,7 @@ export default function Analytics({ user, onGoCheckin }) {
   const [data, setData] = useState(() => initialTrendsSnapshot?.analytics ?? null)
   const [checkins, setCheckins] = useState(() => initialTrendsSnapshot?.checkins ?? [])
   const [days, setDays] = useState(14)
+  const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
   const [loading, setLoading] = useState(() => initialTrendsSnapshot === null)
   const [loadError, setLoadError] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
@@ -635,30 +639,79 @@ export default function Analytics({ user, onGoCheckin }) {
   }
 
   return (
-    <div className="mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-5 animate-fade-in">
+    <div
+      className={`mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-5 animate-fade-in${
+        PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2' : ''
+      }`}
+    >
       <header className="mx-progress-redesign__header">
         <h2 className="mx-type-analytics-heading">прогресс.</h2>
-        <span>{days} дней</span>
+        {PROGRESS_LAYOUT_V2_ENABLED ? (
+          <div className="mx-progress-layout-v2__period-control">
+            <button
+              type="button"
+              className="mx-progress-layout-v2__period-trigger mx-type-control"
+              aria-expanded={periodMenuOpen}
+              aria-controls="progress-period-menu"
+              onClick={() => setPeriodMenuOpen(value => !value)}
+            >
+              {days} дней
+              <span aria-hidden="true">⌄</span>
+            </button>
+            {periodMenuOpen && (
+              <div
+                id="progress-period-menu"
+                className="mx-progress-layout-v2__period-menu"
+                role="menu"
+                aria-label="Период аналитики"
+              >
+                {ANALYTICS_PERIODS.map(period => (
+                  <button
+                    key={period}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={days === period}
+                    onClick={() => {
+                      if (days !== period) {
+                        setLoading(true)
+                        setLoadError('')
+                        setDays(period)
+                      }
+                      setPeriodMenuOpen(false)
+                    }}
+                  >
+                    <span>{period} дней</span>
+                    {days === period && <span aria-hidden="true">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <span>{days} дней</span>
+        )}
       </header>
 
-      <div className="mx-progress-redesign__periods" aria-label="Период аналитики">
-        {ANALYTICS_PERIODS.map(period => (
-          <button
-            key={period}
-            type="button"
-            onClick={() => {
-              if (days !== period) {
-                setLoading(true)
-                setLoadError('')
-                setDays(period)
-              }
-            }}
-            aria-pressed={days === period}
-          >
-            {period} дней
-          </button>
-        ))}
-      </div>
+      {!PROGRESS_LAYOUT_V2_ENABLED && (
+        <div className="mx-progress-redesign__periods" aria-label="Период аналитики">
+          {ANALYTICS_PERIODS.map(period => (
+            <button
+              key={period}
+              type="button"
+              onClick={() => {
+                if (days !== period) {
+                  setLoading(true)
+                  setLoadError('')
+                  setDays(period)
+                }
+              }}
+              aria-pressed={days === period}
+            >
+              {period} дней
+            </button>
+          ))}
+        </div>
+      )}
 
       <MoodTrend
         checkins={checkins}
