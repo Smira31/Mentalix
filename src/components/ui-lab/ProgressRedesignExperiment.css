@@ -138,15 +138,8 @@
   margin: 4px 0 20px;
 }
 
-.mx-progress-redesign__header h2 {
-  font-size: 35px;
-  font-weight: 650;
-  line-height: 1;
-  letter-spacing: -0.055em;
-}
-
 .mx-progress-redesign__header > span {
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font-size: 11px;
 }
 
@@ -162,7 +155,7 @@
 
 .mx-progress-redesign__periods button {
   min-width: 0;
-  min-height: 34px;
+  min-height: 44px;
   padding: 5px 4px;
   border-color: transparent;
   border-radius: 999px;
@@ -212,7 +205,7 @@
 }
 
 .mx-progress-redesign__hero-copy small {
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font-size: 13px;
 }
 
@@ -262,8 +255,8 @@
   display: flex;
   justify-content: space-between;
   padding-top: 8px;
-  color: rgb(var(--c-faint));
-  font-size: 10px;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
 }
 
 .mx-progress-redesign__chart-message,
@@ -289,7 +282,7 @@
 }
 
 .mx-progress-redesign__chart-message button {
-  min-height: 38px;
+  min-height: 44px;
   margin-top: 4px;
   padding: 8px 15px;
   border-radius: 999px;
@@ -327,7 +320,7 @@
 }
 
 .mx-progress-redesign__section-head > small {
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font-size: 11px;
 }
 
@@ -356,10 +349,6 @@
 
 .mx-progress-redesign__observation strong {
   align-self: center;
-  font-size: 23px;
-  font-weight: 560;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
 }
 
 .mx-progress-redesign__observation p,
@@ -382,8 +371,8 @@
 
 .mx-progress-redesign__month-nav button {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   padding: 0;
   border-radius: 999px;
@@ -478,7 +467,7 @@
 
 .mx-progress-redesign__emotion-ring small {
   margin-top: 4px;
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font-size: 9px;
 }
 
@@ -508,7 +497,7 @@
 }
 
 .mx-progress-redesign__emotion-list small {
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
 }
 
 .mx-progress-redesign__activities {
@@ -626,7 +615,7 @@
 
 .mx-progress-redesign__status-note {
   margin: 10px 0 0;
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font-size: 11px;
   line-height: 1.5;
 }
@@ -806,10 +795,6 @@
   .mx-progress-redesign__scroll {
     padding-right: 16px;
     padding-left: 16px;
-  }
-
-  .mx-progress-redesign__header h2 {
-    font-size: 31px;
   }
 
   .mx-progress-redesign__hero {

@@ -180,7 +180,7 @@ function ObservationRail({ observations, insightsEnabled, preferenceError }) {
             <PrimaryObservationCard observation={observations[0] ?? null} />
             {secondary.map((observation, index) => (
               <article
-                className="mx-progress-redesign__observation"
+                className="mx-progress-redesign__observation mx-type-insight"
                 key={`${observation.text}-${index}`}
               >
                 <span>Ещё одно наблюдение</span>
@@ -694,7 +694,7 @@ export default function Analytics({ user, onGoCheckin }) {
       }`}
     >
       <header className="mx-progress-redesign__header">
-        <h2 className="mx-type-analytics-heading">прогресс.</h2>
+        <h2 className="font-display mx-type-page text-cream lowercase">прогресс.</h2>
         {PROGRESS_LAYOUT_V2_ENABLED ? (
           <div className="mx-progress-layout-v2__period-control">
             <button
