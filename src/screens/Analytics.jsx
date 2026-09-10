@@ -555,7 +555,7 @@ const WEEKDAY_FULL = [
 function Metric({ label, value, note, progress, children }) {
   return (
     <article
-      className={PROGRESS_LAYOUT_V2_ENABLED ? 'mx-progress-layout-v2__activity-card' : undefined}
+      className={PROGRESS_LAYOUT_V2_ENABLED ? 'mx-progress-redesign__activity-card' : undefined}
       data-progress-label={PROGRESS_LAYOUT_V2_ENABLED ? value : undefined}
     >
       <span>{label}</span>
