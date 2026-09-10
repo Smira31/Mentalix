@@ -111,6 +111,27 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
   )
 }
 
+function ObservationEvidence({ observation, preserveLegacyEmptyCaveat = false }) {
+  return (
+    <div>
+      {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
+        <p>
+          Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
+        </p>
+      )}
+      {observation.sourceDates?.length > 0 && (
+        <details>
+          <summary>Даты в основе наблюдения</summary>
+          <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
+        </details>
+      )}
+      {(observation.caveat || preserveLegacyEmptyCaveat) && (
+        <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
+      )}
+    </div>
+  )
+}
+
 function PrimaryObservationCard({ observation }) {
   if (!observation) {
     return (
@@ -131,44 +152,16 @@ function PrimaryObservationCard({ observation }) {
       {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
       <span>Главное наблюдение</span>
       <strong>{observation.text}</strong>
-      <div>
-        {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-          <p>
-            Основа: {observation.sampleSize}{' '}
-            {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
-          </p>
-        )}
-        {observation.sourceDates?.length > 0 && (
-          <details>
-            <summary>Даты в основе наблюдения</summary>
-            <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
-          </details>
-        )}
-        <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
-      </div>
+      <ObservationEvidence
+        observation={observation}
+        preserveLegacyEmptyCaveat={!PROGRESS_LAYOUT_V2_ENABLED}
+      />
     </article>
   )
 }
 
 function ObservationRail({ observations, insightsEnabled, preferenceError }) {
   const secondary = observations.slice(1, 3)
-
-  const renderEvidence = observation => (
-    <div>
-      {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-        <p>
-          Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
-        </p>
-      )}
-      {observation.sourceDates?.length > 0 && (
-        <details>
-          <summary>Даты в основе наблюдения</summary>
-          <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
-        </details>
-      )}
-      {observation.caveat && <p className="mx-progress-redesign__caveat">{observation.caveat}</p>}
-    </div>
-  )
 
   return (
     <section
@@ -192,7 +185,11 @@ function ObservationRail({ observations, insightsEnabled, preferenceError }) {
               >
                 <span>Ещё одно наблюдение</span>
                 <strong>{observation.text}</strong>
-                {renderEvidence(observation)}
+                {PROGRESS_LAYOUT_V2_ENABLED ? (
+                  <ObservationEvidence observation={observation} />
+                ) : (
+                  <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
+                )}
               </article>
             ))}
           </>
@@ -334,7 +331,9 @@ function EmotionCloud({ checkins }) {
     if (checkin.emotion) counts.set(checkin.emotion, (counts.get(checkin.emotion) || 0) + 1)
   }
   const emotions = [...counts.entries()].sort((left, right) => right[1] - left[1]).slice(0, 4)
-  const total = [...counts.values()].reduce((sum, count) => sum + count, 0)
+  const total = PROGRESS_LAYOUT_V2_ENABLED
+    ? [...counts.values()].reduce((sum, count) => sum + count, 0)
+    : emotions.reduce((sum, [, count]) => sum + count, 0)
 
   return (
     <section className="mx-progress-redesign__section" aria-labelledby="progress-emotions-title">

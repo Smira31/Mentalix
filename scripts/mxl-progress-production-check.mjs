@@ -29,6 +29,10 @@ function response(body, status = 200) {
   return { status, contentType: 'application/json', body: JSON.stringify(body) }
 }
 
+function periodCheckins(days) {
+  return days === 90 ? CHECKINS : CHECKINS.slice(-days)
+}
+
 function analyticsFixture(days) {
   return {
     period_days: days,
@@ -50,18 +54,18 @@ function analyticsFixture(days) {
       {
         text: 'В дни с утренней прогулкой энергия в этой выборке отмечалась выше.',
         sampleSize: 8,
-        sourceDates: CHECKINS.slice(0, 8).map(item => item.date),
+        sourceDates: periodCheckins(days).slice(0, 8).map(item => item.date),
         caveat: 'Это описание доступных данных, а не доказательство причины.',
       },
       {
         text: 'Во второй половине периода настроение стало немного устойчивее.',
-        sampleSize: 40,
-        sourceDates: CHECKINS.map(item => item.date),
+        sampleSize: periodCheckins(days).length,
+        sourceDates: periodCheckins(days).map(item => item.date),
         caveat: 'Наблюдение зависит от полноты сохранённых check-in.',
       },
     ],
     insights: [],
-    daily_activity: CHECKINS.map((item, index) => ({
+    daily_activity: periodCheckins(days).map((item, index) => ({
       date: item.date,
       count: index % 3 === 0 ? 2 : 1,
       breaks: index === 6 ? 1 : 0,
@@ -88,6 +92,7 @@ try {
       localStorage.setItem('mx-onboarded-v2', '1')
       localStorage.setItem('mx-app-lock-enabled', '0')
     }, USER)
+    let analyticsRequests = 0
     await context.route('**/api/**', route => {
       const request = route.request()
       const url = new URL(request.url())
@@ -96,9 +101,12 @@ try {
         return route.fulfill(response({ review_hour: 24, insights_enabled: true }))
       }
       if (url.pathname === '/api/analytics') {
+        analyticsRequests += 1
         return route.fulfill(response(analyticsFixture(Number(url.searchParams.get('days')) || 14)))
       }
-      if (url.pathname === '/api/checkin/history') return route.fulfill(response(CHECKINS))
+      if (url.pathname === '/api/checkin/history') {
+        return route.fulfill(response(periodCheckins(Number(url.searchParams.get('days')) || 14)))
+      }
       return route.fulfill(response([]))
     })
 
@@ -143,29 +151,6 @@ try {
     if (geometry.documentWidth > geometry.viewportWidth + 1) {
       throw new Error(`${viewport.name}: горизонтальный overflow страницы`)
     }
-    if (PROGRESS_LAYOUT_V2_ENABLED) {
-      const dataContract = await page.evaluate(() => ({
-        chartPoints: document.querySelectorAll('.mx-progress-redesign__chart circle').length,
-        average: document.querySelector('.mx-progress-redesign__hero-copy strong')?.textContent,
-        observationEvidence: document.querySelectorAll(
-          '.mx-progress-redesign__observation details'
-        ).length,
-        observationBases: [...document.querySelectorAll('.mx-progress-redesign__observation p')]
-          .map(node => node.textContent)
-          .filter(text => text.startsWith('Основа:')).length,
-        emotionTotal: document.querySelector('.mx-progress-redesign__emotion-ring span')?.textContent,
-        emotionRows: document.querySelectorAll('.mx-progress-redesign__emotion-list > div').length,
-      }))
-      if (dataContract.chartPoints !== 40 || dataContract.average !== '3.8') {
-        throw new Error(`${viewport.name}: график или среднее не используют все 40 точек`)
-      }
-      if (dataContract.observationEvidence !== 2 || dataContract.observationBases !== 2) {
-        throw new Error(`${viewport.name}: evidence не показан у всех observations`)
-      }
-      if (dataContract.emotionTotal !== '40' || dataContract.emotionRows > 4) {
-        throw new Error(`${viewport.name}: total эмоций или top-4 рассчитан неверно`)
-      }
-    }
     if (!geometry.railScrollable || geometry.secondCardLeft >= geometry.railRight) {
       throw new Error(`${viewport.name}: rail не показывает край следующей карточки`)
     }
@@ -199,13 +184,61 @@ try {
       await page.getByRole('menuitemradio', { name: '30 дней' }).click()
       await page.getByRole('button', { name: /30 дней/ }).click()
       await page.getByRole('menuitemradio', { name: '90 дней' }).click()
+      await page.getByText('Среднее настроение · 90 дней').waitFor()
+      const requestsAfter90 = analyticsRequests
+      const dataContract = await page.evaluate(() => ({
+        chartPoints: document.querySelectorAll('.mx-progress-redesign__chart circle').length,
+        average: document.querySelector('.mx-progress-redesign__hero-copy strong')?.textContent,
+        observationEvidence: document.querySelectorAll(
+          '.mx-progress-redesign__observation details'
+        ).length,
+        observationBases: [...document.querySelectorAll('.mx-progress-redesign__observation p')]
+          .map(node => node.textContent)
+          .filter(text => text.startsWith('Основа:')).length,
+        emotionTotal: document.querySelector('.mx-progress-redesign__emotion-ring span')?.textContent,
+        emotionRows: document.querySelectorAll('.mx-progress-redesign__emotion-list > div').length,
+      }))
+      if (dataContract.chartPoints !== 40 || dataContract.average !== '3.8') {
+        throw new Error(`${viewport.name}: 90 дней не используют все 40 точек или среднее 3.8`)
+      }
+      if (dataContract.observationEvidence !== 2 || dataContract.observationBases !== 2) {
+        throw new Error(`${viewport.name}: evidence не показан у всех V2 observations`)
+      }
+      if (dataContract.emotionTotal !== '40' || dataContract.emotionRows > 4) {
+        throw new Error(`${viewport.name}: V2 total эмоций или top-4 рассчитан неверно`)
+      }
+      if (viewport.name === '390x844') {
+        await page.screenshot({
+          path: path.join(OUTPUT_DIR, 'scope-b-390x844-90-days.png'),
+          fullPage: true,
+        })
+        await page.locator('.mx-progress-redesign__rail details').nth(1).click()
+        await page.screenshot({
+          path: path.join(OUTPUT_DIR, 'scope-b-390x844-observation-evidence.png'),
+          fullPage: true,
+        })
+      }
       for (let index = 0; index < 4; index += 1) {
         const previousMonth = page.getByRole('button', { name: 'Предыдущий месяц' })
         if (await previousMonth.isDisabled()) break
         await previousMonth.click()
       }
+      if (analyticsRequests !== requestsAfter90) {
+        throw new Error(`${viewport.name}: переход между месяцами вызвал API-запрос`)
+      }
       if (!(await page.getByRole('button', { name: 'Предыдущий месяц' }).isDisabled())) {
         throw new Error(`${viewport.name}: календарь разрешил месяц до начала 90-дневного периода`)
+      }
+      if (viewport.name === '390x844') {
+        await page.screenshot({
+          path: path.join(OUTPUT_DIR, 'scope-b-390x844-calendar-first-month.png'),
+          fullPage: true,
+        })
+      }
+      const requestsBeforeDisabledClick = analyticsRequests
+      await page.evaluate(() => document.querySelector('button[aria-label="Предыдущий месяц"]')?.click())
+      if (analyticsRequests !== requestsBeforeDisabledClick) {
+        throw new Error(`${viewport.name}: disabled-стрелка вызвала API-запрос`)
       }
       for (let index = 0; index < 4; index += 1) {
         const nextMonth = page.getByRole('button', { name: 'Следующий месяц' })
@@ -215,6 +248,12 @@ try {
       if (!(await page.getByRole('button', { name: 'Следующий месяц' }).isDisabled())) {
         throw new Error(`${viewport.name}: календарь разрешил будущий месяц`)
       }
+      if (viewport.name === '390x844') {
+        await page.screenshot({
+          path: path.join(OUTPUT_DIR, 'scope-b-390x844-calendar-current-month.png'),
+          fullPage: true,
+        })
+      }
       await page.getByRole('button', { name: /90 дней/ }).click()
       await page.getByRole('menuitemradio', { name: '7 дней' }).click()
       if (!(await page.getByRole('button', { name: 'Предыдущий месяц' }).isDisabled())) {
@@ -223,7 +262,27 @@ try {
       await page.getByRole('button', { name: /7 дней/ }).click()
       await page.getByRole('menuitemradio', { name: '30 дней' }).click()
     } else {
+      const legacyContract = await page.evaluate(() => ({
+        periods: document.querySelectorAll('.mx-progress-redesign__periods button').length,
+        secondaryDetails: document.querySelectorAll(
+          '.mx-progress-redesign__observation:not([data-primary-observation="true"]) details'
+        ).length,
+        emotionTotal: document.querySelector('.mx-progress-redesign__emotion-ring span')?.textContent,
+      }))
+      if (
+        legacyContract.periods !== 4 ||
+        legacyContract.secondaryDetails !== 0 ||
+        legacyContract.emotionTotal !== '12' ||
+        (await page.getByRole('button', { name: 'Предыдущий месяц' }).isDisabled())
+      ) {
+        throw new Error(`${viewport.name}: legacy-граница Scope B нарушена`)
+      }
+      const requestsBeforeLegacyPeriod = analyticsRequests
       await page.getByRole('button', { name: '30 дней' }).click()
+      await page.getByText('Среднее настроение · 30 дней').waitFor()
+      if (analyticsRequests !== requestsBeforeLegacyPeriod + 1) {
+        throw new Error(`${viewport.name}: выбор legacy периода не вызвал ожидаемый API-запрос`)
+      }
     }
     await page.getByText('Среднее настроение · 30 дней').waitFor()
     await page.getByText('Показать ритуалы').click()
