@@ -20,7 +20,9 @@ try {
     if (await page.locator('.mx-ui-lab__header').count()) throw new Error(`${viewport.width}: UI Lab header is visible in review mode`)
     if (await page.locator('.mx-library-programs__device').evaluate(element => getComputedStyle(element).borderWidth !== '0px')) throw new Error(`${viewport.width}: review device frame is visible`)
     if (!(await page.getByRole('heading', { name: 'Программы', exact: true }).isVisible())) throw new Error(`${viewport.width}: Programs heading missing`)
-    if (!(await page.getByRole('button', { name: 'Посмотреть программу' }).isVisible())) throw new Error(`${viewport.width}: featured CTA missing`)
+    const featured = page.locator('.mx-library-programs__featured')
+    if (!(await featured.isVisible())) throw new Error(`${viewport.width}: featured programme card missing`)
+    if (await page.getByText('790 ₽', { exact: false }).count()) throw new Error(`${viewport.width}: price should be hidden on landing card`)
     const navigationLabels = await page.locator('.mx-library-programs__bottom span').allTextContents()
     if (navigationLabels.join(' · ') !== 'Сегодня · Шаги · Диалог · Библиотека · Прогресс') throw new Error(`${viewport.width}: bottom navigation labels changed`)
     if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) throw new Error(`${viewport.width}: page horizontal overflow`)
@@ -28,15 +30,14 @@ try {
     if (smallTargets) throw new Error(`${viewport.width}: ${smallTargets} tap targets below 44px`)
     if (viewport.width === 320) {
       const overlap = await page.evaluate(() => {
-        const cta = document.querySelector('.mx-library-programs__featured-cta').getBoundingClientRect()
         const card = document.querySelector('.mx-library-programs__featured').getBoundingClientRect()
         const nav = document.querySelector('.mx-library-programs__bottom').getBoundingClientRect()
-        return { ctaBottom: cta.bottom, cardBottom: card.bottom, navTop: nav.top }
+        return { cardBottom: card.bottom, navTop: nav.top }
       })
-      if (overlap.ctaBottom > overlap.navTop || overlap.cardBottom > overlap.navTop) throw new Error('320: featured CTA/card overlaps bottom navigation')
+      if (overlap.cardBottom > overlap.navTop) throw new Error('320: featured card overlaps bottom navigation')
     }
-    await page.getByRole('button', { name: 'Посмотреть программу' }).click()
-    if (!(await page.getByText('790 ₽', { exact: true }).isVisible())) throw new Error(`${viewport.width}: price missing in detail`)
+    await featured.click()
+    if (!(await page.getByText('Полная программа · 790 ₽', { exact: true }).isVisible())) throw new Error(`${viewport.width}: price missing in detail`)
     await page.close()
     console.log(`PASS landing/detail ${viewport.width}x${viewport.height}`)
   }

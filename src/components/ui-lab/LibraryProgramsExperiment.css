@@ -839,6 +839,167 @@
   outline: 2px solid rgb(var(--c-gold));
   outline-offset: 3px;
 }
+
+/* Bounded refinement: programme card and paid detail purchase hierarchy. */
+.mx-library-programs__featured {
+  position: relative;
+  grid-template-columns: 96px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 24px;
+}
+.mx-library-programs__featured-art {
+  height: 112px;
+  border-radius: 18px;
+}
+.mx-library-programs__featured-art svg {
+  width: 92px;
+  height: 76px;
+}
+.mx-library-programs__featured-mark {
+  display: none;
+}
+.mx-library-programs__featured-copy {
+  position: relative;
+  gap: 7px;
+  min-width: 0;
+  padding: 2px 28px 2px 0;
+}
+.mx-library-programs__featured-copy strong {
+  max-width: none;
+  font-size: 18px;
+  line-height: 1.1;
+}
+.mx-library-programs__featured-copy p {
+  max-width: 220px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.mx-library-programs__offer-meta {
+  gap: 5px 10px;
+  font-size: 11px;
+}
+.mx-library-programs__offer-meta span:first-child {
+  flex-basis: auto;
+  color: rgb(var(--c-text));
+}
+.mx-library-programs__offer-meta span:nth-child(2) {
+  color: rgb(var(--c-gold));
+}
+.mx-library-programs__featured-arrow {
+  position: absolute;
+  right: 0;
+  bottom: 1px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 50%;
+  color: rgb(var(--c-gold));
+}
+.mx-library-programs__featured:focus-visible,
+.mx-library-programs__steps-toggle:focus-visible {
+  outline: 2px solid rgb(var(--c-gold));
+  outline-offset: 3px;
+}
+.mx-library-programs__detail {
+  gap: 16px;
+}
+.mx-library-programs__detail-art {
+  height: 218px;
+  border-radius: 28px;
+}
+.mx-library-programs__detail-art svg {
+  width: 210px;
+  height: 158px;
+}
+.mx-library-programs__detail h2 {
+  font-size: 31px;
+}
+.mx-library-programs__detail-meta {
+  color: rgb(var(--c-text));
+  font-size: 13px;
+}
+.mx-library-programs__value-heading {
+  margin: 2px 0 10px;
+  font-size: 19px;
+}
+.mx-library-programs__value-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid rgb(var(--c-border));
+}
+.mx-library-programs__value-list li {
+  min-height: 44px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-text));
+  font-size: 14px;
+}
+.mx-library-programs__value-list li::before {
+  margin-right: 10px;
+  color: rgb(var(--c-gold));
+  content: '—';
+}
+.mx-library-programs__steps-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 16px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+}
+.mx-library-programs__detail-purchase {
+  position: sticky;
+  z-index: 2;
+  bottom: -18px;
+  display: grid;
+  gap: 9px;
+  margin: 2px -18px -18px;
+  padding: 16px 18px calc(18px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-bg) / 0.97);
+}
+.mx-library-programs__detail-purchase > strong {
+  font-size: 15px;
+}
+.mx-library-programs__detail-purchase small {
+  color: rgb(var(--c-faint));
+  font-size: 11px;
+  text-align: center;
+}
+.mx-library-programs__detail-purchase .mx-library-programs__secondary {
+  min-height: 44px;
+}
+@media (max-width: 360px) {
+  .mx-library-programs__featured {
+    grid-template-columns: 84px 1fr;
+    gap: 10px;
+  }
+  .mx-library-programs__featured-art {
+    height: 104px;
+  }
+  .mx-library-programs__featured-copy strong {
+    font-size: 17px;
+  }
+  .mx-library-programs__detail-art {
+    height: 192px;
+  }
+  .mx-library-programs__detail h2 {
+    font-size: 27px;
+  }
+}
 .mx-library-programs__confirmation {
   display: grid;
   min-height: calc(100dvh - 116px);

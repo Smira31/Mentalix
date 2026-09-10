@@ -5,7 +5,6 @@ import {
   BookOpen,
   Check,
   Clock3,
-  LockKeyhole,
   Menu,
   Search,
   Sparkles,
@@ -106,7 +105,7 @@ function ContinueCard({ completed, onOpen }) {
   )
 }
 
-function FeaturedProgram({ active, completed, onOpen }) {
+function FeaturedProgram({ onOpen }) {
   return (
     <button type="button" className="mx-library-programs__featured" onClick={onOpen}>
       <div className="mx-library-programs__featured-art" aria-hidden="true">
@@ -118,18 +117,15 @@ function FeaturedProgram({ active, completed, onOpen }) {
         </span>
       </div>
       <div className="mx-library-programs__featured-copy">
-        <span className="mx-library-programs__eyebrow">
-          {completed ? 'Пройдено' : 'Авторская программа'}
-        </span>
+        <span className="mx-library-programs__eyebrow">Платная программа</span>
         <strong>7 дней к ясному следующему шагу</strong>
-        <p>Разобрать перегруженную ситуацию и выбрать одно реалистичное действие.</p>
+        <p>Разобраться в ситуации и выбрать одно действие на сейчас.</p>
         <div className="mx-library-programs__offer-meta">
-          <span>7 дней · 10 минут в день</span>
+          <span>7 дней</span>
           <span>Первый день бесплатно</span>
-          <b>790 ₽</b>
         </div>
-        <span className="mx-library-programs__featured-cta">
-          Посмотреть программу <ArrowRight size={16} aria-hidden="true" />
+        <span className="mx-library-programs__featured-arrow" aria-hidden="true">
+          <ArrowRight size={18} />
         </span>
       </div>
     </button>
@@ -230,12 +226,10 @@ function Landing({ demoState, onOpenDetail }) {
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
           <div>
-            <span className="mx-library-programs__eyebrow">Авторские последовательности</span>
             <h3>Программы</h3>
           </div>
-          <span className="mx-library-programs__free-note">первый день бесплатно</span>
         </div>
-        <FeaturedProgram active={active} completed={completed} onOpen={onOpenDetail} />
+        <FeaturedProgram onOpen={onOpenDetail} />
         <ProgramRail onOpen={onOpenDetail} />
       </section>
       <section className="mx-library-programs__section">
@@ -292,60 +286,37 @@ function Detail({ demoState, onBack, onFreeDay, onPay }) {
           за раз
         </span>
       </div>
-      <span className="mx-library-programs__eyebrow">Авторская программа</span>
       <h2>7 дней к ясному следующему шагу</h2>
       <p className="mx-library-programs__lead">
-        Разобрать перегруженную ситуацию и сформулировать один реалистичный следующий шаг.
+        Разобраться в перегруженной ситуации и выбрать одно действие, которое можно сделать сейчас.
       </p>
-      <div className="mx-library-programs__detail-offer">
-        <strong>7 дней · 10 минут в день</strong>
-        <span>Первый день бесплатно</span>
-        <b>790 ₽</b>
-        <small>Разовая покупка программы · demo-copy</small>
-      </div>
-      {!completed && (
-        <>
-          <button type="button" className="mx-library-programs__primary" onClick={onFreeDay}>
-            Попробовать первый день бесплатно
-          </button>
-          <button type="button" className="mx-library-programs__secondary" onClick={onPay}>
-            Получить программу за 790 ₽
-          </button>
-        </>
-      )}
+      <strong className="mx-library-programs__detail-meta">7 дней · около 10 минут в день</strong>
       <section>
-        <div className="mx-library-programs__detail-heading">
-          <h3>Как устроены 7 дней</h3>
-          <span>постепенно</span>
-        </div>
-        <ol className="mx-library-programs__days">
-          <li className="is-open">
-            <span>01</span>
-            <div>
-              <strong>{DAYS[0][1]}</strong>
-              <small>{DAYS[0][2]}</small>
-            </div>
-            <Check size={16} />
-          </li>
-          <li className="mx-library-programs__days-summary">
-            <div>
-              <strong>Дни 2–7 откроются после получения программы</strong>
-              <small>
-                Отделить факты · увидеть ограничения · выбрать следующий шаг · итоговая рефлексия
-              </small>
-            </div>
-            <LockKeyhole size={15} />
-          </li>
-        </ol>
+        <h3 className="mx-library-programs__value-heading">За эту неделю</h3>
+        <ul className="mx-library-programs__value-list">
+          <li>Отделишь главное от шума</li>
+          <li>Увидишь реальные варианты</li>
+          <li>Выберешь следующий шаг</li>
+        </ul>
+        <button type="button" className="mx-library-programs__steps-toggle" aria-expanded="false">
+          <span>Посмотреть все 7 шагов</span>
+          <ArrowRight size={17} aria-hidden="true" />
+        </button>
       </section>
-      <section className="mx-library-programs__included">
-        <strong>Что входит</strong>
-        <span>ежедневные задания · checkpoints · итоговая рефлексия</span>
-        <small>
-          Это не терапия и не медицинская рекомендация. Если тебе нужна помощь специалиста, обратись
-          к нему напрямую.
-        </small>
-      </section>
+      <div className="mx-library-programs__detail-purchase">
+        <strong>Полная программа · 790 ₽</strong>
+        {!completed && (
+          <>
+            <button type="button" className="mx-library-programs__primary" onClick={onFreeDay}>
+              Попробовать первый день бесплатно
+            </button>
+            <button type="button" className="mx-library-programs__secondary" onClick={onPay}>
+              Получить программу сразу
+            </button>
+          </>
+        )}
+        <small>Демо: оплата не подключена</small>
+      </div>
       {completed && (
         <div className="mx-library-programs__completed">
           <Check size={18} /> Программа завершена · итоговая рефлексия открыта
