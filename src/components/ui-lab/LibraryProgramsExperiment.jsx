@@ -110,20 +110,11 @@ function FeaturedProgram({ onOpen }) {
     <button type="button" className="mx-library-programs__featured" onClick={onOpen}>
       <div className="mx-library-programs__featured-art" aria-hidden="true">
         <ProgramGlyph />
-        <span className="mx-library-programs__featured-mark">
-          одна задача
-          <br />
-          за раз
-        </span>
       </div>
       <div className="mx-library-programs__featured-copy">
         <span className="mx-library-programs__eyebrow">Платная программа</span>
         <strong>7 дней к ясному следующему шагу</strong>
-        <div className="mx-library-programs__offer-meta">
-          <span>7 дней</span>
-          <span>Первый день бесплатно</span>
-        </div>
-        <span className="mx-library-programs__featured-arrow" aria-hidden="true">
+        <span className="mx-library-programs__featured-arrow" aria-label="Открыть программу">
           <ArrowRight size={18} />
         </span>
       </div>
