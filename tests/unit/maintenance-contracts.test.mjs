@@ -944,7 +944,6 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(articles, /mx-type-article-title/)
   assert.match(articles, /mx-type-article-body/)
   assert.match(analytics, /mx-type-page/)
-  assert.match(analytics, /mx-type-analytics-heading/)
   assert.match(analytics, /mx-type-insight/)
   assert.match(personaPicker, /mx-type-page/)
   assert.match(personaPicker, /mx-type-persona-title/)

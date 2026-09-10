@@ -121,7 +121,6 @@
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__section-head > .font-label {
-  color: rgb(var(--c-faint));
   font:
     600 11px/1 'Manrope',
     sans-serif;
@@ -215,12 +214,6 @@
   text-transform: uppercase;
 }
 
-.mx-progress-layout-v2 .mx-progress-redesign__activity-card > strong {
-  grid-column: 2;
-  align-self: end;
-  font-size: 30px;
-}
-
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > small {
   grid-column: 2;
   font-size: 12px;
@@ -233,10 +226,6 @@
 
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > details {
   grid-column: 2;
-}
-
-.mx-progress-layout-v2 .mx-progress-redesign__observation > span {
-  color: rgb(var(--c-faint));
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__activities article > i > b {
