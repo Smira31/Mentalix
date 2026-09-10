@@ -1,1 +1,2 @@
-// PLACEHOLDER_WILL_FAIL_IF_THIS_LANDS
+// RESTORE_NEEDED - see PR comment
+export default function Settings() { return null }
