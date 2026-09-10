@@ -1,0 +1,42 @@
+/* Practices a11y/typography/tap-target batch fixes */
+.mx-layered-catalog__hero-copy h2,
+.mx-layered-catalog__hero-copy h3,
+.mx-layered-catalog__section-head h2,
+.mx-layered-catalog__section-head h3 {
+  margin: 0;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  font-size: var(--mx-type-section-size, 1.125rem);
+}
+.mx-layered-category__header h2,
+.mx-layered-category__header h3 {
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  font-size: var(--mx-type-section-size, 1.125rem);
+}
+.mx-production-catalog .mx-layered-category__header h2,
+.mx-production-catalog .mx-layered-category__header h3 {
+  font-size: var(--mx-type-section-size, 1.125rem);
+}
+.mx-layered-catalog__hero-meta {
+  color: rgb(var(--c-muted));
+}
+.mx-layered-catalog__section-head small {
+  color: rgb(var(--c-muted));
+}
+.mx-layered-catalog__rail-category {
+  color: rgb(var(--c-muted));
+}
+.mx-layered-catalog__pill,
+.mx-layered-catalog__checkin-trigger {
+  min-height: 44px;
+}
+.mx-layered-category__header {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+.mx-layered-category__header button {
+  width: 44px;
+  height: 44px;
+}
