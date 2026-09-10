@@ -1,11 +1,32 @@
 import { Snowflake } from 'lucide-react'
-import { tierForStreak } from '../lib/series'
+import { tierForStreak } from '../lib/streakTiers'
+
+/*
+ * СТРИК
+ *
+ * Раньше это был эмодзи с цифрой: 🔥 12. Цветная картинка из
+ * системного шрифта — единственное место в карточке, которое не
+ * подчиняется ни одному нашему токену, и рядом с золотой линией
+ * она выглядит наклейкой.
+ *
+ * Здесь та же цифра сказана языком мотивов: семь коротких засечек
+ * — неделя, закрашено столько, сколько дней держится серия (не
+ * больше семи), рядом словами сколько всего. Заморозки — отдельным
+ * тихим значком, они не часть серии, а страховка.
+ *
+ * Имя уровня (tierForStreak) заменяет фразу «N дней подряд» целиком,
+ * без числа рядом — карточка узкая, делит строку с кнопками действий,
+ * а «имя · N дней» на 320px всё равно обрезается (длиннее прежней
+ * римской цифры).
+ */
 
 function plural(n) {
-  const mod10 = n % 10
-  const mod100 = n % 100
-  if (mod10 === 1 && mod100 !== 11) return 'день'
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return 'дня'
+  const last = n % 10
+  const teen = n % 100 >= 11 && n % 100 <= 14
+
+  if (!teen && last === 1) return 'день'
+  if (!teen && last >= 2 && last <= 4) return 'дня'
+
   return 'дней'
 }
 
@@ -15,7 +36,7 @@ export default function StreakBar({
   tone = 'gold',
   bump = false,
 }) {
-  const filled = Math.min(Math.max(0, streak), 7)
+  const filled = Math.min(Math.max(streak, 0), 7)
   const tier = tierForStreak(streak)
 
   const mark = tone === 'mint' ? 'bg-mint' : 'bg-gold'
