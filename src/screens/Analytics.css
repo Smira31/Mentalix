@@ -103,6 +103,84 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.mx-progress-layout-v2 .mx-progress-redesign__section {
+  margin-top: 32px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head > .font-label {
+  color: rgb(var(--c-faint));
+  font:
+    600 11px/1 'Manrope',
+    sans-serif;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head > small {
+  color: rgb(var(--c-faint));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation h3,
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
+  margin: 0;
+  color: rgb(var(--c-ink));
+  font-size: 21px;
+  font-weight: 570;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation h3 {
+  align-self: start;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card {
+  display: grid;
+  gap: 16px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation > span {
+  color: rgb(var(--c-faint));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities article > i > b {
+  background: rgb(var(--c-muted));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities summary {
+  color: rgb(var(--c-text));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities summary::after {
+  color: rgb(var(--c-faint));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
+  text-align: left;
+}
+
 @media (max-width: 359px) {
   .mx-progress-layout-v2__period-trigger {
     padding-inline: 9px;

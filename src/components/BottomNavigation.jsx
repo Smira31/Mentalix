@@ -1,6 +1,7 @@
-import { AlignJustify, House, Sparkles, BookOpen } from 'lucide-react'
+import { House, Sparkles, BookOpen } from 'lucide-react'
 
 import MazeLogo from './MazeLogo'
+import SemanticGlyph from './SemanticGlyph'
 import { platform } from '../platform'
 
 // MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
@@ -31,7 +32,7 @@ const TABS = [
   {
     key: 'trends',
     label: 'Прогресс',
-    icon: AlignJustify,
+    icon: 'progress-glyph',
   },
 ]
 
@@ -46,6 +47,16 @@ function TabIcon({ item, active, size = 21 }) {
         showDot={false}
         baseClass="text-transparent"
         trailClass={active ? 'text-gold' : 'text-muted'}
+      />
+    )
+  }
+
+  if (item.icon === 'progress-glyph') {
+    return (
+      <SemanticGlyph
+        kind="next-step"
+        className={`h-[21px] w-[21px] ${active ? 'text-cream' : 'text-muted'}`}
+        animated={false}
       />
     )
   }
