@@ -1095,4 +1095,32 @@
   .mx-library-programs--review .mx-library-programs__offer-meta {
     font-size: 10px;
   }
+  .mx-library-programs--review .mx-library-programs__detail {
+    padding-bottom: 248px;
+  }
+  .mx-library-programs--review .mx-library-programs__detail-art {
+    height: 140px;
+  }
+  .mx-library-programs--review .mx-library-programs__detail-purchase {
+    bottom: -18px;
+    gap: 6px;
+    margin-top: 0;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    border-radius: 20px 20px 0 0;
+    background: rgb(9 9 9 / 0.98);
+  }
+  .mx-library-programs--review .mx-library-programs__detail-purchase > strong {
+    font-size: 14px;
+  }
+  .mx-library-programs--review .mx-library-programs__detail-purchase .mx-library-programs__primary,
+  .mx-library-programs--review
+    .mx-library-programs__detail-purchase
+    .mx-library-programs__secondary {
+    min-height: 44px;
+    padding-inline: 10px;
+    font-size: 12px;
+  }
+  .mx-library-programs--review .mx-library-programs__detail-purchase small {
+    font-size: 10px;
+  }
 }

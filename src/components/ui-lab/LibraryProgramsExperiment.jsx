@@ -119,7 +119,6 @@ function FeaturedProgram({ onOpen }) {
       <div className="mx-library-programs__featured-copy">
         <span className="mx-library-programs__eyebrow">Платная программа</span>
         <strong>7 дней к ясному следующему шагу</strong>
-        <p>Разобраться в ситуации и выбрать одно действие на сейчас.</p>
         <div className="mx-library-programs__offer-meta">
           <span>7 дней</span>
           <span>Первый день бесплатно</span>
