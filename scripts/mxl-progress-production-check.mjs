@@ -110,16 +110,30 @@ try {
     await page.getByText('Активности').waitFor()
 
     const geometry = await page.evaluate(() => {
+      const screen = document.querySelector('.mx-progress-redesign--live')
       const rail = document.querySelector('.mx-progress-redesign__rail')
       const cards = [...document.querySelectorAll('.mx-progress-redesign__observation')]
+      const screenRect = screen?.getBoundingClientRect()
+      const railRect = rail?.getBoundingClientRect()
+      const fontSize = selector => {
+        const element = document.querySelector(selector)
+        return element ? Number.parseFloat(getComputedStyle(element).fontSize) : 0
+      }
       return {
         viewportWidth: window.innerWidth,
         documentWidth: document.documentElement.scrollWidth,
         railScrollable: rail ? rail.scrollWidth > rail.clientWidth : false,
-        railRight: rail?.getBoundingClientRect().right ?? 0,
+        screenLeft: screenRect?.left ?? -1,
+        screenRight: screenRect?.right ?? window.innerWidth + 1,
+        railRight: railRect?.right ?? window.innerWidth + 1,
         secondCardLeft: cards[1]?.getBoundingClientRect().left ?? 0,
         periods: document.querySelectorAll('.mx-progress-redesign__periods button').length,
         activities: document.querySelectorAll('.mx-progress-redesign__activities article').length,
+        observationBodySize: fontSize('.mx-progress-redesign__observation p'),
+        calendarNoteSize: fontSize('.mx-progress-redesign__calendar-card > p'),
+        emotionRowSize: fontSize('.mx-progress-redesign__emotion-list > div'),
+        activityLabelSize: fontSize('.mx-progress-redesign__activities article > span'),
+        activityDetailSize: fontSize('.mx-progress-redesign__activities details'),
       }
     })
     if (geometry.documentWidth > geometry.viewportWidth + 1) {
@@ -128,8 +142,25 @@ try {
     if (!geometry.railScrollable || geometry.secondCardLeft >= geometry.railRight) {
       throw new Error(`${viewport.name}: rail не показывает край следующей карточки`)
     }
+    if (
+      geometry.screenLeft < -1 ||
+      geometry.screenRight > geometry.viewportWidth + 1 ||
+      geometry.railRight > geometry.screenRight + 1
+    ) {
+      throw new Error(`${viewport.name}: production-контент выходит за границу viewport`)
+    }
     if (geometry.periods !== 4 || geometry.activities !== 4) {
       throw new Error(`${viewport.name}: неполная production-композиция`)
+    }
+    const smallTextSizes = [
+      geometry.observationBodySize,
+      geometry.calendarNoteSize,
+      geometry.emotionRowSize,
+      geometry.activityLabelSize,
+      geometry.activityDetailSize,
+    ]
+    if (smallTextSizes.some(size => size < 12)) {
+      throw new Error(`${viewport.name}: текст внутри карточек меньше 12px`)
     }
 
     await page.getByRole('button', { name: '30 дней' }).click()

@@ -1605,6 +1605,38 @@
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__collection-chevron {
   z-index: 1;
 }
+
+/* Production-полировка: полный текст карточек без изменения геометрии UI Lab. */
+.mx-production-catalog.mx-layered-catalog--mxl-547-preview {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+}
+.mx-production-catalog.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__rail {
+  max-width: 100%;
+  overscroll-behavior-inline: contain;
+}
+.mx-production-catalog.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__rail-card {
+  height: 252px;
+  min-height: 252px;
+  max-height: 252px;
+}
+.mx-production-catalog.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__rail-card strong {
+  font-size: 16px;
+  line-height: 1.2;
+  -webkit-line-clamp: 3;
+}
+.mx-production-catalog.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__rail-card small {
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  line-height: 1.4;
+}
+.mx-production-catalog.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__collection small {
+  max-width: 90%;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  line-height: 1.4;
+}
 @media (prefers-reduced-motion: reduce) {
   .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-track {
     scroll-behavior: auto;
