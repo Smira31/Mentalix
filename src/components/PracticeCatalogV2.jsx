@@ -20,7 +20,7 @@ function JournalBanner({ onOpen }) {
       </div>
       <div className="mx-layered-catalog__journal-hero-copy">
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
-        <h3>Разбери день на части</h3>
+        <h2 className="mx-type-section">Разбери день на части</h2>
         <p>Семь простых вопросов, чтобы увидеть главное</p>
         <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
           Открыть журнал <ArrowRight size={15} />
@@ -143,7 +143,7 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
         <div className="mx-layered-catalog__section-head">
           <div>
             <span>Тема недели:</span>
-            <h3>{title}</h3>
+            <h2 className="mx-type-section">{title}</h2>
           </div>
         </div>
         <p className="mx-layered-catalog__empty-copy">{copy}</p>
@@ -159,7 +159,7 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
       <div className="mx-layered-catalog__section-head">
         <div>
           <span>Тема недели:</span>
-          <h3 id="production-theme-title">Один вопрос.</h3>
+          <h2 className="mx-type-section" id="production-theme-title">Один вопрос.</h2>
         </div>
       </div>
       <div className="mx-layered-catalog__theme-track" ref={trackRef} onScroll={handleScroll}>
@@ -181,12 +181,14 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
       </div>
       <span
         className="mx-layered-catalog__dots"
+        role="img"
         aria-label={`Вопрос ${safeQuestionIndex + 1} из ${questions.length}`}
       >
         {questions.map((question, index) => (
           <i
             key={question.day ?? index}
             data-active={index === safeQuestionIndex ? 'true' : undefined}
+            aria-hidden="true"
           />
         ))}
       </span>
@@ -227,7 +229,7 @@ function CollectionGrid({ onOpen }) {
       <div className="mx-layered-catalog__section-head">
         <div>
           <span>Собрано для тебя</span>
-          <h3>Коллекции</h3>
+          <h2 className="mx-type-section">Коллекции</h2>
         </div>
         <small>{VISIBLE_COLLECTIONS.length}</small>
       </div>
@@ -265,7 +267,7 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
           <ArrowLeft size={19} />
         </button>
         <div className="mx-layered-category__heading">
-          <h3 id="production-category-title">{collection.title}.</h3>
+          <h2 className="mx-type-section" id="production-category-title">{collection.title}.</h2>
           <p>{collection.description}</p>
         </div>
         <span aria-hidden="true" />
