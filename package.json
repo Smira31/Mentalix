@@ -16,6 +16,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:contract": "node --test tests/unit/api-contract.test.mjs",
     "docs:check": "node scripts/docs-check.mjs",
     "docs:drift": "node scripts/docs-drift.mjs",
     "docs:canonical-drift": "node scripts/docs-canonical-drift.mjs",
