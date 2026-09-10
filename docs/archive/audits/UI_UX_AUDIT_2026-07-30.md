@@ -1,3 +1,8 @@
+---
+status: archived
+last_verified: 2026-09-10
+---
+
 # Mentalix — UI/UX audit
 
 Дата: 30.07.2026

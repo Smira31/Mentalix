@@ -1,3 +1,8 @@
+---
+status: normative
+last_verified: 2026-09-10
+---
+
 # Mentalix — Design System v1
 
 Смысловые SVG-иллюстрации и motion-поведение дополнительно зафиксированы в `MENTALIX_SEMANTIC_MOTION.md`. Для новых карточек оба документа являются единым source of truth.

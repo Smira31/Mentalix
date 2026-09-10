@@ -1,3 +1,8 @@
+---
+status: archived
+last_verified: 2026-09-10
+---
+
 # MXL-UI-005, Шаг 2 — pre-mortem (метод Gary Klein)
 
 Дата: 16.08.2026. Проведён по скиллу `pre-mortem` перед стартом Шага 2

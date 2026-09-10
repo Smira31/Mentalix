@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 09.09.2026 (после owner PASS и merge PR #561). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog** на 10.09.2026 (после owner PASS и merge PR #564). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -8,15 +8,15 @@
 
 ## Каноническая продуктовая очередь (после cleanup)
 
-| Порядок | Issue | ID / title            | Примечание                                                                               |
-| ------: | ----- | --------------------- | ---------------------------------------------------------------------------------------- |
-|       — | —     | Execution queue пуста | #557 завершена через PR #561; следующая product-задача требует отдельного owner decision |
+| Порядок | Issue                                                  | ID / title                | Примечание                                                                                   |
+| ------: | ------------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------- |
+|       1 | [#563](https://github.com/Smira31/Mentalix/issues/563) | MXL-PROGRESS-REDESIGN-001 | **В работе:** перенос одобренной композиции вкладки «Прогресс» на реальные production-данные |
 
-**Последний completed gate (09.09.2026):** [#557](https://github.com/Smira31/Mentalix/issues/557) via [PR #561](https://github.com/Smira31/Mentalix/pull/561) — owner QA PASS, merge commit `f2b0a1e203a4b65c79d6bfd182416dd2c90c999f`; production deployment после merge проверяется отдельно.
+**Последний completed gate (09.09.2026):** UI Lab задачи [#563](https://github.com/Smira31/Mentalix/issues/563) via [PR #564](https://github.com/Smira31/Mentalix/pull/564) — owner QA PASS, merge commit `a360c45dc1a77bb6603bba8b5aa5a9364836c870`; production promotion выполняется отдельным PR.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active work:** нет. #557 / `MXL-PROGRESS-UX-002` закрыта через PR #561: candidate принят в UI Lab после owner PASS; production `Analytics.jsx`, backend/API и нижняя навигация не менялись. Следующий product scope требует отдельного owner decision.
+**Active work:** `MXL-PROGRESS-REDESIGN-001` / ветка `codex/mxl-progress-redesign-production`. Одобренная композиция переносится в `Analytics.jsx` поверх существующих cache/API/settings contracts; backend/API, навигация и продуктовая семантика метрик не меняются. Следующий gate — production Preview на exact SHA, owner iPhone/Telegram PASS и только затем squash merge.
 
 ## PARKED / NOT SCHEDULED
 

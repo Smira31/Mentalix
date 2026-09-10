@@ -1,3 +1,8 @@
+---
+status: archived
+last_verified: 2026-09-10
+---
+
 # Контекст проекта Mentalix — legacy / historical context
 
 > Этот файл сохранён как исторический контекст и шаблон работы из ранней

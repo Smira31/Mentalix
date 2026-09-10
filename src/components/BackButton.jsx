@@ -26,11 +26,7 @@ import { useBackButton } from '../platform/telegram.hooks'
  * внутри Telegram, `telegram.adapter.js`), как и остальной
  * платформенный слой.
  */
-export default function BackButton({
-  onClick,
-  label = 'Назад',
-  className = '',
-}) {
+export default function BackButton({ onClick, label = 'Назад', className = '' }) {
   useBackButton(() => {
     platform.haptic('light')
     onClick?.()
@@ -48,18 +44,13 @@ export default function BackButton({
       }}
       className={[
         'flex items-center gap-2 rounded-full border border-cream/15 bg-emerald',
-        'pl-2.5 pr-4 py-2 active:scale-95 transition-transform shrink-0',
+        'min-h-11 pl-2.5 pr-4 py-2 active:scale-95 transition-transform shrink-0',
         className,
       ].join(' ')}
     >
-      <ChevronLeft
-        size={17}
-        className="text-muted"
-      />
+      <ChevronLeft size={17} className="text-muted" aria-hidden="true" />
 
-      <span className="text-[13px] font-semibold text-muted">
-        {label}
-      </span>
+      <span className="text-[13px] font-semibold text-muted">{label}</span>
     </button>
   )
 }

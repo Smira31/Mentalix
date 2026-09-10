@@ -1,3 +1,8 @@
+---
+status: historical
+last_verified: 2026-09-10
+---
+
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
 ## 08.09.2026 — MXL-AI-HANDOFF-001: вечерний разбор доходит до Следопыта (PR #542)

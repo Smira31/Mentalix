@@ -554,6 +554,37 @@ test('локальный UX smoke по основному маршруту', asy
             .filter({ hasText: 'Психологические практики' })
         )
         await assertSoonControls(page)
+        const productionCardTypography = await page.evaluate(() => {
+          const catalog = document.querySelector('.mx-production-catalog')
+          const rail = catalog?.querySelector('.mx-layered-catalog__rail')
+          const upcomingTitle = [
+            ...(rail?.querySelectorAll('.mx-layered-catalog__rail-card') || []),
+          ]
+            .find(card => card.textContent?.includes('Импульс к действию с Львом'))
+            ?.querySelector('strong')
+          const railCopy = rail?.querySelector('.mx-layered-catalog__rail-card small')
+          const collectionCopy = catalog?.querySelector('.mx-layered-catalog__collection small')
+          const catalogRect = catalog?.getBoundingClientRect()
+          const railRect = rail?.getBoundingClientRect()
+          const fontSize = element =>
+            element ? Number.parseFloat(getComputedStyle(element).fontSize) : 0
+
+          return {
+            catalogRight: catalogRect?.right ?? window.innerWidth + 1,
+            railRight: railRect?.right ?? window.innerWidth + 1,
+            titleClipped: upcomingTitle
+              ? upcomingTitle.scrollHeight > upcomingTitle.clientHeight + 1
+              : true,
+            railCopySize: fontSize(railCopy),
+            collectionCopySize: fontSize(collectionCopy),
+          }
+        })
+        expect(productionCardTypography.railRight).toBeLessThanOrEqual(
+          productionCardTypography.catalogRight + 1
+        )
+        expect(productionCardTypography.titleClipped).toBe(false)
+        expect(productionCardTypography.railCopySize).toBeGreaterThanOrEqual(12)
+        expect(productionCardTypography.collectionCopySize).toBeGreaterThanOrEqual(12)
       },
     })
 
@@ -1021,7 +1052,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'Аналитика' })).toBeAttached()
+        await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeAttached()
         await expect(page.getByRole('button', { name: 'Прогресс' })).toHaveAttribute(
           'aria-current',
           'page'

@@ -95,10 +95,16 @@ test('withQuery пропускает только null/undefined и не доб�
 
 test('MXL-JOURNAL-ORGANIZE-001 сериализует несколько tag-параметров и включает server-side Journey UI', () => {
   const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
-  const journeySearch = readFileSync(new URL('../../src/screens/JourneySearch.jsx', import.meta.url), 'utf8')
+  const journeySearch = readFileSync(
+    new URL('../../src/screens/JourneySearch.jsx', import.meta.url),
+    'utf8'
+  )
   const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 
-  assert.equal(withQuery('/journey/entries', { tag_id: [4, 9] }), '/journey/entries?tag_id=4&tag_id=9')
+  assert.equal(
+    withQuery('/journey/entries', { tag_id: [4, 9] }),
+    '/journey/entries?tag_id=4&tag_id=9'
+  )
   assert.match(history, /JourneySearch/)
   assert.match(journeySearch, /Поиск работает только по твоим сохранённым записям/)
   assert.match(journeySearch, /Показать ещё/)
@@ -185,12 +191,18 @@ test('preview cleanup подтверждает удаление до очист�
   assert.match(source, /MENTALIX_PREVIEW_STOP_VERIFY_DEADLINE_SECONDS/)
   assert.match(source, /MENTALIX_PREVIEW_STOP_RETRY_DELAY_SECONDS/)
   assert.match(source, /MENTALIX_PREVIEW_STOP_RETRY_MAX_DELAY_SECONDS/)
-  assert.match(source, /verify deadline seconds=\{0\}, initial delay seconds=\{1\}, max delay seconds=\{2\}/)
+  assert.match(
+    source,
+    /verify deadline seconds=\{0\}, initial delay seconds=\{1\}, max delay seconds=\{2\}/
+  )
   const dryRunGuard = source.indexOf('if ($DryRun -or $dryRunFromEnv)')
   assert.ok(dryRunGuard > 0)
   assert.ok(dryRunGuard < source.indexOf('vercel@latest list'))
   assert.match(source, /while \(\(Get-Date\) -lt \$verificationDeadline/)
-  assert.match(source, /\$currentDelaySeconds = \[math\]::Min\(\$currentDelaySeconds \* 2, \$retryMaxDelaySeconds\)/)
+  assert.match(
+    source,
+    /\$currentDelaySeconds = \[math\]::Min\(\$currentDelaySeconds \* 2, \$retryMaxDelaySeconds\)/
+  )
   assert.match(source, /Start-Sleep -Seconds \$sleepSeconds/)
   assert.match(source, /State сохранён для повторной попытки/)
   assert.match(launcher, /Join-Path \$PSScriptRoot 'preview-stop\.ps1'/)
@@ -228,9 +240,15 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
 
   assert.match(demo, /host\.endsWith\('\.trycloudflare\.com'\)/)
-  assert.match(demo, /const isPreviewRuntime = import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview'/)
+  assert.match(
+    demo,
+    /const isPreviewRuntime = import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview'/
+  )
   assert.match(demo, /const isQaProductionHost = host === 'mentalix-preview\.vercel\.app'/)
-  assert.match(demo, /return params\.get\('demo'\) === '1' && isAllowedHost && \(isPreviewRuntime \|\| isQaProductionHost\)/)
+  assert.match(
+    demo,
+    /return params\.get\('demo'\) === '1' && isAllowedHost && \(isPreviewRuntime \|\| isQaProductionHost\)/
+  )
 })
 
 test('MXL-PREVIEW-ROUTING-CLEANUP-001 использует manual existing Preview gate', () => {
@@ -240,7 +258,10 @@ test('MXL-PREVIEW-ROUTING-CLEANUP-001 использует manual existing Previ
   )
 
   const packageJson = readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
-  const legacy = readFileSync(new URL('../../scripts/preview-telegram.ps1', import.meta.url), 'utf8')
+  const legacy = readFileSync(
+    new URL('../../scripts/preview-telegram.ps1', import.meta.url),
+    'utf8'
+  )
 
   assert.match(workflow, /workflow_dispatch:/)
   assert.match(workflow, /pr_number:/)
@@ -276,16 +297,19 @@ test('MXL-007 публикует дневные strips и убирает ста�
     new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
     'utf8'
   )
-  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
+  const analytics = readFileSync(
+    new URL('../../src/screens/Analytics.jsx', import.meta.url),
+    'utf8'
+  )
 
   assert.match(today, /mx-today-week__calendar/)
   assert.match(today, /mx-today-week-day/)
-  assert.match(today, /Дни недели/)
+  assert.match(today, /role="group" aria-label="Календарь недели"/)
   assert.doesNotMatch(today, /mx-today-streaks/)
   assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
   assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
-  assert.match(analytics, /stroke="rgb\(94 178 237\)"/)
-  assert.match(analytics, /cursor=\{false\}/)
+  assert.match(analytics, /mx-progress-redesign__chart-line/)
+  assert.match(analytics, /График настроения/)
   assert.doesNotMatch(analytics, /🛡/)
 })
 
@@ -307,8 +331,14 @@ test('MXL-021 связывает Journey с продолжением Today', () 
 })
 
 test('MXL-JOURNAL-001 открывает единственный Guided Self-Discovery Journal flow из «Практик»', () => {
-  const journal = readFileSync(new URL('../../src/screens/JournalFlow.jsx', import.meta.url), 'utf8')
-  const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
+  const journal = readFileSync(
+    new URL('../../src/screens/JournalFlow.jsx', import.meta.url),
+    'utf8'
+  )
+  const practices = readFileSync(
+    new URL('../../src/screens/Practices.jsx', import.meta.url),
+    'utf8'
+  )
   const mentalix = readFileSync(new URL('../../src/screens/Mentalix.jsx', import.meta.url), 'utf8')
 
   assert.match(journal, /Идея/)
@@ -329,7 +359,10 @@ test('MXL-JOURNAL-001 открывает единственный Guided Self-Di
   assert.doesNotMatch(practices, /PRACTICE_CATALOG_V2_ENABLED|VITE_PRACTICES_CATALOG_V2/)
   assert.doesNotMatch(practices, /function PracticeRow\(|function PracticeCategory\(/)
   assert.match(practices, /setSub\('journal'\)/)
-  assert.match(practices, /if \(sub === 'journal'\) \{[\s\S]*<GuidedSelfDiscoveryFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\} \/>/)
+  assert.match(
+    practices,
+    /if \(sub === 'journal'\) \{[\s\S]*<GuidedSelfDiscoveryFlow userId=\{user\.id\} onClose=\{\(\) => setSub\(null\)\} \/>/
+  )
   assert.doesNotMatch(practices, /<JournalFlow/)
   assert.doesNotMatch(mentalix, /JournalHome|journalOpen/)
   assert.match(mentalix, /PersonaPicker/)
@@ -379,7 +412,10 @@ test('MXL-P0-CORE-JOURNAL-001 содержит режимы записи, confir
 
 test('MXL-JOURNAL-GUIDED-001 добавляет guided catalog и private template builder внутрь Library', () => {
   const library = readFileSync(new URL('../../src/screens/Library.jsx', import.meta.url), 'utf8')
-  const guided = readFileSync(new URL('../../src/screens/GuidedJournals.jsx', import.meta.url), 'utf8')
+  const guided = readFileSync(
+    new URL('../../src/screens/GuidedJournals.jsx', import.meta.url),
+    'utf8'
+  )
   const api = readFileSync(new URL('../../src/lib/api.js', import.meta.url), 'utf8')
 
   assert.match(library, /GuidedJournals/)
@@ -488,7 +524,10 @@ test('MXL-JOURNAL-HISTORY-001 показывает только local journal т
 
 test('MXL-JOURNAL-HISTORY-001 сохраняет History-only scope без fullscreen Journal или API', () => {
   const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
-  const presenter = readFileSync(new URL('../../src/lib/journalHistory.js', import.meta.url), 'utf8')
+  const presenter = readFileSync(
+    new URL('../../src/lib/journalHistory.js', import.meta.url),
+    'utf8'
+  )
 
   assert.match(history, /readJournalHistory\(user\.id\)/)
   assert.match(history, /Локальный журнал/)
@@ -544,7 +583,8 @@ test('MXL-JOURNAL-PERSISTENCE-001 сообщает ошибку вместо л�
   }
 
   assert.throws(
-    () => saveJournalPhase({ userId: 101, date: '2026-08-27', phase: 'idea', text: 'Не теряй меня' }),
+    () =>
+      saveJournalPhase({ userId: 101, date: '2026-08-27', phase: 'idea', text: 'Не теряй меня' }),
     /Локальное хранилище недоступно/
   )
 })
@@ -559,7 +599,7 @@ test('MXL-009 ограничивает insights описательными на�
     'utf8'
   )
 
-  assert.match(analytics, /selectDescriptiveInsights\(data\.insights\)/)
+  assert.match(analytics, /selectDescriptiveInsights\(safeData\.insights\)/)
   assert.match(analytics, /не диагнозы и не доказанные причины/)
   assert.match(analytics, /чаще совпадала/)
   assert.doesNotMatch(analytics, /Собранность не зависит от энергии/)
@@ -693,7 +733,10 @@ test('MXL-006 публикует единый AI typography baseline без back
 })
 
 test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
-  const journalFlow = readFileSync(new URL('../../src/screens/JournalFlow.jsx', import.meta.url), 'utf8')
+  const journalFlow = readFileSync(
+    new URL('../../src/screens/JournalFlow.jsx', import.meta.url),
+    'utf8'
+  )
   const sceneLayout = readFileSync(
     new URL('../../src/components/practices/SceneLayout.jsx', import.meta.url),
     'utf8'
@@ -710,7 +753,9 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
   assert.match(journalFlow, /PracticeWritingCanvas/)
   assert.match(sceneLayout, /font-display/)
   assert.match(journalStart, /font-display/)
-  assert.match(analytics, /fontFamily="Onest"/)
+  assert.match(analytics, /mx-type-page/)
+  assert.match(analytics, /font-display/)
+  assert.doesNotMatch(analytics, /Georgia|Times New Roman/)
   assert.doesNotMatch(journalFlow, /Georgia|Times New Roman/)
   assert.doesNotMatch(journalStart, /Georgia|Times New Roman/)
 })
@@ -719,7 +764,7 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
  * MXL-DS-LABEL-FONT-001: Manrope (`font-label`) — вторичный шрифт,
  * разрешённый исключительно на eyebrow-лейблах Analytics («Наблюдения»,
  * «Цифры», «Данные»), а не на основных числовых значениях, графиках
- * (recharts) или экране целиком. Контракт ниже проверяет канонический
+ * или экране целиком. Контракт ниже проверяет канонический
  * класс `font-label`, а не буквальное имя шрифта в JSX: имя гарнитуры —
  * ответственность CSS/design-system слоя (`tailwind.config.js`,
  * `src/index.css`, задокументировано в `DESIGN_SYSTEM.md` §3), а не
@@ -739,22 +784,17 @@ test('MXL-DS-LABEL-FONT-001 разрешает font-label только на eyeb
   // Manrope — ответственность design-system слоя, не отдельного экрана.
   assert.match(tailwindConfig, /label:\s*\[\s*['"]Manrope['"]/)
 
-  const eyebrowLabels = ['Наблюдения', 'Цифры', 'Данные']
-  const eyebrowClassName =
-    'font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5'
-
-  for (const label of eyebrowLabels) {
-    assert.match(
-      analytics,
-      new RegExp(`className="${eyebrowClassName.replace(/[[\]().]/g, '\\$&')}">\\s*${label}`),
-      `эйбрауз "${label}" должен использовать канонический класс font-label`
-    )
+  assert.match(analytics, /function SectionHeading/)
+  assert.match(analytics, /<span className="font-label">\{eyebrow\}<\/span>/)
+  assert.match(analytics, /<span className="font-label">Данные<\/span>/)
+  for (const label of ['Наблюдения', 'Цифры', 'По существующим данным']) {
+    assert.match(analytics, new RegExp(`eyebrow="${label}"`))
   }
 
-  // font-label встречается ровно на трёх eyebrow-лейблах — не расползается
-  // на Metric/графики/остальной экран.
+  // font-label встречается только в общем eyebrow-компоненте и календаре —
+  // не расползается на Metric/графики/остальной экран.
   const fontLabelOccurrences = (analytics.match(/font-label/g) || []).length
-  assert.equal(fontLabelOccurrences, eyebrowLabels.length)
+  assert.equal(fontLabelOccurrences, 2)
 
   const metricComponent = analytics.slice(analytics.indexOf('function Metric('))
   const metricValueBlock = metricComponent.slice(0, metricComponent.indexOf('{value}'))
@@ -790,14 +830,26 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.ok(heroIndex < secondaryIndex)
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
   assert.match(today, /mx-today-primary-card/)
-  assert.match(today, /data-complete=\{heroPresentationState === 'allDone' \|\| heroPresentationState === 'dayClosed'\}/)
-  assert.match(today, /heroPresentationState !== 'allDone'\s+&&\s+heroPresentationState !== 'dayClosed'/)
+  assert.match(
+    today,
+    /data-complete=\{heroPresentationState === 'allDone' \|\| heroPresentationState === 'dayClosed'\}/
+  )
+  assert.match(
+    today,
+    /heroPresentationState !== 'allDone'\s+&&\s+heroPresentationState !== 'dayClosed'/
+  )
   assert.match(today, /mx-today-hero-breath/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
   assert.match(today, /mx-today-affirmation-card/)
   assert.match(todayStyles, /\.mx-today-primary-card\s*\{[\s\S]*min-height:\s*452px/)
-  assert.match(todayStyles, /\.mx-today-primary-card\[data-complete='true'\][\s\S]*background:\s*rgb\(var\(--c-card\)\)/)
-  assert.match(todayStyles, /\.mx-today-primary-card\[data-complete='true'\] \.mx-type-hero[\s\S]*font-size:\s*1\.25rem/)
+  assert.match(
+    todayStyles,
+    /\.mx-today-primary-card\[data-complete='true'\][\s\S]*background:\s*rgb\(var\(--c-card\)\)/
+  )
+  assert.match(
+    todayStyles,
+    /\.mx-today-primary-card\[data-complete='true'\] \.mx-type-hero[\s\S]*font-size:\s*1\.25rem/
+  )
   assert.match(todayStyles, /\.mx-today-hero-breath\s*\{[\s\S]*height:\s*16px/)
   assert.match(todayStyles, /\.mx-today-affirmation-card\s*\{[\s\S]*min-height:\s*340px/)
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
@@ -813,9 +865,18 @@ test('MXL-THEME-015 light-preview keeps Mentalix warmth and remains preview-only
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-card2: 235 227 216/)
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-gold: 157 86 32/)
   assert.match(styles, /\[data-theme='light-preview'\] \.bg-artbed[\s\S]*--c-gold: 225 166 79/)
-  assert.match(styles, /\[data-theme='light-preview'\] \.mx-today-primary-card:not\(\[data-complete='true'\]\)[\s\S]*background: #30322e/)
-  assert.match(todayStyles, /\[data-theme='light-preview'\] \.mx-today-theme-card[\s\S]*background: rgb\(var\(--c-card2\)\)/)
-  assert.match(todayStyles, /\[data-theme='light-preview'\] \.mx-today-primary-card:not\(\[data-complete='true'\]\) \.text-cream/)
+  assert.match(
+    styles,
+    /\[data-theme='light-preview'\] \.mx-today-primary-card:not\(\[data-complete='true'\]\)[\s\S]*background: #30322e/
+  )
+  assert.match(
+    todayStyles,
+    /\[data-theme='light-preview'\] \.mx-today-theme-card[\s\S]*background: rgb\(var\(--c-card2\)\)/
+  )
+  assert.match(
+    todayStyles,
+    /\[data-theme='light-preview'\] \.mx-today-primary-card:not\(\[data-complete='true'\]\) \.text-cream/
+  )
   assert.match(app, /const LIGHT_THEME_PREVIEW_PARAM = 'light-preview'/)
   assert.match(app, /return previewBuild && requested === '1'/)
 })
@@ -830,7 +891,10 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   )
   const library = readFileSync(new URL('../../src/screens/Library.jsx', import.meta.url), 'utf8')
   const articles = readFileSync(new URL('../../src/screens/Articles.jsx', import.meta.url), 'utf8')
-  const analytics = readFileSync(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
+  const analytics = readFileSync(
+    new URL('../../src/screens/Analytics.jsx', import.meta.url),
+    'utf8'
+  )
   const personaPicker = readFileSync(
     new URL('../../src/screens/mentalix/PersonaPicker.jsx', import.meta.url),
     'utf8'
@@ -880,7 +944,6 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(articles, /mx-type-article-title/)
   assert.match(articles, /mx-type-article-body/)
   assert.match(analytics, /mx-type-page/)
-  assert.match(analytics, /mx-type-analytics-heading/)
   assert.match(analytics, /mx-type-insight/)
   assert.match(personaPicker, /mx-type-page/)
   assert.match(personaPicker, /mx-type-persona-title/)
@@ -898,11 +961,17 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
 })
 
 test('MXL-JOURNAL-UI-247 выравнивает Journal слева и не показывает метку «Тема недели»', () => {
-  const themeScreen = readFileSync(new URL('../../src/screens/ThemeScreen.jsx', import.meta.url), 'utf8')
+  const themeScreen = readFileSync(
+    new URL('../../src/screens/ThemeScreen.jsx', import.meta.url),
+    'utf8'
+  )
 
   assert.match(themeScreen, /data-testid="journal-day-content"/)
   assert.match(themeScreen, /aria-label="Дни журнала"/)
-  assert.match(themeScreen, /className="font-display text-\[24px\] text-cream lowercase leading-tight text-left"/)
+  assert.match(
+    themeScreen,
+    /className="font-display text-\[24px\] text-cream lowercase leading-tight text-left"/
+  )
   assert.doesNotMatch(themeScreen, />\s*Тема недели\s*</)
   assert.doesNotMatch(themeScreen, /Тема недели · День/)
 })
@@ -923,7 +992,11 @@ test('preview cleanup verification waits for both channels across eventual-consi
     let inspectVerifiedRemoved = false
     const observations = []
 
-    for (let attempt = 0; attempt < Math.max(httpCodes.length, inspectStates.length); attempt += 1) {
+    for (
+      let attempt = 0;
+      attempt < Math.max(httpCodes.length, inspectStates.length);
+      attempt += 1
+    ) {
       if (!httpVerifiedRemoved && /^(404|410)$/.test(String(httpCodes[attempt] ?? ''))) {
         httpVerifiedRemoved = true
       }
@@ -942,12 +1015,12 @@ test('preview cleanup verification waits for both channels across eventual-consi
     return observations
   }
 
-  const observations = verifySequence(
-    ['200', '200', '404'],
-    ['ready', 'ready', 'missing']
-  )
+  const observations = verifySequence(['200', '200', '404'], ['ready', 'ready', 'missing'])
 
-  assert.deepEqual(observations.map(({ verifiedRemoved }) => verifiedRemoved), [false, false, true])
+  assert.deepEqual(
+    observations.map(({ verifiedRemoved }) => verifiedRemoved),
+    [false, false, true]
+  )
   assert.deepEqual(observations[2], {
     attempt: 3,
     httpVerifiedRemoved: true,
@@ -1000,8 +1073,14 @@ test('MXL-STARTER-SET-001 guards its api.rituals.create write path the same way'
 })
 
 test('MXL-310 показывает завершённые разовые практики без streak и day-progress интеграции', () => {
-  const helper = readFileSync(new URL('../../src/lib/oneOffPracticeHistory.js', import.meta.url), 'utf8')
-  const practices = readFileSync(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
+  const helper = readFileSync(
+    new URL('../../src/lib/oneOffPracticeHistory.js', import.meta.url),
+    'utf8'
+  )
+  const practices = readFileSync(
+    new URL('../../src/screens/Practices.jsx', import.meta.url),
+    'utf8'
+  )
   const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
 
   assert.match(helper, /readFirstStepLog/)

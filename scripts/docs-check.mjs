@@ -1,6 +1,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+const STALE_AFTER_DAYS = 30
 const root = process.cwd()
 const ignored = new Set(['.git', 'node_modules', 'dist'])
 const requiredFiles = [
@@ -13,7 +15,9 @@ const requiredFiles = [
   'AGENTS.md',
   'PROJECT_STATE.md',
   'docs/DOCUMENTATION_GUIDE.md',
+  'BASELINE_SNAPSHOT.md',
   'docs/TASK_INDEX.md',
+  'docs/INDEX.md',
 ]
 
 function markdownFiles(dir) {
@@ -28,6 +32,7 @@ function markdownFiles(dir) {
 }
 
 const errors = []
+const warnings = []
 for (const relative of requiredFiles) {
   if (!fs.existsSync(path.join(root, relative))) errors.push(`missing required file: ${relative}`)
 }
@@ -39,6 +44,17 @@ const linkPattern = /\[[^\]]+\]\(([^)]+)\)/g
 for (const absolute of files) {
   const relative = path.relative(root, absolute).replaceAll(path.sep, '/')
   const text = fs.readFileSync(absolute, 'utf8')
+  const frontMatter = text.match(/^---\n([\s\S]*?)\n---\n/)
+  if (frontMatter) {
+    const status = frontMatter[1].match(/^status:\s*(\S+)\s*$/m)?.[1]
+    const verified = frontMatter[1].match(/^last_verified:\s*(\d{4}-\d{2}-\d{2})\s*$/m)?.[1]
+    if ((status === 'current' || status === 'normative') && verified) {
+      const ageDays = Math.floor((Date.now() - Date.parse(`${verified}T00:00:00Z`)) / MS_PER_DAY)
+      if (ageDays > STALE_AFTER_DAYS) {
+        warnings.push(`${relative}: last_verified ${verified} is ${ageDays} days old (advisory; threshold ${STALE_AFTER_DAYS} days)`)
+      }
+    }
+  }
   for (const match of text.matchAll(linkPattern)) {
     const target = match[1].split('#', 1)[0]
     if (!target || /^(?:https?:|mailto:|#)/.test(target)) continue
@@ -75,4 +91,5 @@ if (errors.length) {
   console.log(
     `Documentation check passed: ${files.length} Markdown files, ${canonicalTaskIds.size} canonical task IDs, 0 errors.`
   )
+  for (const warning of warnings) console.warn(`Documentation freshness warning: ${warning}`)
 }

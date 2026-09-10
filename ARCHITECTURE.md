@@ -1,3 +1,8 @@
+---
+status: normative
+last_verified: 2026-09-10
+---
+
 # Mentalix — Architecture v1
 
 Статус: описание публичного frontend-репозитория `Smira31/Mentalix`.
