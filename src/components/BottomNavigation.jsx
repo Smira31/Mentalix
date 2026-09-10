@@ -1,7 +1,6 @@
 import { House, Sparkles, BookOpen } from 'lucide-react'
 
 import MazeLogo from './MazeLogo'
-import SemanticGlyph from './SemanticGlyph'
 import { platform } from '../platform'
 
 // MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
@@ -32,7 +31,8 @@ const TABS = [
   {
     key: 'trends',
     label: 'Прогресс',
-    icon: 'progress-glyph',
+    // TODO(owner): выбрать финальный SemanticGlyph для накопленного результата.
+    icon: 'progress-glyph-todo',
   },
 ]
 
@@ -51,15 +51,7 @@ function TabIcon({ item, active, size = 21 }) {
     )
   }
 
-  if (item.icon === 'progress-glyph') {
-    return (
-      <SemanticGlyph
-        kind="next-step"
-        className={`h-[21px] w-[21px] ${active ? 'text-cream' : 'text-muted'}`}
-        animated={false}
-      />
-    )
-  }
+  if (item.icon === 'progress-glyph-todo') return null
 
   const Icon = item.icon
 
