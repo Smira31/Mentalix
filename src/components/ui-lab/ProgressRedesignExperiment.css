@@ -558,6 +558,111 @@
   background: rgb(var(--c-gold));
 }
 
+.mx-progress-redesign--live {
+  display: block;
+  width: 100%;
+  max-width: 448px;
+  padding-top: 12px;
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__header {
+  margin-top: 8px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__hero {
+  min-height: 408px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__chart-message button {
+  cursor: pointer;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__observation details {
+  margin-top: 8px;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__observation summary {
+  color: rgb(var(--c-gold));
+  cursor: pointer;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__observation details p {
+  margin-top: 6px;
+}
+
+.mx-progress-redesign__status-note {
+  margin: 10px 0 0;
+  color: rgb(var(--c-faint));
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__month-nav button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__calendar i[data-empty='true'] {
+  opacity: 0;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__calendar i[data-day] {
+  position: relative;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__calendar i[data-day]::after {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  color: rgb(var(--c-faint));
+  content: attr(data-day);
+  font-size: 7px;
+  transform: translateX(-50%);
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__calendar-card {
+  padding-bottom: 28px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities article {
+  min-height: 186px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities details {
+  margin-top: 14px;
+  color: rgb(var(--c-muted));
+  font-size: 10px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities summary {
+  color: rgb(var(--c-gold));
+  cursor: pointer;
+  line-height: 1.35;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities details p {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  margin: 8px 0 0;
+  line-height: 1.35;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities details p span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities details p b {
+  color: rgb(var(--c-text));
+  font-weight: 500;
+}
+
 .mx-progress-redesign__bottom-nav {
   position: absolute;
   z-index: 4;
