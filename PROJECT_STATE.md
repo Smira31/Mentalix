@@ -1,3 +1,8 @@
+---
+status: current
+last_verified: 2026-09-10
+---
+
 # PROJECT_STATE — подтверждённый current/release snapshot
 
 > Этот файл фиксирует только проверяемое текущее состояние frontend-репозитория и release/production-факты. Он **не является backlog**: активные задачи находятся в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md), а подробный scope — в связанных GitHub Issue/PR.

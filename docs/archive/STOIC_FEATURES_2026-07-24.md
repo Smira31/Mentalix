@@ -1,3 +1,8 @@
+---
+status: archived
+last_verified: 2026-09-10
+---
+
 # STOIC → MENTALIX: каталог функций
 
 > **HISTORICAL REFERENCE RESEARCH / ARCHIVE**

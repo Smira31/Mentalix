@@ -1,3 +1,8 @@
+---
+status: archived
+last_verified: 2026-09-10
+---
+
 # MXL-GLYPH-UNIFY-001 — картирование потребителей SemanticGlyph и CardSystemGlyph
 
 Дата: 12.08.2026

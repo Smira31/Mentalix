@@ -1,3 +1,8 @@
+---
+status: archived
+last_verified: 2026-09-10
+---
+
 # MXL-GLYPH-UNIFY-001 — pre-mortem (метод Gary Klein)
 
 Дата: 12.08.2026. Проведён по скиллу `pre-mortem` перед согласованием плана Цикла 1
