@@ -1,6 +1,6 @@
 # Progress redesign — Visual Contract
 
-Статус: **REFERENCE LOCK / UI LAB**, production не изменён.
+Статус: **OWNER APPROVED / PRODUCTION PROMOTION**. UI Lab смёржен через PR #564; production-перенос выполняется отдельной веткой и PR.
 Дата: 09.09.2026.
 ID: `MXL-PROGRESS-REDESIGN-001`.
 

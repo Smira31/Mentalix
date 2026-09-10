@@ -1021,7 +1021,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'Аналитика' })).toBeAttached()
+        await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeAttached()
         await expect(page.getByRole('button', { name: 'Прогресс' })).toHaveAttribute(
           'aria-current',
           'page'

@@ -4,317 +4,310 @@ import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
 import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
-import { MotifArt } from '../components/Motif'
-import EmptyState from '../components/EmptyState'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  Tooltip,
-  Cell,
-  LineChart,
-  Line,
-  YAxis,
-} from 'recharts'
+import '../components/ui-lab/ProgressRedesignExperiment.css'
 
-const WEEKDAY_LABELS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-const CATEGORY_LABELS = {
-  physio: 'физиология',
-  psycho: 'психология',
-  social: 'поведение',
-  digital: 'цифровое',
-  food: 'пищевое',
+function SectionHeading({ eyebrow, title, meta, id }) {
+  return (
+    <div className="mx-progress-redesign__section-head">
+      <div>
+        <span className="font-label">{eyebrow}</span>
+        <h3 id={id}>{title}</h3>
+      </div>
+      {meta && <small>{meta}</small>}
+    </div>
+  )
 }
 
-function EmptyAnalytics() {
-  return (
-    <div className="mx-type-page w-full max-w-md px-5 animate-fade-in">
-      <h2 className="font-display text-2xl text-cream mb-1">Аналитика</h2>
-      <p className="text-[11px] text-muted mb-8">за последние дни</p>
+function chartGeometry(checkins) {
+  const points = checkins.filter(item => Number.isInteger(item?.mood)).slice(-30)
+  if (points.length < 2) return { points, polyline: '' }
 
-      <EmptyState glyph={<MotifArt name="lestnica" size={120} className="mx-auto mb-3" />}>
-        <h3 className="font-display text-lg text-cream mb-2">Пока нечего показать</h3>
-        <p className="font-body text-sm text-muted leading-relaxed">
-          Отмечай ритуалы и аскезы хотя бы несколько дней — и здесь появятся закономерности, которые
-          сам не замечаешь.
+  return {
+    points,
+    polyline: points
+      .map((item, index) => {
+        const x = 2 + (index / (points.length - 1)) * 296
+        const y = 132 - ((item.mood - 1) / 4) * 118
+        return `${x.toFixed(1)},${y.toFixed(1)}`
+      })
+      .join(' '),
+  }
+}
+
+function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
+  const { points, polyline } = chartGeometry(checkins)
+  const avgMood = average(points.map(item => item.mood))
+  const axisDates = points.length
+    ? [points[0], points[Math.floor((points.length - 1) / 2)], points[points.length - 1]]
+    : []
+
+  return (
+    <section className="mx-progress-redesign__hero" aria-labelledby="progress-mood-title">
+      <div className="mx-progress-redesign__hero-copy">
+        <span id="progress-mood-title">Среднее настроение · {period} дней</span>
+        <div>
+          <strong>{avgMood === null ? '—' : avgMood.toFixed(1)}</strong>
+          <small>/ 5</small>
+        </div>
+        <p>
+          {points.length >= 2
+            ? 'Линия показывает только твои сохранённые check-in за выбранный период.'
+            : 'Ещё несколько спокойных отметок — и здесь станет виден твой ритм.'}
         </p>
-      </EmptyState>
-    </div>
-  )
-}
-
-function WeekChart({ dailyActivity }) {
-  const last7 = dailyActivity.slice(-7)
-  const todayIso = toLocalCalendarDate()
-
-  const chartData = last7.map(d => {
-    const jsDate = new Date(d.date + 'T00:00:00')
-    return {
-      ...d,
-      label: WEEKDAY_LABELS[jsDate.getDay()],
-      isToday: d.date === todayIso,
-    }
-  })
-
-  const hasAny = chartData.some(d => d.count > 0 || d.breaks > 0)
-
-  return (
-    <div className="rounded-[24px] bg-emerald-light/15 border border-cream/15 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[11px] text-muted">За неделю</h4>
-        <span className="text-[11px] text-muted">по дням</span>
       </div>
 
-      {hasAny ? (
-        <>
-          <div className="h-32">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} barCategoryGap={14} barGap={3}>
-                <XAxis
-                  dataKey="label"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={props => {
-                    const { x, y, payload, index } = props
-                    const isToday = chartData[index]?.isToday
-                    return (
-                      <text
-                        x={x}
-                        y={y + 12}
-                        textAnchor="middle"
-                        fill={isToday ? 'rgb(var(--c-text))' : 'rgb(var(--c-text) / 0.4)'}
-                        fontSize={11}
-                        fontFamily="Onest"
-                        fontWeight={isToday ? 600 : 400}
-                      >
-                        {payload.value}
-                      </text>
-                    )
-                  }}
-                />
-                <Tooltip
-                  cursor={false}
-                  contentStyle={{
-                    background: 'rgb(var(--c-card2))',
-                    border: '1px solid rgb(var(--c-border))',
-                    borderRadius: 12,
-                    fontFamily: 'Onest',
-                    fontSize: 12,
-                    color: 'rgb(var(--c-text))',
-                  }}
-                  itemStyle={{ color: 'rgb(var(--c-text) / 0.7)' }}
-                  labelStyle={{ color: 'rgb(var(--c-text))' }}
-                  formatter={(value, name) => [value, name === 'count' ? 'ритуалов' : 'срывов']}
-                />
-                <Bar dataKey="count" radius={[5, 5, 5, 5]}>
-                  {chartData.map((d, i) => (
-                    <Cell key={i} fill={d.isToday ? 'rgb(var(--c-text))' : 'rgb(var(--c-gold))'} />
-                  ))}
-                </Bar>
-                <Bar dataKey="breaks" radius={[5, 5, 5, 5]} fill="rgb(var(--c-text) / 0.3)" />
-              </BarChart>
-            </ResponsiveContainer>
+      <div className="mx-progress-redesign__chart">
+        {loading ? (
+          <div className="mx-progress-redesign__chart-skeleton" aria-label="Загрузка прогресса" />
+        ) : error ? (
+          <div className="mx-progress-redesign__chart-message" role="alert">
+            <strong>Не удалось загрузить прогресс</strong>
+            <span>Проверь соединение и попробуй ещё раз.</span>
+            <button type="button" onClick={onRetry}>
+              Повторить
+            </button>
           </div>
-          <div className="flex items-center gap-4 mt-2 flex-wrap">
-            <span className="flex items-center gap-1.5 text-[11px] text-muted">
-              <span className="w-2 h-2 rounded-full bg-mint" /> сегодня
+        ) : points.length < 2 ? (
+          <div className="mx-progress-redesign__chart-message">
+            <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
+            <span>
+              {points.length
+                ? 'После следующего check-in появится первая линия.'
+                : 'Check-in занимает меньше минуты и запускает личную историю прогресса.'}
             </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-muted">
-              <span className="w-2 h-2 rounded-full bg-gold" /> ритуалы
-            </span>
-            <span className="flex items-center gap-1.5 text-[11px] text-muted">
-              <span className="w-2 h-2 rounded-full bg-cream/30" /> срывы
-            </span>
+            <button type="button" onClick={onGoCheckin}>
+              Пройти check-in
+            </button>
           </div>
-        </>
-      ) : (
-        <p className="text-xs text-faint py-8 text-center leading-relaxed">
-          За эту неделю пока нет отметок.
-          <br />
-          Начни отмечаться — здесь появится картина дней.
-        </p>
-      )}
-    </div>
+        ) : (
+          <>
+            <svg viewBox="0 0 300 142" role="img" aria-label="График настроения">
+              <path
+                className="mx-progress-redesign__chart-grid"
+                d="M2 14H298 M2 73H298 M2 132H298"
+              />
+              <polyline className="mx-progress-redesign__chart-line" points={polyline} />
+              {points.map((item, index) => {
+                const x = 2 + (index / (points.length - 1)) * 296
+                const y = 132 - ((item.mood - 1) / 4) * 118
+                return <circle key={item.date} cx={x} cy={y} r="3.2" />
+              })}
+            </svg>
+            <div className="mx-progress-redesign__chart-axis">
+              {axisDates.map(item => (
+                <span key={item.date}>{formatSourceDate(item.date)}</span>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </section>
   )
 }
 
-function RitualBar({ ritual }) {
-  return (
-    <div className="mb-3">
-      <div className="flex justify-between text-xs text-muted mb-1">
-        <span>{ritual.name}</span>
-        <span className="font-mono text-gold">{ritual.completion_rate}%</span>
-      </div>
-      <div className="h-2 rounded-full bg-emerald-deep overflow-hidden">
-        <div
-          className="h-full bg-gold transition-all duration-700 ease-out"
-          style={{ width: `${ritual.completion_rate}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
-function AscezaRow({ asceza }) {
-  return (
-    <div className="mb-3">
-      <div className="flex justify-between items-baseline text-xs mb-1">
-        <span className="text-cream">
-          {asceza.name}
-          <span className="text-faint ml-1.5">{CATEGORY_LABELS[asceza.category] || ''}</span>
-        </span>
-        <span className="font-mono text-mint whitespace-nowrap">серия {asceza.streak}</span>
-      </div>
-      <div className="h-2 rounded-full bg-emerald-deep overflow-hidden">
-        <div
-          className="h-full bg-mint transition-all duration-700 ease-out"
-          style={{ width: `${asceza.clean_rate}%` }}
-        />
-      </div>
-      <div className="flex justify-between text-[10px] text-faint mt-1">
-        <span>чистых дней: {asceza.held_days}</span>
-        {asceza.breaks > 0 && <span className="text-cognac/70">срывов: {asceza.breaks}</span>}
-      </div>
-    </div>
-  )
-}
-
-const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
-
-// ── настроение по чек-инам: линия за 14 дней ──
-function MoodTrend({ checkins, onGoCheckin }) {
-  // Cache уже отбрасывает outliers; эта граница дополнительно защищает UI,
-  // если компонент когда-либо получит данные из другого источника.
-  const scoredCheckins = (Array.isArray(checkins) ? checkins : []).filter(
-    checkin => Number.isInteger(checkin?.mood) && checkin.mood >= 1 && checkin.mood <= 5
-  )
-  if (scoredCheckins.length === 0) {
+function PrimaryObservationCard({ observation }) {
+  if (!observation) {
     return (
-      <EmptyState className="border border-cream/10 !bg-emerald-light/15 !p-6 mb-6">
-        <h3 className="font-display text-[17px] text-cream mb-1.5">Как ты сейчас?</h3>
-        <p className="text-[13px] text-muted leading-snug mb-4">
-          Пройди первый чек-ин — и здесь появится
-          <br />
-          линия твоего настроения
-        </p>
-        <button onClick={onGoCheckin} className="cta-pill text-[14px] px-8 py-3">
-          Пройти чек-ин
-        </button>
-      </EmptyState>
+      <article className="mx-progress-redesign__observation">
+        <span>Данные собираются</span>
+        <strong>Пока недостаточно отметок для наблюдения.</strong>
+        <p>Продолжай в своём темпе — вывод появится только при достаточной выборке.</p>
+      </article>
     )
   }
 
-  const chartData = scoredCheckins.map(c => {
-    const d = new Date(c.date + 'T00:00:00')
-    return {
-      label: `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`,
-      mood: c.mood,
-      energy: c.energy,
-    }
-  })
-  const last = scoredCheckins[scoredCheckins.length - 1]
-  const avgMood = (
-    scoredCheckins.reduce((sum, checkin) => sum + checkin.mood, 0) / scoredCheckins.length
-  ).toFixed(1)
-
   return (
-    <div className="mb-6">
-      <div className="flex items-baseline justify-between mb-2">
-        <h3 className="text-sm text-cream">Настроение</h3>
-        <span className="text-[11px] text-muted">в среднем {avgMood}/5</span>
-      </div>
-      <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-4">
-        {scoredCheckins.length >= 2 ? (
-          <ResponsiveContainer width="100%" height={140}>
-            <LineChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: -28 }}>
-              <XAxis
-                dataKey="label"
-                tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                domain={[1, 5]}
-                ticks={[1, 3, 5]}
-                tick={{ fill: 'rgb(var(--c-text) / 0.35)', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: 'rgb(var(--c-card2))',
-                  border: '1px solid rgb(var(--c-border))',
-                  borderRadius: 12,
-                  fontSize: 12,
-                  color: 'rgb(var(--c-text))',
-                }}
-                labelStyle={{ color: 'rgb(var(--c-text) / 0.6)' }}
-                formatter={(v, name) => [v + '/5', name === 'mood' ? 'настроение' : 'энергия']}
-              />
-              <Line
-                type="monotone"
-                dataKey="mood"
-                stroke="rgb(94 178 237)"
-                strokeWidth={2.5}
-                dot={{ r: 3, fill: 'rgb(217,180,91)' }}
-              />
-              <Line
-                type="monotone"
-                dataKey="energy"
-                stroke="rgb(var(--c-text) / 0.3)"
-                strokeWidth={1.5}
-                dot={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <p className="text-[13px] text-muted text-center py-4">
-            Первая точка есть — сегодня: {MOOD_WORDS[(last.mood || 3) - 1]}.
-            <br />
-            Ещё пара дней, и появится линия.
+    <article
+      className="mx-progress-redesign__observation mx-type-insight"
+      data-primary-observation="true"
+    >
+      <span>Главное наблюдение</span>
+      <strong>{observation.text}</strong>
+      <div>
+        {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
+          <p>
+            Основа: {observation.sampleSize}{' '}
+            {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
           </p>
         )}
+        {observation.sourceDates?.length > 0 && (
+          <details>
+            <summary>Даты в основе наблюдения</summary>
+            <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
+          </details>
+        )}
+        <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
       </div>
-    </div>
+    </article>
   )
 }
 
-// ── частые эмоции: что ты называл чаще всего ──
-function EmotionCloud({ checkins }) {
-  const counts = {}
-  for (const c of checkins || []) {
-    if (c.emotion) counts[c.emotion] = (counts[c.emotion] || 0) + 1
-  }
-  const top = Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6)
-  if (top.length === 0) return null
-  const max = top[0][1]
+function ObservationRail({ observations, insightsEnabled, preferenceError }) {
+  const secondary = observations.slice(1, 3)
 
   return (
-    <div className="mb-6">
-      <div className="flex items-baseline justify-between mb-2">
-        <h3 className="text-sm text-cream">Частые чувства</h3>
-        <span className="text-[11px] text-muted">за 14 дней</span>
+    <section
+      className="mx-progress-redesign__section"
+      aria-labelledby="progress-observations-title"
+    >
+      <SectionHeading
+        eyebrow="Наблюдения"
+        title="Что повторяется"
+        meta={`${Math.max(observations.length, 1)} / 3`}
+        id="progress-observations-title"
+      />
+      <div className="mx-progress-redesign__rail">
+        {insightsEnabled ? (
+          <>
+            <PrimaryObservationCard observation={observations[0] ?? null} />
+            {secondary.map((observation, index) => (
+              <article
+                className="mx-progress-redesign__observation"
+                key={`${observation.text}-${index}`}
+              >
+                <span>Ещё одно наблюдение</span>
+                <strong>{observation.text}</strong>
+                <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
+              </article>
+            ))}
+          </>
+        ) : (
+          <article className="mx-progress-redesign__observation" role="status">
+            <span>Скрыто в настройках</span>
+            <strong>Персональные наблюдения сейчас не показываются.</strong>
+            <p>
+              Персональные описательные наблюдения скрыты. Твои сохранённые данные и обычные цифры
+              ниже не удалены. Включить наблюдения можно в настройках.
+            </p>
+          </article>
+        )}
       </div>
-      <div className="rounded-[24px] bg-emerald-light/15 border border-cream/10 p-4 flex flex-wrap gap-2">
-        {top.map(([name, n]) => (
-          <span
-            key={name}
-            className={[
-              'px-3.5 py-2 rounded-full font-semibold',
-              n === max ? 'bg-gold/20 text-gold' : 'bg-cream/5 text-muted',
-            ].join(' ')}
-            style={{ fontSize: `${12 + (n / max) * 4}px` }}
+      <p className="mx-progress-redesign__caveat">
+        Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные причины;
+        они также не являются прогнозами.
+      </p>
+      {preferenceError && <p className="mx-progress-redesign__status-note">{preferenceError}</p>}
+    </section>
+  )
+}
+
+function ActivityCalendar({ checkins, dailyActivity }) {
+  const todayIso = toLocalCalendarDate()
+  const today = new Date(`${todayIso}T00:00:00`)
+  const [monthCursor, setMonthCursor] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1)
+  )
+  const year = monthCursor.getFullYear()
+  const month = monthCursor.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const offset = (new Date(year, month, 1).getDay() + 6) % 7
+  const activeDates = new Set([
+    ...checkins.map(item => item.date),
+    ...dailyActivity
+      .filter(item => item.count > 0 || item.breaks > 0 || item.held_ascezas > 0)
+      .map(item => item.date),
+  ])
+  const moodByDate = new Map(checkins.map(item => [item.date, item.mood]))
+  const cells = [
+    ...Array.from({ length: offset }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
+  ]
+  const monthLabel = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(
+    monthCursor
+  )
+  const isCurrentMonth = year === today.getFullYear() && month === today.getMonth()
+
+  return (
+    <section className="mx-progress-redesign__section" aria-labelledby="progress-calendar-title">
+      <div className="mx-progress-redesign__section-head">
+        <div>
+          <span className="font-label">Данные</span>
+          <h3 id="progress-calendar-title">Календарь</h3>
+        </div>
+        <div className="mx-progress-redesign__month-nav">
+          <button
+            type="button"
+            aria-label="Предыдущий месяц"
+            onClick={() =>
+              setMonthCursor(value => new Date(value.getFullYear(), value.getMonth() - 1, 1))
+            }
           >
-            {name}
-            <span className="opacity-50 ml-1.5 text-[11px]">{n}</span>
-          </span>
-        ))}
+            ‹
+          </button>
+          <small>{monthLabel}</small>
+          <button
+            type="button"
+            aria-label="Следующий месяц"
+            disabled={isCurrentMonth}
+            onClick={() =>
+              setMonthCursor(value => new Date(value.getFullYear(), value.getMonth() + 1, 1))
+            }
+          >
+            ›
+          </button>
+        </div>
       </div>
-    </div>
+      <div className="mx-progress-redesign__calendar-card">
+        <div className="mx-progress-redesign__weekdays">
+          {CALENDAR_WEEKDAYS.map(day => (
+            <span key={day}>{day}</span>
+          ))}
+        </div>
+        <div className="mx-progress-redesign__calendar">
+          {cells.map((day, index) => {
+            if (!day) return <i aria-hidden="true" key={`blank-${index}`} data-empty="true" />
+            const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            const active = activeDates.has(date)
+            return (
+              <i
+                key={date}
+                aria-label={`${day}, ${active ? 'есть отметка' : 'нет отметки'}`}
+                data-day={day}
+                data-filled={active}
+                data-tone={moodByDate.get(date) ?? 0}
+              />
+            )
+          })}
+        </div>
+        <p>
+          {activeDates.size
+            ? 'Отмеченные дни складываются в общий ритм.'
+            : 'Здесь появятся дни с отметками.'}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function EmotionCloud({ checkins }) {
+  const counts = new Map()
+  for (const checkin of checkins) {
+    if (checkin.emotion) counts.set(checkin.emotion, (counts.get(checkin.emotion) || 0) + 1)
+  }
+  const emotions = [...counts.entries()].sort((left, right) => right[1] - left[1]).slice(0, 4)
+  const total = emotions.reduce((sum, [, count]) => sum + count, 0)
+
+  return (
+    <section className="mx-progress-redesign__section" aria-labelledby="progress-emotions-title">
+      <SectionHeading eyebrow="Цифры" title="Эмоции" id="progress-emotions-title" />
+      <div className="mx-progress-redesign__emotion-card">
+        <div className="mx-progress-redesign__emotion-ring" aria-label={`${total} отметок эмоций`}>
+          <span>{total || '—'}</span>
+          <small>отметки</small>
+        </div>
+        <div className="mx-progress-redesign__emotion-list">
+          {(emotions.length ? emotions : [['пока нет данных', 0]]).map(([name, count], index) => (
+            <div key={name} data-tone={index === 0 ? 'high' : 'middle'}>
+              <i />
+              <span>{name}</span>
+              <small>{count || '—'}</small>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -512,52 +505,17 @@ const WEEKDAY_FULL = [
   'субботу',
 ]
 
-function Metric({ label, value }) {
+function Metric({ label, value, note, progress, children }) {
   return (
-    <div className="flex-1 rounded-[18px] bg-emerald border border-cream/10 px-3 py-3">
-      <div className="text-[10px] text-faint leading-none mb-1.5">{label}</div>
-
-      <div className="font-display text-[18px] font-bold text-gold leading-none">{value}</div>
-    </div>
-  )
-}
-
-function PrimaryObservationCard({ observation }) {
-  if (!observation) {
-    return (
-      <div className="mb-7 rounded-[20px] bg-emerald px-4 py-3.5 text-[15px] leading-relaxed text-muted">
-        Пока недостаточно отметок для наблюдения. Продолжай в своём темпе — данные появятся сами.
-      </div>
-    )
-  }
-
-  return (
-    <div
-      data-primary-observation="true"
-      className="mx-type-insight mb-7 rounded-[20px] border border-gold/25 bg-emerald px-4 py-4"
-    >
-      <div className="font-body mb-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-gold">
-        Главное наблюдение
-      </div>
-      <p className="font-body text-[18px] leading-snug text-cream">{observation.text}</p>
-      {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-        <p className="font-body mt-3 text-[13px] leading-relaxed text-muted">
-          Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
-          {observation.sourceDates?.length ? ` · ${observation.sourceDates.length} дат` : ''}
-        </p>
-      )}
-      {observation.sourceDates?.length > 0 && (
-        <details className="font-body mt-2 text-[13px] leading-relaxed text-muted">
-          <summary className="cursor-pointer select-none text-gold">
-            Даты в основе наблюдения
-          </summary>
-          <p className="mt-1 leading-relaxed">
-            {observation.sourceDates.map(formatSourceDate).join(' · ')}
-          </p>
-        </details>
-      )}
-      <p className="font-body mt-3 text-[13px] leading-relaxed text-faint">{observation.caveat}</p>
-    </div>
+    <article>
+      <span>{label}</span>
+      <strong className="font-display">{value}</strong>
+      <small>{note}</small>
+      <i aria-hidden="true">
+        <b style={{ width: `${Math.max(4, Math.min(progress || 0, 100))}%` }} />
+      </i>
+      {children}
+    </article>
   )
 }
 
@@ -576,6 +534,8 @@ export default function Analytics({ user, onGoCheckin }) {
   const [checkins, setCheckins] = useState(() => initialTrendsSnapshot?.checkins ?? [])
   const [days, setDays] = useState(14)
   const [loading, setLoading] = useState(() => initialTrendsSnapshot === null)
+  const [loadError, setLoadError] = useState('')
+  const [reloadKey, setReloadKey] = useState(0)
   const [insightsEnabled, setInsightsEnabled] = useState(true)
   const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
 
@@ -583,9 +543,8 @@ export default function Analytics({ user, onGoCheckin }) {
     if (!user) return
 
     let active = true
-
     fetchTrendsData(user.id, days, {
-      force: days !== 14 || initialTrendsState?.shouldRefresh === true,
+      force: days !== 14 || initialTrendsState?.shouldRefresh === true || reloadKey > 0,
     })
       .then(({ analytics, checkins }) => {
         if (!active) return
@@ -593,7 +552,13 @@ export default function Analytics({ user, onGoCheckin }) {
         setData(analytics)
         setCheckins(checkins || [])
       })
-      .catch(e => console.error(e))
+      .catch(error => {
+        console.error(error)
+        if (!active) return
+        setData(null)
+        setCheckins([])
+        setLoadError('Не удалось загрузить прогресс')
+      })
       .finally(() => {
         if (active) setLoading(false)
       })
@@ -601,7 +566,7 @@ export default function Analytics({ user, onGoCheckin }) {
     return () => {
       active = false
     }
-  }, [user, days, initialTrendsState])
+  }, [user, days, initialTrendsState, reloadKey])
 
   useEffect(() => {
     if (!user) return
@@ -626,21 +591,16 @@ export default function Analytics({ user, onGoCheckin }) {
     }
   }, [user])
 
-  if (loading) return <p className="text-muted text-sm px-6">Загрузка...</p>
-  if (!data) return <p className="text-muted text-sm px-6">Не удалось загрузить аналитику</p>
-
-  const rituals = data.rituals || []
-  const ascezas = data.ascezas || []
-  const hasData = rituals.length > 0 || ascezas.length > 0
-
-  if (!hasData && checkins.length === 0) {
-    return (
-      <div className="w-full max-w-md px-5">
-        <MoodTrend checkins={[]} onGoCheckin={onGoCheckin} />
-        <EmptyAnalytics />
-      </div>
-    )
+  const safeData = data || {
+    period_days: days,
+    rituals: [],
+    ascezas: [],
+    insights: [],
+    observations: [],
+    daily_activity: [],
   }
+  const rituals = safeData.rituals || []
+  const ascezas = safeData.ascezas || []
 
   const avgRituals = rituals.length
     ? Math.round(rituals.reduce((s, r) => s + r.completion_rate, 0) / rituals.length)
@@ -649,8 +609,10 @@ export default function Analytics({ user, onGoCheckin }) {
     ? Math.round(ascezas.reduce((s, a) => s + a.clean_rate, 0) / ascezas.length)
     : 0
 
-  const descriptiveBackendInsights = selectDescriptiveInsights(data.insights)
-  const backendObservations = Array.isArray(data.observations) ? data.observations.slice(0, 3) : []
+  const descriptiveBackendInsights = selectDescriptiveInsights(safeData.insights)
+  const backendObservations = Array.isArray(safeData.observations)
+    ? safeData.observations.slice(0, 3)
+    : []
   const observations =
     backendObservations.length > 0
       ? backendObservations
@@ -661,19 +623,25 @@ export default function Analytics({ user, onGoCheckin }) {
           caveat: 'Это описание доступных данных, а не диагноз и не доказательство причины.',
         }))
 
-  const round = values => {
-    const value = average(pick(checkins, values))
+  const score = field => average(pick(checkins, field))
+  const scoreLabel = field => {
+    const value = score(field)
 
     return value === null ? '—' : value.toFixed(1)
   }
+  const scoreProgress = field => {
+    const value = score(field)
+    return value === null ? 0 : (value / 5) * 100
+  }
 
   return (
-    <div className="mx-type-page w-full max-w-md px-5 animate-fade-in">
-      <h2 className="mx-type-analytics-heading font-display text-[34px] text-cream lowercase mt-4 mb-1">
-        аналитика.
-      </h2>
+    <div className="mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-5 animate-fade-in">
+      <header className="mx-progress-redesign__header">
+        <h2 className="mx-type-analytics-heading">прогресс.</h2>
+        <span>{days} дней</span>
+      </header>
 
-      <div className="mb-5 flex flex-wrap gap-2" aria-label="Период аналитики">
+      <div className="mx-progress-redesign__periods" aria-label="Период аналитики">
         {ANALYTICS_PERIODS.map(period => (
           <button
             key={period}
@@ -681,104 +649,101 @@ export default function Analytics({ user, onGoCheckin }) {
             onClick={() => {
               if (days !== period) {
                 setLoading(true)
+                setLoadError('')
                 setDays(period)
               }
             }}
             aria-pressed={days === period}
-            className={[
-              'min-h-9 rounded-full px-3 text-[12px] font-semibold',
-              days === period ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted',
-            ].join(' ')}
           >
             {period} дней
           </button>
         ))}
       </div>
-      <p className="text-[12px] text-faint mb-7">за последние {data.period_days} дней</p>
 
-      <div className="font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
-        Наблюдения
-      </div>
+      <MoodTrend
+        checkins={checkins}
+        loading={loading}
+        error={loadError}
+        onRetry={() => {
+          setLoading(true)
+          setLoadError('')
+          setReloadKey(value => value + 1)
+        }}
+        onGoCheckin={onGoCheckin}
+        period={safeData.period_days}
+      />
 
-      {insightsEnabled ? (
+      {!loading && !loadError && (
         <>
-          {/* Safety invariant: не диагнозы и не доказанные причины. */}
-          <p className="font-body text-[13px] text-faint leading-relaxed mb-3">
-            Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные
-            причины; они также не являются прогнозами.
-          </p>
+          <ObservationRail
+            observations={observations}
+            insightsEnabled={insightsEnabled}
+            preferenceError={insightsPreferenceError}
+          />
+          <ActivityCalendar checkins={checkins} dailyActivity={safeData.daily_activity || []} />
+          <EmotionCloud checkins={checkins} />
 
-          <PrimaryObservationCard observation={observations[0] ?? null} />
-        </>
-      ) : (
-        <div
-          role="status"
-          className="mb-7 rounded-[20px] border border-cream/10 bg-emerald px-4 py-3.5 text-[14px] leading-relaxed text-muted"
-        >
-          Персональные описательные наблюдения скрыты. Твои сохранённые данные и обычные цифры ниже
-          не удалены. Включить наблюдения можно в настройках.
-        </div>
-      )}
-      {insightsPreferenceError && (
-        <p role="status" className="-mt-5 mb-7 text-[12px] leading-relaxed text-faint">
-          {insightsPreferenceError}
-        </p>
-      )}
-
-      {/* ── Цифры ── */}
-
-      <div className="font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
-        Цифры
-      </div>
-
-      <div className="flex gap-2 mb-3">
-        <Metric label="настроение" value={round('mood')} />
-        <Metric label="энергия" value={round('energy')} />
-        <Metric label="тревога" value={round('anxiety')} />
-        <Metric label="фокус" value={round('focus')} />
-      </div>
-
-      <div className="flex gap-2 mb-8">
-        {rituals.length > 0 && <Metric label="ритуалы выполнены" value={`${avgRituals}%`} />}
-
-        {ascezas.length > 0 && <Metric label="аскезы удержаны" value={`${avgClean}%`} />}
-      </div>
-
-      {/* ── Данные ── */}
-
-      <div className="font-label text-[11px] text-faint font-semibold uppercase tracking-[0.14em] mb-2.5">
-        Данные
-      </div>
-
-      <MoodTrend checkins={checkins} onGoCheckin={onGoCheckin} />
-
-      <EmotionCloud checkins={checkins} />
-
-      {data.daily_activity && data.daily_activity.length > 0 && (
-        <div className="mb-6">
-          <WeekChart dailyActivity={data.daily_activity} />
-        </div>
-      )}
-
-      {ascezas.length > 0 && (
-        <>
-          <h3 className="text-sm text-cream mb-2">Аскезы</h3>
-          <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4 mb-6">
-            {ascezas.map(a => (
-              <AscezaRow key={a.id} asceza={a} />
-            ))}
-          </div>
-        </>
-      )}
-
-      {rituals.length > 0 && (
-        <>
-          <h3 className="text-sm text-cream mb-2">Ритуалы</h3>
-          <div className="rounded-xl border border-cream/15 bg-emerald-light/15 p-4">
-            {rituals.map(r => (
-              <RitualBar key={r.id} ritual={r} />
-            ))}
-          </div>
+          <section
+            className="mx-progress-redesign__section"
+            aria-labelledby="progress-activities-title"
+          >
+            <SectionHeading
+              eyebrow="По существующим данным"
+              title="Активности"
+              meta="4"
+              id="progress-activities-title"
+            />
+            <div className="mx-progress-redesign__activities">
+              <Metric
+                label="Ритуалы"
+                value={rituals.length ? `${avgRituals}%` : '—'}
+                note={rituals.length ? `${rituals.length} активных` : 'данные ещё собираются'}
+                progress={avgRituals}
+              >
+                {rituals.length > 0 && (
+                  <details>
+                    <summary>Показать ритуалы</summary>
+                    {rituals.map(ritual => (
+                      <p key={ritual.id}>
+                        <span>{ritual.name}</span>
+                        <b>{ritual.completion_rate}%</b>
+                      </p>
+                    ))}
+                  </details>
+                )}
+              </Metric>
+              <Metric
+                label="Аскезы"
+                value={ascezas.length ? `${avgClean}%` : '—'}
+                note={ascezas.length ? `${ascezas.length} активных` : 'данные ещё собираются'}
+                progress={avgClean}
+              >
+                {ascezas.length > 0 && (
+                  <details>
+                    <summary>Показать аскезы</summary>
+                    {ascezas.map(asceza => (
+                      <p key={asceza.id}>
+                        <span>{asceza.name}</span>
+                        <b>{asceza.clean_rate}%</b>
+                      </p>
+                    ))}
+                  </details>
+                )}
+              </Metric>
+              <Metric
+                label="Энергия"
+                value={scoreLabel('energy')}
+                note="среднее по check-in"
+                progress={scoreProgress('energy')}
+              />
+              <Metric
+                label="Фокус"
+                value={scoreLabel('focus')}
+                note="среднее по check-in"
+                progress={scoreProgress('focus')}
+              />
+            </div>
+          </section>
         </>
       )}
     </div>
