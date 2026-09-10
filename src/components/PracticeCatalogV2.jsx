@@ -5,6 +5,7 @@ import JournalArt from './practice-art/JournalArt'
 import SemanticGlyph from './SemanticGlyph'
 import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
 import './ui-lab/LayeredPracticeCatalogExperiment.css'
+import './ui-lab/practices-a11y-fixes.css'
 
 const VISIBLE_COLLECTIONS = PRACTICE_COLLECTIONS.filter(collection => collection.key !== 'lila')
 
