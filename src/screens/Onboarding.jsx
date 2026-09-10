@@ -216,7 +216,7 @@ export default function Onboarding({ user, onFinish }) {
                 />
               ))}
             </div>
-            <p className="text-[12px] text-faint text-center mt-6 leading-snug">
+            <p className="text-[12px] text-muted text-center mt-6 leading-snug">
               Выбор ничего не ограничивает — все функции остаются доступными.
             </p>
             <button
@@ -254,7 +254,7 @@ export default function Onboarding({ user, onFinish }) {
                 />
               ))}
             </div>
-            <p className="text-[12px] text-faint text-center mt-6">Это остаётся только у тебя.</p>
+            <p className="text-[12px] text-muted text-center mt-6">Это остаётся только у тебя.</p>
             <button
               onClick={next}
               disabled={!age}
@@ -302,7 +302,7 @@ export default function Onboarding({ user, onFinish }) {
                       </span>
                       <span className="block font-display text-[22px] leading-tight">{r.time}</span>
                       <span
-                        className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-faint'}`}
+                        className={`block text-[12px] mt-0.5 ${on ? 'opacity-60' : 'text-muted'}`}
                       >
                         {r.note}
                       </span>
@@ -313,7 +313,7 @@ export default function Onboarding({ user, onFinish }) {
                         on ? 'bg-emerald-deep text-cream' : 'bg-cream/10 text-transparent',
                       ].join(' ')}
                     >
-                      <Check size={14} strokeWidth={3} />
+                      <Check size={14} strokeWidth={3} aria-hidden="true" />
                     </span>
                   </button>
                 )
