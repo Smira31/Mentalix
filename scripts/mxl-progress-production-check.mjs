@@ -12,16 +12,18 @@ const VIEWPORTS = [
   { name: '430x932', width: 430, height: 932 },
 ]
 const USER = { id: 900001, first_name: 'UX', username: 'progress_check' }
-const CHECKINS = Array.from({ length: 10 }, (_, index) => ({
-  date: `2026-09-${String(index + 1).padStart(2, '0')}`,
-  mood: [3, 4, 3, 5, 4, 4, 5, 4, 3, 4][index],
-  energy: [2, 4, 3, 4, 4, 3, 5, 4, 3, 4][index],
-  anxiety: 2,
-  focus: [2, 3, 3, 4, 4, 3, 5, 4, 3, 4][index],
-  emotion: ['спокойствие', 'интерес', 'усталость'][index % 3],
-  review_completed_at:
-    index % 2 === 0 ? `2026-09-${String(index + 1).padStart(2, '0')}T20:00:00Z` : null,
-}))
+const CHECKINS = Array.from({ length: 40 }, (_, index) => {
+  const date = new Date(Date.UTC(2026, 7, 2 + index)).toISOString().slice(0, 10)
+  return {
+    date,
+    mood: [3, 4, 3, 5, 4][index % 5],
+    energy: [2, 4, 3, 4, 4][index % 5],
+    anxiety: 2,
+    focus: [2, 3, 3, 4, 4][index % 5],
+    emotion: ['спокойствие', 'интерес', 'усталость', 'напряжение', 'радость'][index % 5],
+    review_completed_at: index % 2 === 0 ? `${date}T20:00:00Z` : null,
+  }
+})
 
 function response(body, status = 200) {
   return { status, contentType: 'application/json', body: JSON.stringify(body) }
@@ -53,7 +55,7 @@ function analyticsFixture(days) {
       },
       {
         text: 'Во второй половине периода настроение стало немного устойчивее.',
-        sampleSize: 10,
+        sampleSize: 40,
         sourceDates: CHECKINS.map(item => item.date),
         caveat: 'Наблюдение зависит от полноты сохранённых check-in.',
       },
@@ -141,6 +143,29 @@ try {
     if (geometry.documentWidth > geometry.viewportWidth + 1) {
       throw new Error(`${viewport.name}: горизонтальный overflow страницы`)
     }
+    if (PROGRESS_LAYOUT_V2_ENABLED) {
+      const dataContract = await page.evaluate(() => ({
+        chartPoints: document.querySelectorAll('.mx-progress-redesign__chart circle').length,
+        average: document.querySelector('.mx-progress-redesign__hero-copy strong')?.textContent,
+        observationEvidence: document.querySelectorAll(
+          '.mx-progress-redesign__observation details'
+        ).length,
+        observationBases: [...document.querySelectorAll('.mx-progress-redesign__observation p')]
+          .map(node => node.textContent)
+          .filter(text => text.startsWith('Основа:')).length,
+        emotionTotal: document.querySelector('.mx-progress-redesign__emotion-ring span')?.textContent,
+        emotionRows: document.querySelectorAll('.mx-progress-redesign__emotion-list > div').length,
+      }))
+      if (dataContract.chartPoints !== 40 || dataContract.average !== '3.8') {
+        throw new Error(`${viewport.name}: график или среднее не используют все 40 точек`)
+      }
+      if (dataContract.observationEvidence !== 2 || dataContract.observationBases !== 2) {
+        throw new Error(`${viewport.name}: evidence не показан у всех observations`)
+      }
+      if (dataContract.emotionTotal !== '40' || dataContract.emotionRows > 4) {
+        throw new Error(`${viewport.name}: total эмоций или top-4 рассчитан неверно`)
+      }
+    }
     if (!geometry.railScrollable || geometry.secondCardLeft >= geometry.railRight) {
       throw new Error(`${viewport.name}: rail не показывает край следующей карточки`)
     }
@@ -171,6 +196,31 @@ try {
 
     if (PROGRESS_LAYOUT_V2_ENABLED) {
       await page.getByRole('button', { name: /14 дней/ }).click()
+      await page.getByRole('menuitemradio', { name: '30 дней' }).click()
+      await page.getByRole('button', { name: /30 дней/ }).click()
+      await page.getByRole('menuitemradio', { name: '90 дней' }).click()
+      for (let index = 0; index < 4; index += 1) {
+        const previousMonth = page.getByRole('button', { name: 'Предыдущий месяц' })
+        if (await previousMonth.isDisabled()) break
+        await previousMonth.click()
+      }
+      if (!(await page.getByRole('button', { name: 'Предыдущий месяц' }).isDisabled())) {
+        throw new Error(`${viewport.name}: календарь разрешил месяц до начала 90-дневного периода`)
+      }
+      for (let index = 0; index < 4; index += 1) {
+        const nextMonth = page.getByRole('button', { name: 'Следующий месяц' })
+        if (await nextMonth.isDisabled()) break
+        await nextMonth.click()
+      }
+      if (!(await page.getByRole('button', { name: 'Следующий месяц' }).isDisabled())) {
+        throw new Error(`${viewport.name}: календарь разрешил будущий месяц`)
+      }
+      await page.getByRole('button', { name: /90 дней/ }).click()
+      await page.getByRole('menuitemradio', { name: '7 дней' }).click()
+      if (!(await page.getByRole('button', { name: 'Предыдущий месяц' }).isDisabled())) {
+        throw new Error(`${viewport.name}: monthCursor не ограничен после смены периода`)
+      }
+      await page.getByRole('button', { name: /7 дней/ }).click()
       await page.getByRole('menuitemradio', { name: '30 дней' }).click()
     } else {
       await page.getByRole('button', { name: '30 дней' }).click()
