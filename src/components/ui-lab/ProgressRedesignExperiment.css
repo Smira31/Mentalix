@@ -3,7 +3,7 @@
   gap: 22px;
   max-width: 760px;
   margin: 0 auto;
-  padding: 8px 0 28px;
+  padding-block: 8px 28px;
   color: rgb(var(--c-text));
   font-family: 'Onest', sans-serif;
 }
@@ -365,7 +365,7 @@
 .mx-progress-redesign__observation p,
 .mx-progress-redesign__caveat {
   margin: 0;
-  color: rgb(var(--c-faint));
+  color: rgb(var(--c-muted));
   font-size: 11px;
   line-height: 1.5;
 }
@@ -413,8 +413,8 @@
 
 .mx-progress-redesign__weekdays {
   margin-bottom: 13px;
-  color: rgb(var(--c-faint));
-  font-size: 9px;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
   text-align: center;
 }
 
