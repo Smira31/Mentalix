@@ -561,9 +561,28 @@
 .mx-progress-redesign--live {
   display: block;
   width: 100%;
+  min-width: 0;
   max-width: 448px;
+  overflow-x: clip;
   padding-top: 12px;
   padding-bottom: calc(112px + env(safe-area-inset-bottom));
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__section,
+.mx-progress-redesign--live .mx-progress-redesign__hero,
+.mx-progress-redesign--live .mx-progress-redesign__calendar-card,
+.mx-progress-redesign--live .mx-progress-redesign__emotion-card,
+.mx-progress-redesign--live .mx-progress-redesign__activities {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__rail {
+  width: 100%;
+  max-width: 100%;
+  margin-right: 0;
+  padding-right: 20px;
+  overscroll-behavior-inline: contain;
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__header {
@@ -581,8 +600,19 @@
 .mx-progress-redesign--live .mx-progress-redesign__observation details {
   margin-top: 8px;
   color: rgb(var(--c-muted));
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__observation > span {
+  font-size: 11px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__observation p,
+.mx-progress-redesign--live .mx-progress-redesign__observation .mx-progress-redesign__caveat {
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__observation summary {
@@ -628,14 +658,62 @@
   padding-bottom: 28px;
 }
 
+.mx-progress-redesign--live .mx-progress-redesign__weekdays {
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__calendar i[data-day]::after {
+  color: rgb(var(--c-muted));
+  font-size: 9px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__calendar-card > p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__emotion-card {
+  grid-template-columns: minmax(0, 128px) minmax(0, 1fr);
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__emotion-list {
+  min-width: 0;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__emotion-list > div {
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  font-size: 13px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__emotion-ring small {
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__emotion-list small {
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+}
+
 .mx-progress-redesign--live .mx-progress-redesign__activities article {
   min-height: 186px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities article > span {
+  font-size: 13px;
+}
+
+.mx-progress-redesign--live .mx-progress-redesign__activities small {
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities details {
   margin-top: 14px;
   color: rgb(var(--c-muted));
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities summary {
@@ -653,9 +731,8 @@
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities details p span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities details p b {
