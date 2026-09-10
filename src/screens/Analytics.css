@@ -104,7 +104,12 @@
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__section {
-  margin-top: 32px;
+  margin-top: var(--mx-space-6);
+  margin-bottom: 0;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__hero {
+  margin-bottom: var(--mx-space-6);
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__section-head {
@@ -151,12 +156,83 @@
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__activities {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--mx-space-6);
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
   grid-column: 1 / -1;
   margin-bottom: 2px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto;
+  column-gap: 18px;
+  row-gap: 5px;
+  min-height: 174px;
+  padding: 20px;
+  border-radius: 24px;
+  background: rgb(var(--c-card));
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card::before {
+  grid-row: 2 / 5;
+  grid-column: 1;
+  align-self: center;
+  width: 80px;
+  height: 80px;
+  border: 10px solid rgb(var(--c-card2));
+  border-top-color: rgb(var(--c-gold));
+  border-right-color: rgb(var(--c-muted));
+  border-radius: 50%;
+  content: '';
+  transform: rotate(-18deg);
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card::after {
+  position: absolute;
+  top: 79px;
+  left: 20px;
+  width: 80px;
+  color: rgb(var(--c-text));
+  content: attr(data-progress-label);
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities article > span {
+  grid-column: 1 / -1;
+  color: rgb(var(--c-faint));
+  font:
+    600 12px/1 'Manrope',
+    sans-serif;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card > strong {
+  grid-column: 2;
+  align-self: end;
+  font-size: 30px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card > small {
+  grid-column: 2;
+  font-size: 12px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card > i {
+  grid-column: 2;
+  align-self: end;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card > details {
+  grid-column: 2;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__observation > span {
