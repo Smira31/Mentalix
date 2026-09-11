@@ -72,7 +72,11 @@ function ProgramGlyph() {
 
 function FeaturedProgram({ onOpen }) {
   return (
-    <button type="button" className="mx-library-programs__featured" onClick={onOpen}>
+    <button
+      type="button"
+      className="mx-library-programs__featured"
+      onClick={() => onOpen('Самодисциплина')}
+    >
       <div className="mx-library-programs__featured-art" aria-hidden="true">
         <ProgramGlyph />
       </div>
@@ -232,12 +236,12 @@ export default function LibraryProgramsExperiment() {
   const [screen, setScreen] = useState(() => params().get('screen') || 'landing')
   const setReviewScreen = (next, title) => {
     setScreen(next)
-    if (title)
-      window.history.replaceState(
-        null,
-        '',
-        `?ui_lab=library-programs&review=1&screen=detail&program=${encodeURIComponent(title)}`
-      )
+    const query = new URLSearchParams({ ui_lab: 'library-programs', review: '1' })
+    if (next === 'detail' && title) {
+      query.set('screen', 'detail')
+      query.set('program', title)
+    }
+    window.history.replaceState(null, '', `?${query.toString()}`)
   }
   const requestedTitle = params().get('program')
   const secondaryTitles = ['Границы без лишнего напряжения', 'Неделя внимательного решения']
