@@ -543,7 +543,7 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
         const journalEntry = page.locator('article.mx-layered-catalog__journal-hero button')
         await assertClickable(journalEntry)
-        const collectionsHeading = page.locator('section[aria-label="Коллекции"] h3')
+        const collectionsHeading = page.locator('section[aria-label="Коллекции"] h2')
         await expect(collectionsHeading).toBeVisible()
         const journalBox = await journalEntry.boundingBox()
         const collectionsBox = await collectionsHeading.boundingBox()
