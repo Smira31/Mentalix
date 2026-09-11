@@ -119,7 +119,10 @@ function FeaturedProgram({ onOpen }) {
         <ProgramGlyph />
       </div>
       <div className="mx-library-programs__featured-copy">
-        <strong>Самодисциплина</strong>
+        <div>
+          <strong>Самодисциплина</strong>
+          <p>Выстроить устойчивый ритм без давления на себя.</p>
+        </div>
         <span className="mx-library-programs__featured-arrow" aria-label="Открыть программу">
           <ArrowRight size={18} />
         </span>

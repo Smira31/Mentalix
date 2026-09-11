@@ -24,16 +24,20 @@ async function assertBase(page, width) {
   const smallTargets = await page.evaluate(() => [...document.querySelectorAll('button')].filter(button => { const rect = button.getBoundingClientRect(); return rect.width < 44 || rect.height < 44 }).length)
   if (smallTargets) throw new Error(`${width}: ${smallTargets} tap targets below 44px`)
   const geometry = await page.locator('.mx-library-programs__featured').evaluate(element => { const rect = element.getBoundingClientRect(); const art = element.querySelector('.mx-library-programs__featured-art').getBoundingClientRect(); return { ratio: rect.width / rect.height, split: art.width / rect.width } })
-  if (geometry.ratio < 1.45 || geometry.ratio > 1.68) throw new Error(`${width}: featured ratio ${geometry.ratio.toFixed(2)} outside 1.45–1.68`)
-  if (geometry.split < 0.34 || geometry.split > 0.42) throw new Error(`${width}: featured split ${geometry.split.toFixed(2)} outside 0.34–0.42`)
+  const featuredRatioRange = width <= 360 ? [0.9, 1.1] : [1.45, 1.68]
+  const featuredSplitRange = width <= 360 ? [0.95, 1.05] : [0.34, 0.42]
+  if (geometry.ratio < featuredRatioRange[0] || geometry.ratio > featuredRatioRange[1]) throw new Error(`${width}: featured ratio ${geometry.ratio.toFixed(2)} outside ${featuredRatioRange.join('–')}`)
+  if (geometry.split < featuredSplitRange[0] || geometry.split > featuredSplitRange[1]) throw new Error(`${width}: featured split ${geometry.split.toFixed(2)} outside ${featuredSplitRange.join('–')}`)
   const small = await page.locator('.mx-library-programs__small-program').first().boundingBox()
-  if (!small || small.width < 148 || small.width > 188 || small.height < 220 || small.height > 236) throw new Error(`${width}: secondary geometry is ${JSON.stringify(small)}`)
+  const heightRange = width <= 360 ? [220, 236] : [200, 216]
+  if (!small || small.width < geometry.width * 0.465 || small.width > geometry.width * 0.475 || small.height < heightRange[0] || small.height > heightRange[1]) throw new Error(`${width}: secondary geometry is ${JSON.stringify(small)}`)
 }
 
 try {
   for (const viewport of sizes) {
     const page = await browser.newPage({ viewport }); await open(page); await assertBase(page, viewport.width)
-    if ((await page.locator('.mx-library-programs__featured').innerText()).trim() !== 'Самодисциплина') throw new Error(`${viewport.width}: featured card has extra copy`)
+    const featuredCopy = (await page.locator('.mx-library-programs__featured').innerText()).replace(/\s+/g, ' ').trim()
+    if (!featuredCopy.startsWith('Самодисциплина Выстроить устойчивый ритм без давления на себя.')) throw new Error(`${viewport.width}: featured copy is incorrect: ${featuredCopy}`)
     await page.locator('.mx-library-programs__featured').click(); await assertUrl(page, { screen: 'detail', program: 'Самодисциплина' })
     if (!(await page.getByRole('heading', { name: 'Самодисциплина', exact: true }).isVisible())) throw new Error(`${viewport.width}: main detail title missing`)
     if (!(await page.getByText('Скоро', { exact: true }).isVisible())) throw new Error(`${viewport.width}: main detail status missing`)
