@@ -12,3 +12,4 @@
 | Work | [`TASKS.md`](../TASKS.md) | Исторический backlog и записи выполнения; открывать только по конкретной задаче или ссылке из Issue/PR. |
 | History | [`CHANGES.md`](../CHANGES.md) | История изменений; открывать для проверки происхождения решения, не как текущий источник истины. |
 | History | [`docs/archive/`](archive/) | Архивные аудиты, handoff и старые планы; открывать только для исторического контекста. |
+| CI | [`docs/ci/VERCEL_WATCHDOG.md`](ci/VERCEL_WATCHDOG.md) | Инструкция по секретам и работе Vercel Production Watchdog; открывать при настройке автопроверки Production. |

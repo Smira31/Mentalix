@@ -309,9 +309,9 @@ export default function Conversation({
           <BackButton onClick={onBack} />
         </div>
 
-        <div className="justify-self-center mx-ai-meta text-cream leading-none whitespace-nowrap">
+        <h1 className="justify-self-center mx-ai-meta text-cream leading-none whitespace-nowrap">
           {meta.name}
-        </div>
+        </h1>
 
         <span aria-hidden="true" />
       </div>
@@ -338,7 +338,7 @@ export default function Conversation({
           {groupJournalMessages(messages).map(group => (
             <div key={group.key} className="space-y-5">
               {group.label && (
-                <div className="pt-2 text-center text-[10px] uppercase tracking-[0.18em] text-faint">
+                <div className="pt-2 text-center text-[10px] uppercase tracking-[0.18em] text-muted">
                   {group.label}
                 </div>
               )}
@@ -367,7 +367,7 @@ export default function Conversation({
                       <MessageText content={messageContent(message)} />
                     </div>
 
-                    <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-faint">
+                    <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-muted">
                       Ответ создан AI
                     </p>
                     {message.id && (
@@ -376,7 +376,7 @@ export default function Conversation({
                           type="button"
                           onClick={() => leaveFeedback(message.id, 'up')}
                           disabled={feedbackByMessage.has(message.id)}
-                          className="min-h-9 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
+                          className="min-h-11 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
                         >
                           Полезно
                         </button>
@@ -384,12 +384,12 @@ export default function Conversation({
                           type="button"
                           onClick={() => leaveFeedback(message.id, 'down')}
                           disabled={feedbackByMessage.has(message.id)}
-                          className="min-h-9 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
+                          className="min-h-11 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
                         >
                           Не полезно
                         </button>
                         {feedbackByMessage.has(message.id) && (
-                          <span role="status" className="text-[11px] text-faint">
+                          <span role="status" className="text-[11px] text-muted">
                             Отметка сохранена
                           </span>
                         )}
@@ -448,7 +448,7 @@ export default function Conversation({
                 {meta.name}
               </div>
 
-              <p className="text-[14px] text-faint">{meta.typing}</p>
+              <p className="text-[14px] text-muted">{meta.typing}</p>
             </div>
           )}
         </div>
