@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Journal follow-up: тесты, миграция и юридический review
 
 **Статус:** рабочий материал для PR #224, MXL-JOURNAL-HISTORY-001 и MXL-JOURNAL-PRIVACY-001. Тест-кейсы можно автоматизировать; migration и legal sections являются проектными drafts и не заменяют backend или юридическое решение.

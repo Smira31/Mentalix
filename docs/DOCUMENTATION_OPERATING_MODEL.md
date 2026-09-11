@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Documentation operating model
 
 Этот документ задаёт границы между нормативными документами, текущим backlog и историей проекта. Он не заменяет GitHub Issues или Project board.

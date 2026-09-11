@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-STARTER-SET-001 — starter-set decision artifact
 
 ## Status

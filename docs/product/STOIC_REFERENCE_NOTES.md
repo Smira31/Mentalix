@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Stoic reference notes
 
 **Дата проверки:** 27.08.2026

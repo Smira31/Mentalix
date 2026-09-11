@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix — Reference Workflow v1
 
 Цель: использовать референсы как источник принципов, не копируя чужой продукт.

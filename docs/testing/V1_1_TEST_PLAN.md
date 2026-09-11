@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix v1.1.0 — план задач и тестирования
 
 Дата: **27.08.2026, Europe/Moscow**.

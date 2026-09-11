@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # AGENTS.md
 Точка входа по документации: [`docs/INDEX.md`](docs/INDEX.md).
 

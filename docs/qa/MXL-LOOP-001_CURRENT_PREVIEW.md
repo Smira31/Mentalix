@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-LOOP-001 Current Preview Verification
 
 This document exists to produce a fresh Vercel Preview from the current `main` revision after the completion-navigation fix.

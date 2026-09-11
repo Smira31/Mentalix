@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-JOURNAL-PERSISTENCE-001 — локальная визуальная проверка
 
 **Дата:** 27 августа 2026 г.  

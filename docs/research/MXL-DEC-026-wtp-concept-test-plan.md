@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-DEC-026 — Willingness-to-pay: execution plan
 
 ## Цель

@@ -1,9 +1,12 @@
 ---
+status: working
+last_verified: 2026-09-11
 name: "🎯 UX"
 about: "Сообщить о проблеме пользовательского опыта в Mentalix"
 title: "[UX]: "
 labels: ["🎯 UX"]
 ---
+
 
 # 🎯 Описание проблемы
 

@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 ## Контекст
 
 **Issue / задача:** `MXL-...` или ссылка на Issue.

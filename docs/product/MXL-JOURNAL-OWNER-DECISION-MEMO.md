@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix Journal — owner-ready decision memo
 
 **Дата аудита:** 29 августа 2026 г.

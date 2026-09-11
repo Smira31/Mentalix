@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-CONTENT-ARTICLES-001 — research brief: короткие статьи по состоянию/ритуалу
 
 ## Статус

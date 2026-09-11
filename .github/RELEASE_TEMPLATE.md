@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix — релиз [версия]
 
 ## Краткий итог

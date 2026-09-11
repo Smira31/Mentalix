@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Light theme preview notes
 
 Visual check on local `?light-preview=1` preview confirms the new direction renders as a warm parchment background rather than sterile white. The direct web-auth boundary remains legible and coherent: cream card, graphite text, cognac-gold accent, and a dark Mentalix mark. The preview remains behind the existing local/preview build gate.

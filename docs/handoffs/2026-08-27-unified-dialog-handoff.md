@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix — единый handoff из диалога
 
 Дата сборки: **27.08.2026, Europe/Moscow**.

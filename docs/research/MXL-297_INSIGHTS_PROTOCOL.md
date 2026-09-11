@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-297 — descriptive insights research protocol
 
 This protocol defines how Mentalix may test the value of descriptive pattern observations after journal history and provenance are available. It does not authorize a production insights engine or conclusions from sparse data.

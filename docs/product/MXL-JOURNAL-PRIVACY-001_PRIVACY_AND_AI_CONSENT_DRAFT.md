@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-JOURNAL-PRIVACY-001 — черновик privacy и AI consent
 
 > **Рабочий draft — не юридическая консультация и не готовая privacy policy.** Перед production-релизом документ должен проверить квалифицированный юрист с учётом юрисдикций, Telegram Mini Apps, фактического backend и используемых AI-провайдеров.

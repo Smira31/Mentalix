@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-103 — Mentalix animation library
 
 Each approved animation records `motion_id`, purpose, trigger, duration, easing, affected property, reduced-motion behavior, performance risk and example screen. Motion exists to explain state or response, not to increase pressure or time-in-app.

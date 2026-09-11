@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix — протокол координации диалогов и PR
 
 Цель документа — убрать путаницу при работе над Mentalix из нескольких диалогов, Claude Code, Codex или других агентов. Протокол не меняет продуктовый scope, P0, backend, API, production, данные или secrets.
