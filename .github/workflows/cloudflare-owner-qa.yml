@@ -15,6 +15,7 @@ concurrency:
 env:
   NODE_VERSION: 20
   CLOUDFLARE_PROJECT: mentalix-owner-qa
+  CLOUDFLARE_PRODUCTION_BRANCH: manual
   OWNER_QA_STABLE_URL: https://mentalix-owner-qa.pages.dev
 
 jobs:
@@ -84,7 +85,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ env.CLOUDFLARE_PROJECT }} --branch=main
+          command: pages deploy dist --project-name=${{ env.CLOUDFLARE_PROJECT }} --branch=${{ env.CLOUDFLARE_PRODUCTION_BRANCH }}
 
       - name: Проверить stable и immutable provenance
         shell: bash

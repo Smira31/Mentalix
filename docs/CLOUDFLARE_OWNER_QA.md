@@ -8,6 +8,6 @@ Cloudflare Owner QA — это **не Production** и не механизм Verc
 
 ## Ручной запуск
 
-В GitHub откройте **Actions → Cloudflare Owner QA → Run workflow**, выберите Environment `cloudflare-owner-qa` и передайте полный 40-символьный SHA. Workflow не запускается на `push`, `pull_request`, `schedule` или других автоматических событиях. Deployment и merge не выполняются автоматически при изменении репозитория.
+В GitHub откройте **Actions → Cloudflare Owner QA → Run workflow** и передайте полный 40-символьный SHA. Workflow автоматически использует Environment `cloudflare-owner-qa`; выбирать Environment при запуске не нужно. Workflow не запускается на `push`, `pull_request`, `schedule` или других автоматических событиях. Deployment и merge не выполняются автоматически при изменении репозитория.
 
 После успешного запуска используйте stable и immutable URL только для проверки exact-SHA provenance. До Owner PASS результат не считается подтверждением готовности продукта к релизу.
