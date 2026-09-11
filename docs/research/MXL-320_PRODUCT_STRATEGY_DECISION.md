@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-320 — Mentalix product strategy decision artifact
 
 This artifact summarizes the product direction recorded by the owner. The source of truth for age segmentation is `docs/core/PRODUCT_DECISIONS.md` → **MXL-DEC-021**, `Обновление 31.08.2026`; this document does not independently confirm that decision. It prevents parallel agents from reopening the same decisions and keeps implementation work aligned with one measurable loop.

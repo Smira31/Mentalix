@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-359 — iPhone performance gate preparation
 
 Реальный iPhone отсутствует в автономной среде, поэтому этот PR не заявляет, что manual gate пройден. Он подготавливает воспроизводимый evidence form для владельца.

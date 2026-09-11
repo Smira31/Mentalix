@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-012 — Android Telegram gate
 
 `MXL-012` — контрольная проверка Mentalix на реальном Android-устройстве внутри Telegram. Это отдельный manual gate; desktop, Chrome Android без Telegram WebView и зелёный CI его не заменяют.

@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-434 — DISCOVER-вход: ADR and pre-mortem
 
 **Status:** proposed; no implementation authorized

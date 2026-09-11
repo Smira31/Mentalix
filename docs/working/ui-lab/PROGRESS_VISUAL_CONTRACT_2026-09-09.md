@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # Progress redesign — Visual Contract
 
 Статус: **OWNER APPROVED / PRODUCTION PROMOTION**. UI Lab смёржен через PR #564; production-перенос выполняется отдельной веткой и PR.

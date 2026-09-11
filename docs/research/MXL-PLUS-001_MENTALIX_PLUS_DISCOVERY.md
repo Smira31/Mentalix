@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-PLUS-001 — Mentalix Plus: discovery платного слоя без урезания бесплатного core
 
 **Статус:** discovery approved by owner; реализация не разрешена этим документом.

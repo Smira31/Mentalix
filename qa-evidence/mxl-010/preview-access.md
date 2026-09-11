@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-010 Preview access evidence
 
 - Repository: `Smira31/Mentalix`

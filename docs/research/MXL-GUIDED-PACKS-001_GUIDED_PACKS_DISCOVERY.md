@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-GUIDED-PACKS-001 — Discovery guided packs для Mentalix Plus
 
 **Статус:** product discovery; не является разрешением на реализацию контента, оплаты, checkout, backend, AI или fake-door.

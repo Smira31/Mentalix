@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # MXL Visual Rules Library
 
 **Status:** `verified` baseline + `proposed` consolidation  

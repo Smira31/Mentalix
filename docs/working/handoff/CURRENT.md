@@ -1,8 +1,12 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # CURRENT — Scope A / Progress
 
 ## Задача и scope
 
-Закрытие Scope A для экрана «Прогресс» в PR #569 без merge, без включения `VITE_PROGRESS_LAYOUT_V2` в Production и без изменения API, данных, агрегации, периода, карусели и поведения сворачивания BottomNavigation.
+Закрытие Scope A для экрана «Прогресс» в PR #569 смёржен в main 10.09.2026, без включения `VITE_PROGRESS_LAYOUT_V2` в Production и без изменения API, данных, агрегации, периода, карусели и поведения сворачивания BottomNavigation.
 
 ## Ветка
 

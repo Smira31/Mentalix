@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix — модель работы новых чатов и custom instructions
 
 Этот документ описывает, как распределять работу между несколькими диалогами. Он дополняет `mentalix-safe-release-workflow`, но не заменяет его.

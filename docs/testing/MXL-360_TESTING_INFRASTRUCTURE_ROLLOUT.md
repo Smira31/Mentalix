@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-360 — Testing infrastructure rollout
 
 Этот документ превращает post-MVP техдолг в независимые проверяемые slices. Он не объявляет ручные device gates пройденными.

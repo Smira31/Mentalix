@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix reference library
 
 This index is a source of design principles and review references, not a random moodboard and not a place to redistribute third-party assets. External brands and products are references only; Mentalix keeps its own voice, tokens and interaction model.

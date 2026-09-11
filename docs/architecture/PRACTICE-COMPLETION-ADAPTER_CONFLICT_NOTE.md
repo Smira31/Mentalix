@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Practice completion local-first storage adapter — conflict note
 
 **Статус:** discovery/conflict note, docs-only. Никакой код не добавлен и не изменён.

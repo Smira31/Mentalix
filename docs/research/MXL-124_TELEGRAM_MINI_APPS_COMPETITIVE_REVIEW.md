@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-124 — Competitive review Telegram Mini Apps
 
 **Статус:** research; не является разрешением на изменение продукта, API, данных, безопасности, paywall или политики AI.

@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-CONTENT-TONE-001 — research brief: персонализация тона контента
 
 ## Статус

@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix animation library
 
 This is the source of truth for approved motion patterns in Mentalix. Motion explains a state change or gives feedback; it must not create pressure, obscure focus or increase time-in-app for its own sake.

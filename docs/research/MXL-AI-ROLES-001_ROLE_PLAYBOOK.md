@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-AI-ROLES-001 — role contract and playbook draft
 
 ## Status

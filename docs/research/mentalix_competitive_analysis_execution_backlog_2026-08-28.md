@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix — execution backlog по конкурентному анализу
 
 **Основание:** согласованный отчёт `mentalix_psychological_practices_competitive_analysis_2026-08-28.md`.  

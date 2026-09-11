@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # Mentalix — финальный handoff для нового чистого диалога
 
 Дата сверки: **27.08.2026, Europe/Moscow**.

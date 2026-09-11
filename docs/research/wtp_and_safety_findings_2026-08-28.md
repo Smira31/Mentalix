@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # WTP and safety findings — 28 Aug 2026
 
 ## Willingness to pay

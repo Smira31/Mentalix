@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix — AI Rules v1
 
 Эти правила применяются к ChatGPT, Codex и другим AI-агентам, работающим с Mentalix.

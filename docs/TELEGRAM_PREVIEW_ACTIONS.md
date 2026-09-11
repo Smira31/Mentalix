@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix Preview и UI Lab: единый рабочий контур
 
 Этот документ — каноническая инструкция по локальному UI Lab, временному
