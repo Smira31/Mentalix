@@ -7,18 +7,19 @@ last_verified: 2026-09-10
 
 > Этот файл фиксирует только проверяемое текущее состояние frontend-репозитория и release/production-факты. Он **не является backlog**: активные задачи находятся в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md), а подробный scope — в связанных GitHub Issue/PR.
 
-**Последняя сверка:** 10.09.2026, после merge PR #574 (Phase 0 baseline snapshot). Baseline: [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md).
+**Последняя сверка:** 11.09.2026, read-only сверка GitHub после создания Issue #600. Это документационная Phase 0 сверка; она не является production release и не заменяет ручной Telegram/iPhone gate. Предыдущий baseline: [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md).
 
 ## Подтверждённые факты
 
 | Область | Подтверждённый факт | Доказательство |
 |---|---|---|
 | Frontend repository | `Smira31/Mentalix`, каноническая ветка `main` | [GitHub](https://github.com/Smira31/Mentalix) |
-| Текущий `main` | [`893ad72d7f73792135a4b0ab6bde06b79d02ede9`](https://github.com/Smira31/Mentalix/commit/893ad72d7f73792135a4b0ab6bde06b79d02ede9) — merge PR #574; baseline snapshot находится в `main` | [PR #574](https://github.com/Smira31/Mentalix/pull/574), [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md) |
+| Текущий `main` | [`b099dfe770b3660e389daea4222cb31fdf1756f0`](https://github.com/Smira31/Mentalix/commit/b099dfe770b3660e389daea4222cb31fdf1756f0) — актуальный `origin/main` на момент read-only сверки 11.09.2026 | [GitHub main](https://github.com/Smira31/Mentalix/tree/main) |
 | Baseline frontend до merge | `d4b908903d97be74e4ada645f843aafe024ecb91` | [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md) |
-| Backend `main` на момент baseline | `d6694f585ec318288da8c0df0326ac722b40a3f9` | [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md) |
+| Backend `main` на момент сверки | [`6b170e7`](https://github.com/Smira31/mentalix-bot/commit/6b170e7) — актуальный `main` приватного backend-репозитория на момент read-only сверки 11.09.2026 | [Backend main](https://github.com/Smira31/mentalix-bot/tree/main) |
 | Scope C / Progress V2 | **Смёржен в `main` и присутствует в текущем коде за флагом `VITE_PROGRESS_LAYOUT_V2`** | [PR #572](https://github.com/Smira31/Mentalix/pull/572), merge commit [`dfb6bed18b86a83d21478c141badee6d8dc74072`](https://github.com/Smira31/Mentalix/commit/dfb6bed18b86a83d21478c141badee6d8dc74072), `src/screens/Analytics.jsx` |
-| Active open PR | PR #574 закрыт merge; отдельный PR Фазы 1 будет создан после документационных изменений | GitHub |
+| Координационный трек | [Issue #600](https://github.com/Smira31/Mentalix/issues/600) — граф разработки и evaluator–optimizer; Phase 0 ограничена синхронизацией состояния и task passport | GitHub Issue #600 |
+| Open PRs | На момент сверки открыты PR #599, #593, #592, #589, #584 и #565; они не являются частью Issue #600 и не меняются этим PR | [Open PRs](https://github.com/Smira31/Mentalix/pulls) |
 | Production | **Production:** `main` → Vercel project `mentalix` → <https://mentalix.vercel.app> | `README.md`, Vercel URL; HTTP 200 на сверке 10.09.2026 |
 | Owner QA Preview | **Owner QA Preview:** Vercel project `mentalix-preview` → <https://mentalix-preview.vercel.app> | `README.md`, Vercel URL; HTTP 200 на сверке 10.09.2026 |
 | Render backend | `https://mentalix-bot.onrender.com`; `/api/health` вернул `{"status":"ok"}` | [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md); SHA работающего Render deployment не подтверждён |
@@ -44,6 +45,6 @@ Production URL и `/api/health` проверяются при каждой зн�
 
 ## References
 
-[1]: https://github.com/Smira31/Mentalix/commit/893ad72d7f73792135a4b0ab6bde06b79d02ede9 'Текущий main после PR #574'
+[1]: https://github.com/Smira31/Mentalix/commit/b099dfe770b3660e389daea4222cb31fdf1756f0 'Текущий frontend main на сверке 11.09.2026'
 [2]: https://mentalix.vercel.app 'Production: Vercel project mentalix'
 [3]: https://mentalix-preview.vercel.app 'Owner QA Preview: Vercel project mentalix-preview'

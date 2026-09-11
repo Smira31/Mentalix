@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 10.09.2026 (после owner PASS и merge PR #564). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog и координационных треков** на 11.09.2026 (после read-only сверки GitHub и создания Issue #600). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -17,6 +17,14 @@
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
 **Active work:** `MXL-PROGRESS-REDESIGN-001` / ветка `codex/mxl-progress-redesign-production`. Одобренная композиция переносится в `Analytics.jsx` поверх существующих cache/API/settings contracts; backend/API, навигация и продуктовая семантика метрик не меняются. Следующий gate — production Preview на exact SHA, owner iPhone/Telegram PASS и только затем squash merge.
+
+## Координационная очередь
+
+| Issue | ID / title | Статус и границы |
+|---|---|---|
+| [#600](https://github.com/Smira31/Mentalix/issues/600) | `MXL-AGENT-EVALUATOR-001` — граф разработки и evaluator–optimizer для Mentalix | Phase 0: синхронизация current state и task passport. Не меняет product logic, API, данные, secrets, production или deployment. Следующие этапы — отдельные малые PR. |
+
+Issue #600 не заменяет продуктовую очередь и не разрешает автоматически менять чувствительные области. Evaluator–optimizer должен начинаться с локального Markdown/JSON MVP, с ограниченным циклом до трёх итераций и обязательным `owner_review` для product logic, API, database, auth, privacy, AI personas, payments, age/legal и deployment.
 
 ## PARKED / NOT SCHEDULED
 
