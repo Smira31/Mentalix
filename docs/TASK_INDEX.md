@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog и координационных треков** на 11.09.2026 (после read-only сверки GitHub и создания Issue #600). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog и координационных треков** на 11.09.2026 (после read-only сверки GitHub и текущего `main` `b099dfe7`). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -17,6 +17,22 @@
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
 **Active work:** `MXL-PROGRESS-REDESIGN-001` / ветка `codex/mxl-progress-redesign-production`. Одобренная композиция переносится в `Analytics.jsx` поверх существующих cache/API/settings contracts; backend/API, навигация и продуктовая семантика метрик не меняются. Следующий gate — production Preview на exact SHA, owner iPhone/Telegram PASS и только затем squash merge.
+
+## Open PR inventory
+
+На сверке 11.09.2026 GitHub показывает следующие открытые PR. Этот список не объявляет PR готовыми и не заменяет их собственные review/QA gates.
+
+| PR | Краткая суть | Связь с очередью |
+|---:|---|---|
+| [#601](https://github.com/Smira31/Mentalix/pull/601) | Phase 0 и task passport для evaluator-трека. | Issue #600, координационный |
+| [#599](https://github.com/Smira31/Mentalix/pull/599) | Preview-only редизайн picker-а персон. | Отдельный UI Lab track |
+| [#593](https://github.com/Smira31/Mentalix/pull/593) | Разрешение Cloudflare Owner QA hostname. | Отдельный QA/CI track |
+| [#592](https://github.com/Smira31/Mentalix/pull/592) | Полный индекс и нормализация документации. | Отдельный docs track |
+| [#589](https://github.com/Smira31/Mentalix/pull/589) | A11y, contrast, tap targets и page titles для Settings/Series. | Отдельный UI/a11y track |
+| [#584](https://github.com/Smira31/Mentalix/pull/584) | Preview-only программы в Library. | Отдельный UI Lab track |
+| [#565](https://github.com/Smira31/Mentalix/pull/565) | MVP «Наставник»: тексты, результат и действия. | Отдельный product/UI track |
+
+PR [#589](https://github.com/Smira31/Mentalix/pull/589) остаётся открытым; он не считается частью merge inventory после baseline.
 
 ## Координационная очередь
 
