@@ -1,0 +1,111 @@
+name: Vercel Production Watchdog
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production-watchdog
+  cancel-in-progress: true
+
+jobs:
+  check-production:
+    name: Проверить синхронизацию Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+      VERCEL_DEPLOY_HOOK_URL: ${{ secrets.VERCEL_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Получить main для scheduled-запуска
+        if: github.event_name != 'push'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Проверить Production и при необходимости запустить redeploy
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          summary_file="$GITHUB_STEP_SUMMARY"
+          echo '## Vercel Production Watchdog' >> "$summary_file"
+          echo "Событие: \\`${GITHUB_EVENT_NAME}\\`" >> "$summary_file"
+
+          if [[ -z "$VERCEL_TOKEN" || -z "$VERCEL_PROJECT_ID" || -z "$VERCEL_DEPLOY_HOOK_URL" ]]; then
+            message='Секреты не настроены: нужны VERCEL_TOKEN, VERCEL_PROJECT_ID и VERCEL_DEPLOY_HOOK_URL. VERCEL_TEAM_ID опционален.'
+            echo "::notice title=Vercel Watchdog::$message"
+            echo "- ⚠️ $message" >> "$summary_file"
+            echo 'Проверка завершена без запроса к Vercel API.' >> "$summary_file"
+            exit 0
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" == 'push' ]]; then
+            main_sha="$GITHUB_SHA"
+          else
+            main_sha="$(git rev-parse origin/main 2>/dev/null || git rev-parse HEAD)"
+          fi
+
+          query="projectId=${VERCEL_PROJECT_ID}&target=production&limit=1&state=READY"
+          if [[ -n "$VERCEL_TEAM_ID" ]]; then
+            query+="&teamId=${VERCEL_TEAM_ID}"
+          fi
+
+          api_response="$(mktemp)"
+          api_error="$(mktemp)"
+          api_url="https://api.vercel.com/v6/deployments?${query}"
+          if ! curl --silent --show-error --fail \
+            --header "Authorization: Bearer ${VERCEL_TOKEN}" \
+            --header 'Accept: application/json' \
+            "$api_url" >"$api_response" 2>"$api_error"; then
+            error_text="$(tr '\n' ' ' <"$api_error" | sed 's/[[:space:]]\+/ /g')"
+            [[ -n "$error_text" ]] || error_text='Vercel API вернул ошибку без текста.'
+            echo "::error title=Vercel API::$error_text"
+            echo "- ❌ Ошибка запроса к Vercel API: $error_text" >> "$summary_file"
+            exit 1
+          fi
+
+          production_sha="$(jq -r '.deployments[0].meta.githubCommitSha // empty' "$api_response")"
+          if [[ -z "$production_sha" ]]; then
+            error_text="$(jq -r '.error.message // empty' "$api_response")"
+            [[ -n "$error_text" ]] || error_text='В ответе нет READY Production-деплоя с meta.githubCommitSha.'
+            echo "::error title=Vercel API::$error_text"
+            echo "- ❌ Ошибка запроса к Vercel API: $error_text" >> "$summary_file"
+            exit 1
+          fi
+
+          echo "main: $main_sha"
+          echo "последний READY Production: $production_sha"
+
+          if [[ "$main_sha" == "$production_sha" ]]; then
+            message="Production в актуальном состоянии для коммита $main_sha."
+            echo "::notice title=Vercel Watchdog::$message"
+            echo "- ✅ $message" >> "$summary_file"
+            exit 0
+          fi
+
+          hook_error="$(mktemp)"
+          if ! curl --silent --show-error --fail --request POST \
+            --header 'Accept: application/json' \
+            "$VERCEL_DEPLOY_HOOK_URL" > /dev/null 2>"$hook_error"; then
+            error_text="$(tr '\n' ' ' <"$hook_error" | sed 's/[[:space:]]\+/ /g')"
+            [[ -n "$error_text" ]] || error_text='Deploy Hook вернул ошибку без текста.'
+            echo "::error title=Vercel Deploy Hook::$error_text"
+            echo "- ❌ Ошибка запроса к Vercel Deploy Hook: $error_text" >> "$summary_file"
+            exit 1
+          fi
+
+          message="Production отстаёт от main: запущен redeploy для коммита $main_sha. Предыдущий Production-коммит: $production_sha."
+          echo "::notice title=Vercel Watchdog::$message"
+          echo "- 🔁 $message" >> "$summary_file"
+          echo 'Повторный redeploy в рамках этого прогона не выполняется.' >> "$summary_file"

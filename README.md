@@ -21,6 +21,7 @@ Telegram Mini App и методология, помогающая превращ
 | **Branch Deployment** | Временный Vercel deployment под конкретный branch/commit; это не канонический Owner QA Preview. |
 
 ## Документация
+Точка входа для агентов: [`docs/INDEX.md`](docs/INDEX.md).
 
 ### Актуальные нормативные документы
 

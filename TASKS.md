@@ -1,3 +1,8 @@
+---
+status: historical
+last_verified: 2026-09-10
+---
+
 # Mentalix — задачи
 
 ## Performance-фикс 1/2 — Onest/JetBrains Mono self-hosted (из аудита этой сессии)

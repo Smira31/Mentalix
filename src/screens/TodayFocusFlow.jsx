@@ -148,15 +148,14 @@ export default function TodayFocusFlow({
       </div>
 
       <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
+        <h1 className="sr-only">Разгрузить голову</h1>
         {step === 'input' && (
           <div className="w-full max-w-md mx-auto animate-fade-in">
             <span className="block font-label text-[11px] font-bold uppercase tracking-wider text-gold mb-2">
               Разгрузить голову
             </span>
 
-            <h2 className="font-display text-[22px] text-cream leading-tight">
-              Что тянет внимание?
-            </h2>
+            <h2 className="mx-type-flow-title text-cream">Что тянет внимание?</h2>
 
             <p className="text-[12px] text-muted mt-2 leading-relaxed">
               Выпиши все дела, которые конкурируют за сегодня — по одному на строку. Ничего не
@@ -187,7 +186,7 @@ export default function TodayFocusFlow({
               Разгрузить голову
             </span>
 
-            <h2 className="font-display text-[22px] text-cream leading-tight">Выбери одно</h2>
+            <h2 className="mx-type-flow-title text-cream">Выбери одно</h2>
 
             <p className="text-[12px] text-muted mt-2 leading-relaxed">
               Остальное никуда не денется — просто не сегодня.
@@ -210,7 +209,7 @@ export default function TodayFocusFlow({
               <button
                 type="button"
                 onClick={() => setStep('input')}
-                className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+                className="min-h-11 text-[12px] font-semibold text-muted -m-2 px-2 py-2 active:opacity-60"
               >
                 Изменить список
               </button>
@@ -224,7 +223,7 @@ export default function TodayFocusFlow({
               Разгрузить голову
             </span>
 
-            <h2 className="font-display text-[22px] text-cream leading-tight">Как начнёшь?</h2>
+            <h2 className="mx-type-flow-title text-cream">Как начнёшь?</h2>
 
             <p className="text-[12px] text-muted mt-2 leading-relaxed">
               Первый шаг, который займёт не больше пяти минут — необязательно, можно пропустить.
@@ -255,7 +254,7 @@ export default function TodayFocusFlow({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-[12px] font-semibold text-muted -m-2 p-2 active:opacity-60"
+                className="min-h-11 text-[12px] font-semibold text-muted -m-2 px-2 py-2 active:opacity-60"
               >
                 Пропустить
               </button>

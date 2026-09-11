@@ -250,7 +250,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   if (isLoading) {
     return (
       <div className="w-full max-w-md px-5" role="status" aria-live="polite">
-        <h2 className="font-display mx-type-page text-cream lowercase">практики.</h2>
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
         <p className="mt-6 text-[13px] leading-relaxed text-muted">Загружаю практики…</p>
       </div>
     )
@@ -259,7 +259,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   if (loadError) {
     return (
       <div className="w-full max-w-md px-5" role="alert">
-        <h2 className="font-display mx-type-page text-cream lowercase">практики.</h2>
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
         <p className="mt-6 text-[13px] leading-relaxed text-muted">
           Не удалось загрузить практики. Попробуйте ещё раз.
         </p>
@@ -280,7 +280,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
     <div className="mx-practices-catalog-shell w-full max-w-md px-5">
       <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
         <span aria-hidden="true" />
-        <h2 className="font-display mx-type-page text-cream lowercase">практики.</h2>
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
         <span aria-hidden="true" />
       </div>
       <PracticeCatalogV2

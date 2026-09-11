@@ -1,3 +1,8 @@
+---
+status: normative
+last_verified: 2026-09-10
+---
+
 # Mentalix — Product v1
 
 Статус: предлагаемый источник правды. Подготовлен по `main` на 29.07.2026.

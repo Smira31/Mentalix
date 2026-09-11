@@ -91,7 +91,7 @@ function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle }) {
   return (
     <div className="mx-library-catalog animate-fade-in">
       <header className="mx-library-catalog__header">
-        <h2 className="font-display mx-type-page text-cream lowercase">библиотека.</h2>
+        <h1 className="font-display mx-type-page text-cream lowercase">библиотека.</h1>
         <button type="button" onClick={() => setSearchOpen(true)} aria-label="Открыть поиск">
           <Search size={20} />
         </button>
@@ -124,13 +124,13 @@ function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle }) {
         <div className="mx-library-catalog__section-head">
           <div>
             <span>Новые материалы</span>
-            <h3 id="library-featured-title">На сейчас</h3>
+            <h2 className="mx-type-section" id="library-featured-title">На сейчас</h2>
           </div>
           {!loading && !error && <small>{featured.length}</small>}
         </div>
 
         {loading ? (
-          <div className="mx-library-catalog__status" aria-label="Загрузка библиотеки">
+          <div className="mx-library-catalog__status" role="status" aria-live="polite" aria-label="Загрузка библиотеки">
             <i />
             <i />
           </div>
@@ -184,7 +184,7 @@ function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle }) {
         <div className="mx-library-catalog__section-head">
           <div>
             <span>Всё в одном месте</span>
-            <h3 id="library-collections-title">Коллекции</h3>
+            <h2 className="mx-type-section" id="library-collections-title">Коллекции</h2>
           </div>
           <small>3</small>
         </div>

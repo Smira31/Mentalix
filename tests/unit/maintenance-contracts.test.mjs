@@ -304,7 +304,7 @@ test('MXL-007 публикует дневные strips и убирает ста�
 
   assert.match(today, /mx-today-week__calendar/)
   assert.match(today, /mx-today-week-day/)
-  assert.match(today, /Дни недели/)
+  assert.match(today, /role="group" aria-label="Календарь недели"/)
   assert.doesNotMatch(today, /mx-today-streaks/)
   assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
   assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
