@@ -1,7 +1,8 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 ---
+
 # MXL-010 web fallback evidence
 
 Локально на commit `29f156180941d5dc326f3e965124c42c2f6e1f3d` (`origin/main`) по адресу `http://127.0.0.1:5173/` приложение загрузилось без blank screen или runtime overlay. Видимый экран: `Вход в Mentalix`, подпись `Введи email — пришлём одноразовый код`, email input с placeholder `you@example.com` и кнопка `Получить код`.

@@ -1,7 +1,8 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 ---
+
 # MXL-98 — Mentalix visual card library
 
 The library stores approved card assets and their design metadata. Each record includes `card_id`, version, source asset path, semantic purpose, aspect ratio, light/dark treatment, alt text, safe-area notes, usage context and approval status.

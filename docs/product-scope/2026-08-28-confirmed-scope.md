@@ -1,7 +1,8 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 ---
+
 # Confirmed product scope — 2026-08-28
 
 The owner confirmed that the current governance, product philosophy, AI rules, Card System and UI reference catalog should be represented in `main`. The Card Lab remains explicitly Preview/UI-lab-only: it is available for visual review but does not change production product flows or backend contracts.

@@ -1,7 +1,8 @@
 ---
-status: working
+status: historical
 last_verified: 2026-09-11
 ---
+
 # Mentalix — финальный handoff перед закрытием диалога
 
 **Дата сверки:** 27.08.2026, Europe/Moscow.

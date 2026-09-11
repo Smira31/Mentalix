@@ -184,3 +184,41 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   сессии — это экономит перечитывание/передоказательство контекста в следующей сессии.
 - Sonnet — модель по умолчанию для этого репозитория; эскалация до Opus только
   на явную архитектурную неоднозначность, отмечай это в коммите/PR-описании.
+
+## Служебные и операционные Markdown-файлы
+
+Эти файлы относятся к настройкам репозитория, шаблонам, handoff/evidence и историческим журналам. Ссылки ниже дают им входящие текстовые ссылки; содержание каждого файла остаётся самостоятельным.
+
+- [`.claude/agents/reviewer.md`](.claude/agents/reviewer.md)
+- [`.claude/daily-canonical-brief.md`](.claude/daily-canonical-brief.md)
+- [`.github/ISSUE_TEMPLATE/bug.md`](.github/ISSUE_TEMPLATE/bug.md)
+- [`.github/ISSUE_TEMPLATE/documentation.md`](.github/ISSUE_TEMPLATE/documentation.md)
+- [`.github/ISSUE_TEMPLATE/feature.md`](.github/ISSUE_TEMPLATE/feature.md)
+- [`.github/ISSUE_TEMPLATE/idea.md`](.github/ISSUE_TEMPLATE/idea.md)
+- [`.github/ISSUE_TEMPLATE/research.md`](.github/ISSUE_TEMPLATE/research.md)
+- [`.github/ISSUE_TEMPLATE/ux.md`](.github/ISSUE_TEMPLATE/ux.md)
+- [`.github/RELEASE_TEMPLATE.md`](.github/RELEASE_TEMPLATE.md)
+- [`.github/copilot-instructions.md`](.github/copilot-instructions.md)
+- [`.github/pull_request_template.md`](.github/pull_request_template.md)
+- [`AI_RULES.md`](AI_RULES.md)
+- [`ARCHITECTURE.md`](ARCHITECTURE.md)
+- [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md)
+- [`CHANGES.md`](CHANGES.md)
+- [`CLAUDE.md`](CLAUDE.md)
+- [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md)
+- [`MENTALIX_SEMANTIC_MOTION.md`](MENTALIX_SEMANTIC_MOTION.md)
+- [`PRODUCT.md`](PRODUCT.md)
+- [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md)
+- [`PROJECT_STATE.md`](PROJECT_STATE.md)
+- [`README.md`](README.md)
+- [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md)
+- [`ROADMAP.md`](ROADMAP.md)
+- [`TASKS.md`](TASKS.md)
+- [`audit-artifacts/README.md`](audit-artifacts/README.md)
+- [`progress-fix-report.md`](progress-fix-report.md)
+- [`qa-evidence/mxl-010/automated-gate.md`](qa-evidence/mxl-010/automated-gate.md)
+- [`qa-evidence/mxl-010/preview-access.md`](qa-evidence/mxl-010/preview-access.md)
+- [`qa-evidence/mxl-010/release-gate-report.md`](qa-evidence/mxl-010/release-gate-report.md)
+- [`qa-evidence/mxl-010/report.md`](qa-evidence/mxl-010/report.md)
+- [`qa-evidence/mxl-010/ux-smoke-report.md`](qa-evidence/mxl-010/ux-smoke-report.md)
+- [`qa-evidence/mxl-010/web-fallback.md`](qa-evidence/mxl-010/web-fallback.md)

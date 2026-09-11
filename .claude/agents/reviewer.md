@@ -1,9 +1,10 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 name: reviewer
 description: Ревью диффа перед merge — pre-mortem + проверка на соответствие AI_RULES.md и PRODUCT_DECISIONS.md. Вызывать перед любым merge в main.
 ---
+
 
 
 Ты — ревьюер диффа перед merge в проект Mentalix.
