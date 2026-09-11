@@ -1,6 +1,6 @@
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 10.09.2026 (после owner PASS и merge PR #564). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Статус индекса: каноническое представление **активного product backlog и открытых PR** на 11.09.2026 (после независимой сверки `origin/main` `b099dfe7`). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
 
 ## Как читать индекс
 
@@ -10,13 +10,31 @@
 
 | Порядок | Issue                                                  | ID / title                | Примечание                                                                                   |
 | ------: | ------------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------- |
-|       1 | [#563](https://github.com/Smira31/Mentalix/issues/563) | MXL-PROGRESS-REDESIGN-001 | **В работе:** перенос одобренной композиции вкладки «Прогресс» на реальные production-данные |
+|       1 | [#563](https://github.com/Smira31/Mentalix/issues/563) | MXL-PROGRESS-REDESIGN-001 | Production promotion одобренной композиции «Прогресс» (часть уже в `main` через #566/#569/#571/#572; флаг `VITE_PROGRESS_LAYOUT_V2`) |
 
-**Последний completed gate (09.09.2026):** UI Lab задачи [#563](https://github.com/Smira31/Mentalix/issues/563) via [PR #564](https://github.com/Smira31/Mentalix/pull/564) — owner QA PASS, merge commit `a360c45dc1a77bb6603bba8b5aa5a9364836c870`; production promotion выполняется отдельным PR.
+**Последний completed gate (09.09.2026):** UI Lab задачи [#563](https://github.com/Smira31/Mentalix/issues/563) via [PR #564](https://github.com/Smira31/Mentalix/pull/564) — owner QA PASS, merge commit `a360c45dc1a77bb6603bba8b5aa5a9364836c870`.
 
 **Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
 
-**Active work:** `MXL-PROGRESS-REDESIGN-001` / ветка `codex/mxl-progress-redesign-production`. Одобренная композиция переносится в `Analytics.jsx` поверх существующих cache/API/settings contracts; backend/API, навигация и продуктовая семантика метрик не меняются. Следующий gate — production Preview на exact SHA, owner iPhone/Telegram PASS и только затем squash merge.
+## Open PR inventory (сверка 11.09.2026)
+
+Список открытых PR с GitHub на момент сверки. Не объявляет PR готовыми к merge и не заменяет их review/QA gates.
+
+| PR | Краткая суть | Примечание |
+|---:|---|---|
+| [#601](https://github.com/Smira31/Mentalix/pull/601) | docs: Phase 0 — синхронизация state для evaluator-трека (#600) | Координационный; пересекается по `PROJECT_STATE.md` с этой сверкой |
+| [#599](https://github.com/Smira31/Mentalix/pull/599) | feat(ui-lab): MXL-435 — редизайн пикера персон (Preview-only) | UI Lab; status `manual-gate` |
+| [#593](https://github.com/Smira31/Mentalix/pull/593) | fix(ui-lab): разрешить Cloudflare Owner QA hostname | Draft; base ≠ main |
+| [#592](https://github.com/Smira31/Mentalix/pull/592) | docs: полный индекс и нормализация документации | Docs-only |
+| [#589](https://github.com/Smira31/Mentalix/pull/589) | fix(a11y): faint contrast, tap targets (Settings/Series scope) | Открыт; батч #585–#588 уже в main |
+| [#584](https://github.com/Smira31/Mentalix/pull/584) | MXL-LIBRARY-PROGRAMS-UI-LAB-001 — Preview-only программы в Библиотеке | Draft; Vercel rate-limited |
+| [#565](https://github.com/Smira31/Mentalix/pull/565) | MVP «Наставник»: тексты + блок результата + действия | Product/UI; real-device gate не пройден |
+
+## Координационная очередь
+
+| Issue | ID / title | Статус и границы |
+|---|---|---|
+| [#600](https://github.com/Smira31/Mentalix/issues/600) | `MXL-AGENT-EVALUATOR-001` — граф разработки и evaluator–optimizer | Phase 0: docs/state sync (см. PR #601). Не меняет product logic, API, данные, secrets, production или deployment. |
 
 ## PARKED / NOT SCHEDULED
 
@@ -49,6 +67,7 @@
 | Backend/API     | Приватный `mentalix-bot`                                                                                                                              |
 | Telegram/iPhone | Основной manual gate                                                                                                                                  |
 | Preview         | Owner QA только `https://mentalix-preview.vercel.app`; feature QA проходит через promote exact deployment и Vercel-side alias provenance verification |
+| Светлая тема vs #590/#591 | **Открытый вопрос владельца.** В main смёржены изменения text size scale (#590) и dark theme colors + text size scale (#591). Влияние на light theme не решено. |
 
 ## Canonical Preview QA gate
 
