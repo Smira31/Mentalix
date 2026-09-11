@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-INSIGHTS-001 — Discovery note: descriptive pattern insights
 
 **Статус:** research/docs; не является разрешением на изменение product code, backend, API, платежей или продуктового решения. Ничего из этого документа не реализовано этой задачей.

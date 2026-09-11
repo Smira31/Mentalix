@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-298 — Willingness-to-pay experiment protocol
 
 This is a no-checkout fake-door/concept test. The free daily loop remains fully usable and the test does not collect payment credentials.

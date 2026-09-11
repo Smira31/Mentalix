@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # Mentalix — активный task index
 
 Статус индекса: каноническое представление **активного product backlog** на 10.09.2026 (после owner PASS и merge PR #564). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).

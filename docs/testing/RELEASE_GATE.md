@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Release Gate — Pre-Release Testing Sequence
 
 Последовательность автоматических и ручных проверок перед releasе.

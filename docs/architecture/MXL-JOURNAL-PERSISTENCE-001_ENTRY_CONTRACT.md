@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-JOURNAL-PERSISTENCE-001 / MXL-JOURNAL-HISTORY-001 — Entry contract discovery
 
 **Статус:** discovery/data-contract, docs-only. Backend implementation, schema-миграции и новые endpoints этой задачей не делаются — приватный backend-репозиторий (`mentalix-bot`) не подключён к этой сессии, и по правилу execution backlog («нельзя предполагать endpoint, retention или data model по frontend-коду») любая backend-схема ниже — **предложение для review**, не факт контракта.

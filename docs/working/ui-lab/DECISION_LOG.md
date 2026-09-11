@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # UI Lab — decision log
 
 Этот журнал отвечает на вопрос: **какое решение принято по результатам UI Lab и что из него следует**. Он не заменяет канонический реестр продуктовых решений в [`docs/core/PRODUCT_DECISIONS.md`](../../core/PRODUCT_DECISIONS.md), а хранит рабочую трассировку UI Lab.

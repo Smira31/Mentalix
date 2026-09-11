@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Performance Gate — Automated Performance Monitoring
 
 Спецификация автоматических проверок производительности Mentalix.

@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix — Baseline Snapshot
 
 > Фаза 0 (Freeze & Baseline). Только документирование фактического состояния; runtime-код, UI, дизайн и продуктовые документы не изменялись.

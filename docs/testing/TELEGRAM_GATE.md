@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Telegram/iPhone Gate — Manual Testing Checklist
 
 Обязательный ручной checklist для проверки Mentalix на реальном iPhone внутри Telegram Mini App.

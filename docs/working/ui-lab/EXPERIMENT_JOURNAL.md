@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # UI Lab — журнал экспериментов
 
 Журнал отвечает на вопрос: **что проверяли, в каком окружении и что наблюдали**. Продуктовые решения фиксируются отдельно в [`DECISION_LOG.md`](DECISION_LOG.md) и, если меняется политика продукта, в [`docs/core/PRODUCT_DECISIONS.md`](../../core/PRODUCT_DECISIONS.md).

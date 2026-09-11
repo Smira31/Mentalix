@@ -1,3 +1,8 @@
+---
+status: current
+last_verified: 2026-09-11
+---
+
 # Mentalix — AI handoff
 
 This file is the canonical handoff for Claude Code and other AI agents working in this repository. Read it before changing code, documentation, GitHub Issues or pull requests. The file describes project decisions and operational boundaries; the repository and GitHub remain the source of truth for actual code and current PR status. For product decisions specifically, `docs/core/PRODUCT_DECISIONS.md` is the source of truth — this file summarizes and links to it, and never states a decision on its own authority.

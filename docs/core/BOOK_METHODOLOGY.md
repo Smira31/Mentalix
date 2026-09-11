@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Конвейер обработки книг
 
 **Статус:** рабочий стандарт Mentalix Core v0.1.

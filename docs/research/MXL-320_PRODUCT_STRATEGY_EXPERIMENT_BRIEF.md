@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-320 — Product strategy experiment brief
 
 Этот brief превращает четыре гипотезы Mentalix в проверяемый порядок экспериментов. Он не утверждает, что какая-либо гипотеза доказана, и не меняет production UI, paywall, API или AI-персон.

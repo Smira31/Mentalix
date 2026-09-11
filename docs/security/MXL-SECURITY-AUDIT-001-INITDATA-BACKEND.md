@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-SECURITY-AUDIT-001 — backend initData
 
 ## Статус

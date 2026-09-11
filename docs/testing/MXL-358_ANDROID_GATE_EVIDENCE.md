@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-358 — Android gate evidence form
 
 Этот документ готовит ручной Android gate, но не подменяет реальное устройство. Проверка выполняется на свежем Android/Telegram build с synthetic account data.

@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # Mentalix Journal — Stoic-inspired product spec
 
 **Статус:** draft prototype scope, 26.08.2026  

@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # UX Gate — Automated Testing for Mentalix
 
 Спецификация локального UX gate на Playwright.

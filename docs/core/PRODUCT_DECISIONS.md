@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # Решения Mentalix Core
 
 Формат ADR-lite. Статус `предложено` означает, что решение подготовлено в draft PR и не считается принятым в `main` до merge.
