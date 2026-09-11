@@ -1,7 +1,8 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 ---
+
 # Mentalix visual card library
 
 This index is the source of truth for approved visual-card assets and their metadata. It does not invent final artwork: a record may describe an owned implementation pattern or remain `placeholder` until a real asset, provenance and accessibility review exist.

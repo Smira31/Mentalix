@@ -1,7 +1,8 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 ---
+
 # MXL-104 — Mentalix reference library
 
 The library is a source-of-truth index, not a random moodboard. Each reference record contains `reference_id`, title, source URL or owned asset path, capture date, category, approved use, rejected use, license/rights note, related token and reviewer status.

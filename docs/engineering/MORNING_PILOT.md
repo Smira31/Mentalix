@@ -1,7 +1,8 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 ---
+
 # Персональный утренний пилот
 
 Статус: реализовано, в `main` (PR #8, #9).

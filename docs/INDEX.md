@@ -21,16 +21,16 @@ last_verified: 2026-09-11
 
 | Файл | Статус | Зачем открывать |
 |---|---|---|
-| [`AGENT_ONBOARDING.md`](AGENT_ONBOARDING.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`AI_HANDOFF.md`](AI_HANDOFF.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`COORDINATION_PROTOCOL.md`](COORDINATION_PROTOCOL.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`AGENT_ONBOARDING.md`](AGENT_ONBOARDING.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`AI_HANDOFF.md`](AI_HANDOFF.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`COORDINATION_PROTOCOL.md`](COORDINATION_PROTOCOL.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`DOCUMENTATION_GUIDE.md`](DOCUMENTATION_GUIDE.md) | `historical` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`DOCUMENTATION_OPERATING_MODEL.md`](DOCUMENTATION_OPERATING_MODEL.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`INDEX.md`](INDEX.md) | `historical` / 2026-09-11 | Открыть для полного каталога документации и статусов. |
-| [`MENTALIX_CHAT_OPERATING_MODEL.md`](MENTALIX_CHAT_OPERATING_MODEL.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`INDEX.md`](INDEX.md) | `normative` / 2026-09-11 | Открыть для полного каталога документации и статусов. |
+| [`MENTALIX_CHAT_OPERATING_MODEL.md`](MENTALIX_CHAT_OPERATING_MODEL.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`TASK_INDEX.md`](TASK_INDEX.md) | `historical` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
 | [`TELEGRAM_PREVIEW_ACTIONS.md`](TELEGRAM_PREVIEW_ACTIONS.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`ui-audit-2026-08-13.md`](ui-audit-2026-08-13.md) | `working` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
+| [`ui-audit-2026-08-13.md`](ui-audit-2026-08-13.md) | `historical` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
 
 ### `architecture`
 
@@ -93,30 +93,30 @@ last_verified: 2026-09-11
 | Файл | Статус | Зачем открывать |
 |---|---|---|
 | [`MENTALIX_ANIMATION_LIBRARY.md`](design/MENTALIX_ANIMATION_LIBRARY.md) | `current` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
-| [`MENTALIX_REFERENCE_LIBRARY.md`](design/MENTALIX_REFERENCE_LIBRARY.md) | `working` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
-| [`MENTALIX_VISUAL_CARD_LIBRARY.md`](design/MENTALIX_VISUAL_CARD_LIBRARY.md) | `working` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
-| [`MXL-103_ANIMATION_LIBRARY.md`](design/MXL-103_ANIMATION_LIBRARY.md) | `working` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
-| [`MXL-104_REFERENCE_LIBRARY.md`](design/MXL-104_REFERENCE_LIBRARY.md) | `working` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
-| [`MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md`](design/MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md) | `working` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
-| [`MXL-98_VISUAL_CARD_LIBRARY.md`](design/MXL-98_VISUAL_CARD_LIBRARY.md) | `working` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
+| [`MENTALIX_REFERENCE_LIBRARY.md`](design/MENTALIX_REFERENCE_LIBRARY.md) | `current` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
+| [`MENTALIX_VISUAL_CARD_LIBRARY.md`](design/MENTALIX_VISUAL_CARD_LIBRARY.md) | `current` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
+| [`MXL-103_ANIMATION_LIBRARY.md`](design/MXL-103_ANIMATION_LIBRARY.md) | `current` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
+| [`MXL-104_REFERENCE_LIBRARY.md`](design/MXL-104_REFERENCE_LIBRARY.md) | `current` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
+| [`MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md`](design/MXL-290_TYPOGRAPHY_AUDIT_CONTRACT.md) | `current` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
+| [`MXL-98_VISUAL_CARD_LIBRARY.md`](design/MXL-98_VISUAL_CARD_LIBRARY.md) | `current` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
 | [`MXL-VISUAL-RULES-LIBRARY-001.md`](design/MXL-VISUAL-RULES-LIBRARY-001.md) | `historical` / 2026-09-11 | Открыть для UI/UX-решения и визуальных ограничений. |
 
 ### `engineering`
 
 | Файл | Статус | Зачем открывать |
 |---|---|---|
-| [`EVENING_REVIEW_PILOT.md`](engineering/EVENING_REVIEW_PILOT.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`JOURNAL.md`](engineering/JOURNAL.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`MORNING_PILOT.md`](engineering/MORNING_PILOT.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`EVENING_REVIEW_PILOT.md`](engineering/EVENING_REVIEW_PILOT.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`JOURNAL.md`](engineering/JOURNAL.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`MORNING_PILOT.md`](engineering/MORNING_PILOT.md) | `current` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
 
 ### `handoffs`
 
 | Файл | Статус | Зачем открывать |
 |---|---|---|
 | [`2026-08-27-final-clean-dialog-handoff.md`](handoffs/2026-08-27-final-clean-dialog-handoff.md) | `historical` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`2026-08-27-post-merge-handoff.md`](handoffs/2026-08-27-post-merge-handoff.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`2026-08-27-pr-triage.md`](handoffs/2026-08-27-pr-triage.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
-| [`2026-08-27-unified-dialog-handoff.md`](handoffs/2026-08-27-unified-dialog-handoff.md) | `working` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`2026-08-27-post-merge-handoff.md`](handoffs/2026-08-27-post-merge-handoff.md) | `historical` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`2026-08-27-pr-triage.md`](handoffs/2026-08-27-pr-triage.md) | `historical` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
+| [`2026-08-27-unified-dialog-handoff.md`](handoffs/2026-08-27-unified-dialog-handoff.md) | `historical` / 2026-09-11 | Открыть для контекста и деталей, относящихся к этому разделу. |
 
 ### `methodology`
 
@@ -193,7 +193,7 @@ last_verified: 2026-09-11
 
 | Файл | Статус | Зачем открывать |
 |---|---|---|
-| [`2026-08-28-confirmed-scope.md`](product-scope/2026-08-28-confirmed-scope.md) | `working` / 2026-09-11 | Открыть для продуктового решения, scope и ограничений. |
+| [`2026-08-28-confirmed-scope.md`](product-scope/2026-08-28-confirmed-scope.md) | `current` / 2026-09-11 | Открыть для продуктового решения, scope и ограничений. |
 
 ### `qa`
 

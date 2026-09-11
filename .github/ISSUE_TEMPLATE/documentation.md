@@ -1,11 +1,12 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 name: "📚 Документация"
 about: "Сообщить о пробеле или ошибке в документации Mentalix"
 title: "[Документация]: "
 labels: ["📚 Документация"]
 ---
+
 
 
 # 📚 Описание

@@ -1,11 +1,12 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 name: "🐞 Ошибка"
 about: "Сообщить об ошибке в Mentalix"
 title: "[Ошибка]: "
 labels: ["🐞 Ошибка"]
 ---
+
 
 
 # 🐞 Описание ошибки

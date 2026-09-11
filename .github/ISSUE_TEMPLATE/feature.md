@@ -1,11 +1,12 @@
 ---
-status: working
+status: current
 last_verified: 2026-09-11
 name: "✨ Новая функция"
 about: "Предложить новую функцию для Mentalix"
 title: "[Функция]: "
 labels: ["✨ Новая функция"]
 ---
+
 
 
 # ✨ Описание функции
