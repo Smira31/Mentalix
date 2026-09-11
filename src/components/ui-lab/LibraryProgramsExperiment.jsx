@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, BookOpen, Menu, Search, Sparkles } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
 import './LibraryProgramsExperiment.css'
 
@@ -105,25 +105,60 @@ const ARTICLES = [
   },
 ]
 
-const params = () => new URLSearchParams(window.location.search)
+const STORAGE_KEY = 'mentalix-library-guided-entry-v1'
+const TEMPLATE_ID = 'clarify-choice'
+const JOURNAL_STEPS = [
+  'Что именно вы сейчас пытаетесь решить?',
+  'Какие факты вы знаете точно?',
+  'Что для вас важнее всего в этом выборе?',
+  'Какой небольшой следующий шаг можно сделать сейчас?',
+]
+
+const emptyAnswers = () => JOURNAL_STEPS.map(() => '')
+
+function readSavedEntry() {
+  try {
+    const raw = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || 'null')
+    if (!raw || !Array.isArray(raw.answers) || raw.answers.length !== JOURNAL_STEPS.length)
+      return null
+    return {
+      answers: JOURNAL_STEPS.map((_, index) =>
+        typeof raw.answers[index] === 'string' ? raw.answers[index] : ''
+      ),
+      step: Math.max(0, Math.min(JOURNAL_STEPS.length - 1, Number(raw.step) || 0)),
+      status: raw.status === 'completed' ? 'completed' : 'draft',
+    }
+  } catch {
+    return null
+  }
+}
+
+function saveEntry(answers, step, status = 'draft') {
+  window.sessionStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({ answers: [...answers], step, status, updatedAt: new Date().toISOString() })
+  )
+}
+
+function params() {
+  return new URLSearchParams(window.location.search)
+}
+
+function urlFor(screen, values = {}) {
+  const next = new URLSearchParams({ ui_lab: 'library-programs', review: '1' })
+  if (screen !== 'landing') next.set('screen', screen)
+  Object.entries(values).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') next.set(key, String(value))
+  })
+  return `?${next}`
+}
 
 function SafeArea() {
   return (
     <div className="mx-library-programs__safe" aria-hidden="true">
       <span>MENTALIX</span>
-      <Menu size={17} />
+      <span />
     </div>
-  )
-}
-
-function TopBar({ onSearch }) {
-  return (
-    <header className="mx-library-programs__topbar">
-      <h2>библиотека.</h2>
-      <button type="button" aria-label="Открыть поиск" onClick={onSearch}>
-        <Search size={19} />
-      </button>
-    </header>
   )
 }
 
@@ -208,10 +243,12 @@ function BottomNav() {
   )
 }
 
-function Landing({ onOpenDetail, onRead, readIds }) {
+function Landing({ onOpenDetail, onRead, onOpenJournals, readIds }) {
   return (
     <div className="mx-library-programs__landing">
-      <TopBar onSearch={() => {}} />
+      <header className="mx-library-programs__topbar">
+        <h2>библиотека.</h2>
+      </header>
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
           <h3>Программы</h3>
@@ -222,19 +259,29 @@ function Landing({ onOpenDetail, onRead, readIds }) {
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
           <h3>Статьи</h3>
-          <BookOpen size={18} aria-hidden="true" />
         </div>
         <ArticleRail readIds={readIds} onRead={onRead} />
       </section>
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
-          <h3>Практики для размышления</h3>
+          <h3>Направленные записи</h3>
         </div>
-        <button type="button" className="mx-library-programs__journal-row">
-          <span>
-            <Sparkles size={18} />
-            <strong>Прояснить выбор</strong>
-            <small>4 вопроса, чтобы принять решение</small>
+        <button
+          type="button"
+          className="mx-library-programs__guided-entry"
+          onClick={onOpenJournals}
+        >
+          <span className="mx-library-programs__guided-entry-art" aria-hidden="true">
+            <SemanticGlyph kind="journal" animated={false} />
+          </span>
+          <span className="mx-library-programs__guided-entry-copy">
+            <strong>Направленные записи</strong>
+            <small>
+              Короткие письменные практики, которые помогают прояснить мысли и сохранить важное
+            </small>
+          </span>
+          <span className="mx-library-programs__guided-entry-arrow" aria-hidden="true">
+            →
           </span>
         </button>
       </section>
@@ -262,60 +309,6 @@ function Detail({ title, onBack }) {
   )
 }
 
-function ReaderSlide({ article, index, read, onFinish, scrollTop, onScroll }) {
-  const handleScroll = event => {
-    const element = event.currentTarget
-    onScroll(index, element.scrollTop)
-    if (!read && element.scrollTop + element.clientHeight >= element.scrollHeight - 24)
-      onFinish(article.id)
-  }
-  return (
-    <article
-      className="mx-library-programs__reader-slide"
-      onScroll={handleScroll}
-      data-article-id={article.id}
-    >
-      <div className="mx-library-programs__reader-art" aria-hidden="true">
-        <SemanticGlyph kind={article.kind} animated={false} />
-      </div>
-      <span className="mx-library-programs__eyebrow">{article.eyebrow}</span>
-      <h1>{article.title}</h1>
-      <small>{article.duration}</small>
-      <p className="mx-library-programs__reader-situation">{article.situation}</p>
-      <p className="mx-library-programs__reader-lead">{article.intro}</p>
-      <h2>Одна мысль</h2>
-      <p>{article.thought}</p>
-      <blockquote>{article.quote}</blockquote>
-      <h2>Из жизни</h2>
-      <p>{article.example}</p>
-      {article.blocks.map(([heading, text]) => (
-        <section key={heading}>
-          <h2>{heading}</h2>
-          <p>{text}</p>
-        </section>
-      ))}
-      <section className="mx-library-programs__reader-try">
-        <span className="mx-library-programs__eyebrow">Попробуй сегодня</span>
-        <p>{article.tryToday}</p>
-      </section>
-      <p className="mx-library-programs__reader-close">{article.closing}</p>
-      {read && <p className="mx-library-programs__reader-read">Прочитано</p>}
-      <div
-        className="mx-library-programs__reader-next"
-        aria-label={index < ARTICLES.length - 1 ? 'Следующая статья' : 'Вернуться к статьям'}
-      >
-        <span>{index < ARTICLES.length - 1 ? 'Следующая статья →' : 'Вернуться к статьям'}</span>
-        <strong>{index < ARTICLES.length - 1 ? ARTICLES[index + 1].title : 'Все статьи'}</strong>
-      </div>
-      <span
-        className="mx-library-programs__reader-restored"
-        data-restored-scroll={scrollTop}
-        aria-hidden="true"
-      />
-    </article>
-  )
-}
-
 function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }) {
   const startIndex = Math.max(
     0,
@@ -323,35 +316,18 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
   )
   const [index, setIndex] = useState(startIndex)
   const railRef = useRef(null)
-  const slideRefs = useRef([])
   const scrollPositions = useRef({})
   const activeArticle = ARTICLES[index]
-  const scrollTo = (next, behavior = 'smooth') => {
-    const safeIndex = Math.max(0, Math.min(ARTICLES.length - 1, next))
-    setIndex(safeIndex)
-    onChangeArticle(ARTICLES[safeIndex].id)
-    railRef.current?.children[safeIndex]?.scrollIntoView({
+  const scrollTo = (next, behavior = 'smooth') =>
+    railRef.current?.children[Math.max(0, Math.min(ARTICLES.length - 1, next))]?.scrollIntoView({
       behavior,
       block: 'nearest',
       inline: 'start',
     })
-  }
-  useEffect(() => {
-    const slide = slideRefs.current[startIndex]
-    slide?.scrollTo({
-      top: scrollPositions.current[ARTICLES[startIndex].id] || 0,
-      behavior: 'auto',
-    })
-    railRef.current?.children[startIndex]?.scrollIntoView({ block: 'nearest', inline: 'start' })
-  }, [startIndex])
-  useEffect(() => {
-    const slide = slideRefs.current[index]
-    slide?.scrollTo({ top: scrollPositions.current[activeArticle.id] || 0, behavior: 'auto' })
-  }, [index, activeArticle.id])
   return (
     <div className="mx-library-programs__reader">
-      <header className="mx-library-programs__reader-head">
-        <button type="button" className="mx-library-programs__reader-back" onClick={onBack}>
+      <header className="mx-library-programs__reader-header">
+        <button type="button" onClick={onBack} aria-label="← Библиотека">
           ← Библиотека
         </button>
         <span>
@@ -374,36 +350,215 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
         }}
       >
         {ARTICLES.map((article, articleIndex) => (
-          <div
-            className="mx-library-programs__reader-page"
-            key={article.id}
-            ref={element => {
-              slideRefs.current[articleIndex] = element
-            }}
-          >
-            <ReaderSlide
-              article={article}
-              index={articleIndex}
-              read={readIds.has(article.id)}
-              onFinish={onFinish}
-              scrollTop={scrollPositions.current[article.id] || 0}
-              onScroll={(slideIndex, top) => {
-                scrollPositions.current[ARTICLES[slideIndex].id] = top
+          <div className="mx-library-programs__reader-page" key={article.id}>
+            <article
+              className="mx-library-programs__reader-slide"
+              onScroll={event => {
+                const element = event.currentTarget
+                scrollPositions.current[article.id] = element.scrollTop
+                if (
+                  !readIds.has(article.id) &&
+                  element.scrollTop + element.clientHeight >= element.scrollHeight - 24
+                )
+                  onFinish(article.id)
               }}
-            />
+              data-article-id={article.id}
+            >
+              <div className="mx-library-programs__reader-art" aria-hidden="true">
+                <SemanticGlyph kind={article.kind} animated={false} />
+              </div>
+              <span className="mx-library-programs__eyebrow">{article.eyebrow}</span>
+              <h1>{article.title}</h1>
+              <small>{article.duration}</small>
+              <p className="mx-library-programs__reader-situation">{article.situation}</p>
+              <p className="mx-library-programs__reader-lead">{article.intro}</p>
+              <h2>Одна мысль</h2>
+              <p>{article.thought}</p>
+              <blockquote>{article.quote}</blockquote>
+              <h2>Из жизни</h2>
+              <p>{article.example}</p>
+              {article.blocks.map(([heading, text]) => (
+                <section key={heading}>
+                  <h2>{heading}</h2>
+                  <p>{text}</p>
+                </section>
+              ))}
+              <section className="mx-library-programs__reader-try">
+                <span className="mx-library-programs__eyebrow">Попробуй сегодня</span>
+                <p>{article.tryToday}</p>
+              </section>
+              <p className="mx-library-programs__reader-close">{article.closing}</p>
+              {readIds.has(article.id) && (
+                <p className="mx-library-programs__reader-read">Прочитано</p>
+              )}
+              <button
+                type="button"
+                className="mx-library-programs__reader-next"
+                onClick={() => (index < ARTICLES.length - 1 ? scrollTo(index + 1) : onBack)}
+              >
+                <span>
+                  {index < ARTICLES.length - 1 ? 'Следующая статья →' : 'Вернуться к статьям'}
+                </span>
+                <strong>
+                  {index < ARTICLES.length - 1 ? ARTICLES[index + 1].title : 'Все статьи'}
+                </strong>
+              </button>
+            </article>
           </div>
         ))}
       </div>
-      <div className="mx-library-programs__reader-swipe" aria-hidden="true">
+      <p className="mx-library-programs__reader-swipe" aria-hidden="true">
         Свайп в сторону, чтобы открыть следующую статью
-      </div>
+      </p>
+    </div>
+  )
+}
+
+function GuidedCatalog({ saved, onBack, onOpenTemplate }) {
+  const status =
+    saved?.status === 'completed'
+      ? 'Завершено'
+      : saved
+        ? `Продолжить · ${Math.min(4, saved.step + 1)} из 4`
+        : 'Начать'
+  return (
+    <div className="mx-library-programs__guided-catalog">
       <button
         type="button"
-        className="mx-library-programs__reader-hidden-next"
-        onClick={() => scrollTo(index + 1)}
-        disabled={index === ARTICLES.length - 1}
+        className="mx-library-programs__back"
+        onClick={onBack}
+        aria-label="Вернуться в библиотеку"
       >
-        Следующая статья
+        <ArrowLeft size={19} /> <span>Библиотека</span>
+      </button>
+      <span className="mx-library-programs__eyebrow">Коллекция</span>
+      <h1>Направленные записи</h1>
+      <p className="mx-library-programs__guided-intro">
+        Короткие вопросы, чтобы остановиться, увидеть главное и сохранить следующий шаг.
+      </p>
+      <button
+        type="button"
+        className="mx-library-programs__guided-template"
+        onClick={onOpenTemplate}
+      >
+        <span className="mx-library-programs__guided-template-art" aria-hidden="true">
+          <SemanticGlyph kind="journal" animated={false} />
+        </span>
+        <span>
+          <strong>Прояснить выбор</strong>
+          <small>4 вопроса, чтобы принять решение</small>
+          <small>5–7 минут · {status}</small>
+        </span>
+      </button>
+    </div>
+  )
+}
+
+function FlowHeader({ onBack, step, label }) {
+  return (
+    <header className="mx-library-programs__flow-header">
+      <button type="button" onClick={onBack} aria-label="Назад">
+        <ArrowLeft size={19} />
+      </button>
+      <span>{label}</span>
+      <strong>{step}</strong>
+    </header>
+  )
+}
+
+function GuidedJournal({
+  saved,
+  stage,
+  stepIndex,
+  answers,
+  onBack,
+  onStart,
+  onChange,
+  onContinue,
+  onReview,
+  onSave,
+  onReturn,
+}) {
+  if (stage === 'intro')
+    return (
+      <div className="mx-library-programs__guided-flow mx-library-programs__guided-intro-screen">
+        <FlowHeader onBack={onBack} step="" label="Направленные записи" />
+        <div className="mx-library-programs__guided-flow-center">
+          <span className="mx-library-programs__guided-flow-art" aria-hidden="true">
+            <SemanticGlyph kind="journal" animated={false} />
+          </span>
+          <span className="mx-library-programs__eyebrow">Прояснить выбор</span>
+          <h1>Разложите ситуацию по частям и увидьте следующий шаг</h1>
+          <p>4 вопроса · 5–7 минут</p>
+          <button type="button" className="mx-library-programs__primary" onClick={onStart}>
+            Начать
+          </button>
+        </div>
+      </div>
+    )
+  if (stage === 'review')
+    return (
+      <div className="mx-library-programs__guided-flow mx-library-programs__guided-review">
+        <FlowHeader onBack={onBack} step="Проверка" label="Прояснить выбор" />
+        <span className="mx-library-programs__eyebrow">Ваши ответы</span>
+        <h1>Остановитесь на том, что стало яснее</h1>
+        <div className="mx-library-programs__answer-list">
+          {JOURNAL_STEPS.map((question, index) => (
+            <section key={question}>
+              <small>{index + 1} из 4</small>
+              <h2>{question}</h2>
+              <p>{answers[index]}</p>
+            </section>
+          ))}
+        </div>
+        <button type="button" className="mx-library-programs__primary" onClick={onSave}>
+          Сохранить запись
+        </button>
+      </div>
+    )
+  return (
+    <div className="mx-library-programs__guided-flow mx-library-programs__guided-writing">
+      <FlowHeader onBack={onBack} step={`${stepIndex + 1} из 4`} label="Прояснить выбор" />
+      <span className="mx-library-programs__eyebrow">Вопрос {stepIndex + 1}</span>
+      <h1>{JOURNAL_STEPS[stepIndex]}</h1>
+      <p className="mx-library-programs__guided-hint">
+        Ответьте так, как получается сейчас. Правильной формулировки не нужно.
+      </p>
+      <textarea
+        autoFocus
+        value={answers[stepIndex]}
+        onChange={event => onChange(event.target.value)}
+        placeholder="Начните писать…"
+        aria-label={JOURNAL_STEPS[stepIndex]}
+      />
+      <div className="mx-library-programs__guided-actions">
+        <button type="button" className="mx-library-programs__secondary" onClick={onBack}>
+          Назад
+        </button>
+        <button
+          type="button"
+          className="mx-library-programs__primary"
+          disabled={!answers[stepIndex].trim()}
+          onClick={stepIndex === 3 ? onReview : onContinue}
+        >
+          {stepIndex === 3 ? 'Проверить ответы' : 'Продолжить'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function Completion({ onReturn }) {
+  return (
+    <div className="mx-library-programs__guided-flow mx-library-programs__guided-completion">
+      <span className="mx-library-programs__guided-completion-mark" aria-hidden="true">
+        ✓
+      </span>
+      <span className="mx-library-programs__eyebrow">Прояснить выбор</span>
+      <h1>Запись сохранена</h1>
+      <p>Ответы остались в этом preview-сеансе. К ним можно вернуться из каталога.</p>
+      <button type="button" className="mx-library-programs__primary" onClick={onReturn}>
+        Вернуться в библиотеку
       </button>
     </div>
   )
@@ -411,9 +566,12 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
 
 export default function LibraryProgramsExperiment() {
   const query = params()
-  const review = query.get('review') === '1'
   const initialScreen = query.get('screen') || 'landing'
   const [screen, setScreen] = useState(initialScreen)
+  const [stage, setStage] = useState(query.get('stage') || 'intro')
+  const [stepIndex, setStepIndex] = useState(
+    Math.max(0, Math.min(3, Number(query.get('step')) || 0))
+  )
   const [readIds, setReadIds] = useState(() => {
     try {
       return new Set(JSON.parse(window.sessionStorage.getItem('mentalix-library-read') || '[]'))
@@ -421,62 +579,160 @@ export default function LibraryProgramsExperiment() {
       return new Set()
     }
   })
+  const [saved, setSaved] = useState(readSavedEntry)
+  const [answers, setAnswers] = useState(() => readSavedEntry()?.answers || emptyAnswers())
   const [articleId, setArticleId] = useState(query.get('article') || ARTICLES[0].id)
-  const requestedTitle = query.get('program')
-  const detailTitle = [...PROGRAMS.map(([title]) => title), 'Самодисциплина'].includes(
-    requestedTitle
-  )
-    ? requestedTitle
-    : 'Самодисциплина'
+  const [detailTitle, setDetailTitle] = useState(query.get('program') || 'Самодисциплина')
+  const review = query.get('review') === '1'
+
   useEffect(() => {
     window.sessionStorage.setItem('mentalix-library-read', JSON.stringify([...readIds]))
   }, [readIds])
-  const setReviewScreen = (next, value) => {
-    setScreen(next)
-    const nextQuery = new URLSearchParams({ ui_lab: 'library-programs', review: '1' })
-    if (next === 'detail') {
-      nextQuery.set('screen', 'detail')
-      nextQuery.set('program', value)
+  useEffect(() => {
+    const handlePopState = () => {
+      const next = params()
+      setScreen(next.get('screen') || 'landing')
+      setStage(next.get('stage') || 'intro')
+      setStepIndex(Math.max(0, Math.min(3, Number(next.get('step')) || 0)))
+      setArticleId(next.get('article') || ARTICLES[0].id)
+      setDetailTitle(next.get('program') || 'Самодисциплина')
     }
-    if (next === 'article') {
-      nextQuery.set('screen', 'article')
-      nextQuery.set('article', value)
-    }
-    window.history.replaceState(null, '', `?${nextQuery}`)
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  function navigate(nextScreen, values = {}, replace = false) {
+    const href = urlFor(nextScreen, values)
+    if (replace) window.history.replaceState({ mentalixLibrary: true }, '', href)
+    else window.history.pushState({ mentalixLibrary: true }, '', href)
+    setScreen(nextScreen)
+    if (values.stage) setStage(values.stage)
+    if (values.step !== undefined) setStepIndex(Number(values.step))
+    if (values.article) setArticleId(values.article)
+    if (values.program) setDetailTitle(values.program)
   }
-  const openArticle = id => {
-    setArticleId(id)
-    setReviewScreen('article', id)
+  function back(fallback = 'landing') {
+    if (window.history.state?.mentalixLibrary) window.history.back()
+    else navigate(fallback, {}, true)
   }
-  const finishArticle = id =>
+  function openJournal() {
+    const next = saved?.status === 'completed' ? 'review' : saved ? 'writing' : 'intro'
+    if (next === 'review') navigate('review', { template: TEMPLATE_ID })
+    else navigate('journal', { template: TEMPLATE_ID, stage: next, step: saved?.step || 0 })
+  }
+  function updateAnswer(value) {
+    const next = [...answers]
+    next[stepIndex] = value
+    setAnswers(next)
+    saveEntry(next, stepIndex)
+    setSaved({ answers: next, step: stepIndex, status: 'draft' })
+  }
+  function startJournal() {
+    const firstIncomplete = answers.findIndex(answer => !answer.trim())
+    const nextStep = firstIncomplete === -1 ? 3 : firstIncomplete
+    setStepIndex(nextStep)
+    navigate('journal', { template: TEMPLATE_ID, stage: 'writing', step: nextStep })
+  }
+  function continueJournal() {
+    const nextStep = Math.min(3, stepIndex + 1)
+    saveEntry(answers, nextStep)
+    setSaved({ answers, step: nextStep, status: 'draft' })
+    setStepIndex(nextStep)
+    navigate('journal', { template: TEMPLATE_ID, stage: 'writing', step: nextStep })
+  }
+  function reviewJournal() {
+    saveEntry(answers, 3)
+    setSaved({ answers, step: 3, status: 'draft' })
+    navigate('review', { template: TEMPLATE_ID })
+  }
+  function saveJournal() {
+    saveEntry(answers, 3, 'completed')
+    setSaved({ answers, step: 3, status: 'completed' })
+    navigate('completion', { template: TEMPLATE_ID })
+  }
+  function returnToLibrary() {
+    navigate('landing', {}, true)
+  }
+  function finishArticle(id) {
     setReadIds(current => (current.has(id) ? current : new Set(current).add(id)))
-  const product =
-    screen === 'detail' ? (
-      <Detail title={detailTitle} onBack={() => setReviewScreen('landing')} />
-    ) : screen === 'article' ? (
+  }
+
+  let product
+  if (screen === 'detail') product = <Detail title={detailTitle} onBack={() => back()} />
+  else if (screen === 'article')
+    product = (
       <ArticleReader
         articleId={articleId}
-        onBack={() => setReviewScreen('landing')}
+        onBack={() => back()}
         readIds={readIds}
         onFinish={finishArticle}
         onChangeArticle={id => {
           setArticleId(id)
-          const nextQuery = new URLSearchParams({
-            ui_lab: 'library-programs',
-            review: '1',
-            screen: 'article',
-            article: id,
-          })
-          window.history.replaceState(null, '', `?${nextQuery}`)
+          navigate('article', { article: id }, true)
         }}
       />
-    ) : (
-      <Landing
-        readIds={readIds}
-        onRead={openArticle}
-        onOpenDetail={title => setReviewScreen('detail', title)}
+    )
+  else if (screen === 'catalog')
+    product = (
+      <GuidedCatalog
+        saved={saved}
+        onBack={() => navigate('landing', {}, true)}
+        onOpenTemplate={openJournal}
       />
     )
+  else if (screen === 'journal')
+    product = (
+      <GuidedJournal
+        saved={saved}
+        stage={stage}
+        stepIndex={stepIndex}
+        answers={answers}
+        onBack={() =>
+          stage === 'writing'
+            ? stepIndex > 0
+              ? navigate(
+                  'journal',
+                  { template: TEMPLATE_ID, stage: 'writing', step: stepIndex - 1 },
+                  true
+                )
+              : navigate('catalog', {}, true)
+            : back('catalog')
+        }
+        onStart={startJournal}
+        onChange={updateAnswer}
+        onContinue={continueJournal}
+        onReview={reviewJournal}
+      />
+    )
+  else if (screen === 'review')
+    product = (
+      <GuidedJournal
+        saved={saved}
+        stage="review"
+        stepIndex={3}
+        answers={answers}
+        onBack={() => back('journal')}
+        onSave={saveJournal}
+      />
+    )
+  else if (screen === 'completion') product = <Completion onReturn={returnToLibrary} />
+  else
+    product = (
+      <Landing
+        readIds={readIds}
+        onRead={id => {
+          setArticleId(id)
+          navigate('article', { article: id })
+        }}
+        onOpenDetail={title => {
+          setDetailTitle(title)
+          navigate('detail', { program: title })
+        }}
+        onOpenJournals={() => navigate('catalog')}
+      />
+    )
+
+  const hideNav = ['journal', 'review', 'completion'].includes(screen)
   return (
     <section
       className={`mx-library-programs${review ? ' mx-library-programs--review' : ''}`}
@@ -489,15 +745,15 @@ export default function LibraryProgramsExperiment() {
           </span>
           <h2 id="library-programs-title">Библиотека: программы</h2>
           <p>
-            Канонический mobile-концепт: сначала понятная ценность, затем спокойное действие. Оплата
-            и сохранение состояния не подключены.
+            Канонический mobile-концепт. Состояние направленных записей сохраняется только в
+            preview-сеансе.
           </p>
         </div>
       )}
       <div className="mx-library-programs__device">
         {review ? null : <SafeArea />}
         <div className="mx-library-programs__scroll">{product}</div>
-        {screen !== 'article' && <BottomNav />}
+        {!hideNav && screen !== 'article' && <BottomNav />}
       </div>
     </section>
   )
