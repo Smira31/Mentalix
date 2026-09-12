@@ -1,0 +1,138 @@
+.mx-semantic-glyph {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mx-semantic-glyph path,
+.mx-semantic-glyph circle {
+  vector-effect: non-scaling-stroke;
+}
+
+.mx-semantic-glyph__guide,
+.mx-semantic-glyph__network,
+.mx-semantic-glyph__route,
+.mx-semantic-glyph__exercise,
+.mx-semantic-glyph__breath-upper,
+.mx-semantic-glyph__breath-lower,
+.mx-semantic-glyph__breath-axis,
+.mx-semantic-glyph__focus-beams,
+.mx-semantic-glyph__focus-axis,
+.mx-semantic-glyph__focus-plane,
+.mx-semantic-glyph__contour,
+.mx-semantic-glyph__prayer,
+.mx-semantic-glyph__shower-arch,
+.mx-semantic-glyph__streams,
+.mx-semantic-glyph__purpose-arcs,
+.mx-semantic-glyph__glass,
+.mx-semantic-glyph__decision,
+.mx-semantic-glyph__cigarette,
+.mx-semantic-glyph__smoke,
+.mx-semantic-glyph__compass-arcs,
+.mx-semantic-glyph__cardinal-marks,
+.mx-semantic-glyph__needle,
+.mx-semantic-glyph__pivot,
+.mx-semantic-glyph__voice-left,
+.mx-semantic-glyph__voice-right,
+.mx-semantic-glyph__dialog-line,
+.mx-semantic-glyph__trail-guide,
+.mx-semantic-glyph__trail-marks,
+.mx-semantic-glyph__anxiety-knot,
+.mx-semantic-glyph__calm-line,
+.mx-semantic-glyph__release-knot,
+.mx-semantic-glyph__release-line,
+.mx-semantic-glyph__finish-attempts,
+.mx-semantic-glyph__finish-loop,
+.mx-semantic-glyph__sleep-upper,
+.mx-semantic-glyph__sleep-lower,
+.mx-semantic-glyph__sleep-drop,
+.mx-semantic-glyph__ritual-marks,
+.mx-semantic-glyph__brackets,
+.mx-semantic-glyph__template-axis,
+.mx-semantic-glyph__path-wall,
+.mx-semantic-glyph__boundary,
+.mx-semantic-glyph__threshold {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mx-semantic-glyph__journal-pages {
+  fill: none;
+  stroke: rgb(var(--c-line));
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mx-semantic-glyph__journal-line {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+  opacity: 0.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mx-semantic-glyph__ritual-orbits ellipse {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.mx-semantic-glyph__ritual-orbit-main {
+  stroke: rgb(var(--c-line));
+  stroke-width: 1.8;
+}
+
+.mx-semantic-glyph__ritual-orbit-layer--outer ellipse:not(.mx-semantic-glyph__ritual-orbit-main) {
+  stroke-width: 0.7;
+}
+
+.mx-semantic-glyph__ritual-orbit-layer--middle ellipse {
+  stroke-width: 0.65;
+}
+
+.mx-semantic-glyph__ritual-orbit-layer--cross ellipse {
+  stroke-width: 0.55;
+}
+
+.mx-semantic-glyph__ritual-orbit-faint {
+  opacity: 0.28;
+}
+
+.mx-semantic-glyph__ritual-orbit-soft {
+  opacity: 0.42;
+}
+
+.mx-semantic-glyph__ritual-orbit-dashed {
+  stroke-dasharray: 2 5;
+  opacity: 0.5;
+}
+
+.mx-semantic-glyph__ritual-orbit-faint:first-child {
+  opacity: 0.18;
+}
+
+.mx-semantic-glyph__ritual-nodes circle {
+  fill: rgb(var(--c-line));
+}
+
+.mx-semantic-glyph__ritual-nodes circle:nth-child(2),
+.mx-semantic-glyph__ritual-nodes circle:nth-child(5) {
+  fill: rgb(var(--c-gold));
+}
+
+.mx-semantic-glyph__focus-ring {
+  fill: none;
+  stroke: rgb(var(--c-line-secondary));
+  stroke-width: 1;
+}
+
+/* PROBE_END_MARKER */
