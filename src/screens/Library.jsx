@@ -1,12 +1,127 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Search, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Search, X } from 'lucide-react'
 
 import SemanticGlyph, { semanticKindForArticle } from '../components/SemanticGlyph'
+import ArticleCover from '../components/ArticleCover'
+import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
 import { platform } from '../platform'
 import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
 import './Library.css'
+
+const LIBRARY_V2_ENV_ENABLED = import.meta.env.VITE_LIBRARY_V2 === 'true'
+const LIBRARY_V2_QA_ENABLED =
+  typeof window !== 'undefined' &&
+  window.location.hostname === 'mentalix-owner-qa.pages.dev' &&
+  new URLSearchParams(window.location.search).get('library_v2') === '1'
+const LIBRARY_V2_ENABLED = LIBRARY_V2_ENV_ENABLED || LIBRARY_V2_QA_ENABLED
+
+function LibraryV2ArticleCard({ article, onOpen }) {
+  return (
+    <button type="button" className="mx-library-v2__article-card" onClick={() => onOpen(article)}>
+      <div className="mx-library-v2__article-card-main">
+        <ArticleCover article={article} className="w-[112px] h-[132px] shrink-0" />
+        <div className="mx-library-v2__article-card-copy">
+          {article.tag && <span className="mx-library-v2__article-tag">{article.tag}</span>}
+          <strong>{article.title}</strong>
+          <p>{article.excerpt}</p>
+        </div>
+      </div>
+      <div className="mx-library-v2__article-card-meta">
+        <span>
+          Читать статью <ArrowRight size={14} strokeWidth={2} />
+        </span>
+        <small>{article.minutes} мин</small>
+      </div>
+    </button>
+  )
+}
+
+function LibraryV2ArticleLanding({ onOpen }) {
+  const article = ARTICLES[0]
+  return (
+    <button type="button" className="mx-library-programs__featured" onClick={onOpen}>
+      <div className="mx-library-programs__featured-art">
+        <ArticleCover article={article} className="h-full w-full" />
+      </div>
+      <div className="mx-library-programs__featured-copy">
+        <strong>{article.title}</strong>
+        <p>{article.excerpt}</p>
+      </div>
+    </button>
+  )
+}
+
+function LibraryV2ArticlesList({ onBack, onOpen }) {
+  return (
+    <div className="mx-library-v2__articles-list animate-fade-in">
+      <button
+        type="button"
+        className="mx-library-collection-back"
+        onClick={onBack}
+        aria-label="Назад"
+      >
+        <ArrowLeft size={19} />
+      </button>
+      <header className="mx-library-collection-header">
+        <span>Коллекция</span>
+        <h2>Статьи.</h2>
+        <p>Короткие материалы, которые помогают перейти от мысли к действию.</p>
+      </header>
+      <div className="mx-library-v2__article-list-items">
+        {ARTICLES.map(article => (
+          <LibraryV2ArticleCard key={article.id} article={article} onOpen={onOpen} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function LibraryV2ArticleReader({ article, onBack }) {
+  const paragraphs = String(article.body || '')
+    .split(/\n\s*\n/)
+    .filter(Boolean)
+  return (
+    <div className="mx-library-v2__reader animate-fade-in">
+      <button
+        type="button"
+        className="mx-library-collection-back"
+        onClick={onBack}
+        aria-label="Назад"
+      >
+        <ArrowLeft size={19} />
+      </button>
+      <ArticleCover article={article} variant="banner" className="mb-5" />
+      <h1>{article.title}</h1>
+      <div className="mx-library-v2__reader-meta">
+        <span>{article.minutes} мин чтения</span>
+        <span>·</span>
+        <span>{article.tag}</span>
+      </div>
+      <div className="mx-library-v2__reader-body">
+        {paragraphs.map((paragraph, index) => (
+          <p key={index}>{paragraph}</p>
+        ))}
+      </div>
+      {article.source && (
+        <a
+          href={article.source}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mx-library-v2__reader-source"
+        >
+          Первоисточник <ArrowRight size={14} />
+        </a>
+      )}
+    </div>
+  )
+}
+
+function LibraryV2Articles({ article, onBack, onOpen }) {
+  if (article) return <LibraryV2ArticleReader article={article} onBack={onBack} />
+  return <LibraryV2ArticlesList onBack={onBack} onOpen={onOpen} />
+}
 
 function CollectionCard({ title, description, kind, soon = false, onClick }) {
   return (
@@ -32,7 +147,7 @@ function CollectionCard({ title, description, kind, soon = false, onClick }) {
   )
 }
 
-function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle }) {
+function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle, onOpenV2Articles }) {
   const [initialArticlesState] = useState(() => {
     const memoryArticles = peekArticles()
     if (memoryArticles !== null) return { data: memoryArticles, shouldRefresh: false }
@@ -120,17 +235,33 @@ function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle }) {
         </label>
       )}
 
+      {LIBRARY_V2_ENABLED && (
+        <section className="mx-library-v2__section" aria-labelledby="library-v2-articles-title">
+          <div className="mx-library-v2__section-title">
+            <h2 id="library-v2-articles-title">Статьи</h2>
+          </div>
+          <LibraryV2ArticleLanding onOpen={onOpenV2Articles} />
+        </section>
+      )}
+
       <section className="mx-library-catalog__section" aria-labelledby="library-featured-title">
         <div className="mx-library-catalog__section-head">
           <div>
             <span>Новые материалы</span>
-            <h2 className="mx-type-section" id="library-featured-title">На сейчас</h2>
+            <h2 className="mx-type-section" id="library-featured-title">
+              На сейчас
+            </h2>
           </div>
           {!loading && !error && <small>{featured.length}</small>}
         </div>
 
         {loading ? (
-          <div className="mx-library-catalog__status" role="status" aria-live="polite" aria-label="Загрузка библиотеки">
+          <div
+            className="mx-library-catalog__status"
+            role="status"
+            aria-live="polite"
+            aria-label="Загрузка библиотеки"
+          >
             <i />
             <i />
           </div>
@@ -184,17 +315,21 @@ function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle }) {
         <div className="mx-library-catalog__section-head">
           <div>
             <span>Всё в одном месте</span>
-            <h2 className="mx-type-section" id="library-collections-title">Коллекции</h2>
+            <h2 className="mx-type-section" id="library-collections-title">
+              Коллекции
+            </h2>
           </div>
           <small>3</small>
         </div>
         <div className="mx-library-catalog__collections">
-          <CollectionCard
-            title="Статьи"
-            description="Короткие материалы, которые помогают перейти к действию."
-            kind="purpose"
-            onClick={onOpenArticles}
-          />
+          {!LIBRARY_V2_ENABLED && (
+            <CollectionCard
+              title="Статьи"
+              description="Короткие материалы, которые помогают перейти к действию."
+              kind="purpose"
+              onClick={onOpenArticles}
+            />
+          )}
           <CollectionCard
             title="Направленные записи"
             description="Готовые вопросы и личные шаблоны для рефлексии."
@@ -216,6 +351,22 @@ function LibraryHome({ onOpenArticles, onOpenJournals, onOpenArticle }) {
 export default function Library({ user }) {
   const [screen, setScreen] = useState('home')
   const [initialArticle, setInitialArticle] = useState(null)
+  const [libraryV2Article, setLibraryV2Article] = useState(null)
+
+  if (screen === 'library-v2-articles' && LIBRARY_V2_ENABLED) {
+    return (
+      <div className="w-full max-w-md px-5">
+        <LibraryV2Articles
+          article={libraryV2Article}
+          onBack={() => {
+            setLibraryV2Article(null)
+            setScreen('home')
+          }}
+          onOpen={article => setLibraryV2Article(article)}
+        />
+      </div>
+    )
+  }
 
   if (screen === 'articles') {
     return (
@@ -247,6 +398,10 @@ export default function Library({ user }) {
         onOpenArticle={article => {
           setInitialArticle(article)
           setScreen('articles')
+        }}
+        onOpenV2Articles={() => {
+          setLibraryV2Article(null)
+          setScreen('library-v2-articles')
         }}
       />
     </div>
