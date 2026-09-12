@@ -60,6 +60,13 @@ async function assertLanding(page, width) {
   if (!rail || !card || card.x + card.width >= rail.x + rail.width) throw new Error(`${width}: next program card is not visibly peeking`)
   const guided = await page.locator('.mx-library-programs__guided-entry').boundingBox()
   if (!guided || guided.height < 44) throw new Error(`${width}: guided entry tap target is too small`)
+  const featuredType = await page.locator('.mx-library-programs__featured-copy strong').evaluate(element => {
+    const style = getComputedStyle(element)
+    return { family: style.fontFamily, size: Number.parseFloat(style.fontSize), weight: style.fontWeight, lines: element.getClientRects().length }
+  })
+  if (!featuredType.family.includes('-apple-system') || featuredType.size < 20 || featuredType.size > 22.5 || featuredType.weight < 500) throw new Error(`${width}: featured typography is ${JSON.stringify(featuredType)}`)
+  if (width > 360 && featuredType.lines !== 1) throw new Error(`${width}: featured title wraps unexpectedly`)
+  if (width <= 360 && featuredType.lines > 2) throw new Error(`${width}: featured title wraps beyond two lines`)
 }
 
 async function saveScreenshot(page, name) {
@@ -99,14 +106,47 @@ async function run() {
       }
       const flowBack = page.locator('.mx-library-programs__flow-header button[aria-label="Назад"]')
       if (!(await flowBack.count())) throw new Error(`${viewport.width}: journal Back button missing`)
-      await flowBack.first().click()
+      await flowBack.first().click({ force: true })
       if (viewport.width === 390) {
         await assertUrl(page, 'journal', { stage: 'writing', step: 0 })
         if (!(await flowBack.count())) throw new Error(`${viewport.width}: journal Back button missing at first step`)
-        await flowBack.first().click()
+        await flowBack.first().click({ force: true })
       }
       await assertUrl(page, 'catalog')
       await page.getByRole('button', { name: 'Вернуться в библиотеку' }).click()
+      await assertUrl(page)
+      await page.locator('.mx-library-programs__article').filter({ hasText: 'Как начать с одного шага' }).click()
+      await assertUrl(page, 'article', { article: 'one-step' })
+      await saveScreenshot(page, `${viewport.width}x${viewport.height}-article-start`)
+      if (viewport.width === 390 && !(await page.getByText('Смахните влево, чтобы открыть следующую статью', { exact: true }).isVisible())) throw new Error('one-time swipe hint is missing')
+      const firstSlide = page.locator('.mx-library-programs__reader-slide').first()
+      await firstSlide.evaluate(element => { element.scrollTop = element.scrollHeight })
+      await firstSlide.dispatchEvent('scroll')
+      await page.waitForTimeout(80)
+      await assertUrl(page, 'article', { article: 'one-step' })
+      await saveScreenshot(page, `${viewport.width}x${viewport.height}-article-end`)
+      const firstNext = firstSlide.getByRole('button', { name: /Следующая статья/ })
+      if (!(await firstNext.isVisible())) throw new Error(`${viewport.width}: next article card missing`)
+      await firstNext.click()
+      await page.waitForTimeout(180)
+      await assertUrl(page, 'article', { article: 'inner-support' })
+      if (viewport.width === 390) {
+        await saveScreenshot(page, '390x844-article-second')
+        const secondSlide = page.locator('.mx-library-programs__reader-slide').nth(1)
+        await secondSlide.evaluate(element => { element.scrollTop = element.scrollHeight })
+        await secondSlide.dispatchEvent('scroll')
+        await page.waitForTimeout(80)
+        await page.locator('.mx-library-programs__reader-slide').nth(1).getByRole('button', { name: /Следующая статья/ }).click()
+        await page.waitForTimeout(180)
+        await assertUrl(page, 'article', { article: 'evening-pause' })
+        const thirdSlide = page.locator('.mx-library-programs__reader-slide').nth(2)
+        await thirdSlide.evaluate(element => { element.scrollTop = element.scrollHeight })
+        await thirdSlide.dispatchEvent('scroll')
+        await page.waitForTimeout(80)
+        if (!(await thirdSlide.getByRole('button', { name: /Вернуться к статьям/ }).isVisible())) throw new Error('third article return card missing')
+        await saveScreenshot(page, '390x844-article-third-end')
+      }
+      await page.getByRole('button', { name: '← Библиотека' }).click()
       await assertUrl(page)
       await context.close()
       console.log(`PASS landing/catalog/journal/back ${viewport.width}x${viewport.height}`)

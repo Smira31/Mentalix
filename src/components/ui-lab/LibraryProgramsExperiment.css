@@ -842,3 +842,91 @@
     transition: none !important;
   }
 }
+
+/* Stage A refinement: iOS-like featured type and Telegram-safe article reader. */
+.mx-library-programs__featured-copy strong {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  max-width: none;
+  font-size: clamp(20px, 5.6vw, 22px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+.mx-library-programs__featured-copy p {
+  max-width: 230px;
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.35;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.mx-library-programs__reader {
+  top: -62px;
+  height: min(calc(100% + 62px), var(--tg-viewport-height, 100dvh));
+  margin-bottom: calc(-88px - var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+.mx-library-programs__reader-header {
+  padding-top: max(0px, var(--tg-content-safe-area-inset-top, var(--app-safe-top, 0px)));
+  min-height: max(62px, calc(62px + var(--tg-content-safe-area-inset-top, 0px)));
+}
+.mx-library-programs__reader-slide {
+  height: calc(
+    var(--tg-viewport-height, 100dvh) - 62px - var(--tg-content-safe-area-inset-top, 0px)
+  );
+  padding-bottom: max(
+    64px,
+    calc(44px + var(--tg-content-safe-area-inset-bottom, 0px)),
+    calc(44px + var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)))
+  );
+}
+.mx-library-programs__reader-hint {
+  position: absolute;
+  z-index: 6;
+  right: 18px;
+  bottom: max(22px, calc(22px + var(--tg-content-safe-area-inset-bottom, 0px)));
+  left: 18px;
+  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid rgb(var(--c-gold) / 0.5);
+  border-radius: 18px;
+  background: rgb(var(--c-card2) / 0.98);
+  color: rgb(var(--c-text));
+  font-size: 13px;
+  line-height: 1.3;
+  text-align: center;
+  box-shadow: 0 12px 28px rgb(0 0 0 / 0.28);
+  pointer-events: none;
+  animation: mx-library-reader-hint-in 180ms ease-out;
+}
+.mx-library-programs__reader-swipe {
+  display: none;
+}
+.mx-library-programs--telegram .mx-library-programs__back,
+.mx-library-programs--telegram .mx-library-programs__flow-header button,
+.mx-library-programs--telegram .mx-library-programs__reader-header button {
+  display: none;
+}
+@keyframes mx-library-reader-hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (max-width: 360px) {
+  .mx-library-programs__featured-copy strong {
+    max-width: 100%;
+    white-space: normal;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mx-library-programs__reader-hint {
+    animation: none;
+  }
+}

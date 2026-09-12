@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
+import { useBackButton } from '../../platform/telegram.hooks'
 import './LibraryProgramsExperiment.css'
 
 const PROGRAMS = [
@@ -107,6 +108,7 @@ const ARTICLES = [
 
 const STORAGE_KEY = 'mentalix-library-guided-entry-v1'
 const TEMPLATE_ID = 'clarify-choice'
+const SWIPE_HINT_STORAGE_KEY = 'mentalix-library-reader-swipe-hint-v1'
 const JOURNAL_STEPS = [
   'Что именно вы сейчас пытаетесь решить?',
   'Какие факты вы знаете точно?',
@@ -315,8 +317,16 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
     ARTICLES.findIndex(article => article.id === articleId)
   )
   const [index, setIndex] = useState(startIndex)
+  const [showSwipeHint, setShowSwipeHint] = useState(() => {
+    try {
+      return window.sessionStorage.getItem(SWIPE_HINT_STORAGE_KEY) !== 'seen'
+    } catch {
+      return true
+    }
+  })
   const railRef = useRef(null)
   const scrollPositions = useRef({})
+  const gestureStart = useRef(null)
   const activeArticle = ARTICLES[index]
   const scrollTo = (next, behavior = 'smooth') =>
     railRef.current?.children[Math.max(0, Math.min(ARTICLES.length - 1, next))]?.scrollIntoView({
@@ -324,6 +334,29 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
       block: 'nearest',
       inline: 'start',
     })
+  useEffect(() => {
+    if (!showSwipeHint) return undefined
+    const timer = window.setTimeout(() => setShowSwipeHint(false), 2600)
+    return () => window.clearTimeout(timer)
+  }, [showSwipeHint])
+  function dismissSwipeHint() {
+    setShowSwipeHint(false)
+    try {
+      window.sessionStorage.setItem(SWIPE_HINT_STORAGE_KEY, 'seen')
+    } catch {
+      // Preview-only hint remains best-effort when storage is unavailable.
+    }
+  }
+  function handleRailPointerDown(event) {
+    gestureStart.current = { x: event.clientX, y: event.clientY }
+  }
+  function handleRailPointerUp(event) {
+    const start = gestureStart.current
+    gestureStart.current = null
+    if (!start) return
+    if (Math.abs(event.clientX - start.x) > 32 || Math.abs(event.clientY - start.y) > 32)
+      dismissSwipeHint()
+  }
   return (
     <div className="mx-library-programs__reader">
       <header className="mx-library-programs__reader-header">
@@ -341,9 +374,15 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
       <div
         className="mx-library-programs__reader-rail"
         ref={railRef}
+        onPointerDown={handleRailPointerDown}
+        onPointerUp={handleRailPointerUp}
         onScroll={event => {
-          const next = Math.round(event.currentTarget.scrollLeft / event.currentTarget.clientWidth)
+          const rail = event.currentTarget
+          const next = Math.round(rail.scrollLeft / rail.clientWidth)
+          const distance = Math.abs(rail.scrollLeft - index * rail.clientWidth)
+          if (distance < rail.clientWidth * 0.28) return
           if (next !== index && ARTICLES[next]) {
+            dismissSwipeHint()
             setIndex(next)
             onChangeArticle(ARTICLES[next].id)
           }
@@ -407,9 +446,11 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
           </div>
         ))}
       </div>
-      <p className="mx-library-programs__reader-swipe" aria-hidden="true">
-        Свайп в сторону, чтобы открыть следующую статью
-      </p>
+      {showSwipeHint && (
+        <div className="mx-library-programs__reader-hint" role="status">
+          Смахните влево, чтобы открыть следующую статью
+        </div>
+      )}
     </div>
   )
 }
@@ -657,6 +698,12 @@ export default function LibraryProgramsExperiment() {
     setReadIds(current => (current.has(id) ? current : new Set(current).add(id)))
   }
 
+  const telegramAvailable = Boolean(
+    typeof window !== 'undefined' && window.Telegram?.WebApp?.initData
+  )
+  const nestedScreen = screen !== 'landing'
+  useBackButton(() => back(), telegramAvailable && nestedScreen)
+
   let product
   if (screen === 'detail') product = <Detail title={detailTitle} onBack={() => back()} />
   else if (screen === 'article')
@@ -735,7 +782,7 @@ export default function LibraryProgramsExperiment() {
   const hideNav = ['journal', 'review', 'completion'].includes(screen)
   return (
     <section
-      className={`mx-library-programs${review ? ' mx-library-programs--review' : ''}`}
+      className={`mx-library-programs${review ? ' mx-library-programs--review' : ''}${telegramAvailable ? ' mx-library-programs--telegram' : ''}`}
       aria-labelledby="library-programs-title"
     >
       {!review && (
