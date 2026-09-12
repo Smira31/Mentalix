@@ -75,7 +75,7 @@ function Row({
         divider ? 'border-b border-cream/[0.06]' : ''
       } active:bg-cream/[0.04] transition-colors`}
     >
-      {Icon && <Icon size={18} className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
+      {Icon && <Icon size={18} aria-hidden="true" className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
       <div className="flex-1 min-w-0">
         <div className={`font-body text-[14px] ${danger ? 'text-red-400' : 'text-cream'}`}>
           {title}
@@ -84,7 +84,7 @@ function Row({
           <div className="font-body text-[12px] text-muted mt-0.5 truncate">{subtitle}</div>
         )}
       </div>
-      {right ?? <ChevronRight size={18} className="text-muted shrink-0" />}
+      {right ?? <ChevronRight size={18} aria-hidden="true" className="text-muted shrink-0" />}
     </Component>
   )
 }
@@ -501,7 +501,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
             Мы получили подтверждение удаления аккаунта Mentalix и связанных серверных данных.
             Локальный незавершённый check-in на этом устройстве также очищен.
           </p>
-          <p className="mt-3 text-[12px] leading-relaxed text-faint">
+          <p className="mt-3 text-[12px] leading-relaxed text-muted">
             В Telegram закрой мини-приложение. Если захочешь начать с чистого листа, сначала отправь
             боту команду /start, а затем открой приложение снова.
           </p>
@@ -633,7 +633,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
                     setQuietStart(value)
                     saveQuietHours(true, value, quietEnd)
                   }}
-                  className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream"
+                  className="mt-1 min-h-11 w-full rounded-xl bg-emerald-light px-2 text-cream"
                 >
                   {Array.from({ length: 24 }, (_, h) => (
                     <option key={h} value={h}>
@@ -651,7 +651,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
                     setQuietEnd(value)
                     saveQuietHours(true, quietStart, value)
                   }}
-                  className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-cream"
+                  className="mt-1 min-h-11 w-full rounded-xl bg-emerald-light px-2 text-cream"
                 >
                   {Array.from({ length: 24 }, (_, h) => (
                     <option key={h} value={h}>
@@ -762,7 +762,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
               <button
                 type="button"
                 onClick={loadWritingGoalProgress}
-                className="min-h-9 rounded-full border border-cream/15 px-3 text-[12px] font-semibold text-gold"
+                className="min-h-11 rounded-full border border-cream/15 px-3 text-[12px] font-semibold text-gold"
               >
                 Повторить
               </button>
@@ -887,11 +887,16 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
                   aria-label={label}
                   aria-pressed={accent === id}
                   onClick={() => onAccentChange(id)}
-                  className={`w-8 h-8 rounded-full shrink-0 transition-transform ${
-                    accent === id ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep' : ''
-                  }`}
-                  style={{ background: hex }}
-                />
+                  className="h-11 w-11 shrink-0 flex items-center justify-center"
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`w-8 h-8 rounded-full transition-transform ${
+                      accent === id ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep' : ''
+                    }`}
+                    style={{ background: hex }}
+                  />
+                </button>
               ))}
             </div>
           }
@@ -971,7 +976,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
           {accountEraseError}
         </p>
       )}
-      <p className="-mt-3 mb-8 w-full px-1 text-[12px] leading-relaxed text-faint">
+      <p className="-mt-3 mb-8 w-full px-1 text-[12px] leading-relaxed text-muted">
         Незавершённый draft остаётся только на текущем устройстве и не является cloud backup.
         Блокировка приложения — локальный экранный барьер, а не шифрование данных. Подробности о
         хранении и ограничениях синхронизации — в разделе «Политика и данные».
@@ -1034,7 +1039,7 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       <SectionLabel>Обновление приложения</SectionLabel>
       <Card>
         <div className="w-full flex items-center gap-3 px-4 py-4 border-b border-cream/[0.06]">
-          <RefreshCw size={18} className="text-gold shrink-0" />
+          <RefreshCw size={18} aria-hidden="true" className="text-gold shrink-0" />
           <span className="flex-1 font-body text-[14px] text-cream">Текущая версия</span>
           <span className="text-muted text-[13px] font-body">v1.0.0</span>
         </div>
