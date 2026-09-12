@@ -931,6 +931,97 @@
   }
 }
 
+/* Owner QA correction pass: preserve the accepted grammar while restoring hierarchy. */
+.mx-library-programs--review .mx-library-programs__scroll {
+  padding-bottom: var(--app-content-bottom);
+}
+.mx-library-programs--review .mx-library-programs__featured {
+  width: calc(100% + 4px);
+  margin-inline: -2px;
+  aspect-ratio: 1.46;
+  grid-template-columns: 34% 1fr;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy {
+  padding: 20px 18px;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy p {
+  max-width: none;
+  display: block;
+  max-height: calc(3 * 1.35em);
+  overflow: hidden;
+}
+.mx-library-programs--review .mx-library-programs__small-program {
+  flex-basis: 48%;
+  grid-template-rows: 48% 1fr;
+  gap: 0;
+  height: 188px;
+}
+.mx-library-programs--review .mx-library-programs__article {
+  flex-basis: 76%;
+  grid-template-rows: 48% 1fr auto;
+  gap: 0;
+  height: 220px;
+}
+.mx-library-programs--review .mx-library-programs__article-art,
+.mx-library-programs--review .mx-library-programs__small-art {
+  height: auto;
+}
+.mx-library-programs--review .mx-library-programs__article strong,
+.mx-library-programs--review .mx-library-programs__small-program strong {
+  align-self: center;
+}
+.mx-library-programs--review .mx-library-programs__reader {
+  top: 0;
+  height: 100%;
+  margin: 0;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  overflow: hidden;
+  background: rgb(var(--c-bg));
+}
+.mx-library-programs--review .mx-library-programs__reader-header {
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-border));
+  border-radius: 0;
+  background: rgb(var(--c-card2));
+}
+.mx-library-programs--review .mx-library-programs__reader-rail {
+  min-height: 0;
+}
+.mx-library-programs--review .mx-library-programs__reader-slide {
+  height: calc(var(--tg-viewport-height, 100dvh) - 52px);
+  padding-top: 0;
+  padding-bottom: var(--app-content-bottom);
+}
+.mx-library-programs--review .mx-library-programs__reader-art {
+  width: calc(100% + 48px);
+  height: 132px;
+  margin: 0 -24px 18px;
+  border: 0;
+  border-radius: 0 0 24px 24px;
+  background: rgb(var(--c-card2));
+}
+.mx-library-programs--review .mx-library-programs__reader-progress {
+  height: 2px;
+}
+.mx-library-programs--review .mx-library-programs__guided-flow-center {
+  min-height: 0;
+  padding-top: clamp(48px, 8vh, 80px);
+  align-content: start;
+}
+@media (max-width: 360px) {
+  .mx-library-programs--review .mx-library-programs__featured {
+    aspect-ratio: auto;
+    height: 248px;
+  }
+  .mx-library-programs--review .mx-library-programs__small-program {
+    height: 176px;
+  }
+  .mx-library-programs--review .mx-library-programs__article {
+    height: 208px;
+  }
+}
+
 /* Correction pass: dense iPhone rhythm without duplicating Telegram safe-area. */
 .mx-library-programs__scroll {
   padding-bottom: calc(88px + var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
@@ -1047,5 +1138,55 @@
   }
   .mx-library-programs--review .mx-library-programs__featured-copy p {
     font-size: 13px;
+  }
+}
+
+/* Final owner-QA contract: these rules intentionally come after legacy refinement blocks. */
+.mx-library-programs--review .mx-library-programs__scroll {
+  padding-bottom: var(--app-content-bottom);
+}
+.mx-library-programs--review .mx-library-programs__reader {
+  top: 0;
+  height: 100%;
+  margin: 0;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  overflow: hidden;
+  background: rgb(var(--c-bg));
+}
+.mx-library-programs--review .mx-library-programs__reader-header {
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-border));
+  border-radius: 0;
+  background: rgb(var(--c-card2));
+}
+.mx-library-programs--review .mx-library-programs__reader-slide {
+  height: calc(var(--tg-viewport-height, 100dvh) - 52px);
+  padding-top: 0;
+  padding-bottom: var(--app-content-bottom);
+}
+.mx-library-programs--review .mx-library-programs__reader-art {
+  width: calc(100% + 48px);
+  height: 132px;
+  margin: 0 -24px 18px;
+  border: 0;
+  border-radius: 0 0 24px 24px;
+  background: rgb(var(--c-card2));
+}
+.mx-library-programs--review .mx-library-programs__guided-flow-center {
+  min-height: 0;
+  padding-top: clamp(48px, 8vh, 80px);
+  align-content: start;
+}
+@media (max-width: 360px) {
+  .mx-library-programs--review .mx-library-programs__featured {
+    aspect-ratio: auto;
+    height: 248px;
+  }
+  .mx-library-programs--review .mx-library-programs__small-program {
+    height: 176px;
+  }
+  .mx-library-programs--review .mx-library-programs__article {
+    height: 208px;
   }
 }

@@ -369,7 +369,7 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
         </span>
         <span
           className="mx-library-programs__reader-progress"
-          style={{ '--reader-progress': `${readIds.has(activeArticle.id) ? 100 : 0}%` }}
+          style={{ '--reader-progress': `${((index + 1) / ARTICLES.length) * 100}%` }}
         />
       </header>
       <div
