@@ -1,0 +1,160 @@
+name: Cloudflare Owner QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Полный 40-символьный SHA коммита для Owner QA
+        required: true
+        type: string
+
+concurrency:
+  group: cloudflare-owner-qa
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 20
+  CLOUDFLARE_PROJECT: mentalix-owner-qa
+  CLOUDFLARE_PRODUCTION_BRANCH: manual
+  OWNER_QA_STABLE_URL: https://mentalix-owner-qa.pages.dev
+
+jobs:
+  deploy:
+    name: Сборка и Direct Upload Owner QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: cloudflare-owner-qa
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.commit_sha }}
+          fetch-depth: 0
+
+      - name: Проверить exact SHA
+        shell: bash
+        env:
+          REQUESTED_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo 'commit_sha должен быть полным 40-символьным SHA.' >&2
+            exit 1
+          fi
+          actual_sha="$(git rev-parse HEAD)"
+          if [[ "$actual_sha" != "$REQUESTED_SHA" ]]; then
+            echo "Checkout SHA $actual_sha не совпадает с requested SHA $REQUESTED_SHA." >&2
+            exit 1
+          fi
+          printf 'Проверен exact SHA: %s\n' "$actual_sha"
+
+      - name: Настроить Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Выполнить обязательную core-проверку
+        run: npm run check:core
+
+      - name: Собрать приложение
+        run: npm run build
+
+      - name: Проверить dist и добавить provenance
+        shell: bash
+        env:
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          printf '{"commit_sha":"%s"}\n' "$COMMIT_SHA" > dist/qa-build.json
+          cat > dist/_headers <<'EOF'
+          /*
+            X-Robots-Tag: noindex, nofollow
+          EOF
+          test "$(jq -r '.commit_sha' dist/qa-build.json)" = "$COMMIT_SHA"
+          grep -Fqx '  X-Robots-Tag: noindex, nofollow' dist/_headers
+
+      - name: Выполнить Cloudflare Pages Direct Upload
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=${{ env.CLOUDFLARE_PROJECT }} --branch=${{ env.CLOUDFLARE_PRODUCTION_BRANCH }}
+
+      - name: Проверить stable и immutable provenance
+        shell: bash
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          deployments_json="$(mktemp)"
+          curl --fail --silent --show-error \
+            --retry 5 --retry-delay 2 \
+            --header "Authorization: Bearer $API_TOKEN" \
+            --header 'Content-Type: application/json' \
+            "https://api.cloudflare.com/client/v4/accounts/$ACCOUNT_ID/pages/projects/${CLOUDFLARE_PROJECT}/deployments?per_page=20" \
+            > "$deployments_json"
+          test "$(jq -r '.success' "$deployments_json")" = true
+          deployment_json="$(jq -c '[.result[] | select(.environment == "production")] | sort_by(.created_on) | reverse | .[]' "$deployments_json" | while read -r candidate; do
+            immutable_url="$(jq -r '.url // empty' <<< "$candidate")"
+            if [[ -n "$immutable_url" ]] && curl --fail --silent --show-error --retry 5 --retry-delay 2 "$immutable_url/qa-build.json" | jq -e --arg sha "$COMMIT_SHA" '.commit_sha == $sha' >/dev/null; then
+              printf '%s' "$candidate"
+              break
+            fi
+          done)"
+          test -n "$deployment_json"
+          deployment_id="$(jq -r '.id' <<< "$deployment_json")"
+          immutable_url="$(jq -r '.url' <<< "$deployment_json")"
+          stable_url="${OWNER_QA_STABLE_URL}"
+          check_provenance() {
+            local url="$1"
+            local label="$2"
+            local last_sha=''
+            local last_headers=''
+
+            for attempt in $(seq 1 10); do
+              if json="$(curl --fail --silent --show-error "$url/qa-build.json")" && \
+                headers="$(curl --fail --silent --show-error -I "$url/qa-build.json")"; then
+                last_sha="$(jq -r '.commit_sha // empty' <<< "$json" 2>/dev/null || true)"
+                last_headers="$headers"
+                echo "$label attempt $attempt/10: commit_sha=$last_sha, expected=$COMMIT_SHA"
+                if [[ "$last_sha" == "$COMMIT_SHA" ]] && \
+                  grep -iq '^x-robots-tag: noindex, nofollow' <<< "$headers"; then
+                  echo "$label provenance passed on attempt $attempt/10"
+                  return 0
+                fi
+              else
+                echo "$label attempt $attempt/10: curl failed"
+              fi
+
+              if (( attempt < 10 )); then
+                sleep 3
+              fi
+            done
+
+            echo "$label provenance check failed after 10 attempts" >&2
+            echo "$label last commit_sha: ${last_sha:-<no response>}" >&2
+            echo "$label expected commit_sha: $COMMIT_SHA" >&2
+            echo "$label last headers:" >&2
+            printf '%s\n' "${last_headers:-<no response>}" >&2
+            return 1
+          }
+
+          check_provenance "$stable_url" 'stable'
+          check_provenance "$immutable_url" 'immutable'
+          {
+            echo '## Cloudflare Owner QA'
+            echo
+            echo "- Stable URL: $stable_url"
+            echo "- Immutable URL: $immutable_url"
+            echo "- Deployment ID: $deployment_id"
+            echo "- Подтверждённый SHA: $COMMIT_SHA"
+          } >> "$GITHUB_STEP_SUMMARY"
