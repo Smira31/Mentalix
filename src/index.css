@@ -198,6 +198,15 @@
   /* #5EB2ED — холодный акцент, контраст к --c-bg ≈8.8:1 */
 }
 
+/* Светлая тема использует отдельную пару акцентов, но тот же data-accent. */
+[data-theme='light'][data-accent='sage'] {
+  --c-gold: 107 122 82;
+}
+
+[data-theme='light'][data-accent='terracotta'] {
+  --c-gold: 185 115 85;
+}
+
 /*
  * Preview-only light theme: enabled by ?light-preview=1 in local dev or
  * Vercel Preview. This is a complete visual direction for review, not a
@@ -262,8 +271,8 @@
   --c-border: 211 198 181;
   --c-line: 53 44 36;
   --c-line-secondary: 132 113 94;
-  --c-gold: 157 86 32;
-  --c-glyph-secondary: 126 71 66;
+  /* Accent pair is selected by [data-theme='light'][data-accent]. */
+  --c-glyph-secondary: 96 112 72;
   --btn-bg: #2b231d;
   --btn-text: #fffaf2;
   --shadow-float: 0 12px 34px rgba(76, 55, 35, 0.16);

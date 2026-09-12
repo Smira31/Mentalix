@@ -317,11 +317,11 @@ export default function App() {
    */
   const [accentRaw, setAccentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
 
-  const accent = parseAccent(accentRaw)
-
   const [themeRaw, setThemeRaw] = useSynced(THEME_KEY, DEFAULT_THEME)
 
   const theme = parseTheme(themeRaw)
+
+  const accent = parseAccent(accentRaw, theme)
 
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
@@ -416,6 +416,12 @@ export default function App() {
   /* ============================================================
      THEME
      ============================================================ */
+
+  useEffect(() => {
+    if (accentRaw !== accent) {
+      setAccentRaw(accent)
+    }
+  }, [accent, accentRaw, setAccentRaw])
 
   useEffect(() => {
     // Manual user preference is production behavior. The diagnostic gate
