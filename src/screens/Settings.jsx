@@ -32,7 +32,8 @@ import {
   TODAY_CARD_LABELS,
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
-import { ACCENT_COLORS } from '../lib/accentColor'
+import { getAccentColors } from '../lib/accentColor'
+import { THEMES } from '../lib/theme'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -126,7 +127,16 @@ const TIMEZONES = [
   ['Asia/Vladivostok', 'Владивосток'],
 ]
 
-export default function Settings({ user, onBack, onNavigate, accent, onAccentChange }) {
+export default function Settings({
+  user,
+  onBack,
+  onNavigate,
+  accent,
+  onAccentChange,
+  theme,
+  onThemeChange,
+}) {
+  const accentColors = getAccentColors(theme)
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
   const [reviewHour, setReviewHour] = useState(19)
@@ -875,12 +885,37 @@ export default function Settings({ user, onBack, onNavigate, accent, onAccentCha
       <SectionLabel>Внешний вид</SectionLabel>
       <Card>
         <Row
+          title="Тема приложения"
+          subtitle={THEMES[theme].label}
+          right={
+            <div
+              className="flex gap-1 rounded-2xl bg-cream/[0.04] p-1"
+              role="group"
+              aria-label="Тема приложения"
+            >
+              {Object.entries(THEMES).map(([id, { label }]) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={theme === id}
+                  onClick={() => onThemeChange(id)}
+                  className={`rounded-xl px-3 py-2 text-[11px] font-bold transition-colors ${
+                    theme === id ? 'bg-gold text-emerald-deep' : 'text-muted'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          }
+        />
+        <Row
           title="Акцентный цвет"
-          subtitle={ACCENT_COLORS[accent].label}
+          subtitle={accentColors[accent].label}
           divider={false}
           right={
             <div className="flex gap-2">
-              {Object.entries(ACCENT_COLORS).map(([id, { label, hex }]) => (
+              {Object.entries(accentColors).map(([id, { label, hex }]) => (
                 <button
                   key={id}
                   type="button"
