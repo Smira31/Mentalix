@@ -636,7 +636,7 @@
   margin: 0 auto;
   overflow: hidden;
   border-radius: 12px;
-  background: rgb(28 28 28);
+  background: rgb(var(--c-artbed));
 }
 .mx-layered-category__art-glyph {
   display: grid;
@@ -649,7 +649,7 @@
 }
 .mx-layered-category__art-base {
   min-height: 0;
-  background: rgb(237 189 96 / 0.18);
+  background: rgb(var(--c-gold) / 0.18);
 }
 .mx-layered-category__card strong {
   width: 100%;

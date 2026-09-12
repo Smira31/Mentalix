@@ -10,6 +10,10 @@ const catalogSource = await readFile(
   new URL('../../src/components/PracticeCatalogV2.jsx', import.meta.url),
   'utf8'
 )
+const layeredStyles = await readFile(
+  new URL('../../src/components/ui-lab/LayeredPracticeCatalogExperiment.css', import.meta.url),
+  'utf8'
+)
 
 test('MXL-525 (G5): тема недели ставит is_current первой', () => {
   assert.match(
@@ -31,4 +35,12 @@ test('MXL-547: каталог использует четыре реальных
   assert.match(catalogSource, /theme\.days\.slice\(0, 4\)/)
   assert.match(catalogSource, /\{question\.day \?\? index \+ 1\}/)
   assert.doesNotMatch(catalogSource, /padStart/)
+})
+
+test('MXL-603: layered category art follows theme and accent tokens', () => {
+  assert.match(layeredStyles, /\.mx-layered-category__art\s*\{[\s\S]*background: rgb\(var\(--c-artbed\)\)/)
+  assert.match(
+    layeredStyles,
+    /\.mx-layered-category__art-base\s*\{[\s\S]*background: rgb\(var\(--c-gold\) \/ 0\.18\)/
+  )
 })
