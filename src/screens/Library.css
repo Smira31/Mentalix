@@ -462,10 +462,10 @@
   min-height: 38px;
   margin-top: 2px;
   padding: 0 13px;
-  border: 1px solid rgb(var(--c-gold) / 0.35);
+  border: 0;
   border-radius: 999px;
-  background: rgb(var(--c-gold) / 0.1);
-  color: rgb(var(--c-gold));
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
   font-size: 12px;
 }
 
