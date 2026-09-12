@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
 import ArticleCover from '../ArticleCover'
 import { useBackButton } from '../../platform/telegram.hooks'
@@ -212,50 +212,33 @@ function ProgramRail({ onOpen }) {
     </div>
   )
 }
-function ArticleRail({ onRead }) {
-  return (
-    <div className="mx-library-programs__article-rail" aria-label="Статьи">
-      {ARTICLES.map(article => (
-        <button
-          type="button"
-          key={article.id}
-          className="mx-library-programs__rail-card"
-          onClick={() => onRead(article.id)}
-        >
-          <span className="mx-library-programs__rail-avatar" aria-hidden="true">
-            <SemanticGlyph kind={article.kind} animated={false} />
-          </span>
-          <span className="mx-library-programs__rail-badge">{article.duration}</span>
-          <span className="mx-library-programs__rail-category">{article.eyebrow}</span>
-          <strong>{article.title}</strong>
-          <small>{article.intro}</small>
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function FeaturedArticle({ onRead, readIds }) {
+function ArticleLandingCard({ onRead }) {
   const article = ARTICLES[0]
   return (
     <button
       type="button"
-      className="mx-library-programs__featured mx-library-programs__featured-article"
+      className="w-full rounded-3xl bg-emerald mb-3 text-left border border-cream/10 p-4 transition-transform active:scale-[0.99]"
       onClick={() => onRead(article.id)}
     >
-      <ArticleCover
-        article={article}
-        variant="banner"
-        className="mx-library-programs__featured-art"
-      />
-      <span className="mx-library-programs__featured-copy">
-        <span className="mx-library-programs__eyebrow">{article.eyebrow}</span>
-        <span className="mx-library-programs__featured-title">{article.title}</span>
-        <span>{article.intro}</span>
-        <small>
-          {article.duration} · {readIds.has(article.id) ? 'Прочитано' : 'Читать статью'}
-        </small>
-      </span>
+      <div className="flex items-start gap-4">
+        <ArticleCover article={article} className="w-[112px] h-[132px] shrink-0" />
+        <div className="flex-1 min-w-0 py-0.5">
+          {article.eyebrow && (
+            <span className="inline-block text-[10px] text-gold border border-gold/25 rounded-full px-2.5 py-0.5 mb-2 whitespace-nowrap">
+              {article.eyebrow}
+            </span>
+          )}
+          <div className="font-display mx-type-article-title text-cream">{article.title}</div>
+          <p className="mx-type-article-body text-muted mt-2 line-clamp-3">{article.intro}</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2 mt-4 pt-3.5 border-t border-cream/8">
+        <span className="mx-type-article-action text-gold">Читать статью</span>
+        <ArrowRight size={14} className="text-gold shrink-0" strokeWidth={2} />
+        <span className="mx-type-article-meta text-faint ml-auto whitespace-nowrap">
+          {article.duration}
+        </span>
+      </div>
     </button>
   )
 }
@@ -272,7 +255,7 @@ function BottomNav() {
   )
 }
 
-function Landing({ onOpenDetail, onRead, onOpenJournals, readIds }) {
+function Landing({ onOpenDetail, onRead, onOpenJournals }) {
   return (
     <div className="mx-library-programs__landing">
       <header className="mx-library-programs__topbar">
@@ -289,8 +272,7 @@ function Landing({ onOpenDetail, onRead, onOpenJournals, readIds }) {
         <div className="mx-library-programs__section-title">
           <h3>Статьи</h3>
         </div>
-        <FeaturedArticle readIds={readIds} onRead={onRead} />
-        <ArticleRail onRead={onRead} />
+        <ArticleLandingCard onRead={onRead} />
       </section>
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
@@ -815,7 +797,6 @@ export default function LibraryProgramsExperiment() {
   else
     product = (
       <Landing
-        readIds={readIds}
         onRead={id => {
           setArticleId(id)
           navigate('article', { article: id })

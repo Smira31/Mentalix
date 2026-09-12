@@ -76,8 +76,7 @@
 }
 .mx-library-programs__scroll::-webkit-scrollbar,
 .mx-library-programs__reader-rail::-webkit-scrollbar,
-.mx-library-programs__program-rail::-webkit-scrollbar,
-.mx-library-programs__article-rail::-webkit-scrollbar {
+.mx-library-programs__program-rail::-webkit-scrollbar {
   display: none;
 }
 .mx-library-programs__landing {
@@ -183,8 +182,7 @@
   width: 82%;
   height: 76%;
 }
-.mx-library-programs__program-rail,
-.mx-library-programs__article-rail {
+.mx-library-programs__program-rail {
   display: flex;
   gap: 14px;
   margin-inline: -18px;
@@ -193,8 +191,7 @@
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
 }
-.mx-library-programs__small-program,
-.mx-library-programs__article {
+.mx-library-programs__small-program {
   display: grid;
   flex: 0 0 47%;
   height: 208px;
@@ -209,33 +206,24 @@
   text-align: left;
   transition: transform 140ms ease;
 }
-.mx-library-programs__small-program:active,
-.mx-library-programs__article:active {
+.mx-library-programs__small-program:active {
   transform: scale(0.992);
 }
-.mx-library-programs__small-art,
-.mx-library-programs__article-art {
+.mx-library-programs__small-art {
   display: grid;
   height: 45%;
   place-items: center;
   background: rgb(var(--c-card2));
 }
-.mx-library-programs__small-art svg,
-.mx-library-programs__article-art svg {
+.mx-library-programs__small-art svg {
   width: 76%;
   height: 76%;
 }
-.mx-library-programs__small-program strong,
-.mx-library-programs__article strong {
+.mx-library-programs__small-program strong {
   padding: 0 13px;
   font-size: 15px;
   font-weight: 500;
   line-height: 1.16;
-}
-.mx-library-programs__article small {
-  padding: 0 13px;
-  color: rgb(var(--c-muted));
-  font-size: 11px;
 }
 .mx-library-programs__journal-row {
   display: flex;
@@ -496,8 +484,7 @@
     height: 260px;
     min-height: 0;
   }
-  .mx-library-programs__small-program,
-  .mx-library-programs__article {
+  .mx-library-programs__small-program {
     height: 228px;
   }
   .mx-library-programs__featured-copy {
@@ -515,8 +502,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .mx-library-programs__featured,
-  .mx-library-programs__small-program,
-  .mx-library-programs__article {
+  .mx-library-programs__small-program {
     transition: none !important;
   }
   .mx-library-programs__reader-rail {
@@ -931,10 +917,6 @@
   padding-inline: 12px;
   font-size: 14px;
 }
-.mx-library-programs--review .mx-library-programs__article-rail {
-  gap: 12px;
-  scroll-snap-type: x proximity;
-}
 .mx-library-programs--review .mx-library-programs__guided-catalog,
 .mx-library-programs--review .mx-library-programs__guided-flow {
   gap: 14px;
@@ -1004,17 +986,9 @@
   gap: 0;
   height: 188px;
 }
-.mx-library-programs--review .mx-library-programs__article {
-  flex-basis: 76%;
-  grid-template-rows: 48% 1fr auto;
-  gap: 0;
-  height: 220px;
-}
-.mx-library-programs--review .mx-library-programs__article-art,
 .mx-library-programs--review .mx-library-programs__small-art {
   height: auto;
 }
-.mx-library-programs--review .mx-library-programs__article strong,
 .mx-library-programs--review .mx-library-programs__small-program strong {
   align-self: center;
 }
@@ -1054,9 +1028,6 @@
 @media (max-width: 360px) {
   .mx-library-programs--review .mx-library-programs__small-program {
     height: 176px;
-  }
-  .mx-library-programs--review .mx-library-programs__article {
-    height: 208px;
   }
 }
 
@@ -1118,13 +1089,11 @@
   font-size: 12px;
   line-height: 1.35;
 }
-.mx-library-programs--review .mx-library-programs__program-rail,
-.mx-library-programs--review .mx-library-programs__article-rail {
+.mx-library-programs--review .mx-library-programs__program-rail {
   gap: 10px;
   scroll-snap-type: x proximity;
 }
-.mx-library-programs--review .mx-library-programs__small-program,
-.mx-library-programs--review .mx-library-programs__article {
+.mx-library-programs--review .mx-library-programs__small-program {
   flex: 0 0 130px;
   width: 130px;
   height: 156px;
@@ -1132,24 +1101,17 @@
   padding: 12px;
   border-radius: 18px;
 }
-.mx-library-programs--review .mx-library-programs__small-art,
-.mx-library-programs--review .mx-library-programs__article-art {
+.mx-library-programs--review .mx-library-programs__small-art {
   height: 26px;
   min-height: 26px;
   background: transparent;
 }
-.mx-library-programs--review .mx-library-programs__small-art svg,
-.mx-library-programs--review .mx-library-programs__article-art svg {
+.mx-library-programs--review .mx-library-programs__small-art svg {
   width: 26px;
   height: 26px;
 }
-.mx-library-programs--review .mx-library-programs__small-program strong,
-.mx-library-programs--review .mx-library-programs__article strong,
-.mx-library-programs--review .mx-library-programs__article small {
+.mx-library-programs--review .mx-library-programs__small-program strong {
   padding: 0;
-}
-.mx-library-programs--review .mx-library-programs__article {
-  grid-template-rows: 26px 1fr auto;
 }
 .mx-library-programs__guided-list {
   display: grid;
@@ -1232,15 +1194,6 @@
   align-content: center;
 }
 
-.mx-library-programs--review .mx-library-programs__featured-title {
-  display: block;
-  color: rgb(var(--c-text));
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.035em;
-}
-
 /* Rail cards: shared owner-approved production proportions for programs and articles. */
 .mx-library-programs__rail-card {
   position: relative;
@@ -1277,21 +1230,6 @@
 .mx-library-programs__rail-avatar svg {
   width: 76%;
   height: 76%;
-}
-.mx-library-programs__rail-badge {
-  padding: 3px 9px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 999px;
-  background: rgb(var(--c-card));
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  line-height: 1.2;
-}
-.mx-library-programs__rail-category {
-  margin-top: 3px;
-  color: rgb(var(--c-faint));
-  font-size: 9px;
-  line-height: 1.2;
 }
 .mx-library-programs__rail-card strong {
   margin-top: 2px;

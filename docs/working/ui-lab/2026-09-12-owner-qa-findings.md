@@ -42,3 +42,9 @@ CSS conflict был локальным и ограничен `.mx-library-progra
 Финальный контракт featured-карточки: `height: 300px`, `grid-template-columns: 40% 1fr`, `border-radius: 24px`; featured copy: `padding: 22px 16px`. У featured-art удалены конфликтующие фиксированные `height`/`aspect-ratio` review-правила, оставлено grid-растяжение через `min-height: 0`. Rail `.mx-library-programs__rail-card` не изменялся.
 
 Before/after screenshots для viewport 390×844 сохранены в `qa-evidence/library-programs-featured-consolidation-2026-09-12-before/` и `qa-evidence/library-programs-featured-consolidation-2026-09-12-after/`. Вычисленная геометрия изменилась с `211.39px` и радиуса `20px` до `300px` и радиуса `24px`; rail остаётся `243px` по фактическому bounding box, поэтому иерархия явно восстановлена. `npm run build` проходит успешно.
+
+## Single production article card — 2026-09-12
+
+По решению владельца landing-секция «Статьи» переведена с набора rail-карточек на одну широкую `ArticleLandingCard`. JSX повторяет production `ArticleCard` из `src/screens/Articles.jsx`: `ArticleCover` 112×132, tag из `article.eyebrow`, title/excerpt из `article.title` и `article.intro`, нижняя action-строка с ArrowRight и исходным `article.duration` без выдуманной даты. Используется `ARTICLES[0]`, как разрешено задачей.
+
+Удалены неиспользуемые `ArticleRail`, `FeaturedArticle` и связанные article-rail/featured-article/rail-badge/rail-category CSS-правила. Program rail и направленные записи не менялись; после проверки program rail сохранил прежний контракт и partial-next card. Визуальное evidence сохранено в `qa-evidence/library-articles-single-card-2026-09-12/390x844-landing.png`; на странице присутствует одна article-кнопка и отсутствует article rail. `npm run build` проходит успешно.
