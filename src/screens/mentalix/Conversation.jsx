@@ -43,6 +43,7 @@ export default function Conversation({
   footerSlot = null,
   sendError = '',
   onRetry,
+  resultMessage = null,
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
@@ -63,6 +64,7 @@ export default function Conversation({
   const [expandedMessages, setExpandedMessages] = useState(() => new Set())
   const [feedbackByMessage, setFeedbackByMessage] = useState(() => new Set())
   const [feedbackError, setFeedbackError] = useState('')
+  const [resultStatus, setResultStatus] = useState('')
 
   const voiceSupported =
     typeof navigator !== 'undefined' &&
@@ -95,6 +97,10 @@ export default function Conversation({
     !voiceHintDismissed &&
     !hasText &&
     voiceState === 'idle'
+
+  const resultReply = messageContent(resultMessage)
+  const lastUserMessage = [...messages].reverse().find(message => message.role === 'user')
+  const showResult = persona === 'kompas' && Boolean(resultMessage) && !resultStatus
 
   const dismissVoiceHint = useCallback(() => {
     setVoiceHintDismissed(true)
@@ -457,6 +463,47 @@ export default function Conversation({
           paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
         }}
       >
+        {showResult && (
+          <section className="mx-mentor-result w-full max-w-md mx-auto mb-3" aria-labelledby="mentor-result-title">
+            <div className="mx-ai-meta text-gold mb-2">Результат разговора</div>
+            <h2 id="mentor-result-title" className="mx-mentor-result__title">Один маленький шаг</h2>
+            {lastUserMessage?.content && (
+              <p className="mx-mentor-result__copy">
+                <strong>Что я услышал:</strong> {messageContent(lastUserMessage)}
+              </p>
+            )}
+            <p className="mx-mentor-result__copy">
+              <strong>Возможный эксперимент:</strong> {resultReply}
+            </p>
+            <p className="mx-mentor-result__note">Попробуй только небольшой фрагмент. После этого можно остановиться или решить, что делать дальше.</p>
+            <div className="mx-mentor-result__actions">
+              <button type="button" className="cta-pill mx-type-control" onClick={() => setResultStatus('saved')}>
+                Сохранить шаг
+              </button>
+              <button type="button" className="mx-mentor-result__secondary" onClick={() => setResultStatus('deferred')}>
+                Отложить
+              </button>
+              <button type="button" className="mx-mentor-result__secondary" onClick={onBack}>
+                Закрыть
+              </button>
+            </div>
+          </section>
+        )}
+
+        {resultStatus === 'saved' && (
+          <div className="mx-mentor-result mx-mentor-result--status w-full max-w-md mx-auto mb-3" role="status">
+            <strong>Шаг оставлен в этом разговоре.</strong>
+            <span>Постоянное сохранение не меняется этим сценарием.</span>
+          </div>
+        )}
+
+        {resultStatus === 'deferred' && (
+          <div className="mx-mentor-result mx-mentor-result--status w-full max-w-md mx-auto mb-3" role="status">
+            <strong>Шаг отложен.</strong>
+            <span>Можно вернуться к разговору позже.</span>
+          </div>
+        )}
+
         {(voiceState !== 'idle' || voiceError) && (
           <div className="w-full max-w-md mx-auto px-3 pb-2 text-center text-[12px]">
             {voiceState === 'recording' && (
