@@ -257,7 +257,7 @@
   --btn-text: #fffaf2;
   --shadow-float: 0 12px 34px rgba(76, 55, 35, 0.16);
   --shadow-float-compact: 0 8px 24px rgba(76, 55, 35, 0.18);
-  --c-artbed: 39 42 38;
+  --c-artbed: 38 31 25;
 }
 
 /* Production light theme: warm paper surfaces with ink-like UI chrome. */
@@ -277,7 +277,7 @@
   --btn-text: #fffaf2;
   --shadow-float: 0 12px 34px rgba(76, 55, 35, 0.16);
   --shadow-float-compact: 0 8px 24px rgba(76, 55, 35, 0.18);
-  --c-artbed: 245 240 232;
+  --c-artbed: 38 31 25;
 }
 
 [data-theme='light'] .bg-emerald-deep {
