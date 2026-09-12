@@ -528,21 +528,6 @@
 .mx-library-programs__topbar h2 {
   margin-top: 7px;
 }
-.mx-library-programs__guided-entry {
-  display: grid;
-  grid-template-columns: 82px minmax(0, 1fr) 24px;
-  min-height: 104px;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 12px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 26px;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-text));
-  text-align: left;
-}
-.mx-library-programs__guided-entry-art,
 .mx-library-programs__guided-template-art {
   display: grid;
   min-height: 80px;
@@ -550,32 +535,23 @@
   border-radius: 18px;
   background: rgb(var(--c-card2));
 }
-.mx-library-programs__guided-entry-art svg,
 .mx-library-programs__guided-template-art svg {
   width: 74px;
   height: 64px;
 }
-.mx-library-programs__guided-entry-copy,
 .mx-library-programs__guided-template > span:last-child {
   display: grid;
   gap: 6px;
   min-width: 0;
 }
-.mx-library-programs__guided-entry-copy strong,
 .mx-library-programs__guided-template strong {
   font-size: 16px;
   line-height: 1.15;
 }
-.mx-library-programs__guided-entry-copy small,
 .mx-library-programs__guided-template small {
   color: rgb(var(--c-muted));
   font-size: 12px;
   line-height: 1.35;
-}
-.mx-library-programs__guided-entry-arrow {
-  color: rgb(var(--c-gold));
-  font-size: 20px;
-  text-align: center;
 }
 .mx-library-programs__guided-catalog,
 .mx-library-programs__guided-flow {
@@ -818,24 +794,7 @@
   color: rgb(var(--c-muted));
   font-size: 12px;
 }
-@media (max-width: 360px) {
-  .mx-library-programs__guided-entry {
-    grid-template-columns: 66px minmax(0, 1fr) 18px;
-    gap: 9px;
-    padding: 9px;
-  }
-  .mx-library-programs__guided-entry-art {
-    min-height: 70px;
-  }
-  .mx-library-programs__guided-entry-copy strong {
-    font-size: 14px;
-  }
-  .mx-library-programs__guided-entry-copy small {
-    font-size: 11px;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .mx-library-programs__guided-entry,
   .mx-library-programs__guided-template,
   .mx-library-programs__primary,
   .mx-library-programs__secondary {
@@ -986,10 +945,6 @@
 .mx-library-programs--review .mx-library-programs__article-rail {
   gap: 12px;
   scroll-snap-type: x proximity;
-}
-.mx-library-programs--review .mx-library-programs__guided-entry {
-  min-height: 96px;
-  padding: 10px;
 }
 .mx-library-programs--review .mx-library-programs__guided-catalog,
 .mx-library-programs--review .mx-library-programs__guided-flow {
@@ -1214,24 +1169,6 @@
 }
 .mx-library-programs--review .mx-library-programs__article {
   grid-template-rows: 26px 1fr auto;
-}
-.mx-library-programs--review .mx-library-programs__guided-entry {
-  grid-template-columns: 40% 1fr;
-  min-height: 0;
-  aspect-ratio: 1.58;
-  padding: 0;
-  border-radius: 20px;
-}
-.mx-library-programs--review .mx-library-programs__guided-entry-art {
-  height: 100%;
-  min-height: 0;
-  border-radius: 19px 0 0 19px;
-}
-.mx-library-programs--review .mx-library-programs__guided-entry-copy {
-  padding: 14px;
-}
-.mx-library-programs--review .mx-library-programs__guided-entry-arrow {
-  display: none;
 }
 .mx-library-programs__guided-list {
   display: grid;

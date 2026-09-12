@@ -108,7 +108,7 @@ const ARTICLES = [
   },
 ]
 
-const STORAGE_KEY = 'mentalix-library-guided-entry-v1'
+const STORAGE_KEY = 'mentalix-library-journal-entry-v1'
 const TEMPLATE_ID = 'clarify-choice'
 const SWIPE_HINT_STORAGE_KEY = 'mentalix-library-reader-swipe-hint-v1'
 const JOURNAL_STEPS = [
@@ -298,20 +298,15 @@ function Landing({ onOpenDetail, onRead, onOpenJournals, readIds }) {
         </div>
         <button
           type="button"
-          className="mx-library-programs__guided-entry"
+          className="mx-library-programs__featured mx-library-programs__featured-journal"
           onClick={onOpenJournals}
         >
-          <span className="mx-library-programs__guided-entry-art" aria-hidden="true">
+          <span className="mx-library-programs__featured-art" aria-hidden="true">
             <SemanticGlyph kind="journal" animated={false} />
           </span>
-          <span className="mx-library-programs__guided-entry-copy">
+          <span className="mx-library-programs__featured-copy">
             <strong>Направленные записи</strong>
-            <small>
-              Короткие письменные практики, которые помогают прояснить мысли и сохранить важное
-            </small>
-          </span>
-          <span className="mx-library-programs__guided-entry-arrow" aria-hidden="true">
-            →
+            <p>Короткие письменные практики, которые помогают прояснить мысли и сохранить важное</p>
           </span>
         </button>
         <div className="mx-library-programs__guided-list" aria-label="Другие направленные записи">
