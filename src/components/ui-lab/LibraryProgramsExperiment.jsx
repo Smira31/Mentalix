@@ -212,8 +212,7 @@ function ProgramRail({ onOpen }) {
     </div>
   )
 }
-function ArticleLandingCard({ onRead }) {
-  const article = ARTICLES[0]
+function ArticleCard({ article, onRead }) {
   return (
     <button
       type="button"
@@ -243,6 +242,44 @@ function ArticleLandingCard({ onRead }) {
   )
 }
 
+function ArticlesList({ onBack, onRead }) {
+  return (
+    <div className="mx-library-programs__articles-list">
+      <button
+        type="button"
+        className="mx-library-programs__back"
+        onClick={onBack}
+        aria-label="Назад"
+      >
+        <ArrowLeft size={19} />
+      </button>
+      <header className="mx-library-programs__articles-list-header">
+        <h2>Статьи</h2>
+      </header>
+      <div className="mx-library-programs__articles-list-items">
+        {ARTICLES.map(article => (
+          <ArticleCard key={article.id} article={article} onRead={onRead} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ArticleLandingCard({ onOpen }) {
+  const article = ARTICLES[0]
+  return (
+    <button type="button" className="mx-library-programs__featured" onClick={onOpen}>
+      <div className="mx-library-programs__featured-art">
+        <ArticleCover article={article} className="h-full w-full" />
+      </div>
+      <div className="mx-library-programs__featured-copy">
+        <strong>{article.title}</strong>
+        <p>{article.intro}</p>
+      </div>
+    </button>
+  )
+}
+
 function BottomNav() {
   return (
     <nav className="mx-library-programs__bottom" aria-label="Основная навигация">
@@ -255,7 +292,7 @@ function BottomNav() {
   )
 }
 
-function Landing({ onOpenDetail, onRead, onOpenJournals }) {
+function Landing({ onOpenDetail, onOpenArticles, onOpenJournals }) {
   return (
     <div className="mx-library-programs__landing">
       <header className="mx-library-programs__topbar">
@@ -272,7 +309,7 @@ function Landing({ onOpenDetail, onRead, onOpenJournals }) {
         <div className="mx-library-programs__section-title">
           <h3>Статьи</h3>
         </div>
-        <ArticleLandingCard onRead={onRead} />
+        <ArticleLandingCard onOpen={onOpenArticles} />
       </section>
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
@@ -661,6 +698,11 @@ export default function LibraryProgramsExperiment() {
     window.sessionStorage.setItem('mentalix-library-read', JSON.stringify([...readIds]))
   }, [readIds])
   useEffect(() => {
+    window.requestAnimationFrame(() => {
+      document.querySelector('.mx-library-programs__scroll')?.scrollTo({ top: 0, behavior: 'auto' })
+    })
+  }, [screen])
+  useEffect(() => {
     const handlePopState = () => {
       const next = params()
       setScreen(next.get('screen') || 'landing')
@@ -737,6 +779,16 @@ export default function LibraryProgramsExperiment() {
 
   let product
   if (screen === 'detail') product = <Detail title={detailTitle} onBack={() => back()} />
+  else if (screen === 'articles')
+    product = (
+      <ArticlesList
+        onBack={() => back()}
+        onRead={id => {
+          setArticleId(id)
+          navigate('article', { article: id })
+        }}
+      />
+    )
   else if (screen === 'article')
     product = (
       <ArticleReader
@@ -797,10 +849,7 @@ export default function LibraryProgramsExperiment() {
   else
     product = (
       <Landing
-        onRead={id => {
-          setArticleId(id)
-          navigate('article', { article: id })
-        }}
+        onOpenArticles={() => navigate('articles')}
         onOpenDetail={title => {
           setDetailTitle(title)
           navigate('detail', { program: title })

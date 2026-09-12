@@ -48,3 +48,9 @@ Before/after screenshots для viewport 390×844 сохранены в `qa-evid
 По решению владельца landing-секция «Статьи» переведена с набора rail-карточек на одну широкую `ArticleLandingCard`. JSX повторяет production `ArticleCard` из `src/screens/Articles.jsx`: `ArticleCover` 112×132, tag из `article.eyebrow`, title/excerpt из `article.title` и `article.intro`, нижняя action-строка с ArrowRight и исходным `article.duration` без выдуманной даты. Используется `ARTICLES[0]`, как разрешено задачей.
 
 Удалены неиспользуемые `ArticleRail`, `FeaturedArticle` и связанные article-rail/featured-article/rail-badge/rail-category CSS-правила. Program rail и направленные записи не менялись; после проверки program rail сохранил прежний контракт и partial-next card. Визуальное evidence сохранено в `qa-evidence/library-articles-single-card-2026-09-12/390x844-landing.png`; на странице присутствует одна article-кнопка и отсутствует article rail. `npm run build` проходит успешно.
+
+## Three-screen article flow — 2026-09-12
+
+Landing-секция «Статьи» снова использует общую featured-карточку библиотеки и открывает отдельный экран `articles`. Новый экран показывает все три статьи в переиспользуемом production-like `ArticleCard`; переход по карточке открывает существующий `ArticleReader`, который не изменялся. История проходит в обе стороны по утверждённому паттерну: landing → список → reader → список → landing; смена экранов сбрасывает scroll-контейнер в начало, поэтому back-кнопка и заголовок списка всегда видимы.
+
+Скриншоты и переходы сохранены в `qa-evidence/library-articles-flow-2026-09-12/`: `01-landing.png`, `01-landing-articles-card.png`, `02-articles-list.png`, `03-reader.png`, `04-back-to-list.png`, `05-back-to-landing.png`. Playwright подтвердил `listTitle=1`, `listCards=3`, `readerTitle=1`, `listAfterReader=1`, `landingTitle=1`; `npm run build` и `git diff --check` проходят успешно.

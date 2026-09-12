@@ -306,6 +306,21 @@
   color: rgb(var(--c-gold));
   font-size: 13px;
 }
+.mx-library-programs__articles-list {
+  display: grid;
+  gap: 18px;
+  padding-bottom: 18px;
+}
+.mx-library-programs__articles-list-header h2 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+.mx-library-programs__articles-list-items {
+  display: grid;
+  gap: 0;
+}
 .mx-library-programs__reader {
   position: relative;
   top: -62px;
