@@ -251,6 +251,40 @@
   --c-artbed: 39 42 38;
 }
 
+/* Production light theme: warm paper surfaces with ink-like UI chrome. */
+[data-theme='light'] {
+  --c-bg: 245 240 232;
+  --c-card: 255 252 247;
+  --c-card2: 237 230 220;
+  --c-text: 38 31 25;
+  --c-muted: 105 90 75;
+  --c-faint: 126 109 91;
+  --c-border: 211 198 181;
+  --c-line: 53 44 36;
+  --c-line-secondary: 132 113 94;
+  --c-gold: 157 86 32;
+  --c-glyph-secondary: 126 71 66;
+  --btn-bg: #2b231d;
+  --btn-text: #fffaf2;
+  --shadow-float: 0 12px 34px rgba(76, 55, 35, 0.16);
+  --shadow-float-compact: 0 8px 24px rgba(76, 55, 35, 0.18);
+  --c-artbed: 245 240 232;
+}
+
+[data-theme='light'] .bg-emerald-deep {
+  background-color: rgb(var(--c-bg));
+}
+
+[data-theme='light'] .bg-emerald {
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.55) inset;
+}
+
+[data-theme='light'] input,
+[data-theme='light'] textarea,
+[data-theme='light'] select {
+  color-scheme: light;
+}
+
 /* Illustrations retain their dark atelier-like window and warm luminous ink. */
 [data-theme='light-preview'] .bg-artbed {
   --c-text: 242 239 233;
