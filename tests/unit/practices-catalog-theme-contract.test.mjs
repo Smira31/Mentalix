@@ -43,4 +43,12 @@ test('MXL-603: layered category art follows theme and accent tokens', () => {
     layeredStyles,
     /\.mx-layered-category__art-base\s*\{[\s\S]*background: rgb\(var\(--c-gold\) \/ 0\.18\)/
   )
+  assert.match(
+    layeredStyles,
+    /\[data-theme='light'\] \.mx-layered-category__art,\s*\[data-theme='light-preview'\] \.mx-layered-category__art\s*\{[\s\S]*background: rgb\(var\(--c-card2\)\)/
+  )
+  assert.match(
+    layeredStyles,
+    /\[data-theme='light'\] \.mx-layered-category__art-base,\s*\[data-theme='light-preview'\] \.mx-layered-category__art-base\s*\{[\s\S]*background: rgb\(var\(--c-gold\) \/ 0\.32\)/
+  )
 })
