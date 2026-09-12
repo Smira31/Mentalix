@@ -38,14 +38,13 @@ function LibraryV2ArticleCard({ article, onOpen }) {
   )
 }
 
-function LibraryV2FeaturedBanner({ label, title, description, art, action, onOpen }) {
+function LibraryV2FeaturedBanner({ title, description, art, action, onOpen }) {
   return (
     <article className="mx-library-v2__featured-banner">
       <div className="mx-library-v2__featured-art" aria-hidden="true">
         {art}
       </div>
       <div className="mx-library-v2__featured-copy">
-        <span>{label}</span>
         <h3>{title}</h3>
         <p>{description}</p>
         <button type="button" className="mx-library-v2__pill" onClick={onOpen}>
@@ -56,47 +55,87 @@ function LibraryV2FeaturedBanner({ label, title, description, art, action, onOpe
   )
 }
 
+const LIBRARY_V2_PROGRAMS = [
+  ['Границы без лишнего напряжения', 'journal', 'Сказать «нет» без чувства вины'],
+  ['Неделя внимательного решения', 'purpose', 'Семь дней, чтобы разложить выбор по полочкам'],
+  ['Неделя внутреннего порядка', 'focus', 'Навести ясность в делах без спешки'],
+]
+
+function LibraryV2ProgramRail({ onOpen }) {
+  return (
+    <div className="mx-library-programs__program-rail" aria-label="Другие программы">
+      {LIBRARY_V2_PROGRAMS.map(([title, kind, description]) => (
+        <button
+          type="button"
+          key={title}
+          onClick={() => onOpen(title)}
+          className="mx-library-programs__rail-card"
+        >
+          <span className="mx-library-programs__rail-avatar" aria-hidden="true">
+            <SemanticGlyph kind={kind} animated={false} />
+          </span>
+          <strong>{title}</strong>
+          <small>{description}</small>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function LibraryV2ArticleLanding({ onOpen }) {
   const article = ARTICLES[0]
   return (
-    <LibraryV2FeaturedBanner
-      label="СТАТЬИ"
-      title={article.title}
-      description={article.excerpt}
-      action="Читать"
-      onOpen={onOpen}
-      art={<ArticleCover article={article} className="h-full w-full" />}
-    />
+    <section className="mx-library-v2__section-block" aria-labelledby="library-v2-articles-title">
+      <h2 className="mx-type-section" id="library-v2-articles-title">
+        Статьи
+      </h2>
+      <LibraryV2FeaturedBanner
+        title={article.title}
+        description={article.excerpt}
+        action="Читать"
+        onOpen={onOpen}
+        art={<ArticleCover article={article} className="h-full w-full" />}
+      />
+    </section>
   )
 }
 
 function LibraryV2ProgramLanding({ onOpen }) {
   return (
-    <LibraryV2FeaturedBanner
-      label="ПРОГРАММЫ"
-      title="Самодисциплина"
-      description="Выстроить устойчивый ритм и доводить важное до конца без давления на себя."
-      action="Скоро"
-      onOpen={onOpen}
-      art={<SemanticGlyph kind="focus" animated={false} />}
-    />
+    <section className="mx-library-v2__section-block" aria-labelledby="library-v2-programs-title">
+      <h2 className="mx-type-section" id="library-v2-programs-title">
+        Программы
+      </h2>
+      <LibraryV2FeaturedBanner
+        title="Самодисциплина"
+        description="Выстроить устойчивый ритм и доводить важное до конца без давления на себя."
+        action="Скоро"
+        onOpen={() => onOpen('Самодисциплина')}
+        art={<SemanticGlyph kind="focus" animated={false} />}
+      />
+      <LibraryV2ProgramRail onOpen={onOpen} />
+    </section>
   )
 }
 
 function LibraryV2JournalLanding({ onOpen }) {
   return (
-    <LibraryV2FeaturedBanner
-      label="НАПРАВЛЕННЫЕ ЗАПИСИ"
-      title="Новая запись"
-      description="Короткие письменные практики, которые помогают прояснить мысли."
-      action="Начать"
-      onOpen={onOpen}
-      art={<SemanticGlyph kind="journal" animated={false} />}
-    />
+    <section className="mx-library-v2__section-block" aria-labelledby="library-v2-journals-title">
+      <h2 className="mx-type-section" id="library-v2-journals-title">
+        Направленные записи
+      </h2>
+      <LibraryV2FeaturedBanner
+        title="Новая запись"
+        description="Короткие письменные практики, которые помогают прояснить мысли."
+        action="Начать"
+        onOpen={onOpen}
+        art={<SemanticGlyph kind="journal" animated={false} />}
+      />
+    </section>
   )
 }
 
-function LibraryV2ProgramDetail({ onBack }) {
+function LibraryV2ProgramDetail({ title, onBack }) {
   return (
     <div className="mx-library-v2__program-detail animate-fade-in">
       <button
@@ -111,7 +150,7 @@ function LibraryV2ProgramDetail({ onBack }) {
         <SemanticGlyph kind="focus" animated={false} />
       </div>
       <span className="mx-library-v2__article-tag">ПРОГРАММЫ</span>
-      <h1>Самодисциплина</h1>
+      <h1>{title}</h1>
       <p>Выстроить устойчивый ритм и доводить важное до конца без давления на себя.</p>
       <strong>Скоро</strong>
     </div>
@@ -314,108 +353,115 @@ function LibraryHome({
         </section>
       )}
 
-      <section className="mx-library-catalog__section" aria-labelledby="library-featured-title">
-        <div className="mx-library-catalog__section-head">
-          <div>
-            <span>Новые материалы</span>
-            <h2 className="mx-type-section" id="library-featured-title">
-              На сейчас
-            </h2>
+      {!LIBRARY_V2_ENABLED && (
+        <section className="mx-library-catalog__section" aria-labelledby="library-featured-title">
+          <div className="mx-library-catalog__section-head">
+            <div>
+              <span>Новые материалы</span>
+              <h2 className="mx-type-section" id="library-featured-title">
+                На сейчас
+              </h2>
+            </div>
+            {!loading && !error && <small>{featured.length}</small>}
           </div>
-          {!loading && !error && <small>{featured.length}</small>}
-        </div>
 
-        {loading ? (
-          <div
-            className="mx-library-catalog__status"
-            role="status"
-            aria-live="polite"
-            aria-label="Загрузка библиотеки"
-          >
-            <i />
-            <i />
-          </div>
-        ) : error && articles.length === 0 ? (
-          <div className="mx-library-catalog__message" role="alert">
-            <strong>Материалы не загрузились</strong>
-            <p>Проверь соединение — сохранённые данные не изменились.</p>
-            <button type="button" onClick={retryLoad}>
-              Повторить
-            </button>
-          </div>
-        ) : featured.length === 0 ? (
-          <div className="mx-library-catalog__message">
-            <strong>{articles.length === 0 ? 'Статей пока нет' : 'Ничего не найдено'}</strong>
-            <p>
-              {articles.length === 0
-                ? 'Первая статья появится здесь.'
-                : 'Попробуй более короткий запрос.'}
-            </p>
-            {articles.length > 0 && (
-              <button type="button" onClick={() => setQuery('')}>
-                Очистить поиск
+          {loading ? (
+            <div
+              className="mx-library-catalog__status"
+              role="status"
+              aria-live="polite"
+              aria-label="Загрузка библиотеки"
+            >
+              <i />
+              <i />
+            </div>
+          ) : error && articles.length === 0 ? (
+            <div className="mx-library-catalog__message" role="alert">
+              <strong>Материалы не загрузились</strong>
+              <p>Проверь соединение — сохранённые данные не изменились.</p>
+              <button type="button" onClick={retryLoad}>
+                Повторить
               </button>
+            </div>
+          ) : featured.length === 0 ? (
+            <div className="mx-library-catalog__message">
+              <strong>{articles.length === 0 ? 'Статей пока нет' : 'Ничего не найдено'}</strong>
+              <p>
+                {articles.length === 0
+                  ? 'Первая статья появится здесь.'
+                  : 'Попробуй более короткий запрос.'}
+              </p>
+              {articles.length > 0 && (
+                <button type="button" onClick={() => setQuery('')}>
+                  Очистить поиск
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="mx-library-catalog__rail" aria-label="Новые материалы">
+              {featured.map(article => (
+                <button
+                  type="button"
+                  className="mx-library-catalog__feature-card"
+                  key={article.id}
+                  onClick={() => {
+                    platform.haptic('light')
+                    onOpenArticle(article)
+                  }}
+                >
+                  <span className="mx-library-catalog__feature-art" aria-hidden="true">
+                    <SemanticGlyph kind={semanticKindForArticle(article)} animated={false} />
+                  </span>
+                  <span className="mx-library-catalog__eyebrow">{article.tag || 'Статья'}</span>
+                  <strong>{article.title}</strong>
+                  <small>{article.excerpt}</small>
+                </button>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {!LIBRARY_V2_ENABLED && (
+        <section
+          className="mx-library-catalog__section"
+          aria-labelledby="library-collections-title"
+        >
+          <div className="mx-library-catalog__section-head">
+            <div>
+              <span>Всё в одном месте</span>
+              <h2 className="mx-type-section" id="library-collections-title">
+                Коллекции
+              </h2>
+            </div>
+            <small>3</small>
+          </div>
+          <div className="mx-library-catalog__collections">
+            {!LIBRARY_V2_ENABLED && (
+              <CollectionCard
+                title="Статьи"
+                description="Короткие материалы, которые помогают перейти к действию."
+                kind="purpose"
+                onClick={onOpenArticles}
+              />
             )}
-          </div>
-        ) : (
-          <div className="mx-library-catalog__rail" aria-label="Новые материалы">
-            {featured.map(article => (
-              <button
-                type="button"
-                className="mx-library-catalog__feature-card"
-                key={article.id}
-                onClick={() => {
-                  platform.haptic('light')
-                  onOpenArticle(article)
-                }}
-              >
-                <span className="mx-library-catalog__feature-art" aria-hidden="true">
-                  <SemanticGlyph kind={semanticKindForArticle(article)} animated={false} />
-                </span>
-                <span className="mx-library-catalog__eyebrow">{article.tag || 'Статья'}</span>
-                <strong>{article.title}</strong>
-                <small>{article.excerpt}</small>
-              </button>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section className="mx-library-catalog__section" aria-labelledby="library-collections-title">
-        <div className="mx-library-catalog__section-head">
-          <div>
-            <span>Всё в одном месте</span>
-            <h2 className="mx-type-section" id="library-collections-title">
-              Коллекции
-            </h2>
-          </div>
-          <small>3</small>
-        </div>
-        <div className="mx-library-catalog__collections">
-          {!LIBRARY_V2_ENABLED && (
+            {!LIBRARY_V2_ENABLED && (
+              <CollectionCard
+                title="Направленные записи"
+                description="Готовые вопросы и личные шаблоны для рефлексии."
+                kind="journal"
+                onClick={onOpenJournals}
+              />
+            )}
             <CollectionCard
-              title="Статьи"
-              description="Короткие материалы, которые помогают перейти к действию."
-              kind="purpose"
-              onClick={onOpenArticles}
+              title="Практикумы"
+              description="Большие материалы для последовательной работы."
+              kind="focus"
+              soon
             />
-          )}
-          {!LIBRARY_V2_ENABLED && (
-            <CollectionCard
-              title="Направленные записи"
-              description="Готовые вопросы и личные шаблоны для рефлексии."
-              kind="journal"
-              onClick={onOpenJournals}
-            />
-          )}
-          <CollectionCard
-            title="Практикумы"
-            description="Большие материалы для последовательной работы."
-            kind="focus"
-            soon
-          />
-        </div>
-      </section>
+          </div>
+        </section>
+      )}
     </div>
   )
 }
@@ -424,11 +470,12 @@ export default function Library({ user }) {
   const [screen, setScreen] = useState('home')
   const [initialArticle, setInitialArticle] = useState(null)
   const [libraryV2Article, setLibraryV2Article] = useState(null)
+  const [libraryV2Program, setLibraryV2Program] = useState('Самодисциплина')
 
   if (screen === 'library-v2-program' && LIBRARY_V2_ENABLED) {
     return (
       <div className="w-full max-w-md px-5">
-        <LibraryV2ProgramDetail onBack={() => setScreen('home')} />
+        <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('home')} />
       </div>
     )
   }
@@ -483,7 +530,10 @@ export default function Library({ user }) {
           setLibraryV2Article(null)
           setScreen('library-v2-articles')
         }}
-        onOpenV2Program={() => setScreen('library-v2-program')}
+        onOpenV2Program={title => {
+          setLibraryV2Program(title)
+          setScreen('library-v2-program')
+        }}
       />
     </div>
   )
