@@ -82,8 +82,30 @@ function LibraryV2ProgramRail({ onOpen }) {
   )
 }
 
+function LibraryV2ArticleRail({ articles, onOpen }) {
+  return (
+    <div className="mx-library-programs__program-rail" aria-label="Другие статьи">
+      {articles.map(article => (
+        <button
+          type="button"
+          key={article.id}
+          onClick={() => onOpen(article.id)}
+          className="mx-library-programs__rail-card mx-library-v2__article-rail-card"
+        >
+          <span className="mx-library-programs__rail-avatar mx-library-v2__article-rail-cover">
+            <ArticleCover article={article} className="h-full w-full" />
+          </span>
+          <strong>{article.title}</strong>
+          <small>{article.excerpt}</small>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function LibraryV2ArticleLanding({ onOpen }) {
   const article = ARTICLES[0]
+  const otherArticles = ARTICLES.slice(1)
   return (
     <section className="mx-library-v2__section-block" aria-labelledby="library-v2-articles-title">
       <h2 className="mx-type-section" id="library-v2-articles-title">
@@ -96,6 +118,7 @@ function LibraryV2ArticleLanding({ onOpen }) {
         onOpen={onOpen}
         art={<ArticleCover article={article} className="h-full w-full" />}
       />
+      <LibraryV2ArticleRail articles={otherArticles} onOpen={onOpen} />
     </section>
   )
 }
@@ -131,6 +154,22 @@ function LibraryV2JournalLanding({ onOpen }) {
         onOpen={onOpen}
         art={<SemanticGlyph kind="journal" animated={false} />}
       />
+      <div className="mx-library-programs__guided-list" aria-label="Другие направленные записи">
+        <button type="button" className="mx-library-programs__guided-list-row" onClick={onOpen}>
+          <span>
+            <strong>Новая запись</strong>
+            <small>4 вопроса · 5–7 минут</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <button type="button" className="mx-library-programs__guided-list-row" onClick={onOpen}>
+          <span>
+            <strong>Вернуться к записи</strong>
+            <small>Сохранённые ответы и следующий шаг</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
     </section>
   )
 }
@@ -175,7 +214,11 @@ function LibraryV2ArticlesList({ onBack, onOpen }) {
       </header>
       <div className="mx-library-v2__article-list-items">
         {ARTICLES.map(article => (
-          <LibraryV2ArticleCard key={article.id} article={article} onOpen={onOpen} />
+          <LibraryV2ArticleCard
+            key={article.id}
+            article={article}
+            onOpen={() => onOpen(article.id)}
+          />
         ))}
       </div>
     </div>
@@ -489,7 +532,9 @@ export default function Library({ user }) {
             setLibraryV2Article(null)
             setScreen('home')
           }}
-          onOpen={article => setLibraryV2Article(article)}
+          onOpen={articleId =>
+            setLibraryV2Article(ARTICLES.find(article => article.id === articleId))
+          }
         />
       </div>
     )
@@ -526,8 +571,8 @@ export default function Library({ user }) {
           setInitialArticle(article)
           setScreen('articles')
         }}
-        onOpenV2Articles={() => {
-          setLibraryV2Article(null)
+        onOpenV2Articles={articleId => {
+          setLibraryV2Article(articleId ? ARTICLES.find(article => article.id === articleId) : null)
           setScreen('library-v2-articles')
         }}
         onOpenV2Program={title => {
