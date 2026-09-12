@@ -930,3 +930,122 @@
     animation: none;
   }
 }
+
+/* Correction pass: dense iPhone rhythm without duplicating Telegram safe-area. */
+.mx-library-programs__scroll {
+  padding-bottom: calc(88px + var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+.mx-library-programs--review .mx-library-programs__scroll {
+  /* UiLab already reserves --app-safe-top; the previous 62px slot duplicated visual chrome. */
+  padding-top: 18px;
+}
+.mx-library-programs--review .mx-library-programs__landing {
+  gap: 24px;
+}
+.mx-library-programs--review .mx-library-programs__topbar h2 {
+  margin-top: 0;
+  font-size: clamp(30px, 8.4vw, 34px);
+}
+.mx-library-programs--review .mx-library-programs__section {
+  gap: 12px;
+}
+.mx-library-programs--review .mx-library-programs__section + .mx-library-programs__section {
+  gap: 12px;
+}
+.mx-library-programs--review .mx-library-programs__section-title h3 {
+  font-size: 20px;
+}
+.mx-library-programs--review .mx-library-programs__featured {
+  aspect-ratio: 1.68;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy {
+  padding: 18px 16px;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy p {
+  max-width: 215px;
+  margin-top: 8px;
+  -webkit-line-clamp: 3;
+}
+.mx-library-programs--review .mx-library-programs__program-rail {
+  gap: 12px;
+  scroll-snap-type: x proximity;
+}
+.mx-library-programs--review .mx-library-programs__small-program {
+  flex-basis: 44%;
+  height: 176px;
+  gap: 8px;
+  scroll-snap-align: start;
+}
+.mx-library-programs--review .mx-library-programs__small-art {
+  height: 48%;
+}
+.mx-library-programs--review .mx-library-programs__small-program strong {
+  padding-inline: 12px;
+  font-size: 14px;
+}
+.mx-library-programs--review .mx-library-programs__article-rail {
+  gap: 12px;
+  scroll-snap-type: x proximity;
+}
+.mx-library-programs--review .mx-library-programs__guided-entry {
+  min-height: 96px;
+  padding: 10px;
+}
+.mx-library-programs--review .mx-library-programs__guided-catalog,
+.mx-library-programs--review .mx-library-programs__guided-flow {
+  gap: 14px;
+}
+.mx-library-programs--review .mx-library-programs__guided-flow-center {
+  min-height: 360px;
+  gap: 14px;
+}
+.mx-library-programs--review .mx-library-programs__guided-flow-art {
+  width: 96px;
+  height: 96px;
+}
+.mx-library-programs--review .mx-library-programs__guided-flow-center h1 {
+  max-width: 282px;
+  font-size: 27px;
+}
+.mx-library-programs--review .mx-library-programs__reader {
+  top: 0;
+  height: 100%;
+  margin: 0 -18px -88px;
+}
+.mx-library-programs--review .mx-library-programs__reader-header {
+  min-height: 52px;
+  padding: 0 20px;
+  border: 1px solid rgb(var(--c-border));
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background: rgb(var(--c-card2));
+}
+.mx-library-programs--review .mx-library-programs__reader-slide {
+  height: calc(var(--tg-viewport-height, 100dvh) - 52px);
+  padding-top: 0;
+}
+.mx-library-programs--review .mx-library-programs__reader-art {
+  height: 112px;
+  margin-bottom: 18px;
+  border: 1px solid rgb(var(--c-border));
+  border-top: 0;
+  border-radius: 0 0 24px 24px;
+}
+.mx-library-programs--review .mx-library-programs__reader-slide h1 {
+  margin-top: 6px;
+}
+.mx-library-programs--review .mx-library-programs__bottom {
+  padding-bottom: calc(14px + var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+@media (max-width: 360px) {
+  .mx-library-programs--review .mx-library-programs__featured {
+    height: 236px;
+  }
+  .mx-library-programs--review .mx-library-programs__small-program {
+    flex-basis: 44%;
+    height: 164px;
+  }
+  .mx-library-programs--review .mx-library-programs__featured-copy p {
+    font-size: 13px;
+  }
+}

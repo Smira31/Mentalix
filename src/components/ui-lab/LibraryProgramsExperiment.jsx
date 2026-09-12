@@ -7,6 +7,7 @@ import './LibraryProgramsExperiment.css'
 const PROGRAMS = [
   ['Границы без лишнего напряжения', 'journal'],
   ['Неделя внимательного решения', 'purpose'],
+  ['Неделя внутреннего порядка', 'focus'],
 ]
 
 const ARTICLES = [
