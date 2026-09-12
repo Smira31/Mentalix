@@ -13,6 +13,7 @@ import UiLabHub from './UiLabHub'
 import LibraryExperiment from './LibraryExperiment'
 import ProgressObservationExperiment from './ProgressObservationExperiment'
 import ProgressRedesignExperiment from './ProgressRedesignExperiment'
+import PersonaPickerRedesignExperiment from './PersonaPickerRedesignExperiment'
 import './UiLab.css'
 
 const LEGACY_PARAM_MAP = { 1: 'experiments', showcase: 'baseline' }
@@ -31,6 +32,7 @@ export function resolveUiLabSection(value = 'hub') {
       'focus-check',
       'progress-observation',
       'progress-redesign',
+      'mentor-picker',
     ].includes(value)
       ? value
       : 'hub')
@@ -165,6 +167,7 @@ export default function UiLab({ initialSection = 'hub' }) {
           {section === 'library' && <LibraryExperiment />}
           {section === 'progress-observation' && <ProgressObservationExperiment />}
           {section === 'progress-redesign' && <ProgressRedesignExperiment />}
+          {section === 'mentor-picker' && <PersonaPickerRedesignExperiment />}
         </div>
         <footer className="mx-ui-lab__footer">
           Preview-only · live sources подключаются в Telegram-сессии; production Practices.jsx не

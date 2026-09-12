@@ -64,7 +64,7 @@ export default function StreakBar({
 
       {freezes > 0 && (
         <span className="flex items-center gap-0.5 text-[11px] text-muted shrink-0">
-          <Snowflake size={11} strokeWidth={2} />
+          <Snowflake size={11} strokeWidth={2} aria-hidden="true" />
           {freezes}
         </span>
       )}
