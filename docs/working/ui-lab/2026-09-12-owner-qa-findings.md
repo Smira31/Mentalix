@@ -16,3 +16,9 @@
 - Intro/clarify flow likely has a structural min-height/centering rule in CSS after line 527; inspect before changing.
 
 No API, backend, data, secrets, production or merge changes are intended.
+
+## Final bounded sanity check — 2026-09-12
+
+После удаления раннего дублирующего owner override и переноса правил в один canonical block post-patch screenshots сохранили ожидаемую геометрию. На landing featured занимает почти всю полезную ширину, description укладывается естественно, programme rail показывает partial third card, а articles имеют единый image/text surface и доступный нижний content inset. На reader header и artwork находятся внутри одной rounded outer card; progress для `1 из 3` занимает примерно треть ширины.
+
+CSS conflict был локальным и ограничен `.mx-library-programs--review` selectors в этом UI Lab файле. Legacy block на строках 1025+ переопределял `.reader` margin, `.reader-header` border/radius, `.reader-slide` bottom padding, `.reader-art` width/border/radius, featured aspect ratio, small-program basis/height и intro flow `min-height`. Ранний owner block на строках 934+ был удалён полностью; canonical owner-QA block после legacy оставлен один раз и содержит все намеренные corrected values. Широкий refactor не выполнялся, поскольку legacy block включает остальные принятые density rules и затрагивание его структуры за пределами scope не нужно.
