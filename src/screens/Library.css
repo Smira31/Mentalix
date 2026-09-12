@@ -391,6 +391,126 @@
   margin-bottom: 32px;
 }
 
+.mx-library-v2__featured-banner {
+  position: relative;
+  display: grid;
+  min-height: 190px;
+  grid-template-columns: 108px minmax(0, 1fr);
+  gap: 12px;
+  padding: 22px;
+  overflow: hidden;
+  border: 1px solid rgb(var(--c-gold) / 0.32);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 14% 25%, rgb(var(--c-gold) / 0.18), transparent 35%),
+    linear-gradient(135deg, rgb(var(--c-card2)), rgb(var(--c-bg)));
+}
+
+.mx-library-v2__featured-copy {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  gap: 9px;
+  min-width: 0;
+}
+
+.mx-library-v2__featured-copy > span {
+  color: rgb(var(--c-gold));
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mx-library-v2__featured-copy h3 {
+  max-width: 275px;
+  margin: 0;
+  font-size: 25px;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+
+.mx-library-v2__featured-copy p {
+  max-width: 300px;
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.mx-library-v2__featured-art {
+  display: grid;
+  align-self: center;
+  width: 108px;
+  height: 108px;
+  place-items: center;
+  color: rgb(var(--c-gold));
+  opacity: 0.72;
+}
+
+.mx-library-v2__featured-art svg {
+  width: 100%;
+  height: 100%;
+}
+
+.mx-library-v2__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  margin-top: 2px;
+  padding: 0 13px;
+  border: 1px solid rgb(var(--c-gold) / 0.35);
+  border-radius: 999px;
+  background: rgb(var(--c-gold) / 0.1);
+  color: rgb(var(--c-gold));
+  font-size: 12px;
+}
+
+.mx-library-v2__program-detail {
+  display: grid;
+  gap: 16px;
+  min-height: 540px;
+  align-content: start;
+  padding-bottom: 18px;
+}
+
+.mx-library-v2__program-detail-art {
+  display: grid;
+  height: 188px;
+  place-items: center;
+  border-radius: 28px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-gold));
+}
+
+.mx-library-v2__program-detail-art svg {
+  width: 174px;
+  height: 132px;
+}
+
+.mx-library-v2__program-detail h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.mx-library-v2__program-detail p {
+  max-width: 360px;
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mx-library-v2__program-detail > strong {
+  color: rgb(var(--c-gold));
+  font-size: 13px;
+}
+
 .mx-library-v2__section-title h2 {
   margin: 0;
   color: rgb(var(--c-text));
