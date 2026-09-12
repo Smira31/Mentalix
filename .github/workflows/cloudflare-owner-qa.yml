@@ -114,14 +114,42 @@ jobs:
           deployment_id="$(jq -r '.id' <<< "$deployment_json")"
           immutable_url="$(jq -r '.url' <<< "$deployment_json")"
           stable_url="${OWNER_QA_STABLE_URL}"
-          stable_json="$(curl --fail --silent --show-error --retry 5 --retry-delay 2 "$stable_url/qa-build.json")"
-          immutable_json="$(curl --fail --silent --show-error --retry 5 --retry-delay 2 "$immutable_url/qa-build.json")"
-          test "$(jq -r '.commit_sha' <<< "$stable_json")" = "$COMMIT_SHA"
-          test "$(jq -r '.commit_sha' <<< "$immutable_json")" = "$COMMIT_SHA"
-          stable_headers="$(curl --fail --silent --show-error --retry 5 --retry-delay 2 -I "$stable_url/qa-build.json")"
-          immutable_headers="$(curl --fail --silent --show-error --retry 5 --retry-delay 2 -I "$immutable_url/qa-build.json")"
-          grep -iq '^x-robots-tag: noindex, nofollow' <<< "$stable_headers"
-          grep -iq '^x-robots-tag: noindex, nofollow' <<< "$immutable_headers"
+          check_provenance() {
+            local url="$1"
+            local label="$2"
+            local last_sha=''
+            local last_headers=''
+
+            for attempt in $(seq 1 10); do
+              if json="$(curl --fail --silent --show-error "$url/qa-build.json")" && \
+                headers="$(curl --fail --silent --show-error -I "$url/qa-build.json")"; then
+                last_sha="$(jq -r '.commit_sha // empty' <<< "$json" 2>/dev/null || true)"
+                last_headers="$headers"
+                echo "$label attempt $attempt/10: commit_sha=$last_sha, expected=$COMMIT_SHA"
+                if [[ "$last_sha" == "$COMMIT_SHA" ]] && \
+                  grep -iq '^x-robots-tag: noindex, nofollow' <<< "$headers"; then
+                  echo "$label provenance passed on attempt $attempt/10"
+                  return 0
+                fi
+              else
+                echo "$label attempt $attempt/10: curl failed"
+              fi
+
+              if (( attempt < 10 )); then
+                sleep 3
+              fi
+            done
+
+            echo "$label provenance check failed after 10 attempts" >&2
+            echo "$label last commit_sha: ${last_sha:-<no response>}" >&2
+            echo "$label expected commit_sha: $COMMIT_SHA" >&2
+            echo "$label last headers:" >&2
+            printf '%s\n' "${last_headers:-<no response>}" >&2
+            return 1
+          }
+
+          check_provenance "$stable_url" 'stable'
+          check_provenance "$immutable_url" 'immutable'
           {
             echo '## Cloudflare Owner QA'
             echo

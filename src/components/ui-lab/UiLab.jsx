@@ -11,6 +11,7 @@ import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
 import LibraryExperiment from './LibraryExperiment'
+import LibraryProgramsExperiment from './LibraryProgramsExperiment'
 import ProgressObservationExperiment from './ProgressObservationExperiment'
 import ProgressRedesignExperiment from './ProgressRedesignExperiment'
 import PersonaPickerRedesignExperiment from './PersonaPickerRedesignExperiment'
@@ -29,6 +30,7 @@ export function resolveUiLabSection(value = 'hub') {
       'daily-canonical',
       'practice-catalog',
       'library',
+      'library-programs',
       'focus-check',
       'progress-observation',
       'progress-redesign',
@@ -42,6 +44,9 @@ export function resolveUiLabSection(value = 'hub') {
 export default function UiLab({ initialSection = 'hub' }) {
   const [section, setSection] = useState(resolveUiLabSection(initialSection))
   const [todayState, setTodayState] = useState('checkinPending')
+  const cleanReview =
+    section === 'library-programs' &&
+    new URLSearchParams(window.location.search).get('review') === '1'
 
   function selectSection(next) {
     setSection(next)
@@ -53,15 +58,17 @@ export default function UiLab({ initialSection = 'hub' }) {
   return (
     <main className="mx-ui-lab">
       <div className="mx-ui-lab__scroll">
-        <header className="mx-ui-lab__header">
-          <p className="mx-ui-lab__kicker">Mentalix · Preview-only</p>
-          <h1>Эталон → Эксперименты → Сравнение</h1>
-          <p>
-            Здесь можно посмотреть актуальный интерфейс, гипотезы и разницу между ними. Production
-            не изменён.
-          </p>
-          <UiLabSwitch active={section} />
-        </header>
+        {!cleanReview && (
+          <header className="mx-ui-lab__header">
+            <p className="mx-ui-lab__kicker">Mentalix · Preview-only</p>
+            <h1>Эталон → Эксперименты → Сравнение</h1>
+            <p>
+              Здесь можно посмотреть актуальный интерфейс, гипотезы и разницу между ними. Production
+              не изменён.
+            </p>
+            <UiLabSwitch active={section} />
+          </header>
+        )}
         <div className="mx-ui-lab__content">
           {section === 'hub' && <UiLabHub />}
           {section === 'baseline' && (
@@ -165,14 +172,17 @@ export default function UiLab({ initialSection = 'hub' }) {
           )}
           {section === 'focus-check' && <FocusCheck />}
           {section === 'library' && <LibraryExperiment />}
+          {section === 'library-programs' && <LibraryProgramsExperiment />}
           {section === 'progress-observation' && <ProgressObservationExperiment />}
           {section === 'progress-redesign' && <ProgressRedesignExperiment />}
           {section === 'mentor-picker' && <PersonaPickerRedesignExperiment />}
         </div>
-        <footer className="mx-ui-lab__footer">
-          Preview-only · live sources подключаются в Telegram-сессии; production Practices.jsx не
-          изменён
-        </footer>
+        {!cleanReview && (
+          <footer className="mx-ui-lab__footer">
+            Preview-only · live sources подключаются в Telegram-сессии; production Practices.jsx не
+            изменён
+          </footer>
+        )}
       </div>
     </main>
   )
