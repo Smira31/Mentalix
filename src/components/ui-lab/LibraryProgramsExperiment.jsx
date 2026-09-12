@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import SemanticGlyph from '../SemanticGlyph'
+import ArticleCover from '../ArticleCover'
 import { useBackButton } from '../../platform/telegram.hooks'
 import './LibraryProgramsExperiment.css'
 
@@ -234,6 +235,31 @@ function ArticleRail({ onRead, readIds }) {
   )
 }
 
+function FeaturedArticle({ onRead, readIds }) {
+  const article = ARTICLES[0]
+  return (
+    <button
+      type="button"
+      className="mx-library-programs__featured mx-library-programs__featured-article"
+      onClick={() => onRead(article.id)}
+    >
+      <ArticleCover
+        article={article}
+        variant="banner"
+        className="mx-library-programs__featured-art"
+      />
+      <span className="mx-library-programs__featured-copy">
+        <span className="mx-library-programs__eyebrow">{article.eyebrow}</span>
+        <span className="mx-library-programs__featured-title">{article.title}</span>
+        <span>{article.intro}</span>
+        <small>
+          {article.duration} · {readIds.has(article.id) ? 'Прочитано' : 'Читать статью'}
+        </small>
+      </span>
+    </button>
+  )
+}
+
 function BottomNav() {
   return (
     <nav className="mx-library-programs__bottom" aria-label="Основная навигация">
@@ -263,6 +289,7 @@ function Landing({ onOpenDetail, onRead, onOpenJournals, readIds }) {
         <div className="mx-library-programs__section-title">
           <h3>Статьи</h3>
         </div>
+        <FeaturedArticle readIds={readIds} onRead={onRead} />
         <ArticleRail readIds={readIds} onRead={onRead} />
       </section>
       <section className="mx-library-programs__section">
@@ -287,6 +314,30 @@ function Landing({ onOpenDetail, onRead, onOpenJournals, readIds }) {
             →
           </span>
         </button>
+        <div className="mx-library-programs__guided-list" aria-label="Другие направленные записи">
+          <button
+            type="button"
+            className="mx-library-programs__guided-list-row"
+            onClick={onOpenJournals}
+          >
+            <span>
+              <strong>Новая запись</strong>
+              <small>4 вопроса · 5–7 минут</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <button
+            type="button"
+            className="mx-library-programs__guided-list-row"
+            onClick={onOpenJournals}
+          >
+            <span>
+              <strong>Вернуться к записи</strong>
+              <small>Сохранённые ответы и следующий шаг</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
       </section>
     </div>
   )
@@ -404,9 +455,11 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
               }}
               data-article-id={article.id}
             >
-              <div className="mx-library-programs__reader-art" aria-hidden="true">
-                <SemanticGlyph kind={article.kind} animated={false} />
-              </div>
+              <ArticleCover
+                article={article}
+                variant="banner"
+                className="mx-library-programs__reader-art"
+              />
               <span className="mx-library-programs__eyebrow">{article.eyebrow}</span>
               <h1>{article.title}</h1>
               <small>{article.duration}</small>

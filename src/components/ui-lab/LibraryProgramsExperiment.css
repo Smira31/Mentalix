@@ -1134,3 +1134,191 @@
     height: 208px;
   }
 }
+
+/* MXL-LIBRARY-PROGRAMS-UI-LAB-001: unified owner-approved visual contract. */
+.mx-library-programs--review .mx-library-programs__landing {
+  gap: 28px;
+}
+.mx-library-programs--review .mx-library-programs__section {
+  gap: 12px;
+}
+.mx-library-programs--review .mx-library-programs__featured {
+  grid-template-columns: 40% 60%;
+  aspect-ratio: 1.58;
+  border-radius: 20px;
+}
+.mx-library-programs--review .mx-library-programs__featured-art {
+  min-width: 0;
+  height: auto !important;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+}
+.mx-library-programs--review .mx-library-programs__featured-art svg {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy {
+  min-width: 0;
+  justify-content: center;
+  padding: 14px;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy strong {
+  white-space: normal;
+  font-size: 20px;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy p,
+.mx-library-programs--review
+  .mx-library-programs__featured-copy
+  > span:not(.mx-library-programs__eyebrow),
+.mx-library-programs--review .mx-library-programs__featured-copy > small {
+  max-width: none;
+  margin-top: 8px;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  line-height: 1.35;
+}
+.mx-library-programs--review .mx-library-programs__featured-copy > small {
+  color: rgb(var(--c-gold));
+}
+.mx-library-programs--review .mx-library-programs__program-rail,
+.mx-library-programs--review .mx-library-programs__article-rail {
+  gap: 10px;
+  scroll-snap-type: x proximity;
+}
+.mx-library-programs--review .mx-library-programs__small-program,
+.mx-library-programs--review .mx-library-programs__article {
+  flex: 0 0 130px;
+  width: 130px;
+  height: 156px;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 18px;
+}
+.mx-library-programs--review .mx-library-programs__small-art,
+.mx-library-programs--review .mx-library-programs__article-art {
+  height: 26px;
+  min-height: 26px;
+  background: transparent;
+}
+.mx-library-programs--review .mx-library-programs__small-art svg,
+.mx-library-programs--review .mx-library-programs__article-art svg {
+  width: 26px;
+  height: 26px;
+}
+.mx-library-programs--review .mx-library-programs__small-program strong,
+.mx-library-programs--review .mx-library-programs__article strong,
+.mx-library-programs--review .mx-library-programs__article small {
+  padding: 0;
+}
+.mx-library-programs--review .mx-library-programs__article {
+  grid-template-rows: 26px 1fr auto;
+}
+.mx-library-programs--review .mx-library-programs__guided-entry {
+  grid-template-columns: 40% 1fr;
+  min-height: 0;
+  aspect-ratio: 1.58;
+  padding: 0;
+  border-radius: 20px;
+}
+.mx-library-programs--review .mx-library-programs__guided-entry-art {
+  height: 100%;
+  min-height: 0;
+  border-radius: 19px 0 0 19px;
+}
+.mx-library-programs--review .mx-library-programs__guided-entry-copy {
+  padding: 14px;
+}
+.mx-library-programs--review .mx-library-programs__guided-entry-arrow {
+  display: none;
+}
+.mx-library-programs__guided-list {
+  display: grid;
+  gap: 8px;
+}
+.mx-library-programs__guided-list-row {
+  display: flex;
+  min-height: 58px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 18px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  text-align: left;
+}
+.mx-library-programs__guided-list-row > span:first-child {
+  display: grid;
+  gap: 4px;
+}
+.mx-library-programs__guided-list-row strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.mx-library-programs__guided-list-row small {
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+}
+.mx-library-programs__guided-list-row > span:last-child {
+  color: rgb(var(--c-gold));
+  font-size: 18px;
+}
+.mx-library-programs--review .mx-library-programs__reader {
+  top: 0;
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+}
+.mx-library-programs--review .mx-library-programs__reader-header {
+  min-height: 52px;
+  padding: 0 20px;
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-border));
+  border-radius: 0;
+  background: rgb(var(--c-bg));
+}
+.mx-library-programs--review .mx-library-programs__reader-slide {
+  height: calc(100dvh - 52px);
+  padding: 20px 24px var(--app-content-bottom);
+}
+.mx-library-programs--review .mx-library-programs__reader-art {
+  width: 100%;
+  height: 150px;
+  margin: 0 0 20px;
+  border: 0;
+  border-radius: 24px;
+}
+.mx-library-programs--review .mx-library-programs__reader-art svg {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+}
+.mx-library-programs--review
+  .mx-library-programs__guided-intro-screen
+  .mx-library-programs__guided-flow-center,
+.mx-library-programs--review .mx-library-programs__guided-writing {
+  min-height: calc(100dvh - 150px);
+  padding-top: 0;
+  align-content: center;
+}
+.mx-library-programs--review .mx-library-programs__guided-completion {
+  min-height: calc(100dvh - 110px);
+  padding-block: 24px;
+  align-content: center;
+}
+
+.mx-library-programs--review .mx-library-programs__featured-title {
+  display: block;
+  color: rgb(var(--c-text));
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
