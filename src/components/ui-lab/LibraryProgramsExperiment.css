@@ -1259,3 +1259,72 @@
   line-height: 1.12;
   letter-spacing: -0.035em;
 }
+
+/* Rail cards: shared owner-approved production proportions for programs and articles. */
+.mx-library-programs__rail-card {
+  position: relative;
+  display: grid;
+  flex: 0 0 43%;
+  width: 43%;
+  height: 238px;
+  align-content: start;
+  justify-items: center;
+  gap: 0;
+  padding: 92px 14px 14px;
+  scroll-snap-align: start;
+  overflow: hidden;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 22px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  text-align: center;
+  transition: transform 140ms ease;
+}
+.mx-library-programs__rail-card:active {
+  transform: scale(0.992);
+}
+.mx-library-programs__rail-avatar {
+  position: absolute;
+  top: 14px;
+  display: grid;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(var(--c-artbed));
+}
+.mx-library-programs__rail-avatar svg {
+  width: 76%;
+  height: 76%;
+}
+.mx-library-programs__rail-badge {
+  padding: 3px 9px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: rgb(var(--c-card));
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+}
+.mx-library-programs__rail-category {
+  margin-top: 3px;
+  color: rgb(var(--c-faint));
+  font-size: 9px;
+  line-height: 1.2;
+}
+.mx-library-programs__rail-card strong {
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.mx-library-programs__rail-card small {
+  display: -webkit-box;
+  max-width: 100%;
+  margin-top: 3px;
+  overflow: hidden;
+  color: rgb(var(--c-muted));
+  font-size: 10px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}

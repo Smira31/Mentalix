@@ -6,9 +6,9 @@ import { useBackButton } from '../../platform/telegram.hooks'
 import './LibraryProgramsExperiment.css'
 
 const PROGRAMS = [
-  ['Границы без лишнего напряжения', 'journal'],
-  ['Неделя внимательного решения', 'purpose'],
-  ['Неделя внутреннего порядка', 'focus'],
+  ['Границы без лишнего напряжения', 'journal', 'Сказать «нет» без чувства вины'],
+  ['Неделя внимательного решения', 'purpose', 'Семь дней, чтобы разложить выбор по полочкам'],
+  ['Неделя внутреннего порядка', 'focus', 'Навести ясность в делах без спешки'],
 ]
 
 const ARTICLES = [
@@ -195,40 +195,40 @@ function FeaturedProgram({ onOpen }) {
 function ProgramRail({ onOpen }) {
   return (
     <div className="mx-library-programs__program-rail" aria-label="Другие программы">
-      {PROGRAMS.map(([title, kind]) => (
+      {PROGRAMS.map(([title, kind, description]) => (
         <button
           type="button"
           key={title}
           onClick={() => onOpen(title)}
-          className="mx-library-programs__small-program"
+          className="mx-library-programs__rail-card"
         >
-          <span className="mx-library-programs__small-art" aria-hidden="true">
+          <span className="mx-library-programs__rail-avatar" aria-hidden="true">
             <SemanticGlyph kind={kind} animated={false} />
           </span>
           <strong>{title}</strong>
+          <small>{description}</small>
         </button>
       ))}
     </div>
   )
 }
-
-function ArticleRail({ onRead, readIds }) {
+function ArticleRail({ onRead }) {
   return (
     <div className="mx-library-programs__article-rail" aria-label="Статьи">
       {ARTICLES.map(article => (
         <button
           type="button"
           key={article.id}
-          className="mx-library-programs__article"
+          className="mx-library-programs__rail-card"
           onClick={() => onRead(article.id)}
         >
-          <span className="mx-library-programs__article-art" aria-hidden="true">
+          <span className="mx-library-programs__rail-avatar" aria-hidden="true">
             <SemanticGlyph kind={article.kind} animated={false} />
           </span>
+          <span className="mx-library-programs__rail-badge">{article.duration}</span>
+          <span className="mx-library-programs__rail-category">{article.eyebrow}</span>
           <strong>{article.title}</strong>
-          <small>
-            {article.duration} · {readIds.has(article.id) ? 'Прочитано' : 'Не прочитано'}
-          </small>
+          <small>{article.intro}</small>
         </button>
       ))}
     </div>
@@ -290,7 +290,7 @@ function Landing({ onOpenDetail, onRead, onOpenJournals, readIds }) {
           <h3>Статьи</h3>
         </div>
         <FeaturedArticle readIds={readIds} onRead={onRead} />
-        <ArticleRail readIds={readIds} onRead={onRead} />
+        <ArticleRail onRead={onRead} />
       </section>
       <section className="mx-library-programs__section">
         <div className="mx-library-programs__section-title">
