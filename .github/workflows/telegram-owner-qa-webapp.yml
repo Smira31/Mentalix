@@ -7,6 +7,11 @@ on:
         description: Полный 40-символьный SHA exact Cloudflare Owner QA build
         required: true
         type: string
+      qa_url:
+        description: Точный URL страницы Owner QA для web_app-кнопки
+        required: false
+        default: https://mentalix-owner-qa.pages.dev/?ui_lab=library-programs&review=1
+        type: string
 
 permissions:
   contents: read
@@ -17,7 +22,7 @@ concurrency:
 
 env:
   OWNER_QA_BASE_URL: https://mentalix-owner-qa.pages.dev
-  OWNER_QA_URL: https://mentalix-owner-qa.pages.dev/?ui_lab=library-programs&review=1
+  OWNER_QA_URL: ${{ inputs.qa_url }}
 
 jobs:
   notify:
@@ -34,6 +39,10 @@ jobs:
           set -euo pipefail
           if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
             echo 'commit_sha должен быть полным 40-символьным SHA.' >&2
+            exit 1
+          fi
+          if [[ "$OWNER_QA_URL" != https://mentalix-owner-qa.pages.dev/* ]]; then
+            echo 'qa_url должен указывать на mentalix-owner-qa.pages.dev.' >&2
             exit 1
           fi
           qa_json="$(mktemp)"
