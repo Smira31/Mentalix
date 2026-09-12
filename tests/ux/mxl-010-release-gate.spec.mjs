@@ -30,25 +30,6 @@ function buildFixtureRouter() {
       const url = new URL(request.url())
       const { pathname } = url
 
-      if (pathname === '/api/auth/email/request-code' && request.method() === 'POST') {
-        return route.fulfill(jsonResponse({ dev_code: '000000' }))
-      }
-
-      if (pathname === '/api/auth/email/verify' && request.method() === 'POST') {
-        return route.fulfill(
-          jsonResponse({
-            ok: true,
-            user: {
-              app_user_id: TEST_USER.id,
-              web_user_id: 'web-release-fixture',
-              first_name: TEST_USER.first_name,
-              email: 'release-qa@example.invalid',
-              linked: true,
-            },
-          })
-        )
-      }
-
       if (pathname === '/api/checkin' && request.method() === 'POST') {
         const payload = request.postDataJSON()
         const reviewCompleted = payload.review_completed === true
@@ -138,16 +119,15 @@ test.describe('MXL-010 automated technical gate', () => {
     const page = await context.newPage()
 
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Вход через браузер' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Лучше открыть Mentalix через Telegram Mini App' })).toBeVisible()
-    await page.getByPlaceholder('you@example.com').fill('release-qa@example.invalid')
-    await page.getByRole('button', { name: 'Получить одноразовый код на email' }).click()
-    await expect(page.getByText('Тестовый режим — код: 000000')).toBeVisible()
-    await page.locator('input[placeholder="000000"]').fill('000000')
-    await page.getByRole('button', { name: 'Проверить одноразовый код' }).click()
-    await expect(page.getByRole('button', { name: 'Начать' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Mentalix.' })).toBeVisible()
-    await expect(page.locator('body')).not.toContainText('release-qa@example.invalid')
+    await expect(page.getByRole('heading', { name: 'Вход через браузер скоро появится' })).toBeVisible()
+    await expect(
+      page.getByText(
+        'Сейчас вход в Mentalix доступен только через Telegram Mini App. Открой приложение в Telegram — там уже доступен твой Telegram-контекст.'
+      )
+    ).toBeVisible()
+    await expect(page.locator('form')).toHaveCount(0)
+    await expect(page.getByRole('textbox')).toHaveCount(0)
+    await expect(page.getByRole('button')).toHaveCount(0)
 
     await context.close()
   })
