@@ -3,14 +3,16 @@ import { createRoot } from 'react-dom/client'
 import { AppProviders } from './app/AppProviders'
 import './index.css'
 import App from './App'
+import { isUiLabHostAllowed } from './lib/uiLabAccess'
 
 const showcaseRequested =
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('showcase') === 'archetypes'
 
-const isCanonicalPreviewHost = window.location.hostname === 'mentalix-preview.vercel.app'
 const uiLabEnabled =
-  import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || isCanonicalPreviewHost
+  import.meta.env.DEV ||
+  import.meta.env.VERCEL_ENV === 'preview' ||
+  isUiLabHostAllowed(window.location.hostname)
 
 const uiLabParam = new URLSearchParams(window.location.search).get('ui_lab')
 
