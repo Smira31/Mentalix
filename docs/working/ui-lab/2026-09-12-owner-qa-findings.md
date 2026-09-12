@@ -34,3 +34,11 @@ CSS conflict был локальным и ограничен `.mx-library-progra
 ## Rail cards rework — 2026-09-12
 
 В `LibraryProgramsExperiment` карточки ProgramRail и ArticleRail переведены на общий `.mx-library-programs__rail-card` contract по production reference: ширина 43%, высота 238px, padding 14px/92px top, radius 22px, centered content и avatar 68×68. Программы получили описания из согласованного черновика; статьи используют duration badge, eyebrow category и двухстрочный intro, без статуса «Прочитано/Не прочитано». Before/after screenshots для viewport 390×844 сохранены в `qa-evidence/library-programs-rail-cards-2026-09-12/`. Build выполняется после изменений.
+
+## Featured CSS consolidation — 2026-09-12
+
+Устранён техдолг с несколькими каскадными override-блоками для `.mx-library-programs--review .mx-library-programs__featured` и связанных copy/art/title-селекторов в `LibraryProgramsExperiment.css`. Причина расхождения была в накопившихся правилах от разных раундов UI Lab: `aspect-ratio`, ширина и отступы карточки переопределялись частично в нескольких местах, поэтому итоговая геометрия зависела от порядка блоков. Все намеренные review-значения перенесены в один canonical-блок; media override для featured удалён, media-исключения для rail-карточек сохранены.
+
+Финальный контракт featured-карточки: `height: 300px`, `grid-template-columns: 40% 1fr`, `border-radius: 24px`; featured copy: `padding: 22px 16px`. У featured-art удалены конфликтующие фиксированные `height`/`aspect-ratio` review-правила, оставлено grid-растяжение через `min-height: 0`. Rail `.mx-library-programs__rail-card` не изменялся.
+
+Before/after screenshots для viewport 390×844 сохранены в `qa-evidence/library-programs-featured-consolidation-2026-09-12-before/` и `qa-evidence/library-programs-featured-consolidation-2026-09-12-after/`. Вычисленная геометрия изменилась с `211.39px` и радиуса `20px` до `300px` и радиуса `24px`; rail остаётся `243px` по фактическому bounding box, поэтому иерархия явно восстановлена. `npm run build` проходит успешно.
