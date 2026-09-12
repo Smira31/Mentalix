@@ -17,6 +17,7 @@ import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
+import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
 import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { currentCheckinStreak } from './lib/series'
@@ -316,7 +317,11 @@ export default function App() {
    */
   const [accentRaw, setAccentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
 
-  const accent = parseAccent(accentRaw)
+  const [themeRaw, setThemeRaw] = useSynced(THEME_KEY, DEFAULT_THEME)
+
+  const theme = parseTheme(themeRaw)
+
+  const accent = parseAccent(accentRaw, theme)
 
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
@@ -413,17 +418,25 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
-    // Hidden developer gate: ?light-preview=1 works only in local dev or
-    // Vercel Preview builds. Production defaults to the existing dark theme.
+    if (accentRaw !== accent) {
+      setAccentRaw(accent)
+    }
+  }, [accent, accentRaw, setAccentRaw])
+
+  useEffect(() => {
+    // Manual user preference is production behavior. The diagnostic gate
+    // remains independent and is only consulted while the preference is dark.
     const root = document.documentElement
-    if (isLightThemePreviewEnabled()) {
+    if (theme === 'light') {
+      root.setAttribute('data-theme', 'light')
+    } else if (isLightThemePreviewEnabled()) {
       root.setAttribute('data-theme', 'light-preview')
     } else {
       root.removeAttribute('data-theme')
     }
 
     applyDarkTheme()
-  }, [])
+  }, [theme])
 
   useEffect(() => {
     if (accent === DEFAULT_ACCENT) {
@@ -1106,6 +1119,8 @@ export default function App() {
                 }}
                 accent={accent}
                 onAccentChange={setAccentRaw}
+                theme={theme}
+                onThemeChange={setThemeRaw}
               />
             )}
 

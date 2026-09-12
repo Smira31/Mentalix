@@ -1,0 +1,264 @@
+.mx-persona-redesign {
+  display: grid;
+  gap: 20px;
+  color: rgb(var(--c-text));
+}
+
+.mx-persona-redesign button {
+  font: inherit;
+}
+
+.mx-persona-redesign__intro,
+.mx-persona-redesign__variant-header {
+  display: grid;
+  gap: 8px;
+  max-width: 760px;
+}
+
+.mx-persona-redesign__intro > span,
+.mx-persona-redesign__variant-header > span {
+  color: rgb(var(--c-gold));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mx-persona-redesign__intro h2,
+.mx-persona-redesign__intro p,
+.mx-persona-redesign__variant-header h3,
+.mx-persona-redesign__variant-header p,
+.mx-persona-redesign__active-person,
+.mx-persona-redesign__feedback,
+.mx-persona-redesign__note {
+  margin: 0;
+}
+
+.mx-persona-redesign__intro h2 {
+  font-size: clamp(25px, 5vw, 38px);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.mx-persona-redesign__intro p,
+.mx-persona-redesign__variant-header p,
+.mx-persona-redesign__active-person,
+.mx-persona-redesign__feedback,
+.mx-persona-redesign__note {
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mx-persona-redesign__variants {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.mx-persona-redesign__variant {
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+}
+
+.mx-persona-redesign__variant-header h3 {
+  font-size: clamp(20px, 3vw, 28px);
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+.mx-persona-redesign__track {
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+  padding: 2px 2px 8px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.mx-persona-redesign__track::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-persona-redesign__card {
+  display: flex;
+  flex: 0 0 min(100%, 390px);
+  min-height: 510px;
+  flex-direction: column;
+  overflow: hidden;
+  scroll-snap-align: center;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  background: rgb(var(--c-card));
+  box-shadow: 0 16px 40px rgb(0 0 0 / 12%);
+}
+
+.mx-persona-redesign__art {
+  display: grid;
+  flex: 0 0 38%;
+  min-height: 150px;
+  place-items: center;
+  padding: 16px;
+  background: rgb(var(--c-art-bed));
+  border-bottom: 1px solid rgb(var(--c-border));
+}
+
+.mx-persona-redesign__glyph {
+  width: 100%;
+  height: 100%;
+  max-height: 180px;
+  transform: scale(1.05);
+}
+
+.mx-persona-redesign__content {
+  display: grid;
+  flex: 1;
+  gap: 10px;
+  padding: 18px 20px 20px;
+}
+
+.mx-persona-redesign__identity {
+  display: grid;
+  gap: 5px;
+}
+
+.mx-persona-redesign__identity h4 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+
+.mx-persona-redesign__identity span {
+  color: rgb(var(--c-gold));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mx-persona-redesign__identity p {
+  margin: 5px 0 0;
+  color: rgb(var(--c-text));
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.mx-persona-redesign__description {
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.mx-persona-redesign__actions {
+  display: grid;
+  align-self: end;
+  gap: 9px;
+  margin-top: auto;
+}
+
+.mx-persona-redesign__starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mx-persona-redesign__starters button,
+.mx-persona-redesign__cta {
+  min-height: 44px;
+  border-radius: 14px;
+}
+
+.mx-persona-redesign__starters button {
+  flex: 1 1 44%;
+  padding: 8px 11px;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card-raised));
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  text-align: left;
+}
+
+.mx-persona-redesign__cta {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1px solid rgb(var(--c-gold));
+  border-radius: 999px;
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.mx-persona-redesign__helper {
+  margin: 0;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.mx-persona-redesign__pagination {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mx-persona-redesign__pagination button {
+  display: inline-flex;
+  align-items: end;
+  justify-content: center;
+  width: 44px;
+  min-height: 44px;
+  padding: 0 0 2px;
+  border: 0;
+  background: transparent;
+}
+
+.mx-persona-redesign__pagination span {
+  display: block;
+  width: 6px;
+  height: 16px;
+  border-radius: 999px;
+  background: rgb(var(--c-border));
+  transition:
+    height 180ms ease,
+    background-color 180ms ease;
+}
+
+.mx-persona-redesign__pagination button[aria-current='page'] span {
+  height: 30px;
+  background: rgb(var(--c-gold));
+}
+
+.mx-persona-redesign__active-person,
+.mx-persona-redesign__feedback,
+.mx-persona-redesign__note {
+  text-align: center;
+}
+
+.mx-persona-redesign__feedback {
+  color: rgb(var(--c-gold));
+}
+
+.mx-persona-redesign button:focus-visible {
+  outline: 2px solid rgb(var(--c-gold));
+  outline-offset: 3px;
+}
+
+.mx-persona-redesign button:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 760px) {
+  .mx-persona-redesign__variants {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-persona-redesign__pagination span {
+    transition: none;
+  }
+}

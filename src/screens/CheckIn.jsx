@@ -720,7 +720,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                       ? 'Текст сохранён в сегодняшнем check-in.'
                       : 'Состояние сохранено без текстовой записи.'}
                   </p>
-                  <p className="mt-2 text-[12px] text-faint">
+                  <p className="mt-2 text-[12px] text-muted">
                     Дальше — один добровольный шаг, который тебе сейчас подходит.
                   </p>
                 </div>
@@ -786,9 +786,9 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
             }
           }}
           aria-label="Назад"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
+          className="w-11 h-11 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
         >
-          <ChevronLeft size={20} className="text-muted" />
+          <ChevronLeft size={20} aria-hidden="true" className="text-muted" />
         </button>
 
         <div className="flex gap-1.5">
@@ -809,9 +809,9 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
             requestClose()
           }}
           aria-label="Закрыть"
-          className="w-10 h-10 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
+          className="w-11 h-11 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
         >
-          <X size={18} className="text-muted" />
+          <X size={18} aria-hidden="true" className="text-muted" />
         </button>
       </div>
 
@@ -821,7 +821,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
             <div
               className={[
                 'mb-2 font-label text-[12px] font-semibold uppercase tracking-wide',
-                isMorningNoteStep ? 'text-gold' : 'text-faint',
+                isMorningNoteStep ? 'text-gold' : 'text-muted',
               ].join(' ')}
             >
               {stepLabel}
@@ -882,7 +882,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
                         <span
                           className={`text-[10px] font-semibold leading-tight text-center ${
-                            active ? 'text-gold' : 'text-faint'
+                            active ? 'text-gold' : 'text-muted'
                           }`}
                         >
                           {scale.labels[level - 1]}
@@ -992,7 +992,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                     <p
                       role="status"
                       aria-live="polite"
-                      className="min-h-5 mt-3 text-[12px] text-faint"
+                      className="min-h-5 mt-3 text-[12px] text-muted"
                     >
                       {draftStatus === 'pending'
                         ? 'Есть несохранённая запись'

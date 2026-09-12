@@ -1,0 +1,114 @@
+name: Telegram Owner QA Web App
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Полный 40-символьный SHA exact Cloudflare Owner QA build
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: telegram-owner-qa-webapp
+  cancel-in-progress: false
+
+env:
+  OWNER_QA_BASE_URL: https://mentalix-owner-qa.pages.dev
+  OWNER_QA_URL: https://mentalix-owner-qa.pages.dev/?ui_lab=library-programs&review=1
+
+jobs:
+  notify:
+    name: Send Owner QA Web App button
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: cloudflare-owner-qa
+    steps:
+      - name: Verify exact SHA and stable provenance
+        shell: bash
+        env:
+          REQUESTED_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$REQUESTED_SHA" =~ ^[0-9a-fA-F]{40}$ ]]; then
+            echo 'commit_sha должен быть полным 40-символьным SHA.' >&2
+            exit 1
+          fi
+          qa_json="$(mktemp)"
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 "$OWNER_QA_BASE_URL/qa-build.json" > "$qa_json"
+          test "$(jq -r '.commit_sha' "$qa_json")" = "$REQUESTED_SHA"
+          echo "Проверен exact SHA: $REQUESTED_SHA"
+
+      - name: Build and send Telegram Web App payload
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_PRODUCTION_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_PREVIEW_CHAT_ID }}
+          COMMIT_SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$TELEGRAM_BOT_TOKEN" =~ ^[0-9]+:[A-Za-z0-9_-]+$ ]]; then
+            echo 'TELEGRAM_PRODUCTION_BOT_TOKEN имеет неверный формат.' >&2
+            exit 1
+          fi
+          if [[ ! "$TELEGRAM_CHAT_ID" =~ ^-?[0-9]+$ ]]; then
+            echo 'TELEGRAM_PREVIEW_CHAT_ID должен быть числом.' >&2
+            exit 1
+          fi
+
+          text="Mentalix Owner QA · Library UI Lab\nSHA: $COMMIT_SHA\nURL: $OWNER_QA_URL\nProvenance: Cloudflare qa-build.json подтверждён"
+          payload="$(jq -n \
+            --arg chat_id "$TELEGRAM_CHAT_ID" \
+            --arg text "$text" \
+            --arg url "$OWNER_QA_URL" \
+            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Owner QA", web_app: {url: $url}}]]}}')"
+
+          response_file="$(mktemp)"
+          status="$(curl --silent --show-error --max-time 20 \
+            --request POST \
+            --header 'Content-Type: application/json; charset=utf-8' \
+            --data "$payload" \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage")"
+
+          if [ "$status" = "200" ] && jq -e '.ok == true' "$response_file" >/dev/null 2>&1; then
+            echo 'Telegram Web App notification sent.'
+            {
+              echo '### Telegram Owner QA Web App'
+              echo "Stable URL: $OWNER_QA_URL"
+              echo "Exact SHA: $COMMIT_SHA"
+              echo 'Payload: web_app'
+              echo 'Fallback: не использован'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # Некоторые типы чатов не принимают web_app в inline keyboard. Не называем
+          # такой запуск Mini App PASS: отправляем отдельную обычную ссылку и фиксируем
+          # точный fallback в summary.
+          reason="$(jq -r '.description // "неизвестная ошибка Telegram API"' "$response_file" 2>/dev/null || true)"
+          echo "web_app недоступен для текущего типа чата: $reason" >&2
+          fallback_payload="$(jq -n \
+            --arg chat_id "$TELEGRAM_CHAT_ID" \
+            --arg text "$text\n\nFallback: обычная ссылка (Telegram web_app отклонён: $reason)" \
+            --arg url "$OWNER_QA_URL" \
+            '{chat_id: $chat_id, text: $text, disable_web_page_preview: false, reply_markup: {inline_keyboard: [[{text: "Открыть Owner QA в браузере", url: $url}]]}}')"
+          fallback_response="$(curl --silent --show-error --max-time 20 \
+            --request POST \
+            --header 'Content-Type: application/json; charset=utf-8' \
+            --data "$fallback_payload" \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage")"
+          if ! printf '%s' "$fallback_response" | jq -e '.ok == true' >/dev/null 2>&1; then
+            echo 'Не удалось отправить безопасный URL fallback.' >&2
+            exit 1
+          fi
+          {
+            echo '### Telegram Owner QA Web App'
+            echo "Stable URL: $OWNER_QA_URL"
+            echo "Exact SHA: $COMMIT_SHA"
+            echo 'Payload: web_app — отклонён текущим типом чата'
+            echo "Fallback: обычная ссылка отправлена; причина: $reason"
+          } >> "$GITHUB_STEP_SUMMARY"

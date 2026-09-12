@@ -123,7 +123,7 @@ export default function PersonaPicker({ user, onPick }) {
 
   return (
     <div className="w-full max-w-lg mx-auto px-4 animate-fade-in">
-      <h2 className="font-display mx-type-page text-cream lowercase mt-0 mb-2">с кем говорим.</h2>
+      <h1 className="font-display mx-type-page text-cream lowercase mt-0 mb-2">с кем говорим.</h1>
 
       <p className="mx-type-meta text-faint mb-4">три собеседника, три отдельных разговора</p>
 
@@ -266,7 +266,7 @@ export default function PersonaPicker({ user, onPick }) {
 
                               onPick(persona.key, starter)
                             }}
-                            className="rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform mx-persona-card__starter"
+                            className="min-h-11 rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform mx-persona-card__starter"
                           >
                             {starter}
                           </button>
@@ -290,7 +290,11 @@ export default function PersonaPicker({ user, onPick }) {
             )
           })}
         </div>
-        <div className="mt-3 flex items-end justify-center gap-2" aria-label="Страница собеседника">
+        <div
+          className="mt-3 flex items-end justify-center gap-2"
+          role="group"
+          aria-label="Страница собеседника"
+        >
           {PERSONAS.map((persona, index) => (
             <button
               type="button"
@@ -298,11 +302,16 @@ export default function PersonaPicker({ user, onPick }) {
               aria-label={`${persona.name}, страница ${index + 1} из ${PERSONAS.length}`}
               aria-current={active === index ? 'page' : undefined}
               onClick={() => selectPage(index)}
-              className={[
-                'w-1.5 rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60',
-                active === index ? 'h-8 bg-gold' : 'h-4 bg-cream/20 hover:bg-cream/40',
-              ].join(' ')}
-            />
+              className="inline-flex h-11 w-11 items-end justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+            >
+              <span
+                className={[
+                  'w-1.5 rounded-full transition-all duration-200',
+                  active === index ? 'h-8 bg-gold' : 'h-4 bg-cream/20',
+                ].join(' ')}
+                aria-hidden="true"
+              />
+            </button>
           ))}
         </div>
       </div>

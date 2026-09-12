@@ -864,6 +864,8 @@ test('MXL-THEME-015 light-preview keeps Mentalix warmth and remains preview-only
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-bg: 244 239 230/)
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-card2: 235 227 216/)
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-gold: 157 86 32/)
+  assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-artbed: 38 31 25/)
+  assert.match(styles, /\[data-theme='light'\][\s\S]*--c-artbed: 38 31 25/)
   assert.match(styles, /\[data-theme='light-preview'\] \.bg-artbed[\s\S]*--c-gold: 225 166 79/)
   assert.match(
     styles,

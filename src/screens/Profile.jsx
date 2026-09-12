@@ -148,7 +148,7 @@ function PathEvent({ event, isLast }) {
       </div>
 
       <div className={isLast ? 'pb-1' : 'pb-5'}>
-        <div className="text-[11px] text-faint mb-1">
+        <div className="text-[11px] text-muted mb-1">
           {event.mark}
         </div>
 
@@ -227,7 +227,7 @@ export default function Profile({ user }) {
           </h2>
 
           {stats && (
-            <p className="text-[12px] text-faint mt-0.5">
+            <p className="text-[12px] text-muted mt-0.5">
               {stats.days_active} дней в системе · {stats.total_checkins} чек-инов
             </p>
           )}
@@ -280,7 +280,7 @@ export default function Profile({ user }) {
 
       {!loading && !loadError && stats?.best_streak > 0 && (
         <div className="rounded-[22px] border border-gold/25 bg-emerald px-5 py-4 mb-8">
-          <div className="text-[11px] text-faint mb-1">личный максимум</div>
+          <div className="text-[11px] text-muted mb-1">личный максимум</div>
 
           <p className="text-[14px] text-cream leading-snug">
             Лучшая серия — {stats.best_streak} дней подряд.
