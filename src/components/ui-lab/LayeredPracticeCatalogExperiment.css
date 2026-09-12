@@ -636,7 +636,7 @@
   margin: 0 auto;
   overflow: hidden;
   border-radius: 12px;
-  background: rgb(28 28 28);
+  background: rgb(var(--c-artbed));
 }
 .mx-layered-category__art-glyph {
   display: grid;
@@ -649,7 +649,7 @@
 }
 .mx-layered-category__art-base {
   min-height: 0;
-  background: rgb(237 189 96 / 0.18);
+  background: rgb(var(--c-gold) / 0.18);
 }
 .mx-layered-category__card strong {
   width: 100%;
@@ -1641,4 +1641,17 @@
   .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-track {
     scroll-behavior: auto;
   }
+}
+
+/* Light themes: only this layered category card uses a paper surface.
+   Global --c-artbed stays dark so other artbed cards remain a night window. */
+[data-theme='light'] .mx-layered-category__art,
+[data-theme='light-preview'] .mx-layered-category__art {
+  background: rgb(var(--c-card2));
+}
+
+/* Accent strip needs higher opacity on the light paper bed to stay readable. */
+[data-theme='light'] .mx-layered-category__art-base,
+[data-theme='light-preview'] .mx-layered-category__art-base {
+  background: rgb(var(--c-gold) / 0.32);
 }
