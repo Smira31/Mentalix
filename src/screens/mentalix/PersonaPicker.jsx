@@ -15,7 +15,7 @@ const PROMISES = {
   dnevnik: 'Поможет исследовать свои мысли и эмоции глубже.',
 }
 
-function trim(text, max = 96) {
+function trim(text, max = 70) {
   const clean = String(text || '')
     .replace(/\s+/g, ' ')
     .trim()
@@ -26,18 +26,18 @@ function HeadContours() {
   return (
     <svg
       className="mx-dialog-heads__svg"
-      viewBox="0 0 390 330"
+      viewBox="0 0 390 190"
       preserveAspectRatio="none"
       aria-hidden="true"
       focusable="false"
     >
       <g className="mx-dialog-head mx-dialog-head--left">
-        <path d="M245 40c-32-22-75-25-109-6-32 18-50 47-53 82-3 28 5 51 18 69 8 11 11 25 8 39-4 19-16 35-34 48l-18 13c-9 6-12 18-6 26 6 9 18 12 28 7l51-24c19-9 34-24 44-42l13-24c6-12 16-20 29-23 32-8 57-30 67-61 13-39 0-80-38-104Z" />
-        <path d="M245 40c-18 22-22 43-14 63 6 15 18 24 35 28" />
+        <path d="M-18 154C18 148 32 127 37 103C42 79 49 54 70 38C88 24 111 20 132 25C148 29 160 40 168 54C153 52 143 57 140 66C136 76 143 84 157 88C149 99 143 110 132 119C118 131 101 136 82 142L42 162C22 172 2 171-18 166Z" />
+        <path d="M168 54C153 52 143 57 140 66C136 76 143 84 157 88C149 99 143 110 132 119" />
       </g>
       <g className="mx-dialog-head mx-dialog-head--right">
-        <path d="M245 40c-32-22-75-25-109-6-32 18-50 47-53 82-3 28 5 51 18 69 8 11 11 25 8 39-4 19-16 35-34 48l-18 13c-9 6-12 18-6 26 6 9 18 12 28 7l51-24c19-9 34-24 44-42l13-24c6-12 16-20 29-23 32-8 57-30 67-61 13-39 0-80-38-104Z" />
-        <path d="M245 40c-18 22-22 43-14 63 6 15 18 24 35 28" />
+        <path d="M408 154C372 148 358 127 353 103C348 79 341 54 320 38C302 24 279 20 258 25C242 29 230 40 222 54C237 52 247 57 250 66C254 76 247 84 233 88C241 99 247 110 258 119C272 131 289 136 308 142L348 162C368 172 388 171 408 166Z" />
+        <path d="M222 54C237 52 247 57 250 66C254 76 247 84 233 88C241 99 247 110 258 119" />
       </g>
     </svg>
   )
@@ -85,7 +85,7 @@ export default function PersonaPicker({ user, onPick }) {
   useEffect(() => {
     const track = trackRef.current
     const card = track?.children[DEFAULT_INDEX]
-    if (!track || !card) return
+    if (!track || !card) return undefined
     const frame = requestAnimationFrame(() => {
       track.scrollTo({
         left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2,
@@ -114,7 +114,7 @@ export default function PersonaPicker({ user, onPick }) {
 
   function selectRole(index) {
     const track = trackRef.current
-    const card = trackRef.current?.children[index]
+    const card = track?.children[index]
     if (!track || !card) return
     platform.haptic('light')
     track.scrollTo({
@@ -136,17 +136,13 @@ export default function PersonaPicker({ user, onPick }) {
           <HeadContours />
         </div>
         <div className="mx-dialog-hero__content">
-          <p className="mx-dialog-eyebrow">Д И А Л О Г</p>
-          <h1 id="dialog-entry-title">
-            О чём хочешь
-            <br />
-            поговорить
-            <br />
-            <strong>прямо сейчас?</strong>
+          <p className="mx-dialog-eyebrow font-label">ДИАЛОГ</p>
+          <h1 id="dialog-entry-title" className="mx-type-hero">
+            О чём хочешь поговорить прямо сейчас?
           </h1>
           <button
             type="button"
-            className="mx-dialog-start"
+            className="mx-dialog-start cta-pill mx-type-control"
             onClick={() => startRole(PERSONAS[active])}
             aria-label={`Начать разговор: ${PERSONAS[active].name}`}
           >
@@ -157,11 +153,9 @@ export default function PersonaPicker({ user, onPick }) {
 
       <section className="mx-dialog-surface" aria-labelledby="dialog-role-title">
         <div className="mx-dialog-surface__header">
-          <p className="mx-dialog-surface__kicker">для разговора</p>
-          <h2 id="dialog-role-title">
-            Выбери роль
-            <br />
-            для разговора.
+          <p className="mx-dialog-surface__kicker font-label">ДЛЯ РАЗГОВОРА</p>
+          <h2 id="dialog-role-title" className="mx-type-section">
+            Выбери роль для разговора.
           </h2>
         </div>
         <div
@@ -178,7 +172,7 @@ export default function PersonaPicker({ user, onPick }) {
             return (
               <article
                 key={persona.key}
-                className={`mx-dialog-card ${isActive ? 'is-active' : ''}`}
+                className={`mx-dialog-card mx-card-surface ${isActive ? 'is-active' : ''}`}
                 data-testid="mentor-persona-card"
                 aria-label={`${persona.name}: ${PROMISES[persona.key]}`}
                 aria-current={isActive ? 'true' : undefined}
@@ -193,12 +187,12 @@ export default function PersonaPicker({ user, onPick }) {
               >
                 <RoleGlyph persona={persona} active={isActive} />
                 <div className="mx-dialog-card__body">
-                  <p className="mx-dialog-card__role">{persona.name}</p>
-                  <h3>{PROMISES[persona.key]}</h3>
-                  <p className="mx-dialog-card__description">{persona.desc}</p>
+                  <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
+                  <h3 className="mx-type-persona-title">{PROMISES[persona.key]}</h3>
+                  <p className="mx-dialog-card__description mx-type-persona-body">{persona.desc}</p>
                   {last && !previewsLoading && (
-                    <p className="mx-dialog-card__history">
-                      Последний разговор: {trim(last.content, 70)}
+                    <p className="mx-dialog-card__history mx-type-meta">
+                      Последний разговор: {trim(last.content)}
                     </p>
                   )}
                 </div>
