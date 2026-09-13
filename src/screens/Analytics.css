@@ -604,3 +604,11 @@
   border-color: #d9aa52;
   background: #a9823e;
 }
+
+/* The legacy live-calendar pseudo-label is disabled because the JSX now
+   renders the day number inside the circular cell. */
+.mx-progress-layout-v2 .mx-progress-redesign__calendar i[data-day]::before,
+.mx-progress-layout-v2 .mx-progress-redesign__calendar i[data-day]::after {
+  display: none;
+  content: none;
+}
