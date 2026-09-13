@@ -1078,6 +1078,8 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 }) => {
   const layouts = [
     ...VIEWPORTS,
+    { name: '393x852', width: 393, height: 852 }, // iPhone 16
+    { name: '402x874', width: 402, height: 874 }, // iPhone 16 Pro
     { name: '768x1024', width: 768, height: 1024 },
     { name: '1280x800', width: 1280, height: 800 },
   ]
@@ -1119,6 +1121,15 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await expect(page.getByRole('heading', { name: /Выбери роль/ })).toBeVisible()
     const cards = page.getByTestId('mentor-persona-card')
     await expect(cards).toHaveCount(3)
+    const cardGeometry = await cards.first().evaluate(element => {
+      const rect = element.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    })
+    expect(cardGeometry.width, 'Карточка должна оставаться компактной').toBeGreaterThanOrEqual(190)
+    expect(cardGeometry.width, 'Карточка не должна становиться dashboard-like').toBeLessThanOrEqual(
+      204
+    )
+    expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(160)
     expect(
       await cards.evaluateAll(elements =>
         elements.map(element => getComputedStyle(element).borderTopWidth)
@@ -1133,6 +1144,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
+      await expect(track).toHaveCSS('touch-action', 'pan-x')
       const cardWidth = await cards
         .first()
         .evaluate(element => element.getBoundingClientRect().width)
