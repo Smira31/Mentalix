@@ -497,21 +497,23 @@
 /* Readability pass: softer graphite instead of low-contrast grey. */
 .mx-progress-layout-v2 .mx-progress-redesign__section-head > .font-label,
 .mx-progress-layout-v2 .mx-progress-redesign__activities article > span {
-  color: rgb(178 178 178);
-  font-size: 8px;
+  color: rgb(154 154 158);
+  font-family: 'Manrope', 'Onest', sans-serif;
+  font-size: 9px;
   font-weight: 600;
-  letter-spacing: 1.65px;
+  letter-spacing: 1.55px;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__section-head > small,
 .mx-progress-layout-v2 .mx-progress-redesign__month-nav small {
-  color: rgb(184 184 184);
-  font-size: 12px;
-  font-weight: 600;
+  color: rgb(190 190 194);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__month-nav button {
-  color: rgb(190 190 190);
+  color: rgb(196 196 200);
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__observation > span,
@@ -524,7 +526,8 @@
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card summary,
 .mx-progress-layout-v2 .mx-progress-redesign__hero-copy > span,
 .mx-progress-layout-v2 .mx-progress-redesign__hero-copy > p {
-  color: rgb(168 168 168);
+  color: rgb(174 174 178);
+  font-weight: 500;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__observation > strong {
@@ -536,15 +539,22 @@
 .mx-progress-layout-v2 .mx-progress-redesign__observation > p,
 .mx-progress-layout-v2 .mx-progress-redesign__caveat,
 .mx-progress-layout-v2 .mx-progress-redesign__calendar-card > p {
-  font-size: 12px;
-  line-height: 1.38;
+  color: rgb(174 174 178);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.42;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__emotion-list > div {
-  font-size: 12px;
+  color: rgb(178 178 182);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card > small,
 .mx-progress-layout-v2 .mx-progress-redesign__activity-card summary {
-  font-size: 11px;
+  color: rgb(178 178 182);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
 }
