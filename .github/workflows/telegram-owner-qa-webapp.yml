@@ -46,7 +46,8 @@ jobs:
             exit 1
           fi
           qa_json="$(mktemp)"
-          curl --fail --silent --show-error --retry 5 --retry-delay 2 "$OWNER_QA_BASE_URL/qa-build.json" > "$qa_json"
+          cache_bust="$(date +%s%N)"
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 "$OWNER_QA_BASE_URL/qa-build.json?t=$cache_bust" > "$qa_json"
           test "$(jq -r '.commit_sha' "$qa_json")" = "$REQUESTED_SHA"
           echo "Проверен exact SHA: $REQUESTED_SHA"
 

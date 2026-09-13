@@ -74,10 +74,13 @@ jobs:
           test -f dist/index.html
           printf '{"commit_sha":"%s"}\n' "$COMMIT_SHA" > dist/qa-build.json
           cat > dist/_headers <<'EOF'
+          /qa-build.json
+            Cache-Control: no-store
           /*
             X-Robots-Tag: noindex, nofollow
           EOF
           test "$(jq -r '.commit_sha' dist/qa-build.json)" = "$COMMIT_SHA"
+          grep -Fqx '  Cache-Control: no-store' dist/_headers
           grep -Fqx '  X-Robots-Tag: noindex, nofollow' dist/_headers
 
       - name: Выполнить Cloudflare Pages Direct Upload
@@ -121,8 +124,9 @@ jobs:
             local last_headers=''
 
             for attempt in $(seq 1 10); do
-              if json="$(curl --fail --silent --show-error "$url/qa-build.json")" && \
-                headers="$(curl --fail --silent --show-error -I "$url/qa-build.json")"; then
+              cache_bust="$(date +%s%N)"
+              if json="$(curl --fail --silent --show-error "$url/qa-build.json?t=$cache_bust")" && \
+                headers="$(curl --fail --silent --show-error -I "$url/qa-build.json?t=$cache_bust")"; then
                 last_sha="$(jq -r '.commit_sha // empty' <<< "$json" 2>/dev/null || true)"
                 last_headers="$headers"
                 echo "$label attempt $attempt/10: commit_sha=$last_sha, expected=$COMMIT_SHA"
