@@ -974,7 +974,9 @@ export default function App() {
 
       <div
         ref={scrollRootRef}
-        className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain flex flex-col items-center"
+        className={`w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
+          tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
+        }`}
         style={{
           paddingBottom: contentBottomPadding,
           scrollPaddingBottom: contentBottomPadding,
@@ -1088,7 +1090,11 @@ export default function App() {
           key={overlay || 'main'}
           className={[
             'flex-1 w-full flex flex-col items-center',
-            mentorPersonaOpen ? '' : 'animate-fade-in',
+            tab === 'mentor' && !overlay
+              ? 'mx-dialog-runtime-shell'
+              : mentorPersonaOpen
+                ? ''
+                : 'animate-fade-in',
           ].join(' ')}
         >
           <Suspense fallback={<ScreenLoading />}>
