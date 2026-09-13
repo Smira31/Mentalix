@@ -240,9 +240,10 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
 
   assert.match(demo, /host\.endsWith\('\.trycloudflare\.com'\)/)
+  assert.match(demo, /const localPreviewEnabled = import\.meta\.env\.VITE_LOCAL_PREVIEW === 'true'/)
   assert.match(
     demo,
-    /const isPreviewRuntime = import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview'/
+    /const isPreviewRuntime =\s+import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview' \|\| localPreviewEnabled/
   )
   assert.match(demo, /const isQaProductionHost = host === 'mentalix-preview\.vercel\.app'/)
   assert.match(

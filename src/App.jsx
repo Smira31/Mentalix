@@ -876,7 +876,12 @@ export default function App() {
    */
   const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
-  const topSafeArea = fullscreen ? 'calc(var(--app-safe-top) + 56px)' : 'var(--app-safe-top)'
+  const topSafeArea =
+    tab === 'mentor' && !overlay
+      ? 'var(--app-safe-top)'
+      : fullscreen
+        ? 'calc(var(--app-safe-top) + 56px)'
+        : 'var(--app-safe-top)'
 
   /*
    * КОНТРАКТ ОТСТУПОВ ЭКРАНА
@@ -926,7 +931,7 @@ export default function App() {
         paddingLeft: 'var(--app-safe-left)',
       }}
     >
-      {previewDemoMode && (
+      {previewDemoMode && tab !== 'mentor' && (
         <div
           role="status"
           className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-gold/40 bg-emerald px-3 py-1 text-[10px] font-semibold tracking-wide text-gold shadow-lg"
