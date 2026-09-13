@@ -251,3 +251,140 @@
     padding-inline: 9px;
   }
 }
+
+/* MXL-PROGRESS-REDESIGN-001 — compact production composition. */
+.mx-progress-layout-v2 {
+  padding-inline: 16px;
+  padding-bottom: 40px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__header {
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__header h2 {
+  font-size: 30px;
+}
+
+.mx-progress-layout-v2__period-control {
+  top: 8px;
+}
+
+.mx-progress-layout-v2__period-trigger {
+  min-height: 44px;
+  padding-inline: 12px;
+  font-size: 13px;
+}
+
+.mx-progress-layout-v2__period-menu {
+  min-width: 124px;
+  padding: 4px;
+  border-radius: 13px;
+}
+
+.mx-progress-layout-v2__period-menu button {
+  min-height: 30px;
+  font-size: 12px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__hero {
+  min-height: 300px;
+  margin-bottom: 28px;
+  padding: 20px 18px 18px;
+  border-radius: 24px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__hero-copy strong {
+  font-size: 48px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__hero-copy p {
+  max-width: 280px;
+  font-size: 13px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__chart {
+  min-height: 142px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section {
+  margin-top: 28px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head {
+  margin-bottom: 10px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__section-head > .font-label {
+  font-size: 9px;
+  letter-spacing: 1.7px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation h3,
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card h3,
+.mx-progress-layout-v2 .mx-progress-redesign__activities > h3 {
+  font-size: 19px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__observation {
+  min-height: 190px;
+  padding: 18px;
+  border-radius: 22px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__caveat,
+.mx-progress-layout-v2 .mx-progress-redesign__observation p {
+  font-size: 10px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__calendar-card,
+.mx-progress-layout-v2 .mx-progress-redesign__emotion-card {
+  padding: 16px;
+  border-radius: 22px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activities {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card {
+  min-height: 128px;
+  padding: 16px;
+  border-radius: 20px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card::before {
+  width: 56px;
+  height: 56px;
+  border-width: 7px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card::after {
+  top: 63px;
+  left: 16px;
+  width: 56px;
+  font-size: 14px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card > span {
+  font-size: 9px;
+  letter-spacing: 1.2px;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card > small,
+.mx-progress-layout-v2 .mx-progress-redesign__activity-card summary {
+  font-size: 10px;
+}
+
+@media (min-width: 420px) {
+  .mx-progress-layout-v2 {
+    padding-inline: 20px;
+  }
+
+  .mx-progress-layout-v2 .mx-progress-redesign__hero {
+    min-height: 320px;
+  }
+}

@@ -7,7 +7,11 @@ import { api } from '../lib/api'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 
-const PROGRESS_LAYOUT_V2_ENABLED = import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
+// Production now uses the owner-approved compact mobile composition. The
+// feature flag remains available for local comparison, while production
+// builds use the same visual contract as the validated preview.
+const PROGRESS_LAYOUT_V2_ENABLED =
+  import.meta.env.PROD || import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
