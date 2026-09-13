@@ -14,6 +14,14 @@ const uiLabEnabled =
   import.meta.env.VERCEL_ENV === 'preview' ||
   isUiLabHostAllowed(window.location.hostname)
 
+const dialogPreviewEnabled =
+  import.meta.env.DEV ||
+  import.meta.env.VERCEL_ENV === 'preview' ||
+  window.location.hostname === 'mentalix-preview.vercel.app'
+
+const dialogPreviewRequested =
+  dialogPreviewEnabled && new URLSearchParams(window.location.search).get('dialog_preview') === '1'
+
 const uiLabParam = new URLSearchParams(window.location.search).get('ui_lab')
 
 // UI Lab доступен только в dev/Vercel Preview. Старые значения query
@@ -24,6 +32,10 @@ const uiLabSection =
   uiLabParam === '1' ? 'experiments' : uiLabParam === 'showcase' ? 'baseline' : uiLabParam
 
 const UiLab = uiLabEnabled ? lazy(() => import('./components/ui-lab/UiLab')) : null
+
+const PersonaPicker = dialogPreviewEnabled
+  ? lazy(() => import('./screens/mentalix/PersonaPicker'))
+  : null
 
 const motionKitEnabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
 
@@ -54,6 +66,14 @@ const CardDirectionsLab = cardLabEnabled
 const OnboardingPreview = import.meta.env.DEV ? lazy(() => import('./screens/Onboarding')) : null
 
 function RootScreen() {
+  if (dialogPreviewRequested && PersonaPicker) {
+    return (
+      <Suspense fallback={<div className="min-h-[100dvh] bg-emerald-deep" />}>
+        <PersonaPicker user={null} onPick={() => undefined} />
+      </Suspense>
+    )
+  }
+
   if (cardLabRequested && CardDirectionsLab) {
     return (
       <Suspense fallback={<div className="min-h-[100dvh] bg-emerald-deep" />}>
