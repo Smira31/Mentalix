@@ -52,66 +52,105 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
     : []
 
   return (
-    <section className="mx-progress-redesign__hero" aria-labelledby="progress-mood-title">
-      <div className="mx-progress-redesign__hero-copy">
-        <span id="progress-mood-title">Среднее настроение · {period} дней</span>
-        <div>
-          <strong>{avgMood === null ? '—' : avgMood.toFixed(1)}</strong>
-          <small>/ 5</small>
-        </div>
+    <>
+      <section className="mx-progress-redesign__intro" aria-labelledby="progress-intro-title">
+        <h1 id="progress-intro-title">прогресс.</h1>
         <p>
-          {points.length >= 2
-            ? 'Линия показывает только твои сохранённые check-in за выбранный период.'
-            : 'Ещё несколько спокойных отметок — и здесь станет виден твой ритм.'}
+          Здесь ты увидишь, как меняется
+          <br />
+          твоё настроение за неделю
         </p>
-      </div>
+        <small>
+          {points.length ? 'Твои отметки за выбранный период' : 'Пока нет данных для показа'}
+        </small>
+      </section>
 
-      <div className="mx-progress-redesign__chart">
-        {loading ? (
-          <div className="mx-progress-redesign__chart-skeleton" aria-label="Загрузка прогресса" />
-        ) : error ? (
-          <div className="mx-progress-redesign__chart-message" role="alert">
-            <strong>Не удалось загрузить прогресс</strong>
-            <span>Проверь соединение и попробуй ещё раз.</span>
-            <button type="button" onClick={onRetry}>
-              Повторить
+      <section
+        className="mx-progress-redesign__mood-prompt"
+        aria-labelledby="progress-mood-prompt-title"
+      >
+        <h2 id="progress-mood-prompt-title">Как ты себя чувствуешь сейчас?</h2>
+        <p>Отметь своё настроение, чтобы добавить первую точку в прогресс</p>
+        <div
+          className="mx-progress-redesign__mood-options"
+          role="group"
+          aria-label="Выбери настроение"
+        >
+          {[
+            ['Очень тяжело', '☹'],
+            ['Тяжело', '−'],
+            ['Ровно', '—'],
+            ['Хорошо', '⌣'],
+            ['Отлично', '☺'],
+          ].map(([label, icon]) => (
+            <button key={label} type="button" aria-label={label} onClick={onGoCheckin}>
+              {icon}
             </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-progress-redesign__hero" aria-labelledby="progress-mood-title">
+        <div className="mx-progress-redesign__hero-copy">
+          <span id="progress-mood-title">Среднее настроение · {period} дней</span>
+          <div>
+            <strong>{avgMood === null ? '—' : avgMood.toFixed(1)}</strong>
+            <small>/ 5</small>
           </div>
-        ) : points.length < 2 ? (
-          <div className="mx-progress-redesign__chart-message">
-            <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
-            <span>
-              {points.length
-                ? 'После следующего check-in появится первая линия.'
-                : 'Check-in занимает меньше минуты и запускает личную историю прогресса.'}
-            </span>
-            <button type="button" onClick={onGoCheckin}>
-              Пройти check-in
-            </button>
-          </div>
-        ) : (
-          <>
-            <svg viewBox="0 0 300 142" role="img" aria-label="График настроения">
-              <path
-                className="mx-progress-redesign__chart-grid"
-                d="M2 14H298 M2 73H298 M2 132H298"
-              />
-              <polyline className="mx-progress-redesign__chart-line" points={polyline} />
-              {points.map((item, index) => {
-                const x = 2 + (index / (points.length - 1)) * 296
-                const y = 132 - ((item.mood - 1) / 4) * 118
-                return <circle key={item.date} cx={x} cy={y} r="3.2" />
-              })}
-            </svg>
-            <div className="mx-progress-redesign__chart-axis">
-              {axisDates.map(item => (
-                <span key={item.date}>{formatSourceDate(item.date)}</span>
-              ))}
+          <p>
+            {points.length >= 2
+              ? 'Линия показывает только твои сохранённые check-in за выбранный период.'
+              : 'Ещё несколько спокойных отметок — и здесь станет виден твой ритм.'}
+          </p>
+        </div>
+
+        <div className="mx-progress-redesign__chart">
+          {loading ? (
+            <div className="mx-progress-redesign__chart-skeleton" aria-label="Загрузка прогресса" />
+          ) : error ? (
+            <div className="mx-progress-redesign__chart-message" role="alert">
+              <strong>Не удалось загрузить прогресс</strong>
+              <span>Проверь соединение и попробуй ещё раз.</span>
+              <button type="button" onClick={onRetry}>
+                Повторить
+              </button>
             </div>
-          </>
-        )}
-      </div>
-    </section>
+          ) : points.length < 2 ? (
+            <div className="mx-progress-redesign__chart-message">
+              <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
+              <span>
+                {points.length
+                  ? 'После следующего check-in появится первая линия.'
+                  : 'Check-in занимает меньше минуты и запускает личную историю прогресса.'}
+              </span>
+              <button type="button" onClick={onGoCheckin}>
+                Пройти check-in
+              </button>
+            </div>
+          ) : (
+            <>
+              <svg viewBox="0 0 300 142" role="img" aria-label="График настроения">
+                <path
+                  className="mx-progress-redesign__chart-grid"
+                  d="M2 14H298 M2 73H298 M2 132H298"
+                />
+                <polyline className="mx-progress-redesign__chart-line" points={polyline} />
+                {points.map((item, index) => {
+                  const x = 2 + (index / (points.length - 1)) * 296
+                  const y = 132 - ((item.mood - 1) / 4) * 118
+                  return <circle key={item.date} cx={x} cy={y} r="3.2" />
+                })}
+              </svg>
+              <div className="mx-progress-redesign__chart-axis">
+                {axisDates.map(item => (
+                  <span key={item.date}>{formatSourceDate(item.date)}</span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+    </>
   )
 }
 
@@ -698,7 +737,9 @@ export default function Analytics({ user, onGoCheckin }) {
       }`}
     >
       <header className="mx-progress-redesign__header">
-        <h2 className="font-display mx-type-page text-cream lowercase">прогресс.</h2>
+        {!PROGRESS_LAYOUT_V2_ENABLED && (
+          <h2 className="font-display mx-type-page text-cream lowercase">прогресс.</h2>
+        )}
         {PROGRESS_LAYOUT_V2_ENABLED ? (
           <div className="mx-progress-layout-v2__period-control">
             <button
