@@ -1,3 +1,24 @@
+.mx-dialog-runtime-shell {
+  min-height: 0;
+  opacity: 1;
+  animation: none !important;
+}
+
+.mx-dialog-runtime-scroll {
+  overflow: hidden;
+  padding-bottom: var(--app-safe-bottom) !important;
+}
+
+#root:has(.mx-dialog-entry),
+html:has(.mx-dialog-entry),
+body:has(.mx-dialog-entry) {
+  overflow-y: hidden;
+}
+
+#root:has(.mx-dialog-entry) {
+  --bottom-nav-offset: 0px;
+}
+
 .mx-dialog-entry {
   --mx-dialog-card-width: clamp(190px, 49vw, 202px);
   --mx-dialog-card-min-height: clamp(220px, 27vh, 244px);
@@ -9,7 +30,8 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  height: calc(100% - var(--app-content-bottom));
+  height: 100%;
+  max-height: 100%;
   min-height: 0;
   overflow-x: clip;
   overflow-y: visible;
