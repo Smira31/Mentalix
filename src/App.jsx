@@ -876,7 +876,12 @@ export default function App() {
    */
   const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
-  const topSafeArea = fullscreen ? 'calc(var(--app-safe-top) + 56px)' : 'var(--app-safe-top)'
+  const topSafeArea =
+    tab === 'mentor' && !overlay
+      ? 'var(--app-safe-top)'
+      : fullscreen
+        ? 'calc(var(--app-safe-top) + 56px)'
+        : 'var(--app-safe-top)'
 
   /*
    * КОНТРАКТ ОТСТУПОВ ЭКРАНА

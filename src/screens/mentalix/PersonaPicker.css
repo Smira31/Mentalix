@@ -21,7 +21,7 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-entry {
   --mx-dialog-card-width: clamp(190px, 49vw, 202px);
-  --mx-dialog-card-min-height: clamp(220px, 27vh, 244px);
+  --mx-dialog-card-min-height: 280px;
   --mx-dialog-card-padding: calc(var(--mx-space-4) + (var(--mx-space-1) / 2));
   --mx-dialog-carousel-gutter: max(
     var(--mx-space-6),
@@ -57,7 +57,7 @@ body:has(.mx-dialog-entry) {
   position: relative;
   z-index: 2;
   width: min(calc(100% - 64px), 332px);
-  padding-top: 18px;
+  padding-top: 0;
   text-align: center;
 }
 
@@ -91,9 +91,9 @@ body:has(.mx-dialog-entry) {
 .mx-dialog-heads {
   position: absolute;
   z-index: 1;
-  inset: 26px 0 0;
+  inset: 8px 0 0;
   width: 100%;
-  height: calc(100% - 26px);
+  height: calc(100% - 8px);
   pointer-events: none;
   opacity: 0.92;
 }
@@ -192,10 +192,11 @@ body:has(.mx-dialog-entry) {
   gap: var(--mx-space-3);
   width: 100%;
   min-width: 0;
-  padding: 0 var(--mx-dialog-carousel-gutter) var(--mx-space-2);
+  padding: 0 var(--mx-dialog-carousel-gutter);
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
   touch-action: pan-x;
   scroll-padding-inline: var(--mx-dialog-carousel-gutter);
   scroll-snap-type: x mandatory;
@@ -213,6 +214,7 @@ body:has(.mx-dialog-entry) {
   min-height: var(--mx-dialog-card-min-height);
   flex-direction: column;
   padding: var(--mx-dialog-card-padding);
+  overflow: visible;
   opacity: 0.56;
   scroll-snap-align: center;
   transition:
@@ -249,6 +251,7 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-card__body {
   margin-top: auto;
+  overflow: visible;
 }
 
 .mx-dialog-card__role {
@@ -323,7 +326,7 @@ body:has(.mx-dialog-entry) {
 @media (max-width: 340px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
-    --mx-dialog-card-min-height: 218px;
+    --mx-dialog-card-min-height: 244px;
   }
 
   .mx-dialog-hero {
@@ -364,7 +367,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 390px) and (max-width: 404px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 198px;
-    --mx-dialog-card-min-height: 236px;
+    --mx-dialog-card-min-height: 280px;
   }
 
   .mx-dialog-hero {
@@ -377,7 +380,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 405px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 202px;
-    --mx-dialog-card-min-height: 244px;
+    --mx-dialog-card-min-height: 280px;
   }
 }
 

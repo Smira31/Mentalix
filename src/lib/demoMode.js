@@ -20,6 +20,7 @@ export function isPreviewDemoMode() {
 
   const host = window.location.hostname
   const params = new URLSearchParams(window.location.search)
+  const localPreviewEnabled = import.meta.env.VITE_LOCAL_PREVIEW === 'true'
 
   const isAllowedHost =
     host === 'localhost' ||
@@ -27,7 +28,8 @@ export function isPreviewDemoMode() {
     host.endsWith('.vercel.app') ||
     host.endsWith('.manus.computer') ||
     host.endsWith('.trycloudflare.com')
-  const isPreviewRuntime = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+  const isPreviewRuntime =
+    import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost = host === 'mentalix-preview.vercel.app'
 
   return params.get('demo') === '1' && isAllowedHost && (isPreviewRuntime || isQaProductionHost)

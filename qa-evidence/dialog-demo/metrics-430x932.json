@@ -1,0 +1,114 @@
+{
+  "viewport": [430, 932],
+  "url": "http://127.0.0.1:4174/?demo=1&tab=mentor",
+  "authScreen": false,
+  "demoBanner": true,
+  "heads": true,
+  "heroLabel": "ДИАЛОГ",
+  "cta": "Начать",
+  "roleCards": ["Наставник", "Собеседник", "Следопыт"],
+  "dots": 3,
+  "centerCardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+  "rectangles": {
+    "entry": {
+      "x": 0,
+      "y": 0,
+      "width": 430,
+      "height": 932,
+      "top": 0,
+      "right": 430,
+      "bottom": 932,
+      "left": 0
+    },
+    "hero": {
+      "x": 0,
+      "y": 0,
+      "width": 430,
+      "height": 316.875,
+      "top": 0,
+      "right": 430,
+      "bottom": 316.875,
+      "left": 0
+    },
+    "heads": {
+      "x": 0,
+      "y": 8,
+      "width": 430,
+      "height": 308.875,
+      "top": 8,
+      "right": 430,
+      "bottom": 316.875,
+      "left": 0
+    },
+    "content": {
+      "x": 49,
+      "y": 65.796875,
+      "width": 332,
+      "height": 185.265625,
+      "top": 65.796875,
+      "right": 381,
+      "bottom": 251.0625,
+      "left": 49
+    },
+    "surface": {
+      "x": 0,
+      "y": 304.875,
+      "width": 430,
+      "height": 627.125,
+      "top": 304.875,
+      "right": 430,
+      "bottom": 932,
+      "left": 0
+    },
+    "card": {
+      "x": 114,
+      "y": 413.125,
+      "width": 202,
+      "height": 280,
+      "top": 413.125,
+      "right": 316,
+      "bottom": 693.125,
+      "left": 114
+    },
+    "body": {
+      "x": 133,
+      "y": 511.21875,
+      "width": 164,
+      "height": 162.90625,
+      "top": 511.21875,
+      "right": 297,
+      "bottom": 674.125,
+      "left": 133
+    },
+    "nav": {
+      "x": 21,
+      "y": 865,
+      "width": 388,
+      "height": 66,
+      "top": 865,
+      "right": 409,
+      "bottom": 931,
+      "left": 21
+    }
+  },
+  "page": {
+    "scrollHeight": 932,
+    "clientHeight": 932,
+    "scrollWidth": 430,
+    "clientWidth": 430,
+    "scrollTop": 0,
+    "bodyScrollTop": 0
+  },
+  "carousel": {
+    "scrollHeight": 280,
+    "clientHeight": 280,
+    "scrollWidth": 856,
+    "clientWidth": 428,
+    "scrollTop": 0,
+    "overflowX": "auto",
+    "overflowY": "hidden"
+  },
+  "navLabels": ["Сегодня", "Шаги", "Диалог", "Библиотека", "Прогресс"],
+  "animationFrames": ["0", "50", "100"],
+  "externalRequests": []
+}
