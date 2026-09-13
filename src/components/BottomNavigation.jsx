@@ -1,8 +1,7 @@
-import { AlignJustify, House, Sparkles, BookOpen, Lightbulb } from 'lucide-react'
+import { AlignJustify, House, Sparkles, BookOpen } from 'lucide-react'
 
 import MazeLogo from './MazeLogo'
 import { platform } from '../platform'
-import { isPreviewDemoMode } from '../lib/demoMode'
 
 const PROGRESS_LAYOUT_V2_ENABLED = import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
 
@@ -39,13 +38,6 @@ const TABS = [
   },
 ]
 
-const DEMO_TABS = [
-  { key: 'today', label: 'Главная', icon: House },
-  { key: 'practices', label: 'Цитаты', icon: Lightbulb },
-  { key: 'mentor', label: 'Диалог', icon: 'monogram' },
-  { key: 'trends', label: 'Развитие', icon: AlignJustify },
-]
-
 const MOTION = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 function TabIcon({ item, active, size = 21 }) {
@@ -69,8 +61,7 @@ function TabIcon({ item, active, size = 21 }) {
 }
 
 export default function BottomNavigation({ tab, collapsed, onCollapseChange, onTabChange }) {
-  const tabs = isPreviewDemoMode() ? DEMO_TABS : TABS
-  const activeItem = tabs.find(item => item.key === tab) || tabs[0]
+  const activeItem = TABS.find(item => item.key === tab) || TABS[0]
 
   return (
     /*
@@ -190,7 +181,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
             transition: [`opacity 220ms ${MOTION}`, `transform 420ms ${MOTION}`].join(', '),
           }}
         >
-          {tabs.map(item => {
+          {TABS.map(item => {
             const active = tab === item.key
 
             return (
