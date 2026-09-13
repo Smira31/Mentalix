@@ -1,14 +1,6 @@
 {
   "viewport": [430, 932],
-  "url": "http://127.0.0.1:4174/?demo=1&tab=mentor",
-  "authScreen": false,
-  "demoBanner": true,
-  "heads": true,
-  "heroLabel": "ДИАЛОГ",
-  "cta": "Начать",
-  "roleCards": ["Наставник", "Собеседник", "Следопыт"],
-  "dots": 3,
-  "centerCardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+  "url": "http://127.0.0.1:4174/?demo=1&tab=mentor&v=followup-320",
   "rectangles": {
     "entry": {
       "x": 0,
@@ -29,26 +21,6 @@
       "right": 430,
       "bottom": 316.875,
       "left": 0
-    },
-    "heads": {
-      "x": 0,
-      "y": 8,
-      "width": 430,
-      "height": 308.875,
-      "top": 8,
-      "right": 430,
-      "bottom": 316.875,
-      "left": 0
-    },
-    "content": {
-      "x": 49,
-      "y": 65.796875,
-      "width": 332,
-      "height": 185.265625,
-      "top": 65.796875,
-      "right": 381,
-      "bottom": 251.0625,
-      "left": 49
     },
     "surface": {
       "x": 0,
@@ -80,25 +52,19 @@
       "bottom": 674.125,
       "left": 133
     },
-    "nav": {
-      "x": 21,
-      "y": 865,
-      "width": 388,
-      "height": 66,
-      "top": 865,
-      "right": 409,
-      "bottom": 931,
-      "left": 21
-    }
+    "carousel": {
+      "x": 1,
+      "y": 414.125,
+      "width": 428,
+      "height": 280,
+      "top": 414.125,
+      "right": 429,
+      "bottom": 694.125,
+      "left": 1
+    },
+    "nav": null
   },
-  "page": {
-    "scrollHeight": 932,
-    "clientHeight": 932,
-    "scrollWidth": 430,
-    "clientWidth": 430,
-    "scrollTop": 0,
-    "bodyScrollTop": 0
-  },
+  "cardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
   "carousel": {
     "scrollHeight": 280,
     "clientHeight": 280,
@@ -108,7 +74,16 @@
     "overflowX": "auto",
     "overflowY": "hidden"
   },
-  "navLabels": ["Сегодня", "Шаги", "Диалог", "Библиотека", "Прогресс"],
-  "animationFrames": ["0", "50", "100"],
-  "externalRequests": []
+  "page": {
+    "scrollHeight": 932,
+    "clientHeight": 932,
+    "scrollWidth": 430,
+    "clientWidth": 430,
+    "scrollTop": 0,
+    "bodyScrollTop": 0,
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "bodyOverflowX": "hidden",
+    "bodyOverflowY": "hidden"
+  }
 }

@@ -326,12 +326,12 @@ body:has(.mx-dialog-entry) {
 @media (max-width: 340px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
-    --mx-dialog-card-min-height: 244px;
+    --mx-dialog-card-min-height: 236px;
   }
 
   .mx-dialog-hero {
-    flex-basis: 244px;
-    min-height: 244px;
+    flex-basis: 236px;
+    min-height: 236px;
   }
 
   .mx-dialog-hero__content {
