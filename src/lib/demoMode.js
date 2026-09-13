@@ -27,11 +27,9 @@ export function isPreviewDemoMode() {
     host.endsWith('.vercel.app') ||
     host.endsWith('.manus.computer') ||
     host.endsWith('.trycloudflare.com')
-  const isPreviewRuntime =
-    import.meta.env.DEV ||
-    import.meta.env.VERCEL_ENV === 'preview' ||
-    import.meta.env.VITE_LOCAL_PREVIEW === 'true'
-  const isQaProductionHost = host === 'mentalix-preview.vercel.app'
+  const isPreviewRuntime = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+  const isLocalPreview = import.meta.env.VITE_LOCAL_PREVIEW === 'true'
+  const isQaProductionHost = host === 'mentalix-preview.vercel.app' || isLocalPreview
 
   return params.get('demo') === '1' && isAllowedHost && (isPreviewRuntime || isQaProductionHost)
 }

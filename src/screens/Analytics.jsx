@@ -248,7 +248,7 @@ function ObservationRail({ observations, insightsEnabled, preferenceError }) {
         )}
       </div>
       <p className="mx-progress-redesign__caveat">
-        Это описание твоих отметок, не диагноз и не прогноз.
+        Это описание твоих отметок — не диагнозы и не доказанные причины, не прогноз.
       </p>
       {preferenceError && <p className="mx-progress-redesign__status-note">{preferenceError}</p>}
     </section>
