@@ -17,27 +17,6 @@ const LIBRARY_V2_QA_ENABLED =
   new URLSearchParams(window.location.search).get('library_v2') === '1'
 const LIBRARY_V2_ENABLED = LIBRARY_V2_ENV_ENABLED || LIBRARY_V2_QA_ENABLED
 
-function LibraryV2ArticleCard({ article, onOpen }) {
-  return (
-    <button type="button" className="mx-library-v2__article-card" onClick={() => onOpen(article)}>
-      <div className="mx-library-v2__article-card-main">
-        <ArticleCover article={article} className="w-[112px] h-[132px] shrink-0" />
-        <div className="mx-library-v2__article-card-copy">
-          {article.tag && <span className="mx-library-v2__article-tag">{article.tag}</span>}
-          <strong>{article.title}</strong>
-          <p>{article.excerpt}</p>
-        </div>
-      </div>
-      <div className="mx-library-v2__article-card-meta">
-        <span>
-          Читать статью <ArrowRight size={14} strokeWidth={2} />
-        </span>
-        <small>{article.minutes} мин</small>
-      </div>
-    </button>
-  )
-}
-
 function LibraryV2FeaturedBanner({ title, description, art, action, onOpen }) {
   return (
     <article className="mx-library-v2__featured-banner">
@@ -61,51 +40,8 @@ const LIBRARY_V2_PROGRAMS = [
   ['Неделя внутреннего порядка', 'focus', 'Навести ясность в делах без спешки'],
 ]
 
-function LibraryV2ProgramRail({ onOpen }) {
-  return (
-    <div className="mx-library-programs__program-rail" aria-label="Другие программы">
-      {LIBRARY_V2_PROGRAMS.map(([title, kind, description]) => (
-        <button
-          type="button"
-          key={title}
-          onClick={() => onOpen(title)}
-          className="mx-library-programs__rail-card"
-        >
-          <span className="mx-library-programs__rail-avatar" aria-hidden="true">
-            <SemanticGlyph kind={kind} animated={false} />
-          </span>
-          <strong>{title}</strong>
-          <small>{description}</small>
-        </button>
-      ))}
-    </div>
-  )
-}
-
-function LibraryV2ArticleRail({ articles, onOpen }) {
-  return (
-    <div className="mx-library-programs__program-rail" aria-label="Другие статьи">
-      {articles.map(article => (
-        <button
-          type="button"
-          key={article.id}
-          onClick={() => onOpen(article.id)}
-          className="mx-library-programs__rail-card mx-library-v2__article-rail-card"
-        >
-          <span className="mx-library-programs__rail-avatar mx-library-v2__article-rail-cover">
-            <ArticleCover article={article} className="h-full w-full" />
-          </span>
-          <strong>{article.title}</strong>
-          <small>{article.excerpt}</small>
-        </button>
-      ))}
-    </div>
-  )
-}
-
 function LibraryV2ArticleLanding({ onOpen }) {
   const article = ARTICLES[0]
-  const otherArticles = ARTICLES.slice(1)
   return (
     <section className="mx-library-v2__section-block" aria-labelledby="library-v2-articles-title">
       <h2 className="mx-type-section" id="library-v2-articles-title">
@@ -118,7 +54,6 @@ function LibraryV2ArticleLanding({ onOpen }) {
         onOpen={onOpen}
         art={<ArticleCover article={article} className="h-full w-full" />}
       />
-      <LibraryV2ArticleRail articles={otherArticles} onOpen={onOpen} />
     </section>
   )
 }
@@ -130,13 +65,12 @@ function LibraryV2ProgramLanding({ onOpen }) {
         Программы
       </h2>
       <LibraryV2FeaturedBanner
-        title="Самодисциплина"
-        description="Выстроить устойчивый ритм и доводить важное до конца без давления на себя."
-        action="Скоро"
-        onOpen={() => onOpen('Самодисциплина')}
+        title="Найди свою программу"
+        description="Пошаговые практики на несколько дней или недель — выбери то, что откликается сейчас."
+        action="Смотреть"
+        onOpen={onOpen}
         art={<SemanticGlyph kind="focus" animated={false} />}
       />
-      <LibraryV2ProgramRail onOpen={onOpen} />
     </section>
   )
 }
@@ -196,9 +130,25 @@ function LibraryV2ProgramDetail({ title, onBack }) {
   )
 }
 
-function LibraryV2ArticlesList({ onBack, onOpen }) {
+function LibraryV2CatalogCard({ title, description, kind, article, onOpen }) {
   return (
-    <div className="mx-library-v2__articles-list animate-fade-in">
+    <button type="button" className="mx-library-v2__catalog-card" onClick={onOpen}>
+      <span className="mx-library-v2__catalog-card-art" aria-hidden="true">
+        {article ? (
+          <ArticleCover article={article} className="h-full w-full" />
+        ) : (
+          <SemanticGlyph kind={kind} animated={false} />
+        )}
+      </span>
+      <strong>{title}</strong>
+      <small>{description}</small>
+    </button>
+  )
+}
+
+function LibraryV2ProgramsCatalog({ onBack, onOpen }) {
+  return (
+    <div className="mx-library-v2__catalog animate-fade-in">
       <button
         type="button"
         className="mx-library-collection-back"
@@ -207,15 +157,40 @@ function LibraryV2ArticlesList({ onBack, onOpen }) {
       >
         <ArrowLeft size={19} />
       </button>
-      <header className="mx-library-collection-header">
-        <span>Коллекция</span>
-        <h2>Статьи.</h2>
-        <p>Короткие материалы, которые помогают перейти от мысли к действию.</p>
-      </header>
-      <div className="mx-library-v2__article-list-items">
+      <h1 className="font-display mx-type-page text-cream lowercase">программы.</h1>
+      <div className="mx-library-v2__catalog-grid" aria-label="Каталог программ">
+        {LIBRARY_V2_PROGRAMS.map(([title, kind, description]) => (
+          <LibraryV2CatalogCard
+            key={title}
+            title={title}
+            description={description}
+            kind={kind}
+            onOpen={() => onOpen(title)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function LibraryV2ArticlesCatalog({ onBack, onOpen }) {
+  return (
+    <div className="mx-library-v2__catalog animate-fade-in">
+      <button
+        type="button"
+        className="mx-library-collection-back"
+        onClick={onBack}
+        aria-label="Назад"
+      >
+        <ArrowLeft size={19} />
+      </button>
+      <h1 className="font-display mx-type-page text-cream lowercase">статьи.</h1>
+      <div className="mx-library-v2__catalog-grid" aria-label="Каталог статей">
         {ARTICLES.map(article => (
-          <LibraryV2ArticleCard
+          <LibraryV2CatalogCard
             key={article.id}
+            title={article.title}
+            description={article.excerpt}
             article={article}
             onOpen={() => onOpen(article.id)}
           />
@@ -298,8 +273,8 @@ function LibraryHome({
   onOpenArticles,
   onOpenJournals,
   onOpenArticle,
+  onOpenV2Programs,
   onOpenV2Articles,
-  onOpenV2Program,
 }) {
   const [initialArticlesState] = useState(() => {
     const memoryArticles = peekArticles()
@@ -390,7 +365,7 @@ function LibraryHome({
 
       {LIBRARY_V2_ENABLED && (
         <section className="mx-library-v2__section" aria-label="Библиотека v2">
-          <LibraryV2ProgramLanding onOpen={onOpenV2Program} />
+          <LibraryV2ProgramLanding onOpen={onOpenV2Programs} />
           <LibraryV2ArticleLanding onOpen={onOpenV2Articles} />
           <LibraryV2JournalLanding onOpen={onOpenJournals} />
         </section>
@@ -515,6 +490,33 @@ export default function Library({ user }) {
   const [libraryV2Article, setLibraryV2Article] = useState(null)
   const [libraryV2Program, setLibraryV2Program] = useState('Самодисциплина')
 
+  if (screen === 'library-v2-programs' && LIBRARY_V2_ENABLED) {
+    return (
+      <div className="w-full max-w-md px-5">
+        <LibraryV2ProgramsCatalog
+          onBack={() => setScreen('home')}
+          onOpen={title => {
+            setLibraryV2Program(title)
+            setScreen('library-v2-program')
+          }}
+        />
+      </div>
+    )
+  }
+
+  if (screen === 'library-v2-articles' && LIBRARY_V2_ENABLED && !libraryV2Article) {
+    return (
+      <div className="w-full max-w-md px-5">
+        <LibraryV2ArticlesCatalog
+          onBack={() => setScreen('home')}
+          onOpen={articleId =>
+            setLibraryV2Article(ARTICLES.find(article => article.id === articleId))
+          }
+        />
+      </div>
+    )
+  }
+
   if (screen === 'library-v2-program' && LIBRARY_V2_ENABLED) {
     return (
       <div className="w-full max-w-md px-5">
@@ -567,6 +569,7 @@ export default function Library({ user }) {
       <LibraryHome
         onOpenArticles={() => setScreen('articles')}
         onOpenJournals={() => setScreen('journals')}
+        onOpenV2Programs={() => setScreen('library-v2-programs')}
         onOpenArticle={article => {
           setInitialArticle(article)
           setScreen('articles')
@@ -574,10 +577,6 @@ export default function Library({ user }) {
         onOpenV2Articles={articleId => {
           setLibraryV2Article(articleId ? ARTICLES.find(article => article.id === articleId) : null)
           setScreen('library-v2-articles')
-        }}
-        onOpenV2Program={title => {
-          setLibraryV2Program(title)
-          setScreen('library-v2-program')
         }}
       />
     </div>
