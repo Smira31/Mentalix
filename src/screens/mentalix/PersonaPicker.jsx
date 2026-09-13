@@ -165,7 +165,7 @@ export default function PersonaPicker({ user, onPick }) {
                 aria-label={`${persona.name}: ${PROMISES[persona.key]}`}
                 aria-current={isActive ? 'true' : undefined}
                 tabIndex={isActive ? 0 : -1}
-                onClick={() => !isActive && selectRole(index)}
+                onClick={() => (isActive ? startRole(persona) : selectRole(index))}
                 onKeyDown={event => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()

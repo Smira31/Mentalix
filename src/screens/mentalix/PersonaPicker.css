@@ -55,7 +55,7 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-hero__content {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   width: min(calc(100% - 64px), 332px);
   padding-top: 0;
   text-align: center;
@@ -93,9 +93,10 @@ body:has(.mx-dialog-entry) {
   z-index: 1;
   inset: 8px 0 0;
   width: 100%;
-  height: auto;
+  height: calc(100% - 8px);
   pointer-events: none;
   opacity: 0.92;
+  overflow: hidden;
 }
 
 .mx-dialog-heads__image {
@@ -127,6 +128,7 @@ body:has(.mx-dialog-entry) {
   overflow: clip;
   display: flex;
   flex-direction: column;
+  z-index: 2;
 }
 
 .mx-dialog-surface__header {
@@ -155,6 +157,8 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-carousel {
+  position: relative;
+  z-index: 3;
   display: flex;
   flex: 0 0 var(--mx-dialog-card-min-height);
   gap: var(--mx-space-3);
