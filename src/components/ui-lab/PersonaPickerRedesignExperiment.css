@@ -1,248 +1,19 @@
 .mx-persona-redesign {
   display: grid;
   gap: 20px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: max(24px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
   color: rgb(var(--c-text));
 }
 
-.mx-persona-redesign button {
+.mx-persona-redesign button,
+.mx-persona-redesign input {
   font: inherit;
 }
 
-.mx-persona-redesign__intro,
-.mx-persona-redesign__variant-header {
-  display: grid;
-  gap: 8px;
-  max-width: 760px;
-}
-
-.mx-persona-redesign__intro > span,
-.mx-persona-redesign__variant-header > span {
-  color: rgb(var(--c-gold));
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.mx-persona-redesign__intro h2,
-.mx-persona-redesign__intro p,
-.mx-persona-redesign__variant-header h3,
-.mx-persona-redesign__variant-header p,
-.mx-persona-redesign__active-person,
-.mx-persona-redesign__feedback,
-.mx-persona-redesign__note {
-  margin: 0;
-}
-
-.mx-persona-redesign__intro h2 {
-  font-size: clamp(25px, 5vw, 38px);
-  line-height: 1.08;
-  letter-spacing: -0.035em;
-}
-
-.mx-persona-redesign__intro p,
-.mx-persona-redesign__variant-header p,
-.mx-persona-redesign__active-person,
-.mx-persona-redesign__feedback,
-.mx-persona-redesign__note {
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  line-height: 1.55;
-}
-
-.mx-persona-redesign__variants {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.mx-persona-redesign__variant {
-  display: grid;
-  min-width: 0;
-  gap: 14px;
-}
-
-.mx-persona-redesign__variant-header h3 {
-  font-size: clamp(20px, 3vw, 28px);
-  line-height: 1.12;
-  letter-spacing: -0.025em;
-}
-
-.mx-persona-redesign__track {
-  display: flex;
-  gap: 12px;
-  min-width: 0;
-  padding: 2px 2px 8px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-
-.mx-persona-redesign__track::-webkit-scrollbar {
-  display: none;
-}
-
-.mx-persona-redesign__card {
-  display: flex;
-  flex: 0 0 min(100%, 390px);
-  min-height: 510px;
-  flex-direction: column;
-  overflow: hidden;
-  scroll-snap-align: center;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 28px;
-  background: rgb(var(--c-card));
-  box-shadow: 0 16px 40px rgb(0 0 0 / 12%);
-}
-
-.mx-persona-redesign__art {
-  display: grid;
-  flex: 0 0 38%;
-  min-height: 150px;
-  place-items: center;
-  padding: 16px;
-  background: rgb(var(--c-art-bed));
-  border-bottom: 1px solid rgb(var(--c-border));
-}
-
-.mx-persona-redesign__glyph {
-  width: 100%;
-  height: 100%;
-  max-height: 180px;
-  transform: scale(1.05);
-}
-
-.mx-persona-redesign__content {
-  display: grid;
-  flex: 1;
-  gap: 10px;
-  padding: 18px 20px 20px;
-}
-
-.mx-persona-redesign__identity {
-  display: grid;
-  gap: 5px;
-}
-
-.mx-persona-redesign__identity h4 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 750;
-  letter-spacing: -0.025em;
-}
-
-.mx-persona-redesign__identity span {
-  color: rgb(var(--c-gold));
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.mx-persona-redesign__identity p {
-  margin: 5px 0 0;
-  color: rgb(var(--c-text));
-  font-size: 18px;
-  line-height: 1.25;
-}
-
-.mx-persona-redesign__description {
-  margin: 0;
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.mx-persona-redesign__actions {
-  display: grid;
-  align-self: end;
-  gap: 9px;
-  margin-top: auto;
-}
-
-.mx-persona-redesign__starters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.mx-persona-redesign__starters button,
-.mx-persona-redesign__cta {
-  min-height: 44px;
-  border-radius: 14px;
-}
-
-.mx-persona-redesign__starters button {
-  flex: 1 1 44%;
-  padding: 8px 11px;
-  border: 1px solid rgb(var(--c-border));
-  background: rgb(var(--c-card-raised));
-  color: rgb(var(--c-muted));
-  font-size: 12px;
-  text-align: left;
-}
-
-.mx-persona-redesign__cta {
-  width: 100%;
-  padding: 11px 16px;
-  border: 1px solid rgb(var(--c-gold));
-  border-radius: 999px;
-  background: rgb(var(--c-gold));
-  color: rgb(var(--c-bg));
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.mx-persona-redesign__helper {
-  margin: 0;
-  color: rgb(var(--c-muted));
-  font-size: 11px;
-  line-height: 1.45;
-}
-
-.mx-persona-redesign__pagination {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-}
-
-.mx-persona-redesign__pagination button {
-  display: inline-flex;
-  align-items: end;
-  justify-content: center;
-  width: 44px;
-  min-height: 44px;
-  padding: 0 0 2px;
-  border: 0;
-  background: transparent;
-}
-
-.mx-persona-redesign__pagination span {
-  display: block;
-  width: 6px;
-  height: 16px;
-  border-radius: 999px;
-  background: rgb(var(--c-border));
-  transition:
-    height 180ms ease,
-    background-color 180ms ease;
-}
-
-.mx-persona-redesign__pagination button[aria-current='page'] span {
-  height: 30px;
-  background: rgb(var(--c-gold));
-}
-
-.mx-persona-redesign__active-person,
-.mx-persona-redesign__feedback,
-.mx-persona-redesign__note {
-  text-align: center;
-}
-
-.mx-persona-redesign__feedback {
-  color: rgb(var(--c-gold));
-}
-
-.mx-persona-redesign button:focus-visible {
+.mx-persona-redesign button:focus-visible,
+.mx-persona-redesign input:focus-visible {
   outline: 2px solid rgb(var(--c-gold));
   outline-offset: 3px;
 }
@@ -251,14 +22,407 @@
   transform: scale(0.98);
 }
 
-@media (max-width: 760px) {
-  .mx-persona-redesign__variants {
+.mx-persona-redesign__intro,
+.mx-persona-redesign__hero-copy,
+.mx-persona-redesign__conversation-title {
+  display: grid;
+  gap: 7px;
+}
+
+.mx-persona-redesign__intro > span,
+.mx-persona-redesign__eyebrow,
+.mx-persona-redesign__review-tools > span {
+  color: rgb(var(--c-gold));
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mx-persona-redesign__intro h2,
+.mx-persona-redesign__intro p,
+.mx-persona-redesign__hero h3,
+.mx-persona-redesign__hero p,
+.mx-persona-redesign__helper,
+.mx-persona-redesign__role-description,
+.mx-persona-redesign__conversation h3,
+.mx-persona-redesign__conversation p,
+.mx-persona-redesign__conversation label,
+.mx-persona-redesign__state-message,
+.mx-persona-redesign__empty p,
+.mx-persona-redesign__review-tools span {
+  margin: 0;
+}
+
+.mx-persona-redesign__intro h2 {
+  font-size: clamp(28px, 7vw, 44px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.mx-persona-redesign__intro p,
+.mx-persona-redesign__helper,
+.mx-persona-redesign__role-description,
+.mx-persona-redesign__empty p,
+.mx-persona-redesign__state-message span {
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mx-persona-redesign__hero {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 22px 20px 20px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 24px;
+  background: rgb(var(--c-card));
+}
+
+.mx-persona-redesign__mark {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 22px;
+  background: rgb(var(--c-art-bed));
+  color: rgb(var(--c-gold));
+}
+
+.mx-persona-redesign__hero > .mx-persona-redesign__mark {
+  width: 92px;
+  height: 92px;
+  border-radius: 28px;
+}
+
+.mx-persona-redesign__glyph {
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+}
+
+.mx-persona-redesign__hero h3,
+.mx-persona-redesign__conversation h3 {
+  font-size: clamp(24px, 6vw, 34px);
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.mx-persona-redesign__hero-copy > p {
+  color: rgb(var(--c-text));
+  font-size: 15px;
+}
+
+.mx-persona-redesign__primary-button,
+.mx-persona-redesign__secondary-button,
+.mx-persona-redesign__choose-button,
+.mx-persona-redesign__text-button,
+.mx-persona-redesign__send-button {
+  min-height: 44px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.mx-persona-redesign__primary-button {
+  grid-column: 1 / -1;
+  width: 100%;
+  padding: 13px 18px;
+  border: 1px solid rgb(var(--c-gold));
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.mx-persona-redesign__helper {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  text-align: center;
+}
+
+.mx-persona-redesign__role-picker {
+  display: grid;
+  gap: 10px;
+}
+
+.mx-persona-redesign__choose-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border: 1px solid rgb(var(--c-border));
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.mx-persona-redesign__role-options {
+  display: grid;
+  gap: 8px;
+}
+
+.mx-persona-redesign__role-option {
+  display: grid;
+  grid-template-columns: 54px 1fr auto;
+  min-height: 72px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 18px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  text-align: left;
+}
+
+.mx-persona-redesign__role-option[aria-pressed='true'] {
+  border-color: rgb(var(--c-gold));
+}
+
+.mx-persona-redesign__role-option .mx-persona-redesign__mark {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+}
+
+.mx-persona-redesign__role-option span:not(.mx-persona-redesign__check) {
+  display: grid;
+  gap: 4px;
+}
+
+.mx-persona-redesign__role-option strong {
+  font-size: 14px;
+}
+
+.mx-persona-redesign__role-option small {
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.mx-persona-redesign__check {
+  color: rgb(var(--c-gold));
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.mx-persona-redesign__review-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 12px;
+  padding-top: 4px;
+  border-top: 1px solid rgb(var(--c-border));
+}
+
+.mx-persona-redesign__review-tools button,
+.mx-persona-redesign__state-controls button {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: rgb(var(--c-card-raised));
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+}
+
+.mx-persona-redesign__conversation {
+  display: grid;
+  gap: 16px;
+  min-height: min(680px, calc(100dvh - 160px));
+  padding-bottom: max(12px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+.mx-persona-redesign__conversation-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding-top: max(0px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
+}
+
+.mx-persona-redesign__conversation-title {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  justify-self: center;
+}
+
+.mx-persona-redesign__conversation-title .mx-persona-redesign__mark {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+}
+
+.mx-persona-redesign__conversation-title h3 {
+  font-size: 22px;
+}
+
+.mx-persona-redesign__text-button,
+.mx-persona-redesign__secondary-button {
+  position: relative;
+  z-index: 1;
+  justify-self: start;
+  padding: 0 12px;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mx-persona-redesign__conversation-header > .mx-persona-redesign__secondary-button {
+  justify-self: end;
+}
+
+.mx-persona-redesign__state-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+}
+
+.mx-persona-redesign__state-controls button.is-active {
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+  font-weight: 800;
+}
+
+.mx-persona-redesign__messages {
+  display: flex;
+  min-height: 280px;
+  flex-direction: column;
+  justify-content: end;
+  gap: 10px;
+  padding: 16px 4px;
+}
+
+.mx-persona-redesign__history-label {
+  color: rgb(var(--c-gold));
+  font-size: 11px;
+  text-align: center;
+}
+
+.mx-persona-redesign__bubble {
+  max-width: 84%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.mx-persona-redesign__bubble--assistant {
+  align-self: flex-start;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card));
+}
+
+.mx-persona-redesign__bubble--user {
+  align-self: flex-end;
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+}
+
+.mx-persona-redesign__state-message,
+.mx-persona-redesign__empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  max-width: 340px;
+  margin: auto;
+  text-align: center;
+}
+
+.mx-persona-redesign__state-message strong,
+.mx-persona-redesign__empty strong {
+  font-size: 16px;
+}
+
+.mx-persona-redesign__composer {
+  display: grid;
+  gap: 7px;
+  margin-top: auto;
+  padding: 12px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 20px;
+  background: rgb(var(--c-card));
+}
+
+.mx-persona-redesign__composer label {
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+}
+
+.mx-persona-redesign__input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.mx-persona-redesign__input-row input {
+  min-width: 0;
+  min-height: 44px;
+  flex: 1;
+  padding: 0 13px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 14px;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+}
+
+.mx-persona-redesign__send-button {
+  width: 44px;
+  border: 1px solid rgb(var(--c-gold));
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.mx-persona-redesign__composer p {
+  color: rgb(var(--c-muted));
+  font-size: 10px;
+}
+
+@media (max-width: 360px) {
+  .mx-persona-redesign__hero {
+    grid-template-columns: 72px 1fr;
+    padding: 16px;
+  }
+
+  .mx-persona-redesign__hero > .mx-persona-redesign__mark {
+    width: 72px;
+    height: 72px;
+  }
+
+  .mx-persona-redesign__hero h3 {
+    font-size: 23px;
+  }
+
+  .mx-persona-redesign__conversation-header {
     grid-template-columns: 1fr;
+  }
+
+  .mx-persona-redesign__conversation-header > .mx-persona-redesign__secondary-button {
+    justify-self: start;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mx-persona-redesign__pagination span {
+  .mx-persona-redesign button {
     transition: none;
   }
 }
