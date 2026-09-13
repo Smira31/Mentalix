@@ -990,6 +990,7 @@ export default function App() {
               className="
               w-full
               max-w-md
+              min-w-0
 
               px-5
               pt-0
@@ -1055,6 +1056,7 @@ export default function App() {
                 aria-label="Настройки"
                 className="
                 w-10
+                max-[359px]:w-6
                 h-10
 
                 rounded-full
