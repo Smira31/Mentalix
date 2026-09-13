@@ -397,10 +397,27 @@
 }
 
 /* Reference-aligned top hierarchy: intro → mood prompt → existing data hero. */
+.mx-progress-redesign:not(.mx-progress-layout-v2) .mx-progress-redesign__intro,
+.mx-progress-redesign:not(.mx-progress-layout-v2) .mx-progress-redesign__mood-prompt {
+  display: none;
+}
+
 .mx-progress-layout-v2 .mx-progress-redesign__header {
   min-height: 0;
   justify-content: flex-end;
   margin-bottom: 0;
+}
+
+.mx-progress-layout-v2 .mx-progress-layout-v2__legacy-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__intro {

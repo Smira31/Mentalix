@@ -738,9 +738,13 @@ export default function Analytics({ user, onGoCheckin }) {
       }`}
     >
       <header className="mx-progress-redesign__header">
-        {!PROGRESS_LAYOUT_V2_ENABLED && (
-          <h2 className="font-display mx-type-page text-cream lowercase">прогресс.</h2>
-        )}
+        <h2
+          className={`font-display mx-type-page text-cream lowercase${
+            PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2__legacy-title' : ''
+          }`}
+        >
+          прогресс.
+        </h2>
         {PROGRESS_LAYOUT_V2_ENABLED ? (
           <div className="mx-progress-layout-v2__period-control">
             <button
