@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mentalix Dialog — iPhone preview</title>
+    <style>
+      :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; background: #111; color: #eee; }
+      body { display: grid; place-items: center; padding: 28px; }
+      .stage { display: grid; gap: 16px; justify-items: center; }
+      .toolbar { display: flex; gap: 8px; align-items: center; font-size: 13px; color: #aaa; }
+      .toolbar a { color: #eee; text-decoration: none; border: 1px solid #444; border-radius: 999px; padding: 7px 11px; }
+      .toolbar a.active { background: #eee; color: #111; }
+      .phone { padding: 10px; border-radius: 42px; background: #050505; box-shadow: 0 24px 80px #000, inset 0 0 0 1px #333; }
+      iframe { display: block; width: 393px; height: 852px; border: 0; border-radius: 32px; background: #050403; }
+      @media (max-width: 470px) {
+        body { padding: 10px; }
+        .phone { transform: scale(calc((100vw - 20px) / 413)); transform-origin: top center; margin-bottom: calc(-852px * (1 - ((100vw - 20px) / 413))); }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="stage">
+      <nav class="toolbar" aria-label="Размер телефона">
+        <span>Dialog preview:</span>
+        <a href="?device=iphone16" data-device="iphone16">iPhone 16</a>
+        <a href="?device=iphone16promax" data-device="iphone16promax">iPhone 16 Pro Max</a>
+      </nav>
+      <div class="phone"><iframe id="screen" title="Mentalix Dialog iPhone preview"></iframe></div>
+    </main>
+    <script>
+      const params = new URLSearchParams(location.search)
+      const device = params.get('device') === 'iphone16promax' ? 'iphone16promax' : 'iphone16'
+      const config = device === 'iphone16promax' ? { width: 430, height: 932 } : { width: 393, height: 852 }
+      const frame = document.querySelector('.phone')
+      const iframe = document.querySelector('#screen')
+      iframe.style.width = `${config.width}px`
+      iframe.style.height = `${config.height}px`
+      iframe.src = `/?demo=1&tab=mentor&v=8a536d2c&device=${device}`
+      document.querySelectorAll('[data-device]').forEach(a => a.classList.toggle('active', a.dataset.device === device))
+    </script>
+  </body>
+</html>
