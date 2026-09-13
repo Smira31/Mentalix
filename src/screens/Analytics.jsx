@@ -7,7 +7,11 @@ import { api } from '../lib/api'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 
-const PROGRESS_LAYOUT_V2_ENABLED = import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
+// Production now uses the owner-approved compact mobile composition. The
+// feature flag remains available for local comparison, while production
+// builds use the same visual contract as the validated preview.
+const PROGRESS_LAYOUT_V2_ENABLED =
+  import.meta.env.PROD || import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
@@ -48,66 +52,105 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
     : []
 
   return (
-    <section className="mx-progress-redesign__hero" aria-labelledby="progress-mood-title">
-      <div className="mx-progress-redesign__hero-copy">
-        <span id="progress-mood-title">Среднее настроение · {period} дней</span>
-        <div>
-          <strong>{avgMood === null ? '—' : avgMood.toFixed(1)}</strong>
-          <small>/ 5</small>
-        </div>
+    <>
+      <section className="mx-progress-redesign__intro" aria-labelledby="progress-intro-title">
+        <h1 id="progress-intro-title">прогресс.</h1>
         <p>
-          {points.length >= 2
-            ? 'Линия показывает только твои сохранённые check-in за выбранный период.'
-            : 'Ещё несколько спокойных отметок — и здесь станет виден твой ритм.'}
+          Здесь ты увидишь, как меняется
+          <br />
+          твоё настроение за неделю
         </p>
-      </div>
+        <small>
+          {points.length ? 'Твои отметки за выбранный период' : 'Пока нет данных для показа'}
+        </small>
+      </section>
 
-      <div className="mx-progress-redesign__chart">
-        {loading ? (
-          <div className="mx-progress-redesign__chart-skeleton" aria-label="Загрузка прогресса" />
-        ) : error ? (
-          <div className="mx-progress-redesign__chart-message" role="alert">
-            <strong>Не удалось загрузить прогресс</strong>
-            <span>Проверь соединение и попробуй ещё раз.</span>
-            <button type="button" onClick={onRetry}>
-              Повторить
+      <section
+        className="mx-progress-redesign__mood-prompt"
+        aria-labelledby="progress-mood-prompt-title"
+      >
+        <h2 id="progress-mood-prompt-title">Как ты себя чувствуешь сейчас?</h2>
+        <p>Отметь своё настроение, чтобы добавить первую точку в прогресс</p>
+        <div
+          className="mx-progress-redesign__mood-options"
+          role="group"
+          aria-label="Выбери настроение"
+        >
+          {[
+            ['Очень тяжело', '☹'],
+            ['Тяжело', '−'],
+            ['Ровно', '—'],
+            ['Хорошо', '⌣'],
+            ['Отлично', '☺'],
+          ].map(([label, icon]) => (
+            <button key={label} type="button" aria-label={label} onClick={onGoCheckin}>
+              {icon}
             </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-progress-redesign__hero" aria-labelledby="progress-mood-title">
+        <div className="mx-progress-redesign__hero-copy">
+          <span id="progress-mood-title">Настроение за {period} дней</span>
+          <div>
+            <strong>{avgMood === null ? '—' : avgMood.toFixed(1)}</strong>
+            <small>/ 5</small>
           </div>
-        ) : points.length < 2 ? (
-          <div className="mx-progress-redesign__chart-message">
-            <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
-            <span>
-              {points.length
-                ? 'После следующего check-in появится первая линия.'
-                : 'Check-in занимает меньше минуты и запускает личную историю прогресса.'}
-            </span>
-            <button type="button" onClick={onGoCheckin}>
-              Пройти check-in
-            </button>
-          </div>
-        ) : (
-          <>
-            <svg viewBox="0 0 300 142" role="img" aria-label="График настроения">
-              <path
-                className="mx-progress-redesign__chart-grid"
-                d="M2 14H298 M2 73H298 M2 132H298"
-              />
-              <polyline className="mx-progress-redesign__chart-line" points={polyline} />
-              {points.map((item, index) => {
-                const x = 2 + (index / (points.length - 1)) * 296
-                const y = 132 - ((item.mood - 1) / 4) * 118
-                return <circle key={item.date} cx={x} cy={y} r="3.2" />
-              })}
-            </svg>
-            <div className="mx-progress-redesign__chart-axis">
-              {axisDates.map(item => (
-                <span key={item.date}>{formatSourceDate(item.date)}</span>
-              ))}
+          <p>
+            {points.length >= 2
+              ? 'Линия показывает твои отметки за выбранный период.'
+              : 'Добавь ещё несколько отметок — и здесь появится твой ритм.'}
+          </p>
+        </div>
+
+        <div className="mx-progress-redesign__chart">
+          {loading ? (
+            <div className="mx-progress-redesign__chart-skeleton" aria-label="Загрузка прогресса" />
+          ) : error ? (
+            <div className="mx-progress-redesign__chart-message" role="alert">
+              <strong>Не удалось загрузить прогресс</strong>
+              <span>Проверь соединение и попробуй ещё раз.</span>
+              <button type="button" onClick={onRetry}>
+                Повторить
+              </button>
             </div>
-          </>
-        )}
-      </div>
-    </section>
+          ) : points.length < 2 ? (
+            <div className="mx-progress-redesign__chart-message">
+              <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
+              <span>
+                {points.length
+                  ? 'После следующего check-in появится первая линия.'
+                  : 'Одна отметка — меньше минуты.'}
+              </span>
+              <button type="button" onClick={onGoCheckin}>
+                Пройти check-in
+              </button>
+            </div>
+          ) : (
+            <>
+              <svg viewBox="0 0 300 142" role="img" aria-label="График настроения">
+                <path
+                  className="mx-progress-redesign__chart-grid"
+                  d="M2 14H298 M2 73H298 M2 132H298"
+                />
+                <polyline className="mx-progress-redesign__chart-line" points={polyline} />
+                {points.map((item, index) => {
+                  const x = 2 + (index / (points.length - 1)) * 296
+                  const y = 132 - ((item.mood - 1) / 4) * 118
+                  return <circle key={item.date} cx={x} cy={y} r="3.2" />
+                })}
+              </svg>
+              <div className="mx-progress-redesign__chart-axis">
+                {axisDates.map(item => (
+                  <span key={item.date}>{formatSourceDate(item.date)}</span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+    </>
   )
 }
 
@@ -137,9 +180,9 @@ function PrimaryObservationCard({ observation }) {
     return (
       <article className="mx-progress-redesign__observation">
         {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
-        <span>Данные собираются</span>
-        <strong>Пока недостаточно отметок для наблюдения.</strong>
-        <p>Продолжай в своём темпе — вывод появится только при достаточной выборке.</p>
+        <span>Пока мало данных</span>
+        <strong>Добавь ещё несколько отметок.</strong>
+        <p>Тогда здесь появится первое наблюдение.</p>
       </article>
     )
   }
@@ -205,8 +248,7 @@ function ObservationRail({ observations, insightsEnabled, preferenceError }) {
         )}
       </div>
       <p className="mx-progress-redesign__caveat">
-        Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные причины;
-        они также не являются прогнозами.
+        Это описание твоих отметок — не диагнозы и не доказанные причины, не прогноз.
       </p>
       {preferenceError && <p className="mx-progress-redesign__status-note">{preferenceError}</p>}
     </section>
@@ -307,7 +349,9 @@ function ActivityCalendar({ checkins, dailyActivity, period }) {
                 data-day={day}
                 data-filled={active}
                 data-tone={moodByDate.get(date) ?? 0}
-              />
+              >
+                <span>{day}</span>
+              </i>
             )
           })}
         </div>
@@ -315,7 +359,7 @@ function ActivityCalendar({ checkins, dailyActivity, period }) {
           {PROGRESS_LAYOUT_V2_ENABLED
             ? hasActiveDatesInMonth
               ? 'Отмеченные дни складываются в общий ритм.'
-              : 'В этом месяце пока нет отметок.'
+              : 'Пока нет отметок за этот месяц.'
             : activeDates.size
               ? 'Отмеченные дни складываются в общий ритм.'
               : 'Здесь появятся дни с отметками.'}
@@ -694,7 +738,13 @@ export default function Analytics({ user, onGoCheckin }) {
       }`}
     >
       <header className="mx-progress-redesign__header">
-        <h2 className="font-display mx-type-page text-cream lowercase">прогресс.</h2>
+        <h2
+          className={`font-display mx-type-page text-cream lowercase${
+            PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2__legacy-title' : ''
+          }`}
+        >
+          прогресс.
+        </h2>
         {PROGRESS_LAYOUT_V2_ENABLED ? (
           <div className="mx-progress-layout-v2__period-control">
             <button
@@ -804,7 +854,7 @@ export default function Analytics({ user, onGoCheckin }) {
               <Metric
                 label="Ритуалы"
                 value={rituals.length ? `${avgRituals}%` : '—'}
-                note={rituals.length ? `${rituals.length} активных` : 'данные ещё собираются'}
+                note={rituals.length ? `${rituals.length} активных` : 'Пока нет отметок'}
                 progress={avgRituals}
               >
                 {rituals.length > 0 && (
@@ -822,7 +872,7 @@ export default function Analytics({ user, onGoCheckin }) {
               <Metric
                 label="Аскезы"
                 value={ascezas.length ? `${avgClean}%` : '—'}
-                note={ascezas.length ? `${ascezas.length} активных` : 'данные ещё собираются'}
+                note={ascezas.length ? `${ascezas.length} активных` : 'Пока нет отметок'}
                 progress={avgClean}
               >
                 {ascezas.length > 0 && (
@@ -840,13 +890,13 @@ export default function Analytics({ user, onGoCheckin }) {
               <Metric
                 label="Энергия"
                 value={scoreLabel('energy')}
-                note="среднее по check-in"
+                note="После check-in"
                 progress={scoreProgress('energy')}
               />
               <Metric
                 label="Фокус"
                 value={scoreLabel('focus')}
-                note="среднее по check-in"
+                note="После check-in"
                 progress={scoreProgress('focus')}
               />
             </div>
