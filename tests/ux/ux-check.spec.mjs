@@ -1115,8 +1115,8 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 
     await page.goto('/')
     await page.getByRole('button', { name: 'Диалог' }).click()
-    await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
-    await expect(page.getByLabel('Выбранный собеседник')).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Выбери роль/ })).toBeVisible()
     const cards = page.getByTestId('mentor-persona-card')
     await expect(cards).toHaveCount(3)
     expect(
@@ -1124,12 +1124,12 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
         elements.map(element => getComputedStyle(element).borderTopWidth)
       )
     ).toEqual(['1px', '1px', '1px'])
-    const pager = page.getByLabel('Страница собеседника')
+    const pager = page.getByRole('group', { name: 'Выбор роли' })
     await expect(pager).toBeVisible()
     await expect(pager.getByRole('button')).toHaveCount(3)
     await expect(
-      pager.getByRole('button', { name: 'Собеседник, страница 1 из 3' })
-    ).toHaveAttribute('aria-current', 'page')
+      pager.getByRole('button', { name: 'Собеседник, 1 из 3' })
+    ).toHaveAttribute('aria-current', 'true')
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
@@ -1140,16 +1140,16 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
         element.scrollLeft = scrollLeft
         element.dispatchEvent(new Event('scroll'))
       }, cardWidth + 12)
-      await expect(
-        pager.getByRole('button', { name: 'Наставник, страница 2 из 3' })
-      ).toHaveAttribute('aria-current', 'page')
+      await expect(pager.getByRole('button', { name: 'Наставник, 2 из 3' })).toHaveAttribute(
+        'aria-current',
+        'true'
+      )
     }
-
-    await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
 
     const mentorCard = cards.filter({ hasText: 'Наставник' })
     await mentorCard.scrollIntoViewIfNeeded()
     await mentorCard.click()
+    await page.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
     await expect(page.getByText('История kompas')).toBeVisible()
     await expect(page.getByText('История mayak')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Назад' }))
