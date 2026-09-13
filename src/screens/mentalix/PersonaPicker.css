@@ -152,12 +152,12 @@ body:has(.mx-dialog-entry) {
   position: relative;
   z-index: 3;
   display: flex;
-  flex: 1 1 auto;
+  flex: 0 0 var(--mx-dialog-card-min-height);
   gap: var(--mx-space-3);
   width: 100%;
   min-width: 0;
   min-height: var(--mx-dialog-card-min-height);
-  padding: 0 var(--mx-dialog-carousel-gutter) 34px;
+  padding: 0 var(--mx-dialog-carousel-gutter);
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
@@ -176,7 +176,7 @@ body:has(.mx-dialog-entry) {
   position: relative;
   display: flex;
   flex: 0 0 var(--mx-dialog-card-width);
-  height: calc(100% - 34px);
+  height: auto;
   min-height: var(--mx-dialog-card-min-height);
   flex-direction: column;
   padding: var(--mx-dialog-card-padding);
@@ -258,6 +258,7 @@ body:has(.mx-dialog-entry) {
   right: 0;
   bottom: 8px;
   left: 0;
+  z-index: 4;
   display: flex;
   justify-content: center;
   gap: 4px;
@@ -340,7 +341,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 390px) and (max-width: 404px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: min(248px, 66vw);
-    --mx-dialog-card-min-height: clamp(270px, 34vh, 300px);
+    --mx-dialog-card-min-height: clamp(280px, 35vh, 310px);
   }
 
   .mx-dialog-hero {
@@ -354,7 +355,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 405px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: min(260px, 66vw);
-    --mx-dialog-card-min-height: clamp(280px, 32vh, 310px);
+    --mx-dialog-card-min-height: clamp(290px, 31vh, 320px);
   }
 }
 
