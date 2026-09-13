@@ -20,8 +20,8 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-entry {
-  --mx-dialog-card-width: clamp(190px, 49vw, 202px);
-  --mx-dialog-card-min-height: 280px;
+  --mx-dialog-card-width: clamp(182px, 42.5vw, 250px);
+  --mx-dialog-card-min-height: clamp(236px, 32vh, 408px);
   --mx-dialog-card-padding: calc(var(--mx-space-4) + (var(--mx-space-1) / 2));
   --mx-dialog-carousel-gutter: max(
     var(--mx-space-6),
@@ -44,9 +44,9 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-hero {
   position: relative;
-  flex: 0 0 clamp(286px, 34vh, 318px);
-  min-height: 286px;
-  max-height: 318px;
+  flex: 0 0 clamp(312px, 34vh, 440px);
+  min-height: 312px;
+  max-height: 440px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -151,7 +151,7 @@ body:has(.mx-dialog-entry) {
   width: 100%;
   max-width: 100%;
   margin-top: calc(var(--mx-space-3) * -1);
-  padding: var(--mx-space-6) 0 calc(var(--app-content-bottom) + var(--mx-space-2));
+  padding: 42px 0 calc(var(--app-content-bottom) + var(--mx-space-2));
   border: 1px solid rgb(var(--c-border) / 0.72);
   border-bottom: 0;
   border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
@@ -332,6 +332,7 @@ body:has(.mx-dialog-entry) {
   .mx-dialog-hero {
     flex-basis: 236px;
     min-height: 236px;
+    max-height: 236px;
   }
 
   .mx-dialog-hero__content {
@@ -366,21 +367,22 @@ body:has(.mx-dialog-entry) {
 /* iPhone 16 / 16 Pro: 393–402px wide CSS viewports. */
 @media (min-width: 390px) and (max-width: 404px) {
   .mx-dialog-entry {
-    --mx-dialog-card-width: 198px;
-    --mx-dialog-card-min-height: 280px;
+    --mx-dialog-card-width: 182px;
+    --mx-dialog-card-min-height: 270px;
   }
 
   .mx-dialog-hero {
-    flex-basis: clamp(276px, 33vh, 300px);
-    min-height: 276px;
+    flex-basis: 312px;
+    min-height: 312px;
+    max-height: 312px;
   }
 }
 
 /* iPhone 16 Plus / Pro Max class: 430px and wider CSS viewports. */
 @media (min-width: 405px) {
   .mx-dialog-entry {
-    --mx-dialog-card-width: 202px;
-    --mx-dialog-card-min-height: 280px;
+    --mx-dialog-card-width: clamp(182px, 42.5vw, 250px);
+    --mx-dialog-card-min-height: clamp(280px, 32vh, 408px);
   }
 }
 
