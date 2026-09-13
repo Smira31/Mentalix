@@ -53,6 +53,17 @@ body:has(.mx-dialog-entry) {
   isolation: isolate;
 }
 
+.mx-dialog-hero-reference {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
 .mx-dialog-hero__content {
   position: relative;
   z-index: 3;
@@ -78,39 +89,20 @@ body:has(.mx-dialog-entry) {
   color: rgb(var(--c-text));
 }
 
+.mx-dialog-hero__content .mx-dialog-eyebrow,
+.mx-dialog-hero__content h1 {
+  visibility: hidden;
+}
+
 .mx-dialog-start {
   min-height: 46px;
   min-width: 112px;
   padding-inline: 28px;
   border: 1px solid rgb(var(--c-border));
   border-radius: var(--mx-radius-pill);
-  background: var(--btn-bg);
-  color: var(--btn-text);
-}
-
-.mx-dialog-heads {
-  position: absolute;
-  z-index: 1;
-  inset: 8px 0 0;
-  width: 100%;
-  height: calc(100% - 8px);
-  pointer-events: none;
-  opacity: 0.92;
-  overflow: hidden;
-}
-
-.mx-dialog-heads__image {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  object-position: top center;
-  image-rendering: auto;
-}
-
-.mx-dialog-head {
-  transform-box: view-box;
-  transform-origin: center;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
 }
 
 .mx-dialog-surface {

@@ -4,7 +4,7 @@ import { platform } from '../../platform'
 import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
 import { fetchHistory } from '../../lib/mentalixHistoryCache'
 import { PERSONAS } from './personas'
-import headReference from '../../assets/dialog-heads-reference.png'
+import heroReference from '../../assets/dialog-hero-reference.png'
 
 import './PersonaPicker.css'
 
@@ -25,10 +25,6 @@ function trim(text, max = 70) {
     .replace(/\s+/g, ' ')
     .trim()
   return clean.length > max ? `${clean.slice(0, max).trimEnd()}…` : clean
-}
-
-function HeadContours() {
-  return <img className="mx-dialog-heads__image" src={headReference} alt="" aria-hidden="true" />
 }
 
 function RoleGlyph({ persona, active }) {
@@ -120,9 +116,7 @@ export default function PersonaPicker({ user, onPick }) {
   return (
     <main className="mx-dialog-entry" data-testid="dialog-entry">
       <section className="mx-dialog-hero" aria-labelledby="dialog-entry-title">
-        <div className="mx-dialog-heads" aria-hidden="true">
-          <HeadContours />
-        </div>
+        <img className="mx-dialog-hero-reference" src={heroReference} alt="" aria-hidden="true" />
         <div className="mx-dialog-hero__content">
           <p className="mx-dialog-eyebrow font-label">ДИАЛОГ</p>
           <h1 id="dialog-entry-title" className="mx-type-hero">
