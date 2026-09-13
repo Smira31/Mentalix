@@ -112,7 +112,7 @@ body:has(.mx-dialog-entry) {
   width: 100%;
   max-width: 100%;
   margin-top: -36px;
-  padding: 42px 0 calc(var(--app-content-bottom) + var(--mx-space-2));
+  padding: 34px 0 0;
   border: 1px solid rgb(var(--c-border) / 0.72);
   border-bottom: 0;
   border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
@@ -255,7 +255,7 @@ body:has(.mx-dialog-entry) {
   display: flex;
   justify-content: center;
   gap: 4px;
-  margin-top: auto;
+  margin-top: var(--mx-space-2);
   margin-bottom: 0;
 }
 
@@ -335,7 +335,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 390px) and (max-width: 404px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: min(248px, 66vw);
-    --mx-dialog-card-min-height: clamp(250px, 35vh, 310px);
+    --mx-dialog-card-min-height: clamp(300px, 39vh, 340px);
   }
 
   .mx-dialog-hero {
@@ -349,7 +349,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 405px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: min(260px, 66vw);
-    --mx-dialog-card-min-height: clamp(260px, 35vh, 326px);
+    --mx-dialog-card-min-height: clamp(320px, 39vh, 360px);
   }
 }
 
