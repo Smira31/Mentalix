@@ -7,7 +7,11 @@ import { PERSONAS } from './personas'
 
 import './PersonaPicker.css'
 
-const DEFAULT_INDEX = 0
+const DEFAULT_INDEX = 1
+
+// Визуальный порядок entry-карусели задан reference screenshot. Сами persona
+// keys и backend-контракт остаются прежними.
+const DISPLAY_PERSONAS = [PERSONAS[1], PERSONAS[0], PERSONAS[2]]
 
 const PROMISES = {
   mayak: 'Поможет разобраться в том, что чувствуешь.',
@@ -34,10 +38,12 @@ function HeadContours() {
       <g className="mx-dialog-head mx-dialog-head--left">
         <path d="M-18 154C18 148 32 127 37 103C42 79 49 54 70 38C88 24 111 20 132 25C148 29 160 40 168 54C153 52 143 57 140 66C136 76 143 84 157 88C149 99 143 110 132 119C118 131 101 136 82 142L42 162C22 172 2 171-18 166Z" />
         <path d="M168 54C153 52 143 57 140 66C136 76 143 84 157 88C149 99 143 110 132 119" />
+        <path d="M82 142L82 190" />
       </g>
       <g className="mx-dialog-head mx-dialog-head--right">
         <path d="M408 154C372 148 358 127 353 103C348 79 341 54 320 38C302 24 279 20 258 25C242 29 230 40 222 54C237 52 247 57 250 66C254 76 247 84 233 88C241 99 247 110 258 119C272 131 289 136 308 142L348 162C368 172 388 171 408 166Z" />
         <path d="M222 54C237 52 247 57 250 66C254 76 247 84 233 88C241 99 247 110 258 119" />
+        <path d="M308 142L308 190" />
       </g>
     </svg>
   )
@@ -66,7 +72,7 @@ export default function PersonaPicker({ user, onPick }) {
     if (!user) return undefined
     let alive = true
     Promise.all(
-      PERSONAS.map(persona =>
+      DISPLAY_PERSONAS.map(persona =>
         fetchHistory(user.id, persona.key)
           .then(messages => [persona.key, Array.isArray(messages) ? messages.at(-1) : null])
           .catch(() => [persona.key, null])
@@ -143,8 +149,8 @@ export default function PersonaPicker({ user, onPick }) {
           <button
             type="button"
             className="mx-dialog-start cta-pill mx-type-control"
-            onClick={() => startRole(PERSONAS[active])}
-            aria-label={`Начать разговор: ${PERSONAS[active].name}`}
+            onClick={() => startRole(DISPLAY_PERSONAS[active])}
+            aria-label={`Начать разговор: ${DISPLAY_PERSONAS[active].name}`}
           >
             Начать
           </button>
@@ -153,9 +159,9 @@ export default function PersonaPicker({ user, onPick }) {
 
       <section className="mx-dialog-surface" aria-labelledby="dialog-role-title">
         <div className="mx-dialog-surface__header">
-          <p className="mx-dialog-surface__kicker font-label">ДЛЯ РАЗГОВОРА</p>
           <h2 id="dialog-role-title" className="mx-type-section">
-            Выбери роль для разговора.
+            <span>Выбери роль</span>
+            <strong>для разговора.</strong>
           </h2>
         </div>
         <div
@@ -166,7 +172,7 @@ export default function PersonaPicker({ user, onPick }) {
           aria-label="Выбор роли для разговора"
           onScroll={syncActive}
         >
-          {PERSONAS.map((persona, index) => {
+          {DISPLAY_PERSONAS.map((persona, index) => {
             const last = previews[persona.key]
             const isActive = active === index
             return (
@@ -201,7 +207,7 @@ export default function PersonaPicker({ user, onPick }) {
           })}
         </div>
         <div className="mx-dialog-dots" role="group" aria-label="Выбор роли">
-          {PERSONAS.map((persona, index) => (
+          {DISPLAY_PERSONAS.map((persona, index) => (
             <button
               type="button"
               key={persona.key}
