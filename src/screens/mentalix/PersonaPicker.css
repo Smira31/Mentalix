@@ -331,8 +331,8 @@ body:has(.mx-dialog-entry) {
 /* iPhone 16 / 16 Pro: 393–402px wide CSS viewports. */
 @media (min-width: 390px) and (max-width: 404px) {
   .mx-dialog-entry {
-    --mx-dialog-card-width: 182px;
-    --mx-dialog-card-min-height: 270px;
+    --mx-dialog-card-width: min(248px, 66vw);
+    --mx-dialog-card-min-height: clamp(250px, 35vh, 310px);
   }
 
   .mx-dialog-hero {
@@ -345,8 +345,8 @@ body:has(.mx-dialog-entry) {
 /* iPhone 16 Plus / Pro Max class: 430px and wider CSS viewports. */
 @media (min-width: 405px) {
   .mx-dialog-entry {
-    --mx-dialog-card-width: clamp(182px, 42.5vw, 250px);
-    --mx-dialog-card-min-height: clamp(280px, 32vh, 408px);
+    --mx-dialog-card-width: min(260px, 66vw);
+    --mx-dialog-card-min-height: clamp(260px, 35vh, 326px);
   }
 }
 

@@ -15,9 +15,15 @@ const DEFAULT_INDEX = 1
 const DISPLAY_PERSONAS = [PERSONAS[1], PERSONAS[0], PERSONAS[2]]
 
 const PROMISES = {
-  mayak: 'Поможет разобраться в том, что чувствуешь.',
-  kompas: 'Поможет увидеть новые перспективы и найти решение.',
-  dnevnik: 'Поможет исследовать свои мысли и эмоции глубже.',
+  mayak: 'Поможет разобраться в чувствах.',
+  kompas: 'Поможет увидеть главное.',
+  dnevnik: 'Поможет заметить важное.',
+}
+
+const DIALOG_DESCRIPTIONS = {
+  mayak: 'Разговор без оценки — чтобы услышать себя.',
+  kompas: 'Коротко и по делу — к следующему шагу.',
+  dnevnik: 'Внимательно разберём мысли и день.',
 }
 
 function trim(text, max = 70) {
@@ -172,7 +178,9 @@ export default function PersonaPicker({ user, onPick }) {
                   <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
                   <h3 className="mx-type-persona-title">{persona.name}</h3>
                   <p className="mx-dialog-card__promise">{PROMISES[persona.key]}</p>
-                  <p className="mx-dialog-card__description mx-type-persona-body">{persona.desc}</p>
+                  <p className="mx-dialog-card__description mx-type-persona-body">
+                    {DIALOG_DESCRIPTIONS[persona.key]}
+                  </p>
                   {last && !previewsLoading && (
                     <p className="mx-dialog-card__history mx-type-meta">
                       Последний разговор: {trim(last.content)}
