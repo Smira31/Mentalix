@@ -93,55 +93,23 @@ body:has(.mx-dialog-entry) {
   z-index: 1;
   inset: 8px 0 0;
   width: 100%;
-  height: calc(100% - 8px);
+  height: auto;
   pointer-events: none;
   opacity: 0.92;
 }
 
-.mx-dialog-heads__svg {
+.mx-dialog-heads__image {
   display: block;
   width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: rgb(var(--c-line-secondary));
-  stroke-width: 1.1;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  overflow: visible;
+  height: auto;
+  object-fit: contain;
+  object-position: top center;
+  image-rendering: auto;
 }
 
 .mx-dialog-head {
   transform-box: view-box;
   transform-origin: center;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .mx-dialog-head--left {
-    animation: mx-dialog-head-left 14s ease-in-out infinite;
-  }
-  .mx-dialog-head--right {
-    animation: mx-dialog-head-right 14s ease-in-out infinite;
-  }
-}
-
-@keyframes mx-dialog-head-left {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(3px, -2px);
-  }
-}
-
-@keyframes mx-dialog-head-right {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(-3px, -2px);
-  }
 }
 
 .mx-dialog-surface {
