@@ -275,7 +275,7 @@
 }
 
 .mx-progress-layout-v2__period-control {
-  top: 8px;
+  top: 0;
 }
 
 .mx-progress-layout-v2__period-trigger {
@@ -404,7 +404,7 @@
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__intro {
-  padding: 42px 4px 0;
+  padding: 20px 4px 0;
   text-align: center;
 }
 
@@ -493,7 +493,7 @@
 
 @media (min-width: 420px) {
   .mx-progress-layout-v2 .mx-progress-redesign__intro {
-    padding-top: 48px;
+    padding-top: 26px;
   }
 
   .mx-progress-layout-v2 .mx-progress-redesign__mood-prompt {
