@@ -92,15 +92,15 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
 
       <section className="mx-progress-redesign__hero" aria-labelledby="progress-mood-title">
         <div className="mx-progress-redesign__hero-copy">
-          <span id="progress-mood-title">Среднее настроение · {period} дней</span>
+          <span id="progress-mood-title">Настроение за {period} дней</span>
           <div>
             <strong>{avgMood === null ? '—' : avgMood.toFixed(1)}</strong>
             <small>/ 5</small>
           </div>
           <p>
             {points.length >= 2
-              ? 'Линия показывает только твои сохранённые check-in за выбранный период.'
-              : 'Ещё несколько спокойных отметок — и здесь станет виден твой ритм.'}
+              ? 'Линия показывает твои отметки за выбранный период.'
+              : 'Добавь ещё несколько отметок — и здесь появится твой ритм.'}
           </p>
         </div>
 
@@ -121,7 +121,7 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
               <span>
                 {points.length
                   ? 'После следующего check-in появится первая линия.'
-                  : 'Check-in занимает меньше минуты и запускает личную историю прогресса.'}
+                  : 'Одна отметка — меньше минуты.'}
               </span>
               <button type="button" onClick={onGoCheckin}>
                 Пройти check-in
@@ -180,9 +180,9 @@ function PrimaryObservationCard({ observation }) {
     return (
       <article className="mx-progress-redesign__observation">
         {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
-        <span>Данные собираются</span>
-        <strong>Пока недостаточно отметок для наблюдения.</strong>
-        <p>Продолжай в своём темпе — вывод появится только при достаточной выборке.</p>
+        <span>Пока мало данных</span>
+        <strong>Добавь ещё несколько отметок.</strong>
+        <p>Тогда здесь появится первое наблюдение.</p>
       </article>
     )
   }
@@ -248,8 +248,7 @@ function ObservationRail({ observations, insightsEnabled, preferenceError }) {
         )}
       </div>
       <p className="mx-progress-redesign__caveat">
-        Это описательные наблюдения по доступным отметкам, а не диагнозы и не доказанные причины;
-        они также не являются прогнозами.
+        Это описание твоих отметок, не диагноз и не прогноз.
       </p>
       {preferenceError && <p className="mx-progress-redesign__status-note">{preferenceError}</p>}
     </section>
@@ -350,7 +349,9 @@ function ActivityCalendar({ checkins, dailyActivity, period }) {
                 data-day={day}
                 data-filled={active}
                 data-tone={moodByDate.get(date) ?? 0}
-              />
+              >
+                <span>{day}</span>
+              </i>
             )
           })}
         </div>
@@ -358,7 +359,7 @@ function ActivityCalendar({ checkins, dailyActivity, period }) {
           {PROGRESS_LAYOUT_V2_ENABLED
             ? hasActiveDatesInMonth
               ? 'Отмеченные дни складываются в общий ритм.'
-              : 'В этом месяце пока нет отметок.'
+              : 'Пока нет отметок за этот месяц.'
             : activeDates.size
               ? 'Отмеченные дни складываются в общий ритм.'
               : 'Здесь появятся дни с отметками.'}
@@ -849,7 +850,7 @@ export default function Analytics({ user, onGoCheckin }) {
               <Metric
                 label="Ритуалы"
                 value={rituals.length ? `${avgRituals}%` : '—'}
-                note={rituals.length ? `${rituals.length} активных` : 'данные ещё собираются'}
+                note={rituals.length ? `${rituals.length} активных` : 'Пока нет отметок'}
                 progress={avgRituals}
               >
                 {rituals.length > 0 && (
@@ -867,7 +868,7 @@ export default function Analytics({ user, onGoCheckin }) {
               <Metric
                 label="Аскезы"
                 value={ascezas.length ? `${avgClean}%` : '—'}
-                note={ascezas.length ? `${ascezas.length} активных` : 'данные ещё собираются'}
+                note={ascezas.length ? `${ascezas.length} активных` : 'Пока нет отметок'}
                 progress={avgClean}
               >
                 {ascezas.length > 0 && (
@@ -885,13 +886,13 @@ export default function Analytics({ user, onGoCheckin }) {
               <Metric
                 label="Энергия"
                 value={scoreLabel('energy')}
-                note="среднее по check-in"
+                note="После check-in"
                 progress={scoreProgress('energy')}
               />
               <Metric
                 label="Фокус"
                 value={scoreLabel('focus')}
-                note="среднее по check-in"
+                note="После check-in"
                 progress={scoreProgress('focus')}
               />
             </div>
