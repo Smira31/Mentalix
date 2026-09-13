@@ -193,7 +193,7 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: 'Свернуть ответ' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Назад' }).click()
-    await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
     await page.getByRole('button', { name: 'Сегодня' }).click()
     await expect(page).toHaveURL(/\/$/)
     await expect(page.getByRole('button', { name: 'Открыть разбор снова' })).toBeVisible()

@@ -1078,6 +1078,8 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 }) => {
   const layouts = [
     ...VIEWPORTS,
+    { name: '393x852', width: 393, height: 852 }, // iPhone 16
+    { name: '402x874', width: 402, height: 874 }, // iPhone 16 Pro
     { name: '768x1024', width: 768, height: 1024 },
     { name: '1280x800', width: 1280, height: 800 },
   ]
@@ -1115,24 +1117,37 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 
     await page.goto('/')
     await page.getByRole('button', { name: 'Диалог' }).click()
-    await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
-    await expect(page.getByLabel('Выбранный собеседник')).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Выбери роль/ })).toBeVisible()
     const cards = page.getByTestId('mentor-persona-card')
     await expect(cards).toHaveCount(3)
+    const cardGeometry = await cards.first().evaluate(element => {
+      const rect = element.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    })
+    expect(cardGeometry.width, 'Карточка должна оставаться компактной').toBeGreaterThanOrEqual(190)
+    expect(cardGeometry.width, 'Карточка не должна становиться dashboard-like').toBeLessThanOrEqual(
+      204
+    )
+    expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
+    expect(cardGeometry.height, 'Карточка не должна перекрывать pagination и nav').toBeLessThanOrEqual(
+      250
+    )
     expect(
       await cards.evaluateAll(elements =>
         elements.map(element => getComputedStyle(element).borderTopWidth)
       )
     ).toEqual(['1px', '1px', '1px'])
-    const pager = page.getByLabel('Страница собеседника')
+    const pager = page.getByRole('group', { name: 'Выбор роли' })
     await expect(pager).toBeVisible()
     await expect(pager.getByRole('button')).toHaveCount(3)
     await expect(
-      pager.getByRole('button', { name: 'Собеседник, страница 1 из 3' })
-    ).toHaveAttribute('aria-current', 'page')
+      pager.getByRole('button', { name: 'Собеседник, 2 из 3' })
+    ).toHaveAttribute('aria-current', 'true')
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
+      await expect(track).toHaveCSS('touch-action', 'pan-x')
       const cardWidth = await cards
         .first()
         .evaluate(element => element.getBoundingClientRect().width)
@@ -1140,16 +1155,16 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
         element.scrollLeft = scrollLeft
         element.dispatchEvent(new Event('scroll'))
       }, cardWidth + 12)
-      await expect(
-        pager.getByRole('button', { name: 'Наставник, страница 2 из 3' })
-      ).toHaveAttribute('aria-current', 'page')
+      await expect(pager.getByRole('button', { name: 'Собеседник, 2 из 3' })).toHaveAttribute(
+        'aria-current',
+        'true'
+      )
     }
-
-    await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
 
     const mentorCard = cards.filter({ hasText: 'Наставник' })
     await mentorCard.scrollIntoViewIfNeeded()
     await mentorCard.click()
+    await page.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
     await expect(page.getByText('История kompas')).toBeVisible()
     await expect(page.getByText('История mayak')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Назад' }))
