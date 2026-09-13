@@ -194,7 +194,8 @@ export default function PersonaPicker({ user, onPick }) {
                 <RoleGlyph persona={persona} active={isActive} />
                 <div className="mx-dialog-card__body">
                   <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
-                  <h3 className="mx-type-persona-title">{PROMISES[persona.key]}</h3>
+                  <h3 className="mx-type-persona-title">{persona.name}</h3>
+                  <p className="mx-dialog-card__promise">{PROMISES[persona.key]}</p>
                   <p className="mx-dialog-card__description mx-type-persona-body">{persona.desc}</p>
                   {last && !previewsLoading && (
                     <p className="mx-dialog-card__history mx-type-meta">
