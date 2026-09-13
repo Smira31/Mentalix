@@ -179,11 +179,10 @@ body:has(.mx-dialog-entry) {
   flex-direction: column;
   padding: var(--mx-dialog-card-padding);
   overflow: visible;
-  opacity: 0.42;
+  opacity: 0.48;
   scroll-snap-align: center;
-  transform: scale(0.78);
-  transform-origin: center center;
-  will-change: transform, opacity;
+  transform: none;
+  will-change: opacity;
   transition:
     opacity var(--mx-motion-base) ease,
     transform var(--mx-motion-base) var(--mx-ease-out);
@@ -193,7 +192,7 @@ body:has(.mx-dialog-entry) {
 .mx-dialog-card.is-active {
   border-color: rgb(var(--c-border));
   opacity: 1;
-  transform: translateY(-1px) scale(1);
+  transform: translateY(-1px);
 }
 
 .mx-dialog-card:focus-visible {
