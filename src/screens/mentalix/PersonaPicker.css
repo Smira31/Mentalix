@@ -111,8 +111,8 @@ body:has(.mx-dialog-entry) {
   min-height: 0;
   width: 100%;
   max-width: 100%;
-  margin-top: -36px;
-  padding: 34px 0 0;
+  margin-top: -20px;
+  padding: 44px 0 0;
   border: 1px solid rgb(var(--c-border) / 0.72);
   border-bottom: 0;
   border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
@@ -152,7 +152,7 @@ body:has(.mx-dialog-entry) {
   position: relative;
   z-index: 3;
   display: flex;
-  flex: 0 0 var(--mx-dialog-card-min-height);
+  flex: 1 1 auto;
   gap: var(--mx-space-3);
   width: 100%;
   min-width: 0;
@@ -181,7 +181,7 @@ body:has(.mx-dialog-entry) {
   flex-direction: column;
   padding: var(--mx-dialog-card-padding);
   overflow: visible;
-  justify-content: space-between;
+  justify-content: center;
   opacity: 0.48;
   scroll-snap-align: center;
   transform: none;
