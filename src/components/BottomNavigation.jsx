@@ -159,6 +159,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
 
             flex
             items-center
+            justify-center
 
             px-[6px]
 
@@ -193,6 +194,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                 className={[
                   'h-[56px]',
                   'flex-1',
+                  'basis-0',
                   'min-w-0',
                   'rounded-[var(--mx-radius-pill)]',
                   'flex',

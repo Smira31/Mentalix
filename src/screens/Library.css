@@ -413,6 +413,12 @@
     linear-gradient(135deg, rgb(var(--c-card2)), rgb(var(--c-bg)));
 }
 
+.mx-library-v2__featured-banner.is-neutral {
+  border-color: rgb(var(--c-border));
+  background: rgb(var(--c-card2));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025);
+}
+
 .mx-library-v2__featured-copy {
   position: relative;
   z-index: 1;

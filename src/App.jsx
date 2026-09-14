@@ -301,9 +301,6 @@ export default function App() {
     }
   }, [user])
 
-  const bottomNavigationHidden =
-    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
-
   /*
    * Последняя реальная позиция скролла.
    */
@@ -445,6 +442,9 @@ export default function App() {
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
 
+  const bottomNavigationHidden =
+    tab === 'mentor' || mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
+
   useEffect(() => {
     if (!isPreviewDemoMode()) return
 
@@ -515,11 +515,7 @@ export default function App() {
   }, [theme])
 
   useEffect(() => {
-    if (accent === DEFAULT_ACCENT) {
-      document.documentElement.removeAttribute('data-accent')
-    } else {
-      document.documentElement.setAttribute('data-accent', accent)
-    }
+    document.documentElement.setAttribute('data-accent', accent)
   }, [accent])
 
   /* ============================================================
@@ -1152,11 +1148,11 @@ export default function App() {
                     setTodaySeriesOpen(true)
                   }}
                   aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
-                  className="relative flex w-10 max-[359px]:w-6 h-10 shrink-0 items-center justify-center rounded-full bg-emerald border border-cream/10 text-gold active:scale-95"
+                  className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/10 bg-emerald text-gold active:scale-95 max-[359px]:w-8"
                 >
                   <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
                   {todayStreak > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 min-w-[15px] rounded-full bg-gold px-1 text-center text-[9px] font-bold leading-[15px] text-emerald-deep">
+                    <span className="absolute -right-1 -top-1 z-20 min-w-[20px] rounded-full bg-gold px-1.5 text-center text-[9px] font-bold leading-[18px] text-emerald-deep">
                       {todayStreak}
                     </span>
                   )}

@@ -18,9 +18,9 @@ const LIBRARY_V2_QA_ENABLED =
   new URLSearchParams(window.location.search).get('library_v2') === '1'
 const LIBRARY_V2_ENABLED = LIBRARY_V2_ENV_ENABLED || LIBRARY_V2_QA_ENABLED || isPreviewDemoMode()
 
-function LibraryV2FeaturedBanner({ title, description, art, action, onOpen }) {
+function LibraryV2FeaturedBanner({ title, description, art, action, onOpen, neutral = false }) {
   return (
-    <article className="mx-library-v2__featured-banner">
+    <article className={`mx-library-v2__featured-banner ${neutral ? 'is-neutral' : ''}`}>
       <div className="mx-library-v2__featured-art" aria-hidden="true">
         {art}
       </div>
@@ -53,6 +53,7 @@ function LibraryV2ArticleLanding({ onOpen }) {
         description={article.excerpt}
         action="Читать"
         onOpen={onOpen}
+        neutral
         art={<ArticleCover article={article} className="h-full w-full" />}
       />
     </section>
@@ -87,6 +88,7 @@ function LibraryV2JournalLanding({ onOpen }) {
         description="Короткие письменные практики, которые помогают прояснить мысли."
         action="Начать"
         onOpen={onOpen}
+        neutral
         art={<SemanticGlyph kind="journal" animated={false} />}
       />
       <div className="mx-library-programs__guided-list" aria-label="Другие направленные записи">

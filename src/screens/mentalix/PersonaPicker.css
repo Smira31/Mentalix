@@ -44,9 +44,9 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-hero {
   position: relative;
-  flex: 0 0 clamp(312px, 34vh, 440px);
-  min-height: 312px;
-  max-height: 440px;
+  flex: 0 0 clamp(288px, 32vh, 400px);
+  min-height: 288px;
+  max-height: 400px;
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -113,7 +113,7 @@ body:has(.mx-dialog-entry) {
   width: 100%;
   max-width: 100%;
   margin-top: 0;
-  padding: 44px 0 0;
+  padding: 24px 0 0;
   border: 1px solid rgb(var(--c-border) / 0.72);
   border-bottom: 0;
   border-radius: var(--mx-radius-card) var(--mx-radius-card) 0 0;
@@ -282,14 +282,15 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-dots {
   position: absolute;
-  right: 0;
+  left: 50%;
   bottom: 8px;
-  left: 0;
   z-index: 4;
   display: flex;
+  width: 100%;
   justify-content: center;
   gap: 4px;
   margin: 0;
+  transform: translateX(-50%);
 }
 
 .mx-dialog-dots button {
@@ -372,9 +373,9 @@ body:has(.mx-dialog-entry) {
   }
 
   .mx-dialog-hero {
-    flex-basis: 312px;
-    min-height: 312px;
-    max-height: 312px;
+    flex-basis: 288px;
+    min-height: 288px;
+    max-height: 288px;
   }
 }
 
@@ -386,9 +387,9 @@ body:has(.mx-dialog-entry) {
   }
 
   .mx-dialog-hero {
-    flex-basis: 312px;
-    min-height: 312px;
-    max-height: 312px;
+    flex-basis: 288px;
+    min-height: 288px;
+    max-height: 288px;
   }
 }
 
