@@ -861,6 +861,19 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
             {!isCard && !isEmotionStep && (
               <div key={step} className="w-full flex flex-col items-center">
+                {!scale.faces && (
+                  <div aria-hidden="true" className="mb-5 flex w-full max-w-sm gap-1.5 px-1">
+                    {[1, 2, 3, 4, 5].map(segment => (
+                      <span
+                        key={segment}
+                        className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ease-out ${
+                          values[scale.key] >= segment ? 'bg-gold' : 'bg-cream/15'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex items-end justify-center gap-3 w-full max-w-sm">
                   {[1, 2, 3, 4, 5].map(level => {
                     const active = values[scale.key] === level
@@ -869,7 +882,9 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                       <button
                         key={level}
                         onClick={() => pick(scale.key, level)}
-                        className="flex flex-col items-center gap-2 border-0 bg-transparent active:scale-90 transition-transform flex-1"
+                        className={`flex flex-1 flex-col items-center gap-2 border-0 bg-transparent transition-transform duration-200 ease-out active:scale-95 ${
+                          active ? 'scale-105' : 'scale-100'
+                        }`}
                       >
                         {scale.faces ? (
                           <Face level={level} active={active} />
