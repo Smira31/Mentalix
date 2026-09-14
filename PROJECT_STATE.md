@@ -11,15 +11,15 @@ last_verified: 2026-09-14
 
 ## Каноническое состояние
 
-| Область | Факт | Доказательство |
-|---|---|---|
-| Frontend | `Smira31/Mentalix`, default branch `main` | [GitHub](https://github.com/Smira31/Mentalix) |
-| Frontend `main` | `ce25ad2ca23ed9f4fdd1a785fd9dd885410582a8`; ветка защищена | [commit](https://github.com/Smira31/Mentalix/commit/ce25ad2ca23ed9f4fdd1a785fd9dd885410582a8) |
-| Production | `main → Vercel mentalix → https://mentalix.vercel.app` | Deployment `dpl_5pC9UU5h2BE25rfFjNK3ZQM8uHT3`; target `production`; HTTP 200 |
-| Production provenance | Production опубликован из `main`, SHA `ce25ad2...`, commit verification `verified` | [Vercel project](https://vercel.com/smiraandre2-8311s-projects/mentalix) |
-| Owner QA Preview | `Vercel mentalix-preview → https://mentalix-preview.vercel.app` | [Preview](https://mentalix-preview.vercel.app) |
-| Backend | `Smira31/mentalix-bot`, `main`=`6b170e7d0fd0af7e532a1bbb1bc4b9593de0f90f`; ветка не защищена | GitHub authenticated API |
-| Backend runtime | `https://mentalix-bot.onrender.com/api/health` | Проверять перед backend-релизом; SHA Render не подтверждён |
+| Область               | Факт                                                                                                                                                                                                                                | Доказательство                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Frontend              | `Smira31/Mentalix`, default branch `main`                                                                                                                                                                                           | [GitHub](https://github.com/Smira31/Mentalix)                                                 |
+| Frontend `main`       | `456a2c017ab328633ed1edd953f2309be0a0a10b`; ветка защищена                                                                                                                                                                          | [commit](https://github.com/Smira31/Mentalix/commit/456a2c017ab328633ed1edd953f2309be0a0a10b) |
+| Production            | `main → Vercel mentalix → https://mentalix.vercel.app`                                                                                                                                                                              | Deployment `dpl_5pC9UU5h2BE25rfFjNK3ZQM8uHT3`; target `production`; HTTP 200                  |
+| Production provenance | Последний production deployment создан из `main` SHA `ce25ad2...`, commit verification `verified`; последующий merge PR #592 изменил только Markdown, поэтому Vercel сохранил content-equivalent deployment через Ignore Build Step | [Vercel project](https://vercel.com/smiraandre2-8311s-projects/mentalix)                      |
+| Owner QA Preview      | `Vercel mentalix-preview → https://mentalix-preview.vercel.app`                                                                                                                                                                     | [Preview](https://mentalix-preview.vercel.app)                                                |
+| Backend               | `Smira31/mentalix-bot`, `main`=`6b170e7d0fd0af7e532a1bbb1bc4b9593de0f90f`; ветка не защищена                                                                                                                                        | GitHub authenticated API                                                                      |
+| Backend runtime       | `https://mentalix-bot.onrender.com/api/health`                                                                                                                                                                                      | Проверять перед backend-релизом; SHA Render не подтверждён                                    |
 
 ## Канонический словарь окружений
 
@@ -30,17 +30,17 @@ last_verified: 2026-09-14
 
 ## Активные GitHub-треки
 
-На 14.09.2026 открыты только два PR и пять issues.
+На 14.09.2026 открыт один PR и пять issues.
 
-| Объект | Состояние | Следствие |
-|---|---|---|
-| PR #592 | Открыт, docs/reorg-2026-09, `DIRTY` относительно старого base | После актуализации и rebase — единственный docs PR |
-| PR #565 | Открыт, `feat/mentor-mvp-kompas-ux` | Единственный активный продуктовый PR после закрытия Dialog-треков |
-| Issue #612 | Мониторинг Progress после rollout | Закрыть после записи evidence и короткого наблюдения |
-| Issue #600 | Evaluator–optimizer coordination | Координационный, не заменяет product backlog |
-| Issue #582 | Library Programs UI Lab | Preview-only, не production-приоритет |
-| Issue #516 | Illustration system | Preview-only, отложено |
-| Issue #480 | AI handoff context | Backend-dependent, отложено |
+| Объект     | Состояние                                                            | Следствие                                                         |
+| ---------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| PR #592    | Смёржен после rebase и успешных 9 CI checks; merge commit `456a2c01` | Документационный cleanup завершён                                 |
+| PR #565    | Открыт, `feat/mentor-mvp-kompas-ux`                                  | Единственный активный продуктовый PR после закрытия Dialog-треков |
+| Issue #612 | Мониторинг Progress после rollout                                    | Закрыть после записи evidence и короткого наблюдения              |
+| Issue #600 | Evaluator–optimizer coordination                                     | Координационный, не заменяет product backlog                      |
+| Issue #582 | Library Programs UI Lab                                              | Preview-only, не production-приоритет                             |
+| Issue #516 | Illustration system                                                  | Preview-only, отложено                                            |
+| Issue #480 | AI handoff context                                                   | Backend-dependent, отложено                                       |
 
 PR #608 и PR #609 закрыты как выполненная/заменённая работа по Dialog. Issue #515 закрыта. Ветки `feat/515-dialog-ux-ui-lab` и `feat/515-dialog-production-parity` удалены.
 
@@ -54,7 +54,7 @@ PR #608 и PR #609 закрыты как выполненная/заменённ
 
 ## References
 
-[1]: https://github.com/Smira31/Mentalix/commit/ce25ad2ca23ed9f4fdd1a785fd9dd885410582a8 "Текущий frontend main"
-[2]: https://mentalix.vercel.app "Mentalix production"
-[3]: https://mentalix-preview.vercel.app "Mentalix Owner QA Preview"
-[4]: https://vercel.com/smiraandre2-8311s-projects/mentalix "Vercel production project"
+[1]: https://github.com/Smira31/Mentalix/commit/456a2c017ab328633ed1edd953f2309be0a0a10b 'Текущий frontend main'
+[2]: https://mentalix.vercel.app 'Mentalix production'
+[3]: https://mentalix-preview.vercel.app 'Mentalix Owner QA Preview'
+[4]: https://vercel.com/smiraandre2-8311s-projects/mentalix 'Vercel production project'
