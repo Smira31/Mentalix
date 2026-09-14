@@ -1080,6 +1080,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     ...VIEWPORTS,
     { name: '393x852', width: 393, height: 852 }, // iPhone 16
     { name: '402x874', width: 402, height: 874 }, // iPhone 16 Pro
+    { name: '430x932', width: 430, height: 932 }, // iPhone 16 Pro Max
     { name: '768x1024', width: 768, height: 1024 },
     { name: '1280x800', width: 1280, height: 800 },
   ]
@@ -1161,6 +1162,34 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       )
     }
 
+    const cardTextGeometry = await cards.evaluateAll(elements =>
+      elements.map(element => {
+        const cardRect = element.getBoundingClientRect()
+        const textNodes = [...element.querySelectorAll('h3, p')]
+        const textRects = textNodes
+          .map(node => node.getBoundingClientRect())
+          .filter(rect => rect.width > 0 && rect.height > 0)
+        return {
+          cardRight: cardRect.right,
+          cardLeft: cardRect.left,
+          textRight: Math.max(...textRects.map(rect => rect.right)),
+          textLeft: Math.min(...textRects.map(rect => rect.left)),
+          scrollWidth: element.scrollWidth,
+          clientWidth: element.clientWidth,
+        }
+      })
+    )
+    for (const geometry of cardTextGeometry) {
+      expect(geometry.textRight, 'Текст не должен выходить за правую границу карточки').toBeLessThanOrEqual(
+        geometry.cardRight + 0.5
+      )
+      expect(geometry.textLeft, 'Текст не должен выходить за левую границу карточки').toBeGreaterThanOrEqual(
+        geometry.cardLeft - 0.5
+      )
+      expect(geometry.scrollWidth, 'Карточка не должна иметь горизонтального overflow').toBeLessThanOrEqual(
+        geometry.clientWidth
+      )
+    }
     const mentorCard = cards.filter({ hasText: 'Наставник' })
     await mentorCard.scrollIntoViewIfNeeded()
     await mentorCard.click()

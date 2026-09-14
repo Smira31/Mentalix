@@ -182,7 +182,8 @@ body:has(.mx-dialog-entry) {
   max-height: var(--mx-dialog-card-min-height);
   flex-direction: column;
   padding: var(--mx-dialog-card-padding);
-  overflow: visible;
+  min-width: 0;
+  overflow: hidden;
   justify-content: center;
   opacity: 0.48;
   scroll-snap-align: center;
@@ -221,8 +222,9 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-card__body {
+  min-width: 0;
   margin-top: 0;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .mx-dialog-card__role {
@@ -234,26 +236,38 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-card h3 {
+  min-width: 0;
   margin: 0;
   color: rgb(var(--c-text));
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mx-dialog-card__promise {
+  min-width: 0;
   margin: var(--mx-space-2) 0 0;
   color: rgb(var(--c-text));
   font-size: 1rem;
   line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mx-dialog-card__description {
+  min-width: 0;
   margin: var(--mx-space-3) 0 0;
   color: rgb(var(--c-muted));
   line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mx-dialog-card__history {
+  min-width: 0;
   margin: 7px 0 0;
   color: rgb(var(--c-faint));
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mx-dialog-dots {
@@ -354,7 +368,7 @@ body:has(.mx-dialog-entry) {
   }
 }
 
-/* iPhone 16 Plus / Pro Max class: 430px and wider CSS viewports. */
+/* iPhone 16 Pro Max: 430px CSS viewport. Keep the same fixed reference geometry. */
 @media (min-width: 405px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
