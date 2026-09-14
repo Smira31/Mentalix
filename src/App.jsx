@@ -254,6 +254,28 @@ export default function App() {
   const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
   const [demoMotionTick, setDemoMotionTick] = useState(0)
 
+  const registerDemoBack = useCallback((key, handler) => {
+    demoBackRefs.current[key] = handler
+    setDemoMotionTick(tick => tick + 1)
+  }, [])
+
+  const registerTodayBack = useCallback(
+    handler => registerDemoBack('today', handler),
+    [registerDemoBack]
+  )
+
+  const registerPracticesBack = useCallback(
+    handler => registerDemoBack('practices', handler),
+    [registerDemoBack]
+  )
+
+  const registerMentorBack = useCallback(
+    handler => registerDemoBack('mentor', handler),
+    [registerDemoBack]
+  )
+
+  const closeTodaySeries = useCallback(() => setTodaySeriesOpen(false), [])
+
   useEffect(() => {
     if (!isPreviewDemoMode()) return undefined
 
@@ -1318,12 +1340,10 @@ export default function App() {
                       onReturnFlowEvent={reportReturnFlowEvent}
                       onGoMentor={goMentor}
                       onFlowChange={setTodayFlowOpen}
-                      onRegisterBack={handler => {
-                        demoBackRefs.current.today = handler
-                      }}
+                      onRegisterBack={registerTodayBack}
                       onOpenSettings={() => setOverlay('settings')}
                       seriesOpen={todaySeriesOpen}
-                      onCloseSeries={() => setTodaySeriesOpen(false)}
+                      onCloseSeries={closeTodaySeries}
                     />
                   )}
 
@@ -1332,9 +1352,7 @@ export default function App() {
                       user={user}
                       initialSub={practicesSub}
                       onGameChange={setPracticeGameOpen}
-                      onRegisterBack={handler => {
-                        demoBackRefs.current.practices = handler
-                      }}
+                      onRegisterBack={registerPracticesBack}
                       onReturnToToday={goToday}
                     />
                   )}
@@ -1343,9 +1361,7 @@ export default function App() {
                     <MentalixChat
                       user={user}
                       onPersonaChange={setMentorPersonaOpen}
-                      onRegisterBack={handler => {
-                        demoBackRefs.current.mentor = handler
-                      }}
+                      onRegisterBack={registerMentorBack}
                     />
                   )}
 

@@ -11,7 +11,7 @@ test('Demo Telegram chrome exposes Back for nested product screens', () => {
   assert.match(app, /function DemoTelegramChrome\(\{ onBack \}\)/)
   assert.match(app, /aria-label=\{hasBack \? 'Назад' : 'Закрыть превью'\}/)
   assert.match(app, /<DemoTelegramChrome onBack=\{demoBackAction\} \/>/)
-  assert.match(app, /onRegisterBack=\{handler => \{/)
+  assert.match(app, /onRegisterBack=\{register(Today|Practices|Mentor)Back\}/)
   assert.match(mentalix, /onRegisterBack\?\.\(persona \? exitConversation : null\)/)
   assert.match(today, /onRegisterBack\?\.\(handler\)/)
   assert.match(practices, /onRegisterBack\?\.\(handler\)/)

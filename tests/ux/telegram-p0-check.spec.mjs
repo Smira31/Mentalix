@@ -37,43 +37,50 @@ async function openTelegramDemo(browser, viewport) {
 
     window.__telegramBackClick = () => [...handlers].at(-1)?.()
     window.__telegramBackState = button
-    window.Telegram = {
-      WebApp: {
-        initData: 'query_id=p0-test&user=%7B%22id%22%3A900001%7D',
-        initDataUnsafe: { user: { id: 900001, first_name: 'P0' } },
-        version: '8.0',
-        platform: 'ios',
-        colorScheme: 'dark',
-        isFullscreen: true,
-        BackButton: button,
-        MainButton: {
-          setParams() {},
-          onClick() {},
-          offClick() {},
-          show() {},
-          hide() {},
-          enable() {},
-          disable() {},
-          showProgress() {},
-          hideProgress() {},
-        },
-        SecondaryButton: {
-          setParams() {},
-          onClick() {},
-          offClick() {},
-          show() {},
-          hide() {},
-        },
-        onEvent() {},
-        offEvent() {},
-        ready() {},
-        expand() {},
-        requestFullscreen() {},
-        lockOrientation() {},
-        disableVerticalSwipes() {},
-        HapticFeedback: { impactOccurred() {}, notificationOccurred() {} },
+    const webApp = {
+      initData: 'query_id=p0-test&user=%7B%22id%22%3A900001%7D',
+      initDataUnsafe: { user: { id: 900001, first_name: 'P0' } },
+      version: '8.0',
+      platform: 'ios',
+      colorScheme: 'dark',
+      isFullscreen: true,
+      BackButton: button,
+      MainButton: {
+        setParams() {},
+        onClick() {},
+        offClick() {},
+        show() {},
+        hide() {},
+        enable() {},
+        disable() {},
+        showProgress() {},
+        hideProgress() {},
       },
+      SecondaryButton: {
+        setParams() {},
+        onClick() {},
+        offClick() {},
+        show() {},
+        hide() {},
+      },
+      onEvent() {},
+      offEvent() {},
+      ready() {},
+      expand() {},
+      requestFullscreen() {},
+      lockOrientation() {},
+      disableVerticalSwipes() {},
+      HapticFeedback: { impactOccurred() {}, notificationOccurred() {} },
     }
+
+    window.Telegram = { WebApp: webApp }
+    Object.defineProperty(window.Telegram, 'WebApp', {
+      configurable: true,
+      get() {
+        return webApp
+      },
+      set() {},
+    })
   })
 
   const page = await context.newPage()
@@ -140,7 +147,7 @@ for (const viewport of P0_VIEWPORTS) {
       const { context, page } = await openTelegramDemo(browser, viewport)
       await page.getByRole('button', { name: 'Настройки' }).click()
       await page.getByRole('button', { name: /Профиль и мой путь/ }).click()
-      await expect(page.getByRole('heading', { name: 'профиль.' })).toBeVisible()
+      await expect(page.getByText('профиль.', { exact: true })).toBeVisible()
       await nativeBack(page)
       await expect(page.getByRole('heading', { name: 'настройки.' })).toBeVisible()
       await nativeBack(page)
