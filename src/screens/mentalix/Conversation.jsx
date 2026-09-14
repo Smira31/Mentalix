@@ -299,7 +299,7 @@ export default function Conversation({
       style={{
         ...surfaceStyle,
 
-        background: 'linear-gradient(180deg, #174953 0%, #0d3c3b 38%, #0b3530 100%)',
+        background: '#090d0e',
         paddingBottom: 'max(6px, env(safe-area-inset-bottom))',
       }}
     >
