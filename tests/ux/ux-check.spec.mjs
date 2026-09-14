@@ -1131,8 +1131,9 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       204
     )
     expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
+    const maxCardHeight = viewport.width >= 405 ? 292 : viewport.width >= 390 ? 280 : 250
     expect(cardGeometry.height, 'Карточка не должна перекрывать pagination и nav').toBeLessThanOrEqual(
-      250
+      maxCardHeight
     )
     expect(
       await cards.evaluateAll(elements =>

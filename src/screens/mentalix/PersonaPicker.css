@@ -358,7 +358,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 390px) and (max-width: 404px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
-    --mx-dialog-card-min-height: 244px;
+    --mx-dialog-card-min-height: 276px;
   }
 
   .mx-dialog-hero {
@@ -368,11 +368,11 @@ body:has(.mx-dialog-entry) {
   }
 }
 
-/* iPhone 16 Pro Max: 430px CSS viewport. Keep the same fixed reference geometry. */
+/* iPhone 16 Pro Max: 430px CSS viewport gets its own breathing room. */
 @media (min-width: 405px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
-    --mx-dialog-card-min-height: 244px;
+    --mx-dialog-card-min-height: 288px;
   }
 }
 
