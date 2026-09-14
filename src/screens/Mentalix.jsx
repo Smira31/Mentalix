@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
@@ -171,14 +171,25 @@ export function ConversationChat({
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({ user, onPersonaChange }) {
+export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) {
   const [pending] = useState(() => readPendingMentor())
   const [persona, setPersona] = useState(pending.persona)
   const [draft, setDraft] = useState(pending.draft)
 
+  const exitConversation = useCallback(() => {
+    setDraft('')
+    setPersona(null)
+  }, [])
+
   useEffect(() => {
     onPersonaChange?.(Boolean(persona))
   }, [persona, onPersonaChange])
+
+  useEffect(() => {
+    onRegisterBack?.(persona ? exitConversation : null)
+
+    return () => onRegisterBack?.(null)
+  }, [exitConversation, onRegisterBack, persona])
 
   useEffect(() => {
     return () => {
@@ -205,10 +216,7 @@ export default function MentalixChat({ user, onPersonaChange }) {
       initialText={draft}
       viaHandoff={Boolean(pending.persona)}
       withSafetyNotice={Boolean(pending.safety)}
-      onBack={() => {
-        setDraft('')
-        setPersona(null)
-      }}
+      onBack={exitConversation}
     />
   )
 }

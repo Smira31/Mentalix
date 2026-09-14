@@ -99,12 +99,23 @@ function Splash() {
   )
 }
 
-function DemoTelegramChrome() {
+function DemoTelegramChrome({ onBack }) {
+  const hasBack = typeof onBack === 'function'
+
   return (
     <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
-      <button type="button" aria-label="Закрыть превью" className="mx-demo-telegram-chrome__close">
-        <X size={18} strokeWidth={2.2} aria-hidden="true" />
-        <span>Закрыть</span>
+      <button
+        type="button"
+        aria-label={hasBack ? 'Назад' : 'Закрыть превью'}
+        className="mx-demo-telegram-chrome__close"
+        onClick={hasBack ? onBack : undefined}
+      >
+        {hasBack ? (
+          <ChevronDown size={18} strokeWidth={2.2} className="rotate-90" aria-hidden="true" />
+        ) : (
+          <X size={18} strokeWidth={2.2} aria-hidden="true" />
+        )}
+        <span>{hasBack ? 'Назад' : 'Закрыть'}</span>
       </button>
       <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
         <ChevronDown size={22} strokeWidth={2.2} />
@@ -239,6 +250,7 @@ export default function App() {
   const [todayStreak, setTodayStreak] = useState(0)
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
+  const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
 
   useEffect(() => {
     if (!user) return
@@ -402,6 +414,19 @@ export default function App() {
     initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
+
+  const demoBackAction =
+    overlay === 'profile'
+      ? () => setOverlay('settings')
+      : overlay === 'settings'
+        ? () => setOverlay(null)
+        : tab === 'mentor'
+          ? demoBackRefs.current.mentor
+          : tab === 'today'
+            ? demoBackRefs.current.today
+            : tab === 'practices'
+              ? demoBackRefs.current.practices
+              : null
 
   // Разрешены только известные contextual deep-links. Остальные query-параметры не
   // меняют состояние приложения и не могут открыть произвольный экран.
@@ -1012,7 +1037,7 @@ export default function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {previewDemoMode && <DemoTelegramChrome />}
+        {previewDemoMode && <DemoTelegramChrome onBack={demoBackAction} />}
 
         {/* ========================================================
           MENTALIX WORDMARK
@@ -1277,6 +1302,9 @@ export default function App() {
                       onReturnFlowEvent={reportReturnFlowEvent}
                       onGoMentor={goMentor}
                       onFlowChange={setTodayFlowOpen}
+                      onRegisterBack={handler => {
+                        demoBackRefs.current.today = handler
+                      }}
                       onOpenSettings={() => setOverlay('settings')}
                       seriesOpen={todaySeriesOpen}
                       onCloseSeries={() => setTodaySeriesOpen(false)}
@@ -1288,12 +1316,21 @@ export default function App() {
                       user={user}
                       initialSub={practicesSub}
                       onGameChange={setPracticeGameOpen}
+                      onRegisterBack={handler => {
+                        demoBackRefs.current.practices = handler
+                      }}
                       onReturnToToday={goToday}
                     />
                   )}
 
                   {user && tab === 'mentor' && (
-                    <MentalixChat user={user} onPersonaChange={setMentorPersonaOpen} />
+                    <MentalixChat
+                      user={user}
+                      onPersonaChange={setMentorPersonaOpen}
+                      onRegisterBack={handler => {
+                        demoBackRefs.current.mentor = handler
+                      }}
+                    />
                   )}
 
                   {user && tab === 'library' && <Library user={user} />}

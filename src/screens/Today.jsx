@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
@@ -135,6 +135,7 @@ export default function Today({
   onReturnFlowEvent,
   onGoMentor,
   onFlowChange,
+  onRegisterBack,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -194,15 +195,18 @@ export default function Today({
    * темы и аватаром там не нужна: человек уже внутри и знает,
    * где он. Возврат даёт системная кнопка Telegram.
    */
-  function changeSub(nextSub) {
-    onFlowChange?.(Boolean(nextSub))
+  const changeSub = useCallback(
+    nextSub => {
+      onFlowChange?.(Boolean(nextSub))
 
-    if (returnFlowActive && nextSub === 'checkin') {
-      onReturnFlowEvent?.('morning_action_started')
-    }
+      if (returnFlowActive && nextSub === 'checkin') {
+        onReturnFlowEvent?.('morning_action_started')
+      }
 
-    setSub(nextSub)
-  }
+      setSub(nextSub)
+    },
+    [onFlowChange, onReturnFlowEvent, returnFlowActive]
+  )
 
   function retryTodayData() {
     if (!user) return
@@ -218,6 +222,14 @@ export default function Today({
       onFlowChange?.(false)
     }
   }, [onFlowChange])
+
+  useEffect(() => {
+    const handler = seriesOpen ? onCloseSeries : sub ? () => changeSub(null) : null
+
+    onRegisterBack?.(handler)
+
+    return () => onRegisterBack?.(null)
+  }, [changeSub, onCloseSeries, onRegisterBack, seriesOpen, sub])
 
   async function refreshCheckin() {
     if (!user) return
