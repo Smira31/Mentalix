@@ -40,7 +40,6 @@ export default function Conversation({
   sending,
   onSend,
   onBack,
-  privacyControls,
   contextSlot = null,
   footerSlot = null,
   sendError = '',
@@ -64,8 +63,6 @@ export default function Conversation({
   const [voiceSeconds, setVoiceSeconds] = useState(0)
   const [voiceError, setVoiceError] = useState('')
   const [expandedMessages, setExpandedMessages] = useState(() => new Set())
-  const [feedbackByMessage, setFeedbackByMessage] = useState(() => new Set())
-  const [feedbackError, setFeedbackError] = useState('')
   const demoVoice = isPreviewDemoMode()
 
   const voiceSupported =
@@ -114,17 +111,6 @@ export default function Conversation({
 
     return () => clearTimeout(timer)
   }, [showVoiceHint, dismissVoiceHint])
-
-  async function leaveFeedback(messageId, rating) {
-    if (!messageId || feedbackByMessage.has(messageId)) return
-    setFeedbackError('')
-    try {
-      await api.mentalix.feedback(userId, rating, messageId)
-      setFeedbackByMessage(previous => new Set(previous).add(messageId))
-    } catch {
-      setFeedbackError('Не удалось сохранить отметку. Попробуй ещё раз.')
-    }
-  }
 
   function scrollToEnd(behavior = 'smooth') {
     const scroll = scrollRef.current
@@ -313,13 +299,14 @@ export default function Conversation({
       style={{
         ...surfaceStyle,
 
+        background: 'linear-gradient(180deg, #174953 0%, #0d3c3b 38%, #0b3530 100%)',
         paddingBottom: 'max(6px, env(safe-area-inset-bottom))',
       }}
     >
       {/* ── шапка ── */}
 
       <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} grid grid-cols-[1fr_auto_1fr] items-center px-5`}
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mt-2 grid grid-cols-[1fr_auto_1fr] items-center px-5`}
       >
         <div className="justify-self-start">
           <BackButton onClick={onBack} />
@@ -335,8 +322,6 @@ export default function Conversation({
       {/* ── история сообщений ── */}
 
       <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-6`}>
-        {!loading && privacyControls}
-
         {!loading && contextSlot}
 
         {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
@@ -383,32 +368,6 @@ export default function Conversation({
                       <MessageText content={messageContent(message)} />
                     </div>
 
-                    {message.id && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => leaveFeedback(message.id, 'up')}
-                          disabled={feedbackByMessage.has(message.id)}
-                          className="min-h-11 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
-                        >
-                          Полезно
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => leaveFeedback(message.id, 'down')}
-                          disabled={feedbackByMessage.has(message.id)}
-                          className="min-h-11 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
-                        >
-                          Не полезно
-                        </button>
-                        {feedbackByMessage.has(message.id) && (
-                          <span role="status" className="text-[11px] text-muted">
-                            Отметка сохранена
-                          </span>
-                        )}
-                      </div>
-                    )}
-
                     {isLong && (
                       <button
                         type="button"
@@ -430,12 +389,6 @@ export default function Conversation({
               })}
             </div>
           ))}
-
-          {feedbackError && (
-            <p role="status" className="text-[11px] text-red-300">
-              {feedbackError}
-            </p>
-          )}
 
           {sendError && (
             <div
