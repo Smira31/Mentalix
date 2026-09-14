@@ -71,6 +71,7 @@ function LibraryV2ProgramLanding({ onOpen }) {
         description="Пошаговые практики на несколько дней или недель — выбери то, что откликается сейчас."
         action="Смотреть"
         onOpen={onOpen}
+        neutral
         art={<SemanticGlyph kind="focus" animated={false} />}
       />
     </section>

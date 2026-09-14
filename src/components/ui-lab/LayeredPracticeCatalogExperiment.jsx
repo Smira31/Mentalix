@@ -453,7 +453,7 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
         .filter(entry => entry.day === localDayId(new Date()))
         .map(entry => entry.practiceKey)
     )
-  }, [previewUser, previewUser?.id])
+  }, [previewUser])
   const practices = useMemo(
     () => buildPracticeViewModels({ rituals, ascezas, completedToday }),
     [rituals, ascezas, completedToday]

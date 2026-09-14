@@ -153,12 +153,12 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: 'Закрыть' })).toBeVisible()
 
     for (const option of ['Нормально', 'Средне', 'Заметно', 'Держусь']) {
-      await page.getByRole('button', { name: new RegExp(option, 'i') }).click()
+      await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
     }
     await page.getByRole('button', { name: 'ровно' }).click()
     await page.getByRole('button', { name: 'Дальше' }).click()
 
-    const morningNote = page.getByRole('textbox', { name: 'Утренняя мысль' })
+    const morningNote = page.getByRole('textbox', { name: 'Что на уме' })
     await morningNote.fill('Fixture morning note')
     await page.getByRole('button', { name: 'Завершить чек-ин' }).click()
     await expect(page.getByRole('heading', { name: 'Чек-ин записан' })).toBeVisible()

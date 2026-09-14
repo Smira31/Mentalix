@@ -456,7 +456,7 @@ test('локальный UX smoke по основному маршруту', asy
     })
 
     for (const option of ['Нормально', 'Средне', 'Заметно', 'Держусь']) {
-      await page.getByRole('button', { name: new RegExp(option, 'i') }).click()
+      await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
       await page.waitForTimeout(320)
     }
     await page.getByRole('button', { name: 'ровно' }).click()
@@ -469,7 +469,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Утренняя мысль' })
+        const editor = page.getByRole('textbox', { name: 'Что на уме' })
         await expect(editor).toBeVisible()
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
@@ -477,6 +477,7 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Завершить чек-ин' }))
       },
     })
+    await page.waitForTimeout(650)
     const checkinCloseButton = page.locator('button[aria-label="Закрыть"]')
     await checkinCloseButton.click()
 
