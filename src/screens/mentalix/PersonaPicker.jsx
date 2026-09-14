@@ -4,6 +4,7 @@ import { platform } from '../../platform'
 import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
 import heroReference from '../../assets/dialog-hero-reference.png'
+import { isPreviewDemoMode } from '../../lib/demoMode'
 
 import './PersonaPicker.css'
 
@@ -41,6 +42,7 @@ function RoleGlyph({ persona, active }) {
 export default function PersonaPicker({ onPick }) {
   const [active, setActive] = useState(DEFAULT_INDEX)
   const trackRef = useRef(null)
+  const previewDemoMode = isPreviewDemoMode()
 
   useEffect(() => {
     const track = trackRef.current
@@ -126,12 +128,15 @@ export default function PersonaPicker({ onPick }) {
         >
           {DISPLAY_PERSONAS.map((persona, index) => {
             const isActive = active === index
+            const useDemoMentorCopy = previewDemoMode && persona.key === 'kompas'
+            const promise = useDemoMentorCopy ? persona.tagline : PROMISES[persona.key]
+            const description = useDemoMentorCopy ? persona.desc : DIALOG_DESCRIPTIONS[persona.key]
             return (
               <article
                 key={persona.key}
                 className={`mx-dialog-card mx-card-surface ${isActive ? 'is-active' : ''}`}
                 data-testid="mentor-persona-card"
-                aria-label={`${persona.name}: ${PROMISES[persona.key]}`}
+                aria-label={`${persona.name}: ${promise}`}
                 aria-current={isActive ? 'true' : undefined}
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => startRole(persona)}
@@ -146,10 +151,8 @@ export default function PersonaPicker({ onPick }) {
                 <div className="mx-dialog-card__body">
                   <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
                   <h3 className="mx-type-persona-title">{persona.name}</h3>
-                  <p className="mx-dialog-card__promise">{PROMISES[persona.key]}</p>
-                  <p className="mx-dialog-card__description mx-type-persona-body">
-                    {DIALOG_DESCRIPTIONS[persona.key]}
-                  </p>
+                  <p className="mx-dialog-card__promise">{promise}</p>
+                  <p className="mx-dialog-card__description mx-type-persona-body">{description}</p>
                 </div>
               </article>
             )
