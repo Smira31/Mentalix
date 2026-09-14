@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Конституция Mentalix Core
 
 **Версия:** 0.1.0

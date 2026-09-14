@@ -1,9 +1,13 @@
 ---
+status: current
+last_verified: 2026-09-11
 name: "🧠 Идея"
 about: "Предложить новую идею для Mentalix"
 title: "[Идея]: "
 labels: ["🧠 Идея"]
 ---
+
+
 
 # 🧠 Описание идеи
 

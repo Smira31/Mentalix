@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Stoic → Mentalix: product and design audit
 
 **Статус:** рабочий аудит, 27.08.2026  

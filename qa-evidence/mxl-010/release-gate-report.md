@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-010 — Frontend Release Gate Report
 
 **Проект:** [`Smira31/Mentalix`](https://github.com/Smira31/Mentalix)  

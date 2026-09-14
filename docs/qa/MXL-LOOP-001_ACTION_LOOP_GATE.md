@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-LOOP-001 — action loop implementation and QA plan
 
 **Статус:** первый implementation slice; код продукта в этом коммите не меняется.  

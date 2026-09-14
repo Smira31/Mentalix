@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Competitor browser findings — 28 Aug 2026
 
 ## Clarity (App Store)

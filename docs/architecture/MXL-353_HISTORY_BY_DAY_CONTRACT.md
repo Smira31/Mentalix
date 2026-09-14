@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-353 — History-by-day contract for Journal tags
 
 Теги зависят от общего Journal history backend. Этот документ фиксирует минимальный контракт, не реализуя endpoint и не меняя frontend до снятия backend blocker.

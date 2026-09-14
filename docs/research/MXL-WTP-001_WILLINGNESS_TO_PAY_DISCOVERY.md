@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # MXL-WTP-001 — Discovery note: willingness to pay за повторяемый outcome
 
 **Статус:** research/docs; не является разрешением на реализацию checkout, выбор payment provider, изменение backend/Telegram-бота или product code. Ничего из этого документа не реализовано этой задачей — только концепт-тесты на бумаге и предложенная методология.

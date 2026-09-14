@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix UX check
 
 Результат: **PASS** — 120/120 экранов прошли проверки.
