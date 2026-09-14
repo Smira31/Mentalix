@@ -24,6 +24,7 @@ import { currentCheckinStreak } from './lib/series'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
+import { installDemoPressFeedback } from './lib/demoPressFeedback'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -252,6 +253,12 @@ export default function App() {
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
   const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
   const [demoMotionTick, setDemoMotionTick] = useState(0)
+
+  useEffect(() => {
+    if (!isPreviewDemoMode()) return undefined
+
+    return installDemoPressFeedback(document)
+  }, [])
 
   useEffect(() => {
     if (!user) return
