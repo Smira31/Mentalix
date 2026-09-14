@@ -251,6 +251,7 @@ export default function App() {
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
   const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
+  const [demoMotionTick, setDemoMotionTick] = useState(0)
 
   useEffect(() => {
     if (!user) return
@@ -414,6 +415,12 @@ export default function App() {
     initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
+
+  useEffect(() => {
+    if (!isPreviewDemoMode()) return
+
+    setDemoMotionTick(tick => tick + 1)
+  }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
 
   const demoBackAction =
     overlay === 'profile'
@@ -1199,6 +1206,8 @@ export default function App() {
                 : mentorPersonaOpen
                   ? ''
                   : 'animate-fade-in',
+              previewDemoMode && 'mx-demo-screen-transition',
+              previewDemoMode && `mx-demo-screen-transition--${demoMotionTick % 2}`,
             ].join(' ')}
           >
             <Suspense fallback={<ScreenLoading />}>

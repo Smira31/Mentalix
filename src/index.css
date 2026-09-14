@@ -994,6 +994,27 @@ button {
   }
 }
 
+/* Demo-only Stoic-inspired screen motion: a quiet fade with a small upward
+   settle keeps the next task dominant without turning navigation into a
+   spectacle. Alternating class names restart the animation for stateful
+   nested flows without remounting their React screens. */
+@keyframes mxDemoScreenEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mx-demo-screen-transition--0,
+.mx-demo-screen-transition--1 {
+  animation: mxDemoScreenEnter var(--mx-motion-slow) var(--mx-ease-out) both;
+}
+
 /* ============================================================
    ACCESSIBILITY
    ============================================================ */
