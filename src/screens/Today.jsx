@@ -23,6 +23,7 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
+import { isPreviewDemoMode } from '../lib/demoMode'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -184,6 +185,7 @@ export default function Today({
   // пользователь явно не пропустил его в этой сессии — «пропустить» не
   // должно повторно всплывать при каждом ре-рендере Today.
   const [starterSetSkipped, setStarterSetSkipped] = useState(false)
+  const [demoQuickStartOpen, setDemoQuickStartOpen] = useState(false)
 
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
@@ -725,6 +727,57 @@ export default function Today({
 
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
+
+      {isPreviewDemoMode() && (
+        <div className="w-full mt-3">
+          <button
+            type="button"
+            className="w-full rounded-full border border-cream/15 bg-emerald-light px-4 py-2.5 mx-type-meta text-muted active:scale-[0.99] transition-transform"
+            aria-expanded={demoQuickStartOpen}
+            onClick={() => setDemoQuickStartOpen(open => !open)}
+          >
+            {demoQuickStartOpen ? 'Скрыть другие способы' : 'Другой способ начать'}
+          </button>
+
+          {demoQuickStartOpen && (
+            <div className="mt-2 grid grid-cols-3 gap-2" aria-label="Другие способы начать">
+              <button
+                type="button"
+                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  platform.haptic('light')
+                  setDemoQuickStartOpen(false)
+                  changeSub('checkin')
+                }}
+              >
+                Настроение
+              </button>
+              <button
+                type="button"
+                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  platform.haptic('light')
+                  setDemoQuickStartOpen(false)
+                  onOpenPractice('journal')
+                }}
+              >
+                Записать мысль
+              </button>
+              <button
+                type="button"
+                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  platform.haptic('light')
+                  setDemoQuickStartOpen(false)
+                  onOpenPractice('rituals')
+                }}
+              >
+                Практика
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mx-today-hero-breath" aria-hidden="true" />
 
