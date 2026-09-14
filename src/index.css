@@ -363,6 +363,45 @@ svg .animate-celebrate-pop {
   max-width: 430px;
   margin-inline: auto;
   padding-inline: var(--mx-space-5);
+  animation: mx-stoic-screen-enter 420ms var(--mx-ease-out) both;
+}
+
+/*
+ * Спокойный вход экрана: короткий fade и небольшой settle
+ * вместо резкого появления. Это перенос наблюдаемой механики референса в
+ * существующую motion-систему Mentalix, а не отдельный визуальный язык.
+ */
+@keyframes mx-stoic-screen-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mx-checkin-step-enter {
+  animation: mx-stoic-step-enter 460ms var(--mx-ease-out) both;
+}
+
+@keyframes mx-stoic-step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mx-type-hero {
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: -0.035em;
 }
 .mx-practices-catalog-shell:has(.mx-production-catalog > .mx-layered-category)
   .mx-practices-catalog-title {
@@ -859,6 +898,14 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .mx-screen-shell {
+    animation: none;
+  }
+
+  .mx-checkin-step-enter {
+    animation: none;
+  }
+
   .cta-pill {
     transition: none;
   }
