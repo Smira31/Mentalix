@@ -463,6 +463,7 @@
 .mx-progress-layout-v2 .mx-progress-redesign__mood-prompt h2 {
   margin: 0;
   color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
   font-size: 19px;
   font-weight: 600;
   line-height: 1.16;
@@ -472,6 +473,7 @@
   max-width: 270px;
   margin: 6px auto 16px;
   color: rgb(var(--c-muted));
+  font-family: 'Onest', sans-serif;
   font-size: 13px;
   line-height: 1.3;
 }

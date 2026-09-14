@@ -67,6 +67,11 @@
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.018);
 }
 
+.mx-today-affirmation-card .mx-type-card,
+.mx-today-affirmation-card .mx-type-meta {
+  font-family: 'Onest', sans-serif;
+}
+
 /*
  * Diagnostic-only (light-preview, MXL-THEME-015). These three cards keep
  * a dark surface on purpose even in light-preview:

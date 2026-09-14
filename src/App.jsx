@@ -102,6 +102,16 @@ function Splash() {
 
 function DemoTelegramChrome({ onBack }) {
   const hasBack = typeof onBack === 'function'
+  const chromeTab = new URLSearchParams(window.location.search).get('tab')
+  const tabTitle =
+    chromeTab === 'progress'
+      ? 'Прогресс'
+      : chromeTab === 'library'
+        ? 'Библиотека'
+        : chromeTab === 'practices'
+          ? 'Практики'
+          : ''
+  const tabMeta = chromeTab === 'progress' ? '14 дней' : ''
 
   return (
     <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
@@ -118,9 +128,13 @@ function DemoTelegramChrome({ onBack }) {
         )}
         <span>{hasBack ? 'Назад' : 'Закрыть'}</span>
       </button>
-      <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
-        <ChevronDown size={22} strokeWidth={2.2} />
-        <Ellipsis size={22} strokeWidth={2.2} />
+      {tabTitle && <div className="mx-demo-telegram-chrome__title">{tabTitle}</div>}
+      <div className="mx-demo-telegram-chrome__right">
+        <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
+          <ChevronDown size={22} strokeWidth={2.2} />
+          <Ellipsis size={22} strokeWidth={2.2} />
+        </div>
+        {tabMeta && <span className="mx-demo-telegram-chrome__meta">{tabMeta}</span>}
       </div>
     </div>
   )

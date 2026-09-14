@@ -805,7 +805,7 @@
 
 /* Stage A refinement: iOS-like featured type and Telegram-safe article reader. */
 .mx-library-programs__featured-copy strong {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', sans-serif;
+  font-family: 'Onest', sans-serif;
   max-width: none;
   font-size: clamp(20px, 5.6vw, 22px);
   font-weight: 600;

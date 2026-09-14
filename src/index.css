@@ -1235,6 +1235,23 @@ button {
   justify-content: space-between;
   pointer-events: none;
 }
+.mx-demo-telegram-chrome__title {
+  position: absolute;
+  left: 50%;
+  min-width: max-content;
+  color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  transform: translateX(-50%);
+}
+.mx-demo-telegram-chrome__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
 .mx-demo-telegram-chrome__close,
 .mx-demo-telegram-chrome__menu {
   display: flex;
@@ -1256,6 +1273,14 @@ button {
 .mx-demo-telegram-chrome__menu {
   gap: 8px;
   padding: 0 10px;
+}
+.mx-demo-telegram-chrome__meta {
+  padding-right: 5px;
+  color: rgb(var(--c-muted));
+  font-family: 'Onest', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .mx-preview-stage {
