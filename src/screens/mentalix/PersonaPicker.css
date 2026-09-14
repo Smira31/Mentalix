@@ -372,7 +372,7 @@ body:has(.mx-dialog-entry) {
 @media (min-width: 405px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
-    --mx-dialog-card-min-height: 288px;
+    --mx-dialog-card-min-height: 320px;
   }
 }
 
