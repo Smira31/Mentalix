@@ -18,4 +18,10 @@ test('Stoic-inspired motion respects reduced-motion accessibility', () => {
   assert.match(styles, /prefers-reduced-motion: reduce/)
 })
 
+test('Demo buttons expose a restrained visual tactile press cue', () => {
+  assert.match(styles, /\[data-mentalix-demo-frame='true'\] button:active/)
+  assert.match(styles, /filter: brightness\(1\.08\)/)
+  assert.match(styles, /box-shadow: 0 0 0 3px/)
+})
+
 console.log('Demo Stoic motion contract passed')

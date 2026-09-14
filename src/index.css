@@ -1015,6 +1015,23 @@ button {
   animation: mxDemoScreenEnter var(--mx-motion-slow) var(--mx-ease-out) both;
 }
 
+/* Preview-only tactile simulation: Telegram/Web cannot expose the native
+   haptic pulse in a browser preview, so the pressed state gets a restrained
+   visual cue instead. It deliberately avoids replacing existing transform
+   transitions or changing production buttons. */
+[data-mentalix-demo-frame='true'] button {
+  -webkit-tap-highlight-color: transparent;
+  transition-property:
+    transform, filter, box-shadow, background-color, color, border-color, opacity;
+  transition-duration: var(--mx-motion-fast);
+  transition-timing-function: var(--mx-ease-out);
+}
+
+[data-mentalix-demo-frame='true'] button:active {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 3px rgb(var(--c-gold) / 0.12);
+}
+
 /* ============================================================
    ACCESSIBILITY
    ============================================================ */
