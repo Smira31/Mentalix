@@ -1069,6 +1069,7 @@ button {
 .mx-preview-stage > .h-screen {
   flex: 0 0 auto;
   max-width: calc(100vw - 40px);
+  transform-origin: top center;
   border: 8px solid #191817;
   border-radius: 42px;
   box-shadow:

@@ -197,9 +197,19 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-card.is-active {
-  border-color: rgb(var(--c-border));
+  border-color: rgb(var(--c-gold) / 0.62);
   opacity: 1;
   transform: translateY(-1px);
+}
+.mx-dialog-card:not(.is-active) .mx-dialog-card__description,
+.mx-dialog-card:not(.is-active) .mx-dialog-card__history {
+  max-height: 0;
+  margin-top: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+.mx-dialog-card:not(.is-active) .mx-dialog-card__promise {
+  color: rgb(var(--c-text) / 0.55);
 }
 
 .mx-dialog-card:focus-visible {

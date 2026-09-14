@@ -461,6 +461,7 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
+  const demoToolbar = new URLSearchParams(window.location.search).get('toolbar') === '1'
   const [demoDevice, setDemoDevice] = useState(() => {
     const device = new URLSearchParams(window.location.search).get('device')
     return device === 'pro' ? 'pro' : 'pro-max'
@@ -469,6 +470,20 @@ export default function App() {
     demoDevice === 'pro'
       ? { width: 402, height: 874, label: 'iPhone 16 Pro' }
       : { width: 430, height: 932, label: 'iPhone 16 Pro Max' }
+  const [demoScale, setDemoScale] = useState(1)
+
+  useEffect(() => {
+    if (!previewDemoMode) return undefined
+    const updateScale = () => {
+      const reservedHeight = demoToolbar ? 118 : 42
+      setDemoScale(
+        Math.min(1, Math.max(0.62, (window.innerHeight - reservedHeight) / demoViewport.height))
+      )
+    }
+    updateScale()
+    window.addEventListener('resize', updateScale)
+    return () => window.removeEventListener('resize', updateScale)
+  }, [demoDevice, demoToolbar, demoViewport.height, previewDemoMode])
 
   useEffect(() => {
     platform.init()
@@ -922,7 +937,7 @@ export default function App() {
 
   return (
     <div className={previewDemoMode ? 'mx-preview-stage' : undefined}>
-      {previewDemoMode && (
+      {previewDemoMode && demoToolbar && (
         <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
           <span className="mx-preview-device-switcher__label">Demo viewport</span>
           {[
@@ -966,6 +981,7 @@ export default function App() {
               ? `${viewportHeight}px`
               : '100dvh',
           width: previewDemoMode ? `${demoViewport.width}px` : undefined,
+          transform: previewDemoMode ? `scale(${demoScale})` : undefined,
           paddingTop: topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
