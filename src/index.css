@@ -1100,6 +1100,17 @@ button {
   background: rgb(var(--c-gold) / 0.12);
   color: rgb(var(--c-cream));
 }
+.mx-preview-demo-note {
+  padding: 6px 10px;
+  border: 1px solid rgb(var(--c-gold) / 0.32);
+  border-radius: 999px;
+  background: rgb(var(--c-card2) / 0.92);
+  color: rgb(var(--c-gold));
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.2);
+}
 .mx-preview-stage > .h-screen {
   flex: 0 0 auto;
   max-width: calc(100vw - 40px);
@@ -1122,6 +1133,9 @@ button {
     z-index: 100;
     transform: scale(0.86);
     transform-origin: top center;
+  }
+  .mx-preview-demo-note {
+    display: none;
   }
   .mx-preview-stage > .h-screen {
     border-width: 0;

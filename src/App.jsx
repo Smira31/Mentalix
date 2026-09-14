@@ -978,6 +978,11 @@ export default function App() {
           ))}
         </div>
       )}
+      {previewDemoMode && tab !== 'mentor' && (
+        <div className="mx-preview-demo-note" role="status">
+          Preview Demo Mode · данные только в этом браузере
+        </div>
+      )}
       <div
         className="
         h-screen
@@ -1004,15 +1009,6 @@ export default function App() {
         }}
       >
         {previewDemoMode && <DemoTelegramChrome />}
-
-        {previewDemoMode && tab !== 'mentor' && (
-          <div
-            role="status"
-            className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-gold/40 bg-emerald px-3 py-1 text-[10px] font-semibold tracking-wide text-gold shadow-lg"
-          >
-            Preview Demo Mode · данные только в этом браузере
-          </div>
-        )}
 
         {/* ========================================================
           MENTALIX WORDMARK

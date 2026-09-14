@@ -501,6 +501,22 @@
     background var(--mx-motion-fast);
 }
 
+.mx-progress-layout-v2 .mx-progress-redesign__mood-face {
+  width: 27px;
+  height: 27px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.45;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__mood-face .mx-progress-redesign__mood-eye {
+  fill: currentColor;
+  stroke: none;
+}
+
 .mx-progress-layout-v2 .mx-progress-redesign__mood-options button:hover,
 .mx-progress-layout-v2 .mx-progress-redesign__mood-options button:focus-visible {
   background: #3a3a3c;
