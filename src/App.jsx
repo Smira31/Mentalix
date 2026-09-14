@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { Flame, Settings as SettingsIcon } from 'lucide-react'
+import { ChevronDown, Ellipsis, Flame, Settings as SettingsIcon, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -94,6 +94,21 @@ function Splash() {
         "
       >
         выход находится шагами
+      </div>
+    </div>
+  )
+}
+
+function DemoTelegramChrome() {
+  return (
+    <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
+      <button type="button" aria-label="Закрыть превью" className="mx-demo-telegram-chrome__close">
+        <X size={18} strokeWidth={2.2} aria-hidden="true" />
+        <span>Закрыть</span>
+      </button>
+      <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
+        <ChevronDown size={22} strokeWidth={2.2} />
+        <Ellipsis size={22} strokeWidth={2.2} />
       </div>
     </div>
   )
@@ -966,6 +981,7 @@ export default function App() {
       <div
         className="
         h-screen
+        relative
         overflow-hidden
         bg-emerald-deep
         text-cream
@@ -982,11 +998,13 @@ export default function App() {
               : '100dvh',
           width: previewDemoMode ? `${demoViewport.width}px` : undefined,
           transform: previewDemoMode ? `scale(${demoScale})` : undefined,
-          paddingTop: topSafeArea,
+          paddingTop: previewDemoMode ? '78px' : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
+        {previewDemoMode && <DemoTelegramChrome />}
+
         {previewDemoMode && tab !== 'mentor' && (
           <div
             role="status"

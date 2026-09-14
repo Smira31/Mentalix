@@ -1007,6 +1007,40 @@ button {
 }
 
 /* Desktop demo viewport: show the real app inside an iPhone-sized frame. */
+.mx-demo-telegram-chrome {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  left: 20px;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.mx-demo-telegram-chrome__close,
+.mx-demo-telegram-chrome__menu {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  border: 1px solid rgb(var(--c-text) / 0.08);
+  border-radius: 999px;
+  background: rgb(var(--c-card2) / 0.92);
+  color: rgb(var(--c-text));
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.24);
+}
+.mx-demo-telegram-chrome__close {
+  gap: 7px;
+  padding: 0 13px 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: auto;
+}
+.mx-demo-telegram-chrome__menu {
+  gap: 8px;
+  padding: 0 10px;
+}
+
 .mx-preview-stage {
   min-height: 100vh;
   width: 100%;
