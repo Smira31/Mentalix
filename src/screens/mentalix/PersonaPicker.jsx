@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
+import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
 import { isPreviewDemoMode } from '../../lib/demoMode'
 
@@ -22,6 +23,19 @@ const DIALOG_DESCRIPTIONS = {
   mayak: 'Тёплый и внимательный разговор без оценки, когда нужно выговориться или услышать себя.',
   kompas: 'Строгий и честный. Разложит цель на шаги и не даст себя жалеть.',
   dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
+}
+
+function RoleGlyph({ persona, active }) {
+  return (
+    <div className="mx-dialog-role-glyph" aria-hidden="true">
+      <SemanticGlyph
+        kind={semanticKindForPersona(persona.key)}
+        animated={false}
+        highlighted={active}
+        className="mx-dialog-role-glyph__svg"
+      />
+    </div>
+  )
 }
 
 export default function PersonaPicker({ onPick }) {
@@ -123,6 +137,7 @@ export default function PersonaPicker({ onPick }) {
                   }
                 }}
               >
+                <RoleGlyph persona={persona} active={isActive} />
                 <div className="mx-dialog-card__body">
                   <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
                   <h3 className="mx-type-persona-title">{persona.name}</h3>
