@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -263,6 +264,6 @@ export default function TodayFocusFlow({
         )}
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { createPortal } from 'react-dom'
 import { useMemo, useState } from 'react'
 
@@ -55,7 +56,7 @@ function StageShell({ children, title, onBack }) {
         <div className="mx-lila-stage-content flex min-h-0 flex-1 flex-col pt-3">{children}</div>
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
 

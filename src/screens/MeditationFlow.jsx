@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -211,6 +212,6 @@ export default function MeditationFlow({ onClose }) {
         </SceneLayout>
       )}
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

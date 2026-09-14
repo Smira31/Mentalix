@@ -189,7 +189,7 @@ test('MXL-LILA-UX-006 uses the native Telegram BackButton without a duplicate Li
   assert.doesNotMatch(flow, /<BackButton/)
   assert.match(flow, /<StageShell title="Лила" onBack=\{goBack\}>/)
   assert.match(flow, /createPortal\(/)
-  assert.match(flow, /document\.body/)
+  assert.match(flow, /getFullscreenPortalTarget\(\)/)
   assert.match(lilaCss, /height: 100dvh/)
   assert.match(lilaCss, /max-height: 100dvh/)
   assert.match(lilaCss, /box-sizing: border-box/)

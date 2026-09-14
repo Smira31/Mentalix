@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
@@ -731,7 +732,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
         <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
       </div>,
-      document.body
+      getFullscreenPortalTarget()
     )
   }
 
@@ -1178,6 +1179,6 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
       <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

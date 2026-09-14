@@ -984,6 +984,7 @@ export default function App() {
         </div>
       )}
       <div
+        data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
         className="
         h-screen
         relative
@@ -1003,6 +1004,9 @@ export default function App() {
               : '100dvh',
           width: previewDemoMode ? `${demoViewport.width}px` : undefined,
           transform: previewDemoMode ? `scale(${demoScale})` : undefined,
+          marginBottom: previewDemoMode
+            ? `${-(demoViewport.height * (1 - demoScale))}px`
+            : undefined,
           paddingTop: previewDemoMode ? '78px' : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',

@@ -1049,7 +1049,7 @@ button {
   align-items: center;
   justify-content: flex-start;
   gap: 14px;
-  padding: 24px 20px;
+  padding: 10px 20px 18px;
   background:
     radial-gradient(circle at 50% 0%, rgb(var(--c-card2) / 0.7), transparent 42%), rgb(var(--c-bg));
 }

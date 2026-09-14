@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -87,6 +88,6 @@ export default function MoodCheckGate({ onDismiss }) {
         </div>
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useState, useRef } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
@@ -219,7 +220,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
         </div>
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
 
@@ -488,7 +489,7 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
       </div>
       <WebActionBar action={webAction} />
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
 

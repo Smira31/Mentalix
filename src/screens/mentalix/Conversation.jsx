@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../../lib/fullscreenSurface'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -702,6 +703,6 @@ export default function Conversation({
         {footerSlot}
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

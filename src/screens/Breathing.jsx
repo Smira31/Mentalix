@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
@@ -28,7 +29,7 @@ function FullscreenStage({ className = '', children }) {
     <div className={`${FULLSCREEN_SHELL_CLASS} ${className}`} style={style}>
       {children}
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
 

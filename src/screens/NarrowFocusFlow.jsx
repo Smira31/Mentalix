@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
@@ -451,6 +452,6 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
         )}
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

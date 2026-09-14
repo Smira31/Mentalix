@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useState, useRef } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
@@ -309,7 +310,7 @@ function CreateRitualScreen({ onCreate, onCancel }) {
 
       <WebActionBar action={webAction} />
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
 

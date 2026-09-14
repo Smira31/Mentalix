@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useMemo, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
@@ -170,6 +171,6 @@ export default function QuoteView({ user, todayQuote, onClose }) {
         </button>
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

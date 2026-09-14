@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -320,6 +321,6 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
         />
       )}
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
