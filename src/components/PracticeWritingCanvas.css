@@ -125,18 +125,30 @@
 .practice-writing-canvas.is-demo-keyboard-open {
   padding-bottom: 252px;
 }
+.practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__question {
+  margin-top: 18px;
+  font-size: clamp(24px, 7vw, 30px);
+}
+.practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__description {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.35;
+}
 .practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__field {
-  min-height: 120px;
+  min-height: 86px;
+  margin-top: 14px;
   overflow-y: auto;
   padding-bottom: 18px;
 }
 .practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__dock {
   position: fixed;
   right: 22px;
-  bottom: 244px;
+  bottom: 252px;
   left: 22px;
-  background: linear-gradient(180deg, transparent, var(--pwc-bg) 32%);
-  padding-top: 18px;
+  z-index: 100;
+  min-height: 56px;
+  padding-top: 0;
+  background: var(--pwc-bg);
 }
 .practice-writing-canvas__demo-keyboard {
   position: fixed;

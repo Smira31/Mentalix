@@ -112,7 +112,7 @@ export default function PracticeWritingCanvas({
           setFocused(true)
           if (demoPreview) setDemoKeyboard(true)
           if (demoPreview) {
-            window.requestAnimationFrame(() => {
+            const resetFlowScroll = () => {
               let parent = event.currentTarget.parentElement
               while (parent && parent !== document.body) {
                 if (parent.scrollHeight > parent.clientHeight) {
@@ -121,7 +121,9 @@ export default function PracticeWritingCanvas({
                 parent = parent.parentElement
               }
               window.scrollTo({ top: 0, behavior: 'auto' })
-            })
+            }
+            window.requestAnimationFrame(resetFlowScroll)
+            window.setTimeout(resetFlowScroll, 120)
           }
         }}
         onBlur={() => setFocused(false)}
