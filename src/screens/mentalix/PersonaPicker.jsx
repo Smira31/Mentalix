@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
 import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
-import { fetchHistory } from '../../lib/mentalixHistoryCache'
 import { PERSONAS } from './personas'
 import heroReference from '../../assets/dialog-hero-reference.png'
 
@@ -26,13 +25,6 @@ const DIALOG_DESCRIPTIONS = {
   dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
 }
 
-function trim(text, max = 70) {
-  const clean = String(text || '')
-    .replace(/\s+/g, ' ')
-    .trim()
-  return clean.length > max ? `${clean.slice(0, max).trimEnd()}…` : clean
-}
-
 function RoleGlyph({ persona, active }) {
   return (
     <div className="mx-dialog-role-glyph" aria-hidden="true">
@@ -46,31 +38,9 @@ function RoleGlyph({ persona, active }) {
   )
 }
 
-export default function PersonaPicker({ user, onPick }) {
-  const [previews, setPreviews] = useState({})
-  const [previewsLoading, setPreviewsLoading] = useState(true)
+export default function PersonaPicker({ onPick }) {
   const [active, setActive] = useState(DEFAULT_INDEX)
   const trackRef = useRef(null)
-
-  useEffect(() => {
-    if (!user) return undefined
-    let alive = true
-    Promise.all(
-      DISPLAY_PERSONAS.map(persona =>
-        fetchHistory(user.id, persona.key)
-          .then(messages => [persona.key, Array.isArray(messages) ? messages.at(-1) : null])
-          .catch(() => [persona.key, null])
-      )
-    )
-      .then(pairs => {
-        if (!alive) return
-        setPreviews(Object.fromEntries(pairs.filter(([, last]) => last?.content)))
-      })
-      .finally(() => alive && setPreviewsLoading(false))
-    return () => {
-      alive = false
-    }
-  }, [user])
 
   useEffect(() => {
     const track = trackRef.current
@@ -155,7 +125,6 @@ export default function PersonaPicker({ user, onPick }) {
           onScroll={syncActive}
         >
           {DISPLAY_PERSONAS.map((persona, index) => {
-            const last = previews[persona.key]
             const isActive = active === index
             return (
               <article
@@ -165,11 +134,11 @@ export default function PersonaPicker({ user, onPick }) {
                 aria-label={`${persona.name}: ${PROMISES[persona.key]}`}
                 aria-current={isActive ? 'true' : undefined}
                 tabIndex={isActive ? 0 : -1}
-                onClick={() => selectRole(index)}
+                onClick={() => startRole(persona)}
                 onKeyDown={event => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    selectRole(index)
+                    startRole(persona)
                   }
                 }}
               >
@@ -181,11 +150,6 @@ export default function PersonaPicker({ user, onPick }) {
                   <p className="mx-dialog-card__description mx-type-persona-body">
                     {DIALOG_DESCRIPTIONS[persona.key]}
                   </p>
-                  {last && !previewsLoading && (
-                    <p className="mx-dialog-card__history mx-type-meta">
-                      Последний разговор: {trim(last.content)}
-                    </p>
-                  )}
                 </div>
               </article>
             )

@@ -1194,7 +1194,6 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     const mentorCard = cards.filter({ hasText: 'Наставник' })
     await mentorCard.scrollIntoViewIfNeeded()
     await mentorCard.click()
-    await page.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
     await expect(page.getByText('История kompas')).toBeVisible()
     await expect(page.getByText('История mayak')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Назад' }))
