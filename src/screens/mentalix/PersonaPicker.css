@@ -112,7 +112,7 @@ body:has(.mx-dialog-entry) {
   min-height: 0;
   width: 100%;
   max-width: 100%;
-  margin-top: -20px;
+  margin-top: 0;
   padding: 44px 0 0;
   border: 1px solid rgb(var(--c-border) / 0.72);
   border-bottom: 0;
@@ -197,7 +197,7 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-card.is-active {
-  border-color: rgb(var(--c-gold) / 0.62);
+  border-color: rgb(var(--c-border));
   opacity: 1;
   transform: translateY(-1px);
 }
@@ -364,7 +364,7 @@ body:has(.mx-dialog-entry) {
   }
 }
 
-/* iPhone 16 / 16 Pro: 393–402px wide CSS viewports. */
+/* iPhone 16 / 16 Pro / Pro Max: one identical mobile composition. */
 @media (min-width: 390px) and (max-width: 404px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
@@ -378,11 +378,17 @@ body:has(.mx-dialog-entry) {
   }
 }
 
-/* iPhone 16 Pro Max: 430px CSS viewport gets its own breathing room. */
+/* Pro Max keeps the same geometry; only the real viewport width changes. */
 @media (min-width: 405px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
-    --mx-dialog-card-min-height: 320px;
+    --mx-dialog-card-min-height: 276px;
+  }
+
+  .mx-dialog-hero {
+    flex-basis: 312px;
+    min-height: 312px;
+    max-height: 312px;
   }
 }
 
