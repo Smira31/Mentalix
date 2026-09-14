@@ -403,6 +403,130 @@ svg .animate-celebrate-pop {
   font-family: Georgia, 'Times New Roman', serif;
   letter-spacing: -0.035em;
 }
+
+.mx-scale-rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: min(100%, 390px);
+  gap: 0.2rem;
+  padding-inline: 0.2rem;
+}
+
+.mx-scale-rail__line {
+  position: absolute;
+  top: 1.65rem;
+  right: 9%;
+  left: 9%;
+  height: 2px;
+  background: rgb(var(--c-border) / 0.9);
+}
+
+.mx-scale-rail__progress {
+  position: absolute;
+  top: 1.65rem;
+  left: 9%;
+  z-index: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(var(--c-gold) / 0.82);
+  transition: width 300ms var(--mx-ease-out);
+}
+
+.mx-scale-rail__item {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  transition:
+    transform 220ms var(--mx-ease-out),
+    color 220ms ease;
+}
+
+.mx-scale-rail__item:active {
+  transform: scale(0.94);
+}
+
+.mx-scale-rail__item--active {
+  color: rgb(var(--c-gold));
+  transform: translateY(-2px) scale(1.04);
+}
+
+.mx-scale-rail__circle {
+  display: grid;
+  width: 3.3rem;
+  height: 3.3rem;
+  place-items: center;
+  border: 1px solid rgb(var(--c-border) / 0.9);
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-muted));
+  font-size: 1rem;
+  font-weight: 700;
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.mx-scale-rail__item--active .mx-scale-rail__circle {
+  border-color: rgb(var(--c-gold) / 0.9);
+  background: rgb(var(--c-gold) / 0.14);
+  box-shadow: 0 0 0 5px rgb(var(--c-gold) / 0.06);
+}
+
+.mx-scale-rail__label {
+  max-width: 4.3rem;
+  text-align: center;
+  font-size: 0.625rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.mx-face {
+  display: block;
+  overflow: visible;
+  transition: transform 240ms var(--mx-ease-out);
+}
+
+.mx-face--active {
+  animation: mx-face-pop 360ms var(--mx-ease-out) both;
+}
+
+@keyframes mx-face-pop {
+  0% {
+    transform: scale(0.88);
+  }
+
+  65% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 359px) {
+  .mx-scale-rail__circle {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+
+  .mx-scale-rail__line {
+    top: 1.4rem;
+  }
+
+  .mx-scale-rail__progress {
+    top: 1.4rem;
+  }
+}
 .mx-practices-catalog-shell:has(.mx-production-catalog > .mx-layered-category)
   .mx-practices-catalog-title {
   display: none;
@@ -904,6 +1028,14 @@ button {
 
   .mx-checkin-step-enter {
     animation: none;
+  }
+
+  .mx-face--active {
+    animation: none;
+  }
+
+  .mx-scale-rail__progress {
+    transition: none;
   }
 
   .cta-pill {

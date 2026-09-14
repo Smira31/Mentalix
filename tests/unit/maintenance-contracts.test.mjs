@@ -395,13 +395,12 @@ test('MXL-P0-CORE-JOURNAL-001 сохраняет local-only draft пользов
   assert.equal(draftHasContent(readCheckinDraft({ userId: 17, date: '2026-08-27' })), false)
 })
 
-test('MXL-P0-CORE-JOURNAL-001 содержит режимы записи, confirmation и detail view без нового journal route', () => {
+test('MXL-P0-CORE-JOURNAL-001 содержит единый ввод, confirmation и detail view без нового journal route', () => {
   const checkin = readFileSync(new URL('../../src/screens/CheckIn.jsx', import.meta.url), 'utf8')
   const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
 
-  assert.match(checkin, /label: 'Коротко'/)
-  assert.match(checkin, /label: 'Разобрать'/)
-  assert.match(checkin, /label: 'Своя запись'/)
+  assert.match(checkin, /ariaLabel="Что на уме"/)
+  assert.doesNotMatch(checkin, /Режим утренней записи/)
   assert.match(checkin, /Черновик сохранён локально/)
   assert.match(checkin, /Есть несохранённая запись/)
   assert.match(checkin, /clearCheckinDraft/)
