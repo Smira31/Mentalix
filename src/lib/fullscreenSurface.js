@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 
 import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
 import { useVisualViewportHeight } from './visualViewport'
+import { isPreviewDemoMode } from './demoMode'
 
 /*
  * ОБЩИЙ КОНТРАКТ FULLSCREEN-ЭКРАНОВ MENTALIX
@@ -70,6 +71,7 @@ export function getFullscreenPortalTarget() {
 
 export function useFullscreenSurface() {
   const viewportHeight = useVisualViewportHeight()
+  const demoFrameHeight = isPreviewDemoMode() ? getFullscreenPortalTarget()?.offsetHeight : null
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
@@ -101,7 +103,11 @@ export function useFullscreenSurface() {
 
     paddingBottom: 'var(--app-safe-bottom)',
 
-    height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+    height: demoFrameHeight
+      ? `${demoFrameHeight}px`
+      : viewportHeight
+        ? `${viewportHeight}px`
+        : '100dvh',
   }
 
   return {

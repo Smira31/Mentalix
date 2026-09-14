@@ -11,7 +11,6 @@ import { messageContent } from '../lib/journalPresentation'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-import AiPrivacyControls from './mentalix/AiPrivacyControls'
 
 // ============================================================
 // ЧАТ
@@ -144,11 +143,6 @@ export function ConversationChat({
     void send(failed.text, failed.visibleText, { appendUser: false })
   }
 
-  function handleAiDataDeleted() {
-    invalidateHistory(user.id, persona)
-    setMessages([])
-  }
-
   return (
     <Conversation
       userId={user.id}
@@ -165,7 +159,6 @@ export function ConversationChat({
       footerSlot={footerSlot}
       sendError={sendError}
       onRetry={retryLastSend}
-      privacyControls={<AiPrivacyControls userId={user.id} onDataDeleted={handleAiDataDeleted} />}
       resultMessage={resultMessage}
     />
   )

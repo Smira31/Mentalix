@@ -313,7 +313,7 @@ export default function Conversation({
       style={{
         ...surfaceStyle,
 
-        paddingBottom: 'max(14px, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(6px, env(safe-area-inset-bottom))',
       }}
     >
       {/* ── шапка ── */}
@@ -473,7 +473,7 @@ export default function Conversation({
         className="shrink-0 px-4 pt-3"
 
         style={{
-          paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
+          paddingBottom: 'max(4px, env(safe-area-inset-bottom))',
         }}
       >
         {(voiceState !== 'idle' || voiceError) && (
