@@ -321,7 +321,10 @@ export default function Conversation({
 
       {/* ── история сообщений ── */}
 
-      <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-6`}>
+      <div
+        ref={scrollRef}
+        className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-5 pb-6`}
+      >
         {!loading && contextSlot}
 
         {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
@@ -335,9 +338,9 @@ export default function Conversation({
           </p>
         )}
 
-        <div className="w-full max-w-md mx-auto space-y-5">
+        <div className="w-full max-w-md mx-auto space-y-3.5">
           {groupJournalMessages(messages).map(group => (
-            <div key={group.key} className="space-y-5">
+            <div key={group.key} className="space-y-3.5">
               {group.label && (
                 <div className="pt-2 text-center text-[10px] uppercase tracking-[0.18em] text-muted">
                   {group.label}
@@ -352,8 +355,8 @@ export default function Conversation({
 
                 if (isUser) {
                   return (
-                    <div key={messageKey} className="flex justify-end">
-                      <div className="w-fit max-w-[82%] rounded-[24px] bg-cognac px-5 py-4 text-[16px] leading-[1.5] font-normal text-cream break-words whitespace-pre-wrap">
+                    <div key={messageKey} className="mx-imessage-row mx-imessage-row--user">
+                      <div className="mx-imessage-bubble mx-imessage-bubble--user">
                         {messageContent(message)}
                       </div>
                     </div>
@@ -361,10 +364,13 @@ export default function Conversation({
                 }
 
                 return (
-                  <div key={messageKey} className="w-full mx-msg-in">
-                    <div className="mx-ai-meta text-gold mb-2.5">{meta.name}</div>
+                  <div
+                    key={messageKey}
+                    className="mx-imessage-row mx-imessage-row--assistant mx-msg-in"
+                  >
+                    <div className="mx-ai-meta text-gold mb-1.5">{meta.name}</div>
 
-                    <div className="mx-ai-body text-cream break-words">
+                    <div className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words">
                       <MessageText content={messageContent(message)} />
                     </div>
 

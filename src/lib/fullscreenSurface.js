@@ -103,11 +103,14 @@ export function useFullscreenSurface() {
 
     paddingBottom: 'var(--app-safe-bottom)',
 
-    height: demoFrameHeight
-      ? `${demoFrameHeight}px`
-      : viewportHeight
-        ? `${viewportHeight}px`
-        : '100dvh',
+    height:
+      demoFrameHeight && viewportHeight
+        ? `${Math.min(demoFrameHeight, viewportHeight)}px`
+        : demoFrameHeight
+          ? `${demoFrameHeight}px`
+          : viewportHeight
+            ? `${viewportHeight}px`
+            : '100dvh',
   }
 
   return {
