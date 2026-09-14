@@ -443,7 +443,11 @@ export default function App() {
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
 
   const bottomNavigationHidden =
-    tab === 'mentor' || mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
+    (tab === 'mentor' && !isPreviewDemoMode()) ||
+    mentorPersonaOpen ||
+    todayFlowOpen ||
+    todaySeriesOpen ||
+    practiceGameOpen
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return
