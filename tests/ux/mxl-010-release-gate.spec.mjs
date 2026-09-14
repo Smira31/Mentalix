@@ -194,7 +194,9 @@ test.describe('MXL-010 automated technical gate', () => {
 
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
-    await page.getByRole('button', { name: 'Сегодня' }).click()
+    // Первый Back закрывает conversation и оставляет fullscreen picker Mentor;
+    // возврат на Today выполняется следующим шагом browser history.
+    await page.goBack()
     await expect(page).toHaveURL(/\/$/)
     await expect(page.getByRole('button', { name: 'Открыть разбор снова' })).toBeVisible()
 
