@@ -285,11 +285,14 @@ function ActivityCalendar({ checkins, dailyActivity, period }) {
   )
   useEffect(() => {
     if (!PROGRESS_LAYOUT_V2_ENABLED) return
+    // Clamp the cursor after period changes; this is the intentional state sync.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMonthCursor(value => {
       if (value < firstAllowedMonth) return firstAllowedMonth
       if (value > lastAllowedMonth) return lastAllowedMonth
       return value
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, firstAllowedMonth.getTime(), lastAllowedMonth.getTime()])
   const year = monthCursor.getFullYear()
   const month = monthCursor.getMonth()

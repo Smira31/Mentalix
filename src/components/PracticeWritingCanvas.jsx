@@ -87,7 +87,7 @@ export default function PracticeWritingCanvas({
     return {
       top: `${metrics.pageTop + metrics.offsetTop + metrics.height - 48 - 56 - 8}px`,
     }
-  }, [keyboardOpen, metrics])
+  }, [demoPreview, keyboardOpen, metrics, visualKeyboardOpen])
 
   return (
     <section

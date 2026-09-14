@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
-import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability'
+import { PRACTICE_KEYS } from '../config/practiceAvailability'
 import { readOneOffPracticeHistory } from '../lib/oneOffPracticeHistory'
 import { localDayId } from '../lib/morningPilot'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
@@ -27,13 +27,7 @@ import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
 import ThemeScreen from './ThemeScreen'
 
-export default function Practices({
-  user,
-  initialSub = null,
-  onGameChange,
-  onReturnToToday,
-  onRegisterBack,
-}) {
+export default function Practices({ user, initialSub = null, onGameChange, onRegisterBack }) {
   const [sub, setSub] = useState(initialSub)
   const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
 

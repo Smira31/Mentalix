@@ -448,6 +448,8 @@ export default function App() {
   useEffect(() => {
     if (!isPreviewDemoMode()) return
 
+    // Demo-only motion tick intentionally follows route/overlay transitions.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDemoMotionTick(tick => tick + 1)
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
 
@@ -1069,6 +1071,7 @@ export default function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
+        {/* eslint-disable-next-line react-hooks/refs */}
         {previewDemoMode && <DemoTelegramChrome onBack={demoBackAction} />}
 
         {/* ========================================================

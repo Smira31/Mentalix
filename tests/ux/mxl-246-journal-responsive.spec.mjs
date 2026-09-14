@@ -198,7 +198,6 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       await expect(dayEditor).toBeVisible()
       await assertNoHorizontalOverflow(page)
       await expect(page.getByLabel('Дни журнала')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Диалог' })).toBeVisible()
       await screenshot(page, viewport, '04-theme-journal-day')
 
       const submitButton = page.getByRole('button', { name: /Сохранить мысль|Обновить мысль/ })

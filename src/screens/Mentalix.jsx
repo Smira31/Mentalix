@@ -80,6 +80,8 @@ export function ConversationChat({
     return () => {
       cancelled = true
     }
+    // The request is scoped to stable userId/persona inputs, not the mutable user object.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, persona, viaHandoff, withSafetyNotice])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
@@ -132,6 +134,8 @@ export function ConversationChat({
     if (loading || !initialPrompt || initialPromptSent.current) return
     initialPromptSent.current = true
     void send(initialPrompt, initialDisplayText || initialPrompt)
+    // send intentionally remains the local action function for this one-shot handoff.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, initialPrompt, initialDisplayText])
 
   function retryLastSend() {

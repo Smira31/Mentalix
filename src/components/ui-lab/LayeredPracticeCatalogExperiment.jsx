@@ -57,7 +57,10 @@ function usePreviewData(user) {
   }
 
   useEffect(() => {
+    // Initial data hydration is intentionally triggered once per Telegram user.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id])
 
   return { ...data, status, error, reload: load }
@@ -450,7 +453,7 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
         .filter(entry => entry.day === localDayId(new Date()))
         .map(entry => entry.practiceKey)
     )
-  }, [previewUser?.id])
+  }, [previewUser, previewUser?.id])
   const practices = useMemo(
     () => buildPracticeViewModels({ rituals, ascezas, completedToday }),
     [rituals, ascezas, completedToday]
