@@ -1,3 +1,7 @@
+---
+status: historical
+last_verified: 2026-09-11
+---
 # Stoic video reference → Mentalix visual contract
 
 Статус: **REFERENCE / APPROVED DIRECTION**, не production-реализация.  

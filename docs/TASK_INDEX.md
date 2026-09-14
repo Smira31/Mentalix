@@ -1,61 +1,52 @@
+---
+status: current
+last_verified: 2026-09-14
+---
+
 # Mentalix — активный task index
 
-Статус индекса: каноническое представление **активного product backlog** на 10.09.2026 (после owner PASS и merge PR #564). Исторический шум и closed maintenance вынесены; подробные handoff — в связанных GitHub Issue/PR и при необходимости в [`TASKS.md`](../TASKS.md).
+Этот файл — единственный активный backlog. GitHub Issue/PR являются первичными карточками работы; этот индекс задаёт только порядок и границы. `TASKS.md` и `CHANGES.md` не являются backlog.
 
-## Как читать индекс
+## Каноническая очередь
 
-`autonomous` можно выполнять без нового продуктового решения при соблюдении обычного PR-цикла. `needs-owner` требует решения владельца. `manual-gate` не закрывается без проверки на реальном устройстве. `backend-dependent` нельзя реализовывать без приватного контракта.
+| Порядок | Трек                                                                               | Состояние                                   | Следующий gate                                                                   |
+| ------: | ---------------------------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
+|       1 | [PR #565](https://github.com/Smira31/Mentalix/pull/565) — MVP «Наставник»          | Единственный активный продуктовый PR        | Проверить preview, сохранение/отложить/закрыть, затем owner iPhone/Telegram PASS |
+|       2 | [Issue #612](https://github.com/Smira31/Mentalix/issues/612) — мониторинг Progress | Post-release наблюдение                     | Записать evidence, проверить ошибки и закрыть                                    |
+|       3 | [PR #592](https://github.com/Smira31/Mentalix/pull/592) — документационный индекс  | Активный docs PR, требует rebase и проверки | Сверить `PROJECT_STATE`, `docs/INDEX`, frontmatter и drift-check, затем merge    |
 
-## Каноническая продуктовая очередь (после cleanup)
+## Отложено
 
-| Порядок | Issue                                                  | ID / title                | Примечание                                                                                   |
-| ------: | ------------------------------------------------------ | ------------------------- | -------------------------------------------------------------------------------------------- |
-|       1 | [#563](https://github.com/Smira31/Mentalix/issues/563) | MXL-PROGRESS-REDESIGN-001 | **В работе:** перенос одобренной композиции вкладки «Прогресс» на реальные production-данные |
+|                                                  Issue | Причина                                                                   |
+| -----------------------------------------------------: | ------------------------------------------------------------------------- |
+| [#600](https://github.com/Smira31/Mentalix/issues/600) | Координационный evaluator–optimizer трек; не заменяет продуктовую очередь |
+| [#582](https://github.com/Smira31/Mentalix/issues/582) | Preview-only Library UI Lab; не начинать production-монетизацию           |
+| [#516](https://github.com/Smira31/Mentalix/issues/516) | Preview-only illustration system                                          |
+| [#480](https://github.com/Smira31/Mentalix/issues/480) | Backend-dependent AI handoff                                              |
 
-**Последний completed gate (09.09.2026):** UI Lab задачи [#563](https://github.com/Smira31/Mentalix/issues/563) via [PR #564](https://github.com/Smira31/Mentalix/pull/564) — owner QA PASS, merge commit `a360c45dc1a77bb6603bba8b5aa5a9364836c870`; production promotion выполняется отдельным PR.
+## Закрытые текущие треки
 
-**Deferred Issues (не в execution queue):** #514 (NAV-IA), #515 (DIALOG), #516 (ILLUSTRATION-SYSTEM), #480 (AI-HANDOFF).
-
-**Active work:** `MXL-PROGRESS-REDESIGN-001` / ветка `codex/mxl-progress-redesign-production`. Одобренная композиция переносится в `Analytics.jsx` поверх существующих cache/API/settings contracts; backend/API, навигация и продуктовая семантика метрик не меняются. Следующий gate — production Preview на exact SHA, owner iPhone/Telegram PASS и только затем squash merge.
-
-## PARKED / NOT SCHEDULED
-
-Не текущая execution queue. Задачи без отдельной GitHub Issue и без owner-решения об отмене — сохранены, чтобы не потерять backlog. **Не создавать Issues сейчас.** Не поднимать в каноническую очередь без явного решения владельца.
-
-| ID                            | Тип                     | Автономность                    | Следующий шаг (когда разморозят)                      |
-| ----------------------------- | ----------------------- | ------------------------------- | ----------------------------------------------------- |
-| `MXL-JOURNAL-HISTORY-001`     | product/backend/UX      | backend-dependent               | Объединить датированную историю после persistence     |
-| `MXL-JOURNAL-PRIVACY-001`     | product/safety/backend  | needs-owner + backend-dependent | AI consent, retention, export, delete                 |
-| `MXL-JOURNAL-PERSONALIZE-001` | product/UX              | needs-owner                     | Cadence и режим prompt/free write/AI                  |
-| `MXL-JOURNAL-GUIDED-001`      | product/content         | needs-owner                     | Guided tracks после стабилизации core journal         |
-| `MXL-JOURNAL-ORGANIZE-001`    | product/backend/UX      | backend-dependent               | Tags, search, favorites после schema decision         |
-| `MXL-JOURNAL-MEMORIES-001`    | product/privacy/backend | backend-dependent               | Media attachments только после privacy/storage review |
-| `MXL-JOURNAL-REMINDERS-001`   | product/backend         | needs-owner + backend-dependent | Quiet hours, consent, scheduler contract              |
-
-Прочие historically completed / closed (MXL-001…, practice-flow #513 via #520, catalog v2, Meditation #521 via #529) — в [`TASKS.md`](../TASKS.md) / archive, не здесь.
+Dialog role flow по Issue #515 выполнен и опубликован из `main` через PR #613. PR #608 и #609 закрыты, их ветки удалены. Новую работу по Dialog не начинать без новой Issue и отдельного owner-решения.
 
 ## Автономная очередь
 
-Сейчас очередь `autonomous` пуста. Новая автономная задача появляется только через явную запись с однозначным scope и owner decision.
+Сейчас очередь `autonomous` пуста. Новая автономная задача появляется только после явной записи с однозначным scope и owner-решением.
 
-## Product decision register (кратко)
+## Правила готовности
 
-| Тема            | Состояние                                                                                                                                             |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Навигация       | Пять основных разделов; Today — главный вход                                                                                                          |
-| Акцент          | Gold ↔ Azure (см. DESIGN_SYSTEM.md)                                                                                                                   |
-| AI-персоны      | Тон и набор зафиксированы                                                                                                                             |
-| Оплата          | Отложена                                                                                                                                              |
-| Backend/API     | Приватный `mentalix-bot`                                                                                                                              |
-| Telegram/iPhone | Основной manual gate                                                                                                                                  |
-| Preview         | Owner QA только `https://mentalix-preview.vercel.app`; feature QA проходит через promote exact deployment и Vercel-side alias provenance verification |
+**Ready:** определены цель, scope, то, что не меняется, проверки, rollback и manual gate. **Done:** проверки зелёные, evidence сохранён, а обязательный manual gate пройден. Production публикуется только из `main`.
 
-## Canonical Preview QA gate
+## Product decision register
 
-Для feature QA действует последовательность: feature branch → deployment в Vercel project `mentalix-preview` → promote exact deployment нужного SHA в `mentalix-preview` → canonical alias `https://mentalix-preview.vercel.app` → Vercel-side verify alias provenance → Telegram owner QA → iPhone/browser → Telegram `web_app` → owner PASS → merge. Branch URL и deployment URL не являются owner QA URL; владельцу передаётся только canonical alias с разрешённым path/query. Production project `mentalix` для feature QA не используется. Без Vercel API/token GitHub workflow не может доказать alias→SHA автоматически: `Telegram Preview` принимает только явное `provenance_verified=true` как precondition после ручной Vercel-side проверки, не использует GitHub Deployments как proof и fail-closed при отсутствии этой precondition.
+| Тема             | Решение                                                       |
+| ---------------- | ------------------------------------------------------------- |
+| Navigation       | Пять основных разделов; Today — главный вход.                 |
+| Dialog           | Role flow выполнен; новые изменения только через новую Issue. |
+| Product priority | После документации — MVP «Наставник» через PR #565.           |
+| Production       | Публикация только из защищённого `main`.                      |
+| Manual gate      | iPhone/Telegram проверка обязательна перед product release.   |
 
-## Definition of Ready / Done
+## References
 
-**Ready:** однозначная цель, текущее/ожидаемое поведение, scope, «не меняется», критерии, проверки, rollback, автономность.
-
-**Done:** согласованный scope, зелёные проверки, отдельный PR с evidence, пройденный manual gate (если нужен). `docs/TASK_INDEX.md` — активный backlog; `PROJECT_STATE.md` — только подтверждённые release/production факты.
+[1]: https://github.com/Smira31/Mentalix/pulls 'Открытые pull requests Mentalix'
+[2]: https://github.com/Smira31/Mentalix/issues 'Открытые issues Mentalix'

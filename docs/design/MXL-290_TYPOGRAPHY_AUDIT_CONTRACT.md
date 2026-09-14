@@ -1,3 +1,8 @@
+---
+status: current
+last_verified: 2026-09-11
+---
+
 # MXL-290 — Typography audit contract
 
 ## Approved mapping

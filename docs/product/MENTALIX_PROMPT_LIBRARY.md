@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix prompt library
 
 This is the source of truth for prompts used in Mentalix product experiments and AI-assisted surfaces. A prompt is a versioned product contract, not a hidden personality layer. Every record has a bounded purpose, explicit input/output shape, safety boundaries and regression fixtures.

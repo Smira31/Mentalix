@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Contract/regression harness
 
 **Статус:** test infrastructure only. No production code changed.

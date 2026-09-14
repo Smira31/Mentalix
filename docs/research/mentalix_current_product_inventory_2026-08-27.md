@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Mentalix — фактический продуктовый инвентарь для сравнения со Stoic
 
 **Исходный срез:** `main` at `12326a54916c4845fddc25212c5d2f3b295ebe6c` (`27 Aug 2026`).

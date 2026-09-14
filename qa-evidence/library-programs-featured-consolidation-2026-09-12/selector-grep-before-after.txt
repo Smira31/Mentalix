@@ -1,0 +1,42 @@
+BEFORE (HEAD 896122af)
+127:.mx-library-programs__featured {
+143:.mx-library-programs__featured:active {
+147:.mx-library-programs__featured-art {
+153:.mx-library-programs__featured-copy {
+160:.mx-library-programs__featured-copy strong {
+169:.mx-library-programs__featured-copy p {
+806:.mx-library-programs__featured-copy strong {
+815:.mx-library-programs__featured-copy p {
+917:.mx-library-programs--review .mx-library-programs__featured {
+920:.mx-library-programs--review .mx-library-programs__featured-copy {
+923:.mx-library-programs--review .mx-library-programs__featured-copy p {
+1012:.mx-library-programs--review .mx-library-programs__featured {
+1018:.mx-library-programs--review .mx-library-programs__featured-copy {
+1021:.mx-library-programs--review .mx-library-programs__featured-copy p {
+1100:.mx-library-programs--review .mx-library-programs__featured {
+1105:.mx-library-programs--review .mx-library-programs__featured-art {
+1112:.mx-library-programs--review .mx-library-programs__featured-art svg {
+1117:.mx-library-programs--review .mx-library-programs__featured-copy {
+1122:.mx-library-programs--review .mx-library-programs__featured-copy strong {
+1126:.mx-library-programs--review .mx-library-programs__featured-copy p,
+1130:.mx-library-programs--review .mx-library-programs__featured-copy > small {
+1137:.mx-library-programs--review .mx-library-programs__featured-copy > small {
+1254:.mx-library-programs--review .mx-library-programs__featured-title {
+
+AFTER (working tree)
+127:.mx-library-programs__featured {
+143:.mx-library-programs__featured:active {
+147:.mx-library-programs__featured-art {
+153:.mx-library-programs__featured-copy {
+160:.mx-library-programs__featured-copy strong {
+169:.mx-library-programs__featured-copy p {
+806:.mx-library-programs__featured-copy strong {
+815:.mx-library-programs__featured-copy p {
+1070:.mx-library-programs--review .mx-library-programs__featured {
+1075:.mx-library-programs--review .mx-library-programs__featured-art {
+1081:.mx-library-programs--review .mx-library-programs__featured-art svg {
+1086:.mx-library-programs--review .mx-library-programs__featured-copy {
+1091:.mx-library-programs--review .mx-library-programs__featured-copy strong {
+1095:.mx-library-programs--review .mx-library-programs__featured-copy p {
+1114:.mx-library-programs--review .mx-library-programs__featured-copy > small {
+1235:.mx-library-programs--review .mx-library-programs__featured-title {

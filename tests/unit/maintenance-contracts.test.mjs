@@ -240,9 +240,10 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   const demo = readFileSync(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')
 
   assert.match(demo, /host\.endsWith\('\.trycloudflare\.com'\)/)
+  assert.match(demo, /const localPreviewEnabled = import\.meta\.env\.VITE_LOCAL_PREVIEW === 'true'/)
   assert.match(
     demo,
-    /const isPreviewRuntime = import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview'/
+    /const isPreviewRuntime =\s+import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview' \|\| localPreviewEnabled/
   )
   assert.match(demo, /const isQaProductionHost = host === 'mentalix-preview\.vercel\.app'/)
   assert.match(
@@ -704,7 +705,7 @@ test('MXL-MENTOR-UI-248 убирает внешнюю рамку и индика
   assert.doesNotMatch(picker, /rounded-\[28px\]\s+border\s+border-cream\/12/)
   assert.doesNotMatch(picker, /aria-label="Выбранный собеседник"/)
   assert.doesNotMatch(picker, /h-\[3px\] rounded-full transition-all duration-200/)
-  assert.match(picker, /У каждого своя история — разговоры не смешиваются\./)
+  assert.match(picker, /mx-dialog-surface/)
   assert.match(historyCache, /return `\$\{userId\}:\$\{persona\}`/)
   assert.match(historyCache, /api\.mentalix\.history\(userId, persona\)/)
   assert.match(container, /fetchHistory\(userId, persona\)/)
@@ -729,7 +730,7 @@ test('MXL-006 публикует единый AI typography baseline без back
   assert.match(conversation, /mx-ai-body/)
   assert.match(conversation, /mx-ai-input/)
   assert.doesNotMatch(personaPicker, /mx-ai-title/)
-  assert.match(personaPicker, /mx-type-persona-title/)
+  assert.match(personaPicker, /mx-dialog-card__role/)
 })
 
 test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline без пользовательских serif overrides', () => {
@@ -864,6 +865,8 @@ test('MXL-THEME-015 light-preview keeps Mentalix warmth and remains preview-only
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-bg: 244 239 230/)
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-card2: 235 227 216/)
   assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-gold: 157 86 32/)
+  assert.match(styles, /\[data-theme='light-preview'\][\s\S]*--c-artbed: 38 31 25/)
+  assert.match(styles, /\[data-theme='light'\][\s\S]*--c-artbed: 38 31 25/)
   assert.match(styles, /\[data-theme='light-preview'\] \.bg-artbed[\s\S]*--c-gold: 225 166 79/)
   assert.match(
     styles,
@@ -945,9 +948,9 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(articles, /mx-type-article-body/)
   assert.match(analytics, /mx-type-page/)
   assert.match(analytics, /mx-type-insight/)
-  assert.match(personaPicker, /mx-type-page/)
-  assert.match(personaPicker, /mx-type-persona-title/)
-  assert.match(personaPicker, /mx-type-persona-body/)
+  assert.match(personaPicker, /mx-dialog-entry/)
+  assert.match(personaPicker, /mx-dialog-hero__content/)
+  assert.match(personaPicker, /mx-dialog-card__description/)
   assert.doesNotMatch(personaPicker, /AiFlowIndicator/)
   assert.doesNotMatch(personaPicker, /mx-ai-title/)
   assert.doesNotMatch(journalHome, /mx-type-page|mx-type-hero/)

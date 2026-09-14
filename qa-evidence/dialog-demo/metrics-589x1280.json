@@ -1,0 +1,89 @@
+{
+  "viewport": [589, 1280],
+  "url": "http://127.0.0.1:4174/?demo=1&tab=mentor&v=followup-320",
+  "rectangles": {
+    "entry": {
+      "x": 0,
+      "y": 0,
+      "width": 589,
+      "height": 1280,
+      "top": 0,
+      "right": 589,
+      "bottom": 1280,
+      "left": 0
+    },
+    "hero": {
+      "x": 0,
+      "y": 0,
+      "width": 589,
+      "height": 318,
+      "top": 0,
+      "right": 589,
+      "bottom": 318,
+      "left": 0
+    },
+    "surface": {
+      "x": 0,
+      "y": 306,
+      "width": 589,
+      "height": 974,
+      "top": 306,
+      "right": 589,
+      "bottom": 1280,
+      "left": 0
+    },
+    "card": {
+      "x": 193.5,
+      "y": 414.25,
+      "width": 202,
+      "height": 280,
+      "top": 414.25,
+      "right": 395.5,
+      "bottom": 694.25,
+      "left": 193.5
+    },
+    "body": {
+      "x": 212.5,
+      "y": 512.34375,
+      "width": 164,
+      "height": 162.90625,
+      "top": 512.34375,
+      "right": 376.5,
+      "bottom": 675.25,
+      "left": 212.5
+    },
+    "carousel": {
+      "x": 1,
+      "y": 415.25,
+      "width": 587,
+      "height": 280,
+      "top": 415.25,
+      "right": 588,
+      "bottom": 695.25,
+      "left": 1
+    },
+    "nav": null
+  },
+  "cardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+  "carousel": {
+    "scrollHeight": 280,
+    "clientHeight": 280,
+    "scrollWidth": 1015,
+    "clientWidth": 587,
+    "scrollTop": 0,
+    "overflowX": "auto",
+    "overflowY": "hidden"
+  },
+  "page": {
+    "scrollHeight": 1280,
+    "clientHeight": 1280,
+    "scrollWidth": 589,
+    "clientWidth": 589,
+    "scrollTop": 0,
+    "bodyScrollTop": 0,
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "bodyOverflowX": "hidden",
+    "bodyOverflowY": "hidden"
+  }
+}

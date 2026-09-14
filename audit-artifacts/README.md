@@ -1,3 +1,7 @@
+---
+status: normative
+last_verified: 2026-09-11
+---
 # Today audit visual comparison
 
 Viewport: 390×844, dark theme, deterministic UX fixtures.

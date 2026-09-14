@@ -17,6 +17,7 @@ import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
+import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
 import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { currentCheckinStreak } from './lib/series'
@@ -316,7 +317,11 @@ export default function App() {
    */
   const [accentRaw, setAccentRaw] = useSynced(ACCENT_COLOR_KEY, DEFAULT_ACCENT)
 
-  const accent = parseAccent(accentRaw)
+  const [themeRaw, setThemeRaw] = useSynced(THEME_KEY, DEFAULT_THEME)
+
+  const theme = parseTheme(themeRaw)
+
+  const accent = parseAccent(accentRaw, theme)
 
   const [locked, setLocked] = useState(() => appLockEnabled && hasPinRecord())
 
@@ -413,17 +418,25 @@ export default function App() {
      ============================================================ */
 
   useEffect(() => {
-    // Hidden developer gate: ?light-preview=1 works only in local dev or
-    // Vercel Preview builds. Production defaults to the existing dark theme.
+    if (accentRaw !== accent) {
+      setAccentRaw(accent)
+    }
+  }, [accent, accentRaw, setAccentRaw])
+
+  useEffect(() => {
+    // Manual user preference is production behavior. The diagnostic gate
+    // remains independent and is only consulted while the preference is dark.
     const root = document.documentElement
-    if (isLightThemePreviewEnabled()) {
+    if (theme === 'light') {
+      root.setAttribute('data-theme', 'light')
+    } else if (isLightThemePreviewEnabled()) {
       root.setAttribute('data-theme', 'light-preview')
     } else {
       root.removeAttribute('data-theme')
     }
 
     applyDarkTheme()
-  }, [])
+  }, [theme])
 
   useEffect(() => {
     if (accent === DEFAULT_ACCENT) {
@@ -863,7 +876,12 @@ export default function App() {
    */
   const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
-  const topSafeArea = fullscreen ? 'calc(var(--app-safe-top) + 56px)' : 'var(--app-safe-top)'
+  const topSafeArea =
+    tab === 'mentor' && !overlay
+      ? 'var(--app-safe-top)'
+      : fullscreen
+        ? 'calc(var(--app-safe-top) + 56px)'
+        : 'var(--app-safe-top)'
 
   /*
    * КОНТРАКТ ОТСТУПОВ ЭКРАНА
@@ -913,7 +931,7 @@ export default function App() {
         paddingLeft: 'var(--app-safe-left)',
       }}
     >
-      {previewDemoMode && (
+      {previewDemoMode && tab !== 'mentor' && (
         <div
           role="status"
           className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-gold/40 bg-emerald px-3 py-1 text-[10px] font-semibold tracking-wide text-gold shadow-lg"
@@ -961,7 +979,9 @@ export default function App() {
 
       <div
         ref={scrollRootRef}
-        className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain flex flex-col items-center"
+        className={`w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
+          tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
+        }`}
         style={{
           paddingBottom: contentBottomPadding,
           scrollPaddingBottom: contentBottomPadding,
@@ -977,6 +997,7 @@ export default function App() {
               className="
               w-full
               max-w-md
+              min-w-0
 
               px-5
               pt-0
@@ -1042,6 +1063,7 @@ export default function App() {
                 aria-label="Настройки"
                 className="
                 w-10
+                max-[359px]:w-6
                 h-10
 
                 rounded-full
@@ -1073,7 +1095,11 @@ export default function App() {
           key={overlay || 'main'}
           className={[
             'flex-1 w-full flex flex-col items-center',
-            mentorPersonaOpen ? '' : 'animate-fade-in',
+            tab === 'mentor' && !overlay
+              ? 'mx-dialog-runtime-shell'
+              : mentorPersonaOpen
+                ? ''
+                : 'animate-fade-in',
           ].join(' ')}
         >
           <Suspense fallback={<ScreenLoading />}>
@@ -1106,6 +1132,8 @@ export default function App() {
                 }}
                 accent={accent}
                 onAccentChange={setAccentRaw}
+                theme={theme}
+                onThemeChange={setThemeRaw}
               />
             )}
 

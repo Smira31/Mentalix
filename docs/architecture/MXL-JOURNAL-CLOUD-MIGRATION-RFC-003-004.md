@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # RFC: MXL-JOURNAL-HISTORY-001 — этапы 3 и 4 миграции к cloud sync
 
 **Статус:** draft для review frontend/backend/privacy команды. **Не утверждает** конкретные endpoint, таблицы или provider contract.

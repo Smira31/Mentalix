@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # Содержательное review MXL-PRB-002
 
 - **Дата:** 02.08.2026

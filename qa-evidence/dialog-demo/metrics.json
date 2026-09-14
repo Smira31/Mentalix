@@ -1,0 +1,582 @@
+{
+  "baseURL": "http://127.0.0.1:4174/?demo=1&tab=mentor",
+  "viewports": [
+    [320, 568],
+    [375, 812],
+    [390, 844],
+    [430, 932],
+    [589, 1280]
+  ],
+  "results": [
+    {
+      "viewport": [320, 568],
+      "url": "http://127.0.0.1:4174/?demo=1&tab=mentor",
+      "authScreen": false,
+      "demoBanner": true,
+      "heads": true,
+      "heroLabel": "ДИАЛОГ",
+      "cta": "Начать",
+      "roleCards": ["Наставник", "Собеседник", "Следопыт"],
+      "dots": 3,
+      "centerCardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+      "rectangles": {
+        "entry": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 568,
+          "top": 0,
+          "right": 320,
+          "bottom": 568,
+          "left": 0
+        },
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 244,
+          "top": 0,
+          "right": 320,
+          "bottom": 244,
+          "left": 0
+        },
+        "heads": {
+          "x": 0,
+          "y": 8,
+          "width": 320,
+          "height": 236,
+          "top": 8,
+          "right": 320,
+          "bottom": 244,
+          "left": 0
+        },
+        "content": {
+          "x": 18,
+          "y": 29.359375,
+          "width": 284,
+          "height": 185.265625,
+          "top": 29.359375,
+          "right": 302,
+          "bottom": 214.625,
+          "left": 18
+        },
+        "surface": {
+          "x": 0,
+          "y": 232,
+          "width": 320,
+          "height": 336,
+          "top": 232,
+          "right": 320,
+          "bottom": 568,
+          "left": 0
+        },
+        "card": {
+          "x": 58,
+          "y": 332.25,
+          "width": 204,
+          "height": 244,
+          "top": 332.25,
+          "right": 262,
+          "bottom": 576.25,
+          "left": 58
+        },
+        "body": {
+          "x": 71,
+          "y": 421.9375,
+          "width": 178,
+          "height": 141.3125,
+          "top": 421.9375,
+          "right": 249,
+          "bottom": 563.25,
+          "left": 71
+        },
+        "nav": {
+          "x": 21,
+          "y": 501,
+          "width": 278,
+          "height": 66,
+          "top": 501,
+          "right": 299,
+          "bottom": 567,
+          "left": 21
+        }
+      },
+      "page": {
+        "scrollHeight": 568,
+        "clientHeight": 568,
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "scrollTop": 0,
+        "bodyScrollTop": 0
+      },
+      "carousel": {
+        "scrollHeight": 244,
+        "clientHeight": 244,
+        "scrollWidth": 750,
+        "clientWidth": 318,
+        "scrollTop": 0,
+        "overflowX": "auto",
+        "overflowY": "hidden"
+      },
+      "navLabels": ["Сегодня", "Шаги", "Диалог", "Библиотека", "Прогресс"],
+      "animationFrames": [],
+      "externalRequests": []
+    },
+    {
+      "viewport": [375, 812],
+      "url": "http://127.0.0.1:4174/?demo=1&tab=mentor",
+      "authScreen": false,
+      "demoBanner": true,
+      "heads": true,
+      "heroLabel": "ДИАЛОГ",
+      "cta": "Начать",
+      "roleCards": ["Наставник", "Собеседник", "Следопыт"],
+      "dots": 3,
+      "centerCardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+      "rectangles": {
+        "entry": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 812,
+          "top": 0,
+          "right": 375,
+          "bottom": 812,
+          "left": 0
+        },
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 286,
+          "top": 0,
+          "right": 375,
+          "bottom": 286,
+          "left": 0
+        },
+        "heads": {
+          "x": 0,
+          "y": 8,
+          "width": 375,
+          "height": 278,
+          "top": 8,
+          "right": 375,
+          "bottom": 286,
+          "left": 0
+        },
+        "content": {
+          "x": 32,
+          "y": 50.359375,
+          "width": 311,
+          "height": 185.265625,
+          "top": 50.359375,
+          "right": 343,
+          "bottom": 235.625,
+          "left": 32
+        },
+        "surface": {
+          "x": 0,
+          "y": 274,
+          "width": 375,
+          "height": 538,
+          "top": 274,
+          "right": 375,
+          "bottom": 812,
+          "left": 0
+        },
+        "card": {
+          "x": 92.5,
+          "y": 382.25,
+          "width": 190,
+          "height": 280,
+          "top": 382.25,
+          "right": 282.5,
+          "bottom": 662.25,
+          "left": 92.5
+        },
+        "body": {
+          "x": 111.5,
+          "y": 459.25,
+          "width": 152,
+          "height": 200.59375,
+          "top": 459.25,
+          "right": 263.5,
+          "bottom": 659.84375,
+          "left": 111.5
+        },
+        "nav": {
+          "x": 21,
+          "y": 745,
+          "width": 333,
+          "height": 66,
+          "top": 745,
+          "right": 354,
+          "bottom": 811,
+          "left": 21
+        }
+      },
+      "page": {
+        "scrollHeight": 812,
+        "clientHeight": 812,
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "scrollTop": 0,
+        "bodyScrollTop": 0
+      },
+      "carousel": {
+        "scrollHeight": 280,
+        "clientHeight": 280,
+        "scrollWidth": 777,
+        "clientWidth": 373,
+        "scrollTop": 0,
+        "overflowX": "auto",
+        "overflowY": "hidden"
+      },
+      "navLabels": ["Сегодня", "Шаги", "Диалог", "Библиотека", "Прогресс"],
+      "animationFrames": [],
+      "externalRequests": []
+    },
+    {
+      "viewport": [390, 844],
+      "url": "http://127.0.0.1:4174/?demo=1&tab=mentor",
+      "authScreen": false,
+      "demoBanner": true,
+      "heads": true,
+      "heroLabel": "ДИАЛОГ",
+      "cta": "Начать",
+      "roleCards": ["Наставник", "Собеседник", "Следопыт"],
+      "dots": 3,
+      "centerCardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+      "rectangles": {
+        "entry": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844,
+          "top": 0,
+          "right": 390,
+          "bottom": 844,
+          "left": 0
+        },
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 278.515625,
+          "top": 0,
+          "right": 390,
+          "bottom": 278.515625,
+          "left": 0
+        },
+        "heads": {
+          "x": 0,
+          "y": 8,
+          "width": 390,
+          "height": 270.515625,
+          "top": 8,
+          "right": 390,
+          "bottom": 278.515625,
+          "left": 0
+        },
+        "content": {
+          "x": 32,
+          "y": 46.625,
+          "width": 326,
+          "height": 185.265625,
+          "top": 46.625,
+          "right": 358,
+          "bottom": 231.890625,
+          "left": 32
+        },
+        "surface": {
+          "x": 0,
+          "y": 266.515625,
+          "width": 390,
+          "height": 577.484375,
+          "top": 266.515625,
+          "right": 390,
+          "bottom": 844,
+          "left": 0
+        },
+        "card": {
+          "x": 96,
+          "y": 374.765625,
+          "width": 198,
+          "height": 280,
+          "top": 374.765625,
+          "right": 294,
+          "bottom": 654.765625,
+          "left": 96
+        },
+        "body": {
+          "x": 115,
+          "y": 454.015625,
+          "width": 160,
+          "height": 181.75,
+          "top": 454.015625,
+          "right": 275,
+          "bottom": 635.765625,
+          "left": 115
+        },
+        "nav": {
+          "x": 21,
+          "y": 777,
+          "width": 348,
+          "height": 66,
+          "top": 777,
+          "right": 369,
+          "bottom": 843,
+          "left": 21
+        }
+      },
+      "page": {
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "scrollTop": 0,
+        "bodyScrollTop": 0
+      },
+      "carousel": {
+        "scrollHeight": 280,
+        "clientHeight": 280,
+        "scrollWidth": 808,
+        "clientWidth": 388,
+        "scrollTop": 0,
+        "overflowX": "auto",
+        "overflowY": "hidden"
+      },
+      "navLabels": ["Сегодня", "Шаги", "Диалог", "Библиотека", "Прогресс"],
+      "animationFrames": [],
+      "externalRequests": []
+    },
+    {
+      "viewport": [430, 932],
+      "url": "http://127.0.0.1:4174/?demo=1&tab=mentor",
+      "authScreen": false,
+      "demoBanner": true,
+      "heads": true,
+      "heroLabel": "ДИАЛОГ",
+      "cta": "Начать",
+      "roleCards": ["Наставник", "Собеседник", "Следопыт"],
+      "dots": 3,
+      "centerCardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+      "rectangles": {
+        "entry": {
+          "x": 0,
+          "y": 0,
+          "width": 430,
+          "height": 932,
+          "top": 0,
+          "right": 430,
+          "bottom": 932,
+          "left": 0
+        },
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 430,
+          "height": 316.875,
+          "top": 0,
+          "right": 430,
+          "bottom": 316.875,
+          "left": 0
+        },
+        "heads": {
+          "x": 0,
+          "y": 8,
+          "width": 430,
+          "height": 308.875,
+          "top": 8,
+          "right": 430,
+          "bottom": 316.875,
+          "left": 0
+        },
+        "content": {
+          "x": 49,
+          "y": 65.796875,
+          "width": 332,
+          "height": 185.265625,
+          "top": 65.796875,
+          "right": 381,
+          "bottom": 251.0625,
+          "left": 49
+        },
+        "surface": {
+          "x": 0,
+          "y": 304.875,
+          "width": 430,
+          "height": 627.125,
+          "top": 304.875,
+          "right": 430,
+          "bottom": 932,
+          "left": 0
+        },
+        "card": {
+          "x": 114,
+          "y": 413.125,
+          "width": 202,
+          "height": 280,
+          "top": 413.125,
+          "right": 316,
+          "bottom": 693.125,
+          "left": 114
+        },
+        "body": {
+          "x": 133,
+          "y": 511.21875,
+          "width": 164,
+          "height": 162.90625,
+          "top": 511.21875,
+          "right": 297,
+          "bottom": 674.125,
+          "left": 133
+        },
+        "nav": {
+          "x": 21,
+          "y": 865,
+          "width": 388,
+          "height": 66,
+          "top": 865,
+          "right": 409,
+          "bottom": 931,
+          "left": 21
+        }
+      },
+      "page": {
+        "scrollHeight": 932,
+        "clientHeight": 932,
+        "scrollWidth": 430,
+        "clientWidth": 430,
+        "scrollTop": 0,
+        "bodyScrollTop": 0
+      },
+      "carousel": {
+        "scrollHeight": 280,
+        "clientHeight": 280,
+        "scrollWidth": 856,
+        "clientWidth": 428,
+        "scrollTop": 0,
+        "overflowX": "auto",
+        "overflowY": "hidden"
+      },
+      "navLabels": ["Сегодня", "Шаги", "Диалог", "Библиотека", "Прогресс"],
+      "animationFrames": ["0", "50", "100"],
+      "externalRequests": []
+    },
+    {
+      "viewport": [589, 1280],
+      "url": "http://127.0.0.1:4174/?demo=1&tab=mentor",
+      "authScreen": false,
+      "demoBanner": true,
+      "heads": true,
+      "heroLabel": "ДИАЛОГ",
+      "cta": "Начать",
+      "roleCards": ["Наставник", "Собеседник", "Следопыт"],
+      "dots": 3,
+      "centerCardText": "Собеседник\n\nПоможет разобраться в том, что чувствуешь.\n\nТёплый и внимательный. Поможет разобраться в чувствах, когда непросто.",
+      "rectangles": {
+        "entry": {
+          "x": 0,
+          "y": 0,
+          "width": 589,
+          "height": 1280,
+          "top": 0,
+          "right": 589,
+          "bottom": 1280,
+          "left": 0
+        },
+        "hero": {
+          "x": 0,
+          "y": 0,
+          "width": 589,
+          "height": 318,
+          "top": 0,
+          "right": 589,
+          "bottom": 318,
+          "left": 0
+        },
+        "heads": {
+          "x": 0,
+          "y": 8,
+          "width": 589,
+          "height": 310,
+          "top": 8,
+          "right": 589,
+          "bottom": 318,
+          "left": 0
+        },
+        "content": {
+          "x": 128.5,
+          "y": 66.359375,
+          "width": 332,
+          "height": 185.265625,
+          "top": 66.359375,
+          "right": 460.5,
+          "bottom": 251.625,
+          "left": 128.5
+        },
+        "surface": {
+          "x": 0,
+          "y": 306,
+          "width": 589,
+          "height": 974,
+          "top": 306,
+          "right": 589,
+          "bottom": 1280,
+          "left": 0
+        },
+        "card": {
+          "x": 193.5,
+          "y": 414.25,
+          "width": 202,
+          "height": 280,
+          "top": 414.25,
+          "right": 395.5,
+          "bottom": 694.25,
+          "left": 193.5
+        },
+        "body": {
+          "x": 212.5,
+          "y": 512.34375,
+          "width": 164,
+          "height": 162.90625,
+          "top": 512.34375,
+          "right": 376.5,
+          "bottom": 675.25,
+          "left": 212.5
+        },
+        "nav": {
+          "x": 80.5,
+          "y": 1213,
+          "width": 398,
+          "height": 66,
+          "top": 1213,
+          "right": 478.5,
+          "bottom": 1279,
+          "left": 80.5
+        }
+      },
+      "page": {
+        "scrollHeight": 1280,
+        "clientHeight": 1280,
+        "scrollWidth": 589,
+        "clientWidth": 589,
+        "scrollTop": 0,
+        "bodyScrollTop": 0
+      },
+      "carousel": {
+        "scrollHeight": 280,
+        "clientHeight": 280,
+        "scrollWidth": 1015,
+        "clientWidth": 587,
+        "scrollTop": 0,
+        "overflowX": "auto",
+        "overflowY": "hidden"
+      },
+      "navLabels": ["Сегодня", "Шаги", "Диалог", "Библиотека", "Прогресс"],
+      "animationFrames": ["0", "50", "100"],
+      "externalRequests": []
+    }
+  ]
+}

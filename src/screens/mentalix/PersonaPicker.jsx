@@ -1,324 +1,212 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
-
-import { fetchHistory } from '../../lib/mentalixHistoryCache'
 import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
+import { fetchHistory } from '../../lib/mentalixHistoryCache'
 import { PERSONAS } from './personas'
+import heroReference from '../../assets/dialog-hero-reference.png'
 
-/*
- * ВЫБОР СОБЕСЕДНИКА
- *
- * Раньше это был вертикальный список из трёх узких карточек:
- * персоны отличались только названием и выглядели как пункты
- * меню. Теперь каждая занимает почти весь экран и листается
- * вбок — одна персона за раз, с характером и своим местом.
- *
- * Листание сделано нативным горизонтальным скроллом со
- * snap-точками, а не самописной обработкой касаний. Причина
- * практическая: внутри Telegram Mini App собственные обработчики
- * жестов конфликтуют с жестами самого Telegram, и мы это уже
- * проходили с блокировкой зума. Нативный скролл ведёт себя
- * предсказуемо, работает с инерцией и ничего не перехватывает.
- *
- * overscroll-x-contain нужен, чтобы свайп в конце ленты не
- * уходил дальше — в жест закрытия окна.
- */
+import './PersonaPicker.css'
 
-/*
- * Карточка тянется до нижней навигации, а не живёт фиксированной
- * высотой. Вычитаем из высоты видимой области всё, что занято
- * не карточкой: контролы Telegram, заголовок экрана, точки и
- * подпись снизу, зарезервированное место под навигацию.
- */
-/*
- * Верхний предел обязателен. Высота считается от 100dvh, и на
- * телефоне это даёт ~470px — то, подо что карточка рисовалась.
- * На широком экране Telegram Desktop то же выражение даёт под
- * семьсот, карточка растягивается и рисунок с текстом расползаются.
- * На телефоне min() ничего не меняет: там всегда выигрывает calc.
- */
-const CARD_HEIGHT = {
-  height: 'min(620px, calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom) - 220px))',
-  minHeight: '400px',
+const DEFAULT_INDEX = 1
+
+// Визуальный порядок entry-карусели задан reference screenshot. Сами persona
+// keys и backend-контракт остаются прежними.
+const DISPLAY_PERSONAS = [PERSONAS[1], PERSONAS[0], PERSONAS[2]]
+
+const PROMISES = {
+  mayak: 'Поможет разобраться в том, что чувствуешь.',
+  kompas: 'Поможет увидеть новые перспективы и найти решения.',
+  dnevnik: 'Поможет исследовать свои мысли и эмоции глубже.',
 }
 
-function trim(text, max = 90) {
+const DIALOG_DESCRIPTIONS = {
+  mayak: 'Тёплый и внимательный разговор без оценки, когда нужно выговориться или услышать себя.',
+  kompas: 'Строгий и честный. Разложит цель на шаги и не даст себя жалеть.',
+  dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
+}
+
+function trim(text, max = 70) {
   const clean = String(text || '')
     .replace(/\s+/g, ' ')
     .trim()
-
   return clean.length > max ? `${clean.slice(0, max).trimEnd()}…` : clean
+}
+
+function RoleGlyph({ persona, active }) {
+  return (
+    <div className="mx-dialog-role-glyph" aria-hidden="true">
+      <SemanticGlyph
+        kind={semanticKindForPersona(persona.key)}
+        animated={active}
+        highlighted={active}
+        className="mx-dialog-role-glyph__svg"
+      />
+    </div>
+  )
 }
 
 export default function PersonaPicker({ user, onPick }) {
   const [previews, setPreviews] = useState({})
-
   const [previewsLoading, setPreviewsLoading] = useState(true)
-
-  const [active, setActive] = useState(0)
-
+  const [active, setActive] = useState(DEFAULT_INDEX)
   const trackRef = useRef(null)
 
   useEffect(() => {
-    if (!user) return
-
+    if (!user) return undefined
     let alive = true
-
     Promise.all(
-      PERSONAS.map(persona =>
+      DISPLAY_PERSONAS.map(persona =>
         fetchHistory(user.id, persona.key)
-          .then(messages => [
-            persona.key,
-            Array.isArray(messages) ? messages[messages.length - 1] : null,
-          ])
+          .then(messages => [persona.key, Array.isArray(messages) ? messages.at(-1) : null])
           .catch(() => [persona.key, null])
       )
     )
       .then(pairs => {
         if (!alive) return
-
-        const next = {}
-
-        pairs.forEach(([key, last]) => {
-          if (last?.content) {
-            next[key] = last
-          }
-        })
-
-        setPreviews(next)
+        setPreviews(Object.fromEntries(pairs.filter(([, last]) => last?.content)))
       })
-      .finally(() => {
-        if (alive) setPreviewsLoading(false)
-      })
-
+      .finally(() => alive && setPreviewsLoading(false))
     return () => {
       alive = false
     }
   }, [user])
 
+  useEffect(() => {
+    const track = trackRef.current
+    const card = track?.children[DEFAULT_INDEX]
+    if (!track || !card) return undefined
+    const frame = requestAnimationFrame(() => {
+      track.scrollTo({
+        left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2,
+        behavior: 'auto',
+      })
+      syncActive()
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
   function syncActive() {
     const track = trackRef.current
-
     if (!track) return
-
-    const card = track.firstElementChild
-
-    if (!card) return
-
-    const step = card.offsetWidth + 12
-
-    setActive(Math.max(0, Math.min(PERSONAS.length - 1, Math.round(track.scrollLeft / step))))
+    const center = track.scrollLeft + track.clientWidth / 2
+    let closest = 0
+    let distance = Infinity
+    Array.from(track.children).forEach((card, index) => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2
+      if (Math.abs(cardCenter - center) < distance) {
+        closest = index
+        distance = Math.abs(cardCenter - center)
+      }
+    })
+    setActive(closest)
   }
 
-  function selectPage(index) {
+  function selectRole(index) {
     const track = trackRef.current
-    const card = track?.firstElementChild
-
+    const card = track?.children[index]
     if (!track || !card) return
-
     platform.haptic('light')
-    track.scrollTo({ left: index * (card.offsetWidth + 12), behavior: 'smooth' })
+    track.scrollTo({
+      left: card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2,
+      behavior: 'smooth',
+    })
+    setActive(index)
+  }
+
+  function startRole(persona) {
+    platform.haptic('light')
+    onPick(persona.key, '')
   }
 
   return (
-    <div className="w-full max-w-lg mx-auto px-4 animate-fade-in">
-      <h1 className="font-display mx-type-page text-cream lowercase mt-0 mb-2">с кем говорим.</h1>
+    <main className="mx-dialog-entry" data-testid="dialog-entry">
+      <section className="mx-dialog-hero" aria-labelledby="dialog-entry-title">
+        <img className="mx-dialog-hero-reference" src={heroReference} alt="" aria-hidden="true" />
+        <div className="mx-dialog-hero__content">
+          <p className="mx-dialog-eyebrow font-label">ДИАЛОГ</p>
+          <h1 id="dialog-entry-title" className="mx-type-hero">
+            О чём хочешь поговорить прямо сейчас?
+          </h1>
+          <button
+            type="button"
+            className="mx-dialog-start cta-pill mx-type-control"
+            onClick={() => startRole(DISPLAY_PERSONAS[active])}
+            aria-label={`Начать разговор: ${DISPLAY_PERSONAS[active].name}`}
+          >
+            Начать
+          </button>
+        </div>
+      </section>
 
-      <p className="mx-type-meta text-faint mb-4">три собеседника, три отдельных разговора</p>
-
-      <div className="mt-4">
+      <section className="mx-dialog-surface" aria-labelledby="dialog-role-title">
+        <div className="mx-dialog-surface__header">
+          <h2 id="dialog-role-title" className="mx-type-section">
+            <span>Выбери роль</span>
+            <strong>для разговора.</strong>
+          </h2>
+        </div>
         <div
           ref={trackRef}
+          className="mx-dialog-carousel"
           data-testid="mentor-persona-track"
+          role="region"
+          aria-label="Выбор роли для разговора"
           onScroll={syncActive}
-          className="
-          flex
-          gap-3
-          -mx-4
-          px-4
-          pb-2
-          overflow-x-auto
-          overscroll-x-contain
-          snap-x
-          snap-mandatory
-          [&::-webkit-scrollbar]:hidden
-        "
-          style={{
-            scrollbarWidth: 'none',
-          }}
         >
-          {PERSONAS.map((persona, index) => {
+          {DISPLAY_PERSONAS.map((persona, index) => {
             const last = previews[persona.key]
-
+            const isActive = active === index
             return (
-              /*
-               * Вся карточка — это вход в разговор. Раньше
-               * открыть персону можно было только через
-               * нижнюю кнопку, хотя нажать хочется на саму
-               * карточку: она и есть выбор.
-               */
-              <div
+              <article
                 key={persona.key}
-                role="button"
+                className={`mx-dialog-card mx-card-surface ${isActive ? 'is-active' : ''}`}
                 data-testid="mentor-persona-card"
-                tabIndex={0}
-                onClick={() => {
-                  platform.haptic('light')
-                  onPick(persona.key, '')
-                }}
+                aria-label={`${persona.name}: ${PROMISES[persona.key]}`}
+                aria-current={isActive ? 'true' : undefined}
+                tabIndex={isActive ? 0 : -1}
+                onClick={() => selectRole(index)}
                 onKeyDown={event => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    platform.haptic('light')
-                    onPick(persona.key, '')
+                    selectRole(index)
                   }
                 }}
-                aria-label={`${persona.name}: открыть разговор`}
-                className={`
-                  snap-center
-                  shrink-0
-                  w-full
-                  rounded-[32px]
-                  border border-gold/20
-                  bg-gold/[0.04]
-                  p-6
-                  flex
-                  flex-col
-                  cursor-pointer
-                  active:scale-[0.99]
-                  transition-transform
-                `}
-                style={CARD_HEIGHT}
               >
-                {/*
-                 * Верхняя треть карточки — рисунок. Он занимает
-                 * долю высоты, а не фиксированные пиксели: карточка
-                 * тянется до нижнего меню и на разных экранах имеет
-                 * разную высоту.
-                 */}
-                <div className="-mx-6 -mt-6 mb-1 basis-[42%] shrink-0 min-h-0 bg-artbed rounded-t-[28px] border-b border-cream/[0.06] overflow-hidden px-1">
-                  <SemanticGlyph
-                    kind={semanticKindForPersona(persona.key)}
-                    animated={active === index}
-                    highlighted={active === index}
-                    className="w-full h-full scale-[1.06]"
-                  />
-                </div>
-
-                <div className="font-display mx-type-persona-title text-cream mt-3 mx-persona-card__title">
-                  {persona.name}
-                </div>
-
-                <div className="mx-ai-meta text-gold mt-1.5 mx-persona-card__tagline">
-                  {persona.tagline}
-                </div>
-
-                <p className="mx-type-persona-body text-muted mt-2.5 mx-persona-card__description">
-                  {persona.desc}
-                </p>
-
-                <div className="mt-auto pt-3 mx-persona-card__actions">
-                  {previewsLoading ? (
-                    /*
-                     * Пока fetchHistory не резолвился, last === undefined —
-                     * неотличимо от «истории нет». Без этого нейтрального
-                     * состояния карточка на первом кадре всегда показывала бы
-                     * «Говорить», а через мгновение резко переключалась на
-                     * «Продолжить разговор» — мигание с неверным кадром.
-                     */
-                    <div
-                      aria-hidden="true"
-                      className="w-full rounded-[20px] bg-emerald-light/40 border border-cream/10 px-4 py-3.5 animate-pulse"
-                    >
-                      <div className="h-[10px] w-24 rounded-full bg-cream/10 mb-2" />
-                      <div className="h-[13px] w-full rounded-full bg-cream/10" />
-                    </div>
-                  ) : last ? (
-                    <button
-                      onClick={event => {
-                        event.stopPropagation()
-
-                        platform.haptic('light')
-
-                        onPick(persona.key, '')
-                      }}
-                      className="w-full text-left rounded-[20px] bg-emerald-light border border-cream/10 px-4 py-3.5 active:scale-[0.99] transition-transform"
-                    >
-                      <div className="mx-ai-meta text-gold mb-1">Продолжить разговор</div>
-
-                      <p className="mx-ai-caption text-muted">
-                        {last.role === 'user' ? 'Ты: ' : ''}
-
-                        {trim(last.content)}
-                      </p>
-                    </button>
-                  ) : (
-                    <>
-                      <div className="flex flex-wrap gap-2 mb-3 mx-persona-card__starters">
-                        {persona.starters.map(starter => (
-                          <button
-                            key={starter}
-                            onClick={event => {
-                              event.stopPropagation()
-
-                              platform.haptic('light')
-
-                              onPick(persona.key, starter)
-                            }}
-                            className="min-h-11 rounded-full border border-cream/15 bg-emerald-light px-3.5 py-2 text-[12px] text-muted active:scale-95 transition-transform mx-persona-card__starter"
-                          >
-                            {starter}
-                          </button>
-                        ))}
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          platform.haptic('light')
-
-                          onPick(persona.key, '')
-                        }}
-                        className="cta-pill mx-type-control w-full py-3.5 mx-persona-card__cta"
-                      >
-                        Говорить
-                      </button>
-                    </>
+                <RoleGlyph persona={persona} active={isActive} />
+                <div className="mx-dialog-card__body">
+                  <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
+                  <h3 className="mx-type-persona-title">{persona.name}</h3>
+                  <p className="mx-dialog-card__promise">{PROMISES[persona.key]}</p>
+                  <p className="mx-dialog-card__description mx-type-persona-body">
+                    {DIALOG_DESCRIPTIONS[persona.key]}
+                  </p>
+                  {last && !previewsLoading && (
+                    <p className="mx-dialog-card__history mx-type-meta">
+                      Последний разговор: {trim(last.content)}
+                    </p>
                   )}
                 </div>
-              </div>
+              </article>
             )
           })}
         </div>
-        <div
-          className="mt-3 flex items-end justify-center gap-2"
-          role="group"
-          aria-label="Страница собеседника"
-        >
-          {PERSONAS.map((persona, index) => (
+        <div className="mx-dialog-dots" role="group" aria-label="Выбор роли">
+          {DISPLAY_PERSONAS.map((persona, index) => (
             <button
               type="button"
               key={persona.key}
-              aria-label={`${persona.name}, страница ${index + 1} из ${PERSONAS.length}`}
-              aria-current={active === index ? 'page' : undefined}
-              onClick={() => selectPage(index)}
-              className="inline-flex h-11 w-11 items-end justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
+              aria-label={`${persona.name}, ${index + 1} из ${PERSONAS.length}`}
+              aria-current={active === index ? 'true' : undefined}
+              onClick={() => selectRole(index)}
             >
-              <span
-                className={[
-                  'w-1.5 rounded-full transition-all duration-200',
-                  active === index ? 'h-8 bg-gold' : 'h-4 bg-cream/20',
-                ].join(' ')}
-                aria-hidden="true"
-              />
+              <span aria-hidden="true" />
             </button>
           ))}
         </div>
-      </div>
-
-      <p className="mx-type-list-body mt-4 text-center leading-relaxed text-muted">
-        У каждого своя история — разговоры не смешиваются.
-      </p>
-    </div>
+      </section>
+    </main>
   )
 }
+
+export { PROMISES }

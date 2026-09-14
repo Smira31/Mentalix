@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # Mentalix character canon
 
 This record defines the default Mentalix guide for future product copy, illustrations and generated assets. It is a consistency contract, not permission to add a new production persona or to make the product feel watched.

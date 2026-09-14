@@ -1078,6 +1078,8 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 }) => {
   const layouts = [
     ...VIEWPORTS,
+    { name: '393x852', width: 393, height: 852 }, // iPhone 16
+    { name: '402x874', width: 402, height: 874 }, // iPhone 16 Pro
     { name: '768x1024', width: 768, height: 1024 },
     { name: '1280x800', width: 1280, height: 800 },
   ]
@@ -1115,24 +1117,37 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 
     await page.goto('/')
     await page.getByRole('button', { name: 'Диалог' }).click()
-    await expect(page.getByRole('heading', { name: 'с кем говорим.' })).toBeVisible()
-    await expect(page.getByLabel('Выбранный собеседник')).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Выбери роль/ })).toBeVisible()
     const cards = page.getByTestId('mentor-persona-card')
     await expect(cards).toHaveCount(3)
+    const cardGeometry = await cards.first().evaluate(element => {
+      const rect = element.getBoundingClientRect()
+      return { width: rect.width, height: rect.height }
+    })
+    expect(cardGeometry.width, 'Карточка должна оставаться компактной').toBeGreaterThanOrEqual(190)
+    expect(cardGeometry.width, 'Карточка не должна становиться dashboard-like').toBeLessThanOrEqual(
+      204
+    )
+    expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
+    expect(cardGeometry.height, 'Карточка не должна перекрывать pagination и nav').toBeLessThanOrEqual(
+      250
+    )
     expect(
       await cards.evaluateAll(elements =>
         elements.map(element => getComputedStyle(element).borderTopWidth)
       )
     ).toEqual(['1px', '1px', '1px'])
-    const pager = page.getByLabel('Страница собеседника')
+    const pager = page.getByRole('group', { name: 'Выбор роли' })
     await expect(pager).toBeVisible()
     await expect(pager.getByRole('button')).toHaveCount(3)
     await expect(
-      pager.getByRole('button', { name: 'Собеседник, страница 1 из 3' })
-    ).toHaveAttribute('aria-current', 'page')
+      pager.getByRole('button', { name: 'Собеседник, 2 из 3' })
+    ).toHaveAttribute('aria-current', 'true')
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
+      await expect(track).toHaveCSS('touch-action', 'pan-x')
       const cardWidth = await cards
         .first()
         .evaluate(element => element.getBoundingClientRect().width)
@@ -1140,16 +1155,16 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
         element.scrollLeft = scrollLeft
         element.dispatchEvent(new Event('scroll'))
       }, cardWidth + 12)
-      await expect(
-        pager.getByRole('button', { name: 'Наставник, страница 2 из 3' })
-      ).toHaveAttribute('aria-current', 'page')
+      await expect(pager.getByRole('button', { name: 'Собеседник, 2 из 3' })).toHaveAttribute(
+        'aria-current',
+        'true'
+      )
     }
-
-    await expect(page.getByText('У каждого своя история — разговоры не смешиваются.')).toBeVisible()
 
     const mentorCard = cards.filter({ hasText: 'Наставник' })
     await mentorCard.scrollIntoViewIfNeeded()
     await mentorCard.click()
+    await page.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
     await expect(page.getByText('История kompas')).toBeVisible()
     await expect(page.getByText('История mayak')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Назад' }))
@@ -1247,7 +1262,7 @@ test('History показывает user-scoped local Journal на mobile и tabl
   }
 })
 
-test('прямая web-ссылка объясняет Telegram Mini App и сохраняет OTP recovery', async ({
+test('прямая web-ссылка сообщает о скором веб-входе и Telegram Mini App', async ({
   browser,
   baseURL,
 }) => {
@@ -1263,93 +1278,23 @@ test('прямая web-ссылка объясняет Telegram Mini App и со
     sessionStorage.clear()
   })
 
-  let verifyAttempts = 0
   await context.route('**/api/**', async route => {
-    const request = route.request()
-    const pathname = new URL(request.url()).pathname
-
-    if (request.method() === 'POST' && pathname === '/api/auth/email/request-code') {
-      await new Promise(resolve => setTimeout(resolve, 75))
-      await route.fulfill(jsonResponse({ dev_code: '123456' }))
-      return
-    }
-
-    if (request.method() === 'POST' && pathname === '/api/auth/email/verify') {
-      verifyAttempts += 1
-      if (verifyAttempts === 1) {
-        await route.fulfill(jsonResponse({ ok: false }))
-      } else {
-        await route.fulfill(
-          jsonResponse({
-            ok: true,
-            user: {
-              app_user_id: 42,
-              web_user_id: 84,
-              first_name: 'Web',
-              email: 'person@example.com',
-              linked: true,
-            },
-          })
-        )
-      }
-      return
-    }
-
     await route.fulfill(jsonResponse({ ok: true }))
   })
 
   const page = await context.newPage()
   await page.goto('/')
 
-  await expect(
-    page.getByRole('heading', { name: 'Лучше открыть Mentalix через Telegram Mini App' })
-  ).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Вход через браузер' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Вход через браузер скоро появится' })).toBeVisible()
   await expect(
     page.getByText(
-      'Это поддерживаемый web-вход; он не обходит аутентификацию и не создаёт фиктивного пользователя.'
+      'Сейчас вход в Mentalix доступен только через Telegram Mini App. Открой приложение в Telegram — там уже доступен твой Telegram-контекст.'
     )
   ).toBeVisible()
-
-  const emailInput = page.getByRole('textbox', { name: 'Email для входа' })
-  const requestButton = page.getByRole('button', { name: 'Получить одноразовый код на email' })
-  await expect(emailInput).toBeFocused()
-  await emailInput.fill('person@example.com')
-  await page.keyboard.press('Tab')
-  await expect(requestButton).toBeFocused()
-  await expect(requestButton).toBeEnabled()
-
-  await requestButton.press('Enter')
-  await expect(page.locator('form')).toHaveAttribute('aria-busy', 'true')
-  await expect(page.getByRole('status')).toHaveText('Подожди, выполняю запрос…')
-  await expect(page.getByRole('textbox', { name: 'Одноразовый код' })).toBeVisible()
-  await expect(page.locator('form')).toHaveAttribute('aria-busy', 'false')
-
-  const codeInput = page.getByRole('textbox', { name: 'Одноразовый код' })
-  const verifyButton = page.getByRole('button', { name: 'Проверить одноразовый код' })
-  await expect(codeInput).toHaveAttribute('autocomplete', 'one-time-code')
-  await expect(codeInput).toBeFocused()
-  await codeInput.fill('000000')
-  await verifyButton.press('Enter')
-
-  await expect(page.getByRole('alert')).toHaveText(
-    'Неверный или истёкший код. Проверь его и отправь ещё раз.'
-  )
-  await expect(codeInput).toHaveAttribute('aria-invalid', 'true')
-  await expect(verifyButton).toBeEnabled()
-  expect(verifyAttempts).toBe(1)
+  await expect(page.locator('form')).toHaveCount(0)
+  await expect(page.getByRole('textbox')).toHaveCount(0)
+  await expect(page.getByRole('button')).toHaveCount(0)
   expect(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).toBeNull()
-
-  await codeInput.fill('123456')
-  await expect(page.getByRole('alert')).toHaveCount(0)
-  await expect(codeInput).toHaveAttribute('aria-invalid', 'false')
-  await expect(verifyButton).toBeEnabled()
-  await verifyButton.press('Enter')
-  await expect(page.getByRole('heading', { name: 'Вход через браузер' })).toHaveCount(0)
-  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).id).toBe(
-    42
-  )
-  expect(verifyAttempts).toBe(2)
 
   await context.close()
 })

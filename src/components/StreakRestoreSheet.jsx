@@ -79,9 +79,9 @@ export default function StreakRestoreSheet({ itemName, choices, onSave, onClose 
           <button
             onClick={onClose}
             aria-label="Закрыть"
-            className="practice-scene__choice w-10 h-10 rounded-full bg-cream/5 border-0 flex items-center justify-center shrink-0"
+            className="practice-scene__choice w-11 h-11 rounded-full bg-cream/5 border-0 flex items-center justify-center shrink-0"
           >
-            <X size={18} className="text-muted" />
+            <X size={18} className="text-muted" aria-hidden="true" />
           </button>
         </div>
 

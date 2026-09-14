@@ -1,3 +1,7 @@
+---
+status: working
+last_verified: 2026-09-11
+---
 # `UI-EXP-NNN` — название эксперимента
 
 - **Дата начала:** YYYY-MM-DD

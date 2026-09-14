@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-RETURN-FLOW-001: контракт утреннего Telegram return flow
 
 ## Статус

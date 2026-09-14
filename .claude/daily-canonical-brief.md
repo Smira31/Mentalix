@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-DAILY-CANONICAL-UI-LAB-001
 
 Ты на ветке `feature/mxl-daily-canonical-ui-lab-001` (от main `11dc1128`, doc-коммит

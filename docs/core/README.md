@@ -1,3 +1,7 @@
+---
+status: normative
+last_verified: 2026-09-11
+---
 # Mentalix Core
 
 **Версия:** 0.1.0

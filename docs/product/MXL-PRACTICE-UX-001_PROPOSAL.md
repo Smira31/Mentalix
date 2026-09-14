@@ -1,3 +1,7 @@
+---
+status: current
+last_verified: 2026-09-11
+---
 # MXL-PRACTICE-UX-001 — implementation brief: unified practice UX
 
 **Статус:** готово к реализации в разрешённом runtime-scope

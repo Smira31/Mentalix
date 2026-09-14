@@ -22,6 +22,7 @@
     "docs:canonical-drift": "node scripts/docs-canonical-drift.mjs",
     "doctor": "node scripts/project-doctor.mjs",
     "ux:check": "playwright test --config=playwright.ux.config.mjs",
+    "ux:library-programs-ui-lab": "node scripts/mxl-library-programs-ui-lab-check.mjs",
     "ux:library-production": "node scripts/mxl-526-library-production-check.mjs",
     "ux:progress-redesign": "node scripts/mxl-progress-redesign-ui-lab-check.mjs",
     "ux:progress-production": "node scripts/mxl-progress-production-check.mjs",

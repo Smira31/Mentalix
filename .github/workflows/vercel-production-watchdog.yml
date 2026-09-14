@@ -40,7 +40,7 @@ jobs:
 
           summary_file="$GITHUB_STEP_SUMMARY"
           echo '## Vercel Production Watchdog' >> "$summary_file"
-          echo "Событие: \\`${GITHUB_EVENT_NAME}\\`" >> "$summary_file"
+          printf 'Событие: `%s`\n' "$GITHUB_EVENT_NAME" >> "$summary_file"
 
           if [[ -z "$VERCEL_TOKEN" || -z "$VERCEL_PROJECT_ID" || -z "$VERCEL_DEPLOY_HOOK_URL" ]]; then
             message='Секреты не настроены: нужны VERCEL_TOKEN, VERCEL_PROJECT_ID и VERCEL_DEPLOY_HOOK_URL. VERCEL_TEAM_ID опционален.'

@@ -272,6 +272,53 @@
   opacity: 0.38;
 }
 
+/* Phase 1 light-theme redraw: explicit ink and fill choices per glyph. */
+[data-theme='light'] .mx-semantic-glyph--neuro .mx-semantic-glyph__network,
+[data-theme='light'] .mx-semantic-glyph--neuro .mx-semantic-glyph__signal {
+  stroke: rgb(77 61 45);
+}
+[data-theme='light'] .mx-semantic-glyph--neuro .mx-semantic-glyph__network circle {
+  fill: rgb(133 94 55);
+}
+[data-theme='light'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-upper,
+[data-theme='light'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-lower {
+  stroke: rgb(74 63 51);
+}
+[data-theme='light'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-lower {
+  opacity: 0.72;
+}
+[data-theme='light'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-axis {
+  stroke: rgb(158 110 59);
+}
+[data-theme='light'] .mx-semantic-glyph--focus .mx-semantic-glyph__focus-beams {
+  stroke: rgb(92 69 48);
+}
+[data-theme='light'] .mx-semantic-glyph--focus .mx-semantic-glyph__focus-axis,
+[data-theme='light'] .mx-semantic-glyph--focus .mx-semantic-glyph__focus-plane {
+  stroke: rgb(145 93 45);
+}
+[data-theme='light'] .mx-semantic-glyph--meditation .mx-semantic-glyph__contour--outer {
+  stroke: rgb(74 58 43);
+}
+[data-theme='light'] .mx-semantic-glyph--meditation .mx-semantic-glyph__contour--middle {
+  stroke: rgb(126 91 57);
+}
+[data-theme='light'] .mx-semantic-glyph--meditation .mx-semantic-glyph__contour--inner {
+  stroke: rgb(177 116 55);
+}
+[data-theme='light'] .mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-main {
+  stroke: rgb(76 58 42);
+}
+[data-theme='light'] .mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbits ellipse {
+  stroke: rgb(126 96 66) !important;
+}
+[data-theme='light'] .mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-nodes circle {
+  fill: rgb(157 101 48);
+}
+[data-theme='light'] .mx-semantic-glyph--ritual .mx-semantic-glyph__focus-ring {
+  stroke: rgb(177 116 55);
+}
+
 .mx-semantic-glyph[data-animated='true'].mx-semantic-glyph--neuro .mx-semantic-glyph__network {
   animation: mx-semantic-network 13.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
@@ -915,4 +962,50 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+[data-theme='light-preview'] .mx-semantic-glyph--neuro .mx-semantic-glyph__network,
+[data-theme='light-preview'] .mx-semantic-glyph--neuro .mx-semantic-glyph__signal {
+  stroke: rgb(77 61 45);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--neuro .mx-semantic-glyph__network circle {
+  fill: rgb(133 94 55);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-upper,
+[data-theme='light-preview'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-lower {
+  stroke: rgb(74 63 51);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-lower {
+  opacity: 0.72;
+}
+[data-theme='light-preview'] .mx-semantic-glyph--breath .mx-semantic-glyph__breath-axis {
+  stroke: rgb(158 110 59);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--focus .mx-semantic-glyph__focus-beams {
+  stroke: rgb(92 69 48);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--focus .mx-semantic-glyph__focus-axis,
+[data-theme='light-preview'] .mx-semantic-glyph--focus .mx-semantic-glyph__focus-plane {
+  stroke: rgb(145 93 45);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--meditation .mx-semantic-glyph__contour--outer {
+  stroke: rgb(74 58 43);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--meditation .mx-semantic-glyph__contour--middle {
+  stroke: rgb(126 91 57);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--meditation .mx-semantic-glyph__contour--inner {
+  stroke: rgb(177 116 55);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbit-main {
+  stroke: rgb(76 58 42);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-orbits ellipse {
+  stroke: rgb(126 96 66) !important;
+}
+[data-theme='light-preview'] .mx-semantic-glyph--ritual .mx-semantic-glyph__ritual-nodes circle {
+  fill: rgb(157 101 48);
+}
+[data-theme='light-preview'] .mx-semantic-glyph--ritual .mx-semantic-glyph__focus-ring {
+  stroke: rgb(177 116 55);
 }

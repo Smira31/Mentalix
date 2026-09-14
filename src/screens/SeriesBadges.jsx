@@ -11,7 +11,7 @@ function Stat({ label, value }) {
   return (
     <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 px-4 py-3">
       <div className="font-display text-[20px] text-cream">{value}</div>
-      <div className="mx-type-meta mt-1 text-faint">{label}</div>
+      <div className="mx-type-meta mt-1 text-muted">{label}</div>
     </div>
   )
 }
@@ -31,9 +31,9 @@ function BadgeRow({ badge, onOpen }) {
         >
           {badge.title}
         </span>
-        <span className="mt-1 block text-[11px] leading-snug text-faint">{badge.desc}</span>
+        <span className="mt-1 block text-[11px] leading-snug text-muted">{badge.desc}</span>
         {!badge.done && (
-          <span className="mt-1.5 block font-mono text-[10px] text-faint">
+          <span className="mt-1.5 block font-mono text-[10px] text-muted">
             {badge.progress}/{badge.goal}
           </span>
         )}
@@ -55,7 +55,7 @@ function BadgeDetail({ badge, onBack }) {
         <h2 className="mt-4 font-display text-[24px] text-cream">{badge.title}</h2>
         <p className="mx-type-body mt-2 text-muted">{badge.desc}</p>
         <div className="mt-5 rounded-2xl bg-emerald px-4 py-3">
-          <div className="flex items-center justify-between text-[11px] text-faint">
+          <div className="flex items-center justify-between text-[11px] text-muted">
             <span>{badge.done ? 'Открыто' : 'Прогресс'}</span>
             <span>
               {badge.progress}/{badge.goal}
@@ -112,7 +112,7 @@ export default function SeriesBadges({ user, onBack }) {
     <div className="w-full max-w-md px-5 pb-8 animate-fade-in">
       <div className="flex items-center gap-3 py-4">
         <BackButton onClick={onBack} />
-        <h1 className="font-display text-[20px] lowercase text-cream">серии и вехи.</h1>
+        <h1 className="font-display mx-type-page lowercase text-cream">серии и вехи.</h1>
       </div>
 
       {error && (
@@ -135,7 +135,7 @@ export default function SeriesBadges({ user, onBack }) {
                 <Flame size={25} strokeWidth={1.7} aria-hidden="true" />
               </span>
               <div className="min-w-0">
-                <div className="mx-type-meta text-faint">текущая серия</div>
+                <div className="mx-type-meta text-muted">текущая серия</div>
                 <div className="mt-1 font-display text-[25px] text-cream">
                   {model.currentStreak} {model.currentStreak === 1 ? 'день' : 'дней'} подряд
                 </div>
@@ -157,7 +157,7 @@ export default function SeriesBadges({ user, onBack }) {
             <section className="mt-7">
               <div className="mb-2 flex items-baseline justify-between">
                 <h2 className="text-[13px] text-cream">Открыто</h2>
-                <span className="mx-type-meta text-faint">{unlocked.length}</span>
+                <span className="mx-type-meta text-muted">{unlocked.length}</span>
               </div>
               <div className="space-y-2">
                 {unlocked.map(badge => (
@@ -171,7 +171,7 @@ export default function SeriesBadges({ user, onBack }) {
             <section className="mt-7">
               <div className="mb-2 flex items-baseline justify-between">
                 <h2 className="text-[13px] text-cream">Следующие вехи</h2>
-                <span className="mx-type-meta text-faint">{upcoming.length}</span>
+                <span className="mx-type-meta text-muted">{upcoming.length}</span>
               </div>
               <div className="space-y-2">
                 {upcoming.map(badge => (
