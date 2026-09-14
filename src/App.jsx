@@ -461,6 +461,14 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
+  const [demoDevice, setDemoDevice] = useState(() => {
+    const device = new URLSearchParams(window.location.search).get('device')
+    return device === 'pro' ? 'pro' : 'pro-max'
+  })
+  const demoViewport =
+    demoDevice === 'pro'
+      ? { width: 402, height: 874, label: 'iPhone 16 Pro' }
+      : { width: 430, height: 932, label: 'iPhone 16 Pro Max' }
 
   useEffect(() => {
     platform.init()
@@ -913,8 +921,35 @@ export default function App() {
      ============================================================ */
 
   return (
-    <div
-      className="
+    <div className={previewDemoMode ? 'mx-preview-stage' : undefined}>
+      {previewDemoMode && (
+        <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
+          <span className="mx-preview-device-switcher__label">Demo viewport</span>
+          {[
+            { key: 'pro', label: 'iPhone 16 Pro', size: '402×874' },
+            { key: 'pro-max', label: 'iPhone 16 Pro Max', size: '430×932' },
+          ].map(device => (
+            <button
+              key={device.key}
+              type="button"
+              role="tab"
+              aria-selected={demoDevice === device.key}
+              className={demoDevice === device.key ? 'is-active' : ''}
+              onClick={() => {
+                setDemoDevice(device.key)
+                const params = new URLSearchParams(window.location.search)
+                params.set('device', device.key)
+                window.history.replaceState({}, '', `${window.location.pathname}?${params}`)
+              }}
+            >
+              <strong>{device.label}</strong>
+              <small>{device.size}</small>
+            </button>
+          ))}
+        </div>
+      )}
+      <div
+        className="
         h-screen
         overflow-hidden
         bg-emerald-deep
@@ -924,30 +959,35 @@ export default function App() {
         items-center
         font-body
       "
-      style={{
-        height: viewportHeight ? `${viewportHeight}px` : '100dvh',
-        paddingTop: topSafeArea,
-        paddingRight: 'var(--app-safe-right)',
-        paddingLeft: 'var(--app-safe-left)',
-      }}
-    >
-      {previewDemoMode && tab !== 'mentor' && (
-        <div
-          role="status"
-          className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-gold/40 bg-emerald px-3 py-1 text-[10px] font-semibold tracking-wide text-gold shadow-lg"
-        >
-          Preview Demo Mode · данные только в этом браузере
-        </div>
-      )}
+        style={{
+          height: previewDemoMode
+            ? `${demoViewport.height}px`
+            : viewportHeight
+              ? `${viewportHeight}px`
+              : '100dvh',
+          width: previewDemoMode ? `${demoViewport.width}px` : undefined,
+          paddingTop: topSafeArea,
+          paddingRight: 'var(--app-safe-right)',
+          paddingLeft: 'var(--app-safe-left)',
+        }}
+      >
+        {previewDemoMode && tab !== 'mentor' && (
+          <div
+            role="status"
+            className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-gold/40 bg-emerald px-3 py-1 text-[10px] font-semibold tracking-wide text-gold shadow-lg"
+          >
+            Preview Demo Mode · данные только в этом браузере
+          </div>
+        )}
 
-      {/* ========================================================
+        {/* ========================================================
           MENTALIX WORDMARK
           Только Сегодня.
          ======================================================== */}
 
-      {fullscreen && showTodayHeader && (
-        <div
-          className="
+        {fullscreen && showTodayHeader && (
+          <div
+            className="
               absolute
               left-0
               right-0
@@ -959,42 +999,42 @@ export default function App() {
 
               pointer-events-none
             "
-          style={{
-            top: 'var(--app-safe-top)',
-            height: '56px',
-          }}
-        >
-          <span
-            className="
+            style={{
+              top: 'var(--app-safe-top)',
+              height: '56px',
+            }}
+          >
+            <span
+              className="
                 font-display
                 text-[16px]
                 tracking-[0.42em]
                 text-muted
               "
-          >
-            MENTALIX
-          </span>
-        </div>
-      )}
+            >
+              MENTALIX
+            </span>
+          </div>
+        )}
 
-      <div
-        ref={scrollRootRef}
-        className={`w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
-          tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
-        }`}
-        style={{
-          paddingBottom: contentBottomPadding,
-          scrollPaddingBottom: contentBottomPadding,
-        }}
-      >
-        {/* ========================================================
+        <div
+          ref={scrollRootRef}
+          className={`w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
+            tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
+          }`}
+          style={{
+            paddingBottom: contentBottomPadding,
+            scrollPaddingBottom: contentBottomPadding,
+          }}
+        >
+          {/* ========================================================
           TODAY HEADER
          ======================================================== */}
 
-        {showTodayHeader && (
-          <>
-            <div
-              className="
+          {showTodayHeader && (
+            <>
+              <div
+                className="
               w-full
               max-w-md
               min-w-0
@@ -1008,29 +1048,29 @@ export default function App() {
               justify-between
               gap-2
             "
-            >
-              {/* Огонёк открывает общий экран серий и вех. */}
-              <button
-                type="button"
-                onClick={() => {
-                  platform.haptic('light')
-                  setTodaySeriesOpen(true)
-                }}
-                aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
-                className="relative flex w-10 max-[359px]:w-6 h-10 shrink-0 items-center justify-center rounded-full bg-emerald border border-cream/10 text-gold active:scale-95"
               >
-                <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
-                {todayStreak > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 min-w-[15px] rounded-full bg-gold px-1 text-center text-[9px] font-bold leading-[15px] text-emerald-deep">
-                    {todayStreak}
-                  </span>
-                )}
-              </button>
+                {/* Огонёк открывает общий экран серий и вех. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    platform.haptic('light')
+                    setTodaySeriesOpen(true)
+                  }}
+                  aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
+                  className="relative flex w-10 max-[359px]:w-6 h-10 shrink-0 items-center justify-center rounded-full bg-emerald border border-cream/10 text-gold active:scale-95"
+                >
+                  <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
+                  {todayStreak > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 min-w-[15px] rounded-full bg-gold px-1 text-center text-[9px] font-bold leading-[15px] text-emerald-deep">
+                      {todayStreak}
+                    </span>
+                  )}
+                </button>
 
-              {/* Greeting */}
+                {/* Greeting */}
 
-              <h1
-                className="
+                <h1
+                  className="
                 font-display
                 mx-type-greeting
                 text-cream
@@ -1040,28 +1080,28 @@ export default function App() {
                 text-center
                 truncate
               "
-              >
-                {/*
+                >
+                  {/*
                 Простое приветствие по
                 времени суток, без имени.
                 Обращение по имени каждый
                 день звучит как рассылка,
                 а не как разговор с собой.
               */}
-                {greeting()}
-              </h1>
+                  {greeting()}
+                </h1>
 
-              {/* Settings */}
+                {/* Settings */}
 
-              <button
-                type="button"
-                onClick={() => {
-                  platform.haptic('light')
+                <button
+                  type="button"
+                  onClick={() => {
+                    platform.haptic('light')
 
-                  setOverlay('settings')
-                }}
-                aria-label="Настройки"
-                className="
+                    setOverlay('settings')
+                  }}
+                  aria-label="Настройки"
+                  className="
                 w-10
                 max-[359px]:w-6
                 h-10
@@ -1080,76 +1120,76 @@ export default function App() {
                 active:scale-95
                 shrink-0
               "
-              >
-                <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
-              </button>
-            </div>
-          </>
-        )}
+                >
+                  <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
+                </button>
+              </div>
+            </>
+          )}
 
-        {/* ========================================================
+          {/* ========================================================
           CONTENT
          ======================================================== */}
 
-        <div
-          key={overlay || 'main'}
-          className={[
-            'flex-1 w-full flex flex-col items-center',
-            tab === 'mentor' && !overlay
-              ? 'mx-dialog-runtime-shell'
-              : mentorPersonaOpen
-                ? ''
-                : 'animate-fade-in',
-          ].join(' ')}
-        >
-          <Suspense fallback={<ScreenLoading />}>
-            {!user && (
-              <p
-                className="
+          <div
+            key={overlay || 'main'}
+            className={[
+              'flex-1 w-full flex flex-col items-center',
+              tab === 'mentor' && !overlay
+                ? 'mx-dialog-runtime-shell'
+                : mentorPersonaOpen
+                  ? ''
+                  : 'animate-fade-in',
+            ].join(' ')}
+          >
+            <Suspense fallback={<ScreenLoading />}>
+              {!user && (
+                <p
+                  className="
               text-muted
               text-[13px]
               px-6
               text-center
               pt-8
             "
-              >
-                Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
-              </p>
-            )}
+                >
+                  Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
+                </p>
+              )}
 
-            {/* Settings */}
+              {/* Settings */}
 
-            {overlay === 'settings' && (
-              <Settings
-                user={user}
-                onBack={() => {
-                  setOverlay(null)
-                }}
-                onNavigate={destination => {
-                  if (destination === 'profile') {
-                    setOverlay('profile')
-                  }
-                }}
-                accent={accent}
-                onAccentChange={setAccentRaw}
-                theme={theme}
-                onThemeChange={setThemeRaw}
-              />
-            )}
+              {overlay === 'settings' && (
+                <Settings
+                  user={user}
+                  onBack={() => {
+                    setOverlay(null)
+                  }}
+                  onNavigate={destination => {
+                    if (destination === 'profile') {
+                      setOverlay('profile')
+                    }
+                  }}
+                  accent={accent}
+                  onAccentChange={setAccentRaw}
+                  theme={theme}
+                  onThemeChange={setThemeRaw}
+                />
+              )}
 
-            {/* Profile */}
+              {/* Profile */}
 
-            {overlay === 'profile' && (
-              <div
-                className="
+              {overlay === 'profile' && (
+                <div
+                  className="
               w-full
               flex
               flex-col
               items-center
             "
-              >
-                <div
-                  className="
+                >
+                  <div
+                    className="
                 w-full
                 max-w-md
 
@@ -1161,109 +1201,110 @@ export default function App() {
                 grid-cols-[1fr_auto_1fr]
                 items-center
               "
-                >
-                  <div className="justify-self-start">
-                    <BackButton
-                      onClick={() => {
-                        setOverlay('settings')
-                      }}
-                    />
-                  </div>
+                  >
+                    <div className="justify-self-start">
+                      <BackButton
+                        onClick={() => {
+                          setOverlay('settings')
+                        }}
+                      />
+                    </div>
 
-                  <span
-                    className="
+                    <span
+                      className="
                   font-display
                   mx-type-card
                   text-cream
                   lowercase
                 "
-                  >
-                    профиль.
-                  </span>
+                    >
+                      профиль.
+                    </span>
 
-                  <span aria-hidden="true" />
+                    <span aria-hidden="true" />
+                  </div>
+
+                  <Profile user={user} />
                 </div>
+              )}
 
-                <Profile user={user} />
-              </div>
-            )}
-
-            {/* ======================================================
+              {/* ======================================================
             MAIN TABS
            ====================================================== */}
 
-            {!overlay && (
-              <>
-                {user && tab === 'today' && (
-                  <Today
-                    user={user}
-                    onOpenPractice={openPractice}
-                    initialSub={initialTodaySub}
-                    returnFlowActive={Boolean(initialReturnFlow)}
-                    onReturnFlowEvent={reportReturnFlowEvent}
-                    onGoMentor={goMentor}
-                    onFlowChange={setTodayFlowOpen}
-                    onOpenSettings={() => setOverlay('settings')}
-                    seriesOpen={todaySeriesOpen}
-                    onCloseSeries={() => setTodaySeriesOpen(false)}
-                  />
-                )}
+              {!overlay && (
+                <>
+                  {user && tab === 'today' && (
+                    <Today
+                      user={user}
+                      onOpenPractice={openPractice}
+                      initialSub={initialTodaySub}
+                      returnFlowActive={Boolean(initialReturnFlow)}
+                      onReturnFlowEvent={reportReturnFlowEvent}
+                      onGoMentor={goMentor}
+                      onFlowChange={setTodayFlowOpen}
+                      onOpenSettings={() => setOverlay('settings')}
+                      seriesOpen={todaySeriesOpen}
+                      onCloseSeries={() => setTodaySeriesOpen(false)}
+                    />
+                  )}
 
-                {user && tab === 'practices' && (
-                  <Practices
-                    user={user}
-                    initialSub={practicesSub}
-                    onGameChange={setPracticeGameOpen}
-                    onReturnToToday={goToday}
-                  />
-                )}
+                  {user && tab === 'practices' && (
+                    <Practices
+                      user={user}
+                      initialSub={practicesSub}
+                      onGameChange={setPracticeGameOpen}
+                      onReturnToToday={goToday}
+                    />
+                  )}
 
-                {user && tab === 'mentor' && (
-                  <MentalixChat user={user} onPersonaChange={setMentorPersonaOpen} />
-                )}
+                  {user && tab === 'mentor' && (
+                    <MentalixChat user={user} onPersonaChange={setMentorPersonaOpen} />
+                  )}
 
-                {user && tab === 'library' && <Library user={user} />}
+                  {user && tab === 'library' && <Library user={user} />}
 
-                {user && tab === 'trends' && (
-                  <Analytics
-                    user={user}
-                    onGoCheckin={() => {
-                      platform.haptic('light')
+                  {user && tab === 'trends' && (
+                    <Analytics
+                      user={user}
+                      onGoCheckin={() => {
+                        platform.haptic('light')
 
-                      setMentorPersonaOpen(false)
+                        setMentorPersonaOpen(false)
 
-                      setTab('today')
+                        setTab('today')
 
-                      setPracticesSub(null)
+                        setPracticesSub(null)
 
-                      setNavCollapsed(false)
+                        setNavCollapsed(false)
 
-                      resetNavigationGesture()
+                        resetNavigationGesture()
 
-                      scrollAppToTop()
-                    }}
-                  />
-                )}
-              </>
-            )}
-          </Suspense>
+                        scrollAppToTop()
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </Suspense>
+          </div>
         </div>
-      </div>
 
-      {/* ========================================================
+        {/* ========================================================
           COLLAPSIBLE NAVIGATION
          ======================================================== */}
 
-      {user && !overlay && !bottomNavigationHidden && (
-        <BottomNavigation
-          tab={tab}
-          collapsed={navCollapsed}
-          onCollapseChange={setNavCollapsed}
-          onTabChange={switchTab}
-        />
-      )}
+        {user && !overlay && !bottomNavigationHidden && (
+          <BottomNavigation
+            tab={tab}
+            collapsed={navCollapsed}
+            onCollapseChange={setNavCollapsed}
+            onTabChange={switchTab}
+          />
+        )}
 
-      <PreviewApiDiagnostic />
+        <PreviewApiDiagnostic />
+      </div>
     </div>
   )
 }
