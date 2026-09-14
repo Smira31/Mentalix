@@ -332,7 +332,7 @@ function LibraryHome({
   }
 
   return (
-    <div className="mx-library-catalog animate-fade-in">
+    <div className="mx-library-catalog mx-screen-shell animate-fade-in">
       <header className="mx-library-catalog__header">
         <h1 className="font-display mx-type-page text-cream lowercase">библиотека.</h1>
         <button type="button" onClick={() => setSearchOpen(true)} aria-label="Открыть поиск">

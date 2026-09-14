@@ -1,7 +1,10 @@
 .mx-library-catalog {
   display: grid;
   gap: 8px;
-  padding-inline: 20px;
+  width: 100%;
+  max-width: 430px;
+  margin-inline: auto;
+  padding: 4px var(--mx-space-5) 0;
   color: rgb(var(--c-text));
 }
 
