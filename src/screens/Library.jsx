@@ -5,6 +5,7 @@ import SemanticGlyph, { semanticKindForArticle } from '../components/SemanticGly
 import ArticleCover from '../components/ArticleCover'
 import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
+import { isPreviewDemoMode } from '../lib/demoMode'
 import { platform } from '../platform'
 import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
@@ -15,7 +16,7 @@ const LIBRARY_V2_QA_ENABLED =
   typeof window !== 'undefined' &&
   window.location.hostname === 'mentalix-owner-qa.pages.dev' &&
   new URLSearchParams(window.location.search).get('library_v2') === '1'
-const LIBRARY_V2_ENABLED = LIBRARY_V2_ENV_ENABLED || LIBRARY_V2_QA_ENABLED
+const LIBRARY_V2_ENABLED = LIBRARY_V2_ENV_ENABLED || LIBRARY_V2_QA_ENABLED || isPreviewDemoMode()
 
 function LibraryV2FeaturedBanner({ title, description, art, action, onOpen }) {
   return (
