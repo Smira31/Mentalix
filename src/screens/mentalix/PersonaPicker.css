@@ -99,7 +99,7 @@ body:has(.mx-dialog-entry) {
 .mx-dialog-hero__content .mx-dialog-eyebrow,
 .mx-dialog-hero__content h1 {
   visibility: visible;
-  opacity: 1;
+  opacity: 0;
 }
 
 .mx-dialog-start {
