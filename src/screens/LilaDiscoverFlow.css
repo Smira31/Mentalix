@@ -82,6 +82,32 @@
   border-left: 2px solid rgb(var(--c-gold) / 0.62);
 }
 
+.mx-lila-choice {
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-muted));
+}
+
+.mx-lila-choice:active,
+.mx-lila-choice:hover {
+  background: rgb(var(--c-card2));
+}
+
+.mx-lila-choice--active {
+  border-color: rgb(96 165 250 / 0.8);
+  background: rgb(37 99 235 / 0.28);
+  color: rgb(219 234 254);
+  box-shadow: inset 0 0 0 1px rgb(147 197 253 / 0.14);
+}
+
+.mx-lila-choice--active .mx-type-card {
+  color: rgb(239 246 255);
+}
+
+.mx-lila-choice--active .mx-type-list-body {
+  color: rgb(191 219 254);
+}
+
 @media (max-height: 650px) {
   .mx-lila-query-canvas .practice-writing-canvas__question {
     font-size: var(--mx-type-section-size);

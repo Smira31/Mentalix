@@ -28,8 +28,8 @@ function ChoiceButton({ active, children, onClick }) {
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`min-h-12 w-full rounded-2xl px-4 py-3 text-left text-[13px] transition-colors ${
-        active ? 'bg-gold text-emerald-deep' : 'bg-emerald text-muted active:bg-emerald-light'
+      className={`mx-lila-choice min-h-12 w-full rounded-2xl px-4 py-3 text-left text-[13px] transition-colors ${
+        active ? 'mx-lila-choice--active' : ''
       }`}
     >
       {children}
@@ -96,7 +96,7 @@ function ThemePicker({ query, selectedCardId, onPick, onBack }) {
               active={selectedCardId === card.id}
               onClick={() => onPick(card.id)}
             >
-              <span className="mx-type-card block text-cream">{card.title}</span>
+              <span className="mx-type-card block">{card.title}</span>
               <span className="mx-type-list-body mt-1 block text-muted">{card.dilemma}</span>
             </ChoiceButton>
           ))}

@@ -525,6 +525,7 @@
   grid-column: 2;
   text-align: center;
 }
+.mx-layered-category__header h2,
 .mx-layered-category__header h3 {
   margin: 0;
   font-size: clamp(26px, 7vw, 32px);
@@ -1374,6 +1375,7 @@
 .mx-production-catalog .mx-layered-category__header {
   margin-top: 0;
 }
+.mx-production-catalog .mx-layered-category__header h2,
 .mx-production-catalog .mx-layered-category__header h3 {
   font-size: clamp(26px, 7vw, 32px);
 }

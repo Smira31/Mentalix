@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
-import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
 import { PERSONAS } from './personas'
-import heroReference from '../../assets/dialog-hero-reference.png'
 import { isPreviewDemoMode } from '../../lib/demoMode'
 
 import './PersonaPicker.css'
@@ -24,19 +22,6 @@ const DIALOG_DESCRIPTIONS = {
   mayak: 'Тёплый и внимательный разговор без оценки, когда нужно выговориться или услышать себя.',
   kompas: 'Строгий и честный. Разложит цель на шаги и не даст себя жалеть.',
   dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
-}
-
-function RoleGlyph({ persona, active }) {
-  return (
-    <div className="mx-dialog-role-glyph" aria-hidden="true">
-      <SemanticGlyph
-        kind={semanticKindForPersona(persona.key)}
-        animated={active}
-        highlighted={active}
-        className="mx-dialog-role-glyph__svg"
-      />
-    </div>
-  )
 }
 
 export default function PersonaPicker({ onPick }) {
@@ -94,20 +79,11 @@ export default function PersonaPicker({ onPick }) {
   return (
     <main className="mx-dialog-entry" data-testid="dialog-entry">
       <section className="mx-dialog-hero" aria-labelledby="dialog-entry-title">
-        <img className="mx-dialog-hero-reference" src={heroReference} alt="" aria-hidden="true" />
         <div className="mx-dialog-hero__content">
           <p className="mx-dialog-eyebrow font-label">ДИАЛОГ</p>
           <h1 id="dialog-entry-title" className="mx-type-hero">
             О чём хочешь поговорить прямо сейчас?
           </h1>
-          <button
-            type="button"
-            className="mx-dialog-start cta-pill mx-type-control"
-            onClick={() => startRole(DISPLAY_PERSONAS[active])}
-            aria-label={`Начать разговор: ${DISPLAY_PERSONAS[active].name}`}
-          >
-            Начать
-          </button>
         </div>
       </section>
 
@@ -147,7 +123,6 @@ export default function PersonaPicker({ onPick }) {
                   }
                 }}
               >
-                <RoleGlyph persona={persona} active={isActive} />
                 <div className="mx-dialog-card__body">
                   <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
                   <h3 className="mx-type-persona-title">{persona.name}</h3>
@@ -172,6 +147,16 @@ export default function PersonaPicker({ onPick }) {
           ))}
         </div>
       </section>
+      <div className="mx-dialog-start-dock">
+        <button
+          type="button"
+          className="mx-dialog-start cta-pill mx-type-control"
+          onClick={() => startRole(DISPLAY_PERSONAS[active])}
+          aria-label={`Начать разговор: ${DISPLAY_PERSONAS[active].name}`}
+        >
+          Начать {DISPLAY_PERSONAS[active].name}
+        </button>
+      </div>
     </main>
   )
 }
