@@ -69,7 +69,8 @@ export default function Conversation({
   const voiceSupported =
     typeof navigator !== 'undefined' &&
     Boolean(navigator.mediaDevices?.getUserMedia) &&
-    typeof MediaRecorder !== 'undefined'
+    typeof window !== 'undefined' &&
+    typeof window.MediaRecorder !== 'undefined'
 
   useEffect(() => {
     sendingRef.current = sending
@@ -177,11 +178,12 @@ export default function Conversation({
         },
       })
 
+      const Recorder = window.MediaRecorder
       const mimeType = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(type =>
-        MediaRecorder.isTypeSupported(type)
+        Recorder.isTypeSupported(type)
       )
 
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
+      const recorder = new Recorder(stream, mimeType ? { mimeType } : undefined)
 
       streamRef.current = stream
       recorderRef.current = recorder
@@ -464,9 +466,14 @@ export default function Conversation({
         }}
       >
         {showResult && (
-          <section className="mx-mentor-result w-full max-w-md mx-auto mb-3" aria-labelledby="mentor-result-title">
+          <section
+            className="mx-mentor-result w-full max-w-md mx-auto mb-3"
+            aria-labelledby="mentor-result-title"
+          >
             <div className="mx-ai-meta text-gold mb-2">Результат разговора</div>
-            <h2 id="mentor-result-title" className="mx-mentor-result__title">Один маленький шаг</h2>
+            <h2 id="mentor-result-title" className="mx-mentor-result__title">
+              Один маленький шаг
+            </h2>
             {lastUserMessage?.content && (
               <p className="mx-mentor-result__copy">
                 <strong>Что я услышал:</strong> {messageContent(lastUserMessage)}
@@ -475,12 +482,23 @@ export default function Conversation({
             <p className="mx-mentor-result__copy">
               <strong>Возможный эксперимент:</strong> {resultReply}
             </p>
-            <p className="mx-mentor-result__note">Попробуй только небольшой фрагмент. После этого можно остановиться или решить, что делать дальше.</p>
+            <p className="mx-mentor-result__note">
+              Попробуй только небольшой фрагмент. После этого можно остановиться или решить, что
+              делать дальше.
+            </p>
             <div className="mx-mentor-result__actions">
-              <button type="button" className="cta-pill mx-type-control" onClick={() => setResultStatus('saved')}>
+              <button
+                type="button"
+                className="cta-pill mx-type-control"
+                onClick={() => setResultStatus('saved')}
+              >
                 Сохранить шаг
               </button>
-              <button type="button" className="mx-mentor-result__secondary" onClick={() => setResultStatus('deferred')}>
+              <button
+                type="button"
+                className="mx-mentor-result__secondary"
+                onClick={() => setResultStatus('deferred')}
+              >
                 Отложить
               </button>
               <button type="button" className="mx-mentor-result__secondary" onClick={onBack}>
@@ -491,14 +509,20 @@ export default function Conversation({
         )}
 
         {resultStatus === 'saved' && (
-          <div className="mx-mentor-result mx-mentor-result--status w-full max-w-md mx-auto mb-3" role="status">
+          <div
+            className="mx-mentor-result mx-mentor-result--status w-full max-w-md mx-auto mb-3"
+            role="status"
+          >
             <strong>Шаг оставлен в этом разговоре.</strong>
             <span>Постоянное сохранение не меняется этим сценарием.</span>
           </div>
         )}
 
         {resultStatus === 'deferred' && (
-          <div className="mx-mentor-result mx-mentor-result--status w-full max-w-md mx-auto mb-3" role="status">
+          <div
+            className="mx-mentor-result mx-mentor-result--status w-full max-w-md mx-auto mb-3"
+            role="status"
+          >
             <strong>Шаг отложен.</strong>
             <span>Можно вернуться к разговору позже.</span>
           </div>
@@ -591,6 +615,7 @@ export default function Conversation({
                 : {
                     onPointerDown: event => {
                       event.preventDefault()
+                      event.currentTarget.setPointerCapture?.(event.pointerId)
 
                       setVoicePressed(true)
 
@@ -599,15 +624,18 @@ export default function Conversation({
                       }
                     },
 
-                    onPointerUp: () => {
+                    onPointerUp: event => {
                       setVoicePressed(false)
+                      event.currentTarget.releasePointerCapture?.(event.pointerId)
 
                       if (voiceState === 'recording') {
                         stopVoiceRecording()
                       }
                     },
 
-                    onPointerLeave: () => {
+                    onPointerLeave: event => {
+                      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) return
+
                       setVoicePressed(false)
 
                       if (voiceState === 'recording') {
