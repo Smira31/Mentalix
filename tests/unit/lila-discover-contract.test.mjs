@@ -107,7 +107,8 @@ test('MXL-LILA-UX-001 keeps multi-turn send and no-duplicate retry behavior', ()
 })
 
 test('MXL-LILA-UX-001 prevents click events from becoming user bubble content', () => {
-  assert.match(conversation, /onClick: \(\) => \{[\s\S]*onSend\(\)/)
+  assert.match(conversation, /async function sendFromComposer\(\)[\s\S]*await onSend\(\)/)
+  assert.match(conversation, /onClick: \(\) => \{[\s\S]*sendFromComposer\(\)/)
   assert.match(mentalix, /const isVoiceMessage = typeof overrideText === 'string'/)
   assert.match(mentalix, /typeof displayText === 'string' \? displayText : text/)
   assert.match(mentalix, /visibleText[\s\S]*\.trim\(\) \|\| text/)

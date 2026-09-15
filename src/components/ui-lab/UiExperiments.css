@@ -241,10 +241,50 @@
 
 .mx-lab-today__app-head {
   display: grid;
-  grid-template-columns: 40px 1fr 40px;
+  grid-template-columns: auto 1fr 40px;
   align-items: center;
+  gap: 12px;
 }
-
+.mx-lab-today__streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 54px;
+  height: 32px;
+  padding: 0 11px 0 8px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+}
+.mx-lab-today__streak svg {
+  width: 15px;
+  height: 15px;
+  color: rgb(var(--c-accent));
+  fill: currentColor;
+}
+.mx-lab-today__streak strong {
+  font-size: 12px;
+}
+.mx-lab-today__greeting {
+  justify-self: center;
+}
+.mx-lab-today__profile {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 50%;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+}
+.mx-lab-today__profile svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.8;
+}
 .mx-lab-today__thread-slot {
   position: relative;
   width: 40px;
@@ -254,24 +294,6 @@
 .mx-lab-today__app-head > strong {
   font-size: 20px;
   text-align: center;
-}
-
-.mx-lab-today__settings {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-}
-
-.mx-lab-today__settings span {
-  width: 15px;
-  height: 15px;
-  border: 1px solid rgb(var(--c-line-secondary));
-  border-radius: 50%;
 }
 
 .mx-lab-today__tagline {
@@ -293,7 +315,8 @@
   display: grid;
   min-width: 0;
   gap: 4px;
-  padding: 8px 0;
+  min-height: 62px;
+  padding: 10px 2px;
   border: 1px solid transparent;
   border-radius: 14px;
   color: rgb(var(--c-faint));
@@ -301,7 +324,12 @@
 }
 
 .mx-lab-today__week > div[data-active='true'] {
-  border-color: rgb(var(--c-line-secondary) / 0.55);
+  border-color: rgb(var(--c-accent) / 0.7);
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+}
+
+.mx-lab-today__week > div[data-completed='true'] {
   color: rgb(var(--c-text));
 }
 
@@ -312,6 +340,13 @@
 
 .mx-lab-today__week strong {
   font-size: 14px;
+}
+
+.mx-lab-today__week strong svg {
+  width: 15px;
+  height: 15px;
+  color: rgb(var(--c-accent));
+  stroke-width: 2.5;
 }
 
 .mx-lab-today__hero {

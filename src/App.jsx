@@ -160,18 +160,9 @@ function ScreenLoading() {
 function greeting() {
   const h = new Date().getHours()
 
-  if (h >= 5 && h <= 11) {
-    return 'доброе утро.'
-  }
-
-  if (h >= 12 && h <= 17) {
-    return 'добрый день.'
-  }
-
-  if (h >= 18 && h <= 22) {
-    return 'добрый вечер.'
-  }
-
+  if (h >= 5 && h <= 11) return 'доброе утро.'
+  if (h >= 12 && h <= 17) return 'добрый день.'
+  if (h >= 18 && h <= 22) return 'добрый вечер.'
   return 'тихой ночи.'
 }
 
@@ -990,7 +981,8 @@ export default function App() {
    * сообщает об этом через onFlowChange; раньше флаг
    * гасил только нижнюю навигацию.
    */
-  const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
+  const showTodayHeader =
+    !previewDemoMode && !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
   const topSafeArea =
     tab === 'mentor' && !overlay
@@ -1086,13 +1078,15 @@ export default function App() {
           marginBottom: previewDemoMode
             ? `${-(demoViewport.height * (1 - demoScale))}px`
             : undefined,
-          paddingTop: previewDemoMode ? '56px' : topSafeArea,
+          paddingTop: previewDemoMode && !overlay && !todaySeriesOpen ? '56px' : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {/* eslint-disable-next-line react-hooks/refs */}
-        {previewDemoMode && <DemoTelegramChrome onBack={demoBackAction} />}
+        {previewDemoMode && !overlay && !todaySeriesOpen && (
+          // eslint-disable-next-line react-hooks/refs
+          <DemoTelegramChrome onBack={demoBackAction} />
+        )}
 
         {/* ========================================================
           MENTALIX WORDMARK
@@ -1361,6 +1355,7 @@ export default function App() {
                       onFlowChange={setTodayFlowOpen}
                       onRegisterBack={registerTodayBack}
                       onOpenSettings={() => setOverlay('settings')}
+                      onOpenSeries={() => setTodaySeriesOpen(true)}
                       seriesOpen={todaySeriesOpen}
                       onCloseSeries={closeTodaySeries}
                     />

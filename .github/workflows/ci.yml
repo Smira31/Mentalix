@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: 20
+  NODE_VERSION: 22.22.1
   BACKEND_SHA: 7fa1cc88d90935fada35bb2b5f6477979cb2cd31
 
 jobs:

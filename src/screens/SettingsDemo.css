@@ -1,0 +1,140 @@
+.mx-settings-screen--demo {
+  padding-bottom: 40px;
+}
+
+.mx-settings-screen--demo > div:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 58px;
+  margin-inline: -5px;
+  padding-inline: 8px;
+  border-radius: 0 0 22px 22px;
+  background: rgb(0 0 0 / 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.mx-settings-header-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.08);
+  color: #f2f2f2;
+}
+
+.mx-settings-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mx-settings-screen--demo svg.text-gold,
+.mx-settings-screen--demo .text-gold,
+.mx-settings-screen--demo [class*='text-accent'],
+.mx-settings-screen--demo [class*='text-blue'] {
+  color: #a7a7a7 !important;
+}
+
+.mx-settings-screen--demo svg {
+  filter: grayscale(1);
+}
+
+.mx-settings-screen--demo .bg-gold,
+.mx-settings-screen--demo [class*='bg-gold'] {
+  background: #7b7b7b !important;
+}
+
+.mx-settings-screen--demo .mx-settings-header-button--gift {
+  display: none;
+}
+
+.mx-settings-premium {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 26px 28px 24px;
+  border-radius: 22px;
+  background: #151515;
+  color: #f3f3f3;
+}
+
+.mx-settings-premium h2 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.mx-settings-premium p {
+  max-width: 260px;
+  margin: 7px 0 18px;
+  color: #a0a0a0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mx-settings-premium button {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #f2f2f2;
+  color: #101010;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mx-settings-premium > svg {
+  flex: 0 0 auto;
+  color: #8b8b8b;
+}
+
+.mx-settings-gift-card {
+  display: flex;
+  width: 100%;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-left: 28px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  background: #151515;
+  color: #f3f3f3;
+  text-align: left;
+  font-size: 16px;
+}
+
+.mx-settings-gift-card > svg {
+  width: 72px;
+  height: 68px;
+  padding: 6px;
+  background: #242424;
+}
+
+.mx-settings-screen--demo > .mb-8,
+.mx-settings-screen--demo > .mb-5,
+.mx-settings-screen--demo > .-mt-5 {
+  margin-bottom: 24px;
+}
+
+@media (max-width: 480px) {
+  .mx-settings-premium {
+    padding-inline: 20px;
+  }
+
+  .mx-settings-premium h2 {
+    font-size: 19px;
+  }
+
+  .mx-settings-gift-card {
+    padding-left: 20px;
+    font-size: 14px;
+  }
+}

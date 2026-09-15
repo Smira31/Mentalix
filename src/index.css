@@ -88,7 +88,7 @@
 
   --bottom-nav-height: 68px;
   --bottom-nav-collapsed-size: 58px;
-  --bottom-nav-offset: 12px;
+  --bottom-nav-offset: 2px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
   --bottom-nav-content-gap: 46px;
   --app-content-bottom: calc(
@@ -400,7 +400,7 @@ svg .animate-celebrate-pop {
 }
 
 .mx-type-hero {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: 'Onest', system-ui, sans-serif;
   letter-spacing: -0.035em;
 }
 

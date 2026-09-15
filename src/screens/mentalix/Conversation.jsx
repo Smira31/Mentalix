@@ -44,13 +44,14 @@ export default function Conversation({
   footerSlot = null,
   sendError = '',
   onRetry,
-  resultMessage = null,
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
-  const { style: surfaceStyle } = useFullscreenSurface()
+  const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
 
   const scrollRef = useRef(null)
+  const inputRef = useRef(null)
+  const restoreComposerFocusRef = useRef(false)
   const previousMessageCount = useRef(0)
   const recorderRef = useRef(null)
   const streamRef = useRef(null)
@@ -122,6 +123,19 @@ export default function Conversation({
       top: scroll.scrollHeight,
       behavior,
     })
+  }
+
+  async function sendFromComposer() {
+    if (!input.trim() || sending) return
+
+    restoreComposerFocusRef.current = document.activeElement === inputRef.current
+    await onSend()
+
+    if (restoreComposerFocusRef.current) {
+      window.requestAnimationFrame(() => {
+        inputRef.current?.focus({ preventScroll: true })
+      })
+    }
   }
 
   useEffect(() => {
@@ -294,14 +308,24 @@ export default function Conversation({
     }
   }, [loading, messages.length, sending])
 
+  useEffect(() => {
+    if (!keyboardOpen) return undefined
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollToEnd('auto')
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [keyboardOpen])
+
   return createPortal(
     <div
-      className={FULLSCREEN_SHELL_CLASS}
+      className={`${FULLSCREEN_SHELL_CLASS} ${demoVoice ? 'mx-conversation-surface--demo' : ''}`}
       style={{
         ...surfaceStyle,
 
-        background: '#090d0e',
-        paddingBottom: 'max(6px, env(safe-area-inset-bottom))',
+        background: 'rgb(var(--c-bg))',
+        paddingBottom: '0px',
       }}
     >
       {/* ── шапка ── */}
@@ -365,10 +389,7 @@ export default function Conversation({
                 }
 
                 return (
-                  <div
-                    key={messageKey}
-                    className="mx-imessage-row mx-imessage-row--assistant mx-msg-in"
-                  >
+                  <div key={messageKey} className="mx-imessage-row mx-imessage-row--assistant">
                     <div className="mx-ai-meta text-gold mb-1.5">{meta.name}</div>
 
                     <div className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words">
@@ -433,7 +454,7 @@ export default function Conversation({
         className="shrink-0 px-4 pt-3"
 
         style={{
-          paddingBottom: 'max(4px, env(safe-area-inset-bottom))',
+          paddingBottom: keyboardOpen ? '1px' : 'max(4px, env(safe-area-inset-bottom))',
         }}
       >
         {(voiceState !== 'idle' || voiceError) && (
@@ -452,9 +473,18 @@ export default function Conversation({
           </div>
         )}
 
-        <div className="mx-ai-composer w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-emerald-light/20 border border-cream/10 flex items-center gap-2.5 px-2.5">
+        <div className="mx-ai-composer w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-black/45 border border-cream/10 flex items-center gap-2.5 px-2.5">
           <input
+            ref={inputRef}
             value={input}
+
+            onFocus={() => {
+              restoreComposerFocusRef.current = true
+            }}
+
+            onBlur={() => {
+              restoreComposerFocusRef.current = false
+            }}
 
             onChange={event => {
               const value = event.target.value
@@ -472,12 +502,18 @@ export default function Conversation({
 
             onKeyDown={event => {
               if (event.key === 'Enter') {
-                onSend()
+                event.preventDefault()
+                void sendFromComposer()
               }
             }}
 
             placeholder={`Написать ${meta.name}…`}
 
+            name="mentor-message"
+            autoComplete="off"
+            autoCapitalize="sentences"
+            inputMode="text"
+            enterKeyHint="send"
             className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-cream placeholder:text-faint"
           />
 
@@ -513,14 +549,28 @@ export default function Conversation({
                         suppressVoiceClickRef.current = false
                         return
                       }
-                      onSend()
+                      void sendFromComposer()
                     },
-                    onPointerDown: () => setVoicePressed(true),
+                    onPointerDown: event => {
+                      event.preventDefault()
+                      setVoicePressed(true)
+                    },
                     onPointerUp: () => setVoicePressed(false),
                     onPointerLeave: () => setVoicePressed(false),
                     onPointerCancel: () => setVoicePressed(false),
                   }
                 : {
+                    onClick: demoVoice
+                      ? () => {
+                          if (suppressVoiceClickRef.current) {
+                            suppressVoiceClickRef.current = false
+                            return
+                          }
+
+                          if (voiceState === 'idle') startVoiceRecording()
+                          else if (voiceState === 'recording') stopVoiceRecording()
+                        }
+                      : undefined,
                     onPointerDown: event => {
                       event.preventDefault()
                       event.currentTarget.setPointerCapture?.(event.pointerId)

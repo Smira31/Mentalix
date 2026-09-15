@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 
 import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
-import { useVisualViewportHeight } from './visualViewport'
+import { useVisualViewportGeometry } from './visualViewport'
 import { isPreviewDemoMode } from './demoMode'
 
 /*
@@ -48,7 +48,7 @@ import { isPreviewDemoMode } from './demoMode'
 export const TG_CONTROLS_HEIGHT = 56
 
 export const FULLSCREEN_SHELL_CLASS =
-  'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden animate-fade-in'
+  'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden'
 
 export const FULLSCREEN_HEADER_SLOT_CLASS = 'h-[52px] shrink-0'
 
@@ -70,8 +70,24 @@ export function getFullscreenPortalTarget() {
 }
 
 export function useFullscreenSurface() {
-  const viewportHeight = useVisualViewportHeight()
-  const demoFrameHeight = isPreviewDemoMode() ? getFullscreenPortalTarget()?.offsetHeight : null
+  const viewportGeometry = useVisualViewportGeometry()
+  const portalTarget = getFullscreenPortalTarget()
+  const demoMode = isPreviewDemoMode()
+  const demoScale =
+    demoMode && portalTarget?.offsetHeight && portalTarget?.getBoundingClientRect
+      ? portalTarget.getBoundingClientRect().height / portalTarget.offsetHeight
+      : 1
+  const scale = Number.isFinite(demoScale) && demoScale > 0 ? demoScale : 1
+  const viewportHeight = viewportGeometry?.height ?? null
+  const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
+  const keyboardOpen =
+    viewportHeight !== null &&
+    typeof window !== 'undefined' &&
+    window.innerHeight - viewportHeight > 80
+  // visualViewport.height is already the visible height. Convert the single
+  // viewport snapshot into the portal target's coordinate space exactly once.
+  const surfaceTop = viewportOffsetTop / scale
+  const visibleHeight = viewportHeight ? viewportHeight / scale : null
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
@@ -97,24 +113,19 @@ export function useFullscreenSurface() {
   }, [])
 
   const style = {
+    top: `${surfaceTop}px`,
     paddingTop: tgFullscreen
       ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
       : 'var(--app-safe-top)',
 
     paddingBottom: 'var(--app-safe-bottom)',
 
-    height:
-      demoFrameHeight && viewportHeight
-        ? `${Math.min(demoFrameHeight, viewportHeight)}px`
-        : demoFrameHeight
-          ? `${demoFrameHeight}px`
-          : viewportHeight
-            ? `${viewportHeight}px`
-            : '100dvh',
+    height: visibleHeight ? `${visibleHeight}px` : '100dvh',
   }
 
   return {
     style,
     tgFullscreen,
+    keyboardOpen,
   }
 }
