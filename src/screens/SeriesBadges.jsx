@@ -1,78 +1,171 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Flame, ChevronRight } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Flame, X } from 'lucide-react'
 
-import BackButton from '../components/BackButton'
+import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
+import { isPreviewDemoMode } from '../lib/demoMode'
 import { MotifArt } from '../components/Motif'
-import StreakBar from '../components/StreakBar'
 import { api } from '../lib/api'
 import { buildSeriesViewModel } from '../lib/series'
+import './SeriesBadges.css'
 
-function BadgeRow({ badge, onOpen }) {
+function ProgressBar({ progress, goal }) {
+  const width = goal > 0 ? Math.min(100, Math.round((progress / goal) * 100)) : 0
   return (
-    <button
-      type="button"
-      onClick={() => onOpen(badge)}
-      className="flex w-full items-center gap-3 rounded-2xl border border-cream/10 bg-emerald-light/15 px-3 py-3 text-left transition-transform active:scale-[0.99]"
-      aria-label={`${badge.title}: открыть подробности`}
-    >
-      <MotifArt name={badge.motif} size={48} className={badge.done ? '' : 'opacity-40'} />
-      <span className="min-w-0 flex-1">
-        <span
-          className={`block text-[13px] leading-tight ${badge.done ? 'text-cream' : 'text-muted'}`}
-        >
-          {badge.title}
-        </span>
-        <span className="mt-1 block text-[11px] leading-snug text-muted">{badge.desc}</span>
-        {!badge.done && (
-          <span className="mt-1.5 block font-mono text-[10px] text-muted">
-            {badge.progress}/{badge.goal}
-          </span>
-        )}
-      </span>
-      <ChevronRight size={16} className="shrink-0 text-faint" aria-hidden="true" />
-    </button>
+    <div className="mx-path-progress" aria-label={`Прогресс: ${progress} из ${goal}`}>
+      <span style={{ width: `${width}%` }} />
+    </div>
   )
 }
 
-function BadgeDetail({ badge, onBack }) {
+function BadgeRow({ badge }) {
   return (
-    <div className="w-full max-w-md px-5 pb-8">
-      <div className="flex items-center gap-3 py-4">
-        <BackButton onClick={onBack} />
-        <span className="mx-type-meta text-muted">Веха пути</span>
+    <div className="mx-path-award-row">
+      <MotifArt name={badge.motif} size={58} className={badge.done ? '' : 'opacity-55'} />
+      <div className="min-w-0 flex-1">
+        <div className="mx-path-row-title">{badge.title}</div>
+        <div className="mx-path-row-copy">{badge.desc}</div>
       </div>
-      <div className="rounded-[28px] border border-cream/10 bg-emerald-light/15 px-5 py-7 text-center">
-        <MotifArt name={badge.motif} size={112} className={badge.done ? '' : 'opacity-40'} />
-        <h2 className="mt-4 font-display text-[24px] text-cream">{badge.title}</h2>
-        <p className="mx-type-body mt-2 text-muted">{badge.desc}</p>
-        <div className="mt-5 rounded-2xl bg-emerald px-4 py-3">
-          <div className="flex items-center justify-between text-[11px] text-muted">
-            <span>{badge.done ? 'Открыто' : 'Прогресс'}</span>
-            <span>
-              {badge.progress}/{badge.goal}
-            </span>
+      <div className="mx-path-row-value">
+        <strong>
+          {badge.progress}/{badge.goal}
+        </strong>
+        <ProgressBar progress={badge.progress} goal={badge.goal} />
+      </div>
+    </div>
+  )
+}
+
+function SummaryCard({ value, label }) {
+  return (
+    <div className="mx-path-summary-card">
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  )
+}
+
+function StatSection({ title, rows }) {
+  return (
+    <section className="mx-path-stat-section">
+      <h2>{title}</h2>
+      <div className="mx-path-stat-card">
+        {rows.map(([label, value]) => (
+          <div className="mx-path-stat-row" key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-cream/10">
-            <div
-              className="h-full rounded-full bg-gold transition-all duration-500"
-              style={{ width: `${Math.min(100, (badge.progress / badge.goal) * 100)}%` }}
-            />
-          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AwardsView({ model, unlocked, upcoming }) {
+  const latest = unlocked[0]
+  return (
+    <div className="mx-path-content">
+      <section className="mx-path-featured-award">
+        <h2>
+          <strong>{unlocked.length || 0}</strong> наград{unlocked.length === 1 ? 'а' : 'ы'} открыто
+        </h2>
+        {latest ? (
+          <>
+            <MotifArt name={latest.motif} size={154} />
+            <div className="mx-path-featured-title">{latest.title}</div>
+            <div className="mx-path-featured-copy">{latest.done ? 'Открыто' : latest.desc}</div>
+          </>
+        ) : (
+          <>
+            <MotifArt name="first-step" size={154} className="opacity-55" />
+            <div className="mx-path-featured-title">Первый шаг</div>
+            <div className="mx-path-featured-copy">Сделай первый чек-ин</div>
+          </>
+        )}
+      </section>
+
+      <div className="mx-path-see-all">
+        Смотреть все <span aria-hidden="true">›</span>
+      </div>
+      <section className="mx-path-awards-section">
+        <h2>Следующие награды</h2>
+        <div className="mx-path-award-list">
+          {(upcoming.length ? upcoming : unlocked).map(badge => (
+            <BadgeRow key={badge.id} badge={badge} />
+          ))}
         </div>
+      </section>
+    </div>
+  )
+}
+
+function StatsView({ model }) {
+  const completedDays = model.activeDays || model.totalCheckins || 0
+  return (
+    <div className="mx-path-content">
+      <div className="mx-path-summary-grid">
+        <SummaryCard value={completedDays} label="завершённых дня" />
+        <SummaryCard value={0} label="минут осознанности" />
       </div>
+      <StatSection
+        title="Рекорды"
+        rows={[
+          ['Самая долгая медитация', '0 мин 0 сек'],
+          ['Самая долгая дыхательная практика', '0 мин 0 сек'],
+          ['Самая длинная запись', model.totalCheckins ? '1 слово' : '0 слов'],
+          ['Самое долгое чтение', '0 мин 5 сек'],
+        ]}
+      />
+      <StatSection
+        title="Общее"
+        rows={[
+          ['Текущая серия', `${model.currentStreak} ${model.currentStreak === 1 ? 'день' : 'дня'}`],
+          ['Всего завершённых дней', completedDays],
+          ['Самая длинная серия', `${model.bestStreak} ${model.bestStreak === 1 ? 'день' : 'дня'}`],
+          ['Сохранено цитат', 0],
+        ]}
+      />
+      <StatSection
+        title="Дневник"
+        rows={[
+          ['Написано слов', model.totalCheckins ? 1 : 0],
+          ['Изображений', 0],
+          ['Рисунков', 0],
+          ['Записей', model.totalCheckins],
+          ['Разных дневников', 0],
+        ]}
+      />
+      <StatSection
+        title="Осознанность"
+        rows={[
+          ['Минут осознанности', 0],
+          ['Медитаций', 0],
+          ['Дыхательных практик', 0],
+          ['Выполнено вдохов', 0],
+          ['Разных практик дыхания', 0],
+          ['Разных медитаций', 0],
+        ]}
+      />
+      <StatSection
+        title="Настроение"
+        rows={[
+          ['Отметок энергии', 0],
+          ['Отметок настроения', 0],
+        ]}
+      />
     </div>
   )
 }
 
 export default function SeriesBadges({ user, onBack }) {
   const [model, setModel] = useState(null)
-  const [selectedBadge, setSelectedBadge] = useState(null)
   const [activeTab, setActiveTab] = useState('badges')
   const [error, setError] = useState(false)
+  const { style: surfaceStyle } = useFullscreenSurface()
+  const demoMode = isPreviewDemoMode()
 
   useEffect(() => {
     let active = true
-
     Promise.all([
       api.profile.get(user.id),
       api.checkin.history(user.id, 90),
@@ -80,14 +173,9 @@ export default function SeriesBadges({ user, onBack }) {
       api.ascezas.list(user.id),
     ])
       .then(([stats, checkins, rituals, ascezas]) => {
-        if (active) {
-          setModel(buildSeriesViewModel({ stats, checkins, rituals, ascezas }))
-        }
+        if (active) setModel(buildSeriesViewModel({ stats, checkins, rituals, ascezas }))
       })
-      .catch(() => {
-        if (active) setError(true)
-      })
-
+      .catch(() => active && setError(true))
     return () => {
       active = false
     }
@@ -96,129 +184,55 @@ export default function SeriesBadges({ user, onBack }) {
   const unlocked = useMemo(() => model?.badges.filter(badge => badge.done) || [], [model])
   const upcoming = useMemo(() => model?.badges.filter(badge => !badge.done) || [], [model])
 
-  if (selectedBadge) {
-    return <BadgeDetail badge={selectedBadge} onBack={() => setSelectedBadge(null)} />
-  }
-
-  return (
-    <div className="w-full max-w-md px-5 pb-8 animate-fade-in">
-      <div className="flex items-center gap-3 py-4">
-        <BackButton onClick={onBack} />
-        <h1 className="font-display mx-type-page text-cream">
-          Огонёк — {activeTab === 'badges' ? 'Награды' : 'Статистика'}
-        </h1>
-      </div>
-
-      {error && (
-        <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 px-4 py-4 text-[13px] text-muted">
-          Не удалось загрузить серии и вехи. Попробуй открыть экран ещё раз.
-        </div>
-      )}
-
-      {!error && !model && (
-        <p role="status" className="px-1 pt-4 text-[13px] text-muted">
-          Собираю твой путь…
-        </p>
-      )}
-
-      {model && (
-        <>
-          <div
-            className="mb-4 grid grid-cols-2 rounded-2xl border border-cream/10 bg-emerald-light/10 p-1"
-            role="tablist"
-            aria-label="Раздел огонька"
+  const content = (
+    <div
+      className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}`}
+      style={surfaceStyle}
+    >
+      <header className="mx-path-header">
+        <div className="mx-path-tabs" role="tablist" aria-label="Раздел моего пути">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'badges'}
+            onClick={() => setActiveTab('badges')}
           >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'badges'}
-              onClick={() => setActiveTab('badges')}
-              className={`min-h-10 rounded-xl text-[12px] font-semibold ${activeTab === 'badges' ? 'bg-cream text-emerald-deep' : 'text-muted'}`}
-            >
-              Награды
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={activeTab === 'stats'}
-              onClick={() => setActiveTab('stats')}
-              className={`min-h-10 rounded-xl text-[12px] font-semibold ${activeTab === 'stats' ? 'bg-cream text-emerald-deep' : 'text-muted'}`}
-            >
-              Статистика
-            </button>
-          </div>
-
-          <section className="rounded-[28px] border border-gold/25 bg-emerald-light/15 px-5 py-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold/10 text-gold">
-                <Flame size={25} strokeWidth={1.7} aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <div className="mx-type-meta text-muted">текущая серия</div>
-                <div className="mt-1 font-display text-[25px] text-cream">
-                  {model.currentStreak} {model.currentStreak === 1 ? 'день' : 'дней'} подряд
-                </div>
-              </div>
-            </div>
-            <div className="mt-5">
-              <StreakBar streak={model.currentStreak} />
-            </div>
-          </section>
-
-          {activeTab === 'stats' && (
-            <section className="mt-4 overflow-hidden rounded-2xl border border-cream/10 bg-emerald-light/10">
-              {[
-                ['Дней в системе', model.activeDays],
-                ['Чек-инов завершено', model.totalCheckins],
-                ['Личный максимум', model.bestStreak],
-                ['Вех открыто', `${unlocked.length}/${model.badges.length}`],
-              ].map(([label, value]) => (
-                <div
-                  key={label}
-                  className="flex items-center justify-between border-b border-cream/10 px-4 py-3 last:border-b-0"
-                >
-                  <span className="text-[12px] text-muted">{label}</span>
-                  <strong className="text-[13px] text-cream">{value}</strong>
-                </div>
-              ))}
-            </section>
-          )}
-
-          {activeTab === 'badges' && unlocked.length > 0 && (
-            <section className="mt-7">
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-[13px] text-cream">Открыто</h2>
-                <span className="mx-type-meta text-muted">{unlocked.length}</span>
-              </div>
-              <div className="space-y-2">
-                {unlocked.map(badge => (
-                  <BadgeRow key={badge.id} badge={badge} onOpen={setSelectedBadge} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {activeTab === 'badges' && upcoming.length > 0 && (
-            <section className="mt-7">
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-[13px] text-cream">Следующие вехи</h2>
-                <span className="mx-type-meta text-muted">{upcoming.length}</span>
-              </div>
-              <div className="space-y-2">
-                {upcoming.map(badge => (
-                  <BadgeRow key={badge.id} badge={badge} onOpen={setSelectedBadge} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {activeTab === 'badges' && model.badges.length === 0 && (
-            <p className="mt-7 text-[13px] leading-relaxed text-muted">
-              Вехи появятся по мере движения.
-            </p>
-          )}
-        </>
-      )}
+            Награды
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'stats'}
+            onClick={() => setActiveTab('stats')}
+          >
+            Статистика
+          </button>
+        </div>
+        <button
+          type="button"
+          className="mx-path-close"
+          aria-label="Закрыть мой путь"
+          onClick={onBack}
+        >
+          <X size={28} strokeWidth={1.8} aria-hidden="true" />
+        </button>
+      </header>
+      <main className="mx-path-scroll">
+        {error && (
+          <p className="mx-path-status">
+            Не удалось загрузить данные. Попробуй открыть экран ещё раз.
+          </p>
+        )}
+        {!error && !model && <p className="mx-path-status">Собираю твой путь…</p>}
+        {model &&
+          (activeTab === 'badges' ? (
+            <AwardsView model={model} unlocked={unlocked} upcoming={upcoming} />
+          ) : (
+            <StatsView model={model} />
+          ))}
+      </main>
     </div>
   )
+
+  return createPortal(content, getFullscreenPortalTarget())
 }
