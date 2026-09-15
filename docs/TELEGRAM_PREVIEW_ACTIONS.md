@@ -1,8 +1,15 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-09-15
 ---
+
 # Mentalix Preview и UI Lab: единый рабочий контур
+
+> **Каноническое правило Demo Preview (2026-09-15):** постоянная иконка на
+> iPhone использует `https://mentalix-owner-qa.pages.dev`. Все готовые Demo
+> изменения публикуются через ручной workflow `Cloudflare Owner QA` по exact
+> SHA. Проект `mentalix-preview.vercel.app` больше не является постоянным
+> адресом Demo и не должен использоваться для каждой UI-итерации.
 
 Этот документ — каноническая инструкция по локальному UI Lab, временному
 Cloudflare Tunnel, Vercel Preview и production deployment. Другие документы
@@ -10,11 +17,11 @@ Cloudflare Tunnel, Vercel Preview и production deployment. Другие док�
 
 ## Три среды без дублирующих deployment
 
-| Среда              | Для чего                                    | Когда использовать                       |
-| ------------------ | ------------------------------------------- | ---------------------------------------- |
-| Локальный UI Lab   | Частые визуальные итерации и скриншоты      | По умолчанию, без push и Vercel          |
-| `mentalix-preview` | Один точный QA-кандидат для Telegram/iPhone | После локальных проверок и готовности PR |
-| `mentalix`         | Пользовательский production                 | Только после owner PASS и merge в `main` |
+| Среда                         | Для чего                                                     | Когда использовать                       |
+| ----------------------------- | ------------------------------------------------------------ | ---------------------------------------- |
+| Локальный UI Lab              | Частые визуальные итерации и скриншоты                       | По умолчанию, без push и Vercel          |
+| `mentalix-owner-qa.pages.dev` | Единственный постоянный Demo/QA-кандидат для Telegram/iPhone | После локальных проверок и готовности PR |
+| `mentalix`                    | Пользовательский production                                  | Только после owner PASS и merge в `main` |
 
 Обычный бюджет одной UI-задачи: **0 deployments** во время разработки,
 **1 QA deployment** после готовности кандидата и **1 production deployment**
@@ -75,9 +82,11 @@ Quick Tunnel — только быстрый визуальный просмот
   `git.deploymentEnabled` в `vercel.json` не создаёт deployments для остальных
   веток. Ignored Build Step остаётся дополнительной защитой, а не основным
   способом экономии квоты.
-- `mentalix-preview`: Git-репозиторий отключён от проекта. Один готовый кандидат
-  разворачивается явно через Vercel CLI из точного worktree/SHA и получает
-  канонический alias `https://mentalix-preview.vercel.app`.
+- `mentalix-owner-qa.pages.dev`: Cloudflare Pages project `mentalix-owner-qa`.
+  Один готовый кандидат разворачивается явно через GitHub Actions workflow
+  `Cloudflare Owner QA` из exact SHA и становится каноническим Demo URL.
+- `mentalix-preview`: legacy Vercel QA project. Не использовать для постоянной
+  иконки или частых UI-итераций.
 - deploy-hook `auto-retry-quota-reset` — аварийный механизм после исчерпания
   квоты, а не обязательный второй deployment после каждого merge. Если Git
   Integration уже успешно собрала `main`, hook не вызывается.
@@ -145,11 +154,10 @@ Workflow принимает `vercel.deployment.success`, но job для это�
 
 Значения вводятся непосредственно в GitHub и после сохранения больше не отображаются. **Не присылайте токены в issue, PR, чат или commit и не добавляйте их в `.env`-файлы, которые могут попасть в Git.**
 
-Проект `mentalix-preview` отключён от Git Integration для экономии квоты. Готовый
-exact-SHA QA deployment создаётся один раз явной командой Vercel из проверенного
-worktree. Provenance подтверждается после deployment через Vercel metadata и
-сопоставление с локальным `git rev-parse HEAD`; GitHub хранит только
-Telegram-секреты, перечисленные выше.
+Проект `mentalix-owner-qa` публикуется только вручную через Cloudflare Owner QA
+из проверенного exact SHA. Provenance подтверждается через `qa-build.json`,
+immutable URL и stable URL. Проект `mentalix-preview` остаётся legacy Vercel
+контуром и не используется для постоянной иконки.
 
 ## Основной ежедневный сценарий
 
