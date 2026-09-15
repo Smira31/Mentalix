@@ -18,6 +18,8 @@ import {
   Moon,
   Download,
   ShieldCheck,
+  Gift,
+  X,
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -42,6 +44,7 @@ import LinkWebAccount from './LinkWebAccount'
 import AppLock from './AppLock'
 import PrivacyNotice from './PrivacyNotice'
 import WillingnessToPayTest from './WillingnessToPayTest'
+import './SettingsDemo.css'
 
 function SectionLabel({ children }) {
   return (
@@ -113,6 +116,27 @@ function Toggle({ checked, label, onChange }) {
         }`}
       />
     </button>
+  )
+}
+
+function DemoSettingsPromo({ onSubscribe, onGift }) {
+  return (
+    <>
+      <section className="mx-settings-premium">
+        <div>
+          <h2>Открой весь потенциал Mentalix</h2>
+          <p>Больше практик, ИИ-функции, синхронизация и не только.</p>
+          <button type="button" onClick={onSubscribe}>
+            Попробовать 7 дней бесплатно
+          </button>
+        </div>
+        <Lock size={78} strokeWidth={1.2} aria-hidden="true" />
+      </section>
+      <button type="button" className="mx-settings-gift-card" onClick={onGift}>
+        <span>Подарить Mentalix близкому человеку</span>
+        <Gift size={56} strokeWidth={1.1} aria-hidden="true" />
+      </button>
+    </>
   )
 }
 
@@ -536,37 +560,49 @@ export default function Settings({
   }
 
   return (
-    <div className="w-full max-w-md px-5 flex flex-col items-center">
+    <div
+      className={`mx-settings-screen w-full max-w-md px-5 flex flex-col items-center ${previewDemoMode ? 'mx-settings-screen--demo' : ''}`}
+    >
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
-        <div className="justify-self-start">
-          <BackButton
+        {previewDemoMode ? (
+          <button
+            type="button"
+            className="mx-settings-header-button justify-self-start"
+            aria-label="Подарок"
+            onClick={() => setScreen('donate')}
+          >
+            <Gift size={22} aria-hidden="true" />
+          </button>
+        ) : (
+          <div className="justify-self-start">
+            <BackButton
+              onClick={onBack}
+              className="max-[359px]:w-10 max-[359px]:justify-center max-[359px]:gap-0 max-[359px]:px-0 max-[359px]:[&>span]:hidden"
+            />
+          </div>
+        )}
+        <h1 className="font-display text-[18px] text-cream lowercase">
+          {previewDemoMode ? 'твой профиль.' : 'настройки.'}
+        </h1>
+        {previewDemoMode ? (
+          <button
+            type="button"
+            className="mx-settings-header-button justify-self-end"
+            aria-label="Закрыть настройки"
             onClick={onBack}
-            className="max-[359px]:w-10 max-[359px]:justify-center max-[359px]:gap-0 max-[359px]:px-0 max-[359px]:[&>span]:hidden"
-          />
-        </div>
-        <h1 className="font-display text-[18px] text-cream lowercase">настройки.</h1>
-        <span aria-hidden="true" />
+          >
+            <X size={22} aria-hidden="true" />
+          </button>
+        ) : (
+          <span aria-hidden="true" />
+        )}
       </div>
 
       {previewDemoMode && (
-        <section className="mb-7 w-full overflow-hidden rounded-3xl border border-cream/10 bg-cream/[0.03] px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-emerald-light/30 text-muted">
-              <Lock size={34} strokeWidth={1.25} aria-hidden="true" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="font-display text-[20px] lowercase text-cream">твой профиль.</h2>
-              <p className="mt-1 text-[12px] leading-snug text-muted">Твой путь в Mentalix</p>
-              <button
-                type="button"
-                onClick={() => setScreen('subscription')}
-                className="mt-3 min-h-9 rounded-full bg-cream px-3 text-[11px] font-semibold text-emerald-deep"
-              >
-                Попробовать 2 дня бесплатно
-              </button>
-            </div>
-          </div>
-        </section>
+        <DemoSettingsPromo
+          onSubscribe={() => setScreen('subscription')}
+          onGift={() => setScreen('donate')}
+        />
       )}
 
       <SectionLabel>Профиль</SectionLabel>

@@ -1078,13 +1078,15 @@ export default function App() {
           marginBottom: previewDemoMode
             ? `${-(demoViewport.height * (1 - demoScale))}px`
             : undefined,
-          paddingTop: previewDemoMode ? '56px' : topSafeArea,
+          paddingTop: previewDemoMode && !overlay && !todaySeriesOpen ? '56px' : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
         {/* eslint-disable-next-line react-hooks/refs */}
-        {previewDemoMode && <DemoTelegramChrome onBack={demoBackAction} />}
+        {previewDemoMode && !overlay && !todaySeriesOpen && (
+          <DemoTelegramChrome onBack={demoBackAction} />
+        )}
 
         {/* ========================================================
           MENTALIX WORDMARK
