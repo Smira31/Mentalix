@@ -1145,7 +1145,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await expect(pager).toBeVisible()
     await expect(pager.getByRole('button')).toHaveCount(3)
     await expect(
-      pager.getByRole('button', { name: 'Наставник, 1 из 3' })
+      pager.getByRole('button', { name: 'Собеседник, 2 из 3' })
     ).toHaveAttribute('aria-current', 'true')
 
     if (viewport.width <= 430) {
