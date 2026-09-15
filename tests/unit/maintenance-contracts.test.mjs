@@ -642,7 +642,7 @@ test('MXL-016 публикует семь авторских мыслей без
   assert.match(today, /const thoughtOfDay = useMemo/)
   assert.match(today, /dailyQuote \? \{ text: dailyQuote/)
   assert.match(today, /getDailyThought\(\)/)
-  assert.match(quoteView, /current\.attribution \|\| current\.tag/)
+  assert.doesNotMatch(quoteView, /current\.attribution \|\| current\.tag/)
   assert.match(quoteView, /current\.prompt/)
   assert.match(quoteView, /current\.nextStep/)
 })

@@ -1283,6 +1283,30 @@ button {
   letter-spacing: 0.02em;
 }
 
+/* In the Demo frame the Telegram-style chrome owns the page title. Keep the
+   real screen controls close to it without rendering a second large heading. */
+[data-mentalix-demo-frame='true'][data-demo-tab='progress']
+  .mx-progress-redesign__header
+  .mx-progress-layout-v2__legacy-title,
+[data-mentalix-demo-frame='true'][data-demo-tab='progress'] .mx-progress-layout-v2__period-control,
+[data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog__header h1,
+[data-mentalix-demo-frame='true'][data-demo-tab='practices'] .mx-practices-catalog-title h1 {
+  display: none;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='progress'] .mx-progress-redesign__header {
+  min-height: 0;
+  margin-top: 0;
+  justify-content: flex-end;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog__header,
+[data-mentalix-demo-frame='true'][data-demo-tab='practices'] .mx-practices-catalog-title {
+  min-height: 0;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
 .mx-preview-stage {
   min-height: 100vh;
   width: 100%;

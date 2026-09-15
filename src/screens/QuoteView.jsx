@@ -115,12 +115,6 @@ export default function QuoteView({ user, todayQuote, onClose }) {
             <p className="font-display text-[22px] text-cream leading-snug max-w-md">
               {current.text}
             </p>
-            {(current.attribution || current.tag) && (
-              <span className="text-[12px] font-semibold text-faint mt-5">
-                {current.attribution || current.tag}
-              </span>
-            )}
-
             {current.prompt && (
               <div className="w-full max-w-sm mt-8 text-left rounded-3xl bg-emerald px-5 py-4">
                 <span className="block text-[11px] uppercase tracking-[0.14em] text-gold font-semibold mb-2">

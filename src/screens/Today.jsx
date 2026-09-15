@@ -14,7 +14,6 @@ import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
-import MorningPilotCard from '../components/MorningPilotCard'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
@@ -891,12 +890,6 @@ export default function Today({
         </button>
       )}
 
-      <MorningPilotCard
-        userId={user.id}
-        rituals={rituals}
-        onOpenRituals={() => onOpenPractice('rituals')}
-      />
-
       {/* ======================================================
           ПУЛЬС
           ====================================================== */}
@@ -976,10 +969,6 @@ export default function Today({
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
           <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
-
-          <span className="block mx-type-meta text-muted mt-4">
-            {thoughtOfDay.attribution} · открыть →
-          </span>
         </button>
       )}
     </div>
