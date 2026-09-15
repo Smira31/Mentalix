@@ -139,6 +139,7 @@ async function request(path, options = {}) {
         `${BASE}${path}`,
         {
           ...fetchOptions,
+          credentials: 'include',
           headers: {
             ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
             ...authHeader(),
@@ -215,6 +216,39 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  auth: {
+    requestEmailCode: email =>
+      request('/auth/email/request-code', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+    verifyEmailCode: (email, code) =>
+      request('/auth/email/verify', {
+        method: 'POST',
+        body: JSON.stringify({ email, code }),
+      }),
+    telegramLogin: payload =>
+      request('/auth/telegram/login', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }),
+    logout: () => request('/auth/logout', { method: 'POST' }),
+    requestCode: email =>
+      request('/auth/email/request-code', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
+    verify: (email, code) =>
+      request('/auth/email/verify', {
+        method: 'POST',
+        body: JSON.stringify({ email, code }),
+      }),
+    confirmLink: (webUserId, code) =>
+      request('/auth/link/confirm', {
+        method: 'POST',
+        body: JSON.stringify({ web_user_id: webUserId, code }),
+      }),
+  },
   habits: {
     list: userId => request(withQuery('/habits', { user_id: userId })),
 
@@ -658,34 +692,6 @@ export const api = {
           user_id: userId,
           amount,
           currency,
-        }),
-      }),
-  },
-
-  auth: {
-    requestCode: email =>
-      request('/auth/email/request-code', {
-        method: 'POST',
-        body: JSON.stringify({
-          email,
-        }),
-      }),
-
-    verify: (email, code) =>
-      request('/auth/email/verify', {
-        method: 'POST',
-        body: JSON.stringify({
-          email,
-          code,
-        }),
-      }),
-
-    confirmLink: (webUserId, code) =>
-      request('/auth/link/confirm', {
-        method: 'POST',
-        body: JSON.stringify({
-          web_user_id: webUserId,
-          code,
         }),
       }),
   },
