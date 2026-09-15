@@ -88,7 +88,7 @@
 
   --bottom-nav-height: 68px;
   --bottom-nav-collapsed-size: 58px;
-  --bottom-nav-offset: 6px;
+  --bottom-nav-offset: 2px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
   --bottom-nav-content-gap: 46px;
   --app-content-bottom: calc(

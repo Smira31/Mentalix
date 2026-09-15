@@ -83,7 +83,7 @@ export function useFullscreenSurface() {
   const keyboardOpen =
     viewportHeight !== null &&
     typeof window !== 'undefined' &&
-    window.innerHeight - viewportHeight > 120
+    window.innerHeight - viewportHeight > 80
   // visualViewport.height is already the visible height. Convert the single
   // viewport snapshot into the portal target's coordinate space exactly once.
   const surfaceTop = viewportOffsetTop / scale
