@@ -186,8 +186,8 @@
 .mx-demo-today-streak svg {
   width: 22px;
   height: 22px;
-  color: rgb(var(--c-accent));
-  fill: currentColor;
+  color: rgb(var(--c-text));
+  fill: none;
 }
 
 .mx-demo-today-streak strong {
@@ -246,13 +246,13 @@
 
 .mx-demo-today-header + .mx-today-week .mx-today-week-day[data-today='true'] {
   min-height: 62px;
-  border-color: rgb(var(--c-accent) / 0.7);
+  border-color: rgb(var(--c-text) / 0.72);
   background: rgb(var(--c-card));
   color: rgb(var(--c-text));
 }
 
 .mx-demo-today-header + .mx-today-week .mx-today-week-day[data-completed='true'] {
-  color: rgb(var(--c-text));
+  color: rgb(var(--c-text) / 0.62);
 }
 
 .mx-demo-today-header + .mx-today-week .mx-today-week-day[data-completed='true'] svg {
