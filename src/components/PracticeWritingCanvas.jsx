@@ -85,8 +85,9 @@ export default function PracticeWritingCanvas({
   const hasText = Boolean(String(value).trim())
   const submitIsDisabled = submitDisabled || submitLoading || !hasText
   const deepenIsDisabled = (deepenDisabled ?? !hasText) || submitLoading || deepenLoading
-  const dockStyle =
-    containedKeyboardDock || (demoPreview && visualKeyboardOpen) || !keyboardOpen || metrics.height === null
+  const dockStyle = containedKeyboardDock && keyboardOpen && metrics.height !== null
+    ? { bottom: `${Math.max(16, metrics.layoutHeight - metrics.height + 16)}px` }
+    : containedKeyboardDock || (demoPreview && visualKeyboardOpen) || !keyboardOpen || metrics.height === null
       ? undefined
       : {
           top: `${metrics.pageTop + metrics.offsetTop + metrics.height - 48 - 56 - 8}px`,

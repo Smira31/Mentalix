@@ -199,8 +199,8 @@
 }
 
 .practice-writing-canvas.is-contained-keyboard-dock.is-keyboard-open .practice-writing-canvas__dock {
-  position: absolute;
-  bottom: max(12px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  position: fixed;
+  bottom: auto;
 }
 .practice-writing-canvas__format,
 .practice-writing-canvas__submit {
