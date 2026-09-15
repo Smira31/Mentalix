@@ -169,11 +169,18 @@
   gap: 6px;
   min-width: 54px;
   height: 32px;
+  margin: 0;
   padding: 0 11px 0 8px;
   border: 1px solid rgb(var(--c-border));
   border-radius: 999px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-text));
+  font: inherit;
+  cursor: pointer;
+}
+
+.mx-demo-today-streak:active {
+  transform: scale(0.97);
 }
 
 .mx-demo-today-streak svg {

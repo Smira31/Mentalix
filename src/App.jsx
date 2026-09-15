@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronDown, Ellipsis, Flame, Settings as SettingsIcon, X } from 'lucide-react'
+import { ChevronDown, Ellipsis, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -160,18 +160,9 @@ function ScreenLoading() {
 function greeting() {
   const h = new Date().getHours()
 
-  if (h >= 5 && h <= 11) {
-    return 'доброе утро.'
-  }
-
-  if (h >= 12 && h <= 17) {
-    return 'добрый день.'
-  }
-
-  if (h >= 18 && h <= 22) {
-    return 'добрый вечер.'
-  }
-
+  if (h >= 5 && h <= 11) return 'доброе утро.'
+  if (h >= 12 && h <= 17) return 'добрый день.'
+  if (h >= 18 && h <= 22) return 'добрый вечер.'
   return 'тихой ночи.'
 }
 
@@ -990,7 +981,8 @@ export default function App() {
    * сообщает об этом через onFlowChange; раньше флаг
    * гасил только нижнюю навигацию.
    */
-  const showTodayHeader = !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
+  const showTodayHeader =
+    !previewDemoMode && !overlay && tab === 'today' && !todayFlowOpen && !todaySeriesOpen
 
   const topSafeArea =
     tab === 'mentor' && !overlay
@@ -1361,6 +1353,7 @@ export default function App() {
                       onFlowChange={setTodayFlowOpen}
                       onRegisterBack={registerTodayBack}
                       onOpenSettings={() => setOverlay('settings')}
+                      onOpenSeries={() => setTodaySeriesOpen(true)}
                       seriesOpen={todaySeriesOpen}
                       onCloseSeries={closeTodaySeries}
                     />

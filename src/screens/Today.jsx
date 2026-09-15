@@ -37,13 +37,18 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 
 // ── календарь недели + отдельные дневные streak strips ──
 
-function DemoTodayHeader({ onOpenSettings }) {
+function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
   return (
     <div className="mx-demo-today-header">
-      <span className="mx-demo-today-streak" aria-label="Серия: 1 день">
+      <button
+        type="button"
+        className="mx-demo-today-streak"
+        aria-label="Серии и вехи. Текущая серия: 1 день"
+        onClick={onOpenSeries}
+      >
         <Flame aria-hidden="true" />
         <strong>1</strong>
-      </span>
+      </button>
       <strong className="mx-demo-today-greeting">добрый вечер.</strong>
       <button
         type="button"
@@ -165,6 +170,7 @@ export default function Today({
   onFlowChange,
   onRegisterBack,
   onOpenSettings,
+  onOpenSeries,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -716,7 +722,9 @@ export default function Today({
   return (
     <div className="mx-screen-shell">
       <h1 className="sr-only">Сегодня</h1>
-      {isPreviewDemoMode() && <DemoTodayHeader onOpenSettings={onOpenSettings} />}
+      {isPreviewDemoMode() && (
+        <DemoTodayHeader onOpenSettings={onOpenSettings} onOpenSeries={onOpenSeries} />
+      )}
       <WeekStrip demo={isPreviewDemoMode()} />
 
       {TODAY_COMPARE_REQUESTED && (
