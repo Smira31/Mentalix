@@ -44,7 +44,6 @@ export default function Conversation({
   footerSlot = null,
   sendError = '',
   onRetry,
-  resultMessage = null,
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
@@ -301,7 +300,7 @@ export default function Conversation({
     previousMessageCount.current = messages.length
 
     const frame = window.requestAnimationFrame(() => {
-      scrollToEnd('auto')
+      scrollToEnd(firstPosition ? 'auto' : 'smooth')
     })
 
     return () => {
