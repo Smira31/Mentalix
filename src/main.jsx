@@ -5,6 +5,13 @@ import './index.css'
 import App from './App'
 import { isUiLabHostAllowed } from './lib/uiLabAccess'
 
+const demoRequested = new URLSearchParams(window.location.search).get('demo') === '1'
+
+if (demoRequested) {
+  const manifestLink = document.querySelector('link[rel="manifest"]')
+  manifestLink?.setAttribute('href', '/manifest-demo.json')
+}
+
 const showcaseRequested =
   import.meta.env.DEV &&
   new URLSearchParams(window.location.search).get('showcase') === 'archetypes'

@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { api } from '../lib/api'
 import { Target, ArrowUp, ArrowLeft, ArrowRight, Flame, TrendingUp, Trash2 } from 'lucide-react'
+import BackButton from '../components/BackButton'
 import JourneyLineArt from '../components/JourneyLineArt'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
+import {
+  getFullscreenPortalTarget,
+  FULLSCREEN_HEADER_SLOT_CLASS,
+  FULLSCREEN_SCROLL_CLASS,
+  FULLSCREEN_SHELL_CLASS,
+  useFullscreenSurface,
+} from '../lib/fullscreenSurface'
 
 const EMPTY_DRAFT = { title: '', description: '', target_date: '' }
 
@@ -76,6 +85,7 @@ function GoalCreateScreen({ onCreate, onCancel }) {
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const { style: surfaceStyle } = useFullscreenSurface()
 
   function set(field) {
     return e => setDraft(d => ({ ...d, [field]: e.target.value }))
@@ -96,74 +106,80 @@ function GoalCreateScreen({ onCreate, onCancel }) {
     setSaving(false)
   }
 
-  return (
-    <div className="w-full max-w-md px-5">
-      <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-[13px] mb-4">
-        <ArrowLeft size={16} /> Отмена
-      </button>
-
-      <h2 className="font-display text-[16px] mb-4 text-cream">Новая цель</h2>
-
-      <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
-        <JourneyLineArt progress={0} className="absolute inset-0 w-full h-full opacity-80" />
-        <div className="absolute top-3 left-3">
-          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-[11px] font-body">
-            <Target size={12} /> Цель
-          </span>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between">
-          <div>
-            <h3 className="font-display text-[16px] text-cream leading-snug">
-              {draft.title || 'Название появится здесь'}
-            </h3>
-            <p className="font-mono text-[11px] text-gold mt-0.5">0% пройдено</p>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-gold flex items-center justify-center shrink-0">
-            <ArrowUp size={16} className="text-emerald-deep" />
-          </div>
-        </div>
+  const portalTarget = getFullscreenPortalTarget()
+  const content = (
+    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+        <BackButton onClick={onCancel} />
+        <h1 className="mx-auto pr-10 font-display text-[16px] text-cream">Новая цель</h1>
       </div>
 
-      <div className="space-y-2 mb-6">
-        <input
-          value={draft.title}
-          onChange={set('title')}
-          placeholder="Название цели"
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
-        />
-        <PracticeWritingCanvas
-          value={draft.description}
-          onChange={value => set('description')({ target: { value } })}
-          question="Описание цели"
-          placeholder="Описание (необязательно)"
-          ariaLabel="Описание цели"
-          submitLabel="Создать цель"
-          submitDisabled={!draft.title.trim() || saving}
-          onSubmit={submit}
-        />
-        <input
-          type="date"
-          value={draft.target_date}
-          onChange={set('target_date')}
-          className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream outline-none focus:border-gold transition-colors"
-        />
+      <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+        <div className="w-full max-w-md mx-auto pt-3">
+          <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
+            <JourneyLineArt progress={0} className="absolute inset-0 w-full h-full opacity-80" />
+            <div className="absolute top-3 left-3">
+              <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 text-cream text-[11px] font-body">
+                <Target size={12} /> Цель
+              </span>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-between">
+              <div>
+                <h3 className="font-display text-[16px] text-cream leading-snug">
+                  {draft.title || 'Название появится здесь'}
+                </h3>
+                <p className="font-mono text-[11px] text-gold mt-0.5">0% пройдено</p>
+              </div>
+              <div className="w-9 h-9 rounded-full bg-gold flex items-center justify-center shrink-0">
+                <ArrowUp size={16} className="text-emerald-deep" />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2 mb-6">
+            <input
+              value={draft.title}
+              onChange={set('title')}
+              placeholder="Название цели"
+              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream placeholder-muted outline-none focus:border-gold transition-colors"
+            />
+            <PracticeWritingCanvas
+              value={draft.description}
+              onChange={value => set('description')({ target: { value } })}
+              question="Описание цели"
+              placeholder="Описание (необязательно)"
+              ariaLabel="Описание цели"
+              submitLabel="Создать цель"
+              submitDisabled={!draft.title.trim() || saving}
+              onSubmit={submit}
+            />
+            <input
+              type="date"
+              value={draft.target_date}
+              onChange={set('target_date')}
+              className="w-full bg-emerald-light/20 border border-cream/15 rounded-xl px-4 py-3 text-[16px] text-cream outline-none focus:border-gold transition-colors"
+            />
+          </div>
+
+          {error && (
+            <p role="alert" className="text-[13px] text-red-300 leading-relaxed mb-3">
+              {error}
+            </p>
+          )}
+
+          <button
+            onClick={submit}
+            disabled={!draft.title.trim() || saving}
+            className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 transition-transform active:scale-95"
+          >
+            {saving ? 'Сохраняю...' : 'Создать цель'}
+          </button>
+        </div>
       </div>
-
-      {error && (
-        <p role="alert" className="text-[13px] text-red-300 leading-relaxed mb-3">
-          {error}
-        </p>
-      )}
-
-      <button
-        onClick={submit}
-        disabled={!draft.title.trim() || saving}
-        className="w-full py-3.5 rounded-2xl bg-gold text-emerald-deep text-[13px] font-medium disabled:opacity-40 transition-transform active:scale-95"
-      >
-        {saving ? 'Сохраняю...' : 'Создать цель'}
-      </button>
     </div>
   )
+
+  return portalTarget ? createPortal(content, portalTarget) : content
 }
 
 function GoalCard({ goal, onOpen }) {

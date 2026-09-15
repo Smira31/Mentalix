@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ArrowRight, Search, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 
 import SemanticGlyph, { semanticKindForArticle } from '../components/SemanticGlyph'
 import ArticleCover from '../components/ArticleCover'
 import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
+import { isPreviewDemoMode } from '../lib/demoMode'
 import { platform } from '../platform'
 import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
@@ -15,11 +16,11 @@ const LIBRARY_V2_QA_ENABLED =
   typeof window !== 'undefined' &&
   window.location.hostname === 'mentalix-owner-qa.pages.dev' &&
   new URLSearchParams(window.location.search).get('library_v2') === '1'
-const LIBRARY_V2_ENABLED = LIBRARY_V2_ENV_ENABLED || LIBRARY_V2_QA_ENABLED
+const LIBRARY_V2_ENABLED = LIBRARY_V2_ENV_ENABLED || LIBRARY_V2_QA_ENABLED || isPreviewDemoMode()
 
-function LibraryV2FeaturedBanner({ title, description, art, action, onOpen }) {
+function LibraryV2FeaturedBanner({ title, description, art, action, onOpen, neutral = false }) {
   return (
-    <article className="mx-library-v2__featured-banner">
+    <article className={`mx-library-v2__featured-banner ${neutral ? 'is-neutral' : ''}`}>
       <div className="mx-library-v2__featured-art" aria-hidden="true">
         {art}
       </div>
@@ -52,6 +53,7 @@ function LibraryV2ArticleLanding({ onOpen }) {
         description={article.excerpt}
         action="Читать"
         onOpen={onOpen}
+        neutral
         art={<ArticleCover article={article} className="h-full w-full" />}
       />
     </section>
@@ -69,6 +71,7 @@ function LibraryV2ProgramLanding({ onOpen }) {
         description="Пошаговые практики на несколько дней или недель — выбери то, что откликается сейчас."
         action="Смотреть"
         onOpen={onOpen}
+        neutral
         art={<SemanticGlyph kind="focus" animated={false} />}
       />
     </section>
@@ -86,6 +89,7 @@ function LibraryV2JournalLanding({ onOpen }) {
         description="Короткие письменные практики, которые помогают прояснить мысли."
         action="Начать"
         onOpen={onOpen}
+        neutral
         art={<SemanticGlyph kind="journal" animated={false} />}
       />
       <div className="mx-library-programs__guided-list" aria-label="Другие направленные записи">
@@ -287,8 +291,6 @@ function LibraryHome({
   const [loading, setLoading] = useState(() => initialArticlesState.data === null)
   const [error, setError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [query, setQuery] = useState('')
 
   useEffect(() => {
     let active = true
@@ -313,17 +315,8 @@ function LibraryHome({
 
   const featured = useMemo(() => {
     const sorted = [...articles].sort((a, b) => String(b.date).localeCompare(String(a.date)))
-    const normalized = query.trim().toLowerCase()
-    if (!normalized) return sorted.slice(0, 5)
-
-    return sorted
-      .filter(article =>
-        `${article.title} ${article.excerpt} ${article.tag || ''}`
-          .toLowerCase()
-          .includes(normalized)
-      )
-      .slice(0, 5)
-  }, [articles, query])
+    return sorted.slice(0, 5)
+  }, [articles])
 
   function retryLoad() {
     setError(false)
@@ -332,36 +325,10 @@ function LibraryHome({
   }
 
   return (
-    <div className="mx-library-catalog animate-fade-in">
+    <div className="mx-library-catalog mx-screen-shell animate-fade-in">
       <header className="mx-library-catalog__header">
         <h1 className="font-display mx-type-page text-cream lowercase">библиотека.</h1>
-        <button type="button" onClick={() => setSearchOpen(true)} aria-label="Открыть поиск">
-          <Search size={20} />
-        </button>
       </header>
-
-      {searchOpen && (
-        <label className="mx-library-catalog__search">
-          <Search size={17} aria-hidden="true" />
-          <input
-            autoFocus
-            value={query}
-            onChange={event => setQuery(event.target.value)}
-            placeholder="Найти материал"
-            aria-label="Найти материал"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              setSearchOpen(false)
-              setQuery('')
-            }}
-            aria-label="Закрыть поиск"
-          >
-            <X size={17} />
-          </button>
-        </label>
-      )}
 
       {LIBRARY_V2_ENABLED && (
         <section className="mx-library-v2__section" aria-label="Библиотека v2">
@@ -403,17 +370,8 @@ function LibraryHome({
             </div>
           ) : featured.length === 0 ? (
             <div className="mx-library-catalog__message">
-              <strong>{articles.length === 0 ? 'Статей пока нет' : 'Ничего не найдено'}</strong>
-              <p>
-                {articles.length === 0
-                  ? 'Первая статья появится здесь.'
-                  : 'Попробуй более короткий запрос.'}
-              </p>
-              {articles.length > 0 && (
-                <button type="button" onClick={() => setQuery('')}>
-                  Очистить поиск
-                </button>
-              )}
+              <strong>Статей пока нет</strong>
+              <p>Первая статья появится здесь.</p>
             </div>
           ) : (
             <div className="mx-library-catalog__rail" aria-label="Новые материалы">

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
-import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailability'
+import { PRACTICE_KEYS } from '../config/practiceAvailability'
 import { readOneOffPracticeHistory } from '../lib/oneOffPracticeHistory'
 import { localDayId } from '../lib/morningPilot'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
@@ -27,28 +27,11 @@ import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
 import ThemeScreen from './ThemeScreen'
 
-export default function Practices({ user, initialSub = null, onGameChange, onReturnToToday }) {
+export default function Practices({ user, initialSub = null, onGameChange, onRegisterBack }) {
   const [sub, setSub] = useState(initialSub)
   const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
 
   const returnToPracticeOrigin = () => setSub(null)
-
-  const focusedFlowOpen = [
-    'first-step',
-    'no-blame',
-    'narrow-focus',
-    'one-finish',
-    'meditation',
-    'journal',
-    'self-discovery',
-    'lila-discover',
-  ].includes(sub)
-
-  useEffect(() => {
-    onGameChange?.(focusedFlowOpen)
-
-    return () => onGameChange?.(false)
-  }, [focusedFlowOpen, onGameChange])
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
@@ -60,6 +43,37 @@ export default function Practices({ user, initialSub = null, onGameChange, onRet
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
+  const focusedFlowOpen = [
+    'first-step',
+    'no-blame',
+    'narrow-focus',
+    'one-finish',
+    'meditation',
+    'journal',
+    'self-discovery',
+    'lila-discover',
+  ].includes(sub)
+  const nestedFlowOpen = focusedFlowOpen || Boolean(selectedThemeId)
+
+  useEffect(() => {
+    onGameChange?.(nestedFlowOpen)
+
+    return () => onGameChange?.(false)
+  }, [nestedFlowOpen, onGameChange])
+
+  useEffect(() => {
+    const handler = selectedThemeId
+      ? () => setSelectedThemeId(null)
+      : selectedCollectionKey
+        ? () => setSelectedCollectionKey(null)
+        : sub
+          ? () => setSub(null)
+          : null
+
+    onRegisterBack?.(handler)
+
+    return () => onRegisterBack?.(null)
+  }, [onRegisterBack, selectedCollectionKey, selectedThemeId, sub])
   const completedToday = new Set(
     readOneOffPracticeHistory(user?.id)
       .filter(entry => entry.day === localDayId(new Date()))

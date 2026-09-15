@@ -308,7 +308,7 @@ async function assertLibrarySoonControl(page) {
   await expect(workshops).toBeDisabled()
   await workshops.evaluate(element => element.click())
   await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Открыть поиск' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
 }
 
 async function captureScreen({ page, viewport, screen, slug, runtimeErrors, results, check }) {
@@ -456,7 +456,7 @@ test('локальный UX smoke по основному маршруту', asy
     })
 
     for (const option of ['Нормально', 'Средне', 'Заметно', 'Держусь']) {
-      await page.getByRole('button', { name: new RegExp(option, 'i') }).click()
+      await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
       await page.waitForTimeout(320)
     }
     await page.getByRole('button', { name: 'ровно' }).click()
@@ -469,7 +469,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        const editor = page.getByRole('textbox', { name: 'Утренняя мысль' })
+        const editor = page.getByRole('textbox', { name: 'Что на уме' })
         await expect(editor).toBeVisible()
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
@@ -477,6 +477,7 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Завершить чек-ин' }))
       },
     })
+    await page.waitForTimeout(650)
     const checkinCloseButton = page.locator('button[aria-label="Закрыть"]')
     await checkinCloseButton.click()
 
@@ -1038,7 +1039,7 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Открыть поиск' }))
+        await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
         await assertLibrarySoonControl(page)
       },
     })
@@ -1080,6 +1081,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     ...VIEWPORTS,
     { name: '393x852', width: 393, height: 852 }, // iPhone 16
     { name: '402x874', width: 402, height: 874 }, // iPhone 16 Pro
+    { name: '430x932', width: 430, height: 932 }, // iPhone 16 Pro Max
     { name: '768x1024', width: 768, height: 1024 },
     { name: '1280x800', width: 1280, height: 800 },
   ]
@@ -1130,8 +1132,9 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       204
     )
     expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
+    const maxCardHeight = viewport.width >= 405 ? 324 : viewport.width >= 390 ? 280 : 250
     expect(cardGeometry.height, 'Карточка не должна перекрывать pagination и nav').toBeLessThanOrEqual(
-      250
+      maxCardHeight
     )
     expect(
       await cards.evaluateAll(elements =>
@@ -1161,10 +1164,37 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       )
     }
 
+    const cardTextGeometry = await cards.evaluateAll(elements =>
+      elements.map(element => {
+        const cardRect = element.getBoundingClientRect()
+        const textNodes = [...element.querySelectorAll('h3, p')]
+        const textRects = textNodes
+          .map(node => node.getBoundingClientRect())
+          .filter(rect => rect.width > 0 && rect.height > 0)
+        return {
+          cardRight: cardRect.right,
+          cardLeft: cardRect.left,
+          textRight: Math.max(...textRects.map(rect => rect.right)),
+          textLeft: Math.min(...textRects.map(rect => rect.left)),
+          scrollWidth: element.scrollWidth,
+          clientWidth: element.clientWidth,
+        }
+      })
+    )
+    for (const geometry of cardTextGeometry) {
+      expect(geometry.textRight, 'Текст не должен выходить за правую границу карточки').toBeLessThanOrEqual(
+        geometry.cardRight + 0.5
+      )
+      expect(geometry.textLeft, 'Текст не должен выходить за левую границу карточки').toBeGreaterThanOrEqual(
+        geometry.cardLeft - 0.5
+      )
+      expect(geometry.scrollWidth, 'Карточка не должна иметь горизонтального overflow').toBeLessThanOrEqual(
+        geometry.clientWidth
+      )
+    }
     const mentorCard = cards.filter({ hasText: 'Наставник' })
     await mentorCard.scrollIntoViewIfNeeded()
     await mentorCard.click()
-    await page.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
     await expect(page.getByText('История kompas')).toBeVisible()
     await expect(page.getByText('История mayak')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Назад' }))
@@ -1262,7 +1292,7 @@ test('History показывает user-scoped local Journal на mobile и tabl
   }
 })
 
-test('прямая web-ссылка сообщает о скором веб-входе и Telegram Mini App', async ({
+test('прямая web-ссылка открывает production email и Telegram auth', async ({
   browser,
   baseURL,
 }) => {
@@ -1285,15 +1315,12 @@ test('прямая web-ссылка сообщает о скором веб-вх
   const page = await context.newPage()
   await page.goto('/')
 
-  await expect(page.getByRole('heading', { name: 'Вход через браузер скоро появится' })).toBeVisible()
-  await expect(
-    page.getByText(
-      'Сейчас вход в Mentalix доступен только через Telegram Mini App. Открой приложение в Telegram — там уже доступен твой Telegram-контекст.'
-    )
-  ).toBeVisible()
-  await expect(page.locator('form')).toHaveCount(0)
-  await expect(page.getByRole('textbox')).toHaveCount(0)
-  await expect(page.getByRole('button')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Вход в Mentalix' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeVisible()
+  await expect(page.locator('form')).toHaveCount(1)
+  await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Получить код' })).toBeVisible()
   expect(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).toBeNull()
 
   await context.close()

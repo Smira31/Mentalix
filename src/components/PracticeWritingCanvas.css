@@ -122,6 +122,77 @@
   gap: 12px;
   min-height: 56px;
 }
+.practice-writing-canvas.is-demo-keyboard-open {
+  padding-bottom: 252px;
+}
+.practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__question {
+  margin-top: 18px;
+  font-size: clamp(24px, 7vw, 30px);
+}
+.practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__description {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.35;
+}
+.practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__field {
+  min-height: 86px;
+  margin-top: 14px;
+  overflow-y: auto;
+  padding-bottom: 18px;
+}
+.practice-writing-canvas.is-demo-keyboard-open .practice-writing-canvas__dock {
+  position: fixed;
+  right: 22px;
+  bottom: 252px;
+  left: 22px;
+  z-index: 100;
+  min-height: 56px;
+  padding-top: 0;
+  background: var(--pwc-bg);
+}
+.practice-writing-canvas__demo-keyboard {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px 7px max(10px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+  background: rgb(37 37 39 / 0.98);
+  box-shadow: 0 -10px 30px rgb(0 0 0 / 0.28);
+}
+.practice-writing-canvas__demo-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.practice-writing-canvas__demo-key {
+  min-width: 0;
+  flex: 1;
+  height: 39px;
+  border: 0;
+  border-radius: 5px;
+  background: rgb(76 76 79);
+  color: rgb(var(--c-text));
+  font-size: 16px;
+  line-height: 1;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.2);
+}
+.practice-writing-canvas__demo-key:active {
+  background: rgb(var(--c-gold));
+  color: rgb(var(--c-bg));
+  transform: scale(0.96);
+}
+.practice-writing-canvas__demo-key--wide {
+  flex: 0 1 18%;
+  font-size: 13px;
+}
+.practice-writing-canvas__demo-key--space {
+  flex: 1 1 50%;
+  font-size: 13px;
+}
 .practice-writing-canvas.is-keyboard-open .practice-writing-canvas__dock {
   position: fixed;
   bottom: auto;
@@ -189,5 +260,9 @@
   }
   .practice-writing-canvas__deepen {
     font-size: 13px;
+  }
+  .practice-writing-canvas__demo-key {
+    height: 34px;
+    font-size: 14px;
   }
 }

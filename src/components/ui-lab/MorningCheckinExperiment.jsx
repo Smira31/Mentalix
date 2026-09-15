@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../../lib/fullscreenSurface'
 // Ported from origin/feature/mxl-morning-checkin-ux-001 (PR #498) for MXL-DAILY-CANONICAL-UI-LAB-001 reuse.
 // Source branch left untouched. Added: optional onComplete prop to hand off to a host flow
 // instead of the internal simulated TodayScreen.
@@ -39,7 +40,7 @@ function Shell({ children, onBack, onExit, progress, label }) {
         {children}
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
 

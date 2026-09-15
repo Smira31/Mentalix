@@ -463,6 +463,7 @@
 .mx-progress-layout-v2 .mx-progress-redesign__mood-prompt h2 {
   margin: 0;
   color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
   font-size: 19px;
   font-weight: 600;
   line-height: 1.16;
@@ -472,6 +473,7 @@
   max-width: 270px;
   margin: 6px auto 16px;
   color: rgb(var(--c-muted));
+  font-family: 'Onest', sans-serif;
   font-size: 13px;
   line-height: 1.3;
 }
@@ -488,6 +490,9 @@
   height: 52px;
   place-items: center;
   padding: 0;
+  line-height: 1;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif;
+  text-rendering: geometricPrecision;
   border: 0;
   border-radius: 50%;
   background: var(--progress-card-secondary);
@@ -496,6 +501,22 @@
   transition:
     transform var(--mx-motion-fast) var(--mx-ease-out),
     background var(--mx-motion-fast);
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__mood-face {
+  width: 27px;
+  height: 27px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.45;
+}
+
+.mx-progress-layout-v2 .mx-progress-redesign__mood-face .mx-progress-redesign__mood-eye {
+  fill: currentColor;
+  stroke: none;
 }
 
 .mx-progress-layout-v2 .mx-progress-redesign__mood-options button:hover,

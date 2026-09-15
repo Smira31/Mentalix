@@ -248,8 +248,10 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   assert.match(demo, /const isQaProductionHost = host === 'mentalix-preview\.vercel\.app'/)
   assert.match(
     demo,
-    /return params\.get\('demo'\) === '1' && isAllowedHost && \(isPreviewRuntime \|\| isQaProductionHost\)/
+    /const demoRequested = params\.get\('demo'\) === '1'/
   )
+  assert.match(demo, /const pwaDemoRequested = params\.get\('source'\) === 'pwa'/)
+  assert.match(demo, /\(isPreviewRuntime \|\| isQaProductionHost\)/)
 })
 
 test('MXL-PREVIEW-ROUTING-CLEANUP-001 использует manual existing Preview gate', () => {
@@ -395,13 +397,12 @@ test('MXL-P0-CORE-JOURNAL-001 сохраняет local-only draft пользов
   assert.equal(draftHasContent(readCheckinDraft({ userId: 17, date: '2026-08-27' })), false)
 })
 
-test('MXL-P0-CORE-JOURNAL-001 содержит режимы записи, confirmation и detail view без нового journal route', () => {
+test('MXL-P0-CORE-JOURNAL-001 содержит единый ввод, confirmation и detail view без нового journal route', () => {
   const checkin = readFileSync(new URL('../../src/screens/CheckIn.jsx', import.meta.url), 'utf8')
   const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
 
-  assert.match(checkin, /label: 'Коротко'/)
-  assert.match(checkin, /label: 'Разобрать'/)
-  assert.match(checkin, /label: 'Своя запись'/)
+  assert.match(checkin, /ariaLabel="Что на уме"/)
+  assert.doesNotMatch(checkin, /Режим утренней записи/)
   assert.match(checkin, /Черновик сохранён локально/)
   assert.match(checkin, /Есть несохранённая запись/)
   assert.match(checkin, /clearCheckinDraft/)
@@ -643,7 +644,7 @@ test('MXL-016 публикует семь авторских мыслей без
   assert.match(today, /const thoughtOfDay = useMemo/)
   assert.match(today, /dailyQuote \? \{ text: dailyQuote/)
   assert.match(today, /getDailyThought\(\)/)
-  assert.match(quoteView, /current\.attribution \|\| current\.tag/)
+  assert.doesNotMatch(quoteView, /current\.attribution \|\| current\.tag/)
   assert.match(quoteView, /current\.prompt/)
   assert.match(quoteView, /current\.nextStep/)
 })

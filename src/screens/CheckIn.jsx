@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
@@ -43,24 +44,6 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 // по МСК (см. src/data/prompts.js) — не пересчитывается на каждый рендер.
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
-const MORNING_WRITING_MODES = [
-  {
-    key: 'brief',
-    label: 'Коротко',
-    hint: 'Один вопрос, одна мысль.',
-  },
-  {
-    key: 'reflect',
-    label: 'Разобрать',
-    hint: 'Факт, чувство и следующий шаг.',
-  },
-  {
-    key: 'free',
-    label: 'Своя запись',
-    hint: 'Свободный текст в своём темпе.',
-  },
-]
-
 /*
  * Короткие сцены (шкалы и эмоции) занимают доступную высоту и держат
  * смысловой центр в середине. Текстовые карточки с клавиатурой используют
@@ -96,20 +79,48 @@ export function Face({ level, active, size = 56 }) {
     'M18 36 Q28 42 38 36',
     'M16 34 Q28 46 40 34',
   ]
+  const brows = [
+    ['M16 18 L23 20', 'M33 20 L40 18'],
+    ['M16 19 L23 20', 'M33 20 L40 19'],
+    ['M17 20 H23', 'M33 20 H39'],
+    ['M16 20 L23 18', 'M33 18 L40 20'],
+    ['M15 21 L23 17', 'M33 17 L41 21'],
+  ]
 
   return (
-    <svg width={size} height={size} viewBox="0 0 56 56" fill="none">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 56 56"
+      fill="none"
+      aria-hidden="true"
+      className={active ? 'mx-face mx-face--active' : 'mx-face'}
+    >
       <circle
         cx="28"
         cy="28"
         r="26"
-        className={active ? 'stroke-gold' : 'stroke-cream/25'}
+        className={active ? 'fill-gold/15 stroke-gold' : 'fill-emerald stroke-cream/25'}
         strokeWidth="2.5"
       />
 
-      <circle cx="20" cy="22" r="2.4" className={active ? 'fill-gold' : 'fill-cream/40'} />
+      <path
+        d={brows[level - 1][0]}
+        className={active ? 'stroke-gold' : 'stroke-cream/40'}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
 
-      <circle cx="36" cy="22" r="2.4" className={active ? 'fill-gold' : 'fill-cream/40'} />
+      <path
+        d={brows[level - 1][1]}
+        className={active ? 'stroke-gold' : 'stroke-cream/40'}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      <circle cx="20" cy="26" r="2.4" className={active ? 'fill-gold' : 'fill-cream/40'} />
+
+      <circle cx="36" cy="26" r="2.4" className={active ? 'fill-gold' : 'fill-cream/40'} />
 
       <path
         d={mouths[level - 1]}
@@ -119,6 +130,40 @@ export function Face({ level, active, size = 56 }) {
         fill="none"
       />
     </svg>
+  )
+}
+
+function ScaleRail({ scale, value, onPick }) {
+  return (
+    <div className="mx-scale-rail" role="radiogroup" aria-label={scale.title}>
+      <div className="mx-scale-rail__line" aria-hidden="true" />
+      <div
+        className="mx-scale-rail__progress"
+        aria-hidden="true"
+        style={{ width: `${Math.max(0, ((value || 1) - 1) / 4) * 82}%` }}
+      />
+      {scale.labels.map((label, index) => {
+        const level = index + 1
+        const active = value === level
+
+        return (
+          <button
+            key={label}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            aria-label={`${level}: ${label}`}
+            onClick={() => onPick(level)}
+            className={`mx-scale-rail__item ${active ? 'mx-scale-rail__item--active' : ''}`}
+          >
+            <span className="mx-scale-rail__circle">
+              {scale.faces ? <Face level={level} active={active} size={52} /> : level}
+            </span>
+            <span className="mx-scale-rail__label">{label}</span>
+          </button>
+        )
+      })}
+    </div>
   )
 }
 
@@ -274,8 +319,6 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
   const [scoutError, setScoutError] = useState('')
 
   const note = isEvening ? '' : morningDraftToNote(morningDraft)
-
-  const morningWritingMode = morningDraft?.mode || 'brief'
 
   const scaleCount = skipScales ? 0 : SCALE_STEPS.length
 
@@ -731,7 +774,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
         <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
       </div>,
-      document.body
+      getFullscreenPortalTarget()
     )
   }
 
@@ -754,11 +797,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       : cardIdx === 0
         ? isEvening
           ? 'Уроки дня'
-          : morningWritingMode === 'reflect'
-            ? 'Разложим мысль без спешки'
-            : morningWritingMode === 'free'
-              ? 'Своя запись'
-              : 'Что на уме?'
+          : 'Что на уме?'
         : 'Чем горжусь')
 
   const questionSubtitle =
@@ -768,8 +807,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       : cardIdx === 0
         ? isEvening
           ? 'Разбери день, пока он ещё свежий. Любое поле можно пропустить.'
-          : MORNING_WRITING_MODES.find(item => item.key === morningWritingMode)?.hint ||
-            'Пара слов — уже разговор с собой.'
+          : 'Пара слов — уже разговор с собой.'
         : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
   return createPortal(
@@ -816,7 +854,10 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
-        <div className={isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
+        <div
+          key={step}
+          className={`${isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS} mx-checkin-step-enter`}
+        >
           <section className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}>
             <div
               className={[
@@ -857,40 +898,11 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
             {!isCard && !isEmotionStep && (
               <div key={step} className="w-full flex flex-col items-center">
-                <div className="flex items-end justify-center gap-3 w-full max-w-sm">
-                  {[1, 2, 3, 4, 5].map(level => {
-                    const active = values[scale.key] === level
-
-                    return (
-                      <button
-                        key={level}
-                        onClick={() => pick(scale.key, level)}
-                        className="flex flex-col items-center gap-2 border-0 bg-transparent active:scale-90 transition-transform flex-1"
-                      >
-                        {scale.faces ? (
-                          <Face level={level} active={active} />
-                        ) : (
-                          <span
-                            className={[
-                              'w-12 h-12 rounded-full flex items-center justify-center text-[16px] font-bold transition-colors',
-                              active ? 'bg-gold text-emerald-deep' : 'bg-emerald text-muted',
-                            ].join(' ')}
-                          >
-                            {level}
-                          </span>
-                        )}
-
-                        <span
-                          className={`text-[10px] font-semibold leading-tight text-center ${
-                            active ? 'text-gold' : 'text-muted'
-                          }`}
-                        >
-                          {scale.labels[level - 1]}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
+                <ScaleRail
+                  scale={scale}
+                  value={values[scale.key]}
+                  onPick={level => pick(scale.key, level)}
+                />
               </div>
             )}
 
@@ -960,35 +972,6 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                   </div>
                 ) : (
                   <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
-                    <div
-                      role="tablist"
-                      aria-label="Режим утренней записи"
-                      className="grid grid-cols-3 gap-2"
-                    >
-                      {MORNING_WRITING_MODES.map(item => {
-                        const selected = item.key === morningWritingMode
-
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            role="tab"
-                            aria-selected={selected}
-                            onClick={() => {
-                              platform.haptic('light')
-                              updateMorningDraft({ mode: item.key })
-                            }}
-                            className={[
-                              'min-h-11 rounded-2xl px-2 text-[12px] font-semibold transition-colors',
-                              selected ? 'bg-gold text-emerald-deep' : 'bg-emerald text-muted',
-                            ].join(' ')}
-                          >
-                            {item.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-
                     <p
                       role="status"
                       aria-live="polite"
@@ -1005,85 +988,19 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                               : 'Текст сохраняется только после завершения чек-ина'}
                     </p>
 
-                    {morningWritingMode === 'brief' && (
-                      <JournalTextarea
-                        value={morningDraft?.brief || ''}
-                        onChange={value => updateMorningDraft({ brief: value })}
-                        placeholder={MORNING_NOTE_PLACEHOLDER}
-                        ariaLabel="Утренняя мысль"
-                        className="min-h-[18rem] flex-1"
-                        editorClassName="pb-24"
-                        floatingToolbar
-                        onSubmit={() => submit()}
-                        submitLabel="Завершить чек-ин"
-                        submitLoading={saving}
-                        onDeepen={deepenMorningNote}
-                      />
-                    )}
-
-                    {morningWritingMode === 'reflect' && (
-                      <div className="min-h-0 flex-1 space-y-3">
-                        <div className="rounded-3xl bg-emerald p-4">
-                          <div className="mb-2 text-[13px] font-bold text-cream">Факт</div>
-                          <JournalTextarea
-                            value={morningDraft?.fact || ''}
-                            onChange={value => updateMorningDraft({ fact: value })}
-                            placeholder="Что происходит без оценки?"
-                            ariaLabel="Факт"
-                            formatting={false}
-                            className="min-h-[7rem]"
-                            editorClassName="min-h-[7rem]"
-                          />
-                        </div>
-
-                        <div className="rounded-3xl bg-emerald p-4">
-                          <div className="mb-2 text-[13px] font-bold text-cream">Чувство</div>
-                          <JournalTextarea
-                            value={morningDraft?.feeling || ''}
-                            onChange={value => updateMorningDraft({ feeling: value })}
-                            placeholder="Что ты сейчас чувствуешь?"
-                            ariaLabel="Чувство"
-                            formatting={false}
-                            className="min-h-[7rem]"
-                            editorClassName="min-h-[7rem]"
-                          />
-                        </div>
-
-                        <div className="rounded-3xl bg-emerald p-4">
-                          <div className="mb-2 text-[13px] font-bold text-cream">Следующий шаг</div>
-                          <JournalTextarea
-                            value={morningDraft?.nextStep || ''}
-                            onChange={value => updateMorningDraft({ nextStep: value })}
-                            placeholder="Что сделаешь дальше?"
-                            ariaLabel="Следующий шаг"
-                            formatting={false}
-                            className="min-h-[10rem]"
-                            editorClassName="min-h-[10rem] pb-24"
-                            floatingToolbar
-                            onSubmit={() => submit()}
-                            submitLabel="Завершить чек-ин"
-                            submitLoading={saving}
-                            onDeepen={deepenMorningNote}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {morningWritingMode === 'free' && (
-                      <JournalTextarea
-                        value={morningDraft?.free || ''}
-                        onChange={value => updateMorningDraft({ free: value })}
-                        placeholder="Начни с того, что важно заметить."
-                        ariaLabel="Своя утренняя запись"
-                        className="min-h-[18rem] flex-1"
-                        editorClassName="pb-24"
-                        floatingToolbar
-                        onSubmit={() => submit()}
-                        submitLabel="Завершить чек-ин"
-                        submitLoading={saving}
-                        onDeepen={deepenMorningNote}
-                      />
-                    )}
+                    <JournalTextarea
+                      value={morningDraft?.brief || ''}
+                      onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
+                      placeholder={MORNING_NOTE_PLACEHOLDER}
+                      ariaLabel="Что на уме"
+                      className="min-h-[18rem] flex-1"
+                      editorClassName="pb-24"
+                      floatingToolbar
+                      onSubmit={() => submit()}
+                      submitLabel="Завершить чек-ин"
+                      submitLoading={saving}
+                      onDeepen={deepenMorningNote}
+                    />
                   </div>
                 )}
 
@@ -1178,6 +1095,6 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
       <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

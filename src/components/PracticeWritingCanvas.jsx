@@ -1,6 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
 import './PracticeWritingCanvas.css'
 
+const DEMO_KEY_ROWS = [
+  ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х'],
+  ['ф', 'ы', 'в', 'а', 'п', 'р', 'о', 'л', 'д', 'ж', 'э'],
+  ['я', 'ч', 'с', 'м', 'и', 'т', 'ь', 'б', 'ю'],
+]
+
+function isDemoPreview() {
+  return (
+    typeof document !== 'undefined' &&
+    Boolean(document.querySelector('[data-mentalix-demo-frame="true"]')) &&
+    new URLSearchParams(window.location.search).get('keyboard') === '1'
+  )
+}
+
 function useVisualViewportMetrics() {
   const [metrics, setMetrics] = useState(() => ({
     height:
@@ -58,22 +72,26 @@ export default function PracticeWritingCanvas({
   className = '',
 }) {
   const [focused, setFocused] = useState(autoFocus)
+  const [demoKeyboard, setDemoKeyboard] = useState(false)
   const metrics = useVisualViewportMetrics()
+  const demoPreview = isDemoPreview()
   const keyboardOpen =
     focused && metrics.height !== null && metrics.height < metrics.layoutHeight - 80
+  const visualKeyboardOpen = demoPreview && (demoKeyboard || focused)
   const hasText = Boolean(String(value).trim())
   const submitIsDisabled = submitDisabled || submitLoading || !hasText
   const deepenIsDisabled = (deepenDisabled ?? !hasText) || submitLoading || deepenLoading
   const dockStyle = useMemo(() => {
+    if (demoPreview && visualKeyboardOpen) return undefined
     if (!keyboardOpen || metrics.height === null) return undefined
     return {
       top: `${metrics.pageTop + metrics.offsetTop + metrics.height - 48 - 56 - 8}px`,
     }
-  }, [keyboardOpen, metrics])
+  }, [demoPreview, keyboardOpen, metrics, visualKeyboardOpen])
 
   return (
     <section
-      className={`practice-writing-canvas ${keyboardOpen ? 'is-keyboard-open' : ''} ${className}`}
+      className={`practice-writing-canvas ${keyboardOpen ? 'is-keyboard-open' : ''} ${visualKeyboardOpen ? 'is-demo-keyboard-open' : ''} ${className}`}
     >
       {onClose && (
         <button
@@ -90,11 +108,30 @@ export default function PracticeWritingCanvas({
       <textarea
         value={value}
         onChange={event => onChange(event.target.value)}
-        onFocus={() => setFocused(true)}
+        onFocus={event => {
+          setFocused(true)
+          if (demoPreview) setDemoKeyboard(true)
+          if (demoPreview) {
+            const resetFlowScroll = () => {
+              let parent = event.currentTarget.parentElement
+              while (parent && parent !== document.body) {
+                if (parent.scrollHeight > parent.clientHeight) {
+                  parent.scrollTo({ top: 0, behavior: 'auto' })
+                }
+                parent = parent.parentElement
+              }
+              window.scrollTo({ top: 0, behavior: 'auto' })
+            }
+            window.requestAnimationFrame(resetFlowScroll)
+            window.setTimeout(resetFlowScroll, 120)
+          }
+        }}
         onBlur={() => setFocused(false)}
         placeholder={placeholder}
         aria-label={ariaLabel || question}
         autoFocus={autoFocus}
+        readOnly={demoPreview}
+        inputMode={demoPreview ? 'none' : undefined}
         className="practice-writing-canvas__field font-body"
       />
       <div className="practice-writing-canvas__dock" style={dockStyle} aria-label="Действия ввода">
@@ -134,6 +171,48 @@ export default function PracticeWritingCanvas({
           </button>
         )}
       </div>
+      {demoPreview && visualKeyboardOpen && (
+        <div className="practice-writing-canvas__demo-keyboard" aria-label="Демо-клавиатура iPhone">
+          {DEMO_KEY_ROWS.map((row, rowIndex) => (
+            <div className="practice-writing-canvas__demo-row" key={rowIndex}>
+              {row.map(key => (
+                <button
+                  key={key}
+                  type="button"
+                  onMouseDown={event => event.preventDefault()}
+                  onClick={() => onChange(`${value}${key}`)}
+                  className="practice-writing-canvas__demo-key"
+                >
+                  {key}
+                </button>
+              ))}
+            </div>
+          ))}
+          <div className="practice-writing-canvas__demo-row practice-writing-canvas__demo-row--special">
+            <button
+              type="button"
+              onClick={() => onChange(value.slice(0, -1))}
+              className="practice-writing-canvas__demo-key practice-writing-canvas__demo-key--wide"
+            >
+              ⌫
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange(`${value} `)}
+              className="practice-writing-canvas__demo-key practice-writing-canvas__demo-key--space"
+            >
+              пробел
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange(`${value}\n`)}
+              className="practice-writing-canvas__demo-key practice-writing-canvas__demo-key--wide"
+            >
+              return
+            </button>
+          </div>
+        </div>
+      )}
       {formatting && formatOpen && formatActions}
     </section>
   )

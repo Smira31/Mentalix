@@ -569,7 +569,7 @@ function TrendsPreview() {
         )}
       </div>
       <div className="mx-history-trends__insights">
-        {visibleCards.map((card, index) => (
+        {visibleCards.map(card => (
           <article key={card.title}>
             <header>
               <div>

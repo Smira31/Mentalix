@@ -32,7 +32,12 @@ export function isPreviewDemoMode() {
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost = host === 'mentalix-preview.vercel.app'
 
-  return params.get('demo') === '1' && isAllowedHost && (isPreviewRuntime || isQaProductionHost)
+  const demoRequested = params.get('demo') === '1'
+  const pwaDemoRequested = params.get('source') === 'pwa'
+
+  return (
+    (demoRequested || pwaDemoRequested) && isAllowedHost && (isPreviewRuntime || isQaProductionHost)
+  )
 }
 
 function previewTodayState() {
@@ -98,6 +103,7 @@ function seedState(todayState = null) {
       },
     ],
     notes: { 900401: [] },
+    messages: [],
     checkins: checkin ? [checkin] : [],
     profile: {
       id: DEMO_USER.id,
@@ -264,6 +270,30 @@ export function demoRequest(path, options = {}) {
   if (pathname === '/themes' && method === 'GET') return json([])
   if (pathname === '/quotes' && method === 'GET') return json([])
   if (pathname === '/analytics/pulse' && method === 'GET') return json({})
+
+  if (pathname === '/mentalix/messages' && method === 'GET') {
+    return json(state.messages || [])
+  }
+  if (pathname === '/mentalix/messages' && method === 'POST') {
+    const userMessage = {
+      id: `demo-user-${Date.now()}`,
+      role: 'user',
+      content: body.content || '',
+    }
+    const personaNames = { kompas: 'Наставник', mayak: 'Собеседник', dnevnik: 'Следопыт' }
+    const personaName = personaNames[body.persona] || 'Собеседник'
+    const reply = {
+      id: `demo-reply-${Date.now()}`,
+      role: 'assistant',
+      content: `${personaName} рядом. Давай разберём это спокойно: что в этой ситуации сейчас важнее всего заметить?`,
+    }
+    writeState({ ...state, messages: [...(state.messages || []), userMessage, reply] })
+    return json(reply)
+  }
+  if (pathname === '/mentalix/feedback' && method === 'POST') return json({ ok: true })
+  if (pathname === '/mentalix/transcribe' && method === 'POST') {
+    return json({ text: 'Хочу разобраться в том, что сейчас для меня важно.' })
+  }
 
   if (method === 'GET') return json([])
   if (method === 'DELETE') return json({ ok: true })

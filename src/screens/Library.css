@@ -1,7 +1,10 @@
 .mx-library-catalog {
   display: grid;
   gap: 8px;
-  padding-inline: 20px;
+  width: 100%;
+  max-width: 430px;
+  margin-inline: auto;
+  padding: 4px var(--mx-space-5) 0;
   color: rgb(var(--c-text));
 }
 
@@ -410,6 +413,12 @@
     linear-gradient(135deg, rgb(var(--c-card2)), rgb(var(--c-bg)));
 }
 
+.mx-library-v2__featured-banner.is-neutral {
+  border-color: rgb(var(--c-border));
+  background: rgb(var(--c-card2));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.025);
+}
+
 .mx-library-v2__featured-copy {
   position: relative;
   z-index: 1;
@@ -463,12 +472,14 @@
   align-items: center;
   gap: 7px;
   min-height: 38px;
+  justify-self: end;
   margin-top: 2px;
   padding: 0 13px;
   border: 0;
   border-radius: 999px;
   background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
+  font-family: 'Manrope', sans-serif;
   font-size: 13px;
   font-weight: 700;
 }

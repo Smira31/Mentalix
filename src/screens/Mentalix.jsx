@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
@@ -11,7 +11,6 @@ import { messageContent } from '../lib/journalPresentation'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
-import AiPrivacyControls from './mentalix/AiPrivacyControls'
 
 // ============================================================
 // ЧАТ
@@ -35,6 +34,7 @@ export function ConversationChat({
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+  const [resultMessage, setResultMessage] = useState(null)
   const lastFailedSend = useRef(null)
   const initialPromptSent = useRef(false)
   const localMessageSequence = useRef(0)
@@ -79,6 +79,8 @@ export function ConversationChat({
     return () => {
       cancelled = true
     }
+    // The request is scoped to stable userId/persona inputs, not the mutable user object.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, persona, viaHandoff, withSafetyNotice])
 
   async function send(overrideText, displayText = overrideText, { appendUser = true } = {}) {
@@ -115,6 +117,7 @@ export function ConversationChat({
       }
 
       setMessages(previous => [...previous, safeReply])
+      if (persona === 'kompas') setResultMessage(safeReply)
       invalidateHistory(user.id, persona)
       lastFailedSend.current = null
     } catch (error) {
@@ -130,17 +133,14 @@ export function ConversationChat({
     if (loading || !initialPrompt || initialPromptSent.current) return
     initialPromptSent.current = true
     void send(initialPrompt, initialDisplayText || initialPrompt)
+    // send intentionally remains the local action function for this one-shot handoff.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, initialPrompt, initialDisplayText])
 
   function retryLastSend() {
     const failed = lastFailedSend.current
     if (!failed) return
     void send(failed.text, failed.visibleText, { appendUser: false })
-  }
-
-  function handleAiDataDeleted() {
-    invalidateHistory(user.id, persona)
-    setMessages([])
   }
 
   return (
@@ -159,7 +159,7 @@ export function ConversationChat({
       footerSlot={footerSlot}
       sendError={sendError}
       onRetry={retryLastSend}
-      privacyControls={<AiPrivacyControls userId={user.id} onDataDeleted={handleAiDataDeleted} />}
+      resultMessage={resultMessage}
     />
   )
 }
@@ -168,14 +168,25 @@ export function ConversationChat({
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({ user, onPersonaChange }) {
+export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) {
   const [pending] = useState(() => readPendingMentor())
   const [persona, setPersona] = useState(pending.persona)
   const [draft, setDraft] = useState(pending.draft)
 
+  const exitConversation = useCallback(() => {
+    setDraft('')
+    setPersona(null)
+  }, [])
+
   useEffect(() => {
     onPersonaChange?.(Boolean(persona))
   }, [persona, onPersonaChange])
+
+  useEffect(() => {
+    onRegisterBack?.(persona ? exitConversation : null)
+
+    return () => onRegisterBack?.(null)
+  }, [exitConversation, onRegisterBack, persona])
 
   useEffect(() => {
     return () => {
@@ -202,10 +213,7 @@ export default function MentalixChat({ user, onPersonaChange }) {
       initialText={draft}
       viaHandoff={Boolean(pending.persona)}
       withSafetyNotice={Boolean(pending.safety)}
-      onBack={() => {
-        setDraft('')
-        setPersona(null)
-      }}
+      onBack={exitConversation}
     />
   )
 }

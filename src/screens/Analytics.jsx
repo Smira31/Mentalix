@@ -15,6 +15,30 @@ const PROGRESS_LAYOUT_V2_ENABLED =
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
+function MoodFace({ level }) {
+  const mouths = [
+    'M9 21.5C11.2 18.4 20.8 18.4 23 21.5',
+    'M9.5 20.5C12 19.1 20 19.1 22.5 20.5',
+    'M9.5 20H22.5',
+    'M9.5 19.5C12 20.9 20 20.9 22.5 19.5',
+    'M9 18.5C11.2 21.6 20.8 21.6 23 18.5',
+  ]
+
+  return (
+    <svg
+      className="mx-progress-redesign__mood-face"
+      viewBox="0 0 32 32"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle cx="16" cy="16" r="12.5" />
+      <circle cx="11.5" cy="13" r="1" className="mx-progress-redesign__mood-eye" />
+      <circle cx="20.5" cy="13" r="1" className="mx-progress-redesign__mood-eye" />
+      <path d={mouths[level]} />
+    </svg>
+  )
+}
+
 function SectionHeading({ eyebrow, title, id, meta }) {
   return (
     <div className="mx-progress-redesign__section-head">
@@ -76,15 +100,9 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
           role="group"
           aria-label="Выбери настроение"
         >
-          {[
-            ['Очень тяжело', '☹'],
-            ['Тяжело', '−'],
-            ['Ровно', '—'],
-            ['Хорошо', '⌣'],
-            ['Отлично', '☺'],
-          ].map(([label, icon]) => (
+          {['Очень тяжело', 'Тяжело', 'Ровно', 'Хорошо', 'Отлично'].map((label, level) => (
             <button key={label} type="button" aria-label={label} onClick={onGoCheckin}>
-              {icon}
+              <MoodFace level={level} />
             </button>
           ))}
         </div>
@@ -267,11 +285,14 @@ function ActivityCalendar({ checkins, dailyActivity, period }) {
   )
   useEffect(() => {
     if (!PROGRESS_LAYOUT_V2_ENABLED) return
+    // Clamp the cursor after period changes; this is the intentional state sync.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMonthCursor(value => {
       if (value < firstAllowedMonth) return firstAllowedMonth
       if (value > lastAllowedMonth) return lastAllowedMonth
       return value
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, firstAllowedMonth.getTime(), lastAllowedMonth.getTime()])
   const year = monthCursor.getFullYear()
   const month = monthCursor.getMonth()

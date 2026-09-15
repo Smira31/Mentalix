@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../../lib/fullscreenSurface'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -6,6 +7,7 @@ import { ArrowRight, LoaderCircle, Mic, Square } from 'lucide-react'
 import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
 import { api } from '../../lib/api'
+import { isPreviewDemoMode } from '../../lib/demoMode'
 import { useSynced } from '../../lib/store'
 import {
   useFullscreenSurface,
@@ -38,11 +40,11 @@ export default function Conversation({
   sending,
   onSend,
   onBack,
-  privacyControls,
   contextSlot = null,
   footerSlot = null,
   sendError = '',
   onRetry,
+  resultMessage = null,
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
@@ -56,18 +58,20 @@ export default function Conversation({
   const stopTimerRef = useRef(null)
   const secondsTimerRef = useRef(null)
   const sendingRef = useRef(sending)
+  const suppressVoiceClickRef = useRef(false)
 
   const [voiceState, setVoiceState] = useState('idle')
   const [voiceSeconds, setVoiceSeconds] = useState(0)
   const [voiceError, setVoiceError] = useState('')
   const [expandedMessages, setExpandedMessages] = useState(() => new Set())
-  const [feedbackByMessage, setFeedbackByMessage] = useState(() => new Set())
-  const [feedbackError, setFeedbackError] = useState('')
+  const demoVoice = isPreviewDemoMode()
 
   const voiceSupported =
-    typeof navigator !== 'undefined' &&
-    Boolean(navigator.mediaDevices?.getUserMedia) &&
-    typeof MediaRecorder !== 'undefined'
+    demoVoice ||
+    (typeof navigator !== 'undefined' &&
+      Boolean(navigator.mediaDevices?.getUserMedia) &&
+      typeof window !== 'undefined' &&
+      typeof window.MediaRecorder !== 'undefined')
 
   useEffect(() => {
     sendingRef.current = sending
@@ -109,17 +113,6 @@ export default function Conversation({
     return () => clearTimeout(timer)
   }, [showVoiceHint, dismissVoiceHint])
 
-  async function leaveFeedback(messageId, rating) {
-    if (!messageId || feedbackByMessage.has(messageId)) return
-    setFeedbackError('')
-    try {
-      await api.mentalix.feedback(userId, rating, messageId)
-      setFeedbackByMessage(previous => new Set(previous).add(messageId))
-    } catch {
-      setFeedbackError('Не удалось сохранить отметку. Попробуй ещё раз.')
-    }
-  }
-
   function scrollToEnd(behavior = 'smooth') {
     const scroll = scrollRef.current
 
@@ -149,6 +142,14 @@ export default function Conversation({
   function stopVoiceRecording() {
     const recorder = recorderRef.current
 
+    if (demoVoice && voiceState === 'recording') {
+      setInput('Хочу разобраться в том, что сейчас для меня важно.')
+      setVoiceState('idle')
+      setVoiceSeconds(0)
+      dismissVoiceHint()
+      return
+    }
+
     if (recorder?.state === 'recording') {
       recorder.stop()
     }
@@ -156,6 +157,13 @@ export default function Conversation({
 
   async function startVoiceRecording() {
     setVoiceError('')
+
+    if (demoVoice) {
+      setVoiceState('recording')
+      setVoiceSeconds(0)
+      platform.haptic('medium')
+      return
+    }
 
     if (!voiceSupported) {
       setVoiceError('Запись голоса недоступна в этой версии Telegram.')
@@ -171,11 +179,12 @@ export default function Conversation({
         },
       })
 
+      const Recorder = window.MediaRecorder
       const mimeType = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm'].find(type =>
-        MediaRecorder.isTypeSupported(type)
+        Recorder.isTypeSupported(type)
       )
 
-      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
+      const recorder = new Recorder(stream, mimeType ? { mimeType } : undefined)
 
       streamRef.current = stream
       recorderRef.current = recorder
@@ -227,8 +236,8 @@ export default function Conversation({
           }
 
           platform.haptic('medium')
-
-          onSend(transcript)
+          setInput(transcript)
+          dismissVoiceHint()
         } catch (error) {
           console.error(error)
           const message = String(error?.message || '')
@@ -291,13 +300,14 @@ export default function Conversation({
       style={{
         ...surfaceStyle,
 
-        paddingBottom: 'max(14px, env(safe-area-inset-bottom))',
+        background: '#090d0e',
+        paddingBottom: 'max(6px, env(safe-area-inset-bottom))',
       }}
     >
       {/* ── шапка ── */}
 
       <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} grid grid-cols-[1fr_auto_1fr] items-center px-5`}
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mt-2 grid grid-cols-[1fr_auto_1fr] items-center px-5`}
       >
         <div className="justify-self-start">
           <BackButton onClick={onBack} />
@@ -312,9 +322,10 @@ export default function Conversation({
 
       {/* ── история сообщений ── */}
 
-      <div ref={scrollRef} className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-6`}>
-        {!loading && privacyControls}
-
+      <div
+        ref={scrollRef}
+        className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-5 pb-6`}
+      >
         {!loading && contextSlot}
 
         {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
@@ -328,9 +339,9 @@ export default function Conversation({
           </p>
         )}
 
-        <div className="w-full max-w-md mx-auto space-y-5">
+        <div className="w-full max-w-md mx-auto space-y-3.5">
           {groupJournalMessages(messages).map(group => (
-            <div key={group.key} className="space-y-5">
+            <div key={group.key} className="space-y-3.5">
               {group.label && (
                 <div className="pt-2 text-center text-[10px] uppercase tracking-[0.18em] text-muted">
                   {group.label}
@@ -345,8 +356,8 @@ export default function Conversation({
 
                 if (isUser) {
                   return (
-                    <div key={messageKey} className="flex justify-end">
-                      <div className="w-fit max-w-[82%] rounded-[24px] bg-cognac px-5 py-4 text-[16px] leading-[1.5] font-normal text-cream break-words whitespace-pre-wrap">
+                    <div key={messageKey} className="mx-imessage-row mx-imessage-row--user">
+                      <div className="mx-imessage-bubble mx-imessage-bubble--user">
                         {messageContent(message)}
                       </div>
                     </div>
@@ -354,41 +365,15 @@ export default function Conversation({
                 }
 
                 return (
-                  <div key={messageKey} className="w-full mx-msg-in">
-                    <div className="mx-ai-meta text-gold mb-2.5">{meta.name}</div>
+                  <div
+                    key={messageKey}
+                    className="mx-imessage-row mx-imessage-row--assistant mx-msg-in"
+                  >
+                    <div className="mx-ai-meta text-gold mb-1.5">{meta.name}</div>
 
-                    <div className="mx-ai-body text-cream break-words">
+                    <div className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words">
                       <MessageText content={messageContent(message)} />
                     </div>
-
-                    <p className="mt-3 text-[10px] uppercase tracking-[0.14em] text-muted">
-                      Ответ создан AI
-                    </p>
-                    {message.id && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => leaveFeedback(message.id, 'up')}
-                          disabled={feedbackByMessage.has(message.id)}
-                          className="min-h-11 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
-                        >
-                          Полезно
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => leaveFeedback(message.id, 'down')}
-                          disabled={feedbackByMessage.has(message.id)}
-                          className="min-h-11 rounded-full bg-cream/5 px-3 text-[11px] font-semibold text-muted disabled:opacity-50"
-                        >
-                          Не полезно
-                        </button>
-                        {feedbackByMessage.has(message.id) && (
-                          <span role="status" className="text-[11px] text-muted">
-                            Отметка сохранена
-                          </span>
-                        )}
-                      </div>
-                    )}
 
                     {isLong && (
                       <button
@@ -411,12 +396,6 @@ export default function Conversation({
               })}
             </div>
           ))}
-
-          {feedbackError && (
-            <p role="status" className="text-[11px] text-red-300">
-              {feedbackError}
-            </p>
-          )}
 
           {sendError && (
             <div
@@ -454,7 +433,7 @@ export default function Conversation({
         className="shrink-0 px-4 pt-3"
 
         style={{
-          paddingBottom: 'max(10px, env(safe-area-inset-bottom))',
+          paddingBottom: 'max(4px, env(safe-area-inset-bottom))',
         }}
       >
         {(voiceState !== 'idle' || voiceError) && (
@@ -489,12 +468,6 @@ export default function Conversation({
               if (value.trim() && voiceHintSeen !== '1') {
                 dismissVoiceHint()
               }
-            }}
-
-            onFocus={() => {
-              setTimeout(() => {
-                scrollToEnd('smooth')
-              }, 180)
             }}
 
             onKeyDown={event => {
@@ -535,7 +508,13 @@ export default function Conversation({
 
               {...(hasText && voiceState === 'idle'
                 ? {
-                    onClick: () => onSend(),
+                    onClick: () => {
+                      if (suppressVoiceClickRef.current) {
+                        suppressVoiceClickRef.current = false
+                        return
+                      }
+                      onSend()
+                    },
                     onPointerDown: () => setVoicePressed(true),
                     onPointerUp: () => setVoicePressed(false),
                     onPointerLeave: () => setVoicePressed(false),
@@ -544,6 +523,7 @@ export default function Conversation({
                 : {
                     onPointerDown: event => {
                       event.preventDefault()
+                      event.currentTarget.setPointerCapture?.(event.pointerId)
 
                       setVoicePressed(true)
 
@@ -552,18 +532,23 @@ export default function Conversation({
                       }
                     },
 
-                    onPointerUp: () => {
+                    onPointerUp: event => {
                       setVoicePressed(false)
+                      event.currentTarget.releasePointerCapture?.(event.pointerId)
 
                       if (voiceState === 'recording') {
+                        suppressVoiceClickRef.current = true
                         stopVoiceRecording()
                       }
                     },
 
-                    onPointerLeave: () => {
+                    onPointerLeave: event => {
+                      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) return
+
                       setVoicePressed(false)
 
                       if (voiceState === 'recording') {
+                        suppressVoiceClickRef.current = true
                         stopVoiceRecording()
                       }
                     },
@@ -572,6 +557,7 @@ export default function Conversation({
                       setVoicePressed(false)
 
                       if (voiceState === 'recording') {
+                        suppressVoiceClickRef.current = true
                         stopVoiceRecording()
                       }
                     },
@@ -627,6 +613,6 @@ export default function Conversation({
         {footerSlot}
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

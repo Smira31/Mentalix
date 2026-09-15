@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
@@ -160,6 +161,6 @@ export default function StreakRestoreSheet({ itemName, choices, onSave, onClose 
         </div>
       </div>
     </div>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

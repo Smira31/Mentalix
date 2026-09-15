@@ -23,8 +23,23 @@ export const webAdapter = {
   },
 
   async requestAuth() {
-    // реальный флоу подключим на шаге email OTP — пока просто читаем сохранённого пользователя
-    return this.getUser()
+    const localFixtureMode = import.meta.env.DEV || import.meta.env.VITE_LOCAL_PREVIEW === 'true'
+    if (localFixtureMode) return this.getUser()
+    const response = await fetch('/api/auth/session', { credentials: 'include' })
+    if (!response.ok) {
+      if (localFixtureMode) return this.getUser()
+      throw new Error(`Web session restore failed: ${response.status}`)
+    }
+    const result = await response.json()
+    if (localFixtureMode && !Object.prototype.hasOwnProperty.call(result, 'authenticated')) {
+      return this.getUser()
+    }
+    if (!result.authenticated || !result.user) {
+      this.clearUser()
+      return null
+    }
+    this.setUser(result.user)
+    return result.user
   },
 
   setUser(user) {

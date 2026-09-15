@@ -42,18 +42,11 @@ export function resolveUiLabSection(value = 'hub') {
 }
 
 export default function UiLab({ initialSection = 'hub' }) {
-  const [section, setSection] = useState(resolveUiLabSection(initialSection))
+  const [section] = useState(resolveUiLabSection(initialSection))
   const [todayState, setTodayState] = useState('checkinPending')
   const cleanReview =
     section === 'library-programs' &&
     new URLSearchParams(window.location.search).get('review') === '1'
-
-  function selectSection(next) {
-    setSection(next)
-    const url = new URL(window.location.href)
-    url.searchParams.set('ui_lab', next)
-    window.history.replaceState({}, '', url)
-  }
 
   return (
     <main className="mx-ui-lab">

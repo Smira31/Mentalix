@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { platform } from '../../platform'
-import SemanticGlyph, { semanticKindForPersona } from '../../components/SemanticGlyph'
-import { fetchHistory } from '../../lib/mentalixHistoryCache'
 import { PERSONAS } from './personas'
 import heroReference from '../../assets/dialog-hero-reference.png'
+import { isPreviewDemoMode } from '../../lib/demoMode'
 
 import './PersonaPicker.css'
 
@@ -26,51 +25,10 @@ const DIALOG_DESCRIPTIONS = {
   dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
 }
 
-function trim(text, max = 70) {
-  const clean = String(text || '')
-    .replace(/\s+/g, ' ')
-    .trim()
-  return clean.length > max ? `${clean.slice(0, max).trimEnd()}…` : clean
-}
-
-function RoleGlyph({ persona, active }) {
-  return (
-    <div className="mx-dialog-role-glyph" aria-hidden="true">
-      <SemanticGlyph
-        kind={semanticKindForPersona(persona.key)}
-        animated={active}
-        highlighted={active}
-        className="mx-dialog-role-glyph__svg"
-      />
-    </div>
-  )
-}
-
-export default function PersonaPicker({ user, onPick }) {
-  const [previews, setPreviews] = useState({})
-  const [previewsLoading, setPreviewsLoading] = useState(true)
+export default function PersonaPicker({ onPick }) {
   const [active, setActive] = useState(DEFAULT_INDEX)
   const trackRef = useRef(null)
-
-  useEffect(() => {
-    if (!user) return undefined
-    let alive = true
-    Promise.all(
-      DISPLAY_PERSONAS.map(persona =>
-        fetchHistory(user.id, persona.key)
-          .then(messages => [persona.key, Array.isArray(messages) ? messages.at(-1) : null])
-          .catch(() => [persona.key, null])
-      )
-    )
-      .then(pairs => {
-        if (!alive) return
-        setPreviews(Object.fromEntries(pairs.filter(([, last]) => last?.content)))
-      })
-      .finally(() => alive && setPreviewsLoading(false))
-    return () => {
-      alive = false
-    }
-  }, [user])
+  const previewDemoMode = isPreviewDemoMode()
 
   useEffect(() => {
     const track = trackRef.current
@@ -128,14 +86,6 @@ export default function PersonaPicker({ user, onPick }) {
           <h1 id="dialog-entry-title" className="mx-type-hero">
             О чём хочешь поговорить прямо сейчас?
           </h1>
-          <button
-            type="button"
-            className="mx-dialog-start cta-pill mx-type-control"
-            onClick={() => startRole(DISPLAY_PERSONAS[active])}
-            aria-label={`Начать разговор: ${DISPLAY_PERSONAS[active].name}`}
-          >
-            Начать
-          </button>
         </div>
       </section>
 
@@ -155,37 +105,31 @@ export default function PersonaPicker({ user, onPick }) {
           onScroll={syncActive}
         >
           {DISPLAY_PERSONAS.map((persona, index) => {
-            const last = previews[persona.key]
             const isActive = active === index
+            const useDemoMentorCopy = previewDemoMode && persona.key === 'kompas'
+            const promise = useDemoMentorCopy ? persona.tagline : PROMISES[persona.key]
+            const description = useDemoMentorCopy ? persona.desc : DIALOG_DESCRIPTIONS[persona.key]
             return (
               <article
                 key={persona.key}
                 className={`mx-dialog-card mx-card-surface ${isActive ? 'is-active' : ''}`}
                 data-testid="mentor-persona-card"
-                aria-label={`${persona.name}: ${PROMISES[persona.key]}`}
+                aria-label={`${persona.name}: ${promise}`}
                 aria-current={isActive ? 'true' : undefined}
                 tabIndex={isActive ? 0 : -1}
-                onClick={() => selectRole(index)}
+                onClick={() => startRole(persona)}
                 onKeyDown={event => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    selectRole(index)
+                    startRole(persona)
                   }
                 }}
               >
-                <RoleGlyph persona={persona} active={isActive} />
                 <div className="mx-dialog-card__body">
                   <p className="mx-dialog-card__role mx-type-meta font-label">{persona.name}</p>
                   <h3 className="mx-type-persona-title">{persona.name}</h3>
-                  <p className="mx-dialog-card__promise">{PROMISES[persona.key]}</p>
-                  <p className="mx-dialog-card__description mx-type-persona-body">
-                    {DIALOG_DESCRIPTIONS[persona.key]}
-                  </p>
-                  {last && !previewsLoading && (
-                    <p className="mx-dialog-card__history mx-type-meta">
-                      Последний разговор: {trim(last.content)}
-                    </p>
-                  )}
+                  <p className="mx-dialog-card__promise">{promise}</p>
+                  <p className="mx-dialog-card__description mx-type-persona-body">{description}</p>
                 </div>
               </article>
             )
@@ -205,6 +149,16 @@ export default function PersonaPicker({ user, onPick }) {
           ))}
         </div>
       </section>
+      <div className="mx-dialog-start-dock">
+        <button
+          type="button"
+          className="mx-dialog-start cta-pill mx-type-control"
+          onClick={() => startRole(DISPLAY_PERSONAS[active])}
+          aria-label={`Начать разговор: ${DISPLAY_PERSONAS[active].name}`}
+        >
+          Начать {DISPLAY_PERSONAS[active].name}
+        </button>
+      </div>
     </main>
   )
 }

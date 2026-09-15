@@ -1,9 +1,7 @@
-import { AlignJustify, House, Sparkles, BookOpen } from 'lucide-react'
+import { Activity, House, Sparkles, BookOpen } from 'lucide-react'
 
 import MazeLogo from './MazeLogo'
 import { platform } from '../platform'
-
-const PROGRESS_LAYOUT_V2_ENABLED = import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
 
 // MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
 // Библиотека · Прогресс». Ключи вкладок не меняются — только пользовательские
@@ -33,8 +31,7 @@ const TABS = [
   {
     key: 'trends',
     label: 'Прогресс',
-    // TODO(owner): выбрать финальный SemanticGlyph для накопленного результата.
-    icon: PROGRESS_LAYOUT_V2_ENABLED ? 'progress-glyph-todo' : AlignJustify,
+    icon: Activity,
   },
 ]
 
@@ -52,8 +49,6 @@ function TabIcon({ item, active, size = 21 }) {
       />
     )
   }
-
-  if (item.icon === 'progress-glyph-todo') return null
 
   const Icon = item.icon
 
@@ -164,6 +159,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
 
             flex
             items-center
+            justify-center
 
             px-[6px]
 
@@ -198,6 +194,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                 className={[
                   'h-[56px]',
                   'flex-1',
+                  'basis-0',
                   'min-w-0',
                   'rounded-[var(--mx-radius-pill)]',
                   'flex',

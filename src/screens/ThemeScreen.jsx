@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
@@ -296,7 +297,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
         <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
       </Shell>,
-      document.body
+      getFullscreenPortalTarget()
     )
   }
 
@@ -343,7 +344,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           </ul>
         </div>
       </Shell>,
-      document.body
+      getFullscreenPortalTarget()
     )
   }
 
@@ -413,7 +414,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           </div>
         )}
       </Shell>,
-      document.body
+      getFullscreenPortalTarget()
     )
   }
 
@@ -478,7 +479,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
           })}
         </div>
       </Shell>,
-      document.body
+      getFullscreenPortalTarget()
     )
   }
 
@@ -624,6 +625,6 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         />
       )}
     </Shell>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }

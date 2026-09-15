@@ -119,15 +119,11 @@ test.describe('MXL-010 automated technical gate', () => {
     const page = await context.newPage()
 
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Вход через браузер скоро появится' })).toBeVisible()
-    await expect(
-      page.getByText(
-        'Сейчас вход в Mentalix доступен только через Telegram Mini App. Открой приложение в Telegram — там уже доступен твой Telegram-контекст.'
-      )
-    ).toBeVisible()
-    await expect(page.locator('form')).toHaveCount(0)
-    await expect(page.getByRole('textbox')).toHaveCount(0)
-    await expect(page.getByRole('button')).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Вход в Mentalix' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeVisible()
+    await expect(page.locator('form')).toHaveCount(1)
+    await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
 
     await context.close()
   })
@@ -153,12 +149,12 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: 'Закрыть' })).toBeVisible()
 
     for (const option of ['Нормально', 'Средне', 'Заметно', 'Держусь']) {
-      await page.getByRole('button', { name: new RegExp(option, 'i') }).click()
+      await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
     }
     await page.getByRole('button', { name: 'ровно' }).click()
     await page.getByRole('button', { name: 'Дальше' }).click()
 
-    const morningNote = page.getByRole('textbox', { name: 'Утренняя мысль' })
+    const morningNote = page.getByRole('textbox', { name: 'Что на уме' })
     await morningNote.fill('Fixture morning note')
     await page.getByRole('button', { name: 'Завершить чек-ин' }).click()
     await expect(page.getByRole('heading', { name: 'Чек-ин записан' })).toBeVisible()
@@ -194,7 +190,9 @@ test.describe('MXL-010 automated technical gate', () => {
 
     await page.getByRole('button', { name: 'Назад' }).click()
     await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
-    await page.getByRole('button', { name: 'Сегодня' }).click()
+    // Первый Back закрывает conversation и оставляет fullscreen picker Mentor;
+    // возврат на Today выполняется следующим шагом browser history.
+    await page.goBack()
     await expect(page).toHaveURL(/\/$/)
     await expect(page.getByRole('button', { name: 'Открыть разбор снова' })).toBeVisible()
 

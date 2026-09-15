@@ -17,7 +17,7 @@ function parseJournal() {
     .filter(line => line.startsWith('| `'))
     .map(line => {
       const cells = line.split('|').slice(1, -1).map(cleanCell)
-      const [id, date, scope, variants, evidence, status] = cells
+      const [id, date, scope, variants, _evidence, status] = cells
 
       return {
         id: id.replace(/`/g, ''),

@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Delete, Fingerprint } from 'lucide-react'
@@ -50,12 +51,12 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
 
     let alive = true
 
-    biometric.isAvailable().then((available) => {
+    biometric.isAvailable().then(available => {
       if (!alive || !available) return
 
       setBiometricOffered(true)
 
-      biometric.authenticate('Разблокировать Mentalix').then((ok) => {
+      biometric.authenticate('Разблокировать Mentalix').then(ok => {
         if (alive && ok) {
           platform.haptic('success')
           onUnlock?.()
@@ -69,10 +70,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSetup])
 
-  useEffect(
-    () => () => window.clearTimeout(shakeTimer.current),
-    [],
-  )
+  useEffect(() => () => window.clearTimeout(shakeTimer.current), [])
 
   function shake() {
     platform.haptic('error')
@@ -130,7 +128,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
 
     if (key === 'delete') {
       platform.haptic('light')
-      setDigits((current) => current.slice(0, -1))
+      setDigits(current => current.slice(0, -1))
 
       return
     }
@@ -140,7 +138,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
 
       platform.haptic('light')
 
-      biometric.authenticate('Разблокировать Mentalix').then((ok) => {
+      biometric.authenticate('Разблокировать Mentalix').then(ok => {
         if (ok) {
           platform.haptic('success')
           onUnlock?.()
@@ -163,11 +161,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
     }
   }
 
-  const title = isSetup
-    ? stage === 'enter'
-      ? 'придумай код.'
-      : 'повтори код.'
-    : 'код доступа.'
+  const title = isSetup ? (stage === 'enter' ? 'придумай код.' : 'повтори код.') : 'код доступа.'
 
   const subtitle = isSetup
     ? stage === 'enter'
@@ -242,6 +236,6 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
         </div>
       </div>
     </div>,
-    document.body,
+    getFullscreenPortalTarget()
   )
 }

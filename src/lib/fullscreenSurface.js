@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 
 import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
 import { useVisualViewportHeight } from './visualViewport'
+import { isPreviewDemoMode } from './demoMode'
 
 /*
  * ОБЩИЙ КОНТРАКТ FULLSCREEN-ЭКРАНОВ MENTALIX
@@ -12,7 +13,8 @@ import { useVisualViewportHeight } from './visualViewport'
  * выведены из runtime-проверок CheckIn
  * на iPhone, не из общих соображений.
  *
- * 1. Рендериться порталом в document.body.
+ * 1. Рендериться порталом в Demo phone frame,
+ *    а в production — в document.body.
  *    Контейнер контента в App.jsx имеет
  *    класс animate-fade-in, а анимация
  *    объявлена с fill-mode both, поэтому
@@ -61,8 +63,15 @@ export const FULLSCREEN_HEADER_SLOT_CLASS = 'h-[52px] shrink-0'
 export const FULLSCREEN_SCROLL_CLASS =
   'w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
 
+export function getFullscreenPortalTarget() {
+  if (typeof document === 'undefined') return null
+
+  return document.querySelector('[data-mentalix-demo-frame]') || document.body
+}
+
 export function useFullscreenSurface() {
   const viewportHeight = useVisualViewportHeight()
+  const demoFrameHeight = isPreviewDemoMode() ? getFullscreenPortalTarget()?.offsetHeight : null
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
@@ -94,7 +103,14 @@ export function useFullscreenSurface() {
 
     paddingBottom: 'var(--app-safe-bottom)',
 
-    height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+    height:
+      demoFrameHeight && viewportHeight
+        ? `${Math.min(demoFrameHeight, viewportHeight)}px`
+        : demoFrameHeight
+          ? `${demoFrameHeight}px`
+          : viewportHeight
+            ? `${viewportHeight}px`
+            : '100dvh',
   }
 
   return {

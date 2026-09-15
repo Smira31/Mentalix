@@ -393,7 +393,6 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
   const railRef = useRef(null)
   const scrollPositions = useRef({})
   const gestureStart = useRef(null)
-  const activeArticle = ARTICLES[index]
   const scrollTo = (next, behavior = 'smooth') =>
     railRef.current?.children[Math.max(0, Math.min(ARTICLES.length - 1, next))]?.scrollIntoView({
       behavior,
@@ -454,7 +453,7 @@ function ArticleReader({ articleId, onBack, onChangeArticle, readIds, onFinish }
           }
         }}
       >
-        {ARTICLES.map((article, articleIndex) => (
+        {ARTICLES.map(article => (
           <div className="mx-library-programs__reader-page" key={article.id}>
             <article
               className="mx-library-programs__reader-slide"
@@ -576,7 +575,7 @@ function FlowHeader({ onBack, step, label }) {
 }
 
 function GuidedJournal({
-  saved,
+  saved: _saved,
   stage,
   stepIndex,
   answers,
@@ -586,7 +585,7 @@ function GuidedJournal({
   onContinue,
   onReview,
   onSave,
-  onReturn,
+  onReturn: _onReturn,
 }) {
   if (stage === 'intro')
     return (

@@ -1,6 +1,7 @@
 import { ChevronLeft } from 'lucide-react'
 import { platform, platformName } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
+import { isPreviewDemoMode } from '../lib/demoMode'
 
 /*
  * КНОПКА «НАЗАД»
@@ -27,12 +28,14 @@ import { useBackButton } from '../platform/telegram.hooks'
  * платформенный слой.
  */
 export default function BackButton({ onClick, label = 'Назад', className = '' }) {
+  const previewDemoMode = isPreviewDemoMode()
+
   useBackButton(() => {
     platform.haptic('light')
     onClick?.()
   })
 
-  if (platformName === 'telegram') return null
+  if (platformName === 'telegram' || previewDemoMode) return null
 
   return (
     <button

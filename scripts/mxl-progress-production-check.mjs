@@ -279,12 +279,12 @@ try {
       }
       const requestsBeforeLegacyPeriod = analyticsRequests
       await page.getByRole('button', { name: '30 дней' }).click()
-      await page.getByText('Среднее настроение · 30 дней').waitFor()
+      await page.getByText('Настроение за 30 дней').waitFor()
       if (analyticsRequests !== requestsBeforeLegacyPeriod + 1) {
         throw new Error(`${viewport.name}: выбор legacy периода не вызвал ожидаемый API-запрос`)
       }
     }
-    await page.getByText('Среднее настроение · 30 дней').waitFor()
+    await page.getByText('Настроение за 30 дней').waitFor()
     await page.getByText('Показать ритуалы').click()
     await page.getByText('Утренняя прогулка').waitFor()
     await page.screenshot({ path: path.join(OUTPUT_DIR, `${viewport.name}.png`), fullPage: true })

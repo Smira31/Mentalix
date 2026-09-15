@@ -9,10 +9,6 @@
 export const ACCENT_COLOR_KEY = 'mx-accent-color'
 
 export const DARK_ACCENT_COLORS = {
-  gold: {
-    label: 'Золотой',
-    hex: '#EDBD60',
-  },
   ice: {
     label: 'Лазурный',
     hex: '#5EB2ED',
@@ -24,14 +20,10 @@ export const LIGHT_ACCENT_COLORS = {
     label: 'Шалфейный',
     hex: '#6B7A52',
   },
-  terracotta: {
-    label: 'Терракота',
-    hex: '#B97355',
-  },
 }
 
 export const ACCENT_COLORS = DARK_ACCENT_COLORS
-export const DEFAULT_ACCENT = 'gold'
+export const DEFAULT_ACCENT = 'ice'
 export const LIGHT_DEFAULT_ACCENT = 'sage'
 
 export function getAccentColors(theme) {

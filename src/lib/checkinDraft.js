@@ -104,6 +104,10 @@ export function draftHasContent(draft) {
 export function morningDraftToNote(draft) {
   const normalized = normalizeDraft(draft)
 
+  if (normalized.brief.trim()) {
+    return normalized.brief.trim()
+  }
+
   if (normalized.mode === 'reflect') {
     return [
       ['Факт', normalized.fact],

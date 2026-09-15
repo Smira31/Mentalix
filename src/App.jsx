@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { Flame, Settings as SettingsIcon } from 'lucide-react'
+import { ChevronDown, Ellipsis, Flame, Settings as SettingsIcon, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -24,6 +24,7 @@ import { currentCheckinStreak } from './lib/series'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
+import { installDemoPressFeedback } from './lib/demoPressFeedback'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -94,6 +95,47 @@ function Splash() {
         "
       >
         выход находится шагами
+      </div>
+    </div>
+  )
+}
+
+function DemoTelegramChrome({ onBack }) {
+  const hasBack = typeof onBack === 'function'
+  const requestedTab = new URLSearchParams(window.location.search).get('tab')
+  const chromeTab = requestedTab === 'trends' ? 'progress' : requestedTab
+  const tabTitle =
+    chromeTab === 'progress'
+      ? 'Прогресс'
+      : chromeTab === 'library'
+        ? 'Библиотека'
+        : chromeTab === 'practices'
+          ? 'Практики'
+          : ''
+  const tabMeta = chromeTab === 'progress' ? '14 дней' : ''
+
+  return (
+    <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
+      <button
+        type="button"
+        aria-label={hasBack ? 'Назад' : 'Закрыть превью'}
+        className="mx-demo-telegram-chrome__close"
+        onClick={hasBack ? onBack : undefined}
+      >
+        {hasBack ? (
+          <ChevronDown size={18} strokeWidth={2.2} className="rotate-90" aria-hidden="true" />
+        ) : (
+          <X size={18} strokeWidth={2.2} aria-hidden="true" />
+        )}
+        <span>{hasBack ? 'Назад' : 'Закрыть'}</span>
+      </button>
+      {tabTitle && <div className="mx-demo-telegram-chrome__title">{tabTitle}</div>}
+      <div className="mx-demo-telegram-chrome__right">
+        <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
+          <ChevronDown size={22} strokeWidth={2.2} />
+          <Ellipsis size={22} strokeWidth={2.2} />
+        </div>
+        {tabMeta && <span className="mx-demo-telegram-chrome__meta">{tabMeta}</span>}
       </div>
     </div>
   )
@@ -224,6 +266,36 @@ export default function App() {
   const [todayStreak, setTodayStreak] = useState(0)
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
+  const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
+  const [demoMotionTick, setDemoMotionTick] = useState(0)
+
+  const registerDemoBack = useCallback((key, handler) => {
+    demoBackRefs.current[key] = handler
+    setDemoMotionTick(tick => tick + 1)
+  }, [])
+
+  const registerTodayBack = useCallback(
+    handler => registerDemoBack('today', handler),
+    [registerDemoBack]
+  )
+
+  const registerPracticesBack = useCallback(
+    handler => registerDemoBack('practices', handler),
+    [registerDemoBack]
+  )
+
+  const registerMentorBack = useCallback(
+    handler => registerDemoBack('mentor', handler),
+    [registerDemoBack]
+  )
+
+  const closeTodaySeries = useCallback(() => setTodaySeriesOpen(false), [])
+
+  useEffect(() => {
+    if (!isPreviewDemoMode()) return undefined
+
+    return installDemoPressFeedback(document)
+  }, [])
 
   useEffect(() => {
     if (!user) return
@@ -243,9 +315,6 @@ export default function App() {
       active = false
     }
   }, [user])
-
-  const bottomNavigationHidden =
-    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
 
   /*
    * Последняя реальная позиция скролла.
@@ -388,6 +457,34 @@ export default function App() {
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
 
+  const bottomNavigationHidden =
+    (tab === 'mentor' && !isPreviewDemoMode()) ||
+    mentorPersonaOpen ||
+    todayFlowOpen ||
+    todaySeriesOpen ||
+    practiceGameOpen
+
+  useEffect(() => {
+    if (!isPreviewDemoMode()) return
+
+    // Demo-only motion tick intentionally follows route/overlay transitions.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDemoMotionTick(tick => tick + 1)
+  }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
+
+  const demoBackAction =
+    overlay === 'profile'
+      ? () => setOverlay('settings')
+      : overlay === 'settings'
+        ? () => setOverlay(null)
+        : tab === 'mentor'
+          ? demoBackRefs.current.mentor
+          : tab === 'today'
+            ? demoBackRefs.current.today
+            : tab === 'practices'
+              ? demoBackRefs.current.practices
+              : null
+
   // Разрешены только известные contextual deep-links. Остальные query-параметры не
   // меняют состояние приложения и не могут открыть произвольный экран.
   const [practicesSub, setPracticesSub] = useState(
@@ -439,11 +536,7 @@ export default function App() {
   }, [theme])
 
   useEffect(() => {
-    if (accent === DEFAULT_ACCENT) {
-      document.documentElement.removeAttribute('data-accent')
-    } else {
-      document.documentElement.setAttribute('data-accent', accent)
-    }
+    document.documentElement.setAttribute('data-accent', accent)
   }, [accent])
 
   /* ============================================================
@@ -461,6 +554,29 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
+  const demoToolbar = new URLSearchParams(window.location.search).get('toolbar') === '1'
+  const [demoDevice, setDemoDevice] = useState(() => {
+    const device = new URLSearchParams(window.location.search).get('device')
+    return device === 'pro' ? 'pro' : 'pro-max'
+  })
+  const demoViewport =
+    demoDevice === 'pro'
+      ? { width: 402, height: 874, label: 'iPhone 16 Pro' }
+      : { width: 430, height: 932, label: 'iPhone 16 Pro Max' }
+  const [demoScale, setDemoScale] = useState(1)
+
+  useEffect(() => {
+    if (!previewDemoMode) return undefined
+    const updateScale = () => {
+      const reservedHeight = demoToolbar ? 118 : 42
+      setDemoScale(
+        Math.min(1, Math.max(0.62, (window.innerHeight - reservedHeight) / demoViewport.height))
+      )
+    }
+    updateScale()
+    window.addEventListener('resize', updateScale)
+    return () => window.removeEventListener('resize', updateScale)
+  }, [demoDevice, demoToolbar, demoViewport.height, previewDemoMode])
 
   useEffect(() => {
     platform.init()
@@ -913,9 +1029,44 @@ export default function App() {
      ============================================================ */
 
   return (
-    <div
-      className="
+    <div className={previewDemoMode ? 'mx-preview-stage' : undefined}>
+      {previewDemoMode && demoToolbar && (
+        <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
+          <span className="mx-preview-device-switcher__label">Demo viewport</span>
+          {[
+            { key: 'pro', label: 'iPhone 16 Pro', size: '402×874' },
+            { key: 'pro-max', label: 'iPhone 16 Pro Max', size: '430×932' },
+          ].map(device => (
+            <button
+              key={device.key}
+              type="button"
+              role="tab"
+              aria-selected={demoDevice === device.key}
+              className={demoDevice === device.key ? 'is-active' : ''}
+              onClick={() => {
+                setDemoDevice(device.key)
+                const params = new URLSearchParams(window.location.search)
+                params.set('device', device.key)
+                window.history.replaceState({}, '', `${window.location.pathname}?${params}`)
+              }}
+            >
+              <strong>{device.label}</strong>
+              <small>{device.size}</small>
+            </button>
+          ))}
+        </div>
+      )}
+      {previewDemoMode && tab !== 'mentor' && (
+        <div className="mx-preview-demo-note" role="status">
+          Preview Demo Mode · данные только в этом браузере
+        </div>
+      )}
+      <div
+        data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
+        data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
+        className="
         h-screen
+        relative
         overflow-hidden
         bg-emerald-deep
         text-cream
@@ -924,30 +1075,33 @@ export default function App() {
         items-center
         font-body
       "
-      style={{
-        height: viewportHeight ? `${viewportHeight}px` : '100dvh',
-        paddingTop: topSafeArea,
-        paddingRight: 'var(--app-safe-right)',
-        paddingLeft: 'var(--app-safe-left)',
-      }}
-    >
-      {previewDemoMode && tab !== 'mentor' && (
-        <div
-          role="status"
-          className="fixed top-2 left-1/2 z-[100] -translate-x-1/2 rounded-full border border-gold/40 bg-emerald px-3 py-1 text-[10px] font-semibold tracking-wide text-gold shadow-lg"
-        >
-          Preview Demo Mode · данные только в этом браузере
-        </div>
-      )}
+        style={{
+          height: previewDemoMode
+            ? `${demoViewport.height}px`
+            : viewportHeight
+              ? `${viewportHeight}px`
+              : '100dvh',
+          width: previewDemoMode ? `${demoViewport.width}px` : undefined,
+          transform: previewDemoMode ? `scale(${demoScale})` : undefined,
+          marginBottom: previewDemoMode
+            ? `${-(demoViewport.height * (1 - demoScale))}px`
+            : undefined,
+          paddingTop: previewDemoMode ? '56px' : topSafeArea,
+          paddingRight: 'var(--app-safe-right)',
+          paddingLeft: 'var(--app-safe-left)',
+        }}
+      >
+        {/* eslint-disable-next-line react-hooks/refs */}
+        {previewDemoMode && <DemoTelegramChrome onBack={demoBackAction} />}
 
-      {/* ========================================================
+        {/* ========================================================
           MENTALIX WORDMARK
           Только Сегодня.
          ======================================================== */}
 
-      {fullscreen && showTodayHeader && (
-        <div
-          className="
+        {fullscreen && showTodayHeader && (
+          <div
+            className="
               absolute
               left-0
               right-0
@@ -959,42 +1113,42 @@ export default function App() {
 
               pointer-events-none
             "
-          style={{
-            top: 'var(--app-safe-top)',
-            height: '56px',
-          }}
-        >
-          <span
-            className="
+            style={{
+              top: 'var(--app-safe-top)',
+              height: '56px',
+            }}
+          >
+            <span
+              className="
                 font-display
                 text-[16px]
                 tracking-[0.42em]
                 text-muted
               "
-          >
-            MENTALIX
-          </span>
-        </div>
-      )}
+            >
+              MENTALIX
+            </span>
+          </div>
+        )}
 
-      <div
-        ref={scrollRootRef}
-        className={`w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
-          tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
-        }`}
-        style={{
-          paddingBottom: contentBottomPadding,
-          scrollPaddingBottom: contentBottomPadding,
-        }}
-      >
-        {/* ========================================================
+        <div
+          ref={scrollRootRef}
+          className={`mx-app-scroll-root w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
+            tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
+          }`}
+          style={{
+            paddingBottom: contentBottomPadding,
+            scrollPaddingBottom: contentBottomPadding,
+          }}
+        >
+          {/* ========================================================
           TODAY HEADER
          ======================================================== */}
 
-        {showTodayHeader && (
-          <>
-            <div
-              className="
+          {showTodayHeader && (
+            <>
+              <div
+                className="
               w-full
               max-w-md
               min-w-0
@@ -1008,29 +1162,29 @@ export default function App() {
               justify-between
               gap-2
             "
-            >
-              {/* Огонёк открывает общий экран серий и вех. */}
-              <button
-                type="button"
-                onClick={() => {
-                  platform.haptic('light')
-                  setTodaySeriesOpen(true)
-                }}
-                aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
-                className="relative flex w-10 max-[359px]:w-6 h-10 shrink-0 items-center justify-center rounded-full bg-emerald border border-cream/10 text-gold active:scale-95"
               >
-                <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
-                {todayStreak > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 min-w-[15px] rounded-full bg-gold px-1 text-center text-[9px] font-bold leading-[15px] text-emerald-deep">
-                    {todayStreak}
-                  </span>
-                )}
-              </button>
+                {/* Огонёк открывает общий экран серий и вех. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    platform.haptic('light')
+                    setTodaySeriesOpen(true)
+                  }}
+                  aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
+                  className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/10 bg-emerald text-gold active:scale-95 max-[359px]:w-8"
+                >
+                  <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
+                  {todayStreak > 0 && (
+                    <span className="absolute -right-1 -top-1 z-20 min-w-[20px] rounded-full bg-gold px-1.5 text-center text-[9px] font-bold leading-[18px] text-emerald-deep">
+                      {todayStreak}
+                    </span>
+                  )}
+                </button>
 
-              {/* Greeting */}
+                {/* Greeting */}
 
-              <h1
-                className="
+                <h1
+                  className="
                 font-display
                 mx-type-greeting
                 text-cream
@@ -1040,28 +1194,28 @@ export default function App() {
                 text-center
                 truncate
               "
-              >
-                {/*
+                >
+                  {/*
                 Простое приветствие по
                 времени суток, без имени.
                 Обращение по имени каждый
                 день звучит как рассылка,
                 а не как разговор с собой.
               */}
-                {greeting()}
-              </h1>
+                  {greeting()}
+                </h1>
 
-              {/* Settings */}
+                {/* Settings */}
 
-              <button
-                type="button"
-                onClick={() => {
-                  platform.haptic('light')
+                <button
+                  type="button"
+                  onClick={() => {
+                    platform.haptic('light')
 
-                  setOverlay('settings')
-                }}
-                aria-label="Настройки"
-                className="
+                    setOverlay('settings')
+                  }}
+                  aria-label="Настройки"
+                  className="
                 w-10
                 max-[359px]:w-6
                 h-10
@@ -1080,76 +1234,78 @@ export default function App() {
                 active:scale-95
                 shrink-0
               "
-              >
-                <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
-              </button>
-            </div>
-          </>
-        )}
+                >
+                  <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
+                </button>
+              </div>
+            </>
+          )}
 
-        {/* ========================================================
+          {/* ========================================================
           CONTENT
          ======================================================== */}
 
-        <div
-          key={overlay || 'main'}
-          className={[
-            'flex-1 w-full flex flex-col items-center',
-            tab === 'mentor' && !overlay
-              ? 'mx-dialog-runtime-shell'
-              : mentorPersonaOpen
-                ? ''
-                : 'animate-fade-in',
-          ].join(' ')}
-        >
-          <Suspense fallback={<ScreenLoading />}>
-            {!user && (
-              <p
-                className="
+          <div
+            key={overlay || 'main'}
+            className={[
+              'flex-1 w-full flex flex-col items-center',
+              tab === 'mentor' && !overlay
+                ? 'mx-dialog-runtime-shell'
+                : mentorPersonaOpen
+                  ? ''
+                  : 'animate-fade-in',
+              previewDemoMode && 'mx-demo-screen-transition',
+              previewDemoMode && `mx-demo-screen-transition--${demoMotionTick % 2}`,
+            ].join(' ')}
+          >
+            <Suspense fallback={<ScreenLoading />}>
+              {!user && (
+                <p
+                  className="
               text-muted
               text-[13px]
               px-6
               text-center
               pt-8
             "
-              >
-                Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
-              </p>
-            )}
+                >
+                  Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
+                </p>
+              )}
 
-            {/* Settings */}
+              {/* Settings */}
 
-            {overlay === 'settings' && (
-              <Settings
-                user={user}
-                onBack={() => {
-                  setOverlay(null)
-                }}
-                onNavigate={destination => {
-                  if (destination === 'profile') {
-                    setOverlay('profile')
-                  }
-                }}
-                accent={accent}
-                onAccentChange={setAccentRaw}
-                theme={theme}
-                onThemeChange={setThemeRaw}
-              />
-            )}
+              {overlay === 'settings' && (
+                <Settings
+                  user={user}
+                  onBack={() => {
+                    setOverlay(null)
+                  }}
+                  onNavigate={destination => {
+                    if (destination === 'profile') {
+                      setOverlay('profile')
+                    }
+                  }}
+                  accent={accent}
+                  onAccentChange={setAccentRaw}
+                  theme={theme}
+                  onThemeChange={setThemeRaw}
+                />
+              )}
 
-            {/* Profile */}
+              {/* Profile */}
 
-            {overlay === 'profile' && (
-              <div
-                className="
+              {overlay === 'profile' && (
+                <div
+                  className="
               w-full
               flex
               flex-col
               items-center
             "
-              >
-                <div
-                  className="
+                >
+                  <div
+                    className="
                 w-full
                 max-w-md
 
@@ -1161,109 +1317,116 @@ export default function App() {
                 grid-cols-[1fr_auto_1fr]
                 items-center
               "
-                >
-                  <div className="justify-self-start">
-                    <BackButton
-                      onClick={() => {
-                        setOverlay('settings')
-                      }}
-                    />
-                  </div>
+                  >
+                    <div className="justify-self-start">
+                      <BackButton
+                        onClick={() => {
+                          setOverlay('settings')
+                        }}
+                      />
+                    </div>
 
-                  <span
-                    className="
+                    <span
+                      className="
                   font-display
                   mx-type-card
                   text-cream
                   lowercase
                 "
-                  >
-                    профиль.
-                  </span>
+                    >
+                      профиль.
+                    </span>
 
-                  <span aria-hidden="true" />
+                    <span aria-hidden="true" />
+                  </div>
+
+                  <Profile user={user} />
                 </div>
+              )}
 
-                <Profile user={user} />
-              </div>
-            )}
-
-            {/* ======================================================
+              {/* ======================================================
             MAIN TABS
            ====================================================== */}
 
-            {!overlay && (
-              <>
-                {user && tab === 'today' && (
-                  <Today
-                    user={user}
-                    onOpenPractice={openPractice}
-                    initialSub={initialTodaySub}
-                    returnFlowActive={Boolean(initialReturnFlow)}
-                    onReturnFlowEvent={reportReturnFlowEvent}
-                    onGoMentor={goMentor}
-                    onFlowChange={setTodayFlowOpen}
-                    onOpenSettings={() => setOverlay('settings')}
-                    seriesOpen={todaySeriesOpen}
-                    onCloseSeries={() => setTodaySeriesOpen(false)}
-                  />
-                )}
+              {!overlay && (
+                <>
+                  {user && tab === 'today' && (
+                    <Today
+                      user={user}
+                      onOpenPractice={openPractice}
+                      initialSub={initialTodaySub}
+                      returnFlowActive={Boolean(initialReturnFlow)}
+                      onReturnFlowEvent={reportReturnFlowEvent}
+                      onGoMentor={goMentor}
+                      onFlowChange={setTodayFlowOpen}
+                      onRegisterBack={registerTodayBack}
+                      onOpenSettings={() => setOverlay('settings')}
+                      seriesOpen={todaySeriesOpen}
+                      onCloseSeries={closeTodaySeries}
+                    />
+                  )}
 
-                {user && tab === 'practices' && (
-                  <Practices
-                    user={user}
-                    initialSub={practicesSub}
-                    onGameChange={setPracticeGameOpen}
-                    onReturnToToday={goToday}
-                  />
-                )}
+                  {user && tab === 'practices' && (
+                    <Practices
+                      user={user}
+                      initialSub={practicesSub}
+                      onGameChange={setPracticeGameOpen}
+                      onRegisterBack={registerPracticesBack}
+                      onReturnToToday={goToday}
+                    />
+                  )}
 
-                {user && tab === 'mentor' && (
-                  <MentalixChat user={user} onPersonaChange={setMentorPersonaOpen} />
-                )}
+                  {user && tab === 'mentor' && (
+                    <MentalixChat
+                      user={user}
+                      onPersonaChange={setMentorPersonaOpen}
+                      onRegisterBack={registerMentorBack}
+                    />
+                  )}
 
-                {user && tab === 'library' && <Library user={user} />}
+                  {user && tab === 'library' && <Library user={user} />}
 
-                {user && tab === 'trends' && (
-                  <Analytics
-                    user={user}
-                    onGoCheckin={() => {
-                      platform.haptic('light')
+                  {user && tab === 'trends' && (
+                    <Analytics
+                      user={user}
+                      onGoCheckin={() => {
+                        platform.haptic('light')
 
-                      setMentorPersonaOpen(false)
+                        setMentorPersonaOpen(false)
 
-                      setTab('today')
+                        setTab('today')
 
-                      setPracticesSub(null)
+                        setPracticesSub(null)
 
-                      setNavCollapsed(false)
+                        setNavCollapsed(false)
 
-                      resetNavigationGesture()
+                        resetNavigationGesture()
 
-                      scrollAppToTop()
-                    }}
-                  />
-                )}
-              </>
-            )}
-          </Suspense>
+                        scrollAppToTop()
+                      }}
+                    />
+                  )}
+                </>
+              )}
+            </Suspense>
+          </div>
         </div>
-      </div>
 
-      {/* ========================================================
+        {/* ========================================================
           COLLAPSIBLE NAVIGATION
          ======================================================== */}
 
-      {user && !overlay && !bottomNavigationHidden && (
-        <BottomNavigation
-          tab={tab}
-          collapsed={navCollapsed}
-          onCollapseChange={setNavCollapsed}
-          onTabChange={switchTab}
-        />
-      )}
+        {user && !overlay && !bottomNavigationHidden && (
+          <BottomNavigation
+            tab={tab}
+            collapsed={navCollapsed}
+            onCollapseChange={setNavCollapsed}
+            onTabChange={switchTab}
+          />
+        )}
 
-      <PreviewApiDiagnostic />
+        <PreviewApiDiagnostic />
+      </div>
     </div>
   )
 }

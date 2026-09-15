@@ -1,3 +1,4 @@
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowLeft, Check, Plus, Search, Trash2 } from 'lucide-react'
@@ -215,7 +216,7 @@ function CompletedSessionViewer({ completedSession, onClose }) {
         </div>
       </div>
     </section>,
-    document.body
+    getFullscreenPortalTarget()
   )
 }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
@@ -14,7 +14,6 @@ import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import History from './History'
 import QuoteView from './QuoteView'
-import MorningPilotCard from '../components/MorningPilotCard'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
@@ -23,6 +22,7 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
+import { isPreviewDemoMode } from '../lib/demoMode'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -135,6 +135,7 @@ export default function Today({
   onReturnFlowEvent,
   onGoMentor,
   onFlowChange,
+  onRegisterBack,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -183,6 +184,7 @@ export default function Today({
   // пользователь явно не пропустил его в этой сессии — «пропустить» не
   // должно повторно всплывать при каждом ре-рендере Today.
   const [starterSetSkipped, setStarterSetSkipped] = useState(false)
+  const [demoQuickStartOpen, setDemoQuickStartOpen] = useState(false)
 
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
@@ -194,15 +196,18 @@ export default function Today({
    * темы и аватаром там не нужна: человек уже внутри и знает,
    * где он. Возврат даёт системная кнопка Telegram.
    */
-  function changeSub(nextSub) {
-    onFlowChange?.(Boolean(nextSub))
+  const changeSub = useCallback(
+    nextSub => {
+      onFlowChange?.(Boolean(nextSub))
 
-    if (returnFlowActive && nextSub === 'checkin') {
-      onReturnFlowEvent?.('morning_action_started')
-    }
+      if (returnFlowActive && nextSub === 'checkin') {
+        onReturnFlowEvent?.('morning_action_started')
+      }
 
-    setSub(nextSub)
-  }
+      setSub(nextSub)
+    },
+    [onFlowChange, onReturnFlowEvent, returnFlowActive]
+  )
 
   function retryTodayData() {
     if (!user) return
@@ -218,6 +223,14 @@ export default function Today({
       onFlowChange?.(false)
     }
   }, [onFlowChange])
+
+  useEffect(() => {
+    const handler = seriesOpen ? onCloseSeries : sub ? () => changeSub(null) : null
+
+    onRegisterBack?.(handler)
+
+    return () => onRegisterBack?.(null)
+  }, [changeSub, onCloseSeries, onRegisterBack, seriesOpen, sub])
 
   async function refreshCheckin() {
     if (!user) return
@@ -714,6 +727,57 @@ export default function Today({
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
+      {isPreviewDemoMode() && (
+        <div className="w-full mt-3">
+          <button
+            type="button"
+            className="w-full rounded-full border border-cream/15 bg-emerald-light px-4 py-2.5 mx-type-meta text-muted active:scale-[0.99] transition-transform"
+            aria-expanded={demoQuickStartOpen}
+            onClick={() => setDemoQuickStartOpen(open => !open)}
+          >
+            {demoQuickStartOpen ? 'Скрыть другие способы' : 'Другой способ начать'}
+          </button>
+
+          {demoQuickStartOpen && (
+            <div className="mt-2 grid grid-cols-3 gap-2" aria-label="Другие способы начать">
+              <button
+                type="button"
+                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  platform.haptic('light')
+                  setDemoQuickStartOpen(false)
+                  changeSub('checkin')
+                }}
+              >
+                Настроение
+              </button>
+              <button
+                type="button"
+                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  platform.haptic('light')
+                  setDemoQuickStartOpen(false)
+                  onOpenPractice('journal')
+                }}
+              >
+                Записать мысль
+              </button>
+              <button
+                type="button"
+                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  platform.haptic('light')
+                  setDemoQuickStartOpen(false)
+                  onOpenPractice('rituals')
+                }}
+              >
+                Практика
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="mx-today-hero-breath" aria-hidden="true" />
 
       {/* ======================================================
@@ -826,12 +890,6 @@ export default function Today({
         </button>
       )}
 
-      <MorningPilotCard
-        userId={user.id}
-        rituals={rituals}
-        onOpenRituals={() => onOpenPractice('rituals')}
-      />
-
       {/* ======================================================
           ПУЛЬС
           ====================================================== */}
@@ -911,10 +969,6 @@ export default function Today({
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
           <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
-
-          <span className="block mx-type-meta text-muted mt-4">
-            {thoughtOfDay.attribution} · открыть →
-          </span>
         </button>
       )}
     </div>
