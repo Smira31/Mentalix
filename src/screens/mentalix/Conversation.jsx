@@ -286,7 +286,7 @@ export default function Conversation({
     previousMessageCount.current = messages.length
 
     const frame = window.requestAnimationFrame(() => {
-      scrollToEnd(firstPosition ? 'auto' : 'smooth')
+      scrollToEnd('auto')
     })
 
     return () => {
@@ -365,10 +365,7 @@ export default function Conversation({
                 }
 
                 return (
-                  <div
-                    key={messageKey}
-                    className="mx-imessage-row mx-imessage-row--assistant mx-msg-in"
-                  >
+                  <div key={messageKey} className="mx-imessage-row mx-imessage-row--assistant">
                     <div className="mx-ai-meta text-gold mb-1.5">{meta.name}</div>
 
                     <div className="mx-imessage-bubble mx-imessage-bubble--assistant mx-ai-body text-cream break-words">
@@ -481,6 +478,7 @@ export default function Conversation({
             name="mentor-message"
             autoComplete="off"
             autoCapitalize="sentences"
+            inputMode="text"
             enterKeyHint="send"
             className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-cream placeholder:text-faint"
           />
