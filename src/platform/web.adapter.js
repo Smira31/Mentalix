@@ -24,8 +24,14 @@ export const webAdapter = {
 
   async requestAuth() {
     const response = await fetch('/api/auth/session', { credentials: 'include' })
-    if (!response.ok) throw new Error(`Web session restore failed: ${response.status}`)
+    if (!response.ok) {
+      if (import.meta.env.DEV) return this.getUser()
+      throw new Error(`Web session restore failed: ${response.status}`)
+    }
     const result = await response.json()
+    if (import.meta.env.DEV && !Object.prototype.hasOwnProperty.call(result, 'authenticated')) {
+      return this.getUser()
+    }
     if (!result.authenticated || !result.user) {
       this.clearUser()
       return null
