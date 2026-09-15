@@ -32,7 +32,12 @@ export function isPreviewDemoMode() {
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost = host === 'mentalix-preview.vercel.app'
 
-  return params.get('demo') === '1' && isAllowedHost && (isPreviewRuntime || isQaProductionHost)
+  const demoRequested = params.get('demo') === '1'
+  const pwaDemoRequested = params.get('source') === 'pwa'
+
+  return (
+    (demoRequested || pwaDemoRequested) && isAllowedHost && (isPreviewRuntime || isQaProductionHost)
+  )
 }
 
 function previewTodayState() {

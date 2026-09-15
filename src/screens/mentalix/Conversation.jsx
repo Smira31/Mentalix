@@ -58,6 +58,7 @@ export default function Conversation({
   const stopTimerRef = useRef(null)
   const secondsTimerRef = useRef(null)
   const sendingRef = useRef(sending)
+  const suppressVoiceClickRef = useRef(false)
 
   const [voiceState, setVoiceState] = useState('idle')
   const [voiceSeconds, setVoiceSeconds] = useState(0)
@@ -235,8 +236,8 @@ export default function Conversation({
           }
 
           platform.haptic('medium')
-
-          onSend(transcript)
+          setInput(transcript)
+          dismissVoiceHint()
         } catch (error) {
           console.error(error)
           const message = String(error?.message || '')
@@ -469,12 +470,6 @@ export default function Conversation({
               }
             }}
 
-            onFocus={() => {
-              setTimeout(() => {
-                scrollToEnd('smooth')
-              }, 180)
-            }}
-
             onKeyDown={event => {
               if (event.key === 'Enter') {
                 onSend()
@@ -513,7 +508,13 @@ export default function Conversation({
 
               {...(hasText && voiceState === 'idle'
                 ? {
-                    onClick: () => onSend(),
+                    onClick: () => {
+                      if (suppressVoiceClickRef.current) {
+                        suppressVoiceClickRef.current = false
+                        return
+                      }
+                      onSend()
+                    },
                     onPointerDown: () => setVoicePressed(true),
                     onPointerUp: () => setVoicePressed(false),
                     onPointerLeave: () => setVoicePressed(false),
@@ -536,6 +537,7 @@ export default function Conversation({
                       event.currentTarget.releasePointerCapture?.(event.pointerId)
 
                       if (voiceState === 'recording') {
+                        suppressVoiceClickRef.current = true
                         stopVoiceRecording()
                       }
                     },
@@ -546,6 +548,7 @@ export default function Conversation({
                       setVoicePressed(false)
 
                       if (voiceState === 'recording') {
+                        suppressVoiceClickRef.current = true
                         stopVoiceRecording()
                       }
                     },
@@ -554,6 +557,7 @@ export default function Conversation({
                       setVoicePressed(false)
 
                       if (voiceState === 'recording') {
+                        suppressVoiceClickRef.current = true
                         stopVoiceRecording()
                       }
                     },

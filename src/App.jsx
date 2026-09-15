@@ -102,7 +102,8 @@ function Splash() {
 
 function DemoTelegramChrome({ onBack }) {
   const hasBack = typeof onBack === 'function'
-  const chromeTab = new URLSearchParams(window.location.search).get('tab')
+  const requestedTab = new URLSearchParams(window.location.search).get('tab')
+  const chromeTab = requestedTab === 'trends' ? 'progress' : requestedTab
   const tabTitle =
     chromeTab === 'progress'
       ? 'Прогресс'
@@ -1062,7 +1063,7 @@ export default function App() {
       )}
       <div
         data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
-        data-demo-tab={previewDemoMode ? tab : undefined}
+        data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
         className="
         h-screen
         relative
@@ -1085,7 +1086,7 @@ export default function App() {
           marginBottom: previewDemoMode
             ? `${-(demoViewport.height * (1 - demoScale))}px`
             : undefined,
-          paddingTop: previewDemoMode ? '60px' : topSafeArea,
+          paddingTop: previewDemoMode ? '56px' : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
@@ -1132,7 +1133,7 @@ export default function App() {
 
         <div
           ref={scrollRootRef}
-          className={`w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
+          className={`mx-app-scroll-root w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
             tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
           }`}
           style={{

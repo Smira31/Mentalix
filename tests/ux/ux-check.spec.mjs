@@ -308,7 +308,7 @@ async function assertLibrarySoonControl(page) {
   await expect(workshops).toBeDisabled()
   await workshops.evaluate(element => element.click())
   await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Открыть поиск' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
 }
 
 async function captureScreen({ page, viewport, screen, slug, runtimeErrors, results, check }) {
@@ -1039,7 +1039,7 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Открыть поиск' }))
+        await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
         await assertLibrarySoonControl(page)
       },
     })

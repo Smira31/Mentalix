@@ -712,6 +712,9 @@ body,
 #root {
   min-height: 100%;
 
+  /* Прокрутка остаётся доступной, но нативная полоса не перекрывает дизайн. */
+  scrollbar-width: none;
+
   /*
    * Ни один экран не должен уезжать вбок. Если что-то внутри
    * оказывается шире окна, страница начинает скроллиться
@@ -725,6 +728,22 @@ body,
   max-width: 100%;
   overflow-x: hidden;
   overscroll-behavior-x: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+#root::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-app-scroll-root {
+  scrollbar-width: none;
+}
+
+.mx-app-scroll-root::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 html {
@@ -1275,12 +1294,13 @@ button {
   padding: 0 10px;
 }
 .mx-demo-telegram-chrome__meta {
-  padding-right: 5px;
+  padding-right: 0;
   color: rgb(var(--c-muted));
   font-family: 'Onest', sans-serif;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.02em;
+  transform: translateX(6px);
 }
 
 /* In the Demo frame the Telegram-style chrome owns the page title. Keep the
@@ -1305,6 +1325,24 @@ button {
   min-height: 0;
   margin-top: 0;
   margin-bottom: 16px;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog {
+  gap: 4px;
+  padding-top: 0;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-catalog__header {
+  margin-bottom: 4px;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-v2__section {
+  margin-top: 0;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='library'] .mx-library-v2__program-detail {
+  gap: 12px;
+  padding-top: 0;
 }
 
 .mx-preview-stage {
@@ -1407,5 +1445,20 @@ button {
     border-width: 0;
     border-radius: 0;
     max-width: 100vw;
+    width: 100vw !important;
+    height: 100dvh !important;
+    transform: none !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+/* iOS Home Screen / standalone: keep the app chrome below the native status bar. */
+@media (display-mode: standalone) and (max-width: 700px) {
+  .mx-demo-telegram-chrome {
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+  }
+
+  .mx-preview-stage > .h-screen {
+    padding-top: calc(56px + env(safe-area-inset-top, 0px)) !important;
   }
 }

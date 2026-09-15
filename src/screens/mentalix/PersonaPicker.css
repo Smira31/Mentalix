@@ -42,6 +42,13 @@ body:has(.mx-dialog-entry) {
   padding-top: var(--app-safe-top);
 }
 
+/* App.jsx already reserves the iOS status-bar area in standalone mode. */
+@media (display-mode: standalone) and (max-width: 700px) {
+  .mx-dialog-entry {
+    padding-top: 0;
+  }
+}
+
 .mx-dialog-hero {
   position: relative;
   flex: 0 0 clamp(288px, 32vh, 400px);
