@@ -104,8 +104,8 @@ export default function SeriesBadges({ user, onBack }) {
     <div className="w-full max-w-md px-5 pb-8 animate-fade-in">
       <div className="flex items-center gap-3 py-4">
         <BackButton onClick={onBack} />
-        <h1 className="font-display mx-type-page lowercase text-cream">
-          огонёк — {activeTab === 'badges' ? 'награды' : 'статистика'}
+        <h1 className="font-display mx-type-page text-cream">
+          Огонёк — {activeTab === 'badges' ? 'Награды' : 'Статистика'}
         </h1>
       </div>
 
