@@ -18,9 +18,14 @@ function ProgressBar({ progress, goal }) {
   )
 }
 
-function BadgeRow({ badge }) {
+function BadgeRow({ badge, expanded, onToggle }) {
   return (
-    <div className="mx-path-award-row">
+    <button
+      type="button"
+      className={`mx-path-award-row ${expanded ? 'is-expanded' : ''}`}
+      onClick={onToggle}
+      aria-expanded={expanded}
+    >
       <MotifArt name={badge.motif} size={58} className={badge.done ? '' : 'opacity-55'} />
       <div className="min-w-0 flex-1">
         <div className="mx-path-row-title">{badge.title}</div>
@@ -32,7 +37,14 @@ function BadgeRow({ badge }) {
         </strong>
         <ProgressBar progress={badge.progress} goal={badge.goal} />
       </div>
-    </div>
+      {expanded && (
+        <div className="mx-path-award-detail">
+          {badge.done
+            ? 'Награда открыта. Продолжай в своём темпе.'
+            : `Осталось: ${Math.max(0, badge.goal - badge.progress)}.`}
+        </div>
+      )}
+    </button>
   )
 }
 
@@ -46,10 +58,19 @@ function SummaryCard({ value, label }) {
 }
 
 function StatSection({ title, rows }) {
+  const [open, setOpen] = useState(true)
   return (
-    <section className="mx-path-stat-section">
-      <h2>{title}</h2>
-      <div className="mx-path-stat-card">
+    <section className={`mx-path-stat-section ${open ? 'is-open' : ''}`}>
+      <button
+        type="button"
+        className="mx-path-stat-heading"
+        onClick={() => setOpen(value => !value)}
+        aria-expanded={open}
+      >
+        <h2>{title}</h2>
+        <span aria-hidden="true">{open ? '−' : '+'}</span>
+      </button>
+      <div className="mx-path-stat-card" hidden={!open}>
         {rows.map(([label, value]) => (
           <div className="mx-path-stat-row" key={label}>
             <span>{label}</span>
@@ -61,8 +82,10 @@ function StatSection({ title, rows }) {
   )
 }
 
-function AwardsView({ model, unlocked, upcoming }) {
+function AwardsView({ unlocked, upcoming }) {
   const latest = unlocked[0]
+  const [showAll, setShowAll] = useState(false)
+  const [expandedId, setExpandedId] = useState(null)
   return (
     <div className="mx-path-content">
       <section className="mx-path-featured-award">
@@ -84,14 +107,28 @@ function AwardsView({ model, unlocked, upcoming }) {
         )}
       </section>
 
-      <div className="mx-path-see-all">
-        Смотреть все <span aria-hidden="true">›</span>
-      </div>
-      <section className="mx-path-awards-section">
+      <button
+        type="button"
+        className="mx-path-see-all"
+        onClick={() => setShowAll(value => !value)}
+        aria-expanded={showAll}
+      >
+        {showAll ? 'Скрыть награды' : 'Смотреть все'}{' '}
+        <span aria-hidden="true">{showAll ? '⌃' : '›'}</span>
+      </button>
+      <section className={`mx-path-awards-section ${showAll ? 'is-expanded' : ''}`}>
         <h2>Следующие награды</h2>
         <div className="mx-path-award-list">
-          {(upcoming.length ? upcoming : unlocked).map(badge => (
-            <BadgeRow key={badge.id} badge={badge} />
+          {(showAll
+            ? [...upcoming, ...unlocked]
+            : (upcoming.length ? upcoming : unlocked).slice(0, 3)
+          ).map(badge => (
+            <BadgeRow
+              key={`${badge.id}-${showAll}`}
+              badge={badge}
+              expanded={expandedId === badge.id}
+              onToggle={() => setExpandedId(id => (id === badge.id ? null : badge.id))}
+            />
           ))}
         </div>
       </section>
@@ -226,7 +263,7 @@ export default function SeriesBadges({ user, onBack }) {
         {!error && !model && <p className="mx-path-status">Собираю твой путь…</p>}
         {model &&
           (activeTab === 'badges' ? (
-            <AwardsView model={model} unlocked={unlocked} upcoming={upcoming} />
+            <AwardsView unlocked={unlocked} upcoming={upcoming} />
           ) : (
             <StatsView model={model} />
           ))}

@@ -1083,8 +1083,8 @@ export default function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {/* eslint-disable-next-line react-hooks/refs */}
         {previewDemoMode && !overlay && !todaySeriesOpen && (
+          // eslint-disable-next-line react-hooks/refs
           <DemoTelegramChrome onBack={demoBackAction} />
         )}
 

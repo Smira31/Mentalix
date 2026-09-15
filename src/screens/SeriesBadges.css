@@ -75,6 +75,7 @@
   border-radius: 26px;
   background: #111;
   text-align: center;
+  animation: mx-path-card-in 360ms ease-out both;
 }
 
 .mx-path-featured-award h2 {
@@ -107,10 +108,14 @@
 }
 
 .mx-path-see-all {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
   padding: 26px 8px 18px;
   color: #8b8b8b;
-  text-align: right;
   font-size: 16px;
+  text-align: right;
 }
 
 .mx-path-see-all span {
@@ -143,11 +148,37 @@
 }
 
 .mx-path-award-row {
+  position: relative;
   display: flex;
   min-height: 126px;
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
+  border: 0;
+  color: inherit;
+  text-align: left;
+  transition:
+    background-color 180ms ease,
+    transform 180ms ease;
+  animation: mx-path-card-in 320ms ease-out both;
+}
+
+.mx-path-award-row:active {
+  transform: scale(0.99);
+}
+
+.mx-path-award-row.is-expanded {
+  background: #191919;
+}
+
+.mx-path-award-detail {
+  position: absolute;
+  right: 20px;
+  bottom: 9px;
+  left: 94px;
+  color: #a2a2a2;
+  font-size: 12px;
+  animation: mx-path-detail-in 180ms ease-out both;
 }
 
 .mx-path-award-row .mx-semantic-glyph,
@@ -220,6 +251,26 @@
   margin-top: 26px;
 }
 
+.mx-path-stat-heading {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.mx-path-stat-heading h2 {
+  margin-bottom: 14px;
+}
+
+.mx-path-stat-heading span {
+  color: #8c8c8c;
+  font-size: 20px;
+}
+
 .mx-path-stat-card {
   overflow: hidden;
 }
@@ -250,6 +301,28 @@
   padding: 30px 10px;
   color: #999;
   text-align: center;
+}
+
+@keyframes mx-path-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mx-path-detail-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 480px) {
@@ -300,5 +373,11 @@
   .mx-path-tabs button,
   .mx-path-close {
     transition: none;
+  }
+
+  .mx-path-featured-award,
+  .mx-path-award-row,
+  .mx-path-award-detail {
+    animation: none;
   }
 }

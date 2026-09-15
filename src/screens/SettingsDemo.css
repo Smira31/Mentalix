@@ -25,6 +25,32 @@
   color: #f2f2f2;
 }
 
+.mx-settings-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mx-settings-screen--demo svg.text-gold,
+.mx-settings-screen--demo .text-gold,
+.mx-settings-screen--demo [class*='text-accent'],
+.mx-settings-screen--demo [class*='text-blue'] {
+  color: #a7a7a7 !important;
+}
+
+.mx-settings-screen--demo svg {
+  filter: grayscale(1);
+}
+
+.mx-settings-screen--demo .bg-gold,
+.mx-settings-screen--demo [class*='bg-gold'] {
+  background: #7b7b7b !important;
+}
+
+.mx-settings-screen--demo .mx-settings-header-button--gift {
+  display: none;
+}
+
 .mx-settings-premium {
   display: flex;
   align-items: center;
