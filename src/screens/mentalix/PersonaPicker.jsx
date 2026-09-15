@@ -7,7 +7,7 @@ import { isPreviewDemoMode } from '../../lib/demoMode'
 
 import './PersonaPicker.css'
 
-const DEFAULT_INDEX = 0
+const DEFAULT_INDEX = 1
 
 // Визуальный порядок entry-карусели задан reference screenshot. Сами persona
 // keys и backend-контракт остаются прежними.
@@ -117,11 +117,11 @@ export default function PersonaPicker({ onPick }) {
                 aria-label={`${persona.name}: ${promise}`}
                 aria-current={isActive ? 'true' : undefined}
                 tabIndex={isActive ? 0 : -1}
-                onClick={() => startRole(persona)}
+                onClick={() => selectRole(index)}
                 onKeyDown={event => {
                   if (event.key === 'Enter' || event.key === ' ') {
                     event.preventDefault()
-                    startRole(persona)
+                    selectRole(index)
                   }
                 }}
               >
@@ -130,6 +130,17 @@ export default function PersonaPicker({ onPick }) {
                   <h3 className="mx-type-persona-title">{persona.name}</h3>
                   <p className="mx-dialog-card__promise">{promise}</p>
                   <p className="mx-dialog-card__description mx-type-persona-body">{description}</p>
+                  <button
+                    type="button"
+                    className="mx-dialog-card__start mx-type-control"
+                    onClick={event => {
+                      event.stopPropagation()
+                      startRole(persona)
+                    }}
+                    aria-label={`Начать разговор: ${persona.name}`}
+                  >
+                    Начать
+                  </button>
                 </div>
               </article>
             )
@@ -149,16 +160,6 @@ export default function PersonaPicker({ onPick }) {
           ))}
         </div>
       </section>
-      <div className="mx-dialog-start-dock">
-        <button
-          type="button"
-          className="mx-dialog-start cta-pill mx-type-control"
-          onClick={() => startRole(DISPLAY_PERSONAS[active])}
-          aria-label={`Начать разговор: ${DISPLAY_PERSONAS[active].name}`}
-        >
-          Начать {DISPLAY_PERSONAS[active].name}
-        </button>
-      </div>
     </main>
   )
 }

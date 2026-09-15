@@ -79,13 +79,6 @@ body:has(.mx-dialog-entry) {
   text-align: center;
 }
 
-.mx-dialog-start-dock {
-  flex: 0 0 auto;
-  padding: 10px var(--mx-space-5)
-    max(10px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
-  background: rgb(var(--c-bg));
-}
-
 .mx-dialog-eyebrow,
 .mx-dialog-surface__kicker {
   margin: 0;
@@ -107,16 +100,6 @@ body:has(.mx-dialog-entry) {
 .mx-dialog-hero__content h1 {
   visibility: visible;
   opacity: 0;
-}
-
-.mx-dialog-start {
-  min-height: 46px;
-  width: 100%;
-  padding-inline: 28px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
 }
 
 .mx-dialog-surface {
@@ -243,6 +226,24 @@ body:has(.mx-dialog-entry) {
   width: 58px;
   height: 52px;
   opacity: 0.72;
+}
+
+.mx-dialog-card__start {
+  min-height: 38px;
+  margin: var(--mx-space-4) auto 0;
+  padding: 0 22px;
+  border: 1px solid rgb(var(--c-border) / 0.8);
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mx-dialog-card__start:focus-visible {
+  outline: 2px solid rgb(var(--c-gold));
+  outline-offset: 3px;
 }
 
 .mx-dialog-card__body {
@@ -418,7 +419,7 @@ body:has(.mx-dialog-entry) {
 @media (prefers-reduced-motion: reduce) {
   .mx-dialog-card,
   .mx-dialog-dots button span,
-  .mx-dialog-start {
+  .mx-dialog-card__start {
     transition: none;
   }
 }

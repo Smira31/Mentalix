@@ -478,6 +478,10 @@ export default function Conversation({
 
             placeholder={`Написать ${meta.name}…`}
 
+            name="mentor-message"
+            autoComplete="off"
+            autoCapitalize="sentences"
+            enterKeyHint="send"
             className="mx-ai-input flex-1 min-w-0 bg-transparent border-0 outline-none pl-4 pr-2 text-cream placeholder:text-faint"
           />
 

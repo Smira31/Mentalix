@@ -73,7 +73,6 @@ export function useFullscreenSurface() {
   const viewportGeometry = useVisualViewportGeometry()
   const portalTarget = getFullscreenPortalTarget()
   const demoMode = isPreviewDemoMode()
-  const demoFrameHeight = demoMode ? portalTarget?.offsetHeight : null
   const demoScale =
     demoMode && portalTarget?.offsetHeight && portalTarget?.getBoundingClientRect
       ? portalTarget.getBoundingClientRect().height / portalTarget.offsetHeight
@@ -81,10 +80,10 @@ export function useFullscreenSurface() {
   const scale = Number.isFinite(demoScale) && demoScale > 0 ? demoScale : 1
   const viewportHeight = viewportGeometry?.height ?? null
   const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
-  const surfaceTop = demoMode ? viewportOffsetTop / scale : viewportOffsetTop
-  const visibleHeight = viewportHeight
-    ? Math.max(0, (viewportHeight - viewportOffsetTop) / scale)
-    : null
+  // visualViewport.height is already the visible height. Convert the single
+  // viewport snapshot into the portal target's coordinate space exactly once.
+  const surfaceTop = viewportOffsetTop / scale
+  const visibleHeight = viewportHeight ? viewportHeight / scale : null
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
@@ -117,14 +116,7 @@ export function useFullscreenSurface() {
 
     paddingBottom: 'var(--app-safe-bottom)',
 
-    height:
-      demoFrameHeight && visibleHeight
-        ? `${Math.min(demoFrameHeight, visibleHeight)}px`
-        : demoFrameHeight
-          ? `${demoFrameHeight}px`
-          : visibleHeight
-            ? `${visibleHeight}px`
-            : '100dvh',
+    height: visibleHeight ? `${visibleHeight}px` : '100dvh',
   }
 
   return {
