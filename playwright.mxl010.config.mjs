@@ -20,7 +20,7 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run build && vite preview --host 127.0.0.1 --port 4174',
+    command: 'VITE_LOCAL_PREVIEW=true npm run build && VITE_LOCAL_PREVIEW=true vite preview --host 127.0.0.1 --port 4174',
     url: 'http://127.0.0.1:4174',
     reuseExistingServer: false,
     timeout: 120_000,

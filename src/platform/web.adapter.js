@@ -23,14 +23,15 @@ export const webAdapter = {
   },
 
   async requestAuth() {
-    if (import.meta.env.DEV) return this.getUser()
+    const localFixtureMode = import.meta.env.DEV || import.meta.env.VITE_LOCAL_PREVIEW === 'true'
+    if (localFixtureMode) return this.getUser()
     const response = await fetch('/api/auth/session', { credentials: 'include' })
     if (!response.ok) {
-      if (import.meta.env.DEV) return this.getUser()
+      if (localFixtureMode) return this.getUser()
       throw new Error(`Web session restore failed: ${response.status}`)
     }
     const result = await response.json()
-    if (import.meta.env.DEV && !Object.prototype.hasOwnProperty.call(result, 'authenticated')) {
+    if (localFixtureMode && !Object.prototype.hasOwnProperty.call(result, 'authenticated')) {
       return this.getUser()
     }
     if (!result.authenticated || !result.user) {
