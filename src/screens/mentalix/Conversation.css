@@ -64,7 +64,7 @@
 .mx-imessage-bubble--assistant {
   max-width: min(88%, 360px);
   padding: 12px 16px;
-  background: rgb(var(--c-emerald-light) / 0.28);
+  background: rgb(9 13 14 / 0.92);
   border: 1px solid rgb(var(--c-cream) / 0.08);
   border-bottom-left-radius: 7px;
 }
@@ -76,7 +76,7 @@
   bottom: 0;
   width: 11px;
   height: 12px;
-  background: rgb(var(--c-emerald-light) / 0.28);
+  background: rgb(9 13 14 / 0.92);
   clip-path: polygon(0 100%, 100% 0, 100% 100%);
 }
 
