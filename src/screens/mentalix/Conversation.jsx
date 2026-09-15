@@ -320,7 +320,7 @@ export default function Conversation({
 
   return createPortal(
     <div
-      className={FULLSCREEN_SHELL_CLASS}
+      className={`${FULLSCREEN_SHELL_CLASS} ${demoVoice ? 'mx-conversation-surface--demo' : ''}`}
       style={{
         ...surfaceStyle,
 
@@ -560,6 +560,17 @@ export default function Conversation({
                     onPointerCancel: () => setVoicePressed(false),
                   }
                 : {
+                    onClick: demoVoice
+                      ? () => {
+                          if (suppressVoiceClickRef.current) {
+                            suppressVoiceClickRef.current = false
+                            return
+                          }
+
+                          if (voiceState === 'idle') startVoiceRecording()
+                          else if (voiceState === 'recording') stopVoiceRecording()
+                        }
+                      : undefined,
                     onPointerDown: event => {
                       event.preventDefault()
                       event.currentTarget.setPointerCapture?.(event.pointerId)

@@ -18,6 +18,13 @@
   scroll-behavior: smooth;
 }
 
+/* Не анимируем height: на iOS это создаёт временный gap под composer. */
+.mx-conversation-surface--demo {
+  transition:
+    top 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding-top 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .mx-imessage-row {
   display: flex;
   flex-direction: column;
@@ -188,6 +195,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .mx-conversation-surface--demo {
+    transition: none;
+  }
+
   .mx-voice-icon {
     animation: mx-voice-icon-in-reduced 200ms ease both;
   }
