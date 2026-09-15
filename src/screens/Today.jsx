@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight } from 'lucide-react'
+import { Check, ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
 
 import './Today.css'
 
@@ -37,7 +37,27 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 
 // ── календарь недели + отдельные дневные streak strips ──
 
-function WeekStrip() {
+function DemoTodayHeader({ onOpenSettings }) {
+  return (
+    <div className="mx-demo-today-header">
+      <span className="mx-demo-today-streak" aria-label="Серия: 1 день">
+        <Flame aria-hidden="true" />
+        <strong>1</strong>
+      </span>
+      <strong className="mx-demo-today-greeting">добрый вечер.</strong>
+      <button
+        type="button"
+        className="mx-demo-today-profile"
+        aria-label="Профиль"
+        onClick={onOpenSettings}
+      >
+        <UserRound aria-hidden="true" />
+      </button>
+    </div>
+  )
+}
+
+function WeekStrip({ demo = false }) {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = new Date()
   const monday = new Date(now)
@@ -51,14 +71,22 @@ function WeekStrip() {
   return (
     <div className="mx-today-week" role="group" aria-label="Календарь недели">
       <div className="mx-today-week__calendar">
-        {days.map(day => {
+        {days.map((day, index) => {
           const isToday = day.toDateString() === now.toDateString()
+          const isCompleted = demo && index === Math.max(0, ((now.getDay() + 6) % 7) - 1)
           return (
-            <div key={day.getTime()} className="mx-today-week-day" data-today={isToday}>
+            <div
+              key={day.getTime()}
+              className="mx-today-week-day"
+              data-today={isToday}
+              data-completed={isCompleted}
+            >
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
               </span>
-              <span className="mx-type-calendar-date">{day.getDate()}</span>
+              <span className="mx-type-calendar-date">
+                {isCompleted ? <Check aria-hidden="true" /> : day.getDate()}
+              </span>
             </div>
           )
         })}
@@ -136,6 +164,7 @@ export default function Today({
   onGoMentor,
   onFlowChange,
   onRegisterBack,
+  onOpenSettings,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -687,7 +716,8 @@ export default function Today({
   return (
     <div className="mx-screen-shell">
       <h1 className="sr-only">Сегодня</h1>
-      <WeekStrip />
+      {isPreviewDemoMode() && <DemoTodayHeader onOpenSettings={onOpenSettings} />}
+      <WeekStrip demo={isPreviewDemoMode()} />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
