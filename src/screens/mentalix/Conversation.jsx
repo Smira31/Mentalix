@@ -48,7 +48,7 @@ export default function Conversation({
 }) {
   const meta = personaMeta || PERSONAS.find(item => item.key === persona) || PERSONAS[0]
 
-  const { style: surfaceStyle } = useFullscreenSurface()
+  const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
 
   const scrollRef = useRef(null)
   const previousMessageCount = useRef(0)
@@ -294,6 +294,16 @@ export default function Conversation({
     }
   }, [loading, messages.length, sending])
 
+  useEffect(() => {
+    if (!keyboardOpen) return undefined
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollToEnd('auto')
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [keyboardOpen])
+
   return createPortal(
     <div
       className={FULLSCREEN_SHELL_CLASS}
@@ -430,7 +440,7 @@ export default function Conversation({
         className="shrink-0 px-4 pt-3"
 
         style={{
-          paddingBottom: 'max(4px, env(safe-area-inset-bottom))',
+          paddingBottom: keyboardOpen ? '2px' : 'max(4px, env(safe-area-inset-bottom))',
         }}
       >
         {(voiceState !== 'idle' || voiceError) && (

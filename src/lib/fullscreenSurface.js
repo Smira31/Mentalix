@@ -80,6 +80,10 @@ export function useFullscreenSurface() {
   const scale = Number.isFinite(demoScale) && demoScale > 0 ? demoScale : 1
   const viewportHeight = viewportGeometry?.height ?? null
   const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
+  const keyboardOpen =
+    viewportHeight !== null &&
+    typeof window !== 'undefined' &&
+    window.innerHeight - viewportHeight > 120
   // visualViewport.height is already the visible height. Convert the single
   // viewport snapshot into the portal target's coordinate space exactly once.
   const surfaceTop = viewportOffsetTop / scale
@@ -122,5 +126,6 @@ export function useFullscreenSurface() {
   return {
     style,
     tgFullscreen,
+    keyboardOpen,
   }
 }
