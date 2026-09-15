@@ -181,7 +181,7 @@ body:has(.mx-dialog-entry) {
   padding: var(--mx-dialog-card-padding);
   min-width: 0;
   overflow: hidden;
-  justify-content: center;
+  justify-content: flex-start;
   opacity: 0.48;
   scroll-snap-align: center;
   transform: none;
@@ -197,13 +197,6 @@ body:has(.mx-dialog-entry) {
   border-color: rgb(var(--c-border));
   opacity: 1;
   transform: translateY(-1px);
-}
-.mx-dialog-card:not(.is-active) .mx-dialog-card__description,
-.mx-dialog-card:not(.is-active) .mx-dialog-card__history {
-  max-height: 0;
-  margin-top: 0;
-  overflow: hidden;
-  opacity: 0;
 }
 .mx-dialog-card:not(.is-active) .mx-dialog-card__promise {
   color: rgb(var(--c-text) / 0.55);
@@ -230,7 +223,7 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-card__start {
   min-height: 38px;
-  margin: var(--mx-space-4) auto 0;
+  margin: auto auto 0;
   padding: 0 22px;
   border: 1px solid rgb(var(--c-border) / 0.8);
   border-radius: var(--mx-radius-pill);
@@ -247,6 +240,9 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-card__body {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
   min-width: 0;
   margin-top: 0;
   overflow: hidden;

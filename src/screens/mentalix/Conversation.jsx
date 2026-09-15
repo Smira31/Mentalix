@@ -51,6 +51,8 @@ export default function Conversation({
   const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
 
   const scrollRef = useRef(null)
+  const inputRef = useRef(null)
+  const restoreComposerFocusRef = useRef(false)
   const previousMessageCount = useRef(0)
   const recorderRef = useRef(null)
   const streamRef = useRef(null)
@@ -122,6 +124,19 @@ export default function Conversation({
       top: scroll.scrollHeight,
       behavior,
     })
+  }
+
+  async function sendFromComposer() {
+    if (!input.trim() || sending) return
+
+    restoreComposerFocusRef.current = document.activeElement === inputRef.current
+    await onSend()
+
+    if (restoreComposerFocusRef.current) {
+      window.requestAnimationFrame(() => {
+        inputRef.current?.focus({ preventScroll: true })
+      })
+    }
   }
 
   useEffect(() => {
@@ -461,7 +476,16 @@ export default function Conversation({
 
         <div className="mx-ai-composer w-full max-w-md mx-auto min-h-[72px] rounded-[36px] bg-black/45 border border-cream/10 flex items-center gap-2.5 px-2.5">
           <input
+            ref={inputRef}
             value={input}
+
+            onFocus={() => {
+              restoreComposerFocusRef.current = true
+            }}
+
+            onBlur={() => {
+              restoreComposerFocusRef.current = false
+            }}
 
             onChange={event => {
               const value = event.target.value
@@ -479,7 +503,8 @@ export default function Conversation({
 
             onKeyDown={event => {
               if (event.key === 'Enter') {
-                onSend()
+                event.preventDefault()
+                void sendFromComposer()
               }
             }}
 
@@ -525,9 +550,12 @@ export default function Conversation({
                         suppressVoiceClickRef.current = false
                         return
                       }
-                      onSend()
+                      void sendFromComposer()
                     },
-                    onPointerDown: () => setVoicePressed(true),
+                    onPointerDown: event => {
+                      event.preventDefault()
+                      setVoicePressed(true)
+                    },
                     onPointerUp: () => setVoicePressed(false),
                     onPointerLeave: () => setVoicePressed(false),
                     onPointerCancel: () => setVoicePressed(false),
