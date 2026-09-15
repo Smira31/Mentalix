@@ -325,7 +325,7 @@ export default function Conversation({
       style={{
         ...surfaceStyle,
 
-        background: '#090d0e',
+        background: 'rgb(var(--c-bg))',
         paddingBottom: keyboardOpen ? '0px' : 'max(6px, env(safe-area-inset-bottom))',
       }}
     >
@@ -455,7 +455,7 @@ export default function Conversation({
         className="shrink-0 px-4 pt-3"
 
         style={{
-          paddingBottom: keyboardOpen ? '2px' : 'max(4px, env(safe-area-inset-bottom))',
+          paddingBottom: keyboardOpen ? '1px' : 'max(4px, env(safe-area-inset-bottom))',
         }}
       >
         {(voiceState !== 'idle' || voiceError) && (
