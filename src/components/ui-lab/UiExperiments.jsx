@@ -1,10 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 
-import { ArrowRight, Check, ChevronDown, Pause, Play, RotateCcw, X } from 'lucide-react'
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  Flame,
+  Pause,
+  Play,
+  RotateCcw,
+  UserRound,
+  X,
+} from 'lucide-react'
 
 import { DayArc } from '../Motif'
 import SemanticGlyph from '../SemanticGlyph'
-import { DayThread, DayThreadTrigger, FocusMark, NextActionReveal } from '../TodayMotionExperiment'
+import { DayThread, FocusMark, NextActionReveal } from '../TodayMotionExperiment'
 import MyPathGlyph from './MyPathGlyph'
 import UiLabSwitch from './UiLabSwitch'
 import './UiExperiments.css'
@@ -46,11 +56,12 @@ function PreviewWeek() {
         date.setDate(monday.getDate() + index)
 
         const active = date.toDateString() === today.toDateString()
+        const completed = index === Math.max(0, ((today.getDay() + 6) % 7) - 1)
 
         return (
-          <div key={name} data-active={active}>
+          <div key={name} data-active={active} data-completed={completed}>
             <span>{name}</span>
-            <strong>{date.getDate()}</strong>
+            <strong>{completed ? <Check aria-hidden="true" /> : date.getDate()}</strong>
           </div>
         )
       })}
@@ -77,14 +88,13 @@ function TodayScreenPreview({ mode }) {
 
       <div className="mx-lab-today">
         <div className="mx-lab-today__app-head">
-          <span className="mx-lab-today__thread-slot">
-            {mode === 'after' && (
-              <DayThreadTrigger open={threadOpen} onToggle={() => setThreadOpen(value => !value)} />
-            )}
+          <span className="mx-lab-today__streak" aria-label="Серия: 1 день">
+            <Flame aria-hidden="true" />
+            <strong>1</strong>
           </span>
-          <strong>добрый день.</strong>
-          <button type="button" className="mx-lab-today__settings" aria-label="Настройки">
-            <span />
+          <strong className="mx-lab-today__greeting">добрый вечер.</strong>
+          <button type="button" className="mx-lab-today__profile" aria-label="Профиль">
+            <UserRound aria-hidden="true" />
           </button>
         </div>
 
