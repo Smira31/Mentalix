@@ -96,6 +96,8 @@ async function nativeBack(page) {
 async function openMentorConversation(page) {
   await page.getByRole('button', { name: 'Диалог' }).click()
   await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
+  await expect(page.getByTestId('mentor-persona-card').first()).toHaveAttribute('aria-current', 'true')
+  await expect(page.getByRole('button', { name: 'Начать разговор: Наставник' })).toBeVisible()
   await page.getByTestId('mentor-persona-card').filter({ hasText: 'Наставник' }).click()
   await expect(page.getByRole('heading', { name: 'Наставник' })).toBeVisible()
 }
@@ -108,6 +110,47 @@ for (const viewport of P0_VIEWPORTS) {
       await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
       await nativeBack(page)
       await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
+      await context.close()
+    })
+
+    test('Mentor keyboard resize keeps one bounded scroll area and composer above keyboard', async ({ browser }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+      await openMentorConversation(page)
+
+      const input = page.locator('.mx-ai-input')
+      await input.focus()
+      await page.setViewportSize({ width: viewport.width, height: Math.round(viewport.height * 0.58) })
+
+      const geometry = await page.evaluate(() => {
+        const shell = document.querySelector('.fixed.top-0')
+        const scroll = document.querySelector('.mx-conversation-scroll')
+        const composer = document.querySelector('.mx-ai-composer')
+        const frame = document.querySelector('[data-mentalix-demo-frame="true"]')
+        const shellRect = shell?.getBoundingClientRect()
+        const composerRect = composer?.getBoundingClientRect()
+        const frameRect = frame?.getBoundingClientRect()
+        return {
+          shellTop: shellRect?.top,
+          shellBottom: shellRect?.bottom,
+          composerBottom: composerRect?.bottom,
+          frameBottom: frameRect?.bottom,
+          bodyOverflow: getComputedStyle(document.body).overflow,
+          scrollOverflowY: getComputedStyle(scroll).overflowY,
+          horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+          focused: document.activeElement === document.querySelector('.mx-ai-input'),
+        }
+      })
+
+      expect(geometry.shellTop).toBeGreaterThanOrEqual(-1)
+      expect(geometry.shellBottom).toBeLessThanOrEqual(geometry.frameBottom + 1)
+      expect(geometry.composerBottom).toBeLessThanOrEqual(geometry.shellBottom + 1)
+      expect(geometry.bodyOverflow).toBe('hidden')
+      expect(geometry.scrollOverflowY).toBe('auto')
+      expect(geometry.horizontalOverflow).toBe(false)
+      expect(geometry.focused).toBe(true)
+
+      await page.setViewportSize(viewport)
+      await expect.poll(() => page.evaluate(() => document.querySelector('.fixed.top-0')?.getBoundingClientRect().top)).toBeGreaterThanOrEqual(-1)
       await context.close()
     })
 

@@ -7,7 +7,7 @@ import { isPreviewDemoMode } from '../../lib/demoMode'
 
 import './PersonaPicker.css'
 
-const DEFAULT_INDEX = 1
+const DEFAULT_INDEX = 0
 
 // Визуальный порядок entry-карусели задан reference screenshot. Сами persona
 // keys и backend-контракт остаются прежними.

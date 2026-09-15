@@ -1,7 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 
 import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
-import { useVisualViewportHeight } from './visualViewport'
+import { useVisualViewportGeometry } from './visualViewport'
 import { isPreviewDemoMode } from './demoMode'
 
 /*
@@ -70,8 +70,21 @@ export function getFullscreenPortalTarget() {
 }
 
 export function useFullscreenSurface() {
-  const viewportHeight = useVisualViewportHeight()
-  const demoFrameHeight = isPreviewDemoMode() ? getFullscreenPortalTarget()?.offsetHeight : null
+  const viewportGeometry = useVisualViewportGeometry()
+  const portalTarget = getFullscreenPortalTarget()
+  const demoMode = isPreviewDemoMode()
+  const demoFrameHeight = demoMode ? portalTarget?.offsetHeight : null
+  const demoScale =
+    demoMode && portalTarget?.offsetHeight && portalTarget?.getBoundingClientRect
+      ? portalTarget.getBoundingClientRect().height / portalTarget.offsetHeight
+      : 1
+  const scale = Number.isFinite(demoScale) && demoScale > 0 ? demoScale : 1
+  const viewportHeight = viewportGeometry?.height ?? null
+  const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
+  const surfaceTop = demoMode ? viewportOffsetTop / scale : viewportOffsetTop
+  const visibleHeight = viewportHeight
+    ? Math.max(0, (viewportHeight - viewportOffsetTop) / scale)
+    : null
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо
@@ -97,6 +110,7 @@ export function useFullscreenSurface() {
   }, [])
 
   const style = {
+    top: `${surfaceTop}px`,
     paddingTop: tgFullscreen
       ? `calc(var(--app-safe-top) + ${TG_CONTROLS_HEIGHT}px)`
       : 'var(--app-safe-top)',
@@ -104,12 +118,12 @@ export function useFullscreenSurface() {
     paddingBottom: 'var(--app-safe-bottom)',
 
     height:
-      demoFrameHeight && viewportHeight
-        ? `${Math.min(demoFrameHeight, viewportHeight)}px`
+      demoFrameHeight && visibleHeight
+        ? `${Math.min(demoFrameHeight, visibleHeight)}px`
         : demoFrameHeight
           ? `${demoFrameHeight}px`
-          : viewportHeight
-            ? `${viewportHeight}px`
+          : visibleHeight
+            ? `${visibleHeight}px`
             : '100dvh',
   }
 
