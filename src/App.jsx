@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronDown, Ellipsis, X } from 'lucide-react'
+import { ChevronDown, Ellipsis, Flame, Settings as SettingsIcon, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
