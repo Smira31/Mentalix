@@ -23,6 +23,7 @@ export const webAdapter = {
   },
 
   async requestAuth() {
+    if (import.meta.env.DEV) return this.getUser()
     const response = await fetch('/api/auth/session', { credentials: 'include' })
     if (!response.ok) {
       if (import.meta.env.DEV) return this.getUser()
