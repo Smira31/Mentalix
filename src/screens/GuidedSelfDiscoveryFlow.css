@@ -178,7 +178,6 @@
 .mx-practice-flow--self-discovery
   .guided-self-discovery__writing.is-keyboard-open
   .practice-writing-canvas__dock {
-  position: absolute;
   right: max(16px, var(--app-safe-right, env(safe-area-inset-right, 0px)));
   left: auto;
   width: 56px;
