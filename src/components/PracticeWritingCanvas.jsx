@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './PracticeWritingCanvas.css'
 
 const DEMO_KEY_ROWS = [
@@ -69,29 +69,46 @@ export default function PracticeWritingCanvas({
   formatActions = null,
   onClose,
   autoFocus = false,
+  keyboardDockMode = 'visual-viewport',
   className = '',
 }) {
   const [focused, setFocused] = useState(autoFocus)
   const [demoKeyboard, setDemoKeyboard] = useState(false)
+  const fieldRef = useRef(null)
+  const focusedRef = useRef(autoFocus)
   const metrics = useVisualViewportMetrics()
   const demoPreview = isDemoPreview()
+  const containedKeyboardDock = keyboardDockMode === 'contained'
   const keyboardOpen =
     focused && metrics.height !== null && metrics.height < metrics.layoutHeight - 80
   const visualKeyboardOpen = demoPreview && (demoKeyboard || focused)
   const hasText = Boolean(String(value).trim())
   const submitIsDisabled = submitDisabled || submitLoading || !hasText
   const deepenIsDisabled = (deepenDisabled ?? !hasText) || submitLoading || deepenLoading
-  const dockStyle = useMemo(() => {
-    if (demoPreview && visualKeyboardOpen) return undefined
-    if (!keyboardOpen || metrics.height === null) return undefined
-    return {
-      top: `${metrics.pageTop + metrics.offsetTop + metrics.height - 48 - 56 - 8}px`,
-    }
-  }, [demoPreview, keyboardOpen, metrics, visualKeyboardOpen])
+  const dockStyle =
+    containedKeyboardDock || (demoPreview && visualKeyboardOpen) || !keyboardOpen || metrics.height === null
+      ? undefined
+      : {
+          top: `${metrics.pageTop + metrics.offsetTop + metrics.height - 48 - 56 - 8}px`,
+        }
+  useEffect(() => {
+    if (!focusedRef.current || !fieldRef.current) return undefined
+
+    const frame = window.requestAnimationFrame(() => {
+      const field = fieldRef.current
+      if (!field || document.activeElement === field) return
+
+      field.focus({ preventScroll: true })
+      const caret = field.value.length
+      field.setSelectionRange(caret, caret)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [question])
 
   return (
     <section
-      className={`practice-writing-canvas ${keyboardOpen ? 'is-keyboard-open' : ''} ${visualKeyboardOpen ? 'is-demo-keyboard-open' : ''} ${className}`}
+      className={`practice-writing-canvas ${keyboardOpen ? 'is-keyboard-open' : ''} ${visualKeyboardOpen ? 'is-demo-keyboard-open' : ''} ${containedKeyboardDock ? 'is-contained-keyboard-dock' : ''} ${className}`}
     >
       {onClose && (
         <button
@@ -106,10 +123,12 @@ export default function PracticeWritingCanvas({
       <h1 className="practice-writing-canvas__question font-display">{question}</h1>
       {description && <p className="practice-writing-canvas__description">{description}</p>}
       <textarea
+        ref={fieldRef}
         value={value}
         onChange={event => onChange(event.target.value)}
         onFocus={event => {
           setFocused(true)
+          focusedRef.current = true
           if (demoPreview) setDemoKeyboard(true)
           if (demoPreview) {
             const resetFlowScroll = () => {
@@ -126,7 +145,10 @@ export default function PracticeWritingCanvas({
             window.setTimeout(resetFlowScroll, 120)
           }
         }}
-        onBlur={() => setFocused(false)}
+        onBlur={() => {
+          setFocused(false)
+          focusedRef.current = false
+        }}
         placeholder={placeholder}
         aria-label={ariaLabel || question}
         autoFocus={autoFocus}
@@ -162,6 +184,9 @@ export default function PracticeWritingCanvas({
             type="button"
             aria-label={submitLabel}
             disabled={submitIsDisabled}
+            onPointerDown={event => {
+              if (focusedRef.current) event.preventDefault()
+            }}
             onClick={onSubmit}
             className="practice-writing-canvas__submit"
           >
