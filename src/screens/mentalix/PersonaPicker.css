@@ -60,26 +60,6 @@ body:has(.mx-dialog-entry) {
   isolation: isolate;
 }
 
-.mx-dialog-hero::before,
-.mx-dialog-hero::after {
-  content: '';
-  position: absolute;
-  z-index: 2;
-  bottom: -1px;
-  width: 2px;
-  height: clamp(22px, calc(280px - 59.34vw), 44px);
-  background: rgb(47 53 54);
-  pointer-events: none;
-}
-
-.mx-dialog-hero::before {
-  left: 7.9%;
-}
-
-.mx-dialog-hero::after {
-  right: 7.9%;
-}
-
 .mx-dialog-hero-reference {
   position: absolute;
   z-index: 1;
