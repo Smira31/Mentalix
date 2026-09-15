@@ -7,15 +7,6 @@ import StreakBar from '../components/StreakBar'
 import { api } from '../lib/api'
 import { buildSeriesViewModel } from '../lib/series'
 
-function Stat({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 px-4 py-3">
-      <div className="font-display text-[20px] text-cream">{value}</div>
-      <div className="mx-type-meta mt-1 text-muted">{label}</div>
-    </div>
-  )
-}
-
 function BadgeRow({ badge, onOpen }) {
   return (
     <button
@@ -76,6 +67,7 @@ function BadgeDetail({ badge, onBack }) {
 export default function SeriesBadges({ user, onBack }) {
   const [model, setModel] = useState(null)
   const [selectedBadge, setSelectedBadge] = useState(null)
+  const [activeTab, setActiveTab] = useState('badges')
   const [error, setError] = useState(false)
 
   useEffect(() => {
@@ -112,7 +104,9 @@ export default function SeriesBadges({ user, onBack }) {
     <div className="w-full max-w-md px-5 pb-8 animate-fade-in">
       <div className="flex items-center gap-3 py-4">
         <BackButton onClick={onBack} />
-        <h1 className="font-display mx-type-page lowercase text-cream">серии и вехи.</h1>
+        <h1 className="font-display mx-type-page lowercase text-cream">
+          огонёк — {activeTab === 'badges' ? 'награды' : 'статистика'}
+        </h1>
       </div>
 
       {error && (
@@ -129,6 +123,31 @@ export default function SeriesBadges({ user, onBack }) {
 
       {model && (
         <>
+          <div
+            className="mb-4 grid grid-cols-2 rounded-2xl border border-cream/10 bg-emerald-light/10 p-1"
+            role="tablist"
+            aria-label="Раздел огонька"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'badges'}
+              onClick={() => setActiveTab('badges')}
+              className={`min-h-10 rounded-xl text-[12px] font-semibold ${activeTab === 'badges' ? 'bg-cream text-emerald-deep' : 'text-muted'}`}
+            >
+              Награды
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'stats'}
+              onClick={() => setActiveTab('stats')}
+              className={`min-h-10 rounded-xl text-[12px] font-semibold ${activeTab === 'stats' ? 'bg-cream text-emerald-deep' : 'text-muted'}`}
+            >
+              Статистика
+            </button>
+          </div>
+
           <section className="rounded-[28px] border border-gold/25 bg-emerald-light/15 px-5 py-5">
             <div className="flex items-center gap-3">
               <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold/10 text-gold">
@@ -146,14 +165,26 @@ export default function SeriesBadges({ user, onBack }) {
             </div>
           </section>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <Stat label="дней в системе" value={model.activeDays} />
-            <Stat label="чек-инов" value={model.totalCheckins} />
-            <Stat label="личный максимум" value={model.bestStreak} />
-            <Stat label="вех открыто" value={`${unlocked.length}/${model.badges.length}`} />
-          </div>
+          {activeTab === 'stats' && (
+            <section className="mt-4 overflow-hidden rounded-2xl border border-cream/10 bg-emerald-light/10">
+              {[
+                ['Дней в системе', model.activeDays],
+                ['Чек-инов завершено', model.totalCheckins],
+                ['Личный максимум', model.bestStreak],
+                ['Вех открыто', `${unlocked.length}/${model.badges.length}`],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-between border-b border-cream/10 px-4 py-3 last:border-b-0"
+                >
+                  <span className="text-[12px] text-muted">{label}</span>
+                  <strong className="text-[13px] text-cream">{value}</strong>
+                </div>
+              ))}
+            </section>
+          )}
 
-          {unlocked.length > 0 && (
+          {activeTab === 'badges' && unlocked.length > 0 && (
             <section className="mt-7">
               <div className="mb-2 flex items-baseline justify-between">
                 <h2 className="text-[13px] text-cream">Открыто</h2>
@@ -167,7 +198,7 @@ export default function SeriesBadges({ user, onBack }) {
             </section>
           )}
 
-          {upcoming.length > 0 && (
+          {activeTab === 'badges' && upcoming.length > 0 && (
             <section className="mt-7">
               <div className="mb-2 flex items-baseline justify-between">
                 <h2 className="text-[13px] text-cream">Следующие вехи</h2>
@@ -181,7 +212,7 @@ export default function SeriesBadges({ user, onBack }) {
             </section>
           )}
 
-          {model.badges.length === 0 && (
+          {activeTab === 'badges' && model.badges.length === 0 && (
             <p className="mt-7 text-[13px] leading-relaxed text-muted">
               Вехи появятся по мере движения.
             </p>

@@ -326,7 +326,7 @@ export default function Conversation({
         ...surfaceStyle,
 
         background: '#090d0e',
-        paddingBottom: 'max(6px, env(safe-area-inset-bottom))',
+        paddingBottom: keyboardOpen ? '0px' : 'max(6px, env(safe-area-inset-bottom))',
       }}
     >
       {/* ── шапка ── */}

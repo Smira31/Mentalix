@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { Check, ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
 
 import './Today.css'
 
@@ -62,7 +62,7 @@ function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
   )
 }
 
-function WeekStrip({ demo = false }) {
+function WeekStrip() {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = new Date()
   const monday = new Date(now)
@@ -76,22 +76,19 @@ function WeekStrip({ demo = false }) {
   return (
     <div className="mx-today-week" role="group" aria-label="Календарь недели">
       <div className="mx-today-week__calendar">
-        {days.map((day, index) => {
+        {days.map(day => {
           const isToday = day.toDateString() === now.toDateString()
-          const isCompleted = demo && index === Math.max(0, ((now.getDay() + 6) % 7) - 1)
           return (
             <div
               key={day.getTime()}
               className="mx-today-week-day"
               data-today={isToday}
-              data-completed={isCompleted}
+              data-completed="false"
             >
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
               </span>
-              <span className="mx-type-calendar-date">
-                {isCompleted ? <Check aria-hidden="true" /> : day.getDate()}
-              </span>
+              <span className="mx-type-calendar-date">{day.getDate()}</span>
             </div>
           )
         })}
@@ -725,7 +722,7 @@ export default function Today({
       {isPreviewDemoMode() && (
         <DemoTodayHeader onOpenSettings={onOpenSettings} onOpenSeries={onOpenSeries} />
       )}
-      <WeekStrip demo={isPreviewDemoMode()} />
+      <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />

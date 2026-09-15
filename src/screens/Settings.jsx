@@ -23,6 +23,7 @@ import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
 import { requestMessages, biometric } from '../platform/telegram.hooks'
 import { platform, platformName } from '../platform'
+import { isPreviewDemoMode } from '../lib/demoMode'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import { MOOD_CHECK_ENABLED_KEY } from '../lib/moodCheckDraft'
 import { clearCheckinDraft } from '../lib/checkinDraft'
@@ -76,7 +77,13 @@ function Row({
         divider ? 'border-b border-cream/[0.06]' : ''
       } active:bg-cream/[0.04] transition-colors`}
     >
-      {Icon && <Icon size={18} aria-hidden="true" className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
+      {Icon && (
+        <Icon
+          size={18}
+          aria-hidden="true"
+          className={danger ? 'text-red-400' : 'text-gold shrink-0'}
+        />
+      )}
       <div className="flex-1 min-w-0">
         <div className={`font-body text-[14px] ${danger ? 'text-red-400' : 'text-cream'}`}>
           {title}
@@ -136,6 +143,7 @@ export default function Settings({
   theme,
   onThemeChange,
 }) {
+  const previewDemoMode = isPreviewDemoMode()
   const accentColors = getAccentColors(theme)
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
@@ -540,6 +548,27 @@ export default function Settings({
         <span aria-hidden="true" />
       </div>
 
+      {previewDemoMode && (
+        <section className="mb-7 w-full overflow-hidden rounded-3xl border border-cream/10 bg-cream/[0.03] px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-emerald-light/30 text-muted">
+              <Lock size={34} strokeWidth={1.25} aria-hidden="true" />
+            </div>
+            <div className="min-w-0">
+              <h2 className="font-display text-[20px] lowercase text-cream">твой профиль.</h2>
+              <p className="mt-1 text-[12px] leading-snug text-muted">Твой путь в Mentalix</p>
+              <button
+                type="button"
+                onClick={() => setScreen('subscription')}
+                className="mt-3 min-h-9 rounded-full bg-cream px-3 text-[11px] font-semibold text-emerald-deep"
+              >
+                Попробовать 2 дня бесплатно
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       <SectionLabel>Профиль</SectionLabel>
       <Card>
         <Row
@@ -927,7 +956,9 @@ export default function Settings({
                   <span
                     aria-hidden="true"
                     className={`w-8 h-8 rounded-full transition-transform ${
-                      accent === id ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep' : ''
+                      accent === id
+                        ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep'
+                        : ''
                     }`}
                     style={{ background: hex }}
                   />

@@ -181,7 +181,7 @@ body:has(.mx-dialog-entry) {
   padding: var(--mx-dialog-card-padding);
   min-width: 0;
   overflow: hidden;
-  justify-content: flex-start;
+  justify-content: center;
   opacity: 0.48;
   scroll-snap-align: center;
   transform: none;
@@ -223,7 +223,7 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-card__start {
   min-height: 38px;
-  margin: auto auto 0;
+  margin: var(--mx-space-4) auto 0;
   padding: 0 22px;
   border: 1px solid rgb(var(--c-border) / 0.8);
   border-radius: var(--mx-radius-pill);
@@ -241,11 +241,12 @@ body:has(.mx-dialog-entry) {
 
 .mx-dialog-card__body {
   display: flex;
-  height: 100%;
   flex-direction: column;
+  align-items: center;
   min-width: 0;
   margin-top: 0;
   overflow: hidden;
+  text-align: center;
 }
 
 .mx-dialog-card__role {

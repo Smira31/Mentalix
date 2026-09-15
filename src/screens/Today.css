@@ -156,7 +156,7 @@
 
 .mx-demo-today-header {
   display: grid;
-  grid-template-columns: auto 1fr 40px;
+  grid-template-columns: auto 1fr 46px;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -167,8 +167,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-width: 54px;
-  height: 32px;
+  min-width: 62px;
+  height: 40px;
   margin: 0;
   padding: 0 11px 0 8px;
   border: 1px solid rgb(var(--c-border));
@@ -184,14 +184,14 @@
 }
 
 .mx-demo-today-streak svg {
-  width: 15px;
-  height: 15px;
+  width: 22px;
+  height: 22px;
   color: rgb(var(--c-accent));
   fill: currentColor;
 }
 
 .mx-demo-today-streak strong {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .mx-demo-today-greeting {
@@ -202,8 +202,8 @@
 
 .mx-demo-today-profile {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 46px;
+  height: 46px;
   padding: 0;
   place-items: center;
   border: 1px solid rgb(var(--c-border));
@@ -213,8 +213,8 @@
 }
 
 .mx-demo-today-profile svg {
-  width: 17px;
-  height: 17px;
+  width: 23px;
+  height: 23px;
   stroke-width: 1.8;
 }
 
