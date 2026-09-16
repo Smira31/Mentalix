@@ -149,3 +149,55 @@
     height: 3.25rem;
   }
 }
+
+/* Demo Check-In: the reference uses individual choices, not a connected rail. */
+.mx-checkin-demo .mx-scale-rail__line,
+.mx-checkin-demo .mx-scale-rail__progress {
+  display: none;
+}
+
+.mx-checkin-demo .mx-scale-rail__item--active .mx-scale-rail__circle {
+  border-color: #f2f2f2;
+  background: #f2f2f2;
+  color: #111111;
+  box-shadow: none;
+}
+
+.mx-checkin-demo .mx-scale-rail__item--active .mx-face__frame {
+  display: none;
+}
+
+.mx-checkin-demo .mx-scale-rail__item--active .mx-face circle,
+.mx-checkin-demo .mx-scale-rail__item--active .mx-face path {
+  stroke: #111111;
+}
+
+.mx-checkin-demo .mx-scale-rail__item--active .mx-face circle:not(.mx-face__frame) {
+  fill: #111111;
+}
+
+.mx-checkin-demo button[class*='bg-gold'] {
+  background: #f2f2f2 !important;
+  color: #111111 !important;
+}
+
+.mx-checkin-demo [role='status'] {
+  display: none;
+}
+
+.mx-checkin-demo .journal-textarea,
+.mx-checkin-demo [class*='journal-textarea'] {
+  background: #050505 !important;
+  border-color: #353535 !important;
+}
+
+.mx-checkin-demo .journal-textarea textarea,
+.mx-checkin-demo [class*='journal-textarea'] textarea {
+  background: #050505 !important;
+  color: #f2f2f2 !important;
+}
+
+.mx-checkin-demo .journal-textarea textarea::placeholder,
+.mx-checkin-demo [class*='journal-textarea'] textarea::placeholder {
+  color: #8f8f8f !important;
+}

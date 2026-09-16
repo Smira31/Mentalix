@@ -73,7 +73,7 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 // Поле, которому нечего сказать, не отправляется вовсе: бэкенд
 // сохраняет прежнее значение, и вечер не затирает утро.
 
-export function Face({ level, active, size = 56 }) {
+export function Face({ level, active, size = 56, showFrame = true }) {
   const mouths = [
     'M18 40 Q28 32 38 40',
     'M18 38 Q28 35 38 38',
@@ -98,13 +98,9 @@ export function Face({ level, active, size = 56 }) {
       aria-hidden="true"
       className={active ? 'mx-face mx-face--active' : 'mx-face'}
     >
-      <circle
-        cx="28"
-        cy="28"
-        r="26"
-        className={active ? 'fill-gold/15 stroke-gold' : 'fill-emerald stroke-cream/25'}
-        strokeWidth="2.5"
-      />
+      {showFrame && (
+        <circle className="mx-face__frame" cx="28" cy="28" r="26" fill="none" strokeWidth="2.5" />
+      )}
 
       <path
         d={brows[level - 1][0]}
@@ -159,7 +155,11 @@ function ScaleRail({ scale, value, onPick }) {
             className={`mx-scale-rail__item ${active ? 'mx-scale-rail__item--active' : ''}`}
           >
             <span className="mx-scale-rail__circle">
-              {scale.faces ? <Face level={level} active={active} size={52} /> : level}
+              {scale.faces ? (
+                <Face level={level} active={active} size={52} showFrame={false} />
+              ) : (
+                level
+              )}
             </span>
             <span className="mx-scale-rail__label">{label}</span>
           </button>
@@ -687,13 +687,19 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
           }
         : null
 
+  const writingAction = isMorningNoteStep
+    ? { text: saving ? 'Сохраняю...' : 'Завершить чек-ин', run: submit }
+    : null
+
+  const effectiveMainAction = mainAction || writingAction
+
   useMainButton({
-    text: mainAction?.text || '',
+    text: effectiveMainAction?.text || '',
     onClick: () => {
       platform.haptic('light')
-      mainAction?.run()
+      effectiveMainAction?.run()
     },
-    visible: Boolean(mainAction) && !isMorningNoteStep,
+    visible: Boolean(effectiveMainAction),
     enabled: !saving && !scoutBusy,
     loading: saving || scoutBusy,
   })
@@ -707,10 +713,13 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
     visible: Boolean(skipAction) && !saving && !isMorningNoteStep,
   })
 
-  const webAction =
-    mainAction && !isMorningNoteStep
-      ? { text: mainAction.text, onClick: mainAction.run, disabled: saving || scoutBusy }
-      : null
+  const webAction = effectiveMainAction
+    ? {
+        text: effectiveMainAction.text,
+        onClick: effectiveMainAction.run,
+        disabled: saving || scoutBusy,
+      }
+    : null
 
   const webSecondaryAction =
     skipAction && !saving && !isMorningNoteStep
@@ -733,7 +742,12 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
               ) : null}
 
               <div className="animate-celebrate-pop mb-6">
-                <Face level={values.mood || 4} active size={isEvening ? 64 : 88} />
+                <Face
+                  level={values.mood || 4}
+                  active
+                  size={isEvening ? 64 : 88}
+                  showFrame={false}
+                />
               </div>
 
               <h2 className="font-display text-[26px] text-cream leading-tight">
@@ -1000,7 +1014,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                     <JournalTextarea
                       value={morningDraft?.brief || ''}
                       onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
-                      placeholder={MORNING_NOTE_PLACEHOLDER}
+                      placeholder={previewDemoMode ? 'Начни писать' : MORNING_NOTE_PLACEHOLDER}
                       ariaLabel="Что на уме"
                       className="min-h-[18rem] flex-1"
                       editorClassName="pb-24"
