@@ -2,7 +2,7 @@ import { platform } from '../platform'
 import { withQuery } from './apiQuery'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
 
-const BASE = '/api'
+const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 const API_TIMEOUT_MS = 10_000
 const API_MAX_RETRIES = 1
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
