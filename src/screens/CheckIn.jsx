@@ -248,7 +248,7 @@ function DemoCheckInFlow({ user, onDone }) {
                   className={feedback === item ? 'is-selected' : ''}
                   onClick={() => setFeedback(item)}
                 >
-                  <Icon size={15} aria-hidden="true" />
+                  <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
                   {item}
                 </button>
               ))}
