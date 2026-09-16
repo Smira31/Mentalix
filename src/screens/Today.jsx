@@ -22,6 +22,7 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
+import { isPreviewDemoMode } from '../lib/demoMode'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -172,7 +173,8 @@ export default function Today({
   previewFixture = null,
   previewState = null,
 }) {
-  const showReferenceWelcome = true
+  const previewDemoMode = isPreviewDemoMode()
+  const showReferenceWelcome = previewDemoMode || Boolean(user)
   const [initialTodaySnapshot] = useState(
     () => previewFixture || (user ? peekTodaySnapshot(user.id) : null)
   )
