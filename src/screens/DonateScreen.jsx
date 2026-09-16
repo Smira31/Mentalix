@@ -2,10 +2,13 @@ import { useState } from 'react'
 import { Heart, Check } from 'lucide-react'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
+import { isPreviewDemoMode } from '../lib/demoMode'
+import './DonateScreen.css'
 
 const AMOUNTS = [100, 300, 500, 1000]
 
 export default function DonateScreen({ user, onBack }) {
+  const previewDemoMode = isPreviewDemoMode()
   const [selected, setSelected] = useState(AMOUNTS[1])
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
@@ -27,7 +30,9 @@ export default function DonateScreen({ user, onBack }) {
 
   if (done) {
     return (
-      <div className="w-full max-w-md px-6 pt-16 flex flex-col items-center text-center">
+      <div
+        className={`w-full max-w-md px-6 pt-16 flex flex-col items-center text-center ${previewDemoMode ? 'mx-demo-donate' : ''}`}
+      >
         <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-4">
           <Check size={28} className="text-gold" />
         </div>
@@ -46,7 +51,9 @@ export default function DonateScreen({ user, onBack }) {
   }
 
   return (
-    <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
+    <div
+      className={`w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center ${previewDemoMode ? 'mx-demo-donate' : ''}`}
+    >
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
         <div className="justify-self-start">
           <BackButton showInDemo onClick={onBack} />
@@ -55,13 +62,15 @@ export default function DonateScreen({ user, onBack }) {
         <span aria-hidden="true" />
       </div>
 
-      <div className="w-16 h-16 rounded-full bg-mint/20 flex items-center justify-center mb-4">
-        <Heart size={26} className="text-mint" />
-      </div>
+      <div className="mx-demo-donate__intro-card">
+        <div className="w-16 h-16 rounded-full bg-mint/20 flex items-center justify-center mb-4">
+          <Heart size={26} className="text-mint" />
+        </div>
 
-      <p className="text-[13px] text-muted text-center mb-8 px-4">
-        Донат не связан с тарифами — просто способ поддержать развитие Mentalix.
-      </p>
+        <p className="text-[13px] text-muted text-center mb-8 px-4">
+          Донат не связан с тарифами — просто способ поддержать развитие Mentalix.
+        </p>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 w-full mb-8">
         {AMOUNTS.map(a => (

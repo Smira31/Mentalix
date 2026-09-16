@@ -132,8 +132,8 @@ function DemoSettingsPromo({ onSubscribe, onGift }) {
         </div>
         <Lock size={78} strokeWidth={1.2} aria-hidden="true" />
       </section>
-      <button type="button" className="mx-settings-gift-card" onClick={onGift}>
-        <span>Подарить Mentalix близкому человеку</span>
+      <button type="button" className="mx-settings-support-card" onClick={onGift}>
+        <span>Поддержать проект</span>
         <Gift size={56} strokeWidth={1.1} aria-hidden="true" />
       </button>
     </>

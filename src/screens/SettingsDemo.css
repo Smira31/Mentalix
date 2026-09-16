@@ -94,7 +94,7 @@
   color: #8b8b8b;
 }
 
-.mx-settings-gift-card {
+.mx-settings-support-card {
   display: flex;
   width: 100%;
   min-height: 68px;
@@ -105,13 +105,14 @@
   overflow: hidden;
   border: 0;
   border-radius: 16px;
+  border: 1px solid #2d2d2d;
   background: #151515;
   color: #f3f3f3;
   text-align: left;
   font-size: 16px;
 }
 
-.mx-settings-gift-card > svg {
+.mx-settings-support-card > svg {
   width: 72px;
   height: 68px;
   padding: 6px;
@@ -154,7 +155,7 @@
     font-size: 19px;
   }
 
-  .mx-settings-gift-card {
+  .mx-settings-support-card {
     padding-left: 20px;
     font-size: 14px;
   }
