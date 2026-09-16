@@ -1,5 +1,5 @@
 import { platform, platformName } from '../platform'
-
+import { ArrowRight } from 'lucide-react'
 
 /*
  * Telegram MainButton/SecondaryButton (platform/telegram.hooks.js)
@@ -17,11 +17,7 @@ import { platform, platformName } from '../platform'
  * кнопка остаётся над виртуальной клавиатурой по той же схеме,
  * что уже сузила высоту шелла под visualViewport.
  */
-export default function WebActionBar({
-  action,
-  secondaryAction,
-  className = '',
-}) {
+export default function WebActionBar({ action, secondaryAction, className = '', compact = false }) {
   if (platformName === 'telegram') return null
   if (!action && !secondaryAction) return null
 
@@ -42,9 +38,11 @@ export default function WebActionBar({
             action.onClick()
           }}
           disabled={action.disabled}
-          className="cta-pill w-full py-4 text-[16px] disabled:opacity-40"
+          className={
+            compact ? 'mx-reference-next' : 'cta-pill w-full py-4 text-[16px] disabled:opacity-40'
+          }
         >
-          {action.text}
+          {compact ? <ArrowRight size={24} strokeWidth={2} /> : action.text}
         </button>
       )}
 

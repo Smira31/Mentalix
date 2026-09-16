@@ -161,7 +161,7 @@
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: #f4f4f4;
+  background: conic-gradient(#f4f4f4 var(--energy-fill), #3a3a3a var(--energy-fill));
 }
 .mx-demo-checkin__energy button.is-selected {
   border-color: #f4f4f4;
@@ -339,6 +339,18 @@
   background: rgb(var(--c-card2));
 }
 .mx-demo-checkin .journal-textarea__floating-actions > button:last-child {
+  background: #f4f4f4;
+  color: #111;
+}
+
+.mx-reference-next {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin-left: auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
   background: #f4f4f4;
   color: #111;
 }

@@ -7,12 +7,10 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  ChevronLeft,
   Hand,
-  MoreHorizontal,
   Pencil,
-  Plus,
   Sparkles,
-  Tag,
   ThumbsDown,
   ThumbsUp,
   X,
@@ -146,24 +144,14 @@ function DemoCheckInFlow({ user, onDone }) {
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
       <header className="mx-demo-checkin__header">
-        <div className="mx-demo-checkin__leading-actions">
-          {step < 3 ? (
-            <span aria-hidden="true" />
-          ) : (
-            <>
-              <button
-                type="button"
-                aria-label="Дополнительные действия"
-                className="mx-demo-checkin__icon"
-              >
-                <MoreHorizontal size={20} />
-              </button>
-              <button type="button" aria-label="Метки" className="mx-demo-checkin__icon">
-                <Tag size={18} />
-              </button>
-            </>
-          )}
-        </div>
+        <button
+          type="button"
+          aria-label="Назад"
+          onClick={() => setStep(current => Math.max(0, current - 1))}
+          className="mx-demo-checkin__icon"
+        >
+          <ChevronLeft size={20} />
+        </button>
         <button
           type="button"
           aria-label="Закрыть"
@@ -215,7 +203,7 @@ function DemoCheckInFlow({ user, onDone }) {
                   className={energy === index + 1 ? 'is-selected' : ''}
                   onClick={() => setEnergy(index + 1)}
                 >
-                  <span style={{ opacity: 0.25 + index * 0.18 }} />
+                  <span style={{ '--energy-fill': `${(index + 1) * 20}%` }} />
                 </button>
               ))}
             </div>
@@ -311,9 +299,6 @@ function DemoCheckInFlow({ user, onDone }) {
               className="mx-demo-checkin__bird"
             />
             <h1>Ты завершил ежедневный чек-ин!</h1>
-            <button type="button" className="mx-demo-checkin__tags">
-              <Plus size={17} /> Добавить метки
-            </button>
             <p>Насколько полезным был этот чек-ин сегодня?</p>
             <div className="mx-demo-checkin__feedback">
               {[
@@ -340,7 +325,11 @@ function DemoCheckInFlow({ user, onDone }) {
           </section>
         )}
       </main>
-      <WebActionBar action={step === 3 ? null : webAction} secondaryAction={webSecondaryAction} />
+      <WebActionBar
+        action={step === 3 ? null : webAction}
+        secondaryAction={webSecondaryAction}
+        compact
+      />
     </div>,
     getFullscreenPortalTarget()
   )
