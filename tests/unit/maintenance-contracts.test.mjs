@@ -268,7 +268,7 @@ test('MXL-CLOUDFLARE-OWNER-QA-001 использует manual exact-SHA Demo gat
   assert.match(workflow, /mentalix-owner-qa/)
   assert.match(workflow, /qa-build\.json/)
   assert.match(workflow, /X-Robots-Tag: noindex, nofollow/)
-  assert.match(workflow, /cloudflare\/wrangler-action@v4/)
+  assert.match(workflow, /cloudflare\/wrangler-action@[0-9a-f]{40}/)
   assert.match(workflow, /pages deploy dist/)
   assert.match(workflow, /immutable provenance/)
 })
