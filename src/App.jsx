@@ -555,11 +555,32 @@ export default function App() {
       ? { width: 402, height: 874, label: 'iPhone 16 Pro' }
       : { width: 430, height: 932, label: 'iPhone 16 Pro Max' }
   const [demoScale, setDemoScale] = useState(1)
+  const [desktopDeviceFrame, setDesktopDeviceFrame] = useState(
+    () =>
+      window.innerWidth > 700 &&
+      !['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+      !window.matchMedia?.('(display-mode: standalone)')?.matches
+  )
 
   useEffect(() => {
-    if (!previewDemoMode) return undefined
+    const updateDesktopFrame = () => {
+      setDesktopDeviceFrame(
+        window.innerWidth > 700 &&
+          !['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+          !window.matchMedia?.('(display-mode: standalone)')?.matches
+      )
+    }
+    updateDesktopFrame()
+    window.addEventListener('resize', updateDesktopFrame)
+    return () => window.removeEventListener('resize', updateDesktopFrame)
+  }, [])
+
+  const deviceFrameMode = previewDemoMode || desktopDeviceFrame
+
+  useEffect(() => {
+    if (!deviceFrameMode) return undefined
     const updateScale = () => {
-      const reservedHeight = demoToolbar ? 118 : 42
+      const reservedHeight = previewDemoMode && demoToolbar ? 118 : 42
       setDemoScale(
         Math.min(1, Math.max(0.62, (window.innerHeight - reservedHeight) / demoViewport.height))
       )
@@ -567,7 +588,7 @@ export default function App() {
     updateScale()
     window.addEventListener('resize', updateScale)
     return () => window.removeEventListener('resize', updateScale)
-  }, [demoDevice, demoToolbar, demoViewport.height, previewDemoMode])
+  }, [demoDevice, demoToolbar, demoViewport.height, deviceFrameMode, previewDemoMode])
 
   useEffect(() => {
     platform.init()
@@ -1026,7 +1047,7 @@ export default function App() {
      ============================================================ */
 
   return (
-    <div className={previewDemoMode ? 'mx-preview-stage' : undefined}>
+    <div className={deviceFrameMode ? 'mx-preview-stage' : undefined}>
       {previewDemoMode && demoToolbar && (
         <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
           <span className="mx-preview-device-switcher__label">Demo viewport</span>
@@ -1060,6 +1081,7 @@ export default function App() {
       )}
       <div
         data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
+        data-mentalix-desktop-frame={desktopDeviceFrame ? 'true' : undefined}
         data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
         className="
         h-screen
@@ -1073,14 +1095,14 @@ export default function App() {
         font-body
       "
         style={{
-          height: previewDemoMode
+          height: deviceFrameMode
             ? `${demoViewport.height}px`
             : viewportHeight
               ? `${viewportHeight}px`
               : '100dvh',
-          width: previewDemoMode ? `${demoViewport.width}px` : undefined,
-          transform: previewDemoMode ? `scale(${demoScale})` : undefined,
-          marginBottom: previewDemoMode
+          width: deviceFrameMode ? `${demoViewport.width}px` : undefined,
+          transform: deviceFrameMode ? `scale(${demoScale})` : undefined,
+          marginBottom: deviceFrameMode
             ? `${-(demoViewport.height * (1 - demoScale))}px`
             : undefined,
           paddingTop:

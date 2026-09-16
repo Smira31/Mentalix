@@ -17,23 +17,6 @@
   font-family: 'Onest', sans-serif;
 }
 
-.mx-web-auth-close {
-  position: absolute;
-  top: max(92px, calc(var(--app-safe-top, 0px) + 60px));
-  right: 28px;
-  display: grid;
-  width: 60px;
-  height: 60px;
-  place-items: center;
-  border: 1px solid #333;
-  border-radius: 50%;
-  background: #202020;
-  color: #ddd;
-  font-size: 36px;
-  font-weight: 250;
-  line-height: 1;
-}
-
 .mx-web-auth-illustration {
   display: block;
   width: min(100%, 420px);
@@ -114,16 +97,26 @@
   color: #f4f4f4;
   font: inherit;
   font-size: 19px;
+  color-scheme: dark;
 }
 .mx-web-auth-input-wrap input::placeholder {
   color: #707070;
+}
+.mx-web-auth-input-wrap input:-webkit-autofill,
+.mx-web-auth-input-wrap input:-webkit-autofill:hover,
+.mx-web-auth-input-wrap input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f4f4f4;
+  -webkit-box-shadow: 0 0 0 1000px #151515 inset;
+  box-shadow: 0 0 0 1000px #151515 inset;
+  caret-color: #f4f4f4;
+  transition: background-color 9999s ease-out 0s;
 }
 
 .mx-web-auth-submit {
   display: block;
   width: min(100%, 330px);
   min-height: 76px;
-  margin: 120px auto 0;
+  margin: 28px auto 0;
   border: 0;
   border-radius: 999px;
   background: #eee;
@@ -142,7 +135,7 @@
 }
 
 .mx-web-auth-quote {
-  margin: 72px 0 0;
+  margin: 28px 0 0;
   color: #777;
   font-size: clamp(16px, 3.6vw, 23px);
   line-height: 1.4;
@@ -186,7 +179,7 @@
     padding-left: 43px;
   }
   .mx-web-auth-submit {
-    margin-top: clamp(30px, 5vh, 52px);
+    margin-top: 24px;
   }
 }
 
@@ -199,10 +192,10 @@
     margin-bottom: 26px;
   }
   .mx-web-auth-submit {
-    margin-top: 64px;
+    margin-top: 20px;
   }
   .mx-web-auth-quote {
-    margin-top: 60px;
+    margin-top: 24px;
   }
 }
 
