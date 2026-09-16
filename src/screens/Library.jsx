@@ -246,7 +246,7 @@ function LibraryV2ArticleReader({ article, onBack }) {
 
 function LibraryV2Articles({ article, onBack, onOpen }) {
   if (article) return <LibraryV2ArticleReader article={article} onBack={onBack} />
-  return <LibraryV2ArticlesList onBack={onBack} onOpen={onOpen} />
+  return <LibraryV2ArticlesCatalog onBack={onBack} onOpen={onOpen} />
 }
 
 function CollectionCard({ title, description, kind, soon = false, onClick }) {
