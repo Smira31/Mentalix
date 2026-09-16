@@ -139,22 +139,20 @@ function DemoCheckInFlow({ user, onDone }) {
               type="button"
               aria-label="Назад"
               onClick={() => setStep(current => Math.max(0, current - 1))}
-              className="mx-demo-checkin__back"
+              className="mx-demo-checkin__icon"
             >
-              <ChevronLeft size={20} /> Назад
+              <ChevronLeft size={20} />
             </button>
           )}
         </div>
-        {step !== 3 && (
-          <button
-            type="button"
-            aria-label="Закрыть"
-            onClick={onDone}
-            className="mx-demo-checkin__icon"
-          >
-            <X size={18} />
-          </button>
-        )}
+        <button
+          type="button"
+          aria-label="Закрыть"
+          onClick={onDone}
+          className="mx-demo-checkin__icon"
+        >
+          <X size={18} />
+        </button>
       </header>
 
       <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
