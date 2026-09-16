@@ -575,13 +575,18 @@ export default function App() {
     if (previewDemoMode) return
 
     ;(async () => {
-      const existing = await platform.requestAuth()
+      try {
+        const existing = await platform.requestAuth()
 
-      if (existing) {
-        setUser(existing)
+        if (existing) {
+          setUser(existing)
+        }
+      } catch {
+        // A missing or temporarily unavailable web session must fall through
+        // to WebAuthScreen instead of leaving standalone Safari on the splash.
+      } finally {
+        setAuthChecked(true)
       }
-
-      setAuthChecked(true)
     })()
   }, [previewDemoMode])
 
