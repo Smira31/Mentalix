@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
 
 import './Today.css'
 
@@ -46,13 +46,7 @@ function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
         aria-label="Мой путь. Один день подряд"
         onClick={onOpenSeries}
       >
-        <svg className="mx-stoic-flame" viewBox="0 0 32 38" aria-hidden="true">
-          <path d="M16 2c4 7 10 9 10 18 0 9-5 16-12 16S2 30 2 21C2 13 7 8 13 4c0 5 2 7 3 8 2-3 2-6 0-10Z" />
-          <path
-            className="mx-stoic-flame__inner"
-            d="M16 14c3 4 5 6 5 10 0 4-2 7-5 7s-6-3-6-7c0-3 2-6 4-8 0 2 1 3 2 4 1-2 1-4 0-6Z"
-          />
-        </svg>
+        <Flame aria-hidden="true" />
         <strong>1</strong>
       </button>
       <strong className="mx-demo-today-greeting">добрый вечер.</strong>
@@ -62,13 +56,7 @@ function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
         aria-label="Твой профиль"
         onClick={onOpenSettings}
       >
-        <span className="mx-stoic-profile-mark" aria-hidden="true">
-          <svg viewBox="0 0 32 32">
-            <circle cx="16" cy="16" r="15" />
-            <circle className="mx-stoic-profile-mark__head" cx="16" cy="11" r="4" />
-            <path className="mx-stoic-profile-mark__body" d="M8 26c1-6 4-9 8-9s7 3 8 9" />
-          </svg>
-        </span>
+        <UserRound aria-hidden="true" />
       </button>
     </div>
   )
