@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { X, ChevronLeft } from 'lucide-react'
+import { ArrowRight, ChevronDown, ChevronLeft, Pencil, Plus, Sparkles, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -63,6 +63,259 @@ const CHECKIN_INTERACTIVE_CLASS = 'w-full pt-7'
 const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
+
+const DEMO_FOCUS_OPTIONS = [
+  ['Work', 'Работа'],
+  ['Self-care', 'Забота о себе'],
+  ['People', 'Люди'],
+  ['Hobbies', 'Хобби'],
+  ['Chores', 'Дела'],
+  ['Learning', 'Учёба'],
+  ['Fun', 'Радость'],
+  ['Rest', 'Отдых'],
+  ['Nature', 'Природа'],
+  ['Health', 'Здоровье'],
+  ['Family', 'Семья'],
+  ['Productivity', 'Продуктивность'],
+]
+
+function DemoCheckInFlow({ user, onDone }) {
+  const [step, setStep] = useState(0)
+  const [mood, setMood] = useState(null)
+  const [energy, setEnergy] = useState(null)
+  const [focus, setFocus] = useState(null)
+  const [note, setNote] = useState('')
+  const [feedback, setFeedback] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const { style: viewportStyle } = useFullscreenSurface()
+  const totalSteps = 6
+
+  const goNext = () => setStep(current => Math.min(totalSteps - 1, current + 1))
+  const goBack = () => setStep(current => Math.max(0, current - 1))
+
+  async function finish() {
+    setSaving(true)
+    setError('')
+    try {
+      await api.checkin.save(user.id, {
+        mood: mood || 3,
+        energy: energy || 3,
+        anxiety: 3,
+        focus: focus ? 4 : 3,
+        note: note.trim() || undefined,
+        emotion: focus || undefined,
+      })
+      platform.haptic('success')
+      onDone()
+    } catch (saveError) {
+      console.error(saveError)
+      setError('Не удалось сохранить. Попробуй ещё раз.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const action =
+    step === 3
+      ? { text: 'Далее', onClick: goNext, disabled: !note.trim() }
+      : step === 4
+        ? { text: 'Продолжить', onClick: goNext }
+        : step === 5
+          ? { text: saving ? 'Сохраняю…' : 'Save & Finish', onClick: finish, disabled: saving }
+          : {
+              text: 'Далее',
+              onClick: goNext,
+              disabled: step === 0 ? !mood : step === 1 ? !energy : !focus,
+            }
+
+  useMainButton({
+    text: action.text,
+    onClick: action.onClick,
+    visible: true,
+    enabled: !action.disabled,
+    loading: saving,
+  })
+
+  useSecondaryButton({
+    text: step === 5 ? '' : 'Skip',
+    onClick: goNext,
+    visible: step < 4,
+  })
+
+  const webAction = { ...action }
+  const webSecondaryAction = step < 4 ? { text: 'Skip', onClick: goNext } : null
+
+  return createPortal(
+    <div className="mx-demo-checkin" style={viewportStyle}>
+      <header className="mx-demo-checkin__header">
+        <button type="button" aria-label="Назад" onClick={goBack} className="mx-demo-checkin__icon">
+          <ChevronLeft size={20} />
+        </button>
+        <div className="mx-demo-checkin__dots" aria-label={`Шаг ${step + 1} из ${totalSteps}`}>
+          {Array.from({ length: totalSteps }).map((_, index) => (
+            <span
+              key={index}
+              className={index === step ? 'is-active' : index < step ? 'is-done' : ''}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          aria-label="Закрыть"
+          onClick={onDone}
+          className="mx-demo-checkin__icon"
+        >
+          <X size={18} />
+        </button>
+      </header>
+
+      <main className={`mx-demo-checkin__body ${step === 3 ? 'is-editor' : ''}`}>
+        {step === 0 && (
+          <section className="mx-demo-checkin__scene">
+            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
+            <h1>How are you feeling?</h1>
+            <div className="mx-demo-checkin__moods">
+              {['Terrible', 'Bad', 'Okay', 'Good', 'Great'].map((label, index) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={mood === index + 1 ? 'is-selected' : ''}
+                  onClick={() => setMood(index + 1)}
+                >
+                  <Face level={index + 1} active={mood === index + 1} size={52} showFrame={false} />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {step === 1 && (
+          <section className="mx-demo-checkin__scene">
+            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
+            <h1>How much energy do you feel?</h1>
+            <div className="mx-demo-checkin__energy">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  aria-label={`${index + 1}`}
+                  className={energy === index + 1 ? 'is-selected' : ''}
+                  onClick={() => setEnergy(index + 1)}
+                >
+                  <span style={{ opacity: 0.25 + index * 0.18 }} />
+                </button>
+              ))}
+            </div>
+            <div className="mx-demo-checkin__range">
+              <span>Not at all</span>
+              <span>Very</span>
+            </div>
+          </section>
+        )}
+
+        {step === 2 && (
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--focus">
+            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
+            <h1>What’s your main focus for today?</h1>
+            <div className="mx-demo-checkin__focus-grid">
+              {DEMO_FOCUS_OPTIONS.map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={focus === key ? 'is-selected' : ''}
+                  onClick={() => setFocus(key)}
+                >
+                  <span>{key.slice(0, 1)}</span>
+                  <b>{label}</b>
+                </button>
+              ))}
+            </div>
+            <button type="button" className="mx-demo-checkin__text-action">
+              Show all <ChevronDown size={16} />
+            </button>
+            <button type="button" className="mx-demo-checkin__text-action">
+              <Pencil size={15} /> Personalize
+            </button>
+          </section>
+        )}
+
+        {step === 3 && (
+          <section className="mx-demo-checkin__editor-scene">
+            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
+            <h1>What’s making you smile today when you think of it?</h1>
+            <p className="mx-demo-checkin__hint">Big or small — name your joy.</p>
+            <JournalTextarea
+              value={note}
+              onChange={setNote}
+              placeholder="Start writing..."
+              ariaLabel="Daily Check-In note"
+              className="mx-demo-checkin__editor"
+              editorClassName="pb-28"
+              floatingToolbar
+              guidedFlow
+              keepFocusOnSubmit
+              submitIcon="arrow"
+              submitLabel="Далее"
+              onSubmit={goNext}
+              onDeepen={() => {}}
+              deepenLabel="Go deeper"
+              showAddAction
+              formatting
+            />
+          </section>
+        )}
+
+        {step === 4 && (
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--upsell">
+            <Sparkles size={34} />
+            <h1>Elevate your mental health with AI</h1>
+            <p>Personalized reflections and thoughtful analysis to help you move forward.</p>
+            <div className="mx-demo-checkin__benefits">
+              <span>✦ Personalized Reflections</span>
+              <span>✦ Reflective Analysis</span>
+              <span>✦ One calm next step</span>
+            </div>
+            <button type="button" className="mx-demo-checkin__trial" onClick={goNext}>
+              Start Your Free Trial <ArrowRight size={18} />
+            </button>
+          </section>
+        )}
+
+        {step === 5 && (
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
+            <MotifArt name="noch" size={170} artScale={1.05} />
+            <h1>You’ve completed the Daily Check-In!</h1>
+            <button type="button" className="mx-demo-checkin__tags">
+              <Plus size={17} /> Add Tags
+            </button>
+            <p>Did this check-in feel helpful today?</p>
+            <div className="mx-demo-checkin__feedback">
+              {['No', 'A little', 'Yes'].map(item => (
+                <button
+                  key={item}
+                  type="button"
+                  className={feedback === item ? 'is-selected' : ''}
+                  onClick={() => setFeedback(item)}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+            {error && (
+              <p role="alert" className="mx-demo-checkin__error">
+                {error}
+              </p>
+            )}
+          </section>
+        )}
+      </main>
+      <WebActionBar action={step === 3 ? null : webAction} secondaryAction={webSecondaryAction} />
+    </div>,
+    getFullscreenPortalTarget()
+  )
+}
 
 // ── Чек-ин и вечерний «Анализ дня» ──
 // Утром: четыре шкалы + короткая мысль → note.
@@ -266,6 +519,10 @@ function existingProud(value) {
 export default function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
   const isEvening = mode === 'evening'
   const previewDemoMode = isPreviewDemoMode()
+
+  if (previewDemoMode && !isEvening) {
+    return <DemoCheckInFlow user={user} onDone={onDone} />
+  }
 
   const skipScales = isEvening && !!existing
 

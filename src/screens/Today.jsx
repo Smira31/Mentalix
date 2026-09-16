@@ -559,17 +559,27 @@ export default function Today({
   const heroCheckinContent = (
     <>
       <div className="mx-type-meta text-muted mb-2">
-        {todayState === 'reviewPending' ? 'Анализ дня' : 'Идея дня'}
+        {isPreviewDemoMode()
+          ? 'Daily Check-In'
+          : todayState === 'reviewPending'
+            ? 'Анализ дня'
+            : 'Идея дня'}
       </div>
 
       <h2 className="font-display mx-type-hero text-cream">
-        {todayState === 'reviewPending' ? 'Разобрать день?' : 'Как ты?'}
+        {isPreviewDemoMode()
+          ? 'Check in with yourself.'
+          : todayState === 'reviewPending'
+            ? 'Разобрать день?'
+            : 'Как ты?'}
       </h2>
 
       <p className="mx-type-body text-muted mt-2">
-        {todayState === 'reviewPending'
-          ? 'Уроки и то, чем стоит гордиться'
-          : 'Короткая утренняя настройка'}
+        {isPreviewDemoMode()
+          ? ''
+          : todayState === 'reviewPending'
+            ? 'Уроки и то, чем стоит гордиться'
+            : 'Короткая утренняя настройка'}
       </p>
 
       {todayState === 'reviewPending' && (
@@ -597,7 +607,11 @@ export default function Today({
         }}
         className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
-        {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
+        {isPreviewDemoMode()
+          ? 'Begin'
+          : todayState === 'reviewPending'
+            ? 'Разобрать день'
+            : 'Пройти чек-ин'}
       </button>
 
       {next && <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>}

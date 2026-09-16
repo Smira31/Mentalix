@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Bold, Check, Highlighter, Italic } from 'lucide-react'
+import { ArrowRight, Bold, Check, Highlighter, Italic, Plus } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
@@ -171,10 +171,12 @@ export default function JournalTextarea({
   desktopInline = false,
   writingCanvas = false,
   guidedFlow = false,
+  showAddAction = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
   const [formatOpen, setFormatOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
   const viewportGeometry = useVisualViewportGeometry()
   const keyboardOpen =
     guidedFlow &&
@@ -339,7 +341,10 @@ export default function JournalTextarea({
 
           <div
             className={[
-              'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-3',
+              'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid items-center gap-3',
+              showAddAction
+                ? 'max-w-[430px] grid-cols-[48px_48px_minmax(0,1fr)_56px]'
+                : 'max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px]',
               'journal-textarea__floating-actions',
               desktopInline
                 ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'
@@ -348,6 +353,18 @@ export default function JournalTextarea({
             ].join(' ')}
             style={keyboardDockStyle}
           >
+            {showAddAction && (
+              <button
+                type="button"
+                aria-label={addOpen ? 'Скрыть дополнительные действия' : 'Дополнительные действия'}
+                aria-expanded={addOpen}
+                onPointerDown={event => event.preventDefault()}
+                onClick={() => setAddOpen(current => !current)}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream"
+              >
+                <Plus size={22} />
+              </button>
+            )}
             {formatting ? (
               <button
                 type="button"
@@ -406,6 +423,19 @@ export default function JournalTextarea({
               )}
             </button>
           </div>
+          {showAddAction && addOpen && (
+            <div className="fixed bottom-[calc(var(--app-safe-bottom)+86px)] left-5 z-[71] flex gap-2 rounded-2xl border border-cream/10 bg-emerald-deep/95 p-2 shadow-xl">
+              {['Voice Memo', 'Camera', 'Photo', 'Draw'].map(item => (
+                <button
+                  key={item}
+                  type="button"
+                  className="rounded-xl px-2 py-2 text-[11px] text-muted"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
         </>
       ) : formatting ? (
         <div
