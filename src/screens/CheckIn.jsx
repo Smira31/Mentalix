@@ -23,6 +23,8 @@ import {
   readCheckinDraft,
   saveCheckinDraft,
 } from '../lib/checkinDraft'
+import { isPreviewDemoMode } from '../lib/demoMode'
+import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
 const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
@@ -263,6 +265,7 @@ function existingProud(value) {
 
 export default function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
   const isEvening = mode === 'evening'
+  const previewDemoMode = isPreviewDemoMode()
 
   const skipScales = isEvening && !!existing
 
@@ -716,7 +719,10 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
   if (step >= doneStep) {
     return createPortal(
-      <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
+      <div
+        className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
+        style={viewportStyle}
+      >
         <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
 
         <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -811,7 +817,10 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
         : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
+      style={viewportStyle}
+    >
       <div className={CHECKIN_HEADER_CLASS}>
         <button
           onClick={() => {
