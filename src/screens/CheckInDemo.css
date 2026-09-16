@@ -18,6 +18,12 @@
   padding: max(12px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 12px;
 }
 
+.mx-demo-checkin__leading-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .mx-demo-checkin__icon {
   display: grid;
   width: 44px;

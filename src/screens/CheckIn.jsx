@@ -3,7 +3,16 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Hand, ThumbsDown, ThumbsUp, Check, ChevronLeft, Minus, X } from 'lucide-react'
+import {
+  Check,
+  Hand,
+  MoreHorizontal,
+  SlidersHorizontal,
+  Tag,
+  ThumbsDown,
+  ThumbsUp,
+  X,
+} from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -73,10 +82,7 @@ function DemoCheckInFlow({ user, onDone }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const { style: viewportStyle } = useFullscreenSurface()
-  const totalSteps = 4
-
-  const goNext = () => setStep(current => Math.min(totalSteps - 1, current + 1))
-  const goBack = () => setStep(current => Math.max(0, current - 1))
+  const goNext = () => setStep(current => Math.min(3, current + 1))
 
   async function finish() {
     setSaving(true)
@@ -134,16 +140,25 @@ function DemoCheckInFlow({ user, onDone }) {
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
       <header className="mx-demo-checkin__header">
-        <button type="button" aria-label="Назад" onClick={goBack} className="mx-demo-checkin__icon">
-          <ChevronLeft size={20} />
-        </button>
-        <div className="mx-demo-checkin__dots" aria-label={`Шаг ${step + 1} из ${totalSteps}`}>
-          {Array.from({ length: totalSteps }).map((_, index) => (
-            <span
-              key={index}
-              className={index === step ? 'is-active' : index < step ? 'is-done' : ''}
-            />
-          ))}
+        <div className="mx-demo-checkin__leading-actions">
+          {step < 2 ? (
+            <button type="button" aria-label="Настройки чек-ина" className="mx-demo-checkin__icon">
+              <SlidersHorizontal size={18} />
+            </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                aria-label="Дополнительные действия"
+                className="mx-demo-checkin__icon"
+              >
+                <MoreHorizontal size={20} />
+              </button>
+              <button type="button" aria-label="Метки" className="mx-demo-checkin__icon">
+                <Tag size={18} />
+              </button>
+            </>
+          )}
         </div>
         <button
           type="button"
