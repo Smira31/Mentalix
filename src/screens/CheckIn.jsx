@@ -474,14 +474,9 @@ function existingProud(value) {
   return [...items.slice(0, 3), '', '', ''].slice(0, 3)
 }
 
-export default function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
+function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   const isEvening = mode === 'evening'
   const previewDemoMode = isPreviewDemoMode()
-
-  if (previewDemoMode && !isEvening) {
-    return <DemoCheckInFlow user={user} onDone={onDone} />
-  }
-
   const skipScales = isEvening && !!existing
 
   /*
@@ -1349,3 +1344,16 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
     getFullscreenPortalTarget()
   )
 }
+
+
+function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
+  const previewDemoMode = isPreviewDemoMode()
+
+  if (previewDemoMode && mode !== 'evening') {
+    return <DemoCheckInFlow user={user} onDone={onDone} />
+  }
+
+  return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} />
+}
+
+export default CheckIn
