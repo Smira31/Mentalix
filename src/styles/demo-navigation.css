@@ -1,0 +1,16 @@
+.mx-demo-back-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.08);
+  color: #f2f2f2;
+}
+
+.mx-demo-back-button svg {
+  width: 23px;
+  height: 23px;
+  color: #f2f2f2;
+}

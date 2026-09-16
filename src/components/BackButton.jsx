@@ -2,6 +2,7 @@ import { ChevronLeft } from 'lucide-react'
 import { platform, platformName } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import '../styles/demo-navigation.css'
 
 /*
  * КНОПКА «НАЗАД»
@@ -51,14 +52,16 @@ export default function BackButton({
         onClick?.()
       }}
       className={[
-        'flex items-center gap-2 rounded-full border border-cream/15 bg-emerald',
-        'min-h-11 pl-2.5 pr-4 py-2 active:scale-95 transition-transform shrink-0',
+        showInDemo
+          ? 'mx-demo-back-button'
+          : 'flex items-center gap-2 rounded-full border border-cream/15 bg-emerald min-h-11 pl-2.5 pr-4 py-2',
+        'active:scale-95 transition-transform shrink-0',
         className,
       ].join(' ')}
     >
       <ChevronLeft size={17} className="text-muted" aria-hidden="true" />
 
-      <span className="text-[13px] font-semibold text-muted">{label}</span>
+      {!showInDemo && <span className="text-[13px] font-semibold text-muted">{label}</span>}
     </button>
   )
 }
