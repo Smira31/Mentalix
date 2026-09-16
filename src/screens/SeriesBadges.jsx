@@ -4,10 +4,75 @@ import { Flame, X } from 'lucide-react'
 
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
-import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { buildSeriesViewModel } from '../lib/series'
 import './SeriesBadges.css'
+
+function RewardIcon({ variant = 'locked', size = 110, className = '' }) {
+  const isLocked = variant === 'locked'
+  const isFirstStep = variant === 'first-step'
+
+  return (
+    <svg
+      className={`mx-reward-icon ${className}`}
+      width={size}
+      height={size}
+      viewBox="0 0 160 160"
+      role="img"
+      aria-label={isLocked ? 'Награда пока закрыта' : 'Открытая награда'}
+    >
+      <circle className="mx-reward-icon__glass" cx="80" cy="68" r="48" />
+      <path className="mx-reward-icon__shine" d="M48 42c7-12 17-19 29-23" />
+      {isLocked ? (
+        <text className="mx-reward-icon__question" x="80" y="80" textAnchor="middle">
+          ?
+        </text>
+      ) : isFirstStep ? (
+        <>
+          <path className="mx-reward-icon__steps" d="M42 103h76M50 94h60M58 85h44M66 76h28" />
+          <path className="mx-reward-icon__flag" d="M88 76V43m0 0h22l-7 8 7 8H88" />
+          <path className="mx-reward-icon__bird" d="M104 66c5-6 11-6 16 0-5-2-9-1-12 3" />
+        </>
+      ) : variant === 'voice-heard' ? (
+        <>
+          <path
+            className="mx-reward-icon__symbol"
+            d="M60 68c5-12 10 12 15 0s10-12 15 0 10 12 15 0"
+          />
+          <circle className="mx-reward-icon__dot" cx="80" cy="68" r="4" />
+        </>
+      ) : variant === 'week-on-path' ? (
+        <>
+          {[0, 1, 2, 3, 4, 5, 6].map(index => (
+            <circle
+              className="mx-reward-icon__dot"
+              key={index}
+              cx={56 + index * 8}
+              cy={68 - Math.abs(3 - index) * 4}
+              r="3.5"
+            />
+          ))}
+        </>
+      ) : variant === 'ritual-holds' ? (
+        <path className="mx-reward-icon__steps" d="M55 88h50M62 80h36M69 72h22M76 64h8" />
+      ) : variant === 'asceza-power' ? (
+        <path className="mx-reward-icon__symbol" d="M62 84l36-32M70 88l28-24" />
+      ) : variant === 'month-on-path' ? (
+        <path
+          className="mx-reward-icon__symbol"
+          d="m80 50 5 12 13 1-10 8 3 13-11-7-11 7 3-13-10-8 13-1z"
+        />
+      ) : (
+        <>
+          <circle className="mx-reward-icon__dot" cx="80" cy="68" r="12" />
+          <path className="mx-reward-icon__symbol" d="M80 52v32M64 68h32" />
+        </>
+      )}
+      <path className="mx-reward-icon__base" d="M34 116h92l-9 16H43z" />
+      <path className="mx-reward-icon__base-line" d="M27 137h106" />
+    </svg>
+  )
+}
 
 function ProgressBar({ progress, goal }) {
   const width = goal > 0 ? Math.min(100, Math.round((progress / goal) * 100)) : 0
@@ -26,7 +91,7 @@ function BadgeRow({ badge, expanded, onToggle }) {
       onClick={onToggle}
       aria-expanded={expanded}
     >
-      <MotifArt name={badge.motif} size={58} className={badge.done ? '' : 'opacity-55'} />
+      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={76} />
       <div className="min-w-0 flex-1">
         <div className="mx-path-row-title">{badge.title}</div>
         <div className="mx-path-row-copy">{badge.desc}</div>
@@ -94,13 +159,13 @@ function AwardsView({ unlocked, upcoming }) {
         </h2>
         {latest ? (
           <>
-            <MotifArt name={latest.motif} size={154} />
+            <RewardIcon variant={latest.id} size={184} />
             <div className="mx-path-featured-title">{latest.title}</div>
             <div className="mx-path-featured-copy">{latest.done ? 'Открыто' : latest.desc}</div>
           </>
         ) : (
           <>
-            <MotifArt name="first-step" size={154} className="opacity-55" />
+            <RewardIcon variant="first-step" size={184} />
             <div className="mx-path-featured-title">Первый шаг</div>
             <div className="mx-path-featured-copy">Сделай первый чек-ин</div>
           </>
