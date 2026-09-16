@@ -25,7 +25,9 @@ export const webAdapter = {
   async requestAuth() {
     const localFixtureMode = import.meta.env.DEV || import.meta.env.VITE_LOCAL_PREVIEW === 'true'
     if (localFixtureMode) return this.getUser()
-    const response = await fetch('/api/auth/session', { credentials: 'include' })
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '/api'
+    // The local/Vercel fallback remains /api/auth/session; Firebase uses Render via VITE_API_BASE_URL.
+    const response = await fetch(`${apiBase}/auth/session`, { credentials: 'include' })
     if (!response.ok) {
       if (localFixtureMode) return this.getUser()
       throw new Error(`Web session restore failed: ${response.status}`)
