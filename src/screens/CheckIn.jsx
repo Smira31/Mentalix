@@ -156,7 +156,7 @@ function ScaleRail({ scale, value, onPick }) {
           >
             <span className="mx-scale-rail__circle">
               {scale.faces ? (
-                <Face level={level} active={active} size={52} showFrame={false} />
+                <Face level={level} active={active} size={42} showFrame={false} />
               ) : (
                 level
               )}
@@ -1018,7 +1018,8 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                       ariaLabel="Что на уме"
                       className="min-h-[18rem] flex-1"
                       editorClassName="pb-24"
-                      floatingToolbar
+                      floatingToolbar={!previewDemoMode}
+                      autoFocus={previewDemoMode}
                       onSubmit={() => submit()}
                       submitLabel="Завершить чек-ин"
                       submitLoading={saving}
