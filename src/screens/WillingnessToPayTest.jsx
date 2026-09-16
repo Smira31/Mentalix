@@ -136,7 +136,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
     return (
       <div className="w-full max-w-md px-5 pb-10">
         <div className="mb-6 flex items-center justify-between">
-          <BackButton onClick={onBack} />
+          <BackButton showInDemo onClick={onBack} />
           <span className="text-[11px] font-label uppercase tracking-wider text-muted">готово</span>
         </div>
         <div className="rounded-3xl bg-emerald p-6 text-center">

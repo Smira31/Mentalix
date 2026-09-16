@@ -27,7 +27,12 @@ import { isPreviewDemoMode } from '../lib/demoMode'
  * внутри Telegram, `telegram.adapter.js`), как и остальной
  * платформенный слой.
  */
-export default function BackButton({ onClick, label = 'Назад', className = '' }) {
+export default function BackButton({
+  onClick,
+  label = 'Назад',
+  className = '',
+  showInDemo = false,
+}) {
   const previewDemoMode = isPreviewDemoMode()
 
   useBackButton(() => {
@@ -35,7 +40,7 @@ export default function BackButton({ onClick, label = 'Назад', className = 
     onClick?.()
   })
 
-  if (platformName === 'telegram' || previewDemoMode) return null
+  if (platformName === 'telegram' || (previewDemoMode && !showInDemo)) return null
 
   return (
     <button

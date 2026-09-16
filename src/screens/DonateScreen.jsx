@@ -49,7 +49,7 @@ export default function DonateScreen({ user, onBack }) {
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
         <div className="justify-self-start">
-          <BackButton onClick={onBack} />
+          <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">Поддержать проект</h1>
         <span aria-hidden="true" />
@@ -64,7 +64,7 @@ export default function DonateScreen({ user, onBack }) {
       </p>
 
       <div className="grid grid-cols-2 gap-3 w-full mb-8">
-        {AMOUNTS.map((a) => (
+        {AMOUNTS.map(a => (
           <button
             key={a}
             onClick={() => setSelected(a)}
@@ -86,7 +86,8 @@ export default function DonateScreen({ user, onBack }) {
       </button>
 
       <p className="text-[11px] text-muted text-center mt-4 px-4">
-        Оплата через Telegram Payments подключится в следующем обновлении — сейчас донат фиксируется без реального списания средств.
+        Оплата через Telegram Payments подключится в следующем обновлении — сейчас донат фиксируется
+        без реального списания средств.
       </p>
     </div>
   )

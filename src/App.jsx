@@ -1314,6 +1314,7 @@ export default function App() {
                   >
                     <div className="justify-self-start">
                       <BackButton
+                        showInDemo
                         onClick={() => {
                           setOverlay('settings')
                         }}
