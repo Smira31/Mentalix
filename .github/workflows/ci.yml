@@ -28,7 +28,7 @@ jobs:
       backend_required: ${{ steps.scope.outputs.backend_required }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Определить необходимость Render health
@@ -45,10 +45,8 @@ jobs:
             exit 0
           fi
           changed_files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
-          printf '%s
-' "$changed_files"
-          if printf '%s
-' "$changed_files" | grep -Eq '^(server/|api/|src/lib/api|src/platform/|package(-lock)?\.json$|\.github/workflows/|firebase\.json$|render\.yaml$|Dockerfile)'; then
+          printf '%s\n' "$changed_files"
+          if printf '%s\n' "$changed_files" | grep -Eq '^(server/|api/|src/lib/api|src/platform/|package(-lock)?\.json$|\.github/workflows/|firebase\.json$|render\.yaml$|Dockerfile)'; then
             echo "backend_required=true" >> "$GITHUB_OUTPUT"
           else
             echo "backend_required=false" >> "$GITHUB_OUTPUT"
