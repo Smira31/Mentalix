@@ -1,13 +1,11 @@
 ---
 status: current
-last_verified: 2026-09-11
-name: "✨ Новая функция"
-about: "Предложить новую функцию для Mentalix"
-title: "[Функция]: "
-labels: ["✨ Новая функция"]
+last_verified: 2026-09-16
+name: '✨ Новая функция'
+about: 'Предложить новую функцию для Mentalix'
+title: '[Функция]: '
+labels: ['✨ Новая функция']
 ---
-
-
 
 # ✨ Описание функции
 
@@ -32,8 +30,15 @@ labels: ["✨ Новая функция"]
 Ссылки, примеры, ограничения.
 
 ## 🧭 Task passport
+
 **Тип маршрута:** `product` / `ui` / `api` / `backend` / `platform` / `ai` / `docs`
 **Что не меняется:**
 **Критерий результата:**
 **Проверки и ручной gate:**
 **Риски и rollback:**
+
+## ✅ Definition of Done
+
+- [ ] Acceptance criteria проверяемы и выполнены.
+- [ ] Автоматические проверки и manual gate перечислены с evidence.
+- [ ] Документация и rollback обновлены, если это требуется scope.
