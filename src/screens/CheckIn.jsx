@@ -3,19 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import {
-  Check,
-  Hand,
-  MoreHorizontal,
-  Plus,
-  Share2,
-  SlidersHorizontal,
-  Star,
-  Tag,
-  ThumbsDown,
-  ThumbsUp,
-  X,
-} from 'lucide-react'
+import { Check, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -120,7 +108,7 @@ function DemoCheckInFlow({ user, onDone }) {
         : {
             text: 'Далее',
             onClick: goNext,
-            disabled: step === 0 ? !mood : !energy,
+            disabled: false,
           }
 
   useMainButton({
@@ -132,13 +120,13 @@ function DemoCheckInFlow({ user, onDone }) {
   })
 
   useSecondaryButton({
-    text: step >= 2 ? '' : 'Пропустить',
+    text: '',
     onClick: goNext,
-    visible: step < 2,
+    visible: false,
   })
 
   const webAction = { ...action }
-  const webSecondaryAction = step < 2 ? { text: 'Пропустить', onClick: goNext } : null
+  const webSecondaryAction = null
 
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
@@ -146,20 +134,7 @@ function DemoCheckInFlow({ user, onDone }) {
         <div
           className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
         >
-          {step === 0 && <SlidersHorizontal size={20} aria-label="Настройки" />}
-          {step === 2 && (
-            <>
-              <MoreHorizontal size={20} aria-label="Дополнительные действия" />
-              <Tag size={19} aria-label="Метки" />
-              <span className="mx-demo-checkin__seneca">✦ Seneca</span>
-            </>
-          )}
-          {step === 3 && (
-            <>
-              <Share2 size={19} aria-label="Поделиться" />
-              <Star size={20} aria-label="Избранное" />
-            </>
-          )}
+          {step === 2 && <span className="mx-demo-checkin__header-title">Ежедневный чек-ин</span>}
         </div>
         {step !== 3 && (
           <button
@@ -260,9 +235,6 @@ function DemoCheckInFlow({ user, onDone }) {
               className="mx-demo-checkin__bird"
             />
             <h1>Ты завершил ежедневный чек-ин!</h1>
-            <button type="button" className="mx-demo-checkin__tags">
-              <Plus size={17} /> Добавить метки
-            </button>
             <p>Насколько полезным был этот чек-ин сегодня?</p>
             <div className="mx-demo-checkin__feedback">
               {[

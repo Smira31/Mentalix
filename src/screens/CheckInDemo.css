@@ -27,6 +27,11 @@
 .mx-demo-checkin__header-left.is-right {
   margin-left: auto;
 }
+.mx-demo-checkin__header-title {
+  color: #eee;
+  font-size: 15px;
+  font-weight: 600;
+}
 
 .mx-demo-checkin__seneca {
   display: inline-flex;
@@ -101,7 +106,8 @@
   margin-bottom: auto;
 }
 .mx-demo-checkin__scene--energy {
-  margin-top: 12px;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .mx-demo-checkin__scene--focus,
@@ -152,6 +158,12 @@
 .mx-demo-checkin__moods button.is-selected .mx-demo-checkin__mood-circle {
   border-color: #f4f4f4;
   background: #f4f4f4;
+}
+.mx-demo-checkin__moods button.is-selected .mx-face path {
+  stroke: #111 !important;
+}
+.mx-demo-checkin__moods button.is-selected .mx-face circle {
+  fill: #111 !important;
 }
 .mx-demo-checkin__moods span {
   display: block;
@@ -338,8 +350,8 @@
 }
 .mx-demo-checkin__feedback button {
   display: flex;
-  width: 108px;
-  height: 116px;
+  width: 128px;
+  height: 140px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
