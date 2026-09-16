@@ -198,3 +198,47 @@
 .mx-checkin-demo [class*='journal-textarea'] textarea::placeholder {
   color: #8f8f8f !important;
 }
+
+.mx-checkin-demo__progress-label {
+  color: #b2b2b2;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.mx-checkin-demo .journal-textarea__floating-actions {
+  bottom: calc(var(--app-safe-bottom) + 8px);
+  max-width: none;
+  padding: 10px 18px;
+  border: 1px solid #252525;
+  border-radius: 30px;
+  background: #151515;
+  box-shadow: 0 -6px 20px rgb(0 0 0 / 0.26);
+}
+
+.mx-checkin-demo .journal-textarea__floating-actions > button:first-child {
+  border-color: #353535;
+  background: #111111;
+  color: #f2f2f2;
+}
+
+.mx-checkin-demo .journal-textarea__floating-actions > button:last-child {
+  background: #f2f2f2;
+  color: #111111;
+}
+
+.mx-checkin-demo .journal-textarea__floating-actions > button:last-child:disabled {
+  opacity: 1;
+}
+
+@media (max-width: 430px) {
+  .mx-checkin-demo .journal-textarea__floating-actions {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 24px 24px 0 0;
+    padding: 10px 18px calc(10px + var(--app-safe-bottom));
+  }
+}

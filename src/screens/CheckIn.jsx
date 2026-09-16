@@ -699,7 +699,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       platform.haptic('light')
       effectiveMainAction?.run()
     },
-    visible: Boolean(effectiveMainAction),
+    visible: Boolean(effectiveMainAction) && !(previewDemoMode && isMorningNoteStep),
     enabled: !saving && !scoutBusy,
     loading: saving || scoutBusy,
   })
@@ -713,13 +713,14 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
     visible: Boolean(skipAction) && !saving && !isMorningNoteStep,
   })
 
-  const webAction = effectiveMainAction
-    ? {
-        text: effectiveMainAction.text,
-        onClick: effectiveMainAction.run,
-        disabled: saving || scoutBusy,
-      }
-    : null
+  const webAction =
+    effectiveMainAction && !(previewDemoMode && isMorningNoteStep)
+      ? {
+          text: effectiveMainAction.text,
+          onClick: effectiveMainAction.run,
+          disabled: saving || scoutBusy,
+        }
+      : null
 
   const webSecondaryAction =
     skipAction && !saving && !isMorningNoteStep
@@ -808,7 +809,10 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
   const moodLevel = values.mood || existing?.mood || 3
 
-  const stepLabel = `${isEvening ? 'Анализ дня' : 'Чек-ин'} · ${step + 1} из ${totalSteps}`
+  const stepLabel =
+    previewDemoMode && isMorningNoteStep
+      ? 'ЧЕК-ИН · 4 ИЗ 6'
+      : `${isEvening ? 'Анализ дня' : 'Чек-ин'} · ${step + 1} из ${totalSteps}`
 
   const questionTitle =
     scale?.title ||
@@ -817,7 +821,9 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       : cardIdx === 0
         ? isEvening
           ? 'Уроки дня'
-          : 'Что на уме?'
+          : previewDemoMode
+            ? 'Что сегодня важно не потерять?'
+            : 'Что на уме?'
         : 'Чем горжусь')
 
   const questionSubtitle =
@@ -827,7 +833,9 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       : cardIdx === 0
         ? isEvening
           ? 'Разбери день, пока он ещё свежий. Любое поле можно пропустить.'
-          : 'Пара слов — уже разговор с собой.'
+          : previewDemoMode
+            ? 'Запиши одну мысль — коротко или подробно.'
+            : 'Пара слов — уже разговор с собой.'
         : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
   return createPortal(
@@ -852,16 +860,18 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
           <ChevronLeft size={20} aria-hidden="true" className="text-muted" />
         </button>
 
-        <div className="flex gap-1.5">
-          {Array.from({
-            length: totalSteps,
-          }).map((_, index) => (
-            <span
-              key={index}
-              className={`w-1.5 h-1.5 rounded-full ${index <= step ? 'bg-gold' : 'bg-cream/15'}`}
-            />
-          ))}
-        </div>
+        {previewDemoMode ? (
+          <span className="mx-checkin-demo__progress-label">{stepLabel}</span>
+        ) : (
+          <div className="flex gap-1.5">
+            {Array.from({ length: totalSteps }).map((_, index) => (
+              <span
+                key={index}
+                className={`w-1.5 h-1.5 rounded-full ${index <= step ? 'bg-gold' : 'bg-cream/15'}`}
+              />
+            ))}
+          </div>
+        )}
 
         <button
           onClick={() => {
@@ -882,14 +892,16 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
           className={`${isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS} mx-checkin-step-enter`}
         >
           <section className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}>
-            <div
-              className={[
-                'mb-2 font-label text-[12px] font-semibold uppercase tracking-wide',
-                isMorningNoteStep ? 'text-gold' : 'text-muted',
-              ].join(' ')}
-            >
-              {stepLabel}
-            </div>
+            {!(previewDemoMode && isMorningNoteStep) && (
+              <div
+                className={[
+                  'mb-2 font-label text-[12px] font-semibold uppercase tracking-wide',
+                  isMorningNoteStep ? 'text-gold' : 'text-muted',
+                ].join(' ')}
+              >
+                {stepLabel}
+              </div>
+            )}
 
             <h2
               className={[
@@ -1018,8 +1030,10 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                       ariaLabel="Что на уме"
                       className="min-h-[18rem] flex-1"
                       editorClassName="pb-24"
-                      floatingToolbar={!previewDemoMode}
+                      floatingToolbar
                       autoFocus={previewDemoMode}
+                      keepFocusOnSubmit={previewDemoMode}
+                      submitIcon={previewDemoMode ? 'arrow' : 'check'}
                       onSubmit={() => submit()}
                       submitLabel="Завершить чек-ин"
                       submitLoading={saving}

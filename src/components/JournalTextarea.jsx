@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bold, Check, Highlighter, Italic } from 'lucide-react'
+import { ArrowRight, Bold, Check, Highlighter, Italic } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
@@ -165,6 +165,8 @@ export default function JournalTextarea({
   formatting = true,
   onClose,
   autoFocus = false,
+  keepFocusOnSubmit = false,
+  submitIcon = 'check',
   desktopInline = false,
   writingCanvas = false,
   guidedFlow = false,
@@ -310,6 +312,7 @@ export default function JournalTextarea({
           <div
             className={[
               'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-3',
+              'journal-textarea__floating-actions',
               desktopInline
                 ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'
                 : '',
@@ -359,13 +362,19 @@ export default function JournalTextarea({
               aria-label={submitLabel}
               title={submitLabel}
               onClick={() => {
-                editorRef.current?.blur()
+                if (!keepFocusOnSubmit) {
+                  editorRef.current?.blur()
+                }
                 onSubmit?.()
               }}
               disabled={submitDisabled || submitLoading || deepenLoading}
               className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
             >
-              <Check size={25} strokeWidth={2.4} />
+              {submitIcon === 'arrow' ? (
+                <ArrowRight size={25} strokeWidth={2.4} />
+              ) : (
+                <Check size={25} strokeWidth={2.4} />
+              )}
             </button>
           </div>
         </>
