@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { ArrowLeft, Check, Heart, ShieldCheck } from 'lucide-react'
-import BackButton, { DemoCloseButton } from '../components/BackButton'
+import BackButton from '../components/BackButton'
 
 const STORAGE_PREFIX = 'mx-wtp-concept-test-v1'
 
@@ -137,7 +137,6 @@ export default function WillingnessToPayTest({ user, onBack }) {
       <div className="w-full max-w-md px-5 pb-10">
         <div className="mb-6 flex items-center justify-between">
           <BackButton showInDemo onClick={onBack} />
-          <DemoCloseButton onClick={onBack} />
         </div>
         <div className="rounded-3xl bg-emerald p-6 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gold/15 text-gold">
@@ -167,7 +166,6 @@ export default function WillingnessToPayTest({ user, onBack }) {
     <div className="w-full max-w-md px-5 pb-10">
       <div className="mb-5 flex items-center justify-between">
         <BackButton showInDemo onClick={onBack} />
-        <DemoCloseButton onClick={onBack} />
       </div>
       <Progress step={step} />
 

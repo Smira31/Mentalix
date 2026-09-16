@@ -3,7 +3,6 @@ import { platform, platformName } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import '../styles/demo-navigation.css'
-import { X } from 'lucide-react'
 
 /*
  * КНОПКА «НАЗАД»
@@ -63,24 +62,6 @@ export default function BackButton({
       <ChevronLeft size={17} className="text-muted" aria-hidden="true" />
 
       {!showInDemo && <span className="text-[13px] font-semibold text-muted">{label}</span>}
-    </button>
-  )
-}
-
-export function DemoCloseButton({ onClick, label = 'Закрыть' }) {
-  if (!isPreviewDemoMode()) return null
-
-  return (
-    <button
-      type="button"
-      className="mx-demo-back-button"
-      aria-label={label}
-      onClick={() => {
-        platform.haptic('light')
-        onClick?.()
-      }}
-    >
-      <X size={23} aria-hidden="true" />
     </button>
   )
 }

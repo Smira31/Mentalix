@@ -12,7 +12,7 @@ import {
   useFullscreenSurface,
 } from '../lib/fullscreenSurface'
 import MazeLogo from '../components/MazeLogo'
-import BackButton, { DemoCloseButton } from '../components/BackButton'
+import BackButton from '../components/BackButton'
 import { verifyPin, writePinRecord } from '../lib/appLock'
 import './AppLock.css'
 
@@ -172,12 +172,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
-        {isSetup && (
-          <div className="flex w-full items-center justify-between">
-            <BackButton showInDemo onClick={onCancel} />
-            <DemoCloseButton onClick={onCancel} />
-          </div>
-        )}
+        {isSetup && <BackButton showInDemo onClick={onCancel} />}
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-8 text-center`}>

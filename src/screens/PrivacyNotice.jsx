@@ -1,6 +1,6 @@
 import { CloudOff, Database, Download, KeyRound, ShieldCheck, Sparkles } from 'lucide-react'
 
-import BackButton, { DemoCloseButton } from '../components/BackButton'
+import BackButton from '../components/BackButton'
 
 function NoticeCard({ icon: Icon, title, children }) {
   return (
@@ -26,7 +26,7 @@ export default function PrivacyNotice({ onBack }) {
           <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">политика и данные.</h1>
-        <DemoCloseButton onClick={onBack} />
+        <span aria-hidden="true" />
       </div>
 
       <p className="mt-6 text-[14px] leading-relaxed text-muted">

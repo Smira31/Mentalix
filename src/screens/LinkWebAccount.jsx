@@ -1,6 +1,6 @@
 import { Globe } from 'lucide-react'
 import { platform } from '../platform'
-import BackButton, { DemoCloseButton } from '../components/BackButton'
+import BackButton from '../components/BackButton'
 
 const BOT_LINK_DEEPLINK = 'https://t.me/Mentalix_club_bot?start=link_web'
 
@@ -21,7 +21,7 @@ export default function LinkWebAccount({ onBack }) {
           <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">Связать с сайтом</h1>
-        <DemoCloseButton onClick={onBack} />
+        <span aria-hidden="true" />
       </div>
 
       <div className="w-16 h-16 rounded-full bg-mint/20 flex items-center justify-center mb-4">

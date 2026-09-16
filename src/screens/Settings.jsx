@@ -19,7 +19,6 @@ import {
   Download,
   ShieldCheck,
   Gift,
-  X,
   ChevronLeft,
 } from 'lucide-react'
 import { api } from '../lib/api'
@@ -595,18 +594,7 @@ export default function Settings({
         <h1 className="font-display text-[18px] text-cream lowercase">
           {previewDemoMode ? 'твой профиль.' : 'настройки.'}
         </h1>
-        {previewDemoMode ? (
-          <button
-            type="button"
-            className="mx-settings-header-button justify-self-end"
-            aria-label="Закрыть настройки"
-            onClick={onBack}
-          >
-            <X size={22} aria-hidden="true" />
-          </button>
-        ) : (
-          <span aria-hidden="true" />
-        )}
+        <span aria-hidden="true" />
       </div>
 
       {previewDemoMode && (

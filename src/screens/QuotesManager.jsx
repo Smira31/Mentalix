@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { Plus, Trash2 } from 'lucide-react'
-import BackButton, { DemoCloseButton } from '../components/BackButton'
+import BackButton from '../components/BackButton'
 import EmptyState from '../components/EmptyState'
 
 export default function QuotesManager({ user, onBack }) {
@@ -61,7 +61,7 @@ export default function QuotesManager({ user, onBack }) {
           <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">Мои фразы</h1>
-        <DemoCloseButton onClick={onBack} />
+        <span aria-hidden="true" />
       </div>
 
       <p className="w-full text-[13px] text-muted mb-4 leading-relaxed">

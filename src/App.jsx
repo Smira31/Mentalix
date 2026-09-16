@@ -11,7 +11,7 @@ import Onboarding from './screens/Onboarding'
 import AppLock from './screens/AppLock'
 
 import MazeLogo from './components/MazeLogo'
-import BackButton, { DemoCloseButton } from './components/BackButton'
+import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
 import { useSynced } from './lib/store'
@@ -1332,7 +1332,7 @@ export default function App() {
                       профиль.
                     </span>
 
-                    <DemoCloseButton onClick={() => setOverlay('settings')} />
+                    <span aria-hidden="true" />
                   </div>
 
                   <Profile user={user} />
