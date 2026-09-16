@@ -3,7 +3,19 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
+import {
+  Check,
+  Hand,
+  MoreHorizontal,
+  Plus,
+  Share2,
+  SlidersHorizontal,
+  Star,
+  Tag,
+  ThumbsDown,
+  ThumbsUp,
+  X,
+} from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -131,15 +143,34 @@ function DemoCheckInFlow({ user, onDone }) {
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
       <header className="mx-demo-checkin__header">
-        <span aria-hidden="true" />
-        <button
-          type="button"
-          aria-label="Закрыть"
-          onClick={onDone}
-          className="mx-demo-checkin__icon"
+        <div
+          className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
         >
-          <X size={18} />
-        </button>
+          {step === 0 && <SlidersHorizontal size={20} aria-label="Настройки" />}
+          {step === 2 && (
+            <>
+              <MoreHorizontal size={20} aria-label="Дополнительные действия" />
+              <Tag size={19} aria-label="Метки" />
+              <span className="mx-demo-checkin__seneca">✦ Seneca</span>
+            </>
+          )}
+          {step === 3 && (
+            <>
+              <Share2 size={19} aria-label="Поделиться" />
+              <Star size={20} aria-label="Избранное" />
+            </>
+          )}
+        </div>
+        {step !== 3 && (
+          <button
+            type="button"
+            aria-label="Закрыть"
+            onClick={onDone}
+            className="mx-demo-checkin__icon"
+          >
+            <X size={18} />
+          </button>
+        )}
       </header>
 
       <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
@@ -229,6 +260,9 @@ function DemoCheckInFlow({ user, onDone }) {
               className="mx-demo-checkin__bird"
             />
             <h1>Ты завершил ежедневный чек-ин!</h1>
+            <button type="button" className="mx-demo-checkin__tags">
+              <Plus size={17} /> Добавить метки
+            </button>
             <p>Насколько полезным был этот чек-ин сегодня?</p>
             <div className="mx-demo-checkin__feedback">
               {[
@@ -258,7 +292,7 @@ function DemoCheckInFlow({ user, onDone }) {
       <WebActionBar
         action={step === 2 ? null : webAction}
         secondaryAction={webSecondaryAction}
-        compact
+        compact={step !== 3}
       />
     </div>,
     getFullscreenPortalTarget()

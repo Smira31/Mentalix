@@ -18,6 +18,29 @@
   padding: max(12px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 12px;
 }
 
+.mx-demo-checkin__header-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #eee;
+}
+.mx-demo-checkin__header-left.is-right {
+  margin-left: auto;
+}
+
+.mx-demo-checkin__seneca {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding: 12px 20px;
+  border: 1px solid #2d2d2d;
+  border-radius: 999px;
+  background: #151515;
+  color: #eee;
+  font-size: 17px;
+}
+
 .mx-demo-checkin__leading-actions {
   display: flex;
   align-items: center;
@@ -161,7 +184,11 @@
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: conic-gradient(#f4f4f4 var(--energy-fill), #3a3a3a var(--energy-fill));
+  background: linear-gradient(
+    to top,
+    #f4f4f4 0 var(--energy-fill),
+    #3a3a3a var(--energy-fill) 100%
+  );
 }
 .mx-demo-checkin__energy button.is-selected {
   border-color: #f4f4f4;
@@ -282,7 +309,7 @@
 .mx-demo-checkin__bird {
   display: block;
   width: 170px;
-  height: 175px;
+  height: 230px;
   margin: 0 auto 12px;
   object-fit: contain;
 }
@@ -310,14 +337,19 @@
   margin-top: 14px;
 }
 .mx-demo-checkin__feedback button {
-  display: inline-flex;
+  display: flex;
+  width: 108px;
+  height: 116px;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 10px 16px;
+  padding: 12px 8px;
   border: 1px solid #333;
-  border-radius: 999px;
+  border-radius: 22px;
   background: #101010;
   color: #aaa;
+  font-size: 13px;
 }
 .mx-demo-checkin__feedback button.is-selected {
   border-color: #f4f4f4;
@@ -326,6 +358,18 @@
 }
 .mx-demo-checkin__error {
   color: #d99;
+}
+
+.mx-demo-checkin__tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 16px auto 8px;
+  padding: 8px 14px;
+  border: 1px solid #2a2a2a;
+  border-radius: 999px;
+  background: transparent;
+  color: #ddd;
 }
 .mx-demo-checkin .journal-textarea__floating-actions {
   background: rgb(var(--c-card2));
