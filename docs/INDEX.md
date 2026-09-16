@@ -207,14 +207,15 @@ last_verified: 2026-09-16
 
 ### `qa`
 
-| Файл                                                                                    | Статус                 | Зачем открывать                                                |
-| --------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------------------------- |
-| [`CONTRACT-REGRESSION-HARNESS.md`](qa/CONTRACT-REGRESSION-HARNESS.md)                   | `current` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества. |
-| [`MXL-010_RELEASE_GATE_CHECKLIST.md`](qa/MXL-010_RELEASE_GATE_CHECKLIST.md)             | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества. |
-| [`MXL-JOURNAL-001_TELEGRAM_IPHONE_GATE.md`](qa/MXL-JOURNAL-001_TELEGRAM_IPHONE_GATE.md) | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества. |
-| [`MXL-LOOP-001_ACTION_LOOP_GATE.md`](qa/MXL-LOOP-001_ACTION_LOOP_GATE.md)               | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества. |
-| [`MXL-LOOP-001_CURRENT_PREVIEW.md`](qa/MXL-LOOP-001_CURRENT_PREVIEW.md)                 | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества. |
-| [`MXL-LOOP-002_REGRESSION_MATRIX.md`](qa/MXL-LOOP-002_REGRESSION_MATRIX.md)             | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества. |
+| Файл                                                                                    | Статус                 | Зачем открывать                                                                 |
+| --------------------------------------------------------------------------------------- | ---------------------- | ------------------------------------------------------------------------------- |
+| [`CONTRACT-REGRESSION-HARNESS.md`](qa/CONTRACT-REGRESSION-HARNESS.md)                   | `current` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества.                  |
+| [`MXL-010_RELEASE_GATE_CHECKLIST.md`](qa/MXL-010_RELEASE_GATE_CHECKLIST.md)             | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества.                  |
+| [`MXL-JOURNAL-001_TELEGRAM_IPHONE_GATE.md`](qa/MXL-JOURNAL-001_TELEGRAM_IPHONE_GATE.md) | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества.                  |
+| [`MXL-LOOP-001_ACTION_LOOP_GATE.md`](qa/MXL-LOOP-001_ACTION_LOOP_GATE.md)               | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества.                  |
+| [`MXL-LOOP-001_CURRENT_PREVIEW.md`](qa/MXL-LOOP-001_CURRENT_PREVIEW.md)                 | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества.                  |
+| [`MXL-LOOP-002_REGRESSION_MATRIX.md`](qa/MXL-LOOP-002_REGRESSION_MATRIX.md)             | `working` / 2026-09-11 | Открыть для проверок, gate-критериев и подтверждений качества.                  |
+| [`TELEGRAM_P0_2026-09-15.md`](qa/TELEGRAM_P0_2026-09-15.md)                             | `current` / 2026-09-15 | Автоматизированный Telegram-compatible P0 gate; manual iPhone gate не заменяет. |
 
 ### `research`
 
