@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-14
+last_verified: 2026-09-16
 ---
 
 # Mentalix — активный task index
@@ -9,11 +9,13 @@ last_verified: 2026-09-14
 
 ## Каноническая очередь
 
-| Порядок | Трек                                                                               | Состояние                                   | Следующий gate                                                                   |
-| ------: | ---------------------------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------- |
-|       1 | [PR #565](https://github.com/Smira31/Mentalix/pull/565) — MVP «Наставник»          | Единственный активный продуктовый PR        | Проверить preview, сохранение/отложить/закрыть, затем owner iPhone/Telegram PASS |
-|       2 | [Issue #612](https://github.com/Smira31/Mentalix/issues/612) — мониторинг Progress | Post-release наблюдение                     | Записать evidence, проверить ошибки и закрыть                                    |
-|       3 | [PR #592](https://github.com/Smira31/Mentalix/pull/592) — документационный индекс  | Активный docs PR, требует rebase и проверки | Сверить `PROJECT_STATE`, `docs/INDEX`, frontmatter и drift-check, затем merge    |
+| Порядок | Трек                                                                                                | Состояние                    | Следующий gate                                                                        |
+| ------: | --------------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+|       1 | [Issue #623](https://github.com/Smira31/Mentalix/issues/623) — Today Hero pixel contract            | Активная визуальная задача   | Сверить реализацию с видео-референсом и провести owner Telegram/iPhone gate           |
+|       2 | [Issue #620](https://github.com/Smira31/Mentalix/issues/620) — Daily Check-In + Practices contract  | Активная reference-задача    | Зафиксировать измеримый контракт и границы реализации до изменения Production         |
+|       3 | [Issue #618](https://github.com/Smira31/Mentalix/issues/618) — Demo Preview по PNG-референсам       | Активная Demo Preview задача | Подготовить exact-SHA Cloudflare Demo и получить owner Telegram/iPhone PASS             |
+|       4 | [Issue #615](https://github.com/Smira31/Mentalix/issues/615) — guest onboarding и deferred web auth | Активная продуктовая задача  | Проверить scope Issue, auth-сценарии и обязательные web/Telegram gates                 |
+|       5 | [Issue #612](https://github.com/Smira31/Mentalix/issues/612) — мониторинг Progress                  | Post-release наблюдение      | Записать evidence; закрывать только по отдельному решению владельца                     |
 
 ## Отложено
 
@@ -42,7 +44,7 @@ Dialog role flow по Issue #515 выполнен и опубликован из
 | ---------------- | ------------------------------------------------------------- |
 | Navigation       | Пять основных разделов; Today — главный вход.                 |
 | Dialog           | Role flow выполнен; новые изменения только через новую Issue. |
-| Product priority | После документации — MVP «Наставник» через PR #565.           |
+| Product priority | Очередь определяется открытыми Issues #623, #620, #618, #615 и #612. |
 | Production       | Публикация только из защищённого `main`.                      |
 | Manual gate      | iPhone/Telegram проверка обязательна перед product release.   |
 

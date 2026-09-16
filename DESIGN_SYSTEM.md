@@ -1,6 +1,6 @@
 ---
 status: normative
-last_verified: 2026-09-10
+last_verified: 2026-09-16
 ---
 
 # Mentalix — Design System v1
@@ -415,7 +415,7 @@ safe area и клавиатуры и воспринимаются как рыв�
   (`[data-theme='light-preview']` в `src/index.css` — тёплая «бумажная» палитра,
   свой cognac-gold акцент, свои тени) — не мёртвый код, а сознательно скрытый
   dev/preview-режим, включаемый только через `?light-preview=1` в локальной
-  разработке или на Vercel Preview (см. `src/App.jsx`). В Production выключена
+  разработке или non-production Preview (см. `src/App.jsx`). В Production выключена
   по умолчанию. Обновление 2026: принято решение сделать её полноценным
   пользовательским переключателем в Настройках — см. отдельный тикет на
   реализацию.

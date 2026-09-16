@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-09-16
 ---
 
 # Release Gate — Pre-Release Testing Sequence
@@ -198,7 +198,7 @@ RELEASE ✓
 **Tagging workflow:**
 
 ```bash
-# After merge to main and successful Vercel deploy
+# After merge to main and successful Firebase Hosting deploy
 git tag -a v1.0.0 -m "Release v1.0.0: today, practices, check-in, ai, analytics"
 git push origin v1.0.0
 ```
@@ -241,7 +241,7 @@ If production breaks:
 1. **Identify:** What broke? (Telegram report, health check, user issue)
 2. **Assess:** Can it wait? (Critical: <1 hour, patch; non-critical: next release)
 3. **Rollback:**
-   - Vercel: redeploy previous git commit via Vercel dashboard or `git revert HEAD && git push`;
+   - Firebase Hosting: use the verified Firebase rollback procedure or `git revert HEAD && git push`;
    - Tag: create rollback tag `v{VERSION}-rollback`;
    - Notify: team and users via Telegram bot.
 4. **Fix:** Create hotfix branch, debug locally, test, merge as separate PR.
@@ -253,7 +253,7 @@ If production breaks:
 
 **Post-release:**
 
-- [ ] Vercel deployment successful (green check);
+- [ ] Firebase Hosting Production deployment successful (green workflow);
 - [ ] Production URL accessible (HTTP 200);
 - [ ] Backend health: GET /api/health returns 200 OK;
 - [ ] No frontend errors in Sentry (if integrated);

@@ -51,7 +51,7 @@ last_verified: 2026-09-11
 - **Дата:** 02.09.2026
 - **Статус:** принято владельцем
 - **Решение:** канонический production Mentalix сохраняется без изменений; UI Lab используется как постоянная доска для экспериментов, сравнений и выводов.
-- **Evidence:** [PR #483](https://github.com/Smira31/Mentalix/pull/483), [PR #489](https://github.com/Smira31/Mentalix/pull/489), [Telegram Preview baseline](https://mentalix-git-fix-telegram-pre-5904a8-smiraandre2-8311s-projects.vercel.app/?ui_lab=baseline)
+- **Evidence:** [PR #483](https://github.com/Smira31/Mentalix/pull/483), [PR #489](https://github.com/Smira31/Mentalix/pull/489), [исторический Vercel evidence](https://mentalix-git-fix-telegram-pre-5904a8-smiraandre2-8311s-projects.vercel.app/?ui_lab=baseline). Ссылка сохранена только как evidence проверки 02.09.2026 и не является актуальным Demo Preview.
 - **Manual Telegram/iPhone gate:** **PASS**, подтверждён владельцем на реальном iPhone внутри Telegram Mini App. Baseline, Experiments и Compare открываются; «Рядом» показывает обе версии; состояния переключаются и синхронно меняются в Compare; vertical scroll, Telegram header/top safe area и отсутствие явного horizontal overflow проверены.
 - **Диагностический инструмент:** `preview_diagnostics=1` использовался только для расследования маршрутизации и удалён из Preview UI после фиксации evidence.
 - **Не следует из решения:** UI Lab не становится production, Preview не считается release, а визуально удачный вариант не получает автоматического разрешения на перенос.

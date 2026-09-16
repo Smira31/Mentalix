@@ -1,13 +1,13 @@
 ---
 status: current
-last_verified: 2026-09-10
+last_verified: 2026-09-16
 ---
 
 # Mentalix — краткая операционная карта
 
 > **Начинайте отсюда.** Этот файл — единая точка входа для владельца, Manus, Claude Code, Codex, GitHub Copilot и других агентов. Он отвечает на вопрос «что открыть дальше», но не заменяет продуктовые, технические или проверочные источники.
 
-Mentalix — Telegram Mini App с фронтендом React/Vite/Tailwind в этом репозитории и отдельным приватным backend-репозиторием. Фронтенд размещается на Vercel; production API направляется на backend через `/api`. Нельзя предполагать устройство backend, состояние данных или контракт API, если они не подтверждены отдельно.
+Mentalix — Telegram Mini App с фронтендом React/Vite/Tailwind в этом репозитории и отдельным приватным backend-репозиторием. Production frontend размещается в Firebase Hosting, Demo Preview — в Cloudflare Pages, а production API вызывается напрямую на Render через `VITE_API_BASE_URL`. Нельзя предполагать устройство backend, состояние данных или контракт API, если они не подтверждены отдельно.
 
 ## Быстрый маршрут
 
