@@ -9,13 +9,15 @@ last_verified: 2026-09-16
 
 **Последняя сверка:** 16.09.2026. Проверены GitHub, Vercel integrations, Firebase Production workflow и публичные endpoints.
 
+Текущий `main`: `048d4736ad49c9ca40b46b866a7f903eec411c04`.
+
 ## Каноническое состояние
 
 | Область             | Факт                                                                                 | Доказательство                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend            | `Smira31/Mentalix`, default branch `main`                                            | [GitHub](https://github.com/Smira31/Mentalix)                                                                        |
-| Frontend `main`     | merge commit `eafe13426b2077cadacbb31773ecb082a3aab41b` после PR #626                | [commit](https://github.com/Smira31/Mentalix/commit/eafe13426b2077cadacbb31773ecb082a3aab41b)                        |
-| Production frontend | `main → Firebase Hosting Live channel → https://mentalix-production.web.app`         | Firebase workflow run [35114685506](https://github.com/Smira31/Mentalix/actions/runs/35114685506), success; HTTP 200 |
+| Frontend `main`     | merge commit `048d4736ad49c9ca40b46b866a7f903eec411c04` после PR #628                | [commit](https://github.com/Smira31/Mentalix/commit/048d4736ad49c9ca40b46b866a7f903eec411c04)                        |
+| Production frontend | `main → Firebase Hosting Live channel → https://mentalix-production.web.app`         | Firebase workflow run [35119350799](https://github.com/Smira31/Mentalix/actions/runs/35119350799), success; HTTP 200 |
 | Demo Preview        | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev` | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)        |
 | Backend             | `Smira31/mentalix-bot`, `main`                                                       | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                    |
 | Backend runtime     | `https://mentalix-bot.onrender.com/api/health`                                       | Render; CORS разрешает Firebase Production и Cloudflare Demo origins                                                 |
@@ -41,14 +43,13 @@ last_verified: 2026-09-16
 
 ## GitHub после cleanup
 
-| Объект  | Состояние                                                                               |
-| ------- | --------------------------------------------------------------------------------------- |
-| PR #626 | Смёржен; Firebase migration, auth/session compatibility, desktop frame и hosting policy |
-| PR #625 | Закрыт как устаревший дубль PR #626                                                     |
-| PR #624 | Закрыт как устаревший дубль PR #626                                                     |
-| PR #621 | Закрыт как устаревший дубль PR #626                                                     |
-| PR #616 | Открыт; полезный Telegram P0 QA evidence, требует обновления ветки после migration      |
-| PR #622 | Открыт; reference assets web-auth, требует отдельного решения о сохранении/переносе     |
+| Объект          | Состояние                                                                               |
+| --------------- | --------------------------------------------------------------------------------------- |
+| PR #626         | Смёржен; Firebase migration, auth/session compatibility, desktop frame и hosting policy |
+| PR #628         | Смёржен; завершён cleanup активной документации и GitHub-состояния                      |
+| Открытые PR     | `0` по GitHub API на 16.09.2026                                                         |
+| Открытые Issues | `9`; все отражены в `docs/TASK_INDEX.md`, автоматически не закрывались                  |
+| Remote branches | `6` вместе с `main`; у пяти non-main веток есть уникальные несмёрженные коммиты         |
 
 Текущий активный backlog находится только в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md). Открытые issues не считаются автоматически взятыми в работу: каждая должна иметь ясный scope и следующий decision gate.
 
@@ -58,7 +59,7 @@ last_verified: 2026-09-16
 
 ## References
 
-[1]: https://github.com/Smira31/Mentalix/commit/eafe13426b2077cadacbb31773ecb082a3aab41b 'Current frontend main'
+[1]: https://github.com/Smira31/Mentalix/commit/048d4736ad49c9ca40b46b866a7f903eec411c04 'Current frontend main'
 [2]: https://mentalix-production.web.app 'Mentalix Firebase Production'
 [3]: https://mentalix-owner-qa.pages.dev 'Mentalix Cloudflare Demo Preview'
 [4]: https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml 'Firebase Hosting workflow'

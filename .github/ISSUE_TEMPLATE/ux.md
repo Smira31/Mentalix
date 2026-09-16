@@ -1,13 +1,11 @@
 ---
 status: current
-last_verified: 2026-09-11
-name: "🎯 UX"
-about: "Сообщить о проблеме пользовательского опыта в Mentalix"
-title: "[UX]: "
-labels: ["🎯 UX"]
+last_verified: 2026-09-16
+name: '🎯 UX'
+about: 'Сообщить о проблеме пользовательского опыта в Mentalix'
+title: '[UX]: '
+labels: ['🎯 UX']
 ---
-
-
 
 # 🎯 Описание проблемы
 
@@ -30,3 +28,16 @@ labels: ["🎯 UX"]
 ## 📌 Дополнительно
 
 Скриншоты, ссылки, примеры.
+
+## 🧭 Task passport
+
+**Scope изменения:**
+**Что намеренно не меняется:**
+**Риск и rollback:**
+
+## ✅ Definition of Done
+
+- [ ] Зафиксированы измеримые критерии и целевые viewport/device.
+- [ ] Проверены состояния loading, empty, error и reduced motion, если применимо.
+- [ ] Пройдены автоматические UX-проверки и сохранено evidence.
+- [ ] Telegram/iPhone gate пройден владельцем или явно отмечен как pending.
