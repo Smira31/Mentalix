@@ -809,10 +809,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
   const moodLevel = values.mood || existing?.mood || 3
 
-  const stepLabel =
-    previewDemoMode && isMorningNoteStep
-      ? 'ЧЕК-ИН · 4 ИЗ 6'
-      : `${isEvening ? 'Анализ дня' : 'Чек-ин'} · ${step + 1} из ${totalSteps}`
+  const stepLabel = `${isEvening ? 'Анализ дня' : 'Чек-ин'} · ${step + 1} из ${totalSteps}`
 
   const questionTitle =
     scale?.title ||

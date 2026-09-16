@@ -119,11 +119,14 @@ test.describe('MXL-010 automated technical gate', () => {
     const page = await context.newPage()
 
     await page.goto('/')
-    await expect(page.getByRole('heading', { name: 'Вход в Mentalix' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Продолжай расти даже вне приложения.' })
+    ).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()
     await expect(page.locator('form')).toHaveCount(1)
     await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Получить письмо' })).toBeVisible()
 
     await context.close()
   })
