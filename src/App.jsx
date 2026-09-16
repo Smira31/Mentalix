@@ -1368,16 +1368,6 @@ export default function App() {
                       initialSub={practicesSub}
                       onGameChange={setPracticeGameOpen}
                       onRegisterBack={registerPracticesBack}
-                      onNavigate={key => {
-                        if (
-                          key === 'today' ||
-                          key === 'mentor' ||
-                          key === 'library' ||
-                          key === 'progress'
-                        ) {
-                          switchTab(key === 'progress' ? 'trends' : key)
-                        }
-                      }}
                       onReturnToToday={goToday}
                     />
                   )}

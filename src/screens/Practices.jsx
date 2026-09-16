@@ -26,15 +26,8 @@ import ProcrastinationFlow from './ProcrastinationFlow'
 import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
 import ThemeScreen from './ThemeScreen'
-import FunctionsOverview from './FunctionsOverview'
 
-export default function Practices({
-  user,
-  initialSub = null,
-  onGameChange,
-  onRegisterBack,
-  onNavigate,
-}) {
+export default function Practices({ user, initialSub = null, onGameChange, onRegisterBack }) {
   const [sub, setSub] = useState(initialSub)
   const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
 
@@ -301,24 +294,9 @@ export default function Practices({
     <div className="mx-practices-catalog-shell w-full max-w-md px-5">
       <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
         <span aria-hidden="true" />
-        <h1 className="font-display mx-type-page text-cream lowercase">все функции.</h1>
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
         <span aria-hidden="true" />
       </div>
-      <FunctionsOverview
-        onOpen={key => {
-          if (key === 'today' || key === 'mentor' || key === 'library' || key === 'progress') {
-            onNavigate?.(key)
-            return
-          }
-          if (key === 'journal' || key === 'guided') {
-            setSub('journal')
-            return
-          }
-          if (key === 'meditation' || key === 'breathing' || key === 'brain' || key === 'focus') {
-            setSub(key)
-          }
-        }}
-      />
       <PracticeCatalogV2
         practices={catalogPractices}
         rituals={rituals}
