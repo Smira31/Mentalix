@@ -43,7 +43,7 @@ function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
       <button
         type="button"
         className="mx-demo-today-streak"
-        aria-label="Мой путь. Один день подряд"
+        aria-label="Мой путь. Серия один день"
         onClick={onOpenSeries}
       >
         <Flame aria-hidden="true" />
@@ -607,6 +607,7 @@ export default function Today({
 
           changeSub('checkin')
         }}
+        aria-label={showReferenceWelcome ? 'Пройти чек-ин' : undefined}
         className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
         {showReferenceWelcome
