@@ -1,6 +1,5 @@
 import { Check, Lock } from 'lucide-react'
 import BackButton from '../components/BackButton'
-import { isPreviewDemoMode } from '../lib/demoMode'
 
 const TIERS = [
   {
@@ -31,13 +30,8 @@ const TIERS = [
 ]
 
 export default function SubscriptionManager({ user: _user, tier, onBack }) {
-  const demoMode = isPreviewDemoMode()
   return (
-    <div
-      className={`w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center ${
-        demoMode ? 'mx-demo-subscription' : ''
-      }`}
-    >
+    <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
         <div className="justify-self-start">
           <BackButton showInDemo onClick={onBack} />
@@ -67,10 +61,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
             <ul className="space-y-2 mb-4">
               {t.features.map(f => (
                 <li key={f} className="flex items-start gap-2 text-[13px] text-cream">
-                  <Check
-                    size={15}
-                    className="mx-demo-subscription__check text-gold shrink-0 mt-0.5"
-                  />
+                  <Check size={15} className="text-gold shrink-0 mt-0.5" />
                   {f}
                 </li>
               ))}
