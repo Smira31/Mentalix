@@ -151,11 +151,13 @@ function AwardsView({ unlocked, upcoming }) {
   const latest = unlocked[0]
   const [showAll, setShowAll] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
+  const awardCountLabel =
+    unlocked.length === 1 ? 'награда' : unlocked.length < 5 ? 'награды' : 'наград'
   return (
     <div className="mx-path-content">
       <section className="mx-path-featured-award">
         <h2>
-          <strong>{unlocked.length || 0}</strong> наград{unlocked.length === 1 ? 'а' : 'ы'} открыто
+          <strong>{unlocked.length || 0}</strong> {awardCountLabel} открыто
         </h2>
         {latest ? (
           <>
