@@ -181,7 +181,7 @@ immutable URL и stable URL. Проект `mentalix-preview` остаётся le
 
 Основной CI дополнительно проверяет `https://mentalix-bot.onrender.com/api/health`. Ожидаемый ответ — HTTP 200 и JSON `{"status":"ok"}`. Проверка повторяется несколько раз, чтобы учитывать пробуждение Render Free после периода простоя.
 
-Результаты merge и автоматических проверок фиксируются в [`PROJECT_STATE.md`](../PROJECT_STATE.md). Продуктовый статус и ручной iPhone/Telegram gate подтверждаются владельцем в Pull Request.
+Результаты merge и автоматических проверок фиксируются в [`PROJECT_STATE.md`](../../../PROJECT_STATE.md). Продуктовый статус и ручной iPhone/Telegram gate подтверждаются владельцем в Pull Request.
 
 ## Локальный fallback (Windows/PowerShell)
 

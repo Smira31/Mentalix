@@ -677,7 +677,7 @@ telegram-preview.yml`, secrets, Vercel project, production. Ветка
 - **Цель:** после открытия или обновления PR в `main` автоматически установить зависимости, выполнить lint/build, создать Preview в отдельном Vercel-проекте `mentalix-preview`, проверить `/api/health` и отправить в основной Mentalix-бот кнопку «Открыть Preview».
 - **Безопасность:** workflow запускается только для веток внутри `Smira31/Mentalix`; PR из fork не получает секреты. Telegram-сообщение отправляется только после успешного deploy и health-check.
 - **Необходимые repository secrets:** `VERCEL_TOKEN`, `TELEGRAM_MAIN_BOT_TOKEN`, `TELEGRAM_PREVIEW_CHAT_ID`. Сами значения не хранятся в Git и не передаются в чат.
-- **Файл реализации:** `.github/workflows/telegram-preview.yml`; инструкция владельцу — [`docs/TELEGRAM_PREVIEW_ACTIONS.md`](docs/TELEGRAM_PREVIEW_ACTIONS.md).
+- **Исторический файл реализации:** `.github/workflows/telegram-preview.yml` удалён после перехода на Cloudflare Demo; инструкция сохранена в [`docs/archive/hosting/TELEGRAM_PREVIEW_ACTIONS_VERCEL.md`](docs/archive/hosting/TELEGRAM_PREVIEW_ACTIONS_VERCEL.md).
 - **Ограничение:** GitHub Actions подтверждает сборку и доступность health endpoint, но не заменяет ручной Telegram/iPhone визуальный gate.
 - **Known issue 25.08.2026:** `preview:stop` может вывести `Preview stopped`,
   не удалив deployment. До исправления завершение подтверждается через Vercel

@@ -4,7 +4,7 @@ Workflow `Cloudflare Owner QA` запускается только вручну�
 
 Workflow использует только GitHub Environment `cloudflare-owner-qa`. Значения `CLOUDFLARE_API_TOKEN` и `CLOUDFLARE_ACCOUNT_ID` читаются исключительно из secrets этого Environment. После публикации workflow проверяет `qa-build.json` на стабильном и immutable URL, заголовок `X-Robots-Tag: noindex, nofollow`, deployment ID и точное совпадение опубликованного SHA с requested SHA.
 
-Cloudflare Owner QA — это **не Production** и не механизм Vercel. Он не изменяет `https://mentalix.vercel.app` или `https://mentalix-preview.vercel.app`. Cloudflare Owner QA также не заменяет ручной Owner PASS на реальном iPhone внутри Telegram: safe-area, WebView, клавиатура, fullscreen и жесты должны быть проверены отдельно.
+Cloudflare Owner QA — это **не Production**. Он публикует Demo Preview на `https://mentalix-owner-qa.pages.dev` и не изменяет Firebase Production. Cloudflare Owner QA также не заменяет ручной Owner PASS на реальном iPhone внутри Telegram: safe-area, WebView, клавиатура, fullscreen и жесты должны быть проверены отдельно.
 
 ## Ручной запуск
 

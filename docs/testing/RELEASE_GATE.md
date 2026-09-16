@@ -2,6 +2,7 @@
 status: current
 last_verified: 2026-09-11
 ---
+
 # Release Gate — Pre-Release Testing Sequence
 
 Последовательность автоматических и ручных проверок перед releasе.
@@ -159,7 +160,7 @@ Approve & merge → main
   ↓
 GitHub Actions (same suite) runs on main commit
   ↓
-Deploy to Vercel (automatic)
+Deploy to Firebase Hosting Live channel (automatic from main)
   ↓
 Post-deploy: Manual smoke test (production URL, iPhone Telegram)
   ↓
@@ -179,7 +180,7 @@ RELEASE ✓
 - [x] Performance baseline maintained (or first baseline established);
 - [x] Manual code review approved;
 - [x] Manual Telegram/iPhone gate passed (product owner);
-- [x] Deployment to Vercel successful.
+- [x] Firebase Hosting Production deployment successful.
 
 ---
 
