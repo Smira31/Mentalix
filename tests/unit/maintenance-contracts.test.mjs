@@ -257,44 +257,20 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
   assert.match(demo, /\(isPreviewRuntime \|\| isQaProductionHost\)/)
 })
 
-test('MXL-PREVIEW-ROUTING-CLEANUP-001 использует manual existing Preview gate', () => {
+test('MXL-CLOUDFLARE-OWNER-QA-001 использует manual exact-SHA Demo gate', () => {
   const workflow = readFileSync(
-    new URL('../../.github/workflows/telegram-preview.yml', import.meta.url),
-    'utf8'
-  )
-
-  const packageJson = readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
-  const legacy = readFileSync(
-    new URL('../../scripts/preview-telegram.ps1', import.meta.url),
+    new URL('../../.github/workflows/cloudflare-owner-qa.yml', import.meta.url),
     'utf8'
   )
 
   assert.match(workflow, /workflow_dispatch:/)
-  assert.match(workflow, /pr_number:/)
-  assert.match(workflow, /preview_title:/)
   assert.match(workflow, /commit_sha:/)
-  assert.match(workflow, /provenance_verified:/)
-  assert.match(workflow, /FAIL CLOSED: canonical alias provenance is not verified/)
-  assert.match(workflow, /will not infer it from GitHub Deployments/)
-  assert.match(workflow, /ui_lab_route:/)
-  assert.match(workflow, /experiment_label:/)
-  assert.match(workflow, /if: github\.event_name == 'workflow_dispatch'/)
-  assert.match(workflow, /Mentalix main Preview/)
-  assert.match(workflow, /Mentalix Preview PR #%s%s\\nBranch: %s/)
-  assert.match(workflow, /Mentalix Preview\\nBranch: %s/)
-  assert.doesNotMatch(workflow, /Mentalix main Preview\\nCommit: %s/)
-  assert.doesNotMatch(workflow, /Branch: %s\\nCommit: %s/)
-  assert.match(workflow, /Открыть Preview/)
-  assert.match(workflow, /Открыть \$EXPERIMENT_LABEL/)
-  assert.match(workflow, /Route: \$EXPERIMENT_LABEL/)
-  assert.match(workflow, /ui_lab=\$\{UI_LAB_ROUTE\}/)
-  assert.match(workflow, /inline_keyboard: \[\[\{text: \$button_label/)
-  assert.doesNotMatch(workflow, /PR #n\/a/)
-  assert.doesNotMatch(workflow, /vercel(@latest)? deploy/)
-  assert.match(packageJson, /"preview": "npm run preview:web"/)
-  assert.match(legacy, /Legacy Telegram Preview requires -PullRequest/)
-  assert.doesNotMatch(legacy, /\$prLabel.*PR #n\/a/)
-  assert.doesNotMatch(workflow, /text: "Открыть Preview · UI Lab"/)
+  assert.match(workflow, /mentalix-owner-qa/)
+  assert.match(workflow, /qa-build\.json/)
+  assert.match(workflow, /X-Robots-Tag: noindex, nofollow/)
+  assert.match(workflow, /cloudflare\/wrangler-action@v4/)
+  assert.match(workflow, /pages deploy dist/)
+  assert.match(workflow, /immutable provenance/)
 })
 
 test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
