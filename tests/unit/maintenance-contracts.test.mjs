@@ -245,7 +245,10 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
     demo,
     /const isPreviewRuntime =\s+import\.meta\.env\.DEV \|\| import\.meta\.env\.VERCEL_ENV === 'preview' \|\| localPreviewEnabled/
   )
-  assert.match(demo, /const isQaProductionHost = host === 'mentalix-preview\.vercel\.app'/)
+  assert.match(
+    demo,
+    /const isQaProductionHost =\s+host === 'mentalix-preview\.vercel\.app' \|\| host === 'mentalix-owner-qa\.pages\.dev'/
+  )
   assert.match(
     demo,
     /const demoRequested = params\.get\('demo'\) === '1'/
