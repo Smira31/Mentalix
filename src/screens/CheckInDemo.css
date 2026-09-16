@@ -211,11 +211,13 @@
 .mx-demo-checkin__editor {
   min-height: 300px;
   margin-top: 22px;
-  background: #000 !important;
+  background: rgb(var(--c-card2)) !important;
 }
 .mx-demo-checkin__editor [contenteditable] {
   min-height: 300px;
-  background: #000 !important;
+  background: rgb(var(--c-card2)) !important;
+  border-radius: 22px;
+  padding: 18px;
 }
 .mx-demo-checkin__scene--upsell {
   max-width: 410px;
@@ -254,6 +256,13 @@
 }
 .mx-demo-checkin__scene--complete > svg {
   margin: 0 auto 12px;
+}
+.mx-demo-checkin__bird {
+  display: block;
+  width: 170px;
+  height: 175px;
+  margin: 0 auto 12px;
+  object-fit: contain;
 }
 .mx-demo-checkin__scene--complete h1 {
   font-size: clamp(27px, 6vw, 42px);
@@ -297,11 +306,15 @@
   color: #d99;
 }
 .mx-demo-checkin .journal-textarea__floating-actions {
-  background: #111;
+  background: rgb(var(--c-card2));
   border-color: #2d2d2d;
 }
 .mx-demo-checkin .journal-textarea__floating-actions > button:first-child {
-  background: #0b0b0b;
+  background: rgb(var(--c-card2));
+}
+.mx-demo-checkin .journal-textarea__floating-actions > button:nth-child(2),
+.mx-demo-checkin .journal-textarea__floating-actions > button:nth-child(3) {
+  background: rgb(var(--c-card2));
 }
 .mx-demo-checkin .journal-textarea__floating-actions > button:last-child {
   background: #f4f4f4;

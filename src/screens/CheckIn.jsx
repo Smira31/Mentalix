@@ -3,16 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  Minus,
-  Pencil,
-  Sparkles,
-  X,
-} from 'lucide-react'
+import { Check, ChevronLeft, Minus, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -73,32 +64,16 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
 
-const DEMO_FOCUS_OPTIONS = [
-  ['Work', 'Работа'],
-  ['Self-care', 'Забота о себе'],
-  ['People', 'Люди'],
-  ['Hobbies', 'Хобби'],
-  ['Chores', 'Дела'],
-  ['Learning', 'Учёба'],
-  ['Fun', 'Радость'],
-  ['Rest', 'Отдых'],
-  ['Nature', 'Природа'],
-  ['Health', 'Здоровье'],
-  ['Family', 'Семья'],
-  ['Productivity', 'Продуктивность'],
-]
-
 function DemoCheckInFlow({ user, onDone }) {
   const [step, setStep] = useState(0)
   const [mood, setMood] = useState(null)
   const [energy, setEnergy] = useState(null)
-  const [focus, setFocus] = useState(null)
   const [note, setNote] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const { style: viewportStyle } = useFullscreenSurface()
-  const totalSteps = 6
+  const totalSteps = 4
 
   const goNext = () => setStep(current => Math.min(totalSteps - 1, current + 1))
   const goBack = () => setStep(current => Math.max(0, current - 1))
@@ -111,9 +86,8 @@ function DemoCheckInFlow({ user, onDone }) {
         mood: mood || 3,
         energy: energy || 3,
         anxiety: 3,
-        focus: focus ? 4 : 3,
+        focus: 3,
         note: note.trim() || undefined,
-        emotion: focus || undefined,
       })
       platform.haptic('success')
       onDone()
@@ -126,17 +100,19 @@ function DemoCheckInFlow({ user, onDone }) {
   }
 
   const action =
-    step === 3
+    step === 2
       ? { text: 'Далее', onClick: goNext, disabled: !note.trim() }
-      : step === 4
-        ? { text: 'Продолжить', onClick: goNext }
-        : step === 5
-          ? { text: saving ? 'Сохраняю…' : 'Save & Finish', onClick: finish, disabled: saving }
-          : {
-              text: 'Далее',
-              onClick: goNext,
-              disabled: step === 0 ? !mood : step === 1 ? !energy : !focus,
-            }
+      : step === 3
+        ? {
+            text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
+            onClick: finish,
+            disabled: saving,
+          }
+        : {
+            text: 'Далее',
+            onClick: goNext,
+            disabled: step === 0 ? !mood : !energy,
+          }
 
   useMainButton({
     text: action.text,
@@ -147,13 +123,13 @@ function DemoCheckInFlow({ user, onDone }) {
   })
 
   useSecondaryButton({
-    text: step === 5 ? '' : 'Пропустить',
+    text: step >= 2 ? '' : 'Пропустить',
     onClick: goNext,
-    visible: step < 4,
+    visible: step < 2,
   })
 
   const webAction = { ...action }
-  const webSecondaryAction = step < 4 ? { text: 'Пропустить', onClick: goNext } : null
+  const webSecondaryAction = step < 2 ? { text: 'Пропустить', onClick: goNext } : null
 
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
@@ -179,7 +155,7 @@ function DemoCheckInFlow({ user, onDone }) {
         </button>
       </header>
 
-      <main className={`mx-demo-checkin__body ${step === 3 ? 'is-editor' : ''}`}>
+      <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
         {step === 0 && (
           <section className="mx-demo-checkin__scene">
             <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
@@ -232,32 +208,6 @@ function DemoCheckInFlow({ user, onDone }) {
         )}
 
         {step === 2 && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--focus">
-            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
-            <h1>На чём твой главный фокус сегодня?</h1>
-            <div className="mx-demo-checkin__focus-grid">
-              {DEMO_FOCUS_OPTIONS.map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  className={focus === key ? 'is-selected' : ''}
-                  onClick={() => setFocus(key)}
-                >
-                  <span>{key.slice(0, 1)}</span>
-                  <b>{label}</b>
-                </button>
-              ))}
-            </div>
-            <button type="button" className="mx-demo-checkin__text-action">
-              Показать всё <ChevronDown size={16} />
-            </button>
-            <button type="button" className="mx-demo-checkin__text-action">
-              <Pencil size={15} /> Настроить
-            </button>
-          </section>
-        )}
-
-        {step === 3 && (
           <section className="mx-demo-checkin__editor-scene">
             <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
             <h1>Что сегодня вызывает у тебя улыбку?</h1>
@@ -266,7 +216,7 @@ function DemoCheckInFlow({ user, onDone }) {
               value={note}
               onChange={setNote}
               placeholder="Начни писать…"
-              ariaLabel="Daily Check-In note"
+              ariaLabel="Запись ежедневного чек-ина"
               className="mx-demo-checkin__editor"
               editorClassName="pb-28"
               floatingToolbar
@@ -283,25 +233,13 @@ function DemoCheckInFlow({ user, onDone }) {
           </section>
         )}
 
-        {step === 4 && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--upsell">
-            <Sparkles size={34} />
-            <h1>Подними заботу о себе на новый уровень с AI</h1>
-            <p>Персональные размышления и внимательный анализ помогут двигаться дальше.</p>
-            <div className="mx-demo-checkin__benefits">
-              <span>✦ Персональные размышления</span>
-              <span>✦ Анализ твоих записей</span>
-              <span>✦ Один спокойный следующий шаг</span>
-            </div>
-            <button type="button" className="mx-demo-checkin__trial" onClick={goNext}>
-              Начать бесплатный период <ArrowRight size={18} />
-            </button>
-          </section>
-        )}
-
-        {step === 5 && (
+        {step === 3 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-            <MotifArt name="noch" size={170} artScale={1.05} />
+            <img
+              src="/checkin-bird-reference.png"
+              alt="Птица на кольцах планеты"
+              className="mx-demo-checkin__bird"
+            />
             <h1>Ты завершил ежедневный чек-ин!</h1>
             <p>Насколько полезным был этот чек-ин сегодня?</p>
             <div className="mx-demo-checkin__feedback">
@@ -329,7 +267,7 @@ function DemoCheckInFlow({ user, onDone }) {
           </section>
         )}
       </main>
-      <WebActionBar action={step === 3 ? null : webAction} secondaryAction={webSecondaryAction} />
+      <WebActionBar action={step === 2 ? null : webAction} secondaryAction={webSecondaryAction} />
     </div>,
     getFullscreenPortalTarget()
   )
