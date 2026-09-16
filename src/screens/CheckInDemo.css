@@ -54,13 +54,18 @@
   flex: 1;
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 24px 22px 30px;
+  padding: 8px 22px 20px;
 }
 
 .mx-demo-checkin__scene {
   width: min(100%, 560px);
-  margin: auto;
+  margin: 32px auto 0;
   text-align: center;
+}
+
+.mx-demo-checkin__scene--complete {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .mx-demo-checkin__scene--focus,
@@ -120,6 +125,9 @@
 .mx-demo-checkin__moods .mx-demo-checkin__mood-circle {
   display: grid;
   margin-top: 0;
+}
+.mx-demo-checkin__moods span.is-hidden-label {
+  visibility: hidden;
 }
 .mx-demo-checkin__energy {
   display: flex;

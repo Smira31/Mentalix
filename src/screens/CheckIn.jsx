@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, ChevronLeft, Minus, X } from 'lucide-react'
+import { Hand, ThumbsDown, ThumbsUp, Check, ChevronLeft, Minus, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -176,7 +176,7 @@ function DemoCheckInFlow({ user, onDone }) {
                       showFrame={false}
                     />
                   </span>
-                  <span>{label}</span>
+                  <span className={index > 0 && index < 4 ? 'is-hidden-label' : ''}>{label}</span>
                 </button>
               ))}
             </div>
@@ -244,9 +244,9 @@ function DemoCheckInFlow({ user, onDone }) {
             <p>Насколько полезным был этот чек-ин сегодня?</p>
             <div className="mx-demo-checkin__feedback">
               {[
-                ['Нет', X],
-                ['Немного', Minus],
-                ['Да', Check],
+                ['Нет', ThumbsDown],
+                ['Немного', Hand],
+                ['Да', ThumbsUp],
               ].map(([item, Icon]) => (
                 <button
                   key={item}
