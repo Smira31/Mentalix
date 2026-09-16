@@ -1,14 +1,86 @@
 import { useState } from 'react'
 import { Heart, Check } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import './DonateScreen.css'
 
+function DemoDonateScreen({ user, onBack }) {
+  const [selected, setSelected] = useState(AMOUNTS[1])
+  const [sending, setSending] = useState(false)
+  const [done, setDone] = useState(false)
+
+  async function send() {
+    if (sending) return
+    setSending(true)
+    try {
+      await api.subscription.donate(user.id, selected)
+      setDone(true)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="mx-demo-donate mx-demo-donate--done">
+        <BackButton showInDemo onClick={onBack} />
+        <div className="mx-demo-donate__intro-card">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4">
+            <Check size={28} />
+          </div>
+          <h2>Спасибо!</h2>
+          <p>Твоя поддержка помогает Mentalix развиваться дальше.</p>
+        </div>
+        <button type="button" onClick={onBack}>
+          Готово
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mx-demo-donate">
+      <div className="mx-demo-donate__header">
+        <BackButton showInDemo onClick={onBack} />
+        <h1>Поддержать проект</h1>
+        <span aria-hidden="true" />
+      </div>
+      <div className="mx-demo-donate__intro-card">
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4">
+          <Heart size={26} />
+        </div>
+        <p>Донат не связан с тарифами — просто способ поддержать развитие Mentalix.</p>
+      </div>
+      <div className="grid grid-cols-2">
+        {AMOUNTS.map(amount => (
+          <button
+            key={amount}
+            type="button"
+            onClick={() => setSelected(amount)}
+            className={selected === amount ? 'bg-gold' : ''}
+          >
+            {amount} ₽
+          </button>
+        ))}
+      </div>
+      <button type="button" onClick={send} disabled={sending}>
+        {sending ? 'Отправляю...' : `Поддержать на ${selected} ₽`}
+      </button>
+      <p>
+        Оплата через Telegram Payments подключится в следующем обновлении — сейчас донат фиксируется
+        без реального списания средств.
+      </p>
+    </div>
+  )
+}
+
 const AMOUNTS = [100, 300, 500, 1000]
 
-export default function DonateScreen({ user, onBack }) {
-  const previewDemoMode = isPreviewDemoMode()
+function ProductionDonateScreen({ user, onBack }) {
   const [selected, setSelected] = useState(AMOUNTS[1])
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
@@ -30,9 +102,7 @@ export default function DonateScreen({ user, onBack }) {
 
   if (done) {
     return (
-      <div
-        className={`w-full max-w-md px-6 pt-16 flex flex-col items-center text-center ${previewDemoMode ? 'mx-demo-donate' : ''}`}
-      >
+      <div className="w-full max-w-md px-6 pt-16 flex flex-col items-center text-center">
         <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mb-4">
           <Check size={28} className="text-gold" />
         </div>
@@ -51,9 +121,7 @@ export default function DonateScreen({ user, onBack }) {
   }
 
   return (
-    <div
-      className={`w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center ${previewDemoMode ? 'mx-demo-donate' : ''}`}
-    >
+    <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
         <div className="justify-self-start">
           <BackButton showInDemo onClick={onBack} />
@@ -100,4 +168,12 @@ export default function DonateScreen({ user, onBack }) {
       </p>
     </div>
   )
+}
+
+export default function DonateScreen({ user, onBack }) {
+  if (isPreviewDemoMode()) {
+    return createPortal(<DemoDonateScreen user={user} onBack={onBack} />, document.body)
+  }
+
+  return <ProductionDonateScreen user={user} onBack={onBack} />
 }
