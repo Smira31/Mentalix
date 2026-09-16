@@ -19,6 +19,17 @@
   margin-bottom: 28px;
 }
 
+.mx-demo-donate__header {
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+}
+
+.mx-demo-donate__header h1 {
+  margin: 0;
+  text-align: center;
+}
+
 .mx-demo-donate h1 {
   font-size: 18px;
   font-weight: 750;
