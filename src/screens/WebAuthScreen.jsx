@@ -90,16 +90,7 @@ export default function WebAuthScreen({ onAuthed }) {
   const handleTelegramError = () => setError('Не удалось войти через Telegram. Попробуй ещё раз.')
 
   return (
-    <main className="mx-web-auth-page" aria-labelledby="web-auth-title">
-      <button
-        type="button"
-        className="mx-web-auth-close"
-        aria-label="Закрыть"
-        onClick={() => window.history.back()}
-      >
-        ×
-      </button>
-
+    <main className="mx-web-auth-page" aria-labelledby="mx-web-auth-title">
       <img
         className="mx-web-auth-illustration"
         src="/web-auth-stoic-illustration.jpg"
