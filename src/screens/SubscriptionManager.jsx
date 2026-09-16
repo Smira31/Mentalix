@@ -1,5 +1,8 @@
-import { Check, Lock } from 'lucide-react'
+import { useState } from 'react'
+import { Check, Cloud, Lightbulb, Lock, LockKeyhole, PenLine, Sparkles } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import { isPreviewDemoMode } from '../lib/demoMode'
+import './SubscriptionManager.css'
 
 const TIERS = [
   {
@@ -29,7 +32,105 @@ const TIERS = [
   },
 ]
 
+const DEMO_PLANS = {
+  premium: {
+    label: 'Premium',
+    discount: 'Скидка 58% на функции Premium.',
+    price: '$49.99 в год ($4.17 в месяц)',
+    detail: 'Выгоднее помесячной оплаты для участников Mentalix.',
+    features: [
+      [PenLine, 'Ежедневные подсказки и журналы', 'Новые вопросы и короткие практики каждый день'],
+      [Lightbulb, 'Разблокировать все упражнения', 'Медитации, дыхание, упражнения и больше'],
+      [
+        Cloud,
+        'Автоматическая синхронизация',
+        'Синхронизация между iPhone, Mac, iPad и Apple Watch',
+      ],
+      [Sparkles, 'Персональные отражения', 'Наблюдения, которые помогают замечать свой путь'],
+      [LockKeyhole, 'Защитить записи', 'Личные записи остаются только на твоём устройстве'],
+    ],
+  },
+  ai: {
+    label: 'Premium + AI',
+    discount: 'Скидка 40% на функции Premium + AI.',
+    price: '$129.99 в год ($10.83 в месяц)',
+    detail: 'Самый полный набор возможностей Mentalix.',
+    features: [
+      [Sparkles, 'Персональные отражения', 'Более точные подсказки на основе твоего пути'],
+      [Lightbulb, 'Рефлексия с AI', 'Замечай закономерности и новые направления'],
+      [Cloud, 'Умные уведомления', 'Напоминания, которые подстраиваются под тебя'],
+      [PenLine, 'Ежедневные подсказки и журналы', 'Новые вопросы и короткие практики каждый день'],
+      [LockKeyhole, 'Разблокировать все упражнения', 'Медитации, дыхание, упражнения и больше'],
+    ],
+  },
+}
+
+function DemoSubscriptionOffer({ onBack }) {
+  const [plan, setPlan] = useState('premium')
+  const selected = DEMO_PLANS[plan]
+
+  return (
+    <div className="mx-demo-subscription-offer">
+      <div className="mx-demo-subscription-offer__topbar">
+        <BackButton showInDemo onClick={onBack} />
+        <div className="mx-demo-subscription-offer__switch" role="tablist" aria-label="Тариф">
+          {Object.entries(DEMO_PLANS).map(([key, value]) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={plan === key}
+              onClick={() => setPlan(key)}
+            >
+              {value.label}
+            </button>
+          ))}
+        </div>
+        <span className="mx-demo-subscription-offer__close" aria-hidden="true">
+          ×
+        </span>
+      </div>
+
+      <div className="mx-demo-subscription-offer__intro">
+        <h1>
+          Готов открыть
+          <br />
+          свой потенциал?
+        </h1>
+        <p>{selected.discount}</p>
+      </div>
+
+      <div className="mx-demo-subscription-offer__features">
+        {selected.features.map(([Icon, title, description]) => (
+          <div className="mx-demo-subscription-offer__feature" key={title}>
+            <Icon size={20} strokeWidth={1.7} aria-hidden="true" />
+            <div>
+              <strong>{title}</strong>
+              <span>{description}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mx-demo-subscription-offer__price">
+        <strong>{selected.price}</strong>
+        <span>{selected.detail}</span>
+      </div>
+      <button type="button" className="mx-demo-subscription-offer__cta">
+        Начать бесплатную пробу
+      </button>
+      <p className="mx-demo-subscription-offer__fineprint">
+        Оплата пока не подключена.
+        <br />
+        Отменить можно в любой момент.
+      </p>
+    </div>
+  )
+}
+
 export default function SubscriptionManager({ user: _user, tier, onBack }) {
+  if (isPreviewDemoMode()) return <DemoSubscriptionOffer onBack={onBack} />
+
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">

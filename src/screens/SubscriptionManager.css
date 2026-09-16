@@ -1,0 +1,164 @@
+.mx-demo-subscription-offer {
+  width: 100%;
+  max-width: 390px;
+  min-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
+  padding: max(8px, var(--app-safe-top)) 16px calc(18px + var(--app-safe-bottom));
+  background: #0d0d0d;
+  color: #f2f2f2;
+}
+
+.mx-demo-subscription-offer__topbar {
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+  min-height: 46px;
+  margin-bottom: 28px;
+}
+
+.mx-demo-subscription-offer__topbar .mx-demo-back-button {
+  background: rgb(255 255 255 / 0.06);
+}
+
+.mx-demo-subscription-offer__switch {
+  display: flex;
+  justify-self: center;
+  padding: 2px;
+  border-radius: 999px;
+  background: #1e1e1e;
+}
+
+.mx-demo-subscription-offer__switch button {
+  min-height: 28px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #a7a7a7;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.mx-demo-subscription-offer__switch button[aria-selected='true'] {
+  background: #e5e5e5;
+  color: #151515;
+}
+
+.mx-demo-subscription-offer__close {
+  justify-self: end;
+  color: #c1c1c1;
+  font-size: 21px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.mx-demo-subscription-offer__intro {
+  padding: 0 8px;
+}
+
+.mx-demo-subscription-offer__intro h1 {
+  margin: 0 0 8px;
+  color: #f2f2f2;
+  font-family: inherit;
+  font-size: 25px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+}
+
+.mx-demo-subscription-offer__intro p {
+  margin: 0 0 18px;
+  color: #a5a5a5;
+  font-size: 11px;
+}
+
+.mx-demo-subscription-offer__features {
+  overflow: hidden;
+  border: 1px solid #242424;
+  border-radius: 14px;
+  background: #151515;
+}
+
+.mx-demo-subscription-offer__feature {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  min-height: 57px;
+  align-items: center;
+  padding: 9px 12px;
+  border-bottom: 1px solid #292929;
+}
+
+.mx-demo-subscription-offer__feature:last-child {
+  border-bottom: 0;
+}
+
+.mx-demo-subscription-offer__feature > svg {
+  color: #d2d2d2;
+}
+
+.mx-demo-subscription-offer__feature strong,
+.mx-demo-subscription-offer__feature span {
+  display: block;
+}
+
+.mx-demo-subscription-offer__feature strong {
+  color: #e8e8e8;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mx-demo-subscription-offer__feature span {
+  margin-top: 3px;
+  color: #8e8e8e;
+  font-size: 9px;
+  line-height: 1.25;
+}
+
+.mx-demo-subscription-offer__price {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  margin: 18px 0 10px;
+  text-align: center;
+}
+
+.mx-demo-subscription-offer__price strong {
+  color: #f2f2f2;
+  font-size: 13px;
+}
+
+.mx-demo-subscription-offer__price span {
+  color: #858585;
+  font-size: 9px;
+}
+
+.mx-demo-subscription-offer__cta {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: #5967a8;
+  color: #f2f2f2;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mx-demo-subscription-offer__fineprint {
+  margin: 9px 0 0;
+  color: #8d8d8d;
+  font-size: 9px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+@media (max-width: 360px) {
+  .mx-demo-subscription-offer__switch button {
+    padding-inline: 10px;
+  }
+
+  .mx-demo-subscription-offer__intro h1 {
+    font-size: 23px;
+  }
+}
