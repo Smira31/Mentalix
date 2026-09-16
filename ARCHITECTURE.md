@@ -1,12 +1,12 @@
 ---
 status: normative
-last_verified: 2026-09-10
+last_verified: 2026-09-16
 ---
 
 # Mentalix — Architecture v1
 
 Статус: описание публичного frontend-репозитория `Smira31/Mentalix`.
-Проверяемый baseline — ветка `main`, HEAD `ceb17efb` (28.08.2026).
+Проверяемый baseline — ветка `main`; release provenance сверяется по `PROJECT_STATE.md`.
 Backend находится в приватном `Smira31/mentalix-bot`; его runtime и secrets
 не выводятся из frontend-кода.
 
@@ -21,7 +21,7 @@ Backend находится в приватном `Smira31/mentalix-bot`; его 
 - lucide-react;
 - Recharts.
 
-Деплой описан как Vercel с автосборкой `main`. API доступен frontend через относительный префикс `/api`.
+Production frontend автоматически публикуется из `main` в Firebase Hosting Live channel. Demo Preview публикуется отдельно в Cloudflare Pages. В Firebase frontend получает Render API через `VITE_API_BASE_URL`; относительный `/api` остаётся локальным fallback.
 
 Отдельный приватный `mentalix-bot` содержит FastAPI, SQLAlchemy, aiogram и PostgreSQL; актуальный deployment-контур — Render + Neon. Подробности и текущие secrets/contracts должны проверяться только в `mentalix-bot/main` и его `RENDER.md`.
 

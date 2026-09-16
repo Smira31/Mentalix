@@ -10,7 +10,7 @@
 | Быстрая разработка и визуальная Demo-проверка | Cloudflare Pages | Публиковать Demo Preview из Demo-ветки; использовать synthetic/demo mode и не подключать production data без отдельной проверки. |
 | Рабочий Production frontend                   | Firebase Hosting | Публиковать только из `main` через Firebase Live channel.                                                                        |
 | Backend/API                                   | Render           | Не переносить и не менять без отдельной задачи; канонический URL — `https://mentalix-bot.onrender.com`.                          |
-| Старый fallback                               | Vercel           | Не использовать для новых деплоев и Preview; не удалять `mentalix.vercel.app` без отдельного решения.                            |
+| Отключённый legacy fallback                   | Vercel           | Git integration отключена; это не действующее окружение и не канонический Preview или Production.                               |
 
 ## Запрещённые по умолчанию действия
 
@@ -22,7 +22,7 @@ Firebase Preview Channels для Pull Request не используются. Ver
 2. После ручного QA изменения попадают в `main` обычным PR-процессом.
 3. Push в `main` запускает Firebase Hosting Production deploy.
 4. После Production deploy проверяются email auth, Safari/PWA, desktop frame, Telegram Mini App и ключевые API flows.
-5. DNS и custom domain не меняются автоматически; старый Vercel fallback сохраняется до отдельного решения.
+5. DNS и custom domain не меняются автоматически; отключённый Vercel legacy fallback не активируется и не удаляется без отдельного решения.
 
 ## Среда и API
 

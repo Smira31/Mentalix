@@ -20,8 +20,8 @@ Russian-only — never introduce English strings into product-facing text.
 ## Project
 
 Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
-This repo is the **frontend only**: React 18 + Vite 5 + Tailwind 3, deployed to Vercel
-(auto-build on push to `main`, prod at https://mentalix.vercel.app). The backend/bot
+This repo is the **frontend only**: React 18 + Vite 5 + Tailwind 3. Production is
+deployed from `main` to Firebase Hosting; Demo Preview uses Cloudflare Pages. The backend/bot
 (FastAPI + SQLAlchemy + aiogram + PostgreSQL on Render + Neon) lives in a separate **private**
 repo, `mentalix-bot`, and is not visible here — do not invent its API shape; if a task
 needs backend files, say so instead of guessing. Use `mentalix-bot/main` and its `RENDER.md`
@@ -172,8 +172,8 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
   (`Today.jsx`, `MorningPilotCard.jsx`), which are what's actually shipped. There's no
   TypeScript build configured (no tsconfig); do not recreate or extend the removed `.tsx`
   copies expecting them to compile or ship.
-- `vercel.json` rewrites `/api/*` to the Render backend; `src/lib/api.js` always calls the relative `/api` prefix — there is no `.env`-based API base URL to configure locally
-  beyond running against that same rewrite (or a local backend serving the same paths).
+- Firebase Production uses `VITE_API_BASE_URL` to call the Render backend directly.
+  `src/lib/api.js` keeps relative `/api` only as a local fallback; Firebase Hosting does not proxy API requests.
 
 ## Context economy
 

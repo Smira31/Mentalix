@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-09-16
 ---
 # Mentalix — релиз [версия]
 
@@ -24,13 +24,14 @@ last_verified: 2026-09-11
 
 ## Автоматические проверки
 
-| Проверка              | Результат                      |
-| --------------------- | ------------------------------ |
-| Unit-тесты            | `pass / fail / не запускались` |
-| Lint                  | `pass / fail / не запускался`  |
-| Production build      | `pass / fail / не запускался`  |
-| Render `/api/health`  | `pass / fail / не проверялся`  |
-| Vercel Preview health | `pass / fail / не проверялся`  |
+| Проверка                        | Результат                      |
+| ------------------------------- | ------------------------------ |
+| Unit-тесты                      | `pass / fail / не запускались` |
+| Lint                            | `pass / fail / не запускался`  |
+| Production build                | `pass / fail / не запускался`  |
+| Render `/api/health`            | `pass / fail / не проверялся`  |
+| Cloudflare Demo Preview health  | `pass / fail / не проверялся`  |
+| Firebase Production deploy/HTTP | `pass / fail / не проверялся`  |
 
 ## Затронутые задачи
 
