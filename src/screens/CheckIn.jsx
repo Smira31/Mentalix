@@ -1031,6 +1031,7 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                       className="min-h-[18rem] flex-1"
                       editorClassName="pb-24"
                       floatingToolbar
+                      guidedFlow={previewDemoMode}
                       autoFocus={previewDemoMode}
                       keepFocusOnSubmit={previewDemoMode}
                       submitIcon={previewDemoMode ? 'arrow' : 'check'}

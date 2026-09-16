@@ -3,6 +3,7 @@ import { ArrowRight, Bold, Check, Highlighter, Italic } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
+import { useVisualViewportGeometry } from '../lib/visualViewport'
 import PracticeWritingCanvas from './PracticeWritingCanvas'
 
 const FORMATS = [
@@ -174,6 +175,19 @@ export default function JournalTextarea({
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
   const [formatOpen, setFormatOpen] = useState(false)
+  const viewportGeometry = useVisualViewportGeometry()
+  const keyboardOpen =
+    guidedFlow &&
+    typeof window !== 'undefined' &&
+    viewportGeometry?.height !== null &&
+    viewportGeometry?.height !== undefined &&
+    window.innerHeight - viewportGeometry.height > 80
+  const keyboardDockStyle = keyboardOpen
+    ? {
+        top: `${viewportGeometry.height + viewportGeometry.offsetTop - 76}px`,
+        bottom: 'auto',
+      }
+    : undefined
 
   useEffect(() => {
     const editor = editorRef.current
@@ -266,6 +280,20 @@ export default function JournalTextarea({
           const viewport = window.visualViewport
           if (!guidedFlow || !viewport) return
 
+          const resetFlowScroll = () => {
+            let parent = editorRef.current?.parentElement
+            while (parent && parent !== document.body) {
+              if (parent.scrollHeight > parent.clientHeight) {
+                parent.scrollTo({ top: 0, behavior: 'auto' })
+              }
+              parent = parent.parentElement
+            }
+            window.scrollTo({ top: 0, behavior: 'auto' })
+          }
+
+          window.requestAnimationFrame(resetFlowScroll)
+          window.setTimeout(resetFlowScroll, 120)
+
           const revealEditor = () => {
             if (viewport.height >= window.innerHeight) return
 
@@ -318,6 +346,7 @@ export default function JournalTextarea({
                 : '',
               guidedFlow ? 'journal-textarea__floating-actions--guided' : '',
             ].join(' ')}
+            style={keyboardDockStyle}
           >
             {formatting ? (
               <button
