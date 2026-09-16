@@ -21,6 +21,39 @@ env:
   BACKEND_SHA: 7fa1cc88d90935fada35bb2b5f6477979cb2cd31
 
 jobs:
+  change-scope:
+    name: Определение области изменений
+    runs-on: ubuntu-latest
+    outputs:
+      backend_required: ${{ steps.scope.outputs.backend_required }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Определить необходимость Render health
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "push" ] || [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "backend_required=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed_files="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          printf '%s
+' "$changed_files"
+          if printf '%s
+' "$changed_files" | grep -Eq '^(server/|api/|src/lib/api|src/platform/|package(-lock)?\.json$|\.github/workflows/|firebase\.json$|render\.yaml$|Dockerfile)'; then
+            echo "backend_required=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "backend_required=false" >> "$GITHUB_OUTPUT"
+          fi
+
   quality:
     name: Frontend quality
     runs-on: ubuntu-latest
@@ -99,6 +132,8 @@ jobs:
 
   backend-health:
     name: Backend health
+    needs: change-scope
+    if: needs.change-scope.outputs.backend_required == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -160,4 +195,4 @@ jobs:
           printf 'quality=%s\nux=%s\nbackend-health=%s\n' "$quality" "$ux" "$backend_health"
           test "$quality" = success
           test "$ux" = success
-          test "$backend_health" = success
+          test "$backend_health" = success -o "$backend_health" = skipped
