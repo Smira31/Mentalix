@@ -289,7 +289,6 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           </span>
         </button>
       </div>
-      {demoMode && <span className="mx-demo-home-indicator" aria-hidden="true" />}
     </div>
   )
 }
