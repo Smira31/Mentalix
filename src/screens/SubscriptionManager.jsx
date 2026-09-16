@@ -1,5 +1,5 @@
 import { Check, Lock } from 'lucide-react'
-import BackButton from '../components/BackButton'
+import BackButton, { DemoCloseButton } from '../components/BackButton'
 
 const TIERS = [
   {
@@ -37,7 +37,7 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
           <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">Подписка</h1>
-        <span aria-hidden="true" />
+        <DemoCloseButton onClick={onBack} />
       </div>
 
       {TIERS.map(t => {

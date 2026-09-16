@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Heart, Check } from 'lucide-react'
 import { api } from '../lib/api'
-import BackButton from '../components/BackButton'
+import BackButton, { DemoCloseButton } from '../components/BackButton'
 
 const AMOUNTS = [100, 300, 500, 1000]
 
@@ -52,7 +52,7 @@ export default function DonateScreen({ user, onBack }) {
           <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">Поддержать проект</h1>
-        <span aria-hidden="true" />
+        <DemoCloseButton onClick={onBack} />
       </div>
 
       <div className="w-16 h-16 rounded-full bg-mint/20 flex items-center justify-center mb-4">
