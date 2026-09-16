@@ -1,7 +1,8 @@
-import { Activity, House, Sparkles, BookOpen } from 'lucide-react'
+import { BookOpen, ChartNoAxesColumn, Compass, House, Lightbulb } from 'lucide-react'
 
-import MazeLogo from './MazeLogo'
 import { platform } from '../platform'
+import { isPreviewDemoMode } from '../lib/demoMode'
+import '../styles/demo-bottom-navigation.css'
 
 // MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
 // Библиотека · Прогресс». Ключи вкладок не меняются — только пользовательские
@@ -16,12 +17,12 @@ const TABS = [
   {
     key: 'practices',
     label: 'Шаги',
-    icon: Sparkles,
+    icon: Lightbulb,
   },
   {
     key: 'mentor',
     label: 'Диалог',
-    icon: 'monogram',
+    icon: Compass,
   },
   {
     key: 'library',
@@ -31,25 +32,13 @@ const TABS = [
   {
     key: 'trends',
     label: 'Прогресс',
-    icon: Activity,
+    icon: ChartNoAxesColumn,
   },
 ]
 
 const MOTION = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 function TabIcon({ item, active, size = 21 }) {
-  if (item.icon === 'monogram') {
-    return (
-      <MazeLogo
-        size={size}
-        progress={1}
-        showDot={false}
-        baseClass="text-transparent"
-        trailClass={active ? 'text-gold' : 'text-muted'}
-      />
-    )
-  }
-
   const Icon = item.icon
 
   return <Icon size={size} strokeWidth={1.9} className={active ? 'text-cream' : 'text-muted'} />
@@ -57,6 +46,7 @@ function TabIcon({ item, active, size = 21 }) {
 
 export default function BottomNavigation({ tab, collapsed, onCollapseChange, onTabChange }) {
   const activeItem = TABS.find(item => item.key === tab) || TABS[0]
+  const demoMode = isPreviewDemoMode()
 
   return (
     /*
@@ -69,7 +59,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
      * конфликт в пользу центра.
      */
     <div
-      className="
+      className={`
         fixed
         z-50
 
@@ -78,7 +68,8 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           mx-auto
 
         pointer-events-none
-      "
+        ${demoMode ? 'mx-demo-bottom-nav' : ''}
+      `}
       style={{
         left: 'max(20px, var(--app-safe-left))',
         right: 'max(20px, var(--app-safe-right))',
@@ -298,6 +289,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           </span>
         </button>
       </div>
+      {demoMode && <span className="mx-demo-home-indicator" aria-hidden="true" />}
     </div>
   )
 }
