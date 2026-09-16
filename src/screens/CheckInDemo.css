@@ -67,6 +67,13 @@
   margin-top: auto;
   margin-bottom: auto;
 }
+.mx-demo-checkin__scene--mood {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.mx-demo-checkin__scene--energy {
+  margin-top: 12px;
+}
 
 .mx-demo-checkin__scene--focus,
 .mx-demo-checkin__editor-scene {
@@ -105,28 +112,13 @@
 }
 .mx-demo-checkin__mood-circle {
   display: grid;
-  width: 68px;
-  height: 68px;
+  width: 56px;
+  height: 56px;
   margin: 0 auto;
   place-items: center;
   border: 1px solid #343434;
   border-radius: 50%;
   background: #111;
-}
-.mx-demo-checkin__moods button:nth-child(1) {
-  transform: translateY(12px);
-}
-.mx-demo-checkin__moods button:nth-child(2) {
-  transform: translateY(6px);
-}
-.mx-demo-checkin__moods button:nth-child(3) {
-  transform: translateY(0);
-}
-.mx-demo-checkin__moods button:nth-child(4) {
-  transform: translateY(-6px);
-}
-.mx-demo-checkin__moods button:nth-child(5) {
-  transform: translateY(-12px);
 }
 .mx-demo-checkin__moods button.is-selected .mx-demo-checkin__mood-circle {
   border-color: #f4f4f4;
@@ -148,7 +140,7 @@
   display: flex;
   justify-content: center;
   gap: 16px;
-  margin-top: 54px;
+  margin-top: 22px;
 }
 .mx-demo-checkin__energy button {
   display: grid;
@@ -226,6 +218,7 @@
 .mx-demo-checkin__editor-scene h1 {
   margin-left: 0;
   max-width: 650px;
+  font-size: clamp(24px, 5.6vw, 36px);
 }
 .mx-demo-checkin__hint {
   margin: 16px 0 0;

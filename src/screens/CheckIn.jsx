@@ -157,7 +157,7 @@ function DemoCheckInFlow({ user, onDone }) {
 
       <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
         {step === 0 && (
-          <section className="mx-demo-checkin__scene">
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--mood">
             <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
             <h1>Как ты себя чувствуешь?</h1>
             <div className="mx-demo-checkin__moods">
@@ -184,7 +184,7 @@ function DemoCheckInFlow({ user, onDone }) {
         )}
 
         {step === 1 && (
-          <section className="mx-demo-checkin__scene">
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--energy">
             <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
             <h1>Сколько в тебе энергии?</h1>
             <div className="mx-demo-checkin__energy">
