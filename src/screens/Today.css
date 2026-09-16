@@ -288,7 +288,7 @@
   background: #111;
 }
 
-.mx-stoic-flame {
+.mx-demo-today-streak .mx-stoic-flame {
   width: 25px;
   height: 30px;
   fill: #f4f4f4;
@@ -297,7 +297,7 @@
   stroke-width: 1.5;
 }
 
-.mx-stoic-flame__inner {
+.mx-demo-today-streak .mx-stoic-flame__inner {
   fill: #111;
   stroke: #111;
   stroke-width: 1;
