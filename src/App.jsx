@@ -556,13 +556,18 @@ export default function App() {
       : { width: 430, height: 932, label: 'iPhone 16 Pro Max' }
   const [demoScale, setDemoScale] = useState(1)
   const [desktopDeviceFrame, setDesktopDeviceFrame] = useState(
-    () => window.innerWidth > 700 && !window.matchMedia?.('(display-mode: standalone)')?.matches
+    () =>
+      window.innerWidth > 700 &&
+      !['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+      !window.matchMedia?.('(display-mode: standalone)')?.matches
   )
 
   useEffect(() => {
     const updateDesktopFrame = () => {
       setDesktopDeviceFrame(
-        window.innerWidth > 700 && !window.matchMedia?.('(display-mode: standalone)')?.matches
+        window.innerWidth > 700 &&
+          !['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+          !window.matchMedia?.('(display-mode: standalone)')?.matches
       )
     }
     updateDesktopFrame()
