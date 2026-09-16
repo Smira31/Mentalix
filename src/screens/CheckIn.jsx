@@ -3,7 +3,16 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { ArrowRight, ChevronDown, ChevronLeft, Pencil, Plus, Sparkles, X } from 'lucide-react'
+import {
+  ArrowRight,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  Minus,
+  Pencil,
+  Sparkles,
+  X,
+} from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -138,13 +147,13 @@ function DemoCheckInFlow({ user, onDone }) {
   })
 
   useSecondaryButton({
-    text: step === 5 ? '' : 'Skip',
+    text: step === 5 ? '' : 'Пропустить',
     onClick: goNext,
     visible: step < 4,
   })
 
   const webAction = { ...action }
-  const webSecondaryAction = step < 4 ? { text: 'Skip', onClick: goNext } : null
+  const webSecondaryAction = step < 4 ? { text: 'Пропустить', onClick: goNext } : null
 
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
@@ -173,17 +182,24 @@ function DemoCheckInFlow({ user, onDone }) {
       <main className={`mx-demo-checkin__body ${step === 3 ? 'is-editor' : ''}`}>
         {step === 0 && (
           <section className="mx-demo-checkin__scene">
-            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
-            <h1>How are you feeling?</h1>
+            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
+            <h1>Как ты себя чувствуешь?</h1>
             <div className="mx-demo-checkin__moods">
-              {['Terrible', 'Bad', 'Okay', 'Good', 'Great'].map((label, index) => (
+              {['Очень тяжело', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'].map((label, index) => (
                 <button
                   key={label}
                   type="button"
                   className={mood === index + 1 ? 'is-selected' : ''}
                   onClick={() => setMood(index + 1)}
                 >
-                  <Face level={index + 1} active={mood === index + 1} size={52} showFrame={false} />
+                  <span className="mx-demo-checkin__mood-circle">
+                    <Face
+                      level={index + 1}
+                      active={mood === index + 1}
+                      size={48}
+                      showFrame={false}
+                    />
+                  </span>
                   <span>{label}</span>
                 </button>
               ))}
@@ -193,8 +209,8 @@ function DemoCheckInFlow({ user, onDone }) {
 
         {step === 1 && (
           <section className="mx-demo-checkin__scene">
-            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
-            <h1>How much energy do you feel?</h1>
+            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
+            <h1>Сколько в тебе энергии?</h1>
             <div className="mx-demo-checkin__energy">
               {Array.from({ length: 5 }).map((_, index) => (
                 <button
@@ -209,16 +225,16 @@ function DemoCheckInFlow({ user, onDone }) {
               ))}
             </div>
             <div className="mx-demo-checkin__range">
-              <span>Not at all</span>
-              <span>Very</span>
+              <span>Совсем нет</span>
+              <span>Очень много</span>
             </div>
           </section>
         )}
 
         {step === 2 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--focus">
-            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
-            <h1>What’s your main focus for today?</h1>
+            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
+            <h1>На чём твой главный фокус сегодня?</h1>
             <div className="mx-demo-checkin__focus-grid">
               {DEMO_FOCUS_OPTIONS.map(([key, label]) => (
                 <button
@@ -233,23 +249,23 @@ function DemoCheckInFlow({ user, onDone }) {
               ))}
             </div>
             <button type="button" className="mx-demo-checkin__text-action">
-              Show all <ChevronDown size={16} />
+              Показать всё <ChevronDown size={16} />
             </button>
             <button type="button" className="mx-demo-checkin__text-action">
-              <Pencil size={15} /> Personalize
+              <Pencil size={15} /> Настроить
             </button>
           </section>
         )}
 
         {step === 3 && (
           <section className="mx-demo-checkin__editor-scene">
-            <p className="mx-demo-checkin__eyebrow">Daily Check-In</p>
-            <h1>What’s making you smile today when you think of it?</h1>
-            <p className="mx-demo-checkin__hint">Big or small — name your joy.</p>
+            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
+            <h1>Что сегодня вызывает у тебя улыбку?</h1>
+            <p className="mx-demo-checkin__hint">Большое или маленькое — назови свою радость.</p>
             <JournalTextarea
               value={note}
               onChange={setNote}
-              placeholder="Start writing..."
+              placeholder="Начни писать…"
               ariaLabel="Daily Check-In note"
               className="mx-demo-checkin__editor"
               editorClassName="pb-28"
@@ -260,7 +276,7 @@ function DemoCheckInFlow({ user, onDone }) {
               submitLabel="Далее"
               onSubmit={goNext}
               onDeepen={() => {}}
-              deepenLabel="Go deeper"
+              deepenLabel="Пойти глубже"
               showAddAction
               formatting
             />
@@ -270,15 +286,15 @@ function DemoCheckInFlow({ user, onDone }) {
         {step === 4 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--upsell">
             <Sparkles size={34} />
-            <h1>Elevate your mental health with AI</h1>
-            <p>Personalized reflections and thoughtful analysis to help you move forward.</p>
+            <h1>Подними заботу о себе на новый уровень с AI</h1>
+            <p>Персональные размышления и внимательный анализ помогут двигаться дальше.</p>
             <div className="mx-demo-checkin__benefits">
-              <span>✦ Personalized Reflections</span>
-              <span>✦ Reflective Analysis</span>
-              <span>✦ One calm next step</span>
+              <span>✦ Персональные размышления</span>
+              <span>✦ Анализ твоих записей</span>
+              <span>✦ Один спокойный следующий шаг</span>
             </div>
             <button type="button" className="mx-demo-checkin__trial" onClick={goNext}>
-              Start Your Free Trial <ArrowRight size={18} />
+              Начать бесплатный период <ArrowRight size={18} />
             </button>
           </section>
         )}
@@ -286,19 +302,21 @@ function DemoCheckInFlow({ user, onDone }) {
         {step === 5 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
             <MotifArt name="noch" size={170} artScale={1.05} />
-            <h1>You’ve completed the Daily Check-In!</h1>
-            <button type="button" className="mx-demo-checkin__tags">
-              <Plus size={17} /> Add Tags
-            </button>
-            <p>Did this check-in feel helpful today?</p>
+            <h1>Ты завершил ежедневный чек-ин!</h1>
+            <p>Насколько полезным был этот чек-ин сегодня?</p>
             <div className="mx-demo-checkin__feedback">
-              {['No', 'A little', 'Yes'].map(item => (
+              {[
+                ['Нет', X],
+                ['Немного', Minus],
+                ['Да', Check],
+              ].map(([item, Icon]) => (
                 <button
                   key={item}
                   type="button"
                   className={feedback === item ? 'is-selected' : ''}
                   onClick={() => setFeedback(item)}
                 >
+                  <Icon size={15} aria-hidden="true" />
                   {item}
                 </button>
               ))}

@@ -1083,12 +1083,15 @@ export default function App() {
           marginBottom: previewDemoMode
             ? `${-(demoViewport.height * (1 - demoScale))}px`
             : undefined,
-          paddingTop: previewDemoMode && !overlay && !todaySeriesOpen ? '56px' : topSafeArea,
+          paddingTop:
+            previewDemoMode && !overlay && !todaySeriesOpen && !todayFlowOpen
+              ? '56px'
+              : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {previewDemoMode && !overlay && !todaySeriesOpen && (
+        {previewDemoMode && !overlay && !todaySeriesOpen && !todayFlowOpen && (
           // eslint-disable-next-line react-hooks/refs
           <DemoTelegramChrome onBack={demoBackAction} />
         )}

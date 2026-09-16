@@ -92,21 +92,34 @@
 }
 .mx-demo-checkin__moods button {
   min-width: 0;
-  padding: 12px 2px;
-  border: 1px solid transparent;
-  border-radius: 24px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 0;
   background: transparent;
   color: #777;
 }
-.mx-demo-checkin__moods button.is-selected {
-  border-color: #444;
+.mx-demo-checkin__mood-circle {
+  display: grid;
+  width: 68px;
+  height: 68px;
+  margin: 0 auto;
+  place-items: center;
+  border: 1px solid #343434;
+  border-radius: 50%;
+  background: #111;
+}
+.mx-demo-checkin__moods button.is-selected .mx-demo-checkin__mood-circle {
+  border-color: #f4f4f4;
   background: #f4f4f4;
-  color: #111;
 }
 .mx-demo-checkin__moods span {
   display: block;
   margin-top: 7px;
   font-size: 10px;
+}
+.mx-demo-checkin__moods .mx-demo-checkin__mood-circle {
+  display: grid;
+  margin-top: 0;
 }
 .mx-demo-checkin__energy {
   display: flex;
@@ -266,6 +279,9 @@
   margin-top: 14px;
 }
 .mx-demo-checkin__feedback button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 10px 16px;
   border: 1px solid #333;
   border-radius: 999px;

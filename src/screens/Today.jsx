@@ -560,7 +560,7 @@ export default function Today({
     <>
       <div className="mx-type-meta text-muted mb-2">
         {isPreviewDemoMode()
-          ? 'Daily Check-In'
+          ? 'Ежедневный чек-ин'
           : todayState === 'reviewPending'
             ? 'Анализ дня'
             : 'Идея дня'}
@@ -568,7 +568,7 @@ export default function Today({
 
       <h2 className="font-display mx-type-hero text-cream">
         {isPreviewDemoMode()
-          ? 'Check in with yourself.'
+          ? 'Проверь себя.'
           : todayState === 'reviewPending'
             ? 'Разобрать день?'
             : 'Как ты?'}
@@ -608,7 +608,7 @@ export default function Today({
         className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
         {isPreviewDemoMode()
-          ? 'Begin'
+          ? 'Начать'
           : todayState === 'reviewPending'
             ? 'Разобрать день'
             : 'Пройти чек-ин'}
