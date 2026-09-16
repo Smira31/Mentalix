@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
+import { Check, ChevronLeft, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -134,7 +134,16 @@ function DemoCheckInFlow({ user, onDone }) {
         <div
           className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
         >
-          {step === 2 && <span className="mx-demo-checkin__header-title">Ежедневный чек-ин</span>}
+          {step > 0 && (
+            <button
+              type="button"
+              aria-label="Назад"
+              onClick={() => setStep(current => Math.max(0, current - 1))}
+              className="mx-demo-checkin__back"
+            >
+              <ChevronLeft size={20} /> Назад
+            </button>
+          )}
         </div>
         {step !== 3 && (
           <button
@@ -151,7 +160,6 @@ function DemoCheckInFlow({ user, onDone }) {
       <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
         {step === 0 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--mood">
-            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
             <h1>Как ты себя чувствуешь?</h1>
             <div className="mx-demo-checkin__moods">
               {['Очень тяжело', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'].map((label, index) => (
@@ -178,7 +186,6 @@ function DemoCheckInFlow({ user, onDone }) {
 
         {step === 1 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--energy">
-            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
             <h1>Сколько в тебе энергии?</h1>
             <div className="mx-demo-checkin__energy">
               {Array.from({ length: 5 }).map((_, index) => (
@@ -202,7 +209,6 @@ function DemoCheckInFlow({ user, onDone }) {
 
         {step === 2 && (
           <section className="mx-demo-checkin__editor-scene">
-            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
             <h1>Что сегодня вызывает у тебя улыбку?</h1>
             <p className="mx-demo-checkin__hint">Большое или маленькое — назови свою радость.</p>
             <JournalTextarea
