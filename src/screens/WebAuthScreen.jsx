@@ -36,12 +36,12 @@ function TelegramLogin({ onSuccess, onError }) {
 
   if (!botUsername) {
     return (
-      <p className="text-[12px] text-muted text-center">
+      <p className="mx-web-auth-telegram-note">
         Telegram Login будет доступен после настройки bot username.
       </p>
     )
   }
-  return <div id="mentalix-telegram-login" className="min-h-[44px] flex justify-center" />
+  return <div id="mentalix-telegram-login" className="mx-web-auth-telegram" />
 }
 
 export default function WebAuthScreen({ onAuthed }) {
@@ -88,99 +88,119 @@ export default function WebAuthScreen({ onAuthed }) {
   }
 
   const handleTelegramError = () => setError('Не удалось войти через Telegram. Попробуй ещё раз.')
-  const handleTelegramSuccess = user => onAuthed(user)
 
   return (
-    <main
-      className="w-full max-w-md px-5 flex flex-col items-center pt-16 pb-10"
-      aria-labelledby="web-auth-title"
-    >
-      <div className="mx-web-auth-mark" aria-hidden="true">
-        <svg viewBox="0 0 72 72">
-          <path d="M17 54V18l19 19 19-19v36" />
-          <path d="M26 54V35l10 10 10-10v19" />
-        </svg>
-      </div>
-      <h1 id="web-auth-title" className="font-display text-[26px] text-cream mb-2 text-center">
-        Вход в Mentalix
+    <main className="mx-web-auth-page" aria-labelledby="web-auth-title">
+      <button
+        type="button"
+        className="mx-web-auth-close"
+        aria-label="Закрыть"
+        onClick={() => window.history.back()}
+      >
+        ×
+      </button>
+
+      <img
+        className="mx-web-auth-illustration"
+        src="/web-auth-stoic-illustration.jpg"
+        alt=""
+        aria-hidden="true"
+      />
+
+      <h1 id="web-auth-title">
+        <strong>Продолжай расти</strong> даже вне приложения.
       </h1>
-      <p className="text-[13px] text-muted text-center leading-relaxed mb-6">
-        {directWebVisit
-          ? 'Открой Mentalix как приложение на iPhone и войди удобным способом.'
-          : 'Подтверди вход, чтобы продолжить.'}
+      <p className="mx-web-auth-lead">
+        Получай вдохновляющие письма Mentalix прямо на почту. Один раз в неделю.
       </p>
 
-      <section
-        className="mx-web-auth-card w-full rounded-2xl border border-gold/30 bg-gold/[0.06] px-4 py-5 mb-4"
-        aria-labelledby="email-auth-title"
-      >
-        <h2 id="email-auth-title" className="font-semibold text-cream text-center mb-4">
+      <div className="mx-web-auth-benefits" aria-label="Что будет в письме">
+        <span>
+          короткая
+          <br />
+          <b>рефлексия</b>
+        </span>
+        <span>
+          тема
+          <br />
+          <b>на неделю</b>
+        </span>
+        <span>
+          вдумчивая
+          <br />
+          <b>цитата</b>
+        </span>
+      </div>
+
+      <section className="mx-web-auth-form" aria-labelledby="email-auth-title">
+        <h2 id="email-auth-title" className="sr-only">
           Вход по email
         </h2>
         {step === 'email' ? (
-          <form onSubmit={requestCode} className="flex flex-col gap-3">
-            <input
-              aria-label="Email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={event => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-xl bg-emerald-deep border border-cream/15 px-4 py-3 text-cream"
-            />
-            <button
-              type="submit"
-              disabled={busy || !emailValid}
-              className="cta-pill min-h-[44px] disabled:opacity-50"
-            >
-              {busy ? 'Отправляю…' : 'Получить код'}
+          <form onSubmit={requestCode}>
+            <label className="mx-web-auth-input-wrap">
+              <span aria-hidden="true">✉</span>
+              <input
+                aria-label="Email"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={event => setEmail(event.target.value)}
+                placeholder="Введи свой email"
+              />
+            </label>
+            <p className="mx-web-auth-quote">Ты становишься тем, чему отдаёшь своё внимание.</p>
+            <p className="mx-web-auth-author">— Эпиктет</p>
+            <button type="submit" disabled={busy || !emailValid} className="mx-web-auth-submit">
+              {busy ? 'Отправляю…' : 'Получить письмо'}
             </button>
           </form>
         ) : (
-          <form onSubmit={verifyCode} className="flex flex-col gap-3">
-            <input
-              aria-label="Код из email"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              value={code}
-              onChange={event => setCode(event.target.value)}
-              placeholder="Код из письма"
-              className="w-full rounded-xl bg-emerald-deep border border-cream/15 px-4 py-3 text-cream tracking-[0.2em] text-center"
-            />
+          <form onSubmit={verifyCode}>
+            <label className="mx-web-auth-input-wrap">
+              <span aria-hidden="true">✉</span>
+              <input
+                aria-label="Код из email"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={code}
+                onChange={event => setCode(event.target.value)}
+                placeholder="Код из письма"
+              />
+            </label>
+            <p className="mx-web-auth-quote">Ты становишься тем, чему отдаёшь своё внимание.</p>
+            <p className="mx-web-auth-author">— Эпиктет</p>
             <button
               type="submit"
               disabled={busy || code.trim().length < 4}
-              className="cta-pill min-h-[44px] disabled:opacity-50"
+              className="mx-web-auth-submit"
             >
               {busy ? 'Проверяю…' : 'Войти'}
             </button>
-            <button
-              type="button"
-              onClick={() => setStep('email')}
-              className="text-[12px] text-muted"
-            >
+            <button type="button" onClick={() => setStep('email')} className="mx-web-auth-change">
               Изменить email
             </button>
           </form>
         )}
       </section>
 
-      <section
-        className="mx-web-auth-card mx-web-auth-card--secondary w-full rounded-2xl border border-cream/10 bg-cream/[0.04] px-4 py-5"
-        aria-labelledby="telegram-auth-title"
-      >
-        <h2 id="telegram-auth-title" className="font-semibold text-cream text-center mb-4">
-          Или через Telegram
-        </h2>
-        <TelegramLogin onSuccess={handleTelegramSuccess} onError={handleTelegramError} />
+      <section className="mx-web-auth-telegram-card" aria-labelledby="telegram-auth-title">
+        <h2 id="telegram-auth-title">Или через Telegram</h2>
+        <TelegramLogin onSuccess={onAuthed} onError={handleTelegramError} />
       </section>
+
+      {directWebVisit && (
+        <p className="mx-web-auth-hint">
+          Открой Mentalix как приложение на iPhone и войди удобным способом.
+        </p>
+      )}
       {notice && (
-        <p role="status" className="mt-4 text-[12px] text-gold text-center">
+        <p role="status" className="mx-web-auth-status">
           {notice}
         </p>
       )}
       {error && (
-        <p role="alert" className="mt-4 text-[12px] text-red-300 text-center">
+        <p role="alert" className="mx-web-auth-error">
           {error}
         </p>
       )}
