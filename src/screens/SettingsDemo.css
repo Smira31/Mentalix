@@ -51,64 +51,6 @@
   display: none;
 }
 
-.mx-profile-illustration {
-  width: 100%;
-  margin: 0 0 18px;
-  padding: 14px 16px 15px;
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 24px;
-  background: #111;
-}
-
-.mx-profile-illustration svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  filter: none;
-}
-
-.mx-profile-illustration__line,
-.mx-profile-illustration__figure {
-  fill: none;
-  stroke: #e8e8e8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.5;
-}
-
-.mx-profile-illustration__line--soft {
-  opacity: 0.28;
-}
-
-.mx-profile-illustration__sun {
-  fill: none;
-  stroke: #bdbdbd;
-  stroke-width: 1.2;
-}
-
-.mx-profile-illustration > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: -4px;
-}
-
-.mx-profile-illustration span {
-  color: #9b9b9b;
-  font-size: 10px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.mx-profile-illustration strong {
-  color: #f4f4f4;
-  font-family: var(--font-display, Georgia, serif);
-  font-size: 15px;
-  font-weight: 400;
-}
-
 .mx-settings-premium {
   display: flex;
   align-items: center;
@@ -215,10 +157,5 @@
   .mx-settings-gift-card {
     padding-left: 20px;
     font-size: 14px;
-  }
-
-  .mx-profile-illustration > div {
-    display: grid;
-    gap: 4px;
   }
 }

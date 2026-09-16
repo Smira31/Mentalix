@@ -140,33 +140,6 @@ function DemoSettingsPromo({ onSubscribe, onGift }) {
   )
 }
 
-function DemoProfileIllustration() {
-  return (
-    <section className="mx-profile-illustration" aria-label="Путь Mentalix">
-      <svg viewBox="0 0 360 180" role="img" aria-label="Спокойный путь к ясности">
-        <path
-          className="mx-profile-illustration__line"
-          d="M18 148c48-24 69-52 103-61 34-10 56 11 78 5 22-6 39-40 74-42 29-2 51 11 69 1"
-        />
-        <path
-          className="mx-profile-illustration__line mx-profile-illustration__line--soft"
-          d="M18 158c51-11 70-30 101-31 32-1 53 16 82 10 31-6 47-43 79-48 26-4 50 8 62-1"
-        />
-        <circle className="mx-profile-illustration__sun" cx="284" cy="40" r="19" />
-        <path
-          className="mx-profile-illustration__figure"
-          d="M99 123c5-22 18-34 32-34s27 12 32 34M131 78c8 0 14-6 14-14s-6-14-14-14-14 6-14 14 6 14 14 14Z"
-        />
-        <path className="mx-profile-illustration__line" d="M131 88v35m-18-17h36" />
-      </svg>
-      <div>
-        <span>твой путь</span>
-        <strong>один спокойный шаг за раз.</strong>
-      </div>
-    </section>
-  )
-}
-
 const REMINDER_TIMES = [
   { label: 'Утро', hour: 8 },
   { label: 'День', hour: 14 },
@@ -625,13 +598,10 @@ export default function Settings({
       </div>
 
       {previewDemoMode && (
-        <>
-          <DemoProfileIllustration />
-          <DemoSettingsPromo
-            onSubscribe={() => setScreen('subscription')}
-            onGift={() => setScreen('donate')}
-          />
-        </>
+        <DemoSettingsPromo
+          onSubscribe={() => setScreen('subscription')}
+          onGift={() => setScreen('donate')}
+        />
       )}
 
       <SectionLabel>Профиль</SectionLabel>
