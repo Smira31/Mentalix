@@ -160,3 +160,49 @@
     font-size: 14px;
   }
 }
+
+/* Awards / My Path-aligned Demo profile rhythm and typography. */
+.mx-settings-screen--demo {
+  font-family: 'Onest', sans-serif;
+}
+
+.mx-settings-screen--demo > .mx-settings-premium,
+.mx-settings-screen--demo > .mx-settings-support-card,
+.mx-settings-screen--demo > div[class*='rounded'] {
+  border-radius: 22px;
+  background: #111;
+}
+
+.mx-settings-screen--demo .mx-settings-premium h2,
+.mx-settings-screen--demo .mx-settings-support-card,
+.mx-settings-screen--demo h2 {
+  font-family: 'Onest', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.mx-settings-screen--demo .mx-settings-premium h2 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.mx-settings-screen--demo .mx-settings-premium p,
+.mx-settings-screen--demo .mx-settings-support-card,
+.mx-settings-screen--demo [class*='text-muted'] {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mx-settings-screen--demo .mx-settings-support-card {
+  min-height: 76px;
+  padding-left: 24px;
+  border-color: #292929;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.mx-settings-screen--demo .mx-settings-support-card > svg {
+  width: 78px;
+  height: 76px;
+  padding: 12px;
+  background: #1b1b1b;
+}

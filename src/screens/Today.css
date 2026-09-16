@@ -276,3 +276,66 @@
     border-radius: 14px;
   }
 }
+
+/* Demo Stoic-inspired header marks: white flame with dark inner cutout and black-framed profile mark. */
+.mx-demo-today-streak {
+  min-width: 76px;
+  height: 46px;
+  gap: 8px;
+  padding-inline: 10px;
+  border-color: #303030;
+  border-radius: 16px;
+  background: #111;
+}
+
+.mx-stoic-flame {
+  width: 25px;
+  height: 30px;
+  fill: #f4f4f4;
+  stroke: #f4f4f4;
+  stroke-linejoin: round;
+  stroke-width: 1.5;
+}
+
+.mx-stoic-flame__inner {
+  fill: #111;
+  stroke: #111;
+  stroke-width: 1;
+}
+
+.mx-demo-today-streak strong {
+  color: #f4f4f4;
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.mx-demo-today-profile {
+  border: 2px solid #1f1f1f;
+  background: #111;
+}
+
+.mx-stoic-profile-mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f4f4f4;
+}
+
+.mx-stoic-profile-mark svg {
+  width: 23px;
+  height: 23px;
+  stroke: #111;
+  stroke-width: 1.8;
+}
+
+.mx-stoic-profile-mark__head {
+  fill: #111;
+}
+
+.mx-stoic-profile-mark__body {
+  fill: none;
+  stroke: #111;
+  stroke-linecap: round;
+}
