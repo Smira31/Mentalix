@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Check, Cloud, Lightbulb, Lock, LockKeyhole, PenLine, Sparkles } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import BackButton from '../components/BackButton'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import './SubscriptionManager.css'
@@ -129,7 +130,9 @@ function DemoSubscriptionOffer({ onBack }) {
 }
 
 export default function SubscriptionManager({ user: _user, tier, onBack }) {
-  if (isPreviewDemoMode()) return <DemoSubscriptionOffer onBack={onBack} />
+  if (isPreviewDemoMode()) {
+    return createPortal(<DemoSubscriptionOffer onBack={onBack} />, document.body)
+  }
 
   return (
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
