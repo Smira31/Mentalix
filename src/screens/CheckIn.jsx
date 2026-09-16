@@ -3,18 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import {
-  ArrowRight,
-  Check,
-  ChevronDown,
-  ChevronLeft,
-  Hand,
-  Pencil,
-  Sparkles,
-  ThumbsDown,
-  ThumbsUp,
-  X,
-} from 'lucide-react'
+import { Check, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -84,7 +73,7 @@ function DemoCheckInFlow({ user, onDone }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const { style: viewportStyle } = useFullscreenSurface()
-  const goNext = () => setStep(current => Math.min(5, current + 1))
+  const goNext = () => setStep(current => Math.min(3, current + 1))
 
   async function finish() {
     setSaving(true)
@@ -108,21 +97,19 @@ function DemoCheckInFlow({ user, onDone }) {
   }
 
   const action =
-    step === 3
+    step === 2
       ? { text: 'Далее', onClick: goNext, disabled: !note.trim() }
-      : step === 4
-        ? { text: 'Продолжить', onClick: goNext }
-        : step === 5
-          ? {
-              text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
-              onClick: finish,
-              disabled: saving,
-            }
-          : {
-              text: 'Далее',
-              onClick: goNext,
-              disabled: step === 0 ? !mood : step === 1 ? !energy : false,
-            }
+      : step === 3
+        ? {
+            text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
+            onClick: finish,
+            disabled: saving,
+          }
+        : {
+            text: 'Далее',
+            onClick: goNext,
+            disabled: step === 0 ? !mood : !energy,
+          }
 
   useMainButton({
     text: action.text,
@@ -133,25 +120,18 @@ function DemoCheckInFlow({ user, onDone }) {
   })
 
   useSecondaryButton({
-    text: step >= 3 ? '' : 'Пропустить',
+    text: step >= 2 ? '' : 'Пропустить',
     onClick: goNext,
-    visible: step < 3,
+    visible: step < 2,
   })
 
   const webAction = { ...action }
-  const webSecondaryAction = step < 3 ? { text: 'Пропустить', onClick: goNext } : null
+  const webSecondaryAction = step < 2 ? { text: 'Пропустить', onClick: goNext } : null
 
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
       <header className="mx-demo-checkin__header">
-        <button
-          type="button"
-          aria-label="Назад"
-          onClick={() => setStep(current => Math.max(0, current - 1))}
-          className="mx-demo-checkin__icon"
-        >
-          <ChevronLeft size={20} />
-        </button>
+        <span aria-hidden="true" />
         <button
           type="button"
           aria-label="Закрыть"
@@ -162,7 +142,7 @@ function DemoCheckInFlow({ user, onDone }) {
         </button>
       </header>
 
-      <main className={`mx-demo-checkin__body ${step === 3 ? 'is-editor' : ''}`}>
+      <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
         {step === 0 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--mood">
             <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
@@ -215,40 +195,6 @@ function DemoCheckInFlow({ user, onDone }) {
         )}
 
         {step === 2 && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--focus">
-            <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
-            <h1>На чём твой главный фокус сегодня?</h1>
-            <div className="mx-demo-checkin__focus-grid">
-              {[
-                'Работа',
-                'Забота о себе',
-                'Люди',
-                'Хобби',
-                'Дела',
-                'Учёба',
-                'Радость',
-                'Отдых',
-                'Природа',
-                'Здоровье',
-                'Семья',
-                'Продуктивность',
-              ].map((label, index) => (
-                <button key={label} type="button" className="mx-demo-checkin__focus-choice">
-                  <span>{['▣', '☼', '♟', '✿', '⌂', '▤', '✦', '☾', '⌁', '♧', '♟', '▥'][index]}</span>
-                  <b>{label}</b>
-                </button>
-              ))}
-            </div>
-            <button type="button" className="mx-demo-checkin__text-action">
-              Показать всё <ChevronDown size={16} />
-            </button>
-            <button type="button" className="mx-demo-checkin__text-action">
-              <Pencil size={15} /> Настроить
-            </button>
-          </section>
-        )}
-
-        {step === 3 && (
           <section className="mx-demo-checkin__editor-scene">
             <p className="mx-demo-checkin__eyebrow">Ежедневный чек-ин</p>
             <h1>Что сегодня вызывает у тебя улыбку?</h1>
@@ -275,23 +221,7 @@ function DemoCheckInFlow({ user, onDone }) {
           </section>
         )}
 
-        {step === 4 && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--upsell">
-            <Sparkles size={34} />
-            <h1>Подними заботу о себе на новый уровень с AI.</h1>
-            <p>Персональные размышления и внимательный анализ помогут двигаться дальше.</p>
-            <div className="mx-demo-checkin__benefits">
-              <span>✦ Персональные размышления</span>
-              <span>✦ Анализ твоих записей</span>
-              <span>✦ Умные уведомления</span>
-            </div>
-            <button type="button" className="mx-demo-checkin__trial" onClick={goNext}>
-              Начать бесплатный период <ArrowRight size={18} />
-            </button>
-          </section>
-        )}
-
-        {step === 5 && (
+        {step === 3 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
             <img
               src="/checkin-bird-reference.png"
@@ -326,7 +256,7 @@ function DemoCheckInFlow({ user, onDone }) {
         )}
       </main>
       <WebActionBar
-        action={step === 3 ? null : webAction}
+        action={step === 2 ? null : webAction}
         secondaryAction={webSecondaryAction}
         compact
       />
