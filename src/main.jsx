@@ -10,6 +10,11 @@ const demoRequested = new URLSearchParams(window.location.search).get('demo') ==
 if (demoRequested) {
   const manifestLink = document.querySelector('link[rel="manifest"]')
   manifestLink?.setAttribute('href', '/manifest-demo.json')
+
+  document
+    .querySelector('meta[name="apple-mobile-web-app-title"]')
+    ?.setAttribute('content', 'Демо-превью')
+  document.title = 'Mentalix — демо-превью'
 }
 
 const showcaseRequested =
