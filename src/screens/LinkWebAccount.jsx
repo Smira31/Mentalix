@@ -18,7 +18,7 @@ export default function LinkWebAccount({ onBack }) {
     <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
         <div className="justify-self-start">
-          <BackButton onClick={onBack} />
+          <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">Связать с сайтом</h1>
         <span aria-hidden="true" />
@@ -29,9 +29,9 @@ export default function LinkWebAccount({ onBack }) {
       </div>
 
       <p className="text-[13px] text-muted text-center mb-8 px-4 leading-relaxed">
-        Код теперь приходит только в личку от бота — так его нельзя перехватить.
-        Открой чат с ботом, там появится код. Затем открой mentalix.vercel.app в
-        браузере, войди по email и введи этот код, когда попросят.
+        Код теперь приходит только в личку от бота — так его нельзя перехватить. Открой чат с ботом,
+        там появится код. Затем открой mentalix.vercel.app в браузере, войди по email и введи этот
+        код, когда попросят.
       </p>
 
       <button

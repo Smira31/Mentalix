@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
 
 import './Today.css'
 
@@ -37,6 +37,31 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 
 // ── календарь недели + отдельные дневные streak strips ──
 
+function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
+  return (
+    <div className="mx-demo-today-header">
+      <button
+        type="button"
+        className="mx-demo-today-streak"
+        aria-label="Мой путь. Один день подряд"
+        onClick={onOpenSeries}
+      >
+        <Flame aria-hidden="true" />
+        <strong>1</strong>
+      </button>
+      <strong className="mx-demo-today-greeting">добрый вечер.</strong>
+      <button
+        type="button"
+        className="mx-demo-today-profile"
+        aria-label="Твой профиль"
+        onClick={onOpenSettings}
+      >
+        <UserRound aria-hidden="true" />
+      </button>
+    </div>
+  )
+}
+
 function WeekStrip() {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = new Date()
@@ -54,7 +79,12 @@ function WeekStrip() {
         {days.map(day => {
           const isToday = day.toDateString() === now.toDateString()
           return (
-            <div key={day.getTime()} className="mx-today-week-day" data-today={isToday}>
+            <div
+              key={day.getTime()}
+              className="mx-today-week-day"
+              data-today={isToday}
+              data-completed="false"
+            >
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
               </span>
@@ -136,6 +166,8 @@ export default function Today({
   onGoMentor,
   onFlowChange,
   onRegisterBack,
+  onOpenSettings,
+  onOpenSeries,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -527,17 +559,27 @@ export default function Today({
   const heroCheckinContent = (
     <>
       <div className="mx-type-meta text-muted mb-2">
-        {todayState === 'reviewPending' ? 'Анализ дня' : 'Идея дня'}
+        {isPreviewDemoMode()
+          ? 'Ежедневный чек-ин'
+          : todayState === 'reviewPending'
+            ? 'Анализ дня'
+            : 'Идея дня'}
       </div>
 
       <h2 className="font-display mx-type-hero text-cream">
-        {todayState === 'reviewPending' ? 'Разобрать день?' : 'Как ты?'}
+        {isPreviewDemoMode()
+          ? 'Проверь себя.'
+          : todayState === 'reviewPending'
+            ? 'Разобрать день?'
+            : 'Как ты?'}
       </h2>
 
       <p className="mx-type-body text-muted mt-2">
-        {todayState === 'reviewPending'
-          ? 'Уроки и то, чем стоит гордиться'
-          : 'Короткая утренняя настройка'}
+        {isPreviewDemoMode()
+          ? ''
+          : todayState === 'reviewPending'
+            ? 'Уроки и то, чем стоит гордиться'
+            : 'Короткая утренняя настройка'}
       </p>
 
       {todayState === 'reviewPending' && (
@@ -565,7 +607,11 @@ export default function Today({
         }}
         className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
-        {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
+        {isPreviewDemoMode()
+          ? 'Начать'
+          : todayState === 'reviewPending'
+            ? 'Разобрать день'
+            : 'Пройти чек-ин'}
       </button>
 
       {next && <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>}
@@ -687,6 +733,9 @@ export default function Today({
   return (
     <div className="mx-screen-shell">
       <h1 className="sr-only">Сегодня</h1>
+      {isPreviewDemoMode() && (
+        <DemoTodayHeader onOpenSettings={onOpenSettings} onOpenSeries={onOpenSeries} />
+      )}
       <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (

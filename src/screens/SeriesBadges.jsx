@@ -1,86 +1,275 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Flame, ChevronRight } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Flame, X } from 'lucide-react'
 
-import BackButton from '../components/BackButton'
-import { MotifArt } from '../components/Motif'
-import StreakBar from '../components/StreakBar'
+import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
+import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { buildSeriesViewModel } from '../lib/series'
+import './SeriesBadges.css'
 
-function Stat({ label, value }) {
+function RewardIcon({ variant = 'locked', size = 110, className = '' }) {
+  const isLocked = variant === 'locked'
+  const isFirstStep = variant === 'first-step'
+
   return (
-    <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 px-4 py-3">
-      <div className="font-display text-[20px] text-cream">{value}</div>
-      <div className="mx-type-meta mt-1 text-muted">{label}</div>
+    <svg
+      className={`mx-reward-icon ${className}`}
+      width={size}
+      height={size}
+      viewBox="0 0 160 160"
+      role="img"
+      aria-label={isLocked ? 'Награда пока закрыта' : 'Открытая награда'}
+    >
+      <circle className="mx-reward-icon__glass" cx="80" cy="68" r="48" />
+      <path className="mx-reward-icon__shine" d="M48 42c7-12 17-19 29-23" />
+      {isLocked ? (
+        <text className="mx-reward-icon__question" x="80" y="80" textAnchor="middle">
+          ?
+        </text>
+      ) : isFirstStep ? (
+        <>
+          <path className="mx-reward-icon__steps" d="M42 103h76M50 94h60M58 85h44M66 76h28" />
+          <path className="mx-reward-icon__flag" d="M88 76V43m0 0h22l-7 8 7 8H88" />
+          <path className="mx-reward-icon__bird" d="M104 66c5-6 11-6 16 0-5-2-9-1-12 3" />
+        </>
+      ) : variant === 'voice-heard' ? (
+        <>
+          <path
+            className="mx-reward-icon__symbol"
+            d="M60 68c5-12 10 12 15 0s10-12 15 0 10 12 15 0"
+          />
+          <circle className="mx-reward-icon__dot" cx="80" cy="68" r="4" />
+        </>
+      ) : variant === 'week-on-path' ? (
+        <>
+          {[0, 1, 2, 3, 4, 5, 6].map(index => (
+            <circle
+              className="mx-reward-icon__dot"
+              key={index}
+              cx={56 + index * 8}
+              cy={68 - Math.abs(3 - index) * 4}
+              r="3.5"
+            />
+          ))}
+        </>
+      ) : variant === 'ritual-holds' ? (
+        <path className="mx-reward-icon__steps" d="M55 88h50M62 80h36M69 72h22M76 64h8" />
+      ) : variant === 'asceza-power' ? (
+        <path className="mx-reward-icon__symbol" d="M62 84l36-32M70 88l28-24" />
+      ) : variant === 'month-on-path' ? (
+        <path
+          className="mx-reward-icon__symbol"
+          d="m80 50 5 12 13 1-10 8 3 13-11-7-11 7 3-13-10-8 13-1z"
+        />
+      ) : (
+        <>
+          <circle className="mx-reward-icon__dot" cx="80" cy="68" r="12" />
+          <path className="mx-reward-icon__symbol" d="M80 52v32M64 68h32" />
+        </>
+      )}
+      <path className="mx-reward-icon__base" d="M34 116h92l-9 16H43z" />
+      <path className="mx-reward-icon__base-line" d="M27 137h106" />
+    </svg>
+  )
+}
+
+function ProgressBar({ progress, goal }) {
+  const width = goal > 0 ? Math.min(100, Math.round((progress / goal) * 100)) : 0
+  return (
+    <div className="mx-path-progress" aria-label={`Прогресс: ${progress} из ${goal}`}>
+      <span style={{ width: `${width}%` }} />
     </div>
   )
 }
 
-function BadgeRow({ badge, onOpen }) {
+function BadgeRow({ badge, expanded, onToggle }) {
   return (
     <button
       type="button"
-      onClick={() => onOpen(badge)}
-      className="flex w-full items-center gap-3 rounded-2xl border border-cream/10 bg-emerald-light/15 px-3 py-3 text-left transition-transform active:scale-[0.99]"
-      aria-label={`${badge.title}: открыть подробности`}
+      className={`mx-path-award-row ${expanded ? 'is-expanded' : ''}`}
+      onClick={onToggle}
+      aria-expanded={expanded}
     >
-      <MotifArt name={badge.motif} size={48} className={badge.done ? '' : 'opacity-40'} />
-      <span className="min-w-0 flex-1">
-        <span
-          className={`block text-[13px] leading-tight ${badge.done ? 'text-cream' : 'text-muted'}`}
-        >
-          {badge.title}
-        </span>
-        <span className="mt-1 block text-[11px] leading-snug text-muted">{badge.desc}</span>
-        {!badge.done && (
-          <span className="mt-1.5 block font-mono text-[10px] text-muted">
-            {badge.progress}/{badge.goal}
-          </span>
-        )}
-      </span>
-      <ChevronRight size={16} className="shrink-0 text-faint" aria-hidden="true" />
+      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={76} />
+      <div className="min-w-0 flex-1">
+        <div className="mx-path-row-title">{badge.title}</div>
+        <div className="mx-path-row-copy">{badge.desc}</div>
+      </div>
+      <div className="mx-path-row-value">
+        <strong>
+          {badge.progress}/{badge.goal}
+        </strong>
+        <ProgressBar progress={badge.progress} goal={badge.goal} />
+      </div>
+      {expanded && (
+        <div className="mx-path-award-detail">
+          {badge.done
+            ? 'Награда открыта. Продолжай в своём темпе.'
+            : `Осталось: ${Math.max(0, badge.goal - badge.progress)}.`}
+        </div>
+      )}
     </button>
   )
 }
 
-function BadgeDetail({ badge, onBack }) {
+function SummaryCard({ value, label }) {
   return (
-    <div className="w-full max-w-md px-5 pb-8">
-      <div className="flex items-center gap-3 py-4">
-        <BackButton onClick={onBack} />
-        <span className="mx-type-meta text-muted">Веха пути</span>
-      </div>
-      <div className="rounded-[28px] border border-cream/10 bg-emerald-light/15 px-5 py-7 text-center">
-        <MotifArt name={badge.motif} size={112} className={badge.done ? '' : 'opacity-40'} />
-        <h2 className="mt-4 font-display text-[24px] text-cream">{badge.title}</h2>
-        <p className="mx-type-body mt-2 text-muted">{badge.desc}</p>
-        <div className="mt-5 rounded-2xl bg-emerald px-4 py-3">
-          <div className="flex items-center justify-between text-[11px] text-muted">
-            <span>{badge.done ? 'Открыто' : 'Прогресс'}</span>
-            <span>
-              {badge.progress}/{badge.goal}
-            </span>
+    <div className="mx-path-summary-card">
+      <strong>{value}</strong>
+      <span>{label}</span>
+    </div>
+  )
+}
+
+function StatSection({ title, rows }) {
+  const [open, setOpen] = useState(true)
+  return (
+    <section className={`mx-path-stat-section ${open ? 'is-open' : ''}`}>
+      <button
+        type="button"
+        className="mx-path-stat-heading"
+        onClick={() => setOpen(value => !value)}
+        aria-expanded={open}
+      >
+        <h2>{title}</h2>
+        <span aria-hidden="true">{open ? '−' : '+'}</span>
+      </button>
+      <div className="mx-path-stat-card" hidden={!open}>
+        {rows.map(([label, value]) => (
+          <div className="mx-path-stat-row" key={label}>
+            <span>{label}</span>
+            <strong>{value}</strong>
           </div>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-cream/10">
-            <div
-              className="h-full rounded-full bg-gold transition-all duration-500"
-              style={{ width: `${Math.min(100, (badge.progress / badge.goal) * 100)}%` }}
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AwardsView({ unlocked, upcoming }) {
+  const latest = unlocked[0]
+  const [showAll, setShowAll] = useState(false)
+  const [expandedId, setExpandedId] = useState(null)
+  const awardCountLabel =
+    unlocked.length === 1 ? 'награда' : unlocked.length < 5 ? 'награды' : 'наград'
+  return (
+    <div className="mx-path-content">
+      <section className="mx-path-featured-award">
+        <h2>
+          <strong>{unlocked.length || 0}</strong> {awardCountLabel} открыто
+        </h2>
+        {latest ? (
+          <>
+            <RewardIcon variant={latest.id} size={184} />
+            <div className="mx-path-featured-title">{latest.title}</div>
+            <div className="mx-path-featured-copy">{latest.done ? 'Открыто' : latest.desc}</div>
+          </>
+        ) : (
+          <>
+            <RewardIcon variant="first-step" size={184} />
+            <div className="mx-path-featured-title">Первый шаг</div>
+            <div className="mx-path-featured-copy">Сделай первый чек-ин</div>
+          </>
+        )}
+      </section>
+
+      <button
+        type="button"
+        className="mx-path-see-all"
+        onClick={() => setShowAll(value => !value)}
+        aria-expanded={showAll}
+      >
+        {showAll ? 'Скрыть награды' : 'Смотреть все'}{' '}
+        <span aria-hidden="true">{showAll ? '⌃' : '›'}</span>
+      </button>
+      <section className={`mx-path-awards-section ${showAll ? 'is-expanded' : ''}`}>
+        <h2>Следующие награды</h2>
+        <div className="mx-path-award-list">
+          {(showAll
+            ? [...upcoming, ...unlocked]
+            : (upcoming.length ? upcoming : unlocked).slice(0, 3)
+          ).map(badge => (
+            <BadgeRow
+              key={`${badge.id}-${showAll}`}
+              badge={badge}
+              expanded={expandedId === badge.id}
+              onToggle={() => setExpandedId(id => (id === badge.id ? null : badge.id))}
             />
-          </div>
+          ))}
         </div>
+      </section>
+    </div>
+  )
+}
+
+function StatsView({ model }) {
+  const completedDays = model.activeDays || model.totalCheckins || 0
+  return (
+    <div className="mx-path-content">
+      <div className="mx-path-summary-grid">
+        <SummaryCard value={completedDays} label="завершённых дня" />
+        <SummaryCard value={0} label="минут осознанности" />
       </div>
+      <StatSection
+        title="Рекорды"
+        rows={[
+          ['Самая долгая медитация', '0 мин 0 сек'],
+          ['Самая долгая дыхательная практика', '0 мин 0 сек'],
+          ['Самая длинная запись', model.totalCheckins ? '1 слово' : '0 слов'],
+          ['Самое долгое чтение', '0 мин 5 сек'],
+        ]}
+      />
+      <StatSection
+        title="Общее"
+        rows={[
+          ['Текущая серия', `${model.currentStreak} ${model.currentStreak === 1 ? 'день' : 'дня'}`],
+          ['Всего завершённых дней', completedDays],
+          ['Самая длинная серия', `${model.bestStreak} ${model.bestStreak === 1 ? 'день' : 'дня'}`],
+          ['Сохранено цитат', 0],
+        ]}
+      />
+      <StatSection
+        title="Дневник"
+        rows={[
+          ['Написано слов', model.totalCheckins ? 1 : 0],
+          ['Изображений', 0],
+          ['Рисунков', 0],
+          ['Записей', model.totalCheckins],
+          ['Разных дневников', 0],
+        ]}
+      />
+      <StatSection
+        title="Осознанность"
+        rows={[
+          ['Минут осознанности', 0],
+          ['Медитаций', 0],
+          ['Дыхательных практик', 0],
+          ['Выполнено вдохов', 0],
+          ['Разных практик дыхания', 0],
+          ['Разных медитаций', 0],
+        ]}
+      />
+      <StatSection
+        title="Настроение"
+        rows={[
+          ['Отметок энергии', 0],
+          ['Отметок настроения', 0],
+        ]}
+      />
     </div>
   )
 }
 
 export default function SeriesBadges({ user, onBack }) {
   const [model, setModel] = useState(null)
-  const [selectedBadge, setSelectedBadge] = useState(null)
+  const [activeTab, setActiveTab] = useState('badges')
   const [error, setError] = useState(false)
+  const { style: surfaceStyle } = useFullscreenSurface()
+  const demoMode = isPreviewDemoMode()
 
   useEffect(() => {
     let active = true
-
     Promise.all([
       api.profile.get(user.id),
       api.checkin.history(user.id, 90),
@@ -88,14 +277,9 @@ export default function SeriesBadges({ user, onBack }) {
       api.ascezas.list(user.id),
     ])
       .then(([stats, checkins, rituals, ascezas]) => {
-        if (active) {
-          setModel(buildSeriesViewModel({ stats, checkins, rituals, ascezas }))
-        }
+        if (active) setModel(buildSeriesViewModel({ stats, checkins, rituals, ascezas }))
       })
-      .catch(() => {
-        if (active) setError(true)
-      })
-
+      .catch(() => active && setError(true))
     return () => {
       active = false
     }
@@ -104,90 +288,55 @@ export default function SeriesBadges({ user, onBack }) {
   const unlocked = useMemo(() => model?.badges.filter(badge => badge.done) || [], [model])
   const upcoming = useMemo(() => model?.badges.filter(badge => !badge.done) || [], [model])
 
-  if (selectedBadge) {
-    return <BadgeDetail badge={selectedBadge} onBack={() => setSelectedBadge(null)} />
-  }
-
-  return (
-    <div className="w-full max-w-md px-5 pb-8 animate-fade-in">
-      <div className="flex items-center gap-3 py-4">
-        <BackButton onClick={onBack} />
-        <h1 className="font-display mx-type-page lowercase text-cream">серии и вехи.</h1>
-      </div>
-
-      {error && (
-        <div className="rounded-2xl border border-cream/10 bg-emerald-light/15 px-4 py-4 text-[13px] text-muted">
-          Не удалось загрузить серии и вехи. Попробуй открыть экран ещё раз.
+  const content = (
+    <div
+      className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}`}
+      style={surfaceStyle}
+    >
+      <header className="mx-path-header">
+        <div className="mx-path-tabs" role="tablist" aria-label="Раздел моего пути">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'badges'}
+            onClick={() => setActiveTab('badges')}
+          >
+            Награды
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === 'stats'}
+            onClick={() => setActiveTab('stats')}
+          >
+            Статистика
+          </button>
         </div>
-      )}
-
-      {!error && !model && (
-        <p role="status" className="px-1 pt-4 text-[13px] text-muted">
-          Собираю твой путь…
-        </p>
-      )}
-
-      {model && (
-        <>
-          <section className="rounded-[28px] border border-gold/25 bg-emerald-light/15 px-5 py-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gold/10 text-gold">
-                <Flame size={25} strokeWidth={1.7} aria-hidden="true" />
-              </span>
-              <div className="min-w-0">
-                <div className="mx-type-meta text-muted">текущая серия</div>
-                <div className="mt-1 font-display text-[25px] text-cream">
-                  {model.currentStreak} {model.currentStreak === 1 ? 'день' : 'дней'} подряд
-                </div>
-              </div>
-            </div>
-            <div className="mt-5">
-              <StreakBar streak={model.currentStreak} />
-            </div>
-          </section>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <Stat label="дней в системе" value={model.activeDays} />
-            <Stat label="чек-инов" value={model.totalCheckins} />
-            <Stat label="личный максимум" value={model.bestStreak} />
-            <Stat label="вех открыто" value={`${unlocked.length}/${model.badges.length}`} />
-          </div>
-
-          {unlocked.length > 0 && (
-            <section className="mt-7">
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-[13px] text-cream">Открыто</h2>
-                <span className="mx-type-meta text-muted">{unlocked.length}</span>
-              </div>
-              <div className="space-y-2">
-                {unlocked.map(badge => (
-                  <BadgeRow key={badge.id} badge={badge} onOpen={setSelectedBadge} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {upcoming.length > 0 && (
-            <section className="mt-7">
-              <div className="mb-2 flex items-baseline justify-between">
-                <h2 className="text-[13px] text-cream">Следующие вехи</h2>
-                <span className="mx-type-meta text-muted">{upcoming.length}</span>
-              </div>
-              <div className="space-y-2">
-                {upcoming.map(badge => (
-                  <BadgeRow key={badge.id} badge={badge} onOpen={setSelectedBadge} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {model.badges.length === 0 && (
-            <p className="mt-7 text-[13px] leading-relaxed text-muted">
-              Вехи появятся по мере движения.
-            </p>
-          )}
-        </>
-      )}
+        <button
+          type="button"
+          className="mx-path-close"
+          aria-label="Закрыть мой путь"
+          onClick={onBack}
+        >
+          <X size={28} strokeWidth={1.8} aria-hidden="true" />
+        </button>
+      </header>
+      <main className="mx-path-scroll">
+        {error && (
+          <p className="mx-path-status">
+            Не удалось загрузить данные. Попробуй открыть экран ещё раз.
+          </p>
+        )}
+        {!error && !model && <p className="mx-path-status">Собираю твой путь…</p>}
+        {model &&
+          (activeTab === 'badges' ? (
+            <AwardsView unlocked={unlocked} upcoming={upcoming} />
+          ) : (
+            <StatsView model={model} />
+          ))}
+      </main>
     </div>
   )
+
+  return createPortal(content, getFullscreenPortalTarget())
 }

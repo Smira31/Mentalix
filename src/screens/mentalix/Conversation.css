@@ -18,6 +18,13 @@
   scroll-behavior: smooth;
 }
 
+/* Не анимируем height: на iOS это создаёт временный gap под composer. */
+.mx-conversation-surface--demo {
+  transition:
+    top 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    padding-top 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .mx-imessage-row {
   display: flex;
   flex-direction: column;
@@ -64,7 +71,7 @@
 .mx-imessage-bubble--assistant {
   max-width: min(88%, 360px);
   padding: 12px 16px;
-  background: rgb(var(--c-emerald-light) / 0.28);
+  background: rgb(9 13 14 / 0.92);
   border: 1px solid rgb(var(--c-cream) / 0.08);
   border-bottom-left-radius: 7px;
 }
@@ -76,7 +83,7 @@
   bottom: 0;
   width: 11px;
   height: 12px;
-  background: rgb(var(--c-emerald-light) / 0.28);
+  background: rgb(9 13 14 / 0.92);
   clip-path: polygon(0 100%, 100% 0, 100% 100%);
 }
 
@@ -98,6 +105,13 @@
 
 .mx-voice-btn.mx-voice-btn-pressed {
   transform: scale(0.975);
+}
+
+.mx-ai-input {
+  min-width: 0;
+  font-size: 16px;
+  color: rgb(var(--c-cream));
+  accent-color: rgb(var(--c-gold));
 }
 
 .mx-ai-composer .mx-ai-input:focus,
@@ -180,23 +194,11 @@
   line-height: 1.45;
 }
 
-.mx-msg-in {
-  animation: mx-msg-in 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
-}
-
-@keyframes mx-msg-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
+  .mx-conversation-surface--demo {
+    transition: none;
+  }
+
   .mx-voice-icon {
     animation: mx-voice-icon-in-reduced 200ms ease both;
   }
@@ -204,23 +206,9 @@
   .mx-voice-btn.mx-voice-btn-pressed {
     transform: none;
   }
-
-  .mx-msg-in {
-    animation: mx-msg-in-reduced 360ms ease both;
-  }
 }
 
 @keyframes mx-voice-icon-in-reduced {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes mx-msg-in-reduced {
   from {
     opacity: 0;
   }

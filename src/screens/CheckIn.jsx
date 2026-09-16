@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { X, ChevronLeft } from 'lucide-react'
+import { Check, ChevronLeft, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -23,6 +23,8 @@ import {
   readCheckinDraft,
   saveCheckinDraft,
 } from '../lib/checkinDraft'
+import { isPreviewDemoMode } from '../lib/demoMode'
+import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
 const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
@@ -62,6 +64,217 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
 
+function DemoCheckInFlow({ user, onDone }) {
+  const [step, setStep] = useState(0)
+  const [mood, setMood] = useState(null)
+  const [energy, setEnergy] = useState(null)
+  const [note, setNote] = useState('')
+  const [feedback, setFeedback] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const { style: viewportStyle } = useFullscreenSurface()
+  const goNext = () => setStep(current => Math.min(3, current + 1))
+
+  async function finish() {
+    setSaving(true)
+    setError('')
+    try {
+      await api.checkin.save(user.id, {
+        mood: mood || 3,
+        energy: energy || 3,
+        anxiety: 3,
+        focus: 3,
+        note: note.trim() || undefined,
+      })
+      platform.haptic('success')
+      onDone()
+    } catch (saveError) {
+      console.error(saveError)
+      setError('Не удалось сохранить. Попробуй ещё раз.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const action =
+    step === 2
+      ? { text: 'Далее', onClick: goNext, disabled: !note.trim() }
+      : step === 3
+        ? {
+            text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
+            onClick: finish,
+            disabled: saving,
+          }
+        : {
+            text: 'Далее',
+            onClick: goNext,
+            disabled: false,
+          }
+
+  useMainButton({
+    text: action.text,
+    onClick: action.onClick,
+    visible: true,
+    enabled: !action.disabled,
+    loading: saving,
+  })
+
+  useSecondaryButton({
+    text: '',
+    onClick: goNext,
+    visible: false,
+  })
+
+  const webAction = { ...action }
+  const webSecondaryAction = null
+
+  return createPortal(
+    <div className="mx-demo-checkin" style={viewportStyle}>
+      <header className="mx-demo-checkin__header">
+        <div
+          className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
+        >
+          {step > 0 && (
+            <button
+              type="button"
+              aria-label="Назад"
+              onClick={() => setStep(current => Math.max(0, current - 1))}
+              className="mx-demo-checkin__icon"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          aria-label="Закрыть"
+          onClick={onDone}
+          className="mx-demo-checkin__icon"
+        >
+          <X size={18} />
+        </button>
+      </header>
+
+      <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
+        {step === 0 && (
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--mood">
+            <h1>Как ты себя чувствуешь?</h1>
+            <div className="mx-demo-checkin__moods">
+              {['Очень тяжело', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'].map((label, index) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={mood === index + 1 ? 'is-selected' : ''}
+                  onClick={() => setMood(index + 1)}
+                >
+                  <span className="mx-demo-checkin__mood-circle">
+                    <Face
+                      level={index + 1}
+                      active={mood === index + 1}
+                      size={48}
+                      showFrame={false}
+                    />
+                  </span>
+                  <span className={index > 0 && index < 4 ? 'is-hidden-label' : ''}>{label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {step === 1 && (
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--energy">
+            <h1>Сколько в тебе энергии?</h1>
+            <div className="mx-demo-checkin__energy">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  aria-label={`${index + 1}`}
+                  className={energy === index + 1 ? 'is-selected' : ''}
+                  onClick={() => setEnergy(index + 1)}
+                >
+                  <span style={{ '--energy-fill': `${(index + 1) * 20}%` }} />
+                </button>
+              ))}
+            </div>
+            <div className="mx-demo-checkin__range">
+              <span>Совсем нет</span>
+              <span>Очень много</span>
+            </div>
+          </section>
+        )}
+
+        {step === 2 && (
+          <section className="mx-demo-checkin__editor-scene">
+            <h1>Что сегодня вызывает у тебя улыбку?</h1>
+            <p className="mx-demo-checkin__hint">Большое или маленькое — назови свою радость.</p>
+            <JournalTextarea
+              value={note}
+              onChange={setNote}
+              placeholder="Начни писать…"
+              ariaLabel="Запись ежедневного чек-ина"
+              className="mx-demo-checkin__editor"
+              editorClassName="pb-28"
+              floatingToolbar
+              guidedFlow
+              autoFocus
+              keepFocusOnSubmit
+              submitIcon="arrow"
+              submitLabel="Далее"
+              onSubmit={goNext}
+              onDeepen={() => {}}
+              deepenLabel="Пойти глубже"
+              showAddAction
+              formatting
+            />
+          </section>
+        )}
+
+        {step === 3 && (
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
+            <img
+              src="/checkin-bird-reference.png"
+              alt="Птица на кольцах планеты"
+              className="mx-demo-checkin__bird"
+            />
+            <h1>Ты завершил ежедневный чек-ин!</h1>
+            <p>Насколько полезным был этот чек-ин сегодня?</p>
+            <div className="mx-demo-checkin__feedback">
+              {[
+                ['Нет', ThumbsDown],
+                ['Немного', Hand],
+                ['Да', ThumbsUp],
+              ].map(([item, Icon]) => (
+                <button
+                  key={item}
+                  type="button"
+                  className={feedback === item ? 'is-selected' : ''}
+                  onClick={() => setFeedback(item)}
+                >
+                  <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
+                  {item}
+                </button>
+              ))}
+            </div>
+            {error && (
+              <p role="alert" className="mx-demo-checkin__error">
+                {error}
+              </p>
+            )}
+          </section>
+        )}
+      </main>
+      <WebActionBar
+        action={step === 2 ? null : webAction}
+        secondaryAction={webSecondaryAction}
+        compact={step !== 3}
+      />
+    </div>,
+    getFullscreenPortalTarget()
+  )
+}
+
 // ── Чек-ин и вечерний «Анализ дня» ──
 // Утром: четыре шкалы + короткая мысль → note.
 // Вечером: шкалы (если ещё не отмечался) + две карточки —
@@ -71,7 +284,7 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 // Поле, которому нечего сказать, не отправляется вовсе: бэкенд
 // сохраняет прежнее значение, и вечер не затирает утро.
 
-export function Face({ level, active, size = 56 }) {
+export function Face({ level, active, size = 56, showFrame = true }) {
   const mouths = [
     'M18 40 Q28 32 38 40',
     'M18 38 Q28 35 38 38',
@@ -96,13 +309,9 @@ export function Face({ level, active, size = 56 }) {
       aria-hidden="true"
       className={active ? 'mx-face mx-face--active' : 'mx-face'}
     >
-      <circle
-        cx="28"
-        cy="28"
-        r="26"
-        className={active ? 'fill-gold/15 stroke-gold' : 'fill-emerald stroke-cream/25'}
-        strokeWidth="2.5"
-      />
+      {showFrame && (
+        <circle className="mx-face__frame" cx="28" cy="28" r="26" fill="none" strokeWidth="2.5" />
+      )}
 
       <path
         d={brows[level - 1][0]}
@@ -157,7 +366,11 @@ function ScaleRail({ scale, value, onPick }) {
             className={`mx-scale-rail__item ${active ? 'mx-scale-rail__item--active' : ''}`}
           >
             <span className="mx-scale-rail__circle">
-              {scale.faces ? <Face level={level} active={active} size={52} /> : level}
+              {scale.faces ? (
+                <Face level={level} active={active} size={42} showFrame={false} />
+              ) : (
+                level
+              )}
             </span>
             <span className="mx-scale-rail__label">{label}</span>
           </button>
@@ -263,6 +476,11 @@ function existingProud(value) {
 
 export default function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
   const isEvening = mode === 'evening'
+  const previewDemoMode = isPreviewDemoMode()
+
+  if (previewDemoMode && !isEvening) {
+    return <DemoCheckInFlow user={user} onDone={onDone} />
+  }
 
   const skipScales = isEvening && !!existing
 
@@ -684,13 +902,19 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
           }
         : null
 
+  const writingAction = isMorningNoteStep
+    ? { text: saving ? 'Сохраняю...' : 'Завершить чек-ин', run: submit }
+    : null
+
+  const effectiveMainAction = mainAction || writingAction
+
   useMainButton({
-    text: mainAction?.text || '',
+    text: effectiveMainAction?.text || '',
     onClick: () => {
       platform.haptic('light')
-      mainAction?.run()
+      effectiveMainAction?.run()
     },
-    visible: Boolean(mainAction) && !isMorningNoteStep,
+    visible: Boolean(effectiveMainAction) && !(previewDemoMode && isMorningNoteStep),
     enabled: !saving && !scoutBusy,
     loading: saving || scoutBusy,
   })
@@ -705,8 +929,12 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
   })
 
   const webAction =
-    mainAction && !isMorningNoteStep
-      ? { text: mainAction.text, onClick: mainAction.run, disabled: saving || scoutBusy }
+    effectiveMainAction && !(previewDemoMode && isMorningNoteStep)
+      ? {
+          text: effectiveMainAction.text,
+          onClick: effectiveMainAction.run,
+          disabled: saving || scoutBusy,
+        }
       : null
 
   const webSecondaryAction =
@@ -716,7 +944,10 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
 
   if (step >= doneStep) {
     return createPortal(
-      <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
+      <div
+        className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
+        style={viewportStyle}
+      >
         <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
 
         <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -727,7 +958,12 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
               ) : null}
 
               <div className="animate-celebrate-pop mb-6">
-                <Face level={values.mood || 4} active size={isEvening ? 64 : 88} />
+                <Face
+                  level={values.mood || 4}
+                  active
+                  size={isEvening ? 64 : 88}
+                  showFrame={false}
+                />
               </div>
 
               <h2 className="font-display text-[26px] text-cream leading-tight">
@@ -797,7 +1033,9 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       : cardIdx === 0
         ? isEvening
           ? 'Уроки дня'
-          : 'Что на уме?'
+          : previewDemoMode
+            ? 'Что сегодня важно не потерять?'
+            : 'Что на уме?'
         : 'Чем горжусь')
 
   const questionSubtitle =
@@ -807,11 +1045,16 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
       : cardIdx === 0
         ? isEvening
           ? 'Разбери день, пока он ещё свежий. Любое поле можно пропустить.'
-          : 'Пара слов — уже разговор с собой.'
+          : previewDemoMode
+            ? 'Запиши одну мысль — коротко или подробно.'
+            : 'Пара слов — уже разговор с собой.'
         : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
+      style={viewportStyle}
+    >
       <div className={CHECKIN_HEADER_CLASS}>
         <button
           onClick={() => {
@@ -829,16 +1072,18 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
           <ChevronLeft size={20} aria-hidden="true" className="text-muted" />
         </button>
 
-        <div className="flex gap-1.5">
-          {Array.from({
-            length: totalSteps,
-          }).map((_, index) => (
-            <span
-              key={index}
-              className={`w-1.5 h-1.5 rounded-full ${index <= step ? 'bg-gold' : 'bg-cream/15'}`}
-            />
-          ))}
-        </div>
+        {previewDemoMode ? (
+          <span className="mx-checkin-demo__progress-label">{stepLabel}</span>
+        ) : (
+          <div className="flex gap-1.5">
+            {Array.from({ length: totalSteps }).map((_, index) => (
+              <span
+                key={index}
+                className={`w-1.5 h-1.5 rounded-full ${index <= step ? 'bg-gold' : 'bg-cream/15'}`}
+              />
+            ))}
+          </div>
+        )}
 
         <button
           onClick={() => {
@@ -859,14 +1104,16 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
           className={`${isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS} mx-checkin-step-enter`}
         >
           <section className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}>
-            <div
-              className={[
-                'mb-2 font-label text-[12px] font-semibold uppercase tracking-wide',
-                isMorningNoteStep ? 'text-gold' : 'text-muted',
-              ].join(' ')}
-            >
-              {stepLabel}
-            </div>
+            {!(previewDemoMode && isMorningNoteStep) && (
+              <div
+                className={[
+                  'mb-2 font-label text-[12px] font-semibold uppercase tracking-wide',
+                  isMorningNoteStep ? 'text-gold' : 'text-muted',
+                ].join(' ')}
+              >
+                {stepLabel}
+              </div>
+            )}
 
             <h2
               className={[
@@ -991,11 +1238,15 @@ export default function CheckIn({ user, onDone, mode = 'checkin', existing = nul
                     <JournalTextarea
                       value={morningDraft?.brief || ''}
                       onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
-                      placeholder={MORNING_NOTE_PLACEHOLDER}
+                      placeholder={previewDemoMode ? 'Начни писать' : MORNING_NOTE_PLACEHOLDER}
                       ariaLabel="Что на уме"
                       className="min-h-[18rem] flex-1"
                       editorClassName="pb-24"
                       floatingToolbar
+                      guidedFlow={previewDemoMode}
+                      autoFocus={previewDemoMode}
+                      keepFocusOnSubmit={previewDemoMode}
+                      submitIcon={previewDemoMode ? 'arrow' : 'check'}
                       onSubmit={() => submit()}
                       submitLabel="Завершить чек-ин"
                       submitLoading={saving}

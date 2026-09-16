@@ -1,0 +1,76 @@
+/* Demo-only bottom navigation reference treatment. Production navigation keeps
+   its existing geometry and tokens. */
+.mx-demo-bottom-nav {
+  bottom: calc(var(--app-safe-bottom) + 2px) !important;
+}
+
+.mx-demo-bottom-nav > div {
+  width: calc(100vw - 40px) !important;
+  max-width: 400px !important;
+  height: 72px !important;
+  border: 1px solid rgb(var(--c-text) / 0.12) !important;
+  border-radius: 999px !important;
+  background: #171717 !important;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.42) !important;
+}
+
+.mx-demo-bottom-nav.mx-demo-bottom-nav--collapsed > div {
+  width: var(--bottom-nav-collapsed-size) !important;
+  max-width: var(--bottom-nav-collapsed-size) !important;
+  height: var(--bottom-nav-collapsed-size) !important;
+}
+
+.mx-demo-bottom-nav > div nav {
+  padding-inline: 6px;
+}
+
+.mx-demo-bottom-nav > div nav button {
+  height: 60px;
+  gap: 4px;
+  border-radius: 999px;
+}
+
+.mx-demo-bottom-nav > div nav button[class*='bg-cream'] {
+  background: #3b3b3b !important;
+}
+
+.mx-demo-bottom-nav > div nav button svg,
+.mx-demo-bottom-nav > div nav button svg * {
+  color: #f2f2f2 !important;
+  stroke: currentColor;
+}
+
+.mx-demo-bottom-nav > div nav button span {
+  color: #a7a7a7 !important;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.mx-demo-bottom-nav > div nav button[class*='bg-cream'] span {
+  color: #f2f2f2 !important;
+  font-weight: 650;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='practices'] .mx-layered-catalog__journal-hero {
+  border-color: rgb(var(--c-border) / 0.9) !important;
+  background:
+    radial-gradient(circle at 86% 25%, rgb(var(--c-text) / 0.06), transparent 35%),
+    linear-gradient(135deg, rgb(var(--c-card2)), rgb(var(--c-bg))) !important;
+}
+
+[data-mentalix-demo-frame='true'][data-demo-tab='practices']
+  .mx-layered-catalog__journal-hero-copy
+  > span {
+  color: rgb(var(--c-muted)) !important;
+}
+
+@media (max-width: 360px) {
+  .mx-demo-bottom-nav > div {
+    width: calc(100vw - 28px) !important;
+  }
+
+  .mx-demo-bottom-nav > div nav button span {
+    font-size: 9px;
+  }
+}

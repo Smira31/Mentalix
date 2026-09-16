@@ -1,7 +1,7 @@
 {
-  "name": "Mentalix Demo Preview",
-  "short_name": "Mentalix Demo",
-  "description": "Demo Preview Mentalix",
+  "name": "Mentalix — демо-превью",
+  "short_name": "Демо-превью",
+  "description": "Демо-превью Mentalix",
   "start_url": "/?demo=1&tab=today&source=pwa",
   "scope": "/",
   "display": "standalone",

@@ -136,8 +136,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
     return (
       <div className="w-full max-w-md px-5 pb-10">
         <div className="mb-6 flex items-center justify-between">
-          <BackButton onClick={onBack} />
-          <span className="text-[11px] font-label uppercase tracking-wider text-muted">готово</span>
+          <BackButton showInDemo onClick={onBack} />
         </div>
         <div className="rounded-3xl bg-emerald p-6 text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gold/15 text-gold">
@@ -166,10 +165,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
   return (
     <div className="w-full max-w-md px-5 pb-10">
       <div className="mb-5 flex items-center justify-between">
-        <BackButton onClick={onBack} />
-        <span className="text-[11px] font-label uppercase tracking-wider text-muted">
-          помоги mentalix
-        </span>
+        <BackButton showInDemo onClick={onBack} />
       </div>
       <Progress step={step} />
 

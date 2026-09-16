@@ -23,7 +23,7 @@ export default function PrivacyNotice({ onBack }) {
     <section className="w-full max-w-md px-5 pb-10">
       <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
         <div className="justify-self-start">
-          <BackButton onClick={onBack} />
+          <BackButton showInDemo onClick={onBack} />
         </div>
         <h1 className="font-display text-[18px] text-cream">политика и данные.</h1>
         <span aria-hidden="true" />

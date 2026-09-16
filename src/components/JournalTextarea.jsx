@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bold, Check, Highlighter, Italic } from 'lucide-react'
+import { ArrowRight, Bold, Check, Highlighter, Italic, Plus } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
+import { useVisualViewportGeometry } from '../lib/visualViewport'
 import PracticeWritingCanvas from './PracticeWritingCanvas'
 
 const FORMATS = [
@@ -165,13 +166,30 @@ export default function JournalTextarea({
   formatting = true,
   onClose,
   autoFocus = false,
+  keepFocusOnSubmit = false,
+  submitIcon = 'check',
   desktopInline = false,
   writingCanvas = false,
   guidedFlow = false,
+  showAddAction = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
   const [formatOpen, setFormatOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
+  const viewportGeometry = useVisualViewportGeometry()
+  const keyboardOpen =
+    guidedFlow &&
+    typeof window !== 'undefined' &&
+    viewportGeometry?.height !== null &&
+    viewportGeometry?.height !== undefined &&
+    window.innerHeight - viewportGeometry.height > 80
+  const keyboardDockStyle = keyboardOpen
+    ? {
+        top: `${viewportGeometry.height + viewportGeometry.offsetTop - 76}px`,
+        bottom: 'auto',
+      }
+    : undefined
 
   useEffect(() => {
     const editor = editorRef.current
@@ -264,6 +282,20 @@ export default function JournalTextarea({
           const viewport = window.visualViewport
           if (!guidedFlow || !viewport) return
 
+          const resetFlowScroll = () => {
+            let parent = editorRef.current?.parentElement
+            while (parent && parent !== document.body) {
+              if (parent.scrollHeight > parent.clientHeight) {
+                parent.scrollTo({ top: 0, behavior: 'auto' })
+              }
+              parent = parent.parentElement
+            }
+            window.scrollTo({ top: 0, behavior: 'auto' })
+          }
+
+          window.requestAnimationFrame(resetFlowScroll)
+          window.setTimeout(resetFlowScroll, 120)
+
           const revealEditor = () => {
             if (viewport.height >= window.innerHeight) return
 
@@ -309,13 +341,30 @@ export default function JournalTextarea({
 
           <div
             className={[
-              'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px] items-center gap-3',
+              'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid items-center gap-3',
+              showAddAction
+                ? 'max-w-[430px] grid-cols-[48px_48px_minmax(0,1fr)_56px]'
+                : 'max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px]',
+              'journal-textarea__floating-actions',
               desktopInline
                 ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'
                 : '',
               guidedFlow ? 'journal-textarea__floating-actions--guided' : '',
             ].join(' ')}
+            style={keyboardDockStyle}
           >
+            {showAddAction && (
+              <button
+                type="button"
+                aria-label={addOpen ? 'Скрыть дополнительные действия' : 'Дополнительные действия'}
+                aria-expanded={addOpen}
+                onPointerDown={event => event.preventDefault()}
+                onClick={() => setAddOpen(current => !current)}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream"
+              >
+                <Plus size={22} />
+              </button>
+            )}
             {formatting ? (
               <button
                 type="button"
@@ -359,15 +408,34 @@ export default function JournalTextarea({
               aria-label={submitLabel}
               title={submitLabel}
               onClick={() => {
-                editorRef.current?.blur()
+                if (!keepFocusOnSubmit) {
+                  editorRef.current?.blur()
+                }
                 onSubmit?.()
               }}
               disabled={submitDisabled || submitLoading || deepenLoading}
               className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
             >
-              <Check size={25} strokeWidth={2.4} />
+              {submitIcon === 'arrow' ? (
+                <ArrowRight size={25} strokeWidth={2.4} />
+              ) : (
+                <Check size={25} strokeWidth={2.4} />
+              )}
             </button>
           </div>
+          {showAddAction && addOpen && (
+            <div className="fixed bottom-[calc(var(--app-safe-bottom)+86px)] left-5 z-[71] flex gap-2 rounded-2xl border border-cream/10 bg-emerald-deep/95 p-2 shadow-xl">
+              {['Voice Memo', 'Camera', 'Photo', 'Draw'].map(item => (
+                <button
+                  key={item}
+                  type="button"
+                  className="rounded-xl px-2 py-2 text-[11px] text-muted"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
         </>
       ) : formatting ? (
         <div

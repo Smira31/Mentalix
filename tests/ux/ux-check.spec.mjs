@@ -1193,8 +1193,19 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       )
     }
     const mentorCard = cards.filter({ hasText: 'Наставник' })
-    await mentorCard.scrollIntoViewIfNeeded()
+    const sideCard = cards.filter({ hasText: 'Собеседник' })
+    await sideCard.click()
+    await expect(sideCard).toHaveAttribute('aria-current', 'true')
+    await expect(mentorCard).not.toHaveAttribute('aria-current', 'true')
+    await expect(page.getByText('История kompas')).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Назад' })).toHaveCount(0)
+
     await mentorCard.click()
+    await expect(mentorCard).toHaveAttribute('aria-current', 'true')
+    await expect(mentorCard.getByRole('button', { name: 'Начать разговор: Наставник' })).toBeVisible()
+    await expect(page.getByText('История kompas')).toHaveCount(0)
+
+    await mentorCard.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
     await expect(page.getByText('История kompas')).toBeVisible()
     await expect(page.getByText('История mayak')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Назад' }))
@@ -1315,12 +1326,14 @@ test('прямая web-ссылка открывает production email и Teleg
   const page = await context.newPage()
   await page.goto('/')
 
-  await expect(page.getByRole('heading', { name: 'Вход в Mentalix' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Продолжай расти даже вне приложения.' })
+  ).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()
   await expect(page.locator('form')).toHaveCount(1)
   await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Получить код' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Получить письмо' })).toBeVisible()
   expect(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).toBeNull()
 
   await context.close()

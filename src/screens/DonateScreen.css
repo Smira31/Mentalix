@@ -1,0 +1,170 @@
+.mx-demo-donate {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100vw;
+  max-width: none;
+  min-height: 100dvh;
+  overflow-y: auto;
+  padding: max(8px, var(--app-safe-top)) max(16px, var(--app-safe-left))
+    calc(24px + var(--app-safe-bottom)) max(16px, var(--app-safe-right));
+  background: #0d0d0d;
+  color: #f2f2f2;
+}
+
+.mx-demo-donate > div:first-child {
+  width: 100%;
+  max-width: none;
+  min-height: 46px;
+  margin-bottom: 28px;
+}
+
+.mx-demo-donate__header {
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+}
+
+.mx-demo-donate__header h1 {
+  margin: 0;
+  text-align: center;
+}
+
+.mx-demo-donate h1 {
+  font-size: 18px;
+  font-weight: 750;
+}
+
+.mx-demo-donate__intro-card {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto 18px;
+  padding: 28px 22px;
+  border: 1px solid #2d2d2d;
+  border-radius: 22px;
+  background: #151515;
+}
+
+.mx-demo-donate__intro-card > div:first-child {
+  width: 56px;
+  height: 56px;
+  margin-bottom: 16px;
+  background: #2a2a2a;
+}
+
+.mx-demo-donate__intro-card svg {
+  color: #f2f2f2;
+}
+
+.mx-demo-donate .grid {
+  width: 100%;
+  max-width: 520px;
+  margin-bottom: 18px;
+  gap: 10px;
+}
+
+.mx-demo-donate .grid button {
+  min-height: 56px;
+  border: 1px solid #303030;
+  background: #151515;
+  color: #a8a8a8;
+}
+
+.mx-demo-donate .grid button.bg-gold {
+  border-color: #f2f2f2;
+  background: #f2f2f2;
+  color: #111111;
+}
+
+.mx-demo-donate > button {
+  width: 100%;
+  max-width: 520px;
+  min-height: 50px;
+  border: 0;
+  background: #f2f2f2;
+  color: #111111;
+}
+
+.mx-demo-donate > p:last-child {
+  max-width: 420px;
+  color: #858585;
+}
+
+/* Demo Support follows the Awards / My Path visual language. */
+.mx-demo-donate {
+  font-family: 'Onest', sans-serif;
+  background: #000;
+}
+
+.mx-demo-donate__header {
+  min-height: 58px;
+  padding: 6px 0 14px;
+  border-bottom: 1px solid #252525;
+}
+
+.mx-demo-donate__header h1 {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.mx-demo-donate__intro-card {
+  max-width: 680px;
+  margin: 22px auto 18px;
+  padding: 26px 24px 24px;
+  border: 0;
+  border-radius: 22px;
+  background: #111;
+}
+
+.mx-demo-donate__intro-card > div:first-child {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 18px;
+  background: #1b1b1b;
+}
+
+.mx-demo-donate__intro-card p {
+  margin: 0;
+  color: #a2a2a2;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.mx-demo-donate .grid {
+  max-width: 680px;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.mx-demo-donate .grid button {
+  min-height: 64px;
+  border: 0;
+  border-radius: 18px;
+  background: #111;
+  color: #cfcfcf;
+  font-family: inherit;
+  font-size: 16px;
+}
+
+.mx-demo-donate .grid button.bg-gold {
+  background: #eee;
+  color: #111;
+}
+
+.mx-demo-donate > button {
+  max-width: 680px;
+  min-height: 58px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mx-demo-donate > p:last-child {
+  max-width: 520px;
+  color: #818181;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+}

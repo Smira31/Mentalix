@@ -21,7 +21,8 @@ const registrySource = await readFile(
 test('Telegram platform detection does not depend only on already-populated initData', () => {
   assert.match(platformSource, /hashHasTelegramData = .*tgWebAppData=/)
   assert.match(platformSource, /telegramBridge = typeof window\.TelegramWebviewProxy/)
-  assert.match(platformSource, /initData \|\| hashHasTelegramData \|\| telegramBridge/)
+  assert.match(platformSource, /standaloneSafari/)
+  assert.match(platformSource, /!standaloneSafari/)
 })
 
 test('Telegram requestAuth waits for a valid user id before App mounts user-scoped screens', () => {

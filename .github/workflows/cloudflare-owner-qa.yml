@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: 20
+  NODE_VERSION: 22.22.1
   CLOUDFLARE_PROJECT: mentalix-owner-qa
   CLOUDFLARE_PRODUCTION_BRANCH: manual
   OWNER_QA_STABLE_URL: https://mentalix-owner-qa.pages.dev

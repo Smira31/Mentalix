@@ -18,11 +18,14 @@ import {
   Moon,
   Download,
   ShieldCheck,
+  Gift,
+  ChevronLeft,
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
 import { requestMessages, biometric } from '../platform/telegram.hooks'
 import { platform, platformName } from '../platform'
+import { isPreviewDemoMode } from '../lib/demoMode'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import { MOOD_CHECK_ENABLED_KEY } from '../lib/moodCheckDraft'
 import { clearCheckinDraft } from '../lib/checkinDraft'
@@ -41,6 +44,7 @@ import LinkWebAccount from './LinkWebAccount'
 import AppLock from './AppLock'
 import PrivacyNotice from './PrivacyNotice'
 import WillingnessToPayTest from './WillingnessToPayTest'
+import './SettingsDemo.css'
 
 function SectionLabel({ children }) {
   return (
@@ -76,7 +80,13 @@ function Row({
         divider ? 'border-b border-cream/[0.06]' : ''
       } active:bg-cream/[0.04] transition-colors`}
     >
-      {Icon && <Icon size={18} aria-hidden="true" className={danger ? 'text-red-400' : 'text-gold shrink-0'} />}
+      {Icon && (
+        <Icon
+          size={18}
+          aria-hidden="true"
+          className={danger ? 'text-red-400' : 'text-gold shrink-0'}
+        />
+      )}
       <div className="flex-1 min-w-0">
         <div className={`font-body text-[14px] ${danger ? 'text-red-400' : 'text-cream'}`}>
           {title}
@@ -109,6 +119,27 @@ function Toggle({ checked, label, onChange }) {
   )
 }
 
+function DemoSettingsPromo({ onSubscribe, onGift }) {
+  return (
+    <>
+      <section className="mx-settings-premium">
+        <div>
+          <h2>Открой весь потенциал Mentalix</h2>
+          <p>Больше практик, ИИ-функции, синхронизация и не только.</p>
+          <button type="button" onClick={onSubscribe}>
+            Попробовать 7 дней бесплатно
+          </button>
+        </div>
+        <Lock size={78} strokeWidth={1.2} aria-hidden="true" />
+      </section>
+      <button type="button" className="mx-settings-support-card" onClick={onGift}>
+        <span>Поддержать проект</span>
+        <Gift size={56} strokeWidth={1.1} aria-hidden="true" />
+      </button>
+    </>
+  )
+}
+
 const REMINDER_TIMES = [
   { label: 'Утро', hour: 8 },
   { label: 'День', hour: 14 },
@@ -136,6 +167,7 @@ export default function Settings({
   theme,
   onThemeChange,
 }) {
+  const previewDemoMode = isPreviewDemoMode()
   const accentColors = getAccentColors(theme)
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
@@ -528,17 +560,49 @@ export default function Settings({
   }
 
   return (
-    <div className="w-full max-w-md px-5 flex flex-col items-center">
+    <div
+      className={`mx-settings-screen w-full max-w-md px-5 flex flex-col items-center ${previewDemoMode ? 'mx-settings-screen--demo' : ''}`}
+    >
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
-        <div className="justify-self-start">
-          <BackButton
-            onClick={onBack}
-            className="max-[359px]:w-10 max-[359px]:justify-center max-[359px]:gap-0 max-[359px]:px-0 max-[359px]:[&>span]:hidden"
-          />
-        </div>
-        <h1 className="font-display text-[18px] text-cream lowercase">настройки.</h1>
+        {previewDemoMode ? (
+          <div className="mx-settings-header-actions justify-self-start">
+            <button
+              type="button"
+              className="mx-settings-header-button"
+              aria-label="Назад"
+              onClick={onBack}
+            >
+              <ChevronLeft size={22} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className="mx-settings-header-button mx-settings-header-button--gift"
+              aria-label="Подарок"
+              onClick={() => setScreen('donate')}
+            >
+              <Gift size={20} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <div className="justify-self-start">
+            <BackButton
+              onClick={onBack}
+              className="max-[359px]:w-10 max-[359px]:justify-center max-[359px]:gap-0 max-[359px]:px-0 max-[359px]:[&>span]:hidden"
+            />
+          </div>
+        )}
+        <h1 className="font-display text-[18px] text-cream lowercase">
+          {previewDemoMode ? 'твой профиль.' : 'настройки.'}
+        </h1>
         <span aria-hidden="true" />
       </div>
+
+      {previewDemoMode && (
+        <DemoSettingsPromo
+          onSubscribe={() => setScreen('subscription')}
+          onGift={() => setScreen('donate')}
+        />
+      )}
 
       <SectionLabel>Профиль</SectionLabel>
       <Card>
@@ -927,7 +991,9 @@ export default function Settings({
                   <span
                     aria-hidden="true"
                     className={`w-8 h-8 rounded-full transition-transform ${
-                      accent === id ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep' : ''
+                      accent === id
+                        ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep'
+                        : ''
                     }`}
                     style={{ background: hex }}
                   />

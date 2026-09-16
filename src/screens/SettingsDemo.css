@@ -1,0 +1,208 @@
+.mx-settings-screen--demo {
+  padding-bottom: 40px;
+}
+
+.mx-settings-screen--demo > div:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  min-height: 58px;
+  margin-inline: -5px;
+  padding-inline: 8px;
+  border-radius: 0 0 22px 22px;
+  background: rgb(0 0 0 / 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.mx-settings-header-button {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.08);
+  color: #f2f2f2;
+}
+
+.mx-settings-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mx-settings-screen--demo svg.text-gold,
+.mx-settings-screen--demo .text-gold,
+.mx-settings-screen--demo [class*='text-accent'],
+.mx-settings-screen--demo [class*='text-blue'] {
+  color: #a7a7a7 !important;
+}
+
+.mx-settings-screen--demo svg {
+  filter: grayscale(1);
+}
+
+.mx-settings-screen--demo .bg-gold,
+.mx-settings-screen--demo [class*='bg-gold'] {
+  background: #7b7b7b !important;
+}
+
+.mx-settings-screen--demo .mx-settings-header-button--gift {
+  display: none;
+}
+
+.mx-settings-premium {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 26px 28px 24px;
+  border-radius: 22px;
+  background: #151515;
+  color: #f3f3f3;
+}
+
+.mx-settings-premium h2 {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.2;
+}
+
+.mx-settings-premium p {
+  max-width: 260px;
+  margin: 7px 0 18px;
+  color: #a0a0a0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mx-settings-premium button {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: #f2f2f2;
+  color: #101010;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mx-settings-premium > svg {
+  flex: 0 0 auto;
+  color: #8b8b8b;
+}
+
+.mx-settings-support-card {
+  display: flex;
+  width: 100%;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-left: 28px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 16px;
+  border: 1px solid #2d2d2d;
+  background: #151515;
+  color: #f3f3f3;
+  text-align: left;
+  font-size: 16px;
+}
+
+.mx-settings-support-card > svg {
+  width: 72px;
+  height: 68px;
+  padding: 6px;
+  background: #242424;
+}
+
+.mx-settings-screen--demo > .mb-8,
+.mx-settings-screen--demo > .mb-5,
+.mx-settings-screen--demo > .-mt-5 {
+  margin-bottom: 24px;
+}
+
+/* Selected controls use a neutral grey surface in Demo; labels remain white. */
+.mx-settings-screen--demo button.bg-gold,
+.mx-settings-screen--demo button[class*='bg-gold'] {
+  background: #777 !important;
+  color: #f2f2f2 !important;
+}
+
+.mx-settings-screen--demo button.bg-cream\/\[0\.04\],
+.mx-settings-screen--demo button[class*='bg-cream'] {
+  color: #f2f2f2 !important;
+}
+
+.mx-settings-screen--demo [class*='bg-gold\/5'] {
+  color: #f2f2f2;
+}
+
+.mx-settings-screen--demo [class*='bg-gold\/5'] p,
+.mx-settings-screen--demo [class*='bg-gold\/5'] span {
+  color: #f2f2f2 !important;
+}
+
+@media (max-width: 480px) {
+  .mx-settings-premium {
+    padding-inline: 20px;
+  }
+
+  .mx-settings-premium h2 {
+    font-size: 19px;
+  }
+
+  .mx-settings-support-card {
+    padding-left: 20px;
+    font-size: 14px;
+  }
+}
+
+/* Awards / My Path-aligned Demo profile rhythm and typography. */
+.mx-settings-screen--demo {
+  font-family: 'Onest', sans-serif;
+}
+
+.mx-settings-screen--demo > .mx-settings-premium,
+.mx-settings-screen--demo > .mx-settings-support-card,
+.mx-settings-screen--demo > div[class*='rounded'] {
+  border-radius: 22px;
+  background: #111;
+}
+
+.mx-settings-screen--demo .mx-settings-premium h2,
+.mx-settings-screen--demo .mx-settings-support-card,
+.mx-settings-screen--demo h2 {
+  font-family: 'Onest', sans-serif;
+  letter-spacing: -0.01em;
+}
+
+.mx-settings-screen--demo .mx-settings-premium h2 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.mx-settings-screen--demo .mx-settings-premium p,
+.mx-settings-screen--demo .mx-settings-support-card,
+.mx-settings-screen--demo [class*='text-muted'] {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.mx-settings-screen--demo .mx-settings-support-card {
+  min-height: 76px;
+  padding-left: 24px;
+  border-color: #292929;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.mx-settings-screen--demo .mx-settings-support-card > svg {
+  width: 78px;
+  height: 76px;
+  padding: 12px;
+  background: #1b1b1b;
+}
