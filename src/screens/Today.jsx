@@ -43,7 +43,7 @@ function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
       <button
         type="button"
         className="mx-demo-today-streak"
-        aria-label="Мой путь. Серия один день"
+        aria-label="Мой путь. Текущая серия"
         onClick={onOpenSeries}
       >
         <Flame aria-hidden="true" />
