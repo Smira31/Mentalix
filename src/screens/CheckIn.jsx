@@ -221,6 +221,7 @@ function DemoCheckInFlow({ user, onDone }) {
               editorClassName="pb-28"
               floatingToolbar
               guidedFlow
+              autoFocus
               keepFocusOnSubmit
               submitIcon="arrow"
               submitLabel="Далее"
