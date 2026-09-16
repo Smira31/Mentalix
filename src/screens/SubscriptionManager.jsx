@@ -87,9 +87,7 @@ function DemoSubscriptionOffer({ onBack }) {
             </button>
           ))}
         </div>
-        <span className="mx-demo-subscription-offer__close" aria-hidden="true">
-          ×
-        </span>
+        <span aria-hidden="true" />
       </div>
 
       <div className="mx-demo-subscription-offer__intro">
