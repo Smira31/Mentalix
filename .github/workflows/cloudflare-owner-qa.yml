@@ -28,7 +28,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout exact SHA
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.commit_sha }}
           fetch-depth: 0
