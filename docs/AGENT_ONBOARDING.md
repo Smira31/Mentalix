@@ -110,22 +110,19 @@ PR/commit: ...
 
 ## 6. Product and Preview boundaries
 
-Card Lab, Motion Kit и другие UI-lab поверхности являются Preview-only, пока владелец отдельно не подтвердил production scope. Частые итерации выполняются локально; быстрый iPhone-просмотр допускает временный Cloudflare Quick Tunnel без реальных пользовательских данных. Exact-SHA owner gate использует один deployment в `mentalix-preview`, после чего Preview отправляется через GitHub Actions workflow `Telegram Preview`. Полная каноническая инструкция находится в [`TELEGRAM_PREVIEW_ACTIONS.md`](TELEGRAM_PREVIEW_ACTIONS.md). Не отправляйте токены, raw `initData`, персональные данные или production URLs with credentials в PR, issue, chat или commit.
+Card Lab, Motion Kit и другие UI-lab поверхности являются Demo-only, пока владелец отдельно не подтвердил production scope. Частые итерации выполняются локально; exact-SHA owner gate публикуется через GitHub Actions workflow `Cloudflare Owner QA` в Cloudflare Pages. Production публикуется только Firebase workflow после merge в `main`. Не отправляйте токены, raw `initData`, персональные данные или production URLs with credentials в PR, issue, chat или commit.
 
 ### Preview contract (обязательно)
 
-| Роль                   | Vercel project     | URL                                     |
-| ---------------------- | ------------------ | --------------------------------------- |
-| **Production**         | `mentalix`         | https://mentalix.vercel.app             |
-| **Owner QA / Preview** | `mentalix-preview` | **https://mentalix-preview.vercel.app** |
+| Роль                        | Платформа / проект                   | URL                                     |
+| --------------------------- | ------------------------------------ | --------------------------------------- |
+| **Production**              | Firebase Hosting Live                | https://mentalix-production.web.app     |
+| **Demo Preview / Owner QA** | Cloudflare Pages `mentalix-owner-qa` | **https://mentalix-owner-qa.pages.dev** |
 
-- Канонический QA-процесс: локальный UI Lab → готовый exact SHA → один явный deployment в project `mentalix-preview` → canonical alias `https://mentalix-preview.vercel.app` → verify alias provenance Vercel-side → Telegram owner QA → iPhone/browser → Telegram `web_app` → owner PASS → merge → один автоматический production deployment проекта `mentalix` из `main`.
-- Production project `mentalix` не используется для feature QA.
-- Владельцу QA отдаётся **только** `https://mentalix-preview.vercel.app` с разрешённым path/query.
-- Branch URL и deployment URL никогда не являются owner QA URL: **не** отдавать владельцу branch URL, deployment URL (`*.vercel.app` с hash/branch), Preview URL конкретного PR или любой другой `*.vercel.app`.
-- Workflow `Telegram Preview` принимает для owner QA только canonical `url=https://mentalix-preview.vercel.app`; `open_url` может отличаться path/query, но host обязан быть тем же.
-- Без Vercel API/token workflow не может автоматически доказать alias→SHA. Поэтому перед workflow dispatch обязательны exact-SHA deployment и Vercel-side provenance verification; workflow fail-closed через `provenance_verified=true` и не использует GitHub Deployments как доказательство. Deploy-hook не вызывается после успешного автоматического production deployment и остаётся только аварийным retry после сброса квоты.
-- Health check и Telegram button используют canonical host.
+- Канонический QA-процесс: локальный UI Lab → готовый exact SHA → GitHub Actions `Cloudflare Owner QA` → `https://mentalix-owner-qa.pages.dev` → Telegram owner QA → iPhone/browser → Telegram `web_app` → owner PASS → merge → автоматический Firebase Production deploy из `main`.
+- Production Firebase не используется для feature QA.
+- Vercel Preview, Vercel deployment URLs и workflow `Telegram Preview` не используются.
+- Health check и Telegram button для Demo QA используют Cloudflare stable URL.
 
 ## 7. Финальный чек-лист PR
 

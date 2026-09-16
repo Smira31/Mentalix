@@ -1,65 +1,29 @@
 ---
-status: historical
-last_verified: 2026-09-11
+status: current
+last_verified: 2026-09-16
 ---
+
 # Mentalix
 
-Telegram Mini App и методология, помогающая превращать понимание в небольшие ежедневные действия и постепенно выстраивать более устойчивые способы поведения.
+Mentalix — Telegram Mini App и веб-приложение, помогающее превращать понимание в небольшие ежедневные действия и постепенно выстраивать более устойчивые способы поведения.
 
-**Production:** `main` → Vercel project `mentalix` → <https://mentalix.vercel.app>
+## С чего начать
 
-**Owner QA Preview:** Vercel project `mentalix-preview` → <https://mentalix-preview.vercel.app>
+1. **Текущее подтверждённое состояние:** [`PROJECT_STATE.md`](PROJECT_STATE.md).
+2. **Активный backlog:** [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md).
+3. **Правила работы агента:** [`AGENTS.md`](AGENTS.md) и [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md).
+4. **Карта документации:** [`docs/INDEX.md`](docs/INDEX.md).
 
----
+## Каноническая инфраструктура
 
-## Канонический словарь окружений
+| Назначение              | Платформа        | Канонический адрес / правило                                                           |
+| ----------------------- | ---------------- | -------------------------------------------------------------------------------------- |
+| **Demo Preview**        | Cloudflare Pages | <https://mentalix-owner-qa.pages.dev>; ручной запуск для exact-SHA визуальной проверки |
+| **Production frontend** | Firebase Hosting | <https://mentalix-production.web.app>; автоматически из `main`                         |
+| **Backend/API**         | Render           | <https://mentalix-bot.onrender.com>; отдельный репозиторий `Smira31/mentalix-bot`      |
+| **Vercel**              | отключён         | Не используется для новых deploy/checks; старый fallback не является источником истины |
 
-В документации Mentalix используются только следующие пять терминов:
-
-| Термин | Определение |
-|---|---|
-| **Production** | `main` → Vercel project `mentalix` → <https://mentalix.vercel.app>. Каноническое пользовательское окружение. |
-| **Owner QA Preview** | Vercel project `mentalix-preview` → <https://mentalix-preview.vercel.app>. Каноническое окружение владельца для QA; Branch Deployment не заменяет его. |
-| **UI Lab** | Встроенные экспериментальные маршруты в репозитории. Это не Production. |
-| **Local Preview** | `vite preview` после production build. |
-| **Branch Deployment** | Временный Vercel deployment под конкретный branch/commit; это не канонический Owner QA Preview. |
-
-## Документация
-Точка входа для агентов: [`docs/INDEX.md`](docs/INDEX.md).
-
-### Актуальные нормативные документы
-
-| Файл | О чём |
-|---|---|
-| [`PRODUCT.md`](PRODUCT.md) | Зачем продукт и для кого. Принципы, что не делаем, открытые решения |
-| [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) | Фактические дизайн-токены, типографика и UI-правила |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Устройство frontend, platform layer и API-контракты |
-| [`ROADMAP.md`](ROADMAP.md) | Что построено, что в работе |
-| [`AI_RULES.md`](AI_RULES.md) | Обязательный процесс работы AI с Mentalix |
-| [`docs/AGENT_ONBOARDING.md`](docs/AGENT_ONBOARDING.md) | Единый onboarding и handoff для Codex/Claude Code |
-| [`REFERENCE_WORKFLOW.md`](REFERENCE_WORKFLOW.md) | Как переводить референсы в Mentalix без копирования |
-| [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md) | Активный backlog и следующие decision gates |
-| [`TASKS.md`](TASKS.md) | Исторический контекст и старые handoffs |
-| [`PROJECT_STATE.md`](PROJECT_STATE.md) | Актуальное подтверждённое состояние проекта |
-| [`BASELINE_SNAPSHOT.md`](BASELINE_SNAPSHOT.md) | Зафиксированный baseline двух репозиториев на 10.09.2026 |
-| [`docs/DOCUMENTATION_GUIDE.md`](docs/DOCUMENTATION_GUIDE.md) | Правило единой документации и канонический словарь окружений |
-
-### История и архив
-
-`CHANGES.md` и `docs/archive/` — исторический слой; его не следует использовать вместо `PROJECT_STATE.md` и свежего GitHub evidence.
-
-При конфликте приоритет такой:
-
-1. явная команда пользователя;
-2. актуальный код — для фактического состояния;
-3. профильный нормативный документ — для решений и правил;
-4. исторические документы — только как контекст.
-
-## Стек
-
-**Этот репозиторий — фронт.** React + Vite + Tailwind. Деплой Vercel, автосборка при пуше в `main`.
-
-**Бэкенд и бот — отдельный приватный репозиторий** `mentalix-bot`. FastAPI + SQLAlchemy + aiogram, PostgreSQL, деплой Render и Neon. Актуальные подтверждённые сведения находятся в [`PROJECT_STATE.md`](PROJECT_STATE.md).
+**Важно:** Firebase Preview Channels не используются. Demo Preview не является Production и не должен работать с production-данными без отдельного решения.
 
 ## Разработка
 
@@ -68,30 +32,44 @@ npm install
 npm run dev
 ```
 
-Для production-like проверки локального результата используйте **Local Preview** только после production build:
+Для локального production-like просмотра:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-**Перед каждым Pull Request:**
+Перед Pull Request:
 
 ```bash
 npm run check:core
 ```
 
-Для изменений UI, safe area, keyboard, fullscreen или Telegram дополнительно выполните:
+Для изменений UI, safe area, keyboard, fullscreen или Telegram дополнительно:
 
 ```bash
 npm run ux:check
 ```
 
-`check:core` запускает unit-тесты, lint, production build и `docs:check`. Реальный Telegram/iPhone gate остаётся обязательным для mobile-sensitive изменений.
+Для ручной Demo-проверки используется GitHub Actions → **Cloudflare Owner QA** с полным 40-символьным SHA. Production обновляется только после merge в `main` и успешного Firebase workflow.
+
+## Документация
+
+| Вопрос                                             | Источник                                                                                   |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Что сейчас развернуто и какой commit в Production? | [`PROJECT_STATE.md`](PROJECT_STATE.md)                                                     |
+| Как устроен процесс и окружения?                   | [`docs/handoffs/2026-09-16-hosting-policy.md`](docs/handoffs/2026-09-16-hosting-policy.md) |
+| Как начать работу агенту?                          | [`docs/AGENT_ONBOARDING.md`](docs/AGENT_ONBOARDING.md)                                     |
+| Какие задачи активны?                              | [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md)                                                 |
+| Где карта документов?                              | [`docs/INDEX.md`](docs/INDEX.md)                                                           |
+| История изменений и старые handoffs                | [`CHANGES.md`](CHANGES.md), [`TASKS.md`](TASKS.md), [`docs/archive/`](docs/archive/)       |
+
+При конфликте приоритет такой: **явная команда владельца → актуальный код и GitHub → нормативная документация → архив**. Старые Vercel-only документы не описывают текущий deploy-процесс.
+
+## Стек
+
+Frontend: React, Vite, Tailwind. Backend: отдельный FastAPI/SQLAlchemy/aiogram репозиторий, PostgreSQL и Render. Firebase Hosting не проксирует API: браузер обращается к Render напрямую, поэтому CORS backend должен разрешать Firebase Production и Cloudflare Demo origins.
 
 ## Дизайн
 
-Палитра и радиусы меняются чаще, чем стоит дублировать их здесь. Актуальные значения находятся в коде и [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md).
-
-Коротко: монохром + золото как единственный акцент, актуальный пользовательский шрифт — Onest (решение UI-DEC-008).
-Символ — лабиринт, заполняющийся золотом по мере прохождения Пути.
+Актуальные токены, типографика и UI-правила находятся в [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md). Не дублируйте численные значения в новых документах.

@@ -1,7 +1,8 @@
 ---
-status: historical
-last_verified: 2026-09-11
+status: current
+last_verified: 2026-09-16
 ---
+
 # Mentalix — правило единой документации
 
 > **Один вопрос — один источник истины.** Стартовый маршрут, границы и минимальный контекст определены в [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md). Этот guide объясняет, где живёт каждый вид информации и когда его разрешено обновлять.
@@ -10,29 +11,29 @@ last_verified: 2026-09-11
 
 Во всех актуальных документах Mentalix используются только следующие пять терминов:
 
-| Термин | Каноническое определение |
-|---|---|
-| **Production** | `main` → Vercel project `mentalix` → <https://mentalix.vercel.app>. |
-| **Owner QA Preview** | Vercel project `mentalix-preview` → <https://mentalix-preview.vercel.app>. |
-| **UI Lab** | Встроенные экспериментальные маршруты в репозитории, не Production. |
-| **Local Preview** | `vite preview` после production build. |
-| **Branch Deployment** | Временный Vercel deployment под конкретный branch/commit, не канонический Owner QA Preview. |
+| Термин              | Каноническое определение                                                              |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| **Production**      | `main` → Firebase Hosting Live channel → <https://mentalix-production.web.app>.       |
+| **Demo Preview**    | Cloudflare Pages project `mentalix-owner-qa` → <https://mentalix-owner-qa.pages.dev>. |
+| **UI Lab**          | Встроенные экспериментальные маршруты в репозитории, не Production.                   |
+| **Local Preview**   | `vite preview` после production build.                                                |
+| **Vercel fallback** | Старое отключённое окружение; не использовать для новых deploy/checks.                |
 
 Не используйте `preview` как самостоятельное имя окружения: всегда выбирайте точный термин из этой таблицы. Документ с актуальными SHA и проверенными release/production-фактами — [`PROJECT_STATE.md`](../PROJECT_STATE.md); исходный freeze — [`BASELINE_SNAPSHOT.md`](../BASELINE_SNAPSHOT.md).
 
 ## Карта документации
 
-| Вопрос | Канонический источник | Не использовать как замену |
-|---|---|---|
-| Как начать работу и какой минимум читать? | [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md) | Длинные исторические документы и handoff целиком |
-| Какие правила обязательны для любого ИИ? | [`AGENTS.md`](../AGENTS.md) | Инструкции конкретной модели |
-| Что подтверждено сейчас в release/production? | [`PROJECT_STATE.md`](../PROJECT_STATE.md) + свежий GitHub | Старый PR, handoff или зелёная сборка без runtime-проверки |
-| Какие задачи активны и какой следующий gate? | [`TASK_INDEX.md`](TASK_INDEX.md) | `TASKS.md`, `CHANGES.md` и чат |
-| Что является scope одной конкретной работы? | Связанный GitHub Issue и Pull Request | Параллельный документ или комментарий в чате |
-| Почему принято продуктовое решение? | [`PRODUCT.md`](../PRODUCT.md) | Issue с исторической дискуссией |
-| Как устроен frontend и backend boundary? | [`ARCHITECTURE.md`](../ARCHITECTURE.md) | Предположение по frontend-коду |
-| Какие UI-токены обязательны? | [`DESIGN_SYSTEM.md`](../DESIGN_SYSTEM.md) | Копия численных значений в другом документе |
-| Почему изменилось что-то в прошлом? | `CHANGES.md`, `TASKS.md`, `docs/archive/`, `docs/handoffs/` | Текущий backlog или production snapshot |
+| Вопрос                                        | Канонический источник                                       | Не использовать как замену                                 |
+| --------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------- |
+| Как начать работу и какой минимум читать?     | [`PROJECT_BRIEF.md`](../PROJECT_BRIEF.md)                   | Длинные исторические документы и handoff целиком           |
+| Какие правила обязательны для любого ИИ?      | [`AGENTS.md`](../AGENTS.md)                                 | Инструкции конкретной модели                               |
+| Что подтверждено сейчас в release/production? | [`PROJECT_STATE.md`](../PROJECT_STATE.md) + свежий GitHub   | Старый PR, handoff или зелёная сборка без runtime-проверки |
+| Какие задачи активны и какой следующий gate?  | [`TASK_INDEX.md`](TASK_INDEX.md)                            | `TASKS.md`, `CHANGES.md` и чат                             |
+| Что является scope одной конкретной работы?   | Связанный GitHub Issue и Pull Request                       | Параллельный документ или комментарий в чате               |
+| Почему принято продуктовое решение?           | [`PRODUCT.md`](../PRODUCT.md)                               | Issue с исторической дискуссией                            |
+| Как устроен frontend и backend boundary?      | [`ARCHITECTURE.md`](../ARCHITECTURE.md)                     | Предположение по frontend-коду                             |
+| Какие UI-токены обязательны?                  | [`DESIGN_SYSTEM.md`](../DESIGN_SYSTEM.md)                   | Копия численных значений в другом документе                |
+| Почему изменилось что-то в прошлом?           | `CHANGES.md`, `TASKS.md`, `docs/archive/`, `docs/handoffs/` | Текущий backlog или production snapshot                    |
 
 При конфликте соблюдайте порядок: явная команда владельца → актуальный код и GitHub → профильный нормативный документ → архив. Никогда не выбирайте версию молча: укажите расхождение и запросите решение.
 
@@ -42,25 +43,25 @@ GitHub Issue — вход для новой работы; он фиксируе�
 
 `TASKS.md`, `CHANGES.md`, `docs/handoffs/` и `docs/archive/` — **исторический слой**. Их не нужно обновлять для каждой малой задачи и не нужно читать при каждом старте. Старые записи сохраняются как доказательство контекста, но не переопределяют GitHub, `TASK_INDEX.md` или `PROJECT_STATE.md`.
 
-| Статус | Где обновить | Что должно быть в записи |
-|---|---|---|
-| Новая идея / проблема | GitHub Issue | Наблюдаемая проблема, ценность, критерий результата |
-| Планируется / выполняется | `TASK_INDEX.md` + Issue/PR | Статус, ссылка, владелец, следующий gate |
-| Проверяется | Pull Request | Малый scope, checks, ограничения, evidence, rollback |
-| Смёржена | Pull Request + `TASK_INDEX.md` | Merge commit и итоговый статус |
-| Меняет подтверждённый release/production факт | `PROJECT_STATE.md` | Дата, Git SHA, deployment/runtime evidence, blockers |
-| Нужна запись в истории | `CHANGES.md` или `docs/handoffs/` | Ссылка на Issue/PR; без дублирования технических деталей |
+| Статус                                        | Где обновить                      | Что должно быть в записи                                 |
+| --------------------------------------------- | --------------------------------- | -------------------------------------------------------- |
+| Новая идея / проблема                         | GitHub Issue                      | Наблюдаемая проблема, ценность, критерий результата      |
+| Планируется / выполняется                     | `TASK_INDEX.md` + Issue/PR        | Статус, ссылка, владелец, следующий gate                 |
+| Проверяется                                   | Pull Request                      | Малый scope, checks, ограничения, evidence, rollback     |
+| Смёржена                                      | Pull Request + `TASK_INDEX.md`    | Merge commit и итоговый статус                           |
+| Меняет подтверждённый release/production факт | `PROJECT_STATE.md`                | Дата, Git SHA, deployment/runtime evidence, blockers     |
+| Нужна запись в истории                        | `CHANGES.md` или `docs/handoffs/` | Ссылка на Issue/PR; без дублирования технических деталей |
 
 Жизненный цикл: `Issue → ready → in progress → PR → checks passed → merged → verified`. Статусы `blocked`, `needs-owner`, `manual-gate` и `backend-dependent` никогда не превращаются в `ready` автоматически.
 
 ## Автономность и gates
 
-| Категория | Можно выполнить без нового решения? | Пример |
-|---|---|---|
-| `autonomous` | Да, если scope уже принят и diff минимален | Исправить ссылку, maintenance, изолированный regression test |
-| `needs-owner` | Нет | Новая функция, navigation, AI-тональность, изменение бренда |
-| `manual-gate` | Код можно подготовить, но закрытие требует владельца | Telegram/iPhone, keyboard, safe areas |
-| `backend-dependent` | Нет без подтверждённого приватного контракта | API, auth, события, миграции, данные |
+| Категория           | Можно выполнить без нового решения?                  | Пример                                                       |
+| ------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| `autonomous`        | Да, если scope уже принят и diff минимален           | Исправить ссылку, maintenance, изолированный regression test |
+| `needs-owner`       | Нет                                                  | Новая функция, navigation, AI-тональность, изменение бренда  |
+| `manual-gate`       | Код можно подготовить, но закрытие требует владельца | Telegram/iPhone, keyboard, safe areas                        |
+| `backend-dependent` | Нет без подтверждённого приватного контракта         | API, auth, события, миграции, данные                         |
 
 Каждая существенная сессия заканчивается коротким handoff: что изменилось, где это находится, что проверено, что не проверено и какой следующий decision gate.
 
