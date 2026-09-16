@@ -928,7 +928,7 @@ export default function App() {
   if (!user && platformName === 'web') {
     return (
       <div
-        className="
+        className="mx-web-auth-shell
           min-h-screen
           bg-emerald-deep
           text-cream

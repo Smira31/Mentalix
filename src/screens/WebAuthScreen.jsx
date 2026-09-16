@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { api } from '../lib/api'
 import { platform } from '../platform'
+import './WebAuthScreen.css'
 
 function TelegramLogin({ onSuccess, onError }) {
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME
@@ -94,11 +95,11 @@ export default function WebAuthScreen({ onAuthed }) {
       className="w-full max-w-md px-5 flex flex-col items-center pt-16 pb-10"
       aria-labelledby="web-auth-title"
     >
-      <div
-        className="w-14 h-14 rounded-full border border-gold flex items-center justify-center mb-6"
-        aria-hidden="true"
-      >
-        <span className="font-display text-[18px] text-gold">M</span>
+      <div className="mx-web-auth-mark" aria-hidden="true">
+        <svg viewBox="0 0 72 72">
+          <path d="M17 54V18l19 19 19-19v36" />
+          <path d="M26 54V35l10 10 10-10v19" />
+        </svg>
       </div>
       <h1 id="web-auth-title" className="font-display text-[26px] text-cream mb-2 text-center">
         Вход в Mentalix
@@ -110,7 +111,7 @@ export default function WebAuthScreen({ onAuthed }) {
       </p>
 
       <section
-        className="w-full rounded-2xl border border-gold/30 bg-gold/[0.06] px-4 py-5 mb-4"
+        className="mx-web-auth-card w-full rounded-2xl border border-gold/30 bg-gold/[0.06] px-4 py-5 mb-4"
         aria-labelledby="email-auth-title"
       >
         <h2 id="email-auth-title" className="font-semibold text-cream text-center mb-4">
@@ -165,7 +166,7 @@ export default function WebAuthScreen({ onAuthed }) {
       </section>
 
       <section
-        className="w-full rounded-2xl border border-cream/10 bg-cream/[0.04] px-4 py-5"
+        className="mx-web-auth-card mx-web-auth-card--secondary w-full rounded-2xl border border-cream/10 bg-cream/[0.04] px-4 py-5"
         aria-labelledby="telegram-auth-title"
       >
         <h2 id="telegram-auth-title" className="font-semibold text-cream text-center mb-4">
