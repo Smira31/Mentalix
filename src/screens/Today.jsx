@@ -22,7 +22,6 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
-import { isPreviewDemoMode } from '../lib/demoMode'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -173,6 +172,7 @@ export default function Today({
   previewFixture = null,
   previewState = null,
 }) {
+  const showReferenceWelcome = true
   const [initialTodaySnapshot] = useState(
     () => previewFixture || (user ? peekTodaySnapshot(user.id) : null)
   )
@@ -559,7 +559,7 @@ export default function Today({
   const heroCheckinContent = (
     <>
       <div className="mx-type-meta text-muted mb-2">
-        {isPreviewDemoMode()
+        {showReferenceWelcome
           ? 'Ежедневный чек-ин'
           : todayState === 'reviewPending'
             ? 'Анализ дня'
@@ -567,7 +567,7 @@ export default function Today({
       </div>
 
       <h2 className="font-display mx-type-hero text-cream">
-        {isPreviewDemoMode()
+        {showReferenceWelcome
           ? 'Проверь себя.'
           : todayState === 'reviewPending'
             ? 'Разобрать день?'
@@ -575,7 +575,7 @@ export default function Today({
       </h2>
 
       <p className="mx-type-body text-muted mt-2">
-        {isPreviewDemoMode()
+        {showReferenceWelcome
           ? ''
           : todayState === 'reviewPending'
             ? 'Уроки и то, чем стоит гордиться'
@@ -607,7 +607,7 @@ export default function Today({
         }}
         className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
-        {isPreviewDemoMode()
+        {showReferenceWelcome
           ? 'Начать'
           : todayState === 'reviewPending'
             ? 'Разобрать день'
@@ -733,7 +733,7 @@ export default function Today({
   return (
     <div className="mx-screen-shell">
       <h1 className="sr-only">Сегодня</h1>
-      {isPreviewDemoMode() && (
+      {showReferenceWelcome && (
         <DemoTodayHeader onOpenSettings={onOpenSettings} onOpenSeries={onOpenSeries} />
       )}
       <WeekStrip />
@@ -776,7 +776,7 @@ export default function Today({
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
-      {isPreviewDemoMode() && (
+      {showReferenceWelcome && (
         <div className="w-full mt-3">
           <button
             type="button"

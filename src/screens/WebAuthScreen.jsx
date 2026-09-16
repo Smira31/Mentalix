@@ -184,14 +184,17 @@ export default function WebAuthScreen({ onAuthed }) {
         )}
       </section>
 
-      <section className="mx-web-auth-telegram-card" aria-labelledby="telegram-auth-title">
-        <h2 id="telegram-auth-title">Или через Telegram</h2>
-        <TelegramLogin onSuccess={onAuthed} onError={handleTelegramError} />
-      </section>
+      {!directWebVisit && (
+        <section className="mx-web-auth-telegram-card" aria-labelledby="telegram-auth-title">
+          <h2 id="telegram-auth-title">Или через Telegram</h2>
+          <TelegramLogin onSuccess={onAuthed} onError={handleTelegramError} />
+        </section>
+      )}
 
       {directWebVisit && (
         <p className="mx-web-auth-hint">
-          Открой Mentalix как приложение на iPhone и войди удобным способом.
+          В Safari доступен безопасный вход по email. Telegram-кнопка работает только внутри
+          Telegram.
         </p>
       )}
       {notice && (
