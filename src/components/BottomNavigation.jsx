@@ -69,6 +69,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
 
         pointer-events-none
         ${demoMode ? 'mx-demo-bottom-nav' : ''}
+        ${demoMode && collapsed ? 'mx-demo-bottom-nav--collapsed' : ''}
       `}
       style={{
         left: 'max(20px, var(--app-safe-left))',

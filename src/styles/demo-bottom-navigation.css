@@ -14,6 +14,12 @@
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.42) !important;
 }
 
+.mx-demo-bottom-nav.mx-demo-bottom-nav--collapsed > div {
+  width: var(--bottom-nav-collapsed-size) !important;
+  max-width: var(--bottom-nav-collapsed-size) !important;
+  height: var(--bottom-nav-collapsed-size) !important;
+}
+
 .mx-demo-bottom-nav > div nav {
   padding-inline: 6px;
 }
