@@ -1,8 +1,15 @@
 .mx-demo-subscription-offer {
-  width: 100%;
-  max-width: 390px;
-  min-height: calc(100dvh - var(--app-safe-top) - var(--app-safe-bottom));
-  padding: max(8px, var(--app-safe-top)) 16px calc(18px + var(--app-safe-bottom));
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(8px, var(--app-safe-top)) max(16px, var(--app-safe-left))
+    calc(18px + var(--app-safe-bottom)) max(16px, var(--app-safe-right));
   background: #0d0d0d;
   color: #f2f2f2;
 }
