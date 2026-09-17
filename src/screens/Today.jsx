@@ -559,28 +559,16 @@ export default function Today({
   const heroCheckinContent = (
     <>
       <div className="mx-type-meta text-muted mb-2">
-        {isPreviewDemoMode()
-          ? 'Ежедневный чек-ин'
-          : todayState === 'reviewPending'
-            ? 'Анализ дня'
-            : 'Идея дня'}
+        {todayState === 'reviewPending' ? 'Анализ дня' : 'Ежедневный чек-ин'}
       </div>
 
       <h2 className="font-display mx-type-hero text-cream">
-        {isPreviewDemoMode()
-          ? 'Проверь себя.'
-          : todayState === 'reviewPending'
-            ? 'Разобрать день?'
-            : 'Как ты?'}
+        {todayState === 'reviewPending' ? 'Разобрать день?' : 'Сверься с собой.'}
       </h2>
 
-      <p className="mx-type-body text-muted mt-2">
-        {isPreviewDemoMode()
-          ? ''
-          : todayState === 'reviewPending'
-            ? 'Уроки и то, чем стоит гордиться'
-            : 'Короткая утренняя настройка'}
-      </p>
+      {todayState === 'reviewPending' && (
+        <p className="mx-type-body text-muted mt-2">Уроки и то, чем стоит гордиться</p>
+      )}
 
       {todayState === 'reviewPending' && (
         <div className="w-full max-w-sm mx-auto mt-5 space-y-2 text-left">
@@ -607,14 +595,9 @@ export default function Today({
         }}
         className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
       >
-        {isPreviewDemoMode()
-          ? 'Начать'
-          : todayState === 'reviewPending'
-            ? 'Разобрать день'
-            : 'Пройти чек-ин'}
+        {todayState === 'reviewPending' ? 'Разобрать день' : 'Начать'}
       </button>
 
-      {next && <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>}
     </>
   )
 
@@ -758,6 +741,7 @@ export default function Today({
       <div
         className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
         data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
+        data-hero-kind={checkinAsHero ? 'checkin' : 'default'}
       >
         {heroPresentationState !== 'allDone' &&
           heroPresentationState !== 'dayClosed' &&
@@ -775,6 +759,10 @@ export default function Today({
 
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
+
+      {checkinAsHero && next && (
+        <p className="mx-today-next-action mx-type-meta text-muted">Следующее действие: {next.title}</p>
+      )}
 
       {isPreviewDemoMode() && (
         <div className="w-full mt-3">
