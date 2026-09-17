@@ -178,6 +178,19 @@ export default function JournalTextarea({
   const [formatOpen, setFormatOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const viewportGeometry = useVisualViewportGeometry()
+  useEffect(() => {
+    if (!autoFocus || !editorRef.current) return undefined
+
+    const focusEditor = () => {
+      editorRef.current?.focus({ preventScroll: true })
+    }
+    const frame = window.requestAnimationFrame(focusEditor)
+    const retry = window.setTimeout(focusEditor, 80)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(retry)
+    }
+  }, [autoFocus])
   const keyboardOpen =
     guidedFlow &&
     typeof window !== 'undefined' &&

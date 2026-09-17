@@ -150,14 +150,16 @@ function DemoCheckInFlow({ user, onDone }) {
             </button>
           )}
         </div>
-        <button
-          type="button"
-          aria-label="Закрыть"
-          onClick={onDone}
-          className="mx-demo-checkin__icon"
-        >
-          <X size={18} />
-        </button>
+        {step !== 3 && (
+          <button
+            type="button"
+            aria-label="Закрыть"
+            onClick={onDone}
+            className="mx-demo-checkin__icon"
+          >
+            <X size={18} />
+          </button>
+        )}
       </header>
 
       <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
