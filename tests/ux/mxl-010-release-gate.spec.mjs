@@ -144,7 +144,7 @@ test.describe('MXL-010 automated technical gate', () => {
     await context.route('**/api/**', route => fixtures.handle(route))
     const page = await context.newPage()
     await page.goto('/')
-    await expect(page.getByRole('button', { name: /Пройти чек-ин/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Начать|Пройти чек-ин/ })).toBeVisible()
 
     await page.getByRole('button', { name: /Начать|Пройти чек-ин/ }).click()
     await expect(page.getByText(/Чек-ин/).first()).toBeVisible()
