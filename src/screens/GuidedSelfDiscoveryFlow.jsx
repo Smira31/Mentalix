@@ -306,7 +306,6 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
               stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить'
             }
             submitDisabled={!answered(value)}
-            keyboardDockMode="contained"
             className="guided-self-discovery__writing min-h-0 flex-1"
           />
         </>

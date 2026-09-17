@@ -7,7 +7,7 @@
  */
 
 .mx-today-primary-card {
-  min-height: 498px;
+  min-height: 452px;
   padding: 36px 24px 42px;
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: var(--mx-radius-hero);
@@ -36,44 +36,6 @@
 .mx-today-primary-card .mx-today-hero-art {
   min-height: 178px;
   margin-bottom: 8px;
-}
-
-.mx-today-primary-card[data-hero-kind='checkin'] {
-  min-height: 498px;
-  padding: 32px 24px 38px;
-}
-
-.mx-today-primary-card[data-hero-kind='checkin'] .mx-today-hero-art {
-  width: 184px;
-  height: 106px;
-  min-height: 106px;
-  margin: 0 auto 64px;
-  display: grid;
-  place-items: center;
-}
-
-.mx-today-primary-card[data-hero-kind='checkin'] .mx-today-hero-art-glyph {
-  width: 184px;
-  height: 106px;
-}
-
-.mx-today-primary-card[data-hero-kind='checkin'] .mx-type-meta {
-  line-height: 13px;
-}
-
-.mx-today-primary-card[data-hero-kind='checkin'] .mx-type-hero {
-  margin: 0;
-  font-size: 28px;
-  line-height: 31.4px;
-}
-
-.mx-today-primary-card[data-hero-kind='checkin'] .cta-pill {
-  margin-top: 57px;
-}
-
-.mx-today-next-action {
-  margin: 14px 20px 0;
-  text-align: center;
 }
 
 .mx-today-primary-card .cta-pill {
@@ -163,27 +125,6 @@
   .mx-today-primary-card .mx-today-hero-art {
     min-height: 86px;
     margin-bottom: 0;
-  }
-
-  .mx-today-primary-card[data-hero-kind='checkin'] {
-    min-height: 270px;
-    padding: 22px 20px 24px;
-  }
-
-  .mx-today-primary-card[data-hero-kind='checkin'] .mx-today-hero-art {
-    width: 120px;
-    height: 70px;
-    min-height: 70px;
-    margin-bottom: 18px;
-  }
-
-  .mx-today-primary-card[data-hero-kind='checkin'] .mx-today-hero-art-glyph {
-    width: 120px;
-    height: 70px;
-  }
-
-  .mx-today-primary-card[data-hero-kind='checkin'] .cta-pill {
-    margin-top: 22px;
   }
 
   .mx-today-primary-card .mx-today-hero-art .mx-today-hero-art-glyph {

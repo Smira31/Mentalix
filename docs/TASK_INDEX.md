@@ -9,22 +9,13 @@ last_verified: 2026-09-16
 
 ## Каноническая очередь
 
-| Порядок | Трек                                                                                                | Состояние                    | Следующий gate                                                                        |
-| ------: | --------------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
-|       1 | [Issue #623](https://github.com/Smira31/Mentalix/issues/623) — Today Hero pixel contract            | Активная визуальная задача   | Сверить реализацию с видео-референсом и провести owner Telegram/iPhone gate           |
-|       2 | [Issue #620](https://github.com/Smira31/Mentalix/issues/620) — Daily Check-In + Practices contract  | Активная reference-задача    | Зафиксировать измеримый контракт и границы реализации до изменения Production         |
-|       3 | [Issue #618](https://github.com/Smira31/Mentalix/issues/618) — Demo Preview по PNG-референсам       | Активная Demo Preview задача | Подготовить exact-SHA Cloudflare Demo и получить owner Telegram/iPhone PASS             |
-|       4 | [Issue #615](https://github.com/Smira31/Mentalix/issues/615) — guest onboarding и deferred web auth | Активная продуктовая задача  | Проверить scope Issue, auth-сценарии и обязательные web/Telegram gates                 |
-|       5 | [Issue #612](https://github.com/Smira31/Mentalix/issues/612) — мониторинг Progress                  | Post-release наблюдение      | Записать evidence; закрывать только по отдельному решению владельца                     |
-
-## Операционные gates
-
-Эти карточки не являются новыми продуктовым backlog-треками, но должны оставаться видимыми рядом с очередью, пока не закрыты:
-
-| Issue | Назначение | Следующий gate |
-| ---: | --- | --- |
-| [#631](https://github.com/Smira31/Mentalix/issues/631) | Keyboard и нижний CTA в Guided Writing | Owner iPhone/Telegram QA для PR #642 |
-| [#644](https://github.com/Smira31/Mentalix/issues/644) | Очистка неиспользуемых GitHub environments | Проверка владельцем старых production/preview secrets и deployments |
+| Порядок | Трек                                                                                                | Состояние                    | Следующий gate                                                                |
+| ------: | --------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------- |
+|       1 | [Issue #623](https://github.com/Smira31/Mentalix/issues/623) — Today Hero pixel contract            | Активная визуальная задача   | Сверить реализацию с видео-референсом и провести owner Telegram/iPhone gate   |
+|       2 | [Issue #620](https://github.com/Smira31/Mentalix/issues/620) — Daily Check-In + Practices contract  | Активная reference-задача    | Зафиксировать измеримый контракт и границы реализации до изменения Production |
+|       3 | [Issue #618](https://github.com/Smira31/Mentalix/issues/618) — Demo Preview по PNG-референсам       | Активная Demo Preview задача | Подготовить exact-SHA Cloudflare Demo и получить owner Telegram/iPhone PASS   |
+|       4 | [Issue #615](https://github.com/Smira31/Mentalix/issues/615) — guest onboarding и deferred web auth | Активная продуктовая задача  | Проверить scope Issue, auth-сценарии и обязательные web/Telegram gates        |
+|       5 | [Issue #612](https://github.com/Smira31/Mentalix/issues/612) — мониторинг Progress                  | Post-release наблюдение      | Записать evidence; закрывать только по отдельному решению владельца           |
 
 ## Отложено
 
@@ -49,13 +40,13 @@ Dialog role flow по Issue #515 выполнен и опубликован из
 
 ## Product decision register
 
-| Тема             | Решение                                                       |
-| ---------------- | ------------------------------------------------------------- |
-| Navigation       | Пять основных разделов; Today — главный вход.                 |
-| Dialog           | Role flow выполнен; новые изменения только через новую Issue. |
+| Тема             | Решение                                                              |
+| ---------------- | -------------------------------------------------------------------- |
+| Navigation       | Пять основных разделов; Today — главный вход.                        |
+| Dialog           | Role flow выполнен; новые изменения только через новую Issue.        |
 | Product priority | Очередь определяется открытыми Issues #623, #620, #618, #615 и #612. |
-| Production       | Публикация только из защищённого `main`.                      |
-| Manual gate      | iPhone/Telegram проверка обязательна перед product release.   |
+| Production       | Публикация только из защищённого `main`.                             |
+| Manual gate      | iPhone/Telegram проверка обязательна перед product release.          |
 
 ## References
 
