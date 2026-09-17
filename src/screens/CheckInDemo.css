@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: space-between;
   flex: 0 0 auto;
-  padding: max(12px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 12px;
+  padding: max(4px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 8px;
 }
 
 .mx-demo-checkin__header-left {
@@ -371,6 +371,10 @@
   background: #101010;
   color: #aaa;
   font-size: 16px;
+}
+.mx-demo-checkin__feedback button > svg {
+  width: 24px;
+  height: 24px;
 }
 .mx-demo-checkin__feedback button.is-selected {
   border-color: #f4f4f4;
