@@ -11,11 +11,33 @@
 }
 
 .mx-demo-checkin__header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex: 0 0 auto;
   padding: max(12px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 12px;
+}
+
+.mx-demo-checkin__progress {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.mx-demo-checkin__progress-dots {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mx-demo-checkin__progress-dots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #343434;
+}
+.mx-demo-checkin__progress-dots span.is-active {
+  background: #f4f4f4;
 }
 
 .mx-demo-checkin__header-left {
@@ -274,6 +296,14 @@
   max-width: 650px;
   font-size: clamp(24px, 5.6vw, 36px);
 }
+.mx-demo-checkin__editor-progress {
+  display: block;
+  margin: 0 0 18px;
+  color: #888;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
 .mx-demo-checkin__hint {
   margin: 16px 0 0;
   color: #777;
@@ -331,6 +361,21 @@
 .mx-demo-checkin__scene--complete h1 {
   font-size: clamp(27px, 6.4vw, 42px);
 }
+.mx-demo-checkin__bird {
+  display: block;
+  width: 118px;
+  height: 136px;
+  margin: 0 auto 10px;
+  object-fit: contain;
+}
+.mx-demo-checkin__complete-eyebrow {
+  margin: 0 auto 16px !important;
+  color: #888 !important;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
 .mx-demo-checkin__tags {
   display: inline-flex;
   align-items: center;
@@ -348,21 +393,39 @@
   color: rgb(var(--c-muted));
   line-height: 1.45;
 }
+.mx-demo-checkin__note-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  margin: 28px auto 0;
+  padding: 0 24px;
+  border: 1px solid #383838;
+  border-radius: 999px;
+  color: #eee;
+  font-size: 16px;
+}
+.mx-demo-checkin__feedback-prompt {
+  margin-top: 66px !important;
+  color: rgb(var(--c-text)) !important;
+  font-size: 17px;
+  line-height: 1.35 !important;
+}
 .mx-demo-checkin__feedback {
   display: grid;
   width: 100%;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 30px;
+  margin-top: 28px;
 }
 .mx-demo-checkin__feedback button {
   display: flex;
   width: 100%;
-  height: 114px;
+  height: 146px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 7px;
   padding: 10px 6px;
   border: 1px solid rgb(var(--c-border));
   border-radius: 22px;
@@ -370,10 +433,24 @@
   color: rgb(var(--c-muted));
   font-size: 16px;
 }
+.mx-demo-checkin__feedback button .mx-face {
+  color: rgb(var(--c-muted));
+}
+.mx-demo-checkin__feedback button .mx-face__frame {
+  stroke: currentColor;
+}
 .mx-demo-checkin__feedback button.is-selected {
   border-color: rgb(var(--c-text));
   background: rgb(var(--c-text));
   color: rgb(var(--c-card2));
+}
+.mx-demo-checkin__feedback button.is-selected .mx-face path,
+.mx-demo-checkin__feedback button.is-selected .mx-face circle {
+  stroke: rgb(var(--c-card2)) !important;
+  fill: none !important;
+}
+.mx-demo-checkin__feedback button.is-selected .mx-face circle:not(.mx-face__frame) {
+  fill: rgb(var(--c-card2)) !important;
 }
 .mx-demo-checkin__error {
   color: #d99;

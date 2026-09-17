@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, ChevronLeft, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
+import { Check, ChevronLeft, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -131,6 +131,15 @@ function DemoCheckInFlow({ user, onDone }) {
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
       <header className="mx-demo-checkin__header">
+        {step === 2 && (
+          <div className="mx-demo-checkin__progress" aria-label={`Чек-ин · ${step + 1} из 4`}>
+            <div className="mx-demo-checkin__progress-dots" aria-hidden="true">
+              {Array.from({ length: 4 }, (_, index) => (
+                <span key={index} className={index <= step ? 'is-active' : ''} />
+              ))}
+            </div>
+          </div>
+        )}
         <div
           className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
         >
@@ -207,6 +216,7 @@ function DemoCheckInFlow({ user, onDone }) {
 
         {step === 2 && (
           <section className="mx-demo-checkin__editor-scene">
+            <p className="mx-demo-checkin__editor-progress">ЧЕК-ИН · {step + 1} ИЗ 4</p>
             <h1>Что сегодня вызывает у тебя улыбку?</h1>
             <p className="mx-demo-checkin__hint">Большое или маленькое — назови свою радость.</p>
             <JournalTextarea
@@ -233,21 +243,29 @@ function DemoCheckInFlow({ user, onDone }) {
 
         {step === 3 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-            <h1>Ты завершил ежедневный чек-ин!</h1>
-            <p>Насколько полезным был этот чек-ин сегодня?</p>
+            <img src="/checkin-bird-reference.png" alt="" className="mx-demo-checkin__bird" />
+            <p className="mx-demo-checkin__complete-eyebrow">ЧЕК-ИН ЗАВЕРШЁН</p>
+            <h1>Ты сохранил главное.</h1>
+            <p>Ответы останутся в сегодняшнем цикле. К ним можно вернуться позже.</p>
+            <span className="mx-demo-checkin__note-chip" aria-hidden="true">
+              + Добавить заметку
+            </span>
+            <p className="mx-demo-checkin__feedback-prompt">
+              Эта практика помогла остановиться и заметить важное?
+            </p>
             <div className="mx-demo-checkin__feedback">
               {[
-                ['Нет', ThumbsDown],
-                ['Немного', Hand],
-                ['Да', ThumbsUp],
-              ].map(([item, Icon]) => (
+                ['Нет', 1],
+                ['Немного', 3],
+                ['Да', 5],
+              ].map(([item, level]) => (
                 <button
                   key={item}
                   type="button"
                   className={feedback === item ? 'is-selected' : ''}
                   onClick={() => setFeedback(item)}
                 >
-                  <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
+                  <Face level={level} active={false} size={58} showFrame />
                   {item}
                 </button>
               ))}
