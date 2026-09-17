@@ -100,6 +100,10 @@
   overscroll-behavior: contain;
   padding: 0 22px 12px;
 }
+.mx-demo-checkin__body.is-editor {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
 
 .mx-demo-checkin__scene {
   width: min(100%, 560px);
@@ -268,6 +272,7 @@
   width: 100%;
   min-height: 100%;
   margin-top: 8px;
+  overflow: hidden;
   text-align: left;
 }
 .mx-demo-checkin__editor-scene h1 {
@@ -386,26 +391,26 @@
 }
 .mx-demo-checkin__feedback {
   display: grid;
-  width: calc(100% - 20px);
-  max-width: 420px;
+  width: calc(100% - 36px);
+  max-width: 360px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   margin-top: 18px;
 }
 .mx-demo-checkin__feedback button {
   display: flex;
   width: 100%;
-  height: 96px;
+  height: 150px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 8px 6px;
+  gap: 10px;
+  padding: 10px 6px;
   border: 1px solid rgb(var(--c-border));
-  border-radius: 16px;
+  border-radius: 20px;
   background: rgb(var(--c-card2));
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: 12px;
 }
 .mx-demo-checkin__feedback button .mx-face {
   color: rgb(var(--c-muted));
@@ -414,8 +419,8 @@
   stroke: currentColor;
 }
 .mx-demo-checkin__feedback button > svg {
-  width: 22px;
-  height: 22px;
+  width: 40px;
+  height: 40px;
 }
 .mx-demo-checkin__feedback button.is-selected {
   border-color: rgb(var(--c-text));
