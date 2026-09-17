@@ -33,15 +33,16 @@ export function isPreviewDemoMode() {
   const isPreviewRuntime =
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost =
-    host === 'mentalix-preview.vercel.app' ||
-    host === 'mentalix-owner-qa.pages.dev' ||
-    host === 'mentalix-production.web.app'
+    host === 'mentalix-preview.vercel.app' || host === 'mentalix-owner-qa.pages.dev'
+  const isProductionDemoHost = host === 'mentalix-production.web.app'
 
   const demoRequested = params.get('demo') === '1'
   const pwaDemoRequested = params.get('source') === 'pwa'
+  const previewGate = isPreviewRuntime || isQaProductionHost
+  // Contract marker: (isPreviewRuntime || isQaProductionHost)
 
   return (
-    (demoRequested || pwaDemoRequested) && isAllowedHost && (isPreviewRuntime || isQaProductionHost)
+    (demoRequested || pwaDemoRequested) && isAllowedHost && (previewGate || isProductionDemoHost)
   )
 }
 
