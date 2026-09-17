@@ -96,7 +96,7 @@
   display: flex;
   min-height: 0;
   flex: 1;
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   padding: 0 22px 12px;
 }

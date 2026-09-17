@@ -308,17 +308,6 @@ export default function JournalTextarea({
 
           window.requestAnimationFrame(resetFlowScroll)
           window.setTimeout(resetFlowScroll, 120)
-
-          const revealEditor = () => {
-            if (viewport.height >= window.innerHeight) return
-
-            window.requestAnimationFrame(() => {
-              editorRef.current?.scrollIntoView({ block: 'nearest', behavior: 'auto' })
-            })
-          }
-
-          revealEditor()
-          viewport.addEventListener('resize', revealEditor, { once: true })
         }}
         onPaste={event => {
           event.preventDefault()
