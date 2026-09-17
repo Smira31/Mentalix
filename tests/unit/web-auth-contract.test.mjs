@@ -14,7 +14,14 @@ const adapter = await readFile(new URL('../../src/platform/web.adapter.js', impo
 })
 
 test('web adapter restores server session and sends cookie credentials', () => {
-  assert.match(adapter, /\/api\/auth\/session/)
+  assert.match(adapter, /apiBase.*\/api/)
+  assert.match(adapter, /\/auth\/session/)
   assert.match(adapter, /credentials: 'include'/)
   assert.match(api, /credentials: 'include'/)
+})
+
+test('web auth restore has a finite timeout for standalone Safari', () => {
+  assert.match(adapter, /AbortController/)
+  assert.match(adapter, /setTimeout\(\(\) => controller\.abort\(\), 7000\)/)
+  assert.match(adapter, /signal: controller\.signal/)
 })
