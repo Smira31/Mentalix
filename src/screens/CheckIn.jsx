@@ -233,11 +233,6 @@ function DemoCheckInFlow({ user, onDone }) {
 
         {step === 3 && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-            <img
-              src="/checkin-bird-reference.png"
-              alt="Птица на кольцах планеты"
-              className="mx-demo-checkin__bird"
-            />
             <h1>Ты завершил ежедневный чек-ин!</h1>
             <p>Насколько полезным был этот чек-ин сегодня?</p>
             <div className="mx-demo-checkin__feedback">
@@ -1344,7 +1339,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     getFullscreenPortalTarget()
   )
 }
-
 
 function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
   const previewDemoMode = isPreviewDemoMode()

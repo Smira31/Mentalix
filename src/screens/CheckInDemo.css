@@ -322,20 +322,14 @@
   font-weight: 700;
 }
 .mx-demo-checkin__scene--complete {
-  max-width: 470px;
+  max-width: 560px;
+  gap: 0;
 }
 .mx-demo-checkin__scene--complete > svg {
   margin: 0 auto 12px;
 }
-.mx-demo-checkin__bird {
-  display: block;
-  width: 170px;
-  height: 230px;
-  margin: 0 auto 12px;
-  object-fit: contain;
-}
 .mx-demo-checkin__scene--complete h1 {
-  font-size: clamp(27px, 6vw, 42px);
+  font-size: clamp(27px, 6.4vw, 42px);
 }
 .mx-demo-checkin__tags {
   display: inline-flex;
@@ -349,33 +343,37 @@
   color: #eee;
 }
 .mx-demo-checkin__scene--complete p {
-  color: #999;
+  margin: 18px auto 0;
+  max-width: 420px;
+  color: rgb(var(--c-muted));
+  line-height: 1.45;
 }
 .mx-demo-checkin__feedback {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 14px;
+  margin-top: 30px;
 }
 .mx-demo-checkin__feedback button {
   display: flex;
-  width: 128px;
-  height: 140px;
+  width: 100%;
+  height: 114px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
-  border: 1px solid #333;
+  gap: 8px;
+  padding: 10px 6px;
+  border: 1px solid rgb(var(--c-border));
   border-radius: 22px;
-  background: #101010;
-  color: #aaa;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-muted));
   font-size: 16px;
 }
 .mx-demo-checkin__feedback button.is-selected {
-  border-color: #f4f4f4;
-  background: #f4f4f4;
-  color: #111;
+  border-color: rgb(var(--c-text));
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-card2));
 }
 .mx-demo-checkin__error {
   color: #d99;
