@@ -11,33 +11,11 @@
 }
 
 .mx-demo-checkin__header {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex: 0 0 auto;
-  padding: max(12px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 12px;
-}
-
-.mx-demo-checkin__progress {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.mx-demo-checkin__progress-dots {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.mx-demo-checkin__progress-dots span {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: #343434;
-}
-.mx-demo-checkin__progress-dots span.is-active {
-  background: #f4f4f4;
+  padding: var(--app-safe-top, env(safe-area-inset-top, 0px)) 20px 0;
 }
 
 .mx-demo-checkin__header-left {
@@ -468,15 +446,17 @@
   color: #ddd;
 }
 .mx-demo-checkin .journal-textarea__floating-actions {
-  background: rgb(var(--c-card2));
-  border-color: #2d2d2d;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 .mx-demo-checkin .journal-textarea__floating-actions > button:first-child {
-  background: rgb(var(--c-card2));
+  background: transparent !important;
+  border-color: transparent !important;
 }
 .mx-demo-checkin .journal-textarea__floating-actions > button:nth-child(2),
 .mx-demo-checkin .journal-textarea__floating-actions > button:nth-child(3) {
-  background: rgb(var(--c-card2));
+  background: transparent !important;
+  border-color: transparent !important;
 }
 .mx-demo-checkin .journal-textarea__floating-actions > button:last-child {
   background: #f4f4f4;

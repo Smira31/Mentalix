@@ -131,19 +131,10 @@ function DemoCheckInFlow({ user, onDone }) {
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
       <header className="mx-demo-checkin__header">
-        {step === 2 && (
-          <div className="mx-demo-checkin__progress" aria-label={`Чек-ин · ${step + 1} из 4`}>
-            <div className="mx-demo-checkin__progress-dots" aria-hidden="true">
-              {Array.from({ length: 4 }, (_, index) => (
-                <span key={index} className={index <= step ? 'is-active' : ''} />
-              ))}
-            </div>
-          </div>
-        )}
         <div
           className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
         >
-          {step > 0 && (
+          {step > 0 && step !== 3 && (
             <button
               type="button"
               aria-label="Назад"
