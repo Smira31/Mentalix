@@ -197,11 +197,6 @@
   position: fixed;
   bottom: auto;
 }
-
-.practice-writing-canvas.is-contained-keyboard-dock.is-keyboard-open .practice-writing-canvas__dock {
-  position: fixed;
-  bottom: auto;
-}
 .practice-writing-canvas__format,
 .practice-writing-canvas__submit {
   display: grid;

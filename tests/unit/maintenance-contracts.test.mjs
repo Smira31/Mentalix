@@ -822,7 +822,7 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.match(today, /mx-today-hero-breath/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
   assert.match(today, /mx-today-affirmation-card/)
-  assert.match(todayStyles, /\.mx-today-primary-card\s*\{[\s\S]*min-height:\s*498px/)
+  assert.match(todayStyles, /\.mx-today-primary-card\s*\{[\s\S]*min-height:\s*452px/)
   assert.match(
     todayStyles,
     /\.mx-today-primary-card\[data-complete='true'\][\s\S]*background:\s*rgb\(var\(--c-card\)\)/
