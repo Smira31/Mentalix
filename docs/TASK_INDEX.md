@@ -17,6 +17,15 @@ last_verified: 2026-09-16
 |       4 | [Issue #615](https://github.com/Smira31/Mentalix/issues/615) — guest onboarding и deferred web auth | Активная продуктовая задача  | Проверить scope Issue, auth-сценарии и обязательные web/Telegram gates                 |
 |       5 | [Issue #612](https://github.com/Smira31/Mentalix/issues/612) — мониторинг Progress                  | Post-release наблюдение      | Записать evidence; закрывать только по отдельному решению владельца                     |
 
+## Операционные gates
+
+Эти карточки не являются новыми продуктовым backlog-треками, но должны оставаться видимыми рядом с очередью, пока не закрыты:
+
+| Issue | Назначение | Следующий gate |
+| ---: | --- | --- |
+| [#631](https://github.com/Smira31/Mentalix/issues/631) | Keyboard и нижний CTA в Guided Writing | Owner iPhone/Telegram QA для PR #642 |
+| [#644](https://github.com/Smira31/Mentalix/issues/644) | Очистка неиспользуемых GitHub environments | Проверка владельцем старых production/preview secrets и deployments |
+
 ## Отложено
 
 |                                                  Issue | Причина                                                                   |

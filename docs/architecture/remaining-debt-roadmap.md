@@ -14,19 +14,15 @@ last_verified: 2026-09-11
 
 ### PR #464 — Today cache runtime coverage
 
-Статус: открыт.
+Статус: смёржен в `main`.
 
-Нужно дождаться обязательных GitHub checks и проверить, что runtime-сценарий действительно подтверждает: критичный сбой не превращается в пустой Today, retry делает новый запрос, ошибочный snapshot не используется.
-
-Definition of Done: required checks зелёные, diff ограничен тестом, PR просмотрен, merge выполнен владельцем или отдельно подтверждённым admin-merge.
+PR закрыт: runtime-поведение кэша Today покрыто тестом обновления после критической ошибки.
 
 ### PR #465 — Profile load error state
 
-Статус: открыт.
+Статус: смёржен в `main`.
 
-PR исправляет реальный UX/architecture defect: ошибка основного profile-запроса раньше только логировалась и могла выглядеть как пустая история. Нужно дождаться checks и отдельно пройти ручной Profile/Settings gate на Telegram/iPhone.
-
-Definition of Done: required checks зелёные, Profile error/retry не меняет Settings и navigation, ручной gate выполнен или явно отмечен blocked.
+PR закрыт: ошибка загрузки Profile больше не маскируется пустой историей; добавлено состояние ошибки и повторная загрузка.
 
 ## Этап 1 — завершить MXL-UI-AUDIT-001
 
@@ -119,11 +115,10 @@ Definition of Done: один экран, один query hook, отсутстви
 
 ## Приоритет на ближайший рабочий цикл
 
-1. Закрыть #464 и #465 по checks и ручным gates.
-2. Закрыть MXL-UI-AUDIT-001 evidence.
-3. Проверить Practices runtime states.
-4. Взять один независимый query-layer или API-consumer slice.
-5. Только после этого начинать navigation/App refactor.
+1. Закрыть MXL-UI-AUDIT-001 evidence.
+2. Проверить Practices runtime states.
+3. Взять один независимый query-layer или API-consumer slice.
+4. Только после этого начинать navigation/App refactor.
 
 ## Общий Definition of Done
 
