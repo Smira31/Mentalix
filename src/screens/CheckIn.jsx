@@ -75,6 +75,11 @@ function DemoCheckInFlow({ user, onDone }) {
   const { style: viewportStyle } = useFullscreenSurface()
   const goNext = () => setStep(current => Math.min(3, current + 1))
 
+  useEffect(() => {
+    const bird = new Image()
+    bird.src = '/checkin-bird-reference.png'
+  }, [])
+
   async function finish() {
     setSaving(true)
     setError('')
@@ -134,7 +139,7 @@ function DemoCheckInFlow({ user, onDone }) {
         <div
           className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
         >
-          {step > 0 && (
+          {step > 0 && step !== 3 && (
             <button
               type="button"
               aria-label="Назад"
@@ -145,14 +150,16 @@ function DemoCheckInFlow({ user, onDone }) {
             </button>
           )}
         </div>
-        <button
-          type="button"
-          aria-label="Закрыть"
-          onClick={onDone}
-          className="mx-demo-checkin__icon"
-        >
-          <X size={18} />
-        </button>
+        {step !== 3 && (
+          <button
+            type="button"
+            aria-label="Закрыть"
+            onClick={onDone}
+            className="mx-demo-checkin__icon"
+          >
+            <X size={18} />
+          </button>
+        )}
       </header>
 
       <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
@@ -235,11 +242,19 @@ function DemoCheckInFlow({ user, onDone }) {
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
             <img
               src="/checkin-bird-reference.png"
-              alt="Птица на кольцах планеты"
+              alt=""
               className="mx-demo-checkin__bird"
+              fetchpriority="high"
             />
-            <h1>Ты завершил ежедневный чек-ин!</h1>
-            <p>Насколько полезным был этот чек-ин сегодня?</p>
+            <p className="mx-demo-checkin__complete-eyebrow">ЧЕК-ИН ЗАВЕРШЁН</p>
+            <h1>Ты сохранил главное.</h1>
+            <p>Ответы останутся в сегодняшнем цикле. К ним можно вернуться позже.</p>
+            <span className="mx-demo-checkin__note-chip" aria-hidden="true">
+              + Добавить заметку
+            </span>
+            <p className="mx-demo-checkin__feedback-prompt">
+              Эта практика помогла остановиться и заметить важное?
+            </p>
             <div className="mx-demo-checkin__feedback">
               {[
                 ['Нет', ThumbsDown],
@@ -1344,7 +1359,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     getFullscreenPortalTarget()
   )
 }
-
 
 function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
   const previewDemoMode = isPreviewDemoMode()

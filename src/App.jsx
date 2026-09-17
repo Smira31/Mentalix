@@ -580,10 +580,10 @@ export default function App() {
   useEffect(() => {
     if (!deviceFrameMode) return undefined
     const updateScale = () => {
-      const reservedHeight = previewDemoMode && demoToolbar ? 118 : 42
-      setDemoScale(
-        Math.min(1, Math.max(0.62, (window.innerHeight - reservedHeight) / demoViewport.height))
-      )
+      // Единый базовый масштаб во всех web-режимах. Если окно ПК ниже
+      // iPhone viewport, фрейм может выходить за высоту окна, но интерфейс
+      // не должен становиться мельче только из-за высоты окна.
+      setDemoScale(1)
     }
     updateScale()
     window.addEventListener('resize', updateScale)
