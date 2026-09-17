@@ -1452,13 +1452,9 @@ button {
   }
 }
 
-/* iOS Home Screen / standalone: keep the app chrome below the native status bar. */
+/* iOS Home Screen / standalone: safe-area is already included by App. */
 @media (display-mode: standalone) and (max-width: 700px) {
   .mx-demo-telegram-chrome {
     top: calc(env(safe-area-inset-top, 0px) + 10px);
-  }
-
-  .mx-preview-stage > .h-screen {
-    padding-top: calc(56px + env(safe-area-inset-top, 0px)) !important;
   }
 }
