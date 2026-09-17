@@ -27,12 +27,15 @@ export function isPreviewDemoMode() {
     host === '127.0.0.1' ||
     host.endsWith('.vercel.app') ||
     host === 'mentalix-owner-qa.pages.dev' ||
+    host === 'mentalix-production.web.app' ||
     host.endsWith('.manus.computer') ||
     host.endsWith('.trycloudflare.com')
   const isPreviewRuntime =
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost =
-    host === 'mentalix-preview.vercel.app' || host === 'mentalix-owner-qa.pages.dev'
+    host === 'mentalix-preview.vercel.app' ||
+    host === 'mentalix-owner-qa.pages.dev' ||
+    host === 'mentalix-production.web.app'
 
   const demoRequested = params.get('demo') === '1'
   const pwaDemoRequested = params.get('source') === 'pwa'
