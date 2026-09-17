@@ -1458,6 +1458,10 @@ button {
     top: calc(env(safe-area-inset-top, 0px) + 10px);
   }
 
+  .mx-demo-checkin__scene--complete {
+    transform: translateY(-40px);
+  }
+
   .mx-preview-stage > .h-screen {
     padding-top: calc(56px + env(safe-area-inset-top, 0px)) !important;
   }
