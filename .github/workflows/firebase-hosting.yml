@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  VITE_API_BASE_URL: https://mentalix-bot.onrender.com/api
+  VITE_API_BASE_URL: /api
 
 jobs:
   build-and-deploy:
