@@ -91,6 +91,8 @@
 }
 
 .mx-practice-flow--self-discovery .guided-self-discovery__writing {
+  min-height: 0;
+  height: 100%;
   padding-top: max(0px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
   padding-right: var(--gsd-inset);
   padding-left: var(--gsd-inset);
