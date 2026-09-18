@@ -249,8 +249,8 @@
   --c-line: 49 43 36;
   --c-line-secondary: 122 108 93;
 
-  /* Нейтральный акцент на светлой бумажной поверхности. */
-  --c-gold: 64 64 64;
+  /* Preview-only warm accent is part of the established light-preview contract. */
+  --c-gold: 157 86 32;
   --c-glyph-secondary: 126 71 66;
 
   --btn-bg: #302a24;
@@ -297,7 +297,7 @@
 /* Иллюстрации сохраняют тёмное окно; UI-акцент внутри остаётся нейтральным. */
 [data-theme='light-preview'] .bg-artbed {
   --c-text: 242 239 233;
-  --c-gold: 220 220 220;
+  --c-gold: 225 166 79;
   --c-line: 232 229 220;
   --c-line-secondary: 128 137 119;
 }

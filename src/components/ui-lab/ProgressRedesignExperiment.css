@@ -426,7 +426,7 @@
 
 .mx-progress-redesign__calendar i[data-filled='true'][data-tone='4'] {
   background: rgb(var(--c-muted));
-  background-image: repeating-linear-gradient(45deg, transparent 0 3px, rgb(var(--c-bg)) 3px 4px);
+  border: 2px dashed rgb(var(--c-text));
 }
 
 .mx-progress-redesign__calendar-card > p {
@@ -550,16 +550,16 @@
 }
 
 .mx-progress-redesign__activities article:nth-child(2) > i > b {
-  background-image: repeating-linear-gradient(135deg, transparent 0 4px, rgb(var(--c-bg)) 4px 5px);
+  border-left: 2px solid rgb(var(--c-bg));
 }
 
 .mx-progress-redesign__activities article:nth-child(3) > i > b {
-  background-image: radial-gradient(rgb(var(--c-bg)) 1px, transparent 1px);
-  background-size: 5px 5px;
+  border-radius: 0;
 }
 
 .mx-progress-redesign__activities article:nth-child(4) > i > b {
-  background-image: repeating-linear-gradient(90deg, transparent 0 5px, rgb(var(--c-bg)) 5px 6px);
+  border-top: 1px solid rgb(var(--c-bg));
+  border-bottom: 1px solid rgb(var(--c-bg));
 }
 
 .mx-progress-redesign--live {
