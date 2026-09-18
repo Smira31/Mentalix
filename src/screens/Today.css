@@ -346,7 +346,7 @@
   height: 40px;
   gap: 6px;
   padding: 0 11px 0 8px;
-  border: 1px solid rgb(var(--c-border));
+  border: 1px solid rgb(var(--c-gold) / 0.42);
   border-radius: 999px;
   background: rgb(var(--c-card));
 }
@@ -354,13 +354,13 @@
 .mx-demo-today-streak svg {
   width: 22px;
   height: 22px;
-  color: rgb(var(--c-text));
+  color: rgb(var(--c-gold));
   fill: none;
   stroke: currentColor;
 }
 
 .mx-demo-today-streak strong {
-  color: inherit;
+  color: rgb(var(--c-gold));
   font-size: 14px;
   font-weight: 700;
 }
