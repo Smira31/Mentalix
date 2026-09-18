@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronDown, Ellipsis, Flame, Settings as SettingsIcon, X } from 'lucide-react'
+import { ChevronDown, Ellipsis, Flame, UserRound, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -1241,7 +1241,7 @@ export default function App() {
                   {greeting()}
                 </h1>
 
-                {/* Settings */}
+                {/* Profile */}
 
                 <button
                   type="button"
@@ -1250,7 +1250,7 @@ export default function App() {
 
                     setOverlay('settings')
                   }}
-                  aria-label="Настройки"
+                  aria-label="Профиль"
                   className="
                 w-10
                 max-[359px]:w-6
@@ -1271,7 +1271,7 @@ export default function App() {
                 shrink-0
               "
                 >
-                  <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
+                  <UserRound size={19} strokeWidth={1.7} className="text-muted" />
                 </button>
               </div>
             </>
