@@ -1,0 +1,22 @@
+{
+  "viewport": [390, 844],
+  "pagerCount": 0,
+  "card": {
+    "top": 458.25,
+    "bottom": 762.25,
+    "height": 304
+  },
+  "button": {
+    "top": 693.84375,
+    "bottom": 731.84375,
+    "height": 38
+  },
+  "fillBelowButton": 30.40625,
+  "cardPadding": "18px 18px 42px",
+  "cardPaddingBottom": "42px",
+  "carousel": {
+    "top": 459.25,
+    "bottom": 783.25,
+    "height": 324
+  }
+}

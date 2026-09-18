@@ -1076,7 +1076,7 @@ test('локальный UX smoke по основному маршруту', asy
   ).toEqual([])
 })
 
-test('Mentor PersonaPicker сохраняет тематическую рамку и pager на mobile, tablet и desktop', async ({
+test('Mentor PersonaPicker сохраняет тематическую рамку на mobile, tablet и desktop', async ({
   browser,
   baseURL,
 }) => {
@@ -1135,8 +1135,8 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       204
     )
     expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
-    const maxCardHeight = viewport.width >= 405 ? 324 : viewport.width >= 390 ? 280 : 250
-    expect(cardGeometry.height, 'Карточка не должна перекрывать pagination и nav').toBeLessThanOrEqual(
+    const maxCardHeight = viewport.width >= 405 ? 348 : viewport.width >= 390 ? 304 : 274
+    expect(cardGeometry.height, 'Карточка не должна перекрывать nav').toBeLessThanOrEqual(
       maxCardHeight
     )
     expect(
@@ -1144,12 +1144,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
         elements.map(element => getComputedStyle(element).borderTopWidth)
       )
     ).toEqual(['1px', '1px', '1px'])
-    const pager = page.getByRole('group', { name: 'Выбор роли' })
-    await expect(pager).toBeVisible()
-    await expect(pager.getByRole('button')).toHaveCount(3)
-    await expect(
-      pager.getByRole('button', { name: 'Собеседник, 2 из 3' })
-    ).toHaveAttribute('aria-current', 'true')
+    await expect(page.getByRole('group', { name: 'Выбор роли' })).toHaveCount(0)
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
@@ -1161,10 +1156,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
         element.scrollLeft = scrollLeft
         element.dispatchEvent(new Event('scroll'))
       }, cardWidth + 12)
-      await expect(pager.getByRole('button', { name: 'Собеседник, 2 из 3' })).toHaveAttribute(
-        'aria-current',
-        'true'
-      )
+      await expect(page.getByRole('group', { name: 'Выбор роли' })).toHaveCount(0)
     }
 
     const cardTextGeometry = await cards.evaluateAll(elements =>
