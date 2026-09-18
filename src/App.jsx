@@ -451,11 +451,7 @@ export default function App() {
   tabRef.current = tab
 
   const bottomNavigationHidden =
-    (tab === 'mentor' && !isPreviewDemoMode()) ||
-    mentorPersonaOpen ||
-    todayFlowOpen ||
-    todaySeriesOpen ||
-    practiceGameOpen
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return
@@ -1417,6 +1413,7 @@ export default function App() {
                   {user && tab === 'mentor' && (
                     <MentalixChat
                       user={user}
+                      dialogNavOffset={bottomNavigationHidden ? '0px' : 'var(--app-content-bottom)'}
                       onPersonaChange={setMentorPersonaOpen}
                       onRegisterBack={registerMentorBack}
                     />

@@ -6,7 +6,7 @@
 
 .mx-dialog-runtime-scroll {
   overflow: hidden;
-  padding-bottom: var(--app-safe-bottom) !important;
+  padding-bottom: var(--app-content-bottom) !important;
 }
 
 #root:has(.mx-dialog-entry),
@@ -164,6 +164,7 @@ body:has(.mx-dialog-entry) {
   scroll-padding-inline: var(--mx-dialog-carousel-gutter);
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
+  transform: translateY(calc(-1 * var(--mx-dialog-nav-offset, 0px)));
 }
 
 .mx-dialog-carousel::-webkit-scrollbar {
