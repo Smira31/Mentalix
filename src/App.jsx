@@ -451,11 +451,7 @@ export default function App() {
   tabRef.current = tab
 
   const bottomNavigationHidden =
-    (tab === 'mentor' && !isPreviewDemoMode()) ||
-    mentorPersonaOpen ||
-    todayFlowOpen ||
-    todaySeriesOpen ||
-    practiceGameOpen
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return

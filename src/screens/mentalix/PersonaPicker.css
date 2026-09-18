@@ -6,7 +6,7 @@
 
 .mx-dialog-runtime-scroll {
   overflow: hidden;
-  padding-bottom: var(--app-safe-bottom) !important;
+  padding-bottom: var(--app-content-bottom) !important;
 }
 
 #root:has(.mx-dialog-entry),
