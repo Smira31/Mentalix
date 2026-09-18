@@ -25,7 +25,7 @@ const DIALOG_DESCRIPTIONS = {
   dnevnik: 'Наблюдательный. Подведёт итоги дня и заметит то, что ты пропустил.',
 }
 
-export default function PersonaPicker({ onPick, dialogNavOffset = '0px' }) {
+export default function PersonaPicker({ onPick }) {
   const [active, setActive] = useState(DEFAULT_INDEX)
   const trackRef = useRef(null)
   const previewDemoMode = isPreviewDemoMode()
@@ -78,11 +78,7 @@ export default function PersonaPicker({ onPick, dialogNavOffset = '0px' }) {
   }
 
   return (
-    <main
-      className="mx-dialog-entry"
-      data-testid="dialog-entry"
-      style={{ '--mx-dialog-nav-offset': dialogNavOffset }}
-    >
+    <main className="mx-dialog-entry" data-testid="dialog-entry">
       <section className="mx-dialog-hero" aria-labelledby="dialog-entry-title">
         <img className="mx-dialog-hero-reference" src={heroReference} alt="" aria-hidden="true" />
         <div className="mx-dialog-hero__content">

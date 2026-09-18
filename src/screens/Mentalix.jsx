@@ -165,12 +165,7 @@ export function ConversationChat({
 // MENTALIX
 // ============================================================
 
-export default function MentalixChat({
-  user,
-  dialogNavOffset = '0px',
-  onPersonaChange,
-  onRegisterBack,
-}) {
+export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) {
   const [pending] = useState(() => readPendingMentor())
   const [persona, setPersona] = useState(pending.persona)
   const [draft, setDraft] = useState(pending.draft)
@@ -200,7 +195,6 @@ export default function MentalixChat({
     return (
       <PersonaPicker
         user={user}
-        dialogNavOffset={dialogNavOffset}
         onPick={(key, text) => {
           setDraft(text || '')
           setPersona(key)
