@@ -4,9 +4,9 @@ Viewport: **390×844**, dark theme, reduced motion.
 
 ## Before → after
 
-| Today reference                                                                                         | Dialog before                              | Dialog after                             |
-| ------------------------------------------------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------- |
-| [Today](/home/ubuntu/Mentalix/qa-evidence/dialog-card-visual-parity-2026-09-18/after/today-390x844.png) | [Dialog before](before/dialog-390x844.png) | [Dialog after](after/dialog-390x844.png) |
+| Today reference                  | Dialog before                              | Dialog after                             |
+| -------------------------------- | ------------------------------------------ | ---------------------------------------- |
+| [Today](after/today-390x844.png) | [Dialog before](before/dialog-390x844.png) | [Dialog after](after/dialog-390x844.png) |
 
 The Today screenshot is captured in the same evidence run as the Dialog screenshots; it is unchanged by this PR and serves as the reference surface.
 
