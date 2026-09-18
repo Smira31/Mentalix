@@ -1413,6 +1413,7 @@ export default function App() {
                   {user && tab === 'mentor' && (
                     <MentalixChat
                       user={user}
+                      dialogNavOffset={bottomNavigationHidden ? '0px' : 'var(--app-content-bottom)'}
                       onPersonaChange={setMentorPersonaOpen}
                       onRegisterBack={registerMentorBack}
                     />
