@@ -447,6 +447,8 @@ export default function App() {
     initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
+  const tabRef = useRef(tab)
+  tabRef.current = tab
 
   const bottomNavigationHidden =
     (tab === 'mentor' && !isPreviewDemoMode()) ||
@@ -706,6 +708,16 @@ export default function App() {
        * управлять его состоянием.
        */
       if (bottomNavigationHidden) {
+        return
+      }
+
+      /*
+       * Dialog — fullscreen-сценарий: нижняя панель остаётся якорем
+       * навигации и не должна исчезать при прокрутке истории сообщений.
+       */
+      if (tabRef.current === 'mentor') {
+        setNavCollapsed(false)
+        resetGesture()
         return
       }
 

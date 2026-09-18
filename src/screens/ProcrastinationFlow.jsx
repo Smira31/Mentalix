@@ -204,6 +204,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
 
   useLayoutEffect(() => {
     document.activeElement?.blur?.()
+
     const resetScroll = () => {
       if (sceneScrollRef.current) sceneScrollRef.current.scrollTop = 0
     }
