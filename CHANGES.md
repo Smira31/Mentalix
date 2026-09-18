@@ -3900,3 +3900,8 @@ Journal Home переведён с прямого prototype `localStorage` на 
 - Cloudflare Owner QA передеплоен с тем же SHA через workflow `Cloudflare Owner QA` (run `35319490749`); `qa-build.json` теперь подтверждает `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`.
 - После передеплоя Firebase и Cloudflare QA отдают одинаковые assets: `index-BjnWiwIM.js` и `index-CU_Y9Pp1.css`.
 - `src/` до фиксации этой диагностики не изменялся.
+
+## 2026-09-18 — PR #662 — профиль в Today
+
+- `src/App.jsx`: в authenticated Today header иконка Settings заменена на `UserRound`; существующий handler перехода сохранён, `aria-label` изменён на «Профиль».
+- Изменение изолировано от Pin Bar/layout-фикса PR #661.
