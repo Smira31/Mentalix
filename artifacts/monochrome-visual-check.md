@@ -30,3 +30,12 @@
 Скриншот направленного Дневника: `/home/ubuntu/screenshots/127_0_0_1_2026-09-18_10-13-19_7945.webp`.
 
 Отдельный раздел «Направленные записи» в web-demo намеренно сообщает, что временно не открывается без server-side sessions; это существующее ограничение, не результат монохромной правки. Отдельной top-level вкладки «История» в текущем mapping App нет.
+
+## Чистые Playwright-скриншоты, viewport 375×812
+
+- [Today](./monochrome-screens/01-today.png)
+- [Профиль](./monochrome-screens/02-profile.png)
+- [Диалог](./monochrome-screens/03-dialog.png)
+- [Библиотека](./monochrome-screens/04-library.png)
+- [Прогресс](./monochrome-screens/05-progress.png)
+- [Направленный Дневник](./monochrome-screens/06-directed-journal.png)
