@@ -3876,3 +3876,27 @@ Journal Home переведён с прямого prototype `localStorage` на 
 ## 27.08.2026 — Home/type quiet slice
 
 `MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001` реализованы в PR #241: главный hero Today поднят перед вторичными секциями, а пользовательские serif/Manrope overrides заменены на Onest baseline. Follow-up `MXL-HOME-QUIET-V2-002` добавил 10px нижнего воздуха перед fixed-навигацией и различимое active-состояние CTA; добавлен regression-контракт. CI/Vercel и повторный Telegram/iPhone gate пройдены. Backend, cloud sync, AI consent и proprietary Stoic assets не затронуты.
+
+## 2026-09-18 — диагностика синхронизации production / demo / QA
+
+### Подтверждённые commit SHA
+
+- Firebase Production: `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`
+- Firebase Production Demo (`?demo=1`): `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8` — тот же Firebase build и тот же bundle.
+- Cloudflare Owner QA Demo до исправления: `46b944e9aead2896b206b117fe59ccd6525f5659` — подтверждено через `https://mentalix-owner-qa.pages.dev/qa-build.json`.
+- GitHub `origin/main`: `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`.
+
+### Найденные причины расхождения
+
+- QA отставал от `main`. Firebase отдаёт `index-BjnWiwIM.js` и `index-CU_Y9Pp1.css`, а Cloudflare QA — старые `index-BvBF39fk.js` и `index-BK2uEtMj.css`.
+- В репозитории нет отдельной QA-ветки исходников. Workflow `.github/workflows/cloudflare-owner-qa.yml` собирает переданный `commit_sha` вручную и записывает его в `qa-build.json`.
+- Firebase workflow использует `VITE_API_BASE_URL=/api`. В Cloudflare workflow отдельный `VITE_*` override для дизайна не задан; приложение использует тот же fallback `/api`. `VITE_LOCAL_PREVIEW` не задан в production deploy и не является причиной расхождения.
+- Зарегистрированный service worker не обнаружен (`serviceWorker`, `registerSW`, `sw.js`). HTML на всех адресах содержит одинаковые `theme-color=#050403` и `viewport-fit=cover`. Причина — разные commit SHA и бандлы, не service worker-кеш.
+
+### Решение
+
+- Источник истины: GitHub `main`, SHA `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`.
+- Firebase Production уже соответствует источнику истины.
+- Cloudflare Owner QA передеплоен с тем же SHA через workflow `Cloudflare Owner QA` (run `35319490749`); `qa-build.json` теперь подтверждает `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`.
+- После передеплоя Firebase и Cloudflare QA отдают одинаковые assets: `index-BjnWiwIM.js` и `index-CU_Y9Pp1.css`.
+- `src/` до фиксации этой диагностики не изменялся.
