@@ -556,19 +556,19 @@ function Drawing({ kind, debugSource }) {
         <g transform="translate(30 6)">
           <path
             d="M20 40 C30 30 40 30 50 40 C60 50 70 50 80 40"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.8"
             strokeLinecap="round"
           />
           <path
             d="M20 55 C30 45 40 45 50 55 C60 65 70 65 80 55"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.5"
             strokeLinecap="round"
           />
-          <circle cx="76" cy="38" r="3" fill="#EDBD60" />
+          <circle cx="76" cy="38" r="3" fill="rgb(var(--c-text))" />
         </g>
       )
     // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
@@ -580,7 +580,7 @@ function Drawing({ kind, debugSource }) {
             cy="50"
             r="30"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="1.5"
             opacity="0.5"
           />
@@ -589,12 +589,12 @@ function Drawing({ kind, debugSource }) {
             cy="50"
             r="19"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="1.5"
             opacity="0.7"
           />
-          <circle cx="50" cy="50" r="8" fill="#E6E6E6" opacity="0.85" />
-          <circle cx="50" cy="50" r="2.5" fill="#EDBD60" />
+          <circle cx="50" cy="50" r="8" fill="rgb(var(--c-line))" opacity="0.85" />
+          <circle cx="50" cy="50" r="2.5" fill="rgb(var(--c-text))" />
         </g>
       )
     // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
@@ -608,28 +608,36 @@ function Drawing({ kind, debugSource }) {
             height="60"
             rx="2"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.85"
           />
-          <line x1="50" y1="20" x2="50" y2="80" stroke="#E6E6E6" strokeWidth="1.5" opacity="0.5" />
-          <circle cx="50" cy="50" r="3" fill="#EDBD60" />
+          <line
+            x1="50"
+            y1="20"
+            x2="50"
+            y2="80"
+            stroke="rgb(var(--c-line))"
+            strokeWidth="1.5"
+            opacity="0.5"
+          />
+          <circle cx="50" cy="50" r="3" fill="rgb(var(--c-text))" />
         </g>
       )
     // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
     case 'ui-exp-003-next-step':
       return (
         <g transform="translate(30 6)">
-          <circle cx="30" cy="70" r="3" fill="#E6E6E6" opacity="0.6" />
+          <circle cx="30" cy="70" r="3" fill="rgb(var(--c-line))" opacity="0.6" />
           <path
             d="M30 70 C42 66 50 54 58 34"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.75"
             strokeLinecap="round"
           />
-          <circle cx="58" cy="34" r="3.5" fill="#EDBD60" />
+          <circle cx="58" cy="34" r="3.5" fill="rgb(var(--c-text))" />
         </g>
       )
     // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
@@ -639,7 +647,7 @@ function Drawing({ kind, debugSource }) {
           <path
             d="M30 78 C30 60 36 40 46 26 C50 20 58 16 66 18"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="1.5"
             opacity="0.7"
             strokeLinecap="round"
@@ -647,12 +655,12 @@ function Drawing({ kind, debugSource }) {
           <path
             d="M44 30 C50 26 58 26 64 20"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="1.5"
             opacity="0.5"
             strokeLinecap="round"
           />
-          <circle cx="66" cy="18" r="3" fill="#EDBD60" />
+          <circle cx="66" cy="18" r="3" fill="rgb(var(--c-text))" />
         </g>
       )
     // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
@@ -664,33 +672,37 @@ function Drawing({ kind, debugSource }) {
             cy="50"
             r="26"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.5"
           />
           <path
             d="M50 50 L50 26"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.85"
             strokeLinecap="round"
           />
           <path
             d="M50 50 L68 62"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.85"
             strokeLinecap="round"
           />
-          <circle cx="50" cy="50" r="3" fill="#EDBD60" />
+          <circle cx="50" cy="50" r="3" fill="rgb(var(--c-text))" />
         </g>
       )
     // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
     case 'ui-exp-003-evening':
       return (
         <g transform="translate(30 6)">
-          <path d="M62 26 A26 26 0 1 0 62 74 A20 20 0 1 1 62 26 Z" fill="#E6E6E6" opacity="0.75" />
-          <circle cx="66" cy="30" r="2.5" fill="#EDBD60" />
+          <path
+            d="M62 26 A26 26 0 1 0 62 74 A20 20 0 1 1 62 26 Z"
+            fill="rgb(var(--c-line))"
+            opacity="0.75"
+          />
+          <circle cx="66" cy="30" r="2.5" fill="rgb(var(--c-text))" />
         </g>
       )
     // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
@@ -700,12 +712,12 @@ function Drawing({ kind, debugSource }) {
           <path
             d="M25 60 A25 25 0 1 1 65 76"
             fill="none"
-            stroke="#E6E6E6"
+            stroke="rgb(var(--c-line))"
             strokeWidth="2"
             opacity="0.75"
             strokeLinecap="round"
           />
-          <circle cx="65" cy="76" r="4" fill="#EDBD60" />
+          <circle cx="65" cy="76" r="4" fill="rgb(var(--c-text))" />
         </g>
       )
     default:

@@ -448,7 +448,9 @@ export default function App() {
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
   const tabRef = useRef(tab)
-  tabRef.current = tab
+  useEffect(() => {
+    tabRef.current = tab
+  }, [tab])
 
   const bottomNavigationHidden =
     mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen

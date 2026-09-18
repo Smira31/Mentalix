@@ -39,3 +39,16 @@
 - [Библиотека](./monochrome-screens/04-library.png)
 - [Прогресс](./monochrome-screens/05-progress.png)
 - [Направленный Дневник](./monochrome-screens/06-directed-journal.png)
+
+## PR #663: спорные места, before/after
+
+Актуальные кадры сняты Playwright при viewport 375×812 из baseline `HEAD` до изменений и из рабочей ветки после изменений:
+
+| Место                       | До                                                       | После                                                |
+| --------------------------- | -------------------------------------------------------- | ---------------------------------------------------- |
+| SemanticGlyph               | [до](./monochrome-screens/before/01-semantic-glyph.png)  | [после](./monochrome-screens/01-semantic-glyph.png)  |
+| BrainTrainer: Stroop/Memory | [до](./monochrome-screens/before/02-brain-trainer.png)   | [после](./monochrome-screens/02-brain-trainer.png)   |
+| YearPath / Progress         | [до](./monochrome-screens/before/03-year-path.png)       | [после](./monochrome-screens/03-year-path.png)       |
+| Progress/UI Lab             | [до](./monochrome-screens/before/04-progress-ui-lab.png) | [после](./monochrome-screens/04-progress-ui-lab.png) |
+
+`YearPath` отмечает пик ромбом вместо цветной точки. В Memory цветовая идентификация заменена четырьмя паттернами. В Stroop сохранена логика совпадения/несовпадения, но после монохрома цветовой конфликт больше не отображается — тест стал текстовым сравнением без классического Stroop-эффекта.

@@ -11,9 +11,8 @@ import { TickGauge } from './Path'
  * поэтому визуальный язык другой, а не просто перекраска: одна линия
  * вместо пяти декоративных рядов, currentColor вместо декоративного accent-color
  * (правило Motif.jsx — линии наследуют системную палитру через
- * прозрачность, а цветная точка сохраняется как кодировка лучшей недели),
- * заливка-силуэт под линией, толще штрих. Цветная точка на лучшей неделе
- * периода — data-визуализация, а не UI-хром (не «сейчас», см. TASKS.md).
+ * прозрачность, а лучшая неделя отмечается формой маркера), заливка-силуэт
+ * под линией, толще штрих. Цвет не используется для кодирования данных.
  */
 
 const WEEK_SIZE = 7
@@ -80,11 +79,11 @@ function YearRidge({ values }) {
       />
 
       {values[peakIndex] > 0 && (
-        <circle
-          cx={peakX}
-          cy={peakY}
-          r={3.5}
-          fill="rgb(var(--c-gold))"
+        <polygon
+          points={`${peakX},${peakY - 5} ${peakX + 5},${peakY} ${peakX},${peakY + 5} ${peakX - 5},${peakY}`}
+          fill="currentColor"
+          stroke="currentColor"
+          strokeWidth="1"
           filter="url(#year-ridge-glow)"
         />
       )}

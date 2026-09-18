@@ -79,9 +79,9 @@
 }
 
 .mx-progress-observation__states button[aria-pressed='true'] {
-  border-color: rgb(var(--c-gold) / 0.55);
-  background: rgb(var(--c-gold) / 0.14);
-  color: rgb(var(--c-gold));
+  border-color: rgb(var(--c-text) / 0.55);
+  background: rgb(var(--c-text) / 0.1);
+  color: rgb(var(--c-text));
 }
 
 .mx-progress-observation__card {
@@ -93,7 +93,7 @@
 }
 
 .mx-progress-observation__card[data-primary-observation='true'] {
-  border-color: rgb(var(--c-gold) / 0.35);
+  border-style: dashed;
 }
 
 .mx-progress-observation__card h3 {
@@ -142,7 +142,7 @@
 
 .mx-progress-observation__evidence summary {
   cursor: pointer;
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-text));
 }
 
 .mx-progress-observation__caveat {
@@ -171,8 +171,8 @@
 
 .mx-progress-observation__primary {
   flex: 0 0 auto;
-  border-color: rgb(var(--c-gold) / 0.5);
-  background: rgb(var(--c-gold));
+  border-color: rgb(var(--c-text));
+  background: rgb(var(--c-text));
   color: rgb(var(--c-bg));
 }
 
@@ -192,7 +192,7 @@
 .mx-progress-observation__feedback {
   min-height: 18px;
   margin: -10px 0 0;
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-text));
   font-size: 12px;
 }
 
