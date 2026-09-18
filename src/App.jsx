@@ -25,6 +25,7 @@ import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDra
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
+import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -1123,7 +1124,10 @@ export default function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {previewDemoMode && !overlay && !todaySeriesOpen && !todayFlowOpen && (
+        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName }) &&
+          !overlay &&
+          !todaySeriesOpen &&
+          !todayFlowOpen && (
           // eslint-disable-next-line react-hooks/refs
           <DemoTelegramChrome onBack={demoBackAction} />
         )}
