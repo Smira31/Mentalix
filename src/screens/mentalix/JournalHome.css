@@ -5,7 +5,9 @@
 
 .mx-journal-intro__art,
 .mx-journal-day-header__mark {
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03), 0 10px 30px rgb(0 0 0 / 0.12);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.03),
+    0 10px 30px rgb(0 0 0 / 0.12);
 }
 
 .mx-journal-intro h1,
@@ -21,7 +23,7 @@
   line-height: 1.55;
 }
 
-  .mx-journal-day-header {
+.mx-journal-day-header {
   padding-top: 3px;
 }
 
@@ -64,7 +66,7 @@
   min-height: 11rem;
   font-size: 1rem;
   line-height: 1.6;
-  caret-color: #5eb2ed;
+  caret-color: rgb(var(--c-gold));
 }
 
 .mx-journal-editor-wrap .sticky {
@@ -78,11 +80,11 @@
 }
 
 .mx-journal-editor-wrap .sticky button:active {
-  color: #5eb2ed;
+  color: rgb(var(--c-gold));
 }
 
 .mx-journal-primary-action {
-  box-shadow: 0 8px 24px rgb(94 178 237 / 0.14);
+  box-shadow: 0 8px 24px rgb(var(--c-gold) / 0.14);
 }
 
 .mx-journal-primary-action:disabled {

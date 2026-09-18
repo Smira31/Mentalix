@@ -3902,9 +3902,18 @@ Journal Home переведён с прямого prototype `localStorage` на 
 - `src/` до фиксации этой диагностики не изменялся.
 
 ## 2026-09-18 — PR #662 — профиль в Today
+
 - `src/App.jsx`: в authenticated Today header иконка Settings заменена на `UserRound`; существующий handler перехода сохранён, `aria-label` изменён на «Профиль».
 - Изменение изолировано от Pin Bar/layout-фикса PR #661.
 
 ## 2026-09-18 — PR #661 — Pin Bar в Dialog
+
 - `src/App.jsx`: из `bottomNavigationHidden` удалено условие `(tab === 'mentor' && !isPreviewDemoMode())`. Pin Bar теперь остаётся видимым на экране выбора роли в Dialog и скрывается только при фактическом открытии persona/fullscreen flow через существующие условия.
 - `src/App.jsx`, `src/screens/Mentalix.jsx`, `src/screens/mentalix/PersonaPicker.jsx` и `PersonaPicker.css`: при видимом Pin Bar передаётся существующий `--app-content-bottom`, а карусель сдвигается вверх на этот offset. При скрытом Pin Bar offset равен `0px`; приём выступающих за поверхность карточек не изменён.
+
+## 2026-09-18 — монохромный UI-хром
+
+- В `src/index.css` legacy-токены `--c-gold` и `--c-azure` переведены в нейтральные серые значения; переключатель `src/lib/accentColor.js` теперь предлагает только серые оттенки.
+- Tailwind-алиасы `gold`/`cognac`, glow-анимация streak, JournalHome, PracticeFlow, Path и fallback-экран ошибки используют нейтральную палитру без декоративного золота/синего.
+- Обновлены `tailwind.config.js`, `docs/design/MXL-VISUAL-RULES-LIBRARY-001.md`, `docs/testing/DESIGN_GUARD.md` и исторические PersonaPicker-документы.
+- Цвет сохранён намеренно в спорных/семантических местах: точки `SemanticGlyph`, график `YearPath`, цветные игровые плитки BrainTrainer и категории/визуализации данных. Их смысл нужно отдельно подтвердить владельцу перед дальнейшей перекраской.

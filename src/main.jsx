@@ -172,7 +172,7 @@ window.addEventListener('error', e => {
   const root = document.getElementById('root')
   if (root && !root.hasChildNodes()) {
     root.innerHTML =
-      '<pre style="padding:24px;color:#D9B45B;background:#0A0A0A;min-height:100vh;white-space:pre-wrap;font-size:13px">Ошибка загрузки — покажи разработчику:\n\n' +
+      '<pre style="padding:24px;color:#D9D9D9;background:#0A0A0A;min-height:100vh;white-space:pre-wrap;font-size:13px">Ошибка загрузки — покажи разработчику:\n\n' +
       (e.message || e.error) +
       '</pre>'
   }
