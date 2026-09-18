@@ -41,7 +41,10 @@ body:has(.mx-dialog-entry) {
   background: rgb(var(--c-bg));
   color: rgb(var(--c-text));
   padding-top: var(--app-safe-top);
-  padding-bottom: var(--app-content-bottom);
+  /* Dialog ends directly above the fixed 68px BottomNavigation. */
+  padding-bottom: calc(
+    var(--app-safe-bottom) + var(--bottom-nav-offset) + var(--bottom-nav-height)
+  );
   box-sizing: border-box;
 }
 
