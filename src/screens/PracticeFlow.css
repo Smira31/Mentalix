@@ -559,7 +559,7 @@
   --pf-muted: #9b9488;
   --pf-faint: #625d54;
   --pf-line: #36322c;
-  --pf-ice: #c9e7e5;
+  --pf-ice: #d0d0d0;
   --pf-ios-input-accessory-gap: 48px;
   box-sizing: border-box;
   width: 100%;
@@ -1175,7 +1175,7 @@
   --pf-text: #f3f0e9;
   --pf-muted: #8c8983;
   --pf-faint: #56534e;
-  --pf-azure: #79b9ff;
+  --pf-azure: #d0d0d0;
   --pf-line: rgba(243, 240, 233, 0.18);
   box-sizing: border-box;
   min-height: 100%;

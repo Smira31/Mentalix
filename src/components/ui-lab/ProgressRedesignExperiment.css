@@ -17,7 +17,7 @@
 .mx-progress-redesign__intro > span,
 .mx-progress-redesign__section-head > div > span,
 .mx-progress-redesign__observation > span {
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-text));
   font-family: 'Manrope', sans-serif;
   font-size: 10px;
   font-weight: 700;
@@ -81,9 +81,9 @@
 }
 
 .mx-progress-redesign__states button[aria-pressed='true'] {
-  border-color: rgb(var(--c-gold) / 0.55);
-  background: rgb(var(--c-gold) / 0.13);
-  color: rgb(var(--c-gold));
+  border-color: rgb(var(--c-text) / 0.55);
+  background: rgb(var(--c-text) / 0.1);
+  color: rgb(var(--c-text));
 }
 
 .mx-progress-redesign__device {
@@ -246,7 +246,7 @@
 
 .mx-progress-redesign__chart circle {
   fill: rgb(var(--c-bg));
-  stroke: rgb(var(--c-gold));
+  stroke: rgb(var(--c-text));
   stroke-width: 1.8;
   vector-effect: non-scaling-stroke;
 }
@@ -425,7 +425,8 @@
 }
 
 .mx-progress-redesign__calendar i[data-filled='true'][data-tone='4'] {
-  background: rgb(var(--c-gold));
+  background: rgb(var(--c-muted));
+  border: 2px dashed rgb(var(--c-text));
 }
 
 .mx-progress-redesign__calendar-card > p {
@@ -448,7 +449,7 @@
   height: 118px;
   place-content: center;
   border: 17px solid rgb(var(--c-card2));
-  border-top-color: rgb(var(--c-gold));
+  border-top-color: rgb(var(--c-text));
   border-right-color: rgb(var(--c-muted));
   border-radius: 50%;
   text-align: center;
@@ -493,7 +494,8 @@
 }
 
 .mx-progress-redesign__emotion-list > div[data-tone='high'] i {
-  background: rgb(var(--c-gold));
+  background: rgb(var(--c-text));
+  border-radius: 1px;
 }
 
 .mx-progress-redesign__emotion-list small {
@@ -544,7 +546,20 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: rgb(var(--c-gold));
+  background: rgb(var(--c-text));
+}
+
+.mx-progress-redesign__activities article:nth-child(2) > i > b {
+  border-left: 2px solid rgb(var(--c-bg));
+}
+
+.mx-progress-redesign__activities article:nth-child(3) > i > b {
+  border-radius: 0;
+}
+
+.mx-progress-redesign__activities article:nth-child(4) > i > b {
+  border-top: 1px solid rgb(var(--c-bg));
+  border-bottom: 1px solid rgb(var(--c-bg));
 }
 
 .mx-progress-redesign--live {
@@ -606,7 +621,7 @@
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__observation summary {
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-text));
   cursor: pointer;
 }
 
@@ -707,7 +722,7 @@
 }
 
 .mx-progress-redesign--live .mx-progress-redesign__activities summary {
-  color: rgb(var(--c-gold));
+  color: rgb(var(--c-text));
   cursor: pointer;
   line-height: 1.35;
 }

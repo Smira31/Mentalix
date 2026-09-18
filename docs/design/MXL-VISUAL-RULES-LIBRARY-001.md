@@ -2,6 +2,7 @@
 status: historical
 last_verified: 2026-09-11
 ---
+
 # MXL Visual Rules Library
 
 **Status:** `verified` baseline + `proposed` consolidation  
@@ -33,38 +34,38 @@ last_verified: 2026-09-11
 
 ## 1. Visual principles
 
-| Rule                                                                   | Rationale                                                                          | Scope                     | Example                                                         | Status     |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------- | ---------- |
-| Mentalix uses a quiet, warm-dark base with one restrained accent       | Reduces visual noise and keeps attention on one next action                        | All product surfaces      | Dark background, cream text, gold action cue                    | `verified` |
-| The interface should feel like a calm instrument, not a game dashboard | The product helps reflection and action; decoration must not compete with the task | Today, practices, Journal | One primary CTA, limited motion                                 | `verified` |
-| One screen should have one dominant action                             | Supports the action loop and prevents choice overload                              | Primary user journeys     | `Завершить`, `Дальше`, or `Войти`, not several equal CTAs       | `proposed` |
-| Visual novelty must not change navigation semantics                    | Prevents decorative features from breaking Today → practice → Today                | All feature work          | Series & Badges can add a surface but must preserve action loop | `proposed` |
+| Rule                                                                       | Rationale                                                                          | Scope                     | Example                                                         | Status     |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------- | ---------- |
+| Mentalix uses a quiet, warm-dark base with restrained monochrome UI chrome | Reduces visual noise and keeps attention on one next action                        | All product surfaces      | Dark background, cream text, neutral action cue                 | `verified` |
+| The interface should feel like a calm instrument, not a game dashboard     | The product helps reflection and action; decoration must not compete with the task | Today, practices, Journal | One primary CTA, limited motion                                 | `verified` |
+| One screen should have one dominant action                                 | Supports the action loop and prevents choice overload                              | Primary user journeys     | `Завершить`, `Дальше`, or `Войти`, not several equal CTAs       | `proposed` |
+| Visual novelty must not change navigation semantics                        | Prevents decorative features from breaking Today → practice → Today                | All feature work          | Series & Badges can add a surface but must preserve action loop | `proposed` |
 
 ## 2. Color roles
 
 Production stores color values as RGB triplets so Tailwind opacity utilities continue to work. New code should use semantic roles rather than raw hex values.
 
-| Role                        | Current token                  |                     Value | Intended use                                | Avoid                                  | Status     |
-| --------------------------- | ------------------------------ | ------------------------: | ------------------------------------------- | -------------------------------------- | ---------- |
-| App background              | `--c-bg`                       |       `5 4 3` / `#050403` | Root background, quiet shell                | Large bright backgrounds               | `verified` |
-| Primary card                | `--c-card`                     |       `9 9 9` / `#090909` | Main cards and selectable surfaces          | Using card as page background          | `verified` |
-| Secondary surface           | `--c-card2`                    |    `17 17 17` / `#111111` | Nested or secondary cards                   | Multiple competing surface levels      | `verified` |
-| Primary text                | `--c-text`                     | `243 243 243` / `#F3F3F3` | Headings, body copy with priority           | Low-opacity text for essential content | `verified` |
-| Muted text                  | `--c-muted`                    | `133 133 133` / `#858585` | Supporting copy and metadata                | Long essential paragraphs              | `verified` |
-| Faint text                  | `--c-faint`                    | `100 100 100` / `#646464` | Large or non-essential labels only          | Small body text and controls           | `verified` |
-| Border                      | `--c-border`                   |    `41 41 41` / `#292929` | Quiet separators and card borders           | Heavy outlines everywhere              | `verified` |
-| Illustration line           | `--c-line`                     | `230 230 230` / `#E6E6E6` | Primary illustration strokes                | Long text or UI chrome                 | `verified` |
-| Secondary illustration line | `--c-line-secondary`           | `106 106 106` / `#6A6A6A` | Supporting illustration strokes             | Essential text                         | `verified` |
-| Accent                      | `--c-gold`                     |  `237 189 96` / `#EDBD60` | Progress, selected cue, meaningful emphasis | Making every CTA gold                  | `verified` |
-| Alternate accent            | `[data-accent='ice'] --c-gold` |  `94 178 237` / `#5EB2ED` | User-selected alternate accent              | Assuming gold is always active         | `verified` |
-| CTA background              | `--btn-bg`                     |                 `#EDEDED` | Primary pill CTA                            | Secondary actions competing with it    | `verified` |
-| CTA text                    | `--btn-text`                   |                 `#111111` | Text inside primary CTA                     | Low contrast text                      | `verified` |
+| Role                        | Current token            |                     Value | Intended use                         | Avoid                                  | Status     |
+| --------------------------- | ------------------------ | ------------------------: | ------------------------------------ | -------------------------------------- | ---------- |
+| App background              | `--c-bg`                 |       `5 4 3` / `#050403` | Root background, quiet shell         | Large bright backgrounds               | `verified` |
+| Primary card                | `--c-card`               |       `9 9 9` / `#090909` | Main cards and selectable surfaces   | Using card as page background          | `verified` |
+| Secondary surface           | `--c-card2`              |    `17 17 17` / `#111111` | Nested or secondary cards            | Multiple competing surface levels      | `verified` |
+| Primary text                | `--c-text`               | `243 243 243` / `#F3F3F3` | Headings, body copy with priority    | Low-opacity text for essential content | `verified` |
+| Muted text                  | `--c-muted`              | `133 133 133` / `#858585` | Supporting copy and metadata         | Long essential paragraphs              | `verified` |
+| Faint text                  | `--c-faint`              | `100 100 100` / `#646464` | Large or non-essential labels only   | Small body text and controls           | `verified` |
+| Border                      | `--c-border`             |    `41 41 41` / `#292929` | Quiet separators and card borders    | Heavy outlines everywhere              | `verified` |
+| Illustration line           | `--c-line`               | `230 230 230` / `#E6E6E6` | Primary illustration strokes         | Long text or UI chrome                 | `verified` |
+| Secondary illustration line | `--c-line-secondary`     | `106 106 106` / `#6A6A6A` | Supporting illustration strokes      | Essential text                         | `verified` |
+| Neutral UI accent           | `--c-gold` (legacy name) | `224 224 224` / `#E0E0E0` | Selected cue, focus, UI emphasis     | Decorative gold or blue                | `verified` |
+| Data visualization color    | Local semantic token     |          Context-specific | Charts, mood points, category labels | Using color as decorative UI chrome    | `verified` |
+| CTA background              | `--btn-bg`               |                 `#EDEDED` | Primary pill CTA                     | Secondary actions competing with it    | `verified` |
+| CTA text                    | `--btn-text`             |                 `#111111` | Text inside primary CTA              | Low contrast text                      | `verified` |
 
 ### Color Do / Don’t
 
-**Do:** use `rgb(var(--c-gold))`, `rgb(var(--c-muted))` and the other semantic tokens; keep accent usage sparse; preserve the alternate accent contract.
+**Do:** use the neutral semantic tokens for UI chrome; reserve intentional color for charts, mood points and category labels where it encodes data; keep color meaning explicit.
 
-**Don’t:** hard-code a new near-black or gold; use `--c-faint` for small essential copy; encode meaning with color alone; introduce a light theme without a separate accessibility review.
+**Don’t:** hard-code decorative gold or blue; use `--c-faint` for small essential copy; encode meaning with color alone; introduce a light theme without a separate accessibility review.
 
 ## 3. Typography hierarchy
 

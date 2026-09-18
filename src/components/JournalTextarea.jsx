@@ -295,6 +295,8 @@ export default function JournalTextarea({
           if (!guidedFlow) return
           let parent = editorRef.current?.parentElement
           while (parent && parent !== document.body) {
+            // The editor owns this scroll reset during guided input.
+            // eslint-disable-next-line react-hooks/immutability
             if (parent.scrollHeight > parent.clientHeight) parent.scrollTop = 0
             parent = parent.parentElement
           }

@@ -16,7 +16,7 @@
 4. **«Контекст под контролем пользователя»** — прозрачная граница продолжения, начала заново и памяти.
 5. **«Безопасный выбор по состоянию, а не по личности»** — выбор формы разговора по текущей задаче, а не ярлыку человека.
 
-Stoic Explore используется только как структурный референс: образ, подпись, вопрос, CTA, горизонтальная карточка и пагинация. Иллюстрация Stoic не копируется. Mentalix сохраняет собственный `SemanticGlyph`, тёмную тему и семантику gold/azure [1] [2].
+Stoic Explore используется только как структурный референс: образ, подпись, вопрос, CTA, горизонтальная карточка и пагинация. Иллюстрация Stoic не копируется. Mentalix сохраняет собственный `SemanticGlyph` и тёмную тему; прежняя рекомендация gold/azure является исторической и заменена монохромным UI-хромом. Цвет оставляется только для визуализаций, кодирующих данные [1] [2].
 
 Этот ADR не изменяет `src/`, `backend`, API-контракты, persona в production и открытый PR #565. Тексты `kompas` на `origin/main` считаются baseline; PR #565 не является источником решения [3].
 
@@ -60,16 +60,16 @@ Skeptic оспаривает Visionary: комбинация трёх promise-с
 
 ## Pre-mortem: предположим, что рекомендованный вариант провалился
 
-| Failure mode | Early warning | Prevention / kill rule |
-|---|---|---|
+| Failure mode                                                 | Early warning                                                                                                       | Prevention / kill rule                                                                                               |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | «Один шаг» воспринимается как давление или оценка дисциплины | Пользователи выбирают роль, но не начинают разговор; в feedback появляются слова «надо», «должен», «меня оценивают» | Переписать на «попробовать», «если подходит» и добавить заметный выход; остановить вариант при росте отказов у 16–17 |
-| Promise не совпадает с первым ответом AI | Пользователь не может объяснить, чем «Наставник» отличается; ответ уходит в общий совет | Content/AI gate на примерах первого ответа; reject при отсутствии трассировки promise → response |
-| State-based safety-copy создаёт ложное ожидание помощи | Пользователь трактует карточку как терапию, диагностику или emergency response | Нейтральная граница AI; запрет claims; отдельная проверка sensitive и youth сценариев |
-| Карточка перегружается направлениями и CTA | Пользователь не замечает главный CTA или путает starter с выбором новой persona | Оставить один primary CTA, максимум два starter-а, один пагинатор; kill rule по comprehension |
-| Референс Stoic превращается в визуальную копию | В макете появляются два силуэта, лупа, брендовые тексты или фирменный Explore chrome | Asset review: только оригинальный SemanticGlyph и текущие токены; отклонять чужую иллюстрацию |
-| «Продолжить разговор» обещает memory, которой нет | Пользователь ожидает постоянный профиль или исправление сохранённого факта | В первом scope говорить только о фактическом `last`/текущем разговоре; persistent memory вынести в отдельный ADR |
-| У 16–17 лет starter приводит к чувствительному раскрытию | Starter провоцирует медицинские, сексуальные, self-harm или emergency disclosures | Youth safety review до UI Lab; заменить starter или остановить вариант при неясном redirect |
-| Picker перестаёт вести в core loop | После выбора persona растёт число возвратов, но не начинается разговор или next action | Измерять выбор → первое сообщение → reversible next action; не добавлять вторичные entry points |
+| Promise не совпадает с первым ответом AI                     | Пользователь не может объяснить, чем «Наставник» отличается; ответ уходит в общий совет                             | Content/AI gate на примерах первого ответа; reject при отсутствии трассировки promise → response                     |
+| State-based safety-copy создаёт ложное ожидание помощи       | Пользователь трактует карточку как терапию, диагностику или emergency response                                      | Нейтральная граница AI; запрет claims; отдельная проверка sensitive и youth сценариев                                |
+| Карточка перегружается направлениями и CTA                   | Пользователь не замечает главный CTA или путает starter с выбором новой persona                                     | Оставить один primary CTA, максимум два starter-а, один пагинатор; kill rule по comprehension                        |
+| Референс Stoic превращается в визуальную копию               | В макете появляются два силуэта, лупа, брендовые тексты или фирменный Explore chrome                                | Asset review: только оригинальный SemanticGlyph и текущие токены; отклонять чужую иллюстрацию                        |
+| «Продолжить разговор» обещает memory, которой нет            | Пользователь ожидает постоянный профиль или исправление сохранённого факта                                          | В первом scope говорить только о фактическом `last`/текущем разговоре; persistent memory вынести в отдельный ADR     |
+| У 16–17 лет starter приводит к чувствительному раскрытию     | Starter провоцирует медицинские, сексуальные, self-harm или emergency disclosures                                   | Youth safety review до UI Lab; заменить starter или остановить вариант при неясном redirect                          |
+| Picker перестаёт вести в core loop                           | После выбора persona растёт число возвратов, но не начинается разговор или next action                              | Измерять выбор → первое сообщение → reversible next action; не добавлять вторичные entry points                      |
 
 ## Proposed decision
 
@@ -85,14 +85,14 @@ Skeptic оспаривает Visionary: комбинация трёх promise-с
 
 ## Acceptance gates before implementation
 
-| Gate | Required evidence | Owner decision |
-|---|---|---|
-| Product fit | Пользователь своими словами объясняет различие трёх ролей и следующий шаг; picker не конкурирует с Today/Journal | approve / reject |
-| Safety | Review для 16–17, sensitive disclosures, non-diagnostic language, не-терапевтическая позиция и emergency boundary | approve / reject |
-| Privacy | Ясно указано, что первый scope session-local; для продолжения, Memory, delete/export и retention есть подтверждённый контракт | approve / reject |
-| Core loop | Есть измеримый переход picker → первое сообщение → один обратимый next action; нет новых равногромких entry points | approve / reject |
-| Content | Promise каждой persona симметричен, не содержит давления, prediction, diagnosis или identity claims; оригинальный art review пройден | approve / reject |
-| AI | Для каждого promise есть проверяемые примеры ответа, provenance/границы контекста, refusal и redirect для safety-сценариев; либо AI gate отклонён | approve / reject |
+| Gate        | Required evidence                                                                                                                                 | Owner decision   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| Product fit | Пользователь своими словами объясняет различие трёх ролей и следующий шаг; picker не конкурирует с Today/Journal                                  | approve / reject |
+| Safety      | Review для 16–17, sensitive disclosures, non-diagnostic language, не-терапевтическая позиция и emergency boundary                                 | approve / reject |
+| Privacy     | Ясно указано, что первый scope session-local; для продолжения, Memory, delete/export и retention есть подтверждённый контракт                     | approve / reject |
+| Core loop   | Есть измеримый переход picker → первое сообщение → один обратимый next action; нет новых равногромких entry points                                | approve / reject |
+| Content     | Promise каждой persona симметричен, не содержит давления, prediction, diagnosis или identity claims; оригинальный art review пройден              | approve / reject |
+| AI          | Для каждого promise есть проверяемые примеры ответа, provenance/границы контекста, refusal и redirect для safety-сценариев; либо AI gate отклонён | approve / reject |
 
 ## Non-goals
 
@@ -110,11 +110,11 @@ Skeptic оспаривает Visionary: комбинация трёх promise-с
 
 ## References
 
-[1]: https://github.com/Smira31/Mentalix/blob/main/DESIGN_SYSTEM.md "Mentalix Design System"
-[2]: https://github.com/Smira31/Mentalix/blob/main/docs/product/STOIC_TO_MENTALIX_AUDIT.md "Stoic to Mentalix product and design audit"
-[3]: https://github.com/Smira31/Mentalix/pull/565 "PR #565: MVP «Наставник»"
-[4]: https://support.character.ai/hc/en-us/articles/42645561782555-Important-Changes-for-Teens-on-Character-ai "Important Changes for Teens on Character.AI"
-[5]: https://character.ai/safety "Character.AI Safety Center"
-[6]: https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs "Poe FAQs"
-[7]: https://help.replika.com/hc/en-us/articles/37208679176077-How-does-Replika-s-memory-work "How does Replika’s memory work?"
-[8]: https://inflection.ai/safety "Inflection AI safety"
+[1]: https://github.com/Smira31/Mentalix/blob/main/DESIGN_SYSTEM.md 'Mentalix Design System'
+[2]: https://github.com/Smira31/Mentalix/blob/main/docs/product/STOIC_TO_MENTALIX_AUDIT.md 'Stoic to Mentalix product and design audit'
+[3]: https://github.com/Smira31/Mentalix/pull/565 'PR #565: MVP «Наставник»'
+[4]: https://support.character.ai/hc/en-us/articles/42645561782555-Important-Changes-for-Teens-on-Character-ai 'Important Changes for Teens on Character.AI'
+[5]: https://character.ai/safety 'Character.AI Safety Center'
+[6]: https://help.poe.com/hc/en-us/articles/19944206309524-Poe-FAQs 'Poe FAQs'
+[7]: https://help.replika.com/hc/en-us/articles/37208679176077-How-does-Replika-s-memory-work 'How does Replika’s memory work?'
+[8]: https://inflection.ai/safety 'Inflection AI safety'

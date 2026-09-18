@@ -1,8 +1,8 @@
-// Акцентный цвет интерфейса — косметическая персонализация.
+// Нейтральный оттенок UI-акцента — косметическая персонализация.
 //
 // Синхронизируемый (useSynced) флаг, тот же паттерн, что
 // APP_LOCK_ENABLED_KEY/TODAY_CARDS_HIDDEN_KEY. Фон (--c-bg) не меняется —
-// только --c-gold, единственный источник акцента в проекте
+// только нейтральный UI-токен, единственный источник акцента в проекте
 // (src/index.css, tailwind.config.js). Переключение — CSS-override
 // переменной по data-accent на <html>, см. src/App.jsx. Набор опций
 // зависит от темы, но ключ хранения остаётся общим.
@@ -10,15 +10,15 @@ export const ACCENT_COLOR_KEY = 'mx-accent-color'
 
 export const DARK_ACCENT_COLORS = {
   ice: {
-    label: 'Лазурный',
-    hex: '#5EB2ED',
+    label: 'Серый',
+    hex: '#C8C8C8',
   },
 }
 
 export const LIGHT_ACCENT_COLORS = {
   sage: {
-    label: 'Шалфейный',
-    hex: '#6B7A52',
+    label: 'Графитовый',
+    hex: '#484848',
   },
 }
 

@@ -9,11 +9,10 @@ import { TickGauge } from './Path'
  * Ридж-график по образцу WireframeMountain (Path.jsx): волнистая
  * полилиния, filter glow. Но данные здесь настоящие, не декоративные —
  * поэтому визуальный язык другой, а не просто перекраска: одна линия
- * вместо пяти декоративных рядов, currentColor вместо сплошного gold
+ * вместо пяти декоративных рядов, currentColor вместо декоративного accent-color
  * (правило Motif.jsx — линии наследуют системную палитру через
- * прозрачность, золото не заливает рисунок, а отмечает одну точку),
- * заливка-силуэт под линией, толще штрих. Единственный золотой акцент —
- * точка на лучшей неделе периода (не «сейчас», см. TASKS.md).
+ * прозрачность, а лучшая неделя отмечается формой маркера), заливка-силуэт
+ * под линией, толще штрих. Цвет не используется для кодирования данных.
  */
 
 const WEEK_SIZE = 7
@@ -80,11 +79,11 @@ function YearRidge({ values }) {
       />
 
       {values[peakIndex] > 0 && (
-        <circle
-          cx={peakX}
-          cy={peakY}
-          r={3.5}
-          fill="rgb(var(--c-gold))"
+        <polygon
+          points={`${peakX},${peakY - 5} ${peakX + 5},${peakY} ${peakX},${peakY + 5} ${peakX - 5},${peakY}`}
+          fill="currentColor"
+          stroke="currentColor"
+          strokeWidth="1"
           filter="url(#year-ridge-glow)"
         />
       )}
@@ -122,7 +121,7 @@ export default function YearPath({ user, onContinueToday }) {
     api.analytics
       .get(user.id, 365)
       .then(setAnalytics)
-      .catch((e) => {
+      .catch(e => {
         console.error(e)
         setAnalytics(null)
       })
@@ -133,7 +132,7 @@ export default function YearPath({ user, onContinueToday }) {
 
   const daily = analytics?.daily_activity || []
 
-  const firstActiveIndex = daily.findIndex((d) => d.count + d.held_ascezas > 0)
+  const firstActiveIndex = daily.findIndex(d => d.count + d.held_ascezas > 0)
 
   if (firstActiveIndex === -1) return <YearPathEmpty onContinueToday={onContinueToday} />
 
@@ -141,7 +140,7 @@ export default function YearPath({ user, onContinueToday }) {
   // 365-дневный запрошенный период — иначе новый аккаунт видел бы
   // заведомо низкий процент из-за дней до своего появления.
   const relevant = daily.slice(firstActiveIndex)
-  const activeDaysCount = relevant.filter((d) => d.count + d.held_ascezas > 0).length
+  const activeDaysCount = relevant.filter(d => d.count + d.held_ascezas > 0).length
 
   if (activeDaysCount < MIN_ACTIVE_DAYS) {
     return <YearPathEmpty onContinueToday={onContinueToday} />
@@ -160,7 +159,8 @@ export default function YearPath({ user, onContinueToday }) {
       </div>
 
       <div className="px-6 pb-1 text-center text-[12px] text-muted">
-        {activeDaysCount} активных {activeDaysCount === 1 ? 'день' : activeDaysCount < 5 ? 'дня' : 'дней'} в периоде
+        {activeDaysCount} активных{' '}
+        {activeDaysCount === 1 ? 'день' : activeDaysCount < 5 ? 'дня' : 'дней'} в периоде
       </div>
       <div className="mt-2">
         <YearRidge values={weeklyBuckets} />

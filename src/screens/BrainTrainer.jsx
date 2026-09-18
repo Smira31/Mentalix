@@ -56,10 +56,10 @@ function ActiveGameFrame({ onExit, children }) {
 
 // ---------- 1. Внимание — Струп-тест ----------
 const COLORS = [
-  { name: 'Красный', hex: '#E85C5C' },
-  { name: 'Зелёный', hex: '#5CE87A' },
-  { name: 'Синий', hex: '#5C8FE8' },
-  { name: 'Жёлтый', hex: '#E8D65C' },
+  { name: 'Красный', hex: 'rgb(var(--c-text))' },
+  { name: 'Зелёный', hex: 'rgb(var(--c-text))' },
+  { name: 'Синий', hex: 'rgb(var(--c-text))' },
+  { name: 'Жёлтый', hex: 'rgb(var(--c-text))' },
 ]
 const TOTAL_ROUNDS_ATTENTION = 10
 
@@ -103,13 +103,13 @@ function AttentionGame({ onFinish }) {
       <div className="flex gap-4 w-full">
         <button
           onClick={() => answer(true)}
-          className="flex-1 py-4 rounded-2xl bg-mint/20 text-mint mx-type-flow-action active:scale-95 transition-transform"
+          className="flex-1 py-4 rounded-2xl bg-cream/10 text-cream mx-type-flow-action active:scale-95 transition-transform"
         >
           Да
         </button>
         <button
           onClick={() => answer(false)}
-          className="flex-1 py-4 rounded-2xl bg-cognac/20 text-cognac mx-type-flow-action active:scale-95 transition-transform"
+          className="flex-1 py-4 rounded-2xl bg-cream/10 text-cream mx-type-flow-action active:scale-95 transition-transform"
         >
           Нет
         </button>
@@ -119,7 +119,7 @@ function AttentionGame({ onFinish }) {
 }
 
 // ---------- 2. Память — последовательности ----------
-const TILE_COLORS = ['#B8952E', '#96CDB0', '#C18D52', '#5A8F76']
+const TILE_PATTERNS = ['dots', 'diagonal', 'cross', 'solid']
 const MEMORY_ROUNDS = 4 // после 4-го успешного уровня — завершение
 
 function randomSequence(level) {
@@ -188,14 +188,24 @@ function MemoryGame({ onFinish }) {
         {MEMORY_ROUNDS}
       </p>
       <div className="grid grid-cols-2 gap-4 w-full max-w-[240px]">
-        {TILE_COLORS.map((color, i) => (
+        {TILE_PATTERNS.map((pattern, i) => (
           <button
             key={i}
             onClick={() => tapTile(i)}
             disabled={showing}
             className="aspect-square rounded-3xl transition-all duration-150"
+            data-pattern={pattern}
             style={{
-              backgroundColor: color,
+              backgroundColor: 'rgb(var(--c-muted))',
+              backgroundImage:
+                pattern === 'dots'
+                  ? 'radial-gradient(rgb(var(--c-bg)) 1px, transparent 1px)'
+                  : pattern === 'diagonal'
+                    ? 'repeating-linear-gradient(135deg, transparent 0 8px, rgb(var(--c-bg)) 8px 10px)'
+                    : pattern === 'cross'
+                      ? 'linear-gradient(45deg, transparent 45%, rgb(var(--c-bg)) 45% 55%, transparent 55%), linear-gradient(-45deg, transparent 45%, rgb(var(--c-bg)) 45% 55%, transparent 55%)'
+                      : 'none',
+              backgroundSize: pattern === 'dots' ? '10px 10px' : 'auto',
               opacity: activeTile === i ? 1 : 0.35,
               transform: activeTile === i ? 'scale(0.92)' : 'scale(1)',
             }}
