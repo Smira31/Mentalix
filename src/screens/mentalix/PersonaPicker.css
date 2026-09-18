@@ -6,7 +6,7 @@
 
 .mx-dialog-runtime-scroll {
   overflow: hidden;
-  padding-bottom: var(--app-content-bottom) !important;
+  padding-bottom: 0 !important;
 }
 
 #root:has(.mx-dialog-entry),
@@ -30,7 +30,8 @@ body:has(.mx-dialog-entry) {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  height: 100%;
+  height: auto;
+  flex: 1 1 auto;
   max-height: 100%;
   min-height: 0;
   overflow-x: clip;
@@ -40,6 +41,8 @@ body:has(.mx-dialog-entry) {
   background: rgb(var(--c-bg));
   color: rgb(var(--c-text));
   padding-top: var(--app-safe-top);
+  padding-bottom: var(--app-content-bottom);
+  box-sizing: border-box;
 }
 
 /* App.jsx already reserves the iOS status-bar area in standalone mode. */
@@ -164,7 +167,6 @@ body:has(.mx-dialog-entry) {
   scroll-padding-inline: var(--mx-dialog-carousel-gutter);
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  transform: translateY(calc(-1 * var(--mx-dialog-nav-offset, 0px)));
 }
 
 .mx-dialog-carousel::-webkit-scrollbar {
@@ -342,9 +344,9 @@ body:has(.mx-dialog-entry) {
   }
 
   .mx-dialog-hero {
-    flex-basis: 236px;
-    min-height: 236px;
-    max-height: 236px;
+    flex-basis: 56px;
+    min-height: 56px;
+    max-height: 56px;
   }
 
   .mx-dialog-hero__content {
@@ -352,11 +354,18 @@ body:has(.mx-dialog-entry) {
   }
 
   .mx-dialog-surface {
-    padding-top: var(--mx-space-4);
+    padding-top: 12px;
+  }
+
+  .mx-dialog-surface__header h2 {
+    margin-bottom: 12px;
+    font-size: 1.6rem;
   }
 
   .mx-dialog-card {
     padding: var(--mx-space-3);
+    height: 204px;
+    max-height: 204px;
   }
 
   .mx-dialog-carousel {
@@ -364,6 +373,7 @@ body:has(.mx-dialog-entry) {
       var(--mx-space-4),
       calc((100% - var(--mx-dialog-card-width)) / 2)
     );
+    min-height: 0;
   }
 
   .mx-dialog-role-glyph {

@@ -304,11 +304,11 @@ async function assertSoonControls(page) {
 }
 
 async function assertLibrarySoonControl(page) {
-  const workshops = page.getByRole('button', { name: /Практикумы/ })
-  await expect(workshops).toBeDisabled()
-  await workshops.evaluate(element => element.click())
   await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
+  const sectionHeadings = page.locator('.mx-library-v2__section-block > h2')
+  await expect(sectionHeadings).toHaveText(['Программы', 'Статьи', 'Направленные записи'])
+  await expect(page.getByRole('button', { name: 'Смотреть' })).toBeVisible()
 }
 
 async function captureScreen({ page, viewport, screen, slug, runtimeErrors, results, check }) {
