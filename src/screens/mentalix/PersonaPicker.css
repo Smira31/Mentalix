@@ -188,6 +188,12 @@ body:has(.mx-dialog-entry) {
   min-width: 0;
   overflow: hidden;
   justify-content: center;
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  border-radius: var(--mx-radius-hero);
+  background: rgb(var(--c-card2));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.025),
+    0 18px 44px rgb(0 0 0 / 0.18);
   opacity: 0.48;
   scroll-snap-align: center;
   transform: none;
@@ -200,7 +206,7 @@ body:has(.mx-dialog-entry) {
 }
 
 .mx-dialog-card.is-active {
-  border-color: rgb(var(--c-border));
+  border-color: rgb(var(--c-line) / 0.08);
   opacity: 1;
   transform: translateY(-1px);
 }
