@@ -322,6 +322,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
           <FlowBack onClick={goBack} />
           <div className={FULLSCREEN_SCROLL_CLASS}>
             <PracticeWritingCanvas
+              key={step.key}
               value={value}
               onChange={next => updateAnswer(step.key, next)}
               question={step.title}

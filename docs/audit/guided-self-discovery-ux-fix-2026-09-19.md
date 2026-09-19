@@ -33,6 +33,7 @@ scope: GuidedSelfDiscoveryFlow only
 - `npm run ux:check` — 11/11 passed.
 - `npx playwright test --config=playwright.mxl246.config.mjs` — 8/8 passed на 390×844, 768×1024, 1024×768 и 1440×900.
 - В `qa-evidence/mxl-246/390x844/` сохранены состояния 390×844; `02-journal-writer-before-round.png` — before, `02-journal-writer.png` — after.
+- Новая regression-проверка — 8/8 passed после добавления веб-X и `key={step.key}`; before/after для всех 7 writing-состояний сохранены как `*-before-header.png` и соответствующие after PNG.
 
 ## Telegram MainButton — результат разведки
 
