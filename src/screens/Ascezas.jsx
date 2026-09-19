@@ -197,6 +197,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
             question="Хочешь добавить пару слов?"
             placeholder="Например: вернулся после тяжёлого дня и автоматически открыл Reels"
             ariaLabel="Комментарий к срыву"
+            autoFocus
             submitLabel="Сохранить"
             submitDisabled={!trigger || saving}
             onSubmit={submit}

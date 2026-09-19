@@ -74,11 +74,11 @@
 }
 .practice-writing-canvas__close {
   align-self: flex-end;
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgb(var(--c-border));
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgb(var(--c-emerald-light) / 0.8);
   border-radius: 50%;
-  background: transparent;
+  background: rgb(var(--c-emerald));
   color: var(--pwc-text);
   font-size: 28px;
   line-height: 1;
@@ -232,9 +232,9 @@
   white-space: nowrap;
 }
 .practice-writing-canvas__submit {
-  border: 1px solid var(--pwc-text);
-  background: var(--pwc-text);
-  color: var(--pwc-bg);
+  border: 1px solid rgb(var(--c-cream));
+  background: rgb(var(--c-cream));
+  color: rgb(var(--c-emerald-deep));
   font-size: 30px;
 }
 .practice-writing-canvas__submit svg {
