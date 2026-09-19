@@ -13,10 +13,8 @@ test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): live-ритуалы/аскезы о
     /const openSource = \(\) => onOpenPractice\(\{ key: source, sub: source \}, collection\.key\)/
   )
   assert.doesNotMatch(source, /disabled=\{!practice\}/)
-  assert.match(
-    source,
-    /isLive \? openSource\(\) : practice && onOpenPractice\(practice, collection\.key\)/
-  )
+  assert.match(source, /if \(isLive\) openSource\(\)/)
+  assert.match(source, /else if \(practice\) onOpenPractice\(practice, collection\.key\)/)
 })
 
 test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): пустое состояние ритуалов/аскез имеет CTA', () => {
