@@ -3558,9 +3558,10 @@ entityType, entityId)`.
   - Микро-анимации: смена иконки — fade+scale ~200ms, тактильный scale 0.97–0.985 на удержании кнопки, ответ наставника — slide-up+fade 360ms; `prefers-reduced-motion` сводит все три к простому fade — `main` (PR #25, `a658358`).
   - Автоотправка — `main` (PR #22, `0ad7cfa`).
   - Подтверждено на реальном iPhone в Telegram: press-and-hold запись, разрешение микрофона, автоотправка и все три анимации работают корректно на прод-домене.
+  - **MXL-VOICE-DIAGNOSTICS-002 — закрыто:** `VOICE_USER_400` исправлен backend PR #75; владелец подтвердил живую проверку голосового ввода в Safari.
   - **MXL-VOICE-DIAGNOSTICS-003 (19.09.2026):** Render-логи `mentalix-bot` за 14–15.09.2026 показали точный ответ GigaChat на этапе `chat/completions`: `{"status":422,"message":"Model does not support audio"}`. Причина — backend отправлял attachment-аудио в модели `GigaChat-2`, которая не поддерживает аудио; это не ошибка codec/MIME, `file_id` или доступа к файлу. По официальной документации аудио поддерживает `GigaChat-2-Max`; в backend внесён минимальный фикс смены модели, frontend не менялся. Backend PR #76 смёржен squash-коммитом `d166fd96`, docs PR #678 смёржен squash-коммитом `c2df6f1d`.
   - В найденных Render application logs отсутствует `content_type`/codec конкретного запроса, поэтому утверждение о фактическом `audio/mp4` либо `audio/webm;codecs=opus` по логам не подтверждается; MIME-фикс вслепую не вносился.
-  - Render передеплоил backend на `d166fd96`; деплой имеет статус `live`, `GET https://mentalix-bot.onrender.com/api/health` вернул `HTTP 200 {"status":"ok"}`. Ручная проверка голоса в Telegram после деплоя — за владельцем.
+  - Render передеплоил backend на `d166fd96`; деплой имеет статус `live`, `GET https://mentalix-bot.onrender.com/api/health` вернул `HTTP 200 {"status":"ok"}`. **Статус: закрыто; владелец подтвердил живую проверку голосового ввода в настоящем Telegram.**
 
 - [ ] **[M-L] MXL-001 — Довести три AI-экрана по референсам**
   - Частично: существуют Собеседник, Наставник и Следопыт.
