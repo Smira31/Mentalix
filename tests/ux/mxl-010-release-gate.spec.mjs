@@ -171,9 +171,27 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('heading', { name: 'Что ближе всего?' })).toBeVisible()
     await page.getByRole('button', { name: 'ровно' }).click()
     await page.getByRole('button', { name: 'Дальше' }).click()
-    await page.locator('[aria-label="Что получилось?"]').fill('Fixture result')
-    await page.getByRole('button', { name: 'Дальше' }).click()
-    await page.getByRole('button', { name: 'Закрыть день' }).click()
+
+    for (const [label, value] of [
+      ['Что получилось?', 'Fixture result'],
+      ['Что было трудно?', 'Fixture difficulty'],
+      ['Какой вывод забираешь?', 'Fixture lesson'],
+    ]) {
+      await page.locator(`[aria-label="${label}"]`).fill(value)
+      await page.getByRole('button', { name: 'Дальше' }).click()
+    }
+
+    for (const [index, label] of [
+      'Что сделал, хотя не хотелось?',
+      'Где повёл себя так, как хочешь?',
+      'Что заметил в себе хорошего?',
+    ].entries()) {
+      await page.locator(`[aria-label="${label}"]`).fill(`Fixture proud ${index + 1}`)
+      await page
+        .getByRole('button', { name: index === 2 ? 'Закрыть день' : 'Дальше' })
+        .click()
+    }
+
     await expect(page.getByRole('heading', { name: 'День закрыт' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
