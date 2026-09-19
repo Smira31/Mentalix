@@ -19,7 +19,7 @@ html:has(.mx-dialog-entry),
 body:has(.mx-dialog-entry),
 body:has(.mx-dialog-entry) #root,
 body:has(.mx-dialog-entry) .mx-dialog-app-shell {
-  background-color: rgb(var(--c-card2));
+  background-color: rgb(var(--c-bg));
 }
 
 #root:has(.mx-dialog-entry) {
@@ -46,7 +46,7 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   overflow-y: visible;
   display: flex;
   flex-direction: column;
-  background: rgb(var(--c-card2));
+  background: rgb(var(--c-bg));
   color: rgb(var(--c-text));
   padding-top: var(--app-safe-top);
   /* Dialog ends directly above the fixed 68px BottomNavigation. */
