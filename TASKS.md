@@ -3765,6 +3765,12 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 
 ## Требует продуктового решения
 
+- [ ] **MXL-QUOTE-CURATION-001 — Админка и автоматическая ротация «мыслей дня»** ([issue #683](https://github.com/Smira31/Mentalix/issues/683))
+  - **Статус:** backlog / needs-owner; реализация не начинается сейчас — запись только фиксирует желание владельца на будущее.
+  - В будущем нужна простая возможность самостоятельно управлять набором curated-текстов «мысли дня» без разработчика и видеть этот список в автоматической ежедневной ротации, как сейчас ротируются 7 захардкоженных текстов (`MXL-016`).
+  - Архитектурный референс для отдельного исследования: существующий admin-паттерн статей (`backend/articles.py`, защита `X-Admin-Key`, `/admin` в `bot/handlers_admin.py`, включая разделы «Медиа»/«Статистика»). Это референс, а не решение копировать механизм без проверки.
+  - **Не входит сейчас:** админка, backend, формат хранения, публикация и UI-изменения. Связанная задача: [GitHub issue #683](https://github.com/Smira31/Mentalix/issues/683).
+
 - [ ] **MXL-PLUS-001 — Discovery платного слоя Mentalix Plus**
   - **Статус:** discovery approved владельцем 29.08.2026; implementation не начата и не разрешена этим документом.
   - **Рекомендованный free/paid boundary:** бесплатными навсегда остаются Journal core, local-first History, базовые практики, check-in, базовые descriptive observations, удаление и privacy controls. Первый Premium-кандидат — дополнительные curated guided packs; cloud/convenience и AI — только после отдельных backend/privacy/safety gates.
