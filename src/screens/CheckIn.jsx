@@ -549,7 +549,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const scaleCount = skipScales ? 0 : MORNING_SCALE_STEPS.length
 
-  const cardCount = isEvening ? 2 : 1
+  const cardCount = isEvening ? LESSON_FIELDS.length + PROUD_HINTS.length : 1
 
   const emotionStep = scaleCount
 
@@ -886,11 +886,11 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
             text: saving
               ? 'Сохраняю...'
               : isEvening
-                ? cardIdx === 0
-                  ? 'Дальше'
-                  : 'Закрыть день'
+                ? cardIdx === cardCount - 1
+                  ? 'Закрыть день'
+                  : 'Дальше'
                 : 'Завершить',
-            run: () => (isEvening && cardIdx === 0 ? setStep(step + 1) : submit()),
+            run: () => (isEvening && cardIdx < cardCount - 1 ? setStep(step + 1) : submit()),
           }
         : null
 
@@ -909,7 +909,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       : isCard
         ? {
             text: 'Пропустить',
-            run: () => (isEvening && cardIdx === 0 ? setStep(step + 1) : submit()),
+            run: () => (isEvening && cardIdx < cardCount - 1 ? setStep(step + 1) : submit()),
           }
         : null
 
@@ -1035,29 +1035,35 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const moodLevel = values.mood || existing?.mood || 3
 
+  const eveningQuestion =
+    isEvening && isCard
+      ? cardIdx < LESSON_FIELDS.length
+        ? LESSON_FIELDS[cardIdx]
+        : { label: PROUD_HINTS[cardIdx - LESSON_FIELDS.length] }
+      : null
   const questionTitle =
     scale?.title ||
     (isEmotionStep
       ? 'Что ближе всего?'
-      : cardIdx === 0
-        ? isEvening
-          ? 'Уроки дня'
-          : previewDemoMode
+      : isEvening
+        ? eveningQuestion.label
+        : cardIdx === 0
+          ? previewDemoMode
             ? 'Что сегодня важно не потерять?'
             : 'Что на уме?'
-        : 'Чем горжусь')
+          : 'Чем горжусь')
 
   const questionSubtitle =
     scale?.hint ||
     (isEmotionStep
       ? 'Назвать чувство — половина работы с ним.'
-      : cardIdx === 0
-        ? isEvening
-          ? 'Разбери день, пока он ещё свежий. Любое поле можно пропустить.'
-          : previewDemoMode
+      : isEvening
+        ? 'Пара слов — уже разговор с собой. Можно пропустить.'
+        : cardIdx === 0
+          ? previewDemoMode
             ? 'Запиши одну мысль — коротко или подробно.'
             : 'Пара слов — уже разговор с собой.'
-        : 'Три пункта. Мелочи считаются — из них и состоит день.')
+          : 'Три пункта. Мелочи считаются — из них и состоит день.')
 
   return createPortal(
     <div
@@ -1175,29 +1181,23 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
             {/* ── уроки / мысль ── */}
 
-            {isCard && cardIdx === 0 && (
+            {isCard && cardIdx < LESSON_FIELDS.length && (
               <div key="c1" className="w-full flex flex-1 flex-col items-center">
                 {isEvening ? (
-                  <div className="space-y-3 max-w-md mx-auto w-full">
-                    {LESSON_FIELDS.map(field => (
-                      <div key={field.key} className="rounded-3xl bg-emerald p-4">
-                        <div className="text-[13px] font-bold text-cream mb-2">{field.label}</div>
-
-                        <JournalTextarea
-                          writingCanvas
-                          value={lessons[field.key] || ''}
-                          onChange={value =>
-                            setLessons(current => ({
-                              ...current,
-                              [field.key]: value,
-                            }))
-                          }
-                          placeholder={field.placeholder}
-                          ariaLabel={field.label}
-                          className="min-h-[11rem]"
-                        />
-                      </div>
-                    ))}
+                  <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
+                    <JournalTextarea
+                      writingCanvas
+                      value={lessons[eveningQuestion.key] || ''}
+                      onChange={value =>
+                        setLessons(current => ({
+                          ...current,
+                          [eveningQuestion.key]: value,
+                        }))
+                      }
+                      placeholder={eveningQuestion.placeholder}
+                      ariaLabel={eveningQuestion.label}
+                      className="min-h-[18rem] flex-1"
+                    />
                   </div>
                 ) : (
                   <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
@@ -1247,32 +1247,27 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
             {/* ── чем горжусь ── */}
 
-            {isCard && cardIdx === 1 && (
+            {isCard && cardIdx >= LESSON_FIELDS.length && (
               <div key="c2" className="w-full flex flex-col items-center">
-                <div className="space-y-2.5 max-w-md mx-auto w-full">
-                  {proud.map((value, index) => (
-                    <div
-                      key={index}
-                      className="rounded-full bg-emerald px-5 py-3.5 flex items-center gap-3"
-                    >
-                      <span className="w-6 h-6 rounded-full bg-gold/15 text-gold text-[12px] font-bold flex items-center justify-center shrink-0">
-                        {index + 1}
-                      </span>
-
-                      <input
-                        value={value}
-                        onChange={event =>
-                          setProud(current =>
-                            current.map((item, itemIndex) =>
-                              itemIndex === index ? event.target.value : item
-                            )
-                          )
-                        }
-                        placeholder={PROUD_HINTS[index]}
-                        className="flex-1 bg-transparent text-cream placeholder-muted text-[16px] outline-none font-body"
-                      />
+                <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
+                  <div className="rounded-3xl bg-emerald p-4">
+                    <div className="text-[13px] font-bold text-gold mb-3">
+                      {cardIdx - LESSON_FIELDS.length + 1} из {PROUD_HINTS.length}
                     </div>
-                  ))}
+                    <input
+                      value={proud[cardIdx - LESSON_FIELDS.length]}
+                      onChange={event =>
+                        setProud(current =>
+                          current.map((item, itemIndex) =>
+                            itemIndex === cardIdx - LESSON_FIELDS.length ? event.target.value : item
+                          )
+                        )
+                      }
+                      placeholder={eveningQuestion.label}
+                      aria-label={eveningQuestion.label}
+                      className="w-full min-h-[12rem] bg-transparent text-cream placeholder-muted text-[16px] outline-none font-body"
+                    />
+                  </div>
                 </div>
 
                 {error && (

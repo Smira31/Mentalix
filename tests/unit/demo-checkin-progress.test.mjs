@@ -27,3 +27,8 @@ test('PWA and core flows share the same question renderer and do not render scal
   assert.match(checkinSource, /className="mx-checkin-scale__circle"/)
   assert.doesNotMatch(checkinSource, /<span className="mx-checkin-scale__circle">\s*\{level\}/)
 })
+
+test('Вечерний Check-In не показывает локальный счётчик или точки прогресса', () => {
+  assert.doesNotMatch(checkinSource, /Анализ дня · \$\{step \+ 1\} из \$\{totalSteps\}/)
+  assert.doesNotMatch(checkinSource, /mx-checkin-demo__progress-label/)
+})
