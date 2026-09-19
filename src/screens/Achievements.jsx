@@ -5,6 +5,7 @@ import { readLocal, writeLocal } from '../lib/store'
 import { cloud } from '../platform/telegram.hooks'
 import { MotifArt } from '../components/Motif'
 import { buildBadges } from '../lib/badges'
+import { loadIndependentSources, retrySources } from '../lib/pathDataLoader'
 
 const SEEN_KEY = 'mx-badges-seen'
 
@@ -48,17 +49,25 @@ function writeSeen(ids) {
 export default function Achievements({ user }) {
   const [badges, setBadges] = useState(null)
   const [freshIds, setFreshIds] = useState([])
+  const [loadResult, setLoadResult] = useState(null)
+  const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     if (!user) return
-    Promise.all([
-      api.profile.get(user.id).catch(() => null),
-      api.rituals.list(user.id).catch(() => []),
-      api.ascezas.list(user.id).catch(() => []),
-    ]).then(([stats, rituals, ascezas]) => {
-      const list = buildBadges({ stats, rituals, ascezas })
+    const previous = reloadToken > 0 ? loadResult : null
+    loadIndependentSources(
+      {
+        stats: () => api.profile.get(user.id),
+        rituals: () => api.rituals.list(user.id),
+        ascezas: () => api.ascezas.list(user.id),
+      },
+      { only: previous ? retrySources(previous) : null, previous }
+    ).then(result => {
+      setLoadResult(result)
+      if (result.status !== 'success') return
+      const list = buildBadges(result.data)
       setBadges(list)
-      // отмечаем новые открытые вехи
+      // Обязательные источники успешны: только теперь меняем seen-состояние.
       readSeenEverywhere().then(seen => {
         const unlocked = list.filter(b => b.done).map(b => b.id)
         const fresh = unlocked.filter(id => !seen.includes(id))
@@ -71,9 +80,28 @@ export default function Achievements({ user }) {
         writeSeen(Array.from(new Set([...seen, ...unlocked])))
       })
     })
-  }, [user])
+    // loadResult is the intentional retry snapshot, not a fetch dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadToken, user])
 
-  if (!badges) return null
+  if (!badges && !loadResult) return <p className="text-[13px] text-muted mb-6">Загружаю вехи...</p>
+  if (!badges) {
+    const auth = loadResult?.status === 'auth'
+    return (
+      <div className="mb-6" role="alert">
+        <p className="text-[13px] text-muted">
+          {auth ? 'Вехи требуют повторной авторизации.' : 'Не удалось загрузить вехи полностью.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => setReloadToken(value => value + 1)}
+          className="mt-3 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
+        >
+          Повторить
+        </button>
+      </div>
+    )
+  }
 
   const unlockedCount = badges.filter(b => b.done).length
 

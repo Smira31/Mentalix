@@ -1,5 +1,6 @@
 import { api } from './api'
 import { sanitizeTrendsData } from './trendsDataSanitizer'
+import { loadIndependentSources } from './pathDataLoader'
 
 /*
  * Кеш данных экрана «Аналитика». Ключ включает userId и период, чтобы
@@ -100,33 +101,54 @@ export function peekTrendsSnapshot(userId, days) {
   return readSnapshot(userId, days)
 }
 
-export async function fetchTrendsData(userId, days, { force = false } = {}) {
+export async function fetchTrendsData(
+  userId,
+  days,
+  { force = false, retrySources = null, previous = null } = {}
+) {
   const cached = freshEntry(userId, days)
 
-  if (!force && cached) {
-    return cached.data
+  if (!force && !retrySources && cached) {
+    return {
+      data: { analytics: cached.data.analytics, checkins: cached.data.checkins },
+      states: { analytics: 'success', checkins: 'success' },
+      errors: {},
+      status: 'success',
+      failed: [],
+      auth: [],
+    }
   }
 
   const key = cacheKey(userId, days)
-  if (inFlight.has(key)) return inFlight.get(key)
+  if (!retrySources && inFlight.has(key)) return inFlight.get(key)
 
-  const request = Promise.all([
-    api.analytics.get(userId, days),
-    api.checkin.history(userId, days).catch(() => []),
-  ])
-    .then(([analytics, checkins]) => {
-      const data = sanitizeTrendsData({ analytics, checkins })
+  const request = loadIndependentSources(
+    {
+      analytics: () => api.analytics.get(userId, days),
+      checkins: () => api.checkin.history(userId, days),
+    },
+    {
+      only: retrySources,
+      previous: previous || cached || {},
+    }
+  ).then(result => {
+    const data = result.data.analytics
+      ? sanitizeTrendsData({ analytics: result.data.analytics, checkins: result.data.checkins })
+      : null
+    const next = { ...result, data }
 
+    // Partial/error/auth results are intentionally never cached as empty data.
+    if (result.status === 'success' && data) {
       cache.set(key, { data, fetchedAt: Date.now() })
       writeSnapshot(userId, days, data)
+    }
+    return next
+  })
 
-      return data
-    })
-    .finally(() => {
-      inFlight.delete(key)
-    })
-
-  inFlight.set(key, request)
+  if (!retrySources) {
+    inFlight.set(key, request)
+    request.finally(() => inFlight.delete(key))
+  }
 
   return request
 }
