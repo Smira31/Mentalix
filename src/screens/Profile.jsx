@@ -170,21 +170,27 @@ export default function Profile({ user }) {
         activity: () => api.analytics.get(user.id, 90),
       },
       { only: previous ? retrySources(previous) : null, previous }
-    ).then(result => {
-      if (!active) return
-      setLoadResult(result)
-      setStats(result.data.profile || null)
-      setPath(
-        buildPath({
-          checkins: result.data.checkins,
-          ascezas: result.data.ascezas,
-          rituals: result.data.rituals,
-          themes: result.data.themes,
-          activity: result.data.activity?.daily_activity,
-        })
-      )
-      setLoading(false)
-    })
+    )
+      .then(result => {
+        if (!active) return
+        setLoadResult(result)
+        setStats(result.data.profile || null)
+        setPath(
+          buildPath({
+            checkins: result.data.checkins || [],
+            ascezas: result.data.ascezas,
+            rituals: result.data.rituals,
+            themes: result.data.themes,
+            activity: result.data.activity?.daily_activity,
+          })
+        )
+        setLoading(false)
+      })
+      .catch(() => {
+        if (!active) return
+        setLoadResult({ status: 'error', failed: [] })
+        setLoading(false)
+      })
 
     return () => {
       active = false
