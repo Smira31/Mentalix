@@ -81,5 +81,17 @@ test('MXL-014 публикует короткую текстовую медит�
   assert.doesNotMatch(flow, /api\./)
 })
 
-// FULL SUITE CONTINUES IN NEXT COMMIT — temporary incomplete marker
-// Owner: if this marker remains, restore from main + apply the allowlist patch above.
+test('withQuery сохраняет порядок и кодирует значения', () => {
+  assert.equal(
+    withQuery('/mentalix/messages', { user_id: 42, persona: 'mentor & guide' }),
+    '/mentalix/messages?user_id=42&persona=mentor+%26+guide'
+  )
+})
+
+test('withQuery пропускает только null/undefined и не добавляет пустой query', () => {
+  assert.equal(withQuery('/articles'), '/articles')
+  assert.equal(
+    withQuery('/example', { empty: null, missing: undefined, zero: 0, disabled: false }),
+    '/example?zero=0&disabled=false'
+  )
+})
