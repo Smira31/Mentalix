@@ -1104,7 +1104,9 @@ export default function App() {
         flex-col
         items-center
         font-body
+        mx-app-shell
         ${tab === 'mentor' && !overlay ? 'mx-dialog-app-shell' : ''}
+        ${fullscreen ? 'mx-app-shell--fullscreen' : ''}
       `}
         style={{
           height: deviceFrameMode
