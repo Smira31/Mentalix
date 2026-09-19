@@ -5,7 +5,9 @@ import { createPortal } from 'react-dom'
 import BackButton from '../components/BackButton'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import SemanticGlyph from '../components/SemanticGlyph'
+import WebActionBar from '../components/WebActionBar'
 import {
+  FULLSCREEN_SCROLL_CLASS,
   FULLSCREEN_SHELL_CLASS,
   FULLSCREEN_HEADER_SLOT_CLASS,
   useFullscreenSurface,
@@ -16,6 +18,7 @@ import {
   saveGuidedSelfDiscoveryDraft,
 } from '../lib/guidedSelfDiscoveryDraft'
 import { platform, platformName } from '../platform'
+import { useMainButton } from '../platform/telegram.hooks'
 import './GuidedSelfDiscoveryFlow.css'
 
 const STEPS = [
@@ -100,40 +103,42 @@ function Intro({ hasDraft, onClose, onStart }) {
   return (
     <>
       <FlowBack onClick={onClose} />
-      <div className="guided-self-discovery__intro">
-        <div className="guided-self-discovery__hero" aria-hidden="true">
-          <SemanticGlyph
-            kind="next-step"
-            animated={false}
-            className="guided-self-discovery__glyph"
-          />
-        </div>
-        <div className="guided-self-discovery__intro-copy">
-          <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Запись</p>
-          <h1 className="guided-self-discovery__intro-title font-display text-cream">
-            {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
-          </h1>
-          <p className="guided-self-discovery__intro-description">{INTRO_DESCRIPTION}</p>
-          <p className="guided-self-discovery__intro-note">
-            Ответы остаются на этом устройстве. Можно остановиться в любой момент.
-          </p>
-        </div>
-        <div className="guided-self-discovery__intro-actions">
-          <button
-            type="button"
-            onClick={onStart}
-            className="guided-self-discovery__intro-cta"
-            aria-label={hasDraft ? 'Продолжить' : 'Начать'}
-          >
-            <svg
-              aria-hidden="true"
-              className="guided-self-discovery__chevron"
-              viewBox="0 0 20 20"
-              focusable="false"
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div className="guided-self-discovery__intro">
+          <div className="guided-self-discovery__hero" aria-hidden="true">
+            <SemanticGlyph
+              kind="next-step"
+              animated={false}
+              className="guided-self-discovery__glyph"
+            />
+          </div>
+          <div className="guided-self-discovery__intro-copy">
+            <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-gold">Запись</p>
+            <h1 className="guided-self-discovery__intro-title font-display text-cream">
+              {hasDraft ? 'Продолжи разбирать ситуацию' : 'Когда непонятно, что делать'}
+            </h1>
+            <p className="guided-self-discovery__intro-description">{INTRO_DESCRIPTION}</p>
+            <p className="guided-self-discovery__intro-note">
+              Ответы остаются на этом устройстве. Можно остановиться в любой момент.
+            </p>
+          </div>
+          <div className="guided-self-discovery__intro-actions">
+            <button
+              type="button"
+              onClick={onStart}
+              className="guided-self-discovery__intro-cta"
+              aria-label={hasDraft ? 'Продолжить' : 'Начать'}
             >
-              <path d="M6 4.5 12 10 6 15.5" />
-            </svg>
-          </button>
+              <svg
+                aria-hidden="true"
+                className="guided-self-discovery__chevron"
+                viewBox="0 0 20 20"
+                focusable="false"
+              >
+                <path d="M6 4.5 12 10 6 15.5" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -144,72 +149,67 @@ function Complete({ onClose, onRestart, experiment, feedback, onFeedback }) {
   return (
     <>
       <FlowBack onClick={onClose} />
-      <div className="guided-self-discovery__completion">
-        <div className="guided-self-discovery__completion-art" aria-hidden="true">
-          <SemanticGlyph
-            kind="next-step"
-            animated={false}
-            className="guided-self-discovery__glyph"
-          />
-        </div>
-        <div className="guided-self-discovery__completion-copy">
-          <p className="guided-self-discovery__completion-eyebrow text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
-            Эксперимент готов
-          </p>
-          <h1 className="guided-self-discovery__completion-title font-display text-cream">
-            Хорошо. Следующий шаг готов.
-          </h1>
-          <p className="guided-self-discovery__completion-description">
-            Проверь его в реальности, а не пытайся заранее получить идеальную ясность.
-          </p>
-        </div>
-        <div
-          className="guided-self-discovery__completion-feedback"
-          role="group"
-          aria-label="Помогло ли это?"
-        >
-          <p>Помогло ли это?</p>
-          <div className="guided-self-discovery__feedback-options">
-            {[
-              ['no', 'Нет', '−'],
-              ['a-little', 'Немного', '≈'],
-              ['yes', 'Да', '✓'],
-            ].map(([value, label, icon]) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={feedback === value}
-                onClick={() => onFeedback(value)}
-              >
-                <span className="guided-self-discovery__feedback-icon" aria-hidden="true">
-                  {icon}
-                </span>
-                <span>{label}</span>
-              </button>
-            ))}
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div className="guided-self-discovery__completion">
+          <div className="guided-self-discovery__completion-art" aria-hidden="true">
+            <SemanticGlyph
+              kind="next-step"
+              animated={false}
+              className="guided-self-discovery__glyph"
+            />
           </div>
-        </div>
-        {answered(experiment) && (
-          <div className="guided-self-discovery__completion-result">
-            <span>твой эксперимент</span>
-            <p>{experiment}</p>
+          <div className="guided-self-discovery__completion-copy">
+            <p className="guided-self-discovery__completion-eyebrow text-[11px] font-bold uppercase tracking-[0.14em] text-gold">
+              Эксперимент готов
+            </p>
+            <h1 className="guided-self-discovery__completion-title font-display text-cream">
+              Хорошо. Следующий шаг готов.
+            </h1>
+            <p className="guided-self-discovery__completion-description">
+              Проверь его в реальности, а не пытайся заранее получить идеальную ясность.
+            </p>
           </div>
-        )}
-        <div className="guided-self-discovery__completion-actions">
-          <button
-            type="button"
-            onClick={onClose}
-            className="cta-pill guided-self-discovery__completion-primary"
+          <div
+            className="guided-self-discovery__completion-feedback"
+            role="group"
+            aria-label="Помогло ли это?"
           >
-            Вернуться в дневник
-          </button>
-          <button
-            type="button"
-            onClick={onRestart}
-            className="guided-self-discovery__completion-secondary"
-          >
-            Начать заново
-          </button>
+            <p>Помогло ли это?</p>
+            <div className="guided-self-discovery__feedback-options">
+              {[
+                ['no', 'Нет', '−'],
+                ['a-little', 'Немного', '≈'],
+                ['yes', 'Да', '✓'],
+              ].map(([value, label, icon]) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={feedback === value}
+                  onClick={() => onFeedback(value)}
+                >
+                  <span className="guided-self-discovery__feedback-icon" aria-hidden="true">
+                    {icon}
+                  </span>
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          {answered(experiment) && (
+            <div className="guided-self-discovery__completion-result">
+              <span>твой эксперимент</span>
+              <p>{experiment}</p>
+            </div>
+          )}
+          <div className="guided-self-discovery__completion-actions">
+            <button
+              type="button"
+              onClick={onRestart}
+              className="guided-self-discovery__completion-secondary"
+            >
+              Начать заново
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -283,6 +283,24 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
     setStage('writing')
   }
 
+  const action =
+    stage === 'writing'
+      ? {
+          text: stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
+          onClick: continueFlow,
+          disabled: !answered(value),
+        }
+      : stage === 'complete'
+        ? { text: 'Вернуться в дневник', onClick: onClose, disabled: false }
+        : null
+
+  useMainButton({
+    text: action?.text || '',
+    onClick: action?.onClick,
+    visible: Boolean(action),
+    enabled: !action?.disabled,
+  })
+
   return createPortal(
     <div
       className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow mx-practice-flow--guided mx-practice-flow--self-discovery flex flex-col`}
@@ -293,21 +311,22 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       {stage === 'writing' && step && (
         <>
           <FlowBack onClick={goBack} />
-          <PracticeWritingCanvas
-            value={value}
-            onChange={next => updateAnswer(step.key, next)}
-            question={step.title}
-            description={step.hint}
-            placeholder={step.placeholder}
-            ariaLabel={step.title}
-            autoFocus
-            onSubmit={continueFlow}
-            submitLabel={
-              stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить'
-            }
-            submitDisabled={!answered(value)}
-            className="guided-self-discovery__writing min-h-0 flex-1"
-          />
+          <div className={FULLSCREEN_SCROLL_CLASS}>
+            <PracticeWritingCanvas
+              value={value}
+              onChange={next => updateAnswer(step.key, next)}
+              question={step.title}
+              description={step.hint}
+              placeholder={step.placeholder}
+              ariaLabel={step.title}
+              autoFocus
+              submitLabel={
+                stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить'
+              }
+              submitDisabled={!answered(value)}
+              className="guided-self-discovery__writing min-h-0 flex-1"
+            />
+          </div>
         </>
       )}
 
@@ -320,6 +339,8 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
           onFeedback={setCompletionFeedback}
         />
       )}
+
+      <WebActionBar action={action} />
     </div>,
     getFullscreenPortalTarget()
   )

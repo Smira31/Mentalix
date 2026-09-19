@@ -18,7 +18,7 @@ last_verified: 2026-09-11
 
 ## Обновление 19.09.2026 — MXL-DEC-028: единый стандарт текстового ввода
 
-**Статус:** предложено в draft PR #675.
+**Статус:** реализовано в PR #677 (reapply «autofocus text inputs and unify writing actions»).
 
 **Решение:** production-экраны со свободным текстовым вводом (JournalFlow, CheckIn, GuidedJournals, GuidedSelfDiscoveryFlow, PracticeWritingCanvas и Ascezas) автоматически фокусируют поле после открытия шага, без отдельной кнопки-триггера. Для устойчивости на мобильных webview применяется отложенный фокус через `requestAnimationFrame` с коротким повтором.
 
