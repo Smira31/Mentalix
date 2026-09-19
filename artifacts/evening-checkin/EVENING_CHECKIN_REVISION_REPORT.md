@@ -16,13 +16,13 @@
 
 ## Проверки
 
-| Проверка                                                | Результат                                                                 |
-| ------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `npm run check:core`                                    | PASS                                                                      |
-| `npm exec prettier -- --check src/screens/CheckIn.jsx`  | PASS                                                                      |
-| `npm exec eslint -- src/screens/CheckIn.jsx`            | PASS                                                                      |
-| `node --test tests/unit/demo-checkin-progress.test.mjs` | PASS                                                                      |
-| `npm run ux:check`                                      | Запущена после установки Chromium; итог добавляется в PR после завершения |
+| Проверка                                                | Результат        |
+| ------------------------------------------------------- | ---------------- |
+| `npm run check:core`                                    | PASS             |
+| `npm exec prettier -- --check src/screens/CheckIn.jsx`  | PASS             |
+| `npm exec eslint -- src/screens/CheckIn.jsx`            | PASS             |
+| `node --test tests/unit/demo-checkin-progress.test.mjs` | PASS             |
+| `npm run ux:check`                                      | PASS — 11 тестов |
 
 ## Коммиты и PR
 
