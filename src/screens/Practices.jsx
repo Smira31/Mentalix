@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
-import { PRACTICE_KEYS } from '../config/practiceAvailability'
+import { isPracticeAvailable, PRACTICE_KEYS } from '../config/practiceAvailability'
 import { readOneOffPracticeHistory } from '../lib/oneOffPracticeHistory'
 import { localDayId } from '../lib/morningPilot'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
@@ -185,7 +185,8 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     )
   }
 
-  if (sub === 'meditation') {
+  // MeditationFlow kept in tree for future; entry gated by isPracticeAvailable.
+  if (sub === 'meditation' && isPracticeAvailable(PRACTICE_KEYS.meditation)) {
     return <MeditationFlow onClose={() => setSub(null)} />
   }
 
@@ -307,6 +308,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         selectedCollectionKey={selectedCollectionKey}
         onCollectionChange={setSelectedCollectionKey}
         onOpenPractice={(practice, collectionKey = null) => {
+          if (practice?.key && !isPracticeAvailable(practice.key)) return
           platform.haptic('light')
           if (practice.key === 'lila-discover') {
             setSelectedCollectionKey(null)
