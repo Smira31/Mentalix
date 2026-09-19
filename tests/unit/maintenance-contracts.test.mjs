@@ -35,7 +35,7 @@ test('allowlist сохраняет доступные практики и акт
     'no-blame',
     'narrow-focus',
     'one-finish',
-    'meditation',
+    // Meditation: product decision 2026-09-19 - not ready; "Скоро" in catalog.
     // MXL-525 G6: brain/breathing/focus признаны доступными.
     'brain',
     'breathing',
@@ -45,7 +45,7 @@ test('allowlist сохраняет доступные практики и акт
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.brain), true)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.breathing), true)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.focus), true)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), true)
+  assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), false)
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
 
@@ -72,9 +72,10 @@ test('MXL-014 публикует короткую текстовую медит�
   assert.match(flow, /practice-scene--input practice-scene--input-centered/)
   assert.equal((flow.match(/floatingToolbar/g) || []).length, 3)
   assert.match(flow, /<JournalTextarea/)
-  assert.match(practices, /<MeditationFlow onClose=\{\(\) => setSub\(null\)\} \/>/)
+  assert.match(practices, /MeditationFlow/)
   assert.match(practices, /buildPracticeViewModels\(\{ rituals, ascezas, completedToday \}\)/)
-  assert.match(availability, /PRACTICE_KEYS\.meditation,/)
+  assert.match(availability, /meditation:\s*'meditation'/)
+  assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), false)
   assert.doesNotMatch(flow, /api\./)
 })
 
