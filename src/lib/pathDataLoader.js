@@ -1,5 +1,3 @@
-import { ApiError } from './api'
-
 export const SOURCE_STATES = Object.freeze({
   loading: 'loading',
   success: 'success',
@@ -65,7 +63,7 @@ export async function loadIndependentSources(sources, { previous = {}, only = nu
 }
 
 export function isAuthError(error) {
-  return error instanceof ApiError && (error.status === 401 || error.status === 403)
+  return error?.status === 401 || error?.status === 403
 }
 
 export function retrySources(result) {
