@@ -147,43 +147,49 @@ export default function PracticeWritingCanvas({
         inputMode={demoPreview ? 'none' : undefined}
         className="practice-writing-canvas__field font-body"
       />
-      <div className="practice-writing-canvas__dock" style={dockStyle} aria-label="Действия ввода">
-        {formatting && onFormat && (
-          <button
-            type="button"
-            aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
-            aria-expanded={formatOpen}
-            onClick={onFormat}
-            className={`practice-writing-canvas__format ${formatOpen ? 'is-open' : ''}`}
-          >
-            Aa
-          </button>
-        )}
-        {onDeepen && (
-          <button
-            type="button"
-            aria-label={deepenLabel}
-            disabled={deepenIsDisabled}
-            onClick={onDeepen}
-            className="practice-writing-canvas__deepen"
-          >
-            {deepenLabel}
-          </button>
-        )}
-        {onSubmit && (
-          <button
-            type="button"
-            aria-label={submitLabel}
-            disabled={submitIsDisabled}
-            onClick={onSubmit}
-            className="practice-writing-canvas__submit"
-          >
-            <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
-              <path d="M6 4.5 12 10 6 15.5" />
-            </svg>
-          </button>
-        )}
-      </div>
+      {(onFormat || onDeepen || onSubmit) && (
+        <div
+          className="practice-writing-canvas__dock"
+          style={dockStyle}
+          aria-label="Действия ввода"
+        >
+          {formatting && onFormat && (
+            <button
+              type="button"
+              aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
+              aria-expanded={formatOpen}
+              onClick={onFormat}
+              className={`practice-writing-canvas__format ${formatOpen ? 'is-open' : ''}`}
+            >
+              Aa
+            </button>
+          )}
+          {onDeepen && (
+            <button
+              type="button"
+              aria-label={deepenLabel}
+              disabled={deepenIsDisabled}
+              onClick={onDeepen}
+              className="practice-writing-canvas__deepen"
+            >
+              {deepenLabel}
+            </button>
+          )}
+          {onSubmit && (
+            <button
+              type="button"
+              aria-label={submitLabel}
+              disabled={submitIsDisabled}
+              onClick={onSubmit}
+              className="practice-writing-canvas__submit"
+            >
+              <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
+                <path d="M6 4.5 12 10 6 15.5" />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
       {demoPreview && visualKeyboardOpen && (
         <div className="practice-writing-canvas__demo-keyboard" aria-label="Демо-клавиатура iPhone">
           {DEMO_KEY_ROWS.map((row, rowIndex) => (
