@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
@@ -187,14 +187,7 @@ export default function Today({
 
   const [reloadToken, setReloadToken] = useState(0)
 
-  const [dailyQuote, setDailyQuote] = useState(() => initialTodaySnapshot?.quote?.text || null)
-
-  const [dailyThought] = useState(() => getDailyThought())
-
-  const thoughtOfDay = useMemo(
-    () => (dailyQuote ? { text: dailyQuote, attribution: 'твоя фраза' } : dailyThought),
-    [dailyQuote, dailyThought]
-  )
+  const [thoughtOfDay] = useState(() => getDailyThought())
 
   const [checkin, setCheckin] = useState(() => initialTodaySnapshot?.checkin || null)
 
@@ -291,7 +284,6 @@ export default function Today({
         const {
           rituals: ritualsData,
           ascezas: ascezasData,
-          quote: quoteData,
           checkin: checkinData,
           themes: themesData,
           settings: settingsData,
@@ -310,8 +302,6 @@ export default function Today({
         setRituals(ritualsData)
 
         setAscezas(ascezasData)
-
-        setDailyQuote(quoteData?.text || null)
 
         setCheckin(checkinData)
 
