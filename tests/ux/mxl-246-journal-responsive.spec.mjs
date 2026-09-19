@@ -153,6 +153,7 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       await page.getByRole('button', { name: 'Начать' }).click()
       const firstEditor = page.getByRole('textbox', { name: 'Что сейчас происходит?' })
       await expect(firstEditor).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Закрыть' })).toBeVisible()
 
       const fontSize = await firstEditor.evaluate(element =>
         parseFloat(getComputedStyle(element).fontSize)
@@ -184,7 +185,10 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       for (const [index, [label, text]] of guidedSteps.entries()) {
         const editor = page.getByRole('textbox', { name: label })
         await expect(editor).toBeVisible()
-        if (index > 0) await editor.fill(text)
+        if (index > 0) {
+          await expect(editor).toHaveValue('')
+          await editor.fill(text)
+        }
         await page
           .getByRole('button', {
             name:
