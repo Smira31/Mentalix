@@ -292,15 +292,24 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
               {items.map(item => {
                 const isLive = !item.key
                 const practice = item.key ? item : null
+                const isSoon = Boolean(practice?.soon)
                 const key = practice?.key || `${collection.key}-${item.id || itemLabel(item)}`
                 return (
                   <button
                     className="mx-layered-category__card"
                     type="button"
                     key={key}
-                    onClick={() =>
-                      isLive ? openSource() : practice && onOpenPractice(practice, collection.key)
+                    disabled={isSoon}
+                    aria-label={
+                      isSoon
+                        ? `${practice?.title || itemLabel(item)}, скоро`
+                        : `Открыть ${practice?.title || itemLabel(item)}`
                     }
+                    onClick={() => {
+                      if (isSoon) return
+                      if (isLive) openSource()
+                      else if (practice) onOpenPractice(practice, collection.key)
+                    }}
                   >
                     <span className="mx-layered-category__art" aria-hidden="true">
                       <span className="mx-layered-category__art-glyph">
@@ -310,16 +319,23 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
                     </span>
                     <strong>{practice?.title || itemLabel(item)}</strong>
                     <small>
-                      {practice?.subtitle ||
-                        (source === 'rituals'
-                          ? item.today_level
-                            ? 'сегодня выполнено'
-                            : 'открыть ритуалы'
-                          : item.today_status === 'held'
-                            ? 'сегодня удержано'
-                            : 'открыть аскезы')}
+                      {isSoon
+                        ? 'скоро'
+                        : practice?.subtitle ||
+                          (source === 'rituals'
+                            ? item.today_level
+                              ? 'сегодня выполнено'
+                              : 'открыть ритуалы'
+                            : item.today_status === 'held'
+                              ? 'сегодня удержано'
+                              : 'открыть аскезы')}
                     </small>
-                    {practice?.completedToday && (
+                    {isSoon && (
+                      <span className="mx-layered-category__completion" aria-hidden="true">
+                        Скоро
+                      </span>
+                    )}
+                    {!isSoon && practice?.completedToday && (
                       <span className="mx-layered-category__completion">сегодня</span>
                     )}
                   </button>
