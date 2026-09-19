@@ -2,85 +2,101 @@
   {
     "screen": "today",
     "viewport": "390x844",
+    "device": "iPhone notch profile",
+    "safeTop": "47px",
     "mode": "safari",
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "47px",
+      "safeTop": "max(\n    0px,\n    47px,\n    0px,\n    0px,\n    0px\n  )"
     }
   },
   {
     "screen": "today",
     "viewport": "390x844",
+    "device": "iPhone notch profile",
+    "safeTop": "47px",
     "mode": "standalone",
     "before": {
-      "paddingTop": "47px"
+      "paddingTop": "94px"
     },
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "47px",
+      "safeTop": "max(\n    0px,\n    47px,\n    0px,\n    0px,\n    0px\n  )"
     }
   },
   {
     "screen": "practices",
     "viewport": "390x844",
+    "device": "iPhone notch profile",
+    "safeTop": "47px",
     "mode": "safari",
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "47px",
+      "safeTop": "max(\n    0px,\n    47px,\n    0px,\n    0px,\n    0px\n  )"
     }
   },
   {
     "screen": "practices",
     "viewport": "390x844",
+    "device": "iPhone notch profile",
+    "safeTop": "47px",
     "mode": "standalone",
     "before": {
-      "paddingTop": "47px"
+      "paddingTop": "94px"
     },
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "47px",
+      "safeTop": "max(\n    0px,\n    47px,\n    0px,\n    0px,\n    0px\n  )"
     }
   },
   {
     "screen": "today",
     "viewport": "430x932",
+    "device": "iPhone Dynamic Island profile",
+    "safeTop": "59px",
     "mode": "safari",
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "59px",
+      "safeTop": "max(\n    0px,\n    59px,\n    0px,\n    0px,\n    0px\n  )"
     }
   },
   {
     "screen": "today",
     "viewport": "430x932",
+    "device": "iPhone Dynamic Island profile",
+    "safeTop": "59px",
     "mode": "standalone",
     "before": {
-      "paddingTop": "47px"
+      "paddingTop": "106px"
     },
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "59px",
+      "safeTop": "max(\n    0px,\n    59px,\n    0px,\n    0px,\n    0px\n  )"
     }
   },
   {
     "screen": "practices",
     "viewport": "430x932",
+    "device": "iPhone Dynamic Island profile",
+    "safeTop": "59px",
     "mode": "safari",
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "59px",
+      "safeTop": "max(\n    0px,\n    59px,\n    0px,\n    0px,\n    0px\n  )"
     }
   },
   {
     "screen": "practices",
     "viewport": "430x932",
+    "device": "iPhone Dynamic Island profile",
+    "safeTop": "59px",
     "mode": "standalone",
     "before": {
-      "paddingTop": "47px"
+      "paddingTop": "106px"
     },
     "after": {
-      "paddingTop": "0px",
-      "safeTop": "47px"
+      "paddingTop": "59px",
+      "safeTop": "max(\n    0px,\n    59px,\n    0px,\n    0px,\n    0px\n  )"
     }
   }
 ]

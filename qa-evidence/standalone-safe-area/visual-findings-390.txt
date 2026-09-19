@@ -1,0 +1,3 @@
+Visual QA 390x844 after safe-area fix:
+- Today: content begins below the simulated 47px iPhone notch inset; greeting/icons are not clipped or pressed against the top edge. No extra legacy 47px gap is visible beyond the expected status-bar clearance.
+- Practices (Шаги): journal card and heading begin below the simulated 47px inset; no overlap with the system area and no duplicated blank band.
