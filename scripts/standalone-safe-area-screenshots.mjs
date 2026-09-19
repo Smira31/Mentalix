@@ -8,8 +8,8 @@ const screens = [
   { name: 'practices', tab: 'practices' },
 ]
 const viewports = [
-  { name: '390x844', width: 390, height: 844, safeTop: 47, device: 'iPhone notch profile' },
-  { name: '430x932', width: 430, height: 932, safeTop: 59, device: 'iPhone Dynamic Island profile' },
+  { name: '390x844', width: 390, height: 844 },
+  { name: '430x932', width: 430, height: 932 },
 ]
 
 await fs.mkdir(outputDir, { recursive: true })
@@ -28,12 +28,10 @@ for (const viewport of viewports) {
       })
       await page.addStyleTag({
         content: `
-          :root { --tg-safe-area-inset-top: ${viewport.safeTop}px; }
+          :root { --app-safe-top: 47px; }
           .mx-preview-demo-note, .mx-demo-telegram-chrome { display: none !important; }
           .mx-app-shell--fullscreen { padding-top: 0 !important; }
-          .mx-app-shell:not(.mx-dialog-app-shell):not(.mx-app-shell--fullscreen) {
-            padding-top: ${mode === 'standalone' ? 'var(--app-safe-top)' : 'var(--app-safe-top)'} !important;
-          }
+          .mx-app-shell:not(.mx-dialog-app-shell) { padding-top: ${mode === 'standalone' ? '0px' : '0px'} !important; }
         `,
       })
       await page.waitForTimeout(100)
@@ -46,32 +44,16 @@ for (const viewport of viewports) {
 
       if (mode === 'standalone') {
         await page.addStyleTag({
-          content:
-            '.mx-app-shell:not(.mx-dialog-app-shell):not(.mx-app-shell--fullscreen) { padding-top: calc(var(--app-safe-top) + 47px) !important; }',
+          content: '.mx-app-shell:not(.mx-dialog-app-shell):not(.mx-app-shell--fullscreen) { padding-top: 47px !important; }',
         })
         await page.waitForTimeout(100)
         const before = await page.locator('.mx-app-shell').evaluate(element => ({
           paddingTop: getComputedStyle(element).paddingTop,
         }))
         await page.screenshot({ path: `${outputDir}/before-${suffix}.png`, fullPage: false })
-        results.push({
-          screen: screen.name,
-          viewport: viewport.name,
-          device: viewport.device,
-          safeTop: `${viewport.safeTop}px`,
-          mode,
-          before,
-          after,
-        })
+        results.push({ screen: screen.name, viewport: viewport.name, mode, before, after })
       } else {
-        results.push({
-          screen: screen.name,
-          viewport: viewport.name,
-          device: viewport.device,
-          safeTop: `${viewport.safeTop}px`,
-          mode,
-          after,
-        })
+        results.push({ screen: screen.name, viewport: viewport.name, mode, after })
       }
       await context.close()
     }

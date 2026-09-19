@@ -1,3 +1,0 @@
-Visual QA 430x932 after safe-area fix:
-- Today: content begins below the simulated 59px Dynamic Island inset; the greeting, icons, calendar, and hero card are comfortably clear of the top system area. The old duplicated gap is absent.
-- Practices (Шаги): the journal card starts below the simulated 59px inset and the catalog remains fully visible without top overlap or an artificial extra band.
