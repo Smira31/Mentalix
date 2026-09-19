@@ -1128,17 +1128,13 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await expect(cards).toHaveCount(3)
     const cardGeometry = await cards.first().evaluate(element => {
       const rect = element.getBoundingClientRect()
-      return { width: rect.width, height: rect.height }
+      return { y: rect.y, width: rect.width, height: rect.height }
     })
     expect(cardGeometry.width, 'Карточка должна оставаться компактной').toBeGreaterThanOrEqual(190)
     expect(cardGeometry.width, 'Карточка не должна становиться dashboard-like').toBeLessThanOrEqual(
       204
     )
     expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
-    const maxCardHeight = viewport.width >= 405 ? 324 : viewport.width >= 390 ? 280 : 250
-    expect(cardGeometry.height, 'Карточка не должна перекрывать навигацию').toBeLessThanOrEqual(
-      maxCardHeight
-    )
     expect(
       await cards.evaluateAll(elements =>
         elements.map(element => getComputedStyle(element).borderTopWidth)
@@ -1151,6 +1147,14 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       Math.abs(navigationBox.y + navigationBox.height - viewport.height),
       'BottomNavigation должна доходить до нижнего края viewport без legacy gap'
     ).toBeLessThanOrEqual(0.5)
+    expect(
+      navigationBox.y - (cardGeometry.y + cardGeometry.height),
+      'Карточка должна заканчиваться с небольшим зазором до BottomNavigation'
+    ).toBeGreaterThanOrEqual(15)
+    expect(
+      navigationBox.y - (cardGeometry.y + cardGeometry.height),
+      'Карточка не должна оставаться далеко от BottomNavigation'
+    ).toBeLessThanOrEqual(17)
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
