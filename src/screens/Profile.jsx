@@ -198,7 +198,7 @@ export default function Profile({ user }) {
     setReloadToken(token => token + 1)
   }
 
-  const hasLoadError = loadResult?.status === 'error' || loadResult?.status === 'auth'
+  const hasLoadError = loadResult?.status != null && loadResult.status !== 'success'
   const loadMessage =
     loadResult?.status === 'auth'
       ? 'Профиль требует повторной авторизации.'
