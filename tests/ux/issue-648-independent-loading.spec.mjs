@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test'
 
-const TEST_USER = { id: 900648, first_name: 'Issue 648', username: 'issue_648' }
+const TEST_USER = {
+  id: 900648,
+  first_name: 'Issue 648',
+  username: 'issue_648',
+  days_active: 7,
+  total_checkins: 3,
+}
 
 function json(body, status = 200) {
   return { status, contentType: 'application/json', body: JSON.stringify(body) }
@@ -24,7 +30,8 @@ async function openApp(browser, baseURL, failures) {
   await context.route('**/api/**', route => {
     const pathname = new URL(route.request().url()).pathname
     if (route.request().method() === 'GET' && failures.has(pathname)) {
-      return route.fulfill(json({ error: `forced failure: ${pathname}` }, 503))
+      const status = failures instanceof Map ? failures.get(pathname) : 503
+      return route.fulfill(json({ error: `forced failure: ${pathname}` }, status))
     }
     if (route.request().method() !== 'GET') return route.fulfill(json({ ok: true }))
     if (pathname === '/api/profile') return route.fulfill(json(TEST_USER))
@@ -53,7 +60,7 @@ test('Profile keeps profile data visible when rituals fail', async ({ browser, b
     await page.getByRole('button', { name: 'Профиль' }).click()
     await page.getByText('Профиль и мой путь').click()
     await expect(page.getByRole('heading', { name: 'мой путь.' })).toBeVisible()
-    await expect(page.getByText(/Issue 648 дней в системе/)).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Issue 648' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
   } finally {
     await context.close()
@@ -70,11 +77,32 @@ test('Analytics keeps the mood check-in neighbor visible and interactive when an
     new Set(['/api/analytics', '/api/checkin/history'])
   )
   try {
-    await page.getByRole('button', { name: 'Прогресс' }).click()
+    await page.goto('/?tab=trends')
     await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Очень тяжело' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Очень тяжело' })).toBeEnabled()
-    await expect(page.getByRole('alert')).toContainText(/статистик|прогресс/i)
+    await expect(page.getByText('Настроение за 14 дней')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
+    await expect(page.getByRole('alert').filter({ hasText: 'Статистика временно недоступна.' })).toBeVisible()
+  } finally {
+    await context.close()
+  }
+})
+
+test('Profile and Analytics expose auth recovery for 401/403 responses', async ({ browser, baseURL }) => {
+  const { context, page } = await openApp(
+    browser,
+    baseURL,
+    new Map([
+      ['/api/profile', 401],
+      ['/api/rituals', 403],
+      ['/api/analytics', 401],
+      ['/api/checkin/history', 403],
+    ])
+  )
+  try {
+    await page.goto('/?tab=trends')
+    await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeVisible()
+    await expect(page.getByRole('alert').filter({ hasText: 'Статистика требует повторной авторизации.' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
   } finally {
     await context.close()
   }
