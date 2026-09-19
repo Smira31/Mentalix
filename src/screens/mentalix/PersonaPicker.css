@@ -15,6 +15,13 @@ body:has(.mx-dialog-entry) {
   overflow-y: hidden;
 }
 
+html:has(.mx-dialog-entry),
+body:has(.mx-dialog-entry),
+body:has(.mx-dialog-entry) #root,
+body:has(.mx-dialog-entry) .mx-dialog-app-shell {
+  background-color: rgb(var(--c-card2));
+}
+
 #root:has(.mx-dialog-entry) {
   --bottom-nav-offset: 0px;
 }
@@ -22,6 +29,7 @@ body:has(.mx-dialog-entry) {
 .mx-dialog-entry {
   --mx-dialog-card-width: 204px;
   --mx-dialog-card-min-height: clamp(250px, 36vh, 300px);
+  --mx-dialog-card-bottom-gap: 16px;
   --mx-dialog-card-padding: calc(var(--mx-space-4) + (var(--mx-space-1) / 2));
   --mx-dialog-carousel-gutter: max(
     var(--mx-space-6),
@@ -38,7 +46,7 @@ body:has(.mx-dialog-entry) {
   overflow-y: visible;
   display: flex;
   flex-direction: column;
-  background: rgb(var(--c-bg));
+  background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
   padding-top: var(--app-safe-top);
   /* Dialog ends directly above the fixed 68px BottomNavigation. */
@@ -161,7 +169,7 @@ body:has(.mx-dialog-entry) {
   width: 100%;
   min-width: 0;
   min-height: var(--mx-dialog-card-min-height);
-  padding: 0 var(--mx-dialog-carousel-gutter) 8px;
+  padding: 0 var(--mx-dialog-carousel-gutter) var(--mx-dialog-card-bottom-gap);
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
@@ -180,9 +188,11 @@ body:has(.mx-dialog-entry) {
   position: relative;
   display: flex;
   flex: 0 0 var(--mx-dialog-card-width);
-  height: 250px;
+  /* The carousel's percentage height already resolves against its content
+     box; its bottom padding supplies the single visual gap to navigation. */
+  height: 100%;
   min-height: 0;
-  max-height: 250px;
+  max-height: none;
   flex-direction: column;
   padding: var(--mx-dialog-card-padding);
   min-width: 0;
@@ -304,48 +314,6 @@ body:has(.mx-dialog-entry) {
   word-break: break-word;
 }
 
-.mx-dialog-dots {
-  position: relative;
-  flex: 0 0 44px;
-  display: flex;
-  width: auto;
-  justify-content: center;
-  gap: 4px;
-  margin: 0;
-  background: rgb(var(--c-card2) / 0.84);
-}
-
-.mx-dialog-dots button {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-
-.mx-dialog-dots button span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgb(var(--c-border));
-  transition:
-    transform var(--mx-motion-fast) ease,
-    background-color var(--mx-motion-fast) ease;
-}
-
-.mx-dialog-dots button[aria-current='true'] span {
-  background: rgb(var(--c-text));
-  transform: scale(1.25);
-}
-
-.mx-dialog-dots button:focus-visible {
-  outline: 2px solid rgb(var(--c-gold));
-  outline-offset: -2px;
-  border-radius: 50%;
-}
-
 @media (max-width: 340px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
@@ -373,8 +341,6 @@ body:has(.mx-dialog-entry) {
 
   .mx-dialog-card {
     padding: var(--mx-space-3);
-    height: 204px;
-    max-height: 204px;
   }
 
   .mx-dialog-carousel {
@@ -409,8 +375,7 @@ body:has(.mx-dialog-entry) {
   }
 
   .mx-dialog-card {
-    height: 280px;
-    max-height: 280px;
+    min-height: 260px;
   }
 }
 
@@ -428,14 +393,12 @@ body:has(.mx-dialog-entry) {
   }
 
   .mx-dialog-card {
-    height: 324px;
-    max-height: 324px;
+    min-height: 280px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .mx-dialog-card,
-  .mx-dialog-dots button span,
   .mx-dialog-card__start {
     transition: none;
   }

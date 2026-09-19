@@ -1094,7 +1094,7 @@ export default function App() {
         data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
         data-mentalix-desktop-frame={desktopDeviceFrame ? 'true' : undefined}
         data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
-        className="
+        className={`
         h-screen
         relative
         overflow-hidden
@@ -1104,7 +1104,8 @@ export default function App() {
         flex-col
         items-center
         font-body
-      "
+        ${tab === 'mentor' && !overlay ? 'mx-dialog-app-shell' : ''}
+      `}
         style={{
           height: deviceFrameMode
             ? `${demoViewport.height}px`
@@ -1128,9 +1129,9 @@ export default function App() {
           !overlay &&
           !todaySeriesOpen &&
           !todayFlowOpen && (
-          // eslint-disable-next-line react-hooks/refs
-          <DemoTelegramChrome onBack={demoBackAction} />
-        )}
+            // eslint-disable-next-line react-hooks/refs
+            <DemoTelegramChrome onBack={demoBackAction} />
+          )}
 
         {/* ========================================================
           MENTALIX WORDMARK

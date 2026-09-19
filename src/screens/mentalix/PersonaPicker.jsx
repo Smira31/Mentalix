@@ -146,19 +146,6 @@ export default function PersonaPicker({ onPick }) {
             )
           })}
         </div>
-        <div className="mx-dialog-dots" role="group" aria-label="Выбор роли">
-          {DISPLAY_PERSONAS.map((persona, index) => (
-            <button
-              type="button"
-              key={persona.key}
-              aria-label={`${persona.name}, ${index + 1} из ${PERSONAS.length}`}
-              aria-current={active === index ? 'true' : undefined}
-              onClick={() => selectRole(index)}
-            >
-              <span aria-hidden="true" />
-            </button>
-          ))}
-        </div>
       </section>
     </main>
   )

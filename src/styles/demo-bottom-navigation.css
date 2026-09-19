@@ -1,7 +1,7 @@
 /* Demo-only bottom navigation reference treatment. Production navigation keeps
    its existing geometry and tokens. */
 .mx-demo-bottom-nav {
-  bottom: calc(var(--app-safe-bottom) + 2px) !important;
+  bottom: var(--app-safe-bottom) !important;
 }
 
 .mx-demo-bottom-nav > div {
