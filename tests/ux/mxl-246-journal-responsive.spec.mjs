@@ -26,7 +26,13 @@ const TEST_USER = {
 }
 
 const THEMES = [
-  { id: 701, title: 'о меньшем усилии', subtitle: 'Семь коротких наблюдений.', total_days: 7, reflected_days: 1 },
+  {
+    id: 701,
+    title: 'о меньшем усилии',
+    subtitle: 'Семь коротких наблюдений.',
+    total_days: 7,
+    reflected_days: 1,
+  },
 ]
 const THEME = {
   id: 701,
@@ -74,7 +80,8 @@ async function handleRoute(route) {
   if (pathname === '/api/checkin/history') return route.fulfill(jsonResponse([]))
   if (pathname === '/api/rituals') return route.fulfill(jsonResponse([]))
   if (pathname === '/api/ascezas') return route.fulfill(jsonResponse([]))
-  if (pathname === '/api/quotes/today') return route.fulfill(jsonResponse({ text: 'Fixture quote.' }))
+  if (pathname === '/api/quotes/today')
+    return route.fulfill(jsonResponse({ text: 'Fixture quote.' }))
   if (pathname === '/api/profile/settings') return route.fulfill(jsonResponse({ review_hour: 24 }))
   if (pathname === '/api/analytics/pulse') return route.fulfill(jsonResponse({ active_today: 1 }))
   if (pathname === '/api/analytics') {
@@ -128,7 +135,10 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
   for (const viewport of [MOBILE_VIEWPORT, ...WIDE_VIEWPORTS]) {
     const isWide = viewport.width >= 768
 
-    test(`Journal (Практики → Guided Self-Discovery) на ${viewport.name}`, async ({ browser, baseURL }) => {
+    test(`Journal (Практики → Guided Self-Discovery) на ${viewport.name}`, async ({
+      browser,
+      baseURL,
+    }) => {
       const { context, page } = await newFixturePage(browser, baseURL, viewport)
 
       await page.goto('/')
@@ -144,23 +154,23 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       const firstEditor = page.getByRole('textbox', { name: 'Что сейчас происходит?' })
       await expect(firstEditor).toBeVisible()
 
-      const fontSize = await firstEditor.evaluate(element => parseFloat(getComputedStyle(element).fontSize))
+      const fontSize = await firstEditor.evaluate(element =>
+        parseFloat(getComputedStyle(element).fontSize)
+      )
       expect(fontSize).toBeGreaterThanOrEqual(16)
 
       const submitButton = page.getByRole('button', { name: 'Сохранить и продолжить' })
-      const actionRowPosition = await submitButton.evaluate(
-        element => getComputedStyle(element.closest('div')).position
-      )
-      expect(['absolute', 'fixed']).toContain(actionRowPosition)
-      await expect(page.locator('[aria-label="Действия ввода"]')).toHaveCount(1)
+      await expect(submitButton).toBeVisible()
+      await expect(page.locator('[aria-label="Действия ввода"]')).toHaveCount(0)
+      await expect(page.locator('.guided-self-discovery__writing')).toBeVisible()
 
       await firstEditor.fill('Сегодня я замечаю главное')
       await assertNoHorizontalOverflow(page)
       await screenshot(page, viewport, '02-journal-writer')
 
       const submitBox = await submitButton.boundingBox()
-      expect(submitBox?.width).toBe(56)
-      expect(submitBox?.height).toBe(56)
+      expect(submitBox?.width).toBeGreaterThan(280)
+      expect(submitBox?.height).toBeGreaterThanOrEqual(56)
 
       const guidedSteps = [
         ['Что сейчас происходит?', 'Сегодня я замечаю главное'],
@@ -177,9 +187,13 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
         if (index > 0) await editor.fill(text)
         await page
           .getByRole('button', {
-            name: index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
+            name:
+              index === guidedSteps.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
           })
           .click()
+        if (index < guidedSteps.length - 1) {
+          await screenshot(page, viewport, `03-journal-step-${index + 1}`)
+        }
       }
 
       await expect(page.getByText('Хорошо. Следующий шаг готов.')).toBeVisible()
