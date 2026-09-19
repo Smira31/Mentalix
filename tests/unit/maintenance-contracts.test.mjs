@@ -685,6 +685,7 @@ test('MXL-MENTOR-UI-248 убирает внешнюю рамку и индика
   assert.doesNotMatch(picker, /rounded-\[28px\]\s+border\s+border-cream\/12/)
   assert.doesNotMatch(picker, /aria-label="Выбранный собеседник"/)
   assert.doesNotMatch(picker, /h-\[3px\] rounded-full transition-all duration-200/)
+  assert.doesNotMatch(picker, /mx-dialog-dots|Выбор роли.*aria-current/)
   assert.match(picker, /mx-dialog-surface/)
   assert.match(historyCache, /return `\$\{userId\}:\$\{persona\}`/)
   assert.match(historyCache, /api\.mentalix\.history\(userId, persona\)/)

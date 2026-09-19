@@ -304,48 +304,6 @@ body:has(.mx-dialog-entry) {
   word-break: break-word;
 }
 
-.mx-dialog-dots {
-  position: relative;
-  flex: 0 0 44px;
-  display: flex;
-  width: auto;
-  justify-content: center;
-  gap: 4px;
-  margin: 0;
-  background: rgb(var(--c-card2) / 0.84);
-}
-
-.mx-dialog-dots button {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-}
-
-.mx-dialog-dots button span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgb(var(--c-border));
-  transition:
-    transform var(--mx-motion-fast) ease,
-    background-color var(--mx-motion-fast) ease;
-}
-
-.mx-dialog-dots button[aria-current='true'] span {
-  background: rgb(var(--c-text));
-  transform: scale(1.25);
-}
-
-.mx-dialog-dots button:focus-visible {
-  outline: 2px solid rgb(var(--c-gold));
-  outline-offset: -2px;
-  border-radius: 50%;
-}
-
 @media (max-width: 340px) {
   .mx-dialog-entry {
     --mx-dialog-card-width: 204px;
@@ -435,7 +393,6 @@ body:has(.mx-dialog-entry) {
 
 @media (prefers-reduced-motion: reduce) {
   .mx-dialog-card,
-  .mx-dialog-dots button span,
   .mx-dialog-card__start {
     transition: none;
   }
