@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/ux',
-  testMatch: 'ux-check.spec.mjs',
+  testMatch: ['ux-check.spec.mjs', 'issue-648-independent-loading.spec.mjs'],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
   workers: 1,
