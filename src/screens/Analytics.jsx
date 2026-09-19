@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
+import { retrySources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
 import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
@@ -652,7 +653,7 @@ export default function Analytics({ user, onGoCheckin }) {
   const [days, setDays] = useState(14)
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
   const [loading, setLoading] = useState(() => initialTrendsSnapshot === null)
-  const [loadError, setLoadError] = useState('')
+  const [loadResult, setLoadResult] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [insightsEnabled, setInsightsEnabled] = useState(true)
   const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
@@ -661,21 +662,27 @@ export default function Analytics({ user, onGoCheckin }) {
     if (!user) return
 
     let active = true
+    const previous = reloadKey > 0 ? loadResult : null
     fetchTrendsData(user.id, days, {
       force: days !== 14 || initialTrendsState?.shouldRefresh === true || reloadKey > 0,
+      retrySources: previous ? retrySources(previous) : null,
+      previous,
     })
-      .then(({ analytics, checkins }) => {
+      .then(result => {
         if (!active) return
 
-        setData(analytics)
-        setCheckins(checkins || [])
+        setLoadResult(result)
+        if (result.data?.analytics) setData(result.data.analytics)
+        if (Array.isArray(result.data?.checkins)) setCheckins(result.data.checkins)
       })
       .catch(error => {
         console.error(error)
         if (!active) return
-        setData(null)
-        setCheckins([])
-        setLoadError('Не удалось загрузить прогресс')
+        setLoadResult({
+          status: 'error',
+          states: { analytics: SOURCE_STATES.error, checkins: SOURCE_STATES.error },
+          failed: ['analytics', 'checkins'],
+        })
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -684,6 +691,8 @@ export default function Analytics({ user, onGoCheckin }) {
     return () => {
       active = false
     }
+    // loadResult is the intentional retry snapshot, not a fetch dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, days, initialTrendsState, reloadKey])
 
   useEffect(() => {
@@ -717,6 +726,11 @@ export default function Analytics({ user, onGoCheckin }) {
     observations: [],
     daily_activity: [],
   }
+  const analyticsReady = loadResult?.states?.analytics === SOURCE_STATES.success || data !== null
+  const analyticsAuth = loadResult?.states?.analytics === SOURCE_STATES.auth
+  const analyticsError = !loading && !analyticsReady
+  const checkinsFailed =
+    loadResult?.states?.checkins && loadResult.states.checkins !== SOURCE_STATES.success
   const rituals = safeData.rituals || []
   const ascezas = safeData.ascezas || []
 
@@ -794,7 +808,6 @@ export default function Analytics({ user, onGoCheckin }) {
                     onClick={() => {
                       if (days !== period) {
                         setLoading(true)
-                        setLoadError('')
                         setDays(period)
                       }
                       setPeriodMenuOpen(false)
@@ -821,7 +834,6 @@ export default function Analytics({ user, onGoCheckin }) {
               onClick={() => {
                 if (days !== period) {
                   setLoading(true)
-                  setLoadError('')
                   setDays(period)
                 }
               }}
@@ -836,17 +848,43 @@ export default function Analytics({ user, onGoCheckin }) {
       <MoodTrend
         checkins={checkins}
         loading={loading}
-        error={loadError}
+        error={
+          analyticsError
+            ? analyticsAuth
+              ? 'Нужна повторная авторизация.'
+              : 'Не удалось загрузить статистику.'
+            : ''
+        }
         onRetry={() => {
           setLoading(true)
-          setLoadError('')
           setReloadKey(value => value + 1)
         }}
         onGoCheckin={onGoCheckin}
         period={safeData.period_days}
       />
 
-      {!loading && !loadError && (
+      {checkinsFailed && !loading && (
+        <p className="mx-progress-redesign__status-note" role="status">
+          История чек-инов временно недоступна; остальные показатели продолжают работать.
+        </p>
+      )}
+      {analyticsError && (
+        <div role="alert" className="mx-progress-redesign__status-note">
+          {analyticsAuth
+            ? 'Статистика требует повторной авторизации.'
+            : 'Статистика временно недоступна.'}
+          <button
+            type="button"
+            onClick={() => {
+              setLoading(true)
+              setReloadKey(value => value + 1)
+            }}
+          >
+            Повторить
+          </button>
+        </div>
+      )}
+      {!loading && analyticsReady && (
         <>
           <ObservationRail
             observations={observations}

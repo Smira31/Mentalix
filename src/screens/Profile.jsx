@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { loadIndependentSources, retrySources } from '../lib/pathDataLoader'
 import Achievements from './Achievements'
 
 // ============================================================
@@ -16,10 +17,19 @@ import Achievements from './Achievements'
 // ============================================================
 
 const MONTHS = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+  'января',
+  'февраля',
+  'марта',
+  'апреля',
+  'мая',
+  'июня',
+  'июля',
+  'августа',
+  'сентября',
+  'октября',
+  'ноября',
+  'декабря',
 ]
-
 
 function formatDay(iso) {
   const date = new Date(iso + 'T00:00:00')
@@ -28,7 +38,6 @@ function formatDay(iso) {
 
   return `${date.getDate()} ${MONTHS[date.getMonth()]}`
 }
-
 
 function currentStreak(checkins) {
   let streak = 0
@@ -41,7 +50,6 @@ function currentStreak(checkins) {
 
   return streak
 }
-
 
 function buildPath({ checkins, ascezas, rituals, themes, activity }) {
   const now = []
@@ -57,9 +65,8 @@ function buildPath({ checkins, ascezas, rituals, themes, activity }) {
     })
   }
 
-
   for (const asceza of [...(ascezas || [])]
-    .filter((item) => (item.held_days || 0) >= 3)
+    .filter(item => (item.held_days || 0) >= 3)
     .sort((a, b) => (b.held_days || 0) - (a.held_days || 0))
     .slice(0, 3)) {
     now.push({
@@ -69,12 +76,9 @@ function buildPath({ checkins, ascezas, rituals, themes, activity }) {
     })
   }
 
-
-  const bestRitual = [...(rituals || [])]
-    .sort(
-      (a, b) =>
-        (b.completion_rate || 0) - (a.completion_rate || 0),
-    )[0]
+  const bestRitual = [...(rituals || [])].sort(
+    (a, b) => (b.completion_rate || 0) - (a.completion_rate || 0)
+  )[0]
 
   if (bestRitual && (bestRitual.completion_rate || 0) >= 70) {
     now.push({
@@ -83,12 +87,8 @@ function buildPath({ checkins, ascezas, rituals, themes, activity }) {
     })
   }
 
-
   for (const theme of themes || []) {
-    if (
-      theme.total_days
-      && theme.reflected_days === theme.total_days
-    ) {
+    if (theme.total_days && theme.reflected_days === theme.total_days) {
       now.push({
         mark: 'пройдено',
         text: `Тема «${theme.title}» пройдена целиком.`,
@@ -97,10 +97,7 @@ function buildPath({ checkins, ascezas, rituals, themes, activity }) {
     }
   }
 
-
-  for (const day of (activity || [])
-    .filter((item) => item.breaks > 0)
-    .slice(-4)) {
+  for (const day of (activity || []).filter(item => item.breaks > 0).slice(-4)) {
     dated.push({
       date: day.date,
       mark: formatDay(day.date),
@@ -110,7 +107,6 @@ function buildPath({ checkins, ascezas, rituals, themes, activity }) {
           : `${day.breaks} срыва за день. Отмечены честно.`,
     })
   }
-
 
   const first = checkins?.[0]
 
@@ -124,12 +120,10 @@ function buildPath({ checkins, ascezas, rituals, themes, activity }) {
     })
   }
 
-
   dated.sort((a, b) => String(b.date).localeCompare(String(a.date)))
 
   return [...now, ...dated]
 }
-
 
 function PathEvent({ event, isLast }) {
   return (
@@ -142,75 +136,75 @@ function PathEvent({ event, isLast }) {
           ].join(' ')}
         />
 
-        {!isLast && (
-          <span className="w-px flex-1 bg-cream/10" />
-        )}
+        {!isLast && <span className="w-px flex-1 bg-cream/10" />}
       </div>
 
       <div className={isLast ? 'pb-1' : 'pb-5'}>
-        <div className="text-[11px] text-muted mb-1">
-          {event.mark}
-        </div>
+        <div className="text-[11px] text-muted mb-1">{event.mark}</div>
 
-        <p className="text-[13px] text-cream leading-snug">
-          {event.text}
-        </p>
+        <p className="text-[13px] text-cream leading-snug">{event.text}</p>
       </div>
     </div>
   )
 }
 
-
 export default function Profile({ user }) {
   const [stats, setStats] = useState(null)
   const [path, setPath] = useState([])
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState(false)
+  const [loadResult, setLoadResult] = useState(null)
   const [reloadToken, setReloadToken] = useState(0)
 
   useEffect(() => {
     if (!user) return
     let active = true
 
-    Promise.all([
-      api.profile.get(user.id),
-      api.checkin.history(user.id, 90).catch(() => []),
-      api.ascezas.list(user.id).catch(() => []),
-      api.rituals.list(user.id).catch(() => []),
-      api.themes.list(user.id).catch(() => []),
-      api.analytics.get(user.id, 90).catch(() => null),
-    ])
-      .then(([profile, checkins, ascezas, rituals, themes, analytics]) => {
-        if (!active) return
-        setStats(profile)
-        setLoadError(false)
-        setPath(
-          buildPath({
-            checkins: checkins || [],
-            ascezas: ascezas || [],
-            rituals: rituals || [],
-            themes: themes || [],
-            activity: analytics?.daily_activity || [],
-          }),
-        )
-      })
-      .catch(() => {
-        if (active) setLoadError(true)
-      })
-      .finally(() => {
-        if (active) setLoading(false)
-      })
+    const previous = reloadToken > 0 ? loadResult : null
+    loadIndependentSources(
+      {
+        profile: () => api.profile.get(user.id),
+        checkins: () => api.checkin.history(user.id, 90),
+        ascezas: () => api.ascezas.list(user.id),
+        rituals: () => api.rituals.list(user.id),
+        themes: () => api.themes.list(user.id),
+        activity: () => api.analytics.get(user.id, 90),
+      },
+      { only: previous ? retrySources(previous) : null, previous }
+    ).then(result => {
+      if (!active) return
+      setLoadResult(result)
+      setStats(result.data.profile || null)
+      setPath(
+        buildPath({
+          checkins: result.data.checkins,
+          ascezas: result.data.ascezas,
+          rituals: result.data.rituals,
+          themes: result.data.themes,
+          activity: result.data.activity?.daily_activity,
+        })
+      )
+      setLoading(false)
+    })
 
     return () => {
       active = false
     }
+    // loadResult is a deliberate retry snapshot, not a render dependency.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reloadToken, user])
 
   function retryProfile() {
-    setLoadError(false)
     setLoading(true)
     setReloadToken(token => token + 1)
   }
+
+  const hasLoadError = loadResult?.status === 'error' || loadResult?.status === 'auth'
+  const loadMessage =
+    loadResult?.status === 'auth'
+      ? 'Профиль требует повторной авторизации.'
+      : loadResult?.status === 'partial'
+        ? 'Часть данных пути временно недоступна.'
+        : 'Не удалось загрузить профиль и историю пути.'
 
   return (
     <div className="w-full max-w-md px-5 animate-fade-in">
@@ -234,19 +228,14 @@ export default function Profile({ user }) {
         </div>
       </div>
 
+      <h3 className="font-display text-[24px] text-cream lowercase mb-5">мой путь.</h3>
 
-      <h3 className="font-display text-[24px] text-cream lowercase mb-5">
-        мой путь.
-      </h3>
+      {loading && <p className="text-muted text-[13px] mb-8">Собираю историю...</p>}
 
-      {loading && (
-        <p className="text-muted text-[13px] mb-8">Собираю историю...</p>
-      )}
-
-      {!loading && loadError && (
+      {!loading && hasLoadError && (
         <div className="mb-8" role="alert">
           <p className="text-[13px] leading-relaxed text-muted">
-            Не удалось загрузить профиль и историю пути. Попробуйте ещё раз.
+            {loadMessage} Попробуйте ещё раз.
           </p>
           <button
             type="button"
@@ -258,27 +247,22 @@ export default function Profile({ user }) {
         </div>
       )}
 
-      {!loading && !loadError && path.length === 0 && (
+      {!loading && !hasLoadError && path.length === 0 && (
         <p className="text-[13px] text-muted leading-relaxed mb-8">
-          Путь начнётся с первого чек-ина. Здесь появятся серии,
-          удержанные аскезы и пройденные темы — всё, что было на
-          самом деле.
+          Путь начнётся с первого чек-ина. Здесь появятся серии, удержанные аскезы и пройденные темы
+          — всё, что было на самом деле.
         </p>
       )}
 
-      {!loading && !loadError && path.length > 0 && (
+      {!loading && !hasLoadError && path.length > 0 && (
         <div className="mb-8">
           {path.map((event, index) => (
-            <PathEvent
-              key={index}
-              event={event}
-              isLast={index === path.length - 1}
-            />
+            <PathEvent key={index} event={event} isLast={index === path.length - 1} />
           ))}
         </div>
       )}
 
-      {!loading && !loadError && stats?.best_streak > 0 && (
+      {!loading && !hasLoadError && stats?.best_streak > 0 && (
         <div className="rounded-[22px] border border-gold/25 bg-emerald px-5 py-4 mb-8">
           <div className="text-[11px] text-muted mb-1">личный максимум</div>
 
@@ -287,7 +271,6 @@ export default function Profile({ user }) {
           </p>
         </div>
       )}
-
 
       <Achievements user={user} />
     </div>
