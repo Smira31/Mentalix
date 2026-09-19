@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import './PracticeWritingCanvas.css'
 
 const DEMO_KEY_ROWS = [
@@ -71,21 +71,9 @@ export default function PracticeWritingCanvas({
   autoFocus = false,
   className = '',
 }) {
-  const fieldRef = useRef(null)
   const [focused, setFocused] = useState(autoFocus)
   const [demoKeyboard, setDemoKeyboard] = useState(false)
   const metrics = useVisualViewportMetrics()
-  useEffect(() => {
-    if (!autoFocus || !fieldRef.current) return undefined
-
-    const focusField = () => fieldRef.current?.focus({ preventScroll: true })
-    const frame = window.requestAnimationFrame(focusField)
-    const retry = window.setTimeout(focusField, 80)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.clearTimeout(retry)
-    }
-  }, [autoFocus])
   const demoPreview = isDemoPreview()
   const keyboardOpen =
     focused && metrics.height !== null && metrics.height < metrics.layoutHeight - 80
@@ -118,7 +106,6 @@ export default function PracticeWritingCanvas({
       <h1 className="practice-writing-canvas__question font-display">{question}</h1>
       {description && <p className="practice-writing-canvas__description">{description}</p>}
       <textarea
-        ref={fieldRef}
         value={value}
         onChange={event => onChange(event.target.value)}
         onFocus={event => {

@@ -1254,7 +1254,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                       editorClassName="pb-24"
                       floatingToolbar
                       guidedFlow={previewDemoMode}
-                      autoFocus
+                      autoFocus={previewDemoMode}
                       keepFocusOnSubmit={previewDemoMode}
                       submitIcon={previewDemoMode ? 'arrow' : 'check'}
                       onSubmit={() => submit()}
