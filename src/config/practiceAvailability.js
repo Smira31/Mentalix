@@ -19,7 +19,8 @@ export const AVAILABLE_PRACTICES = Object.freeze([
   PRACTICE_KEYS.noBlame,
   PRACTICE_KEYS.narrowFocus,
   PRACTICE_KEYS.oneFinish,
-  PRACTICE_KEYS.meditation,
+  // Meditation intentionally not listed: product decision 2026-09-19 —
+  // practice is not ready; card stays in catalog with «Скоро», flow code kept.
   // MXL-525 G6: «Живая линза» (brain/breathing/focus) — рабочие практики,
   // признаны доступными (Focus починен #544); гейтинг должен быть честным.
   PRACTICE_KEYS.brain,
