@@ -451,11 +451,13 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await assertClickable(page.getByRole('button', { name: 'Закрыть' }))
-        await expect(page.getByText(/Чек-ин|Анализ дня/).first()).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
       },
     })
 
-    for (const option of ['Нормально', 'Средне', 'Заметно', 'Держусь']) {
+    // Scale answers auto-advance to the next question. Keep labels aligned
+    // with MORNING_SCALE_STEPS: energy, mood, focus, then noise.
+    for (const option of ['Средне', 'Нормально', 'Держусь', 'Заметно']) {
       await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
       await page.waitForTimeout(320)
     }

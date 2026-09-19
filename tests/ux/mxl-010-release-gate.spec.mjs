@@ -147,11 +147,11 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: /Пройти чек-ин/ })).toBeVisible()
 
     await page.getByRole('button', { name: 'Пройти чек-ин' }).click()
-    await expect(page.getByText(/Чек-ин/).first()).toBeVisible()
+    await expect(page.getByRole('radiogroup', { name: 'Сколько в тебе энергии?' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Назад' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Закрыть' })).toBeVisible()
 
-    for (const option of ['Нормально', 'Средне', 'Заметно', 'Держусь']) {
+    for (const option of ['Средне', 'Нормально', 'Держусь', 'Заметно']) {
       await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
     }
     await page.getByRole('button', { name: 'ровно' }).click()
@@ -168,7 +168,7 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: 'Разобрать день' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Разобрать день' }).click()
-    await expect(page.getByText(/Анализ дня · 1 из 3/)).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Что ближе всего?' })).toBeVisible()
     await page.getByRole('button', { name: 'ровно' }).click()
     await page.getByRole('button', { name: 'Дальше' }).click()
     await page.locator('[aria-label="Что получилось?"]').fill('Fixture result')

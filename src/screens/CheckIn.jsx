@@ -64,32 +64,62 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
 
+export function CheckInQuestion({
+  title,
+  hint,
+  children,
+  className = '',
+  headingAs = 'h1',
+  headingClassName = '',
+  hintClassName = '',
+}) {
+  const Heading = headingAs
+
+  return (
+    <section className={`mx-checkin-question ${className}`.trim()}>
+      <Heading className={headingClassName}>{title}</Heading>
+      {hint ? <p className={`mx-checkin-question__hint ${hintClassName}`.trim()}>{hint}</p> : null}
+      {children}
+    </section>
+  )
+}
+
 function DemoCheckInFlow({ user, onDone }) {
   const [step, setStep] = useState(0)
-  const [mood, setMood] = useState(null)
-  const [energy, setEnergy] = useState(null)
+  const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
+  const [emotion, setEmotion] = useState(null)
   const [note, setNote] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const { style: viewportStyle } = useFullscreenSurface()
-  const goNext = () => setStep(current => Math.min(3, current + 1))
+  const scale = step < MORNING_SCALE_STEPS.length ? MORNING_SCALE_STEPS[step] : null
+  const emotionStep = MORNING_SCALE_STEPS.length
+  const noteStep = emotionStep + 1
+  const doneStep = noteStep + 1
 
   useEffect(() => {
     const bird = new Image()
     bird.src = '/checkin-bird-reference.png'
   }, [])
 
+  function pick(key, level) {
+    platform.haptic('light')
+    setValues(current => ({ ...current, [key]: level }))
+    setTimeout(() => setStep(current => Math.min(doneStep, current + 1)), 280)
+  }
+
   async function finish() {
     setSaving(true)
     setError('')
     try {
       await api.checkin.save(user.id, {
-        mood: mood || 3,
-        energy: energy || 3,
-        anxiety: 3,
-        focus: 3,
+        mood: values.mood || 3,
+        energy: values.energy || 3,
+        anxiety: values.anxiety || 3,
+        focus: values.focus || 3,
         note: note.trim() || undefined,
+        emotion: emotion || undefined,
       })
       platform.haptic('success')
       onDone()
@@ -102,19 +132,15 @@ function DemoCheckInFlow({ user, onDone }) {
   }
 
   const action =
-    step === 2
-      ? { text: 'Далее', onClick: goNext, disabled: !note.trim() }
-      : step === 3
+    step === noteStep
+      ? { text: 'Далее', onClick: () => setStep(doneStep), disabled: !note.trim() }
+      : step === doneStep
         ? {
             text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
             onClick: finish,
             disabled: saving,
           }
-        : {
-            text: 'Далее',
-            onClick: goNext,
-            disabled: false,
-          }
+        : { text: 'Далее', onClick: () => setStep(current => current + 1), disabled: false }
 
   useMainButton({
     text: action.text,
@@ -124,22 +150,15 @@ function DemoCheckInFlow({ user, onDone }) {
     loading: saving,
   })
 
-  useSecondaryButton({
-    text: '',
-    onClick: goNext,
-    visible: false,
-  })
-
-  const webAction = { ...action }
-  const webSecondaryAction = null
+  useSecondaryButton({ text: '', onClick: () => {}, visible: false })
 
   return createPortal(
     <div className="mx-demo-checkin" style={viewportStyle}>
       <header className="mx-demo-checkin__header">
         <div
-          className={`mx-demo-checkin__header-left ${step === 0 || step === 3 ? 'is-right' : ''}`}
+          className={`mx-demo-checkin__header-left ${step === 0 || step === doneStep ? 'is-right' : ''}`}
         >
-          {step > 0 && step !== 3 && (
+          {step > 0 && step !== doneStep && (
             <button
               type="button"
               aria-label="Назад"
@@ -150,7 +169,7 @@ function DemoCheckInFlow({ user, onDone }) {
             </button>
           )}
         </div>
-        {step !== 3 && (
+        {step !== doneStep && (
           <button
             type="button"
             aria-label="Закрыть"
@@ -162,65 +181,47 @@ function DemoCheckInFlow({ user, onDone }) {
         )}
       </header>
 
-      <main className={`mx-demo-checkin__body ${step === 2 ? 'is-editor' : ''}`}>
-        {step === 0 && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--mood">
-            <h1>Как ты себя чувствуешь?</h1>
-            <div className="mx-demo-checkin__moods">
-              {['Очень тяжело', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'].map((label, index) => (
+      <main className={`mx-demo-checkin__body ${step === noteStep ? 'is-editor' : ''}`}>
+        {scale && (
+          <CheckInScaleQuestion
+            scale={scale}
+            value={values[scale.key]}
+            onPick={level => pick(scale.key, level)}
+          />
+        )}
+
+        {step === emotionStep && (
+          <CheckInQuestion
+            title="Что ближе всего?"
+            hint="Назвать чувство — половина работы с ним."
+            className="mx-checkin-question--chips"
+          >
+            <div className="mx-checkin-chips">
+              {(EMOTIONS[values.mood || 3] || EMOTIONS[3]).map(item => (
                 <button
-                  key={label}
+                  key={item}
                   type="button"
-                  className={mood === index + 1 ? 'is-selected' : ''}
-                  onClick={() => setMood(index + 1)}
+                  onClick={() => setEmotion(current => (current === item ? null : item))}
+                  className={emotion === item ? 'is-selected' : ''}
                 >
-                  <span className="mx-demo-checkin__mood-circle">
-                    <Face
-                      level={index + 1}
-                      active={mood === index + 1}
-                      size={48}
-                      showFrame={false}
-                    />
-                  </span>
-                  <span className={index > 0 && index < 4 ? 'is-hidden-label' : ''}>{label}</span>
+                  {item}
                 </button>
               ))}
             </div>
-          </section>
+          </CheckInQuestion>
         )}
 
-        {step === 1 && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--energy">
-            <h1>Сколько в тебе энергии?</h1>
-            <div className="mx-demo-checkin__energy">
-              {Array.from({ length: 5 }).map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  aria-label={`${index + 1}`}
-                  className={energy === index + 1 ? 'is-selected' : ''}
-                  onClick={() => setEnergy(index + 1)}
-                >
-                  <span style={{ '--energy-fill': `${(index + 1) * 20}%` }} />
-                </button>
-              ))}
-            </div>
-            <div className="mx-demo-checkin__range">
-              <span>Совсем нет</span>
-              <span>Очень много</span>
-            </div>
-          </section>
-        )}
-
-        {step === 2 && (
-          <section className="mx-demo-checkin__editor-scene">
-            <h1>Что сегодня вызывает у тебя улыбку?</h1>
-            <p className="mx-demo-checkin__hint">Большое или маленькое — назови свою радость.</p>
+        {step === noteStep && (
+          <CheckInQuestion
+            title="Что на уме?"
+            hint="Пара слов — уже разговор с собой."
+            className="mx-demo-checkin__editor-scene"
+          >
             <JournalTextarea
               value={note}
               onChange={setNote}
               placeholder="Начни писать…"
-              ariaLabel="Запись ежедневного чек-ина"
+              ariaLabel="Что на уме"
               className="mx-demo-checkin__editor"
               editorClassName="pb-28"
               floatingToolbar
@@ -229,16 +230,16 @@ function DemoCheckInFlow({ user, onDone }) {
               keepFocusOnSubmit
               submitIcon="arrow"
               submitLabel="Далее"
-              onSubmit={goNext}
+              onSubmit={() => setStep(doneStep)}
               onDeepen={() => {}}
               deepenLabel="Пойти глубже"
               showAddAction
               formatting
             />
-          </section>
+          </CheckInQuestion>
         )}
 
-        {step === 3 && (
+        {step === doneStep && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
             <img
               src="/checkin-bird-reference.png"
@@ -281,9 +282,9 @@ function DemoCheckInFlow({ user, onDone }) {
         )}
       </main>
       <WebActionBar
-        action={step === 2 ? null : webAction}
-        secondaryAction={webSecondaryAction}
-        compact={step !== 3}
+        action={step === noteStep ? null : action}
+        secondaryAction={null}
+        compact={step !== doneStep}
       />
     </div>,
     getFullscreenPortalTarget()
@@ -357,44 +358,6 @@ export function Face({ level, active, size = 56, showFrame = true }) {
   )
 }
 
-function ScaleRail({ scale, value, onPick }) {
-  return (
-    <div className="mx-scale-rail" role="radiogroup" aria-label={scale.title}>
-      <div className="mx-scale-rail__line" aria-hidden="true" />
-      <div
-        className="mx-scale-rail__progress"
-        aria-hidden="true"
-        style={{ width: `${Math.max(0, ((value || 1) - 1) / 4) * 82}%` }}
-      />
-      {scale.labels.map((label, index) => {
-        const level = index + 1
-        const active = value === level
-
-        return (
-          <button
-            key={label}
-            type="button"
-            role="radio"
-            aria-checked={active}
-            aria-label={`${level}: ${label}`}
-            onClick={() => onPick(level)}
-            className={`mx-scale-rail__item ${active ? 'mx-scale-rail__item--active' : ''}`}
-          >
-            <span className="mx-scale-rail__circle">
-              {scale.faces ? (
-                <Face level={level} active={active} size={42} showFrame={false} />
-              ) : (
-                level
-              )}
-            </span>
-            <span className="mx-scale-rail__label">{label}</span>
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
 export const SCALE_STEPS = [
   {
     key: 'mood',
@@ -422,6 +385,42 @@ export const SCALE_STEPS = [
     labels: ['Рассеян', 'Плыву', 'Держусь', 'Собран', 'Кристально'],
   },
 ]
+
+export const MORNING_SCALE_STEPS = [SCALE_STEPS[1], SCALE_STEPS[0], SCALE_STEPS[3], SCALE_STEPS[2]]
+
+export function CheckInScaleQuestion({ scale, value, onPick }) {
+  return (
+    <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
+      <div className="mx-checkin-scale" role="radiogroup" aria-label={scale.title}>
+        {scale.labels.map((label, index) => {
+          const level = index + 1
+          const active = value === level
+
+          return (
+            <button
+              key={label}
+              type="button"
+              role="radio"
+              aria-checked={active}
+              aria-label={`${level}: ${label}`}
+              onClick={() => onPick(level)}
+              className={`mx-checkin-scale__option ${active ? 'is-selected' : ''}`}
+            >
+              <span className="mx-checkin-scale__circle">
+                {scale.faces ? (
+                  <Face level={level} active={active} size={48} showFrame={false} />
+                ) : null}
+              </span>
+              <span className="mx-checkin-scale__label">
+                {index === 0 || index === scale.labels.length - 1 ? label : ''}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </CheckInQuestion>
+  )
+}
 
 const LESSON_FIELDS = [
   {
@@ -548,7 +547,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const note = isEvening ? '' : morningDraftToNote(morningDraft)
 
-  const scaleCount = skipScales ? 0 : SCALE_STEPS.length
+  const scaleCount = skipScales ? 0 : MORNING_SCALE_STEPS.length
 
   const cardCount = isEvening ? LESSON_FIELDS.length + PROUD_HINTS.length : 1
 
@@ -845,6 +844,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const isCard = step > emotionStep
 
+  const isScaleStep = !isCard && !isEmotionStep
+
   const cardIdx = step - emotionStep - 1
 
   const isMorningNoteStep = !isEvening && isCard && cardIdx === 0
@@ -1030,18 +1031,16 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
    * и брать их заголовки по индексу нельзя: подписи
    * уезжали на карточки уроков и гордости.
    */
-  const scale = skipScales ? null : SCALE_STEPS[step]
+  const scale = skipScales ? null : MORNING_SCALE_STEPS[step]
 
   const moodLevel = values.mood || existing?.mood || 3
 
-  const stepLabel = `Чек-ин · ${step + 1} из ${totalSteps}`
   const eveningQuestion =
     isEvening && isCard
       ? cardIdx < LESSON_FIELDS.length
         ? LESSON_FIELDS[cardIdx]
         : { label: PROUD_HINTS[cardIdx - LESSON_FIELDS.length] }
       : null
-
   const questionTitle =
     scale?.title ||
     (isEmotionStep
@@ -1088,19 +1087,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
           <ChevronLeft size={20} aria-hidden="true" className="text-muted" />
         </button>
 
-        {previewDemoMode && !isEvening ? (
-          <span className="mx-checkin-demo__progress-label">{stepLabel}</span>
-        ) : !isEvening ? (
-          <div className="flex gap-1.5">
-            {Array.from({ length: totalSteps }).map((_, index) => (
-              <span
-                key={index}
-                className={`w-1.5 h-1.5 rounded-full ${index <= step ? 'bg-gold' : 'bg-cream/15'}`}
-              />
-            ))}
-          </div>
-        ) : null}
-
         <button
           onClick={() => {
             platform.haptic('light')
@@ -1119,36 +1105,22 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
           key={step}
           className={`${isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS} mx-checkin-step-enter`}
         >
-          <section className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}>
-            {!isEvening && !(previewDemoMode && isMorningNoteStep) && (
-              <div
-                className={[
-                  'mb-2 font-label text-[12px] font-semibold uppercase tracking-wide',
-                  isMorningNoteStep ? 'text-gold' : 'text-muted',
-                ].join(' ')}
-              >
-                {stepLabel}
-              </div>
-            )}
-
-            <h2
-              className={[
+          {!isScaleStep && (
+            <CheckInQuestion
+              title={questionTitle}
+              hint={questionSubtitle}
+              headingAs="h2"
+              className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
+              headingClassName={[
                 'font-display text-cream',
                 isMorningNoteStep ? 'text-[30px] leading-[1.12]' : 'text-[26px] leading-tight',
               ].join(' ')}
-            >
-              {questionTitle}
-            </h2>
-
-            <p
-              className={[
+              hintClassName={[
                 'text-[14px] text-muted',
                 isMorningNoteStep ? 'mt-5 border-l border-gold pl-4 leading-relaxed' : 'mt-2',
               ].join(' ')}
-            >
-              {questionSubtitle}
-            </p>
-          </section>
+            />
+          )}
 
           <div
             className={
@@ -1159,9 +1131,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
           >
             {/* ── шкалы ── */}
 
-            {!isCard && !isEmotionStep && (
+            {isScaleStep && (
               <div key={step} className="w-full flex flex-col items-center">
-                <ScaleRail
+                <CheckInScaleQuestion
                   scale={scale}
                   value={values[scale.key]}
                   onPick={level => pick(scale.key, level)}

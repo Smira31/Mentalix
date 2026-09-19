@@ -3,7 +3,22 @@
 }
 
 .mx-practice-flow--self-discovery .guided-self-discovery__topbar {
-  justify-content: flex-end;
+  justify-content: space-between;
+}
+
+.mx-practice-flow--self-discovery .guided-self-discovery__close {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(var(--c-emerald));
+  color: rgb(var(--c-muted));
+}
+
+.mx-practice-flow--self-discovery .guided-self-discovery__close:active {
+  transform: scale(0.95);
 }
 
 .mx-practice-flow--self-discovery .guided-self-discovery__intro {
@@ -325,6 +340,26 @@
   color: rgb(var(--c-muted));
   font-size: 13px;
   font-weight: 600;
+}
+
+/* Journal web/PWA only: mirror Stoic's compact bottom-right next action. */
+.mx-practice-flow--self-discovery .guided-self-discovery__action-bar .mx-reference-next {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  min-height: 56px;
+  margin-left: auto;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  box-shadow: var(--shadow-float-compact);
+}
+
+.mx-practice-flow--self-discovery .guided-self-discovery__action-bar .mx-reference-next:disabled {
+  opacity: 0.4;
 }
 
 @media (max-height: 650px) {

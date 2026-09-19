@@ -1,6 +1,7 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
+import { X } from 'lucide-react'
 
 import BackButton from '../components/BackButton'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
@@ -86,7 +87,7 @@ function emptyAnswers() {
 
 function FlowBack({ onClick }) {
   // В Telegram — только native BackButton (компонент сам монтирует hook и не рисует UI).
-  // В web — видимый app-back в header slot.
+  // В web — видимые Back и Close-кнопки в header slot.
   if (platformName === 'telegram') {
     return <BackButton onClick={onClick} />
   }
@@ -95,6 +96,14 @@ function FlowBack({ onClick }) {
       className={`${FULLSCREEN_HEADER_SLOT_CLASS} guided-self-discovery__topbar flex items-center px-5`}
     >
       <BackButton onClick={onClick} />
+      <button
+        type="button"
+        aria-label="Закрыть"
+        onClick={onClick}
+        className="guided-self-discovery__close"
+      >
+        <X size={18} aria-hidden="true" />
+      </button>
     </div>
   )
 }
@@ -313,6 +322,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
           <FlowBack onClick={goBack} />
           <div className={FULLSCREEN_SCROLL_CLASS}>
             <PracticeWritingCanvas
+              key={step.key}
               value={value}
               onChange={next => updateAnswer(step.key, next)}
               question={step.title}
@@ -340,7 +350,11 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
         />
       )}
 
-      <WebActionBar action={action} />
+      <WebActionBar
+        action={action}
+        compact={stage === 'writing'}
+        className="guided-self-discovery__action-bar"
+      />
     </div>,
     getFullscreenPortalTarget()
   )
