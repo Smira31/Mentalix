@@ -1035,8 +1035,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const moodLevel = values.mood || existing?.mood || 3
 
-  const stepLabel = `${isEvening ? 'Анализ дня' : 'Чек-ин'} · ${step + 1} из ${totalSteps}`
-
   const questionTitle =
     scale?.title ||
     (isEmotionStep
@@ -1082,19 +1080,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
         >
           <ChevronLeft size={20} aria-hidden="true" className="text-muted" />
         </button>
-
-        {previewDemoMode ? (
-          <span className="mx-checkin-demo__progress-label">{stepLabel}</span>
-        ) : (
-          <div className="flex gap-1.5">
-            {Array.from({ length: totalSteps }).map((_, index) => (
-              <span
-                key={index}
-                className={`w-1.5 h-1.5 rounded-full ${index <= step ? 'bg-gold' : 'bg-cream/15'}`}
-              />
-            ))}
-          </div>
-        )}
 
         <button
           onClick={() => {
