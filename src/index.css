@@ -1448,16 +1448,16 @@ button {
   }
 }
 
-/* iOS Home Screen / standalone: safe-area is already included by App. */
+/* iOS Home Screen / standalone: regular tabs use App's dynamic safe area. */
 @media (display-mode: standalone) and (max-width: 700px) {
   /*
-   * App's outer shell already starts below the iOS status bar. Regular tabs
-   * must not add the same inset a second time. Dialog is deliberately
-   * excluded: its runtime shell owns the reference layout and keeps the
-   * existing safe-area contract in PersonaPicker.css.
+   * Keep the real iOS status-bar inset, while avoiding any additional legacy
+   * fixed offset. Dialog is deliberately excluded: its runtime shell owns
+   * the reference layout and keeps the existing safe-area contract in
+   * PersonaPicker.css.
    */
   .mx-app-shell:not(.mx-dialog-app-shell):not(.mx-app-shell--fullscreen) {
-    padding-top: 0 !important;
+    padding-top: var(--app-safe-top) !important;
   }
 
   .mx-demo-telegram-chrome {
