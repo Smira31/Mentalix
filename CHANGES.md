@@ -5,6 +5,19 @@ last_verified: 2026-09-10
 
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 18.09.2026 — Исправлены Dialog и структура Библиотеки
+
+- **Dialog:** причиной регрессии был временный `translateY(calc(-1 * var(--mx-dialog-nav-offset, 0px)))` на карусели PersonaPicker. Он дублировал уже существующий резерв `--app-content-bottom` под fixed BottomNavigation и сдвигал карточки в область заголовка. Transform и offset-проп удалены; экран продолжает использовать flex-column flow с резервом под нижнюю навигацию на уровне scroll-root.
+- **Библиотека:** production отличался от demo из-за feature-флага `VITE_LIBRARY_V2`/QA query, который оставлял старую композицию включённой по умолчанию. Production теперь использует тот же порядок `Программы` → `Статьи` → `Направленные записи`; статьи по-прежнему загружаются через `fetchArticles` и cache-backed данные, демо-заглушки для них не добавлялись.
+- **Проверки:** добавлен unit-контракт порядка production-секций и сохранения реального источника статей.
+
+## 18.09.2026 — PR #663: спорные визуализации переведены в монохром
+
+- По финальному решению владельца все четыре спорных пункта перекрашены без цветовых исключений: точки `SemanticGlyph`, маркер лучшей недели в `YearPath`, Stroop/Memory в `BrainTrainer` и цветовые ряды/категории Progress/UI Lab.
+- В `YearPath` лучшая неделя теперь отмечается формой ромба, а в Memory четыре плитки различаются монохромными паттернами (точки, диагональная штриховка, крест, сплошная заливка). В Progress/UI Lab ряды различаются штриховкой, формой маркера и подписями.
+- В Stroop сохранена исходная логика сравнения `isMatch` и случайной генерации совпадений/несовпадений, но после удаления цвета слово и «цвет чернил» визуально неразличимы. Поэтому классический Stroop-эффект больше не возникает: упражнение фактически проверяет распознавание текста/ответа на вопрос о совпадении, без цветового конфликта.
+- Скриншоты до/после для всех четырёх мест приложены в `artifacts/monochrome-screens/` и описаны в `artifacts/monochrome-visual-check.md`.
+
 ## 08.09.2026 — MXL-AI-HANDOFF-001: вечерний разбор доходит до Следопыта (PR #542)
 
 - Issue #480: хендофф «Разобрать со Следопытом» теперь подтверждает персональный AI-контекст перед переходом в чат: при выключенном мастер-согласии показывает явное подтверждение и включает его, затем делает per-entry opt-in только сегодняшней записи check-in. Вне Telegram (web/email identity) поведение не меняется — backend запрещает per-entry выбор вне Telegram.
@@ -3876,3 +3889,44 @@ Journal Home переведён с прямого prototype `localStorage` на 
 ## 27.08.2026 — Home/type quiet slice
 
 `MXL-HOME-QUIET-FOUNDATION-001` и `MXL-TYPE-SYSTEM-001` реализованы в PR #241: главный hero Today поднят перед вторичными секциями, а пользовательские serif/Manrope overrides заменены на Onest baseline. Follow-up `MXL-HOME-QUIET-V2-002` добавил 10px нижнего воздуха перед fixed-навигацией и различимое active-состояние CTA; добавлен regression-контракт. CI/Vercel и повторный Telegram/iPhone gate пройдены. Backend, cloud sync, AI consent и proprietary Stoic assets не затронуты.
+
+## 2026-09-18 — диагностика синхронизации production / demo / QA
+
+### Подтверждённые commit SHA
+
+- Firebase Production: `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`
+- Firebase Production Demo (`?demo=1`): `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8` — тот же Firebase build и тот же bundle.
+- Cloudflare Owner QA Demo до исправления: `46b944e9aead2896b206b117fe59ccd6525f5659` — подтверждено через `https://mentalix-owner-qa.pages.dev/qa-build.json`.
+- GitHub `origin/main`: `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`.
+
+### Найденные причины расхождения
+
+- QA отставал от `main`. Firebase отдаёт `index-BjnWiwIM.js` и `index-CU_Y9Pp1.css`, а Cloudflare QA — старые `index-BvBF39fk.js` и `index-BK2uEtMj.css`.
+- В репозитории нет отдельной QA-ветки исходников. Workflow `.github/workflows/cloudflare-owner-qa.yml` собирает переданный `commit_sha` вручную и записывает его в `qa-build.json`.
+- Firebase workflow использует `VITE_API_BASE_URL=/api`. В Cloudflare workflow отдельный `VITE_*` override для дизайна не задан; приложение использует тот же fallback `/api`. `VITE_LOCAL_PREVIEW` не задан в production deploy и не является причиной расхождения.
+- Зарегистрированный service worker не обнаружен (`serviceWorker`, `registerSW`, `sw.js`). HTML на всех адресах содержит одинаковые `theme-color=#050403` и `viewport-fit=cover`. Причина — разные commit SHA и бандлы, не service worker-кеш.
+
+### Решение
+
+- Источник истины: GitHub `main`, SHA `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`.
+- Firebase Production уже соответствует источнику истины.
+- Cloudflare Owner QA передеплоен с тем же SHA через workflow `Cloudflare Owner QA` (run `35319490749`); `qa-build.json` теперь подтверждает `a75bc11d9a14b7a42093e6fb39dde31d0cc84cf8`.
+- После передеплоя Firebase и Cloudflare QA отдают одинаковые assets: `index-BjnWiwIM.js` и `index-CU_Y9Pp1.css`.
+- `src/` до фиксации этой диагностики не изменялся.
+
+## 2026-09-18 — PR #662 — профиль в Today
+
+- `src/App.jsx`: в authenticated Today header иконка Settings заменена на `UserRound`; существующий handler перехода сохранён, `aria-label` изменён на «Профиль».
+- Изменение изолировано от Pin Bar/layout-фикса PR #661.
+
+## 2026-09-18 — PR #661 — Pin Bar в Dialog
+
+- `src/App.jsx`: из `bottomNavigationHidden` удалено условие `(tab === 'mentor' && !isPreviewDemoMode())`. Pin Bar теперь остаётся видимым на экране выбора роли в Dialog и скрывается только при фактическом открытии persona/fullscreen flow через существующие условия.
+- `src/App.jsx`, `src/screens/Mentalix.jsx`, `src/screens/mentalix/PersonaPicker.jsx` и `PersonaPicker.css`: при видимом Pin Bar передаётся существующий `--app-content-bottom`, а карусель сдвигается вверх на этот offset. При скрытом Pin Bar offset равен `0px`; приём выступающих за поверхность карточек не изменён.
+
+## 2026-09-18 — монохромный UI-хром
+
+- В `src/index.css` legacy-токены `--c-gold` и `--c-azure` переведены в нейтральные серые значения; переключатель `src/lib/accentColor.js` теперь предлагает только серые оттенки.
+- Tailwind-алиасы `gold`/`cognac`, glow-анимация streak, JournalHome, PracticeFlow, Path и fallback-экран ошибки используют нейтральную палитру без декоративного золота/синего.
+- Обновлены `tailwind.config.js`, `docs/design/MXL-VISUAL-RULES-LIBRARY-001.md`, `docs/testing/DESIGN_GUARD.md` и исторические PersonaPicker-документы.
+- Цвет сохранён намеренно в спорных/семантических местах: точки `SemanticGlyph`, график `YearPath`, цветные игровые плитки BrainTrainer и категории/визуализации данных. Их смысл нужно отдельно подтвердить владельцу перед дальнейшей перекраской.

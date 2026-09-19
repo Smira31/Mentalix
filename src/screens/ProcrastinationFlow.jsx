@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 
@@ -192,6 +192,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
   const [distraction, setDistraction] = useState(null)
   const [outcome, setOutcome] = useState(null)
   const [reflection, setReflection] = useState(null)
+  const sceneScrollRef = useRef(null)
 
   const [releasePhrase] = useState(
     () => RELEASE_PHRASES[Math.floor(Math.random() * RELEASE_PHRASES.length)]
@@ -200,6 +201,21 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
   const [secondsLeft, setSecondsLeft] = useState(RUN_SECONDS)
   const [endsAt, setEndsAt] = useState(null)
   const finishedRef = useRef(false)
+
+  useLayoutEffect(() => {
+    document.activeElement?.blur?.()
+
+    const resetScroll = () => {
+      if (sceneScrollRef.current) sceneScrollRef.current.scrollTop = 0
+    }
+    resetScroll()
+    const frame = requestAnimationFrame(resetScroll)
+    const timer = setTimeout(resetScroll, 0)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(timer)
+    }
+  }, [step])
 
   useEffect(() => {
     if (!endsAt) return
@@ -231,9 +247,15 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
     setStep('outcome')
   }, [secondsLeft, endsAt])
 
+  function resetSceneScroll() {
+    document.activeElement?.blur?.()
+    if (sceneScrollRef.current) sceneScrollRef.current.scrollTop = 0
+  }
+
   function goToFeeling() {
     if (!task.trim()) return
 
+    resetSceneScroll()
     platform.haptic('light')
     setStep('feeling')
   }
@@ -303,7 +325,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
         <BackButton onClick={onClose} />
       </div>
 
-      <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
+      <div ref={sceneScrollRef} className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
         {step === 'intro' && (
           <div className="no-blame-stage no-blame-stage--intro animate-fade-in">
             <div className="no-blame-stage__center">

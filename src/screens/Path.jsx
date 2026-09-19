@@ -41,7 +41,7 @@ export function TickGauge({ value, max, sublabel, size = 160 }) {
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke={isFilled ? '#C9A227' : 'rgba(243,233,221,0.12)'}
+              stroke={isFilled ? 'rgb(var(--c-text))' : 'rgba(243,233,221,0.12)'}
               strokeWidth={3}
               strokeLinecap="round"
             />

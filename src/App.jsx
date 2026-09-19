@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronDown, Ellipsis, Flame, Settings as SettingsIcon, X } from 'lucide-react'
+import { ChevronDown, Ellipsis, Flame, UserRound, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -25,6 +25,7 @@ import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDra
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
+import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 
 import { initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -447,13 +448,13 @@ export default function App() {
     initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
 
   const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
+  const tabRef = useRef(tab)
+  useEffect(() => {
+    tabRef.current = tab
+  }, [tab])
 
   const bottomNavigationHidden =
-    (tab === 'mentor' && !isPreviewDemoMode()) ||
-    mentorPersonaOpen ||
-    todayFlowOpen ||
-    todaySeriesOpen ||
-    practiceGameOpen
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return
@@ -706,6 +707,16 @@ export default function App() {
        * управлять его состоянием.
        */
       if (bottomNavigationHidden) {
+        return
+      }
+
+      /*
+       * Dialog — fullscreen-сценарий: нижняя панель остаётся якорем
+       * навигации и не должна исчезать при прокрутке истории сообщений.
+       */
+      if (tabRef.current === 'mentor') {
+        setNavCollapsed(false)
+        resetGesture()
         return
       }
 
@@ -1083,7 +1094,7 @@ export default function App() {
         data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
         data-mentalix-desktop-frame={desktopDeviceFrame ? 'true' : undefined}
         data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
-        className="
+        className={`
         h-screen
         relative
         overflow-hidden
@@ -1093,7 +1104,8 @@ export default function App() {
         flex-col
         items-center
         font-body
-      "
+        ${tab === 'mentor' && !overlay ? 'mx-dialog-app-shell' : ''}
+      `}
         style={{
           height: deviceFrameMode
             ? `${demoViewport.height}px`
@@ -1113,10 +1125,13 @@ export default function App() {
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {previewDemoMode && !overlay && !todaySeriesOpen && !todayFlowOpen && (
-          // eslint-disable-next-line react-hooks/refs
-          <DemoTelegramChrome onBack={demoBackAction} />
-        )}
+        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName }) &&
+          !overlay &&
+          !todaySeriesOpen &&
+          !todayFlowOpen && (
+            // eslint-disable-next-line react-hooks/refs
+            <DemoTelegramChrome onBack={demoBackAction} />
+          )}
 
         {/* ========================================================
           MENTALIX WORDMARK
@@ -1229,7 +1244,7 @@ export default function App() {
                   {greeting()}
                 </h1>
 
-                {/* Settings */}
+                {/* Profile */}
 
                 <button
                   type="button"
@@ -1238,7 +1253,7 @@ export default function App() {
 
                     setOverlay('settings')
                   }}
-                  aria-label="Настройки"
+                  aria-label="Профиль"
                   className="
                 w-10
                 max-[359px]:w-6
@@ -1259,7 +1274,7 @@ export default function App() {
                 shrink-0
               "
                 >
-                  <SettingsIcon size={19} strokeWidth={1.7} className="text-muted" />
+                  <UserRound size={19} strokeWidth={1.7} className="text-muted" />
                 </button>
               </div>
             </>

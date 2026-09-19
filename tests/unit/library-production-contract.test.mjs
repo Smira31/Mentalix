@@ -19,6 +19,16 @@ test('MXL-526 переносит одобренную композицию Би�
   assert.doesNotMatch(library, /Courses/)
 })
 
+test('MXL-661 production Library использует demo-порядок секций без demo-флага', () => {
+  assert.match(library, /const LIBRARY_V2_ENABLED = true/)
+  const programs = library.indexOf('<LibraryV2ProgramLanding')
+  const articlesSection = library.indexOf('<LibraryV2ArticleLanding')
+  const journals = library.indexOf('<LibraryV2JournalLanding')
+  assert.ok(programs >= 0 && programs < articlesSection && articlesSection < journals)
+  assert.match(library, /fetchArticles/)
+  assert.match(library, /ARTICLES\[0\]/)
+})
+
 test('MXL-526 сохраняет честные границы функций', () => {
   assert.match(library, /title="Практикумы"/)
   assert.match(library, /soon/)

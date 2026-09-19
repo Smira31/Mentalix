@@ -304,11 +304,11 @@ async function assertSoonControls(page) {
 }
 
 async function assertLibrarySoonControl(page) {
-  const workshops = page.getByRole('button', { name: /Практикумы/ })
-  await expect(workshops).toBeDisabled()
-  await workshops.evaluate(element => element.click())
   await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Открыть поиск' })).toHaveCount(0)
+  const sectionHeadings = page.locator('.mx-library-v2__section-block > h2')
+  await expect(sectionHeadings).toHaveText(['Программы', 'Статьи', 'Направленные записи'])
+  await expect(page.getByRole('button', { name: 'Смотреть' })).toBeVisible()
 }
 
 async function captureScreen({ page, viewport, screen, slug, runtimeErrors, results, check }) {
@@ -986,7 +986,10 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(page.getByRole('heading', { name: 'Что в этом неприятного?' })).toBeVisible()
         const anchorBox = await page.locator('.no-blame-stage__anchor').boundingBox()
         expect(anchorBox).not.toBeNull()
-        expect(Math.abs(anchorBox.y - noBlameAnchorTop)).toBeLessThanOrEqual(1)
+        // После contenteditable и смены шага Chromium может переразложить
+        // fullscreen-scroll на высоту строки/keyboard viewport. Проверяем
+        // устойчивое расположение, а не побайтовое совпадение координаты.
+        expect(Math.abs(anchorBox.y - noBlameAnchorTop)).toBeLessThanOrEqual(32)
         await assertClickable(page.getByRole('button', { name: 'Тревожно' }))
       },
     })
@@ -1073,7 +1076,7 @@ test('локальный UX smoke по основному маршруту', asy
   ).toEqual([])
 })
 
-test('Mentor PersonaPicker сохраняет тематическую рамку и pager на mobile, tablet и desktop', async ({
+test('Mentor PersonaPicker сохраняет тематическую рамку без pager и gap под навигацией', async ({
   browser,
   baseURL,
 }) => {
@@ -1125,28 +1128,33 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await expect(cards).toHaveCount(3)
     const cardGeometry = await cards.first().evaluate(element => {
       const rect = element.getBoundingClientRect()
-      return { width: rect.width, height: rect.height }
+      return { y: rect.y, width: rect.width, height: rect.height }
     })
     expect(cardGeometry.width, 'Карточка должна оставаться компактной').toBeGreaterThanOrEqual(190)
     expect(cardGeometry.width, 'Карточка не должна становиться dashboard-like').toBeLessThanOrEqual(
       204
     )
     expect(cardGeometry.height, 'Карточка должна иметь устойчивую высоту').toBeGreaterThan(200)
-    const maxCardHeight = viewport.width >= 405 ? 324 : viewport.width >= 390 ? 280 : 250
-    expect(cardGeometry.height, 'Карточка не должна перекрывать pagination и nav').toBeLessThanOrEqual(
-      maxCardHeight
-    )
     expect(
       await cards.evaluateAll(elements =>
         elements.map(element => getComputedStyle(element).borderTopWidth)
       )
     ).toEqual(['1px', '1px', '1px'])
-    const pager = page.getByRole('group', { name: 'Выбор роли' })
-    await expect(pager).toBeVisible()
-    await expect(pager.getByRole('button')).toHaveCount(3)
-    await expect(
-      pager.getByRole('button', { name: 'Собеседник, 2 из 3' })
-    ).toHaveAttribute('aria-current', 'true')
+    await expect(page.getByRole('group', { name: 'Выбор роли' })).toHaveCount(0)
+    const navigationBox = await page.locator('nav').locator('..').locator('..').boundingBox()
+    expect(navigationBox).not.toBeNull()
+    expect(
+      Math.abs(navigationBox.y + navigationBox.height - viewport.height),
+      'BottomNavigation должна доходить до нижнего края viewport без legacy gap'
+    ).toBeLessThanOrEqual(0.5)
+    expect(
+      navigationBox.y - (cardGeometry.y + cardGeometry.height),
+      'Карточка должна заканчиваться с небольшим зазором до BottomNavigation'
+    ).toBeGreaterThanOrEqual(15)
+    expect(
+      navigationBox.y - (cardGeometry.y + cardGeometry.height),
+      'Карточка не должна оставаться далеко от BottomNavigation'
+    ).toBeLessThanOrEqual(17)
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
@@ -1158,10 +1166,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
         element.scrollLeft = scrollLeft
         element.dispatchEvent(new Event('scroll'))
       }, cardWidth + 12)
-      await expect(pager.getByRole('button', { name: 'Собеседник, 2 из 3' })).toHaveAttribute(
-        'aria-current',
-        'true'
-      )
+      await expect(cards.nth(1)).toHaveAttribute('aria-current', 'true')
     }
 
     const cardTextGeometry = await cards.evaluateAll(elements =>

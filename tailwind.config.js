@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         // Семантика темы. Старые имена сохранены, чтобы не переписывать
-        // все экраны: они автоматически перекрашиваются в монохром + золото.
+        // все экраны: UI автоматически перекрашивается в монохром.
         'emerald-deep': 'rgb(var(--c-bg) / <alpha-value>)', // фон
         emerald: 'rgb(var(--c-card) / <alpha-value>)', // карточка
         'emerald-light': 'rgb(var(--c-card2) / <alpha-value>)', // карточка-2
@@ -18,8 +18,8 @@ export default {
 
         sage: 'rgb(var(--c-text) / <alpha-value>)', // → монохром
         mint: 'rgb(var(--c-text) / <alpha-value>)', // → монохром
-        gold: 'rgb(var(--c-gold) / <alpha-value>)', // акцент
-        cognac: 'rgb(var(--c-gold) / <alpha-value>)', // → золото
+        gold: 'rgb(var(--c-gold) / <alpha-value>)', // legacy-имя нейтрального акцента
+        cognac: 'rgb(var(--c-gold) / <alpha-value>)', // → нейтральный акцент
 
         // Подложка под иллюстрации. Тёмная в обеих темах —
         // см. комментарий у --c-artbed в index.css.
@@ -54,11 +54,11 @@ export default {
           '45%': { transform: 'scale(1.02)' },
           '100%': { transform: 'scale(1)' },
         },
-        // золотое свечение выполненного — теплее и дольше
+        // нейтральное свечение выполненного — теплее и дольше
         glowPulse: {
-          '0%': { boxShadow: '0 0 0 0 rgba(217,180,91,0)' },
-          '35%': { boxShadow: '0 0 26px 6px rgba(217,180,91,0.28)' },
-          '100%': { boxShadow: '0 0 0 0 rgba(217,180,91,0)' },
+          '0%': { boxShadow: '0 0 0 0 rgba(224,224,224,0)' },
+          '35%': { boxShadow: '0 0 26px 6px rgba(224,224,224,0.28)' },
+          '100%': { boxShadow: '0 0 0 0 rgba(224,224,224,0)' },
         },
         streakBounce: {
           '0%': { transform: 'scale(1)' },

@@ -131,7 +131,7 @@
 
 .mx-semantic-glyph__focus-ring {
   fill: none;
-  stroke: rgb(var(--c-gold));
+  stroke: rgb(var(--c-line));
   stroke-width: 1;
   opacity: 0.24;
 }
@@ -172,17 +172,17 @@
 
 .mx-semantic-glyph[data-highlighted='true'] .mx-semantic-glyph__point,
 .mx-semantic-glyph[data-highlighted='true'] .mx-semantic-glyph__path-point {
-  fill: rgb(var(--c-gold));
+  fill: rgb(var(--c-text));
 }
 
 /* Accent variant (secondary) — for visual differentiation (e.g. Mentor vs Ritual) */
 .mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__point,
 .mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__path-point {
-  fill: rgb(var(--c-glyph-secondary));
+  fill: rgb(var(--c-line));
 }
 
 .mx-semantic-glyph[data-accent='secondary'] .mx-semantic-glyph__focus-ring {
-  stroke: rgb(var(--c-glyph-secondary));
+  stroke: rgb(var(--c-line));
 }
 
 .mx-semantic-glyph__network,

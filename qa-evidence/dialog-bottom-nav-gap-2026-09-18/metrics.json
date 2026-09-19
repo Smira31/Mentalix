@@ -1,0 +1,32 @@
+{
+  "viewport": [390, 844],
+  "card": {
+    "top": 458.25,
+    "bottom": 738.25,
+    "height": 280
+  },
+  "carousel": {
+    "top": 459.25,
+    "bottom": 759.25,
+    "height": 300,
+    "left": 1,
+    "width": 388
+  },
+  "entry": {
+    "top": 56,
+    "bottom": 844,
+    "height": 788,
+    "left": 0,
+    "width": 390
+  },
+  "nav": {
+    "top": 770,
+    "bottom": 842,
+    "height": 72
+  },
+  "navComputedHeight": "72px",
+  "gapCardToNav": 31.75,
+  "paddingBottom": "68px",
+  "bottomNavHeightToken": "68px",
+  "bottomNavOffsetToken": "2px"
+}

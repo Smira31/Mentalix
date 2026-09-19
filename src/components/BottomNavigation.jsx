@@ -74,7 +74,10 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
       style={{
         left: 'max(20px, var(--app-safe-left))',
         right: 'max(20px, var(--app-safe-right))',
-        bottom: 'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
+        // The panel itself sits directly above the system safe area. The
+        // content reserve remains separate, so other screens keep their
+        // existing clearance from the fixed navigation.
+        bottom: 'var(--app-safe-bottom)',
       }}
     >
       {/* ==========================================================

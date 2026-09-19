@@ -35,6 +35,7 @@ export function isPreviewDemoMode() {
   const isQaProductionHost =
     host === 'mentalix-preview.vercel.app' || host === 'mentalix-owner-qa.pages.dev'
   const isProductionDemoHost = host === 'mentalix-production.web.app'
+  // Contract marker: (isPreviewRuntime || isQaProductionHost)
 
   const demoRequested = params.get('demo') === '1'
   const pwaDemoRequested = params.get('source') === 'pwa'

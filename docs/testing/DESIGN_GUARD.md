@@ -2,6 +2,7 @@
 status: current
 last_verified: 2026-09-11
 ---
+
 # Mentalix Design Guard — Automated Design Validation
 
 Спецификация автоматических дизайн-проверок для соблюдения Design System.
@@ -18,9 +19,9 @@ last_verified: 2026-09-11
 
 **Из DESIGN_SYSTEM.md:**
 
-- Только тёмная тема (монохром + динамический акцент Gold/Azure);
+- Монохромный UI-хром на тёмной теме; цвет разрешён только для осмысленной визуализации данных;
 - Основной фон: `#050403` (--c-bg);
-- Акцент как динамическая пара Gold `#EDBD60` (--c-gold) ↔ Azure `#6FB7E0` (--c-azure);
+- Legacy-токены `--c-gold` и `--c-azure` указывают на нейтральные серые значения;
 - Типографика: Onest 400/500/600/700/800 (заголовки по весу, не гарнитуре);
 - Минимальный размер input: 16px (не увеличивается iOS);
 - Контраст текста: основной text-cream 15.1:1, вторичный text-muted 5.69:1;
@@ -30,7 +31,7 @@ last_verified: 2026-09-11
 
 ## Реализованный foundation (Phase 1)
 
-В проекте уже доступен детерминированный статический guard: `npm run test:design-guard` запускает `scripts/design-guard.mjs`. Он проверяет наличие обязательных design tokens, сохраняет `?light-preview=1` за dev/Vercel Preview gate, запрещает pure-white surfaces/text в CSS и контролирует hardcoded production gold в CSS. Для input, textarea и select действует правило минимального размера 16px.
+В проекте уже доступен детерминированный статический guard: `npm run test:design-guard` запускает `scripts/design-guard.mjs`. Он проверяет наличие обязательных design tokens, сохраняет `?light-preview=1` за dev/Vercel Preview gate, запрещает pure-white surfaces/text в CSS и контролирует декоративные hardcoded gold/blue в UI-хроме. Для input, textarea и select действует правило минимального размера 16px.
 
 Эта проверка намеренно не заявляет, что заменяет визуальный Playwright gate, real-device review, CLS или полноценный WCAG audit. Это первый независимый слой, который быстро ловит очевидный design debt до запуска более дорогих проверок.
 
@@ -56,20 +57,20 @@ expect(bgColor).toMatch(/rgb\(5,\s*4,\s*3\)|rgb\(4,\s*4,\s*4\)/)
 
 ---
 
-### 2. Gold Accent Usage
+### 2. Monochrome UI Chrome
 
-**Правило:** Золото (`#EDBD60`, rgb 237, 189, 96) использовано ТОЛЬКО для:
+**Правило:** обычный UI-хром не использует золото или синий. Цвет сохраняется только если он кодирует данные:
 
-- активный tab indicator;
-- completed state (галочка, прогресс-бар);
-- CTA button highlight;
-- значимые метрики (большие цифры в Analytics).
+- графики и тренды;
+- точки календаря настроения;
+- цветовые метки категорий;
+- семантические цвета игровых/тренировочных механик.
 
 **Реализация:**
 
 ```javascript
-const goldElements = await page.evaluate(() => {
-  const els = document.querySelectorAll('[style*="edbd60"], [style*="EDBD60"], [class*="gold"]')
+const coloredElements = await page.evaluate(() => {
+  const els = document.querySelectorAll('[style*="edbd60"], [style*="EDBD60"], [style*="79b9ff"]')
   return Array.from(els).map(el => ({
     tag: el.tagName,
     role: el.getAttribute('role'),
@@ -77,13 +78,11 @@ const goldElements = await page.evaluate(() => {
   }))
 })
 
-// Validate: each gold element is expected role (tab, button, status)
-expect(goldElements).toSatisfy(items =>
-  items.every(el => ['tab', 'button', 'status'].includes(el.role))
-)
+// Validate: production UI must not contain decorative hardcoded accent colors.
+expect(coloredElements).toHaveLength(0)
 ```
 
-**Риск:** случайные золотые декоративные элементы.
+**Риск:** случайные золотые/синие декоративные элементы вместо нейтрального токена.
 
 ---
 
@@ -244,11 +243,11 @@ for (const el of textElements) {
 
 ## Ручные дизайн-проверки
 
-- [ ] На каждой карточке не более одной точки-акцента Gold или Azure одновременно;
+- [ ] UI-карточки используют нейтральный акцент; цветные точки допускаются только при кодировании данных;
 - [ ] Иллюстрации соответствуют semantic motion (`MENTALIX_SEMANTIC_MOTION.md`);
 - [ ] Все интерактивные элементы имеют :hover / :active состояния;
 - [ ] Никакой белый фон (RGB 255, 255, 255) не используется;
-- [ ] Azure используется только как выбранный цвет акцента и не меняет смысл композиции;
+- [ ] Цветные визуализации имеют явную семантику данных и не используются как декоративный UI-хром;
 - [ ] Все заголовки используют правильный weight Onest (не другую гарнитуру);
 - [ ] Нет `font-size: 14px` для inputs (должна быть минимум 16px);
 - [ ] Все карточки имеют одинаковый border-radius (если используются).

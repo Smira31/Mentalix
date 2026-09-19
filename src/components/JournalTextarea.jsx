@@ -290,7 +290,18 @@ export default function JournalTextarea({
         contentEditable
         suppressContentEditableWarning
         data-placeholder={placeholder}
-        onInput={emitValue}
+        onInput={() => {
+          emitValue()
+          if (!guidedFlow) return
+          let parent = editorRef.current?.parentElement
+          while (parent && parent !== document.body) {
+            // The editor owns this scroll reset during guided input.
+            // eslint-disable-next-line react-hooks/immutability
+            if (parent.scrollHeight > parent.clientHeight) parent.scrollTop = 0
+            parent = parent.parentElement
+          }
+          window.scrollTo({ top: 0, behavior: 'auto' })
+        }}
         onFocus={() => {
           const viewport = window.visualViewport
           if (!guidedFlow || !viewport) return
