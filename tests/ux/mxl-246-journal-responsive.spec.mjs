@@ -169,8 +169,8 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
       await screenshot(page, viewport, '02-journal-writer')
 
       const submitBox = await submitButton.boundingBox()
-      expect(submitBox?.width).toBeGreaterThan(280)
-      expect(submitBox?.height).toBeGreaterThanOrEqual(56)
+      expect(submitBox?.width).toBe(56)
+      expect(submitBox?.height).toBe(56)
 
       const guidedSteps = [
         ['Что сейчас происходит?', 'Сегодня я замечаю главное'],

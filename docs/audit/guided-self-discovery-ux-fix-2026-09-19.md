@@ -19,14 +19,22 @@ scope: GuidedSelfDiscoveryFlow only
 - Intro, writing и completion используют общий `FULLSCREEN_SCROLL_CLASS`.
 - Completion primary CTA «Вернуться в дневник» перенесён в тот же action bar; внутри completion сохранено вторичное действие «Начать заново».
 - Вопросы, тексты, draft-модель и сохранение ответов не менялись.
-- Responsive UX-сценарий обновлён под широкий action bar и сохраняет screenshots для всех семи шагов и completion.
+- Responsive UX-сценарий проверяет compact action bar и сохраняет screenshots для всех семи шагов и completion.
 
 ## Проверки
 
 - `npm run check:core` — passed.
 - `npm run ux:check` — 11/11 passed.
 - `npx playwright test --config=playwright.mxl246.config.mjs` — 8/8 passed на 390×844, 768×1024, 1024×768 и 1440×900.
-- В `qa-evidence/mxl-246/390x844/` сохранены состояния 390×844; contact sheet доступен как `390x844-journal-after-contact-sheet.png`.
+- В `qa-evidence/mxl-246/390x844/` сохранены состояния 390×844; `02-journal-writer-before-round.png` — before, `02-journal-writer.png` — after.
+
+## Telegram MainButton — результат разведки
+
+Официальная документация Telegram Web Apps описывает актуальный объект как `BottomButton` (для main-кнопки это прежний `MainButton`). В `setParams` перечислены `text`, `color`, `text_color`, `has_shine_effect`, `icon_custom_emoji_id`, `position` для secondary-кнопки, `is_active` и `is_visible`; отдельного параметра для размера, ширины, `border-radius` или формы нет. CSS веб-приложения не управляет нативным Telegram UI. Поэтому сделать нативный Telegram MainButton круглым в рамках текущего API нельзя.
+
+Кастомный DOM-оверлей вместо нативной кнопки намеренно не добавлялся. Круглый вариант сделан только для собственного WebActionBar в Safari/standalone: compact mode использует 56×56px, белый круг и шеврон, с сохранением существующего `shrink-0`/visualViewport keyboard-safe расположения. Остальные экраны и общий WebActionBar не изменены.
+
+Источник: [Telegram Mini Apps — BottomButton](https://core.telegram.org/bots/webapps#bottombutton).
 
 ## Gate перед merge
 

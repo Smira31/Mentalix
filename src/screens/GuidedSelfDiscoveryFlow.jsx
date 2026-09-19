@@ -340,7 +340,11 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
         />
       )}
 
-      <WebActionBar action={action} />
+      <WebActionBar
+        action={action}
+        compact={stage === 'writing'}
+        className="guided-self-discovery__action-bar"
+      />
     </div>,
     getFullscreenPortalTarget()
   )

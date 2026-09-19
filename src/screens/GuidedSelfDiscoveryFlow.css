@@ -327,6 +327,26 @@
   font-weight: 600;
 }
 
+/* Journal web/PWA only: mirror Stoic's compact bottom-right next action. */
+.mx-practice-flow--self-discovery .guided-self-discovery__action-bar .mx-reference-next {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  min-height: 56px;
+  margin-left: auto;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  box-shadow: var(--shadow-float-compact);
+}
+
+.mx-practice-flow--self-discovery .guided-self-discovery__action-bar .mx-reference-next:disabled {
+  opacity: 0.4;
+}
+
 @media (max-height: 650px) {
   .mx-practice-flow--self-discovery .guided-self-discovery__completion-art {
     min-height: 110px;
