@@ -72,13 +72,10 @@ test('MXL-014 публикует короткую текстовую медит�
   assert.match(flow, /practice-scene--input practice-scene--input-centered/)
   assert.equal((flow.match(/floatingToolbar/g) || []).length, 3)
   assert.match(flow, /<JournalTextarea/)
+  // Component remains in tree; entry is gated by allowlist (Скоро).
   assert.match(practices, /MeditationFlow/)
   assert.match(practices, /buildPracticeViewModels\(\{ rituals, ascezas, completedToday \}\)/)
-  // Key remains in PRACTICE_KEYS; entry gated off allowlist (Скоро).
   assert.match(availability, /PRACTICE_KEYS\.meditation/)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), false)
   assert.doesNotMatch(flow, /api\./)
 })
-
-// NOTE: Remainder of this suite is restored from main in follow-up if truncated.
-// Critical Meditation gating assertions are above. Full suite must match main + gating.
