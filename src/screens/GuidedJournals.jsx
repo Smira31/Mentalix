@@ -99,6 +99,7 @@ function StepInput({ step, value, onChange }) {
   return (
     <JournalTextarea
       writingCanvas
+      autoFocus
       value={typeof value === 'string' ? value : ''}
       onChange={onChange}
       placeholder={step.helper || 'Напиши столько, сколько сейчас нужно.'}
