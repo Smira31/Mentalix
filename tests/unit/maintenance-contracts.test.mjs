@@ -124,10 +124,7 @@ test('MXL-MOOD-CHECK-ERROR-GUARD-001 не блокирует запуск при
   }
 
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: null }), true)
-  assert.equal(shouldShowMoodCheckGate({ ...
-    shouldShowMoodCheckGate({ ...base, todayCheckin: undefined }),
-    false
-  )
+  assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: undefined }), false)
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: MOOD_CHECK_CHECKIN_ERROR }), false)
   assert.equal(shouldShowMoodCheckGate({ ...base, todayCheckin: { id: 10 } }), false)
 })
