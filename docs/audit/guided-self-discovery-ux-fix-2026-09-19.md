@@ -12,6 +12,12 @@ scope: GuidedSelfDiscoveryFlow only
 
 `GuidedSelfDiscoveryFlow` до правки передавал `onSubmit` непосредственно в `PracticeWritingCanvas`. Кнопка перехода поэтому жила в локальном absolute/fixed dock внутри canvas и зависела от visual viewport и keyboard-offset логики canvas. Это был отдельный механизм, а не контракт `CheckIn`; на реальном iPhone в Telegram dock оказывался под клавиатурой. Дополнительное расхождение: flow не оборачивал содержимое intro/writing/completion в `FULLSCREEN_SCROLL_CLASS` и держал completion primary CTA внутри completion-контента.
 
+## Диагностика новых визуальных находок
+
+1. **Крестик:** X не был случайно потерян в PR #688: его нет в текущем `main`, в базовой версии Guided flow и в исходном коммите компонента. `CheckIn.jsx` использует отдельную DOM-кнопку X справа, тогда как Guided flow исторически оставлял только BackButton. По решению владельца X добавляется только в веб/PWA-шапку; в Telegram остаётся native BackButton без DOM-оверлея.
+2. **Текст вопроса:** `PracticeWritingCanvas__question` и `PracticeWritingCanvas__description` — разные элементы. Первый — вопрос, белый display-текст; второй — приглушённая подсказка. Разная визуальная роль на скриншотах не является смешением стилей одного элемента.
+3. **Хвост предыдущего шага:** `PracticeWritingCanvas` не имел `key` на уровне шага; при смене `stepIndex` React мог переиспользовать внутренний textarea/canvas DOM. Исправление — remount canvas по стабильному `step.key`, без изменения draft-данных.
+
 ## Изменения
 
 - Guided flow теперь публикует действие текущего шага через `useMainButton` и `WebActionBar`.
