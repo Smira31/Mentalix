@@ -3,6 +3,7 @@ import { Check, Cloud, Lightbulb, Lock, LockKeyhole, PenLine, Sparkles } from 'l
 import { createPortal } from 'react-dom'
 import BackButton from '../components/BackButton'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import './SubscriptionManager.css'
 
 const TIERS = [
@@ -129,7 +130,7 @@ function DemoSubscriptionOffer({ onBack }) {
 
 export default function SubscriptionManager({ user: _user, tier, onBack }) {
   if (isPreviewDemoMode()) {
-    return createPortal(<DemoSubscriptionOffer onBack={onBack} />, document.body)
+    return createPortal(<DemoSubscriptionOffer onBack={onBack} />, getFullscreenPortalTarget())
   }
 
   return (

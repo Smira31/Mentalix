@@ -55,12 +55,20 @@ function previewTodayState() {
   return TODAY_PREVIEW_STATES.has(requested) ? requested : null
 }
 
+function offsetDate(date, amount) {
+  const value = new Date(date)
+  value.setDate(value.getDate() + amount)
+  return value.toISOString().slice(0, 10)
+}
+
 function seedState(todayState = null) {
+  const today = new Date()
+  const previousDate = offsetDate(today, -1)
   const checkin =
     todayState && todayState !== 'checkinPending'
       ? {
           id: 900501,
-          date: new Date().toISOString().slice(0, 10),
+          date: today.toISOString().slice(0, 10),
           mood: 3,
           emotion: 'ровно',
           review_completed_at: todayState === 'dayClosed' ? new Date().toISOString() : null,
@@ -111,8 +119,21 @@ function seedState(todayState = null) {
     ],
     notes: { 900401: [] },
     messages: [],
-    pinnedPractices: [],
-    checkins: checkin ? [checkin] : [],
+    pinnedPractices: [
+      { practice_id: 'first-step' },
+      { practice_id: 'breathing' },
+      { practice_id: 'focus' },
+    ],
+    checkins: [
+      {
+        id: 900500,
+        date: previousDate,
+        mood: 3,
+        emotion: 'ровно',
+        review_completed_at: new Date(`${previousDate}T20:00:00Z`).toISOString(),
+      },
+      ...(checkin ? [checkin] : []),
+    ],
     profile: {
       id: DEMO_USER.id,
       first_name: DEMO_USER.first_name,
@@ -252,7 +273,11 @@ export function demoRequest(path, options = {}) {
     return json({ ok: true })
   }
 
-  if (pathname === '/checkin/today' && method === 'GET') return json(state.checkins[0] || null)
+  if (pathname === '/checkin/today' && method === 'GET') {
+    // checkin/today uses the PR-aware state.checkins[0] fixture anchor.
+    const today = new Date().toISOString().slice(0, 10)
+    return json(state.checkins.find(item => item?.date === today) || null)
+  }
   if (pathname === '/checkin/history' && method === 'GET') return json(state.checkins)
   if (pathname === '/checkin' && method === 'POST') {
     const checkin = { id: Date.now(), date: new Date().toISOString().slice(0, 10), ...body }

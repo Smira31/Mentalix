@@ -74,3 +74,69 @@
     font-size: 9px;
   }
 }
+
+/* Compass reference pass: larger iconography, stronger active capsule, calmer spacing. */
+.mx-demo-bottom-nav > div {
+  height: 78px !important;
+  border-radius: 999px !important;
+  background: #171717 !important;
+  border-color: #303030 !important;
+}
+
+.mx-demo-bottom-nav > div nav {
+  padding-inline: 7px;
+  gap: 2px;
+}
+
+.mx-demo-bottom-nav > div nav button {
+  height: 68px;
+  gap: 4px;
+  border-radius: 999px;
+}
+
+.mx-demo-bottom-nav > div nav button svg {
+  width: 29px;
+  height: 29px;
+  stroke-width: 1.8;
+}
+
+.mx-demo-bottom-nav > div nav button span {
+  color: #a9a9a9 !important;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.mx-demo-bottom-nav > div nav button[class*='bg-cream'] {
+  background: #3b3b3b !important;
+}
+
+.mx-demo-bottom-nav > div nav button[class*='bg-cream'] span {
+  color: #f2f2f2 !important;
+  font-weight: 650;
+}
+
+.mx-demo-bottom-nav > div nav button[class*='bg-cream'] svg,
+.mx-demo-bottom-nav > div nav button[class*='bg-cream'] svg * {
+  color: #f2f2f2 !important;
+  stroke: currentColor;
+}
+
+@media (max-width: 360px) {
+  .mx-demo-bottom-nav > div {
+    height: 74px !important;
+  }
+
+  .mx-demo-bottom-nav > div nav button {
+    height: 64px;
+  }
+
+  .mx-demo-bottom-nav > div nav button svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .mx-demo-bottom-nav > div nav button span {
+    font-size: 10px;
+  }
+}

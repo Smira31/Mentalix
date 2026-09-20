@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './PracticeWritingCanvas.css'
+import './WritingControls.css'
 
 const DEMO_KEY_ROWS = [
   ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х'],
@@ -159,7 +160,7 @@ export default function PracticeWritingCanvas({
               aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
               aria-expanded={formatOpen}
               onClick={onFormat}
-              className={`practice-writing-canvas__format ${formatOpen ? 'is-open' : ''}`}
+              className={`practice-writing-canvas__format mx-keyboard-control mx-keyboard-format ${formatOpen ? 'is-open' : ''}`}
             >
               Aa
             </button>
@@ -170,7 +171,7 @@ export default function PracticeWritingCanvas({
               aria-label={deepenLabel}
               disabled={deepenIsDisabled}
               onClick={onDeepen}
-              className="practice-writing-canvas__deepen"
+              className="practice-writing-canvas__deepen mx-keyboard-control mx-keyboard-deepen"
             >
               {deepenLabel}
             </button>
@@ -181,7 +182,7 @@ export default function PracticeWritingCanvas({
               aria-label={submitLabel}
               disabled={submitIsDisabled}
               onClick={onSubmit}
-              className="practice-writing-canvas__submit"
+              className="practice-writing-canvas__submit mx-keyboard-control mx-keyboard-submit"
             >
               <svg aria-hidden="true" viewBox="0 0 20 20" focusable="false">
                 <path d="M6 4.5 12 10 6 15.5" />

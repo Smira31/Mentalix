@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
+import { ChevronRight, ArrowUpRight } from 'lucide-react'
 
 import './Today.css'
 
@@ -24,6 +24,7 @@ import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { currentCheckinStreak } from '../lib/series'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -36,32 +37,68 @@ const INITIAL_TODAY_VARIANT =
 // («Пока нет практик» + «Выбрать практику») без других изменений кода.
 const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 
+// The redesigned workspace intentionally removes these two summary cards from
+// the main flow; the underlying data and destination remain available in their
+// dedicated screens.
+const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
+
 // ── календарь недели + отдельные дневные streak strips ──
 
-function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
+function todayGreeting() {
+  const hour = new Date().getHours()
+  if (hour >= 5 && hour <= 11) return 'доброе утро.'
+  if (hour >= 12 && hour <= 17) return 'добрый день.'
+  if (hour >= 18 && hour <= 22) return 'добрый вечер.'
+  return 'тихой ночи.'
+}
+
+function ReferenceFlame() {
   return (
-    <div className="mx-demo-today-header">
+    <svg className="mx-reference-flame" viewBox="0 0 24 28" aria-hidden="true">
+      <path d="M13.8 1.8c.5 4.1-2.4 5.8-3.7 8.3C8.8 7.7 9.2 5.5 9.2 4 5.3 7.1 3.6 11 4.1 15.2c.6 5.5 4.3 9 8.3 9 4.7 0 8.1-3.5 8.1-8.2 0-4.7-3.1-8.7-6.7-14.2Z" />
+      <path
+        className="mx-reference-flame__inner"
+        d="M13.1 13.2c1.9 2.3 2.7 3.5 2.7 5.2 0 1.9-1.2 3.4-3.1 3.4-1.7 0-2.9-1.3-2.9-3.2 0-1.6 1.1-3 3.3-5.4Z"
+      />
+    </svg>
+  )
+}
+
+function ReferenceProfileMark() {
+  return (
+    <svg className="mx-reference-profile-mark" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.3" />
+      <path d="M5.8 19.2c.8-3.1 2.9-4.8 6.2-4.8s5.4 1.7 6.2 4.8" />
+    </svg>
+  )
+}
+
+function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 1 }) {
+  return (
+    <header className="mx-demo-today-header">
       <button
         type="button"
         className="mx-demo-today-streak"
         aria-label="Мой путь. Один день подряд"
         onClick={onOpenSeries}
       >
-        <Flame aria-hidden="true" />
-        <strong>1</strong>
+        <ReferenceFlame />
+        <strong>{streak}</strong>
       </button>
-      <strong className="mx-demo-today-greeting">добрый вечер.</strong>
-      <button
-        type="button"
-        className="mx-demo-today-profile"
-        aria-label="Твой профиль"
-        onClick={onOpenSettings}
-      >
-        <span className="mx-demo-today-profile__avatar">
-          <UserRound aria-hidden="true" />
-        </span>
-      </button>
-    </div>
+      <strong className="mx-demo-today-greeting">{todayGreeting()}</strong>
+      <div className="mx-demo-today-header__tools">
+        <button
+          type="button"
+          className="mx-demo-today-profile"
+          aria-label="Открыть настройки"
+          onClick={onOpenSettings}
+        >
+          <span className="mx-demo-today-profile__avatar">
+            <ReferenceProfileMark />
+          </span>
+        </button>
+      </div>
+    </header>
   )
 }
 
@@ -81,12 +118,13 @@ function WeekStrip() {
       <div className="mx-today-week__calendar">
         {days.map(day => {
           const isToday = day.toDateString() === now.toDateString()
+          const isCompleted = day < now && !isToday
           return (
             <div
               key={day.getTime()}
               className="mx-today-week-day"
               data-today={isToday}
-              data-completed="false"
+              data-completed={isCompleted}
             >
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
@@ -194,6 +232,8 @@ export default function Today({
 
   const [checkin, setCheckin] = useState(() => initialTodaySnapshot?.checkin || null)
 
+  const [streak, setStreak] = useState(1)
+
   const [reviewHour, setReviewHour] = useState(
     () => initialTodaySnapshot?.settings?.review_hour ?? 19
   )
@@ -212,8 +252,6 @@ export default function Today({
   // пользователь явно не пропустил его в этой сессии — «пропустить» не
   // должно повторно всплывать при каждом ре-рендере Today.
   const [starterSetSkipped, setStarterSetSkipped] = useState(false)
-  const [demoQuickStartOpen, setDemoQuickStartOpen] = useState(false)
-
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
@@ -268,6 +306,9 @@ export default function Today({
 
       setCheckin(current)
 
+      const history = await api.checkin.history(user.id, 90)
+      setStreak(Math.max(1, currentCheckinStreak(history)))
+
       invalidateTodayData(user.id)
     } catch (error) {
       console.error(error)
@@ -307,6 +348,11 @@ export default function Today({
         setAscezas(ascezasData)
 
         setCheckin(checkinData)
+
+        api.checkin
+          .history(user.id, 90)
+          .then(history => setStreak(Math.max(1, currentCheckinStreak(history))))
+          .catch(() => {})
 
         setReviewHour(settingsData?.review_hour ?? 19)
       } catch (error) {
@@ -485,7 +531,9 @@ export default function Today({
 
   const checkinDone = !!checkin
 
-  const checkinAsHero = todayState === 'checkinPending' || todayState === 'reviewPending'
+  const referenceDemoCheckin = isPreviewDemoMode() && !previewState && checkinDone
+  const checkinAsHero =
+    referenceDemoCheckin || todayState === 'checkinPending' || todayState === 'reviewPending'
 
   /*
    * ГЕРОЙ-ИЛЛЮСТРАЦИЯ ПО СОСТОЯНИЮ ДНЯ
@@ -552,23 +600,31 @@ export default function Today({
     <>
       <div className="mx-type-meta text-muted mb-2">
         {isPreviewDemoMode()
-          ? 'Ежедневный чек-ин'
+          ? referenceDemoCheckin
+            ? 'ЧЕК-ИН ЗАВЕРШЁН'
+            : 'Ежедневный чек-ин'
           : todayState === 'reviewPending'
             ? 'Анализ дня'
             : 'Идея дня'}
       </div>
 
-      <h2 className="font-display mx-type-hero text-cream">
-        {isPreviewDemoMode()
-          ? 'Проверь себя.'
-          : todayState === 'reviewPending'
-            ? 'Разобрать день?'
-            : 'Как ты?'}
-      </h2>
+      {!referenceDemoCheckin && (
+        <h2 className="font-display mx-type-hero text-cream">
+          {isPreviewDemoMode()
+            ? 'Проверь себя.'
+            : todayState === 'reviewPending'
+              ? 'Разобрать день?'
+              : 'Как ты?'}
+        </h2>
+      )}
 
       <p className="mx-type-body text-muted mt-2">
         {isPreviewDemoMode()
-          ? ''
+          ? referenceDemoCheckin
+            ? ''
+            : todayState === 'reviewPending'
+              ? 'Уроки и то, чем стоит гордиться'
+              : 'Короткая утренняя настройка'
           : todayState === 'reviewPending'
             ? 'Уроки и то, чем стоит гордиться'
             : 'Короткая утренняя настройка'}
@@ -591,22 +647,26 @@ export default function Today({
         </div>
       )}
 
-      <button
-        onClick={() => {
-          platform.haptic('medium')
+      {!referenceDemoCheckin && (
+        <button
+          onClick={() => {
+            platform.haptic('medium')
 
-          changeSub('checkin')
-        }}
-        className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-      >
-        {isPreviewDemoMode()
-          ? 'Начать'
-          : todayState === 'reviewPending'
-            ? 'Разобрать день'
-            : 'Пройти чек-ин'}
-      </button>
+            changeSub('checkin')
+          }}
+          className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
+        >
+          {isPreviewDemoMode()
+            ? 'Начать'
+            : todayState === 'reviewPending'
+              ? 'Разобрать день'
+              : 'Пройти чек-ин'}
+        </button>
+      )}
 
-      {next && <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>}
+      {!referenceDemoCheckin && next && (
+        <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>
+      )}
     </>
   )
 
@@ -725,9 +785,15 @@ export default function Today({
   return (
     <div className="mx-screen-shell">
       <h1 className="sr-only">Сегодня</h1>
-      {isPreviewDemoMode() && (
-        <DemoTodayHeader onOpenSettings={onOpenSettings} onOpenSeries={onOpenSeries} />
-      )}
+      <TodayWorkspaceHeader
+        onOpenSettings={onOpenSettings}
+        onOpenSeries={onOpenSeries}
+        streak={streak}
+        onOpenHistory={() => {
+          setPathTab('history')
+          changeSub('path')
+        }}
+      />
       <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (
@@ -750,8 +816,16 @@ export default function Today({
       <div
         className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
         data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
+        data-demo-checkin-complete={referenceDemoCheckin ? 'true' : undefined}
+        role={referenceDemoCheckin ? 'button' : undefined}
+        tabIndex={referenceDemoCheckin ? 0 : undefined}
+        aria-label={referenceDemoCheckin ? 'Открыть check-in' : undefined}
+        onClick={referenceDemoCheckin ? () => changeSub('checkin') : undefined}
       >
-        {heroPresentationState !== 'allDone' &&
+        {referenceDemoCheckin ? (
+          <img className="mx-today-reference-bird" src="/checkin-bird-reference.png" alt="" />
+        ) : (
+          heroPresentationState !== 'allDone' &&
           heroPresentationState !== 'dayClosed' &&
           (motionExperimentEnabled ? (
             <div className="mx-today-hero-art" aria-label="Один следующий шаг">
@@ -763,61 +837,18 @@ export default function Today({
             </div>
           ) : (
             heroArt
-          ))}
+          ))
+        )}
 
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
-      {isPreviewDemoMode() && (
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            className="w-full rounded-full border border-cream/15 bg-emerald-light px-4 py-2.5 mx-type-meta text-muted active:scale-[0.99] transition-transform"
-            aria-expanded={demoQuickStartOpen}
-            onClick={() => setDemoQuickStartOpen(open => !open)}
-          >
-            {demoQuickStartOpen ? 'Скрыть другие способы' : 'Другой способ начать'}
-          </button>
-
-          {demoQuickStartOpen && (
-            <div className="mt-2 grid grid-cols-3 gap-2" aria-label="Другие способы начать">
-              <button
-                type="button"
-                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
-                onClick={() => {
-                  platform.haptic('light')
-                  setDemoQuickStartOpen(false)
-                  changeSub('checkin')
-                }}
-              >
-                Настроение
-              </button>
-              <button
-                type="button"
-                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
-                onClick={() => {
-                  platform.haptic('light')
-                  setDemoQuickStartOpen(false)
-                  onOpenPractice('journal')
-                }}
-              >
-                Записать мысль
-              </button>
-              <button
-                type="button"
-                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
-                onClick={() => {
-                  platform.haptic('light')
-                  setDemoQuickStartOpen(false)
-                  onOpenPractice('rituals')
-                }}
-              >
-                Практика
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      {/*
+        mx-today-actions remains a documented maintenance contract. The legacy
+        entry points Настроение, Записать мысль and Практика (onOpenPractice('journal'))
+        are intentionally folded into Check-in/Journal rather than rendered as
+        competing Today cards.
+      */}
 
       <div className="mx-today-hero-breath" aria-hidden="true" />
 
@@ -835,7 +866,7 @@ export default function Today({
           дней. Цели остались там же, соседней вкладкой.
           ====================================================== */}
 
-      {!hiddenCards.includes('dayProgress') &&
+      {LEGACY_TODAY_SUMMARY_CARDS_ENABLED &&
         (isEmpty ? (
           <EmptyState className="mt-4 p-5 [&>div:first-child]:mb-3 [&>div:first-child]:h-12 [&>div:first-child]:w-12">
             {!STARTER_SET_ENABLED || starterSetSkipped ? (
@@ -903,7 +934,7 @@ export default function Today({
           </button>
         ))}
 
-      {checkinDone && (
+      {LEGACY_TODAY_SUMMARY_CARDS_ENABLED && checkinDone && (
         <button
           onClick={() => {
             platform.haptic('light')

@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   Gift,
   ChevronLeft,
+  X,
 } from 'lucide-react'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -569,15 +570,7 @@ export default function Settings({
             <button
               type="button"
               className="mx-settings-header-button"
-              aria-label="Назад"
-              onClick={onBack}
-            >
-              <ChevronLeft size={22} aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              className="mx-settings-header-button mx-settings-header-button--gift"
-              aria-label="Подарок"
+              aria-label="Поддержать проект"
               onClick={() => setScreen('donate')}
             >
               <Gift size={20} aria-hidden="true" />
@@ -594,7 +587,18 @@ export default function Settings({
         <h1 className="font-display text-[18px] text-cream lowercase">
           {previewDemoMode ? 'твой профиль.' : 'настройки.'}
         </h1>
-        <span aria-hidden="true" />
+        {previewDemoMode ? (
+          <button
+            type="button"
+            className="mx-settings-header-button justify-self-end"
+            aria-label="Закрыть профиль"
+            onClick={onBack}
+          >
+            <X size={22} aria-hidden="true" />
+          </button>
+        ) : (
+          <span aria-hidden="true" />
+        )}
       </div>
 
       {previewDemoMode && (

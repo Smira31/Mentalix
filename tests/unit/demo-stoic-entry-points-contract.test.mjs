@@ -4,18 +4,18 @@ import test from 'node:test'
 
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 
-test('Demo exposes Stoic-inspired flexible entry points without changing production flow', () => {
+test('Today exposes the three calm entry points without changing production flow', () => {
   assert.match(today, /isPreviewDemoMode\(\)/)
-  assert.match(today, /Другой способ начать/)
+  assert.match(today, /mx-today-actions/)
   assert.match(today, /Настроение/)
   assert.match(today, /Записать мысль/)
   assert.match(today, /Практика/)
   assert.match(today, /onOpenPractice\('journal'\)/)
 })
 
-test('Today keeps one primary CTA before optional entry points', () => {
+test('Today keeps one primary CTA before the quick actions', () => {
   const heroStart = today.indexOf('const heroCheckinContent')
-  const optionalStart = today.indexOf('Другой способ начать')
+  const optionalStart = today.indexOf('mx-today-actions')
 
   assert.notEqual(heroStart, -1)
   assert.notEqual(optionalStart, -1)

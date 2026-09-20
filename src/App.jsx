@@ -128,7 +128,7 @@ function DemoTelegramChrome({ onBack }) {
         ) : (
           <X size={18} strokeWidth={2.2} aria-hidden="true" />
         )}
-        <span>{hasBack ? 'Назад' : 'Закрыть'}</span>
+        {!hasBack && <span>Закрыть</span>}
       </button>
       {tabTitle && <div className="mx-demo-telegram-chrome__title">{tabTitle}</div>}
       <div className="mx-demo-telegram-chrome__right">

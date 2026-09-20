@@ -274,7 +274,7 @@ test('MXL-CLOUDFLARE-OWNER-QA-001 использует manual exact-SHA Demo gat
   assert.match(workflow, /immutable provenance/)
 })
 
-test('MXL-007 публикует дневные strips и убирает старый цикл из Today', () => {
+test('MXL-007 публикует reference Today chrome with streak/calendar and calm cards', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const conversation = readFileSync(
     new URL('../../src/screens/mentalix/Conversation.jsx', import.meta.url),
@@ -285,10 +285,12 @@ test('MXL-007 публикует дневные strips и убирает ста�
     'utf8'
   )
 
+  assert.match(today, /mx-demo-today-header/)
+  assert.match(today, /mx-today-actions/)
+  assert.match(today, /mx-today-primary-card/)
   assert.match(today, /mx-today-week__calendar/)
   assert.match(today, /mx-today-week-day/)
-  assert.match(today, /role="group" aria-label="Календарь недели"/)
-  assert.doesNotMatch(today, /mx-today-streaks/)
+  assert.match(today, /mx-demo-today-streak/)
   assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
   assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
   assert.match(analytics, /mx-progress-redesign__chart-line/)
@@ -916,8 +918,10 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
 
   assert.match(app, /mx-type-greeting/)
   assert.match(today, /mx-type-hero/)
+  assert.match(today, /mx-demo-today-header/)
   assert.match(today, /mx-type-weekday/)
   assert.match(today, /mx-type-calendar-date/)
+  assert.match(today, /mx-today-actions/)
   assert.match(today, /mx-type-card/)
   assert.match(today, /mx-type-list-title/)
   assert.match(today, /mx-type-flow-action/)

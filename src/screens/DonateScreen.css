@@ -168,3 +168,9 @@
   font-size: 12px;
   line-height: 1.45;
 }
+
+[data-mentalix-demo-frame='true'] .mx-demo-donate {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
