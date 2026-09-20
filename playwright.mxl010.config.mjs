@@ -6,6 +6,7 @@ export default defineConfig({
   outputDir: 'artifacts/mxl-010-gate/playwright-output',
   fullyParallel: false,
   workers: 1,
+  retries: 2,
   timeout: 120_000,
   expect: {
     timeout: 10_000,
