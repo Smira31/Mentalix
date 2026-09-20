@@ -452,15 +452,17 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await assertClickable(page.getByRole('button', { name: 'Закрыть' }))
+        await assertClickable(page.getByRole('button', { name: 'Назад' }))
         await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
       },
     })
 
     // Scale answers auto-advance to the next question: mood, then energy.
     for (const option of ['Нормально', 'Средне']) {
-      await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
-      await page.waitForTimeout(320)
+      const answer = page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') })
+      await expect(answer).toBeVisible()
+      await expect(answer).toBeEnabled()
+      await answer.click()
     }
     await captureScreen({
       page,
@@ -478,9 +480,14 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Далее' }))
       },
     })
-    await page.waitForTimeout(650)
-    const checkinCloseButton = page.locator('button[aria-label="Закрыть"]')
-    await checkinCloseButton.click()
+    const checkinBackButton = page.getByRole('button', { name: 'Назад' })
+    await expect(checkinBackButton).toBeVisible()
+    await expect(checkinBackButton).toBeEnabled()
+    await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
+    await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+    await checkinBackButton.click()
 
     const draftDialog = page.locator(
       '[role="dialog"][aria-labelledby="checkin-draft-dialog-title"]'
