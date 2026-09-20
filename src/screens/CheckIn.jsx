@@ -65,6 +65,69 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
 
+const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+function dayStart(date) {
+  const value = new Date(date)
+  value.setHours(0, 0, 0, 0)
+  return value
+}
+
+function buildStreakDays(streakHistory, streak) {
+  const today = dayStart(new Date())
+  const completedDates = new Set(
+    streakHistory
+      .filter(checkin => checkin?.review_completed_at && checkin?.date)
+      .map(checkin => String(checkin.date).slice(0, 10))
+  )
+  const startDate = new Date(today)
+  startDate.setDate(today.getDate() - Math.max(0, Number(streak) - 1))
+  const visibleStart = new Date(startDate)
+  visibleStart.setDate(startDate.getDate() - Math.max(0, 3 - Number(streak)))
+  const length = Math.max(1, Math.round((today - visibleStart) / 86400000) + 1)
+
+  return Array.from({ length }, (_, index) => {
+    const date = new Date(visibleStart)
+    date.setDate(visibleStart.getDate() + index)
+    const isoDate = date.toISOString().slice(0, 10)
+    const isToday = date.getTime() === today.getTime()
+
+    return {
+      isoDate,
+      isToday,
+      completed: completedDates.has(isoDate),
+      label: WEEK_DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1],
+      dateLabel: date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+    }
+  })
+}
+
+function StreakFlower() {
+  return (
+    <svg
+      width="128"
+      height="128"
+      viewBox="0 0 128 128"
+      fill="none"
+      aria-hidden="true"
+      className="mb-7"
+    >
+      <g strokeWidth="3" strokeLinecap="round">
+        {Array.from({ length: 6 }, (_, index) => (
+          <path
+            key={index}
+            d="M64 52C52 42 54 27 64 18C74 27 76 42 64 52Z"
+            transform={`rotate(${index * 60} 64 64)`}
+            className={index === 0 ? 'stroke-gold' : 'stroke-cream/40'}
+          />
+        ))}
+      </g>
+      <circle cx="64" cy="64" r="13" className="fill-gold" />
+      <circle cx="64" cy="64" r="5" className="fill-emerald-deep" />
+    </svg>
+  )
+}
+
 export function CheckInQuestion({
   title,
   hint,
@@ -127,7 +190,7 @@ function DemoCheckInFlow({ user, onDone }) {
       try {
         const history = await api.checkin.history(user.id, 90)
         setStreakHistory(Array.isArray(history) ? history : [])
-        setStreak(currentCheckinStreak(Array.isArray(history) ? history : []))
+        setStreak(Math.max(1, currentCheckinStreak(Array.isArray(history) ? history : [])))
       } catch (historyError) {
         console.error(historyError)
       }
@@ -169,7 +232,7 @@ function DemoCheckInFlow({ user, onDone }) {
         <div
           className={`mx-demo-checkin__header-left ${step === 0 || step === doneStep ? 'is-right' : ''}`}
         >
-          {step > 0 && step !== doneStep && (
+          {step > 0 && step !== doneStep && step !== streakStep && (
             <button
               type="button"
               aria-label="Назад"
@@ -273,37 +336,27 @@ function DemoCheckInFlow({ user, onDone }) {
 
         {step === streakStep && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-            <MotifArt name="noch" size={128} artScale={1.08} className="mb-6" />
+            <StreakFlower />
             <h1>{streak}-дневная серия.</h1>
-            <p>Ритм недели уже виден.</p>
+            <p>внутренняя работа — это путь. ты только что сделал ещё один шаг.</p>
             <div
-              className="mt-6 grid grid-cols-7 gap-1.5"
+              className="mt-6 grid w-full max-w-sm gap-2"
+              style={{
+                gridTemplateColumns: `repeat(${buildStreakDays(streakHistory, streak).length}, minmax(0, 1fr))`,
+              }}
               role="group"
-              aria-label="Дни текущей недели"
+              aria-label="Дни текущей серии"
             >
-              {Array.from({ length: 7 }, (_, index) => {
-                const today = new Date()
-                const monday = new Date(today)
-                monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
-                const day = new Date(monday)
-                day.setDate(monday.getDate() + index)
-                const isoDate = day.toISOString().slice(0, 10)
-                const active =
-                  day.toDateString() === today.toDateString() ||
-                  streakHistory.some(
-                    item => item?.review_completed_at && String(item.date).startsWith(isoDate)
-                  )
-
+              {buildStreakDays(streakHistory, streak).map(day => {
+                const active = day.completed || day.isToday
                 return (
-                  <div key={isoDate} className="flex flex-col items-center gap-1">
+                  <div key={day.isoDate} className="flex flex-col items-center gap-1">
                     <span
                       className={`flex h-9 w-9 items-center justify-center rounded-full border ${active ? 'border-cream bg-cream text-emerald-deep' : 'border-cream/10 bg-emerald text-muted'}`}
                     >
                       {active ? <Flame size={15} aria-hidden="true" /> : null}
                     </span>
-                    <span className="text-[10px] text-muted">
-                      {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'][index]}
-                    </span>
+                    <span className="text-[10px] text-muted">{day.label}</span>
                   </div>
                 )
               })}
@@ -757,7 +810,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
         try {
           const history = await api.checkin.history(user.id, 90)
           setStreakHistory(Array.isArray(history) ? history : [])
-          setStreak(currentCheckinStreak(Array.isArray(history) ? history : []))
+          setStreak(Math.max(1, currentCheckinStreak(Array.isArray(history) ? history : [])))
         } catch (historyError) {
           console.error(historyError)
         }
@@ -1026,52 +1079,35 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       ? { text: skipAction.text, onClick: skipAction.run }
       : null
 
-  const weekNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-  const today = new Date()
-  const monday = new Date(today)
-  monday.setHours(0, 0, 0, 0)
-  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
-  const completedDates = new Set(
-    streakHistory
-      .filter(checkin => checkin?.review_completed_at && checkin?.date)
-      .map(checkin => String(checkin.date).slice(0, 10))
-  )
-  const weekDays = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(monday)
-    date.setDate(monday.getDate() + index)
-    const isoDate = date.toISOString().slice(0, 10)
-    const isToday = date.toDateString() === today.toDateString()
-
-    return {
-      isoDate,
-      isToday,
-      label: weekNames[index],
-    }
-  })
+  const streakDays = buildStreakDays(streakHistory, streak)
 
   if (isStreakStep) {
     return createPortal(
       <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
-        <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
+        <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex justify-end px-5`}>
+          <button type="button" aria-label="Закрыть" onClick={onDone} className="p-2 text-muted">
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className={`${CHECKIN_CENTER_CLASS} justify-between`}>
             <section className="w-full flex flex-col items-center text-center pt-8">
-              <MotifArt name="noch" size={128} artScale={1.08} className="mb-7" />
+              <StreakFlower />
               <h1 className="font-display text-[30px] font-bold leading-tight text-cream">
                 {streak}-дневная серия.
               </h1>
               <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-muted">
-                Ритм недели уже виден.
+                внутренняя работа — это путь. ты только что сделал ещё один шаг.
               </p>
 
               <div
-                className="mt-10 grid w-full max-w-sm grid-cols-7 gap-2"
+                className="mt-10 grid w-full max-w-sm gap-2"
+                style={{ gridTemplateColumns: `repeat(${streakDays.length}, minmax(0, 1fr))` }}
                 role="group"
-                aria-label="Дни текущей недели"
+                aria-label="Дни текущей серии"
               >
-                {weekDays.map(day => {
-                  const completed = completedDates.has(day.isoDate)
-                  const active = completed || day.isToday
+                {streakDays.map(day => {
+                  const active = day.completed || day.isToday
 
                   return (
                     <div key={day.isoDate} className="flex flex-col items-center gap-2">
