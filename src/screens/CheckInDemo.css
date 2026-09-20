@@ -54,13 +54,7 @@
   margin-top: 32px;
 }
 .mx-checkin-scale::before {
-  position: absolute;
-  top: 27px;
-  right: 8%;
-  left: 8%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, #434343 15%, #434343 85%, transparent);
-  content: '';
+  display: none;
 }
 .mx-checkin-scale__option {
   position: relative;
@@ -83,7 +77,7 @@
   place-items: center;
   border: 1px solid #343434;
   border-radius: 999px;
-  background: linear-gradient(145deg, #f1dfab 0%, #789384 42%, #18251f 100%);
+  background: var(--mx-checkin-neutral-gradient);
   box-shadow: 0 8px 20px rgb(0 0 0 / 16%);
   opacity: 0.62;
   transition:
@@ -132,13 +126,13 @@
   padding: 10px 16px;
   border: 0;
   border-radius: 999px;
-  background: #14251f;
+  background: var(--mx-checkin-neutral-gradient);
   color: #a9aaa3;
   font-size: 14px;
   font-weight: 600;
 }
 .mx-checkin-chips button.is-selected {
-  background: #f1dfab;
+  background: #f4f4f4;
   color: #173027;
 }
 .mx-demo-checkin__header-title {
@@ -208,11 +202,16 @@
 
 .mx-demo-checkin__body {
   display: flex;
+  flex-direction: column;
   min-height: 0;
   flex: 1;
   overflow: hidden;
   overscroll-behavior: contain;
   padding: 0 22px 12px;
+}
+.mx-demo-checkin__body:not(.is-editor) > .mx-checkin-question {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 .mx-demo-checkin__body.is-editor {
   overflow: hidden;
