@@ -10,7 +10,7 @@ import WebAuthScreen from './screens/WebAuthScreen'
 import Onboarding from './screens/Onboarding'
 import AppLock from './screens/AppLock'
 
-import MazeLogo from './components/MazeLogo'
+import BookLogo from './components/BookLogo'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
@@ -73,7 +73,7 @@ function Splash() {
         font-body
       "
     >
-      <MazeLogo size={132} progress={0.55} />
+      <BookLogo size={132} className="text-gold" />
 
       <div
         className="
