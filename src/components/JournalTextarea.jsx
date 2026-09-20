@@ -5,6 +5,7 @@ import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
 import { useVisualViewportGeometry } from '../lib/visualViewport'
 import PracticeWritingCanvas from './PracticeWritingCanvas'
+import './WritingControls.css'
 
 const FORMATS = [
   { command: 'bold', label: 'Жирный текст', Icon: Bold },
@@ -373,7 +374,7 @@ export default function JournalTextarea({
                 aria-expanded={addOpen}
                 onPointerDown={event => event.preventDefault()}
                 onClick={() => setAddOpen(current => !current)}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream"
+                className="mx-keyboard-control mx-keyboard-plus flex h-12 w-12 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream"
               >
                 <Plus size={22} />
               </button>
@@ -389,7 +390,7 @@ export default function JournalTextarea({
                   setFormatOpen(current => !current)
                 }}
                 className={[
-                  'flex h-14 w-14 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
+                  'mx-keyboard-control mx-keyboard-format flex h-14 w-14 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
                   formatOpen
                     ? 'border-gold/40 bg-gold/15 text-gold'
                     : 'border-cream/10 bg-emerald text-cream',
@@ -408,7 +409,7 @@ export default function JournalTextarea({
                 disabled={
                   (deepenDisabled ?? !String(value || '').trim()) || submitLoading || deepenLoading
                 }
-                className="h-14 min-w-0 rounded-full border border-cream/10 bg-emerald px-5 text-[14px] font-semibold text-cream transition-transform active:scale-[0.98] disabled:opacity-35"
+                className="mx-keyboard-control mx-keyboard-deepen h-14 min-w-0 rounded-full border border-cream/10 bg-emerald px-5 text-[14px] font-semibold text-cream transition-transform active:scale-[0.98] disabled:opacity-35"
               >
                 {deepenLabel}
               </button>
@@ -427,7 +428,7 @@ export default function JournalTextarea({
                 onSubmit?.()
               }}
               disabled={submitDisabled || submitLoading || deepenLoading}
-              className="flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
+              className="mx-keyboard-control mx-keyboard-submit flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
             >
               {submitIcon === 'arrow' ? (
                 <ArrowRight size={25} strokeWidth={2.4} />

@@ -1,0 +1,80 @@
+/* Unified Telegram-style writing controls used wherever Mentalix opens a keyboard. */
+.mx-keyboard-control {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border: 1px solid rgb(var(--c-cream) / 0.1) !important;
+  border-radius: 999px !important;
+  background: rgb(var(--c-emerald)) !important;
+  color: rgb(var(--c-cream)) !important;
+  box-shadow: none;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    opacity 140ms ease;
+}
+
+.mx-keyboard-control:active {
+  transform: scale(0.95);
+}
+
+.mx-keyboard-control:disabled {
+  opacity: 0.35;
+}
+
+.mx-keyboard-plus,
+.mx-keyboard-format,
+.mx-keyboard-submit {
+  display: grid !important;
+  width: 56px !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  place-items: center;
+  padding: 0 !important;
+}
+
+.mx-keyboard-plus {
+  width: 48px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  border-radius: 50% !important;
+}
+
+.mx-keyboard-format {
+  font-size: 18px !important;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.mx-keyboard-format.is-open {
+  border-color: rgb(var(--c-gold) / 0.45) !important;
+  background: rgb(var(--c-gold) / 0.15) !important;
+  color: rgb(var(--c-gold)) !important;
+}
+
+.mx-keyboard-deepen {
+  min-width: 0;
+  height: 56px !important;
+  min-height: 56px !important;
+  margin-left: auto;
+  overflow: hidden;
+  border: 1px solid rgb(var(--c-cream) / 0.1) !important;
+  border-radius: 28px !important;
+  background: rgb(var(--c-emerald)) !important;
+  color: rgb(var(--c-cream)) !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-keyboard-submit {
+  border-color: rgb(var(--c-cream)) !important;
+  background: rgb(var(--c-cream)) !important;
+  color: rgb(var(--c-emerald-deep)) !important;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.24);
+}
+
+.mx-keyboard-submit svg {
+  width: 22px;
+  height: 22px;
+}

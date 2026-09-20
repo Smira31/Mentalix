@@ -46,7 +46,7 @@ export default function BackButton({
   return (
     <button
       type="button"
-      aria-label={label}
+      aria-label={showInDemo ? 'Закрыть экран' : label}
       onClick={() => {
         platform.haptic('light')
         onClick?.()

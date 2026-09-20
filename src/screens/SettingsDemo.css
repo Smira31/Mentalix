@@ -47,10 +47,6 @@
   background: #7b7b7b !important;
 }
 
-.mx-settings-screen--demo .mx-settings-header-button--gift {
-  display: none;
-}
-
 .mx-settings-premium {
   display: flex;
   align-items: center;

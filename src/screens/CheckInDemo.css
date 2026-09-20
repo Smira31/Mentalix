@@ -627,3 +627,23 @@
     min-height: 74px;
   }
 }
+
+/* Demo check-in: keep the browser equivalent of Telegram MainButton visible. */
+.mx-demo-checkin__action-bar {
+  position: relative;
+  z-index: 20;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: none;
+  min-height: 76px;
+  margin: 0;
+  padding: 10px 20px max(16px, var(--app-safe-bottom, 0px));
+  background: #000;
+}
+
+.mx-demo-checkin__action-bar > button {
+  min-height: 54px;
+  border-radius: 27px;
+  font-size: 16px;
+  font-weight: 700;
+}

@@ -158,6 +158,13 @@ function DemoCheckInFlow({ user, onDone }) {
   const [streak, setStreak] = useState(0)
   const [streakHistory, setStreakHistory] = useState([])
   const { style: viewportStyle } = useFullscreenSurface()
+  const demoSurfaceStyle = {
+    ...viewportStyle,
+    top: 0,
+    height: '100%',
+    paddingTop: 0,
+    paddingBottom: 0,
+  }
   const scale = step < MORNING_SCALE_STEPS.length ? MORNING_SCALE_STEPS[step] : null
   const noteStep = MORNING_SCALE_STEPS.length
   const doneStep = noteStep + 1
@@ -207,14 +214,14 @@ function DemoCheckInFlow({ user, onDone }) {
     step === streakStep
       ? { text: 'Вернуться в Сегодня', onClick: onDone }
       : step === noteStep
-        ? { text: 'Далее', onClick: () => setStep(doneStep), disabled: !note.trim() }
+        ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
         : step === doneStep
           ? {
-              text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
+              text: saving ? 'Сохраняю…' : 'Завершить',
               onClick: finish,
               disabled: saving,
             }
-          : { text: 'Далее', onClick: () => setStep(current => current + 1), disabled: false }
+          : { text: 'Продолжить', onClick: () => setStep(current => current + 1), disabled: false }
 
   useMainButton({
     text: action.text,
@@ -227,7 +234,7 @@ function DemoCheckInFlow({ user, onDone }) {
   useSecondaryButton({ text: '', onClick: () => {}, visible: false })
 
   return createPortal(
-    <div className="mx-demo-checkin" style={viewportStyle}>
+    <div className="mx-demo-checkin" style={demoSurfaceStyle}>
       <header className="mx-demo-checkin__header">
         <div
           className={`mx-demo-checkin__header-left ${step === 0 || step === doneStep ? 'is-right' : ''}`}
@@ -367,7 +374,8 @@ function DemoCheckInFlow({ user, onDone }) {
       <WebActionBar
         action={step === noteStep ? null : action}
         secondaryAction={null}
-        compact={step !== doneStep && step !== streakStep}
+        compact={false}
+        className="mx-demo-checkin__action-bar"
       />
     </div>,
     getFullscreenPortalTarget()
@@ -991,7 +999,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     : isCompletion
       ? isEvening
         ? { text: 'Разобрать со Следопытом', run: openScout }
-        : { text: saving ? 'Сохраняю...' : 'Сохранить и завершить', run: submit }
+        : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
             text: 'Дальше',
