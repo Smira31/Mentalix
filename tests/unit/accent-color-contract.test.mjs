@@ -38,7 +38,7 @@ test('accent parsing is theme-aware and rejects an option from the other theme',
 })
 
 test('CSS exposes the theme-specific overrides for every temporary option', () => {
-  assert.match(css, /\[data-theme='dark'\]\[data-accent='azure'\][\s\S]*--c-gold:\s*111\s+183\s+224/)
+  assert.match(css, /\[data-accent='azure'\][\s\S]*--c-gold:\s*111\s+183\s+224/)
   assert.match(css, /\[data-theme='light'\]\[data-accent='sage'\][\s\S]*--c-gold:\s*72\s+72\s+72/)
   assert.match(css, /\[data-theme='light'\]\[data-accent='graphite'\][\s\S]*--c-gold:\s*31\s+31\s+31/)
   assert.match(css, /\[data-theme='light'\]\[data-accent='mint'\][\s\S]*--c-gold:\s*150\s+205\s+176/)

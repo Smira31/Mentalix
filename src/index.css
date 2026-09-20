@@ -201,8 +201,10 @@
   --c-gold: 200 200 200;
 }
 
-/* Тестовый лазурный вариант тёмной темы — значение из дизайн-системы. */
-[data-theme='dark'][data-accent='azure'] {
+/* Тестовый лазурный вариант тёмной темы — значение из дизайн-системы.
+   В production dark theme data-theme удаляется, поэтому используется
+   только data-accent; parseAccent не допускает azure в light theme. */
+[data-accent='azure'] {
   --c-gold: 111 183 224;
 }
 
