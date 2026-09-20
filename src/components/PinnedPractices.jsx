@@ -3,7 +3,7 @@ import { Check, Settings2, X } from 'lucide-react'
 
 import SemanticGlyph from './SemanticGlyph'
 import { api } from '../lib/api'
-import { PRACTICE_CATALOG_REGISTRY } from '../lib/practiceCatalogRegistry'
+import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import {
   fetchPinnedPractices,
   invalidatePinnedPractices,
@@ -64,7 +64,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
   }, [user.id])
 
   const catalog = useMemo(
-    () => PRACTICE_CATALOG_REGISTRY.filter(practice => practice.available !== false),
+    () => buildPracticeViewModels({}).filter(practice => practice.available),
     []
   )
   const pinnedIds = useMemo(() => new Set(pinned.map(item => item.practice_id)), [pinned])
