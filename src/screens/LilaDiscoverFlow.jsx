@@ -3,8 +3,8 @@ import { createPortal } from 'react-dom'
 import { useMemo, useState } from 'react'
 
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
+import BackButton from '../components/BackButton'
 import { platform } from '../platform'
-import { useBackButton } from '../platform/telegram.hooks'
 import { findLilaCard, LILA_DISCOVER_CARDS } from '../data/lilaDiscoverCards'
 import { useSynced } from '../lib/store'
 import { FULLSCREEN_SHELL_CLASS, useFullscreenSurface } from '../lib/fullscreenSurface'
@@ -40,16 +40,11 @@ function ChoiceButton({ active, children, onClick }) {
 function StageShell({ children, title, onBack }) {
   const { style } = useFullscreenSurface()
 
-  useBackButton(() => {
-    platform.haptic('light')
-    onBack?.()
-  })
-
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-lila-stage`} style={style}>
       <div className="mx-lila-screen mx-screen-shell mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-5">
         <div className="mx-lila-header grid h-[52px] shrink-0 grid-cols-[1fr_auto_1fr] items-center">
-          <span aria-hidden="true" />
+          <BackButton onClick={onBack} />
           <span className="mx-type-section text-cream">{title}</span>
           <span aria-hidden="true" />
         </div>
