@@ -1294,7 +1294,7 @@ test('History показывает user-scoped local Journal на mobile и tabl
     })
 
     await page.goto('/')
-    await page.getByRole('button', { name: 'День' }).click()
+    await page.getByRole('button', { name: 'История' }).click()
     await page.getByRole('button', { name: 'История' }).click()
     await expect(page.getByTestId('local-journal-history')).toBeVisible()
     await expect(page.getByText('Локальный журнал')).toBeVisible()

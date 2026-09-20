@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Settings2 } from 'lucide-react'
 
 import './Today.css'
 
@@ -36,67 +36,34 @@ const INITIAL_TODAY_VARIANT =
 // («Пока нет практик» + «Выбрать практику») без других изменений кода.
 const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 
+// The redesigned workspace intentionally removes these two summary cards from
+// the main flow; the underlying data and destination remain available in their
+// dedicated screens.
+const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
+
 // ── календарь недели + отдельные дневные streak strips ──
 
-function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
+function TodayWorkspaceHeader({ onOpenSettings, onOpenHistory }) {
   return (
-    <div className="mx-demo-today-header">
-      <button
-        type="button"
-        className="mx-demo-today-streak"
-        aria-label="Мой путь. Один день подряд"
-        onClick={onOpenSeries}
-      >
-        <Flame aria-hidden="true" />
-        <strong>1</strong>
-      </button>
-      <strong className="mx-demo-today-greeting">добрый вечер.</strong>
-      <button
-        type="button"
-        className="mx-demo-today-profile"
-        aria-label="Твой профиль"
-        onClick={onOpenSettings}
-      >
-        <span className="mx-demo-today-profile__avatar">
-          <UserRound aria-hidden="true" />
-        </span>
-      </button>
-    </div>
-  )
-}
-
-function WeekStrip() {
-  const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-  const now = new Date()
-  const monday = new Date(now)
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
-  const days = Array.from({ length: 7 }, (_, index) => {
-    const day = new Date(monday)
-    day.setDate(monday.getDate() + index)
-    return day
-  })
-
-  return (
-    <div className="mx-today-week" role="group" aria-label="Календарь недели">
-      <div className="mx-today-week__calendar">
-        {days.map(day => {
-          const isToday = day.toDateString() === now.toDateString()
-          return (
-            <div
-              key={day.getTime()}
-              className="mx-today-week-day"
-              data-today={isToday}
-              data-completed="false"
-            >
-              <span className="mx-type-weekday">
-                {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
-              </span>
-              <span className="mx-type-calendar-date">{day.getDate()}</span>
-            </div>
-          )
-        })}
+    <header className="mx-today-workspace-header">
+      <div>
+        <span className="mx-today-workspace-header__eyebrow">ТВОЙ РИТМ</span>
+        <h2>Хихира</h2>
       </div>
-    </div>
+      <div className="mx-today-workspace-header__tools">
+        <button type="button" className="mx-today-history-link" onClick={onOpenHistory}>
+          История
+        </button>
+        <button
+          type="button"
+          className="mx-today-settings-button"
+          aria-label="Открыть настройки"
+          onClick={onOpenSettings}
+        >
+          <Settings2 aria-hidden="true" />
+        </button>
+      </div>
+    </header>
   )
 }
 
@@ -170,7 +137,6 @@ export default function Today({
   onFlowChange,
   onRegisterBack,
   onOpenSettings,
-  onOpenSeries,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -212,8 +178,6 @@ export default function Today({
   // пользователь явно не пропустил его в этой сессии — «пропустить» не
   // должно повторно всплывать при каждом ре-рендере Today.
   const [starterSetSkipped, setStarterSetSkipped] = useState(false)
-  const [demoQuickStartOpen, setDemoQuickStartOpen] = useState(false)
-
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
@@ -725,10 +689,13 @@ export default function Today({
   return (
     <div className="mx-screen-shell">
       <h1 className="sr-only">Сегодня</h1>
-      {isPreviewDemoMode() && (
-        <DemoTodayHeader onOpenSettings={onOpenSettings} onOpenSeries={onOpenSeries} />
-      )}
-      <WeekStrip />
+      <TodayWorkspaceHeader
+        onOpenSettings={onOpenSettings}
+        onOpenHistory={() => {
+          setPathTab('history')
+          changeSub('path')
+        }}
+      />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
@@ -749,6 +716,7 @@ export default function Today({
       */}
       <div
         className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
+        data-redesign="hihira"
         data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
       >
         {heroPresentationState !== 'allDone' &&
@@ -768,56 +736,29 @@ export default function Today({
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
-      {isPreviewDemoMode() && (
-        <div className="w-full mt-3">
-          <button
-            type="button"
-            className="w-full rounded-full border border-cream/15 bg-emerald-light px-4 py-2.5 mx-type-meta text-muted active:scale-[0.99] transition-transform"
-            aria-expanded={demoQuickStartOpen}
-            onClick={() => setDemoQuickStartOpen(open => !open)}
-          >
-            {demoQuickStartOpen ? 'Скрыть другие способы' : 'Другой способ начать'}
-          </button>
-
-          {demoQuickStartOpen && (
-            <div className="mt-2 grid grid-cols-3 gap-2" aria-label="Другие способы начать">
-              <button
-                type="button"
-                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
-                onClick={() => {
-                  platform.haptic('light')
-                  setDemoQuickStartOpen(false)
-                  changeSub('checkin')
-                }}
-              >
-                Настроение
-              </button>
-              <button
-                type="button"
-                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
-                onClick={() => {
-                  platform.haptic('light')
-                  setDemoQuickStartOpen(false)
-                  onOpenPractice('journal')
-                }}
-              >
-                Записать мысль
-              </button>
-              <button
-                type="button"
-                className="rounded-2xl bg-emerald px-2 py-3 mx-type-meta text-cream border-0 active:scale-[0.98] transition-transform"
-                onClick={() => {
-                  platform.haptic('light')
-                  setDemoQuickStartOpen(false)
-                  onOpenPractice('rituals')
-                }}
-              >
-                Практика
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+      <div className="mx-today-actions" aria-label="Быстрые действия">
+        <button type="button" className="mx-today-action" onClick={() => changeSub('checkin')}>
+          <span className="mx-today-action__mark">◌</span>
+          <span>
+            <strong>Настроение</strong>
+            <small>как ты сейчас?</small>
+          </span>
+        </button>
+        <button type="button" className="mx-today-action" onClick={() => onOpenPractice('journal')}>
+          <span className="mx-today-action__mark">↗</span>
+          <span>
+            <strong>Записать мысль</strong>
+            <small>освободить голову</small>
+          </span>
+        </button>
+        <button type="button" className="mx-today-action" onClick={() => onOpenPractice('rituals')}>
+          <span className="mx-today-action__mark">✦</span>
+          <span>
+            <strong>Практика</strong>
+            <small>один спокойный шаг</small>
+          </span>
+        </button>
+      </div>
 
       <div className="mx-today-hero-breath" aria-hidden="true" />
 
@@ -835,7 +776,7 @@ export default function Today({
           дней. Цели остались там же, соседней вкладкой.
           ====================================================== */}
 
-      {!hiddenCards.includes('dayProgress') &&
+      {LEGACY_TODAY_SUMMARY_CARDS_ENABLED &&
         (isEmpty ? (
           <EmptyState className="mt-4 p-5 [&>div:first-child]:mb-3 [&>div:first-child]:h-12 [&>div:first-child]:w-12">
             {!STARTER_SET_ENABLED || starterSetSkipped ? (
@@ -903,7 +844,7 @@ export default function Today({
           </button>
         ))}
 
-      {checkinDone && (
+      {LEGACY_TODAY_SUMMARY_CARDS_ENABLED && checkinDone && (
         <button
           onClick={() => {
             platform.haptic('light')

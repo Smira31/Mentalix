@@ -617,3 +617,184 @@
     min-height: 9.4rem;
   }
 }
+
+/* Hihira workspace redesign: calm header, one focal card, and explicit next actions. */
+.mx-today-workspace-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 8px 2px 2px;
+}
+
+.mx-today-workspace-header__eyebrow {
+  display: block;
+  color: rgb(var(--c-muted));
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+}
+
+.mx-today-workspace-header h2 {
+  margin: 5px 0 0;
+  color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.mx-today-settings-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: rgb(var(--c-muted));
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 14px;
+  transition:
+    transform var(--mx-motion-fast) var(--mx-ease-out),
+    color var(--mx-motion-fast) ease;
+}
+
+.mx-today-settings-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mx-today-settings-button:active,
+.mx-today-action:active {
+  transform: scale(0.97);
+}
+
+.mx-today-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.mx-today-action {
+  display: flex;
+  min-height: 104px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 12px 12px;
+  color: rgb(var(--c-text));
+  text-align: left;
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-border) / 0.72);
+  border-radius: 18px;
+  transition:
+    transform var(--mx-motion-fast) var(--mx-ease-out),
+    border-color var(--mx-motion-fast) ease;
+}
+
+.mx-today-action:hover,
+.mx-today-settings-button:hover {
+  border-color: rgb(var(--c-text) / 0.28);
+}
+
+.mx-today-action__mark {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: rgb(var(--c-text));
+  font-size: 18px;
+  line-height: 1;
+  background: rgb(var(--c-text) / 0.08);
+  border-radius: 9px;
+}
+
+.mx-today-action span:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.mx-today-action strong {
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.15;
+}
+
+.mx-today-action small {
+  color: rgb(var(--c-muted));
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+.mx-today-primary-card[data-redesign='hihira'] {
+  min-height: 300px;
+  padding: 25px 22px 27px;
+  border-color: rgb(var(--c-text) / 0.1);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 78% 22%, rgb(var(--c-text) / 0.07), transparent 28%),
+    rgb(var(--c-card2));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.03),
+    0 18px 44px rgb(0 0 0 / 0.16);
+}
+
+.mx-today-primary-card[data-redesign='hihira'] .mx-today-hero-art {
+  min-height: 112px;
+  margin-bottom: 2px;
+}
+
+.mx-today-primary-card[data-redesign='hihira'] .mx-type-hero {
+  max-width: 17rem;
+  margin-inline: auto;
+  font-size: clamp(1.35rem, 6vw, 1.8rem);
+  line-height: 1.08;
+}
+
+.mx-today-primary-card[data-redesign='hihira'] .mx-type-meta:first-child {
+  color: rgb(var(--c-muted));
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 359px) {
+  .mx-today-actions {
+    gap: 6px;
+  }
+
+  .mx-today-action {
+    min-height: 98px;
+    padding-inline: 9px;
+  }
+
+  .mx-today-action strong {
+    font-size: 11px;
+  }
+
+  .mx-today-action small {
+    font-size: 9px;
+  }
+}
+
+.mx-today-workspace-header__tools {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.mx-today-history-link {
+  padding: 8px 2px;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+}
+
+.mx-today-history-link:active {
+  transform: scale(0.97);
+}
