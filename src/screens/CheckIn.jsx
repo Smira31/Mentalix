@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, ChevronLeft, Flame, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
+import { Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
+import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
 import { pickByDay, MORNING_NOTE_PROMPTS, LESSON_PROMPTS } from '../data/prompts'
@@ -170,6 +171,17 @@ function DemoCheckInFlow({ user, onDone }) {
   const doneStep = noteStep + 1
   const streakStep = doneStep + 1
 
+  function handleBack() {
+    platform.haptic('light')
+
+    if (step === streakStep || step === doneStep || step === 0) {
+      onDone()
+      return
+    }
+
+    setStep(current => Math.max(0, current - 1))
+  }
+
   useEffect(() => {
     const bird = new Image()
     bird.src = '/checkin-bird-reference.png'
@@ -236,30 +248,7 @@ function DemoCheckInFlow({ user, onDone }) {
   return createPortal(
     <div className="mx-demo-checkin" style={demoSurfaceStyle}>
       <header className="mx-demo-checkin__header">
-        <div
-          className={`mx-demo-checkin__header-left ${step === 0 || step === doneStep ? 'is-right' : ''}`}
-        >
-          {step > 0 && step !== doneStep && step !== streakStep && (
-            <button
-              type="button"
-              aria-label="Назад"
-              onClick={() => setStep(current => Math.max(0, current - 1))}
-              className="mx-demo-checkin__icon"
-            >
-              <ChevronLeft size={20} />
-            </button>
-          )}
-        </div>
-        {step !== doneStep && (
-          <button
-            type="button"
-            aria-label="Закрыть"
-            onClick={onDone}
-            className="mx-demo-checkin__icon"
-          >
-            <X size={18} />
-          </button>
-        )}
+        <BackButton onClick={handleBack} />
       </header>
 
       <main className={`mx-demo-checkin__body ${step === noteStep ? 'is-editor' : ''}`}>
@@ -982,6 +971,22 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const isFinal = isCompletion || isStreakStep
 
+  function handleBack() {
+    platform.haptic('light')
+
+    if (isStreakStep || isCompletion) {
+      onDone()
+      return
+    }
+
+    if (step === 0) {
+      requestClose()
+      return
+    }
+
+    setStep(current => current - 1)
+  }
+
   /*
    * ДЕЙСТВИЯ ЖИВУТ В СИСТЕМНОЙ КНОПКЕ
    *
@@ -1096,10 +1101,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   if (isStreakStep) {
     return createPortal(
       <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
-        <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex justify-end px-5`}>
-          <button type="button" aria-label="Закрыть" onClick={onDone} className="p-2 text-muted">
-            <X size={20} aria-hidden="true" />
-          </button>
+        <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+          <BackButton onClick={handleBack} label="Сегодня" />
         </div>
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className={`${CHECKIN_CENTER_CLASS} justify-between`}>
@@ -1160,7 +1163,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
         className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
         style={viewportStyle}
       >
-        <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
+        <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+          <BackButton onClick={handleBack} />
+        </div>
 
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className={CHECKIN_CENTER_CLASS}>
@@ -1301,33 +1306,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       style={viewportStyle}
     >
       <div className={CHECKIN_HEADER_CLASS}>
-        <button
-          onClick={() => {
-            platform.haptic('light')
-
-            if (step === 0) {
-              requestClose()
-            } else {
-              setStep(step - 1)
-            }
-          }}
-          aria-label="Назад"
-          className="w-11 h-11 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
-        >
-          <ChevronLeft size={20} aria-hidden="true" className="text-muted" />
-        </button>
-
-        <button
-          onClick={() => {
-            platform.haptic('light')
-
-            requestClose()
-          }}
-          aria-label="Закрыть"
-          className="w-11 h-11 rounded-full bg-emerald flex items-center justify-center active:scale-95 transition-transform border-0"
-        >
-          <X size={18} aria-hidden="true" className="text-muted" />
-        </button>
+        <BackButton onClick={handleBack} />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
