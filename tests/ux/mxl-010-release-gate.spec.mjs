@@ -80,6 +80,7 @@ function buildFixtureRouter() {
       if (pathname === '/api/analytics') {
         return route.fulfill(jsonResponse({ period_days: 14, rituals: [], ascezas: [], insights: [], daily_activity: [] }))
       }
+      if (pathname === '/api/pinned-practices') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/articles') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/themes') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/mentalix/consent') return route.fulfill(jsonResponse({ context_consent: false }))

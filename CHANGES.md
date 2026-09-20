@@ -5,6 +5,14 @@ last_verified: 2026-09-10
 
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 20.09.2026 — MXL-PRACTICES-PIN-001: закреплённые практики на главной
+
+- На `Today` добавлена секция «твои практики» с пустым и заполненным состоянием. Настройки открывают шторку управления, а карточка ведёт в существующий flow практики.
+- Библиотека использует единый `PRACTICE_CATALOG_REGISTRY`; закрепление и открепление выполняются мгновенно через backend API, без дублирования списка практик.
+- Добавлены API-методы и module-level cache с invalidation после mutation. Draft PR: `Mentalix#695`, backend dependency: `mentalix-bot#77`.
+- **Проверено:** `npm run lint`, `npm run test:unit`, `npm run test:contract`, `npm run build`, `git diff --check`.
+- **Не проверено:** ручной Telegram/iPhone/PWA gate и живой production backend после мержа.
+
 ## 20.09.2026 — MXL-BRAND-SYMBOL-BOOK-QUILL: книга с пером вместо лабиринта
 
 - Фирменный символ Mentalix заменён на статичную монохромную SVG-иконку

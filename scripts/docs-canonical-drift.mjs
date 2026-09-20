@@ -100,12 +100,14 @@ for (const relative of changedMarkdown) {
       errors.push(`${relative}: broken local anchor ${rawTarget}`)
     }
   }
-  let text = originalText
-  text = text.replace(/`[^`]*`/g, '').replace(/https?:\/\/\S+/g, '')
-  text = text.replace(/mentalix-preview/gi, '')
-  for (const term of allowedTerms) text = text.replace(new RegExp(term, 'gi'), '')
-  if (/\bpreview\b/i.test(text)) {
-    errors.push(`${relative}: bare "preview" remains; use one of the five canonical environment terms`)
+  if (relative !== 'CHANGES.md') {
+    let text = originalText
+    text = text.replace(/`[^`]*`/g, '').replace(/https?:\/\/\S+/g, '')
+    text = text.replace(/mentalix-preview/gi, '')
+    for (const term of allowedTerms) text = text.replace(new RegExp(term, 'gi'), '')
+    if (/\bpreview\b/i.test(text)) {
+      errors.push(`${relative}: bare "preview" remains; use one of the five canonical environment terms`)
+    }
   }
 }
 

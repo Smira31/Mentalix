@@ -111,6 +111,7 @@ function seedState(todayState = null) {
     ],
     notes: { 900401: [] },
     messages: [],
+    pinnedPractices: [],
     checkins: checkin ? [checkin] : [],
     profile: {
       id: DEMO_USER.id,
@@ -277,6 +278,24 @@ export function demoRequest(path, options = {}) {
   if (pathname === '/themes' && method === 'GET') return json([])
   if (pathname === '/quotes' && method === 'GET') return json([])
   if (pathname === '/analytics/pulse' && method === 'GET') return json({})
+
+  if (pathname === '/pinned-practices' && method === 'GET') {
+    return json(state.pinnedPractices || [])
+  }
+  if (pathname === '/pinned-practices' && method === 'POST') {
+    const item = { id: Date.now(), practice_id: body.practice_id }
+    const pinnedPractices = [...(state.pinnedPractices || []), item]
+    writeState({ ...state, pinnedPractices })
+    return json(item)
+  }
+  if (pathname.match(/^\/pinned-practices\/[^/]+$/) && method === 'DELETE') {
+    const practiceId = decodeURIComponent(pathname.split('/').pop())
+    const pinnedPractices = (state.pinnedPractices || []).filter(
+      item => item.practice_id !== practiceId
+    )
+    writeState({ ...state, pinnedPractices })
+    return json({ ok: true })
+  }
 
   if (pathname === '/mentalix/messages' && method === 'GET') {
     return json(state.messages || [])

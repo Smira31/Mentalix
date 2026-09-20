@@ -389,3 +389,203 @@
   color: rgb(var(--c-text));
   stroke-width: 1.8;
 }
+
+.mx-pinned-practices {
+  width: 100%;
+}
+
+.mx-pinned-practices__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mx-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 auto;
+  color: rgb(var(--c-muted));
+  background: rgb(var(--c-card2));
+  border: 0;
+  border-radius: 999px;
+}
+
+.mx-icon-button:active,
+.mx-pinned-practice-card:active,
+.mx-pinned-library__row:active {
+  transform: scale(0.98);
+}
+
+.mx-pinned-practices__rail,
+.mx-pinned-practices__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.8rem;
+}
+
+.mx-pinned-practice-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+  padding: 0.85rem 0.75rem;
+  color: rgb(var(--c-text));
+  text-align: left;
+  background: rgb(var(--c-card2));
+  border: 0;
+  border-radius: 1.25rem;
+  transition: transform 150ms ease;
+}
+
+.mx-pinned-practice-card .mx-type-meta,
+.mx-pinned-library__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-pinned-practice-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  color: rgb(var(--c-gold));
+  background: rgb(var(--c-gold) / 0.12);
+  border-radius: 0.8rem;
+}
+
+.mx-pinned-practice-glyph svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.mx-pinned-sheet-backdrop {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 45%);
+}
+
+.mx-pinned-sheet {
+  width: min(100%, 28rem);
+  max-height: min(78vh, 42rem);
+  overflow: hidden;
+  background: rgb(var(--c-card));
+  border-radius: 1.75rem;
+  box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 30%);
+}
+
+.mx-pinned-sheet__header,
+.mx-pinned-sheet__footer {
+  padding: 1rem 1.1rem;
+}
+
+.mx-pinned-sheet__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.mx-pinned-sheet__body {
+  max-height: 52vh;
+  overflow-y: auto;
+  padding: 0 1.1rem 1rem;
+}
+
+.mx-pinned-sheet__footer {
+  border-top: 1px solid rgb(var(--c-text) / 0.08);
+}
+
+.mx-pinned-practice-card--managed {
+  position: relative;
+  padding: 0;
+}
+
+.mx-pinned-practice-card__main {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  width: 100%;
+  padding: 0.85rem 2.2rem 0.85rem 0.75rem;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+.mx-pinned-practice-card__remove {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  color: rgb(var(--c-muted));
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+}
+
+.mx-pinned-library {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.mx-pinned-library__row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.7rem 0;
+  color: rgb(var(--c-text));
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgb(var(--c-text) / 0.07);
+  transition: transform 150ms ease;
+}
+
+.mx-pinned-library__name {
+  flex: 1;
+}
+
+.mx-pinned-library__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  flex: 0 0 auto;
+  color: rgb(var(--c-muted));
+  font-size: 1.4rem;
+  line-height: 1;
+  border: 1px solid rgb(var(--c-muted) / 0.35);
+  border-radius: 999px;
+}
+
+.mx-pinned-library__toggle.is-pinned {
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-gold));
+  border-color: rgb(var(--c-gold));
+}
+
+@media (min-width: 480px) {
+  .mx-pinned-practices__rail {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
