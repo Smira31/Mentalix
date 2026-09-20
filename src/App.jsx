@@ -1212,9 +1212,9 @@ export default function App() {
                     setTodaySeriesOpen(true)
                   }}
                   aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
-                  className="relative z-10 flex h-10 w-auto shrink-0 flex-row items-center justify-center gap-1.5 rounded-full border border-cream/10 bg-emerald px-3 text-cream active:scale-95"
+                  className="relative z-10 flex h-10 min-w-[62px] shrink-0 flex-row items-center justify-center gap-1.5 rounded-full border border-cream/15 bg-emerald px-[8px] pr-[11px] text-cream transition-transform duration-150 active:scale-[0.97]"
                 >
-                  <Flame size={18} fill="currentColor" stroke="none" aria-hidden="true" />
+                  <Flame size={22} fill="currentColor" stroke="none" aria-hidden="true" />
                   {todayStreak > 0 && (
                     <strong className="font-bold leading-none">{todayStreak}</strong>
                   )}
@@ -1255,26 +1255,23 @@ export default function App() {
                   }}
                   aria-label="Профиль"
                   className="
-                w-10
-                h-10
-
-                rounded-full
-
-                bg-emerald
-
-                border
-                border-cream/10
-
                 flex
+                h-[46px]
+                w-[46px]
+                shrink-0
                 items-center
                 justify-center
-
-                active:scale-95
-                shrink-0
+                rounded-full
+                border
+                border-cream/15
+                bg-emerald
+                transition-transform
+                duration-150
+                active:scale-[0.97]
               "
                 >
-                  <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-cream">
-                    <UserRound size={22} strokeWidth={1.7} className="text-emerald-deep" />
+                  <span className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-cream">
+                    <UserRound size={23} strokeWidth={1.7} className="text-emerald-deep" />
                   </span>
                 </button>
               </div>
