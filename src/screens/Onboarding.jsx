@@ -365,7 +365,7 @@ export default function Onboarding({ user, onFinish }) {
               })}
             </div>
 
-            {/* лабиринт заполняется по мере готовности плана */}
+            {/* Брендовый символ статичен; готовность плана показывают карточки и CTA. */}
             <button
               onClick={finish}
               disabled={revealed < PLAN_CARDS.length}

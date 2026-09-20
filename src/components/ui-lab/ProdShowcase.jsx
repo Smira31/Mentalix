@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import MazeLogo from '../MazeLogo'
+import BookLogo from '../BookLogo'
 import SemanticGlyph from '../SemanticGlyph'
 import BottomNavigation from '../BottomNavigation'
 import LinkWebAccount from '../../screens/LinkWebAccount'
@@ -10,7 +10,7 @@ import './ProdShowcase.css'
 /*
  * MXL-UI-LAB-SHOWCASE-001
  *
- * Формат карточки согласован владельцем на пилоте (MazeLogo): путь файла →
+ * Формат карточки согласован владельцем на пилоте (BookLogo): путь файла →
  * название → живой рендер → «Как реагирует» одним абзацем без маркетинга.
  * Визуальный язык (hairline blueprint — тонкие серые линии на почти-чёрном
  * фоне, один золотой акцент, без заливок/градиентов) сверен с
@@ -149,14 +149,14 @@ export default function ProdShowcase() {
       <div className="mx-showcase-list">
         <ShowcaseCard
           number="01"
-          path="src/components/MazeLogo.jsx"
-          title="Лабиринт-логотип"
-          note="progress (0..1) золотом заливает пройденную часть лабиринта, точка едет по маршруту следом. Внутреннего состояния нет — чистый SVG от пропов; ниже три статичных снимка прогресса одного и того же компонента."
+          path="src/components/BookLogo.jsx"
+          title="Книга с пером — логотип"
+          note="Статичный монохромный SVG без заливок и progress-логики; currentColor наследует тему интерфейса."
         >
           <div className="mx-showcase-row">
-            <MazeLogo size={72} progress={0.2} />
-            <MazeLogo size={72} progress={0.6} />
-            <MazeLogo size={72} progress={1} />
+            <BookLogo size={72} />
+            <BookLogo size={96} className="text-gold" />
+            <BookLogo size={72} />
           </div>
         </ShowcaseCard>
 
