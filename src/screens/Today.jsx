@@ -57,7 +57,9 @@ function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
         aria-label="Твой профиль"
         onClick={onOpenSettings}
       >
-        <UserRound aria-hidden="true" />
+        <span className="mx-demo-today-profile__avatar">
+          <UserRound aria-hidden="true" />
+        </span>
       </button>
     </div>
   )
@@ -502,9 +504,8 @@ export default function Today({
    * на горизонт утром, поднимается ровно на
    * долю сделанного и садится к ночи.
    *
-   * Лабиринт остался там, где он логотип, — в
-   * шапке, в нижнем меню и на первом экране
-   * знакомства.
+   * Брендовый символ не участвует в этой hero-анимации: он статично
+   * используется только в собственных брендовых точках интерфейса.
    */
   const heroArt = (
     <div className="w-full rounded-[28px] bg-artbed overflow-hidden mb-5 py-2">

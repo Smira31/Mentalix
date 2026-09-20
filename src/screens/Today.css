@@ -212,7 +212,17 @@
   color: rgb(var(--c-text));
 }
 
-.mx-demo-today-profile svg {
+.mx-demo-today-profile__avatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+}
+
+.mx-demo-today-profile__avatar svg {
   width: 23px;
   height: 23px;
   stroke-width: 1.8;

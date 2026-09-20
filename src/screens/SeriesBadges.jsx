@@ -157,17 +157,18 @@ function AwardsView({ unlocked, upcoming }) {
     <div className="mx-path-content">
       <section className="mx-path-featured-award">
         <h2>
-          <strong>{unlocked.length || 0}</strong> {awardCountLabel} открыто
+          <strong>{unlocked.length || 0}</strong>
+          <span className="mx-path-featured-award-label">{awardCountLabel} открыто</span>
         </h2>
         {latest ? (
           <>
-            <RewardIcon variant={latest.id} size={184} />
+            <RewardIcon variant={latest.id} size={128} />
             <div className="mx-path-featured-title">{latest.title}</div>
             <div className="mx-path-featured-copy">{latest.done ? 'Открыто' : latest.desc}</div>
           </>
         ) : (
           <>
-            <RewardIcon variant="first-step" size={184} />
+            <RewardIcon variant="first-step" size={128} />
             <div className="mx-path-featured-title">Первый шаг</div>
             <div className="mx-path-featured-copy">Сделай первый чек-ин</div>
           </>

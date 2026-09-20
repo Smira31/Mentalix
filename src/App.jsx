@@ -10,7 +10,7 @@ import WebAuthScreen from './screens/WebAuthScreen'
 import Onboarding from './screens/Onboarding'
 import AppLock from './screens/AppLock'
 
-import MazeLogo from './components/MazeLogo'
+import BookLogo from './components/BookLogo'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
@@ -73,7 +73,7 @@ function Splash() {
         font-body
       "
     >
-      <MazeLogo size={132} progress={0.55} />
+      <BookLogo size={132} className="text-gold" />
 
       <div
         className="
@@ -1212,13 +1212,11 @@ export default function App() {
                     setTodaySeriesOpen(true)
                   }}
                   aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
-                  className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/10 bg-emerald text-gold active:scale-95 max-[359px]:w-8"
+                  className="relative z-10 flex h-10 min-w-[62px] shrink-0 flex-row items-center justify-center gap-1.5 rounded-full border border-cream/15 bg-emerald px-[8px] pr-[11px] text-cream transition-transform duration-150 active:scale-[0.97]"
                 >
-                  <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
+                  <Flame size={22} fill="currentColor" stroke="none" aria-hidden="true" />
                   {todayStreak > 0 && (
-                    <span className="absolute -right-1 -top-1 z-20 min-w-[20px] rounded-full bg-gold px-1.5 text-center text-[9px] font-bold leading-[18px] text-emerald-deep">
-                      {todayStreak}
-                    </span>
+                    <strong className="font-bold leading-none">{todayStreak}</strong>
                   )}
                 </button>
 
@@ -1257,26 +1255,24 @@ export default function App() {
                   }}
                   aria-label="Профиль"
                   className="
-                w-10
-                max-[359px]:w-6
-                h-10
-
-                rounded-full
-
-                bg-emerald
-
-                border
-                border-cream/10
-
                 flex
+                h-[46px]
+                w-[46px]
+                shrink-0
                 items-center
                 justify-center
-
-                active:scale-95
-                shrink-0
+                rounded-full
+                border
+                border-cream/15
+                bg-emerald
+                transition-transform
+                duration-150
+                active:scale-[0.97]
               "
                 >
-                  <UserRound size={19} strokeWidth={1.7} className="text-muted" />
+                  <span className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-cream">
+                    <UserRound size={23} strokeWidth={1.7} className="text-emerald-deep" />
+                  </span>
                 </button>
               </div>
             </>

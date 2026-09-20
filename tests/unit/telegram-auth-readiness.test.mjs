@@ -8,6 +8,7 @@ const telegramSource = await readFile(
   'utf8'
 )
 const appSource = await readFile(new URL('../../src/App.jsx', import.meta.url), 'utf8')
+const indexCss = await readFile(new URL('../../src/index.css', import.meta.url), 'utf8')
 const catalogSource = await readFile(
   new URL('../../src/components/PracticeCatalogV2.jsx', import.meta.url),
   'utf8'
@@ -34,6 +35,14 @@ test('Telegram requestAuth waits for a valid user id before App mounts user-scop
   assert.match(appSource, /user && tab === 'today'/)
   assert.match(appSource, /user && tab === 'practices'/)
   assert.match(appSource, /user && tab === 'trends'/)
+})
+
+test('standalone regular screens match Safari while Dialog keeps its safe-area contract', () => {
+  assert.match(
+    indexCss,
+    /@media \(display-mode: standalone\)[\s\S]*\.mx-app-shell:not\(.mx-dialog-app-shell\) \{\s*padding-top: 0 !important;/
+  )
+  assert.doesNotMatch(indexCss, /\.mx-app-shell:not\(.mx-dialog-app-shell\):not\(.mx-app-shell--fullscreen\)/)
 })
 
 

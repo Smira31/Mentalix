@@ -22,7 +22,7 @@ export default function PreviewApiDiagnostic() {
     <aside
       role="status"
       aria-live="polite"
-      className="fixed inset-x-3 bottom-3 z-[100] max-w-md rounded-2xl border border-red-300/30 bg-[#240f12]/95 p-4 text-cream shadow-2xl backdrop-blur"
+      className="pointer-events-none fixed inset-x-3 bottom-3 z-[100] max-w-md rounded-2xl border border-red-300/30 bg-[#240f12]/95 p-4 text-cream shadow-2xl backdrop-blur"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -35,7 +35,7 @@ export default function PreviewApiDiagnostic() {
         </div>
         <button
           type="button"
-          className="rounded-full px-2 py-1 text-[16px] text-red-100/80"
+          className="pointer-events-auto rounded-full px-2 py-1 text-[16px] text-red-100/80"
           onClick={() => setDiagnostic(null)}
           aria-label="Скрыть диагностику"
         >

@@ -79,15 +79,24 @@
 }
 
 .mx-path-featured-award h2 {
-  margin: 36px 12px 4px;
+  margin: 30px 12px 4px;
   font-size: 27px;
   font-weight: 700;
 }
 
 .mx-path-featured-award h2 strong {
-  margin-right: 8px;
+  display: block;
   font-size: 62px;
   line-height: 0.9;
+}
+
+.mx-path-featured-award-label {
+  display: block;
+  color: #9b9b9b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
 }
 
 .mx-path-featured-award .mx-semantic-glyph,
@@ -102,7 +111,7 @@
 }
 
 .mx-path-featured-award .mx-reward-icon {
-  width: min(184px, 58vw);
+  width: min(128px, 58vw);
   height: auto;
   margin: 18px auto 8px;
 }

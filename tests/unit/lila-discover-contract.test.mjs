@@ -184,10 +184,10 @@ test('MXL-LILA-UX-005 routes completion to Journal and back to the canonical pra
   assert.match(practices, /<PracticeCatalogV2/)
 })
 
-test('MXL-LILA-UX-006 uses the native Telegram BackButton without a duplicate Lila DOM back control', () => {
-  assert.match(flow, /useBackButton\(\(\) =>/)
-  assert.doesNotMatch(flow, /import BackButton from/)
-  assert.doesNotMatch(flow, /<BackButton/)
+test('MXL-LILA-UX-006 keeps Telegram native BackButton and draws the web/PWA fallback', () => {
+  assert.match(flow, /import BackButton from/)
+  assert.match(flow, /<BackButton onClick=\{onBack\} \/>/)
+  assert.doesNotMatch(flow, /useBackButton/)
   assert.match(flow, /<StageShell title="Лила" onBack=\{goBack\}>/)
   assert.match(flow, /createPortal\(/)
   assert.match(flow, /getFullscreenPortalTarget\(\)/)

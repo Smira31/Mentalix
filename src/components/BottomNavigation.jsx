@@ -3,6 +3,7 @@ import { BookOpen, ChartNoAxesColumn, Compass, House, Lightbulb } from 'lucide-r
 import { platform } from '../platform'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import '../styles/demo-bottom-navigation.css'
+import BookLogo from './BookLogo'
 
 // MXL-NAV-IA-001 (#514): целевой нижний tab bar «Сегодня · Шаги · Диалог ·
 // Библиотека · Прогресс». Ключи вкладок не меняются — только пользовательские
@@ -39,6 +40,9 @@ const TABS = [
 const MOTION = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
 function TabIcon({ item, active, size = 21 }) {
+  if (item.key === 'mentor') {
+    return <BookLogo size={size + 2} className={active ? 'text-gold' : 'text-muted'} />
+  }
   const Icon = item.icon
 
   return <Icon size={size} strokeWidth={1.9} className={active ? 'text-cream' : 'text-muted'} />
