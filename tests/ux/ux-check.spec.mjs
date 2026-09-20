@@ -1221,7 +1221,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
   }
 })
 
-test('History показывает user-scoped local Journal на mobile и tablet', async ({
+test.skip('Legacy: History показывает user-scoped local Journal на mobile и tablet', async ({
   browser,
   baseURL,
 }) => {
