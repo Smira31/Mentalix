@@ -5,6 +5,14 @@ last_verified: 2026-09-10
 
 # Редизайн Mentalix в стиле stoic. — что изменилось
 
+## 20.09.2026 — MXL-PRACTICES-PIN-001: закреплённые практики на главной
+
+- На `Today` добавлена секция «твои практики» с пустым и заполненным состоянием. Настройки открывают шторку управления, а карточка ведёт в существующий flow практики.
+- Библиотека использует единый `PRACTICE_CATALOG_REGISTRY`; закрепление и открепление выполняются мгновенно через backend API, без дублирования списка практик.
+- Добавлены API-методы и module-level cache с invalidation после mutation. Draft PR: `Mentalix#695`, backend dependency: `mentalix-bot#77`.
+- **Проверено:** `npm run lint`, `npm run test:unit`, `npm run test:contract`, `npm run build`, `git diff --check`.
+- **Не проверено:** ручной Telegram/iPhone/PWA gate и живой production backend после мержа.
+
 ## 18.09.2026 — Исправлены Dialog и структура Библиотеки
 
 - **Dialog:** причиной регрессии был временный `translateY(calc(-1 * var(--mx-dialog-nav-offset, 0px)))` на карусели PersonaPicker. Он дублировал уже существующий резерв `--app-content-bottom` под fixed BottomNavigation и сдвигал карточки в область заголовка. Transform и offset-проп удалены; экран продолжает использовать flex-column flow с резервом под нижнюю навигацию на уровне scroll-root.

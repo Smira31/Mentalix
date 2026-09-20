@@ -12,7 +12,11 @@ import {
 
 function Sheet({ title, onClose, children, footer = null }) {
   return (
-    <div className="mx-pinned-sheet-backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}>
+    <div
+      className="mx-pinned-sheet-backdrop"
+      role="presentation"
+      onMouseDown={event => event.target === event.currentTarget && onClose()}
+    >
       <section className="mx-pinned-sheet" role="dialog" aria-modal="true" aria-label={title}>
         <div className="mx-pinned-sheet__header">
           <h2 className="font-display mx-type-card text-cream lowercase">{title}</h2>
@@ -113,7 +117,9 @@ export default function PinnedPractices({ user, onOpenPractice }) {
       ) : error && pinnedPractices.length === 0 ? (
         <p className="mx-type-list-body text-muted mt-3">Не получилось загрузить практики.</p>
       ) : pinnedPractices.length === 0 ? (
-        <p className="mx-type-list-body text-muted mt-3">Выбери практики, которые хочешь видеть здесь.</p>
+        <p className="mx-type-list-body text-muted mt-3">
+          Выбери практики, которые хочешь видеть здесь.
+        </p>
       ) : (
         <div className="mx-pinned-practices__rail" role="list">
           {pinnedPractices.map(practice => (
@@ -136,7 +142,11 @@ export default function PinnedPractices({ user, onOpenPractice }) {
           title="твои практики"
           onClose={() => setSheet(null)}
           footer={
-            <button type="button" className="cta-pill mx-type-flow-action w-full" onClick={() => setSheet('library')}>
+            <button
+              type="button"
+              className="cta-pill mx-type-flow-action w-full"
+              onClick={() => setSheet('library')}
+            >
               Добавить из библиотеки
             </button>
           }
@@ -146,8 +156,15 @@ export default function PinnedPractices({ user, onOpenPractice }) {
           ) : (
             <div className="mx-pinned-practices__grid">
               {pinnedPractices.map(practice => (
-                <div className="mx-pinned-practice-card mx-pinned-practice-card--managed" key={practice.key}>
-                  <button type="button" className="mx-pinned-practice-card__main" onClick={() => openPractice(practice)}>
+                <div
+                  className="mx-pinned-practice-card mx-pinned-practice-card--managed"
+                  key={practice.key}
+                >
+                  <button
+                    type="button"
+                    className="mx-pinned-practice-card__main"
+                    onClick={() => openPractice(practice)}
+                  >
                     <PracticeGlyph practice={practice} />
                     <span className="mx-type-meta text-cream">{practice.title}</span>
                   </button>
@@ -181,15 +198,24 @@ export default function PinnedPractices({ user, onOpenPractice }) {
                   onClick={() => togglePinned(practice)}
                 >
                   <PracticeGlyph practice={practice} />
-                  <span className="mx-pinned-library__name mx-type-list-title text-cream">{practice.title}</span>
-                  <span className={`mx-pinned-library__toggle ${isPinned ? 'is-pinned' : ''}`} aria-hidden="true">
+                  <span className="mx-pinned-library__name mx-type-list-title text-cream">
+                    {practice.title}
+                  </span>
+                  <span
+                    className={`mx-pinned-library__toggle ${isPinned ? 'is-pinned' : ''}`}
+                    aria-hidden="true"
+                  >
                     {isPinned ? <Check size={16} /> : '+'}
                   </span>
                 </button>
               )
             })}
           </div>
-          {error && <p className="mx-type-meta text-muted mt-3">Не получилось сохранить выбор. Попробуй ещё раз.</p>}
+          {error && (
+            <p className="mx-type-meta text-muted mt-3">
+              Не получилось сохранить выбор. Попробуй ещё раз.
+            </p>
+          )}
         </Sheet>
       )}
     </section>

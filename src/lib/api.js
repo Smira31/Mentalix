@@ -358,7 +358,7 @@ export const api = {
           user_id: userId,
           order,
         }),
-    }),
+      }),
   },
 
   pinnedPractices: {
@@ -371,9 +371,12 @@ export const api = {
       }),
 
     remove: (userId, practiceId) =>
-      request(withQuery(`/pinned-practices/${encodeURIComponent(practiceId)}`, { user_id: userId }), {
-        method: 'DELETE',
-      }),
+      request(
+        withQuery(`/pinned-practices/${encodeURIComponent(practiceId)}`, { user_id: userId }),
+        {
+          method: 'DELETE',
+        }
+      ),
   },
 
   checkin: {
