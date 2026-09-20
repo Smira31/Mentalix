@@ -916,7 +916,8 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(styles, /\.mx-type-segment\s*\{[\s\S]*font-size:\s*var\(--mx-type-segment-size\)/)
   assert.doesNotMatch(styles, /Honest/)
 
-  assert.match(app, /mx-type-greeting/)
+  // Today owns the single greeting row; App must not render a duplicate header.
+  assert.doesNotMatch(app, /mx-type-greeting/)
   assert.match(today, /mx-type-hero/)
   assert.match(today, /mx-demo-today-header/)
   assert.match(today, /mx-type-weekday/)
@@ -946,6 +947,18 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(brainTrainer, /mx-type-flow-action/)
   assert.match(brainTrainer, /text-\[16px\]/)
   assert.match(focus, /text-\[13px\]/)
+})
+
+test('Today предлагает добавлять практики только из библиотеки', () => {
+  const pinnedPractices = readFileSync(
+    new URL('../../src/components/PinnedPractices.jsx', import.meta.url),
+    'utf8'
+  )
+  const todayStyles = readFileSync(new URL('../../src/screens/Today.css', import.meta.url), 'utf8')
+
+  assert.match(pinnedPractices, /Добавить из библиотеки/)
+  assert.doesNotMatch(pinnedPractices, /Создать свои практики/)
+  assert.doesNotMatch(todayStyles, /mx-pinned-practices__create-entry/)
 })
 
 test('MXL-JOURNAL-UI-247 выравнивает Journal слева и не показывает метку «Тема недели»', () => {

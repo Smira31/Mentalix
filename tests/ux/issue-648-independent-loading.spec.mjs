@@ -50,14 +50,14 @@ async function openApp(browser, baseURL, failures) {
   })
   const page = await context.newPage()
   await page.goto('/')
-  await expect(page.getByRole('button', { name: 'Профиль' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Открыть настройки' })).toBeVisible()
   return { context, page }
 }
 
 test('Profile keeps profile data visible when rituals fail', async ({ browser, baseURL }) => {
   const { context, page } = await openApp(browser, baseURL, new Set(['/api/rituals']))
   try {
-    await page.getByRole('button', { name: 'Профиль' }).click()
+    await page.getByRole('button', { name: 'Открыть настройки' }).click()
     await page.getByText('Профиль и мой путь').click()
     await expect(page.getByRole('heading', { name: 'мой путь.' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Issue 648' })).toBeVisible()

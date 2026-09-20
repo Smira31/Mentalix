@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
-import { ChevronDown, Ellipsis, Flame, UserRound, X } from 'lucide-react'
+import { ChevronDown, Ellipsis, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -20,7 +20,6 @@ import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor
 import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
 import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
-import { currentCheckinStreak } from './lib/series'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
@@ -155,19 +154,6 @@ function ScreenLoading() {
 }
 
 /* ============================================================
-   TODAY TEXT
-   ============================================================ */
-
-function greeting() {
-  const h = new Date().getHours()
-
-  if (h >= 5 && h <= 11) return 'доброе утро.'
-  if (h >= 12 && h <= 17) return 'добрый день.'
-  if (h >= 18 && h <= 22) return 'добрый вечер.'
-  return 'тихой ночи.'
-}
-
-/* ============================================================
    THEME
    ============================================================ */
 
@@ -255,8 +241,6 @@ export default function App() {
 
   const [todaySeriesOpen, setTodaySeriesOpen] = useState(false)
 
-  const [todayStreak, setTodayStreak] = useState(0)
-
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
   const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
   const [demoMotionTick, setDemoMotionTick] = useState(0)
@@ -288,25 +272,6 @@ export default function App() {
 
     return installDemoPressFeedback(document)
   }, [])
-
-  useEffect(() => {
-    if (!user) return
-
-    let active = true
-
-    api.checkin
-      .history(user.id, 90)
-      .then(checkins => {
-        if (active) setTodayStreak(currentCheckinStreak(checkins))
-      })
-      .catch(() => {
-        if (active) setTodayStreak(0)
-      })
-
-    return () => {
-      active = false
-    }
-  }, [user])
 
   /*
    * Последняя реальная позиция скролла.
@@ -1185,98 +1150,6 @@ export default function App() {
           {/* ========================================================
           TODAY HEADER
          ======================================================== */}
-
-          {showTodayHeader && (
-            <>
-              <div
-                className="
-              w-full
-              max-w-md
-              min-w-0
-
-              px-5
-              pt-0
-              pb-0
-
-              flex
-              items-center
-              justify-between
-              gap-2
-            "
-              >
-                {/* Огонёк открывает общий экран серий и вех. */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    platform.haptic('light')
-                    setTodaySeriesOpen(true)
-                  }}
-                  aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
-                  className="relative z-10 flex h-10 min-w-[62px] shrink-0 flex-row items-center justify-center gap-1.5 rounded-full border border-cream/15 bg-emerald px-[8px] pr-[11px] text-cream transition-transform duration-150 active:scale-[0.97]"
-                >
-                  <Flame size={22} fill="currentColor" stroke="none" aria-hidden="true" />
-                  {todayStreak > 0 && (
-                    <strong className="font-bold leading-none">{todayStreak}</strong>
-                  )}
-                </button>
-
-                {/* Greeting */}
-
-                <h1
-                  className="
-                font-display
-                mx-type-greeting
-                text-cream
-                lowercase
-                min-w-0
-                flex-1
-                text-center
-                truncate
-              "
-                >
-                  {/*
-                Простое приветствие по
-                времени суток, без имени.
-                Обращение по имени каждый
-                день звучит как рассылка,
-                а не как разговор с собой.
-              */}
-                  {greeting()}
-                </h1>
-
-                {/* Profile */}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    platform.haptic('light')
-
-                    setOverlay('settings')
-                  }}
-                  aria-label="Профиль"
-                  className="
-                flex
-                h-[46px]
-                w-[46px]
-                shrink-0
-                items-center
-                justify-center
-                rounded-full
-                border
-                border-cream/15
-                bg-emerald
-                transition-transform
-                duration-150
-                active:scale-[0.97]
-              "
-                >
-                  <span className="flex h-[32px] w-[32px] items-center justify-center rounded-full bg-cream">
-                    <UserRound size={23} strokeWidth={1.7} className="text-emerald-deep" />
-                  </span>
-                </button>
-              </div>
-            </>
-          )}
 
           {/* ========================================================
           CONTENT

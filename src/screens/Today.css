@@ -579,32 +579,6 @@
   text-align: center;
 }
 
-.mx-pinned-practices__create-entry {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  width: 100%;
-  min-height: 2.7rem;
-  padding: 0.65rem 1rem;
-  color: rgb(var(--c-text));
-  text-align: center;
-  background: transparent;
-  border: 1px solid rgb(var(--c-text) / 0.16);
-  border-radius: 999px;
-}
-
-.mx-pinned-practices__create-entry svg {
-  flex: 0 0 auto;
-}
-
-.mx-pinned-practices__create-entry span {
-  flex: 1;
-  font-size: 0.72rem;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
 .mx-pinned-sheet__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -744,16 +718,6 @@
 
   .mx-pinned-practices__rail > .mx-pinned-practice-card {
     min-height: 8rem;
-  }
-
-  .mx-pinned-practices__create-entry {
-    gap: 0.7rem;
-    min-height: 2.55rem;
-    padding: 0.55rem 0.85rem;
-  }
-
-  .mx-pinned-practices__create-entry span {
-    font-size: 0.68rem;
   }
 }
 
