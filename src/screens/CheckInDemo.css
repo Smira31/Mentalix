@@ -77,7 +77,7 @@
   place-items: center;
   border: 1px solid #343434;
   border-radius: 999px;
-  background: var(--mx-checkin-neutral-gradient);
+  background: #111;
   box-shadow: 0 8px 20px rgb(0 0 0 / 16%);
   opacity: 0.62;
   transition:
@@ -98,10 +98,9 @@
   opacity: 0.94;
 }
 .mx-checkin-scale__option.is-selected .mx-checkin-scale__circle {
-  border-color: #f1dfab;
-  box-shadow:
-    0 0 0 5px rgb(241 223 171 / 14%),
-    0 10px 24px rgb(0 0 0 / 24%);
+  border-color: transparent;
+  background: #f4f4f4;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 24%);
   opacity: 1;
   transform: translateY(-2px) scale(1.04);
 }
