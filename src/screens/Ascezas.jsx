@@ -22,6 +22,7 @@ import SemanticGlyph, { semanticKindForAsceza } from '../components/SemanticGlyp
 import EmptyState from '../components/EmptyState'
 import StreakBar from '../components/StreakBar'
 import StreakRestoreSheet from '../components/StreakRestoreSheet'
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog'
 import { Shield, ShieldOff, Cigarette, Brain, Users, Smartphone, Cookie, X } from 'lucide-react'
 
 /*
@@ -272,35 +273,27 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete, onRestore }) {
         <StreakBar streak={asceza.streak} tone="mint" />
 
         <span className="flex items-center gap-2 shrink-0">
-          {confirming ? (
-            <span className="flex items-center gap-1">
-              <button
-                onClick={() => {
-                  platform.haptic('rigid')
-                  onDelete(asceza.id)
-                }}
-                className="practice-scene__choice text-[10px] px-2 py-0.5 rounded border border-cream/20 bg-cream/5 text-muted"
-              >
-                Удалить
-              </button>
-
-              <button
-                onClick={() => setConfirming(false)}
-                className="practice-scene__choice text-[10px] px-2 py-0.5 rounded border border-cream/20 text-muted"
-              >
-                Отмена
-              </button>
-            </span>
-          ) : (
-            <span
-              onClick={() => setConfirming(true)}
-              className="practice-scene__choice text-faint text-[13px] leading-none px-1"
-            >
-              ×
-            </span>
-          )}
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            aria-label={`Удалить аскезу «${asceza.name}»`}
+            className="practice-scene__choice text-faint text-[13px] leading-none px-1"
+          >
+            ×
+          </button>
         </span>
       </div>
+
+      {confirming && (
+        <DeleteConfirmationDialog
+          itemType="аскезу"
+          onCancel={() => setConfirming(false)}
+          onConfirm={() => {
+            platform.haptic('rigid')
+            onDelete(asceza.id)
+          }}
+        />
+      )}
 
       {/*
        * Верхняя треть — рисунок своей категории. Общий жест у
