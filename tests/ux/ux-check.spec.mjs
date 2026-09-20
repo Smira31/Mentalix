@@ -697,7 +697,10 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-    await page.getByRole('button', { name: 'Практики' }).click()
+    await page.getByRole('button', { name: 'Сегодня' }).click()
+    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute('aria-current', 'page')
+    await page.getByRole('button', { name: 'Шаги' }).click()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
     await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Аскезы' }).click()
     await page.getByRole('button', { name: 'Открыть аскезы' }).click()
@@ -714,7 +717,10 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-    await page.getByRole('button', { name: 'Практики' }).click()
+    await page.getByRole('button', { name: 'Сегодня' }).click()
+    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute('aria-current', 'page')
+    await page.getByRole('button', { name: 'Шаги' }).click()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
     await page.locator('[data-collection-key="psychological"]').click()
     await page.getByRole('button', { name: 'Первый шаг' }).click()
@@ -1521,7 +1527,11 @@ test('Practice Catalog v2 psychological collection сохраняет origin п�
   await page.getByRole('button', { name: 'Первый шаг' }).click()
   await page.getByRole('button', { name: 'Назад' }).click()
   await expect(page.getByRole('heading', { name: 'Психологические практики.' })).toBeVisible()
-  await page.getByRole('button', { name: 'Назад к коллекциям' }).click()
+  // PracticeCatalogV2 returns to the catalog root through the app tabs; the old
+  // UI-lab-only "Назад к коллекциям" control is not rendered in production.
+  await page.getByRole('button', { name: 'Сегодня' }).click()
+  await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute('aria-current', 'page')
+  await page.getByRole('button', { name: 'Шаги' }).click()
   await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
   await context.close()
 })
