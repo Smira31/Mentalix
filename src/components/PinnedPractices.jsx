@@ -5,6 +5,7 @@ import { Check, PenLine, Settings2, X } from 'lucide-react'
 import BackButton from './BackButton'
 import { api } from '../lib/api'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import {
   fetchPinnedPractices,
   invalidatePinnedPractices,
@@ -33,7 +34,7 @@ function Sheet({ title, subtitle = null, onClose, children, footer = null }) {
     </div>
   )
 
-  return typeof document === 'undefined' ? null : createPortal(content, document.body)
+  return typeof document === 'undefined' ? null : createPortal(content, getFullscreenPortalTarget())
 }
 
 function PracticeGlyph({ practice }) {

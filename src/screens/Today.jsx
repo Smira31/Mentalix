@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight, Settings2 } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Flame, UserRound } from 'lucide-react'
 
 import './Today.css'
 
@@ -43,27 +43,76 @@ const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
 // ── календарь недели + отдельные дневные streak strips ──
 
-function TodayWorkspaceHeader({ onOpenSettings, onOpenHistory }) {
+function TodayWorkspaceHeader({ onOpenSettings, onOpenHistory, onOpenSeries }) {
   return (
-    <header className="mx-today-workspace-header">
-      <div>
-        <span className="mx-today-workspace-header__eyebrow">ТВОЙ РИТМ</span>
-        <h2>Хихира</h2>
-      </div>
-      <div className="mx-today-workspace-header__tools">
+    <header className="mx-demo-today-header">
+      <button
+        type="button"
+        className="mx-demo-today-streak"
+        aria-label="Мой путь. Один день подряд"
+        onClick={onOpenSeries}
+      >
+        <Flame aria-hidden="true" />
+        <strong>1</strong>
+      </button>
+      <strong className="mx-demo-today-greeting">Хихира</strong>
+      <div className="mx-demo-today-header__tools">
         <button type="button" className="mx-today-history-link" onClick={onOpenHistory}>
           История
         </button>
         <button
           type="button"
-          className="mx-today-settings-button"
+          className="mx-demo-today-profile"
           aria-label="Открыть настройки"
           onClick={onOpenSettings}
         >
-          <Settings2 aria-hidden="true" />
+          <span className="mx-demo-today-profile__avatar">
+            <UserRound aria-hidden="true" />
+          </span>
         </button>
       </div>
     </header>
+  )
+}
+
+function WeekStrip() {
+  const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+  const now = new Date()
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+  const days = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(monday)
+    day.setDate(monday.getDate() + index)
+    return day
+  })
+
+  return (
+    <div className="mx-today-week" role="group" aria-label="Календарь недели">
+      <div className="mx-today-week__calendar">
+        {days.map(day => {
+          const isToday = day.toDateString() === now.toDateString()
+          const isCompleted = day < now && !isToday
+          return (
+            <div
+              key={day.getTime()}
+              className="mx-today-week-day"
+              data-today={isToday}
+              data-completed={isCompleted}
+            >
+              <span className="mx-type-weekday">
+                {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
+              </span>
+              <span className="mx-type-calendar-date">{day.getDate()}</span>
+              {(isCompleted || isToday) && (
+                <span className="mx-today-week-day__check" aria-hidden="true">
+                  ✓
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -137,6 +186,7 @@ export default function Today({
   onFlowChange,
   onRegisterBack,
   onOpenSettings,
+  onOpenSeries,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -691,11 +741,13 @@ export default function Today({
       <h1 className="sr-only">Сегодня</h1>
       <TodayWorkspaceHeader
         onOpenSettings={onOpenSettings}
+        onOpenSeries={onOpenSeries}
         onOpenHistory={() => {
           setPathTab('history')
           changeSub('path')
         }}
       />
+      <WeekStrip />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
@@ -716,7 +768,6 @@ export default function Today({
       */}
       <div
         className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
-        data-redesign="hihira"
         data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
       >
         {heroPresentationState !== 'allDone' &&

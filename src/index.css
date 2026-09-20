@@ -745,6 +745,21 @@ body::-webkit-scrollbar,
   height: 0;
 }
 
+/* Demo contract: every tab, overlay, sheet, and streak surface stays visually
+   clean inside the phone frame. Scrolling remains available; only the native
+   scrollbar chrome is removed. */
+[data-mentalix-demo-frame='true'],
+[data-mentalix-demo-frame='true'] * {
+  scrollbar-width: none;
+}
+
+[data-mentalix-demo-frame='true']::-webkit-scrollbar,
+[data-mentalix-demo-frame='true'] *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 html {
   background: rgb(var(--c-bg));
 }

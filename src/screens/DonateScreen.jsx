@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { api } from '../lib/api'
 import BackButton from '../components/BackButton'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import './DonateScreen.css'
 
 function DemoDonateScreen({ user, onBack }) {
@@ -172,7 +173,10 @@ function ProductionDonateScreen({ user, onBack }) {
 
 export default function DonateScreen({ user, onBack }) {
   if (isPreviewDemoMode()) {
-    return createPortal(<DemoDonateScreen user={user} onBack={onBack} />, document.body)
+    return createPortal(
+      <DemoDonateScreen user={user} onBack={onBack} />,
+      getFullscreenPortalTarget()
+    )
   }
 
   return <ProductionDonateScreen user={user} onBack={onBack} />

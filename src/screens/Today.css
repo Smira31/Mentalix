@@ -934,3 +934,37 @@
 .mx-today-history-link:active {
   transform: scale(0.97);
 }
+
+.mx-demo-today-header__tools {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mx-demo-today-header__tools .mx-today-history-link {
+  padding-inline: 0;
+}
+
+@media (max-height: 650px) {
+  .mx-today-primary-card {
+    min-height: 220px;
+    padding: 16px 16px 18px;
+  }
+
+  .mx-today-primary-card .mx-today-hero-art {
+    min-height: 56px;
+    margin-bottom: 0;
+  }
+
+  .mx-today-primary-card .mx-type-hero {
+    font-size: 1.2rem;
+  }
+
+  .mx-today-primary-card .cta-pill {
+    min-height: 44px;
+  }
+
+  .mx-today-hero-breath {
+    height: 16px;
+  }
+}
