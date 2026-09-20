@@ -26,7 +26,7 @@ import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 
-import { initFullscreen } from './lib/tgFullscreen'
+import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
 
 /* ============================================================
@@ -901,6 +901,18 @@ export default function App() {
     scrollAppToTop()
   }, [scrollAppToTop])
 
+  const completeOnboarding = useCallback(() => {
+    /*
+     * The onboarding surface owns the first fullscreen mount. When it is
+     * removed, Today can otherwise render in the same batch before App has
+     * observed the Telegram fullscreen snapshot and added the 56px control
+     * reserve. Start/read the shared store synchronously before exposing the
+     * main shell so its first frame already has the correct top inset.
+     */
+    setFullscreen(getFullscreenSnapshot())
+    setOnboardedFlag('1')
+  }, [setOnboardedFlag])
+
   /* ============================================================
      LOADING
      ============================================================ */
@@ -914,14 +926,7 @@ export default function App() {
      ============================================================ */
 
   if (user && !onboarded) {
-    return (
-      <Onboarding
-        user={user}
-        onFinish={() => {
-          setOnboardedFlag('1')
-        }}
-      />
-    )
+    return <Onboarding user={user} onFinish={completeOnboarding} />
   }
 
   /* ============================================================
