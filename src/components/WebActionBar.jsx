@@ -33,7 +33,7 @@ export default function WebActionBar({ action, secondaryAction, className = '', 
       {action && (
         <button
           type="button"
-          aria-label={action.text}
+          aria-label={action.ariaLabel || action.text}
           onClick={() => {
             platform.haptic('light')
             action.onClick()

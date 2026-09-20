@@ -1077,6 +1077,10 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     effectiveMainAction && !(previewDemoMode && isMorningNoteStep)
       ? {
           text: effectiveMainAction.text,
+          ariaLabel:
+            effectiveMainAction.text === 'Завершить'
+              ? 'Сохранить и завершить'
+              : effectiveMainAction.text,
           onClick: effectiveMainAction.run,
           disabled: saving || scoutBusy,
         }
