@@ -1158,7 +1158,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                           setEmotion(active ? null : item)
                         }}
                         className={[
-                          'px-4 py-2.5 rounded-full text-[14px] font-semibold border-0 transition-colors',
+                          'mx-checkin-chip px-4 py-2.5 rounded-full text-[14px] font-semibold border-0 transition-colors',
                           active ? 'bg-gold text-emerald-deep' : 'bg-emerald text-muted',
                         ].join(' ')}
                       >

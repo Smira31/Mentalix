@@ -135,6 +135,13 @@
   background: #f4f4f4;
   color: #173027;
 }
+.mx-checkin-chip {
+  background: var(--mx-checkin-neutral-gradient) !important;
+}
+.mx-checkin-chip.is-selected {
+  background: #f4f4f4 !important;
+  color: #111 !important;
+}
 .mx-demo-checkin__header-title {
   color: #eee;
   font-size: 15px;
