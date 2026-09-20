@@ -79,8 +79,12 @@ function PracticeGlyph({ practice }) {
   )
 }
 
+function normalizePinnedPractices(value) {
+  return Array.isArray(value) ? value : []
+}
+
 export default function PinnedPractices({ user, onOpenPractice }) {
-  const [pinned, setPinned] = useState(() => peekPinnedPractices(user.id) || [])
+  const [pinned, setPinned] = useState(() => normalizePinnedPractices(peekPinnedPractices(user.id)))
   const [loading, setLoading] = useState(() => !peekPinnedPractices(user.id))
   const [error, setError] = useState(false)
   const [sheet, setSheet] = useState(null)
@@ -90,7 +94,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
     let active = true
     fetchPinnedPractices(user.id)
       .then(items => {
-        if (active) setPinned(items)
+        if (active) setPinned(normalizePinnedPractices(items))
       })
       .catch(() => {
         if (active) setError(true)

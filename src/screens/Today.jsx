@@ -491,21 +491,29 @@ export default function Today({
 
   if (loadError) {
     return (
-      <div className="w-full max-w-md px-5 pt-8">
-        <EmptyState
-          className="p-5"
-          glyph={
-            <div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />
-          }
-        >
-          <h2 className="font-display mx-type-card text-cream mb-1">Не удалось загрузить день</h2>
-          <p className="mx-type-list-body text-muted mb-4" role="alert">
-            Проверь соединение и попробуй ещё раз. Данные дня не были заменены пустым состоянием.
-          </p>
-          <button onClick={retryTodayData} className="cta-pill mx-type-control px-7 py-3">
-            Повторить
-          </button>
-        </EmptyState>
+      <div className="mx-screen-shell">
+        <h1 className="sr-only">Сегодня</h1>
+        <TodayWorkspaceHeader
+          onOpenSettings={onOpenSettings}
+          onOpenSeries={onOpenSeries}
+          streak={streak}
+        />
+        <div className="w-full max-w-md px-5 pt-8">
+          <EmptyState
+            className="p-5"
+            glyph={
+              <div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />
+            }
+          >
+            <h2 className="font-display mx-type-card text-cream mb-1">Не удалось загрузить день</h2>
+            <p className="mx-type-list-body text-muted mb-4" role="alert">
+              Проверь соединение и попробуй ещё раз. Данные дня не были заменены пустым состоянием.
+            </p>
+            <button onClick={retryTodayData} className="cta-pill mx-type-control px-7 py-3">
+              Повторить
+            </button>
+          </EmptyState>
+        </div>
       </div>
     )
   }
