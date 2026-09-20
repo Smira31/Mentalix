@@ -4,9 +4,10 @@ export default defineConfig({
   testDir: './tests/ux',
   testMatch: 'mxl-010-release-gate.spec.mjs',
   outputDir: 'artifacts/mxl-010-gate/playwright-output',
-  fullyParallel: false,
-  workers: 1,
-  retries: 2,
+  // Each test creates its own browser context and fixture router.
+  fullyParallel: true,
+  workers: 2,
+  retries: 1,
   timeout: 120_000,
   expect: {
     timeout: 10_000,

@@ -4,6 +4,8 @@ export default defineConfig({
   testDir: './tests/ux',
   testMatch: ['ux-check.spec.mjs', 'issue-648-independent-loading.spec.mjs'],
   outputDir: 'artifacts/ux-check/playwright-output',
+  // ux-check.spec.mjs owns a shared report directory and a long stateful journey;
+  // keep this suite serial to avoid artifact races and runner contention.
   fullyParallel: false,
   workers: 1,
   retries: 1,
