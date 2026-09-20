@@ -17,6 +17,7 @@ import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import StreakRestoreSheet from '../components/StreakRestoreSheet'
+import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog'
 import { useMainButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
@@ -75,34 +76,27 @@ function RitualCard({ ritual, onLog, onDelete, onRestore }) {
         <StreakBar streak={ritual.streak} freezes={ritual.freezes} bump={streakBump} />
 
         <span className="flex items-center gap-2 shrink-0">
-          {confirming ? (
-            <span className="flex items-center gap-1">
-              <button
-                onClick={() => {
-                  platform.haptic('rigid')
-                  onDelete(ritual.id)
-                }}
-                className="practice-scene__choice text-[10px] px-2 py-0.5 rounded bg-cream/15 text-cream"
-              >
-                Удалить
-              </button>
-              <button
-                onClick={() => setConfirming(false)}
-                className="practice-scene__choice text-[10px] px-2 py-0.5 rounded border border-cream/20 text-muted"
-              >
-                Отмена
-              </button>
-            </span>
-          ) : (
-            <span
-              onClick={() => setConfirming(true)}
-              className="practice-scene__choice text-faint text-base leading-none px-1"
-            >
-              ×
-            </span>
-          )}
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            aria-label={`Удалить ритуал «${ritual.name}»`}
+            className="practice-scene__choice text-faint text-base leading-none px-1"
+          >
+            ×
+          </button>
         </span>
       </div>
+
+      {confirming && (
+        <DeleteConfirmationDialog
+          itemType="ритуал"
+          onCancel={() => setConfirming(false)}
+          onConfirm={() => {
+            platform.haptic('rigid')
+            onDelete(ritual.id)
+          }}
+        />
+      )}
 
       {/*
        * Верхняя треть — рисунок. Мотив угадывается по названию
