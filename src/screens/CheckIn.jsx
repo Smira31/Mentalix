@@ -88,16 +88,17 @@ export function CheckInQuestion({
 function DemoCheckInFlow({ user, onDone }) {
   const [step, setStep] = useState(0)
   const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
-  const [emotion, setEmotion] = useState(null)
   const [note, setNote] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [streak, setStreak] = useState(0)
+  const [streakHistory, setStreakHistory] = useState([])
   const { style: viewportStyle } = useFullscreenSurface()
   const scale = step < MORNING_SCALE_STEPS.length ? MORNING_SCALE_STEPS[step] : null
-  const emotionStep = MORNING_SCALE_STEPS.length
-  const noteStep = emotionStep + 1
+  const noteStep = MORNING_SCALE_STEPS.length
   const doneStep = noteStep + 1
+  const streakStep = doneStep + 1
 
   useEffect(() => {
     const bird = new Image()
@@ -120,10 +121,17 @@ function DemoCheckInFlow({ user, onDone }) {
         anxiety: values.anxiety || 3,
         focus: values.focus || 3,
         note: note.trim() || undefined,
-        emotion: emotion || undefined,
+        emotion: undefined,
       })
       platform.haptic('success')
-      onDone()
+      try {
+        const history = await api.checkin.history(user.id, 90)
+        setStreakHistory(Array.isArray(history) ? history : [])
+        setStreak(currentCheckinStreak(Array.isArray(history) ? history : []))
+      } catch (historyError) {
+        console.error(historyError)
+      }
+      setStep(streakStep)
     } catch (saveError) {
       console.error(saveError)
       setError('Не удалось сохранить. Попробуй ещё раз.')
@@ -133,15 +141,17 @@ function DemoCheckInFlow({ user, onDone }) {
   }
 
   const action =
-    step === noteStep
-      ? { text: 'Далее', onClick: () => setStep(doneStep), disabled: !note.trim() }
-      : step === doneStep
-        ? {
-            text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
-            onClick: finish,
-            disabled: saving,
-          }
-        : { text: 'Далее', onClick: () => setStep(current => current + 1), disabled: false }
+    step === streakStep
+      ? { text: 'Вернуться в Сегодня', onClick: onDone }
+      : step === noteStep
+        ? { text: 'Далее', onClick: () => setStep(doneStep), disabled: !note.trim() }
+        : step === doneStep
+          ? {
+              text: saving ? 'Сохраняю…' : 'Сохранить и завершить',
+              onClick: finish,
+              disabled: saving,
+            }
+          : { text: 'Далее', onClick: () => setStep(current => current + 1), disabled: false }
 
   useMainButton({
     text: action.text,
@@ -189,27 +199,6 @@ function DemoCheckInFlow({ user, onDone }) {
             value={values[scale.key]}
             onPick={level => pick(scale.key, level)}
           />
-        )}
-
-        {step === emotionStep && (
-          <CheckInQuestion
-            title="Что ближе всего?"
-            hint="Назвать чувство — половина работы с ним."
-            className="mx-checkin-question--chips"
-          >
-            <div className="mx-checkin-chips">
-              {(EMOTIONS[values.mood || 3] || EMOTIONS[3]).map(item => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => setEmotion(current => (current === item ? null : item))}
-                  className={emotion === item ? 'is-selected' : ''}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </CheckInQuestion>
         )}
 
         {step === noteStep && (
@@ -281,11 +270,51 @@ function DemoCheckInFlow({ user, onDone }) {
             )}
           </section>
         )}
+
+        {step === streakStep && (
+          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
+            <MotifArt name="noch" size={128} artScale={1.08} className="mb-6" />
+            <h1>{streak}-дневная серия.</h1>
+            <p>Ритм недели уже виден.</p>
+            <div
+              className="mt-6 grid grid-cols-7 gap-1.5"
+              role="group"
+              aria-label="Дни текущей недели"
+            >
+              {Array.from({ length: 7 }, (_, index) => {
+                const today = new Date()
+                const monday = new Date(today)
+                monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+                const day = new Date(monday)
+                day.setDate(monday.getDate() + index)
+                const isoDate = day.toISOString().slice(0, 10)
+                const active =
+                  day.toDateString() === today.toDateString() ||
+                  streakHistory.some(
+                    item => item?.review_completed_at && String(item.date).startsWith(isoDate)
+                  )
+
+                return (
+                  <div key={isoDate} className="flex flex-col items-center gap-1">
+                    <span
+                      className={`flex h-9 w-9 items-center justify-center rounded-full border ${active ? 'border-cream bg-cream text-emerald-deep' : 'border-cream/10 bg-emerald text-muted'}`}
+                    >
+                      {active ? <Flame size={15} aria-hidden="true" /> : null}
+                    </span>
+                    <span className="text-[10px] text-muted">
+                      {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'][index]}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
       </main>
       <WebActionBar
         action={step === noteStep ? null : action}
         secondaryAction={null}
-        compact={step !== doneStep}
+        compact={step !== doneStep && step !== streakStep}
       />
     </div>,
     getFullscreenPortalTarget()
@@ -293,7 +322,7 @@ function DemoCheckInFlow({ user, onDone }) {
 }
 
 // ── Чек-ин и вечерний «Анализ дня» ──
-// Утром: четыре шкалы + короткая мысль → note.
+// Утром: настроение + энергия + короткая мысль → note.
 // Вечером: шкалы (если ещё не отмечался) + две карточки —
 // «Уроки дня» → lessons и «Чем горжусь» → wins.
 //
@@ -407,7 +436,16 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
               onClick={() => onPick(level)}
               className={`mx-checkin-scale__option ${active ? 'is-selected' : ''}`}
             >
-              <span className="mx-checkin-scale__circle">
+              <span
+                className="mx-checkin-scale__circle"
+                style={
+                  scale.key === 'energy'
+                    ? {
+                        background: `linear-gradient(to top, #f4f4f4 ${level * 25}%, #111 ${level * 25}%)`,
+                      }
+                    : undefined
+                }
+              >
                 {scale.faces ? (
                   <Face level={level} active={active} size={48} showFrame={false} />
                 ) : null}
@@ -536,6 +574,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const [savedMorningNote, setSavedMorningNote] = useState('')
 
+  const [feedback, setFeedback] = useState(null)
+
+  const [streak, setStreak] = useState(0)
+
+  const [streakHistory, setStreakHistory] = useState([])
+
   const [saving, setSaving] = useState(false)
 
   const [error, setError] = useState(false)
@@ -552,11 +596,13 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const cardCount = isEvening ? LESSON_FIELDS.length + PROUD_HINTS.length : 1
 
-  const emotionStep = scaleCount
+  const emotionStep = isEvening ? scaleCount : -1
 
-  const totalSteps = scaleCount + 1 + cardCount
+  const totalSteps = isEvening ? scaleCount + 1 + cardCount : scaleCount + cardCount
 
   const doneStep = totalSteps
+
+  const streakStep = doneStep + 1
 
   const [step, setStep] = useState(() => (isEvening && existing?.review_completed_at ? 1 : 0))
 
@@ -707,6 +753,16 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
       if (afterSave) {
         afterSave()
+      } else if (!isEvening) {
+        try {
+          const history = await api.checkin.history(user.id, 90)
+          setStreakHistory(Array.isArray(history) ? history : [])
+          setStreak(currentCheckinStreak(Array.isArray(history) ? history : []))
+        } catch (historyError) {
+          console.error(historyError)
+        }
+
+        setStep(streakStep)
       } else {
         setStep(doneStep)
       }
@@ -841,13 +897,13 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   // ФИНАЛ
   // ============================================================
 
-  const isEmotionStep = step === emotionStep
+  const isEmotionStep = isEvening && step === emotionStep
 
-  const isCard = step > emotionStep
+  const isCard = isEvening ? step > emotionStep : step >= scaleCount
 
   const isScaleStep = !isCard && !isEmotionStep
 
-  const cardIdx = step - emotionStep - 1
+  const cardIdx = isEvening ? step - emotionStep - 1 : step - scaleCount
 
   const isMorningNoteStep = !isEvening && isCard && cardIdx === 0
 
@@ -859,7 +915,11 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       }
     : undefined
 
-  const isFinal = step >= doneStep
+  const isCompletion = step === doneStep
+
+  const isStreakStep = !isEvening && step === streakStep
+
+  const isFinal = isCompletion || isStreakStep
 
   /*
    * ДЕЙСТВИЯ ЖИВУТ В СИСТЕМНОЙ КНОПКЕ
@@ -873,27 +933,34 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
    * кнопка на текущем шаге, — вместо четырёх разных кнопок,
    * разбросанных по разметке.
    */
-  const mainAction = isFinal
-    ? isEvening
-      ? { text: 'Разобрать со Следопытом', run: openScout }
-      : { text: 'К следующему шагу', run: onDone }
-    : isEmotionStep
-      ? {
-          text: 'Дальше',
-          run: () => setStep(step + 1),
-        }
-      : isCard
+  const mainAction = isStreakStep
+    ? { text: 'Вернуться в Сегодня', run: onDone }
+    : isCompletion
+      ? isEvening
+        ? { text: 'Разобрать со Следопытом', run: openScout }
+        : { text: saving ? 'Сохраняю...' : 'Сохранить и завершить', run: submit }
+      : isEmotionStep
         ? {
-            text: saving
-              ? 'Сохраняю...'
-              : isEvening
-                ? cardIdx === cardCount - 1
-                  ? 'Закрыть день'
-                  : 'Дальше'
-                : 'Завершить',
-            run: () => (isEvening && cardIdx < cardCount - 1 ? setStep(step + 1) : submit()),
+            text: 'Дальше',
+            run: () => setStep(step + 1),
           }
-        : null
+        : isCard
+          ? {
+              text: saving
+                ? 'Сохраняю...'
+                : isEvening
+                  ? cardIdx === cardCount - 1
+                    ? 'Закрыть день'
+                    : 'Дальше'
+                  : 'Далее',
+              run: () =>
+                isEvening
+                  ? cardIdx < cardCount - 1
+                    ? setStep(step + 1)
+                    : submit()
+                  : setStep(doneStep),
+            }
+          : null
 
   const skipAction = isFinal
     ? isEvening
@@ -910,7 +977,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       : isCard
         ? {
             text: 'Пропустить',
-            run: () => (isEvening && cardIdx < cardCount - 1 ? setStep(step + 1) : submit()),
+            run: () =>
+              isEvening
+                ? cardIdx < cardCount - 1
+                  ? setStep(step + 1)
+                  : submit()
+                : setStep(doneStep),
           }
         : null
 
@@ -954,6 +1026,86 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       ? { text: skipAction.text, onClick: skipAction.run }
       : null
 
+  const weekNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+  const today = new Date()
+  const monday = new Date(today)
+  monday.setHours(0, 0, 0, 0)
+  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+  const completedDates = new Set(
+    streakHistory
+      .filter(checkin => checkin?.review_completed_at && checkin?.date)
+      .map(checkin => String(checkin.date).slice(0, 10))
+  )
+  const weekDays = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(monday)
+    date.setDate(monday.getDate() + index)
+    const isoDate = date.toISOString().slice(0, 10)
+    const isToday = date.toDateString() === today.toDateString()
+
+    return {
+      isoDate,
+      isToday,
+      label: weekNames[index],
+    }
+  })
+
+  if (isStreakStep) {
+    return createPortal(
+      <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
+        <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
+        <div className={FULLSCREEN_SCROLL_CLASS}>
+          <div className={`${CHECKIN_CENTER_CLASS} justify-between`}>
+            <section className="w-full flex flex-col items-center text-center pt-8">
+              <MotifArt name="noch" size={128} artScale={1.08} className="mb-7" />
+              <h1 className="font-display text-[30px] font-bold leading-tight text-cream">
+                {streak}-дневная серия.
+              </h1>
+              <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-muted">
+                Ритм недели уже виден.
+              </p>
+
+              <div
+                className="mt-10 grid w-full max-w-sm grid-cols-7 gap-2"
+                role="group"
+                aria-label="Дни текущей недели"
+              >
+                {weekDays.map(day => {
+                  const completed = completedDates.has(day.isoDate)
+                  const active = completed || day.isToday
+
+                  return (
+                    <div key={day.isoDate} className="flex flex-col items-center gap-2">
+                      <span
+                        className={`flex h-10 w-10 items-center justify-center rounded-full border ${
+                          active
+                            ? 'border-cream bg-cream text-emerald-deep'
+                            : 'border-cream/10 bg-emerald text-muted'
+                        }`}
+                        aria-label={`${day.label}: ${active ? 'пройдено' : 'пусто'}`}
+                      >
+                        {active ? <Flame size={17} strokeWidth={2.5} aria-hidden="true" /> : null}
+                      </span>
+                      <span className="text-[11px] text-muted">{day.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+
+            <button
+              type="button"
+              onClick={onDone}
+              className="min-h-12 w-full max-w-sm rounded-full border-0 bg-cream px-6 py-3 text-[14px] font-bold text-emerald-deep"
+            >
+              Вернуться в Сегодня
+            </button>
+          </div>
+        </div>
+      </div>,
+      getFullscreenPortalTarget()
+    )
+  }
+
   if (step >= doneStep) {
     return createPortal(
       <div
@@ -979,14 +1131,43 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
               </div>
 
               <h2 className="font-display text-[26px] text-cream leading-tight">
-                {isEvening ? 'День закрыт' : 'Чек-ин записан'}
+                {isEvening ? 'День закрыт' : 'Ты сохранил главное.'}
               </h2>
 
               <p className="text-[15px] text-muted mt-3 leading-relaxed max-w-sm">
                 {isEvening
                   ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
-                  : 'Ты услышал себя — это тоже шаг.'}
+                  : 'Ответы останутся в сегодняшнем цикле.'}
               </p>
+
+              {!isEvening && (
+                <div className="mt-7 w-full max-w-sm">
+                  <p className="text-[13px] text-muted">
+                    Чек-ин помог остановиться и заметить важное?
+                  </p>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    {[
+                      ['Нет', ThumbsDown],
+                      ['Немного', Hand],
+                      ['Да', ThumbsUp],
+                    ].map(([label, Icon]) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setFeedback(label)}
+                        className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-[12px] ${
+                          feedback === label
+                            ? 'border-gold bg-gold/10 text-gold'
+                            : 'border-cream/10 bg-emerald text-muted'
+                        }`}
+                      >
+                        <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {scoutError && (
                 <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">

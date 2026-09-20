@@ -7,18 +7,15 @@ const checkinSource = await readFile(
   'utf8'
 )
 
-test('PWA preview uses the six-question Telegram set in the agreed order', () => {
+test('PWA preview uses the three-question morning set in the agreed order', () => {
   assert.match(checkinSource, /export const MORNING_SCALE_STEPS = \[/)
-  assert.match(
-    checkinSource,
-    /SCALE_STEPS\[1\],\s*SCALE_STEPS\[0\],\s*SCALE_STEPS\[3\],\s*SCALE_STEPS\[2\]/s
-  )
-  assert.match(checkinSource, /const emotionStep = MORNING_SCALE_STEPS\.length/)
-  assert.match(checkinSource, /const noteStep = emotionStep \+ 1/)
+  assert.match(checkinSource, /SCALE_STEPS\[0\],\s*SCALE_STEPS\[1\]/s)
+  assert.match(checkinSource, /const noteStep = MORNING_SCALE_STEPS\.length/)
   assert.match(checkinSource, /const doneStep = noteStep \+ 1/)
   assert.match(checkinSource, /<CheckInScaleQuestion\s+scale=\{scale\}/)
-  assert.match(checkinSource, /<CheckInQuestion\s+title="Что ближе всего\?"/)
   assert.match(checkinSource, /<CheckInQuestion\s+title="Что на уме\?"/)
+  assert.match(checkinSource, /Ты сохранил главное\./)
+  assert.match(checkinSource, /Вернуться в Сегодня/)
 })
 
 test('PWA and core flows share the same question renderer and do not render scale numbers', () => {
