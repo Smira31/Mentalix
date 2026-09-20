@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, PenLine, Settings2, X } from 'lucide-react'
+import { Check, Settings2, X } from 'lucide-react'
 
 import BackButton from './BackButton'
 import { api } from '../lib/api'
@@ -187,14 +187,6 @@ export default function PinnedPractices({ user, onOpenPractice }) {
           onClose={() => setSheet(null)}
           footer={
             <div className="mx-pinned-sheet__footer-actions">
-              <button
-                type="button"
-                className="mx-pinned-practices__create-entry"
-                onClick={() => setSheet('library')}
-              >
-                <PenLine size={15} aria-hidden="true" />
-                <span>Создать свои практики</span>
-              </button>
               <button
                 type="button"
                 className="cta-pill mx-type-flow-action w-full"
