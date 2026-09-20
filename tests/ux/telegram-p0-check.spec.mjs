@@ -100,6 +100,12 @@ async function openMentorConversation(page) {
   await expect(page.getByRole('heading', { name: 'Наставник' })).toBeVisible()
 }
 
+async function openSeries(page) {
+  await page.getByRole('button', { name: /Мой путь/ }).click()
+  await expect(page.locator('.mx-path-surface')).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Награды' })).toBeVisible()
+}
+
 for (const viewport of P0_VIEWPORTS) {
   test.describe(`Telegram P0 — ${viewport.name}`, () => {
     test('Mentor conversation → native BackButton returns to picker', async ({ browser }) => {
@@ -108,6 +114,15 @@ for (const viewport of P0_VIEWPORTS) {
       await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
       await nativeBack(page)
       await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
+      await context.close()
+    })
+
+    test('Series → native BackButton returns to Today', async ({ browser }) => {
+      const { context, page } = await openTelegramDemo(browser, viewport)
+      await openSeries(page)
+      await expect.poll(() => page.evaluate(() => window.__telegramBackState.isVisible)).toBe(true)
+      await nativeBack(page)
+      await expect(page.getByRole('button', { name: /Мой путь/ })).toBeVisible()
       await context.close()
     })
 
