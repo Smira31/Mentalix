@@ -1212,13 +1212,11 @@ export default function App() {
                     setTodaySeriesOpen(true)
                   }}
                   aria-label={`Серии и вехи. Текущая серия: ${todayStreak} дней`}
-                  className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/10 bg-emerald text-gold active:scale-95 max-[359px]:w-8"
+                  className="relative z-10 flex h-10 w-auto shrink-0 flex-row items-center justify-center gap-1.5 rounded-full border border-cream/10 bg-emerald px-3 text-cream active:scale-95"
                 >
-                  <Flame size={18} strokeWidth={1.75} aria-hidden="true" />
+                  <Flame size={18} fill="currentColor" stroke="none" aria-hidden="true" />
                   {todayStreak > 0 && (
-                    <span className="absolute -right-1 -top-1 z-20 min-w-[20px] rounded-full bg-gold px-1.5 text-center text-[9px] font-bold leading-[18px] text-emerald-deep">
-                      {todayStreak}
-                    </span>
+                    <strong className="font-bold leading-none">{todayStreak}</strong>
                   )}
                 </button>
 
@@ -1258,7 +1256,6 @@ export default function App() {
                   aria-label="Профиль"
                   className="
                 w-10
-                max-[359px]:w-6
                 h-10
 
                 rounded-full
@@ -1276,7 +1273,9 @@ export default function App() {
                 shrink-0
               "
                 >
-                  <UserRound size={19} strokeWidth={1.7} className="text-muted" />
+                  <span className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-cream">
+                    <UserRound size={22} strokeWidth={1.7} className="text-emerald-deep" />
+                  </span>
                 </button>
               </div>
             </>
