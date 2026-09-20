@@ -274,6 +274,7 @@ export function demoRequest(path, options = {}) {
   }
 
   if (pathname === '/checkin/today' && method === 'GET') {
+    // checkin/today uses the PR-aware state.checkins[0] fixture anchor.
     const today = new Date().toISOString().slice(0, 10)
     return json(state.checkins.find(item => item?.date === today) || null)
   }

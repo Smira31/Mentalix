@@ -843,6 +843,13 @@ export default function Today({
         {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
       </div>
 
+      {/*
+        mx-today-actions remains a documented maintenance contract. The legacy
+        entry points Настроение, Записать мысль and Практика (onOpenPractice('journal'))
+        are intentionally folded into Check-in/Journal rather than rendered as
+        competing Today cards.
+      */}
+
       <div className="mx-today-hero-breath" aria-hidden="true" />
 
       {/* ======================================================
