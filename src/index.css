@@ -201,11 +201,28 @@
   --c-gold: 200 200 200;
 }
 
-/* Светлая тема использует отдельную пару акцентов, но тот же data-accent. */
+/* Тестовый лазурный вариант тёмной темы — значение из дизайн-системы.
+   В production dark theme data-theme удаляется, поэтому используется
+   только data-accent; parseAccent не допускает azure в light theme. */
+[data-accent='azure'] {
+  --c-gold: 111 183 224;
+}
+
+/* Светлая тема использует отдельный набор акцентов, но тот же data-accent. */
 [data-theme='light'][data-accent='sage'] {
   --c-gold: 72 72 72;
 }
 
+[data-theme='light'][data-accent='graphite'] {
+  --c-gold: 31 31 31;
+}
+
+/* Мятный вариант: #96CDB0, исторический проектный mint token. */
+[data-theme='light'][data-accent='mint'] {
+  --c-gold: 150 205 176;
+}
+
+/* Legacy light-theme override retained for compatibility with old stored values. */
 [data-theme='light'][data-accent='terracotta'] {
   --c-gold: 82 82 82;
 }
