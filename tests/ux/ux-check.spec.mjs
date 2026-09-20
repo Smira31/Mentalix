@@ -697,7 +697,7 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-    await page.getByRole('button', { name: 'Назад к коллекциям' }).click()
+    await page.getByRole('button', { name: 'Практики' }).click()
 
     await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Аскезы' }).click()
     await page.getByRole('button', { name: 'Открыть аскезы' }).click()
@@ -714,7 +714,7 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-    await page.getByRole('button', { name: 'Назад к коллекциям' }).click()
+    await page.getByRole('button', { name: 'Практики' }).click()
 
     await page.locator('[data-collection-key="psychological"]').click()
     await page.getByRole('button', { name: 'Первый шаг' }).click()
