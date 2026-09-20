@@ -147,24 +147,26 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: /Пройти чек-ин/ })).toBeVisible()
 
     await page.getByRole('button', { name: 'Пройти чек-ин' }).click()
-    await expect(page.getByRole('radiogroup', { name: 'Сколько в тебе энергии?' })).toBeVisible()
+    await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Назад' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Закрыть' })).toBeVisible()
 
-    for (const option of ['Средне', 'Нормально', 'Держусь', 'Заметно']) {
+    for (const option of ['Нормально', 'Средне']) {
       await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
     }
-    await page.getByRole('button', { name: 'ровно' }).click()
-    await page.getByRole('button', { name: 'Дальше' }).click()
 
     const morningNote = page.getByRole('textbox', { name: 'Что на уме' })
     await morningNote.fill('Fixture morning note')
-    await page.getByRole('button', { name: 'Завершить чек-ин' }).click()
-    await expect(page.getByRole('heading', { name: 'Чек-ин записан' })).toBeVisible()
+    await page.getByRole('button', { name: 'Далее' }).dispatchEvent('click')
+    await expect(page.getByRole('heading', { name: 'Ты сохранил главное.' })).toBeVisible()
+    expect(fixtures.savedCheckins).toHaveLength(0)
+
+    await page.getByRole('button', { name: 'Сохранить и завершить' }).click()
+    await expect(page.getByRole('heading', { name: /-дневная серия\./ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
 
-    await page.getByRole('button', { name: 'К следующему шагу' }).click()
+    await page.getByRole('button', { name: 'Вернуться в Сегодня' }).click()
     await expect(page.getByRole('button', { name: 'Разобрать день' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Разобрать день' }).click()
