@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, Settings2, X } from 'lucide-react'
+import { Check, PenLine, Settings2, X } from 'lucide-react'
 
-import SemanticGlyph from './SemanticGlyph'
+import BackButton from './BackButton'
 import { api } from '../lib/api'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import {
@@ -11,7 +11,7 @@ import {
   peekPinnedPractices,
 } from '../lib/pinnedPracticesDataCache'
 
-function Sheet({ title, onClose, children, footer = null }) {
+function Sheet({ title, subtitle = null, onClose, children, footer = null }) {
   const content = (
     <div
       className="mx-pinned-sheet-backdrop"
@@ -20,7 +20,9 @@ function Sheet({ title, onClose, children, footer = null }) {
     >
       <section className="mx-pinned-sheet" role="dialog" aria-modal="true" aria-label={title}>
         <div className="mx-pinned-sheet__header">
+          <BackButton onClick={onClose} showInDemo />
           <h2 className="font-display mx-type-card text-cream lowercase">{title}</h2>
+          {subtitle && <p className="mx-pinned-sheet__subtitle text-muted">{subtitle}</p>}
           <button type="button" className="mx-icon-button" aria-label="Закрыть" onClick={onClose}>
             <X size={19} aria-hidden="true" />
           </button>
@@ -35,14 +37,43 @@ function Sheet({ title, onClose, children, footer = null }) {
 }
 
 function PracticeGlyph({ practice }) {
+  const icon =
+    practice.key === 'lila-discover'
+      ? 'planet'
+      : practice.key === 'ascezas'
+        ? 'ring'
+        : practice.key === 'breathing' || practice.key === 'meditation'
+          ? 'moon'
+          : 'bulb'
+
   return (
     <span className="mx-pinned-practice-glyph" aria-hidden="true">
-      <SemanticGlyph
-        kind={practice.kind}
-        animated={false}
-        highlighted={false}
-        debugSource="PinnedPractices.jsx"
-      />
+      <svg viewBox="0 0 64 64" focusable="false">
+        {icon === 'bulb' && (
+          <>
+            <path d="M32 9c-9.1 0-16.5 7.4-16.5 16.5 0 5.9 3 10 7.2 13.8 2.5 2.2 3.5 4.1 3.5 7.2h11.6c0-3.1 1-5 3.5-7.2 4.2-3.8 7.2-7.9 7.2-13.8C48.5 16.4 41.1 9 32 9Z" />
+            <path d="M27 51h10M28.5 55h7" />
+            <path d="M32 46.5V33M26.5 29.5l5.5 3.5 5.5-3.5" />
+          </>
+        )}
+        {icon === 'ring' && (
+          <>
+            <circle cx="32" cy="32" r="18" />
+            <circle cx="32" cy="32" r="12" />
+            <path d="M32 32 43 21" />
+          </>
+        )}
+        {icon === 'planet' && (
+          <>
+            <ellipse cx="32" cy="33" rx="23" ry="8" transform="rotate(-18 32 33)" />
+            <circle cx="33" cy="29" r="11" />
+            <path d="M13 40c7 3 22 4 38-2" />
+          </>
+        )}
+        {icon === 'moon' && (
+          <path d="M42 14c-8 2-14 9-14 18 0 10 8 18 18 18 2 0 4-.4 6-1.1A20 20 0 1 1 42 14Z" />
+        )}
+      </svg>
     </span>
   )
 }
@@ -150,16 +181,27 @@ export default function PinnedPractices({ user, onOpenPractice }) {
 
       {sheet === 'manage' && (
         <Sheet
-          title="твои практики"
+          title="твои практики."
+          subtitle="Твой дневной набор — нажимай, чтобы начать."
           onClose={() => setSheet(null)}
           footer={
-            <button
-              type="button"
-              className="cta-pill mx-type-flow-action w-full"
-              onClick={() => setSheet('library')}
-            >
-              Добавить из библиотеки
-            </button>
+            <div className="mx-pinned-sheet__footer-actions">
+              <button
+                type="button"
+                className="mx-pinned-practices__create-entry"
+                onClick={() => setSheet('library')}
+              >
+                <PenLine size={15} aria-hidden="true" />
+                <span>Создать свои практики</span>
+              </button>
+              <button
+                type="button"
+                className="cta-pill mx-type-flow-action w-full"
+                onClick={() => setSheet('library')}
+              >
+                Добавить из библиотеки
+              </button>
+            </div>
           }
         >
           {pinnedPractices.length === 0 ? (

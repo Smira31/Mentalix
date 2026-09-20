@@ -420,17 +420,30 @@
   transform: scale(0.98);
 }
 
-.mx-pinned-practices__rail,
 .mx-pinned-practices__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.8rem;
+}
+
+.mx-pinned-practices__rail {
+  display: flex;
   gap: 0.6rem;
   margin-top: 0.8rem;
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+
+.mx-pinned-practices__rail::-webkit-scrollbar {
+  display: none;
 }
 
 .mx-pinned-practice-card {
   display: flex;
-  min-height: 8.7rem;
+  min-height: 10.5rem;
   min-width: 0;
   flex-direction: column;
   align-items: stretch;
@@ -443,6 +456,13 @@
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 1rem;
   transition: transform 150ms ease;
+}
+
+.mx-pinned-practices__rail > .mx-pinned-practice-card {
+  width: calc((100% - 1.2rem) / 3);
+  min-width: calc((100% - 1.2rem) / 3);
+  min-height: 8.5rem;
+  scroll-snap-align: start;
 }
 
 .mx-pinned-practice-card .mx-type-meta,
@@ -477,8 +497,14 @@
 }
 
 .mx-pinned-practice-glyph svg {
-  width: 2.25rem;
-  height: 1.65rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
 .mx-pinned-sheet-backdrop {
@@ -509,12 +535,71 @@
 }
 
 .mx-pinned-sheet__header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 40px;
+  grid-template-rows: auto auto;
+  align-items: center;
+  justify-items: center;
+  min-height: 5.2rem;
+  padding-top: 3.8rem;
+  border-bottom: 1px solid rgb(var(--c-text) / 0.06);
+}
+
+.mx-pinned-sheet__header > .mx-demo-back-button {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+.mx-pinned-sheet__header > h2,
+.mx-pinned-sheet__header > .mx-pinned-sheet__subtitle {
+  grid-column: 2;
+}
+
+.mx-pinned-sheet__header > h2 {
+  grid-row: 1;
+}
+
+.mx-pinned-sheet__header > .mx-pinned-sheet__subtitle {
+  grid-row: 2;
+}
+
+.mx-pinned-sheet__header > .mx-icon-button {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+}
+
+.mx-pinned-sheet__subtitle {
+  max-width: 18rem;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.mx-pinned-practices__create-entry {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   gap: 1rem;
-  min-height: 4.25rem;
-  border-bottom: 1px solid rgb(var(--c-text) / 0.06);
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.65rem 1rem;
+  color: rgb(var(--c-text));
+  text-align: center;
+  background: transparent;
+  border: 1px solid rgb(var(--c-text) / 0.16);
+  border-radius: 999px;
+}
+
+.mx-pinned-practices__create-entry svg {
+  flex: 0 0 auto;
+}
+
+.mx-pinned-practices__create-entry span {
+  flex: 1;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
 .mx-pinned-sheet__body {
@@ -524,10 +609,31 @@
   padding: 1rem 1.1rem 1rem;
 }
 
+.mx-pinned-sheet__hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  height: 7.25rem;
+  margin: 0 auto 0.8rem;
+  overflow: hidden;
+}
+
+.mx-pinned-sheet__hero img {
+  width: 5.25rem;
+  height: 8.05rem;
+  object-fit: cover;
+  object-position: top center;
+}
+
 .mx-pinned-sheet__footer {
   flex: 0 0 auto;
   background: rgb(var(--c-bg));
   border-top: 1px solid rgb(var(--c-text) / 0.08);
+}
+
+.mx-pinned-sheet__footer-actions {
+  display: grid;
+  gap: 0.55rem;
 }
 
 .mx-pinned-practice-card--managed {
@@ -614,6 +720,36 @@
 
 @media (min-width: 480px) {
   .mx-pinned-practice-card {
-    min-height: 9.4rem;
+    min-height: 11rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .mx-pinned-sheet__body {
+    padding-right: 0.85rem;
+    padding-left: 0.85rem;
+  }
+
+  .mx-pinned-sheet__header {
+    min-height: 7.8rem;
+    padding-top: 3.8rem;
+  }
+
+  .mx-pinned-practice-card {
+    min-height: 8.5rem;
+  }
+
+  .mx-pinned-practices__rail > .mx-pinned-practice-card {
+    min-height: 8rem;
+  }
+
+  .mx-pinned-practices__create-entry {
+    gap: 0.7rem;
+    min-height: 2.55rem;
+    padding: 0.55rem 0.85rem;
+  }
+
+  .mx-pinned-practices__create-entry span {
+    font-size: 0.68rem;
   }
 }
