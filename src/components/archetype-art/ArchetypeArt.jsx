@@ -1,12 +1,8 @@
 import { useId } from 'react'
 
-import { LABYRINTH_PATH } from '../MazeLogo'
+import { LABYRINTH_PATH } from './labyrinthPath'
 
-
-export function LabyrinthArt({
-  animated = true,
-  className = '',
-}) {
+export function LabyrinthArt({ animated = true, className = '' }) {
   const uid = useId()
   const glowId = `mx-labyrinth-glow-${uid.replace(/:/g, '')}`
 
@@ -59,18 +55,11 @@ export function LabyrinthArt({
 
       <circle cx="100" cy="100" r="31" fill={`url(#${glowId})`} />
       <circle cx="100" cy="100" r="4.6" fill="currentColor" />
-      <circle
-        cx="100"
-        cy="100"
-        r="9"
-        stroke="currentColor"
-        strokeOpacity="0.2"
-      />
+      <circle cx="100" cy="100" r="9" stroke="currentColor" strokeOpacity="0.2" />
       <circle cx="100" cy="184" r="2.2" fill="currentColor" fillOpacity="0.55" />
     </svg>
   )
 }
-
 
 export const ARCHETYPE_ART = {
   labyrinth: LabyrinthArt,

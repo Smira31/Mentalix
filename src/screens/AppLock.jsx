@@ -11,7 +11,7 @@ import {
   FULLSCREEN_SHELL_CLASS,
   useFullscreenSurface,
 } from '../lib/fullscreenSurface'
-import MazeLogo from '../components/MazeLogo'
+import BookLogo from '../components/BookLogo'
 import BackButton from '../components/BackButton'
 import { verifyPin, writePinRecord } from '../lib/appLock'
 import './AppLock.css'
@@ -176,7 +176,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} items-center justify-center px-8 text-center`}>
-        <MazeLogo size={64} progress={1} className="mb-6" />
+        <BookLogo size={64} className="mb-6 text-gold" />
 
         <h1 className="font-display text-[22px] text-cream lowercase leading-tight">{title}</h1>
         <p className="text-[13px] text-muted mt-2 mb-9">{subtitle}</p>
