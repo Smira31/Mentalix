@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState } from 'react'
-import { ArrowLeft, ArrowRight, ChevronRight } from 'lucide-react'
+import { ArrowRight, ChevronRight } from 'lucide-react'
 
 import JournalArt from './practice-art/JournalArt'
 import SemanticGlyph from './SemanticGlyph'
 import { getPracticeByKey, PRACTICE_COLLECTIONS } from '../lib/practiceCatalogRegistry'
+import { useBackButton } from '../platform/telegram.hooks'
 import './ui-lab/LayeredPracticeCatalogExperiment.css'
 import './ui-lab/practices-a11y-fixes.css'
 
@@ -247,7 +248,7 @@ function itemLabel(item) {
   return item?.name || item?.title || item?.text || 'Без названия'
 }
 
-function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onOpenPractice }) {
+function CollectionScreen({ collection, practices, rituals, ascezas, onOpenPractice }) {
   const practiceItems = (collection.practiceKeys || [])
     .map(key => getPracticeByKey(practices, key))
     .filter(Boolean)
@@ -259,14 +260,6 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onBack, onO
   return (
     <section className="mx-layered-category" aria-labelledby="production-category-title">
       <header className="mx-layered-category__header">
-        <button
-          type="button"
-          className="mx-layered-category__back"
-          aria-label="Назад к коллекциям"
-          onClick={onBack}
-        >
-          <ArrowLeft size={19} />
-        </button>
         <div className="mx-layered-category__heading">
           <h2 className="mx-type-section" id="production-category-title">{collection.title}.</h2>
           <p>{collection.description}</p>
@@ -365,6 +358,7 @@ export default function PracticeCatalogV2({
   const selectedCollection =
     PRACTICE_COLLECTIONS.find(collection => collection.key === selectedCollectionKey) || null
   const visiblePractices = useMemo(() => practices || [], [practices])
+  useBackButton(() => onCollectionChange?.(null), Boolean(selectedCollection))
 
   if (selectedCollection) {
     return (
@@ -374,7 +368,6 @@ export default function PracticeCatalogV2({
           practices={visiblePractices}
           rituals={rituals}
           ascezas={ascezas}
-          onBack={() => onCollectionChange?.(null)}
           onOpenPractice={onOpenPractice}
         />
       </div>
