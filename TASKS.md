@@ -21,9 +21,8 @@ last_verified: 2026-09-10
   apple-touch-icon сделан без альфа-канала.
 - **Документация:** добавлены записи в `CHANGES.md` и
   `docs/core/PRODUCT_DECISIONS.md` (MXL-DEC-029). Историческое «Обновление
-  10» не удалено, но явно отменено. `DESIGN_SYSTEM.md` и
-  `STOIC_FEATURES.md` не содержат актуальных упоминаний брендового
-  лабиринта; второго файла нет в текущем репозитории.
+  10» не удалено, но явно отменено. `DESIGN_SYSTEM.md` и актуальный
+  `STOIC_FEATURES.md` не содержат упоминаний брендового лабиринта.
 - **Проверки:** `grep` по `MazeLogo` в `src/` и `public/`, lint, build и
   `git diff --check` — выполнить перед финальным handoff.
 
@@ -37,7 +36,8 @@ last_verified: 2026-09-10
 
 ## Performance-фикс 1/2 — Onest/JetBrains Mono self-hosted (из аудита этой сессии)
 
-- **Статус:** сделано, ждёт review владельца. Второй фикс (MazeLogo forced reflow) — следующий.
+- **Статус:** сделано, ждёт review владельца. Второй фикс по legacy-логотипу
+  выполнен в `MXL-BRAND-SYMBOL-BOOK-QUILL`.
 - **Причина:** performance-аудит трейсом Chrome DevTools подтвердил — внешний `@import` Google Fonts (без preconnect) давал 1280 из 1374мс LCP на dev-сборке; подтверждено, что тот же `@import` есть и в прод-CSS.
 - **Что сделано:** `@fontsource/onest` + `@fontsource/jetbrains-mono`, тот же паттерн, что уже у Manrope. Те же веса, что в исходном Google Fonts URL.
 - **Проверка:** прод-CSS — 0 внешних ссылок на fonts.googleapis/gstatic. Визуально (скриншот + getComputedStyle) — рендер не изменился. `check:core` зелёный.
