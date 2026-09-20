@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Flame, X } from 'lucide-react'
+import { Flame } from 'lucide-react'
 
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { buildSeriesViewModel } from '../lib/series'
+import BackButton from '../components/BackButton'
 import './SeriesBadges.css'
 
 function RewardIcon({ variant = 'locked', size = 110, className = '' }) {
@@ -313,14 +314,7 @@ export default function SeriesBadges({ user, onBack }) {
             Статистика
           </button>
         </div>
-        <button
-          type="button"
-          className="mx-path-close"
-          aria-label="Закрыть мой путь"
-          onClick={onBack}
-        >
-          <X size={28} strokeWidth={1.8} aria-hidden="true" />
-        </button>
+        <BackButton onClick={onBack} label="Сегодня" />
       </header>
       <main className="mx-path-scroll">
         {error && (
