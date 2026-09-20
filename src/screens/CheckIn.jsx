@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, ChevronLeft, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
+import { Check, ChevronLeft, Flame, Hand, ThumbsDown, ThumbsUp, X } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -24,6 +24,7 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { currentCheckinStreak } from '../lib/series'
 import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -386,7 +387,7 @@ export const SCALE_STEPS = [
   },
 ]
 
-export const MORNING_SCALE_STEPS = [SCALE_STEPS[1], SCALE_STEPS[0], SCALE_STEPS[3], SCALE_STEPS[2]]
+export const MORNING_SCALE_STEPS = [SCALE_STEPS[0], SCALE_STEPS[1]]
 
 export function CheckInScaleQuestion({ scale, value, onPick }) {
   return (
