@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Check, Settings2, X } from 'lucide-react'
 
 import SemanticGlyph from './SemanticGlyph'
@@ -11,7 +12,7 @@ import {
 } from '../lib/pinnedPracticesDataCache'
 
 function Sheet({ title, onClose, children, footer = null }) {
-  return (
+  const content = (
     <div
       className="mx-pinned-sheet-backdrop"
       role="presentation"
@@ -29,12 +30,19 @@ function Sheet({ title, onClose, children, footer = null }) {
       </section>
     </div>
   )
+
+  return typeof document === 'undefined' ? null : createPortal(content, document.body)
 }
 
 function PracticeGlyph({ practice }) {
   return (
     <span className="mx-pinned-practice-glyph" aria-hidden="true">
-      <SemanticGlyph kind={practice.kind} debugSource="PinnedPractices.jsx" />
+      <SemanticGlyph
+        kind={practice.kind}
+        animated={false}
+        highlighted={false}
+        debugSource="PinnedPractices.jsx"
+      />
     </span>
   )
 }
@@ -93,7 +101,9 @@ export default function PinnedPractices({ user, onOpenPractice }) {
   }
 
   function openPractice(practice) {
-    onOpenPractice?.(practice.sub)
+    // `sub` is the navigation contract. Keep `key` as a fallback so an old
+    // persisted pin cannot navigate to an empty screen after a catalog update.
+    onOpenPractice?.(practice.sub || practice.key)
   }
 
   return (
@@ -128,6 +138,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
               className="mx-pinned-practice-card"
               role="listitem"
               key={practice.key}
+              aria-label={`Открыть практику: ${practice.title}`}
               onClick={() => openPractice(practice)}
             >
               <PracticeGlyph practice={practice} />
@@ -163,6 +174,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
                   <button
                     type="button"
                     className="mx-pinned-practice-card__main"
+                    aria-label={`Открыть практику: ${practice.title}`}
                     onClick={() => openPractice(practice)}
                   >
                     <PracticeGlyph practice={practice} />
