@@ -358,6 +358,21 @@ export const api = {
           user_id: userId,
           order,
         }),
+    }),
+  },
+
+  pinnedPractices: {
+    list: userId => request(withQuery('/pinned-practices', { user_id: userId })),
+
+    add: (userId, practiceId) =>
+      request('/pinned-practices', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, practice_id: practiceId }),
+      }),
+
+    remove: (userId, practiceId) =>
+      request(withQuery(`/pinned-practices/${encodeURIComponent(practiceId)}`, { user_id: userId }), {
+        method: 'DELETE',
       }),
   },
 

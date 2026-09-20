@@ -17,6 +17,7 @@ import QuoteView from './QuoteView'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
+import PinnedPractices from '../components/PinnedPractices'
 import SeriesBadges from './SeriesBadges'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
@@ -928,6 +929,8 @@ export default function Today({
           <span className="mx-type-meta text-muted shrink-0">изменить</span>
         </button>
       )}
+
+      <PinnedPractices user={user} onOpenPractice={onOpenPractice} />
 
       {/* ======================================================
           ПУЛЬС
