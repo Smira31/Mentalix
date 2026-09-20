@@ -637,7 +637,7 @@ function Metric({ label, value, note, progress, children }) {
   )
 }
 
-export default function Analytics({ user, onGoCheckin }) {
+export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
   const [initialTrendsState] = useState(() => {
     if (!user) return null
 
@@ -780,49 +780,60 @@ export default function Analytics({ user, onGoCheckin }) {
         >
           прогресс.
         </h2>
-        {PROGRESS_LAYOUT_V2_ENABLED ? (
-          <div className="mx-progress-layout-v2__period-control">
+        <div className="flex items-center gap-2">
+          {onOpenHistory && (
             <button
               type="button"
               className="mx-progress-layout-v2__period-trigger mx-type-control"
-              aria-expanded={periodMenuOpen}
-              aria-controls="progress-period-menu"
-              onClick={() => setPeriodMenuOpen(value => !value)}
+              onClick={onOpenHistory}
             >
-              {days} дней
-              <span aria-hidden="true">⌄</span>
+              История
             </button>
-            {periodMenuOpen && (
-              <div
-                id="progress-period-menu"
-                className="mx-progress-layout-v2__period-menu"
-                role="menu"
-                aria-label="Период аналитики"
+          )}
+          {PROGRESS_LAYOUT_V2_ENABLED ? (
+            <div className="mx-progress-layout-v2__period-control">
+              <button
+                type="button"
+                className="mx-progress-layout-v2__period-trigger mx-type-control"
+                aria-expanded={periodMenuOpen}
+                aria-controls="progress-period-menu"
+                onClick={() => setPeriodMenuOpen(value => !value)}
               >
-                {ANALYTICS_PERIODS.map(period => (
-                  <button
-                    key={period}
-                    type="button"
-                    role="menuitemradio"
-                    aria-checked={days === period}
-                    onClick={() => {
-                      if (days !== period) {
-                        setLoading(true)
-                        setDays(period)
-                      }
-                      setPeriodMenuOpen(false)
-                    }}
-                  >
-                    <span>{period} дней</span>
-                    {days === period && <span aria-hidden="true">✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <span>{days} дней</span>
-        )}
+                {days} дней
+                <span aria-hidden="true">⌄</span>
+              </button>
+              {periodMenuOpen && (
+                <div
+                  id="progress-period-menu"
+                  className="mx-progress-layout-v2__period-menu"
+                  role="menu"
+                  aria-label="Период аналитики"
+                >
+                  {ANALYTICS_PERIODS.map(period => (
+                    <button
+                      key={period}
+                      type="button"
+                      role="menuitemradio"
+                      aria-checked={days === period}
+                      onClick={() => {
+                        if (days !== period) {
+                          setLoading(true)
+                          setDays(period)
+                        }
+                        setPeriodMenuOpen(false)
+                      }}
+                    >
+                      <span>{period} дней</span>
+                      {days === period && <span aria-hidden="true">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <span>{days} дней</span>
+          )}
+        </div>
       </header>
 
       {!PROGRESS_LAYOUT_V2_ENABLED && (

@@ -49,6 +49,7 @@ const MentalixChat = lazy(() => import('./screens/Mentalix'))
 const Profile = lazy(() => import('./screens/Profile'))
 const Settings = lazy(() => import('./screens/Settings'))
 const Library = lazy(() => import('./screens/Library'))
+const History = lazy(() => import('./screens/History'))
 
 // Opt-in (MOOD_CHECK_ENABLED_KEY по умолчанию '0') — большинство никогда
 // его не увидит, поэтому вне стартового bundle, в отличие от AppLock.
@@ -407,7 +408,7 @@ export default function App() {
   const initialReturnFlow = parseReturnFlow(platform.getStartParam?.())
   const initialTab = initialReturnFlow ? null : searchParams.get('tab')
   const initialAction = searchParams.get('action')
-  const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
+  const validTabs = ['today', 'practices', 'mentor', 'library', 'trends', 'history']
   const actionTab = initialAction === 'breathing' ? 'practices' : 'today'
   const initialTodaySub =
     initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
@@ -419,7 +420,7 @@ export default function App() {
   }, [tab])
 
   const bottomNavigationHidden =
-    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen || tab === 'history'
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return
@@ -1259,7 +1260,22 @@ export default function App() {
             MAIN TABS
            ====================================================== */}
 
-              {!overlay && (
+              {!overlay && user && tab === 'history' && (
+                <div className="w-full max-w-md px-5 animate-fade-in">
+                  <div className="flex min-h-[42px] items-center">
+                    <BackButton
+                      showInDemo
+                      onClick={() => {
+                        setTab('trends')
+                        scrollAppToTop()
+                      }}
+                    />
+                  </div>
+                  <History user={user} />
+                </div>
+              )}
+
+              {!overlay && tab !== 'history' && (
                 <>
                   {user && tab === 'today' && (
                     <Today
@@ -1301,6 +1317,11 @@ export default function App() {
                   {user && tab === 'trends' && (
                     <Analytics
                       user={user}
+                      onOpenHistory={() => {
+                        platform.haptic('light')
+                        setTab('history')
+                        scrollAppToTop()
+                      }}
                       onGoCheckin={() => {
                         platform.haptic('light')
 
