@@ -56,7 +56,9 @@ function DemoTodayHeader({ onOpenSettings, onOpenSeries }) {
         aria-label="Твой профиль"
         onClick={onOpenSettings}
       >
-        <UserRound aria-hidden="true" />
+        <span className="mx-demo-today-profile__avatar">
+          <UserRound aria-hidden="true" />
+        </span>
       </button>
     </div>
   )
