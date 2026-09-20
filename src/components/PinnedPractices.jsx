@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Check, PenLine, Settings2, X } from 'lucide-react'
+import { Check, Settings2, X } from 'lucide-react'
 
 import BackButton from './BackButton'
 import { api } from '../lib/api'
@@ -79,8 +79,12 @@ function PracticeGlyph({ practice }) {
   )
 }
 
+function normalizePinnedPractices(value) {
+  return Array.isArray(value) ? value : []
+}
+
 export default function PinnedPractices({ user, onOpenPractice }) {
-  const [pinned, setPinned] = useState(() => peekPinnedPractices(user.id) || [])
+  const [pinned, setPinned] = useState(() => normalizePinnedPractices(peekPinnedPractices(user.id)))
   const [loading, setLoading] = useState(() => !peekPinnedPractices(user.id))
   const [error, setError] = useState(false)
   const [sheet, setSheet] = useState(null)
@@ -90,7 +94,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
     let active = true
     fetchPinnedPractices(user.id)
       .then(items => {
-        if (active) setPinned(items)
+        if (active) setPinned(normalizePinnedPractices(items))
       })
       .catch(() => {
         if (active) setError(true)
@@ -187,14 +191,6 @@ export default function PinnedPractices({ user, onOpenPractice }) {
           onClose={() => setSheet(null)}
           footer={
             <div className="mx-pinned-sheet__footer-actions">
-              <button
-                type="button"
-                className="mx-pinned-practices__create-entry"
-                onClick={() => setSheet('library')}
-              >
-                <PenLine size={15} aria-hidden="true" />
-                <span>Создать свои практики</span>
-              </button>
               <button
                 type="button"
                 className="cta-pill mx-type-flow-action w-full"

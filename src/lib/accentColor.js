@@ -13,12 +13,24 @@ export const DARK_ACCENT_COLORS = {
     label: 'Серый',
     hex: '#C8C8C8',
   },
+  azure: {
+    label: 'Лазурный',
+    hex: '#6FB7E0',
+  },
 }
 
 export const LIGHT_ACCENT_COLORS = {
   sage: {
     label: 'Графитовый',
     hex: '#484848',
+  },
+  graphite: {
+    label: 'Чёрный графитовый',
+    hex: '#1F1F1F',
+  },
+  mint: {
+    label: 'Мятный',
+    hex: '#96CDB0',
   },
 }
 
