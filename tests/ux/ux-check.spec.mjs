@@ -77,6 +77,7 @@ const FIXTURES = {
   },
   settings: { review_hour: 24 },
   pulse: { active_today: 12 },
+  pinnedPractices: [],
   articles: [
     {
       id: 1,
@@ -129,6 +130,7 @@ function fixtureFor(request) {
   if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
+  if (pathname === '/api/pinned-practices') return jsonResponse(FIXTURES.pinnedPractices)
   if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
   if (pathname === '/api/analytics') return jsonResponse(FIXTURES.analytics)
   if (pathname === '/api/mentalix/consent') return jsonResponse({ context_consent: false })
