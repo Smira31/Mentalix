@@ -451,18 +451,15 @@ test('локальный UX smoke по основному маршруту', asy
       results,
       check: async () => {
         await assertClickable(page.getByRole('button', { name: 'Закрыть' }))
-        await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
       },
     })
 
-    // Scale answers auto-advance to the next question. Keep labels aligned
-    // with MORNING_SCALE_STEPS: energy, mood, focus, then noise.
-    for (const option of ['Средне', 'Нормально', 'Держусь', 'Заметно']) {
+    // Scale answers auto-advance to the next question: mood, then energy.
+    for (const option of ['Нормально', 'Средне']) {
       await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
       await page.waitForTimeout(320)
     }
-    await page.getByRole('button', { name: 'ровно' }).click()
-    await page.getByRole('button', { name: 'Дальше' }).click()
     await captureScreen({
       page,
       viewport,
@@ -476,7 +473,7 @@ test('локальный UX smoke по основному маршруту', asy
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
         await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
-        await assertClickable(page.getByRole('button', { name: 'Завершить чек-ин' }))
+        await assertClickable(page.getByRole('button', { name: 'Далее' }))
       },
     })
     await page.waitForTimeout(650)
