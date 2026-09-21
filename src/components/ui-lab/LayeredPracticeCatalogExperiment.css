@@ -1368,6 +1368,15 @@
 .mx-production-catalog .mx-layered-catalog__collection[data-collection-key='psychological'] {
   text-align: center;
 }
+.mx-production-catalog .mx-layered-catalog__collection[data-collection-key='psychological'] strong {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  font-size: 16px;
+  letter-spacing: -0.04em;
+  overflow-wrap: break-word;
+}
 .mx-production-catalog .mx-layered-category {
   padding-top: max(14px, var(--app-safe-top, env(safe-area-inset-top, 0px)));
   gap: 20px;
