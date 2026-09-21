@@ -280,6 +280,52 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
     setDistraction(key)
   }
 
+  function handleBack() {
+    platform.haptic('light')
+
+    if (step === 'intro') {
+      onClose()
+      return
+    }
+
+    if (step === 'task') {
+      setStep('intro')
+      return
+    }
+
+    if (step === 'feeling') {
+      setStep('task')
+      return
+    }
+
+    if (step === 'release') {
+      setStep('feeling')
+      return
+    }
+
+    if (step === 'plan') {
+      if (distraction) {
+        setDistraction(null)
+        return
+      }
+      setStep('release')
+      return
+    }
+
+    if (step === 'run') {
+      setEndsAt(null)
+      setStep('plan')
+      return
+    }
+
+    if (step === 'outcome') {
+      setStep('run')
+      return
+    }
+
+    setStep('outcome')
+  }
+
   function startRun() {
     platform.haptic('medium')
     finishedRef.current = false
@@ -322,7 +368,7 @@ export default function ProcrastinationFlow({ userId, onClose, onComplete }) {
       <div
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
       >
-        <BackButton onClick={onClose} />
+        <BackButton onClick={handleBack} />
       </div>
 
       <div ref={sceneScrollRef} className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>

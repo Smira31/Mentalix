@@ -201,6 +201,48 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
     setStep('plan')
   }
 
+  function handleBack() {
+    platform.haptic('light')
+
+    if (step === 'intro') {
+      onClose()
+      return
+    }
+
+    if (step === 'dump') {
+      setStep('intro')
+      return
+    }
+
+    if (step === 'pick') {
+      setStep('dump')
+      return
+    }
+
+    if (step === 'release') {
+      setStep('pick')
+      return
+    }
+
+    if (step === 'plan') {
+      setStep('release')
+      return
+    }
+
+    if (step === 'run') {
+      setEndsAt(null)
+      setStep('plan')
+      return
+    }
+
+    if (step === 'outcome') {
+      setStep('run')
+      return
+    }
+
+    setStep('outcome')
+  }
+
   function startRun() {
     if (!plan.trim()) return
 
@@ -245,7 +287,7 @@ export default function NarrowFocusFlow({ userId, onClose, onComplete }) {
       <div
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
       >
-        <BackButton onClick={onClose} />
+        <BackButton onClick={handleBack} />
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>
