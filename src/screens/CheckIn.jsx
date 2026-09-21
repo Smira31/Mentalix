@@ -149,7 +149,14 @@ export function CheckInQuestion({
   )
 }
 
-function DemoCheckInFlow({ user, onDone }) {
+/*
+ * Morning flow shared by production and preview.
+ *
+ * The preview-specific part lives outside this component: App supplies
+ * DEMO_USER and api.js intercepts requests only when isPreviewDemoMode() is
+ * true. The screens, transitions and editor must not diverge by environment.
+ */
+function MorningCheckInFlow({ user, onDone }) {
   const [step, setStep] = useState(0)
   const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
   const [note, setNote] = useState('')
@@ -1537,10 +1544,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 }
 
 function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
-  const previewDemoMode = isPreviewDemoMode()
-
-  if (previewDemoMode && mode !== 'evening') {
-    return <DemoCheckInFlow user={user} onDone={onDone} />
+  if (mode !== 'evening') {
+    return <MorningCheckInFlow user={user} onDone={onDone} />
   }
 
   return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} />
