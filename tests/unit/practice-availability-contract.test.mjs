@@ -7,6 +7,7 @@ const source = await readFile(
   'utf8'
 )
 
-test('MXL-525 (G6): brain/breathing/focus признаны доступными', () => {
-  assert.match(source, /PRACTICE_KEYS\.brain,\s*\n\s*PRACTICE_KEYS\.breathing,\s*\n\s*PRACTICE_KEYS\.focus/)
+test('MXL-525: brain/breathing доступны, Focus закрыт до пересмотра дизайна', () => {
+  assert.match(source, /PRACTICE_KEYS\.brain,\s*\n\s*PRACTICE_KEYS\.breathing,/)
+  assert.doesNotMatch(source, /PRACTICE_KEYS\.breathing,[\s\S]*PRACTICE_KEYS\.focus,\s*\n\s*\]\)/)
 })
