@@ -494,8 +494,8 @@ test('локальный UX smoke по основному маршруту', asy
     const draftDialog = page.locator(
       '[role="dialog"][aria-labelledby="checkin-draft-dialog-title"]'
     )
-    await expect(draftDialog).toBeVisible()
-    await draftDialog.getByRole('button', { name: 'Закрыть' }).click()
+    await expect(draftDialog).toHaveCount(0)
+    await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
     await captureScreen({
