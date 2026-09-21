@@ -4,7 +4,7 @@
 
 This change makes the existing expanded morning Check-In visual flow the default non-evening entry point. The legacy `CheckInCore` implementation is intentionally retained: it remains the evening review implementation and provides a rollback path without deleting the previous code.
 
-The source audit is [STOIC_SETTINGS_AUDIT.md](./STOIC_SETTINGS_AUDIT.md) from PR [#727](https://github.com/Smira31/Mentalix/pull/727). That audit confirms that the relevant work is in the Check-In/demo routes and that the preview flow was previously entered through `?demo=1` or `?source=pwa`.
+The source audit is [STOIC_SETTINGS_AUDIT.md](https://github.com/Smira31/Mentalix/blob/main/docs/audit/STOIC_SETTINGS_AUDIT.md) from PR [#727](https://github.com/Smira31/Mentalix/pull/727). That audit confirms that the relevant work is in the Check-In/demo routes and that the preview flow was previously entered through `?demo=1` or `?source=pwa`.
 
 ## What is now default
 
