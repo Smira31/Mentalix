@@ -36,15 +36,14 @@ test('allowlist сохраняет доступные практики и акт
     'narrow-focus',
     'one-finish',
     // Meditation: product decision 2026-09-19 - not ready; "Скоро" in catalog.
-    // MXL-525 G6: brain/breathing/focus признаны доступными.
+    // MXL-525 G6: brain/breathing доступны; Focus закрыт до пересмотра дизайна.
     'brain',
     'breathing',
-    'focus',
   ])
 
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.brain), true)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.breathing), true)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.focus), true)
+  assert.equal(isPracticeAvailable(PRACTICE_KEYS.focus), false)
   assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), false)
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
