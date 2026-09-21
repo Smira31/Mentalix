@@ -480,7 +480,9 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.getByRole('button', { name: 'Далее' }))
       },
     })
-    const checkinBackButton = page.getByRole('button', { name: 'Назад' })
+    // После editor-шага общий BackButton использует label «Сегодня»;
+    // на остальных состояниях flow сохраняется label «Назад».
+    const checkinBackButton = page.getByRole('button', { name: /^(Назад|Сегодня)$/ })
     await expect(checkinBackButton).toBeVisible()
     await expect(checkinBackButton).toBeEnabled()
     await checkinBackButton.click()
