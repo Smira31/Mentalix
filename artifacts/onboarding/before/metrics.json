@@ -1,0 +1,344 @@
+[
+  {
+    "viewport": "320x568",
+    "step": "intro",
+    "metrics": {
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "document": {
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "body": {
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 568,
+        "height": 568,
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 568,
+        "height": 460,
+        "scrollHeight": 460,
+        "clientHeight": 460,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": 90,
+        "bottom": 550,
+        "height": 460
+      }
+    }
+  },
+  {
+    "viewport": "320x568",
+    "step": "age",
+    "metrics": {
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "document": {
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "body": {
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 568,
+        "height": 568,
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 568,
+        "height": 460,
+        "scrollHeight": 584,
+        "clientHeight": 460,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": -16,
+        "bottom": 568.375,
+        "height": 584.375
+      }
+    }
+  },
+  {
+    "viewport": "320x568",
+    "step": "reminder",
+    "metrics": {
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "document": {
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "body": {
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 568,
+        "height": 568,
+        "scrollHeight": 568,
+        "clientHeight": 568
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 568,
+        "height": 460,
+        "scrollHeight": 586,
+        "clientHeight": 460,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": -9,
+        "bottom": 576.625,
+        "height": 585.625
+      }
+    }
+  },
+  {
+    "viewport": "375x812",
+    "step": "intro",
+    "metrics": {
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "document": {
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "body": {
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 812,
+        "height": 812,
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 812,
+        "height": 704,
+        "scrollHeight": 704,
+        "clientHeight": 704,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": 90,
+        "bottom": 794,
+        "height": 704
+      }
+    }
+  },
+  {
+    "viewport": "375x812",
+    "step": "age",
+    "metrics": {
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "document": {
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "body": {
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 812,
+        "height": 812,
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 812,
+        "height": 704,
+        "scrollHeight": 704,
+        "clientHeight": 704,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": 108,
+        "bottom": 812,
+        "height": 704
+      }
+    }
+  },
+  {
+    "viewport": "375x812",
+    "step": "reminder",
+    "metrics": {
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "document": {
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "body": {
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 812,
+        "height": 812,
+        "scrollHeight": 812,
+        "clientHeight": 812
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 812,
+        "height": 704,
+        "scrollHeight": 704,
+        "clientHeight": 704,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": 108,
+        "bottom": 812,
+        "height": 704
+      }
+    }
+  },
+  {
+    "viewport": "390x844",
+    "step": "intro",
+    "metrics": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "document": {
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "body": {
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 844,
+        "height": 844,
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 844,
+        "height": 736,
+        "scrollHeight": 736,
+        "clientHeight": 736,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": 90,
+        "bottom": 826,
+        "height": 736
+      }
+    }
+  },
+  {
+    "viewport": "390x844",
+    "step": "age",
+    "metrics": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "document": {
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "body": {
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 844,
+        "height": 844,
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 844,
+        "height": 736,
+        "scrollHeight": 736,
+        "clientHeight": 736,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": 108,
+        "bottom": 844,
+        "height": 736
+      }
+    }
+  },
+  {
+    "viewport": "390x844",
+    "step": "reminder",
+    "metrics": {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "document": {
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "body": {
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "surface": {
+        "top": 0,
+        "bottom": 844,
+        "height": 844,
+        "scrollHeight": 844,
+        "clientHeight": 844
+      },
+      "scrollArea": {
+        "top": 108,
+        "bottom": 844,
+        "height": 736,
+        "scrollHeight": 736,
+        "clientHeight": 736,
+        "overflow": "auto"
+      },
+      "content": {
+        "top": 108,
+        "bottom": 844,
+        "height": 736
+      }
+    }
+  }
+]

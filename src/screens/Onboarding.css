@@ -72,6 +72,51 @@
   transform: scale(0.985);
 }
 
+/*
+ * The fullscreen surface reserves Telegram's header controls before laying
+ * out the scroll area. On a 320x568 viewport the regular rhythm is taller
+ * than the remaining 460px, so these static question screens become
+ * scrollable. Keep the normal rhythm on larger phones and compact only the
+ * low-height range where the content must fit in one frame.
+ */
+@media (max-height: 600px) {
+  .mx-onboarding-question-step {
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  .mx-onboarding-question-step > h2 + p {
+    margin-top: 8px;
+    margin-bottom: 16px;
+  }
+
+  .mx-onboarding-option-list > * + *,
+  .mx-onboarding-reminder-list > * + * {
+    margin-top: 6px;
+  }
+
+  .mx-onboarding-option,
+  .mx-onboarding-reminder {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .mx-onboarding-reminder {
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  .mx-onboarding-question-step > p:last-of-type {
+    margin-top: 12px;
+  }
+
+  .mx-onboarding-question-step > .cta-pill {
+    margin-top: 16px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+}
+
 .mx-onboarding-plan-card {
   opacity: 0.34;
   transform: translate3d(0, 7px, 0);
