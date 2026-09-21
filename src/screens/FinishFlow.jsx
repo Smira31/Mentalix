@@ -206,6 +206,48 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
     setStep('finish')
   }
 
+  function handleBack() {
+    platform.haptic('light')
+
+    if (step === 'intro') {
+      onClose()
+      return
+    }
+
+    if (step === 'project') {
+      setStep('intro')
+      return
+    }
+
+    if (step === 'state') {
+      setStep('project')
+      return
+    }
+
+    if (step === 'reframe') {
+      setStep('state')
+      return
+    }
+
+    if (step === 'finish') {
+      setStep('reframe')
+      return
+    }
+
+    if (step === 'run') {
+      setEndsAt(null)
+      setStep('finish')
+      return
+    }
+
+    if (step === 'outcome') {
+      setStep('run')
+      return
+    }
+
+    setStep('outcome')
+  }
+
   function startRun() {
     if (!finish.trim()) return
 
@@ -250,7 +292,7 @@ export default function FinishFlow({ userId, onClose, onComplete }) {
       <div
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
       >
-        <BackButton onClick={onClose} />
+        <BackButton onClick={handleBack} />
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body`}>

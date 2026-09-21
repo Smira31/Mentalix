@@ -48,6 +48,40 @@ test('allowlist сохраняет доступные практики и акт
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
 
+test('fullscreen practice flows keep BackButton inside the flow after intro', () => {
+  const flowCases = [
+    {
+      file: 'ProcrastinationFlow.jsx',
+      steps: ['task', 'feeling', 'release', 'plan', 'run', 'outcome'],
+    },
+    {
+      file: 'NarrowFocusFlow.jsx',
+      steps: ['dump', 'pick', 'release', 'plan', 'run', 'outcome'],
+    },
+    {
+      file: 'FinishFlow.jsx',
+      steps: ['project', 'state', 'reframe', 'finish', 'run', 'outcome'],
+    },
+  ]
+
+  for (const { file, steps } of flowCases) {
+    const flow = readFileSync(new URL(`../../src/screens/${file}`, import.meta.url), 'utf8')
+    assert.match(flow, /function handleBack\(\)/, `${file} must define a local back handler`)
+    assert.match(flow, /if \(step === 'intro'\) \{[\s\S]*?onClose\(\)/, `${file} closes only from intro`)
+    assert.match(flow, /<BackButton onClick=\{handleBack\} \/>/, `${file} wires BackButton to handleBack`)
+
+    for (const step of steps) {
+      assert.match(flow, new RegExp(`if \\(step === '${step}'\\)`), `${file} handles ${step} back`)
+    }
+
+    assert.doesNotMatch(
+      flow,
+      /<BackButton onClick=\{onClose\} \/>/,
+      `${file} must not close the flow from every step`
+    )
+  }
+})
+
 test('MXL-014 публикует короткую текстовую медитацию без backend changes', () => {
   const flow = readFileSync(
     new URL('../../src/screens/MeditationFlow.jsx', import.meta.url),
