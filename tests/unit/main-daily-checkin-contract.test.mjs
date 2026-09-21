@@ -39,3 +39,30 @@ test('seeded demo state remains opt-in and isolated in the API wrapper', () => {
   assert.match(demoModeSource, /return \(\s*\(demoRequested \|\| pwaDemoRequested\)/s)
   assert.match(apiSource, /if \(isPreviewDemoMode\(\)\) return demoRequest\(path, options\)/)
 })
+
+test('morning flow keeps the visual viewport height when the keyboard opens', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /const \{ style: viewportStyle \} = useFullscreenSurface\(\)/)
+  assert.match(morningFlow, /const demoSurfaceStyle = \{[\s\S]*\.\.\.viewportStyle[\s\S]*paddingTop: 0/)
+  assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
+})
+
+test('morning completion uses design-system SVG art instead of the raster bird', () => {
+  assert.match(checkinSource, /function CheckInCompletionArt\(\)/)
+  assert.match(checkinSource, /<CheckInCompletionArt \/>/)
+  assert.match(checkinSource, /rgb\(var\(--c-(text|gold|muted|bg)\)\)/)
+  assert.doesNotMatch(checkinSource, /checkin-bird-reference\.png/)
+})
+
+test('morning streak screen uses the shared Telegram BackButton and sprout flower', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /<BackButton onClick=\{handleBack\} label="Сегодня" \/>/)
+  assert.match(checkinSource, /function StreakFlower\(\)/)
+  assert.match(checkinSource, /stroke="rgb\(var\(--c-gold\)\)"/)
+})

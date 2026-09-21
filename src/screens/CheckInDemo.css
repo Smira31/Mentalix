@@ -220,8 +220,10 @@
   margin-bottom: auto;
 }
 .mx-demo-checkin__body.is-editor {
-  overflow: hidden;
+  min-height: 0;
+  overflow-y: auto;
   overscroll-behavior: none;
+  padding-top: 8px;
 }
 
 .mx-demo-checkin__scene {
@@ -388,9 +390,10 @@
   font-size: 13px;
 }
 .mx-demo-checkin__editor-scene {
+  flex: 1 1 auto;
   width: 100%;
-  min-height: 100%;
-  margin-top: 8px;
+  min-height: 0;
+  margin-top: 0;
   overflow: hidden;
   text-align: left;
 }
