@@ -106,25 +106,58 @@ function buildStreakDays(streakHistory, streak) {
 function StreakFlower() {
   return (
     <svg
-      width="128"
-      height="128"
-      viewBox="0 0 128 128"
+      width="112"
+      height="112"
+      viewBox="0 0 112 112"
       fill="none"
       aria-hidden="true"
       className="mb-7"
     >
-      <g strokeWidth="3" strokeLinecap="round">
-        {Array.from({ length: 6 }, (_, index) => (
-          <path
-            key={index}
-            d="M64 52C52 42 54 27 64 18C74 27 76 42 64 52Z"
-            transform={`rotate(${index * 60} 64 64)`}
-            className={index === 0 ? 'stroke-gold' : 'stroke-cream/40'}
-          />
-        ))}
-      </g>
-      <circle cx="64" cy="64" r="13" className="fill-gold" />
-      <circle cx="64" cy="64" r="5" className="fill-emerald-deep" />
+      <path d="M56 91V58" stroke="rgb(var(--c-gold))" strokeWidth="3" strokeLinecap="round" />
+      <path d="M56 70C42 71 34 63 36 52C47 51 56 58 56 70Z" fill="rgb(var(--c-gold))" />
+      <path d="M56 59C57 45 66 37 78 39C79 51 70 59 56 59Z" fill="rgb(var(--c-text))" />
+      <path d="M56 78C65 70 75 71 82 79C74 88 64 87 56 78Z" fill="rgb(var(--c-muted))" />
+    </svg>
+  )
+}
+
+function CheckInCompletionArt() {
+  return (
+    <svg
+      viewBox="0 0 120 136"
+      role="img"
+      aria-label="Птица с пером и карандашом"
+      className="mx-demo-checkin__bird"
+      fill="none"
+    >
+      <path
+        d="M41 62c4-11 14-18 27-19 11-1 20 3 27 11-8 12-23 18-37 15-8-1-14-4-17-7Z"
+        fill="rgb(var(--c-text))"
+      />
+      <path d="M93 52 105 57l-13 4" fill="rgb(var(--c-text))" />
+      <path d="M69 43c-3-13 2-25 14-32 8 13 5 27-7 35" fill="rgb(var(--c-text))" />
+      <circle cx="82" cy="17" r="3" fill="rgb(var(--c-bg))" />
+      <path
+        d="M57 53c10-7 20-8 30-3"
+        stroke="rgb(var(--c-bg))"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path d="M24 83 91 70l6 12-68 15-9-7 4-7Z" fill="rgb(var(--c-text))" />
+      <path d="m91 70 12 6-6 6-6-12Z" fill="rgb(var(--c-gold))" />
+      <path d="m29 97 14 4-19 8 5-12Z" fill="rgb(var(--c-muted))" />
+      <path
+        d="M32 108c11 1 24 5 38 13"
+        stroke="rgb(var(--c-text))"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M39 107c13 2 25 6 36 13"
+        stroke="rgb(var(--c-text))"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -168,8 +201,6 @@ function MorningCheckInFlow({ user, onDone }) {
   const { style: viewportStyle } = useFullscreenSurface()
   const demoSurfaceStyle = {
     ...viewportStyle,
-    top: 0,
-    height: '100%',
     paddingTop: 0,
     paddingBottom: 0,
   }
@@ -188,11 +219,6 @@ function MorningCheckInFlow({ user, onDone }) {
 
     setStep(current => Math.max(0, current - 1))
   }
-
-  useEffect(() => {
-    const bird = new Image()
-    bird.src = '/checkin-bird-reference.png'
-  }, [])
 
   function pick(key, level) {
     platform.haptic('light')
@@ -255,7 +281,7 @@ function MorningCheckInFlow({ user, onDone }) {
   return createPortal(
     <div className="mx-demo-checkin" style={demoSurfaceStyle}>
       <header className="mx-demo-checkin__header">
-        <BackButton onClick={handleBack} />
+        <BackButton onClick={handleBack} label="Сегодня" />
       </header>
 
       <main className={`mx-demo-checkin__body ${step === noteStep ? 'is-editor' : ''}`}>
@@ -297,12 +323,7 @@ function MorningCheckInFlow({ user, onDone }) {
 
         {step === doneStep && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-            <img
-              src="/checkin-bird-reference.png"
-              alt=""
-              className="mx-demo-checkin__bird"
-              fetchpriority="high"
-            />
+            <CheckInCompletionArt />
             <p className="mx-demo-checkin__complete-eyebrow">ЧЕК-ИН ЗАВЕРШЁН</p>
             <h1>Ты сохранил главное.</h1>
             <p>Ответы останутся в сегодняшнем цикле. К ним можно вернуться позже.</p>
