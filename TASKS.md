@@ -4548,5 +4548,3 @@ rituals_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`
 Follow-up MXL-HOME-QUIET-V2-002 добавляет 10px воздуха после последнего контента перед fixed-навигацией и делает active-состояние CTA различимым через спокойное изменение поверхности и внутренний контур. Добавлен regression-контракт в `tests/unit/maintenance-contracts.test.mjs`. Design note: `docs/product/MXL-HOME-TYPE-FOUNDATION-001_DESIGN.md`.
 
 Scope не включает backend, cloud sync, AI consent, новую вкладку, proprietary Stoic assets, tags, search или изменение смысла существующих flows. CI/Vercel и повторный Telegram/iPhone gate пройдены; следующий decision gate — merge PR #241 в `main`.
-
-- Известный некритичный visual test debt: обновить stale snapshots `08-trends` для `320x568`/`375x812` и `03b-journal-intro` для `390x844`/`430x932`.
