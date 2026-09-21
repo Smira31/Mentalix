@@ -192,7 +192,7 @@ export default function Onboarding({ user, onFinish }) {
         {step === 1 && (
           <div
             key="s1"
-            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
             <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Что сейчас важнее всего?
@@ -200,7 +200,7 @@ export default function Onboarding({ user, onFinish }) {
             <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
               Ответы соберут приложение под твои задачи. Можно выбрать несколько.
             </p>
-            <div className="space-y-2.5">
+            <div className="mx-onboarding-option-list space-y-2.5">
               {FOCUS_OPTIONS.map(o => (
                 <Option
                   key={o.key}
@@ -233,7 +233,7 @@ export default function Onboarding({ user, onFinish }) {
         {step === 2 && (
           <div
             key="s2"
-            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
             <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Сколько тебе лет?
@@ -241,7 +241,7 @@ export default function Onboarding({ user, onFinish }) {
             <p className="text-[13px] text-muted mt-3 mb-7 text-center leading-snug">
               Чтобы говорить с тобой на одном языке.
             </p>
-            <div className="space-y-2.5">
+            <div className="mx-onboarding-option-list space-y-2.5">
               {AGE_OPTIONS.map(a => (
                 <Option
                   key={a}
@@ -269,7 +269,7 @@ export default function Onboarding({ user, onFinish }) {
         {step === 3 && (
           <div
             key="s3"
-            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
             <h2 className="font-display text-[22px] text-cream text-center leading-tight">
               Когда напомнить о себе?
@@ -279,7 +279,7 @@ export default function Onboarding({ user, onFinish }) {
               спам.
             </p>
 
-            <div className="space-y-2.5">
+            <div className="mx-onboarding-reminder-list space-y-2.5">
               {REMINDER_OPTIONS.map(r => {
                 const on = reminder === r.key
                 return (
@@ -330,7 +330,7 @@ export default function Onboarding({ user, onFinish }) {
         {step === 4 && (
           <div
             key="s4"
-            className="mx-onboarding-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
+            className="mx-onboarding-step mx-onboarding-question-step flex-1 w-full max-w-md flex flex-col justify-center px-6 py-8"
           >
             <h2 className="font-display text-[24px] text-cream text-center leading-tight">
               Готово. Путь размечен.
