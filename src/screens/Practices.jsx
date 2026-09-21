@@ -27,6 +27,33 @@ import NarrowFocusFlow from './NarrowFocusFlow'
 import FinishFlow from './FinishFlow'
 import ThemeScreen from './ThemeScreen'
 
+function PracticesCatalogLoading() {
+  return (
+    /* Loading state uses role="status" aria-live="polite" for screen readers. */
+    <div
+      className="mx-practices-catalog-shell mx-practices-catalog-shell--loading w-full max-w-md px-5"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
+        <span aria-hidden="true" />
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
+        <span aria-hidden="true" />
+      </div>
+      <div className="mx-practices-catalog-loading" aria-hidden="true">
+        <span className="mx-practices-catalog-loading__hero" />
+        <span className="mx-practices-catalog-loading__label" />
+        <div className="mx-practices-catalog-loading__rail">
+          <span />
+          <span />
+          <span />
+        </div>
+      </div>
+      <span className="sr-only">Загружаю практики…</span>
+    </div>
+  )
+}
+
 export default function Practices({ user, initialSub = null, onGameChange, onRegisterBack }) {
   const [sub, setSub] = useState(initialSub)
   const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
@@ -263,12 +290,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   }
 
   if (isLoading) {
-    return (
-      <div className="w-full max-w-md px-5" role="status" aria-live="polite">
-        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
-        <p className="mt-6 text-[13px] leading-relaxed text-muted">Загружаю практики…</p>
-      </div>
-    )
+    return <PracticesCatalogLoading />
   }
 
   if (loadError) {

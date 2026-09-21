@@ -1590,3 +1590,61 @@
 .mx-practice-flow--guided .mx-practice-flow__completion > .cta-pill {
   margin-top: auto;
 }
+
+/* Keep the first frame's catalog geometry identical while Practices data loads. */
+.mx-practices-catalog-shell--loading {
+  min-height: 760px;
+}
+.mx-practices-catalog-loading {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+  pointer-events: none;
+}
+.mx-practices-catalog-loading__hero {
+  display: block;
+  min-height: 190px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 28px;
+  background: linear-gradient(
+    110deg,
+    rgb(var(--c-card2)) 25%,
+    rgb(var(--c-card)) 37%,
+    rgb(var(--c-card2)) 63%
+  );
+  background-size: 400% 100%;
+  animation: mx-practices-loading-shimmer 1.8s ease-in-out infinite;
+}
+.mx-practices-catalog-loading__label {
+  display: block;
+  width: 150px;
+  height: 12px;
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+}
+.mx-practices-catalog-loading__rail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.mx-practices-catalog-loading__rail span {
+  display: block;
+  min-height: 252px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 22px;
+  background: rgb(var(--c-card));
+}
+@keyframes mx-practices-loading-shimmer {
+  0%,
+  100% {
+    background-position: 100% 0;
+  }
+  50% {
+    background-position: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mx-practices-catalog-loading__hero {
+    animation: none;
+  }
+}
