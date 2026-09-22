@@ -168,9 +168,9 @@ test.describe('MXL-010 automated technical gate', () => {
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
 
     await page.getByRole('button', { name: 'Вернуться в Сегодня' }).click()
-    await expect(page.getByRole('button', { name: 'Разобрать день' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Открыть вечерний разбор' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Разобрать день' }).click()
+    await page.getByRole('button', { name: 'Открыть вечерний разбор' }).click()
     await expect(page.getByRole('heading', { name: 'Что ближе всего?' })).toBeVisible()
     await page.getByRole('button', { name: 'ровно' }).click()
     await page.getByRole('button', { name: 'Дальше' }).click()
