@@ -72,8 +72,8 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
         ${demoMode && collapsed ? 'mx-demo-bottom-nav--collapsed' : ''}
       `}
       style={{
-        left: 'max(20px, var(--app-safe-left))',
-        right: 'max(20px, var(--app-safe-right))',
+        left: 'max(var(--bottom-nav-edge), var(--app-safe-left))',
+        right: 'max(var(--bottom-nav-edge), var(--app-safe-right))',
         // The panel itself sits directly above the system safe area. The
         // content reserve remains separate, so other screens keep their
         // existing clearance from the fixed navigation.
@@ -109,7 +109,9 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           will-change-[width,height,border-radius,transform]
         "
         style={{
-          width: collapsed ? 'var(--bottom-nav-collapsed-size)' : 'calc(100vw - 40px)',
+          width: collapsed
+            ? 'var(--bottom-nav-collapsed-size)'
+            : 'calc(100vw - (2 * var(--bottom-nav-edge)))',
 
           maxWidth: collapsed ? 'var(--bottom-nav-collapsed-size)' : '400px',
 
@@ -198,6 +200,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                   'justify-center',
                   'gap-[2px]',
                   'active:scale-95',
+                  item.key === 'library' ? 'mx-bottom-nav-library' : '',
                   active ? 'bg-[rgb(var(--c-border))]' : '',
                 ].join(' ')}
                 style={{

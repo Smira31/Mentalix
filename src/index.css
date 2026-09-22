@@ -93,6 +93,7 @@
   --bottom-nav-height: 53px;
   --bottom-nav-collapsed-size: 58px;
   --bottom-nav-offset: 8px;
+  --bottom-nav-edge: 20px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
   --bottom-nav-content-gap: 46px;
   --app-content-bottom: calc(
@@ -992,13 +993,19 @@ button {
   font-size: 0.75rem;
   line-height: 1.2;
   font-weight: 500;
-  transform: scaleX(0.95);
-  transform-origin: center;
 }
 
-@media (max-width: 360px) {
+.mx-bottom-nav-library {
+  min-width: max-content;
+}
+
+@media (max-width: 374px) {
+  :root {
+    --bottom-nav-edge: 8px;
+  }
+
   .mx-type-tab {
-    transform: scaleX(0.8);
+    font-size: var(--mx-type-meta-size);
   }
 }
 

@@ -4,7 +4,7 @@
 }
 
 .mx-demo-bottom-nav > div {
-  width: calc(100vw - 40px) !important;
+  width: calc(100vw - (2 * var(--bottom-nav-edge))) !important;
   max-width: 400px !important;
   height: var(--bottom-nav-height) !important;
   border: 1px solid rgb(var(--c-border)) !important;
@@ -29,6 +29,10 @@
   border-radius: var(--mx-radius-pill);
 }
 
+.mx-demo-bottom-nav > div nav button.mx-bottom-nav-library {
+  min-width: max-content;
+}
+
 .mx-demo-bottom-nav > div nav button[class*='bg-'] {
   background: rgb(var(--c-border)) !important;
 }
@@ -49,6 +53,12 @@
 .mx-demo-bottom-nav > div nav button[class*='bg-'] span {
   color: rgb(var(--c-text)) !important;
   font-weight: 500;
+}
+
+@media (max-width: 374px) {
+  .mx-demo-bottom-nav > div nav button span {
+    font-size: var(--mx-type-meta-size);
+  }
 }
 
 [data-mentalix-demo-frame='true'][data-demo-tab='practices'] .mx-layered-catalog__journal-hero {
