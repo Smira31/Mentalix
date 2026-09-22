@@ -771,14 +771,10 @@ test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero пе�
   assert.ok(heroIndex < secondaryIndex)
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
   assert.match(today, /mx-today-primary-card/)
-  assert.match(
-    today,
-    /data-complete=\{heroPresentationState === 'allDone' \|\| heroPresentationState === 'dayClosed'\}/
-  )
-  assert.match(
-    today,
-    /heroPresentationState !== 'allDone'\s+&&\s+heroPresentationState !== 'dayClosed'/
-  )
+  assert.match(today, /data-complete=\{checkinDone\}/)
+  assert.match(today, /checkinAsHero \? heroCheckinContent : heroContentByState\.checkinDone/)
+  assert.match(today, /changeSub\('checkinRecap'\)/)
+  assert.match(today, /checkin\.mood/)
   assert.match(today, /mx-today-hero-breath/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
   assert.match(today, /mx-today-affirmation-card/)
