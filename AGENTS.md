@@ -2,7 +2,9 @@
 status: historical
 last_verified: 2026-09-11
 ---
+
 # AGENTS.md
+
 Точка входа по документации: [`docs/INDEX.md`](docs/INDEX.md).
 
 Guidance for AI coding agents (Codex, Claude Code, and others) working in this
@@ -46,6 +48,26 @@ The unit suite is `npm run test:unit`; the aggregate gate is `npm run check:core
 Playwright smoke is `npm run ux:check`. There is no typecheck script because the project
 is JavaScript despite a couple of stale `.tsx` files — see Gotchas below. GitHub CI runs
 `check:core`, backend health, dependency audit and Playwright smoke.
+
+## Обязательная локальная проверка перед Ready for review
+
+Перед тем как перевести draft PR в **Ready for review** или сообщить владельцу, что
+задача завершена, агент **обязан локально** последовательно выполнить все четыре
+команды:
+
+```bash
+npm run lint
+npm run build
+npm run test:unit
+npm run ux:check
+```
+
+Все четыре команды должны завершиться без failures. Пропуски допустимы только в
+тестах, если соответствующий skip уже существовал до начала текущей ветки. Если
+любая команда падает, агент должен либо исправить проблему, либо явно остановить
+работу и сообщить владельцу о блокере. Нельзя переводить PR в Ready for review и
+нельзя сообщать, что задача завершена, пока все четыре команды не стали зелёными
+локально.
 
 ## Documentation map
 
