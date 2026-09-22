@@ -15,6 +15,8 @@ last_verified: 2026-09-22
 
 | Область             | Факт                                                                                 | Доказательство                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Card System v2    | Нормативная спецификация в `DESIGN_SYSTEM.md` §5.1, решение владельца от 22.09.2026 | [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) §5.1 |
+| Card System v1      | [`docs/archive/CARD_SYSTEM_V1_2026-09-22.md`](docs/archive/CARD_SYSTEM_V1_2026-09-22.md), статус `archived` | Архив; не текущий источник истины |
 | Frontend            | `Smira31/Mentalix`, default branch `main`                                            | [GitHub](https://github.com/Smira31/Mentalix)                                                                        |
 | Frontend `main`     | commit `2296074191b2a42d56053d881414cadd35c65929` после мержа PR #745 с аудитом документации | [commit](https://github.com/Smira31/Mentalix/commit/2296074191b2a42d56053d881414cadd35c65929)                        |
 | Production frontend | `main → Firebase Hosting Live channel → https://mentalix-production.web.app`         | Firebase workflow run [35119350799](https://github.com/Smira31/Mentalix/actions/runs/35119350799), success; HTTP 200 |

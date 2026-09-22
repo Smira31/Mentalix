@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-16
+last_verified: 2026-09-22
 ---
 
 # Индекс документации Mentalix
@@ -16,11 +16,12 @@ last_verified: 2026-09-16
 | Current   | [`PROJECT_STATE.md`](../PROJECT_STATE.md)                                             | Подтверждённое состояние GitHub, Firebase, Cloudflare, backend и открытых треков. |
 | Work      | [`TASK_INDEX.md`](TASK_INDEX.md)                                                      | Единственный активный backlog и порядок следующих действий.                       |
 | Normative | [`PRODUCT.md`](../PRODUCT.md)                                                         | Продуктовая цель, аудитория и ограничения.                                        |
-| Normative | [`DESIGN_SYSTEM.md`](../DESIGN_SYSTEM.md)                                             | Канонические UI-токены и правила дизайна.                                         |
+| Normative | [`DESIGN_SYSTEM.md`](../DESIGN_SYSTEM.md)                                             | Канонические UI-токены и правила дизайна; Card System v2 — §5.1, 22.09.2026.       |
 | Normative | [`ARCHITECTURE.md`](../ARCHITECTURE.md)                                               | Границы frontend, platform layer и API-контракты.                                 |
 | Normative | [`AI_RULES.md`](../AI_RULES.md)                                                       | Обязательный процесс AI-работы.                                                   |
 | History   | [`TASKS.md`](../TASKS.md)                                                             | Исторический backlog; не использовать для выбора следующей задачи.                |
 | History   | [`CHANGES.md`](../CHANGES.md)                                                         | История изменений; не использовать как текущий status.                            |
+| Normative | Card System v2 (`DESIGN_SYSTEM.md` §5.1)                                             | Нормативная спецификация от 22.09.2026.                                           |
 | History   | [`docs/archive/`](archive/)                                                           | Архивные аудиты, handoff и старые планы.                                          |
 | Hosting   | [`docs/handoffs/2026-09-16-hosting-policy.md`](handoffs/2026-09-16-hosting-policy.md) | Cloudflare Demo, Firebase Production и Render API.                                |
 | QA        | [`docs/CLOUDFLARE_OWNER_QA.md`](CLOUDFLARE_OWNER_QA.md)                               | Exact-SHA Cloudflare Demo QA; не Production.                                      |
@@ -58,6 +59,7 @@ last_verified: 2026-09-16
 
 | Файл                                                                   | Статус                  | Зачем открывать                                                                      |
 | ---------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------ |
+| [`CARD_SYSTEM_V1_2026-09-22.md`](archive/CARD_SYSTEM_V1_2026-09-22.md)     | `archived` / 2026-09-22 | Архив Card System v1; не является текущим источником истины.                         |
 | [`CONTEXT.md`](archive/CONTEXT.md)                                     | `archived` / 2026-09-10 | Открыть для исторического контекста; документ не является текущим источником истины. |
 | [`README.md`](archive/README.md)                                       | `archived` / 2026-09-10 | Открыть для входа в раздел и навигации по его документам.                            |
 | [`STOIC_FEATURES_2026-07-24.md`](archive/STOIC_FEATURES_2026-07-24.md) | `archived` / 2026-09-10 | Открыть для исторического контекста; документ не является текущим источником истины. |
