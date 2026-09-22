@@ -491,75 +491,67 @@ export default function Today({
 
   const isEmpty = total === 0
 
-  const checkinDone = todayState === 'dayClosed'
-
-  const checkinAsHero = !checkinDone
+  const checkinDone = Boolean(checkin)
+  const morningComplete = Boolean(checkin)
+  const eveningComplete = todayState === 'dayClosed'
 
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 
-  /*
-   * MXL-UX-U07: hero contract — явная state → presentation мапа.
-   *
-   * checkinAsHero (todayState checkinPending/reviewPending) — одна общая
-   * форма, параметризованная текстом по todayState, вынесена отдельно от
-   * мапы: она уже однозначно определяется одним условием, не цепочкой.
-   *
-   * Для остального дня (todayState === 'dayInProgress' или 'dayClosed')
-   * heroPresentationState — единственное значение, которое решает, что
-   * показать; heroContentByState — таблица «состояние → готовый JSX»,
-   * а не последовательность независимо повторяющихся условий, как было
-   * раньше. motionExperimentEnabled сюда намеренно не входит — это
-   * временный экспериментальный слой поверх итогового состояния 'next',
-   * не часть самого контракта.
-   */
-  const heroCheckinContent = (
-    <>
-      <div className="mx-type-meta text-muted mb-2">Ежедневный чек-ин</div>
-      <h2 className="font-display mx-type-hero text-cream">Как ты?</h2>
-      <p className="mx-type-body text-muted mt-2">
-        {todayState === 'reviewPending'
-          ? 'Уроки и то, чем стоит гордиться'
-          : 'Короткая утренняя настройка'}
-      </p>
-      {todayState === 'reviewPending' && (
-        <div className="w-full max-w-sm mx-auto mt-5 space-y-2 text-left">
-          {['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?'].map(question => (
-            <div
-              key={question}
-              className="rounded-2xl bg-cream/5 px-4 py-2.5 text-[12px] text-muted"
-            >
-              {question}
-            </div>
-          ))}
-          <div className="text-[11px] text-gold font-semibold px-1 pt-1">
-            + три вещи, которыми гордишься
-          </div>
-        </div>
-      )}
-      <button
-        onClick={() => {
-          platform.haptic('medium')
-          changeSub('checkin')
-        }}
-        className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-      >
-        {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
-      </button>
-    </>
+  const morningCard = (
+    <button
+      type="button"
+      className="mx-today-checkin-card mx-today-checkin-card--morning text-left animate-fade-in"
+      data-kind="morning"
+      data-complete={morningComplete}
+      onClick={() => {
+        platform.haptic('medium')
+        changeSub(morningComplete ? 'checkinRecap' : 'checkin')
+      }}
+      aria-label={morningComplete ? 'Открыть утренний чек-ин' : 'Пройти чек-ин'}
+    >
+      <span className="mx-today-checkin-card__eyebrow">Утро · чек-ин</span>
+      <span className="mx-today-checkin-card__title mx-type-hero">
+        {morningComplete ? 'Утро началось с внимания.' : 'Как ты сегодня?'}
+      </span>
+      <span className="mx-today-checkin-card__body">
+        {morningComplete
+          ? `настроение: ${MOOD_WORDS[(checkin?.mood || 3) - 1]}`
+          : 'Короткая настройка состояния и энергии'}
+      </span>
+      <span className="mx-today-checkin-card__action">
+        {morningComplete ? 'Посмотреть ответы' : 'Пройти чек-ин'}{' '}
+        <ChevronRight size={16} aria-hidden="true" />
+      </span>
+    </button>
   )
 
-  const heroContentByState = {
-    checkinDone: (
-      <>
-        <div className="mx-type-meta text-muted mb-2">Сегодня</div>
-        <h2 className="font-display mx-type-hero text-cream">Чек-ин пройден.</h2>
-        <div className="mx-today-checkin-pill">
-          настроение: {MOOD_WORDS[(checkin?.mood || 3) - 1]}
-        </div>
-        <p className="mx-type-body text-muted mt-4">Нажми, чтобы посмотреть ответы</p>
-      </>
-    ),
-  }
+  const eveningCard = (
+    <button
+      type="button"
+      className="mx-today-checkin-card mx-today-checkin-card--evening text-left animate-fade-in"
+      data-kind="evening"
+      data-complete={eveningComplete}
+      onClick={() => {
+        platform.haptic('medium')
+        changeSub('checkin')
+      }}
+      aria-label="Открыть вечерний разбор"
+    >
+      <span className="mx-today-checkin-card__eyebrow">Вечер · разбор дня</span>
+      <span className="mx-today-checkin-card__title mx-type-hero">
+        {eveningComplete ? 'День закрыт.' : 'Забрать главное из дня.'}
+      </span>
+      <span className="mx-today-checkin-card__body">
+        {eveningComplete
+          ? 'Три вывода сохранены в журнале'
+          : 'Три коротких вопроса · около 1 минуты'}
+      </span>
+      <span className="mx-today-checkin-card__action">
+        {eveningComplete ? 'Открыть разбор' : 'Разобрать день'}{' '}
+        <ChevronRight size={16} aria-hidden="true" />
+      </span>
+    </button>
+  )
 
   function changeTodayVariant(nextVariant) {
     setTodayVariant(nextVariant)
@@ -589,37 +581,10 @@ export default function Today({
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
       )}
 
-      {/* ======================================================
-          ГЕРОЙ-КАРТОЧКА
-          ====================================================== */}
-
-      {/*
-        Плоская поверхность карточки, а не градиент.
-        Градиента нет в таблице токенов, и именно из-за
-        него подложка под иллюстрацией читалась как
-        отдельная плашка: она плоская, карточка была с
-        переходом. На одном цвете подложка сливается с
-        карточкой и остаётся тем, чем задумана, — окном
-        в ночь, тёмным в обеих темах.
-      */}
-      <div
-        className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
-        data-complete={checkinDone}
-        role={checkinDone ? 'button' : undefined}
-        tabIndex={checkinDone ? 0 : undefined}
-        aria-label={checkinDone ? 'Открыть recap сегодняшнего check-in' : undefined}
-        onClick={checkinDone ? () => changeSub('checkinRecap') : undefined}
-      >
-        {!checkinDone && (
-          <div className="mx-today-hero-art" aria-label="Один следующий шаг">
-            <SemanticGlyph
-              kind="next-step"
-              debugSource="Today.jsx"
-              className="mx-today-hero-art-glyph"
-            />
-          </div>
-        )}
-        {checkinAsHero ? heroCheckinContent : heroContentByState.checkinDone}
+      {/* Утренний и вечерний входы остаются рядом: у дня два разных ритма. */}
+      <div className="mx-today-checkin-grid mt-5" aria-label="Чек-ин дня">
+        {morningCard}
+        {eveningCard}
       </div>
 
       {/*
@@ -628,8 +593,6 @@ export default function Today({
         are intentionally folded into Check-in/Journal rather than rendered as
         competing Today cards.
       */}
-
-      <div className="mx-today-hero-breath" aria-hidden="true" />
 
       {/* ======================================================
           ДЕНЬ
