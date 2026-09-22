@@ -452,7 +452,9 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await assertClickable(page.getByRole('button', { name: 'Назад' }))
+        // На первом morning Check-in шаге BackButton имеет label «Сегодня»;
+        // на остальных состояниях flow может сохраняться label «Назад».
+        await assertClickable(page.getByRole('button', { name: /^(Назад|Сегодня)$/ }))
         await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
       },
     })
