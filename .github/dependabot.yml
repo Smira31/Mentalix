@@ -6,6 +6,16 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: react
+        update-types:
+          - version-update:semver-major
+      - dependency-name: react-dom
+        update-types:
+          - version-update:semver-major
+      - dependency-name: vite
+        update-types:
+          - version-update:semver-major
     groups:
       npm-minor-patch:
         update-types:
