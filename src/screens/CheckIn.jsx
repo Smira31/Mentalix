@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { Check, Flame, Hand, MoreHorizontal, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -67,6 +67,70 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+const RECAP_MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
+
+function recapAnswers(checkin, evening) {
+  const answers = [
+    ['Как ты сейчас?', `настроение: ${RECAP_MOOD_WORDS[(checkin?.mood || 3) - 1]}`],
+    ['Сколько в тебе энергии?', `${checkin?.energy || 3}/5`],
+    ['Сколько шума в голове?', `${checkin?.anxiety || 3}/5`],
+    ['Насколько ты собран?', `${checkin?.focus || 3}/5`],
+  ]
+
+  if (checkin?.emotion) answers.push(['Что ты чувствуешь?', checkin.emotion])
+  if (!evening && checkin?.note) answers.push(['Что на уме?', checkin.note])
+
+  if (evening && checkin?.lessons) {
+    const labels = ['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?']
+    checkin.lessons.split('\n').forEach(line => {
+      const match = labels.find(label => line.startsWith(`${label} `))
+      if (match) answers.push([match, line.slice(match.length + 1)])
+    })
+  }
+
+  return answers.filter(([, answer]) => String(answer || '').trim())
+}
+
+export function CheckInRecap({ checkin, evening = false, onBack }) {
+  const { style: surfaceStyle } = useFullscreenSurface()
+  const dateLabel = checkin?.date
+    ? new Date(`${checkin.date}T${String(checkin.created_at || '').slice(11, 19) || '00:00:00'}`).toLocaleTimeString(
+        'ru-RU',
+        { hour: '2-digit', minute: '2-digit' }
+      )
+    : new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+  return createPortal(
+    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      <header className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`}>
+        <BackButton onClick={onBack} label="Сегодня" />
+        <button type="button" aria-label="Открыть меню" className="mx-icon-button">
+          <MoreHorizontal size={20} aria-hidden="true" />
+        </button>
+      </header>
+      <main className="w-full flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-10">
+        <div className="mx-auto w-full max-w-md pt-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+            Сегодня в {dateLabel}
+          </p>
+          <h1 className="mt-3 font-display text-[42px] font-bold leading-none text-cream">
+            {evening ? 'вечер.' : 'утро.'}
+          </h1>
+          <div className="mt-10 space-y-7">
+            {recapAnswers(checkin, evening).map(([question, answer]) => (
+              <section key={question}>
+                <h2 className="text-[15px] font-bold leading-snug text-cream">{question}</h2>
+                <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-muted">{answer}</p>
+              </section>
+            ))}
+          </div>
+        </div>
+      </main>
+    </div>,
+    getFullscreenPortalTarget()
+  )
+}
 
 function dayStart(date) {
   const value = new Date(date)
@@ -1159,16 +1223,11 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
             <div className={CHECKIN_SUCCESS_CLASS}>
               {isEvening ? (
                 <MotifArt name="noch" size={184} artScale={1.08} className="mb-5" />
-              ) : null}
-
-              <div className="animate-celebrate-pop mb-6">
-                <Face
-                  level={values.mood || 4}
-                  active
-                  size={isEvening ? 64 : 88}
-                  showFrame={false}
-                />
-              </div>
+              ) : (
+                <div className="animate-celebrate-pop mb-6">
+                  <Face level={values.mood || 4} active size={88} showFrame={false} />
+                </div>
+              )}
 
               <h2 className="font-display text-[26px] text-cream leading-tight">
                 {isEvening ? 'День закрыт' : 'Ты сохранил главное.'}
@@ -1180,34 +1239,34 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                   : 'Ответы останутся в сегодняшнем цикле.'}
               </p>
 
-              {!isEvening && (
-                <div className="mt-7 w-full max-w-sm">
-                  <p className="text-[13px] text-muted">
-                    Чек-ин помог остановиться и заметить важное?
-                  </p>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {[
-                      ['Нет', ThumbsDown],
-                      ['Немного', Hand],
-                      ['Да', ThumbsUp],
-                    ].map(([label, Icon]) => (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={() => setFeedback(label)}
-                        className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-[12px] ${
-                          feedback === label
-                            ? 'border-gold bg-gold/10 text-gold'
-                            : 'border-cream/10 bg-emerald text-muted'
-                        }`}
-                      >
-                        <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+              <div className="mt-7 w-full max-w-sm">
+                <p className="text-[13px] text-muted">
+                  {isEvening
+                    ? 'Этот разбор помог остановиться и заметить важное?'
+                    : 'Чек-ин помог остановиться и заметить важное?'}
+                </p>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {[
+                    ['Нет', ThumbsDown],
+                    ['Немного', Hand],
+                    ['Да', ThumbsUp],
+                  ].map(([label, Icon]) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => setFeedback(label)}
+                      className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-[12px] ${
+                        feedback === label
+                          ? 'border-gold bg-gold/10 text-gold'
+                          : 'border-cream/10 bg-emerald text-muted'
+                      }`}
+                    >
+                      <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
+                      {label}
+                    </button>
+                  ))}
                 </div>
-              )}
+              </div>
 
               {scoutError && (
                 <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
@@ -1377,7 +1436,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                 {isEvening ? (
                   <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
                     <JournalTextarea
-                      writingCanvas
                       value={lessons[eveningQuestion.key] || ''}
                       onChange={value =>
                         setLessons(current => ({ ...current, [eveningQuestion.key]: value }))
@@ -1386,6 +1444,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                       ariaLabel={eveningQuestion.label}
                       className="min-h-[18rem] flex-1"
                       editorClassName="mx-checkin-evening-editor"
+                      formatting={false}
                     />
                   </div>
                 ) : (

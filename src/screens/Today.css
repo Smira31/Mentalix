@@ -1501,3 +1501,27 @@
   color: rgb(var(--c-bg));
   stroke: currentColor;
 }
+
+/* Stoic daily cards: the whole surface is the action; completed states stay compact. */
+.mx-today-checkin-card {
+  border-color: transparent;
+}
+.mx-today-checkin-card[data-complete='true'] {
+  border-color: transparent;
+}
+.mx-today-checkin-card__title {
+  font-weight: 400;
+}
+.mx-today-checkin-card__summary {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgb(var(--c-gold) / 0.1);
+  color: rgb(var(--c-gold));
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}

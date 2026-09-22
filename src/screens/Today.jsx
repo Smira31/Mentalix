@@ -8,7 +8,7 @@ import './Today.css'
 
 import Path from './Path'
 import YearPath from './YearPath'
-import CheckIn from './CheckIn'
+import CheckIn, { CheckInRecap } from './CheckIn'
 import ThemeScreen from './ThemeScreen'
 import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
@@ -367,12 +367,7 @@ export default function Today({
 
   if (sub === 'checkinRecap' && checkin) {
     return (
-      <History
-        user={user}
-        initialSelectedDay={{ date: checkin.date, checkin }}
-        onInitialBack={() => changeSub(null)}
-        recapOnly
-      />
+      <CheckInRecap checkin={checkin} onBack={() => changeSub(null)} />
     )
   }
 
@@ -513,15 +508,13 @@ export default function Today({
       <span className="mx-today-checkin-card__title mx-type-hero">
         {morningComplete ? 'Утро началось с внимания.' : 'Как ты сегодня?'}
       </span>
-      <span className="mx-today-checkin-card__body">
-        {morningComplete
-          ? `настроение: ${MOOD_WORDS[(checkin?.mood || 3) - 1]}`
-          : 'Короткая настройка состояния и энергии'}
-      </span>
-      <span className="mx-today-checkin-card__action">
-        {morningComplete ? 'Посмотреть ответы' : 'Пройти чек-ин'}{' '}
-        <ChevronRight size={16} aria-hidden="true" />
-      </span>
+      {morningComplete ? (
+        <span className="mx-today-checkin-card__summary">
+          настроение: {MOOD_WORDS[(checkin?.mood || 3) - 1]}
+        </span>
+      ) : (
+        <span className="mx-today-checkin-card__body">Короткая настройка состояния и энергии</span>
+      )}
     </button>
   )
 
@@ -533,7 +526,7 @@ export default function Today({
       data-complete={eveningComplete}
       onClick={() => {
         platform.haptic('medium')
-        changeSub('checkin')
+        changeSub(eveningComplete ? 'checkinRecap' : 'checkin')
       }}
       aria-label="Открыть вечерний разбор"
     >
@@ -541,15 +534,11 @@ export default function Today({
       <span className="mx-today-checkin-card__title mx-type-hero">
         {eveningComplete ? 'День закрыт.' : 'Забрать главное из дня.'}
       </span>
-      <span className="mx-today-checkin-card__body">
-        {eveningComplete
-          ? 'Три вывода сохранены в журнале'
-          : 'Три коротких вопроса · около 1 минуты'}
-      </span>
-      <span className="mx-today-checkin-card__action">
-        {eveningComplete ? 'Открыть разбор' : 'Разобрать день'}{' '}
-        <ChevronRight size={16} aria-hidden="true" />
-      </span>
+      {eveningComplete ? (
+        <span className="mx-today-checkin-card__summary">три вывода сохранены</span>
+      ) : (
+        <span className="mx-today-checkin-card__body">Три коротких вопроса · около 1 минуты</span>
+      )}
     </button>
   )
 
