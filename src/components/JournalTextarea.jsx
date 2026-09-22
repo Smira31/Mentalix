@@ -357,7 +357,7 @@ export default function JournalTextarea({
             className={[
               'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid items-center gap-3',
               showAddAction
-                ? 'max-w-[430px] grid-cols-[48px_48px_minmax(0,1fr)_56px]'
+                ? 'max-w-[430px] grid-cols-[56px_56px_minmax(0,1fr)_56px]'
                 : 'max-w-[350px] grid-cols-[56px_minmax(0,1fr)_56px]',
               'journal-textarea__floating-actions',
               desktopInline
@@ -374,7 +374,7 @@ export default function JournalTextarea({
                 aria-expanded={addOpen}
                 onPointerDown={event => event.preventDefault()}
                 onClick={() => setAddOpen(current => !current)}
-                className="mx-keyboard-control mx-keyboard-plus flex h-12 w-12 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream"
+                className="mx-keyboard-control mx-keyboard-plus flex h-14 w-14 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream"
               >
                 <Plus size={22} />
               </button>

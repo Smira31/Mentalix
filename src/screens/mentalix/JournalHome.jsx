@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, BookOpen, Check, Compass, PenLine } from 'lucide-react'
+import { BookOpen, Compass, PenLine } from 'lucide-react'
 import JournalTextarea from '../../components/JournalTextarea'
 import { platform } from '../../platform'
 import { readJournalEntry, saveJournalPhase, todayKey } from '../../lib/journalStorage'
@@ -153,40 +153,30 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
           placeholder="Начни писать..."
           ariaLabel={`${phase.label}: ${phase.title}`}
           formatting
+          floatingToolbar
           stickyToolbar={false}
+          onSubmit={continueFlow}
+          submitLabel={isLast ? 'Завершить запись' : 'Продолжить'}
+          submitIcon="arrow"
+          submitDisabled={!value.trim()}
+          onDeepen={onOpenMentor}
+          deepenLabel="Пойти глубже с наставником"
+          showAddAction
           className="w-full min-h-[15rem]"
           editorClassName="min-h-[11rem] pb-4"
         />
       </div>
 
       <div className="mx-journal-footer pt-4 pb-3" data-keyboard-safe-footer="true">
-        <button
-          type="button"
-          onClick={continueFlow}
-          disabled={!value.trim()}
-          className="mx-journal-primary-action mx-cta-primary flex min-h-[56px] w-full items-center justify-center gap-2 px-5 mx-type-control disabled:opacity-35"
-        >
-          {isLast ? <Check size={19} /> : <ArrowRight size={19} />}
-          {isLast ? 'Завершить запись' : 'Продолжить'}
-        </button>
-        <div className="mt-3 flex items-center justify-between gap-3 mx-type-meta text-faint">
+        {phaseIndex > 0 && (
           <button
             type="button"
-            onClick={onOpenMentor}
-            className="text-left text-muted underline-offset-4 active:text-gold"
+            onClick={() => setPhaseIndex(index => index - 1)}
+            className="mx-type-meta text-faint active:text-gold"
           >
-            Пойти глубже с наставником
+            Назад
           </button>
-          {phaseIndex > 0 && (
-            <button
-              type="button"
-              onClick={() => setPhaseIndex(index => index - 1)}
-              className="shrink-0 active:text-gold"
-            >
-              Назад
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )
