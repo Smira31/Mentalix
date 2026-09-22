@@ -18,6 +18,8 @@ const VISUAL_ANCHOR_SLUGS = new Set([
   '08-trends',
 ])
 
+const RUN_VISUAL_SNAPSHOTS = process.env.RUN_VISUAL_SNAPSHOTS === 'true'
+
 const VIEWPORTS = [
   { name: '320x568', width: 320, height: 568 },
   { name: '375x812', width: 375, height: 812 },
@@ -323,7 +325,7 @@ async function captureScreen({ page, viewport, screen, slug, runtimeErrors, resu
     await check()
     await assertCommonScreenChecks(page, runtimeErrors)
 
-    if (VISUAL_ANCHOR_SLUGS.has(slug)) {
+    if (RUN_VISUAL_SNAPSHOTS && VISUAL_ANCHOR_SLUGS.has(slug)) {
       const starterSetEnabled = process.env.VITE_STARTER_SET_ENABLED === 'true'
       const snapshotName =
         starterSetEnabled && viewport.name === '430x932' && slug === '01-today'
@@ -702,7 +704,10 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Назад' }).click()
     await page.getByRole('button', { name: 'Сегодня' }).click()
-    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute('aria-current', 'page')
+    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
@@ -722,7 +727,10 @@ test('локальный UX smoke по основному маршруту', asy
     })
     await page.getByRole('button', { name: 'Назад' }).click()
     await page.getByRole('button', { name: 'Сегодня' }).click()
-    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute('aria-current', 'page')
+    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
@@ -882,15 +890,18 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
       })
     )
     for (const geometry of cardTextGeometry) {
-      expect(geometry.textRight, 'Текст не должен выходить за правую границу карточки').toBeLessThanOrEqual(
-        geometry.cardRight + 0.5
-      )
-      expect(geometry.textLeft, 'Текст не должен выходить за левую границу карточки').toBeGreaterThanOrEqual(
-        geometry.cardLeft - 0.5
-      )
-      expect(geometry.scrollWidth, 'Карточка не должна иметь горизонтального overflow').toBeLessThanOrEqual(
-        geometry.clientWidth
-      )
+      expect(
+        geometry.textRight,
+        'Текст не должен выходить за правую границу карточки'
+      ).toBeLessThanOrEqual(geometry.cardRight + 0.5)
+      expect(
+        geometry.textLeft,
+        'Текст не должен выходить за левую границу карточки'
+      ).toBeGreaterThanOrEqual(geometry.cardLeft - 0.5)
+      expect(
+        geometry.scrollWidth,
+        'Карточка не должна иметь горизонтального overflow'
+      ).toBeLessThanOrEqual(geometry.clientWidth)
     }
     const mentorCard = cards.filter({ hasText: 'Наставник' })
     const sideCard = cards.filter({ hasText: 'Собеседник' })
@@ -902,7 +913,9 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 
     await mentorCard.click()
     await expect(mentorCard).toHaveAttribute('aria-current', 'true')
-    await expect(mentorCard.getByRole('button', { name: 'Начать разговор: Наставник' })).toBeVisible()
+    await expect(
+      mentorCard.getByRole('button', { name: 'Начать разговор: Наставник' })
+    ).toBeVisible()
     await expect(page.getByText('История kompas')).toHaveCount(0)
 
     await mentorCard.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
