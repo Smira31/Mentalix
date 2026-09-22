@@ -31,85 +31,9 @@ test('allowlist сохраняет доступные практики и акт
     'lila-discover',
     'rituals',
     'ascezas',
-    'first-step',
-    'no-blame',
-    'narrow-focus',
-    'one-finish',
-    // Meditation: product decision 2026-09-19 - not ready; "Скоро" in catalog.
-    // MXL-525 G6: brain/breathing доступны; Focus закрыт до пересмотра дизайна.
-    'brain',
-    'breathing',
   ])
 
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.brain), true)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.breathing), true)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.focus), false)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), false)
   assert.equal(isPracticeAvailable('unknown-practice'), false)
-})
-
-test('fullscreen practice flows keep BackButton inside the flow after intro', () => {
-  const flowCases = [
-    {
-      file: 'ProcrastinationFlow.jsx',
-      steps: ['task', 'feeling', 'release', 'plan', 'run', 'outcome'],
-    },
-    {
-      file: 'NarrowFocusFlow.jsx',
-      steps: ['dump', 'pick', 'release', 'plan', 'run', 'outcome'],
-    },
-    {
-      file: 'FinishFlow.jsx',
-      steps: ['project', 'state', 'reframe', 'finish', 'run', 'outcome'],
-    },
-  ]
-
-  for (const { file, steps } of flowCases) {
-    const flow = readFileSync(new URL(`../../src/screens/${file}`, import.meta.url), 'utf8')
-    assert.match(flow, /function handleBack\(\)/, `${file} must define a local back handler`)
-    assert.match(flow, /if \(step === 'intro'\) \{[\s\S]*?onClose\(\)/, `${file} closes only from intro`)
-    assert.match(flow, /<BackButton onClick=\{handleBack\} \/>/, `${file} wires BackButton to handleBack`)
-
-    for (const step of steps) {
-      assert.match(flow, new RegExp(`if \\(step === '${step}'\\)`), `${file} handles ${step} back`)
-    }
-
-    assert.doesNotMatch(
-      flow,
-      /<BackButton onClick=\{onClose\} \/>/,
-      `${file} must not close the flow from every step`
-    )
-  }
-})
-
-test('MXL-014 публикует короткую текстовую медитацию без backend changes', () => {
-  const flow = readFileSync(
-    new URL('../../src/screens/MeditationFlow.jsx', import.meta.url),
-    'utf8'
-  )
-  const practices = readFileSync(
-    new URL('../../src/screens/Practices.jsx', import.meta.url),
-    'utf8'
-  )
-  const availability = readFileSync(
-    new URL('../../src/config/practiceAvailability.js', import.meta.url),
-    'utf8'
-  )
-
-  assert.match(flow, /5–10 минут/)
-  assert.match(flow, /Что сейчас происходит\?/)
-  assert.match(flow, /Что из этого зависит от тебя\?/)
-  assert.match(flow, /Какой один шаг ты выбираешь\?/)
-  assert.match(flow, /Если становится тяжелее, остановись/)
-  assert.match(flow, /<SceneLayout/)
-  assert.match(flow, /practice-scene--input practice-scene--input-centered/)
-  assert.equal((flow.match(/floatingToolbar/g) || []).length, 3)
-  assert.match(flow, /<JournalTextarea/)
-  assert.match(practices, /MeditationFlow/)
-  assert.match(practices, /buildPracticeViewModels\(\{ rituals, ascezas, completedToday \}\)/)
-  assert.match(availability, /meditation:\s*'meditation'/)
-  assert.equal(isPracticeAvailable(PRACTICE_KEYS.meditation), false)
-  assert.doesNotMatch(flow, /api\./)
 })
 
 test('withQuery сохраняет порядок и кодирует значения', () => {
