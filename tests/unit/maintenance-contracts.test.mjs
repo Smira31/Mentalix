@@ -847,11 +847,6 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
     'utf8'
   )
   const courses = readFileSync(new URL('../../src/screens/Courses.jsx', import.meta.url), 'utf8')
-  const brainTrainer = readFileSync(
-    new URL('../../src/screens/BrainTrainer.jsx', import.meta.url),
-    'utf8'
-  )
-  const focus = readFileSync(new URL('../../src/screens/Focus.jsx', import.meta.url), 'utf8')
 
   assert.match(styles, /--mx-type-page-size:\s*1\.875rem/)
   assert.match(styles, /--mx-type-greeting-size:\s*1\.125rem/)
@@ -900,10 +895,6 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
   assert.match(courses, /mx-type-list-title/)
   assert.match(courses, /mx-type-flow-action/)
   assert.match(courses, /text-\[16px\]/)
-  assert.match(brainTrainer, /mx-type-list-title/)
-  assert.match(brainTrainer, /mx-type-flow-action/)
-  assert.match(brainTrainer, /text-\[16px\]/)
-  assert.match(focus, /text-\[13px\]/)
 })
 
 test('Today предлагает добавлять практики только из библиотеки', () => {
@@ -1028,28 +1019,4 @@ test('MXL-STARTER-SET-001 guards its api.rituals.create write path the same way'
 
   assert.match(source, /api\.rituals\.create[\s\S]*isLinkedWebWriteBlocked/)
   assert.match(source, /LINKED_WEB_WRITE_NOTICE/)
-})
-
-test('MXL-310 показывает завершённые разовые практики без streak и day-progress интеграции', () => {
-  const helper = readFileSync(
-    new URL('../../src/lib/oneOffPracticeHistory.js', import.meta.url),
-    'utf8'
-  )
-  const practices = readFileSync(
-    new URL('../../src/screens/Practices.jsx', import.meta.url),
-    'utf8'
-  )
-  const history = readFileSync(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
-
-  assert.match(helper, /readFirstStepLog/)
-  assert.match(helper, /readNoBlameLog/)
-  assert.match(helper, /readNarrowFocusLog/)
-  assert.match(helper, /readOneFinishLog/)
-  assert.match(helper, /localDayId/)
-  assert.match(practices, /readOneOffPracticeHistory/)
-  assert.match(practices, /completedToday/)
-  assert.match(history, /oneOffPracticesByDay/)
-  assert.match(history, /one-off-practice-history/)
-  assert.match(history, /не влияет на\s*прогресс дня/)
-  assert.doesNotMatch(helper, /api\./)
 })

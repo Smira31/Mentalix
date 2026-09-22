@@ -726,7 +726,7 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.locator('[data-collection-key="psychological"]').click()
+    await expect(page.locator('[data-collection-key="psychological"]')).toBeDisabled()
     await page.getByRole('button', { name: 'Библиотека' }).click()
     await captureScreen({
       page,
