@@ -1,3 +1,5 @@
+> Historical snapshot before PR #743/#744, no longer reflects production state. Archived 2026-09-22.
+
 # Аудит визуального контракта полноэкранных flow-практик
 
 **Статус:** diagnostic-only; runtime-код намеренно не изменялся.

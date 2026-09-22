@@ -13,6 +13,8 @@ last_verified: 2026-09-20
 
 Аудит ограничен диагностикой. В этом PR не изменяются `src/`, поведение приложения, navigation stack или стили.
 
+Исторические fullscreen-flow и связанные findings до закрытия legacy practice collections сохранены в [`docs/audit/archive/`](archive/). Они не заменяют текущий navigation audit и не описывают production-состояние после PR #743/#744.
+
 ## Как проверялось
 
 Проверены:

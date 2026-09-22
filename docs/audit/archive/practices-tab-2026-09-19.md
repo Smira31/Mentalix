@@ -6,6 +6,8 @@ base_sha: ca1d21e84bd1ad0e071b2173604298a924d950dd
 branch: audit/practices-tab-2026-09-19
 ---
 
+> Historical snapshot before PR #743/#744, no longer reflects production state. Archived 2026-09-22.
+
 # UX/UI-аудит вкладки «Практики» — 2026-09-19
 
 Формат по образцу `docs/audit/today-tab-2026-09-19.md` (файл-образец на момент аудита в `main` не найден; структура секций сохранена по брифу: Матрица состояний → Документ↔код → Live evidence → Сводка статусов).

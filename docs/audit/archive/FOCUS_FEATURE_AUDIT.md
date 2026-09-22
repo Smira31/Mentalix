@@ -1,3 +1,5 @@
+> Historical snapshot before PR #743/#744, no longer reflects production state. Archived 2026-09-22.
+
 # Аудит доступности практики «Фокус»
 
 Дата проверки: 2026-09-21. Репозиторий: `Smira31/Mentalix`, ветка `main`.

@@ -151,7 +151,7 @@ check-in → следующий шаг → практика → вечерний
 
 ### Уже есть и не создаётся заново
 
-Текущий `JournalFlow` реализован в открытом PR #245 как явная focused practice внутри «Практик» и не считается production persistence до повторного ручного Telegram/iPhone gate.
+Текущий `JournalFlow` реализован в смёрженном 27.08.2026 PR #245 как явная focused practice внутри «Практик» и не считается production persistence до повторного ручного Telegram/iPhone gate.
 
 - ежедневный цикл **Идея → Действие → Анализ → Новый шаг**;
 - Journal Flow в «Практиках» с intro, Writing Canvas, completion/return и local-first draft/final;
@@ -176,7 +176,7 @@ check-in → следующий шаг → практика → вечерний
 
 ### Порядок реализации
 
-1. Довести до повторного Telegram/iPhone gate текущий Journal Flow в «Практиках» из PR #245 / `MXL-JOURNAL-001`.
+1. Довести до повторного Telegram/iPhone gate текущий Journal Flow в «Практиках», реализованный в PR #245 / `MXL-JOURNAL-001`.
 2. Продолжать `MXL-JOURNAL-PERSISTENCE-001` только после фиксации backend-контракта для cloud/history подэтапов.
 3. Реализовать `MXL-JOURNAL-HISTORY-001` и связать историю с «Продолжить сегодня».
 4. Зафиксировать и внедрить `MXL-JOURNAL-PRIVACY-001` до расширения AI и media.
