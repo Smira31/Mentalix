@@ -554,7 +554,7 @@ export default function Today({
         <div className="mx-type-meta text-muted mb-2">Сегодня</div>
         <h2 className="font-display mx-type-hero text-cream">Чек-ин пройден.</h2>
         <div className="mx-today-checkin-pill">
-          настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+          настроение: {MOOD_WORDS[(checkin?.mood || 3) - 1]}
         </div>
         <p className="mx-type-body text-muted mt-4">Нажми, чтобы посмотреть ответы</p>
       </>
