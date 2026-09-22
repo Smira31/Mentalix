@@ -535,7 +535,7 @@ export default function Today({
         platform.haptic('medium')
         changeSub('checkin')
       }}
-      aria-label="Открыть вечерний разбор"
+      aria-label={eveningComplete ? 'Открыть вечерний разбор' : 'Разобрать день'}
     >
       <span className="mx-today-checkin-card__eyebrow">Вечер · разбор дня</span>
       <span className="mx-today-checkin-card__title mx-type-hero">
