@@ -4,6 +4,8 @@ date: 2026-09-19
 scope: автообновление SHA в PROJECT_STATE.md
 ---
 
+> Historical snapshot before PR #743/#744, no longer reflects production state. Archived 2026-09-22.
+
 # Предложение: автообновление SHA в PROJECT_STATE.md
 
 ## Проблема

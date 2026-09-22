@@ -1,22 +1,22 @@
 ---
 status: current
-last_verified: 2026-09-16
+last_verified: 2026-09-22
 ---
 
 # PROJECT_STATE — подтверждённое состояние Mentalix
 
 Этот файл содержит только проверенные факты о репозиториях, окружениях, release provenance и активных GitHub-треках. Активный backlog находится в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md). История решений находится в [`TASKS.md`](TASKS.md), [`CHANGES.md`](CHANGES.md) и `docs/archive/`.
 
-**Последняя сверка:** 16.09.2026. Проверены GitHub, Vercel integrations, Firebase Production workflow и публичные endpoints.
+**Последняя сверка:** 22.09.2026. Проверены GitHub, текущий `main` после PR #745 и документный архив.
 
-Текущий `main`: `ca1d21e84bd1ad0e071b2173604298a924d950dd`.
+Текущий `main`: `2296074191b2a42d56053d881414cadd35c65929`.
 
 ## Каноническое состояние
 
 | Область             | Факт                                                                                 | Доказательство                                                                                                       |
 | ------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | Frontend            | `Smira31/Mentalix`, default branch `main`                                            | [GitHub](https://github.com/Smira31/Mentalix)                                                                        |
-| Frontend `main`     | commit `ca1d21e84bd1ad0e071b2173604298a924d950dd` после закрытия voice diagnostics | [commit](https://github.com/Smira31/Mentalix/commit/ca1d21e84bd1ad0e071b2173604298a924d950dd)                        |
+| Frontend `main`     | commit `2296074191b2a42d56053d881414cadd35c65929` после мержа PR #745 с аудитом документации | [commit](https://github.com/Smira31/Mentalix/commit/2296074191b2a42d56053d881414cadd35c65929)                        |
 | Production frontend | `main → Firebase Hosting Live channel → https://mentalix-production.web.app`         | Firebase workflow run [35119350799](https://github.com/Smira31/Mentalix/actions/runs/35119350799), success; HTTP 200 |
 | Demo Preview        | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev` | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)        |
 | Backend             | `Smira31/mentalix-bot`, `main`                                                       | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                    |
@@ -43,15 +43,21 @@ last_verified: 2026-09-16
 
 ## GitHub после cleanup
 
+Снимок GitHub API на 22.09.2026.
+
 | Объект          | Состояние                                                                               |
 | --------------- | --------------------------------------------------------------------------------------- |
 | PR #626         | Смёржен; Firebase migration, auth/session compatibility, desktop frame и hosting policy |
 | PR #628         | Смёржен; завершён cleanup активной документации и GitHub-состояния                      |
-| Открытые PR     | `0` по GitHub API на 16.09.2026                                                         |
-| Открытые Issues | `9`; все отражены в `docs/TASK_INDEX.md`, автоматически не закрывались                  |
-| Remote branches | `6` вместе с `main`; у пяти non-main веток есть уникальные несмёрженные коммиты         |
+| Открытые PR     | `3` по GitHub API: #732, #733 и #742                                                  |
+| Открытые Issues | `13`; автоматически не закрывались                                                     |
+| Remote branches | `10` вместе с `main` по GitHub API                                                     |
 
 Текущий активный backlog находится только в [`docs/TASK_INDEX.md`](docs/TASK_INDEX.md). Открытые issues не считаются автоматически взятыми в работу: каждая должна иметь ясный scope и следующий decision gate.
+
+## Исторический документный контекст
+
+Одноразовые аудиты доступности практик, fullscreen-flow и SHA-синхронизации сохранены в [`docs/audit/archive/`](docs/audit/archive/) и не являются текущим production-контрактом. Канонический текущий статус репозитория находится в этом файле; архивные отчёты используются только для исторического контекста и traceability.
 
 ## Ограничения подтверждения
 
@@ -59,7 +65,7 @@ last_verified: 2026-09-16
 
 ## References
 
-[1]: https://github.com/Smira31/Mentalix/commit/ca1d21e84bd1ad0e071b2173604298a924d950dd 'Current frontend main'
+[1]: https://github.com/Smira31/Mentalix/commit/2296074191b2a42d56053d881414cadd35c65929 'Current frontend main'
 [2]: https://mentalix-production.web.app 'Mentalix Firebase Production'
 [3]: https://mentalix-owner-qa.pages.dev 'Mentalix Cloudflare Demo Preview'
 [4]: https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml 'Firebase Hosting workflow'
