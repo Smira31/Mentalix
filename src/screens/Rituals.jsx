@@ -90,6 +90,7 @@ function RitualCard({ ritual, onLog, onDelete, onRestore }) {
       {confirming && (
         <DeleteConfirmationDialog
           itemType="ритуал"
+          itemName={ritual.name}
           onCancel={() => setConfirming(false)}
           onConfirm={() => {
             platform.haptic('rigid')

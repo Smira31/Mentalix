@@ -287,6 +287,7 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete, onRestore }) {
       {confirming && (
         <DeleteConfirmationDialog
           itemType="аскезу"
+          itemName={asceza.name}
           onCancel={() => setConfirming(false)}
           onConfirm={() => {
             platform.haptic('rigid')
