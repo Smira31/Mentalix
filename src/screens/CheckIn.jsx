@@ -1465,11 +1465,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                       guidedFlow={previewDemoMode}
                       autoFocus
                       keepFocusOnSubmit={previewDemoMode}
-                      submitIcon={previewDemoMode ? 'arrow' : 'check'}
+                      submitIcon="arrow"
                       onSubmit={() => submit()}
                       submitLabel="Завершить чек-ин"
                       submitLoading={saving}
                       onDeepen={deepenMorningNote}
+                      showAddAction
                     />
                   </div>
                 )}
