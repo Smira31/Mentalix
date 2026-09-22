@@ -38,14 +38,6 @@ export const PRACTICE_RAIL_KEYS = [
 
 export const PRACTICE_COLLECTIONS = [
   {
-    key: 'psychological',
-    title: 'Психологические практики',
-    description: 'Четыре коротких практики для начала, выбора и завершения.',
-    kind: 'release',
-    active: false,
-    soon: true,
-  },
-  {
     key: 'rituals',
     title: 'Ритуалы',
     description: 'Твои повторяемые опоры и сегодняшний прогресс.',
@@ -58,6 +50,14 @@ export const PRACTICE_COLLECTIONS = [
     description: 'Выбранные ограничения и их текущий статус.',
     kind: 'asceza',
     source: 'ascezas',
+  },
+  {
+    key: 'psychological',
+    title: 'Психологические практики',
+    description: 'Четыре коротких практики для начала, выбора и завершения.',
+    kind: 'release',
+    active: false,
+    soon: true,
   },
   {
     key: 'lila',
