@@ -2,15 +2,6 @@ import { PRACTICE_KEYS, isPracticeAvailable } from '../config/practiceAvailabili
 
 export const PRACTICE_CATALOG_REGISTRY = [
   {
-    key: PRACTICE_KEYS.meditation,
-    title: 'Медитация',
-    subtitle: 'заметить своё и выбрать один спокойный шаг',
-    section: 'Практики',
-    kind: 'meditation',
-    completionSource: 'none',
-    sub: 'meditation',
-  },
-  {
     key: PRACTICE_KEYS.rituals,
     title: 'Ритуалы',
     subtitle: 'обряды, что держат твой день',
@@ -29,42 +20,6 @@ export const PRACTICE_CATALOG_REGISTRY = [
     sub: 'ascezas',
   },
   {
-    key: PRACTICE_KEYS.firstStep,
-    title: 'Первый шаг',
-    subtitle: 'маленький шаг, когда трудно начать',
-    section: 'Психологические практики',
-    kind: 'next-step',
-    completionSource: 'local',
-    sub: 'first-step',
-  },
-  {
-    key: PRACTICE_KEYS.noBlame,
-    title: 'Без вины',
-    subtitle: 'когда откладываешь и знаешь это',
-    section: 'Психологические практики',
-    kind: 'release',
-    completionSource: 'local',
-    sub: 'no-blame',
-  },
-  {
-    key: PRACTICE_KEYS.narrowFocus,
-    title: 'Одно из всех',
-    subtitle: 'когда всё сразу — слишком много',
-    section: 'Психологические практики',
-    kind: 'focus',
-    completionSource: 'local',
-    sub: 'narrow-focus',
-  },
-  {
-    key: PRACTICE_KEYS.oneFinish,
-    title: 'Один финиш',
-    subtitle: 'маленький кусок, доведённый до конца',
-    section: 'Психологические практики',
-    kind: 'next-step',
-    completionSource: 'local',
-    sub: 'one-finish',
-  },
-  {
     key: PRACTICE_KEYS.lilaDiscover || 'lila-discover',
     title: 'Разобраться через Лилу',
     subtitle: 'карта, несколько вопросов и один рабочий шаг',
@@ -73,56 +28,22 @@ export const PRACTICE_CATALOG_REGISTRY = [
     completionSource: 'none',
     sub: 'lila-discover',
   },
-  {
-    key: PRACTICE_KEYS.breathing,
-    title: 'Дыхание',
-    subtitle: 'успокоить систему за минуту',
-    section: 'Живая линза',
-    kind: 'breath',
-    completionSource: 'none',
-    sub: 'breathing',
-  },
-  {
-    key: PRACTICE_KEYS.focus,
-    title: 'Фокус',
-    subtitle: 'таймер глубокой работы',
-    section: 'Живая линза',
-    kind: 'focus',
-    completionSource: 'none',
-    sub: 'focus',
-  },
-  {
-    key: PRACTICE_KEYS.brain,
-    title: 'Нейротренажёр',
-    subtitle: 'внимание, память, реакция',
-    section: 'Живая линза',
-    kind: 'meditation',
-    completionSource: 'none',
-    sub: 'brain',
-  },
 ]
 
 export const PRACTICE_RAIL_KEYS = [
   'lila-discover',
-  PRACTICE_KEYS.meditation,
   PRACTICE_KEYS.rituals,
   PRACTICE_KEYS.ascezas,
-  PRACTICE_KEYS.firstStep,
-  PRACTICE_KEYS.noBlame,
 ]
 
 export const PRACTICE_COLLECTIONS = [
   {
     key: 'psychological',
     title: 'Психологические практики',
-    description: 'Четыре коротких flow, когда нужно начать, выбрать или завершить.',
+    description: 'Четыре коротких практики для начала, выбора и завершения.',
     kind: 'release',
-    practiceKeys: [
-      PRACTICE_KEYS.firstStep,
-      PRACTICE_KEYS.noBlame,
-      PRACTICE_KEYS.narrowFocus,
-      PRACTICE_KEYS.oneFinish,
-    ],
+    active: false,
+    soon: true,
   },
   {
     key: 'rituals',
@@ -150,12 +71,8 @@ export const PRACTICE_COLLECTIONS = [
     title: 'Живая линза',
     description: 'Четыре способа настроить внимание и состояние.',
     kind: 'focus',
-    practiceKeys: [
-      PRACTICE_KEYS.meditation,
-      PRACTICE_KEYS.breathing,
-      PRACTICE_KEYS.focus,
-      PRACTICE_KEYS.brain,
-    ],
+    active: false,
+    soon: true,
   },
 ]
 

@@ -3,28 +3,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
-import { isPracticeAvailable, PRACTICE_KEYS } from '../config/practiceAvailability'
-import { readOneOffPracticeHistory } from '../lib/oneOffPracticeHistory'
-import { localDayId } from '../lib/morningPilot'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
-import BackButton from '../components/BackButton'
 
 import './PracticeFlow.css'
 
 import Rituals from './Rituals'
 import Ascezas from './Ascezas'
-import BrainTrainer from './BrainTrainer'
-import Focus from './Focus'
-import Breathing from './Breathing'
-import FirstStepFlow from './FirstStepFlow'
-import MeditationFlow from './MeditationFlow'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
-import ProcrastinationFlow from './ProcrastinationFlow'
-import NarrowFocusFlow from './NarrowFocusFlow'
-import FinishFlow from './FinishFlow'
 import ThemeScreen from './ThemeScreen'
 
 function PracticesCatalogLoading() {
@@ -71,11 +59,6 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
   const focusedFlowOpen = [
-    'first-step',
-    'no-blame',
-    'narrow-focus',
-    'one-finish',
-    'meditation',
     'journal',
     'self-discovery',
     'lila-discover',
@@ -101,12 +84,6 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
 
     return () => onRegisterBack?.(null)
   }, [onRegisterBack, selectedCollectionKey, selectedThemeId, sub])
-  const completedToday = new Set(
-    readOneOffPracticeHistory(user?.id)
-      .filter(entry => entry.day === localDayId(new Date()))
-      .map(entry => entry.practiceKey)
-  )
-
   /*
    * initialSub приходит из навигации (открыть Practices сразу на
    * конкретном экране) — синхронизация с внешним пропом, без побочных
@@ -202,21 +179,6 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     return <Ascezas user={user} onBack={() => setSub(null)} />
   }
 
-  if (sub === 'first-step') {
-    return (
-      <FirstStepFlow
-        userId={user.id}
-        onClose={returnToPracticeOrigin}
-        onComplete={returnToPracticeOrigin}
-      />
-    )
-  }
-
-  // MeditationFlow kept in tree for future; entry gated by isPracticeAvailable.
-  if (sub === 'meditation' && isPracticeAvailable(PRACTICE_KEYS.meditation)) {
-    return <MeditationFlow onClose={() => setSub(null)} />
-  }
-
   if (sub === 'journal') {
     return <GuidedSelfDiscoveryFlow userId={user.id} onClose={() => setSub(null)} />
   }
@@ -232,60 +194,6 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         onBack={() => setSub(null)}
         onOpenJournal={() => setSub('journal')}
       />
-    )
-  }
-
-  if (sub === 'no-blame') {
-    return (
-      <ProcrastinationFlow
-        userId={user.id}
-        onClose={returnToPracticeOrigin}
-        onComplete={returnToPracticeOrigin}
-      />
-    )
-  }
-
-  if (sub === 'narrow-focus') {
-    return (
-      <NarrowFocusFlow
-        userId={user.id}
-        onClose={returnToPracticeOrigin}
-        onComplete={returnToPracticeOrigin}
-      />
-    )
-  }
-
-  if (sub === 'one-finish') {
-    return (
-      <FinishFlow
-        userId={user.id}
-        onClose={returnToPracticeOrigin}
-        onComplete={returnToPracticeOrigin}
-      />
-    )
-  }
-
-  if (sub === 'brain') {
-    return <BrainTrainer user={user} onBack={() => setSub(null)} onActiveChange={onGameChange} />
-  }
-
-  if (sub === 'breathing') {
-    return <Breathing user={user} onBack={() => setSub(null)} />
-  }
-
-  if (sub === 'focus') {
-    return (
-      <div className="w-full flex flex-col items-center">
-        {/* MXL-PRACTICES-FOCUS-CRASH: SubHeader был удалён при переводе
-            на PracticeCatalogV2 (dfa6c0e8) — здесь использовался
-            несуществующий компонент и «Фокус» падал с ReferenceError.
-            Возврат — через общий BackButton (Telegram: системная кнопка). */}
-        <div className="w-full max-w-md px-5 flex items-start">
-          <BackButton onClick={() => setSub(null)} label="Назад" />
-        </div>
-
-        <Focus user={user} />
-      </div>
     )
   }
 
@@ -311,7 +219,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     )
   }
 
-  const catalogPractices = buildPracticeViewModels({ rituals, ascezas, completedToday })
+  const catalogPractices = buildPracticeViewModels({ rituals, ascezas })
 
   return (
     <div className="mx-practices-catalog-shell w-full max-w-md px-5">
@@ -330,7 +238,6 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         selectedCollectionKey={selectedCollectionKey}
         onCollectionChange={setSelectedCollectionKey}
         onOpenPractice={(practice, collectionKey = null) => {
-          if (practice?.key && !isPracticeAvailable(practice.key)) return
           platform.haptic('light')
           if (practice.key === 'lila-discover') {
             setSelectedCollectionKey(null)

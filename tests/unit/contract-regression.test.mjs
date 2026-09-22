@@ -64,57 +64,6 @@ test('contract: entry schema declares the required fields from the entry-contrac
 // 2. Allowlist of practice/entry types — guards against silent proliferation
 // ---------------------------------------------------------------------------
 
-const KNOWN_PRACTICE_LOG_FILES = [
-  'lib/firstStepPractice.js',
-  'lib/noBlamePractice.js',
-  'lib/oneFinishPractice.js',
-  'lib/narrowFocusPractice.js',
-]
-
-function extractEnum(source, fieldName) {
-  const match = source.match(new RegExp(`${fieldName}:\\s*((?:'[^']+'\\s*\\|?\\s*)+)`))
-  if (!match) return null
-  return [...match[1].matchAll(/'([^']+)'/g)].map(m => m[1])
-}
-
-test('contract: the four practice-completion logs declare the same outcome/reflection allowlist', () => {
-  const enums = KNOWN_PRACTICE_LOG_FILES.map(path => {
-    const source = readSource(path)
-    return {
-      path,
-      outcome: extractEnum(source, 'outcome'),
-      reflection: extractEnum(source, 'reflection'),
-    }
-  })
-
-  for (const entry of enums) {
-    assert.ok(entry.outcome && entry.outcome.length > 0, `${entry.path}: no documented outcome allowlist found`)
-    assert.ok(entry.reflection && entry.reflection.length > 0, `${entry.path}: no documented reflection allowlist found`)
-  }
-
-  const [first, ...rest] = enums
-  for (const entry of rest) {
-    assert.deepEqual(entry.outcome, first.outcome, `${entry.path} outcome allowlist diverges from ${first.path}`)
-    assert.deepEqual(entry.reflection, first.reflection, `${entry.path} reflection allowlist diverges from ${first.path}`)
-  }
-})
-
-test('contract: no unreviewed fifth practice-completion storage file has appeared', () => {
-  // Regression guard: if a new one-shot practice ships a fifth `mx-*-v1`
-  // local completion log, this test starts failing until this harness (and
-  // the practice-completion conflict note) are deliberately updated for it.
-  const prefixes = KNOWN_PRACTICE_LOG_FILES.map(path => {
-    const match = readSource(path).match(/STORAGE_PREFIX = '([^']+)'/)
-    assert.ok(match, `${path}: STORAGE_PREFIX not found`)
-    return match[1]
-  })
-
-  assert.deepEqual(
-    [...prefixes].sort(),
-    ['mx-first-step-v1', 'mx-narrow-focus-v1', 'mx-no-blame-v1', 'mx-one-finish-v1'].sort()
-  )
-})
-
 // ---------------------------------------------------------------------------
 // 3. Idempotency (MXL-JOURNAL-PERSISTENCE-001, once merged)
 // ---------------------------------------------------------------------------
@@ -197,18 +146,6 @@ test('contract: normalizeEntry degrades malformed/legacy input to null, never th
 // ---------------------------------------------------------------------------
 // 7. No diagnostic/treatment claims in user-facing outcome labels
 // ---------------------------------------------------------------------------
-
-test('contract: practice outcome/reflection allowlist values pass the existing descriptive-insight filter', async () => {
-  const { isDescriptiveInsight } = await import('../../src/lib/descriptiveInsights.js')
-
-  const source = readSource('lib/firstStepPractice.js')
-  const values = [...(extractEnum(source, 'outcome') ?? []), ...(extractEnum(source, 'reflection') ?? [])]
-
-  assert.ok(values.length > 0, 'expected to find outcome/reflection values to check')
-  for (const value of values) {
-    assert.equal(isDescriptiveInsight(value), true, `"${value}" reads as unsafe/diagnostic per descriptiveInsights.js`)
-  }
-})
 
 // ---------------------------------------------------------------------------
 // 8. No fabricated backend endpoints

@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, ChevronRight, RefreshCw } from 'lucide-react'
 
 import { api } from '../../lib/api'
-import { readOneOffPracticeHistory } from '../../lib/oneOffPracticeHistory'
-import { localDayId } from '../../lib/morningPilot'
 import { platform } from '../../platform'
 import ThemeScreen from '../../screens/ThemeScreen'
 import JournalFlow from '../../screens/JournalFlow'
@@ -447,12 +445,7 @@ export default function LayeredPracticeCatalogExperiment({ mode = 'after' }) {
   const [openedPractice, setOpenedPractice] = useState(null)
   const completedToday = useMemo(() => {
     if (!previewUser) return new Set(LAYERED_CATALOG_DEMO_COMPLETED_KEYS)
-
-    return new Set(
-      readOneOffPracticeHistory(previewUser.id)
-        .filter(entry => entry.day === localDayId(new Date()))
-        .map(entry => entry.practiceKey)
-    )
+    return new Set()
   }, [previewUser])
   const practices = useMemo(
     () => buildPracticeViewModels({ rituals, ascezas, completedToday }),

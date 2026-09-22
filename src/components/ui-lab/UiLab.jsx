@@ -7,7 +7,6 @@ import ProductionBaseline from './ProductionBaseline'
 import LayeredPracticeCatalogExperiment from './LayeredPracticeCatalogExperiment'
 import EveningReviewExperiment from './EveningReviewExperiment'
 import DailyCanonicalExperiment from './DailyCanonicalExperiment'
-import FocusCheck from './FocusCheck'
 import HistoryTrendsJournalExperiment from './HistoryTrendsJournalExperiment'
 import UiLabHub from './UiLabHub'
 import LibraryExperiment from './LibraryExperiment'
@@ -31,7 +30,6 @@ export function resolveUiLabSection(value = 'hub') {
       'practice-catalog',
       'library',
       'library-programs',
-      'focus-check',
       'progress-observation',
       'progress-redesign',
       'mentor-picker',
@@ -163,7 +161,6 @@ export default function UiLab({ initialSection = 'hub' }) {
               </div>
             </section>
           )}
-          {section === 'focus-check' && <FocusCheck />}
           {section === 'library' && <LibraryExperiment />}
           {section === 'library-programs' && <LibraryProgramsExperiment />}
           {section === 'progress-observation' && <ProgressObservationExperiment />}
