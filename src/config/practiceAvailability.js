@@ -1,30 +1,12 @@
 export const PRACTICE_KEYS = Object.freeze({
   rituals: 'rituals',
   ascezas: 'ascezas',
-  firstStep: 'first-step',
-  noBlame: 'no-blame',
-  narrowFocus: 'narrow-focus',
-  oneFinish: 'one-finish',
-  brain: 'brain',
-  breathing: 'breathing',
-  focus: 'focus',
-  meditation: 'meditation',
 })
 
 export const AVAILABLE_PRACTICES = Object.freeze([
   'lila-discover',
   PRACTICE_KEYS.rituals,
   PRACTICE_KEYS.ascezas,
-  PRACTICE_KEYS.firstStep,
-  PRACTICE_KEYS.noBlame,
-  PRACTICE_KEYS.narrowFocus,
-  PRACTICE_KEYS.oneFinish,
-  // Meditation intentionally not listed: product decision 2026-09-19 —
-  // practice is not ready; card stays in catalog with «Скоро», flow code kept.
-  // MXL-525 G6: «Живая линза» (brain/breathing) — рабочие практики.
-  // Focus оставлен в registry, но закрыт до пересмотра дизайна; в каталоге — «Скоро».
-  PRACTICE_KEYS.brain,
-  PRACTICE_KEYS.breathing,
 ])
 
 export function isPracticeAvailable(practiceKey) {

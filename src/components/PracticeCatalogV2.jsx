@@ -204,18 +204,24 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
 }
 
 function CollectionTile({ collection, onOpen }) {
+  const isSoon = collection.active === false || collection.soon
   return (
     <button
       className="mx-layered-catalog__collection"
       data-collection-key={collection.key}
       type="button"
-      onClick={() => onOpen(collection)}
+      disabled={isSoon}
+      aria-label={isSoon ? `${collection.title}, скоро` : `Открыть ${collection.title}`}
+      onClick={() => {
+        if (!isSoon) onOpen(collection)
+      }}
     >
       <span className="mx-layered-catalog__collection-art" aria-hidden="true">
         <PracticeGlyph kind={collection.kind} />
       </span>
       <strong>{collection.title}</strong>
-      <small>{collection.description}</small>
+      <small>{isSoon ? 'Скоро' : collection.description}</small>
+      {isSoon && <span className="mx-layered-category__completion">Скоро</span>}
       <ChevronRight
         className="mx-layered-catalog__collection-chevron"
         size={17}
