@@ -22,8 +22,7 @@ import SeriesBadges from './SeriesBadges'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
-import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
-import { isPreviewDemoMode } from '../lib/demoMode'
+import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { currentCheckinStreak } from '../lib/series'
 
 const TODAY_COMPARE_REQUESTED =
@@ -138,56 +137,6 @@ function WeekStrip() {
   )
 }
 
-// ============================================================
-// ONE NEXT ACTION
-// ============================================================
-
-function deriveNextAction({ rituals, ascezas }) {
-  const undoneRituals = rituals.filter(ritual => !ritual.today_level)
-
-  if (undoneRituals.length > 0) {
-    return {
-      kind: 'ritual',
-      title: undoneRituals[0].name,
-      meta: 'ритуал',
-      sub: 'rituals',
-    }
-  }
-
-  const unmarkedAscezas = ascezas.filter(asceza => !asceza.today_status)
-
-  if (unmarkedAscezas.length > 0) {
-    return {
-      kind: 'asceza',
-      title: unmarkedAscezas[0].name,
-      meta: 'аскеза · отметься честно',
-      sub: 'ascezas',
-    }
-  }
-
-  return null
-}
-
-function formatRemainingActions(count) {
-  if (count <= 0) {
-    return 'Это последнее на сегодня'
-  }
-
-  const lastTwoDigits = count % 100
-  const lastDigit = count % 10
-
-  const noun =
-    lastTwoDigits >= 11 && lastTwoDigits <= 14
-      ? 'действий'
-      : lastDigit === 1
-        ? 'действие'
-        : lastDigit >= 2 && lastDigit <= 4
-          ? 'действия'
-          : 'действий'
-
-  return `После этого останется ещё ${count} ${noun}`
-}
-
 function pickCurrentTheme(themes) {
   if (!Array.isArray(themes) || themes.length === 0) return null
 
@@ -204,7 +153,6 @@ export default function Today({
   initialSub = null,
   returnFlowActive = false,
   onReturnFlowEvent,
-  onGoMentor,
   onFlowChange,
   onRegisterBack,
   onOpenSettings,
@@ -417,6 +365,17 @@ export default function Today({
     )
   }
 
+  if (sub === 'checkinRecap' && checkin) {
+    return (
+      <History
+        user={user}
+        initialSelectedDay={{ date: checkin.date, checkin }}
+        onInitialBack={() => changeSub(null)}
+        recapOnly
+      />
+    )
+  }
+
   // ============================================================
   // ТЕМА НЕДЕЛИ
   // ============================================================
@@ -530,61 +489,13 @@ export default function Today({
 
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
-  const next = deriveNextAction({
-    rituals,
-    ascezas,
-  })
-
   const isEmpty = total === 0
 
   const checkinDone = !!checkin
 
-  const referenceDemoCheckin = isPreviewDemoMode() && !previewState && checkinDone
-  const checkinAsHero =
-    referenceDemoCheckin || todayState === 'checkinPending' || todayState === 'reviewPending'
-
-  /*
-   * ГЕРОЙ-ИЛЛЮСТРАЦИЯ ПО СОСТОЯНИЮ ДНЯ
-   *
-   * Раньше картинка выбиралась по признаку
-   * «есть ли вообще ритуалы и аскезы»: пусто —
-   * нить, не пусто — лабиринт. Отсюда и разные
-   * картинки на разных аккаунтах: дело было не
-   * в состоянии дня, а в наполненности профиля.
-   *
-   * Теперь это один рисунок с состоянием, а не
-   * три разные картинки. Раньше за день человек
-   * видел нить, потом лабиринт, потом дверь — и
-   * ни один образ не отвечал на вопрос «где я
-   * сейчас». «Дуга дня» отвечает: свет выходит
-   * на горизонт утром, поднимается ровно на
-   * долю сделанного и садится к ночи.
-   *
-   * Брендовый символ не участвует в этой hero-анимации: он статично
-   * используется только в собственных брендовых точках интерфейса.
-   */
-  const heroArt = (
-    <div className="w-full rounded-[28px] bg-artbed overflow-hidden mb-5 py-2">
-      <DayArc
-        state={todayState}
-        done={done}
-        total={total}
-        className="w-full max-w-[300px] h-[150px] mx-auto text-gold"
-      />
-    </div>
-  )
+  const checkinAsHero = !checkinDone
 
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
-
-  const remainRituals = rituals.filter(ritual => !ritual.today_level).length
-
-  const remainAscezas = ascezas.filter(asceza => !asceza.today_status).length
-
-  const remainAfter = Math.max(0, remainRituals + remainAscezas - 1)
-
-  const remainingActionsText = formatRemainingActions(remainAfter)
-
-  const motionExperimentEnabled = !TODAY_COMPARE_REQUESTED || todayVariant === 'after'
 
   /*
    * MXL-UX-U07: hero contract — явная state → presentation мапа.
@@ -601,43 +512,15 @@ export default function Today({
    * временный экспериментальный слой поверх итогового состояния 'next',
    * не часть самого контракта.
    */
-  const heroPresentationState =
-    todayState === 'dayClosed' ? 'dayClosed' : isEmpty ? 'empty' : next ? 'next' : 'allDone'
-
   const heroCheckinContent = (
     <>
-      <div className="mx-type-meta text-muted mb-2">
-        {isPreviewDemoMode()
-          ? referenceDemoCheckin
-            ? 'ЧЕК-ИН ЗАВЕРШЁН'
-            : 'Ежедневный чек-ин'
-          : todayState === 'reviewPending'
-            ? 'Анализ дня'
-            : 'Идея дня'}
-      </div>
-
-      {!referenceDemoCheckin && (
-        <h2 className="font-display mx-type-hero text-cream">
-          {isPreviewDemoMode()
-            ? 'Проверь себя.'
-            : todayState === 'reviewPending'
-              ? 'Разобрать день?'
-              : 'Как ты?'}
-        </h2>
-      )}
-
+      <div className="mx-type-meta text-muted mb-2">Ежедневный чек-ин</div>
+      <h2 className="font-display mx-type-hero text-cream">Как ты?</h2>
       <p className="mx-type-body text-muted mt-2">
-        {isPreviewDemoMode()
-          ? referenceDemoCheckin
-            ? ''
-            : todayState === 'reviewPending'
-              ? 'Уроки и то, чем стоит гордиться'
-              : 'Короткая утренняя настройка'
-          : todayState === 'reviewPending'
-            ? 'Уроки и то, чем стоит гордиться'
-            : 'Короткая утренняя настройка'}
+        {todayState === 'reviewPending'
+          ? 'Уроки и то, чем стоит гордиться'
+          : 'Короткая утренняя настройка'}
       </p>
-
       {todayState === 'reviewPending' && (
         <div className="w-full max-w-sm mx-auto mt-5 space-y-2 text-left">
           {['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?'].map(question => (
@@ -648,134 +531,32 @@ export default function Today({
               {question}
             </div>
           ))}
-
           <div className="text-[11px] text-gold font-semibold px-1 pt-1">
             + три вещи, которыми гордишься
           </div>
         </div>
       )}
-
-      {!referenceDemoCheckin && (
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            changeSub('checkin')
-          }}
-          className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-        >
-          {isPreviewDemoMode()
-            ? 'Начать'
-            : todayState === 'reviewPending'
-              ? 'Разобрать день'
-              : 'Пройти чек-ин'}
-        </button>
-      )}
-
-      {!referenceDemoCheckin && next && (
-        <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>
-      )}
+      <button
+        onClick={() => {
+          platform.haptic('medium')
+          changeSub('checkin')
+        }}
+        className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
+      >
+        {todayState === 'reviewPending' ? 'Разобрать день' : 'Пройти чек-ин'}
+      </button>
     </>
   )
 
   const heroContentByState = {
-    dayClosed: (
+    checkinDone: (
       <>
         <div className="mx-type-meta text-muted mb-2">Сегодня</div>
-
-        <h2 className="font-display mx-type-hero text-cream">День закрыт</h2>
-
-        <p className="mx-type-body text-muted mt-2">Вечерний разбор завершён</p>
-
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            changeSub('checkin')
-          }}
-          className="cta-pill mx-type-control px-9 py-4 mx-auto mt-7"
-        >
-          Открыть разбор снова
-        </button>
-      </>
-    ),
-
-    empty: (
-      <>
-        <div className="mx-type-meta text-muted mb-2">Твой путь ждёт</div>
-
-        <h2 className="font-display mx-type-hero text-cream">Добавь первый ритуал</h2>
-
-        <p className="mx-type-body text-muted mt-2">
-          Система работает через регулярность — начни с одного
-        </p>
-
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            onOpenPractice('rituals')
-          }}
-          className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-        >
-          Начать
-        </button>
-      </>
-    ),
-
-    next:
-      next &&
-      (motionExperimentEnabled ? (
-        <NextActionReveal
-          next={next}
-          remainingActionsText={remainingActionsText}
-          onStart={() => {
-            platform.haptic('medium')
-
-            onOpenPractice(next.sub)
-          }}
-        />
-      ) : (
-        <>
-          <div className="mx-type-meta text-muted mb-2">Действие дня</div>
-
-          <h2 className="font-display mx-type-hero text-cream">{next.title}</h2>
-
-          <p className="mx-type-body text-muted mt-2">{next.meta}</p>
-
-          <button
-            onClick={() => {
-              platform.haptic('medium')
-
-              onOpenPractice(next.sub)
-            }}
-            className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-          >
-            Начать
-          </button>
-
-          <p className="mx-type-meta text-muted mt-5">{remainingActionsText}</p>
-        </>
-      )),
-
-    allDone: (
-      <>
-        <div className="mx-type-meta text-muted mb-2">Новый шаг</div>
-
-        <h2 className="font-display mx-type-hero text-cream">Сегодня ты выше, чем вчера</h2>
-
-        <p className="mx-type-body text-muted mt-2">Все практики закрыты</p>
-
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            onGoMentor()
-          }}
-          className="cta-pill mx-type-control px-9 py-4 mx-auto mt-7"
-        >
-          Поговорить с наставником
-        </button>
+        <h2 className="font-display mx-type-hero text-cream">Чек-ин пройден.</h2>
+        <div className="mx-today-checkin-pill">
+          настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+        </div>
+        <p className="mx-type-body text-muted mt-4">Нажми, чтобы посмотреть ответы</p>
       </>
     ),
   }
@@ -823,32 +604,22 @@ export default function Today({
       */}
       <div
         className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
-        data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
-        data-demo-checkin-complete={referenceDemoCheckin ? 'true' : undefined}
-        role={referenceDemoCheckin ? 'button' : undefined}
-        tabIndex={referenceDemoCheckin ? 0 : undefined}
-        aria-label={referenceDemoCheckin ? 'Открыть check-in' : undefined}
-        onClick={referenceDemoCheckin ? () => changeSub('checkin') : undefined}
+        data-complete={checkinDone}
+        role={checkinDone ? 'button' : undefined}
+        tabIndex={checkinDone ? 0 : undefined}
+        aria-label={checkinDone ? 'Открыть recap сегодняшнего check-in' : undefined}
+        onClick={checkinDone ? () => changeSub('checkinRecap') : undefined}
       >
-        {referenceDemoCheckin ? (
-          <img className="mx-today-reference-bird" src="/checkin-bird-reference.png" alt="" />
-        ) : (
-          heroPresentationState !== 'allDone' &&
-          heroPresentationState !== 'dayClosed' &&
-          (motionExperimentEnabled ? (
-            <div className="mx-today-hero-art" aria-label="Один следующий шаг">
-              <SemanticGlyph
-                kind="next-step"
-                debugSource="Today.jsx"
-                className="mx-today-hero-art-glyph"
-              />
-            </div>
-          ) : (
-            heroArt
-          ))
+        {!checkinDone && (
+          <div className="mx-today-hero-art" aria-label="Один следующий шаг">
+            <SemanticGlyph
+              kind="next-step"
+              debugSource="Today.jsx"
+              className="mx-today-hero-art-glyph"
+            />
+          </div>
         )}
-
-        {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
+        {checkinAsHero ? heroCheckinContent : heroContentByState.checkinDone}
       </div>
 
       {/*
