@@ -218,11 +218,11 @@ test.describe('MXL-010 automated technical gate', () => {
     // возврат на Today выполняется следующим шагом browser history.
     await page.goBack()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: 'Открыть разбор снова' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Открыть recap сегодняшнего check-in' })).toBeVisible()
 
     await page.reload()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: 'Открыть разбор снова' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Открыть recap сегодняшнего check-in' })).toBeVisible()
     expect(fixtures.savedCheckins.filter(item => item.review_completed === true)).toHaveLength(1)
 
     const calendarDays = page.getByLabel('Календарь недели').locator('.mx-today-week-day')

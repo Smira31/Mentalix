@@ -7,6 +7,7 @@ import { buildBadges } from '../lib/badges'
 import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
 import { platform, platformName } from '../platform'
+import { MoreHorizontal } from 'lucide-react'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './mentalix/personas'
 
 // ── История: лента дней из чек-инов, активности и local-only journal, как
@@ -76,7 +77,7 @@ function JournalDayCard({ entry }) {
   )
 }
 
-function HistoryDetail({
+export function HistoryDetail({
   day,
   onBack,
   onDelete,
@@ -87,6 +88,7 @@ function HistoryDetail({
   savingContext,
   contextError,
   onDiscuss,
+  recapOnly = false,
 }) {
   const checkin = day.checkin
   const wins = checkin?.wins || []
@@ -105,174 +107,219 @@ function HistoryDetail({
         <span aria-hidden="true" />
       </div>
 
-      <div className="mt-5 space-y-4 rounded-3xl bg-emerald p-5">
-        {checkin ? (
-          <>
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
-                настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
-              </span>
-              {checkin.energy && (
-                <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
-                  энергия {checkin.energy}/5
-                </span>
-              )}
-              {checkin.focus && (
-                <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
-                  фокус {checkin.focus}/5
-                </span>
-              )}
-              {checkin.emotion && (
-                <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
-                  {checkin.emotion}
-                </span>
-              )}
-            </div>
-
-            {checkin.note && (
-              <div>
-                <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">
-                  Утренняя запись
-                </div>
-                <MarkdownText
-                  content={checkin.note}
-                  className="space-y-2 text-[15px] leading-relaxed text-cream"
-                />
-              </div>
-            )}
-
-            {checkin.lessons && (
-              <div className="rounded-2xl bg-emerald-light p-4">
-                <div className="mb-2 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
-                  Уроки дня
-                </div>
-                <MarkdownText
-                  content={checkin.lessons}
-                  className="space-y-2 text-[14px] leading-relaxed text-cream"
-                />
-              </div>
-            )}
-
-            {wins.length > 0 && (
-              <div className="rounded-2xl bg-emerald-light p-4">
-                <div className="mb-2.5 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
-                  Чем горжусь
-                </div>
-                <ul className="space-y-2">
-                  {wins.map((win, index) => (
-                    <li key={`${day.date}-${index}`} className="flex items-start gap-2.5">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/15 text-[11px] font-bold text-gold">
-                        {index + 1}
-                      </span>
-                      <MarkdownText
-                        content={win}
-                        className="min-w-0 space-y-1 text-[14px] leading-snug text-cream"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {!checkin.note && !checkin.lessons && wins.length === 0 && (
-              <p className="text-[14px] leading-relaxed text-muted">
-                В этот день сохранено состояние и активность, но текстовой записи нет.
-              </p>
-            )}
-          </>
-        ) : (
-          <p className="text-[14px] leading-relaxed text-muted">
-            В этот день сохранена активность или практика, но check-in не сохранён.
-          </p>
-        )}
-
-        {day.activity?.count > 0 && (
-          <p className="text-[13px] font-semibold text-muted">
-            Ритуалов закрыто: {day.activity.count}
-            {day.activity.breaks > 0 && (
-              <span className="text-muted"> · срывов аскез: {day.activity.breaks}</span>
-            )}
-          </p>
-        )}
-
-        {day.journal && <JournalDayCard entry={day.journal} />}
-        {day.oneOffPractices && <OneOffPracticeDayCard entries={day.oneOffPractices} />}
-
-        {checkin && (
-          <div className="border-t border-cream/10 pt-4">
-            <h3 className="text-[14px] font-semibold text-cream">Эта запись и AI</h3>
-            <p className="mt-1 text-[12px] leading-relaxed text-muted">
-              AI получает запись только после этого выбора и только при включённом персональном
-              контексте в «Наставнике». Неотмеченные записи ему не передаются.
-            </p>
-            {canManageAiContext ? (
-              <button
-                type="button"
-                role="switch"
-                aria-checked={Boolean(checkin.ai_context_enabled)}
-                aria-label="Разрешение AI использовать эту запись"
-                onClick={() => onContextChange(!checkin.ai_context_enabled)}
-                disabled={savingContext}
-                className="mt-3 min-h-11 rounded-full bg-cream/5 px-3 text-left text-[12px] font-semibold text-gold disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {savingContext
-                  ? 'Сохраняем…'
-                  : checkin.ai_context_enabled
-                    ? 'AI может использовать запись — отключить'
-                    : 'Разрешить AI использовать эту запись'}
-              </button>
-            ) : (
-              <p className="mt-2 text-[12px] leading-relaxed text-muted">
-                Выбор контекста доступен в Telegram Mini App с проверенной подписью.
-              </p>
-            )}
-            {contextError && (
-              <p role="alert" className="mt-2 text-[12px] text-red-300">
-                {contextError}
-              </p>
-            )}
-            {checkin.ai_context_enabled ? (
-              <button
-                type="button"
-                onClick={onDiscuss}
-                className="mt-3 min-h-11 rounded-full bg-gold/10 px-3 text-left text-[12px] font-semibold text-gold"
-              >
-                Обсудить с AI
-              </button>
-            ) : (
-              <p className="mt-3 text-[12px] leading-relaxed text-muted">
-                Включи персональный контекст выше, чтобы обсудить эту запись с AI.
-              </p>
-            )}
-            <p className="mb-3 mt-5 text-[12px] leading-relaxed text-muted">
-              Удаление необратимо: исчезнет только этот check-in и его личные теги. Активность
-              ритуалов за день сохранится.
-            </p>
+      {recapOnly ? (
+        <div className="mt-5 rounded-3xl bg-emerald p-5">
+          <div className="mb-5 flex items-center justify-between">
+            <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
+              Сегодняшний check-in
+            </span>
             <button
               type="button"
-              onClick={onDelete}
-              disabled={deleting}
-              className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label="Открыть меню check-in"
+              className="mx-icon-button"
+              onClick={() => {}}
             >
-              {deleting ? 'Удаляем…' : 'Удалить эту запись'}
+              <MoreHorizontal size={20} aria-hidden="true" />
             </button>
-            {deleteError && (
-              <p role="alert" className="mt-2 text-[12px] text-red-300">
-                {deleteError}
-              </p>
-            )}
           </div>
-        )}
-      </div>
+          {[
+            ['Как ты сейчас?', `настроение: ${MOOD_WORDS[(checkin?.mood || 3) - 1]}`],
+            ['Сколько в тебе энергии?', `${checkin?.energy || 3}/5`],
+            ['Сколько шума в голове?', `${checkin?.anxiety || 3}/5`],
+            ['Насколько ты собран?', `${checkin?.focus || 3}/5`],
+            checkin?.emotion ? ['Что ты чувствуешь?', checkin.emotion] : null,
+            checkin?.note ? ['Что на уме?', checkin.note] : null,
+            checkin?.lessons ? ['Что получилось и чему научился?', checkin.lessons] : null,
+            ...(checkin?.wins || []).map((win, index) => [`Чем ты гордишься? ${index + 1}`, win]),
+          ]
+            .filter(Boolean)
+            .map(([question, answer]) => (
+              <div
+                key={question}
+                className="border-t border-cream/10 py-4 first:border-t-0 first:pt-0 last:pb-0"
+              >
+                <h3 className="text-[14px] font-bold text-cream">{question}</h3>
+                <p className="mt-1 whitespace-pre-wrap text-[14px] leading-relaxed text-muted">
+                  {answer}
+                </p>
+              </div>
+            ))}
+        </div>
+      ) : (
+        <div className="mt-5 space-y-4 rounded-3xl bg-emerald p-5">
+          {checkin ? (
+            <>
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
+                  настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+                </span>
+                {checkin.energy && (
+                  <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                    энергия {checkin.energy}/5
+                  </span>
+                )}
+                {checkin.focus && (
+                  <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                    фокус {checkin.focus}/5
+                  </span>
+                )}
+                {checkin.emotion && (
+                  <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                    {checkin.emotion}
+                  </span>
+                )}
+              </div>
+
+              {checkin.note && (
+                <div>
+                  <div className="mb-2 text-[12px] font-bold uppercase tracking-wide text-muted">
+                    Утренняя запись
+                  </div>
+                  <MarkdownText
+                    content={checkin.note}
+                    className="space-y-2 text-[15px] leading-relaxed text-cream"
+                  />
+                </div>
+              )}
+
+              {checkin.lessons && (
+                <div className="rounded-2xl bg-emerald-light p-4">
+                  <div className="mb-2 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
+                    Уроки дня
+                  </div>
+                  <MarkdownText
+                    content={checkin.lessons}
+                    className="space-y-2 text-[14px] leading-relaxed text-cream"
+                  />
+                </div>
+              )}
+
+              {wins.length > 0 && (
+                <div className="rounded-2xl bg-emerald-light p-4">
+                  <div className="mb-2.5 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
+                    Чем горжусь
+                  </div>
+                  <ul className="space-y-2">
+                    {wins.map((win, index) => (
+                      <li key={`${day.date}-${index}`} className="flex items-start gap-2.5">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/15 text-[11px] font-bold text-gold">
+                          {index + 1}
+                        </span>
+                        <MarkdownText
+                          content={win}
+                          className="min-w-0 space-y-1 text-[14px] leading-snug text-cream"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {!checkin.note && !checkin.lessons && wins.length === 0 && (
+                <p className="text-[14px] leading-relaxed text-muted">
+                  В этот день сохранено состояние и активность, но текстовой записи нет.
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-[14px] leading-relaxed text-muted">
+              В этот день сохранена активность или практика, но check-in не сохранён.
+            </p>
+          )}
+
+          {day.activity?.count > 0 && (
+            <p className="text-[13px] font-semibold text-muted">
+              Ритуалов закрыто: {day.activity.count}
+              {day.activity.breaks > 0 && (
+                <span className="text-muted"> · срывов аскез: {day.activity.breaks}</span>
+              )}
+            </p>
+          )}
+
+          {day.journal && <JournalDayCard entry={day.journal} />}
+          {day.oneOffPractices && <OneOffPracticeDayCard entries={day.oneOffPractices} />}
+
+          {checkin && (
+            <div className="border-t border-cream/10 pt-4">
+              <h3 className="text-[14px] font-semibold text-cream">Эта запись и AI</h3>
+              <p className="mt-1 text-[12px] leading-relaxed text-muted">
+                AI получает запись только после этого выбора и только при включённом персональном
+                контексте в «Наставнике». Неотмеченные записи ему не передаются.
+              </p>
+              {canManageAiContext ? (
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={Boolean(checkin.ai_context_enabled)}
+                  aria-label="Разрешение AI использовать эту запись"
+                  onClick={() => onContextChange(!checkin.ai_context_enabled)}
+                  disabled={savingContext}
+                  className="mt-3 min-h-11 rounded-full bg-cream/5 px-3 text-left text-[12px] font-semibold text-gold disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {savingContext
+                    ? 'Сохраняем…'
+                    : checkin.ai_context_enabled
+                      ? 'AI может использовать запись — отключить'
+                      : 'Разрешить AI использовать эту запись'}
+                </button>
+              ) : (
+                <p className="mt-2 text-[12px] leading-relaxed text-muted">
+                  Выбор контекста доступен в Telegram Mini App с проверенной подписью.
+                </p>
+              )}
+              {contextError && (
+                <p role="alert" className="mt-2 text-[12px] text-red-300">
+                  {contextError}
+                </p>
+              )}
+              {checkin.ai_context_enabled ? (
+                <button
+                  type="button"
+                  onClick={onDiscuss}
+                  className="mt-3 min-h-11 rounded-full bg-gold/10 px-3 text-left text-[12px] font-semibold text-gold"
+                >
+                  Обсудить с AI
+                </button>
+              ) : (
+                <p className="mt-3 text-[12px] leading-relaxed text-muted">
+                  Включи персональный контекст выше, чтобы обсудить эту запись с AI.
+                </p>
+              )}
+              <p className="mb-3 mt-5 text-[12px] leading-relaxed text-muted">
+                Удаление необратимо: исчезнет только этот check-in и его личные теги. Активность
+                ритуалов за день сохранится.
+              </p>
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={deleting}
+                className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleting ? 'Удаляем…' : 'Удалить эту запись'}
+              </button>
+              {deleteError && (
+                <p role="alert" className="mt-2 text-[12px] text-red-300">
+                  {deleteError}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }
 
-export default function History({ user }) {
+export default function History({
+  user,
+  initialSelectedDay = null,
+  onInitialBack = null,
+  recapOnly = false,
+}) {
   const [days, setDays] = useState(null)
   const [badges, setBadges] = useState(null)
   const [themeEntries, setThemeEntries] = useState(null)
-  const [selectedDay, setSelectedDay] = useState(null)
+  const [selectedDay, setSelectedDay] = useState(initialSelectedDay)
   const [journeySearchOpen, setJourneySearchOpen] = useState(false)
   const [deletingCheckin, setDeletingCheckin] = useState(false)
   const [deleteError, setDeleteError] = useState('')
@@ -481,7 +528,7 @@ export default function History({ user }) {
     return (
       <HistoryDetail
         day={selectedDay}
-        onBack={() => setSelectedDay(null)}
+        onBack={() => (onInitialBack ? onInitialBack() : setSelectedDay(null))}
         onDelete={deleteSelectedCheckin}
         deleting={deletingCheckin}
         deleteError={deleteError}
@@ -490,6 +537,7 @@ export default function History({ user }) {
         savingContext={savingContext}
         contextError={contextError}
         onDiscuss={discussSelectedCheckinWithAI}
+        recapOnly={recapOnly}
       />
     )
   }

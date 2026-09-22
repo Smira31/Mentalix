@@ -29,6 +29,20 @@
   font-weight: 700;
 }
 
+.mx-today-checkin-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  margin: 18px auto 0;
+  padding: 0 12px;
+  border: 1px solid rgb(var(--c-gold) / 0.3);
+  border-radius: 999px;
+  background: rgb(var(--c-gold) / 0.1);
+  color: rgb(var(--c-gold));
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .mx-today-hero-breath {
   height: 16px;
 }
@@ -116,6 +130,20 @@
     min-height: 270px;
     padding: 22px 20px 24px;
     border-radius: var(--mx-radius-card);
+  }
+
+  .mx-today-checkin-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    margin: 18px auto 0;
+    padding: 0 12px;
+    border: 1px solid rgb(var(--c-gold) / 0.3);
+    border-radius: 999px;
+    background: rgb(var(--c-gold) / 0.1);
+    color: rgb(var(--c-gold));
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .mx-today-hero-breath {
@@ -929,6 +957,20 @@
 
   .mx-today-primary-card .cta-pill {
     min-height: 44px;
+  }
+
+  .mx-today-checkin-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    margin: 18px auto 0;
+    padding: 0 12px;
+    border: 1px solid rgb(var(--c-gold) / 0.3);
+    border-radius: 999px;
+    background: rgb(var(--c-gold) / 0.1);
+    color: rgb(var(--c-gold));
+    font-size: 12px;
+    font-weight: 700;
   }
 
   .mx-today-hero-breath {
