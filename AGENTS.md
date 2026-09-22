@@ -1,6 +1,6 @@
 ---
-status: historical
-last_verified: 2026-09-11
+status: normative
+last_verified: 2026-09-22
 ---
 
 # AGENTS.md
@@ -151,8 +151,9 @@ renders via `createPortal` into `document.body`, sizes off `visualViewport`, add
 Telegram-controls offset, and locks `body` scroll while open. The old fade-transform bug
 was removed; do not reintroduce transform-based containing blocks around fixed surfaces.
 
-Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; screens use
-`w-full max-w-md px-5` and nothing else, so all tabs share one visual scale.
+Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; horizontal
+screen padding is defined by one token, `--mx-screen-x: 16px`; screen wrappers use it
+instead of `px-*` classes, so all tabs share one visual scale.
 
 ### Design tokens
 
@@ -168,7 +169,7 @@ Several Tailwind color names in the codebase are legacy aliases (`emerald-deep` 
 aliases in new components.
 
 For every new or changed card, practice illustration, semantic SVG, or persona card,
-the `Mentalix Card System` section in `DESIGN_SYSTEM.md` is mandatory. Reuse or extend
+the Card System v2 section (`DESIGN_SYSTEM.md` §5.1) is mandatory; размеры берутся из таблиц §5.1. Reuse or extend
 `CardSystemGlyph`/`SemanticGlyph`; do not create a parallel visual language. Prototype
 new visual directions in the existing lab or a separate Preview before changing real
 screens, and keep article cards unchanged unless the owner explicitly approves them.
