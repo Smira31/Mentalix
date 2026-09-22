@@ -213,7 +213,7 @@ export default function Profile({ user }) {
         : 'Не удалось загрузить профиль и историю пути.'
 
   return (
-    <div className="w-full max-w-md px-5 animate-fade-in">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
       <div className="flex items-center gap-3.5 mt-4 mb-7">
         <div className="w-12 h-12 rounded-full border border-gold/60 flex items-center justify-center shrink-0">
           <span className="font-display text-[16px] text-gold">
@@ -269,7 +269,7 @@ export default function Profile({ user }) {
       )}
 
       {!loading && !hasLoadError && stats?.best_streak > 0 && (
-        <div className="rounded-[22px] border border-gold/25 bg-emerald px-5 py-4 mb-8">
+        <div className="rounded-[22px] border border-gold/25 bg-emerald px-[var(--mx-screen-x)] py-4 mb-8">
           <div className="text-[11px] text-muted mb-1">личный максимум</div>
 
           <p className="text-[14px] text-cream leading-snug">

@@ -522,7 +522,8 @@ export default function History({
     window.location.href = url.toString()
   }
 
-  if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
+  if (days === null)
+    return <p className="text-muted text-sm px-[var(--mx-screen-x)] pt-6">Загрузка...</p>
 
   if (selectedDay) {
     return (

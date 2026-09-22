@@ -105,7 +105,7 @@ function RitualCard({ ritual, onLog, onDelete, onRestore }) {
        * сразу, без правок в базе.
        */}
       <div
-        className={`-mx-5 shrink-0 min-h-0 mt-3 bg-artbed border-0 mx-practice-detail-art mx-rituals-contract-art ${
+        className={`-mx-[var(--mx-screen-x)] shrink-0 min-h-0 mt-3 bg-artbed border-0 mx-practice-detail-art mx-rituals-contract-art ${
           level ? 'opacity-100' : 'opacity-70'
         }`}
       >
@@ -248,14 +248,16 @@ function CreateRitualScreen({ onCreate, onCancel }) {
    */
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-5`}>
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-[var(--mx-screen-x)]`}
+      >
         <div className="w-full max-w-md mx-auto">
           <BackButton onClick={onCancel} />
         </div>
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body practice-form__scroll`}>
-        <div className="practice-form__inner w-full max-w-md mx-auto px-5 flex flex-col">
+        <div className="practice-form__inner w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-col">
           <div className="mb-8">
             <h2 className="font-display text-[24px] font-semibold text-cream lowercase">
               новый ритуал.
@@ -405,7 +407,7 @@ export default function Rituals({ user, onBack }) {
   }
 
   return (
-    <div className="mx-rituals-screen w-full max-w-md px-5 animate-fade-in flex-1 flex flex-col min-h-0 overflow-hidden">
+    <div className="mx-rituals-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in flex-1 flex flex-col min-h-0 overflow-hidden">
       <div className="flex items-center gap-3 mb-3 shrink-0 mx-rituals-screen__header">
         <BackButton onClick={onBack} />
         <h2 className="font-display text-[20px] text-cream lowercase">ритуалы.</h2>
@@ -447,7 +449,7 @@ export default function Rituals({ user, onBack }) {
           <div
             ref={trackRef}
             onScroll={syncActive}
-            className="mx-rituals-screen__carousel flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
+            className="mx-rituals-screen__carousel flex gap-3 -mx-[var(--mx-screen-x)] px-[var(--mx-screen-x)] pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
             style={{ scrollbarWidth: 'none' }}
           >
             {rituals.map(r => (

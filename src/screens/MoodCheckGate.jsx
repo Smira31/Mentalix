@@ -53,7 +53,9 @@ export default function MoodCheckGate({ onDismiss }) {
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-end px-5`}>
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-end px-[var(--mx-screen-x)]`}
+      >
         <button
           type="button"
           onClick={skip}

@@ -174,11 +174,13 @@ function CompletedSessionViewer({ completedSession, onClose }) {
       className={FULLSCREEN_SHELL_CLASS}
       style={surfaceStyle}
     >
-      <header className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+      <header
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
+      >
         <BackButton onClick={onClose} label="К архиву" />
       </header>
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md px-5 pb-8">
+        <div className="w-full max-w-md px-[var(--mx-screen-x)] pb-8">
           <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Архив записи</p>
           <h3 className="mt-3 font-display text-[28px] leading-tight text-cream">
             {template.title || 'Направленная запись'}
@@ -391,7 +393,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
             draft.steps.some(step => !step.title.trim())
           }
           onClick={save}
-          className="min-h-14 w-full rounded-full bg-gold px-5 text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
         >
           {saving ? 'Сохраняю…' : isEditing ? 'Сохранить новую версию' : 'Сохранить личный шаблон'}
         </button>
@@ -744,7 +746,7 @@ export default function GuidedJournals({ user, onExit }) {
           type="button"
           disabled={loading || !canContinue}
           onClick={() => saveProgress({ complete: isLast })}
-          className="mt-7 min-h-14 w-full rounded-full bg-gold px-5 text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
         >
           {loading ? 'Сохраняю…' : isLast ? 'Завершить запись' : 'Сохранить и продолжить'}
         </button>
@@ -804,7 +806,7 @@ export default function GuidedJournals({ user, onExit }) {
           type="button"
           disabled={loading || deletingTemplate}
           onClick={startOrResume}
-          className="mt-7 min-h-14 w-full rounded-full bg-gold px-5 text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
         >
           {loading ? 'Открываю…' : 'Начать или продолжить'}
         </button>

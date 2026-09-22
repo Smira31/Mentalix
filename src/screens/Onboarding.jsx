@@ -64,7 +64,7 @@ const PLAN_CARDS = [
 // ── шапка: системный Telegram BackButton · прогресс ──
 function Head({ step, total, onBack }) {
   return (
-    <div className="w-full max-w-md px-5 pt-5 grid grid-cols-[1fr_auto_1fr] items-center">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-5 grid grid-cols-[1fr_auto_1fr] items-center">
       <div className="justify-self-start">
         <BackButton onClick={onBack} />
       </div>
@@ -89,7 +89,7 @@ function Option({ label, proof, selected, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="mx-onboarding-option w-full rounded-[22px] px-5 py-4 text-center border-0"
+      className="mx-onboarding-option w-full rounded-[22px] px-[var(--mx-screen-x)] py-4 text-center border-0"
       data-selected={selected}
     >
       <span className="block text-[14px] font-bold">{label}</span>
@@ -290,7 +290,7 @@ export default function Onboarding({ user, onFinish }) {
                       setReminder(r.key)
                     }}
                     className={[
-                      'mx-onboarding-reminder w-full rounded-3xl px-5 py-4 flex items-center gap-4 border-0 text-left',
+                      'mx-onboarding-reminder w-full rounded-3xl px-[var(--mx-screen-x)] py-4 flex items-center gap-4 border-0 text-left',
                       on ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream',
                     ].join(' ')}
                   >
@@ -347,7 +347,7 @@ export default function Onboarding({ user, onFinish }) {
                 return (
                   <div
                     key={i}
-                    className="mx-onboarding-plan-card rounded-3xl bg-emerald px-5 py-4 flex items-center gap-3"
+                    className="mx-onboarding-plan-card rounded-3xl bg-emerald px-[var(--mx-screen-x)] py-4 flex items-center gap-3"
                     data-revealed={shown}
                   >
                     <span className="flex-1 text-[13px] font-semibold text-cream leading-snug">

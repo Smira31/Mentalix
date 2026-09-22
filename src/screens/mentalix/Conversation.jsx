@@ -331,7 +331,7 @@ export default function Conversation({
       {/* ── шапка ── */}
 
       <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mt-2 grid grid-cols-[1fr_auto_1fr] items-center px-5`}
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mt-2 grid grid-cols-[1fr_auto_1fr] items-center px-[var(--mx-screen-x)]`}
       >
         <div className="justify-self-start">
           <BackButton onClick={onBack} />
@@ -348,7 +348,7 @@ export default function Conversation({
 
       <div
         ref={scrollRef}
-        className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-5 pb-6`}
+        className={`${FULLSCREEN_SCROLL_CLASS} mx-conversation-scroll px-[var(--mx-screen-x)] pb-6`}
       >
         {!loading && contextSlot}
 

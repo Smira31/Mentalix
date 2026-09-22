@@ -143,7 +143,7 @@ export default function TodayFocusFlow({
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
       <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-5`}
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header flex items-center gap-3 px-[var(--mx-screen-x)]`}
       >
         <BackButton onClick={onClose} />
       </div>

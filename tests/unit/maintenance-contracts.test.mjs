@@ -856,7 +856,7 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
 
   // Today owns the single greeting row; App must not render a duplicate header.
   assert.doesNotMatch(app, /mx-type-greeting/)
-  assert.match(today, /mx-type-hero/)
+  assert.match(today, /mx-type-checkin-title/)
   assert.match(today, /mx-demo-today-header/)
   assert.match(today, /mx-type-weekday/)
   assert.match(today, /mx-type-calendar-date/)

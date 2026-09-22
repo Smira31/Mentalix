@@ -136,7 +136,7 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
       />
 
       <div
-        className="mx-practice-sheet relative z-10 w-full max-w-sm max-h-[88dvh] rounded-t-[32px] bg-emerald border border-cream/10 px-5 pt-3 pb-8 animate-fade-in flex flex-col overflow-hidden"
+        className="mx-practice-sheet relative z-10 w-full max-w-sm max-h-[88dvh] rounded-t-[32px] bg-emerald border border-cream/10 px-[var(--mx-screen-x)] pt-3 pb-8 animate-fade-in flex flex-col overflow-hidden"
         style={viewportHeight ? { maxHeight: `min(88dvh, ${viewportHeight}px)` } : undefined}
       >
         <div className="shrink-0 w-10 h-1 rounded-full bg-cream/20 mx-auto mb-5" />
@@ -302,7 +302,7 @@ function AscezaCard({ asceza, onLog, onBreak, onDelete, onRestore }) {
        * снаружи тот же материал в беспорядке.
        */}
       <div
-        className={`-mx-5 shrink-0 min-h-0 mt-3 bg-artbed border-0 mx-practice-detail-art mx-ascezas-contract-art ${
+        className={`-mx-[var(--mx-screen-x)] shrink-0 min-h-0 mt-3 bg-artbed border-0 mx-practice-detail-art mx-ascezas-contract-art ${
           status === 'held' ? 'opacity-100' : 'opacity-70'
         }`}
       >
@@ -428,14 +428,16 @@ function CreateAscezaScreen({ onCreate, onCancel }) {
    */
   return createPortal(
     <div className={`${FULLSCREEN_SHELL_CLASS} mx-practice-flow`} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-5`}>
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-[var(--mx-screen-x)]`}
+      >
         <div className="w-full max-w-md mx-auto">
           <BackButton onClick={onCancel} />
         </div>
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body practice-form__scroll`}>
-        <div className="practice-form__inner w-full max-w-md mx-auto px-5 flex flex-col">
+        <div className="practice-form__inner w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-col">
           <div className="mb-8">
             <h2 className="font-display text-[24px] font-semibold text-cream lowercase">
               новая аскеза.
@@ -622,7 +624,7 @@ export default function Ascezas({ user, onBack }) {
 
   return (
     <>
-      <div className="w-full max-w-md px-5 animate-fade-in mx-ascezas-screen flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in mx-ascezas-screen flex-1 flex flex-col min-h-0 overflow-hidden">
         <div className="flex items-center gap-3 mb-3 mx-ascezas-screen__header">
           <BackButton onClick={onBack} />
 
@@ -668,7 +670,7 @@ export default function Ascezas({ user, onBack }) {
             <div
               ref={trackRef}
               onScroll={syncActive}
-              className="mx-ascezas-screen__carousel flex gap-3 -mx-5 px-5 pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
+              className="mx-ascezas-screen__carousel flex gap-3 -mx-[var(--mx-screen-x)] px-[var(--mx-screen-x)] pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
               style={{ scrollbarWidth: 'none' }}
             >
               {ascezas.map(asceza => (

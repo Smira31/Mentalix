@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Check } from 'lucide-react'
 
 import './Today.css'
 
@@ -12,6 +12,7 @@ import CheckIn from './CheckIn'
 import ThemeScreen from './ThemeScreen'
 import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
+import CardSystemGlyph from '../components/CardSystemGlyph'
 import History from './History'
 import QuoteView from './QuoteView'
 import SemanticGlyph from '../components/SemanticGlyph'
@@ -399,7 +400,7 @@ export default function Today({
   if (sub === 'path') {
     return (
       <div className="w-full flex flex-col items-center animate-fade-in">
-        <div className="w-full max-w-md px-5 pt-4 pb-3 flex items-center gap-3">
+        <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-4 pb-3 flex items-center gap-3">
           <BackButton onClick={() => changeSub(null)} />
 
           <div className="flex-1 flex bg-emerald rounded-full p-1">
@@ -425,14 +426,14 @@ export default function Today({
           </div>
         </div>
 
-        <div className="w-full max-w-md px-5">
+        <div className="w-full max-w-md px-[var(--mx-screen-x)]">
           <YearPath user={user} onContinueToday={() => changeSub(null)} />
         </div>
 
         {pathTab === 'path' ? (
           <Path user={user} onContinueToday={() => changeSub(null)} />
         ) : (
-          <div className="w-full max-w-md px-5">
+          <div className="w-full max-w-md px-[var(--mx-screen-x)]">
             <History user={user} />
           </div>
         )}
@@ -457,7 +458,7 @@ export default function Today({
           onOpenSeries={onOpenSeries}
           streak={streak}
         />
-        <div className="w-full max-w-md px-5 pt-8">
+        <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-8">
           <EmptyState
             className="p-5"
             glyph={
@@ -509,19 +510,19 @@ export default function Today({
       }}
       aria-label={morningComplete ? 'Открыть утренний чек-ин' : 'Пройти чек-ин'}
     >
-      <span className="mx-today-checkin-card__eyebrow">Утро · чек-ин</span>
-      <span className="mx-today-checkin-card__title mx-type-hero">
+      <span className="mx-today-checkin-card__title mx-type-checkin-title">
         {morningComplete ? 'Утро началось с внимания.' : 'Как ты сегодня?'}
       </span>
-      <span className="mx-today-checkin-card__body">
-        {morningComplete
-          ? `настроение: ${MOOD_WORDS[(checkin?.mood || 3) - 1]}`
-          : 'Короткая настройка состояния и энергии'}
-      </span>
-      <span className="mx-today-checkin-card__action">
-        {morningComplete ? 'Посмотреть ответы' : 'Пройти чек-ин'}{' '}
-        <ChevronRight size={16} aria-hidden="true" />
-      </span>
+      {morningComplete ? (
+        <span className="mx-today-checkin-pill" aria-label="Настроение">
+          <Check size={12} aria-hidden="true" />
+          {MOOD_WORDS[(checkin?.mood || 3) - 1]}
+        </span>
+      ) : (
+        <span className="mx-today-checkin-glyph">
+          <CardSystemGlyph kind="breath-flow" />
+        </span>
+      )}
     </button>
   )
 
@@ -537,18 +538,11 @@ export default function Today({
       }}
       aria-label="Открыть вечерний разбор"
     >
-      <span className="mx-today-checkin-card__eyebrow">Вечер · разбор дня</span>
-      <span className="mx-today-checkin-card__title mx-type-hero">
+      <span className="mx-today-checkin-card__title mx-type-checkin-title">
         {eveningComplete ? 'День закрыт.' : 'Забрать главное из дня.'}
       </span>
-      <span className="mx-today-checkin-card__body">
-        {eveningComplete
-          ? 'Три вывода сохранены в журнале'
-          : 'Три коротких вопроса · около 1 минуты'}
-      </span>
-      <span className="mx-today-checkin-card__action">
-        {eveningComplete ? 'Открыть разбор' : 'Разобрать день'}{' '}
-        <ChevronRight size={16} aria-hidden="true" />
+      <span className="mx-today-checkin-glyph">
+        <CardSystemGlyph kind="path-corridor" />
       </span>
     </button>
   )
@@ -648,7 +642,7 @@ export default function Today({
 
               changeSub('path')
             }}
-            className="w-full rounded-3xl bg-emerald px-5 py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+            className="w-full rounded-3xl bg-emerald px-[var(--mx-screen-x)] py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
           >
             <ArrowUpRight
               size={18}
@@ -683,7 +677,7 @@ export default function Today({
 
             changeSub('checkin')
           }}
-          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          className="w-full rounded-3xl bg-emerald/60 px-[var(--mx-screen-x)] py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] font-bold shrink-0">
             ✓
@@ -729,7 +723,7 @@ export default function Today({
 
             changeSub('theme')
           }}
-          className="mx-today-theme-card w-full px-5 py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
+          className="mx-today-theme-card w-full px-[var(--mx-screen-x)] py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
           <span className="block font-label mx-type-meta text-muted uppercase tracking-wider mb-2">
             Тема недели
@@ -780,7 +774,7 @@ export default function Today({
 
             changeSub('quote')
           }}
-          className="mx-today-affirmation-card w-full px-5 py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 

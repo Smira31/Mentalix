@@ -446,7 +446,7 @@ export default function Library({ user }) {
 
   if (screen === 'library-v2-programs' && LIBRARY_V2_ENABLED) {
     return (
-      <div className="w-full max-w-md px-5">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)]">
         <LibraryV2ProgramsCatalog
           onBack={() => setScreen('home')}
           onOpen={title => {
@@ -460,7 +460,7 @@ export default function Library({ user }) {
 
   if (screen === 'library-v2-articles' && LIBRARY_V2_ENABLED && !libraryV2Article) {
     return (
-      <div className="w-full max-w-md px-5">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)]">
         <LibraryV2ArticlesCatalog
           onBack={() => setScreen('home')}
           onOpen={articleId =>
@@ -473,7 +473,7 @@ export default function Library({ user }) {
 
   if (screen === 'library-v2-program' && LIBRARY_V2_ENABLED) {
     return (
-      <div className="w-full max-w-md px-5">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)]">
         <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('home')} />
       </div>
     )
@@ -481,7 +481,7 @@ export default function Library({ user }) {
 
   if (screen === 'library-v2-articles' && LIBRARY_V2_ENABLED) {
     return (
-      <div className="w-full max-w-md px-5">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)]">
         <LibraryV2Articles
           article={libraryV2Article}
           onBack={() => {
@@ -498,7 +498,7 @@ export default function Library({ user }) {
 
   if (screen === 'articles') {
     return (
-      <div className="w-full max-w-md px-5">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)]">
         <Articles
           initialArticle={initialArticle}
           onExit={() => {
@@ -512,7 +512,7 @@ export default function Library({ user }) {
 
   if (screen === 'journals') {
     return (
-      <div className="w-full max-w-md px-5">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)]">
         <GuidedJournals user={user} onExit={() => setScreen('home')} />
       </div>
     )
