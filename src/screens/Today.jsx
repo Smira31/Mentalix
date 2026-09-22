@@ -491,7 +491,7 @@ export default function Today({
 
   const isEmpty = total === 0
 
-  const checkinDone = !!checkin
+  const checkinDone = todayState === 'dayClosed'
 
   const checkinAsHero = !checkinDone
 

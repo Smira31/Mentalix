@@ -5,7 +5,7 @@ import test from 'node:test'
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 
 test('Today uses the completed check-in as the recap entry point', () => {
-  assert.match(today, /const checkinDone = !!checkin/)
+  assert.match(today, /const checkinDone = todayState === 'dayClosed'/)
   assert.match(today, /Открыть recap сегодняшнего check-in/)
   assert.match(today, /changeSub\('checkinRecap'\)/)
   assert.match(today, /настроение: \{MOOD_WORDS\[\(checkin\?\.mood \|\| 3\) - 1\]\}/)
