@@ -238,4 +238,4 @@ These decisions intentionally remain `proposed` until a product/design review:
 4. [`docs/testing/DESIGN_GUARD.md`](../testing/DESIGN_GUARD.md) — design regression guard.
 5. [`src/screens/Onboarding.css`](../../src/screens/Onboarding.css) — onboarding interaction, responsive and reduced-motion examples.
 6. [`src/screens/Today.css`](../../src/screens/Today.css) — Today surface and layout examples.
-7. [`src/screens/FinishFlow.css`](../../src/screens/FinishFlow.css) — practice feedback state examples.
+7. [`src/screens/PracticeFlow.css`](../../src/screens/PracticeFlow.css) — practice feedback state examples.
