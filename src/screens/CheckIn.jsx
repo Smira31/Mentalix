@@ -401,8 +401,7 @@ function MorningCheckInFlow({ user, onDone }) {
 
 // ── Чек-ин и вечерний «Анализ дня» ──
 // Утром: настроение + энергия + короткая мысль → note.
-// Вечером: шкалы (если ещё не отмечался) + две карточки —
-// «Уроки дня» → lessons и «Чем горжусь» → wins.
+// Вечером: только три текстовых шага уроков дня → lessons.
 //
 // Утро и вечер пишут в одну строку за день, но в разные поля.
 // Поле, которому нечего сказать, не отправляется вовсе: бэкенд
@@ -565,12 +564,6 @@ const EMOTIONS = {
   5: ['воодушевлён', 'счастлив', 'свободен', 'горжусь', 'вдохновлён', 'силён', 'радостно', 'ясно'],
 }
 
-const PROUD_HINTS = [
-  'Что сделал, хотя не хотелось?',
-  'Где повёл себя так, как хочешь?',
-  'Что заметил в себе хорошего?',
-]
-
 function existingLessons(value) {
   if (typeof value !== 'string') {
     return {}
@@ -585,24 +578,6 @@ function existingLessons(value) {
       return line ? [[field.key, line.slice(prefix.length)]] : []
     })
   )
-}
-
-function existingProud(value) {
-  let items = []
-
-  if (Array.isArray(value)) {
-    items = value
-  } else if (typeof value === 'string' && value.trim()) {
-    try {
-      const parsed = JSON.parse(value)
-
-      items = Array.isArray(parsed) ? parsed : [value]
-    } catch {
-      items = value.split('\n')
-    }
-  }
-
-  return [...items.slice(0, 3), '', '', ''].slice(0, 3)
 }
 
 function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
@@ -634,10 +609,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const [lessons, setLessons] = useState(() =>
     isEvening ? existingLessons(existing?.lessons) : {}
-  )
-
-  const [proud, setProud] = useState(() =>
-    isEvening ? existingProud(existing?.wins) : ['', '', '']
   )
 
   const [morningDraft, setMorningDraft] = useState(() =>
@@ -672,7 +643,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const scaleCount = skipScales ? 0 : MORNING_SCALE_STEPS.length
 
-  const cardCount = isEvening ? LESSON_FIELDS.length + PROUD_HINTS.length : 1
+  const cardCount = isEvening ? LESSON_FIELDS.length : 1
 
   const emotionStep = isEvening ? scaleCount : -1
 
@@ -764,16 +735,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     return filled.length ? filled.join('\n') : undefined
   }
 
-  function buildWins() {
-    if (!isEvening) {
-      return undefined
-    }
-
-    const filled = proud.map(text => text.trim()).filter(Boolean)
-
-    return filled.length ? filled : undefined
-  }
-
   async function submit({ afterSave } = {}) {
     setSaving(true)
     setError(false)
@@ -793,8 +754,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
         emotion,
 
         lessons: buildLessons(),
-
-        wins: buildWins(),
 
         ...(isEvening
           ? {
@@ -1299,11 +1258,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   const moodLevel = values.mood || existing?.mood || 3
 
   const eveningQuestion =
-    isEvening && isCard
-      ? cardIdx < LESSON_FIELDS.length
-        ? LESSON_FIELDS[cardIdx]
-        : { label: PROUD_HINTS[cardIdx - LESSON_FIELDS.length] }
-      : null
+    isEvening && isCard ? (cardIdx < LESSON_FIELDS.length ? LESSON_FIELDS[cardIdx] : null) : null
   const questionTitle =
     scale?.title ||
     (isEmotionStep
@@ -1417,7 +1372,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
             )}
 
             {/* ── уроки / мысль ── */}
-
             {isCard && cardIdx < LESSON_FIELDS.length && (
               <div key="c1" className="w-full flex flex-1 flex-col items-center">
                 {isEvening ? (
@@ -1426,14 +1380,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                       writingCanvas
                       value={lessons[eveningQuestion.key] || ''}
                       onChange={value =>
-                        setLessons(current => ({
-                          ...current,
-                          [eveningQuestion.key]: value,
-                        }))
+                        setLessons(current => ({ ...current, [eveningQuestion.key]: value }))
                       }
                       placeholder={eveningQuestion.placeholder}
                       ariaLabel={eveningQuestion.label}
                       className="min-h-[18rem] flex-1"
+                      editorClassName="mx-checkin-evening-editor"
                     />
                   </div>
                 ) : (
@@ -1453,7 +1405,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                               ? 'Не удалось сохранить черновик локально'
                               : 'Текст сохраняется только после завершения чек-ина'}
                     </p>
-
                     <JournalTextarea
                       value={morningDraft?.brief || ''}
                       onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
@@ -1474,40 +1425,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                     />
                   </div>
                 )}
-
-                {error && (
-                  <p className="text-[13px] text-muted text-center mt-4">
-                    Не получилось сохранить — проверь связь
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* ── чем горжусь ── */}
-
-            {isCard && cardIdx >= LESSON_FIELDS.length && (
-              <div key="c2" className="w-full flex flex-col items-center">
-                <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
-                  <div className="rounded-3xl bg-emerald p-4">
-                    <div className="text-[13px] font-bold text-gold mb-3">
-                      {cardIdx - LESSON_FIELDS.length + 1} из {PROUD_HINTS.length}
-                    </div>
-                    <input
-                      value={proud[cardIdx - LESSON_FIELDS.length]}
-                      onChange={event =>
-                        setProud(current =>
-                          current.map((item, itemIndex) =>
-                            itemIndex === cardIdx - LESSON_FIELDS.length ? event.target.value : item
-                          )
-                        )
-                      }
-                      placeholder={eveningQuestion.label}
-                      aria-label={eveningQuestion.label}
-                      className="w-full min-h-[12rem] bg-transparent text-cream placeholder-muted text-[16px] outline-none font-body"
-                    />
-                  </div>
-                </div>
-
                 {error && (
                   <p className="text-[13px] text-muted text-center mt-4">
                     Не получилось сохранить — проверь связь
