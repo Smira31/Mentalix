@@ -21,7 +21,6 @@ last_verified: 2026-09-22
 | Normative | [`AI_RULES.md`](../AI_RULES.md)                                                       | Обязательный процесс AI-работы.                                                   |
 | History   | [`TASKS.md`](../TASKS.md)                                                             | Исторический backlog; не использовать для выбора следующей задачи.                |
 | History   | [`CHANGES.md`](../CHANGES.md)                                                         | История изменений; не использовать как текущий status.                            |
-| Normative | Card System v2 (`DESIGN_SYSTEM.md` §5.1)                                             | Нормативная спецификация от 22.09.2026.                                           |
 | History   | [`docs/archive/`](archive/)                                                           | Архивные аудиты, handoff и старые планы.                                          |
 | Hosting   | [`docs/handoffs/2026-09-16-hosting-policy.md`](handoffs/2026-09-16-hosting-policy.md) | Cloudflare Demo, Firebase Production и Render API.                                |
 | QA        | [`docs/CLOUDFLARE_OWNER_QA.md`](CLOUDFLARE_OWNER_QA.md)                               | Exact-SHA Cloudflare Demo QA; не Production.                                      |

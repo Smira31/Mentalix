@@ -151,8 +151,9 @@ renders via `createPortal` into `document.body`, sizes off `visualViewport`, add
 Telegram-controls offset, and locks `body` scroll while open. The old fade-transform bug
 was removed; do not reintroduce transform-based containing blocks around fixed surfaces.
 
-Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; screens use
-`w-full max-w-md px-4` (16px) and nothing else; это меняется один раз в оболочке `App.jsx`., so all tabs share one visual scale.
+Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; horizontal
+screen padding is defined by one token, `--mx-screen-x: 16px`; screen wrappers use it
+instead of `px-*` classes, so all tabs share one visual scale.
 
 ### Design tokens
 
