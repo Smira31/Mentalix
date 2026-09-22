@@ -149,8 +149,8 @@ test.describe('MXL-010 automated technical gate', () => {
 
     await page.getByRole('button', { name: 'Пройти чек-ин' }).click()
     await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Назад' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Закрыть' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Продолжить' })).toBeVisible()
 
     for (const option of ['Нормально', 'Средне']) {
       await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
@@ -162,7 +162,7 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('heading', { name: 'Ты сохранил главное.' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(0)
 
-    await page.getByRole('button', { name: 'Сохранить и завершить' }).click()
+    await page.getByRole('button', { name: 'Завершить' }).click()
     await expect(page.getByRole('heading', { name: /-дневная серия\./ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
