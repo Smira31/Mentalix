@@ -975,6 +975,26 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('heading', { name: 'Как прошло?' })).toBeVisible()
+    await expect(page.locator('[aria-label="Шаг 6 из 6"]')).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('heading', { name: 'Только этот кусок' })).toBeVisible()
+    await expect(page.locator('[aria-label="Шаг 5 из 6"]')).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(
+      page.getByRole('textbox', { name: 'Маленький кусок для завершения' })
+    ).toBeVisible()
+    await expect(page.locator('[aria-label="Шаг 4 из 6"]')).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.locator('[aria-label="Шаг 3 из 6"]')).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.locator('[aria-label="Шаг 2 из 6"]')).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('textbox', { name: 'Проект, который завис на середине' })).toBeVisible()
+    await expect(page.locator('[aria-label="Шаг 1 из 6"]')).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('heading', { name: 'Доведи один маленький кусок до конца' })).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
     await page.getByRole('button', { name: 'Без вины' }).click()
     await captureScreen({
       page,
