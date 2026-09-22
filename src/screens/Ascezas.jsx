@@ -20,6 +20,7 @@ import {
 } from '../lib/fullscreenSurface'
 import SemanticGlyph, { semanticKindForAsceza } from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
+import SystemState from '../components/SystemState'
 import StreakBar from '../components/StreakBar'
 import StreakRestoreSheet from '../components/StreakRestoreSheet'
 import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog'
@@ -639,7 +640,7 @@ export default function Ascezas({ user, onBack }) {
         )}
 
         {loading ? (
-          <p className="text-muted text-[13px]">Загрузка...</p>
+          <SystemState kind="loading" title="Загрузка..." description="Собираю аскезы." compact />
         ) : ascezas.length === 0 ? (
           <EmptyState
             glyph={

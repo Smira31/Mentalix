@@ -38,714 +38,441 @@ export function semanticKindForPersona(persona) {
   return 'companion'
 }
 
-function Guide() {
+function Accent({ cx, cy, r = 4 }) {
+  return <circle className="mx-semantic-glyph__accent" cx={cx} cy={cy} r={r} />
+}
+
+function Book() {
   return (
-    <g className="mx-semantic-glyph__guide">
-      <path d="M18 88H142" />
-      <path d="M80 12V100" />
-    </g>
+    <>
+      <g className="mx-semantic-glyph__soft">
+        <path d="M18 34C39 31 60 36 78 49V91C61 79 41 75 18 78Z" />
+        <path d="M142 34C121 31 100 36 82 49V91C99 79 119 75 142 78Z" />
+        <path d="M18 82C39 79 60 83 80 96C100 83 121 79 142 82" />
+      </g>
+      <path className="mx-semantic-glyph__line" d="M27 60C48 55 63 76 83 67C98 61 110 49 130 43" />
+      <Accent cx="130" cy="43" />
+    </>
+  )
+}
+
+function PathScene() {
+  return (
+    <>
+      <path className="mx-semantic-glyph__soft" d="M10 68L36 39L54 58L72 30L96 64L119 42L150 70" />
+      <path
+        className="mx-semantic-glyph__fill"
+        d="M62 108C72 92 94 88 92 73C90 62 77 61 82 51C86 42 99 39 103 30C94 39 78 42 72 52C64 65 78 72 75 82C72 91 58 96 50 108Z"
+      />
+      <Accent cx="103" cy="30" />
+    </>
+  )
+}
+
+function Magnifier() {
+  return (
+    <>
+      <g className="mx-semantic-glyph__soft">
+        <circle cx="68" cy="52" r="34" />
+        <path d="M92 76L139 108" />
+        <circle cx="52" cy="43" r="3" />
+        <circle cx="66" cy="64" r="3" />
+      </g>
+      <circle className="mx-semantic-glyph__line" cx="79" cy="50" r="8" />
+      <Accent cx="79" cy="50" />
+    </>
+  )
+}
+
+function Calendar() {
+  return (
+    <>
+      <g className="mx-semantic-glyph__soft">
+        <path d="M31 35H129L123 94H25Z" />
+        <path d="M40 24V43M61 24V43M82 24V43M103 24V43M124 24V43" />
+        <circle cx="45" cy="65" r="5" />
+        <circle cx="68" cy="65" r="5" />
+        <circle cx="91" cy="65" r="5" />
+        <circle cx="114" cy="65" r="5" />
+      </g>
+      <Accent cx="91" cy="65" r="5" />
+    </>
+  )
+}
+
+function Toggle() {
+  return (
+    <>
+      <rect className="mx-semantic-glyph__line" x="44" y="36" width="72" height="40" rx="20" />
+      <circle className="mx-semantic-glyph__fill" cx="64" cy="56" r="14" />
+      <path className="mx-semantic-glyph__soft" d="M28 56H38M122 56H132" />
+      <Accent cx="28" cy="56" />
+    </>
+  )
+}
+
+function Breath() {
+  return (
+    <>
+      <path className="mx-semantic-glyph__line" d="M79 26V84" />
+      <path
+        className="mx-semantic-glyph__fill"
+        d="M75 43C65 31 48 31 40 46C33 59 34 82 49 88C62 93 72 82 75 67Z"
+      />
+      <path
+        className="mx-semantic-glyph__fill"
+        d="M85 43C95 31 112 31 120 46C127 59 126 82 111 88C98 93 88 82 85 67Z"
+      />
+      <g className="mx-semantic-glyph__ink">
+        <path d="M75 51C65 51 57 58 52 69" />
+        <path d="M85 51C95 51 103 58 108 69" />
+      </g>
+      <Accent cx="80" cy="34" r="3.5" />
+    </>
+  )
+}
+
+function Meditation() {
+  return (
+    <>
+      <g className="mx-semantic-glyph__soft">
+        <path d="M34 73C50 88 110 88 126 73" />
+        <path d="M44 67C54 76 106 76 116 67" />
+        <path d="M50 92H110" />
+        <path d="M62 49C58 41 67 37 64 29" />
+        <path d="M80 49C76 39 86 35 82 24" />
+        <path d="M98 49C94 41 103 37 100 29" />
+      </g>
+      <path className="mx-semantic-glyph__fill" d="M40 58C47 82 113 82 120 58Z" />
+      <Accent cx="80" cy="61" />
+    </>
+  )
+}
+
+function Archive() {
+  return (
+    <>
+      <g className="mx-semantic-glyph__soft">
+        <path d="M32 53L46 37H114L128 53L121 94H39Z" />
+        <path d="M47 37L50 27H110L113 37" />
+        <path d="M56 53V88M74 53V88M92 53V88M110 53V88" />
+      </g>
+      <Accent cx="110" cy="53" />
+    </>
+  )
+}
+
+function Neuro() {
+  return (
+    <>
+      <path
+        className="mx-semantic-glyph__fill"
+        d="M54 54C54 38 65 27 81 27C98 27 108 39 108 54C108 65 103 69 98 76C94 81 94 87 94 91H67C67 84 66 80 61 74C57 69 54 63 54 54Z"
+      />
+      <g className="mx-semantic-glyph__ink">
+        <path d="M65 51L79 42L94 51L82 62L95 70" />
+        <path d="M79 42V67L68 75M82 62L72 55" />
+        <circle cx="65" cy="51" r="2" />
+        <circle cx="79" cy="42" r="2" />
+        <circle cx="94" cy="51" r="2" />
+        <circle cx="82" cy="62" r="2" />
+      </g>
+      <path className="mx-semantic-glyph__soft" d="M69 97H92" />
+      <Accent cx="95" cy="70" r="3.5" />
+    </>
   )
 }
 
 function Drawing({ kind, debugSource }) {
   switch (kind) {
-    case 'neuro':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__network">
-            <path d="M22 74L40 48L58 62L78 40L98 56L118 34L140 52" />
-            <path d="M40 48L30 26M40 48L54 28M58 62L46 86M58 62L78 82M78 40L74 18M78 40L98 24M98 56L92 86M98 56L118 78M118 34L136 22M118 34L140 52" />
-            <circle cx="22" cy="74" r="2.2" />
-            <circle cx="40" cy="48" r="2.8" />
-            <circle cx="58" cy="62" r="2.5" />
-            <circle cx="78" cy="40" r="3" />
-            <circle cx="98" cy="56" r="2.6" />
-            <circle cx="118" cy="34" r="2.8" />
-            <circle cx="140" cy="52" r="2.2" />
-            <circle cx="30" cy="26" r="2" />
-            <circle cx="54" cy="28" r="2.1" />
-            <circle cx="46" cy="86" r="2.2" />
-            <circle cx="78" cy="82" r="2.4" />
-            <circle cx="74" cy="18" r="2" />
-            <circle cx="98" cy="24" r="2.2" />
-            <circle cx="92" cy="86" r="2.1" />
-            <circle cx="118" cy="78" r="2.4" />
-            <circle cx="136" cy="22" r="2" />
-          </g>
-          <path
-            className="mx-semantic-glyph__route"
-            d="M22 74L40 48L58 62L78 40L98 56L118 34L140 52"
-          />
-          <circle
-            className="mx-semantic-glyph__point mx-semantic-glyph__signal"
-            cx="22"
-            cy="74"
-            r="4"
-          />
-        </>
-      )
-
-    case 'brain-attention':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__exercise">
-            <circle cx="80" cy="56" r="29" />
-            <circle cx="80" cy="56" r="15" />
-            <path d="M80 18V34M80 78V94M42 56H58M102 56H118" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
-        </>
-      )
-
-    case 'brain-memory':
-      return (
-        <>
-          <Guide />
-          <path className="mx-semantic-glyph__exercise" d="M28 72L50 48L73 65L96 34L128 55" />
-          <g className="mx-semantic-glyph__exercise-nodes">
-            <circle cx="28" cy="72" r="3" />
-            <circle cx="50" cy="48" r="3" />
-            <circle cx="73" cy="65" r="3" />
-            <circle cx="96" cy="34" r="3" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="128" cy="55" r="4" />
-        </>
-      )
-
-    case 'brain-reaction':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__exercise">
-            <path d="M32 56H61L72 34L88 78L100 56H128" />
-            <path d="M42 38L32 56L42 74M118 38L128 56L118 74" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
-        </>
-      )
-
-    case 'brain-plasticity':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__exercise">
-            <path d="M28 36C56 36 61 76 88 76C106 76 117 64 132 52" />
-            <path d="M28 76C56 76 61 36 88 36C106 36 117 48 132 60" />
-            <path d="M124 47L132 52L127 60M124 65L132 60L127 52" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
-        </>
-      )
-
-    case 'brain-gymnastics':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__exercise">
-            <path d="M28 64C39 45 50 45 61 64C72 83 83 83 94 64C105 45 116 45 132 64" />
-            <path d="M38 45C48 31 58 31 68 45M92 45C102 31 112 31 122 45" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="64" r="4" />
-        </>
-      )
-
-    case 'breath':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__breath-upper">
-            <path d="M24 56C37 31 55 19 80 19C105 19 123 31 136 56" />
-            <path d="M39 56C49 39 62 31 80 31C98 31 111 39 121 56" />
-          </g>
-          <g className="mx-semantic-glyph__breath-lower">
-            <path d="M24 56C37 81 55 93 80 93C105 93 123 81 136 56" />
-            <path d="M39 56C49 73 62 81 80 81C98 81 111 73 121 56" />
-          </g>
-          <path className="mx-semantic-glyph__breath-axis" d="M80 22V90" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
-        </>
-      )
-
-    case 'focus':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__focus-beams">
-            <path d="M18 22C42 28 58 40 80 56" />
-            <path d="M18 39C46 42 62 48 80 56" />
-            <path d="M18 56H80" />
-            <path d="M18 73C46 70 62 64 80 56" />
-            <path d="M18 90C42 84 58 72 80 56" />
-          </g>
-          <path className="mx-semantic-glyph__focus-axis" d="M84 56H142" />
-          <path className="mx-semantic-glyph__focus-plane" d="M80 42V70" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
-        </>
-      )
-
-    case 'meditation':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__contour mx-semantic-glyph__contour--outer">
-            <path d="M28 56C28 31 49 16 78 19C108 15 134 32 132 58C135 84 108 97 80 93C50 98 25 82 28 56Z" />
-          </g>
-          <g className="mx-semantic-glyph__contour mx-semantic-glyph__contour--middle">
-            <path d="M43 57C41 39 58 29 79 31C100 28 119 41 117 59C118 77 100 85 80 82C58 86 42 74 43 57Z" />
-          </g>
-          <g className="mx-semantic-glyph__contour mx-semantic-glyph__contour--inner">
-            <path d="M59 56C59 46 67 40 80 42C93 40 102 47 101 57C102 68 92 73 80 71C67 73 58 67 59 56Z" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
-        </>
-      )
-
     case 'journal':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__journal-pages">
-            <path d="M36 30H75C83 30 87 34 87 42V86C87 78 83 74 75 74H36Z" />
-            <path d="M124 30H85C77 30 73 34 73 42V86C73 78 77 74 85 74H124Z" />
-          </g>
-          <path
-            className="mx-semantic-glyph__journal-line"
-            d="M48 46H70M48 56H70M90 46H112M90 56H112"
-          />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="86" r="4" />
-        </>
-      )
-
-    case 'prayer':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__prayer">
-            <path d="M30 78A50 50 0 0 1 130 78" />
-            <path d="M50 78A30 30 0 0 1 110 78" />
-            <path d="M80 22V66" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="64" r="4" />
-        </>
-      )
-
-    case 'shower':
-      return (
-        <>
-          <Guide />
-          <path className="mx-semantic-glyph__shower-arch" d="M38 42Q80 14 122 42" />
-          <g className="mx-semantic-glyph__streams">
-            <path d="M48 48V78" />
-            <path d="M64 46V84" />
-            <path d="M80 44V88" />
-            <path d="M96 46V84" />
-            <path d="M112 48V78" />
-          </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="88" r="4" />
-        </>
-      )
-
+    case 'ui-exp-003-journal':
+      return <Book />
     case 'purpose':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__purpose-arcs">
-            <path d="M26 78A54 54 0 0 1 134 78" />
-            <path d="M48 78A32 32 0 0 1 112 78" />
+          <path className="mx-semantic-glyph__baseline" d="M20 92H140" />
+          <g className="mx-semantic-glyph__soft">
+            <rect x="39" y="43" width="24" height="49" rx="4" transform="rotate(-25 51 67)" />
+            <rect x="69" y="39" width="24" height="53" rx="4" />
+            <rect x="101" y="39" width="24" height="53" rx="4" />
+            <circle cx="81" cy="52" r="3" />
+            <circle cx="113" cy="52" r="3" />
+            <path d="M72 70H90M104 70H122" />
           </g>
-          <path className="mx-semantic-glyph__horizon" d="M24 84H136" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="58" r="4" />
+          <Accent cx="65" cy="58" />
         </>
       )
-
+    case 'focus':
+      return <Magnifier />
+    case 'release':
+    case 'anxiety':
+    case 'ui-exp-003-release':
+      return (
+        <>
+          <path
+            className="mx-semantic-glyph__soft"
+            d="M28 61C46 30 66 87 83 51C95 25 118 48 104 68C91 88 65 41 49 65C42 77 35 79 27 76"
+          />
+          <path
+            className="mx-semantic-glyph__line"
+            d="M27 76C47 76 66 76 88 76C108 76 119 69 132 55"
+          />
+          <Accent cx="132" cy="55" />
+        </>
+      )
+    case 'ritual':
+    case 'ui-exp-003-ritual':
+      return <Calendar />
+    case 'asceza':
+    case 'ui-exp-003-asceza':
+      return <Toggle />
+    case 'breath':
+    case 'ui-exp-003-breath':
+      return <Breath />
+    case 'meditation':
+    case 'ui-exp-003-meditation':
+      return <Meditation />
+    case 'next-step':
+    case 'pathfinder':
+    case 'ui-exp-003-next-step':
+      return <PathScene />
+    case 'neuro':
+      return <Neuro />
+    case 'brain-attention':
+      return (
+        <>
+          <circle className="mx-semantic-glyph__soft" cx="80" cy="56" r="34" />
+          <circle className="mx-semantic-glyph__line" cx="80" cy="56" r="16" />
+          <Accent cx="80" cy="56" />
+        </>
+      )
+    case 'brain-memory':
+      return (
+        <>
+          <g className="mx-semantic-glyph__soft">
+            <path d="M24 78L50 48L76 69L105 33L136 55" />
+            <circle cx="24" cy="78" r="3" />
+            <circle cx="50" cy="48" r="3" />
+            <circle cx="76" cy="69" r="3" />
+            <circle cx="105" cy="33" r="3" />
+          </g>
+          <Accent cx="136" cy="55" />
+        </>
+      )
+    case 'brain-reaction':
+      return (
+        <>
+          <path className="mx-semantic-glyph__soft" d="M24 58H57L68 35L86 81L101 58H136" />
+          <Accent cx="86" cy="81" />
+        </>
+      )
+    case 'brain-plasticity':
+      return (
+        <>
+          <g className="mx-semantic-glyph__soft">
+            <path d="M24 36C55 36 63 77 91 77C111 77 122 65 136 53" />
+            <path d="M24 78C55 78 63 37 91 37C111 37 122 49 136 61" />
+          </g>
+          <Accent cx="91" cy="57" />
+        </>
+      )
+    case 'brain-gymnastics':
+      return (
+        <>
+          <path
+            className="mx-semantic-glyph__soft"
+            d="M22 65C35 42 49 42 62 65C75 88 88 88 101 65C114 42 127 42 140 65"
+          />
+          <Accent cx="80" cy="76" />
+        </>
+      )
+    case 'prayer':
+      return (
+        <>
+          <path
+            className="mx-semantic-glyph__fill"
+            d="M75 43C68 35 71 25 80 17C89 25 92 35 85 43Z"
+          />
+          <g className="mx-semantic-glyph__soft">
+            <path d="M64 47H96L91 92H69Z" />
+            <path d="M58 92H102" />
+          </g>
+          <Accent cx="80" cy="31" r="3" />
+        </>
+      )
+    case 'shower':
+      return (
+        <>
+          <path
+            className="mx-semantic-glyph__soft"
+            d="M42 51C42 31 57 21 77 21C96 21 111 31 111 49"
+          />
+          <path className="mx-semantic-glyph__fill" d="M96 43H126L120 56H90Z" />
+          <g className="mx-semantic-glyph__line">
+            <path d="M96 66L91 79M108 66L103 85M120 66L115 79" />
+          </g>
+          <Accent cx="103" cy="85" r="3.5" />
+        </>
+      )
     case 'water':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__glass">
-            <path d="M54 28H106L100 84H60Z" />
-            <path d="M58 62C70 58 90 66 102 62" />
+          <g className="mx-semantic-glyph__soft">
+            <path d="M52 25H108L101 91H59Z" />
+            <path d="M57 60C71 55 89 65 103 60" />
           </g>
-          <circle className="mx-semantic-glyph__point" cx="80" cy="62" r="4" />
+          <path className="mx-semantic-glyph__water" d="M58 61C72 57 88 65 102 61L99 87H61Z" />
+          <Accent cx="80" cy="61" r="3.5" />
         </>
       )
-
     case 'alcohol':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__glass">
-            <path d="M54 26H106C104 56 96 68 80 72C64 68 56 56 54 26Z" />
-            <path d="M80 72V88M62 90H98" />
-            <path d="M58 44C70 40 90 50 102 44" />
+          <g className="mx-semantic-glyph__soft">
+            <path d="M54 24H106C103 52 94 66 80 70C66 66 57 52 54 24Z" />
+            <path d="M80 70V89M61 92H99" />
           </g>
-          <path className="mx-semantic-glyph__decision" d="M42 82L118 30" />
-          <circle className="mx-semantic-glyph__point" cx="106" cy="38" r="4" />
+          <path className="mx-semantic-glyph__line" d="M42 86L118 27" />
+          <Accent cx="112" cy="32" r="3.5" />
         </>
       )
-
     case 'smoking':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__cigarette">
-            <path d="M28 64H100V80H28Z" />
-            <path d="M100 64H130V80H100Z" />
-            <path d="M108 69H124M108 74H124" />
-            <path d="M28 64V80M34 68V76" />
+          <g className="mx-semantic-glyph__soft">
+            <path d="M24 59H126V76H24Z" />
+            <path d="M100 59V76M109 64H121M109 70H121" />
+            <path d="M31 51C17 40 43 33 29 20M49 51C35 39 59 31 45 17" />
           </g>
-          <g className="mx-semantic-glyph__smoke">
-            <path d="M34 58C18 48 44 38 30 26" />
-            <path d="M50 56C34 44 58 36 44 22" />
-          </g>
-          <path className="mx-semantic-glyph__decision" d="M66 56L88 88" />
-          <circle className="mx-semantic-glyph__point" cx="28" cy="72" r="4" />
+          <path className="mx-semantic-glyph__line" d="M47 88L111 37" />
+          <Accent cx="105" cy="42" r="3.5" />
         </>
       )
-
     case 'mentor':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__compass-arcs">
-            <path d="M42 76A42 42 0 0 1 70 18" />
-            <path d="M90 18A42 42 0 0 1 118 76" />
-          </g>
-          <g className="mx-semantic-glyph__cardinal-marks">
-            <path d="M80 14V24M34 56H44M116 56H126" />
-          </g>
-          <path className="mx-semantic-glyph__needle" d="M58 82L102 34" />
-          <circle className="mx-semantic-glyph__pivot" cx="80" cy="58" r="3" />
-          <circle className="mx-semantic-glyph__point" cx="102" cy="34" r="4" />
+          <circle className="mx-semantic-glyph__soft" cx="80" cy="56" r="34" />
+          <path className="mx-semantic-glyph__fill" d="M80 27L90 60L80 84L70 60Z" />
+          <path className="mx-semantic-glyph__ink" d="M80 34L80 76" />
+          <Accent cx="80" cy="27" />
         </>
       )
-
     case 'companion':
       return (
         <>
-          <Guide />
           <path
-            className="mx-semantic-glyph__voice-left"
-            d="M26 34C52 34 56 46 62 56C56 66 52 78 26 78"
+            className="mx-semantic-glyph__soft"
+            d="M18 27H59C70 27 75 33 75 44V70C75 81 69 86 58 86H42L29 98V86H18Z"
           />
           <path
-            className="mx-semantic-glyph__voice-right"
-            d="M134 34C108 34 104 46 98 56C104 66 108 78 134 78"
+            className="mx-semantic-glyph__soft"
+            d="M142 27H101C90 27 85 33 85 44V70C85 81 91 86 102 86H118L131 98V86H142Z"
           />
-          <path className="mx-semantic-glyph__dialog-line" d="M66 56H94" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+          <path className="mx-semantic-glyph__line" d="M54 56H106" />
+          <Accent cx="80" cy="56" />
         </>
       )
-
-    case 'pathfinder':
-      return (
-        <>
-          <Guide />
-          <path
-            className="mx-semantic-glyph__trail-guide"
-            d="M30 82C50 52 68 80 86 58C104 36 116 52 132 28"
-          />
-          <g className="mx-semantic-glyph__trail-marks">
-            <path d="M32 78L41 74M38 86L47 82" />
-            <path d="M62 61L70 64M67 69L75 72" />
-            <path d="M90 58L98 53M96 65L104 60" />
-            <path d="M114 42L123 43M118 50L127 51" />
-          </g>
-          <circle className="mx-semantic-glyph__path-point" cx="132" cy="28" r="4" />
-        </>
-      )
-
-    case 'anxiety':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__anxiety-knot">
-            <path d="M34 60C44 24 76 88 88 44C98 12 126 62 108 78C88 96 54 28 34 60Z" />
-            <path d="M46 72C70 16 92 96 122 42" />
-          </g>
-          <path className="mx-semantic-glyph__calm-line" d="M34 64H126" />
-          <circle className="mx-semantic-glyph__point" cx="126" cy="64" r="4" />
-        </>
-      )
-
-    case 'release':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__release-knot">
-            <path d="M34 60C44 24 76 88 88 44C98 12 126 62 108 78C88 96 54 28 34 60Z" />
-            <path d="M46 72C70 16 92 96 122 42" />
-          </g>
-          <path className="mx-semantic-glyph__release-line" d="M34 64H126" />
-          <circle className="mx-semantic-glyph__point" cx="126" cy="64" r="4" />
-        </>
-      )
-
     case 'narrow':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__narrow-field">
-            <circle cx="30" cy="30" r="3" />
-            <circle cx="46" cy="82" r="2.6" />
-            <circle cx="24" cy="60" r="2.4" />
-            <circle cx="112" cy="28" r="2.8" />
-            <circle cx="130" cy="60" r="2.4" />
-            <circle cx="104" cy="86" r="2.6" />
-            <circle cx="60" cy="24" r="2.2" />
-            <circle cx="128" cy="90" r="2.2" />
+          <g className="mx-semantic-glyph__soft">
+            <rect x="22" y="32" width="31" height="52" rx="4" />
+            <rect x="64" y="32" width="31" height="52" rx="4" />
+            <rect x="106" y="32" width="31" height="52" rx="4" />
           </g>
-          <circle
-            className="mx-semantic-glyph__point mx-semantic-glyph__narrow-center"
-            cx="80"
-            cy="56"
-            r="4.5"
+          <path
+            className="mx-semantic-glyph__line"
+            d="M38 93C52 100 66 102 80 102C94 102 108 100 122 93"
           />
+          <Accent cx="80" cy="58" />
         </>
       )
-
     case 'finish':
       return (
         <>
-          <Guide />
-          <g className="mx-semantic-glyph__finish-attempts">
-            <path d="M30 40C34 28 44 22 54 24" />
-            <path d="M28 74C30 86 40 94 52 92" />
-            <path d="M96 26C108 26 118 34 120 46" />
-          </g>
-          <path className="mx-semantic-glyph__finish-loop" d="M80 24A34 34 0 1 1 46 58" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="24" r="4" />
+          <path
+            className="mx-semantic-glyph__soft"
+            d="M34 96C52 81 66 84 78 70C91 55 97 39 105 20"
+          />
+          <path className="mx-semantic-glyph__line" d="M105 20V70M106 23H137L128 38L137 53H106" />
+          <Accent cx="34" cy="96" />
         </>
       )
-
     case 'sleep':
-      return (
-        <>
-          <Guide />
-          <path className="mx-semantic-glyph__sleep-upper" d="M28 54Q80 18 132 54" />
-          <path className="mx-semantic-glyph__sleep-lower" d="M28 54Q80 90 132 54" />
-          <path className="mx-semantic-glyph__sleep-drop" d="M80 38V70" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="48" r="4" />
-        </>
-      )
-
-    case 'asceza':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__boundary mx-semantic-glyph__boundary--outer">
-            <path d="M20 22L58 40L72 56L58 72L20 90" />
-            <path d="M140 22L102 40L88 56L102 72L140 90" />
-          </g>
-          <g className="mx-semantic-glyph__boundary mx-semantic-glyph__boundary--inner">
-            <path d="M38 30L66 44L76 56L66 68L38 82" />
-            <path d="M122 30L94 44L84 56L94 68L122 82" />
-          </g>
-          <path className="mx-semantic-glyph__threshold" d="M80 24V88" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
-        </>
-      )
-
-    case 'ritual':
-      return (
-        <>
-          <g transform="translate(3 0) scale(.7)">
-            <g className="mx-semantic-glyph__ritual-orbits">
-              <g className="mx-semantic-glyph__ritual-orbit-layer mx-semantic-glyph__ritual-orbit-layer--outer">
-                <ellipse
-                  className="mx-semantic-glyph__ritual-orbit-faint"
-                  cx="110"
-                  cy="78"
-                  rx="76"
-                  ry="45"
-                  transform="rotate(-8 110 78)"
-                />
-                <ellipse
-                  className="mx-semantic-glyph__ritual-orbit-main"
-                  cx="110"
-                  cy="78"
-                  rx="69"
-                  ry="42"
-                  transform="rotate(10 110 78)"
-                />
-              </g>
-              <g className="mx-semantic-glyph__ritual-orbit-layer mx-semantic-glyph__ritual-orbit-layer--middle">
-                <ellipse cx="110" cy="78" rx="58" ry="33" transform="rotate(-18 110 78)" />
-                <ellipse
-                  className="mx-semantic-glyph__ritual-orbit-soft"
-                  cx="110"
-                  cy="78"
-                  rx="43"
-                  ry="25"
-                  transform="rotate(7 110 78)"
-                />
-                <ellipse
-                  className="mx-semantic-glyph__ritual-orbit-dashed"
-                  cx="110"
-                  cy="78"
-                  rx="29"
-                  ry="17"
-                  transform="rotate(-12 110 78)"
-                />
-              </g>
-              <g className="mx-semantic-glyph__ritual-orbit-layer mx-semantic-glyph__ritual-orbit-layer--cross">
-                <ellipse
-                  className="mx-semantic-glyph__ritual-orbit-soft"
-                  cx="110"
-                  cy="78"
-                  rx="31"
-                  ry="67"
-                  transform="rotate(58 110 78)"
-                />
-                <ellipse
-                  className="mx-semantic-glyph__ritual-orbit-faint"
-                  cx="110"
-                  cy="78"
-                  rx="37"
-                  ry="70"
-                  transform="rotate(73 110 78)"
-                />
-              </g>
-            </g>
-            <g className="mx-semantic-glyph__ritual-nodes">
-              <circle cx="48" cy="76" r="2.4" />
-              <circle cx="78" cy="43" r="2.2" />
-              <circle cx="144" cy="47" r="2.5" />
-              <circle cx="139" cy="111" r="2.4" />
-              <circle cx="81" cy="111" r="2.1" />
-            </g>
-            <circle className="mx-semantic-glyph__focus-ring" cx="110" cy="78" r="10" />
-            <circle className="mx-semantic-glyph__point" cx="110" cy="78" r="6" />
-            <g className="mx-semantic-glyph__ritual-runner">
-              <circle className="mx-semantic-glyph__point" cx="169" cy="77" r="5" />
-            </g>
-          </g>
-        </>
-      )
-
-    case 'next-step':
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__path-wall mx-semantic-glyph__path-wall--left">
-            <path d="M18 92C42 84 52 68 64 56C76 44 80 32 84 16" />
-            <path d="M34 94C52 82 60 68 70 58C82 46 88 34 92 18" />
-          </g>
-          <g className="mx-semantic-glyph__path-wall mx-semantic-glyph__path-wall--right">
-            <path d="M142 20C118 28 108 42 96 54C84 66 80 78 76 96" />
-            <path d="M126 18C108 30 100 44 90 54C78 66 72 78 68 94" />
-          </g>
-          <path
-            className="mx-semantic-glyph__path-route"
-            d="M26 88C52 80 60 66 80 56C100 46 108 30 134 22"
-          />
-          <circle
-            className="mx-semantic-glyph__point mx-semantic-glyph__path-signal"
-            cx="26"
-            cy="88"
-            r="4"
-          />
-        </>
-      )
-
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
-    case 'ui-exp-003-meditation':
-      return (
-        <g transform="translate(30 6)">
-          <path
-            d="M20 40 C30 30 40 30 50 40 C60 50 70 50 80 40"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.8"
-            strokeLinecap="round"
-          />
-          <path
-            d="M20 55 C30 45 40 45 50 55 C60 65 70 65 80 55"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.5"
-            strokeLinecap="round"
-          />
-          <circle cx="76" cy="38" r="3" fill="rgb(var(--c-text))" />
-        </g>
-      )
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
-    case 'ui-exp-003-ritual':
-      return (
-        <g transform="translate(30 6)">
-          <circle
-            cx="50"
-            cy="50"
-            r="30"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="1.5"
-            opacity="0.5"
-          />
-          <circle
-            cx="50"
-            cy="50"
-            r="19"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="1.5"
-            opacity="0.7"
-          />
-          <circle cx="50" cy="50" r="8" fill="rgb(var(--c-line))" opacity="0.85" />
-          <circle cx="50" cy="50" r="2.5" fill="rgb(var(--c-text))" />
-        </g>
-      )
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
-    case 'ui-exp-003-asceza':
-      return (
-        <g transform="translate(30 6)">
-          <rect
-            x="26"
-            y="20"
-            width="48"
-            height="60"
-            rx="2"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.85"
-          />
-          <line
-            x1="50"
-            y1="20"
-            x2="50"
-            y2="80"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="1.5"
-            opacity="0.5"
-          />
-          <circle cx="50" cy="50" r="3" fill="rgb(var(--c-text))" />
-        </g>
-      )
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
-    case 'ui-exp-003-next-step':
-      return (
-        <g transform="translate(30 6)">
-          <circle cx="30" cy="70" r="3" fill="rgb(var(--c-line))" opacity="0.6" />
-          <path
-            d="M30 70 C42 66 50 54 58 34"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.75"
-            strokeLinecap="round"
-          />
-          <circle cx="58" cy="34" r="3.5" fill="rgb(var(--c-text))" />
-        </g>
-      )
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
-    case 'ui-exp-003-release':
-      return (
-        <g transform="translate(30 6)">
-          <path
-            d="M30 78 C30 60 36 40 46 26 C50 20 58 16 66 18"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="1.5"
-            opacity="0.7"
-            strokeLinecap="round"
-          />
-          <path
-            d="M44 30 C50 26 58 26 64 20"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="1.5"
-            opacity="0.5"
-            strokeLinecap="round"
-          />
-          <circle cx="66" cy="18" r="3" fill="rgb(var(--c-text))" />
-        </g>
-      )
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
-    case 'ui-exp-003-breath':
-      return (
-        <g transform="translate(30 6)">
-          <circle
-            cx="50"
-            cy="50"
-            r="26"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.5"
-          />
-          <path
-            d="M50 50 L50 26"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.85"
-            strokeLinecap="round"
-          />
-          <path
-            d="M50 50 L68 62"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.85"
-            strokeLinecap="round"
-          />
-          <circle cx="50" cy="50" r="3" fill="rgb(var(--c-text))" />
-        </g>
-      )
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
     case 'ui-exp-003-evening':
       return (
-        <g transform="translate(30 6)">
+        <>
           <path
-            d="M62 26 A26 26 0 1 0 62 74 A20 20 0 1 1 62 26 Z"
-            fill="rgb(var(--c-line))"
-            opacity="0.75"
+            className="mx-semantic-glyph__fill"
+            d="M86 21C64 26 55 50 66 69C77 89 105 90 121 72C108 78 91 72 84 59C76 45 77 32 86 21Z"
           />
-          <circle cx="66" cy="30" r="2.5" fill="rgb(var(--c-text))" />
-        </g>
+          <path className="mx-semantic-glyph__soft" d="M32 87C57 78 103 78 128 87L122 98H38Z" />
+          <Accent cx="115" cy="37" r="3.5" />
+        </>
       )
-    // TODO: черновая иллюстрация для превью, финальную нарисует владелец продукта.
-    case 'ui-exp-003-journal':
+    case 'loading':
       return (
-        <g transform="translate(30 6)">
-          <path
-            d="M25 60 A25 25 0 1 1 65 76"
-            fill="none"
-            stroke="rgb(var(--c-line))"
-            strokeWidth="2"
-            opacity="0.75"
-            strokeLinecap="round"
-          />
-          <circle cx="65" cy="76" r="4" fill="rgb(var(--c-text))" />
-        </g>
+        <>
+          <g className="mx-semantic-glyph__soft">
+            <path d="M34 42H109L126 56V91H34Z" />
+            <path d="M45 31H99L111 42H45Z" />
+            <path d="M53 21H91L100 31H53Z" />
+          </g>
+          <Accent cx="126" cy="56" />
+        </>
       )
+    case 'progress':
+      return (
+        <>
+          <g className="mx-semantic-glyph__soft">
+            <path d="M18 88C47 80 56 48 91 36C111 29 127 30 142 24" />
+            <path d="M25 95C53 83 65 57 94 43C113 34 128 31 142 24" />
+            <path d="M36 99C58 84 75 66 101 48C117 37 130 30 142 24" />
+            <path d="M55 102C72 83 88 63 110 45C122 35 133 28 142 24" />
+          </g>
+          <Accent cx="142" cy="24" r="5" />
+        </>
+      )
+    case 'empty':
+    case 'template':
+      return <Archive />
+    case 'success':
+      return (
+        <>
+          <path className="mx-semantic-glyph__fill" d="M43 24H104L121 41V94H43Z" />
+          <g className="mx-semantic-glyph__ink">
+            <path d="M104 24V42H121" />
+            <path d="M60 61L74 75L102 47" />
+          </g>
+          <Accent cx="102" cy="47" r="3.5" />
+        </>
+      )
+    case 'error':
+      return (
+        <>
+          <path className="mx-semantic-glyph__soft" d="M42 24H103L121 42V94H42Z" />
+          <path className="mx-semantic-glyph__line" d="M103 24V43H121M59 69C70 61 80 75 91 67" />
+          <Accent cx="110" cy="76" r="4" />
+        </>
+      )
+    case 'onboarding':
+      return <Book />
     default:
       if (import.meta.env.DEV) {
         console.error(
           `[SemanticGlyph] неизвестный kind "${kind}"` +
             (debugSource ? ` (источник: ${debugSource})` : '') +
-            ' — рендерится generic-заглушка. Проверь имя kind у вызывающего компонента.'
+            ' — используется статичная системная заглушка.'
         )
       }
-
-      return (
-        <>
-          <Guide />
-          <g className="mx-semantic-glyph__brackets">
-            <path d="M52 46V32H66M108 46V32H94M52 66V80H66M108 66V80H94" />
-          </g>
-          <path className="mx-semantic-glyph__template-axis" d="M62 56H98M80 38V74" />
-          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
-        </>
-      )
+      return <Archive />
   }
 }
 
 export default function SemanticGlyph({
   kind = 'template',
   className = '',
-  animated = true,
   highlighted = true,
   accent,
   debugSource,
@@ -754,12 +481,13 @@ export default function SemanticGlyph({
     <svg
       viewBox="0 0 160 112"
       className={`mx-semantic-glyph mx-semantic-glyph--${kind} ${className}`}
-      data-animated={animated}
+      data-animated="false"
       data-highlighted={highlighted}
       data-accent={accent}
       preserveAspectRatio="xMidYMid meet"
       fill="none"
       aria-hidden="true"
+      focusable="false"
     >
       <Drawing kind={kind} debugSource={debugSource} />
     </svg>

@@ -5,6 +5,7 @@ import { Target, ArrowUp, ArrowLeft, ArrowRight, Flame, TrendingUp, Trash2 } fro
 import BackButton from '../components/BackButton'
 import JourneyLineArt from '../components/JourneyLineArt'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
+import SystemState from '../components/SystemState'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import {
   getFullscreenPortalTarget,
@@ -370,7 +371,7 @@ export default function Path({ user, onContinueToday }) {
     }
   }
 
-  if (loading) return <p className="text-muted text-[13px] px-6">Загрузка...</p>
+  if (loading) return <SystemState kind="loading" title="Размечаю путь…" compact />
 
   if (showCreate) {
     return <GoalCreateScreen onCreate={createGoal} onCancel={() => setShowCreate(false)} />

@@ -3,6 +3,7 @@ import { api } from '../lib/api'
 import { Plus, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import EmptyState from '../components/EmptyState'
+import SystemState from '../components/SystemState'
 
 export default function QuotesManager({ user, onBack }) {
   const [quotes, setQuotes] = useState([])
@@ -86,7 +87,7 @@ export default function QuotesManager({ user, onBack }) {
       </div>
 
       {loading ? (
-        <p className="text-muted text-[13px]">Загрузка...</p>
+        <SystemState kind="loading" title="Загрузка..." description="Собираю твои фразы." compact />
       ) : quotes.length === 0 ? (
         <EmptyState className="mt-2">
           <h3 className="font-display text-[16px] text-cream mb-1">Пока нет твоих фраз</h3>

@@ -10,6 +10,7 @@ import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
 import BackButton from '../components/BackButton'
+import SystemState from '../components/SystemState'
 
 import './PracticeFlow.css'
 
@@ -40,10 +41,16 @@ function PracticesCatalogLoading() {
         <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
         <span aria-hidden="true" />
       </div>
-      <div className="mx-practices-catalog-loading" aria-hidden="true">
-        <span className="mx-practices-catalog-loading__hero" />
+      <div className="mx-practices-catalog-loading">
+        <SystemState
+          kind="loading"
+          title="Загружаю практики…"
+          description="Собираю твои ритуалы, аскезы и короткие практики."
+          compact
+        />
+        <span className="mx-practices-catalog-loading__hero" aria-hidden="true" />
         <span className="mx-practices-catalog-loading__label" />
-        <div className="mx-practices-catalog-loading__rail">
+        <div className="mx-practices-catalog-loading__rail" aria-hidden="true">
           <span />
           <span />
           <span />
@@ -297,16 +304,21 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     return (
       <div className="w-full max-w-md px-5" role="alert">
         <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
-        <p className="mt-6 text-[13px] leading-relaxed text-muted">
-          Не удалось загрузить практики. Попробуйте ещё раз.
-        </p>
-        <button
-          type="button"
-          onClick={() => loadPractices(true)}
-          className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
-        >
-          Повторить
-        </button>
+        <SystemState
+          kind="error"
+          title="Не удалось загрузить практики"
+          description="Проверь соединение и попробуй ещё раз."
+          className="mt-3"
+          action={
+            <button
+              type="button"
+              onClick={() => loadPractices(true)}
+              className="min-h-11 rounded-full bg-cream px-5 py-2 text-[13px] font-semibold text-emerald-deep"
+            >
+              Повторить
+            </button>
+          }
+        />
       </div>
     )
   }

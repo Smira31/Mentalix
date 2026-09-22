@@ -5,6 +5,7 @@ import BackButton from '../components/BackButton'
 import { Search, ExternalLink, ArrowLeft, ArrowRight } from 'lucide-react'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
 import EmptyState from '../components/EmptyState'
+import SystemState from '../components/SystemState'
 
 // Радиусы: rounded-3xl (24) — карточка, rounded-full — поиск и метки.
 
@@ -185,7 +186,7 @@ export default function Articles({ initialArticle = null, onExit }) {
     return (
       <div className="animate-fade-in">
         <ArticlesCollectionHeader onExit={onExit} />
-        <p className="px-6 pt-8 text-[13px] text-muted">Загрузка...</p>
+        <SystemState kind="loading" title="Загрузка..." description="Собираю статьи." compact />
       </div>
     )
   }

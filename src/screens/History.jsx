@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
+import SystemState from '../components/SystemState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { readJournalHistory } from '../lib/journalHistory'
@@ -502,7 +503,8 @@ export default function History({ user }) {
     window.location.href = url.toString()
   }
 
-  if (days === null) return <p className="text-muted text-sm px-5 pt-6">Загрузка...</p>
+  if (days === null)
+    return <SystemState kind="loading" title="Загрузка..." description="Собираю историю." compact />
 
   if (selectedDay) {
     return (

@@ -10,6 +10,18 @@
   gap: 8px; /* spacing between title, description, and button handled by flex gap */
 }
 
+.mx-onboarding-art {
+  width: min(190px, 58vw);
+  height: 126px;
+  margin-bottom: 14px;
+}
+
+.mx-onboarding-art--complete {
+  width: 138px;
+  height: 94px;
+  margin: 18px auto 2px;
+}
+
 .mx-onboarding-intro-step {
   transform: translateY(-18px);
 }

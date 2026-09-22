@@ -9,6 +9,7 @@ import JournalTextarea from '../components/JournalTextarea'
 import MarkdownText from '../components/MarkdownText'
 import Motif, { MotifArt } from '../components/Motif'
 import WebActionBar from '../components/WebActionBar'
+import SystemState from '../components/SystemState'
 import { useMainButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY } from './mentalix/personas'
 import {
@@ -295,7 +296,13 @@ export default function ThemeScreen({ user, themeId, onBack }) {
       <Shell style={style}>
         <BackButton onClick={onBack} />
 
-        <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
+        <SystemState
+          kind="loading"
+          title="Загрузка..."
+          description="Открываю тему."
+          compact
+          className="m-auto"
+        />
       </Shell>,
       getFullscreenPortalTarget()
     )

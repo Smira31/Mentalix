@@ -3,11 +3,9 @@ import { api } from '../lib/api'
 import ThemeScreen from './ThemeScreen'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
+import SystemState from '../components/SystemState'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
-import {
-  isLinkedWebWriteBlocked,
-  LINKED_WEB_WRITE_NOTICE,
-} from '../lib/webAuthLimits'
+import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 
 const EMPTY_DRAFT = { title: '', source: '', duration_estimate_min: '', cover_url: '' }
 const FILTERS = [
@@ -199,7 +197,11 @@ function CourseDetail({ user, course, onBack, onDelete, onToggleStatus }) {
         )}
       </div>
 
-      {error && <p role="alert" className="text-[12px] text-amber-200 mb-4 leading-relaxed">{error}</p>}
+      {error && (
+        <p role="alert" className="text-[12px] text-amber-200 mb-4 leading-relaxed">
+          {error}
+        </p>
+      )}
 
       <div className="rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-5">
         <div className="h-36 bg-emerald-light/20 flex items-center justify-center">
@@ -342,7 +344,10 @@ export default function Courses({ user }) {
     }
   }
 
-  if (loading) return <p className="text-muted text-[13px] px-6">Загрузка...</p>
+  if (loading)
+    return (
+      <SystemState kind="loading" title="Загрузка..." description="Собираю программы." compact />
+    )
 
   if (showCreate) {
     return <CourseCreateScreen onCreate={createCourse} onCancel={() => setShowCreate(false)} />

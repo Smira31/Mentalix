@@ -19,12 +19,12 @@ last_verified: 2026-09-16
 
 ## Отложено
 
-|                                                  Issue | Причина                                                                   |
-| -----------------------------------------------------: | ------------------------------------------------------------------------- |
-| [#600](https://github.com/Smira31/Mentalix/issues/600) | Координационный evaluator–optimizer трек; не заменяет продуктовую очередь |
-| [#582](https://github.com/Smira31/Mentalix/issues/582) | Preview-only Library UI Lab; не начинать production-монетизацию           |
-| [#516](https://github.com/Smira31/Mentalix/issues/516) | Preview-only illustration system                                          |
-| [#480](https://github.com/Smira31/Mentalix/issues/480) | Backend-dependent AI handoff                                              |
+|                                                  Issue | Причина                                                                                   |
+| -----------------------------------------------------: | ----------------------------------------------------------------------------------------- |
+| [#600](https://github.com/Smira31/Mentalix/issues/600) | Координационный evaluator–optimizer трек; не заменяет продуктовую очередь                 |
+| [#582](https://github.com/Smira31/Mentalix/issues/582) | Preview-only Library UI Lab; не начинать production-монетизацию                           |
+| [#516](https://github.com/Smira31/Mentalix/issues/516) | Owner-approved static illustration replacement; Preview and device gate before Production |
+| [#480](https://github.com/Smira31/Mentalix/issues/480) | Backend-dependent AI handoff                                                              |
 
 ## Закрытые текущие треки
 

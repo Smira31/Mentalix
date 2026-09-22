@@ -1,3 +1,5 @@
+import SemanticGlyph from './SemanticGlyph'
+
 /*
  * P05 — canonical EmptyState (UI_UX_AUDIT_2026-07-30.md).
  *
@@ -13,11 +15,11 @@
  */
 export default function EmptyState({ glyph, children, className = '' }) {
   return (
-    <div
-      className={`rounded-3xl bg-emerald p-8 text-center ${className}`}
-    >
+    <div className={`rounded-3xl bg-emerald p-8 text-center ${className}`}>
       {glyph ?? (
-        <div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />
+        <div className="mx-auto mb-4 h-[88px] w-[132px]" aria-hidden="true">
+          <SemanticGlyph kind="empty" />
+        </div>
       )}
 
       {children}

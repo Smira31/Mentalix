@@ -16,6 +16,7 @@ import History from './History'
 import QuoteView from './QuoteView'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
+import SystemState from '../components/SystemState'
 import StarterSetPicker from '../components/StarterSetPicker'
 import PinnedPractices from '../components/PinnedPractices'
 import SeriesBadges from './SeriesBadges'
@@ -486,7 +487,15 @@ export default function Today({
   // ============================================================
 
   if (loading) {
-    return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
+    return (
+      <div className="w-full max-w-md px-5 pt-5">
+        <SystemState
+          kind="loading"
+          title="Собираю твой день…"
+          description="Проверяю отметки и следующий спокойный шаг."
+        />
+      </div>
+    )
   }
 
   if (loadError) {
@@ -499,20 +508,17 @@ export default function Today({
           streak={streak}
         />
         <div className="w-full max-w-md px-5 pt-8">
-          <EmptyState
-            className="p-5"
-            glyph={
-              <div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />
+          <SystemState
+            kind="error"
+            title="Не удалось загрузить день"
+            description="Проверь соединение и попробуй ещё раз. Данные дня не были заменены пустым состоянием."
+            role="alert"
+            action={
+              <button onClick={retryTodayData} className="cta-pill mx-type-control px-7 py-3">
+                Повторить
+              </button>
             }
-          >
-            <h2 className="font-display mx-type-card text-cream mb-1">Не удалось загрузить день</h2>
-            <p className="mx-type-list-body text-muted mb-4" role="alert">
-              Проверь соединение и попробуй ещё раз. Данные дня не были заменены пустым состоянием.
-            </p>
-            <button onClick={retryTodayData} className="cta-pill mx-type-control px-7 py-3">
-              Повторить
-            </button>
-          </EmptyState>
+          />
         </div>
       </div>
     )

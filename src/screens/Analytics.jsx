@@ -5,6 +5,8 @@ import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
 import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
+import SystemState from '../components/SystemState'
+import SemanticGlyph from '../components/SemanticGlyph'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 
@@ -125,7 +127,12 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
 
         <div className="mx-progress-redesign__chart">
           {loading ? (
-            <div className="mx-progress-redesign__chart-skeleton" aria-label="Загрузка прогресса" />
+            <SystemState
+              kind="loading"
+              title="Собираю прогресс…"
+              description="Здесь появится твой ритм за выбранный период."
+              compact
+            />
           ) : error ? (
             <div className="mx-progress-redesign__chart-message" role="alert">
               <strong>Не удалось загрузить прогресс</strong>
@@ -136,6 +143,9 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
             </div>
           ) : points.length < 2 ? (
             <div className="mx-progress-redesign__chart-message">
+              <div className="mx-progress-redesign__static-art" aria-hidden="true">
+                <SemanticGlyph kind="progress" />
+              </div>
               <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
               <span>
                 {points.length

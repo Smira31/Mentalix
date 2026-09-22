@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { loadIndependentSources, retrySources } from '../lib/pathDataLoader'
 import Achievements from './Achievements'
+import SystemState from '../components/SystemState'
 
 // ============================================================
 // МОЙ ПУТЬ
@@ -236,7 +237,7 @@ export default function Profile({ user }) {
 
       <h3 className="font-display text-[24px] text-cream lowercase mb-5">мой путь.</h3>
 
-      {loading && <p className="text-muted text-[13px] mb-8">Собираю историю...</p>}
+      {loading && <SystemState kind="loading" title="Собираю историю…" compact />}
 
       {!loading && hasLoadError && (
         <div className="mb-8" role="alert">

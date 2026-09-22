@@ -3,6 +3,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Check } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import SemanticGlyph from '../components/SemanticGlyph'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -177,6 +178,9 @@ export default function Onboarding({ user, onFinish }) {
         {step === 0 && (
           <div className="mx-onboarding-step mx-onboarding-intro-step flex-1 w-full max-w-md flex flex-col items-center justify-center px-8 text-center">
             <div className="mx-onboarding-intro-copy flex flex-col items-center">
+              <div className="mx-onboarding-art" aria-hidden="true">
+                <SemanticGlyph kind="onboarding" />
+              </div>
               <h2 className="font-display text-[30px] text-cream leading-tight">Mentalix.</h2>
               <p className="text-[14px] text-muted mt-4 leading-relaxed max-w-xs">
                 Пара вопросов — и приложение соберётся под тебя. Это займёт минуту.
@@ -335,6 +339,9 @@ export default function Onboarding({ user, onFinish }) {
             <h2 className="font-display text-[24px] text-cream text-center leading-tight">
               Готово. Путь размечен.
             </h2>
+            <div className="mx-onboarding-art mx-onboarding-art--complete" aria-hidden="true">
+              <SemanticGlyph kind="success" />
+            </div>
             {chosenFocusLabels.length > 0 && (
               <p className="text-[13px] text-muted mt-3 text-center leading-snug">
                 Фокус: <span className="text-cream font-bold">{chosenFocusLabels.join(', ')}</span>

@@ -650,3 +650,8 @@
   display: none;
   content: none;
 }
+.mx-progress-redesign__static-art {
+  width: min(172px, 62vw);
+  height: 104px;
+  margin: -8px auto 8px;
+}

@@ -14,6 +14,7 @@ import BookLogo from './components/BookLogo'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
+import SystemState from './components/SystemState'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
@@ -144,12 +145,12 @@ function DemoTelegramChrome({ onBack }) {
 
 function ScreenLoading() {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="w-full max-w-md px-5 pt-8 text-center text-[13px] text-muted"
-    >
-      Загрузка…
+    <div className="w-full max-w-md px-5 pt-8" aria-live="polite">
+      <SystemState
+        kind="loading"
+        title="Открываю Mentalix…"
+        description="Собираю твой сегодняшний контекст."
+      />
     </div>
   )
 }

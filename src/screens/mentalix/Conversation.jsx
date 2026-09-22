@@ -6,6 +6,7 @@ import { ArrowRight, LoaderCircle, Mic, Square } from 'lucide-react'
 
 import { platform } from '../../platform'
 import BackButton from '../../components/BackButton'
+import SystemState from '../../components/SystemState'
 import { api } from '../../lib/api'
 import { isPreviewDemoMode } from '../../lib/demoMode'
 import { useSynced } from '../../lib/store'
@@ -352,7 +353,14 @@ export default function Conversation({
       >
         {!loading && contextSlot}
 
-        {loading && <p className="text-muted text-[14px] text-center pt-4">Загрузка...</p>}
+        {loading && (
+          <SystemState
+            kind="loading"
+            title="Загрузка..."
+            description="Открываю разговор."
+            compact
+          />
+        )}
 
         {!loading && messages.length === 0 && (
           <p className="text-muted text-[14px] text-center pt-10 leading-[1.6]">

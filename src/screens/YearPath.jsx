@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ArrowUpRight, TrendingUp } from 'lucide-react'
 import { api } from '../lib/api'
 import { TickGauge } from './Path'
+import SystemState from '../components/SystemState'
 
 /*
  * MXL-YEAR-PATH-001 — «Год пути».
@@ -128,7 +129,7 @@ export default function YearPath({ user, onContinueToday }) {
       .finally(() => setLoading(false))
   }, [user])
 
-  if (loading) return null
+  if (loading) return <SystemState kind="loading" title="Собираю год пути…" compact />
 
   const daily = analytics?.daily_activity || []
 

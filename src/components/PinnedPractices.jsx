@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Check, Settings2, X } from 'lucide-react'
 
 import BackButton from './BackButton'
+import SystemState from './SystemState'
 import { api } from '../lib/api'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
@@ -159,7 +160,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
       </div>
 
       {loading ? (
-        <p className="mx-type-meta text-muted mt-3">Загрузка…</p>
+        <SystemState kind="loading" title="Собираю закреплённое…" compact />
       ) : error && pinnedPractices.length === 0 ? (
         <p className="mx-type-list-body text-muted mt-3">Не получилось загрузить практики.</p>
       ) : pinnedPractices.length === 0 ? (

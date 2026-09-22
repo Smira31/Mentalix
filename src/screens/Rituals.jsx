@@ -14,6 +14,7 @@ import {
 import SemanticGlyph, { semanticKindForRitual } from '../components/SemanticGlyph'
 import StreakBar from '../components/StreakBar'
 import EmptyState from '../components/EmptyState'
+import SystemState from '../components/SystemState'
 import BackButton from '../components/BackButton'
 import WebActionBar from '../components/WebActionBar'
 import StreakRestoreSheet from '../components/StreakRestoreSheet'
@@ -423,7 +424,7 @@ export default function Rituals({ user, onBack }) {
       )}
 
       {loading ? (
-        <p className="text-muted text-[13px]">Загрузка...</p>
+        <SystemState kind="loading" title="Загрузка..." description="Собираю ритуалы." compact />
       ) : rituals.length === 0 ? (
         <EmptyState
           className="mb-4"
