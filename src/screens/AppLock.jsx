@@ -171,7 +171,7 @@ export default function AppLock({ mode = 'unlock', onUnlock, onSetupDone, onCanc
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         {isSetup && <BackButton showInDemo onClick={onCancel} />}
       </div>
 

@@ -20,7 +20,7 @@ function NoticeCard({ icon: Icon, title, children }) {
 
 export default function PrivacyNotice({ onBack }) {
   return (
-    <section className="w-full max-w-md px-5 pb-10">
+    <section className="w-full max-w-md px-[var(--mx-screen-x)] pb-10">
       <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
         <div className="justify-self-start">
           <BackButton showInDemo onClick={onBack} />

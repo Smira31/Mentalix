@@ -41,7 +41,7 @@ const MOTION = 'cubic-bezier(0.22, 1, 0.36, 1)'
 function TabIcon({ item, active, size = 21 }) {
   const Icon = item.icon
 
-  return <Icon size={size} strokeWidth={1.9} className={active ? 'text-cream' : 'text-muted'} />
+  return <Icon size={size} strokeWidth={1.5} className={active ? 'text-cream' : 'text-muted'} />
 }
 
 export default function BottomNavigation({ tab, collapsed, onCollapseChange, onTabChange }) {
@@ -72,12 +72,12 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
         ${demoMode && collapsed ? 'mx-demo-bottom-nav--collapsed' : ''}
       `}
       style={{
-        left: 'max(20px, var(--app-safe-left))',
-        right: 'max(20px, var(--app-safe-right))',
+        left: 'max(var(--bottom-nav-edge), var(--app-safe-left))',
+        right: 'max(var(--bottom-nav-edge), var(--app-safe-right))',
         // The panel itself sits directly above the system safe area. The
         // content reserve remains separate, so other screens keep their
         // existing clearance from the fixed navigation.
-        bottom: 'var(--app-safe-bottom)',
+        bottom: 'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
       }}
     >
       {/* ==========================================================
@@ -109,7 +109,9 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           will-change-[width,height,border-radius,transform]
         "
         style={{
-          width: collapsed ? 'var(--bottom-nav-collapsed-size)' : 'calc(100vw - 40px)',
+          width: collapsed
+            ? 'var(--bottom-nav-collapsed-size)'
+            : 'calc(100vw - (2 * var(--bottom-nav-edge)))',
 
           maxWidth: collapsed ? 'var(--bottom-nav-collapsed-size)' : '400px',
 
@@ -156,7 +158,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
             items-center
             justify-center
 
-            px-[6px]
+            px-0
 
             origin-left
           "
@@ -187,7 +189,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                   onTabChange(item.key)
                 }}
                 className={[
-                  'h-[56px]',
+                  'h-[47px]',
                   'flex-1',
                   'basis-0',
                   'min-w-0',
@@ -198,7 +200,8 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                   'justify-center',
                   'gap-[2px]',
                   'active:scale-95',
-                  active ? 'bg-cream/[0.12]' : '',
+                  item.key === 'library' ? 'mx-bottom-nav-library' : '',
+                  active ? 'bg-[rgb(var(--c-border))]' : '',
                 ].join(' ')}
                 style={{
                   transition: [
@@ -207,14 +210,12 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                   ].join(', '),
                 }}
               >
-                <TabIcon item={item} active={active} size={21} />
+                <TabIcon item={item} active={active} size={22} />
 
                 <span
                   className={[
-                    'text-[10px]',
-                    'max-[360px]:text-[9px]',
-                    'max-[360px]:tracking-[-0.02em]',
-                    'font-semibold',
+                    'mx-type-tab',
+                    'mt-[1px]',
                     'whitespace-nowrap',
                     active ? 'text-cream' : 'text-muted',
                   ].join(' ')}

@@ -48,7 +48,7 @@ function Shell({ style, footer, children }) {
       <div className={FULLSCREEN_HEADER_SLOT_CLASS} aria-hidden="true" />
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-5 pt-2 pb-6 flex flex-col min-h-full">
+        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pt-2 pb-6 flex flex-col min-h-full">
           {children}
         </div>
       </div>
@@ -316,7 +316,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         <BackButton onClick={onBack} />
 
         <div className="flex-1 flex flex-col pt-4 pb-6">
-          <div className="-mx-5 h-[150px] text-gold mb-6">
+          <div className="-mx-[var(--mx-screen-x)] h-[150px] text-gold mb-6">
             <Motif name="ryad" className="w-full h-full" />
           </div>
 

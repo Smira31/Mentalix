@@ -20,7 +20,7 @@ export default function JournalStart({
   const Icon = meta.Icon
 
   return (
-    <div className="w-full max-w-md mx-auto px-5 flex flex-col min-h-[calc(100vh-160px)] animate-fade-in">
+    <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-col min-h-[calc(100vh-160px)] animate-fade-in">
       {/* ── шапка ── */}
 
       <div className="flex items-center pt-1">

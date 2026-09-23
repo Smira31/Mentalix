@@ -42,7 +42,10 @@ test('Ritual card имеет одну outer border и art-zone без внутр
 test('Rituals screen reserves remaining height for carousel and prevents page scrolling', () => {
   const screen = componentSlice('export default function Rituals', '__missing__')
 
-  assert.match(screen, /mx-rituals-screen w-full max-w-md px-5[^\n]*flex-1 flex flex-col min-h-0 overflow-hidden/)
+  assert.match(
+    screen,
+    /mx-rituals-screen w-full max-w-md px-\[var\(--mx-screen-x\)\][^\n]*flex-1 flex flex-col min-h-0 overflow-hidden/
+  )
   assert.match(screen, /mx-rituals-screen__carousel flex gap-3[^\n]*overflow-x-auto[^\n]*flex-1 min-h-0/)
   assert.match(screen, /w-\[84%\]/)
   assert.match(screen, /snap-x snap-mandatory/)

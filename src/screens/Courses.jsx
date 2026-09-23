@@ -4,10 +4,7 @@ import ThemeScreen from './ThemeScreen'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import { BookOpen, ArrowLeft, Clock, Trash2, Plus, Check } from 'lucide-react'
-import {
-  isLinkedWebWriteBlocked,
-  LINKED_WEB_WRITE_NOTICE,
-} from '../lib/webAuthLimits'
+import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 
 const EMPTY_DRAFT = { title: '', source: '', duration_estimate_min: '', cover_url: '' }
 const FILTERS = [
@@ -94,7 +91,7 @@ function CourseCreateScreen({ onCreate, onCancel }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)]">
       <button onClick={onCancel} className="flex items-center gap-1.5 text-muted text-[13px] mb-4">
         <ArrowLeft size={16} /> Отмена
       </button>
@@ -165,7 +162,7 @@ function CourseDetail({ user, course, onBack, onDelete, onToggleStatus }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)]">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-[13px]">
           <ArrowLeft size={16} /> Назад
@@ -199,7 +196,11 @@ function CourseDetail({ user, course, onBack, onDelete, onToggleStatus }) {
         )}
       </div>
 
-      {error && <p role="alert" className="text-[12px] text-amber-200 mb-4 leading-relaxed">{error}</p>}
+      {error && (
+        <p role="alert" className="text-[12px] text-amber-200 mb-4 leading-relaxed">
+          {error}
+        </p>
+      )}
 
       <div className="rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-5">
         <div className="h-36 bg-emerald-light/20 flex items-center justify-center">
@@ -367,7 +368,7 @@ export default function Courses({ user }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)]">
       {/* ── витрина тем недели ── */}
       {themes.length > 0 && (
         <div className="mb-7">
@@ -377,7 +378,7 @@ export default function Courses({ user }) {
               <button
                 key={t.id}
                 onClick={() => setOpenTheme(t.id)}
-                className="w-full rounded-3xl bg-emerald px-5 py-4 text-left border-0 active:scale-[0.98] transition-transform"
+                className="w-full rounded-3xl bg-emerald px-[var(--mx-screen-x)] py-4 text-left border-0 active:scale-[0.98] transition-transform"
               >
                 <span className="block font-display mx-type-card text-cream lowercase leading-tight">
                   {t.title}

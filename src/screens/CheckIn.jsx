@@ -64,7 +64,7 @@ const CHECKIN_INTERACTIVE_CLASS = 'w-full pt-7'
 
 const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
-const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-5`
+const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
@@ -1088,7 +1088,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   if (isStreakStep) {
     return createPortal(
       <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
-        <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+        <div
+          className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
+        >
           <BackButton onClick={handleBack} label="Сегодня" />
         </div>
         <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -1150,7 +1152,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
         className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
         style={viewportStyle}
       >
-        <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+        <div
+          className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
+        >
           <BackButton onClick={handleBack} />
         </div>
 

@@ -72,7 +72,7 @@ function EmptyGoals({ onCreate }) {
         </p>
         <button
           onClick={onCreate}
-          className="px-5 py-2.5 rounded-xl bg-gold text-emerald-deep text-[13px] font-medium transition-transform active:scale-95"
+          className="px-[var(--mx-screen-x)] py-2.5 rounded-xl bg-gold text-emerald-deep text-[13px] font-medium transition-transform active:scale-95"
         >
           Создать цель
         </button>
@@ -109,12 +109,12 @@ function GoalCreateScreen({ onCreate, onCancel }) {
   const portalTarget = getFullscreenPortalTarget()
   const content = (
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-5`}>
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <BackButton onClick={onCancel} />
         <h1 className="mx-auto pr-10 font-display text-[16px] text-cream">Новая цель</h1>
       </div>
 
-      <div className={`${FULLSCREEN_SCROLL_CLASS} px-5 pb-8`}>
+      <div className={`${FULLSCREEN_SCROLL_CLASS} px-[var(--mx-screen-x)] pb-8`}>
         <div className="w-full max-w-md mx-auto pt-3">
           <div className="relative rounded-[28px] overflow-hidden bg-emerald-deep border border-cream/10 mb-6 h-40">
             <JourneyLineArt progress={0} className="absolute inset-0 w-full h-full opacity-80" />
@@ -223,7 +223,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)]">
       <div className="flex items-center justify-between mb-4">
         <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-[13px]">
           <ArrowLeft size={16} /> Назад
@@ -383,8 +383,8 @@ export default function Path({ user, onContinueToday }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5 pb-24">
-      <div className="mb-5 rounded-[28px] bg-emerald-deep border border-cream/10 px-5 py-5">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)] pb-24">
+      <div className="mb-5 rounded-[28px] bg-emerald-deep border border-cream/10 px-[var(--mx-screen-x)] py-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="font-display text-[16px] text-cream">Мой путь</h2>
