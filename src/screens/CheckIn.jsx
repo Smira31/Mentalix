@@ -26,6 +26,7 @@ import {
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { currentCheckinStreak } from '../lib/series'
+import { energyFillPercent } from '../lib/checkinScale'
 import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -518,7 +519,7 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
                 style={
                   scale.key === 'energy'
                     ? {
-                        background: `linear-gradient(to top, #f4f4f4 ${level * 25}%, #111 ${level * 25}%)`,
+                        background: `linear-gradient(to top, #f4f4f4 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
                       }
                     : undefined
                 }
