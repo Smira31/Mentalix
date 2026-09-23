@@ -262,7 +262,7 @@ export default function Today({
   /*
    * Любой вложенный экран Today — это отдельный сценарий, а не
    * продолжение главной. Шапка с приветствием, переключателем
-   * темы и аватаром там не нужна: человек уже внутри и знает,
+   * темы и аватаром там не нужна: чел��век уже внутри и знает,
    * где он. Возврат даёт системная кнопка Telegram.
    */
   const changeSub = useCallback(
@@ -565,9 +565,6 @@ export default function Today({
   const isEmpty = total === 0
 
   const checkinDone = Boolean(checkin)
-  const morningComplete = Boolean(checkin)
-  const eveningComplete = todayState === 'dayClosed'
-
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
   // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
