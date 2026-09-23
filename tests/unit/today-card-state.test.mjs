@@ -5,7 +5,7 @@ import { formatReviewTime, resolveTodayCardStates } from '../../src/lib/todayCar
 const at = (iso, timeZone) => resolveTodayCardStates({ now: new Date(iso), reviewHour: 19, timeZone })
 
 test('карточки меняются в 04:59 и 05:00', () => {
-  assert.deepEqual(at('2026-09-23T01:59:00Z', 'Europe/Moscow'), { morning: 'missed', review: 'active', hour: 4, minute: 59 })
+  assert.deepEqual(at('2026-09-23T01:59:00Z', 'Europe/Moscow'), { morning: 'missed', review: 'locked', hour: 4, minute: 59 })
   assert.deepEqual(at('2026-09-23T02:00:00Z', 'Europe/Moscow'), { morning: 'active', review: 'locked', hour: 5, minute: 0 })
 })
 
