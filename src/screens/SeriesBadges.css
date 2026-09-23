@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 20px var(--mx-screen-x, 16px) 0;
+  padding: 8px var(--mx-screen-x, 16px) 0;
   background: rgb(var(--c-bg, 5 4 3));
 }
 
