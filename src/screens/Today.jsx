@@ -25,6 +25,7 @@ import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { currentCheckinStreak } from '../lib/series'
+import { resolveCheckInMode } from '../lib/todayCheckinMode'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -343,16 +344,12 @@ export default function Today({
   // ЧЕК-ИН / АНАЛИЗ ДНЯ
   // ============================================================
 
-  if (sub === 'checkin') {
+  if (sub === 'checkin' || sub === 'evening') {
     return (
       <CheckIn
         user={user}
         existing={checkin}
-        mode={
-          initialSub === 'evening' || todayState === 'reviewPending' || todayState === 'dayClosed'
-            ? 'evening'
-            : 'checkin'
-        }
+        mode={resolveCheckInMode({ sub, initialSub })}
         onDone={async () => {
           await refreshCheckin()
 
@@ -534,7 +531,7 @@ export default function Today({
       data-complete={eveningComplete}
       onClick={() => {
         platform.haptic('medium')
-        changeSub('checkin')
+        changeSub('evening')
       }}
       aria-label="Открыть вечерний разбор"
     >

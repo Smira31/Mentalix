@@ -98,11 +98,9 @@
   opacity: 0.94;
 }
 .mx-checkin-scale__option.is-selected .mx-checkin-scale__circle {
-  border-color: transparent;
+  border-color: #f4f4f4;
   background: #f4f4f4;
-  box-shadow: 0 10px 24px rgb(0 0 0 / 24%);
   opacity: 1;
-  transform: translateY(-2px) scale(1.04);
 }
 .mx-checkin-scale__label {
   min-height: 2.2em;

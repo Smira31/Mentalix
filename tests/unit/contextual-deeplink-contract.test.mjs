@@ -17,9 +17,9 @@ test('contextual actions open only the existing allowlisted screens', () => {
 test('Today accepts a contextual initial sub-route and uses the existing Check-in screen', () => {
   assert.match(today, /initialSub = null/)
   assert.match(today, /useState\(initialSub\)/)
-  assert.match(today, /if \(sub === 'checkin'\)/)
+  assert.match(today, /if \(sub === 'checkin' \|\| sub === 'evening'\)/)
   assert.match(today, /<CheckIn/)
-  assert.match(today, /initialSub === 'evening'/)
+  assert.match(today, /resolveCheckInMode\(\{ sub, initialSub \}\)/)
 })
 
 test('morning return flow accepts only the canonical startapp value', () => {

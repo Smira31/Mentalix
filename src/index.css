@@ -112,6 +112,15 @@
   --c-card2: 17 17 17;
   /* #111111 — вторичная поверхность */
 
+  --c-nav: 28 28 28;
+  /* #1C1C1C — поверхность нижней навигации */
+
+  --c-nav-border: 51 51 51;
+  /* #333333 — граница нижней навигации */
+
+  --c-nav-active: 58 58 58;
+  /* #3A3A3A — активная плашка нижней навигации */
+
   /* Текст */
 
   --c-text: 243 243 243;
@@ -990,7 +999,7 @@ button {
 
 .mx-type-tab {
   display: block;
-  font-size: 0.75rem;
+  font-size: 11px;
   line-height: 1.2;
   font-weight: 500;
 }
@@ -1005,7 +1014,7 @@ button {
   }
 
   .mx-type-tab {
-    font-size: var(--mx-type-meta-size);
+    font-size: 10.5px;
   }
 }
 

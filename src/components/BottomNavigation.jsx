@@ -38,10 +38,10 @@ const TABS = [
 
 const MOTION = 'cubic-bezier(0.22, 1, 0.36, 1)'
 
-function TabIcon({ item, active, size = 21 }) {
+function TabIcon({ item, size = 21 }) {
   const Icon = item.icon
 
-  return <Icon size={size} strokeWidth={1.5} className={active ? 'text-cream' : 'text-muted'} />
+  return <Icon size={size} strokeWidth={1.5} className="mx-bottom-nav__icon" aria-hidden="true" />
 }
 
 export default function BottomNavigation({ tab, collapsed, onCollapseChange, onTabChange }) {
@@ -68,6 +68,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           mx-auto
 
         pointer-events-none
+        mx-bottom-nav
         ${demoMode ? 'mx-demo-bottom-nav' : ''}
         ${demoMode && collapsed ? 'mx-demo-bottom-nav--collapsed' : ''}
       `}
@@ -120,9 +121,9 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           borderRadius: collapsed ? 'var(--mx-radius-pill)' : 'var(--mx-radius-pill)',
 
           /* Цвета берутся из системных токенов, а не задаются вручную. */
-          backgroundColor: collapsed ? 'rgb(var(--c-card2) / 0.90)' : 'rgb(var(--c-card2) / 0.92)',
+          backgroundColor: 'rgb(var(--c-nav))',
 
-          borderColor: collapsed ? 'rgb(var(--c-border) / 0.9)' : 'rgb(var(--c-border) / 0.75)',
+          borderColor: 'rgb(var(--c-nav-border))',
 
           boxShadow: collapsed ? 'var(--shadow-float-compact)' : 'var(--shadow-float)',
 
@@ -201,7 +202,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                   'gap-[2px]',
                   'active:scale-95',
                   item.key === 'library' ? 'mx-bottom-nav-library' : '',
-                  active ? 'bg-[rgb(var(--c-border))]' : '',
+                  active ? 'is-active' : '',
                 ].join(' ')}
                 style={{
                   transition: [
@@ -210,14 +211,14 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
                   ].join(', '),
                 }}
               >
-                <TabIcon item={item} active={active} size={22} />
+                <TabIcon item={item} size={22} />
 
                 <span
                   className={[
                     'mx-type-tab',
                     'mt-[1px]',
                     'whitespace-nowrap',
-                    active ? 'text-cream' : 'text-muted',
+                    'mx-bottom-nav__label',
                   ].join(' ')}
                 >
                   {item.label}
