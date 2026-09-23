@@ -54,3 +54,9 @@ export function invalidateHistory(userId, persona) {
   generations.set(key, (generations.get(key) || 0) + 1)
   cache.delete(key)
 }
+
+export function clearHistoryCache() {
+  cache.clear()
+  inFlight.clear()
+  generations.clear()
+}

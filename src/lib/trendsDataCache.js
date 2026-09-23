@@ -156,3 +156,8 @@ export async function fetchTrendsData(
 export function invalidateTrendsData(userId, days) {
   cache.delete(cacheKey(userId, days))
 }
+
+export function clearTrendsDataCache() {
+  cache.clear()
+  inFlight.clear()
+}
