@@ -164,6 +164,7 @@ jobs:
       - name: Run visual snapshots
         env:
           RUN_VISUAL_SNAPSHOTS: 'true'
+          UX_FIXED_TIME: '08:00'
         run: npm run ux:check -- --retries=1
 
       - name: Upload visual artifacts on failure
