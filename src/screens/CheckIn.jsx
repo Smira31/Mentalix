@@ -246,6 +246,9 @@ function MorningCheckInFlow({ user, onDone }) {
   function pick(key, level) {
     platform.haptic('light')
     setValues(current => ({ ...current, [key]: level }))
+    window.setTimeout(() => {
+      setStep(current => current + 1)
+    }, 280)
   }
 
   async function finish() {
