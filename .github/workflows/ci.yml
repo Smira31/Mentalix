@@ -117,6 +117,13 @@ jobs:
       - name: Run UX smoke
         env:
           RUN_VISUAL_SNAPSHOTS: 'false'
+          UX_FIXED_TIME: '08:00'
+        run: npm run ux:check -- --retries=1
+
+      - name: Run UX smoke in evening mode
+        env:
+          RUN_VISUAL_SNAPSHOTS: 'false'
+          UX_FIXED_TIME: '21:00'
         run: npm run ux:check -- --retries=1
 
       - name: Run MXL-010 production-like gate
