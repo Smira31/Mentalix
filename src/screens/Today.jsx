@@ -598,7 +598,7 @@ export default function Today({
             <CardSystemGlyph kind={copy.glyph} />
           </span>
           <span className="mx-today-day-card__label">{copy.label}</span>
-          <span className="mx-today-day-card__title">{copy.title}</span>
+          <span className="mx-today-day-card__title mx-type-checkin-title">{copy.title}</span>
           <span className="mx-today-day-card__start">Начать</span>
         </>
       ) : (
