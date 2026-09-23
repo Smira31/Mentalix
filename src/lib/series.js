@@ -93,9 +93,9 @@ export function buildSeriesViewModel({
   const bestStreak = longestCheckinStreak(checkins, { timezone: resolvedTimezone })
   const metrics = {
     ...stats,
-    total_checkins: Math.max(completed.length, Number(stats?.total_checkins) || 0),
-    days_active: Math.max(activeDays, Number(stats?.days_active) || 0),
-    best_streak: Math.max(bestStreak, Number(stats?.best_streak) || 0),
+    total_checkins: completed.length,
+    days_active: activeDays,
+    best_streak: bestStreak,
   }
 
   return {

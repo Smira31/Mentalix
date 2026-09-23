@@ -10,12 +10,15 @@
 }
 
 .mx-path-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: calc(var(--app-safe-top, 0px) + 20px) var(--mx-screen-x, 16px) 0;
+  padding: 20px var(--mx-screen-x, 16px) 0;
+  background: rgb(var(--c-bg, 5 4 3));
 }
 
 .mx-path-tabs {
@@ -23,7 +26,7 @@
   width: 177px;
   height: 42px;
   grid-template-columns: 1fr 1fr;
-  padding: 3px;
+  padding: 0;
   border: 1px solid rgb(var(--c-border, 41 41 41));
   border-radius: 999px;
   background: rgb(var(--c-card2, 17 17 17));
@@ -68,7 +71,7 @@
   flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 24px var(--mx-screen-x, 16px) calc(var(--app-safe-bottom, 0px) + 28px);
+  padding: 20px var(--mx-screen-x, 16px) calc(var(--app-safe-bottom, 0px) + 28px);
 }
 
 .mx-path-content {

@@ -86,8 +86,16 @@ function CloseButton({ onClose, label = 'Закрыть' }) {
   )
 }
 
-export function BadgeSheet({ badge, onClose }) {
+function badgePractice(badge) {
+  if (badge?.id === 'voice-heard') return { route: 'checkin', label: 'Утренний чек-ин' }
+  if (badge?.id === 'ritual-holds') return { route: 'rituals', label: 'Ритуалы' }
+  if (badge?.id === 'asceza-power') return { route: 'ascezas', label: 'Аскезы' }
+  return null
+}
+
+export function BadgeSheet({ badge, onClose, onOpenPractice }) {
   if (!badge) return null
+  const practice = badgePractice(badge)
   return createPortal(
     <div className="mx-badge-sheet-layer" role="presentation" onClick={onClose}>
       <section
@@ -111,9 +119,15 @@ export function BadgeSheet({ badge, onClose }) {
               {badge.progress}/{badge.goal}
             </span>
           </div>
-          <button type="button" className="mx-badge-sheet__action" onClick={onClose}>
-            Утренний чек-ин
-          </button>
+          {practice && (
+            <button
+              type="button"
+              className="mx-badge-sheet__action"
+              onClick={() => onOpenPractice?.(practice.route)}
+            >
+              {practice.label}
+            </button>
+          )}
         </div>
         <BackButton onClick={onClose} />
       </section>
@@ -140,7 +154,7 @@ export function NewBadgeSheet({ badge, onClose }) {
         <div className="mx-badge-sheet__body">
           <span className="mx-badge-sheet__eyebrow">НОВЫЙ ЗНАЧОК</span>
           <h2 id="mx-new-badge-title">{badge.title}</h2>
-          <p>Ты прошёл первый утренний чек-ин!</p>
+          <p>Первый утренний чек-ин пройден!</p>
           <div className="mx-badge-sheet__received">
             <strong>Получен</strong>
             <span>{new Date().toLocaleDateString('ru-RU')}</span>
@@ -285,8 +299,8 @@ function StatsView({ model }) {
       <StatSection
         title="Практики"
         rows={[
-          ['Ритуалов', '—'],
-          ['Аскез', '—'],
+          ['Ритуалов', 0],
+          ['Аскез', 0],
         ]}
       />
       <StatSection
@@ -316,7 +330,7 @@ function StatSection({ title, rows }) {
   )
 }
 
-export default function SeriesBadges({ user, onBack }) {
+export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const initial = useMemo(() => peekSeriesSnapshot(user?.id), [user?.id])
   const [model, setModel] = useState(initial)
   const [modelUserId, setModelUserId] = useState(user?.id)
@@ -407,7 +421,14 @@ export default function SeriesBadges({ user, onBack }) {
           <p className="mx-path-status">Загружаю последние данные…</p>
         )}
       </main>
-      <BadgeSheet badge={selectedBadge} onClose={() => setSelectedBadge(null)} />
+      <BadgeSheet
+        badge={selectedBadge}
+        onClose={() => setSelectedBadge(null)}
+        onOpenPractice={practice => {
+          setSelectedBadge(null)
+          onOpenPractice?.(practice)
+        }}
+      />
     </div>
   )
 

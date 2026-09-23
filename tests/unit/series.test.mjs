@@ -32,11 +32,11 @@ test('buildSeriesViewModel keeps badges derived from existing stats and practice
   })
 
   assert.equal(model.currentStreak, 1)
-  assert.equal(model.bestStreak, 4)
-  assert.equal(model.totalCheckins, 5)
-  assert.equal(model.activeDays, 7)
+  assert.equal(model.bestStreak, 1)
+  assert.equal(model.totalCheckins, 1)
+  assert.equal(model.activeDays, 1)
   assert.equal(model.badges.length, 6)
-  assert.equal(model.badges.find(badge => badge.id === 'voice-heard').done, true)
+  assert.equal(model.badges.find(badge => badge.id === 'voice-heard').done, false)
   assert.equal(model.badges.find(badge => badge.id === 'ritual-holds').done, true)
 })
 
@@ -89,4 +89,24 @@ test('currentCheckinStreak becomes zero after a missed calendar day', () => {
 test('first completed check-in starts at one and an empty history stays at zero', () => {
   assert.equal(currentCheckinStreak([{ date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' }]), 1)
   assert.equal(currentCheckinStreak([]), 0)
+})
+
+test('yesterday check-in keeps a one-day series before today is completed', () => {
+  assert.equal(
+    currentCheckinStreak([
+      { date: '2026-09-22', review_completed_at: '2026-09-22T08:00:00Z' },
+    ]),
+    1
+  )
+})
+
+test('series metrics use one completed check-in dataset instead of stale profile totals', () => {
+  const model = buildSeriesViewModel({
+    stats: { total_checkins: 4, days_active: 23, best_streak: 0 },
+    checkins: [{ date: '2026-09-22', review_completed_at: '2026-09-22T08:00:00Z' }],
+  })
+  assert.equal(model.currentStreak, 1)
+  assert.equal(model.totalCheckins, 1)
+  assert.equal(model.activeDays, 1)
+  assert.equal(model.bestStreak, 1)
 })
