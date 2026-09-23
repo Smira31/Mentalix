@@ -1,7 +1,11 @@
 import { useEffect, useSyncExternalStore } from 'react'
 
 import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
-import { useVisualViewportGeometry } from './visualViewport'
+import {
+  getKeyboardViewportHeight,
+  isTelegramRuntime,
+  useVisualViewportGeometry,
+} from './visualViewport'
 import { isPreviewDemoMode } from './demoMode'
 
 /*
@@ -23,9 +27,10 @@ import { isPreviewDemoMode } from './demoMode'
  *    внутри якорится к этому контейнеру,
  *    а не к экрану.
  *
- * 2. Брать высоту из visualViewport.
- *    Иначе при открытой клавиатуре низ
- *    экрана уходит за видимую область.
+ * 2. В Telegram строить shell от viewportStableHeight: viewportHeight
+ *    меняется во время раскрытия WebView. Только при открытой клавиатуре
+ *    ограничивать shell минимумом stable height и visualViewport.height.
+ *    Web/PWA fallback на visualViewport остаётся прежним.
  *
  * 3. Отступать сверху на 56px сверх
  *    safe-area, когда Telegram в
@@ -78,16 +83,27 @@ export function useFullscreenSurface() {
       ? portalTarget.getBoundingClientRect().height / portalTarget.offsetHeight
       : 1
   const scale = Number.isFinite(demoScale) && demoScale > 0 ? demoScale : 1
-  const viewportHeight = viewportGeometry?.height ?? null
+  const visualViewportHeight = viewportGeometry?.height ?? null
+  const stableViewportHeight = viewportGeometry?.stableHeight ?? null
   const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
   const keyboardOpen =
-    viewportHeight !== null &&
+    visualViewportHeight !== null &&
     typeof window !== 'undefined' &&
-    window.innerHeight - viewportHeight > 80
-  // visualViewport.height is already the visible height. Convert the single
-  // viewport snapshot into the portal target's coordinate space exactly once.
+    window.innerHeight - visualViewportHeight > 80
+  const telegram = isTelegramRuntime()
+  const shellHeight = telegram
+    ? keyboardOpen
+      ? getKeyboardViewportHeight({
+          isTelegram: true,
+          stableHeight: stableViewportHeight,
+          visualHeight: visualViewportHeight,
+        })
+      : stableViewportHeight || visualViewportHeight
+    : visualViewportHeight
+  // Convert the single viewport snapshot into the portal target's coordinate
+  // space exactly once.
   const surfaceTop = viewportOffsetTop / scale
-  const visibleHeight = viewportHeight ? viewportHeight / scale : null
+  const visibleHeight = shellHeight ? shellHeight / scale : null
 
   /*
    * MXL-FULLSCREEN-SURFACE-RACE-001 — раньше каждый экран независимо

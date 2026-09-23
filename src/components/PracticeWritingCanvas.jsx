@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './PracticeWritingCanvas.css'
 import './WritingControls.css'
+import { getKeyboardViewportHeight, isTelegramRuntime } from '../lib/visualViewport'
 
 const DEMO_KEY_ROWS = [
   ['й', 'ц', 'у', 'к', 'е', 'н', 'г', 'ш', 'щ', 'з', 'х'],
@@ -34,6 +35,9 @@ function useVisualViewportMetrics() {
         offsetTop: viewport.offsetTop,
         pageTop: viewport.pageTop,
         layoutHeight: window.innerHeight,
+        stableHeight: isTelegramRuntime()
+          ? Number(window.Telegram?.WebApp?.viewportStableHeight) || null
+          : null,
       })
     update()
     viewport.addEventListener('resize', update)
@@ -88,6 +92,11 @@ export default function PracticeWritingCanvas({
     }
   }, [autoFocus])
   const demoPreview = isDemoPreview()
+  const telegramVisibleHeight = getKeyboardViewportHeight({
+    isTelegram: isTelegramRuntime(),
+    stableHeight: metrics.stableHeight,
+    visualHeight: metrics.height,
+  })
   const keyboardOpen =
     focused && metrics.height !== null && metrics.height < metrics.layoutHeight - 80
   const visualKeyboardOpen = demoPreview && (demoKeyboard || focused)
@@ -98,9 +107,9 @@ export default function PracticeWritingCanvas({
     if (demoPreview && visualKeyboardOpen) return undefined
     if (!keyboardOpen || metrics.height === null) return undefined
     return {
-      top: `${metrics.pageTop + metrics.offsetTop + metrics.height - 48 - 56 - 8}px`,
+      top: `${metrics.pageTop + metrics.offsetTop + telegramVisibleHeight - 48 - 56 - 8}px`,
     }
-  }, [demoPreview, keyboardOpen, metrics, visualKeyboardOpen])
+  }, [demoPreview, keyboardOpen, metrics, telegramVisibleHeight, visualKeyboardOpen])
 
   return (
     <section
