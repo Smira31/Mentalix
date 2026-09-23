@@ -245,7 +245,9 @@ test('MXL-007 публикует reference Today chrome with streak/calendar and
   assert.match(today, /mx-demo-today-header/)
   assert.match(today, /mx-today-actions/)
   assert.match(today, /mx-today-day-card-slot/)
-  assert.match(today, /data-kind=\{currentPart\}/)
+  assert.match(today, /mx-today-day-cards/)
+  assert.match(today, /renderDayCard\('morning'\)/)
+  assert.match(today, /renderDayCard\('evening'\)/)
   assert.match(today, /mx-today-week__calendar/)
   assert.match(today, /mx-today-week-day/)
   assert.match(today, /mx-demo-today-streak/)
@@ -704,7 +706,7 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
 
 /*
  * MXL-DS-LABEL-FONT-001: Manrope (`font-label`) — вторичный шрифт,
- * разрешённый исключительно на eyebrow-лейблах Analytics («Наблюдения»,
+ * разрешённый исключительно на eyebrow-ле��блах Analytics («Наблюдения»,
  * «Цифры», «Данные»), а не на основных числовых значениях, графиках
  * или экране целиком. Контракт ниже проверяет канонический
  * класс `font-label`, а не буквальное имя шрифта в JSX: имя гарнитуры —
@@ -766,7 +768,9 @@ test('MXL-HOME-QUIET-FOUNDATION-001 публикует одну главную �
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
   assert.match(today, /mx-today-day-card-slot/)
-  assert.match(today, /data-kind=\{currentPart\}/)
+  assert.match(today, /mx-today-day-cards/)
+  assert.match(today, /renderDayCard\('morning'\)/)
+  assert.match(today, /renderDayCard\('evening'\)/)
   assert.match(today, /data-complete=\{dayCardComplete\}/)
   assert.match(today, /const morningComplete = Boolean\(checkin\)/)
   assert.match(today, /const eveningComplete = todayState === 'dayClosed'/)

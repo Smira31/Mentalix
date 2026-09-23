@@ -4,11 +4,12 @@ import test from 'node:test'
 
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 
-test('Today uses the completed check-in as the recap entry point', () => {
-  assert.match(today, /const morningComplete = Boolean\(checkin\)/)
-  assert.match(today, /Открыть утренний чек-ин/)
+test('Today keeps independent morning and review card entry points', () => {
+  assert.match(today, /resolveTodayCardStates/)
+  assert.match(today, /renderDayCard\('morning'\)/)
+  assert.match(today, /renderDayCard\('evening'\)/)
   assert.match(today, /checkinRecap/)
-  assert.match(today, /MOOD_WORDS\[\(checkin\?\.mood \|\| 3\) - 1\]/)
+  assert.match(today, /moodPillText/)
   assert.doesNotMatch(today, /isPreviewDemoMode\(\)/)
 })
 
