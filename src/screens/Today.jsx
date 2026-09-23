@@ -262,7 +262,7 @@ export default function Today({
   /*
    * Любой вложенный экран Today — это отдельный сценарий, а не
    * продолжение главной. Шапка с приветствием, переключателем
-   * темы и аватаром там не нужна: чел��век уже внутри и знает,
+   * темы и аватаром там не нужна: человек уже внутри и знает,
    * где он. Возврат даёт системная кнопка Telegram.
    */
   const changeSub = useCallback(
@@ -583,6 +583,7 @@ export default function Today({
     const content =
       state === 'done' ? (
         <>
+          <span className="mx-today-day-card__label">{copy.label}</span>
           <span className="mx-today-day-card__done">{completedText}</span>
           {moodPillText && (
             <span className="mx-today-day-card__pill">
@@ -596,12 +597,15 @@ export default function Today({
           <span className="mx-today-day-card__glyph">
             <CardSystemGlyph kind={copy.glyph} />
           </span>
-          <span className="mx-today-day-card__label mx-type-checkin-label">{copy.label}</span>
+          <span className="mx-today-day-card__label">{copy.label}</span>
           <span className="mx-today-day-card__title mx-type-checkin-title">{copy.title}</span>
           <span className="mx-today-day-card__start">Начать</span>
         </>
       ) : (
-        <span className="mx-today-day-card__locked">{lockedText}</span>
+        <>
+          <span className="mx-today-day-card__label">{copy.label}</span>
+          <span className="mx-today-day-card__locked">{lockedText}</span>
+        </>
       )
     const props = {
       className: 'mx-today-day-card animate-fade-in',
@@ -896,7 +900,7 @@ export default function Today({
           }}
           className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
-          <span className="block mx-type-meta text-muted mb-3">М��сль дня</span>
+          <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 
           <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
         </button>

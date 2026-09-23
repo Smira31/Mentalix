@@ -27,6 +27,7 @@ import {
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
+import { resolveDesyncStep } from '../lib/checkinDesync'
 import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -968,6 +969,26 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const isScaleStep = !isCard && !isEmotionStep
 
+  /*
+   * Рассинхрон (P0): если existing изменился во время шага шкалы,
+   * шаг может оказаться пустым (scale === null/undefined) или
+   * за пределами нового layout. Пересчитываем: пропускаем пустой
+   * шаг шкалы или зажимаем step в валидный диапазон — чтобы
+   * пользователь не застрял на белом экране и не увидел финал
+   * без сохранения.
+   */
+  useEffect(() => {
+    const nextStep = resolveDesyncStep({
+      step,
+      doneStep,
+      isScaleStep,
+      scaleStepsLength: MORNING_SCALE_STEPS.length,
+    })
+    if (nextStep !== step) {
+      setStep(nextStep)
+    }
+  }, [isScaleStep, step, doneStep])
+
   const cardIdx = isEvening ? step - emotionStep - 1 : step - scaleCount
 
   const isMorningNoteStep = !isEvening && isCard && cardIdx === 0
@@ -1366,7 +1387,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
           >
             {/* ── шкалы ── */}
 
-            {isScaleStep && (
+            {isScaleStep && scale && (
               <div key={step} className="w-full flex flex-col items-center">
                 <CheckInScaleQuestion
                   scale={scale}

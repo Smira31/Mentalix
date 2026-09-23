@@ -155,7 +155,19 @@ class ErrorBoundary extends Component {
           <p style={{ fontWeight: 700, marginBottom: 12 }}>
             Ошибка приложения — покажи этот экран разработчику:
           </p>
-          <pre style={{ whiteSpace: 'pre-wrap', color: 'rgb(var(--c-gold))' }}>
+          {this.state.error && this.state.error.message && (
+            <p
+              style={{
+                color: 'rgb(var(--c-gold))',
+                fontWeight: 600,
+                marginBottom: 12,
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {this.state.error.message}
+            </p>
+          )}
+          <pre style={{ whiteSpace: 'pre-wrap', color: 'rgb(var(--c-muted))', fontSize: 11 }}>
             {String(
               this.state.error &&
                 (this.state.error.stack || this.state.error.message || this.state.error)
