@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
-import { Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { ArrowRight, Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 import { MotifArt } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -68,6 +68,27 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+function CheckInNextControls({ onNext, disabled = false, onSkip = null }) {
+  return (
+    <div className="mx-checkin-next-controls">
+      {onSkip ? (
+        <button type="button" className="mx-checkin-next-controls__skip" onClick={onSkip}>
+          Пропустить
+        </button>
+      ) : null}
+      <button
+        type="button"
+        className="mx-checkin-next-controls__next"
+        aria-label="Далее"
+        onClick={onNext}
+        disabled={disabled}
+      >
+        <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
+      </button>
+    </div>
+  )
+}
 
 function dayStart(date) {
   const value = new Date(date)
@@ -224,7 +245,6 @@ function MorningCheckInFlow({ user, onDone }) {
   function pick(key, level) {
     platform.haptic('light')
     setValues(current => ({ ...current, [key]: level }))
-    setTimeout(() => setStep(current => Math.min(doneStep, current + 1)), 280)
   }
 
   async function finish() {
@@ -272,7 +292,7 @@ function MorningCheckInFlow({ user, onDone }) {
   useMainButton({
     text: action.text,
     onClick: action.onClick,
-    visible: true,
+    visible: step === doneStep || step === streakStep,
     enabled: !action.disabled,
     loading: saving,
   })
@@ -325,12 +345,10 @@ function MorningCheckInFlow({ user, onDone }) {
         {step === doneStep && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
             <CheckInCompletionArt />
-            <p className="mx-demo-checkin__complete-eyebrow">ЧЕК-ИН ЗАВЕРШЁН</p>
-            <h1>Ты сохранил главное.</h1>
-            <p>Ответы останутся в сегодняшнем цикле. К ним можно вернуться позже.</p>
-            <span className="mx-demo-checkin__note-chip" aria-hidden="true">
-              + Добавить заметку
-            </span>
+            <h1>
+              Утренний чек-ин
+              <strong>завершён.</strong>
+            </h1>
             <p className="mx-demo-checkin__feedback-prompt">
               Эта практика помогла остановиться и заметить важное?
             </p>
@@ -389,12 +407,18 @@ function MorningCheckInFlow({ user, onDone }) {
           </section>
         )}
       </main>
-      <WebActionBar
-        action={step === noteStep ? null : action}
-        secondaryAction={null}
-        compact={false}
-        className="mx-demo-checkin__action-bar"
-      />
+      {step < doneStep ? (
+        <CheckInNextControls
+          onNext={() => setStep(current => Math.min(doneStep, current + 1))}
+          disabled={step < noteStep ? !values[MORNING_SCALE_STEPS[step].key] : !note.trim()}
+          onSkip={
+            step < noteStep ? () => setStep(current => Math.min(doneStep, current + 1)) : null
+          }
+        />
+      ) : null}
+      {step === doneStep || step === streakStep ? (
+        <WebActionBar action={action} className="mx-demo-checkin__action-bar" />
+      ) : null}
     </div>,
     getFullscreenPortalTarget()
   )
@@ -514,19 +538,23 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
               onClick={() => onPick(level)}
               className={`mx-checkin-scale__option ${active ? 'is-selected' : ''}`}
             >
-              <span
-                className="mx-checkin-scale__circle"
-                style={
-                  scale.key === 'energy'
-                    ? {
-                        background: `linear-gradient(to top, #f4f4f4 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
-                      }
-                    : undefined
-                }
-              >
+              <span className="mx-checkin-scale__circle">
                 {scale.faces ? (
-                  <Face level={level} active={active} size={48} showFrame={false} />
-                ) : null}
+                  <span className="mx-checkin-scale__inner mx-checkin-scale__inner--face">
+                    <Face level={level} active={active} size={35} showFrame={false} />
+                  </span>
+                ) : (
+                  <span
+                    className="mx-checkin-scale__inner"
+                    style={
+                      scale.key === 'energy'
+                        ? {
+                            background: `linear-gradient(to top, #e6e6e6 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
+                          }
+                        : undefined
+                    }
+                  />
+                )}
               </span>
               <span className="mx-checkin-scale__label">
                 {index === 0 || index === scale.labels.length - 1 ? label : ''}
