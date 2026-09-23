@@ -18,6 +18,27 @@ test('the legacy core remains available for evening review and rollback', () => 
   assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} mode=\{mode\} existing=\{existing\} \/>/)
 })
 
+test('evening first text step has no pre-declaration question access', () => {
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  const compactStepDisabled = core.slice(
+    core.indexOf('const compactStepDisabled'),
+    core.indexOf('const streakDays')
+  )
+  const eveningQuestionDeclaration = core.indexOf('const eveningQuestion =')
+  const firstEveningQuestionUse = core.indexOf('eveningQuestion', eveningQuestionDeclaration + 1)
+  const questionTitleDeclaration = core.indexOf('const questionTitle =')
+  const firstQuestionTitleUse = core.indexOf('questionTitle', questionTitleDeclaration + 1)
+
+  assert.doesNotMatch(compactStepDisabled, /eveningQuestion/)
+  assert.ok(eveningQuestionDeclaration >= 0)
+  assert.ok(firstEveningQuestionUse > eveningQuestionDeclaration)
+  assert.ok(questionTitleDeclaration >= 0)
+  assert.ok(firstQuestionTitleUse > questionTitleDeclaration)
+})
+
 test('the default morning flow persists real user data through the check-in API', () => {
   const morningFlow = checkinSource.slice(
     checkinSource.indexOf('function MorningCheckInFlow'),

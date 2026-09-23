@@ -488,6 +488,7 @@ test('локальный UX smoke по основному маршруту', asy
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
         await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
+        await expect(page.getByRole('button', { name: 'Далее' })).toHaveCount(1)
         await assertClickable(page.getByRole('button', { name: 'Далее' }))
       },
     })

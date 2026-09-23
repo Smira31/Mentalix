@@ -117,7 +117,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
         </h2>
         <button
           type="button"
-          className="mx-icon-button"
+          className="mx-icon-button mx-pinned-practices__filter"
           aria-label="Настроить твои практики"
           onClick={() => setSheet('manage')}
         >
@@ -145,9 +145,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
               onClick={() => openPractice(practice)}
             >
               <PracticeGlyph practice={practice} />
-              <span className="mx-type-card mx-pinned-practice-card__title text-cream">
-                {practice.title}
-              </span>
+              <span className="mx-pinned-practice-card__title text-cream">{practice.title}</span>
             </button>
           ))}
         </div>
@@ -186,7 +184,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
                     onClick={() => openPractice(practice)}
                   >
                     <PracticeGlyph practice={practice} />
-                    <span className="mx-type-card mx-pinned-practice-card__title text-cream">
+                    <span className="mx-pinned-practice-card__title text-cream">
                       {practice.title}
                     </span>
                   </button>

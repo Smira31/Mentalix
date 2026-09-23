@@ -112,6 +112,9 @@
   --c-card2: 17 17 17;
   /* #111111 — вторичная поверхность */
 
+  --c-card3: 46 46 46;
+  /* #2E2E2E — активная статус-карточка текущей части дня */
+
   --c-nav: 28 28 28;
   /* #1C1C1C — поверхность нижней навигации */
 
@@ -994,6 +997,12 @@ button {
 .mx-type-checkin-title {
   font-size: 1.375rem;
   line-height: 1.2;
+  font-weight: 400;
+}
+
+.mx-type-checkin-label {
+  font-size: 1rem;
+  line-height: 1.25;
   font-weight: 400;
 }
 

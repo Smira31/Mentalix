@@ -355,85 +355,85 @@ export default function JournalTextarea({
 
           <div
             className={[
-              'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-5 right-5 z-[70] mx-auto grid items-center gap-3',
-              'max-w-[430px] grid-cols-[56px_56px_minmax(0,1fr)_56px]',
+              'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-[var(--mx-screen-x)] right-[var(--mx-screen-x)] z-[70] mx-auto flex min-w-0 items-center justify-between gap-2',
+              'max-w-[430px]',
               'journal-textarea__floating-actions',
               desktopInline
                 ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'
                 : '',
               guidedFlow ? 'journal-textarea__floating-actions--guided' : '',
             ].join(' ')}
-            style={keyboardDockStyle}
-          >
-            {(showAddAction || floatingToolbar) && (
-              <button
-                type="button"
-                aria-label={addOpen ? 'Скрыть дополнительные действия' : 'Дополнительные действия'}
-                aria-expanded={addOpen}
-                onPointerDown={event => event.preventDefault()}
-                onClick={() => setAddOpen(current => !current)}
-                className="mx-keyboard-control mx-keyboard-plus flex h-14 w-14 items-center justify-center rounded-full border border-cream/10 bg-emerald text-cream"
-              >
-                <Plus size={22} />
-              </button>
-            )}
-            {formatting ? (
-              <button
-                type="button"
-                aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
-                aria-expanded={formatOpen}
-                onPointerDown={event => event.preventDefault()}
-                onClick={() => {
-                  platform.haptic('light')
-                  setFormatOpen(current => !current)
-                }}
-                className={[
-                  'mx-keyboard-control mx-keyboard-format flex h-14 w-14 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
-                  formatOpen
-                    ? 'border-gold/40 bg-gold/15 text-gold'
-                    : 'border-cream/10 bg-emerald text-cream',
-                ].join(' ')}
-              >
-                Aa
-              </button>
-            ) : (
-              <span aria-hidden="true" />
-            )}
-
-            {onDeepen ? (
-              <button
-                type="button"
-                onClick={onDeepen}
-                disabled={
-                  (deepenDisabled ?? !String(value || '').trim()) || submitLoading || deepenLoading
-                }
-                className="mx-keyboard-control mx-keyboard-deepen h-14 min-w-0 rounded-full border border-cream/10 bg-emerald px-5 text-[14px] font-semibold text-cream transition-transform active:scale-[0.98] disabled:opacity-35"
-              >
-                {deepenLabel}
-              </button>
-            ) : (
-              <span aria-hidden="true" />
-            )}
-
-            <button
-              type="button"
-              aria-label={submitLabel}
-              title={submitLabel}
-              onClick={() => {
-                if (!keepFocusOnSubmit) {
-                  editorRef.current?.blur()
-                }
-                onSubmit?.()
-              }}
-              disabled={submitDisabled || submitLoading || deepenLoading}
-              className="mx-keyboard-control mx-keyboard-submit flex h-14 w-14 items-center justify-center rounded-full border-0 bg-cream text-emerald-deep shadow-xl transition-transform active:scale-95 disabled:opacity-35"
+              style={keyboardDockStyle}
             >
-              {submitIcon === 'arrow' ? (
-                <ArrowRight size={25} strokeWidth={2.4} />
-              ) : (
-                <Check size={25} strokeWidth={2.4} />
+            <div className="flex shrink-0 items-center gap-1.5">
+              {(showAddAction || floatingToolbar) && (
+                <button
+                  type="button"
+                  aria-label={addOpen ? 'Скрыть дополнительные действия' : 'Дополнительные действия'}
+                  aria-expanded={addOpen}
+                  onPointerDown={event => event.preventDefault()}
+                  onClick={() => setAddOpen(current => !current)}
+                  className="mx-keyboard-control mx-keyboard-plus flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-emerald-light text-cream"
+                >
+                  <Plus size={22} />
+                </button>
               )}
-            </button>
+              {formatting ? (
+                <button
+                  type="button"
+                  aria-label={formatOpen ? 'Скрыть форматирование' : 'Показать форматирование'}
+                  aria-expanded={formatOpen}
+                  onPointerDown={event => event.preventDefault()}
+                  onClick={() => {
+                    platform.haptic('light')
+                    setFormatOpen(current => !current)
+                  }}
+                  className={[
+                    'mx-keyboard-control mx-keyboard-format flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border text-[18px] font-semibold italic transition-colors active:scale-95',
+                    formatOpen
+                      ? 'border-gold/40 bg-gold/15 text-gold'
+                      : 'border-[rgb(var(--c-border))] bg-emerald-light text-cream',
+                  ].join(' ')}
+                >
+                  Aa
+                </button>
+              ) : null}
+            </div>
+
+            <div className="flex min-w-0 shrink items-center justify-end gap-1.5">
+              {onDeepen ? (
+                <button
+                  type="button"
+                  onClick={onDeepen}
+                  disabled={
+                    (deepenDisabled ?? !String(value || '').trim()) || submitLoading || deepenLoading
+                  }
+                  className="mx-keyboard-control mx-keyboard-deepen h-[45px] min-w-0 shrink rounded-full border border-[rgb(var(--c-border))] bg-emerald-light px-5 text-[17px] font-medium text-cream transition-transform active:scale-[0.98] max-[360px]:px-[14px] disabled:opacity-35"
+                >
+                  {deepenLabel}
+                </button>
+              ) : null}
+
+              <button
+                type="button"
+                aria-label={submitLabel}
+                title={submitLabel}
+                onClick={() => {
+                  if (!keepFocusOnSubmit) {
+                    editorRef.current?.blur()
+                  }
+                  onSubmit?.()
+                }}
+                disabled={submitDisabled || submitLoading || deepenLoading}
+                className="mx-keyboard-control mx-keyboard-submit flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-[#F2F2F2] text-emerald-deep transition-transform active:scale-95 disabled:opacity-35"
+              >
+                {submitIcon === 'arrow' ? (
+                  <ArrowRight size={25} strokeWidth={2.4} />
+                ) : (
+                  <Check size={25} strokeWidth={2.4} />
+                )}
+              </button>
+            </div>
           </div>
           {showAddAction && addOpen && (
             <div className="fixed bottom-[calc(var(--app-safe-bottom)+86px)] left-5 z-[71] flex gap-2 rounded-2xl border border-cream/10 bg-emerald-deep/95 p-2 shadow-xl">

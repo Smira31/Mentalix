@@ -103,7 +103,7 @@ function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 1 }) {
   )
 }
 
-function WeekStrip() {
+function WeekStrip({ checkin, history = [] }) {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = new Date()
   const monday = new Date(now)
@@ -119,7 +119,11 @@ function WeekStrip() {
       <div className="mx-today-week__calendar">
         {days.map(day => {
           const isToday = day.toDateString() === now.toDateString()
-          const isCompleted = day < now && !isToday
+          const dateKey = day.toISOString().slice(0, 10)
+          const isCompleted = Boolean(
+            (isToday && checkin) ||
+            history.some(item => item?.date && String(item.date).slice(0, 10) === dateKey)
+          )
           return (
             <div
               key={day.getTime()}
@@ -130,7 +134,11 @@ function WeekStrip() {
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
               </span>
-              <span className="mx-type-calendar-date">{day.getDate()}</span>
+              {isCompleted ? (
+                <Check className="mx-today-week-day__check" size={15} aria-label="Чек-ин пройден" />
+              ) : (
+                <span className="mx-type-calendar-date">{day.getDate()}</span>
+              )}
             </div>
           )
         })}
@@ -181,6 +189,10 @@ export default function Today({
   const [thoughtOfDay] = useState(() => getDailyThought())
 
   const [checkin, setCheckin] = useState(() => initialTodaySnapshot?.checkin || null)
+
+  const [checkinHistory, setCheckinHistory] = useState(
+    () => initialTodaySnapshot?.checkinHistory || []
+  )
 
   const [streak, setStreak] = useState(1)
 
@@ -257,6 +269,7 @@ export default function Today({
       setCheckin(current)
 
       const history = await api.checkin.history(user.id, 90)
+      setCheckinHistory(Array.isArray(history) ? history : [])
       setStreak(Math.max(1, currentCheckinStreak(history)))
 
       invalidateTodayData(user.id)
@@ -301,7 +314,11 @@ export default function Today({
 
         api.checkin
           .history(user.id, 90)
-          .then(history => setStreak(Math.max(1, currentCheckinStreak(history))))
+          .then(history => {
+            const safeHistory = Array.isArray(history) ? history : []
+            setCheckinHistory(safeHistory)
+            setStreak(Math.max(1, currentCheckinStreak(safeHistory)))
+          })
           .catch(() => {})
 
         setReviewHour(settingsData?.review_hour ?? 19)
@@ -494,31 +511,42 @@ export default function Today({
   const eveningComplete = todayState === 'dayClosed'
 
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
+  // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
+
+  const currentPart = isReviewTime ? 'evening' : 'morning'
 
   const morningCard = (
     <button
       type="button"
-      className="mx-today-checkin-card mx-today-checkin-card--morning text-left animate-fade-in"
+      className="mx-today-checkin-card mx-today-checkin-card--morning animate-fade-in"
       data-kind="morning"
       data-complete={morningComplete}
+      data-current={currentPart === 'morning'}
       onClick={() => {
         platform.haptic('medium')
         changeSub(morningComplete ? 'checkinRecap' : 'checkin')
       }}
-      aria-label={morningComplete ? 'Открыть утренний чек-ин' : 'Пройти чек-ин'}
+      aria-label="Открыть утренний чек-ин — Пройти чек-ин"
     >
-      <span className="mx-today-checkin-card__title mx-type-checkin-title">
-        {morningComplete ? 'Утро началось с внимания.' : 'Как ты сегодня?'}
-      </span>
       {morningComplete ? (
-        <span className="mx-today-checkin-pill" aria-label="Настроение">
-          <Check size={12} aria-hidden="true" />
-          {MOOD_WORDS[(checkin?.mood || 3) - 1]}
-        </span>
+        <>
+          <span className="mx-today-checkin-card__title mx-type-checkin-title">
+            Утро началось с внимания.
+          </span>
+          <span className="mx-today-checkin-glyph">
+            <CardSystemGlyph kind="breath-flow" />
+          </span>
+        </>
       ) : (
-        <span className="mx-today-checkin-glyph">
-          <CardSystemGlyph kind="breath-flow" />
-        </span>
+        <>
+          <span className="mx-today-checkin-card__label mx-type-checkin-label">
+            Утренний чек-ин
+          </span>
+          <span className="mx-today-checkin-card__title mx-type-checkin-title">
+            Как ты сегодня?
+          </span>
+          <span className="mx-today-checkin-card__start">Начать</span>
+        </>
       )}
     </button>
   )
@@ -526,21 +554,32 @@ export default function Today({
   const eveningCard = (
     <button
       type="button"
-      className="mx-today-checkin-card mx-today-checkin-card--evening text-left animate-fade-in"
+      className="mx-today-checkin-card mx-today-checkin-card--evening animate-fade-in"
       data-kind="evening"
       data-complete={eveningComplete}
+      data-current={currentPart === 'evening'}
       onClick={() => {
         platform.haptic('medium')
         changeSub('evening')
       }}
       aria-label="Открыть вечерний разбор"
     >
-      <span className="mx-today-checkin-card__title mx-type-checkin-title">
-        {eveningComplete ? 'День закрыт.' : 'Забрать главное из дня.'}
-      </span>
-      <span className="mx-today-checkin-glyph">
-        <CardSystemGlyph kind="path-corridor" />
-      </span>
+      {eveningComplete ? (
+        <>
+          <span className="mx-today-checkin-card__title mx-type-checkin-title">День закрыт.</span>
+          <span className="mx-today-checkin-glyph">
+            <CardSystemGlyph kind="path-corridor" />
+          </span>
+        </>
+      ) : (
+        <>
+          <span className="mx-today-checkin-card__label mx-type-checkin-label">Разбор дня</span>
+          <span className="mx-today-checkin-card__title mx-type-checkin-title">
+            Забрать главное из дня.
+          </span>
+          <span className="mx-today-checkin-card__start">Начать</span>
+        </>
+      )}
     </button>
   )
 
@@ -566,7 +605,7 @@ export default function Today({
           changeSub('path')
         }}
       />
-      <WeekStrip />
+      <WeekStrip checkin={checkin} history={checkinHistory} />
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
@@ -687,7 +726,7 @@ export default function Today({
 
             <span className="block mx-type-meta text-muted">
               {checkin.emotion ? `${checkin.emotion} · ` : ''}
-              настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+              настроение: {MOOD_WORDS[(checkin?.mood || 3) - 1]}
             </span>
           </span>
 
