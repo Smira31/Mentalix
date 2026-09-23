@@ -33,6 +33,12 @@ const TEST_USER = {
   username: 'local_ux_check',
 }
 
+const UX_FIXED_TIME = process.env.UX_FIXED_TIME || '08:00'
+
+async function freezePageTime(page) {
+  await page.clock.setFixedTime(`2026-09-23T${UX_FIXED_TIME}:00+03:00`)
+}
+
 const FIXTURES = {
   rituals: [],
   ascezas: [],
@@ -417,6 +423,7 @@ test('локальный UX smoke по основному маршруту', asy
     await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
 
     const page = await context.newPage()
+    await freezePageTime(page)
     const runtimeErrors = []
 
     page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
@@ -703,11 +710,9 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-    await page.getByRole('button', { name: 'Сегодня' }).click()
-    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    )
+    const todayNavButton = page.locator('nav[aria-hidden="false"] > button[aria-label="Сегодня"]')
+    await todayNavButton.click()
+    await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
@@ -726,11 +731,8 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Назад' }).click()
-    await page.getByRole('button', { name: 'Сегодня' }).click()
-    await expect(page.getByRole('button', { name: 'Сегодня' })).toHaveAttribute(
-      'aria-current',
-      'page'
-    )
+    await todayNavButton.click()
+    await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Шаги' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
@@ -812,6 +814,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
 
     const page = await context.newPage()
+    await freezePageTime(page)
     const runtimeErrors = []
     page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
     page.on('console', message => {
@@ -984,6 +987,7 @@ test.skip('Legacy: History показывает user-scoped local Journal на m
     })
 
     const page = await context.newPage()
+    await freezePageTime(page)
     const runtimeErrors = []
     page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
     page.on('response', response => {
@@ -1037,6 +1041,7 @@ test('прямая web-ссылка открывает production email и Teleg
   })
 
   const page = await context.newPage()
+  await freezePageTime(page)
   await page.goto('/')
 
   await expect(
@@ -1083,6 +1088,7 @@ test('Today не маскирует ошибку критичного API под
   })
 
   const page = await context.newPage()
+  await freezePageTime(page)
   await page.goto('/')
 
   await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
@@ -1122,6 +1128,7 @@ test('Today retry после критичного сбоя повторно за
     return route.fulfill(fixtureFor(route.request()))
   })
   const page = await context.newPage()
+  await freezePageTime(page)
   await page.goto('/')
   await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
   await page.getByRole('button', { name: 'Повторить' }).click()
@@ -1150,6 +1157,7 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   }, TEST_USER)
   await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
   const page = await context.newPage()
+  await freezePageTime(page)
   await page.goto('/?ui_lab=experiments')
 
   const entryCta = page.getByRole('button', { name: 'Разобрать день' }).last()
