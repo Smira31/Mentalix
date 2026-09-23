@@ -1121,9 +1121,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     ? () => setStep(step + 1)
     : isScaleStep
       ? () => setStep(step + 1)
-      : isCard && isEvening
-        ? effectiveMainAction?.run
-        : null
+      : null
 
   const compactStepDisabled = isEmotionStep
     ? !emotion
@@ -1441,7 +1439,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                 {isEvening ? (
                   <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
                     <JournalTextarea
-                      writingCanvas
                       value={lessons[eveningQuestion.key] || ''}
                       onChange={value =>
                         setLessons(current => ({ ...current, [eveningQuestion.key]: value }))
@@ -1450,6 +1447,17 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                       ariaLabel={eveningQuestion.label}
                       className="min-h-[18rem] flex-1"
                       editorClassName="mx-checkin-evening-editor"
+                      floatingToolbar
+                      guidedFlow
+                      autoFocus
+                      keepFocusOnSubmit
+                      submitIcon="arrow"
+                      submitLabel="Далее"
+                      onSubmit={() => (cardIdx < cardCount - 1 ? setStep(step + 1) : submit())}
+                      onDeepen={() => {}}
+                      deepenLabel="Пойти глубже"
+                      submitLoading={saving}
+                      formatting
                     />
                   </div>
                 ) : (
