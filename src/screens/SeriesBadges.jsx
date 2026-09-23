@@ -5,6 +5,8 @@ import { X } from 'lucide-react'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
+import { pluralize, formatCount } from '../lib/pluralize'
+import { platformName } from '../platform'
 import { buildSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
 import { getSeriesPreferences, saveSeriesPreference } from '../lib/seriesPreferences'
 import BackButton from '../components/BackButton'
@@ -79,6 +81,9 @@ function ProgressBar({ progress, goal }) {
 }
 
 function CloseButton({ onClose, label = 'Закрыть' }) {
+  // В Telegram закрытие — только нативная «Назад» (BackButton).
+  // Свой ✕ остаётся только в web/PWA.
+  if (platformName === 'telegram') return null
   return (
     <button type="button" className="mx-path-close" aria-label={label} onClick={onClose}>
       <X size={18} strokeWidth={1.8} aria-hidden="true" />
@@ -208,16 +213,7 @@ function ToggleRow({ label, checked, onChange }) {
 }
 
 function formatDays(value) {
-  const number = Number(value) || 0
-  const mod10 = number % 10
-  const mod100 = number % 100
-  const word =
-    mod10 === 1 && mod100 !== 11
-      ? 'день'
-      : mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)
-        ? 'дня'
-        : 'дней'
-  return `${number} ${word}`
+  return formatCount(value, ['день', 'дня', 'дней'])
 }
 
 function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
@@ -281,11 +277,17 @@ function StatsView({ model }) {
       <div className="mx-path-summary-grid">
         <div className="mx-path-summary-card">
           <strong>{model.activeDays}</strong>
-          <span>завершённых дня</span>
+          <span>
+            {pluralize(model.activeDays, [
+              'завершённый день',
+              'завершённых дня',
+              'завершённых дней',
+            ])}
+          </span>
         </div>
         <div className="mx-path-summary-card">
           <strong>{model.totalCheckins}</strong>
-          <span>чек-инов</span>
+          <span>{pluralize(model.totalCheckins, ['чек-ин', 'чек-ина', 'чек-инов'])}</span>
         </div>
       </div>
       <StatSection title="Серия" rows={rows} />
