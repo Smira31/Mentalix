@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /*
  * TELEGRAM: REACT-ХУКИ НАД MINI APP API
@@ -23,6 +23,43 @@ import { useEffect, useRef } from 'react'
 
 function api() {
   return typeof window === 'undefined' ? null : (window.Telegram?.WebApp ?? null)
+}
+
+function readViewportHeight(webApp, property = 'viewportHeight') {
+  const height = Number(webApp?.[property])
+
+  return Number.isFinite(height) && height > 0 ? Math.round(height) : null
+}
+
+/*
+ * Telegram WebApp.viewportStableHeight уже учитывает нативную нижнюю панель
+ * и не меняется во время раскрытия Mini App.
+ * visualViewport в iOS WebView может включать область под этой панелью,
+ * поэтому обычный экран должен ориентироваться на это значение.
+ */
+export function useTelegramViewportStableHeight() {
+  const [height, setHeight] = useState(() => readViewportHeight(api(), 'viewportStableHeight'))
+
+  useEffect(() => {
+    const webApp = api()
+
+    if (!webApp) return undefined
+
+    const update = () => {
+      const next = readViewportHeight(webApp, 'viewportStableHeight')
+
+      setHeight(previous => (previous === next ? previous : next))
+    }
+
+    update()
+    webApp.onEvent?.('viewportChanged', update)
+
+    return () => {
+      webApp.offEvent?.('viewportChanged', update)
+    }
+  }, [])
+
+  return height
 }
 
 function safely(action, label) {

@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 
 import { getFullscreenSnapshot, subscribeFullscreen } from './tgFullscreen'
 import { useVisualViewportGeometry } from './visualViewport'
+import { useTelegramViewportStableHeight } from '../platform/telegram.hooks'
 import { isPreviewDemoMode } from './demoMode'
 
 /*
@@ -23,9 +24,11 @@ import { isPreviewDemoMode } from './demoMode'
  *    внутри якорится к этому контейнеру,
  *    а не к экрану.
  *
- * 2. Брать высоту из visualViewport.
- *    Иначе при открытой клавиатуре низ
- *    экрана уходит за видимую область.
+ * 2. В Telegram брать min(viewportStableHeight, visualViewport.height):
+ *    stable viewport задаёт устойчивую геометрию раскрытого Mini App, а
+ *    visualViewport подхватывает уменьшение области при открытой клавиатуре.
+ *    В Safari/PWA Telegram-значение отсутствует, поэтому остаётся прежний
+ *    fallback на visualViewport.
  *
  * 3. Отступать сверху на 56px сверх
  *    safe-area, когда Telegram в
@@ -78,7 +81,12 @@ export function useFullscreenSurface() {
       ? portalTarget.getBoundingClientRect().height / portalTarget.offsetHeight
       : 1
   const scale = Number.isFinite(demoScale) && demoScale > 0 ? demoScale : 1
-  const viewportHeight = viewportGeometry?.height ?? null
+  const telegramStableHeight = useTelegramViewportStableHeight()
+  const visualViewportHeight = viewportGeometry?.height ?? null
+  const viewportHeight =
+    telegramStableHeight === null || visualViewportHeight === null
+      ? telegramStableHeight ?? visualViewportHeight
+      : Math.min(telegramStableHeight, visualViewportHeight)
   const viewportOffsetTop = viewportGeometry?.offsetTop ?? 0
   const keyboardOpen =
     viewportHeight !== null &&

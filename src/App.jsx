@@ -3,7 +3,12 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronDown, Ellipsis, X } from 'lucide-react'
 
 import { platform, platformName } from './platform'
-import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
+import {
+  paintChrome,
+  lockVerticalSwipes,
+  useSettingsButton,
+  useTelegramViewportStableHeight,
+} from './platform/telegram.hooks'
 
 import Today from './screens/Today'
 import WebAuthScreen from './screens/WebAuthScreen'
@@ -224,6 +229,7 @@ export default function App() {
   const [navCollapsed, setNavCollapsed] = useState(false)
 
   const viewportHeight = useVisualViewportHeight()
+  const telegramViewportStableHeight = useTelegramViewportStableHeight()
 
   /*
    * Отдельное состояние:
@@ -1082,9 +1088,11 @@ export default function App() {
         style={{
           height: deviceFrameMode
             ? `${demoViewport.height}px`
-            : viewportHeight
-              ? `${viewportHeight}px`
-              : '100dvh',
+            : telegramViewportStableHeight
+              ? `${telegramViewportStableHeight}px`
+              : viewportHeight
+                ? `${viewportHeight}px`
+                : '100dvh',
           width: deviceFrameMode ? `${demoViewport.width}px` : undefined,
           transform: deviceFrameMode ? `scale(${demoScale})` : undefined,
           marginBottom: deviceFrameMode
