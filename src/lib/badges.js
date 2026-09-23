@@ -3,7 +3,7 @@
 export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas = [] } = {}) {
   const bestRitual = Math.max(0, ...rituals.map(ritual => Number(ritual?.streak) || 0))
   const bestAsceza = Math.max(0, ...ascezas.map(asceza => Number(asceza?.streak) || 0))
-  const checkinsCount = checkins.length || Number(stats.total_checkins) || 0
+  const checkinsCount = Math.max(checkins.length, Number(stats.total_checkins) || 0)
   const days = Number(stats.days_active) || 0
 
   return [

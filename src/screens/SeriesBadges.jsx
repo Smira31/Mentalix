@@ -140,7 +140,7 @@ export function NewBadgeSheet({ badge, onClose }) {
         <div className="mx-badge-sheet__body">
           <span className="mx-badge-sheet__eyebrow">НОВЫЙ ЗНАЧОК</span>
           <h2 id="mx-new-badge-title">{badge.title}</h2>
-          <p>Ты прошёл первый чек-ин!</p>
+          <p>Ты прошёл первый утренний чек-ин!</p>
           <div className="mx-badge-sheet__received">
             <strong>Получен</strong>
             <span>{new Date().toLocaleDateString('ru-RU')}</span>
@@ -191,6 +191,19 @@ function ToggleRow({ label, checked, onChange }) {
       <span className="mx-path-toggle" aria-hidden="true" />
     </label>
   )
+}
+
+function formatDays(value) {
+  const number = Number(value) || 0
+  const mod10 = number % 10
+  const mod100 = number % 100
+  const word =
+    mod10 === 1 && mod100 !== 11
+      ? 'день'
+      : mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)
+        ? 'дня'
+        : 'дней'
+  return `${number} ${word}`
 }
 
 function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
@@ -245,9 +258,9 @@ function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
 
 function StatsView({ model }) {
   const rows = [
-    ['Текущая серия', `${model.currentStreak} ${model.currentStreak === 1 ? 'день' : 'дней'}`],
+    ['Текущая серия', formatDays(model.currentStreak)],
     ['Всего завершённых дней', model.activeDays],
-    ['Самая длинная серия', `${model.bestStreak} ${model.bestStreak === 1 ? 'день' : 'дней'}`],
+    ['Самая длинная серия', formatDays(model.bestStreak)],
   ]
   return (
     <div className="mx-path-content">
