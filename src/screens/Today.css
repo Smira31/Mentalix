@@ -1740,3 +1740,36 @@
     padding-inline: 13px;
   }
 }
+
+/* Card System v2 — Type B practice tiles. */
+.mx-pinned-practices__filter {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.mx-pinned-practices__filter:active {
+  transform: scale(0.97);
+}
+
+.mx-pinned-practice-card__title {
+  display: -webkit-box;
+  overflow: hidden;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.mx-pinned-practice-glyph .mx-card-system-glyph {
+  width: 26px;
+  height: 26px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.5;
+}
