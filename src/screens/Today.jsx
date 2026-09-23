@@ -526,7 +526,7 @@ export default function Today({
         platform.haptic('medium')
         changeSub(morningComplete ? 'checkinRecap' : 'checkin')
       }}
-      aria-label="Открыть утренний чек-ин"
+      aria-label="Открыть утренний чек-ин — Пройти чек-ин"
     >
       {morningComplete ? (
         <>
@@ -562,7 +562,7 @@ export default function Today({
         platform.haptic('medium')
         changeSub('evening')
       }}
-      aria-label="Открыть вечерний разбор"
+      aria-label="Открыть вечерний разбор — Разобрать день"
     >
       {eveningComplete ? (
         <>
