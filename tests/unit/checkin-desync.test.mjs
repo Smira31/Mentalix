@@ -52,16 +52,16 @@ test('рассинхрон: existing ушёл, step=1 — energy scale вали�
   assert.equal(next, 1, 'шаг 1 валиден как energy scale — без изменений')
 })
 
-test('рассинхрон: layout сжался, step за пределами doneStep — зажимаем на последний валидный', () => {
+test('рассинхрон: layout сжался, step=5 → streakStep (doneStep+1=5) — без изменений', () => {
   // До: existing=null, step=5 (cardIdx=2), doneStep=6
-  // После: existing={...}, doneStep=4 — step=5 >= doneStep=4
+  // После: existing={...}, doneStep=4 — step=5 === doneStep+1 (streakStep), валидно
   const next = resolveDesyncStep({
     step: 5,
     doneStep: 4,
     isScaleStep: false,
     scaleStepsLength: 2,
   })
-  assert.equal(next, 3, 'зажимаем на doneStep-1=3 — последний cardIdx=2')
+  assert.equal(next, 5, 'step=5 === streakStep (doneStep+1) — без изменений')
 })
 
 test('рассинхрон: пустой шаг шкалы (step >= scaleStepsLength) — пропускаем', () => {
@@ -75,14 +75,14 @@ test('рассинхрон: пустой шаг шкалы (step >= scaleStepsLe
   assert.equal(next, 4, 'пропускаем пустой шаг — step+1=4')
 })
 
-test('рассинхрон: doneStep=0 — зажимаем на 0', () => {
+test('рассинхрон: doneStep=0, step за пределами streakStep — safety net на doneStep', () => {
   const next = resolveDesyncStep({
     step: 5,
     doneStep: 0,
     isScaleStep: false,
     scaleStepsLength: 2,
   })
-  assert.equal(next, 0, 'Math.max(0, doneStep-1)=0')
+  assert.equal(next, 0, 'step > doneStep+1 → safety net возвращает doneStep=0')
 })
 
 test('рассинхрон: валидный card-шаг — без изменений', () => {
@@ -93,6 +93,26 @@ test('рассинхрон: валидный card-шаг — без измене
     scaleStepsLength: 2,
   })
   assert.equal(next, 3)
+})
+
+test('без рассинхрона: step === doneStep (экран завершения) — не сбрасывается', () => {
+  const next = resolveDesyncStep({
+    step: 4,
+    doneStep: 4,
+    isScaleStep: false,
+    scaleStepsLength: 2,
+  })
+  assert.equal(next, 4, 'экран завершения валиден — без изменений')
+})
+
+test('без рассинхрона: step === streakStep (экран серии) — не сбрасывается', () => {
+  const next = resolveDesyncStep({
+    step: 5,
+    doneStep: 4,
+    isScaleStep: false,
+    scaleStepsLength: 2,
+  })
+  assert.equal(next, 5, 'экран серии (doneStep+1) валиден — без изменений')
 })
 
 // ── Контракт: CheckIn.jsx использует resolveDesyncStep ──
