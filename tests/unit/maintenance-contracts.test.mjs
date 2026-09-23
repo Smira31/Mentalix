@@ -244,9 +244,10 @@ test('MXL-007 публикует reference Today chrome with streak/calendar and
 
   assert.match(today, /mx-demo-today-header/)
   assert.match(today, /mx-today-actions/)
-  assert.match(today, /mx-today-checkin-grid/)
-  assert.match(today, /data-kind="morning"/)
-  assert.match(today, /data-kind="evening"/)
+  assert.match(today, /mx-today-day-card-slot/)
+  assert.match(today, /mx-today-day-cards/)
+  assert.match(today, /renderDayCard\('morning'\)/)
+  assert.match(today, /renderDayCard\('evening'\)/)
   assert.match(today, /mx-today-week__calendar/)
   assert.match(today, /mx-today-week-day/)
   assert.match(today, /mx-demo-today-streak/)
@@ -705,9 +706,9 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
 
 /*
  * MXL-DS-LABEL-FONT-001: Manrope (`font-label`) — вторичный шрифт,
- * разрешённый исключительно на eyebrow-лейблах Analytics («Наблюдения»,
+ * разрешённый исключительно на eyebrow-ле��блах Analytics («Наблюдения»,
  * «Цифры», «Данные»), а не на основных числовых значениях, графиках
- * или экране целиком. Контракт ниже проверяет канонический
+ * или экране целиком. Контракт ниже прове��яет канонический
  * класс `font-label`, а не буквальное имя шрифта в JSX: имя гарнитуры —
  * ответственность CSS/design-system слоя (`tailwind.config.js`,
  * `src/index.css`, задокументировано в `DESIGN_SYSTEM.md` §3), а не
@@ -760,24 +761,27 @@ test('MXL-527 отображает один главный вывод с evidenc
   assert.doesNotMatch(analytics, /observations\.map\(/)
 })
 
-test('MXL-HOME-QUIET-FOUNDATION-001 публикует параллельные карточки утреннего и вечернего ритма', () => {
+test('MXL-HOME-QUIET-FOUNDATION-001 публикует одну главную карточку дня', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
   const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
   const todayStyles = readFileSync(new URL('../../src/screens/Today.css', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
-  assert.match(today, /mx-today-checkin-grid/)
-  assert.match(today, /data-kind="morning"/)
-  assert.match(today, /data-kind="evening"/)
-  assert.match(today, /data-complete=\{morningComplete\}/)
-  assert.match(today, /data-complete=\{eveningComplete\}/)
+  assert.match(today, /mx-today-day-card-slot/)
+  assert.match(today, /mx-today-day-cards/)
+  assert.match(today, /renderDayCard\('morning'\)/)
+  assert.match(today, /renderDayCard\('evening'\)/)
+  assert.match(today, /'data-state': state/)
+  assert.match(today, /const cardStates = resolveTodayCardStates/)
+  assert.match(today, /const moodPillText = MOOD_PILL_WORDS/)
   assert.match(today, /checkinRecap/)
-  assert.match(today, /checkin\.mood/)
+  assert.match(today, /checkin\?\.mood/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
   assert.match(today, /mx-today-affirmation-card/)
-  assert.match(todayStyles, /\.mx-today-checkin-grid\s*\{[\s\S]*grid-template-columns/)
-  assert.match(todayStyles, /\.mx-today-checkin-card\s*\{[\s\S]*min-height:/)
-  assert.match(todayStyles, /\.mx-today-checkin-card\[data-complete='true'\]/)
+  assert.match(todayStyles, /\.mx-today-day-cards\s*\{[\s\S]*grid-template-columns:\s*repeat\(2/)
+  assert.match(todayStyles, /\.mx-today-day-card\s*\{[\s\S]*height:\s*260px/)
+  assert.match(todayStyles, /\.mx-today-day-card\[data-state='active'\]/)
+  assert.match(todayStyles, /\.mx-today-pulse\s*\{[\s\S]*margin-top:\s*16px/)
   assert.match(todayStyles, /\.mx-today-affirmation-card\s*\{[\s\S]*min-height:\s*340px/)
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)

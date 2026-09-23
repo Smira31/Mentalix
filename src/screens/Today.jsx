@@ -33,6 +33,7 @@ import {
 } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
+import { formatReviewTime, resolveTodayCardStates } from '../lib/todayCardState'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -51,6 +52,15 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
 // ── календарь недели + отдельные дневные streak strips ──
+
+// Pill настроения в завершённой главной карточке дня (§5.1, тип A).
+const MOOD_PILL_WORDS = [
+  'Тяжёлое настроение',
+  'Непростое настроение',
+  'Ровное настроение',
+  'Хорошее настроение',
+  'Отличное настроение',
+]
 
 function todayGreeting() {
   const hour = new Date().getHours()
@@ -252,7 +262,7 @@ export default function Today({
   /*
    * Любой вложенный экран Today — это отдельный сценарий, а не
    * продолжение главной. Шапка с приветствием, переключателем
-   * темы и аватаром там не нужна: человек уже внутри и знает,
+   * темы и аватаром там не нужна: чел��век уже внутри и знает,
    * где он. Возврат даёт системная кнопка Telegram.
    */
   const changeSub = useCallback(
@@ -555,80 +565,84 @@ export default function Today({
   const isEmpty = total === 0
 
   const checkinDone = Boolean(checkin)
-  const morningComplete = Boolean(checkin)
-  const eveningComplete = todayState === 'dayClosed'
-
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
   // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
-  const currentPart = isReviewTime ? 'evening' : 'morning'
+  const cardStates = resolveTodayCardStates({ now: new Date(), reviewHour, checkin })
+  const reviewTime = formatReviewTime(reviewHour)
+  const moodPillText = MOOD_PILL_WORDS[Number(checkin?.mood) - 1] || null
 
-  const morningCard = (
-    <button
-      type="button"
-      className="mx-today-checkin-card mx-today-checkin-card--morning animate-fade-in"
-      data-kind="morning"
-      data-complete={morningComplete}
-      data-current={currentPart === 'morning'}
-      onClick={() => {
-        platform.haptic('medium')
-        changeSub(morningComplete ? 'checkinRecap' : 'checkin')
-      }}
-      aria-label="Открыть утренний чек-ин — Пройти чек-ин"
-    >
-      {morningComplete ? (
+  function renderDayCard(kind) {
+    const isMorning = kind === 'morning'
+    const state = cardStates[isMorning ? 'morning' : 'review']
+    const copy = isMorning
+      ? { label: 'Утренний чек-ин', title: 'Как ты сегодня?', glyph: 'breath-flow' }
+      : { label: 'Разбор дня', title: 'Забрать главное из дня.', glyph: 'path-corridor' }
+    const completedText = isMorning ? 'Утро отмечено.' : 'День закрыт.'
+    const lockedText = isMorning ? 'Утро прошло' : `Откроется в ${reviewTime}`
+    const content =
+      state === 'done' ? (
         <>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">
-            Утро началось с внимания.
+          <span className="mx-today-day-card__done">{completedText}</span>
+          {moodPillText && (
+            <span className="mx-today-day-card__pill">
+              <span className="mx-today-day-card__dot" aria-hidden="true" />
+              {moodPillText}
+            </span>
+          )}
+        </>
+      ) : state === 'active' ? (
+        <>
+          <span className="mx-today-day-card__glyph">
+            <CardSystemGlyph kind={copy.glyph} />
           </span>
-          <span className="mx-today-checkin-glyph">
-            <CardSystemGlyph kind="breath-flow" />
-          </span>
+          <span className="mx-today-day-card__label mx-type-checkin-label">{copy.label}</span>
+          <span className="mx-today-day-card__title mx-type-checkin-title">{copy.title}</span>
+          <span className="mx-today-day-card__start">Начать</span>
         </>
       ) : (
-        <>
-          <span className="mx-today-checkin-card__label mx-type-checkin-label">
-            Утренний чек-ин
-          </span>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">
-            Как ты сегодня?
-          </span>
-          <span className="mx-today-checkin-card__start">Начать</span>
-        </>
-      )}
-    </button>
-  )
+        <span className="mx-today-day-card__locked">{lockedText}</span>
+      )
+    const props = {
+      className: 'mx-today-day-card animate-fade-in',
+      'data-kind': kind,
+      'data-state': state,
+      'aria-label': `${copy.label}: ${state === 'locked' ? lockedText : state === 'missed' ? lockedText : state === 'done' ? completedText : copy.title}`,
+    }
+    if (state === 'active' || state === 'done') {
+      return (
+        <button
+          type="button"
+          {...props}
+          onClick={() => {
+            platform.haptic('medium')
+            changeSub(
+              isMorning
+                ? state === 'done'
+                  ? 'checkinRecap'
+                  : 'checkin'
+                : state === 'done'
+                  ? 'checkinRecap'
+                  : 'evening'
+            )
+          }}
+        >
+          {content}
+        </button>
+      )
+    }
+    return (
+      <div {...props} aria-disabled="true">
+        {content}
+      </div>
+    )
+  }
 
-  const eveningCard = (
-    <button
-      type="button"
-      className="mx-today-checkin-card mx-today-checkin-card--evening animate-fade-in"
-      data-kind="evening"
-      data-complete={eveningComplete}
-      data-current={currentPart === 'evening'}
-      onClick={() => {
-        platform.haptic('medium')
-        changeSub('evening')
-      }}
-      aria-label="Открыть вечерний разбор"
-    >
-      {eveningComplete ? (
-        <>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">День закрыт.</span>
-          <span className="mx-today-checkin-glyph">
-            <CardSystemGlyph kind="path-corridor" />
-          </span>
-        </>
-      ) : (
-        <>
-          <span className="mx-today-checkin-card__label mx-type-checkin-label">Разбор дня</span>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">
-            Забрать главное из дня.
-          </span>
-          <span className="mx-today-checkin-card__start">Начать</span>
-        </>
-      )}
-    </button>
+  const dayCards = (
+    <div className="mx-today-day-cards" aria-label="Чек-ин дня">
+      {renderDayCard('morning')}
+      {renderDayCard('evening')}
+    </div>
   )
 
   function changeTodayVariant(nextVariant) {
@@ -684,11 +698,20 @@ export default function Today({
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
       )}
 
-      {/* Утренний и вечерний входы остаются рядом: у дня два разных ритма. */}
-      <div className="mx-today-checkin-grid mt-5" aria-label="Чек-ин дня">
-        {morningCard}
-        {eveningCard}
-      </div>
+      {/* Две независимые карточки дня: утро и разбор (§5.1, тип A). */}
+      <div className="mx-today-day-card-slot">{dayCards}</div>
+
+      {/* ======================================================
+          ПУЛЬС
+          ====================================================== */}
+
+      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
+        <p className="mx-today-pulse">
+          {activeToday < 20
+            ? `Сегодня в пути вместе с тобой: ${activeToday}`
+            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+        </p>
+      )}
 
       {/*
         mx-today-actions remains a documented maintenance contract. The legacy
@@ -810,18 +833,6 @@ export default function Today({
       <PinnedPractices user={user} onOpenPractice={onOpenPractice} />
 
       {/* ======================================================
-          ПУЛЬС
-          ====================================================== */}
-
-      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
-        <p className="text-center mx-type-meta text-muted mt-4">
-          {activeToday < 20
-            ? `Сегодня в пути вместе с тобой: ${activeToday}`
-            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
-        </p>
-      )}
-
-      {/* ======================================================
           ТЕМА НЕДЕЛИ
           ====================================================== */}
 
@@ -885,7 +896,7 @@ export default function Today({
           }}
           className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
-          <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
+          <span className="block mx-type-meta text-muted mb-3">М��сль дня</span>
 
           <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
         </button>

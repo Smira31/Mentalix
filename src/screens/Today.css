@@ -6,42 +6,6 @@
  * Mentalix copy, state handling and navigation independent.
  */
 
-.mx-today-checkin-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-}
-
-.mx-today-checkin-card {
-  display: flex;
-  min-height: 260px;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 32px 16px 24px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: var(--mx-radius-card);
-  background: rgb(var(--c-bg));
-  color: rgb(var(--c-muted));
-  text-align: center;
-}
-.mx-today-checkin-card[data-complete='true'] {
-  background: rgb(var(--c-bg));
-}
-.mx-today-checkin-card:active {
-  transform: scale(0.97);
-  transition: transform 160ms ease;
-}
-@media (max-width: 359px) {
-  .mx-today-checkin-grid {
-    gap: 6px;
-  }
-  .mx-today-checkin-card {
-    min-height: 240px;
-    padding-inline: 13px;
-  }
-}
-
 .mx-today-primary-card {
   min-height: 452px;
   padding: 36px 24px 42px;
@@ -63,36 +27,6 @@
   font-size: 1.25rem;
   line-height: 1.2;
   font-weight: 700;
-}
-
-.mx-today-checkin-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 28px;
-  margin: 0 auto;
-  padding: 0 12px;
-  gap: 4px;
-  border: 0;
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.mx-today-checkin-glyph {
-  display: inline-flex;
-  width: 96px;
-  height: 72px;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-
-.mx-today-checkin-glyph .mx-card-system-glyph {
-  width: 96px;
-  height: 72px;
 }
 
 .mx-today-hero-breath {
@@ -178,92 +112,10 @@
  * сохраняет ту же поверхность, но сокращает только свободное вертикальное поле.
  */
 @media (max-height: 650px) {
-  .mx-today-checkin-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .mx-today-checkin-card {
-    display: flex;
-    min-height: 238px;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 20px 16px 18px;
-    border: 1px solid rgb(var(--c-line) / 0.08);
-    border-radius: 24px;
-    background: rgb(var(--c-card2));
-    color: rgb(var(--c-text));
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.025),
-      0 18px 44px rgb(0 0 0 / 0.12);
-    text-align: left;
-  }
-  .mx-today-checkin-card[data-complete='true'] {
-    background: rgb(var(--c-card));
-    border-color: rgb(var(--c-border));
-  }
-  .mx-today-checkin-card__eyebrow {
-    color: rgb(var(--c-muted));
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .mx-today-checkin-card__title {
-    font-family: inherit;
-    font-size: 25px;
-    line-height: 1.05;
-  }
-  .mx-today-checkin-card__body {
-    min-height: 36px;
-    color: rgb(var(--c-muted));
-    font-size: 12px;
-    line-height: 1.45;
-  }
-  .mx-today-checkin-card__action {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: rgb(var(--c-gold));
-    font-size: 12px;
-    font-weight: 700;
-  }
-  .mx-today-checkin-card:active {
-    transform: scale(0.985);
-  }
-  @media (max-width: 359px) {
-    .mx-today-checkin-grid {
-      gap: 8px;
-    }
-    .mx-today-checkin-card {
-      min-height: 220px;
-      padding-inline: 13px;
-    }
-    .mx-today-checkin-card__title {
-      font-size: 22px;
-    }
-  }
-
   .mx-today-primary-card {
     min-height: 270px;
     padding: 22px 20px 24px;
     border-radius: var(--mx-radius-card);
-  }
-
-  .mx-today-checkin-pill {
-    display: inline-flex;
-    align-items: center;
-    min-height: 30px;
-    margin: 18px auto 0;
-    padding: 0 12px;
-    border: 1px solid rgb(var(--c-gold) / 0.3);
-    border-radius: 999px;
-    background: rgb(var(--c-gold) / 0.1);
-    color: rgb(var(--c-gold));
-    font-size: 12px;
-    font-weight: 700;
   }
 
   .mx-today-hero-breath {
@@ -1061,74 +913,6 @@
 }
 
 @media (max-height: 650px) {
-  .mx-today-checkin-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .mx-today-checkin-card {
-    display: flex;
-    min-height: 238px;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 10px;
-    padding: 20px 16px 18px;
-    border: 1px solid rgb(var(--c-line) / 0.08);
-    border-radius: 24px;
-    background: rgb(var(--c-card2));
-    color: rgb(var(--c-text));
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.025),
-      0 18px 44px rgb(0 0 0 / 0.12);
-    text-align: left;
-  }
-  .mx-today-checkin-card[data-complete='true'] {
-    background: rgb(var(--c-card));
-    border-color: rgb(var(--c-border));
-  }
-  .mx-today-checkin-card__eyebrow {
-    color: rgb(var(--c-muted));
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .mx-today-checkin-card__title {
-    font-family: inherit;
-    font-size: 25px;
-    line-height: 1.05;
-  }
-  .mx-today-checkin-card__body {
-    min-height: 36px;
-    color: rgb(var(--c-muted));
-    font-size: 12px;
-    line-height: 1.45;
-  }
-  .mx-today-checkin-card__action {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    color: rgb(var(--c-gold));
-    font-size: 12px;
-    font-weight: 700;
-  }
-  .mx-today-checkin-card:active {
-    transform: scale(0.985);
-  }
-  @media (max-width: 359px) {
-    .mx-today-checkin-grid {
-      gap: 8px;
-    }
-    .mx-today-checkin-card {
-      min-height: 220px;
-      padding-inline: 13px;
-    }
-    .mx-today-checkin-card__title {
-      font-size: 22px;
-    }
-  }
-
   .mx-today-primary-card {
     min-height: 220px;
     padding: 16px 16px 18px;
@@ -1145,20 +929,6 @@
 
   .mx-today-primary-card .cta-pill {
     min-height: 44px;
-  }
-
-  .mx-today-checkin-pill {
-    display: inline-flex;
-    align-items: center;
-    min-height: 30px;
-    margin: 18px auto 0;
-    padding: 0 12px;
-    border: 1px solid rgb(var(--c-gold) / 0.3);
-    border-radius: 999px;
-    background: rgb(var(--c-gold) / 0.1);
-    color: rgb(var(--c-gold));
-    font-size: 12px;
-    font-weight: 700;
   }
 
   .mx-today-hero-breath {
@@ -1487,59 +1257,11 @@
 }
 
 /* Mentalix Card System v2 final geometry. Keep this block after legacy demo/media rules. */
-.mx-today-checkin-grid {
-  gap: 6px;
-}
 
-.mx-today-checkin-card {
-  min-height: 260px;
-  padding: 32px 16px 24px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: var(--mx-radius-card);
-  background: rgb(var(--c-bg));
-  box-shadow: none;
-  text-align: center;
-}
-
-.mx-today-checkin-card__title {
-  width: 100%;
-  color: rgb(var(--c-muted));
-  font-family: inherit;
-  font-size: 1.375rem;
-  font-weight: 400;
-  line-height: 1.2;
-}
-
-.mx-today-checkin-card__eyebrow,
-.mx-today-checkin-card__body,
-.mx-today-checkin-card__action {
-  display: none;
-}
-
-.mx-today-checkin-card:active,
 .mx-today-theme-card:active,
 .mx-today-affirmation-card:active {
   transform: scale(0.97);
   transition: transform 160ms ease;
-}
-
-.mx-today-checkin-pill {
-  height: 28px;
-  min-height: 28px;
-  margin: 0 auto;
-  padding: 0 12px;
-  border: 0;
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-muted));
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.mx-today-checkin-glyph,
-.mx-today-checkin-glyph .mx-card-system-glyph {
-  width: 96px;
-  height: 72px;
 }
 
 .mx-today-theme-card,
@@ -1569,14 +1291,7 @@
   stroke: rgb(var(--c-gold));
 }
 
-@media (max-width: 359px) {
-  .mx-today-checkin-card {
-    min-height: 240px;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .mx-today-checkin-card,
   .mx-today-theme-card,
   .mx-today-affirmation-card {
     transition: none;
@@ -1647,84 +1362,6 @@
   }
 }
 
-/* Card System v2 — Type A status cards. */
-.mx-today-checkin-card {
-  min-height: 260px;
-  padding: 32px 16px 24px;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  border: 0;
-  border-radius: var(--mx-radius-card);
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-text));
-  text-align: center;
-}
-
-.mx-today-checkin-card[data-current='true']:not([data-complete='true']) {
-  background: rgb(var(--c-card3));
-}
-
-.mx-today-checkin-card[data-complete='true'] {
-  border: 1px solid rgb(var(--c-border));
-  background: rgb(var(--c-bg));
-}
-
-.mx-today-checkin-card__label {
-  display: block;
-  max-width: 100%;
-  color: rgb(var(--c-muted));
-}
-
-.mx-today-checkin-card__title {
-  display: block;
-  max-width: 100%;
-  color: rgb(var(--c-text));
-}
-
-.mx-today-checkin-card[data-complete='true'] .mx-today-checkin-card__title {
-  color: rgb(var(--c-muted));
-}
-
-.mx-today-checkin-card[data-complete='true'] .mx-today-checkin-glyph {
-  margin-bottom: 0;
-}
-
-.mx-today-checkin-card__start {
-  display: inline-flex;
-  min-width: 113px;
-  min-height: 41px;
-  align-items: center;
-  justify-content: center;
-  margin-top: auto;
-  border-radius: var(--mx-radius-pill);
-  background: rgb(var(--c-line));
-  color: rgb(var(--c-bg));
-  font-size: 17px;
-  font-weight: 500;
-}
-
-.mx-today-checkin-card:not([data-current='true']) .mx-today-checkin-card__start {
-  border: 1px solid rgb(var(--c-border));
-  background: rgb(var(--c-card2));
-  color: rgb(var(--c-text));
-}
-
-.mx-today-checkin-card .mx-today-checkin-glyph {
-  display: inline-flex;
-  width: 96px;
-  height: 72px;
-  align-items: center;
-  justify-content: center;
-  margin-top: auto;
-  margin-bottom: 0;
-}
-
-.mx-today-checkin-card .mx-today-checkin-glyph .mx-card-system-glyph {
-  width: 96px;
-  height: 72px;
-}
-
 .mx-today-week-day[data-completed='true'] {
   color: rgb(var(--c-text));
 }
@@ -1732,13 +1369,6 @@
 .mx-today-week-day__check {
   color: rgb(var(--c-gold));
   stroke-width: 2.5;
-}
-
-@media (max-width: 359px) {
-  .mx-today-checkin-card {
-    min-height: 240px;
-    padding-inline: 13px;
-  }
 }
 
 /* Card System v2 — Type B practice tiles. */
@@ -1835,4 +1465,225 @@
   color: rgb(var(--c-text));
   font-size: 20px;
   line-height: 1;
+}
+
+/* ======================================================
+   §5.1 A — главная карточка дня
+   ====================================================== */
+
+.mx-today-day-card-slot {
+  width: 100%;
+}
+
+.mx-today-day-card-slot + .mx-pinned-practices,
+.mx-today-pulse + .mx-pinned-practices {
+  margin-top: 32px;
+}
+
+.mx-today-day-card {
+  display: flex;
+  width: 100%;
+  height: 455px;
+  flex-direction: column;
+  align-items: center;
+  padding: 87px 16px 57px;
+  border: 1px solid rgb(255 255 255 / 0.06);
+  border-radius: 28px;
+  background: linear-gradient(180deg, #242424 0%, #323232 100%);
+  text-align: center;
+}
+
+.mx-today-day-card:active {
+  transform: scale(0.97);
+  transition: transform 160ms ease;
+}
+
+.mx-today-day-card__glyph {
+  display: inline-flex;
+  width: 165px;
+  height: 93px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.mx-today-day-card__glyph .mx-card-system-glyph {
+  width: 165px;
+  height: 93px;
+}
+
+.mx-today-day-card__label {
+  display: block;
+  margin-top: 45px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-day-card__title {
+  display: block;
+  max-width: 240px;
+  margin-top: 19px;
+  color: rgb(var(--c-text));
+}
+
+.mx-today-day-card__start {
+  display: inline-flex;
+  width: 82px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.mx-today-day-card[data-complete='true'] {
+  height: 233px;
+  padding: 87px 16px 35px;
+  border-color: rgb(var(--c-nav-border));
+  background: rgb(var(--c-bg));
+}
+
+.mx-today-day-card__done {
+  display: block;
+  color: rgb(var(--c-muted));
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.mx-today-day-card__pill {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text) / 0.7);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.mx-today-day-card__dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: rgb(var(--c-muted));
+}
+
+.mx-today-pulse {
+  margin-top: 16px;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+}
+
+@media (max-width: 360px) {
+  .mx-today-day-card {
+    height: 420px;
+    padding-top: 72px;
+  }
+
+  .mx-today-day-card__label {
+    margin-top: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-day-card {
+    transition: none;
+  }
+}
+
+/* §5.1 A — две независимые карточки дня. */
+.mx-today-day-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.mx-today-day-card {
+  display: flex;
+  width: 100%;
+  height: 260px;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 10px 16px;
+  border: 1px solid #333;
+  border-radius: 28px;
+  background: transparent;
+  color: rgb(var(--c-text));
+  text-align: center;
+}
+.mx-today-day-card[data-state='active'] {
+  border-color: rgb(255 255 255 / 0.06);
+  background: linear-gradient(180deg, #242424 0%, #323232 100%);
+}
+.mx-today-day-card[data-state='active']:active,
+.mx-today-day-card[data-state='done']:active {
+  transform: scale(0.97);
+  transition: transform 160ms ease;
+}
+.mx-today-day-card[data-state='locked'],
+.mx-today-day-card[data-state='missed'] {
+  color: rgb(var(--c-muted));
+}
+.mx-today-day-card__glyph,
+.mx-today-day-card__glyph .mx-card-system-glyph {
+  width: 100%;
+  height: 74px;
+}
+.mx-today-day-card__label {
+  display: block;
+  margin-top: 18px;
+  color: rgb(var(--c-muted));
+  white-space: nowrap;
+}
+.mx-today-day-card__title {
+  display: block;
+  margin-top: 12px;
+  color: rgb(var(--c-text));
+  font-size: 24px;
+  line-height: 1.15;
+}
+.mx-today-day-card__start {
+  display: inline-flex;
+  width: 82px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-size: 17px;
+  font-weight: 600;
+}
+.mx-today-day-card__done,
+.mx-today-day-card__locked {
+  display: block;
+  margin-top: 78px;
+  color: rgb(var(--c-muted));
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+.mx-today-day-card__pill {
+  margin-top: auto;
+}
+@media (max-width: 360px) {
+  .mx-today-day-card {
+    padding-inline: 7px;
+  }
+  .mx-today-day-card__title {
+    font-size: 20px;
+  }
 }
