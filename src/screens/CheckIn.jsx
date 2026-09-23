@@ -411,7 +411,7 @@ function MorningCheckInFlow({ user, onDone }) {
           </section>
         )}
       </main>
-      {step < doneStep ? (
+      {step < noteStep ? (
         <CheckInNextControls
           onNext={() => setStep(current => Math.min(doneStep, current + 1))}
           disabled={step < noteStep ? !values[MORNING_SCALE_STEPS[step].key] : !note.trim()}
