@@ -1366,7 +1366,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
           >
             {/* ── шкалы ── */}
 
-            {isScaleStep && (
+            {isScaleStep && scale && (
               <div key={step} className="w-full flex flex-col items-center">
                 <CheckInScaleQuestion
                   scale={scale}
