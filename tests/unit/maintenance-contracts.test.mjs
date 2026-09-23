@@ -708,7 +708,7 @@ test('MXL-TYPE-SYSTEM-001 использует единый Onest baseline бе�
  * MXL-DS-LABEL-FONT-001: Manrope (`font-label`) — вторичный шрифт,
  * разрешённый исключительно на eyebrow-ле��блах Analytics («Наблюдения»,
  * «Цифры», «Данные»), а не на основных числовых значениях, графиках
- * или экране целиком. Контракт ниже проверяет канонический
+ * или экране целиком. Контракт ниже прове��яет канонический
  * класс `font-label`, а не буквальное имя шрифта в JSX: имя гарнитуры —
  * ответственность CSS/design-system слоя (`tailwind.config.js`,
  * `src/index.css`, задокументировано в `DESIGN_SYSTEM.md` §3), а не
@@ -771,7 +771,7 @@ test('MXL-HOME-QUIET-FOUNDATION-001 публикует одну главную �
   assert.match(today, /mx-today-day-cards/)
   assert.match(today, /renderDayCard\('morning'\)/)
   assert.match(today, /renderDayCard\('evening'\)/)
-  assert.match(today, /data-state=\{state\}/)
+  assert.match(today, /'data-state': state/)
   assert.match(today, /const cardStates = resolveTodayCardStates/)
   assert.match(today, /const moodPillText = MOOD_PILL_WORDS/)
   assert.match(today, /checkinRecap/)
