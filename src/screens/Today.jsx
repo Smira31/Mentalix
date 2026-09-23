@@ -511,6 +511,7 @@ export default function Today({
   const eveningComplete = todayState === 'dayClosed'
 
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
+  // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
   const currentPart = isReviewTime ? 'evening' : 'morning'
 
