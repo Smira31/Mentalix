@@ -16,6 +16,12 @@ updates:
       - dependency-name: vite
         update-types:
           - version-update:semver-major
+      - dependency-name: eslint
+        update-types:
+          - version-update:semver-major
+      - dependency-name: '@twa-dev/sdk'
+        update-types:
+          - version-update:semver-major
     groups:
       npm-minor-patch:
         update-types:
