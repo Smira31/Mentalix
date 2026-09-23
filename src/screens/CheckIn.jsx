@@ -1070,21 +1070,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
               }
             : null
 
-  const skipAction = isFinal
-    ? isEvening
-      ? { text: 'Ко сну', run: onDone }
-      : null
-    : isCard
-      ? {
-          text: 'Пропустить',
-          run: () =>
-            isEvening
-              ? cardIdx < cardCount - 1
-                ? setStep(step + 1)
-                : submit()
-              : setStep(doneStep),
-        }
-      : null
+  const skipAction = isFinal ? (isEvening ? { text: 'Ко сну', run: onDone } : null) : null
 
   const writingAction = isMorningNoteStep
     ? { text: saving ? 'Сохраняю...' : 'Завершить чек-ин', run: submit }
@@ -1358,14 +1344,22 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
               title={questionTitle}
               hint={questionSubtitle}
               headingAs="h2"
-              className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
+              className={isCard ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
               headingClassName={[
                 'font-display text-cream',
-                isMorningNoteStep ? 'text-[30px] leading-[1.12]' : 'text-[26px] leading-tight',
+                isMorningNoteStep
+                  ? 'text-[30px] leading-[1.12]'
+                  : isEvening && isCard
+                    ? 'text-[22px] font-bold leading-[1.2]'
+                    : 'text-[26px] leading-tight',
               ].join(' ')}
               hintClassName={[
                 'text-[14px] text-muted',
-                isMorningNoteStep ? 'mt-5 border-l border-gold pl-4 leading-relaxed' : 'mt-2',
+                isMorningNoteStep
+                  ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
+                  : isEvening && isCard
+                    ? 'mt-[6px] text-[15px]'
+                    : 'mt-2',
               ].join(' ')}
             />
           )}
