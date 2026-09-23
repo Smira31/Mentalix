@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { platform } from '../platform'
+import { platform, platformName } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight, Check } from 'lucide-react'
+import { ChevronRight, ArrowUpRight } from 'lucide-react'
 
 import './Today.css'
 
@@ -139,7 +139,12 @@ function WeekStrip({ checkin, history = [] }) {
           const dateKey = day.toISOString().slice(0, 10)
           const isCompleted = Boolean(
             (isToday && checkin) ||
-            history.some(item => item?.date && String(item.date).slice(0, 10) === dateKey)
+            history.some(
+              item =>
+                item?.date &&
+                String(item.date).slice(0, 10) === dateKey &&
+                (item.review_completed_at || item.completed_at || item.status === 'completed')
+            )
           )
           return (
             <div
@@ -151,10 +156,12 @@ function WeekStrip({ checkin, history = [] }) {
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
               </span>
-              {isCompleted ? (
-                <Check className="mx-today-week-day__check" size={15} aria-label="Чек-ин пройден" />
-              ) : (
+              {platformName === 'telegram' || !isCompleted ? (
                 <span className="mx-type-calendar-date">{day.getDate()}</span>
+              ) : (
+                <span className="mx-today-week-day__check" aria-label="Чек-ин пройден" role="img">
+                  ✓
+                </span>
               )}
             </div>
           )
@@ -385,7 +392,16 @@ export default function Today({
   // ============================================================
 
   if (seriesOpen) {
-    return <SeriesBadges user={user} onBack={onCloseSeries} />
+    return (
+      <SeriesBadges
+        user={user}
+        onBack={onCloseSeries}
+        onOpenPractice={practice => {
+          onCloseSeries?.()
+          onOpenPractice?.(practice)
+        }}
+      />
+    )
   }
 
   // ============================================================
