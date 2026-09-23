@@ -562,7 +562,7 @@ export default function Today({
         platform.haptic('medium')
         changeSub('evening')
       }}
-      aria-label="Открыть вечерний разбор — Разобрать день"
+      aria-label="Открыть вечерний разбор"
     >
       {eveningComplete ? (
         <>
