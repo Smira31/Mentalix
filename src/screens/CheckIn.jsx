@@ -696,6 +696,11 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       ...current,
       [key]: level,
     }))
+    if (!isEvening) {
+      window.setTimeout(() => {
+        setStep(current => current + 1)
+      }, 280)
+    }
   }
 
   useEffect(() => {
@@ -1210,7 +1215,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                 <strong>завершён.</strong>
               </h2>
 
-              {(
+              {
                 <div className="mt-7 w-full max-w-sm">
                   <p className="text-[13px] text-muted">
                     Чек-ин помог остановиться и заметить важное?
@@ -1237,7 +1242,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                     ))}
                   </div>
                 </div>
-              )}
+              }
 
               {isEvening && (
                 <div className="mt-6 rounded-full border border-cream/10 bg-emerald px-4 py-2 text-[14px] font-semibold text-cream">
