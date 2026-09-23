@@ -144,6 +144,10 @@ test.describe('MXL-010 automated technical gate', () => {
     await seedUser(context)
     await context.route('**/api/**', route => fixtures.handle(route))
     const page = await context.newPage()
+    // Замораживаем время на 08:00 UTC — до времени разбора (19:00) утренняя
+    // карточка active, вечерняя locked (§5.1, todayCardState).
+    // UTC гарантирует, что new Date().getHours() ≥ 19 после перевода clocks.
+    await page.clock.setFixedTime('2026-09-23T08:00:00Z')
     await page.goto('/')
     await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
 
@@ -167,6 +171,10 @@ test.describe('MXL-010 automated technical gate', () => {
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
 
+    // После утреннего чек-ина fixture меняет review_hour на 0 (→ 19:00 в
+    // resolveTodayCardStates). Переводим часы на 19:00, чтобы вечерняя
+    // карточка стала active (button), а не locked (div).
+    await page.clock.setFixedTime('2026-09-23T19:00:00Z')
     await page.getByRole('button', { name: 'Вернуться в Сегодня' }).click()
     await expect(page.getByRole('button', { name: /Разбор дня/ })).toBeVisible()
 
