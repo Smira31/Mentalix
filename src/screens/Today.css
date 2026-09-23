@@ -1646,3 +1646,97 @@
     min-height: 0;
   }
 }
+
+/* Card System v2 — Type A status cards. */
+.mx-today-checkin-card {
+  min-height: 260px;
+  padding: 32px 16px 24px;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  text-align: center;
+}
+
+.mx-today-checkin-card[data-current='true']:not([data-complete='true']) {
+  background: rgb(var(--c-card3));
+}
+
+.mx-today-checkin-card[data-complete='true'] {
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-bg));
+}
+
+.mx-today-checkin-card__label {
+  display: block;
+  max-width: 100%;
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-checkin-card__title {
+  display: block;
+  max-width: 100%;
+  color: rgb(var(--c-text));
+}
+
+.mx-today-checkin-card[data-complete='true'] .mx-today-checkin-card__title {
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-checkin-card[data-complete='true'] .mx-today-checkin-glyph {
+  margin-bottom: 0;
+}
+
+.mx-today-checkin-card__start {
+  display: inline-flex;
+  min-width: 113px;
+  min-height: 41px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-line));
+  color: rgb(var(--c-bg));
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.mx-today-checkin-card:not([data-current='true']) .mx-today-checkin-card__start {
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+}
+
+.mx-today-checkin-card .mx-today-checkin-glyph {
+  display: inline-flex;
+  width: 96px;
+  height: 72px;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.mx-today-checkin-card .mx-today-checkin-glyph .mx-card-system-glyph {
+  width: 96px;
+  height: 72px;
+}
+
+.mx-today-week-day[data-completed='true'] {
+  color: rgb(var(--c-text));
+}
+
+.mx-today-week-day__check {
+  color: rgb(var(--c-gold));
+  stroke-width: 2.5;
+}
+
+@media (max-width: 359px) {
+  .mx-today-checkin-card {
+    min-height: 240px;
+    padding-inline: 13px;
+  }
+}
