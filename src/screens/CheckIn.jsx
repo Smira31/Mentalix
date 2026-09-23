@@ -1074,25 +1074,17 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     ? isEvening
       ? { text: 'Ко сну', run: onDone }
       : null
-    : isEmotionStep
+    : isCard
       ? {
           text: 'Пропустить',
-          run: () => {
-            setEmotion(null)
-            setStep(step + 1)
-          },
+          run: () =>
+            isEvening
+              ? cardIdx < cardCount - 1
+                ? setStep(step + 1)
+                : submit()
+              : setStep(doneStep),
         }
-      : isCard
-        ? {
-            text: 'Пропустить',
-            run: () =>
-              isEvening
-                ? cardIdx < cardCount - 1
-                  ? setStep(step + 1)
-                  : submit()
-                : setStep(doneStep),
-          }
-        : null
+      : null
 
   const writingAction = isMorningNoteStep
     ? { text: saving ? 'Сохраняю...' : 'Завершить чек-ин', run: submit }
