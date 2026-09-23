@@ -12,8 +12,8 @@ test('Today uses the completed check-in as the recap entry point', () => {
   assert.doesNotMatch(today, /isPreviewDemoMode\(\)/)
 })
 
-test('Today keeps both check-in cards before secondary sections', () => {
-  const cardsStart = today.indexOf('mx-today-checkin-grid')
+test('Today keeps the main day card before secondary sections', () => {
+  const cardsStart = today.indexOf('mx-today-day-card-slot')
   const secondaryStart = today.indexOf('mx-today-theme-card')
 
   assert.notEqual(cardsStart, -1)

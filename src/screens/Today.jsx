@@ -52,6 +52,15 @@ const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
 // ── календарь недели + отдельные дневные streak strips ──
 
+// Pill настроения в завершённой главной карточке дня (§5.1, тип A).
+const MOOD_PILL_WORDS = [
+  'Тяжёлое настроение',
+  'Непростое настроение',
+  'Ровное настроение',
+  'Хорошее настроение',
+  'Отличное настроение',
+]
+
 function todayGreeting() {
   const hour = new Date().getHours()
   if (hour >= 5 && hour <= 11) return 'доброе утро.'
@@ -563,69 +572,69 @@ export default function Today({
 
   const currentPart = isReviewTime ? 'evening' : 'morning'
 
-  const morningCard = (
-    <button
-      type="button"
-      className="mx-today-checkin-card mx-today-checkin-card--morning animate-fade-in"
-      data-kind="morning"
-      data-complete={morningComplete}
-      data-current={currentPart === 'morning'}
-      onClick={() => {
-        platform.haptic('medium')
-        changeSub(morningComplete ? 'checkinRecap' : 'checkin')
-      }}
-      aria-label="Открыть утренний чек-ин — Пройти чек-ин"
-    >
-      {morningComplete ? (
-        <>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">
-            Утро началось с внимания.
-          </span>
-          <span className="mx-today-checkin-glyph">
-            <CardSystemGlyph kind="breath-flow" />
-          </span>
-        </>
-      ) : (
-        <>
-          <span className="mx-today-checkin-card__label mx-type-checkin-label">
-            Утренний чек-ин
-          </span>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">
-            Как ты сегодня?
-          </span>
-          <span className="mx-today-checkin-card__start">Начать</span>
-        </>
-      )}
-    </button>
-  )
+  const dayCardComplete = currentPart === 'evening' ? eveningComplete : morningComplete
 
-  const eveningCard = (
+  const dayCardCopy =
+    currentPart === 'evening'
+      ? {
+          label: 'Разбор дня',
+          title: 'Забрать главное из дня.',
+          completed: 'День закрыт.',
+          glyph: 'path-corridor',
+          ariaLabel: 'Открыть вечерний разбор — Разобрать день',
+          ariaLabelComplete: 'День закрыт. Открыть запись дня',
+        }
+      : {
+          label: 'Утренний чек-ин',
+          title: 'Как ты сегодня?',
+          completed: 'Утренний чек-ин завершён.',
+          glyph: 'breath-flow',
+          ariaLabel: 'Открыть утренний чек-ин — Пройти чек-ин',
+          ariaLabelComplete: 'Утренний чек-ин завершён. Открыть запись дня',
+        }
+
+  const moodPillText = MOOD_PILL_WORDS[Number(checkin?.mood) - 1] || null
+
+  const dayCard = (
     <button
       type="button"
-      className="mx-today-checkin-card mx-today-checkin-card--evening animate-fade-in"
-      data-kind="evening"
-      data-complete={eveningComplete}
-      data-current={currentPart === 'evening'}
+      className="mx-today-day-card animate-fade-in"
+      data-kind={currentPart}
+      data-complete={dayCardComplete}
       onClick={() => {
         platform.haptic('medium')
-        changeSub('evening')
+
+        if (dayCardComplete) {
+          changeSub('checkinRecap')
+          return
+        }
+
+        changeSub(currentPart === 'evening' ? 'evening' : 'checkin')
       }}
-      aria-label="Открыть вечерний разбор"
+      aria-label={dayCardComplete ? dayCardCopy.ariaLabelComplete : dayCardCopy.ariaLabel}
     >
-      {eveningComplete ? (
+      {dayCardComplete ? (
         <>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">День закрыт.</span>
-          <span className="mx-today-checkin-glyph">
-            <CardSystemGlyph kind="path-corridor" />
-          </span>
+          <span className="mx-today-day-card__done">{dayCardCopy.completed}</span>
+          {moodPillText && (
+            <span className="mx-today-day-card__pill">
+              <span className="mx-today-day-card__dot" aria-hidden="true" />
+              {moodPillText}
+            </span>
+          )}
         </>
       ) : (
         <>
-          <span className="mx-today-checkin-card__label mx-type-checkin-label">Разбор дня</span>
-          <span className="mx-today-checkin-card__title mx-type-checkin-title">
-            Забрать главное из дня.
+          <span className="mx-today-day-card__glyph">
+            <CardSystemGlyph kind={dayCardCopy.glyph} />
           </span>
-          <span className="mx-today-checkin-card__start">Начать</span>
+          <span className="mx-today-day-card__label mx-type-checkin-label">
+            {dayCardCopy.label}
+          </span>
+          <span className="mx-today-day-card__title mx-type-checkin-title">
+            {dayCardCopy.title}
+          </span>
+          <span className="mx-today-day-card__start">Начать</span>
         </>
       )}
     </button>
@@ -684,11 +693,22 @@ export default function Today({
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
       )}
 
-      {/* Утренний и вечерний входы остаются рядом: у дня два разных ритма. */}
-      <div className="mx-today-checkin-grid mt-5" aria-label="Чек-ин дня">
-        {morningCard}
-        {eveningCard}
+      {/* Одна главная карточка дня: чек-ин текущей части дня (§5.1, тип A). */}
+      <div className="mx-today-day-card-slot" aria-label="Чек-ин дня">
+        {dayCard}
       </div>
+
+      {/* ======================================================
+          ПУЛЬС
+          ====================================================== */}
+
+      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
+        <p className="mx-today-pulse">
+          {activeToday < 20
+            ? `Сегодня в пути вместе с тобой: ${activeToday}`
+            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+        </p>
+      )}
 
       {/*
         mx-today-actions remains a documented maintenance contract. The legacy
@@ -808,18 +828,6 @@ export default function Today({
       )}
 
       <PinnedPractices user={user} onOpenPractice={onOpenPractice} />
-
-      {/* ======================================================
-          ПУЛЬС
-          ====================================================== */}
-
-      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
-        <p className="text-center mx-type-meta text-muted mt-4">
-          {activeToday < 20
-            ? `Сегодня в пути вместе с тобой: ${activeToday}`
-            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
-        </p>
-      )}
 
       {/* ======================================================
           ТЕМА НЕДЕЛИ
