@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Flame } from 'lucide-react'
+import { X } from 'lucide-react'
 
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
-import { buildSeriesViewModel } from '../lib/series'
+import { buildSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
+import { getSeriesPreferences, saveSeriesPreference } from '../lib/seriesPreferences'
 import BackButton from '../components/BackButton'
 import './SeriesBadges.css'
 
-function RewardIcon({ variant = 'locked', size = 110, className = '' }) {
+function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
   const isLocked = variant === 'locked'
   const isFirstStep = variant === 'first-step'
 
@@ -43,26 +44,19 @@ function RewardIcon({ variant = 'locked', size = 110, className = '' }) {
           <circle className="mx-reward-icon__dot" cx="80" cy="68" r="4" />
         </>
       ) : variant === 'week-on-path' ? (
-        <>
-          {[0, 1, 2, 3, 4, 5, 6].map(index => (
-            <circle
-              className="mx-reward-icon__dot"
-              key={index}
-              cx={56 + index * 8}
-              cy={68 - Math.abs(3 - index) * 4}
-              r="3.5"
-            />
-          ))}
-        </>
+        [0, 1, 2, 3, 4, 5, 6].map(index => (
+          <circle
+            className="mx-reward-icon__dot"
+            key={index}
+            cx={56 + index * 8}
+            cy={68 - Math.abs(3 - index) * 4}
+            r="3.5"
+          />
+        ))
       ) : variant === 'ritual-holds' ? (
         <path className="mx-reward-icon__steps" d="M55 88h50M62 80h36M69 72h22M76 64h8" />
       ) : variant === 'asceza-power' ? (
         <path className="mx-reward-icon__symbol" d="M62 84l36-32M70 88l28-24" />
-      ) : variant === 'month-on-path' ? (
-        <path
-          className="mx-reward-icon__symbol"
-          d="m80 50 5 12 13 1-10 8 3 13-11-7-11 7 3-13-10-8 13-1z"
-        />
       ) : (
         <>
           <circle className="mx-reward-icon__dot" cx="80" cy="68" r="12" />
@@ -78,65 +72,226 @@ function RewardIcon({ variant = 'locked', size = 110, className = '' }) {
 function ProgressBar({ progress, goal }) {
   const width = goal > 0 ? Math.min(100, Math.round((progress / goal) * 100)) : 0
   return (
-    <div className="mx-path-progress" aria-label={`Прогресс: ${progress} из ${goal}`}>
+    <span className="mx-path-progress" aria-label={`Прогресс: ${progress} из ${goal}`}>
       <span style={{ width: `${width}%` }} />
-    </div>
+    </span>
   )
 }
 
-function BadgeRow({ badge, expanded, onToggle }) {
+function CloseButton({ onClose, label = 'Закрыть' }) {
   return (
-    <button
-      type="button"
-      className={`mx-path-award-row ${expanded ? 'is-expanded' : ''}`}
-      onClick={onToggle}
-      aria-expanded={expanded}
-    >
-      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={76} />
-      <div className="min-w-0 flex-1">
-        <div className="mx-path-row-title">{badge.title}</div>
-        <div className="mx-path-row-copy">{badge.desc}</div>
-      </div>
-      <div className="mx-path-row-value">
-        <strong>
-          {badge.progress}/{badge.goal}
-        </strong>
-        <ProgressBar progress={badge.progress} goal={badge.goal} />
-      </div>
-      {expanded && (
-        <div className="mx-path-award-detail">
-          {badge.done
-            ? 'Награда открыта. Продолжай в своём темпе.'
-            : `Осталось: ${Math.max(0, badge.goal - badge.progress)}.`}
-        </div>
-      )}
+    <button type="button" className="mx-path-close" aria-label={label} onClick={onClose}>
+      <X size={18} strokeWidth={1.8} aria-hidden="true" />
     </button>
   )
 }
 
-function SummaryCard({ value, label }) {
+export function BadgeSheet({ badge, onClose }) {
+  if (!badge) return null
+  return createPortal(
+    <div className="mx-badge-sheet-layer" role="presentation" onClick={onClose}>
+      <section
+        className="mx-badge-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mx-badge-sheet-title"
+        onClick={event => event.stopPropagation()}
+      >
+        <CloseButton onClose={onClose} />
+        <div className="mx-badge-sheet__scene">
+          <RewardIcon variant={badge.done ? badge.id : 'locked'} size={92} />
+        </div>
+        <div className="mx-badge-sheet__body">
+          <span className="mx-badge-sheet__eyebrow">{badge.done ? 'ЗНАЧОК СЕРИИ' : 'ЗНАЧОК'}</span>
+          <h2 id="mx-badge-sheet-title">{badge.title}</h2>
+          <p>{badge.desc}</p>
+          <div className="mx-badge-sheet__progress">
+            <strong>Твой прогресс</strong>
+            <span>
+              {badge.progress}/{badge.goal}
+            </span>
+          </div>
+          <button type="button" className="mx-badge-sheet__action" onClick={onClose}>
+            Утренний чек-ин
+          </button>
+        </div>
+        <BackButton onClick={onClose} />
+      </section>
+    </div>,
+    getFullscreenPortalTarget()
+  )
+}
+
+export function NewBadgeSheet({ badge, onClose }) {
+  if (!badge) return null
+  return createPortal(
+    <div className="mx-badge-sheet-layer" role="presentation" onClick={onClose}>
+      <section
+        className="mx-badge-sheet mx-badge-sheet--new"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mx-new-badge-title"
+        onClick={event => event.stopPropagation()}
+      >
+        <CloseButton onClose={onClose} />
+        <div className="mx-badge-sheet__scene">
+          <RewardIcon variant={badge.id} size={92} />
+        </div>
+        <div className="mx-badge-sheet__body">
+          <span className="mx-badge-sheet__eyebrow">НОВЫЙ ЗНАЧОК</span>
+          <h2 id="mx-new-badge-title">{badge.title}</h2>
+          <p>Ты прошёл первый чек-ин!</p>
+          <div className="mx-badge-sheet__received">
+            <strong>Получен</strong>
+            <span>{new Date().toLocaleDateString('ru-RU')}</span>
+          </div>
+          <button
+            type="button"
+            className="mx-badge-sheet__action mx-badge-sheet__share"
+            onClick={onClose}
+          >
+            Поделиться
+          </button>
+        </div>
+        <BackButton onClick={onClose} />
+      </section>
+    </div>,
+    getFullscreenPortalTarget()
+  )
+}
+
+function BadgeRow({ badge, onOpen }) {
   return (
-    <div className="mx-path-summary-card">
-      <strong>{value}</strong>
+    <button
+      type="button"
+      className="mx-path-award-row"
+      onClick={onOpen}
+      aria-label={`Открыть значок: ${badge.title}`}
+    >
+      <RewardIcon variant={badge.done ? badge.id : 'locked'} size={54} />
+      <span className="mx-path-row-copy-wrap">
+        <strong className="mx-path-row-title">{badge.title}</strong>
+        <span className="mx-path-row-copy">{badge.desc}</span>
+      </span>
+      <span className="mx-path-row-value">
+        <strong>
+          {badge.progress}/{badge.goal}
+        </strong>
+        <ProgressBar progress={badge.progress} goal={badge.goal} />
+      </span>
+    </button>
+  )
+}
+
+function ToggleRow({ label, checked, onChange }) {
+  return (
+    <label className="mx-path-toggle-row">
       <span>{label}</span>
+      <input type="checkbox" checked={checked} onChange={event => onChange(event.target.checked)} />
+      <span className="mx-path-toggle" aria-hidden="true" />
+    </label>
+  )
+}
+
+function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
+  const [showAll, setShowAll] = useState(false)
+  const unlocked = model.badges.filter(badge => badge.done)
+  const upcoming = model.badges.filter(badge => !badge.done)
+  const latest = unlocked[0]
+  const visible = showAll
+    ? [...upcoming, ...unlocked]
+    : upcoming.length
+      ? upcoming.slice(0, 3)
+      : unlocked.slice(0, 3)
+  const awardCount = unlocked.length
+
+  return (
+    <div className="mx-path-content">
+      <section className="mx-path-featured-award">
+        <strong className="mx-path-award-count">{awardCount}.</strong>
+        <span className="mx-path-featured-award-label">ЗНАЧКОВ ПОЛУЧЕНО</span>
+        <div className="mx-path-featured-scene">
+          <RewardIcon variant={latest ? latest.id : 'locked'} size={118} />
+        </div>
+        <div className="mx-path-featured-title">{latest ? latest.title : 'Твой первый значок'}</div>
+        <div className="mx-path-featured-copy">{latest ? 'Открыто' : 'Может, сегодня?'}</div>
+      </section>
+      <button type="button" className="mx-path-see-all" onClick={() => setShowAll(value => !value)}>
+        {showAll ? 'Скрыть' : 'Все'} <span aria-hidden="true">›</span>
+      </button>
+      <section className="mx-path-awards-section">
+        <h2>Следующие значки</h2>
+        <div className="mx-path-award-list">
+          {visible.map(badge => (
+            <BadgeRow key={badge.id} badge={badge} onOpen={() => onOpenBadge(badge)} />
+          ))}
+        </div>
+      </section>
+      <div className="mx-path-preferences">
+        <ToggleRow
+          label="Показывать серию"
+          checked={preferences.showStreak}
+          onChange={value => onPreference('showStreak', value)}
+        />
+        <ToggleRow
+          label="Показывать значки"
+          checked={preferences.showBadges}
+          onChange={value => onPreference('showBadges', value)}
+        />
+      </div>
+    </div>
+  )
+}
+
+function StatsView({ model }) {
+  const rows = [
+    ['Текущая серия', `${model.currentStreak} ${model.currentStreak === 1 ? 'день' : 'дней'}`],
+    ['Всего завершённых дней', model.activeDays],
+    ['Самая длинная серия', `${model.bestStreak} ${model.bestStreak === 1 ? 'день' : 'дней'}`],
+  ]
+  return (
+    <div className="mx-path-content">
+      <div className="mx-path-summary-grid">
+        <div className="mx-path-summary-card">
+          <strong>{model.activeDays}</strong>
+          <span>завершённых дня</span>
+        </div>
+        <div className="mx-path-summary-card">
+          <strong>{model.totalCheckins}</strong>
+          <span>чек-инов</span>
+        </div>
+      </div>
+      <StatSection title="Серия" rows={rows} />
+      <StatSection
+        title="Чек-ины"
+        rows={[
+          ['Всего чек-инов', model.totalCheckins],
+          ['Дней с чек-ином', model.activeDays],
+        ]}
+      />
+      <StatSection
+        title="Практики"
+        rows={[
+          ['Ритуалов', '—'],
+          ['Аскез', '—'],
+        ]}
+      />
+      <StatSection
+        title="Записи"
+        rows={[
+          ['Записей', model.totalCheckins],
+          ['Сохранено цитат', 0],
+        ]}
+      />
     </div>
   )
 }
 
 function StatSection({ title, rows }) {
-  const [open, setOpen] = useState(true)
   return (
-    <section className={`mx-path-stat-section ${open ? 'is-open' : ''}`}>
-      <button
-        type="button"
-        className="mx-path-stat-heading"
-        onClick={() => setOpen(value => !value)}
-        aria-expanded={open}
-      >
-        <h2>{title}</h2>
-        <span aria-hidden="true">{open ? '−' : '+'}</span>
-      </button>
-      <div className="mx-path-stat-card" hidden={!open}>
+    <section className="mx-path-stat-section">
+      <h2>{title}</h2>
+      <div className="mx-path-stat-card">
         {rows.map(([label, value]) => (
           <div className="mx-path-stat-row" key={label}>
             <span>{label}</span>
@@ -148,125 +303,13 @@ function StatSection({ title, rows }) {
   )
 }
 
-function AwardsView({ unlocked, upcoming }) {
-  const latest = unlocked[0]
-  const [showAll, setShowAll] = useState(false)
-  const [expandedId, setExpandedId] = useState(null)
-  const awardCountLabel =
-    unlocked.length === 1 ? 'награда' : unlocked.length < 5 ? 'награды' : 'наград'
-  return (
-    <div className="mx-path-content">
-      <section className="mx-path-featured-award">
-        <h2>
-          <strong>{unlocked.length || 0}</strong>
-          <span className="mx-path-featured-award-label">{awardCountLabel} открыто</span>
-        </h2>
-        {latest ? (
-          <>
-            <RewardIcon variant={latest.id} size={128} />
-            <div className="mx-path-featured-title">{latest.title}</div>
-            <div className="mx-path-featured-copy">{latest.done ? 'Открыто' : latest.desc}</div>
-          </>
-        ) : (
-          <>
-            <RewardIcon variant="first-step" size={128} />
-            <div className="mx-path-featured-title">Первый шаг</div>
-            <div className="mx-path-featured-copy">Сделай первый чек-ин</div>
-          </>
-        )}
-      </section>
-
-      <button
-        type="button"
-        className="mx-path-see-all"
-        onClick={() => setShowAll(value => !value)}
-        aria-expanded={showAll}
-      >
-        {showAll ? 'Скрыть награды' : 'Смотреть все'}{' '}
-        <span aria-hidden="true">{showAll ? '⌃' : '›'}</span>
-      </button>
-      <section className={`mx-path-awards-section ${showAll ? 'is-expanded' : ''}`}>
-        <h2>Следующие награды</h2>
-        <div className="mx-path-award-list">
-          {(showAll
-            ? [...upcoming, ...unlocked]
-            : (upcoming.length ? upcoming : unlocked).slice(0, 3)
-          ).map(badge => (
-            <BadgeRow
-              key={`${badge.id}-${showAll}`}
-              badge={badge}
-              expanded={expandedId === badge.id}
-              onToggle={() => setExpandedId(id => (id === badge.id ? null : badge.id))}
-            />
-          ))}
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function StatsView({ model }) {
-  const completedDays = model.activeDays || model.totalCheckins || 0
-  return (
-    <div className="mx-path-content">
-      <div className="mx-path-summary-grid">
-        <SummaryCard value={completedDays} label="завершённых дня" />
-        <SummaryCard value={0} label="минут осознанности" />
-      </div>
-      <StatSection
-        title="Рекорды"
-        rows={[
-          ['Самая долгая медитация', '0 мин 0 сек'],
-          ['Самая долгая дыхательная практика', '0 мин 0 сек'],
-          ['Самая длинная запись', model.totalCheckins ? '1 слово' : '0 слов'],
-          ['Самое долгое чтение', '0 мин 5 сек'],
-        ]}
-      />
-      <StatSection
-        title="Общее"
-        rows={[
-          ['Текущая серия', `${model.currentStreak} ${model.currentStreak === 1 ? 'день' : 'дня'}`],
-          ['Всего завершённых дней', completedDays],
-          ['Самая длинная серия', `${model.bestStreak} ${model.bestStreak === 1 ? 'день' : 'дня'}`],
-          ['Сохранено цитат', 0],
-        ]}
-      />
-      <StatSection
-        title="Дневник"
-        rows={[
-          ['Написано слов', model.totalCheckins ? 1 : 0],
-          ['Изображений', 0],
-          ['Рисунков', 0],
-          ['Записей', model.totalCheckins],
-          ['Разных дневников', 0],
-        ]}
-      />
-      <StatSection
-        title="Осознанность"
-        rows={[
-          ['Минут осознанности', 0],
-          ['Медитаций', 0],
-          ['Дыхательных практик', 0],
-          ['Выполнено вдохов', 0],
-          ['Разных практик дыхания', 0],
-          ['Разных медитаций', 0],
-        ]}
-      />
-      <StatSection
-        title="Настроение"
-        rows={[
-          ['Отметок энергии', 0],
-          ['Отметок настроения', 0],
-        ]}
-      />
-    </div>
-  )
-}
-
 export default function SeriesBadges({ user, onBack }) {
-  const [model, setModel] = useState(null)
+  const initial = useMemo(() => peekSeriesSnapshot(user?.id), [user?.id])
+  const [model, setModel] = useState(initial)
   const [activeTab, setActiveTab] = useState('badges')
   const [error, setError] = useState(false)
+  const [selectedBadge, setSelectedBadge] = useState(null)
+  const [preferences, setPreferences] = useState(() => getSeriesPreferences(user?.id))
   const { style: surfaceStyle } = useFullscreenSurface()
   const demoMode = isPreviewDemoMode()
 
@@ -279,7 +322,10 @@ export default function SeriesBadges({ user, onBack }) {
       api.ascezas.list(user.id),
     ])
       .then(([stats, checkins, rituals, ascezas]) => {
-        if (active) setModel(buildSeriesViewModel({ stats, checkins, rituals, ascezas }))
+        if (!active) return
+        const next = buildSeriesViewModel({ stats, checkins, rituals, ascezas })
+        setModel(next)
+        rememberSeriesSnapshot(user.id, next)
       })
       .catch(() => active && setError(true))
     return () => {
@@ -287,23 +333,20 @@ export default function SeriesBadges({ user, onBack }) {
     }
   }, [user.id])
 
-  const unlocked = useMemo(() => model?.badges.filter(badge => badge.done) || [], [model])
-  const upcoming = useMemo(() => model?.badges.filter(badge => !badge.done) || [], [model])
-
   const content = (
     <div
       className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}`}
       style={surfaceStyle}
     >
       <header className="mx-path-header">
-        <div className="mx-path-tabs" role="tablist" aria-label="Раздел моего пути">
+        <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
           <button
             type="button"
             role="tab"
             aria-selected={activeTab === 'badges'}
             onClick={() => setActiveTab('badges')}
           >
-            Награды
+            Значки
           </button>
           <button
             type="button"
@@ -314,6 +357,7 @@ export default function SeriesBadges({ user, onBack }) {
             Статистика
           </button>
         </div>
+        <CloseButton onClose={onBack} />
         <BackButton onClick={onBack} label="Сегодня" />
       </header>
       <main className="mx-path-scroll">
@@ -322,14 +366,24 @@ export default function SeriesBadges({ user, onBack }) {
             Не удалось загрузить данные. Попробуй открыть экран ещё раз.
           </p>
         )}
-        {!error && !model && <p className="mx-path-status">Собираю твой путь…</p>}
-        {model &&
-          (activeTab === 'badges' ? (
-            <AwardsView unlocked={unlocked} upcoming={upcoming} />
+        {model ? (
+          activeTab === 'badges' ? (
+            <AwardsView
+              model={model}
+              preferences={preferences}
+              onPreference={(name, value) =>
+                setPreferences(saveSeriesPreference(user.id, name, value))
+              }
+              onOpenBadge={setSelectedBadge}
+            />
           ) : (
             <StatsView model={model} />
-          ))}
+          )
+        ) : (
+          <p className="mx-path-status">Загружаю последние данные…</p>
+        )}
       </main>
+      <BadgeSheet badge={selectedBadge} onClose={() => setSelectedBadge(null)} />
     </div>
   )
 

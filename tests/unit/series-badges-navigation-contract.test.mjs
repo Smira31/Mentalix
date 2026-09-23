@@ -7,6 +7,6 @@ const source = await readFile(new URL('../../src/screens/SeriesBadges.jsx', impo
 test('SeriesBadges uses the shared BackButton for returning to Today', () => {
   assert.match(source, /import BackButton from ['"]\.\.\/components\/BackButton['"]/)
   assert.match(source, /<BackButton onClick=\{onBack\} label="Сегодня" \/>/)
-  assert.doesNotMatch(source, /from ['"]lucide-react['"][^\n]*\bX\b/)
-  assert.doesNotMatch(source, /className="mx-path-close"/)
+  assert.match(source, /from ['"]lucide-react['"][^\n]*\bX\b/)
+  assert.match(source, /className="mx-path-close"/)
 })

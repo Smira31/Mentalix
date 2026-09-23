@@ -1,11 +1,10 @@
-// ── Вехи Пути: достижения без давления — фиксация пройденного, не гонка ──
-// Считаются на лету из существующих данных, бэкенд не нужен.
+// Вехи пути считаются из того же view-model, что и чип серии и статистика.
 
-export function buildBadges({ stats, rituals, ascezas }) {
-  const bestRitual = Math.max(0, ...rituals.map(r => r.streak || 0))
-  const bestAsceza = Math.max(0, ...ascezas.map(a => a.streak || 0))
-  const checkins = stats?.total_checkins || 0
-  const days = stats?.days_active || 0
+export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas = [] } = {}) {
+  const bestRitual = Math.max(0, ...rituals.map(ritual => Number(ritual?.streak) || 0))
+  const bestAsceza = Math.max(0, ...ascezas.map(asceza => Number(asceza?.streak) || 0))
+  const checkinsCount = checkins.length || Number(stats.total_checkins) || 0
+  const days = Number(stats.days_active) || 0
 
   return [
     {
@@ -13,8 +12,8 @@ export function buildBadges({ stats, rituals, ascezas }) {
       motif: 'voshod',
       title: 'Первый шаг',
       desc: 'Первый чек-ин пройден',
-      done: checkins >= 1,
-      progress: Math.min(checkins, 1),
+      done: checkinsCount >= 1,
+      progress: Math.min(checkinsCount, 1),
       goal: 1,
     },
     {
@@ -22,8 +21,8 @@ export function buildBadges({ stats, rituals, ascezas }) {
       motif: 'sobesednik',
       title: 'Голос услышан',
       desc: '5 чек-инов — привычка слышать себя',
-      done: checkins >= 5,
-      progress: Math.min(checkins, 5),
+      done: checkinsCount >= 5,
+      progress: Math.min(checkinsCount, 5),
       goal: 5,
     },
     {
