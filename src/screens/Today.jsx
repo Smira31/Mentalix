@@ -525,7 +525,7 @@ export default function Today({
         platform.haptic('medium')
         changeSub(morningComplete ? 'checkinRecap' : 'checkin')
       }}
-      aria-label={morningComplete ? 'Открыть ответы утреннего чек-ина' : 'Пройти утренний чек-ин'}
+      aria-label="Открыть утренний чек-ин"
     >
       {morningComplete ? (
         <>
@@ -561,7 +561,7 @@ export default function Today({
         platform.haptic('medium')
         changeSub('evening')
       }}
-      aria-label={eveningComplete ? 'Открыть ответы вечернего разбора' : 'Пройти вечерний разбор'}
+      aria-label="Открыть вечерний разбор"
     >
       {eveningComplete ? (
         <>
@@ -725,7 +725,7 @@ export default function Today({
 
             <span className="block mx-type-meta text-muted">
               {checkin.emotion ? `${checkin.emotion} · ` : ''}
-              настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+              настроение: {MOOD_WORDS[(checkin?.mood || 3) - 1]}
             </span>
           </span>
 
