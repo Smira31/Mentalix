@@ -1,6 +1,46 @@
 import { useEffect, useState } from 'react'
 
 /*
+ * Telegram keeps two heights for Mini Apps:
+ * - viewportHeight: the currently visible height (it changes while the
+ *   viewport is expanding/collapsing and while the keyboard animates);
+ * - viewportStableHeight: the stable layout height used for the shell.
+ *
+ * The stable value is deliberately read only from Telegram. Web/PWA keeps
+ * the existing visualViewport fallback below unchanged.
+ */
+export function isTelegramRuntime() {
+  if (typeof window === 'undefined') return false
+
+  const webApp = window.Telegram?.WebApp
+  const standaloneSafari =
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    window.navigator?.standalone === true
+
+  if (standaloneSafari) return false
+
+  return Boolean(
+    webApp?.initData ||
+    window.TelegramWebviewProxy ||
+    window.location?.hash?.includes('tgWebAppData=')
+  )
+}
+
+export function readTelegramViewportStableHeight() {
+  if (!isTelegramRuntime()) return null
+
+  const value = Number(window.Telegram?.WebApp?.viewportStableHeight)
+  return Number.isFinite(value) && value > 0 ? Math.round(value) : null
+}
+
+export function getKeyboardViewportHeight({ isTelegram = false, stableHeight, visualHeight }) {
+  if (!Number.isFinite(visualHeight) || visualHeight <= 0) return null
+  if (!isTelegram || !Number.isFinite(stableHeight) || stableHeight <= 0) return visualHeight
+
+  return Math.min(stableHeight, visualHeight)
+}
+
+/*
  * Единая геометрия видимой области приложения.
  *
  * На iOS/Telegram высота и верхняя граница visualViewport меняются не всегда
@@ -18,31 +58,51 @@ export function readVisualViewportGeometry(viewport) {
 }
 
 export function useVisualViewportGeometry() {
-  const [geometry, setGeometry] = useState(null)
+  const [geometry, setGeometry] = useState(() => {
+    const viewport = typeof window === 'undefined' ? null : window.visualViewport
+    const next = readVisualViewportGeometry(viewport)
+
+    return next
+      ? { ...next, stableHeight: readTelegramViewportStableHeight() }
+      : { height: null, offsetTop: 0, stableHeight: readTelegramViewportStableHeight() }
+  })
 
   useEffect(() => {
     const viewport = window.visualViewport
-
-    if (!viewport) return undefined
+    const webApp = window.Telegram?.WebApp
 
     const update = () => {
       const next = readVisualViewportGeometry(viewport)
+      const stableHeight = readTelegramViewportStableHeight()
+
       setGeometry(previous => {
-        if (previous?.height === next.height && previous?.offsetTop === next.offsetTop) {
+        const nextGeometry = next
+          ? { ...next, stableHeight }
+          : { height: null, offsetTop: 0, stableHeight }
+
+        if (
+          previous?.height === nextGeometry.height &&
+          previous?.offsetTop === nextGeometry.offsetTop &&
+          previous?.stableHeight === nextGeometry.stableHeight
+        ) {
           return previous
         }
 
-        return next
+        return nextGeometry
       })
     }
 
     update()
-    viewport.addEventListener('resize', update)
-    viewport.addEventListener('scroll', update)
+    viewport?.addEventListener('resize', update)
+    viewport?.addEventListener('scroll', update)
+    window.addEventListener('resize', update)
+    webApp?.onEvent?.('viewportChanged', update)
 
     return () => {
-      viewport.removeEventListener('resize', update)
-      viewport.removeEventListener('scroll', update)
+      viewport?.removeEventListener('resize', update)
+      viewport?.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+      webApp?.offEvent?.('viewportChanged', update)
     }
   }, [])
 
@@ -50,5 +110,6 @@ export function useVisualViewportGeometry() {
 }
 
 export function useVisualViewportHeight() {
-  return useVisualViewportGeometry()?.height ?? null
+  const geometry = useVisualViewportGeometry()
+  return geometry?.stableHeight ?? geometry?.height ?? null
 }

@@ -3,7 +3,11 @@ import { ArrowRight, Bold, Check, Highlighter, Italic, Plus } from 'lucide-react
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
-import { useVisualViewportGeometry } from '../lib/visualViewport'
+import {
+  getKeyboardViewportHeight,
+  isTelegramRuntime,
+  useVisualViewportGeometry,
+} from '../lib/visualViewport'
 import PracticeWritingCanvas from './PracticeWritingCanvas'
 import './WritingControls.css'
 
@@ -198,9 +202,14 @@ export default function JournalTextarea({
     viewportGeometry?.height !== null &&
     viewportGeometry?.height !== undefined &&
     window.innerHeight - viewportGeometry.height > 80
+  const keyboardViewportHeight = getKeyboardViewportHeight({
+    isTelegram: isTelegramRuntime(),
+    stableHeight: viewportGeometry?.stableHeight,
+    visualHeight: viewportGeometry?.height,
+  })
   const keyboardDockStyle = keyboardOpen
     ? {
-        top: `${viewportGeometry.height + viewportGeometry.offsetTop - 76}px`,
+        top: `${keyboardViewportHeight + viewportGeometry.offsetTop - 76}px`,
         bottom: 'auto',
       }
     : undefined
@@ -363,13 +372,15 @@ export default function JournalTextarea({
                 : '',
               guidedFlow ? 'journal-textarea__floating-actions--guided' : '',
             ].join(' ')}
-              style={keyboardDockStyle}
-            >
+            style={keyboardDockStyle}
+          >
             <div className="flex shrink-0 items-center gap-1.5">
               {(showAddAction || floatingToolbar) && (
                 <button
                   type="button"
-                  aria-label={addOpen ? 'Скрыть дополнительные действия' : 'Дополнительные действия'}
+                  aria-label={
+                    addOpen ? 'Скрыть дополнительные действия' : 'Дополнительные действия'
+                  }
                   aria-expanded={addOpen}
                   onPointerDown={event => event.preventDefault()}
                   onClick={() => setAddOpen(current => !current)}
@@ -406,7 +417,9 @@ export default function JournalTextarea({
                   type="button"
                   onClick={onDeepen}
                   disabled={
-                    (deepenDisabled ?? !String(value || '').trim()) || submitLoading || deepenLoading
+                    (deepenDisabled ?? !String(value || '').trim()) ||
+                    submitLoading ||
+                    deepenLoading
                   }
                   className="mx-keyboard-control mx-keyboard-deepen h-[45px] min-w-0 shrink rounded-full border border-[rgb(var(--c-border))] bg-emerald-light px-5 text-[17px] font-medium text-cream transition-transform active:scale-[0.98] max-[360px]:px-[14px] disabled:opacity-35"
                 >
