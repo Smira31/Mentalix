@@ -25,6 +25,13 @@ import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { currentCheckinStreak } from '../lib/series'
+import { buildSeriesViewModel } from '../lib/series'
+import {
+  getSeriesPreferences,
+  markSeriesTooltipSeen,
+  shouldShowSeriesTooltip,
+} from '../lib/seriesPreferences'
+import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
 
 const TODAY_COMPARE_REQUESTED =
@@ -74,18 +81,28 @@ function ReferenceProfileMark() {
   )
 }
 
-function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 1 }) {
+function TodayWorkspaceHeader({
+  onOpenSettings,
+  onOpenSeries,
+  streak = 0,
+  showStreak = true,
+  onStreakClick,
+}) {
   return (
     <header className="mx-demo-today-header">
-      <button
-        type="button"
-        className="mx-demo-today-streak"
-        aria-label="Мой путь. Один день подряд"
-        onClick={onOpenSeries}
-      >
-        <ReferenceFlame />
-        <strong>{streak}</strong>
-      </button>
+      {showStreak ? (
+        <button
+          type="button"
+          className="mx-demo-today-streak"
+          aria-label={`Мой путь. ${streak} ${streak === 1 ? 'день' : 'дней'}`}
+          onClick={onStreakClick || onOpenSeries}
+        >
+          <ReferenceFlame />
+          <strong>{streak}</strong>
+        </button>
+      ) : (
+        <span className="mx-demo-today-streak-spacer" aria-hidden="true" />
+      )}
       <strong className="mx-demo-today-greeting">{todayGreeting()}</strong>
       <div className="mx-demo-today-header__tools">
         <button
@@ -194,7 +211,14 @@ export default function Today({
     () => initialTodaySnapshot?.checkinHistory || []
   )
 
-  const [streak, setStreak] = useState(1)
+  const [streak, setStreak] = useState(() =>
+    currentCheckinStreak(initialTodaySnapshot?.checkinHistory || [])
+  )
+  const [newBadge, setNewBadge] = useState(null)
+  const preferences = getSeriesPreferences(user?.id)
+  const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
+    Boolean(user?.id && preferences.showStreak && shouldShowSeriesTooltip(user.id))
+  )
 
   const [reviewHour, setReviewHour] = useState(
     () => initialTodaySnapshot?.settings?.review_hour ?? 19
@@ -270,9 +294,16 @@ export default function Today({
 
       const history = await api.checkin.history(user.id, 90)
       setCheckinHistory(Array.isArray(history) ? history : [])
-      setStreak(Math.max(1, currentCheckinStreak(history)))
+      const previousModel = buildSeriesViewModel({ checkins: checkinHistory, rituals, ascezas })
+      const nextModel = buildSeriesViewModel({ checkins: history, rituals, ascezas })
+      setStreak(nextModel.currentStreak)
+      const unlocked = nextModel.badges.find(
+        badge =>
+          badge.done && !previousModel.badges.find(previous => previous.id === badge.id)?.done
+      )
 
       invalidateTodayData(user.id)
+      return { history, newBadge: unlocked || null }
     } catch (error) {
       console.error(error)
     }
@@ -317,7 +348,7 @@ export default function Today({
           .then(history => {
             const safeHistory = Array.isArray(history) ? history : []
             setCheckinHistory(safeHistory)
-            setStreak(Math.max(1, currentCheckinStreak(safeHistory)))
+            setStreak(currentCheckinStreak(safeHistory))
           })
           .catch(() => {})
 
@@ -368,13 +399,14 @@ export default function Today({
         existing={checkin}
         mode={resolveCheckInMode({ sub, initialSub })}
         onDone={async () => {
-          await refreshCheckin()
+          const result = await refreshCheckin()
 
           if (returnFlowActive) {
             await onReturnFlowEvent?.('morning_action_completed')
           }
 
           changeSub(null)
+          if (result?.newBadge) setNewBadge(result.newBadge)
         }}
       />
     )
@@ -600,11 +632,36 @@ export default function Today({
         onOpenSettings={onOpenSettings}
         onOpenSeries={onOpenSeries}
         streak={streak}
+        showStreak={preferences.showStreak}
+        onStreakClick={() => {
+          markSeriesTooltipSeen(user?.id)
+          setShowSeriesTooltip(false)
+          onOpenSeries()
+        }}
         onOpenHistory={() => {
           setPathTab('history')
           changeSub('path')
         }}
       />
+      {preferences.showStreak && showSeriesTooltip && (
+        <aside className="mx-today-series-tooltip" role="status">
+          <button
+            type="button"
+            aria-label="Закрыть подсказку о серии"
+            onClick={() => {
+              markSeriesTooltipSeen(user?.id)
+              setShowSeriesTooltip(false)
+            }}
+          >
+            ×
+          </button>
+          <p>
+            Это число — твоя <strong>серия</strong> чек-инов. Её можно скрыть. Нажми, чтобы
+            посмотреть значки.
+          </p>
+        </aside>
+      )}
+      {newBadge && <NewBadgeSheet badge={newBadge} onClose={() => setNewBadge(null)} />}
       <WeekStrip checkin={checkin} history={checkinHistory} />
 
       {TODAY_COMPARE_REQUESTED && (

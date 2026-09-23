@@ -1773,3 +1773,66 @@
   stroke: currentColor;
   stroke-width: 1.5;
 }
+
+/* Серия и подсказка по §5.3. Слой не меняет PWA/Safari layout. */
+.mx-demo-today-streak-spacer {
+  width: 62px;
+  height: 40px;
+  flex: 0 0 auto;
+}
+
+.mx-today-series-tooltip {
+  position: relative;
+  z-index: 5;
+  width: min(286px, calc(100vw - 32px));
+  margin: 8px 0 -2px 9px;
+  padding: 18px 34px 16px 38px;
+  border-radius: 24px;
+  background: rgb(var(--c-nav));
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  line-height: 1.1;
+}
+
+.mx-today-series-tooltip::before {
+  position: absolute;
+  top: -8px;
+  left: 25px;
+  width: 0;
+  height: 0;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid rgb(var(--c-nav));
+  border-left: 10px solid transparent;
+  content: '';
+}
+
+.mx-today-series-tooltip::after {
+  position: absolute;
+  top: 17px;
+  left: 15px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgb(var(--c-muted));
+  border-radius: 50%;
+  content: 'i';
+  font-size: 11px;
+  line-height: 15px;
+  text-align: center;
+}
+
+.mx-today-series-tooltip p {
+  margin: 0;
+}
+.mx-today-series-tooltip strong {
+  font-weight: 700;
+}
+.mx-today-series-tooltip button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 20px;
+  line-height: 1;
+}
