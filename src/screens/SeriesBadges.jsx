@@ -319,8 +319,10 @@ function StatSection({ title, rows }) {
 export default function SeriesBadges({ user, onBack }) {
   const initial = useMemo(() => peekSeriesSnapshot(user?.id), [user?.id])
   const [model, setModel] = useState(initial)
+  const [modelUserId, setModelUserId] = useState(user?.id)
   const [activeTab, setActiveTab] = useState('badges')
   const [error, setError] = useState(false)
+  const [errorUserId, setErrorUserId] = useState(null)
   const [selectedBadge, setSelectedBadge] = useState(null)
   const [preferences, setPreferences] = useState(() => getSeriesPreferences(user?.id))
   const { style: surfaceStyle } = useFullscreenSurface()
@@ -338,13 +340,22 @@ export default function SeriesBadges({ user, onBack }) {
         if (!active) return
         const next = buildSeriesViewModel({ stats, checkins, rituals, ascezas })
         setModel(next)
+        setModelUserId(user.id)
+        setError(false)
+        setErrorUserId(null)
         rememberSeriesSnapshot(user.id, next)
       })
-      .catch(() => active && setError(true))
+      .catch(() => {
+        if (!active) return
+        setError(true)
+        setErrorUserId(user.id)
+      })
     return () => {
       active = false
     }
   }, [user.id])
+
+  const visibleModel = modelUserId === user.id ? model : null
 
   const content = (
     <div
@@ -374,15 +385,15 @@ export default function SeriesBadges({ user, onBack }) {
         <BackButton onClick={onBack} label="Сегодня" />
       </header>
       <main className="mx-path-scroll">
-        {error && (
+        {error && errorUserId === user.id && (
           <p className="mx-path-status">
             Не удалось загрузить данные. Попробуй открыть экран ещё раз.
           </p>
         )}
-        {model ? (
+        {visibleModel ? (
           activeTab === 'badges' ? (
             <AwardsView
-              model={model}
+              model={visibleModel}
               preferences={preferences}
               onPreference={(name, value) =>
                 setPreferences(saveSeriesPreference(user.id, name, value))
@@ -390,7 +401,7 @@ export default function SeriesBadges({ user, onBack }) {
               onOpenBadge={setSelectedBadge}
             />
           ) : (
-            <StatsView model={model} />
+            <StatsView model={visibleModel} />
           )
         ) : (
           <p className="mx-path-status">Загружаю последние данные…</p>

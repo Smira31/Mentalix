@@ -224,3 +224,8 @@ export async function fetchTodayData(userId, { force = false } = {}) {
 export function invalidateTodayData(userId) {
   cache.delete(userId)
 }
+
+export function clearTodayDataCache() {
+  cache.clear()
+  inFlight.clear()
+}

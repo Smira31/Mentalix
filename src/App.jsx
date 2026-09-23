@@ -25,6 +25,11 @@ import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodChe
 import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
+import { switchUserDataScope } from './lib/userDataScope'
+import { clearTodayDataCache } from './lib/todayDataCache'
+import { clearHistoryCache } from './lib/mentalixHistoryCache'
+import { clearSeriesSnapshots } from './lib/series'
+import { clearTrendsDataCache } from './lib/trendsDataCache'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -216,6 +221,19 @@ export default function App() {
   const [user, setUser] = useState(() => (isPreviewDemoMode() ? DEMO_USER : null))
 
   const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
+
+  const acceptUser = useCallback(nextUser => {
+    if (nextUser?.id) {
+      const changed = switchUserDataScope(nextUser.id)
+      if (changed) {
+        clearTodayDataCache()
+        clearHistoryCache()
+        clearSeriesSnapshots()
+        clearTrendsDataCache()
+      }
+    }
+    setUser(nextUser)
+  }, [])
 
   const [overlay, setOverlay] = useState(null)
 
@@ -567,7 +585,7 @@ export default function App() {
         const existing = await platform.requestAuth()
 
         if (existing) {
-          setUser(existing)
+          acceptUser(existing)
         }
       } catch {
         // A missing or temporarily unavailable web session must fall through
@@ -576,7 +594,7 @@ export default function App() {
         setAuthChecked(true)
       }
     })()
-  }, [previewDemoMode])
+  }, [acceptUser, previewDemoMode])
 
   /* ============================================================
      БЛОКИРОВКА ПРИЛОЖЕНИЯ
@@ -946,7 +964,7 @@ export default function App() {
           font-body
         "
       >
-        <WebAuthScreen onAuthed={setUser} />
+        <WebAuthScreen onAuthed={acceptUser} />
       </div>
     )
   }

@@ -137,6 +137,10 @@ export function rememberSeriesSnapshot(userId, model) {
   }
 }
 
+export function clearSeriesSnapshots() {
+  seriesSnapshots.clear()
+}
+
 export function seriesDateKey(checkin, timezone = 'UTC') {
   return dateKey(checkin, timezone)
 }
