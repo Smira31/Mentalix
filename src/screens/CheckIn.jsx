@@ -27,6 +27,7 @@ import {
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
+import { resolveDesyncStep } from '../lib/checkinDesync'
 import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -977,12 +978,14 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
    * без сохранения.
    */
   useEffect(() => {
-    if (step >= doneStep) {
-      setStep(Math.max(0, doneStep - 1))
-      return
-    }
-    if (isScaleStep && !MORNING_SCALE_STEPS[step]) {
-      setStep(current => current + 1)
+    const nextStep = resolveDesyncStep({
+      step,
+      doneStep,
+      isScaleStep,
+      scaleStepsLength: MORNING_SCALE_STEPS.length,
+    })
+    if (nextStep !== step) {
+      setStep(nextStep)
     }
   }, [isScaleStep, step, doneStep])
 
