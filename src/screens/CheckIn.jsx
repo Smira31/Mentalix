@@ -1254,16 +1254,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                   {scoutError}
                 </p>
               )}
-              {isEvening && (
-                <button
-                  type="button"
-                  onClick={openScout}
-                  disabled={scoutBusy}
-                  className="mt-4 text-[16px] font-semibold text-cream"
-                >
-                  Разобрать со Следопытом
-                </button>
-              )}
               {!isEvening && (
                 <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
                   <div className="flex flex-wrap gap-2">
