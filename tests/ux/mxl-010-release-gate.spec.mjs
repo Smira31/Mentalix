@@ -145,9 +145,9 @@ test.describe('MXL-010 automated technical gate', () => {
     await context.route('**/api/**', route => fixtures.handle(route))
     const page = await context.newPage()
     await page.goto('/')
-    await expect(page.getByRole('button', { name: /Пройти чек-ин/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Пройти чек-ин' }).click()
+    await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
     await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
     await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Далее' })).toBeVisible()
@@ -168,9 +168,9 @@ test.describe('MXL-010 automated technical gate', () => {
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
 
     await page.getByRole('button', { name: 'Вернуться в Сегодня' }).click()
-    await expect(page.getByRole('button', { name: 'Открыть вечерний разбор' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Разбор дня/ })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Открыть вечерний разбор' }).click()
+    await page.getByRole('button', { name: /Разбор дня/ }).click()
     await expect(page.getByRole('heading', { name: 'Какой был день?' })).toBeVisible()
     await page.getByRole('button', { name: 'ровно' }).click()
     await page.getByRole('button', { name: 'Далее' }).click()
@@ -207,11 +207,11 @@ test.describe('MXL-010 automated technical gate', () => {
     // возврат на Today выполняется следующим шагом browser history.
     await page.goBack()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: 'Открыть утренний чек-ин' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
 
     await page.reload()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: 'Открыть утренний чек-ин' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
     expect(fixtures.savedCheckins.filter(item => item.review_completed === true)).toHaveLength(1)
 
     const calendarDays = page.getByLabel('Календарь недели').locator('.mx-today-week-day')
