@@ -1,8 +1,10 @@
 ---
-status: historical
-last_verified: 2026-09-11
+status: normative
+last_verified: 2026-09-22
 ---
+
 # AGENTS.md
+
 Точка входа по документации: [`docs/INDEX.md`](docs/INDEX.md).
 
 Guidance for AI coding agents (Codex, Claude Code, and others) working in this
@@ -46,6 +48,26 @@ The unit suite is `npm run test:unit`; the aggregate gate is `npm run check:core
 Playwright smoke is `npm run ux:check`. There is no typecheck script because the project
 is JavaScript despite a couple of stale `.tsx` files — see Gotchas below. GitHub CI runs
 `check:core`, backend health, dependency audit and Playwright smoke.
+
+## Обязательная локальная проверка перед Ready for review
+
+Перед тем как перевести draft PR в **Ready for review** или сообщить владельцу, что
+задача завершена, агент **обязан локально** последовательно выполнить все четыре
+команды:
+
+```bash
+npm run lint
+npm run build
+npm run test:unit
+npm run ux:check
+```
+
+Все четыре команды должны завершиться без failures. Пропуски допустимы только в
+тестах, если соответствующий skip уже существовал до начала текущей ветки. Если
+любая команда падает, агент должен либо исправить проблему, либо явно остановить
+работу и сообщить владельцу о блокере. Нельзя переводить PR в Ready for review и
+нельзя сообщать, что задача завершена, пока все четыре команды не стали зелёными
+локально.
 
 ## Documentation map
 
@@ -129,8 +151,9 @@ renders via `createPortal` into `document.body`, sizes off `visualViewport`, add
 Telegram-controls offset, and locks `body` scroll while open. The old fade-transform bug
 was removed; do not reintroduce transform-based containing blocks around fixed surfaces.
 
-Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; screens use
-`w-full max-w-md px-5` and nothing else, so all tabs share one visual scale.
+Tabs/screens don't own vertical padding — `App.jsx` owns top/bottom offsets; horizontal
+screen padding is defined by one token, `--mx-screen-x: 16px`; screen wrappers use it
+instead of `px-*` classes, so all tabs share one visual scale.
 
 ### Design tokens
 
@@ -146,7 +169,7 @@ Several Tailwind color names in the codebase are legacy aliases (`emerald-deep` 
 aliases in new components.
 
 For every new or changed card, practice illustration, semantic SVG, or persona card,
-the `Mentalix Card System` section in `DESIGN_SYSTEM.md` is mandatory. Reuse or extend
+the Card System v2 section (`DESIGN_SYSTEM.md` §5.1) is mandatory; размеры берутся из таблиц §5.1. Reuse or extend
 `CardSystemGlyph`/`SemanticGlyph`; do not create a parallel visual language. Prototype
 new visual directions in the existing lab or a separate Preview before changing real
 screens, and keep article cards unchanged unless the owner explicitly approves them.

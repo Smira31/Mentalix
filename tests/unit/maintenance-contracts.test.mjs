@@ -244,7 +244,9 @@ test('MXL-007 публикует reference Today chrome with streak/calendar and
 
   assert.match(today, /mx-demo-today-header/)
   assert.match(today, /mx-today-actions/)
-  assert.match(today, /mx-today-primary-card/)
+  assert.match(today, /mx-today-checkin-grid/)
+  assert.match(today, /data-kind="morning"/)
+  assert.match(today, /data-kind="evening"/)
   assert.match(today, /mx-today-week__calendar/)
   assert.match(today, /mx-today-week-day/)
   assert.match(today, /mx-demo-today-streak/)
@@ -758,40 +760,24 @@ test('MXL-527 отображает один главный вывод с evidenc
   assert.doesNotMatch(analytics, /observations\.map\(/)
 })
 
-test('MXL-HOME-QUIET-FOUNDATION-001 ставит главный Today hero перед вторичными секциями', () => {
+test('MXL-HOME-QUIET-FOUNDATION-001 публикует параллельные карточки утреннего и вечернего ритма', () => {
   const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
-  const heroIndex = today.indexOf('ГЕРОЙ-КАРТОЧКА')
-  const secondaryIndex = today.indexOf('mx-today-hero-breath', heroIndex)
-
-  assert.ok(heroIndex >= 0)
-  assert.ok(secondaryIndex >= 0)
   const styles = readFileSync(new URL('../../src/index.css', import.meta.url), 'utf8')
   const todayStyles = readFileSync(new URL('../../src/screens/Today.css', import.meta.url), 'utf8')
   const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
-  assert.ok(heroIndex < secondaryIndex)
   assert.match(styles, /--bottom-nav-content-gap:\s*46px/)
-  assert.match(today, /mx-today-primary-card/)
-  assert.match(
-    today,
-    /data-complete=\{heroPresentationState === 'allDone' \|\| heroPresentationState === 'dayClosed'\}/
-  )
-  assert.match(
-    today,
-    /heroPresentationState !== 'allDone'\s+&&\s+heroPresentationState !== 'dayClosed'/
-  )
-  assert.match(today, /mx-today-hero-breath/)
+  assert.match(today, /mx-today-checkin-grid/)
+  assert.match(today, /data-kind="morning"/)
+  assert.match(today, /data-kind="evening"/)
+  assert.match(today, /data-complete=\{morningComplete\}/)
+  assert.match(today, /data-complete=\{eveningComplete\}/)
+  assert.match(today, /checkinRecap/)
+  assert.match(today, /checkin\.mood/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
   assert.match(today, /mx-today-affirmation-card/)
-  assert.match(todayStyles, /\.mx-today-primary-card\s*\{[\s\S]*min-height:\s*452px/)
-  assert.match(
-    todayStyles,
-    /\.mx-today-primary-card\[data-complete='true'\][\s\S]*background:\s*rgb\(var\(--c-card\)\)/
-  )
-  assert.match(
-    todayStyles,
-    /\.mx-today-primary-card\[data-complete='true'\] \.mx-type-hero[\s\S]*font-size:\s*1\.25rem/
-  )
-  assert.match(todayStyles, /\.mx-today-hero-breath\s*\{[\s\S]*height:\s*16px/)
+  assert.match(todayStyles, /\.mx-today-checkin-grid\s*\{[\s\S]*grid-template-columns/)
+  assert.match(todayStyles, /\.mx-today-checkin-card\s*\{[\s\S]*min-height:/)
+  assert.match(todayStyles, /\.mx-today-checkin-card\[data-complete='true'\]/)
   assert.match(todayStyles, /\.mx-today-affirmation-card\s*\{[\s\S]*min-height:\s*340px/)
   assert.match(app, /ref={scrollRootRef}[\s\S]*paddingBottom: contentBottomPadding/)
   assert.match(app, /scrollPaddingBottom: contentBottomPadding/)
@@ -870,7 +856,7 @@ test('MXL-TYPE-CONSISTENCY-001 задаёт единый Onest typography scale 
 
   // Today owns the single greeting row; App must not render a duplicate header.
   assert.doesNotMatch(app, /mx-type-greeting/)
-  assert.match(today, /mx-type-hero/)
+  assert.match(today, /mx-type-checkin-title/)
   assert.match(today, /mx-demo-today-header/)
   assert.match(today, /mx-type-weekday/)
   assert.match(today, /mx-type-calendar-date/)

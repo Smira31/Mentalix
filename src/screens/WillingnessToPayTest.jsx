@@ -134,7 +134,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
 
   if (step === 'complete') {
     return (
-      <div className="w-full max-w-md px-5 pb-10">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)] pb-10">
         <div className="mb-6 flex items-center justify-between">
           <BackButton showInDemo onClick={onBack} />
         </div>
@@ -153,7 +153,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
           <button
             type="button"
             onClick={onBack}
-            className="cta-pill mt-6 min-h-11 w-full px-5 text-[13px]"
+            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px]"
           >
             Вернуться в настройки
           </button>
@@ -163,7 +163,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
   }
 
   return (
-    <div className="w-full max-w-md px-5 pb-10">
+    <div className="w-full max-w-md px-[var(--mx-screen-x)] pb-10">
       <div className="mb-5 flex items-center justify-between">
         <BackButton showInDemo onClick={onBack} />
       </div>
@@ -215,7 +215,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
               setStep('intent')
               persist({ step: 'intent' })
             }}
-            className="cta-pill mt-6 min-h-11 w-full px-5 text-[13px] disabled:opacity-40"
+            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px] disabled:opacity-40"
           >
             Продолжить
           </button>
@@ -254,7 +254,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
               setStep('trust')
               persist({ step: 'trust' })
             }}
-            className="cta-pill mt-6 min-h-11 w-full px-5 text-[13px] disabled:opacity-40"
+            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px] disabled:opacity-40"
           >
             Продолжить
           </button>
@@ -288,7 +288,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
           <button
             type="button"
             onClick={complete}
-            className="cta-pill mt-6 min-h-11 w-full px-5 text-[13px]"
+            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px]"
           >
             Завершить без оплаты
           </button>

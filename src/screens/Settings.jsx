@@ -537,7 +537,7 @@ export default function Settings({
 
   if (accountErased) {
     return (
-      <div className="w-full max-w-md px-5 pt-12 text-center">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-12 text-center">
         <div className="rounded-3xl bg-emerald p-6">
           <h1 className="font-display text-[26px] text-cream">данные удалены.</h1>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
@@ -551,7 +551,7 @@ export default function Settings({
           <button
             type="button"
             onClick={() => platform.close?.()}
-            className="mt-6 min-h-11 rounded-full bg-gold px-5 text-[13px] font-semibold text-emerald-deep"
+            className="mt-6 min-h-11 rounded-full bg-gold px-[var(--mx-screen-x)] text-[13px] font-semibold text-emerald-deep"
           >
             Закрыть приложение
           </button>
@@ -562,7 +562,7 @@ export default function Settings({
 
   return (
     <div
-      className={`mx-settings-screen w-full max-w-md px-5 flex flex-col items-center ${previewDemoMode ? 'mx-settings-screen--demo' : ''}`}
+      className={`mx-settings-screen w-full max-w-md px-[var(--mx-screen-x)] flex flex-col items-center ${previewDemoMode ? 'mx-settings-screen--demo' : ''}`}
     >
       <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
         {previewDemoMode ? (

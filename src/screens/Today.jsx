@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Check } from 'lucide-react'
 
 import './Today.css'
 
@@ -12,6 +12,7 @@ import CheckIn from './CheckIn'
 import ThemeScreen from './ThemeScreen'
 import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
+import CardSystemGlyph from '../components/CardSystemGlyph'
 import History from './History'
 import QuoteView from './QuoteView'
 import SemanticGlyph from '../components/SemanticGlyph'
@@ -22,8 +23,7 @@ import SeriesBadges from './SeriesBadges'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
-import { NextActionReveal, TodayCompareControl } from '../components/TodayMotionExperiment'
-import { isPreviewDemoMode } from '../lib/demoMode'
+import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { currentCheckinStreak } from '../lib/series'
 
 const TODAY_COMPARE_REQUESTED =
@@ -138,56 +138,6 @@ function WeekStrip() {
   )
 }
 
-// ============================================================
-// ONE NEXT ACTION
-// ============================================================
-
-function deriveNextAction({ rituals, ascezas }) {
-  const undoneRituals = rituals.filter(ritual => !ritual.today_level)
-
-  if (undoneRituals.length > 0) {
-    return {
-      kind: 'ritual',
-      title: undoneRituals[0].name,
-      meta: 'ритуал',
-      sub: 'rituals',
-    }
-  }
-
-  const unmarkedAscezas = ascezas.filter(asceza => !asceza.today_status)
-
-  if (unmarkedAscezas.length > 0) {
-    return {
-      kind: 'asceza',
-      title: unmarkedAscezas[0].name,
-      meta: 'аскеза · отметься честно',
-      sub: 'ascezas',
-    }
-  }
-
-  return null
-}
-
-function formatRemainingActions(count) {
-  if (count <= 0) {
-    return 'Это последнее на сегодня'
-  }
-
-  const lastTwoDigits = count % 100
-  const lastDigit = count % 10
-
-  const noun =
-    lastTwoDigits >= 11 && lastTwoDigits <= 14
-      ? 'действий'
-      : lastDigit === 1
-        ? 'действие'
-        : lastDigit >= 2 && lastDigit <= 4
-          ? 'действия'
-          : 'действий'
-
-  return `После этого останется ещё ${count} ${noun}`
-}
-
 function pickCurrentTheme(themes) {
   if (!Array.isArray(themes) || themes.length === 0) return null
 
@@ -204,7 +154,6 @@ export default function Today({
   initialSub = null,
   returnFlowActive = false,
   onReturnFlowEvent,
-  onGoMentor,
   onFlowChange,
   onRegisterBack,
   onOpenSettings,
@@ -417,6 +366,17 @@ export default function Today({
     )
   }
 
+  if (sub === 'checkinRecap' && checkin) {
+    return (
+      <History
+        user={user}
+        initialSelectedDay={{ date: checkin.date, checkin }}
+        onInitialBack={() => changeSub(null)}
+        recapOnly
+      />
+    )
+  }
+
   // ============================================================
   // ТЕМА НЕДЕЛИ
   // ============================================================
@@ -440,7 +400,7 @@ export default function Today({
   if (sub === 'path') {
     return (
       <div className="w-full flex flex-col items-center animate-fade-in">
-        <div className="w-full max-w-md px-5 pt-4 pb-3 flex items-center gap-3">
+        <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-4 pb-3 flex items-center gap-3">
           <BackButton onClick={() => changeSub(null)} />
 
           <div className="flex-1 flex bg-emerald rounded-full p-1">
@@ -466,14 +426,14 @@ export default function Today({
           </div>
         </div>
 
-        <div className="w-full max-w-md px-5">
+        <div className="w-full max-w-md px-[var(--mx-screen-x)]">
           <YearPath user={user} onContinueToday={() => changeSub(null)} />
         </div>
 
         {pathTab === 'path' ? (
           <Path user={user} onContinueToday={() => changeSub(null)} />
         ) : (
-          <div className="w-full max-w-md px-5">
+          <div className="w-full max-w-md px-[var(--mx-screen-x)]">
             <History user={user} />
           </div>
         )}
@@ -498,7 +458,7 @@ export default function Today({
           onOpenSeries={onOpenSeries}
           streak={streak}
         />
-        <div className="w-full max-w-md px-5 pt-8">
+        <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-8">
           <EmptyState
             className="p-5"
             glyph={
@@ -530,255 +490,62 @@ export default function Today({
 
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
-  const next = deriveNextAction({
-    rituals,
-    ascezas,
-  })
-
   const isEmpty = total === 0
 
-  const checkinDone = !!checkin
-
-  const referenceDemoCheckin = isPreviewDemoMode() && !previewState && checkinDone
-  const checkinAsHero =
-    referenceDemoCheckin || todayState === 'checkinPending' || todayState === 'reviewPending'
-
-  /*
-   * ГЕРОЙ-ИЛЛЮСТРАЦИЯ ПО СОСТОЯНИЮ ДНЯ
-   *
-   * Раньше картинка выбиралась по признаку
-   * «есть ли вообще ритуалы и аскезы»: пусто —
-   * нить, не пусто — лабиринт. Отсюда и разные
-   * картинки на разных аккаунтах: дело было не
-   * в состоянии дня, а в наполненности профиля.
-   *
-   * Теперь это один рисунок с состоянием, а не
-   * три разные картинки. Раньше за день человек
-   * видел нить, потом лабиринт, потом дверь — и
-   * ни один образ не отвечал на вопрос «где я
-   * сейчас». «Дуга дня» отвечает: свет выходит
-   * на горизонт утром, поднимается ровно на
-   * долю сделанного и садится к ночи.
-   *
-   * Брендовый символ не участвует в этой hero-анимации: он статично
-   * используется только в собственных брендовых точках интерфейса.
-   */
-  const heroArt = (
-    <div className="w-full rounded-[28px] bg-artbed overflow-hidden mb-5 py-2">
-      <DayArc
-        state={todayState}
-        done={done}
-        total={total}
-        className="w-full max-w-[300px] h-[150px] mx-auto text-gold"
-      />
-    </div>
-  )
+  const checkinDone = Boolean(checkin)
+  const morningComplete = Boolean(checkin)
+  const eveningComplete = todayState === 'dayClosed'
 
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 
-  const remainRituals = rituals.filter(ritual => !ritual.today_level).length
-
-  const remainAscezas = ascezas.filter(asceza => !asceza.today_status).length
-
-  const remainAfter = Math.max(0, remainRituals + remainAscezas - 1)
-
-  const remainingActionsText = formatRemainingActions(remainAfter)
-
-  const motionExperimentEnabled = !TODAY_COMPARE_REQUESTED || todayVariant === 'after'
-
-  /*
-   * MXL-UX-U07: hero contract — явная state → presentation мапа.
-   *
-   * checkinAsHero (todayState checkinPending/reviewPending) — одна общая
-   * форма, параметризованная текстом по todayState, вынесена отдельно от
-   * мапы: она уже однозначно определяется одним условием, не цепочкой.
-   *
-   * Для остального дня (todayState === 'dayInProgress' или 'dayClosed')
-   * heroPresentationState — единственное значение, которое решает, что
-   * показать; heroContentByState — таблица «состояние → готовый JSX»,
-   * а не последовательность независимо повторяющихся условий, как было
-   * раньше. motionExperimentEnabled сюда намеренно не входит — это
-   * временный экспериментальный слой поверх итогового состояния 'next',
-   * не часть самого контракта.
-   */
-  const heroPresentationState =
-    todayState === 'dayClosed' ? 'dayClosed' : isEmpty ? 'empty' : next ? 'next' : 'allDone'
-
-  const heroCheckinContent = (
-    <>
-      <div className="mx-type-meta text-muted mb-2">
-        {isPreviewDemoMode()
-          ? referenceDemoCheckin
-            ? 'ЧЕК-ИН ЗАВЕРШЁН'
-            : 'Ежедневный чек-ин'
-          : todayState === 'reviewPending'
-            ? 'Анализ дня'
-            : 'Идея дня'}
-      </div>
-
-      {!referenceDemoCheckin && (
-        <h2 className="font-display mx-type-hero text-cream">
-          {isPreviewDemoMode()
-            ? 'Проверь себя.'
-            : todayState === 'reviewPending'
-              ? 'Разобрать день?'
-              : 'Как ты?'}
-        </h2>
+  const morningCard = (
+    <button
+      type="button"
+      className="mx-today-checkin-card mx-today-checkin-card--morning text-left animate-fade-in"
+      data-kind="morning"
+      data-complete={morningComplete}
+      onClick={() => {
+        platform.haptic('medium')
+        changeSub(morningComplete ? 'checkinRecap' : 'checkin')
+      }}
+      aria-label={morningComplete ? 'Открыть утренний чек-ин' : 'Пройти чек-ин'}
+    >
+      <span className="mx-today-checkin-card__title mx-type-checkin-title">
+        {morningComplete ? 'Утро началось с внимания.' : 'Как ты сегодня?'}
+      </span>
+      {morningComplete ? (
+        <span className="mx-today-checkin-pill" aria-label="Настроение">
+          <Check size={12} aria-hidden="true" />
+          {MOOD_WORDS[(checkin?.mood || 3) - 1]}
+        </span>
+      ) : (
+        <span className="mx-today-checkin-glyph">
+          <CardSystemGlyph kind="breath-flow" />
+        </span>
       )}
-
-      <p className="mx-type-body text-muted mt-2">
-        {isPreviewDemoMode()
-          ? referenceDemoCheckin
-            ? ''
-            : todayState === 'reviewPending'
-              ? 'Уроки и то, чем стоит гордиться'
-              : 'Короткая утренняя настройка'
-          : todayState === 'reviewPending'
-            ? 'Уроки и то, чем стоит гордиться'
-            : 'Короткая утренняя настройка'}
-      </p>
-
-      {todayState === 'reviewPending' && (
-        <div className="w-full max-w-sm mx-auto mt-5 space-y-2 text-left">
-          {['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?'].map(question => (
-            <div
-              key={question}
-              className="rounded-2xl bg-cream/5 px-4 py-2.5 text-[12px] text-muted"
-            >
-              {question}
-            </div>
-          ))}
-
-          <div className="text-[11px] text-gold font-semibold px-1 pt-1">
-            + три вещи, которыми гордишься
-          </div>
-        </div>
-      )}
-
-      {!referenceDemoCheckin && (
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            changeSub('checkin')
-          }}
-          className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-        >
-          {isPreviewDemoMode()
-            ? 'Начать'
-            : todayState === 'reviewPending'
-              ? 'Разобрать день'
-              : 'Пройти чек-ин'}
-        </button>
-      )}
-
-      {!referenceDemoCheckin && next && (
-        <p className="mx-type-meta text-muted mt-5">Следующее действие: {next.title}</p>
-      )}
-    </>
+    </button>
   )
 
-  const heroContentByState = {
-    dayClosed: (
-      <>
-        <div className="mx-type-meta text-muted mb-2">Сегодня</div>
-
-        <h2 className="font-display mx-type-hero text-cream">День закрыт</h2>
-
-        <p className="mx-type-body text-muted mt-2">Вечерний разбор завершён</p>
-
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            changeSub('checkin')
-          }}
-          className="cta-pill mx-type-control px-9 py-4 mx-auto mt-7"
-        >
-          Открыть разбор снова
-        </button>
-      </>
-    ),
-
-    empty: (
-      <>
-        <div className="mx-type-meta text-muted mb-2">Твой путь ждёт</div>
-
-        <h2 className="font-display mx-type-hero text-cream">Добавь первый ритуал</h2>
-
-        <p className="mx-type-body text-muted mt-2">
-          Система работает через регулярность — начни с одного
-        </p>
-
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            onOpenPractice('rituals')
-          }}
-          className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-        >
-          Начать
-        </button>
-      </>
-    ),
-
-    next:
-      next &&
-      (motionExperimentEnabled ? (
-        <NextActionReveal
-          next={next}
-          remainingActionsText={remainingActionsText}
-          onStart={() => {
-            platform.haptic('medium')
-
-            onOpenPractice(next.sub)
-          }}
-        />
-      ) : (
-        <>
-          <div className="mx-type-meta text-muted mb-2">Действие дня</div>
-
-          <h2 className="font-display mx-type-hero text-cream">{next.title}</h2>
-
-          <p className="mx-type-body text-muted mt-2">{next.meta}</p>
-
-          <button
-            onClick={() => {
-              platform.haptic('medium')
-
-              onOpenPractice(next.sub)
-            }}
-            className="cta-pill mx-type-control px-11 py-4 mx-auto mt-7"
-          >
-            Начать
-          </button>
-
-          <p className="mx-type-meta text-muted mt-5">{remainingActionsText}</p>
-        </>
-      )),
-
-    allDone: (
-      <>
-        <div className="mx-type-meta text-muted mb-2">Новый шаг</div>
-
-        <h2 className="font-display mx-type-hero text-cream">Сегодня ты выше, чем вчера</h2>
-
-        <p className="mx-type-body text-muted mt-2">Все практики закрыты</p>
-
-        <button
-          onClick={() => {
-            platform.haptic('medium')
-
-            onGoMentor()
-          }}
-          className="cta-pill mx-type-control px-9 py-4 mx-auto mt-7"
-        >
-          Поговорить с наставником
-        </button>
-      </>
-    ),
-  }
+  const eveningCard = (
+    <button
+      type="button"
+      className="mx-today-checkin-card mx-today-checkin-card--evening text-left animate-fade-in"
+      data-kind="evening"
+      data-complete={eveningComplete}
+      onClick={() => {
+        platform.haptic('medium')
+        changeSub('checkin')
+      }}
+      aria-label="Открыть вечерний разбор"
+    >
+      <span className="mx-today-checkin-card__title mx-type-checkin-title">
+        {eveningComplete ? 'День закрыт.' : 'Забрать главное из дня.'}
+      </span>
+      <span className="mx-today-checkin-glyph">
+        <CardSystemGlyph kind="path-corridor" />
+      </span>
+    </button>
+  )
 
   function changeTodayVariant(nextVariant) {
     setTodayVariant(nextVariant)
@@ -808,47 +575,10 @@ export default function Today({
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
       )}
 
-      {/* ======================================================
-          ГЕРОЙ-КАРТОЧКА
-          ====================================================== */}
-
-      {/*
-        Плоская поверхность карточки, а не градиент.
-        Градиента нет в таблице токенов, и именно из-за
-        него подложка под иллюстрацией читалась как
-        отдельная плашка: она плоская, карточка была с
-        переходом. На одном цвете подложка сливается с
-        карточкой и остаётся тем, чем задумана, — окном
-        в ночь, тёмным в обеих темах.
-      */}
-      <div
-        className="mx-today-primary-card mt-5 text-center flex flex-col justify-center animate-fade-in"
-        data-complete={heroPresentationState === 'allDone' || heroPresentationState === 'dayClosed'}
-        data-demo-checkin-complete={referenceDemoCheckin ? 'true' : undefined}
-        role={referenceDemoCheckin ? 'button' : undefined}
-        tabIndex={referenceDemoCheckin ? 0 : undefined}
-        aria-label={referenceDemoCheckin ? 'Открыть check-in' : undefined}
-        onClick={referenceDemoCheckin ? () => changeSub('checkin') : undefined}
-      >
-        {referenceDemoCheckin ? (
-          <img className="mx-today-reference-bird" src="/checkin-bird-reference.png" alt="" />
-        ) : (
-          heroPresentationState !== 'allDone' &&
-          heroPresentationState !== 'dayClosed' &&
-          (motionExperimentEnabled ? (
-            <div className="mx-today-hero-art" aria-label="Один следующий шаг">
-              <SemanticGlyph
-                kind="next-step"
-                debugSource="Today.jsx"
-                className="mx-today-hero-art-glyph"
-              />
-            </div>
-          ) : (
-            heroArt
-          ))
-        )}
-
-        {checkinAsHero ? heroCheckinContent : heroContentByState[heroPresentationState]}
+      {/* Утренний и вечерний входы остаются рядом: у дня два разных ритма. */}
+      <div className="mx-today-checkin-grid mt-5" aria-label="Чек-ин дня">
+        {morningCard}
+        {eveningCard}
       </div>
 
       {/*
@@ -857,8 +587,6 @@ export default function Today({
         are intentionally folded into Check-in/Journal rather than rendered as
         competing Today cards.
       */}
-
-      <div className="mx-today-hero-breath" aria-hidden="true" />
 
       {/* ======================================================
           ДЕНЬ
@@ -914,7 +642,7 @@ export default function Today({
 
               changeSub('path')
             }}
-            className="w-full rounded-3xl bg-emerald px-5 py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+            className="w-full rounded-3xl bg-emerald px-[var(--mx-screen-x)] py-4 mt-8 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
           >
             <ArrowUpRight
               size={18}
@@ -949,7 +677,7 @@ export default function Today({
 
             changeSub('checkin')
           }}
-          className="w-full rounded-3xl bg-emerald/60 px-5 py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
+          className="w-full rounded-3xl bg-emerald/60 px-[var(--mx-screen-x)] py-3 flex items-center gap-3 border-0 active:scale-[0.98] transition-transform"
         >
           <span className="w-9 h-9 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[13px] font-bold shrink-0">
             ✓
@@ -995,7 +723,7 @@ export default function Today({
 
             changeSub('theme')
           }}
-          className="mx-today-theme-card w-full px-5 py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
+          className="mx-today-theme-card w-full px-[var(--mx-screen-x)] py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
           <span className="block font-label mx-type-meta text-muted uppercase tracking-wider mb-2">
             Тема недели
@@ -1046,7 +774,7 @@ export default function Today({
 
             changeSub('quote')
           }}
-          className="mx-today-affirmation-card w-full px-5 py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
+          className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
 

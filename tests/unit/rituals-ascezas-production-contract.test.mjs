@@ -48,6 +48,23 @@ test('production cards preserve Variant A internals and one flat outer surface',
   assert.match(ascezas, /SemanticGlyph kind=\{semanticKindForAsceza\(asceza\)\}/)
 })
 
+test('ritual and asceza deletion requires named confirmation', async () => {
+  const dialog = await readFile(
+    new URL('../../src/components/DeleteConfirmationDialog.jsx', import.meta.url),
+    'utf8'
+  )
+
+  for (const source of [rituals, ascezas]) {
+    assert.match(source, /<DeleteConfirmationDialog/)
+    assert.match(source, /itemName=\{(?:ritual|asceza)\.name\}/)
+    assert.match(source, /onConfirm=\{\(\) => \{[\s\S]*onDelete\(/)
+  }
+  assert.match(dialog, /Удалить \{label\}\?/)
+  assert.match(dialog, /Это действие нельзя отменить\./)
+  assert.match(dialog, /Отмена/)
+  assert.match(dialog, /Удалить/)
+})
+
 test('production Ascezas retain exact held/broke semantics and triggers', () => {
   const card = slice(ascezas, 'function AscezaCard', 'function CreateAscezaScreen')
   const sheet = slice(ascezas, 'function BreakContextSheet', 'function AscezaCard')
@@ -58,10 +75,10 @@ test('production Ascezas retain exact held/broke semantics and triggers', () => 
     assert.match(ascezas, new RegExp(trigger))
   }
   assert.doesNotMatch(sheet, /Автопилот/)
-  assert.match(sheet, /Что сильнее всего повлияло\?/) 
-  assert.match(sheet, /Хочешь добавить пару слов\?/) 
-  assert.match(sheet, /submitLabel="Сохранить"/) 
-  assert.match(sheet, /Ты заранее выбрал замену/) 
+  assert.match(sheet, /Что сильнее всего повлияло\?/)
+  assert.match(sheet, /Хочешь добавить пару слов\?/)
+  assert.match(sheet, /submitLabel="Сохранить"/)
+  assert.match(sheet, /Ты заранее выбрал замену/)
 })
 
 test('production create flows retain fullscreen, Telegram actions and 16px fields', () => {

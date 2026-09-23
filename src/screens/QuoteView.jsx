@@ -97,7 +97,9 @@ export default function QuoteView({ user, todayQuote, onClose }) {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-5`}>
+      <div
+        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center gap-3 px-[var(--mx-screen-x)]`}
+      >
         <BackButton onClick={onClose} />
 
         <span className="text-[12px] text-faint font-semibold ml-auto">
@@ -116,7 +118,7 @@ export default function QuoteView({ user, todayQuote, onClose }) {
               {current.text}
             </p>
             {current.prompt && (
-              <div className="w-full max-w-sm mt-8 text-left rounded-3xl bg-emerald px-5 py-4">
+              <div className="w-full max-w-sm mt-8 text-left rounded-3xl bg-emerald px-[var(--mx-screen-x)] py-4">
                 <span className="block text-[11px] uppercase tracking-[0.14em] text-gold font-semibold mb-2">
                   вопрос к себе
                 </span>

@@ -4,22 +4,21 @@ import test from 'node:test'
 
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 
-test('Today exposes the three calm entry points without changing production flow', () => {
-  assert.match(today, /isPreviewDemoMode\(\)/)
-  assert.match(today, /mx-today-actions/)
-  assert.match(today, /Настроение/)
-  assert.match(today, /Записать мысль/)
-  assert.match(today, /Практика/)
-  assert.match(today, /onOpenPractice\('journal'\)/)
+test('Today uses the completed check-in as the recap entry point', () => {
+  assert.match(today, /const morningComplete = Boolean\(checkin\)/)
+  assert.match(today, /Открыть утренний чек-ин/)
+  assert.match(today, /checkinRecap/)
+  assert.match(today, /MOOD_WORDS\[\(checkin\?\.mood \|\| 3\) - 1\]/)
+  assert.doesNotMatch(today, /isPreviewDemoMode\(\)/)
 })
 
-test('Today keeps one primary CTA before the quick actions', () => {
-  const heroStart = today.indexOf('const heroCheckinContent')
-  const optionalStart = today.indexOf('mx-today-actions')
+test('Today keeps both check-in cards before secondary sections', () => {
+  const cardsStart = today.indexOf('mx-today-checkin-grid')
+  const secondaryStart = today.indexOf('mx-today-theme-card')
 
-  assert.notEqual(heroStart, -1)
-  assert.notEqual(optionalStart, -1)
-  assert.ok(heroStart < optionalStart)
+  assert.notEqual(cardsStart, -1)
+  assert.notEqual(secondaryStart, -1)
+  assert.ok(cardsStart < secondaryStart)
 })
 
 console.log('Demo Stoic entry-point contract passed')

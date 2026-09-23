@@ -280,7 +280,12 @@ export function demoRequest(path, options = {}) {
   }
   if (pathname === '/checkin/history' && method === 'GET') return json(state.checkins)
   if (pathname === '/checkin' && method === 'POST') {
-    const checkin = { id: Date.now(), date: new Date().toISOString().slice(0, 10), ...body }
+    const checkin = {
+      id: Date.now(),
+      date: new Date().toISOString().slice(0, 10),
+      ...body,
+      ...(body.review_completed ? { review_completed_at: new Date().toISOString() } : {}),
+    }
     writeState({ ...state, checkins: [checkin, ...state.checkins] })
     return json(checkin)
   }

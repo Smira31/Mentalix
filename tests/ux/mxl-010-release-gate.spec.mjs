@@ -149,8 +149,8 @@ test.describe('MXL-010 automated technical gate', () => {
 
     await page.getByRole('button', { name: 'Пройти чек-ин' }).click()
     await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Назад' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Закрыть' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Продолжить' })).toBeVisible()
 
     for (const option of ['Нормально', 'Средне']) {
       await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
@@ -162,34 +162,25 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('heading', { name: 'Ты сохранил главное.' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(0)
 
-    await page.getByRole('button', { name: 'Сохранить и завершить' }).click()
+    await page.getByRole('button', { name: 'Завершить' }).click()
     await expect(page.getByRole('heading', { name: /-дневная серия\./ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
 
     await page.getByRole('button', { name: 'Вернуться в Сегодня' }).click()
-    await expect(page.getByRole('button', { name: 'Разобрать день' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Открыть вечерний разбор' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Разобрать день' }).click()
+    await page.getByRole('button', { name: 'Открыть вечерний разбор' }).click()
     await expect(page.getByRole('heading', { name: 'Что ближе всего?' })).toBeVisible()
     await page.getByRole('button', { name: 'ровно' }).click()
     await page.getByRole('button', { name: 'Дальше' }).click()
 
-    for (const [label, value] of [
+    for (const [index, [label, value]] of [
       ['Что получилось?', 'Fixture result'],
       ['Что было трудно?', 'Fixture difficulty'],
       ['Какой вывод забираешь?', 'Fixture lesson'],
-    ]) {
-      await page.locator(`[aria-label="${label}"]`).fill(value)
-      await page.getByRole('button', { name: 'Дальше' }).click()
-    }
-
-    for (const [index, label] of [
-      'Что сделал, хотя не хотелось?',
-      'Где повёл себя так, как хочешь?',
-      'Что заметил в себе хорошего?',
     ].entries()) {
-      await page.locator(`[aria-label="${label}"]`).fill(`Fixture proud ${index + 1}`)
+      await page.locator(`[aria-label="${label}"]`).fill(value)
       await page
         .getByRole('button', { name: index === 2 ? 'Закрыть день' : 'Дальше' })
         .click()
@@ -218,11 +209,11 @@ test.describe('MXL-010 automated technical gate', () => {
     // возврат на Today выполняется следующим шагом browser history.
     await page.goBack()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: 'Открыть разбор снова' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Открыть утренний чек-ин' })).toBeVisible()
 
     await page.reload()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: 'Открыть разбор снова' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Открыть утренний чек-ин' })).toBeVisible()
     expect(fixtures.savedCheckins.filter(item => item.review_completed === true)).toHaveLength(1)
 
     const calendarDays = page.getByLabel('Календарь недели').locator('.mx-today-week-day')

@@ -768,7 +768,7 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
 
   return (
     <div
-      className={`mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-5 animate-fade-in${
+      className={`mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in${
         PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2' : ''
       }`}
     >

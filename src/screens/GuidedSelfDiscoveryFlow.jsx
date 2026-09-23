@@ -93,7 +93,7 @@ function FlowBack({ onClick }) {
   }
   return (
     <div
-      className={`${FULLSCREEN_HEADER_SLOT_CLASS} guided-self-discovery__topbar flex items-center px-5`}
+      className={`${FULLSCREEN_HEADER_SLOT_CLASS} guided-self-discovery__topbar flex items-center px-[var(--mx-screen-x)]`}
     >
       <BackButton onClick={onClick} />
       <button

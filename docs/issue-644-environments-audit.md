@@ -12,15 +12,15 @@
 
 ## Итоговая таблица
 
-| environment | последний deployment (UTC) | secrets / rules | вердикт |
-|---|---|---|---|
-| `Production` | 2026-09-09 14:01, `vercel[bot]`, ref `c3ffb3d76f94b80a9cfd9c9ab725a4f5ffdcbc8` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
-| `Production – mentalix` | 2026-09-15 08:50, `vercel[bot]`, ref `3d2b57d3dd32e396464b127e11f3ba67685193f6` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
+| environment                     | последний deployment (UTC)                                                      | secrets / rules                                     | вердикт      |
+| ------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------- | ------------ |
+| `Production`                    | 2026-09-09 14:01, `vercel[bot]`, ref `c3ffb3d76f94b80a9cfd9c9ab725a4f5ffdcbc8`  | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
+| `Production – mentalix`         | 2026-09-15 08:50, `vercel[bot]`, ref `3d2b57d3dd32e396464b127e11f3ba67685193f6` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
 | `Production – mentalix-preview` | 2026-09-08 17:24, `vercel[bot]`, ref `c82d7301826a50df7676fcb7d46b3d657c01dc34` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
-| `Preview` | 2026-08-26 17:29, `vercel[bot]`, ref `1cc0388ddd7d1ad606598b273f23dea041f8fac6` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
-| `Preview – mentalix` | 2026-09-16 15:03, `vercel[bot]`, ref `6800937a332b2fe0c770f3830bf8d23af5f5f253` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
-| `Preview – mentalix-preview` | 2026-09-08 17:07, `vercel[bot]`, ref `c393f084b32b9e1f55281c736d9e0898194f390b` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
-| `github-pages` | 2026-09-01 16:17, `Smira31`, ref `main` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
+| `Preview`                       | 2026-08-26 17:29, `vercel[bot]`, ref `1cc0388ddd7d1ad606598b273f23dea041f8fac6` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
+| `Preview – mentalix`            | 2026-09-16 15:03, `vercel[bot]`, ref `6800937a332b2fe0c770f3830bf8d23af5f5f253` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
+| `Preview – mentalix-preview`    | 2026-09-08 17:07, `vercel[bot]`, ref `c393f084b32b9e1f55281c736d9e0898194f390b` | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
+| `github-pages`                  | 2026-09-01 16:17, `Smira31`, ref `main`                                         | secrets: 0; protection rules: 0; branch policy: нет | **уточнить** |
 
 ### Как читать результат deployments
 
@@ -30,7 +30,7 @@ GitHub API для всех семи environments вернул `total_count: 0` �
 
 ## Проверка workflow-ссылок
 
-В текущем `.github/workflows/` обнаружены только ссылки на `cloudflare-owner-qa`: в `cloudflare-owner-qa.yml` и `telegram-owner-qa-webapp.yml`. Ссылок на `Production`, `Production – mentalix`, `Production – mentalix-preview`, `Preview`, `Preview – mentalix`, `Preview – mentalix-preview` или `github-pages` не обнаружено. Поиск выполнялся по сырому тексту всех workflow-файлов, поэтому учитывал комментарии и устаревшие/закомментированные строки, если они присутствуют в этих файлах. Firebase workflow использует repository secrets и не задаёт отдельный environment.
+На дату аудита в `.github/workflows/` обнаружены ссылки на `cloudflare-owner-qa`: в `cloudflare-owner-qa.yml` и `telegram-owner-qa-webapp.yml`. После подтверждённого удаления отключённых workflow Telegram-файл больше не является частью репозитория; Cloudflare Owner QA workflow сохранён. Ссылок на `Production`, `Production – mentalix`, `Production – mentalix-preview`, `Preview`, `Preview – mentalix`, `Preview – mentalix-preview` или `github-pages` не обнаружено. Поиск выполнялся по сырому тексту всех workflow-файлов, поэтому учитывал комментарии и устаревшие/закомментированные строки, если они присутствуют в этих файлах. Firebase workflow использует repository secrets и не задаёт отдельный environment.
 
 ## Финальный список
 

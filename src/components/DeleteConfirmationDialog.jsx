@@ -1,6 +1,8 @@
 import { createPortal } from 'react-dom'
 
-export default function DeleteConfirmationDialog({ itemType, onConfirm, onCancel }) {
+export default function DeleteConfirmationDialog({ itemType, itemName, onConfirm, onCancel }) {
+  const label = itemName ? `«${itemName}»` : itemType
+
   return createPortal(
     <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/70 p-5 sm:items-center">
       <button
@@ -16,12 +18,13 @@ export default function DeleteConfirmationDialog({ itemType, onConfirm, onCancel
         aria-labelledby="delete-confirmation-title"
         className="relative z-10 w-full max-w-sm rounded-[28px] border border-cream/10 bg-emerald p-5 shadow-2xl animate-fade-in"
       >
-        <h2 id="delete-confirmation-title" className="font-display text-[20px] font-semibold text-cream">
-          Удалить {itemType}?
+        <h2
+          id="delete-confirmation-title"
+          className="font-display text-[20px] font-semibold text-cream"
+        >
+          Удалить {label}?
         </h2>
-        <p className="mt-3 text-[13px] leading-relaxed text-muted">
-          Запись будет удалена без возможности восстановления.
-        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-muted">Это действие нельзя отменить.</p>
 
         <div className="mt-5 flex gap-2">
           <button
@@ -29,7 +32,7 @@ export default function DeleteConfirmationDialog({ itemType, onConfirm, onCancel
             onClick={onCancel}
             className="practice-scene__choice min-h-11 flex-1 rounded-full border border-cream/15 bg-cream/5 px-4 py-3 text-[13px] font-semibold text-muted"
           >
-            Отменить
+            Отмена
           </button>
           <button
             type="button"

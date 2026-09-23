@@ -86,11 +86,14 @@
     var(--tg-content-safe-area-right)
   );
 
+  --mx-screen-x: 16px;
+
   /* Общая геометрия нижней навигации и резерва под неё. */
 
-  --bottom-nav-height: 68px;
+  --bottom-nav-height: 53px;
   --bottom-nav-collapsed-size: 58px;
-  --bottom-nav-offset: 2px;
+  --bottom-nav-offset: 8px;
+  --bottom-nav-edge: 20px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
   --bottom-nav-content-gap: 46px;
   --app-content-bottom: calc(
@@ -378,7 +381,7 @@ svg .animate-celebrate-pop {
   width: 100%;
   max-width: 430px;
   margin-inline: auto;
-  padding-inline: var(--mx-space-5);
+  padding-inline: var(--mx-screen-x);
   animation: mx-stoic-screen-enter 420ms var(--mx-ease-out) both;
 }
 
@@ -977,6 +980,33 @@ button {
   font-size: var(--mx-type-meta-size);
   line-height: 1.2;
   font-weight: 600;
+}
+
+.mx-type-checkin-title {
+  font-size: 1.375rem;
+  line-height: 1.2;
+  font-weight: 400;
+}
+
+.mx-type-tab {
+  display: block;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.mx-bottom-nav-library {
+  min-width: max-content;
+}
+
+@media (max-width: 374px) {
+  :root {
+    --bottom-nav-edge: 8px;
+  }
+
+  .mx-type-tab {
+    font-size: var(--mx-type-meta-size);
+  }
 }
 
 /* AI-экраны: единая шкала, проверяемая на 320px и 390px viewport. */
