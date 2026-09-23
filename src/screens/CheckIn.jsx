@@ -2,6 +2,7 @@ import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
+import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { ArrowRight, Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 import BackButton from '../components/BackButton'
@@ -30,6 +31,8 @@ import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
 const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
+const DAY_REVIEW_PROMPT =
+  'Разбери мой сегодняшний день. Опирайся только на реальные данные Mentalix: моё состояние, ритуалы, аскезы, срывы, их причины, вечерние выводы и то, чем я горжусь. Дай один главный вывод, максимум две закономерности и один конкретный эксперимент на завтра. Если данных для вывода недостаточно — скажи об этом прямо.'
 
 /*
  * MXL-EMOTION-STEP-002 — эмоция → один микро-шаг (ROADMAP.md, пункт 2).
@@ -636,6 +639,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const [showAllEmotions, setShowAllEmotions] = useState(false)
 
+  const [savedCheckinId, setSavedCheckinId] = useState(null)
+
+  const [scoutBusy, setScoutBusy] = useState(false)
+
+  const [scoutError, setScoutError] = useState('')
+
   const [lessons, setLessons] = useState(() =>
     isEvening ? existingLessons(existing?.lessons) : {}
   )
@@ -787,6 +796,10 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
       // MXL-AI-HANDOFF-001: вечерний разбор сохраняется заранее, чтобы
       // хендофф к Следопыту мог отметить сегодняшнюю запись для AI-контекста.
+      if (isEvening) {
+        setSavedCheckinId(savedCheckin?.id ?? null)
+      }
+
       if (!isEvening) {
         clearCheckinDraft({ userId: user.id })
         setSavedMorningNote(note)
@@ -827,14 +840,63 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     }
   }
 
-  /*
-   * MXL-AI-HANDOFF-001: «Разобрать со Следопытом» — явный запрос разобрать
-   * именно сегодняшний день. Перед переходом в чат хендофф подтверждает
-   * персональный контекст: включает мастер-согласие (если выключено, через
-   * явное подтверждение) и отмечает только сегодняшнюю запись check-in.
-   * Вне Telegram per-entry выбор backend не разрешён — там поведение
-   * остаётся прежним (прямой переход в чат).
-   */
+  async function openScout() {
+    platform.haptic('medium')
+
+    const canGrantAiContext = platform.name === 'telegram' && Number(user?.id) > 0
+
+    if (canGrantAiContext) {
+      const checkinId = savedCheckinId ?? existing?.id
+
+      setScoutBusy(true)
+      setScoutError('')
+
+      try {
+        if (!checkinId) {
+          throw new Error('checkin_id_missing')
+        }
+
+        const consent = await api.mentalix.contextConsent(user.id)
+
+        if (!consent?.enabled) {
+          const granted = window.confirm(
+            'Следопыт получит доступ к персональному контексту. Передавать можно только записи, отмеченные тобой: сейчас разрешится сегодняшний разбор — состояние, уроки и победы. Разрешить?'
+          )
+
+          if (!granted) {
+            return
+          }
+
+          await api.mentalix.setContextConsent(user.id, true)
+        }
+
+        await api.mentalix.setCheckinContext(user.id, checkinId, true)
+      } catch (error) {
+        console.error(error)
+
+        setScoutError('Не удалось разрешить разбор дня. Проверь соединение и попробуй ещё раз.')
+
+        return
+      } finally {
+        setScoutBusy(false)
+      }
+    }
+
+    try {
+      sessionStorage.setItem(MENTOR_PERSONA_KEY, 'dnevnik')
+
+      sessionStorage.setItem(MENTOR_DRAFT_KEY, DAY_REVIEW_PROMPT)
+    } catch (error) {
+      console.error(error)
+    }
+
+    const url = new URL(window.location.href)
+
+    url.searchParams.set('tab', 'mentor')
+
+    window.location.href = url.toString()
+  }
+
   /*
    * Тот же переход-хендофф, что openScout(), но к Собеседнику
    * (mayak) с одним универсальным драфтом вместо разбора дня.
@@ -948,7 +1010,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Вернуться в Сегодня', run: onDone }
+        ? { text: 'Разобрать со Следопытом', run: openScout }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
@@ -1148,7 +1210,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                 <strong>завершён.</strong>
               </h2>
 
-              {!isEvening && (
+              {(
                 <div className="mt-7 w-full max-w-sm">
                   <p className="text-[13px] text-muted">
                     Чек-ин помог остановиться и заметить важное?
@@ -1177,6 +1239,27 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                 </div>
               )}
 
+              {isEvening && (
+                <div className="mt-6 rounded-full border border-cream/10 bg-emerald px-4 py-2 text-[14px] font-semibold text-cream">
+                  Сохранить
+                </div>
+              )}
+
+              {scoutError && (
+                <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
+                  {scoutError}
+                </p>
+              )}
+              {isEvening && (
+                <button
+                  type="button"
+                  onClick={openScout}
+                  disabled={scoutBusy}
+                  className="mt-4 text-[16px] font-semibold text-cream"
+                >
+                  Разобрать со Следопытом
+                </button>
+              )}
               {!isEvening && (
                 <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
                   <div className="flex flex-wrap gap-2">
