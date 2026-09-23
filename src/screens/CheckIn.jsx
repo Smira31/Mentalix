@@ -968,6 +968,24 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const isScaleStep = !isCard && !isEmotionStep
 
+  /*
+   * Рассинхрон (P0): если existing изменился во время шага шкалы,
+   * шаг может оказаться пустым (scale === null/undefined) или
+   * за пределами нового layout. Пересчитываем: пропускаем пустой
+   * шаг шкалы или зажимаем step в валидный диапазон — чтобы
+   * пользователь не застрял на белом экране и не увидел финал
+   * без сохранения.
+   */
+  useEffect(() => {
+    if (step >= doneStep) {
+      setStep(Math.max(0, doneStep - 1))
+      return
+    }
+    if (isScaleStep && !MORNING_SCALE_STEPS[step]) {
+      setStep(current => current + 1)
+    }
+  }, [isScaleStep, step, doneStep])
+
   const cardIdx = isEvening ? step - emotionStep - 1 : step - scaleCount
 
   const isMorningNoteStep = !isEvening && isCard && cardIdx === 0
