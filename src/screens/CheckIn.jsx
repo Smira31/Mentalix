@@ -4,7 +4,6 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { ArrowRight, Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
-import { MotifArt } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -32,9 +31,6 @@ import './CheckInDemo.css'
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
 const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
 
-const DAY_REVIEW_PROMPT =
-  'Разбери мой сегодняшний день. Опирайся только на реальные данные Mentalix: моё состояние, ритуалы, аскезы, срывы, их причины, вечерние выводы и то, чем я горжусь. Дай один главный вывод, максимум две закономерности и один конкретный эксперимент на завтра. Если данных для вывода недостаточно — скажи об этом прямо.'
-
 /*
  * MXL-EMOTION-STEP-002 — эмоция → один микро-шаг (ROADMAP.md, пункт 2).
  * Один универсальный драфт для тяжёлых эмоций, не зависящий от того, какая
@@ -55,9 +51,11 @@ const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
  * отдельный top-aligned класс ниже: длинный ввод не должен плавать при
  * изменении visualViewport.
  */
-const CHECKIN_CENTER_CLASS = 'w-full flex-1 px-6 py-6 flex flex-col items-center justify-center'
+const CHECKIN_CENTER_CLASS =
+  'w-full flex-1 px-[var(--mx-screen-x)] py-6 flex flex-col items-center justify-center'
 
-const CHECKIN_LONG_CLASS = 'w-full min-h-full flex-1 px-6 pt-4 pb-2 flex flex-col items-center'
+const CHECKIN_LONG_CLASS =
+  'w-full min-h-full flex-1 px-[var(--mx-screen-x)] pt-4 pb-2 flex flex-col items-center'
 
 const CHECKIN_QUESTION_CLASS = 'w-full text-center'
 
@@ -636,6 +634,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const [emotion, setEmotion] = useState(existing?.emotion || null)
 
+  const [showAllEmotions, setShowAllEmotions] = useState(false)
+
   const [lessons, setLessons] = useState(() =>
     isEvening ? existingLessons(existing?.lessons) : {}
   )
@@ -662,12 +662,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const [error, setError] = useState(false)
 
-  const [savedCheckinId, setSavedCheckinId] = useState(null)
-
-  const [scoutBusy, setScoutBusy] = useState(false)
-
-  const [scoutError, setScoutError] = useState('')
-
   const note = isEvening ? '' : morningDraftToNote(morningDraft)
 
   const scaleCount = skipScales ? 0 : MORNING_SCALE_STEPS.length
@@ -693,10 +687,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       ...current,
       [key]: level,
     }))
-
-    setTimeout(() => {
-      setStep(current => current + 1)
-    }, 280)
   }
 
   useEffect(() => {
@@ -797,10 +787,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
       // MXL-AI-HANDOFF-001: вечерний разбор сохраняется заранее, чтобы
       // хендофф к Следопыту мог отметить сегодняшнюю запись для AI-контекста.
-      if (isEvening) {
-        setSavedCheckinId(savedCheckin?.id ?? null)
-      }
-
       if (!isEvening) {
         clearCheckinDraft({ userId: user.id })
         setSavedMorningNote(note)
@@ -849,63 +835,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
    * Вне Telegram per-entry выбор backend не разрешён — там поведение
    * остаётся прежним (прямой переход в чат).
    */
-  async function openScout() {
-    platform.haptic('medium')
-
-    const canGrantAiContext = platform.name === 'telegram' && Number(user?.id) > 0
-
-    if (canGrantAiContext) {
-      const checkinId = savedCheckinId ?? existing?.id
-
-      setScoutBusy(true)
-      setScoutError('')
-
-      try {
-        if (!checkinId) {
-          throw new Error('checkin_id_missing')
-        }
-
-        const consent = await api.mentalix.contextConsent(user.id)
-
-        if (!consent?.enabled) {
-          const granted = window.confirm(
-            'Следопыт получит доступ к персональному контексту. Передавать можно только записи, отмеченные тобой: сейчас разрешится сегодняшний разбор — состояние, уроки и победы. Разрешить?'
-          )
-
-          if (!granted) {
-            return
-          }
-
-          await api.mentalix.setContextConsent(user.id, true)
-        }
-
-        await api.mentalix.setCheckinContext(user.id, checkinId, true)
-      } catch (error) {
-        console.error(error)
-
-        setScoutError('Не удалось разрешить разбор дня. Проверь соединение и попробуй ещё раз.')
-
-        return
-      } finally {
-        setScoutBusy(false)
-      }
-    }
-
-    try {
-      sessionStorage.setItem(MENTOR_PERSONA_KEY, 'dnevnik')
-
-      sessionStorage.setItem(MENTOR_DRAFT_KEY, DAY_REVIEW_PROMPT)
-    } catch (error) {
-      console.error(error)
-    }
-
-    const url = new URL(window.location.href)
-
-    url.searchParams.set('tab', 'mentor')
-
-    window.location.href = url.toString()
-  }
-
   /*
    * Тот же переход-хендофф, что openScout(), но к Собеседнику
    * (mayak) с одним универсальным драфтом вместо разбора дня.
@@ -1019,30 +948,36 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Разобрать со Следопытом', run: openScout }
+        ? { text: 'Вернуться в Сегодня', run: onDone }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
             text: 'Дальше',
             run: () => setStep(step + 1),
           }
-        : isCard
+        : isScaleStep
           ? {
-              text: saving
-                ? 'Сохраняю...'
-                : isEvening
-                  ? cardIdx === cardCount - 1
-                    ? 'Закрыть день'
-                    : 'Дальше'
-                  : 'Далее',
-              run: () =>
-                isEvening
-                  ? cardIdx < cardCount - 1
-                    ? setStep(step + 1)
-                    : submit()
-                  : setStep(doneStep),
+              text: 'Далее',
+              run: () => setStep(step + 1),
+              disabled: !values[scale?.key],
             }
-          : null
+          : isCard
+            ? {
+                text: saving
+                  ? 'Сохраняю...'
+                  : isEvening
+                    ? cardIdx === cardCount - 1
+                      ? 'Закрыть день'
+                      : 'Дальше'
+                    : 'Далее',
+                run: () =>
+                  isEvening
+                    ? cardIdx < cardCount - 1
+                      ? setStep(step + 1)
+                      : submit()
+                    : setStep(doneStep),
+              }
+            : null
 
   const skipAction = isFinal
     ? isEvening
@@ -1080,9 +1015,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
       platform.haptic('light')
       effectiveMainAction?.run()
     },
-    visible: Boolean(effectiveMainAction) && !(previewDemoMode && isMorningNoteStep),
-    enabled: !saving && !scoutBusy,
-    loading: saving || scoutBusy,
+    visible: Boolean(effectiveMainAction) && isCompletion,
+    enabled: !saving,
+    loading: saving,
   })
 
   useSecondaryButton({
@@ -1095,7 +1030,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   })
 
   const webAction =
-    effectiveMainAction && !(previewDemoMode && isMorningNoteStep)
+    effectiveMainAction && isCompletion
       ? {
           text: effectiveMainAction.text,
           ariaLabel:
@@ -1103,14 +1038,30 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
               ? 'Сохранить и завершить'
               : effectiveMainAction.text,
           onClick: effectiveMainAction.run,
-          disabled: saving || scoutBusy,
+          disabled: saving,
         }
       : null
 
   const webSecondaryAction =
-    skipAction && !saving && !isMorningNoteStep
+    skipAction && isCompletion && !saving && !isMorningNoteStep
       ? { text: skipAction.text, onClick: skipAction.run }
       : null
+
+  const compactStepAction = isEmotionStep
+    ? () => setStep(step + 1)
+    : isScaleStep
+      ? () => setStep(step + 1)
+      : isCard && isEvening
+        ? effectiveMainAction?.run
+        : null
+
+  const compactStepDisabled = isEmotionStep
+    ? !emotion
+    : isScaleStep
+      ? !values[MORNING_SCALE_STEPS[step]?.key]
+      : isCard && isEvening
+        ? !(lessons[eveningQuestion?.key] || '').trim()
+        : false
 
   const streakDays = buildStreakDays(streakHistory, streak)
 
@@ -1190,28 +1141,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className={CHECKIN_CENTER_CLASS}>
             <div className={CHECKIN_SUCCESS_CLASS}>
-              {isEvening ? (
-                <MotifArt name="noch" size={184} artScale={1.08} className="mb-5" />
-              ) : null}
+              <CheckInCompletionArt />
 
-              <div className="animate-celebrate-pop mb-6">
-                <Face
-                  level={values.mood || 4}
-                  active
-                  size={isEvening ? 64 : 88}
-                  showFrame={false}
-                />
-              </div>
-
-              <h2 className="font-display text-[26px] text-cream leading-tight">
-                {isEvening ? 'День закрыт' : 'Ты сохранил главное.'}
+              <h2 className="mx-checkin-completion-title">
+                {isEvening ? 'Разбор дня' : 'Утренний чек-ин'}
+                <strong>завершён.</strong>
               </h2>
-
-              <p className="text-[15px] text-muted mt-3 leading-relaxed max-w-sm">
-                {isEvening
-                  ? 'Ты разобрал день, а не бросил его. Теперь можно посмотреть на него со стороны.'
-                  : 'Ответы останутся в сегодняшнем цикле.'}
-              </p>
 
               {!isEvening && (
                 <div className="mt-7 w-full max-w-sm">
@@ -1240,12 +1175,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                     ))}
                   </div>
                 </div>
-              )}
-
-              {scoutError && (
-                <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
-                  {scoutError}
-                </p>
               )}
 
               {!isEvening && (
@@ -1289,13 +1218,17 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   const scale = skipScales ? null : MORNING_SCALE_STEPS[step]
 
   const moodLevel = values.mood || existing?.mood || 3
+  const emotionOptions = Array.from(new Set(Object.values(EMOTIONS).flat()))
+  const visibleEmotionOptions = showAllEmotions
+    ? emotionOptions
+    : EMOTIONS[moodLevel] || EMOTIONS[3]
 
   const eveningQuestion =
     isEvening && isCard ? (cardIdx < LESSON_FIELDS.length ? LESSON_FIELDS[cardIdx] : null) : null
   const questionTitle =
     scale?.title ||
     (isEmotionStep
-      ? 'Что ближе всего?'
+      ? 'Какой был день?'
       : isEvening
         ? eveningQuestion.label
         : cardIdx === 0
@@ -1370,8 +1303,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
             {isEmotionStep && (
               <div key="emo" className="w-full flex flex-col items-center">
-                <div className="flex flex-wrap justify-center gap-2 max-w-md mx-auto">
-                  {(EMOTIONS[moodLevel] || EMOTIONS[3]).map(item => {
+                <div className="mx-checkin-emotion-grid">
+                  {visibleEmotionOptions.map(item => {
                     const active = emotion === item
 
                     return (
@@ -1382,16 +1315,23 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
                           setEmotion(active ? null : item)
                         }}
-                        className={[
-                          'mx-checkin-chip px-4 py-2.5 rounded-full text-[14px] font-semibold border-0 transition-colors',
-                          active ? 'bg-gold text-emerald-deep' : 'bg-emerald text-muted',
-                        ].join(' ')}
+                        className={`mx-checkin-emotion-button ${active ? 'is-selected' : ''}`}
                       >
-                        {item}
+                        {item.charAt(0).toUpperCase() + item.slice(1)}
                       </button>
                     )
                   })}
                 </div>
+
+                {!showAllEmotions && (
+                  <button
+                    type="button"
+                    className="mx-checkin-emotion-more"
+                    onClick={() => setShowAllEmotions(true)}
+                  >
+                    Показать ещё
+                  </button>
+                )}
 
                 {HEAVY_EMOTIONS.includes(emotion) && (
                   <button
@@ -1509,6 +1449,13 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
         </div>
       )}
 
+      {!isCompletion && compactStepAction ? (
+        <CheckInNextControls
+          onNext={compactStepAction}
+          disabled={compactStepDisabled}
+          onSkip={isScaleStep ? () => setStep(step + 1) : null}
+        />
+      ) : null}
       <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
     </div>,
     getFullscreenPortalTarget()
