@@ -33,6 +33,7 @@ import {
 } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
+import { formatReviewTime, resolveTodayCardStates } from '../lib/todayCardState'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -570,52 +571,22 @@ export default function Today({
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
   // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
-  const currentPart = isReviewTime ? 'evening' : 'morning'
-
-  const dayCardComplete = currentPart === 'evening' ? eveningComplete : morningComplete
-
-  const dayCardCopy =
-    currentPart === 'evening'
-      ? {
-          label: 'Разбор дня',
-          title: 'Забрать главное из дня.',
-          completed: 'День закрыт.',
-          glyph: 'path-corridor',
-          ariaLabel: 'Открыть вечерний разбор — Разобрать день',
-          ariaLabelComplete: 'День закрыт. Открыть запись дня',
-        }
-      : {
-          label: 'Утренний чек-ин',
-          title: 'Как ты сегодня?',
-          completed: 'Утренний чек-ин завершён.',
-          glyph: 'breath-flow',
-          ariaLabel: 'Открыть утренний чек-ин — Пройти чек-ин',
-          ariaLabelComplete: 'Утренний чек-ин завершён. Открыть запись дня',
-        }
-
+  const cardStates = resolveTodayCardStates({ now: new Date(), reviewHour, checkin })
+  const reviewTime = formatReviewTime(reviewHour)
   const moodPillText = MOOD_PILL_WORDS[Number(checkin?.mood) - 1] || null
 
-  const dayCard = (
-    <button
-      type="button"
-      className="mx-today-day-card animate-fade-in"
-      data-kind={currentPart}
-      data-complete={dayCardComplete}
-      onClick={() => {
-        platform.haptic('medium')
-
-        if (dayCardComplete) {
-          changeSub('checkinRecap')
-          return
-        }
-
-        changeSub(currentPart === 'evening' ? 'evening' : 'checkin')
-      }}
-      aria-label={dayCardComplete ? dayCardCopy.ariaLabelComplete : dayCardCopy.ariaLabel}
-    >
-      {dayCardComplete ? (
+  function renderDayCard(kind) {
+    const isMorning = kind === 'morning'
+    const state = cardStates[isMorning ? 'morning' : 'review']
+    const copy = isMorning
+      ? { label: 'Утренний чек-ин', title: 'Как ты сегодня?', glyph: 'breath-flow' }
+      : { label: 'Разбор дня', title: 'Забрать главное из дня.', glyph: 'path-corridor' }
+    const completedText = isMorning ? 'Утро отмечено.' : 'День закрыт.'
+    const lockedText = isMorning ? 'Утро прошло' : `Откроется в ${reviewTime}`
+    const content =
+      state === 'done' ? (
         <>
-          <span className="mx-today-day-card__done">{dayCardCopy.completed}</span>
+          <span className="mx-today-day-card__done">{completedText}</span>
           {moodPillText && (
             <span className="mx-today-day-card__pill">
               <span className="mx-today-day-card__dot" aria-hidden="true" />
@@ -623,21 +594,58 @@ export default function Today({
             </span>
           )}
         </>
-      ) : (
+      ) : state === 'active' ? (
         <>
           <span className="mx-today-day-card__glyph">
-            <CardSystemGlyph kind={dayCardCopy.glyph} />
+            <CardSystemGlyph kind={copy.glyph} />
           </span>
-          <span className="mx-today-day-card__label mx-type-checkin-label">
-            {dayCardCopy.label}
-          </span>
-          <span className="mx-today-day-card__title mx-type-checkin-title">
-            {dayCardCopy.title}
-          </span>
+          <span className="mx-today-day-card__label mx-type-checkin-label">{copy.label}</span>
+          <span className="mx-today-day-card__title mx-type-checkin-title">{copy.title}</span>
           <span className="mx-today-day-card__start">Начать</span>
         </>
-      )}
-    </button>
+      ) : (
+        <span className="mx-today-day-card__locked">{lockedText}</span>
+      )
+    const props = {
+      className: 'mx-today-day-card animate-fade-in',
+      'data-kind': kind,
+      'data-state': state,
+      'aria-label': `${copy.label}: ${state === 'locked' ? lockedText : state === 'missed' ? lockedText : state === 'done' ? completedText : copy.title}`,
+    }
+    if (state === 'active' || state === 'done') {
+      return (
+        <button
+          type="button"
+          {...props}
+          onClick={() => {
+            platform.haptic('medium')
+            changeSub(
+              isMorning
+                ? state === 'done'
+                  ? 'checkinRecap'
+                  : 'checkin'
+                : state === 'done'
+                  ? 'checkinRecap'
+                  : 'evening'
+            )
+          }}
+        >
+          {content}
+        </button>
+      )
+    }
+    return (
+      <div {...props} aria-disabled="true">
+        {content}
+      </div>
+    )
+  }
+
+  const dayCards = (
+    <div className="mx-today-day-cards" aria-label="Чек-ин дня">
+      {renderDayCard('morning')}
+      {renderDayCard('evening')}
+    </div>
   )
 
   function changeTodayVariant(nextVariant) {
@@ -693,10 +701,8 @@ export default function Today({
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
       )}
 
-      {/* Одна главная карточка дня: чек-ин текущей части дня (§5.1, тип A). */}
-      <div className="mx-today-day-card-slot" aria-label="Чек-ин дня">
-        {dayCard}
-      </div>
+      {/* Две независимые карточки дня: утро и разбор (§5.1, тип A). */}
+      <div className="mx-today-day-card-slot">{dayCards}</div>
 
       {/* ======================================================
           ПУЛЬС
@@ -893,7 +899,7 @@ export default function Today({
           }}
           className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
-          <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
+          <span className="block mx-type-meta text-muted mb-3">М��сль дня</span>
 
           <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
         </button>
