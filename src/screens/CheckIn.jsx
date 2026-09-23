@@ -1127,9 +1127,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     ? !emotion
     : isScaleStep
       ? !values[MORNING_SCALE_STEPS[step]?.key]
-      : isCard && isEvening
-        ? !(lessons[eveningQuestion?.key] || '').trim()
-        : false
+      : false
 
   const streakDays = buildStreakDays(streakHistory, streak)
 
