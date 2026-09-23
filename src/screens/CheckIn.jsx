@@ -1039,7 +1039,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Разобрать со Следопытом', run: openScout }
+        ? { text: 'Сохранить', run: onDone }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
@@ -1070,7 +1070,11 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
               }
             : null
 
-  const skipAction = isFinal ? (isEvening ? { text: 'Ко сну', run: onDone } : null) : null
+  const skipAction = isFinal
+    ? isEvening
+      ? { text: 'Разобрать со Следопытом', run: openScout }
+      : null
+    : null
 
   const writingAction = isMorningNoteStep
     ? { text: saving ? 'Сохраняю...' : 'Завершить чек-ин', run: submit }
@@ -1228,25 +1232,19 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                         key={label}
                         type="button"
                         onClick={() => setFeedback(label)}
-                        className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-[12px] ${
+                        className={`flex min-h-[102px] flex-col items-center justify-center gap-3 rounded-3xl border text-[14px] font-medium ${
                           feedback === label
-                            ? 'border-gold bg-gold/10 text-gold'
-                            : 'border-cream/10 bg-emerald text-muted'
+                            ? 'border-[rgb(var(--c-line))] bg-[rgb(var(--c-line))] text-[rgb(var(--c-bg))]'
+                            : 'border-[rgb(var(--c-border))] bg-emerald text-cream'
                         }`}
                       >
-                        <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
+                        <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
                         {label}
                       </button>
                     ))}
                   </div>
                 </div>
               }
-
-              {isEvening && (
-                <div className="mt-6 rounded-full border border-cream/10 bg-emerald px-4 py-2 text-[14px] font-semibold text-cream">
-                  Сохранить
-                </div>
-              )}
 
               {scoutError && (
                 <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
