@@ -4,8 +4,10 @@ import { formatReviewTime, resolveTodayCardStates } from '../../src/lib/todayCar
 
 const at = (iso, timeZone) => resolveTodayCardStates({ now: new Date(iso), reviewHour: 19, timeZone })
 
-test('карточки меняются в 04:59 и 05:00', () => {
-  assert.deepEqual(at('2026-09-23T01:59:00Z', 'Europe/Moscow'), { morning: 'missed', review: 'locked', hour: 4, minute: 59 })
+test('утро доступно весь день — нет состояния missed', () => {
+  // Утро теперь доступно весь день (active), пока не пройдено.
+  // Состояния 'missed' для сегодняшних карточек нет.
+  assert.deepEqual(at('2026-09-23T01:59:00Z', 'Europe/Moscow'), { morning: 'active', review: 'locked', hour: 4, minute: 59 })
   assert.deepEqual(at('2026-09-23T02:00:00Z', 'Europe/Moscow'), { morning: 'active', review: 'locked', hour: 5, minute: 0 })
 })
 
@@ -22,9 +24,12 @@ test('настройка времени разбора 21:00', () => {
 })
 
 test('done независимы для утра и разбора', () => {
-  const states = resolveTodayCardStates({ now: new Date('2026-09-23T16:00:00Z'), reviewHour: 19, timeZone: 'Europe/Moscow', checkin: {} })
+  // Утро «пройдено» по утренним полям (mood/energy/note), а не по пустому чекину.
+  const states = resolveTodayCardStates({ now: new Date('2026-09-23T16:00:00Z'), reviewHour: 19, timeZone: 'Europe/Moscow', checkin: { mood: 3 } })
   assert.deepEqual(states, { morning: 'done', review: 'active', hour: 19, minute: 0 })
+  // Разбор «пройден» по review_completed_at — утро при этом остаётся active, если утренних полей нет.
   assert.equal(resolveTodayCardStates({ now: new Date('2026-09-23T16:00:00Z'), reviewHour: 19, timeZone: 'Europe/Moscow', checkin: { review_completed_at: '2026-09-23T16:01:00Z' } }).review, 'done')
+  assert.equal(resolveTodayCardStates({ now: new Date('2026-09-23T16:00:00Z'), reviewHour: 19, timeZone: 'Europe/Moscow', checkin: { review_completed_at: '2026-09-23T16:01:00Z' } }).morning, 'active')
 })
 
 test('форматирует время настройки', () => {
