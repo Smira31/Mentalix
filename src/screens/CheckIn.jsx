@@ -1039,7 +1039,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Разобрать со Следопытом', run: openScout }
+        ? { text: 'Сохранить', run: onDone }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
@@ -1072,19 +1072,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const skipAction = isFinal
     ? isEvening
-      ? { text: 'Ко сну', run: onDone }
+      ? { text: 'Разобрать со Следопытом', run: openScout }
       : null
-    : isCard
-      ? {
-          text: 'Пропустить',
-          run: () =>
-            isEvening
-              ? cardIdx < cardCount - 1
-                ? setStep(step + 1)
-                : submit()
-              : setStep(doneStep),
-        }
-      : null
+    : null
 
   const writingAction = isMorningNoteStep
     ? { text: saving ? 'Сохраняю...' : 'Завершить чек-ин', run: submit }
@@ -1242,25 +1232,19 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                         key={label}
                         type="button"
                         onClick={() => setFeedback(label)}
-                        className={`flex min-h-20 flex-col items-center justify-center gap-1 rounded-2xl border text-[12px] ${
+                        className={`flex min-h-[102px] flex-col items-center justify-center gap-3 rounded-3xl border text-[14px] font-medium ${
                           feedback === label
-                            ? 'border-gold bg-gold/10 text-gold'
-                            : 'border-cream/10 bg-emerald text-muted'
+                            ? 'border-[rgb(var(--c-line))] bg-[rgb(var(--c-line))] text-[rgb(var(--c-bg))]'
+                            : 'border-[rgb(var(--c-border))] bg-emerald text-cream'
                         }`}
                       >
-                        <Icon size={22} strokeWidth={1.8} aria-hidden="true" />
+                        <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
                         {label}
                       </button>
                     ))}
                   </div>
                 </div>
               }
-
-              {isEvening && (
-                <div className="mt-6 rounded-full border border-cream/10 bg-emerald px-4 py-2 text-[14px] font-semibold text-cream">
-                  Сохранить
-                </div>
-              )}
 
               {scoutError && (
                 <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
@@ -1281,7 +1265,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                   </div>
                   <p className="mt-3 text-[13px] leading-relaxed text-muted">
                     {savedMorningNote
-                      ? 'Текст сохранён в сегодняшнем check-in.'
+                      ? 'Текст сохранён в сегодняшнем чек-ине.'
                       : 'Состояние сохранено без текстовой записи.'}
                   </p>
                   <p className="mt-2 text-[12px] text-muted">
@@ -1358,14 +1342,22 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
               title={questionTitle}
               hint={questionSubtitle}
               headingAs="h2"
-              className={isMorningNoteStep ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
+              className={isCard ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
               headingClassName={[
                 'font-display text-cream',
-                isMorningNoteStep ? 'text-[30px] leading-[1.12]' : 'text-[26px] leading-tight',
+                isMorningNoteStep
+                  ? 'text-[30px] leading-[1.12]'
+                  : isEvening && isCard
+                    ? 'text-[22px] font-bold leading-[1.2]'
+                    : 'text-[26px] leading-tight',
               ].join(' ')}
               hintClassName={[
                 'text-[14px] text-muted',
-                isMorningNoteStep ? 'mt-5 border-l border-gold pl-4 leading-relaxed' : 'mt-2',
+                isMorningNoteStep
+                  ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
+                  : isEvening && isCard
+                    ? 'mt-[6px] text-[15px]'
+                    : 'mt-2',
               ].join(' ')}
             />
           )}

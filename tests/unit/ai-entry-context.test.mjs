@@ -25,7 +25,7 @@ test('History требует Telegram context и явное confirmation до п
 
 test('AI privacy panel объясняет, что global consent не открывает все journal entries', () => {
   assert.match(controlsSource, /Глобальное согласие не открывает AI все записи/)
-  assert.match(controlsSource, /отметь конкретные\s+check-in/)
+  assert.match(controlsSource, /отметь конкретные\s+чек-ины/)
   assert.match(controlsSource, /entry_selection_window_days/)
   assert.match(controlsSource, /выбор записей для контекста удалены/)
 })
