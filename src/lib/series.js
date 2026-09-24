@@ -39,11 +39,25 @@ function isCompleted(checkin) {
   )
 }
 
+/**
+ * День засчитан для серии, если есть запись чек-ина за этот день —
+ * утренняя (date) или завершённый разбор (review_completed_at / completed_at).
+ * В отличие от isCompleted, учитывает утренний чек-ин без вечернего разбора.
+ */
+function hasCheckinRecord(checkin) {
+  return Boolean(
+    checkin?.date ||
+    checkin?.review_completed_at ||
+    checkin?.completed_at ||
+    checkin?.status === 'completed'
+  )
+}
+
 function completedDays(checkins = [], timezone = 'UTC') {
   return [
     ...new Set(
       checkins
-        .filter(isCompleted)
+        .filter(hasCheckinRecord)
         .map(checkin => dateKey(checkin, timezone))
         .filter(Boolean)
     ),
