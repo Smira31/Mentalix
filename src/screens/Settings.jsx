@@ -22,6 +22,7 @@ import {
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
 import { getAccentColors } from '../lib/accentColor'
+import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
@@ -1088,7 +1089,7 @@ export default function Settings({
           <ProfileCard>
             <ProfileRow
               title="Написать в поддержку"
-              onClick={() => window.open('https://t.me/mentalix_support_bot', '_blank')}
+              onClick={() => openSupportChat()}
             />
             <ProfileRow
               title="Что было бы полезно?"

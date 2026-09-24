@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 
 import { ProfilePage } from './settings/ProfileUi'
+import { SUPPORT_TELEGRAM_URL, openSupportChat } from '../lib/support'
 
 // Раздел — строка с заголовком; текст раскрывается по тапу (§5.4, по умолчанию свёрнут).
 function NoticeCard({ icon: Icon, title, children }) {
@@ -109,9 +110,10 @@ export default function PrivacyNotice({ onBack }) {
         <div className="mt-6 rounded-2xl border border-[rgb(var(--c-border))] p-4 text-[12px] leading-relaxed text-muted">
           Если текст расходится с фактическим поведением, сообщи об этом в{' '}
           <a
-            href="https://t.me/mentalix_support_bot"
+            href={SUPPORT_TELEGRAM_URL}
             target="_blank"
             rel="noreferrer"
+            onClick={openSupportChat}
             className="font-semibold text-cream underline underline-offset-2"
           >
             поддержку Mentalix
