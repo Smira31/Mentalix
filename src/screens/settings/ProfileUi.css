@@ -1,0 +1,372 @@
+/* Профиль и настройки — DESIGN_SYSTEM.md §5.4. 1 pt эталона = 1 px. */
+
+.mx-profile-page {
+  width: 100%;
+  max-width: 28rem;
+  padding-bottom: 40px;
+  color: rgb(var(--c-text));
+}
+
+/* Липкая шапка: кнопка web + свёрнутый заголовок по центру. */
+.mx-profile-page__bar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 56px;
+  padding-inline: 20px;
+  background: rgb(var(--c-bg));
+}
+
+.mx-profile-page__bar-title {
+  max-width: calc(100% - 128px);
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.mx-profile-page__bar--collapsed .mx-profile-page__bar-title {
+  opacity: 1;
+}
+
+.mx-profile-page__button {
+  position: absolute;
+  top: 6px;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  transition: transform 160ms ease;
+}
+
+.mx-profile-page__button:active {
+  transform: scale(0.97);
+}
+
+.mx-profile-page__button--back {
+  left: 20px;
+}
+
+.mx-profile-page__button--close {
+  right: 20px;
+}
+
+.mx-profile-page__title {
+  margin: 4px 0 20px;
+  padding-inline: 20px;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-transform: lowercase;
+}
+
+.mx-profile-body {
+  display: flex;
+  flex-direction: column;
+  padding-inline: 16px;
+}
+
+/* Группа: 28 px от низа прошлой карточки до верха следующей, с подписью. */
+.mx-profile-group + .mx-profile-group {
+  margin-top: 7px;
+}
+
+.mx-profile-group__label {
+  margin: 0 0 8px;
+  padding-inline: 4px;
+  color: rgb(var(--c-muted));
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mx-profile-group:first-child .mx-profile-group__label {
+  margin-top: 0;
+}
+
+.mx-profile-card {
+  overflow: hidden;
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+}
+
+.mx-profile-card + .mx-profile-card,
+.mx-profile-card + .mx-profile-chips,
+.mx-profile-chips + .mx-profile-card,
+.mx-profile-note + .mx-profile-card,
+.mx-profile-card + .mx-profile-panel,
+.mx-profile-panel + .mx-profile-card {
+  margin-top: 8px;
+}
+
+.mx-profile-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 50px;
+  padding: 8px 20px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font: inherit;
+  text-align: left;
+}
+
+button.mx-profile-row:active {
+  background: rgb(var(--c-text) / 0.04);
+}
+
+/* Разделитель: от начала текста (20 px) до правого края карточки. */
+.mx-profile-row + .mx-profile-row::before,
+.mx-profile-row + .mx-profile-inset::before,
+.mx-profile-inset + .mx-profile-row::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 20px;
+  height: 1px;
+  background: rgb(var(--c-border));
+  content: '';
+}
+
+.mx-profile-row__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mx-profile-row__title {
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+.mx-profile-row__subtitle {
+  margin-top: 2px;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 17px;
+}
+
+.mx-profile-row--danger .mx-profile-row__title {
+  color: rgb(248 113 113);
+}
+
+.mx-profile-row__value {
+  max-width: 50%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mx-profile-row__chevron {
+  flex-shrink: 0;
+  color: rgb(var(--c-muted));
+}
+
+/* Блок внутри карточки (выбор, прогресс, пояснение). */
+.mx-profile-inset {
+  position: relative;
+  padding: 12px 20px 14px;
+}
+
+.mx-profile-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+}
+
+.mx-profile-note {
+  margin: 8px 0 0;
+  padding-inline: 4px;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.mx-profile-note--danger {
+  color: rgb(252 165 165);
+}
+
+.mx-profile-chips {
+  display: flex;
+  gap: 8px;
+}
+
+.mx-profile-inset .mx-profile-chips {
+  margin-top: 4px;
+}
+
+.mx-profile-chip {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 6px 4px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 12px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mx-profile-chip[aria-pressed='true'] {
+  border-color: rgb(var(--c-text));
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+}
+
+.mx-profile-chip__hint {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.mx-profile-select {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+  padding-inline: 12px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 12px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  font-size: 15px;
+}
+
+.mx-profile-label {
+  display: block;
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+}
+
+.mx-profile-text-button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mx-profile-text-button--danger {
+  border-color: transparent;
+  color: rgb(252 165 165);
+}
+
+/* iOS-переключатель: включённый — белый трек, тёмная ручка. */
+.mx-profile-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 51px;
+  height: 31px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card3));
+  transition: background-color 200ms ease;
+}
+
+.mx-profile-switch::after {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.3);
+  content: '';
+  transition:
+    transform 200ms cubic-bezier(0.32, 0.72, 0, 1),
+    background-color 200ms ease;
+}
+
+.mx-profile-switch[aria-checked='true'] {
+  background: #fff;
+}
+
+.mx-profile-switch[aria-checked='true']::after {
+  background: rgb(var(--c-bg));
+  transform: translateX(20px);
+}
+
+.mx-profile-swatch {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 0;
+  background: transparent;
+}
+
+.mx-profile-swatch span {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.mx-profile-swatch[aria-pressed='true'] span {
+  box-shadow:
+    0 0 0 2px rgb(var(--c-card2)),
+    0 0 0 4px rgb(var(--c-text));
+}
+
+.mx-profile-progress {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(var(--c-border));
+}
+
+.mx-profile-progress > div {
+  height: 100%;
+  border-radius: 999px;
+  background: rgb(var(--c-text));
+  transition: width 500ms ease;
+}
+
+.mx-profile-version {
+  margin: 32px 0 0;
+  color: rgb(var(--c-faint));
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-profile-page__bar-title,
+  .mx-profile-switch,
+  .mx-profile-switch::after {
+    transition: none;
+  }
+}
