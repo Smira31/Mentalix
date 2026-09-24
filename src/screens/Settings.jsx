@@ -530,6 +530,7 @@ export default function Settings({
               title="Когда показывать разбор"
               subtitle="«Сегодня» сам предложит подвести итоги"
               value={hh(reviewHour)}
+              testId="profile-row-review-hour"
             />
             <div className="mx-profile-inset">
               <ProfileChips
@@ -557,6 +558,7 @@ export default function Settings({
                   onChange={setMoodCheckOn}
                 />
               }
+              testId="profile-row-mood-check"
             />
           </ProfileCard>
         </ProfileGroup>
@@ -577,6 +579,7 @@ export default function Settings({
                   onChange={saveWritingGoal}
                 />
               }
+              testId="profile-row-writing-goal"
             />
             {writingGoalOn && (
               <div className="mx-profile-inset">
@@ -590,7 +593,7 @@ export default function Settings({
             )}
           </ProfileCard>
           {writingGoalOn && (
-            <div className="mx-profile-panel" style={{ marginTop: 8 }}>
+            <div className="mx-profile-panel" style={{ marginTop: 8, minHeight: writingGoalProgress?.enabled ? undefined : 92 }}>
               {writingGoalProgress?.enabled ? (
                 <div>
                   <div className="flex items-baseline justify-between gap-3">

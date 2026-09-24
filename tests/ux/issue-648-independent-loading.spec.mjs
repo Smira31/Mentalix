@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict'
 import { expect, test } from '@playwright/test'
 
 const TEST_USER = {
@@ -54,14 +55,35 @@ async function openApp(browser, baseURL, failures) {
   return { context, page }
 }
 
-test('Profile keeps profile data visible when rituals fail', async ({ browser, baseURL }) => {
+test('Profile keeps user data visible and does not fetch path sources', async ({ browser, baseURL }) => {
+  const requestedUrls = new Set()
   const { context, page } = await openApp(browser, baseURL, new Set(['/api/rituals']))
+  try {
+    page.on('request', req => {
+      requestedUrls.add(new URL(req.url()).pathname)
+    })
+    await page.getByRole('button', { name: 'Открыть настройки' }).click()
+    await page.getByTestId('profile-row-about').click()
+    await expect(page.getByRole('heading', { name: 'Issue 648' })).toBeVisible()
+    // «о тебе.» больше не запрашивает источники пути
+    assert(!requestedUrls.has('/api/rituals'))
+    assert(!requestedUrls.has('/api/ascezas'))
+    assert(!requestedUrls.has('/api/themes'))
+    assert(!requestedUrls.has('/api/analytics'))
+    assert(!requestedUrls.has('/api/checkin/history'))
+  } finally {
+    await context.close()
+  }
+})
+
+test('Profile shows retry when profile endpoint fails', async ({ browser, baseURL }) => {
+  const { context, page } = await openApp(browser, baseURL, new Set(['/api/profile']))
   try {
     await page.getByRole('button', { name: 'Открыть настройки' }).click()
     await page.getByTestId('profile-row-about').click()
-    await expect(page.getByRole('heading', { name: 'мой путь.' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Issue 648' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
+    await expect(page.getByRole('alert')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Повторить' })).toBeEnabled()
   } finally {
     await context.close()
   }
