@@ -566,6 +566,17 @@
 .mx-demo-checkin__error {
   color: #d99;
 }
+/* Слот ошибки резервирует высоту заранее: появление сообщения
+   не сдвигает иллюстрацию и заголовок экрана завершения. */
+.mx-demo-checkin__error-slot {
+  display: flex;
+  justify-content: center;
+  min-height: 40px;
+  margin-top: 18px;
+}
+.mx-demo-checkin__error-slot .mx-demo-checkin__error {
+  margin: 0;
+}
 
 .mx-demo-checkin__tags {
   display: inline-flex;
