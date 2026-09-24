@@ -198,9 +198,8 @@ if (
   import.meta.env.VITE_TG_SHELL !== '0' &&
   !navigator.webdriver
 ) {
-  // Без top-level await: он недоступен в прод-таргетах esbuild и ломает
-  // `vite build`. Порядок инициализации не важен — шапка дорисовывается.
-  import('./tgShell').then(({ initTgShell }) => initTgShell())
+  const { initTgShell } = await import('./tgShell')
+  initTgShell()
 }
 
 createRoot(document.getElementById('root')).render(
