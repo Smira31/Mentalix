@@ -6,6 +6,7 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
+import HistorySkeleton from '../components/HistorySkeleton'
 import { platform, platformName } from '../platform'
 import { MoreHorizontal } from 'lucide-react'
 import BackButton from '../components/BackButton'
@@ -637,8 +638,7 @@ export default function History({
     window.location.href = url.toString()
   }
 
-  if (days === null)
-    return <p className="text-muted text-sm px-[var(--mx-screen-x)] pt-6">Загрузка...</p>
+  if (days === null) return <HistorySkeleton />
 
   if (selectedDay) {
     return (
