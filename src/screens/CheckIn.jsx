@@ -213,7 +213,7 @@ export function CheckInQuestion({
  * DEMO_USER and api.js intercepts requests only when isPreviewDemoMode() is
  * true. The screens, transitions and editor must not diverge by environment.
  */
-function MorningCheckInFlow({ user, onDone }) {
+function MorningCheckInFlow({ user, onDone, redo = false }) {
   const [step, setStep] = useState(0)
   const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
   const [note, setNote] = useState('')
@@ -256,7 +256,8 @@ function MorningCheckInFlow({ user, onDone }) {
     setSaving(true)
     setError('')
     try {
-      await api.checkin.save(user.id, {
+      const saveApi = redo ? api.checkin.redo : api.checkin.save
+      await saveApi(user.id, {
         mood: values.mood || 3,
         energy: values.energy || 3,
         anxiety: values.anxiety || 3,
@@ -265,6 +266,10 @@ function MorningCheckInFlow({ user, onDone }) {
         emotion: undefined,
       })
       platform.haptic('success')
+      if (redo) {
+        onDone()
+        return
+      }
       try {
         const history = await api.checkin.history(user.id, 90)
         setStreakHistory(Array.isArray(history) ? history : [])
@@ -614,10 +619,11 @@ function existingLessons(value) {
   )
 }
 
-function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
+function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = false }) {
   const isEvening = mode === 'evening'
   const previewDemoMode = isPreviewDemoMode()
   const skipScales = isEvening && !!existing
+  const fieldSource = redo ? null : existing
 
   /*
    * MXL-EVENTS: момент открытия флоу — единственное место, где backend
@@ -633,13 +639,13 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   }, [])
 
   const [values, setValues] = useState(() => ({
-    mood: existing?.mood ?? (isEvening ? null : consumeMoodDraft()),
-    energy: existing?.energy ?? null,
-    anxiety: existing?.anxiety ?? null,
-    focus: existing?.focus ?? null,
+    mood: fieldSource?.mood ?? (isEvening ? null : consumeMoodDraft()),
+    energy: fieldSource?.energy ?? null,
+    anxiety: fieldSource?.anxiety ?? null,
+    focus: fieldSource?.focus ?? null,
   }))
 
-  const [emotion, setEmotion] = useState(existing?.emotion || null)
+  const [emotion, setEmotion] = useState(fieldSource?.emotion || null)
 
   const [showAllEmotions, setShowAllEmotions] = useState(false)
 
@@ -650,7 +656,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   const [scoutError, setScoutError] = useState('')
 
   const [lessons, setLessons] = useState(() =>
-    isEvening ? existingLessons(existing?.lessons) : {}
+    isEvening ? existingLessons(fieldSource?.lessons) : {}
   )
 
   const [morningDraft, setMorningDraft] = useState(() =>
@@ -689,7 +695,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
 
   const streakStep = doneStep + 1
 
-  const [step, setStep] = useState(() => (isEvening && existing?.review_completed_at ? 1 : 0))
+  const [step, setStep] = useState(() =>
+    isEvening && !redo && existing?.review_completed_at ? 1 : 0
+  )
 
   const { style: viewportStyle } = useFullscreenSurface()
 
@@ -777,7 +785,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
     setError(false)
 
     try {
-      const savedCheckin = await api.checkin.save(user.id, {
+      const saveApi = redo ? api.checkin.redo : api.checkin.save
+      const savedCheckin = await saveApi(user.id, {
         mood: values.mood ?? 3,
 
         energy: values.energy ?? 3,
@@ -1554,12 +1563,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   )
 }
 
-function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
+function CheckIn({ user, onDone, mode = 'checkin', existing = null, redo = false }) {
   if (mode !== 'evening') {
-    return <MorningCheckInFlow user={user} onDone={onDone} />
+    return <MorningCheckInFlow user={user} onDone={onDone} redo={redo} />
   }
 
-  return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} />
+  return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} redo={redo} />
 }
 
 export default CheckIn

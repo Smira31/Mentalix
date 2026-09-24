@@ -289,6 +289,21 @@ export function demoRequest(path, options = {}) {
     writeState({ ...state, checkins: [checkin, ...state.checkins] })
     return json(checkin)
   }
+  if (pathname === '/checkin/today' && method === 'PUT') {
+    const today = new Date().toISOString().slice(0, 10)
+    const existing = state.checkins.find(item => item?.date === today)
+    const checkin = {
+      id: existing?.id || Date.now(),
+      date: today,
+      ...body,
+      ...(body.review_completed ? { review_completed_at: new Date().toISOString() } : {}),
+    }
+    writeState({
+      ...state,
+      checkins: [checkin, ...state.checkins.filter(item => item?.date !== today)],
+    })
+    return json(checkin)
+  }
 
   if (pathname === '/profile/settings' && method === 'GET') {
     return json({

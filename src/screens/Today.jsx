@@ -438,6 +438,36 @@ export default function Today({
     )
   }
 
+  if (sub === 'redoCheckin') {
+    return (
+      <CheckIn
+        user={user}
+        existing={checkin}
+        mode="checkin"
+        redo
+        onDone={async () => {
+          await refreshCheckin()
+          changeSub(null)
+        }}
+      />
+    )
+  }
+
+  if (sub === 'redoReview') {
+    return (
+      <CheckIn
+        user={user}
+        existing={checkin}
+        mode="evening"
+        redo
+        onDone={async () => {
+          await refreshCheckin()
+          changeSub(null)
+        }}
+      />
+    )
+  }
+
   if (sub === 'checkinRecap' && checkin) {
     return (
       <div className="px-[var(--mx-screen-x)]">
@@ -446,6 +476,8 @@ export default function Today({
           initialSelectedDay={{ date: checkin.date, checkin }}
           onInitialBack={() => changeSub(null)}
           recapOnly
+          onRedo={() => changeSub('redoCheckin')}
+          onRedoReview={() => changeSub('redoReview')}
         />
       </div>
     )
@@ -508,7 +540,11 @@ export default function Today({
           <Path user={user} onContinueToday={() => changeSub(null)} />
         ) : (
           <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-            <History user={user} />
+            <History
+              user={user}
+              onRedo={() => changeSub('redoCheckin')}
+              onRedoReview={() => changeSub('redoReview')}
+            />
           </div>
         )}
       </div>

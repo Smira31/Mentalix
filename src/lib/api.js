@@ -404,6 +404,31 @@ export const api = {
           ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
         }),
       }),
+
+    /*
+     * Атомарная замена сегодняшнего чек-ина (idempotent PUT).
+     * Бэкенд заменяет запись за текущий день целиком, сохраняя
+     * серию и streak — см. спецификацию PUT /api/checkin/today.
+     */
+    redo: (
+      userId,
+      { mood, energy, anxiety, focus, note, emotion, lessons, wins, review_completed }
+    ) =>
+      request('/checkin/today', {
+        method: 'PUT',
+        body: JSON.stringify({
+          user_id: userId,
+          mood,
+          energy,
+          anxiety,
+          focus,
+          note,
+          emotion,
+          lessons,
+          wins,
+          ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
+        }),
+      }),
   },
 
   journalTemplates: {
