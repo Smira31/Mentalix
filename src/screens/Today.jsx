@@ -170,13 +170,7 @@ function WeekStrip({ checkin, history = [] }) {
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
               </span>
-              {platformName === 'telegram' || !isCompleted ? (
-                <span className="mx-type-calendar-date">{day.getDate()}</span>
-              ) : (
-                <span className="mx-today-week-day__check" aria-label="Чек-ин пройден" role="img">
-                  ✓
-                </span>
-              )}
+              <span className="mx-type-calendar-date">{day.getDate()}</span>
             </div>
           )
         })}
