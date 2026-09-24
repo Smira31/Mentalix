@@ -12,14 +12,13 @@ import {
 } from '../lib/fullscreenSurface'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import {
-  Face,
   SCALE_STEPS,
-  EMOTIONS,
   CheckInQuestion,
   CheckInScaleQuestion,
   CheckInNextControls,
   CheckInCompletionArt,
 } from './CheckIn'
+import EmotionStep from '../components/EmotionStep'
 import {
   STEP_INTRO,
   STEP_MOOD,
@@ -33,6 +32,11 @@ import {
 import './CheckInDemo.css'
 
 const INTRO_SEEN_KEY = 'mx-mood-practice-intro-seen'
+
+const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
+const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
+const EMOTION_TALK_PROMPT =
+  'Сейчас тяжело — не хочу делать вид, что всё в порядке. Хочу просто сказать вслух, что чувствую.'
 
 const MOOD_SCALE = SCALE_STEPS[0]
 
@@ -92,6 +96,25 @@ export default function MoodPractice({ user, onDone }) {
     }
 
     setStep(current => current - 1)
+  }
+
+  /*
+   * Тот же переход-хендофф, что в CheckIn.jsx (openListener):
+   * к Собеседнику (mayak) с одним универсальным драфтом для тяжёлых эмоций.
+   */
+  function openListener() {
+    platform.haptic('medium')
+
+    try {
+      sessionStorage.setItem(MENTOR_PERSONA_KEY, 'mayak')
+      sessionStorage.setItem(MENTOR_DRAFT_KEY, EMOTION_TALK_PROMPT)
+    } catch (error) {
+      console.error(error)
+    }
+
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', 'mentor')
+    window.location.href = url.toString()
   }
 
   async function save(withBreathing) {
@@ -209,7 +232,6 @@ export default function MoodPractice({ user, onDone }) {
   // ── Общий каркас для шагов шкалы/эмоций/контекста/дыхания ──
 
   const moodLevel = mood || 3
-  const emotionOptions = EMOTIONS[moodLevel] || EMOTIONS[3]
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
@@ -266,29 +288,13 @@ export default function MoodPractice({ user, onDone }) {
                 headingAs="h2"
                 headingClassName="font-display text-cream text-[22px] font-semibold leading-[1.3]"
               />
-              <div className="mt-8 flex flex-col items-center gap-1.5 w-full">
-                {emotionOptions.map(item => {
-                  const active = emotion === item
-                  return (
-                    <button
-                      key={item}
-                      type="button"
-                      data-testid="mood-practice-emotion"
-                      data-emotion={item}
-                      onClick={() => {
-                        platform.haptic('light')
-                        setEmotion(active ? null : item)
-                      }}
-                      className={`rounded-full px-5 text-[15px] font-medium transition-colors ${
-                        active ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream'
-                      }`}
-                      style={{ height: '38px' }}
-                    >
-                      {item.charAt(0).toUpperCase() + item.slice(1)}
-                    </button>
-                  )
-                })}
-              </div>
+              <EmotionStep
+                initialLevel={moodLevel}
+                emotion={emotion}
+                onEmotionChange={setEmotion}
+                onHeavyEmotionClick={openListener}
+                testId="mood-practice-emotion"
+              />
             </div>
           )}
 
@@ -406,6 +412,7 @@ export default function MoodPractice({ user, onDone }) {
         <CheckInNextControls
           onNext={() => setStep(STEP_CONTEXT)}
           disabled={!canProceedFromStep(STEP_EMOTION, { mood, emotion })}
+          variant="emotion"
         />
       )}
       {step === STEP_CONTEXT && (
