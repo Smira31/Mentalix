@@ -3,6 +3,7 @@ import { ChevronDown, Trash2 } from 'lucide-react'
 import { platform } from '../platform'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import { semanticKindForAsceza, semanticKindForRitual, SemanticGlyph } from './SemanticGlyph'
+import './PracticeDetail.css'
 
 function AccordionRow({ testId, label, children }) {
   const [open, setOpen] = useState(false)
