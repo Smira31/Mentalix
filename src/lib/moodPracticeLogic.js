@@ -48,6 +48,7 @@ export function buildMoodPracticePayload({ mood, emotion, context, note }, breat
  * @returns {string|null}
  */
 export function moodPracticeDate(mp) {
+  if (!mp) return null
   const raw = mp.recorded_at || mp.date
   if (!raw) return null
   return String(raw).slice(0, 10)
