@@ -1,55 +1,32 @@
 // src/screens/settings/ProfileBanners.jsx
 //
 // Три баннера в начале «твой профиль.» — DESIGN_SYSTEM.md §5.4 «Баннеры профиля».
-// Геометрия — по эталону Stoic. Иллюстрация — красный рогатый персонаж
-// из цветного референса владельца (PersonaArt.jsx): симметричный силуэт
-// анфас, чёрные глазницы и апертура, штриховка «угольком», светлый контур.
+// Иллюстрации — готовые файлы владельца, WebP с прозрачным фоном @2x/@3x:
+// персонаж лежит в src/assets/profile/, фон прозрачный — прямоугольника
+// на карточке нет. alt="" — рядом есть текст, картинка декоративная;
+// width/height равны месту на баннере, чтобы вёрстка не прыгала.
 
 import { ChevronRight } from 'lucide-react'
 import './ProfileBanners.css'
-import { PersonaFigure } from './PersonaArt'
+import potentialArt2x from '../../assets/profile/banner-potential@2x.webp'
+import potentialArt3x from '../../assets/profile/banner-potential@3x.webp'
+import supportArt2x from '../../assets/profile/banner-support@2x.webp'
+import supportArt3x from '../../assets/profile/banner-support@3x.webp'
+import webArt2x from '../../assets/profile/banner-web@2x.webp'
+import webArt3x from '../../assets/profile/banner-web@3x.webp'
 
-// Персонаж вырастает из нижнего правого края карточки — на весь рост.
-function PotentialArt() {
+function BannerArt({ art2x, art3x, width, height }) {
   return (
-    <svg className="mx-profile-banner__art" viewBox="0 0 160 140" aria-hidden="true">
-      <g transform="translate(30 10)">
-        <PersonaFigure />
-      </g>
-    </svg>
-  )
-}
-
-// Персонаж на панели справа — во всю высоту, с сердцем-поддержкой
-// на чёрном торсе.
-function SupportArt() {
-  return (
-    <svg className="mx-profile-banner__art" viewBox="0 0 89 118" aria-hidden="true">
-      <g transform="translate(-0.5 0) scale(0.9)">
-        <PersonaFigure />
-        {/* Сердце-поддержка на чёрном торсе. */}
-        <path
-          className="mx-persona-red"
-          d="M50 123C45.5 119.8 43 117.5 43 115.3A3.5 3.5 0 0 1 50 114.1A3.5 3.5 0 0 1 57 115.3C57 117.5 54.5 119.8 50 123Z"
-        />
-      </g>
-    </svg>
-  )
-}
-
-// Персонаж у окна браузера — «смотрит на сайт».
-function WebArt() {
-  return (
-    <svg className="mx-profile-banner__art" viewBox="0 0 120 96" aria-hidden="true">
-      <rect x="6" y="10" width="78" height="56" rx="8" />
-      <path d="M6 24h78" />
-      <circle cx="15" cy="17" r="1.6" className="mx-profile-banner__art-fill" />
-      <circle cx="22" cy="17" r="1.6" className="mx-profile-banner__art-fill" />
-      <path d="M18 38h40M18 48h28" />
-      <g transform="translate(76 27) scale(0.44)">
-        <PersonaFigure />
-      </g>
-    </svg>
+    <img
+      className="mx-profile-banner__art"
+      src={art2x}
+      srcSet={`${art2x} 2x, ${art3x} 3x`}
+      width={width}
+      height={height}
+      loading="lazy"
+      alt=""
+      draggable={false}
+    />
   )
 }
 
@@ -61,7 +38,8 @@ export function PotentialBanner({ onOpen }) {
       data-testid="profile-banner-potential"
       onClick={onOpen}
     >
-      <PotentialArt />
+      {/* Персонаж справа снизу, частично обрезан краем карточки. */}
+      <BannerArt art2x={potentialArt2x} art3x={potentialArt3x} width={118} height={82} />
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
       {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
@@ -92,7 +70,8 @@ export function SupportBanner({ onOpen }) {
         {'\u00A0— это помогает проекту расти.'}
       </p>
       <span className="mx-profile-banner__panel">
-        <SupportArt />
+        {/* Персонаж по центру панели, ≈89 px шириной. */}
+        <BannerArt art2x={supportArt2x} art3x={supportArt3x} width={89} height={75} />
       </span>
     </button>
   )
@@ -106,7 +85,8 @@ export function WebBanner({ onOpen }) {
       data-testid="profile-banner-web"
       onClick={onOpen}
     >
-      <WebArt />
+      {/* Персонаж справа сверху, окно сайта видно целиком. */}
+      <BannerArt art2x={webArt2x} art3x={webArt3x} width={104} height={72} />
       <span className="mx-profile-banner__title">Mentalix на сайте</span>
       <span className="mx-profile-banner__text">
         Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
