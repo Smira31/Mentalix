@@ -15,15 +15,10 @@ test('обычные отметки не передают restore-поле, а �
   assert.match(api, /restoreDaysAgo === null \? \{\} : \{ restore_days_ago: restoreDaysAgo \}/)
 })
 
-test('ритуалы и аскезы используют общий подтверждаемый restore-sheet', () => {
-  assert.match(ritualsSource, /import StreakRestoreSheet/)
-  assert.match(ritualsSource, /Восстановить пропущенный день/)
-  assert.match(ritualsSource, /restoreRitual\(\{ restoreDaysAgo, value \}\)/)
-
-  assert.match(ascezasSource, /import StreakRestoreSheet/)
-  assert.match(ascezasSource, /Восстановить пропущенный день/)
-  assert.match(ascezasSource, /restoreAsceza\(\{ restoreDaysAgo \}\)/)
-  assert.match(ascezasSource, /logAsceza\(restoreTarget\.id, 'held', null, null, restoreDaysAgo\)/)
+test('вариант C убирает restore-sheet из UI, сохраняя API-контракт', () => {
+  assert.doesNotMatch(ritualsSource, /StreakRestoreSheet|Восстановить пропущенный день|restoreTarget/)
+  assert.doesNotMatch(ascezasSource, /StreakRestoreSheet|Восстановить пропущенный день|restoreTarget/)
+  assert.match(api, /restoreDaysAgo === null \? \{\} : \{ restore_days_ago: restoreDaysAgo \}/)
 })
 
 test('restore-sheet ограничивает выбор семью прошедшими днями и требует явного подтверждения', () => {

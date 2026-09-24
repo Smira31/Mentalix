@@ -1,0 +1,208 @@
+.mx-practice-list-screen {
+  padding-bottom: 2rem;
+}
+
+.mx-practice-list-screen__intro {
+  margin: 0 0 1.25rem;
+  color: rgb(var(--c-muted));
+  font-size: 0.75rem;
+}
+
+.mx-practice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.mx-practice-tile {
+  display: flex;
+  min-width: 0;
+  aspect-ratio: 1 / 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: rgb(var(--c-text));
+  text-align: left;
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  border-radius: 1.25rem;
+  flex-direction: column;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, transform 150ms ease;
+}
+
+.mx-practice-tile:active {
+  transform: scale(0.98);
+}
+
+.mx-practice-tile.is-done {
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-text));
+  border-color: rgb(var(--c-text));
+}
+
+.mx-practice-tile__glyph {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.mx-practice-tile__glyph svg {
+  max-width: 7rem;
+  max-height: 5rem;
+}
+
+.mx-practice-tile__name {
+  width: 100%;
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-practice-list-screen__create {
+  display: block;
+  margin: 1.25rem auto 0;
+  padding: 0.5rem 0;
+  color: rgb(var(--c-muted));
+  font-size: 0.8125rem;
+  background: transparent;
+  border: 0;
+}
+
+.mx-practice-detail-screen {
+  padding-bottom: 2rem;
+}
+
+.mx-practice-detail-screen__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 2.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.mx-practice-detail__back,
+.mx-practice-detail__delete {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: rgb(var(--c-muted));
+  font-size: 0.8125rem;
+  background: transparent;
+  border: 0;
+}
+
+.mx-practice-detail__back {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.mx-practice-detail__back span {
+  font-size: 0.8125rem;
+}
+
+.mx-practice-detail__toggle {
+  display: flex;
+  width: 100%;
+  min-height: min(58vw, 19rem);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem;
+  color: rgb(var(--c-text));
+  text-align: left;
+  background: rgb(var(--c-card));
+  border: 1px solid rgb(var(--c-line) / 0.08);
+  border-radius: 1.5rem;
+  flex-direction: column;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.mx-practice-detail__toggle.is-done {
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-text));
+  border-color: rgb(var(--c-text));
+}
+
+.mx-practice-detail__glyph {
+  display: flex;
+  width: 100%;
+  min-height: 7rem;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+
+.mx-practice-detail__glyph svg {
+  width: min(100%, 13rem);
+  height: 100%;
+}
+
+.mx-practice-detail__name {
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.mx-practice-detail__state {
+  width: 100%;
+  color: currentColor;
+  font-size: 0.6875rem;
+  opacity: 0.65;
+}
+
+.mx-practice-detail__accordions {
+  margin-top: 1rem;
+  border-top: 1px solid rgb(var(--c-line) / 0.12);
+}
+
+.mx-practice-detail__accordion {
+  border-bottom: 1px solid rgb(var(--c-line) / 0.12);
+}
+
+.mx-practice-detail__accordion-toggle {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  color: rgb(var(--c-text));
+  font-size: 0.875rem;
+  text-align: left;
+  background: transparent;
+  border: 0;
+}
+
+.mx-practice-detail__accordion-content {
+  padding: 0 0 0.9rem;
+  color: rgb(var(--c-muted));
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.mx-practice-detail__quiet-action {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.5rem;
+  color: rgb(var(--c-muted));
+  font-size: 0.75rem;
+  background: transparent;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-practice-tile,
+  .mx-practice-detail__toggle {
+    transition: none;
+  }
+}
