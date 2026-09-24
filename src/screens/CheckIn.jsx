@@ -71,7 +71,7 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-function CheckInNextControls({ onNext, disabled = false, onSkip = null }) {
+export function CheckInNextControls({ onNext, disabled = false, onSkip = null }) {
   return (
     <div className="mx-checkin-next-controls">
       {onSkip ? (
@@ -146,7 +146,7 @@ function StreakFlower() {
   )
 }
 
-function CheckInCompletionArt() {
+export function CheckInCompletionArt() {
   return (
     <svg
       viewBox="0 0 120 136"
@@ -597,7 +597,7 @@ const LESSON_FIELDS = [
   },
 ]
 
-const EMOTIONS = {
+export const EMOTIONS = {
   1: ['подавлен', 'вымотан', 'тревожно', 'злюсь', 'пусто', 'одиноко', 'обидно', 'страшно'],
   2: ['устал', 'раздражён', 'рассеян', 'вяло', 'скучно', 'неспокойно', 'недоволен', 'растерян'],
   3: ['ровно', 'спокойно', 'задумчиво', 'нейтрально', 'собранно', 'терпимо', 'буднично'],
