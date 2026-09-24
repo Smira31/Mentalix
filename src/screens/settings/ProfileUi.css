@@ -147,15 +147,15 @@ button.mx-profile-row:active {
 
 .mx-profile-row__text {
   display: flex;
-  flex: 1;
+  flex: 1 0 auto;
   flex-direction: column;
-  min-width: 0;
 }
 
 .mx-profile-row__title {
   font-size: 17px;
   font-weight: 400;
   line-height: 22px;
+  white-space: nowrap;
 }
 
 .mx-profile-row__subtitle {
@@ -170,12 +170,15 @@ button.mx-profile-row:active {
 }
 
 .mx-profile-row__value {
+  flex: 0 1 auto;
+  min-width: 0;
   max-width: 50%;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: 17px;
   font-weight: 700;
+  text-align: right;
 }
 
 .mx-profile-row__chevron {
