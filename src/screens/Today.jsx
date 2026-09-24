@@ -471,7 +471,7 @@ export default function Today({
 
   if (sub === 'checkinRecap' && checkin) {
     return (
-      <div className="px-[var(--mx-screen-x)]">
+      <div className="w-full max-w-md px-[var(--mx-screen-x)]">
         <History
           user={user}
           initialSelectedDay={{ date: checkin.date, checkin }}
