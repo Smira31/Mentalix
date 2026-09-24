@@ -10,9 +10,13 @@
  * 56px top inset, etc.) work automatically.
  */
 export function isTgShellMode() {
-  if (typeof window === 'undefined') return false
-  if (!import.meta.env.DEV) return false
-  return new URLSearchParams(window.location.search).get('tgshell') !== '0'
+  // import.meta.env.DEV is false in production builds, so the entire
+  // expression short-circuits to false and esbuild tree-shakes the rest.
+  return (
+    import.meta.env.DEV &&
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('tgshell') !== '0'
+  )
 }
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v1'
