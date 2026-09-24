@@ -225,7 +225,6 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
   const { style: viewportStyle } = useFullscreenSurface()
   const demoSurfaceStyle = {
     ...viewportStyle,
-    paddingTop: 0,
     paddingBottom: 0,
   }
   const scale = step < MORNING_SCALE_STEPS.length ? MORNING_SCALE_STEPS[step] : null
@@ -247,9 +246,6 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
   function pick(key, level) {
     platform.haptic('light')
     setValues(current => ({ ...current, [key]: level }))
-    window.setTimeout(() => {
-      setStep(current => current + 1)
-    }, 280)
   }
 
   async function finish() {
@@ -293,7 +289,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
         ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
         : step === doneStep
           ? {
-              text: saving ? 'Сохраняю…' : 'Завершить',
+              text: saving ? '' : 'Завершить',
               onClick: finish,
               disabled: saving,
             }

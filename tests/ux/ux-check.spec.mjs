@@ -468,12 +468,14 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
 
-    // Scale answers auto-advance to the next question: mood, then energy.
+    // Scale answers advance only after pressing the main «Далее» button.
     for (const option of ['Нормально', 'Средне']) {
       const answer = page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') })
       await expect(answer).toBeVisible()
       await expect(answer).toBeEnabled()
       await answer.click()
+      await assertClickable(page.getByRole('button', { name: 'Далее' }))
+      await page.getByRole('button', { name: 'Далее' }).click()
     }
     await captureScreen({
       page,

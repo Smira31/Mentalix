@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: space-between;
   flex: 0 0 auto;
-  padding: max(4px, var(--app-safe-top, env(safe-area-inset-top, 0px))) 20px 8px;
+  padding: 4px 20px 8px;
 }
 
 .mx-demo-checkin__header-left {
