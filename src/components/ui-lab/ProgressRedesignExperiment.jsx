@@ -241,7 +241,7 @@ function Calendar({ state }) {
             />
           ))}
         </div>
-        {!ready && <p>Календарь заполнится после ежедневных check-in.</p>}
+        {!ready && <p>Календарь заполнится после ежедневных чек-инов.</p>}
       </div>
     </section>
   )
@@ -252,7 +252,7 @@ function Emotions({ state }) {
     <section className="mx-progress-redesign__section" aria-labelledby="progress-emotions-title">
       <div className="mx-progress-redesign__section-head">
         <div>
-          <span>Слова из check-in</span>
+          <span>Слова из чек-ина</span>
           <h3 id="progress-emotions-title">Эмоции</h3>
         </div>
       </div>

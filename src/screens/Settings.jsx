@@ -542,7 +542,7 @@ export default function Settings({
           <h1 className="font-display text-[26px] text-cream">данные удалены.</h1>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
             Мы получили подтверждение удаления аккаунта Mentalix и связанных серверных данных.
-            Локальный незавершённый check-in на этом устройстве также очищен.
+            Локальный незавершённый чек-ин на этом устройстве также очищен.
           </p>
           <p className="mt-3 text-[12px] leading-relaxed text-muted">
             В Telegram закрой мини-приложение. Если захочешь начать с чистого листа, сначала отправь
@@ -1033,7 +1033,7 @@ export default function Settings({
             <Row
               icon={Download}
               title="Экспорт CSV"
-              subtitle="Табличные метрики и check-in"
+              subtitle="Табличные метрики и чек-ин"
               onClick={() => downloadPersonalExport('csv')}
             />
           </>

@@ -81,7 +81,7 @@ export default function AiPrivacyControls({ userId, onDataDeleted }) {
           <p className="text-[12px] font-semibold text-cream">Ответ создаёт AI</p>
           <p className="mt-1 text-[11px] leading-relaxed text-muted">
             Глобальное согласие не открывает AI все записи. В History отдельно отметь конкретные
-            check-in: только отмеченные за последние {selectionWindowDays} дней могут войти в
+            чек-ины: только отмеченные за последние {selectionWindowDays} дней могут войти в
             контекст. AI не заменяет помощь специалиста.
           </p>
           <button

@@ -1265,7 +1265,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
                   </div>
                   <p className="mt-3 text-[13px] leading-relaxed text-muted">
                     {savedMorningNote
-                      ? 'Текст сохранён в сегодняшнем check-in.'
+                      ? 'Текст сохранён в сегодняшнем чек-ине.'
                       : 'Состояние сохранено без текстовой записи.'}
                   </p>
                   <p className="mt-2 text-[12px] text-muted">
