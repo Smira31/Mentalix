@@ -19,6 +19,10 @@ Russian-only — never introduce English strings into product-facing text.
 **Отвечай пользователю только по-русски** — во всех сессиях и во всех ответах,
 независимо от языка тикетов/кода/коммитов.
 
+**Весь контент в GitHub пишется на русском** — заголовки и описания PR, комментарии
+в ревью-тредах, общие комментарии к PR, ответы на ревью, сообщения коммитов. Это
+правило обязательно для Base44 и любых других агентов.
+
 ## Project
 
 Mentalix — a Telegram Mini App (rituals, "ascezas"/abstentions, AI personas, analytics).
