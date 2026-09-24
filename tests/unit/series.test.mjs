@@ -13,10 +13,20 @@ test('currentCheckinStreak counts the completed tail in chronological order', ()
   assert.equal(currentCheckinStreak(checkins), 3)
 })
 
-test('currentCheckinStreak stops at the first incomplete check-in', () => {
+test('currentCheckinStreak counts morning-only check-ins (date without review_completed_at)', () => {
   const checkins = [
     { date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' },
     { date: '2026-08-26', review_completed_at: null },
+    { date: '2026-08-27', review_completed_at: '2026-08-27T20:00:00Z' },
+  ]
+
+  assert.equal(currentCheckinStreak(checkins), 3)
+})
+
+test('currentCheckinStreak ignores records without a date or completion marker', () => {
+  const checkins = [
+    { date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' },
+    { review_completed_at: null },
     { date: '2026-08-27', review_completed_at: '2026-08-27T20:00:00Z' },
   ]
 
@@ -89,6 +99,13 @@ test('currentCheckinStreak becomes zero after a missed calendar day', () => {
 test('first completed check-in starts at one and an empty history stays at zero', () => {
   assert.equal(currentCheckinStreak([{ date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' }]), 1)
   assert.equal(currentCheckinStreak([]), 0)
+})
+
+test('morning check-in without review_completed_at counts as a completed day', () => {
+  assert.equal(
+    currentCheckinStreak([{ date: '2026-09-24', mood: 3, energy: 2 }]),
+    1
+  )
 })
 
 test('yesterday check-in keeps a one-day series before today is completed', () => {
