@@ -160,6 +160,7 @@ function WeekStrip({ checkin, history = [] }) {
             <div
               key={day.getTime()}
               className="mx-today-week-day"
+              data-testid="today-week-day"
               data-today={isToday}
               data-completed={isCompleted}
             >
@@ -647,6 +648,7 @@ export default function Today({
       )
     const props = {
       className: 'mx-today-day-card animate-fade-in',
+      'data-testid': `today-card-${kind}`,
       'data-kind': kind,
       'data-state': state,
       'aria-label': `${copy.label}: ${state === 'locked' ? lockedText : state === 'missed' ? lockedText : state === 'done' ? completedText : copy.title}`,

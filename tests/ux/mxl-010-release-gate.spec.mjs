@@ -1,4 +1,14 @@
 import { expect, test } from '@playwright/test'
+import {
+  scaleStep,
+  textStep,
+  emotionStep,
+  completeCheckin,
+  backToToday,
+  openDayCard,
+  goBack,
+  expectWeekStrip,
+} from './checkin-helpers.mjs'
 
 const TEST_USER = {
   id: 900010,
@@ -149,82 +159,91 @@ test.describe('MXL-010 automated technical gate', () => {
     // UTC гарантирует, что new Date().getHours() ≥ 19 после перевода clocks.
     await page.clock.setFixedTime('2026-09-23T08:00:00Z')
     await page.goto('/')
-    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
 
-    await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
+    // ── Утренний чек-ин ──
+    await openDayCard(page, 'morning')
     await expect(page.getByRole('radiogroup', { name: 'Как ты сейчас?' })).toBeVisible()
     await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Далее' })).toBeVisible()
+    await expect(page.locator('[data-testid="checkin-next"]')).toBeVisible()
 
-    for (const option of ['Нормально', 'Средне']) {
-      await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
-      await page.getByRole('button', { name: 'Далее' }).click()
-    }
+    // Шкалы: mood=3 (Нормально), energy=3 (Средне)
+    await scaleStep(page, 3)
+    await scaleStep(page, 3)
 
-    const morningNote = page.getByRole('textbox', { name: 'Что на уме' })
-    await morningNote.fill('Fixture morning note')
-    await page.getByRole('button', { name: 'Далее' }).dispatchEvent('click')
+    // Текстовый шаг
+    await textStep(page, 'Fixture morning note')
+
+    // Экран завершения
     await expect(page.getByRole('heading', { name: /Утренний чек-ин/ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(0)
 
-    await page.getByRole('button', { name: 'Завершить' }).click()
+    // Завершить → серия
+    await completeCheckin(page)
     await expect(page.getByRole('heading', { name: /-дневная серия\./ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
 
+    // ── Возврат и переход к вечернему разбору ──
     // После утреннего чек-ина fixture меняет review_hour на 0 (→ 19:00 в
     // resolveTodayCardStates). Переводим часы на 19:00, чтобы вечерняя
     // карточка стала active (button), а не locked (div).
     await page.clock.setFixedTime('2026-09-23T19:00:00Z')
-    await page.getByRole('button', { name: 'Вернуться в Сегодня' }).click()
-    await expect(page.getByRole('button', { name: /Разбор дня/ })).toBeVisible()
+    await backToToday(page)
+    await openDayCard(page, 'evening')
 
-    await page.getByRole('button', { name: /Разбор дня/ }).click()
+    // ── Вечерний разбор ──
     await expect(page.getByRole('heading', { name: 'Какой был день?' })).toBeVisible()
-    await page.getByRole('button', { name: 'ровно' }).click()
-    await page.getByRole('button', { name: 'Далее' }).click()
+    await emotionStep(page, 'ровно')
+    await page.locator('[data-testid="checkin-next"]').click()
 
-    for (const [label, value] of [
-      ['Что получилось?', 'Fixture result'],
-      ['Что было трудно?', 'Fixture difficulty'],
-      ['Какой вывод забираешь?', 'Fixture lesson'],
-    ]) {
-      await page.locator(`[aria-label="${label}"]`).fill(value)
-      await page.getByRole('button', { name: 'Далее' }).click()
+    // Три текстовых шага
+    for (const value of ['Fixture result', 'Fixture difficulty', 'Fixture lesson']) {
+      await textStep(page, value)
     }
 
+    // Экран завершения вечернего разбора
     await expect(page.getByRole('heading', { name: /Разбор дня/ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
 
-    await page.getByRole('button', { name: 'Разобрать со Следопытом' }).click()
+    // ── Хендофф к Следопыту ──
+    const scoutBtn = page.locator('[data-testid="checkin-open-scout"]')
+    await expect(scoutBtn).toBeVisible()
+    await scoutBtn.click()
     await expect(page).toHaveURL(/tab=mentor/)
     await expect(page.locator('#root')).not.toHaveText('', { timeout: 30_000 })
-    const chatInput = page.locator('input[placeholder^="Написать "]')
+
+    // ── AI-диалог ──
+    const chatInput = page.locator('[data-testid="mentor-input"]')
     await expect(chatInput).toBeVisible()
     await chatInput.fill('Fixture AI question')
     await chatInput.press('Enter')
     await expect(page.getByText('Fixture AI question')).toBeVisible()
     await expect(page.getByText(LONG_AI_REPLY.slice(0, 70))).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Читать полностью' })).toBeVisible()
-    await page.getByRole('button', { name: 'Читать полностью' }).click()
-    await expect(page.getByRole('button', { name: 'Свернуть ответ' })).toBeVisible()
 
-    await page.getByRole('button', { name: 'Назад' }).click()
+    // Раскрыть длинный ответ
+    const expandBtn = page.locator('[data-testid="ai-expand-reply"]')
+    await expect(expandBtn).toBeVisible()
+    await expandBtn.click()
+    await expect(page.getByText('Свернуть ответ')).toBeVisible()
+
+    // ── Возврат на Today ──
+    await goBack(page)
     await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
     // Первый Back закрывает conversation и оставляет fullscreen picker Mentor;
     // возврат на Today выполняется следующим шагом browser history.
     await page.goBack()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
+    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
 
+    // ── Перезагрузка ──
     await page.reload()
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.getByRole('button', { name: /Утренний чек-ин/ })).toBeVisible()
+    await expect(page.locator('[data-testid="today-card-morning"]')).toBeVisible()
     expect(fixtures.savedCheckins.filter(item => item.review_completed === true)).toHaveLength(1)
 
-    const calendarDays = page.getByLabel('Календарь недели').locator('.mx-today-week-day')
-    await expect(calendarDays).toHaveCount(7)
+    // ── Календарь недели ──
+    await expectWeekStrip(page)
 
     await context.close()
   })

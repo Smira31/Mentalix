@@ -156,6 +156,8 @@ export default function JournalTextarea({
   onChange,
   placeholder,
   ariaLabel,
+  testId,
+  submitTestId,
   className = '',
   editorClassName = '',
   floatingToolbar = false,
@@ -298,6 +300,7 @@ export default function JournalTextarea({
         aria-multiline="true"
         autoFocus={autoFocus}
         contentEditable
+        data-testid={testId}
         suppressContentEditableWarning
         data-placeholder={placeholder}
         onInput={() => {
@@ -431,6 +434,7 @@ export default function JournalTextarea({
                 type="button"
                 aria-label={submitLabel}
                 title={submitLabel}
+                data-testid={submitTestId}
                 onClick={() => {
                   if (!keepFocusOnSubmit) {
                     editorRef.current?.blur()

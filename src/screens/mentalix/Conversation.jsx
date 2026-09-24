@@ -399,6 +399,7 @@ export default function Conversation({
                     {isLong && (
                       <button
                         type="button"
+                        data-testid="ai-expand-reply"
                         className="mx-ai-meta mt-3 text-gold"
                         onClick={() => {
                           setExpandedMessages(previous => {
@@ -477,6 +478,7 @@ export default function Conversation({
           <input
             ref={inputRef}
             value={input}
+            data-testid="mentor-input"
 
             onFocus={() => {
               restoreComposerFocusRef.current = true

@@ -39,6 +39,7 @@ export default function WebActionBar({
       {action && (
         <button
           type="button"
+          data-testid={action.testId}
           aria-label={action.ariaLabel || action.text}
           onClick={() => {
             if (loading) return
@@ -63,6 +64,7 @@ export default function WebActionBar({
       {secondaryAction && (
         <button
           type="button"
+          data-testid={secondaryAction.testId}
           onClick={() => {
             platform.haptic('light')
             secondaryAction.onClick()

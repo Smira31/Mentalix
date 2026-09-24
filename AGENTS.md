@@ -73,6 +73,17 @@ npm run ux:check
 нельзя сообщать, что задача завершена, пока все четыре команды не стали зелёными
 локально.
 
+## MXL-010 и Playwright-помощники
+
+Если PR меняет шаги, кнопки или переходы потока чек-ина (CheckIn.jsx, Today.jsx,
+WebActionBar.jsx, Conversation.jsx, BackButton.jsx, JournalTextarea.jsx), в том же PR:
+
+1. Обнови помощники в `tests/ux/checkin-helpers.mjs` (data-testid, шаги шкалы, текстовые шаги, эмоции, завершение, возврат).
+2. Добавь `data-testid` в новые или изменённые ключевые элементы (кнопки, инпуты, карточки дня, pill эмоций, опции шкалы).
+3. Не используй текст или CSS-классы для поиска элементов в тестах — только `data-testid`. Текст допустим только для проверки, что он показан (`expect(page.getByText(...))`).
+4. Никаких `waitForTimeout` — только ожидание состояния (`waitFor`, `expect(...).toBeVisible()`).
+5. Прогони MXL-010 локально до пуша: `npx playwright test --config=playwright.mxl010.config.mjs`.
+
 ## Documentation map
 
 Read before making non-trivial changes, in this order: `docs/AGENT_ONBOARDING.md` (how
