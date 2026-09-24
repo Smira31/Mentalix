@@ -18,6 +18,14 @@ import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
+const EMPTY_DRAFT = {
+  name: '',
+  category: 'psycho',
+  goal: '',
+  min_version: '',
+  optimal_version: '',
+  skip_consequence: '',
+}
 
 import PracticeDetail from '../components/PracticeDetail'
 function CreateRitualScreen({ onCreate, onCancel }) {
@@ -205,7 +213,8 @@ export default function Rituals({ user, onBack }) {
     }
   }
 
-  if (showCreate) return <CreateRitualScreen onCreate={createRitual} onCancel={() => setShowCreate(false)} />
+  if (showCreate)
+    return <CreateRitualScreen onCreate={createRitual} onCancel={() => setShowCreate(false)} />
   if (selected) {
     return (
       <PracticeDetail
@@ -225,12 +234,20 @@ export default function Rituals({ user, onBack }) {
         <h2 className="font-display text-[20px] text-cream lowercase">ритуалы.</h2>
       </div>
       <p className="mx-practice-list-screen__intro">обряды, что держат твой день</p>
-      {writeError && <p role="alert" className="text-[12px] text-amber-200 mb-4">{writeError}</p>}
-      {loading ? <p className="text-muted text-[13px]">Загрузка...</p> : rituals.length === 0 ? (
+      {writeError && (
+        <p role="alert" className="text-[12px] text-amber-200 mb-4">
+          {writeError}
+        </p>
+      )}
+      {loading ? (
+        <p className="text-muted text-[13px]">Загрузка...</p>
+      ) : rituals.length === 0 ? (
         <EmptyState glyph={<SemanticGlyph kind="ritual" className="w-full h-full" />}>
           <h3 className="font-display text-[16px] text-cream mb-1">Ритуалов пока нет</h3>
           <p className="text-[13px] text-muted mb-4">Создай первый ритуал.</p>
-          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[13px]">Создать ритуал</button>
+          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[13px]">
+            Создать ритуал
+          </button>
         </EmptyState>
       ) : (
         <div className="mx-practice-grid" data-testid="practice-grid">
@@ -241,15 +258,31 @@ export default function Rituals({ user, onBack }) {
               className={`mx-practice-tile ${ritual.today_level ? 'is-done' : ''}`}
               data-testid="practice-tile"
               data-done={Boolean(ritual.today_level)}
-              onClick={() => { platform.haptic('light'); setSelected(ritual) }}
+              onClick={() => {
+                platform.haptic('light')
+                setSelected(ritual)
+              }}
             >
-              <span className="mx-practice-tile__glyph"><SemanticGlyph kind={semanticKindForRitual(ritual.name)} className="w-full h-full" /></span>
+              <span className="mx-practice-tile__glyph">
+                <SemanticGlyph
+                  kind={semanticKindForRitual(ritual.name)}
+                  className="w-full h-full"
+                />
+              </span>
               <span className="mx-practice-tile__name">{ritual.name}</span>
             </button>
           ))}
         </div>
       )}
-      {!loading && <button type="button" className="mx-practice-list-screen__create" onClick={() => setShowCreate(true)}>+ Новый ритуал</button>}
+      {!loading && (
+        <button
+          type="button"
+          className="mx-practice-list-screen__create"
+          onClick={() => setShowCreate(true)}
+        >
+          + Новый ритуал
+        </button>
+      )}
     </div>
   )
 }
