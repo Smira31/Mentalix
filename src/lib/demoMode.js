@@ -220,6 +220,8 @@ function seedState(todayState = null) {
       reminder_hour: 9,
     },
     moodPractices,
+    // Дни с отметками практик (ритуалы/аскезы) за прошлые дни — для серии.
+    practiceDays: [offsetDate(today, -2), offsetDate(today, -3)],
   }
 }
 
@@ -385,6 +387,8 @@ export function demoRequest(path, options = {}) {
   }
 
   if (pathname === '/mood-practices' && method === 'GET') return json(state.moodPractices || [])
+  if (pathname === '/practice-days' && method === 'GET')
+    return json({ days: state.practiceDays || [] })
   if (pathname === '/mood-practices' && method === 'POST') {
     const record = {
       id: Date.now(),

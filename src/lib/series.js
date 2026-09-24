@@ -65,7 +65,13 @@ function hasCheckinRecord(checkin) {
  * исторические отметки практик за прошлые дни не доступны.
  * Если нужен учёт прошлых ритуалов/аскез — требуется отдельный эндпоинт.
  */
-export function collectActivityDays({ rituals, ascezas, moodPractices, now = new Date() } = {}) {
+export function collectActivityDays({
+  rituals,
+  ascezas,
+  moodPractices,
+  practiceDays,
+  now = new Date(),
+} = {}) {
   const days = new Set()
 
   // Сегодняшние отметки ритуалов и аскез
@@ -81,6 +87,13 @@ export function collectActivityDays({ rituals, ascezas, moodPractices, now = new
     for (const mp of moodPractices) {
       const date = moodPracticeDate(mp)
       if (date) days.add(date)
+    }
+  }
+
+  // Дни с отметками практик (ритуалы/аскезы) из бэкенд-эндпоинта /practice-days
+  if (Array.isArray(practiceDays)) {
+    for (const day of practiceDays) {
+      if (day) days.add(String(day).slice(0, 10))
     }
   }
 
@@ -151,11 +164,12 @@ export function buildSeriesViewModel({
   rituals,
   ascezas,
   moodPractices,
+  practiceDays,
   timezone,
 } = {}) {
   const resolvedTimezone =
     timezone || stats?.timezone || stats?.user_timezone || stats?.time_zone || 'UTC'
-  const activityDays = collectActivityDays({ rituals, ascezas, moodPractices })
+  const activityDays = collectActivityDays({ rituals, ascezas, moodPractices, practiceDays })
   const completed = checkins.filter(isCompleted)
   const activeDays = completedDays(checkins, resolvedTimezone, activityDays).length
   const currentStreak = currentCheckinStreak(checkins, { timezone: resolvedTimezone, activityDays })

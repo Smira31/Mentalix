@@ -390,6 +390,21 @@ export const api = {
       }),
   },
 
+  /*
+   * Дни с отметками практик (ритуалы, аскезы) за период — для серии.
+   * Бэкенд-эндпоинт ещё в разработке: при 404/ошибке тихо возвращаем [].
+   */
+  practiceDays: {
+    list: async (userId, { from, to } = {}) => {
+      try {
+        const res = await request(withQuery('/practice-days', { user_id: userId, from, to }))
+        return Array.isArray(res?.days) ? res.days : []
+      } catch {
+        return []
+      }
+    },
+  },
+
   checkin: {
     today: userId => request(withQuery('/checkin/today', { user_id: userId })),
 

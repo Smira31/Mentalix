@@ -226,7 +226,7 @@ export default function Today({
   // сегодняшнего чек-ина.
   const [historyLoaded, setHistoryLoaded] = useState(() => Boolean(previewFixture))
   const [cachedStreak] = useState(() => (user?.id ? peekCachedStreak(user.id) : null))
-  const activityDays = collectActivityDays({ rituals, ascezas, moodPractices })
+  const activityDays = collectActivityDays({ rituals, ascezas, moodPractices, practiceDays })
 
   const streak = resolveDisplayedStreak({
     historyLoaded,
@@ -266,6 +266,7 @@ export default function Today({
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
   const [moodPractices, setMoodPractices] = useState([])
+  const [practiceDays, setPracticeDays] = useState([])
 
   const [hintDismissed, setHintDismissed] = useSynced('mx-today-cards-hint-dismissed', 'false')
 
@@ -324,8 +325,20 @@ export default function Today({
       const history = await api.checkin.history(user.id, 90)
       setCheckinHistory(Array.isArray(history) ? history : [])
       setHistoryLoaded(true)
-      const previousModel = buildSeriesViewModel({ checkins: checkinHistory, rituals, ascezas })
-      const nextModel = buildSeriesViewModel({ checkins: history, rituals, ascezas })
+      const previousModel = buildSeriesViewModel({
+        checkins: checkinHistory,
+        rituals,
+        ascezas,
+        moodPractices,
+        practiceDays,
+      })
+      const nextModel = buildSeriesViewModel({
+        checkins: history,
+        rituals,
+        ascezas,
+        moodPractices,
+        practiceDays,
+      })
       const unlocked = nextModel.badges.find(
         badge =>
           badge.done && !previousModel.badges.find(previous => previous.id === badge.id)?.done
@@ -399,6 +412,13 @@ export default function Today({
             setMoodPractices(Array.isArray(practices) ? practices : [])
           })
           .catch(() => {})
+
+        // Дни с отметками практик (ритуалы/аскезы) за прошлые дни — для серии.
+        // Эндпоинт в бэкенде в разработке: при 404/ошибке вернёт [].
+        api.practiceDays
+          .list(user.id)
+          .then(days => setPracticeDays(Array.isArray(days) ? days : []))
+          .catch(() => setPracticeDays([]))
 
         setReviewHour(settingsData?.review_hour ?? 19)
       } catch (error) {
