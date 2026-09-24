@@ -100,6 +100,23 @@ test('yesterday check-in keeps a one-day series before today is completed', () =
   )
 })
 
+test('streak counts up to yesterday when today is not yet completed', () => {
+  assert.equal(
+    currentCheckinStreak([
+      { date: '2026-09-22', review_completed_at: '2026-09-22T08:00:00Z' },
+    ]),
+    1
+  )
+
+  assert.equal(
+    currentCheckinStreak([
+      { date: '2026-09-22', review_completed_at: '2026-09-22T08:00:00Z' },
+      { date: '2026-09-23', review_completed_at: '2026-09-23T08:00:00Z' },
+    ]),
+    2
+  )
+})
+
 test('series metrics use one completed check-in dataset instead of stale profile totals', () => {
   const model = buildSeriesViewModel({
     stats: { total_checkins: 4, days_active: 23, best_streak: 0 },

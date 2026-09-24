@@ -69,7 +69,7 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
   assert.match(morningFlow, /const \{ style: viewportStyle \} = useFullscreenSurface\(\)/)
-  assert.match(morningFlow, /const demoSurfaceStyle = \{[\s\S]*\.\.\.viewportStyle[\s\S]*paddingTop: 0/)
+  assert.match(morningFlow, /const demoSurfaceStyle = \{[\s\S]*\.\.\.viewportStyle[\s\S]*paddingBottom: 0/)
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })
 
