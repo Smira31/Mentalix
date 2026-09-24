@@ -198,12 +198,8 @@ if (
   import.meta.env.VITE_TG_SHELL !== '0' &&
   !navigator.webdriver
 ) {
-  // Обёрнуто в async IIFE, чтобы избежать top-level await — он недоступен
-  // в production-таргете сборки (esbuild build target: chrome87+).
-  void (async () => {
-    const { initTgShell } = await import('./tgShell')
-    initTgShell()
-  })()
+  const { initTgShell } = await import('./tgShell')
+  initTgShell()
 }
 
 createRoot(document.getElementById('root')).render(
