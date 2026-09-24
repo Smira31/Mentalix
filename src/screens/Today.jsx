@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
-import { ChevronRight, ArrowUpRight } from 'lucide-react'
+import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
 import './Today.css'
 
@@ -29,7 +29,8 @@ import { buildSeriesViewModel } from '../lib/series'
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
-import { formatReviewTime, resolveTodayCardStates } from '../lib/todayCardState'
+import { formatReviewTime, resolveTodayCardStates, primaryCardKind } from '../lib/todayCardState'
+import { collectActivityDays } from '../lib/series'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -48,15 +49,6 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
 // ── календарь недели + отдельные дневные streak strips ──
-
-// Pill настроения в завершённой главной карточке дня (§5.1, тип A).
-const MOOD_PILL_WORDS = [
-  'Тяжёлое настроение',
-  'Непростое настроение',
-  'Ровное настроение',
-  'Хорошее настроение',
-  'Отличное настроение',
-]
 
 function todayGreeting() {
   const hour = new Date().getHours()
@@ -234,11 +226,14 @@ export default function Today({
   // сегодняшнего чек-ина.
   const [historyLoaded, setHistoryLoaded] = useState(() => Boolean(previewFixture))
   const [cachedStreak] = useState(() => (user?.id ? peekCachedStreak(user.id) : null))
+  const activityDays = collectActivityDays({ rituals, ascezas, moodPractices })
+
   const streak = resolveDisplayedStreak({
     historyLoaded,
     history: checkinHistory,
     checkin,
     cachedStreak,
+    activityDays,
   })
 
   useEffect(() => {
@@ -269,6 +264,10 @@ export default function Today({
   // должно повторно всплывать при каждом ре-рендере Today.
   const [starterSetSkipped, setStarterSetSkipped] = useState(false)
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
+
+  const [moodPractices, setMoodPractices] = useState([])
+
+  const [hintDismissed, setHintDismissed] = useSynced('mx-today-cards-hint-dismissed', 'false')
 
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
 
@@ -388,7 +387,18 @@ export default function Today({
               path: 'GET /api/checkin/history',
               status: error?.status ?? null,
             })
+
+            setHistoryLoaded(true)
           })
+
+        // Записи практики «Настроение» — нужны для серии (день засчитывается
+        // по любой активности) и для плейсхолдера иллюстраций.
+        api.moodPractices
+          .list(user.id)
+          .then(practices => {
+            setMoodPractices(Array.isArray(practices) ? practices : [])
+          })
+          .catch(() => {})
 
         setReviewHour(settingsData?.review_hour ?? 19)
       } catch (error) {
@@ -644,51 +654,66 @@ export default function Today({
   // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
   const cardStates = resolveTodayCardStates({ now: new Date(), reviewHour, checkin })
+  const primaryKind = primaryCardKind(cardStates)
   const reviewTime = formatReviewTime(reviewHour)
-  const moodPillText = MOOD_PILL_WORDS[Number(checkin?.mood) - 1] || null
 
   function renderDayCard(kind) {
     const isMorning = kind === 'morning'
     const state = cardStates[isMorning ? 'morning' : 'review']
-    const copy = isMorning
-      ? { label: 'Утренний чек-ин', title: 'Как ты сегодня?', glyph: 'breath-flow' }
-      : { label: 'Разбор дня', title: 'Забрать главное из дня.', glyph: 'path-corridor' }
+    const isPrimary = primaryKind === kind
+    const labelTop = isMorning ? 'Утренний' : 'Разбор'
+    const labelBottom = isMorning ? 'чек-ин' : 'дня'
+    const title = isMorning ? 'Как ты сегодня?' : 'Забрать главное из дня.'
     const completedText = isMorning ? 'Утро отмечено.' : 'День закрыт.'
     const lockedText = isMorning ? 'Утро прошло' : `Откроется в ${reviewTime}`
+
     const content =
       state === 'done' ? (
         <>
-          <span className="mx-today-day-card__label">{copy.label}</span>
           <span className="mx-today-day-card__done">{completedText}</span>
-          {moodPillText && (
-            <span className="mx-today-day-card__pill">
-              <span className="mx-today-day-card__dot" aria-hidden="true" />
-              {moodPillText}
-            </span>
-          )}
+          <div className="mx-today-day-card__illustration" data-testid="today-card-illustration">
+            <div className="mx-today-day-card__illustration-slot">
+              <CardSystemGlyph kind={isMorning ? 'breath-flow' : 'path-corridor'} />
+            </div>
+          </div>
         </>
       ) : state === 'active' ? (
         <>
-          <span className="mx-today-day-card__glyph">
-            <CardSystemGlyph kind={copy.glyph} />
+          {isPrimary && (
+            <span className="mx-today-day-card__glyph">
+              <CardSystemGlyph kind={isMorning ? 'breath-flow' : 'path-corridor'} />
+            </span>
+          )}
+          <span className="mx-today-day-card__label">
+            {labelTop}
+            <br />
+            {labelBottom}
           </span>
-          <span className="mx-today-day-card__label">{copy.label}</span>
-          <span className="mx-today-day-card__title mx-type-checkin-title">{copy.title}</span>
+          <span className="mx-today-day-card__title mx-type-checkin-title">{title}</span>
           <span className="mx-today-day-card__start">Начать</span>
         </>
       ) : (
         <>
-          <span className="mx-today-day-card__label">{copy.label}</span>
+          <span className="mx-today-day-card__label">
+            {labelTop}
+            <br />
+            {labelBottom}
+          </span>
           <span className="mx-today-day-card__locked">{lockedText}</span>
         </>
       )
+
     const props = {
       className: 'mx-today-day-card animate-fade-in',
       'data-testid': `today-card-${kind}`,
       'data-kind': kind,
       'data-state': state,
-      'aria-label': `${copy.label}: ${state === 'locked' ? lockedText : state === 'missed' ? lockedText : state === 'done' ? completedText : copy.title}`,
+      ...(isPrimary ? { 'data-primary': 'true' } : {}),
+      'aria-label': `${labelTop} ${labelBottom}: ${
+        state === 'locked' ? lockedText : state === 'done' ? completedText : title
+      }`,
     }
+
     if (state === 'active' || state === 'done') {
       return (
         <button
@@ -776,22 +801,42 @@ export default function Today({
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />
       )}
 
+      {/* Подсказка после первого чек-ина — монохромная плашка с ✕. */}
+      {checkinHistory.length > 0 && hintDismissed !== 'true' && (
+        <div className="mx-today-cards-hint" data-testid="today-cards-hint">
+          <Lightbulb size={20} className="mx-today-cards-hint__icon" aria-hidden="true" />
+          <p>
+            Две карточки ниже — твои ежедневные рефлексии: одна начинает день, другая подводит итог.
+            Время разбора можно поменять в профиле.
+          </p>
+          <button
+            type="button"
+            className="mx-today-cards-hint__close"
+            aria-label="Закрыть подсказку"
+            onClick={() => setHintDismissed('true')}
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
       {/* Две независимые карточки дня: утро и разбор (§5.1, тип A). */}
       <div className="mx-today-day-card-slot">{dayCards}</div>
 
       {/* ======================================================
-          ПУЛЬС
+          ПУЛЬС — только когда есть реальное число и хотя бы одна
+          карточка не пройдена. Запасной текст убран.
           ====================================================== */}
 
-      {!hiddenCards.includes('pulse') && (
-        <p className="mx-today-pulse">
-          {activeToday == null
-            ? 'Сегодня свой путь продолжают люди по всему миру'
-            : activeToday < 20
+      {!hiddenCards.includes('pulse') &&
+        activeToday != null &&
+        (cardStates.morning !== 'done' || cardStates.review !== 'done') && (
+          <p className="mx-today-pulse">
+            {activeToday < 20
               ? `Сегодня в пути вместе с тобой: ${activeToday}`
               : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
-        </p>
-      )}
+          </p>
+        )}
 
       {/*
         mx-today-actions remains a documented maintenance contract. The legacy
