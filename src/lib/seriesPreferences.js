@@ -5,16 +5,25 @@ function key(userId) {
   return `${PREFIX}${userId || 'anonymous'}`
 }
 
+/*
+ * Огонёк серии в шапке «Сегодня» виден всегда — решение владельца от
+ * 24.09.2026, настройка «Показывать серию» удалена. Старое значение
+ * showStreak в localStorage игнорируется: при чтении поле удаляется
+ * из сохранённого объекта. Остаётся только показ значков.
+ */
 function read(userId) {
   try {
     const raw = localStorage.getItem(key(userId))
     const parsed = raw ? JSON.parse(raw) : null
+    if (parsed && 'showStreak' in parsed) {
+      delete parsed.showStreak
+      localStorage.setItem(key(userId), JSON.stringify(parsed))
+    }
     return {
-      showStreak: parsed?.showStreak !== false,
       showBadges: parsed?.showBadges !== false,
     }
   } catch {
-    return { showStreak: true, showBadges: true }
+    return { showBadges: true }
   }
 }
 

@@ -3,28 +3,36 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 const todaySource = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
-const checkinSource = await readFile(new URL('../../src/screens/CheckIn.jsx', import.meta.url), 'utf8')
+const settingsSource = await readFile(new URL('../../src/screens/Settings.jsx', import.meta.url), 'utf8')
+const seriesBadgesSource = await readFile(
+  new URL('../../src/screens/SeriesBadges.jsx', import.meta.url),
+  'utf8'
+)
 const preferencesSource = await readFile(
   new URL('../../src/lib/seriesPreferences.js', import.meta.url),
   'utf8'
 )
 
 /*
- * Огонёк серии живёт в шапке «Сегодня». Он обязан быть виден при серии ≥ 1
- * независимо от локального снапшота: отсутствующие или битые настройки
- * localStorage не должны прятать серию по умолчанию.
+ * Решение владельца от 24.09.2026: огонёк серии в шапке «Сегодня» виден
+ * всегда, настройки «Показывать серию» больше нет.
+ *
+ * - при серии 0 огонёк отрисован, цифры нет;
+ * - при серии ≥ 1 рядом с огоньком число;
+ * - после первого чек-ина дня — «1», после «Пройти заново» число
+ *   не меняется.
  */
-test('streak flame is visible in the Today header at series ≥ 1', () => {
-  // После завершённого чек-ина серия считается от 1, а не от 0.
+test('streak flame is always rendered in the Today header', () => {
+  assert.match(todaySource, /function TodayWorkspaceHeader\(/)
+  assert.ok(!todaySource.includes('showStreak'), 'условие showStreak удалено из шапки')
   assert.ok(
-    (checkinSource.match(/Math\.max\(1, currentCheckinStreak\(/g) || []).length >= 2,
-    'утренний и вечерний флоу считают серию от 1'
+    !todaySource.includes('mx-demo-today-streak-spacer'),
+    'заглушка-спейсер вместо огонька удалена'
   )
 
-  // Шапка рисует огонёк, пока настройка не выключена явно.
-  assert.match(todaySource, /function TodayWorkspaceHeader\(/)
-  assert.match(todaySource, /\{showStreak \? \(/)
+  // Огонёк рисуется безусловно, цифра — только при серии ≥ 1.
   assert.match(todaySource, /<ReferenceFlame \/>/)
+  assert.match(todaySource, /\{streak > 0 && <strong>\{streak\}<\/strong>\}/)
 
   // Шапка остаётся на экране и во время загрузки дня — с актуальным streak.
   const headerCalls = todaySource.match(/<TodayWorkspaceHeader[\s\S]*?\/>/g) || []
@@ -32,9 +40,72 @@ test('streak flame is visible in the Today header at series ≥ 1', () => {
   for (const call of headerCalls) {
     assert.match(call, /streak=\{streak\}/, 'каждая шапка получает актуальную серию')
   }
+})
 
-  // Настройки по умолчанию: без сохранённых значений огонёк виден,
-  // битый JSON в localStorage тоже не прячет серию.
-  assert.match(preferencesSource, /showStreak: parsed\?\.showStreak !== false/)
-  assert.match(preferencesSource, /return \{ showStreak: true, showBadges: true \}/)
+test('the showStreak setting is removed from Settings and the series sheet', () => {
+  assert.ok(!settingsSource.includes('Показывать серию'), 'тумблер удалён из Настроек')
+  assert.ok(!seriesBadgesSource.includes('Показывать серию'), 'тумблер удалён из шторки серии')
+  assert.ok(!settingsSource.includes('showStreak'), 'в Настройках нет showStreak')
+})
+
+test('seriesPreferences ignores and strips the legacy showStreak value', async () => {
+  const storage = new Map()
+  globalThis.localStorage = {
+    getItem: key => (storage.has(key) ? storage.get(key) : null),
+    setItem: (key, value) => storage.set(key, String(value)),
+    removeItem: key => storage.delete(key),
+  }
+
+  storage.set('mx-series-preferences:7', '{"showStreak":false,"showBadges":true}')
+
+  const { getSeriesPreferences, saveSeriesPreference } = await import(
+    '../../src/lib/seriesPreferences.js'
+  )
+
+  const preferences = getSeriesPreferences(7)
+  assert.equal(preferences.showBadges, true)
+  assert.equal('showStreak' in preferences, false, 'showStreak не возвращается вовсе')
+
+  const stored = JSON.parse(storage.get('mx-series-preferences:7'))
+  assert.equal('showStreak' in stored, false, 'старое поле удаляется при чтении')
+
+  const next = saveSeriesPreference(7, 'showBadges', false)
+  assert.equal(next.showBadges, false)
+  assert.equal('showStreak' in next, false)
+
+  delete globalThis.localStorage
+})
+
+test('streak is 0 with no check-ins, 1 after the first check-in of the day, unchanged after redo', async () => {
+  const { currentCheckinStreak } = await import('../../src/lib/series.js')
+
+  // До первого чек-ина — 0: огонёк есть, цифры нет.
+  assert.equal(currentCheckinStreak([]), 0)
+
+  // Первый чек-ин дня — «1».
+  assert.equal(currentCheckinStreak([{ date: '2026-09-24', mood: 3, energy: 2 }]), 1)
+
+  // «Пройти заново» не увеличивает число: тот же день, та же запись.
+  assert.equal(
+    currentCheckinStreak([
+      { date: '2026-09-24', mood: 4, energy: 3, updated_at: '2026-09-24T09:30:00Z' },
+    ]),
+    1
+  )
+
+  // Redo поверх истории не добавляет новых дней подряд.
+  assert.equal(
+    currentCheckinStreak([
+      { date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' },
+      { date: '2026-09-24', mood: 3 },
+      { date: '2026-09-24', mood: 5, updated_at: '2026-09-24T10:00:00Z' },
+    ]),
+    2
+  )
+})
+
+test('preferences source keeps only the badges visibility toggle', () => {
+  assert.ok(!preferencesSource.includes("saveSeriesPreference(user?.id, 'showStreak'"))
+  assert.match(preferencesSource, /showBadges: parsed\?\.showBadges !== false/)
+  assert.match(preferencesSource, /return \{ showBadges: true \}/)
 })
