@@ -385,7 +385,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
             <p className="mx-demo-checkin__feedback-prompt">
               Эта практика помогла остановиться и заметить важное?
             </p>
-            <div className="mx-demo-checkin__feedback">
+            <div className="mx-demo-checkin__feedback" data-testid="checkin-feedback-row">
               {[
                 ['Нет', ThumbsDown],
                 ['Немного', Hand],
@@ -560,7 +560,12 @@ export const MORNING_SCALE_STEPS = [SCALE_STEPS[0], SCALE_STEPS[1]]
 export function CheckInScaleQuestion({ scale, value, onPick }) {
   return (
     <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
-      <div className="mx-checkin-scale" role="radiogroup" aria-label={scale.title}>
+      <div
+        className="mx-checkin-scale"
+        role="radiogroup"
+        aria-label={scale.title}
+        data-testid="checkin-scale-row"
+      >
         {scale.labels.map((label, index) => {
           const level = index + 1
           const active = value === level
