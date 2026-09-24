@@ -13,6 +13,7 @@
  */
 export function initTgShell() {
   if (typeof window === 'undefined') return
+  if (navigator.webdriver) return
   if (new URLSearchParams(window.location.search).get('tgshell') === '0') return
   window.__MX_TG_SHELL = true
 }
