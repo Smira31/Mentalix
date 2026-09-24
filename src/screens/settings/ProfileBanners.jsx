@@ -38,8 +38,8 @@ export function PotentialBanner({ onOpen }) {
       data-testid="profile-banner-potential"
       onClick={onOpen}
     >
-      {/* Персонаж справа снизу, частично обрезан краем карточки. */}
-      <BannerArt art2x={potentialArt2x} art3x={potentialArt3x} width={118} height={82} />
+      {/* Персонаж справа снизу, крупный, частично обрезан краем карточки. */}
+      <BannerArt art2x={potentialArt2x} art3x={potentialArt3x} width={172} height={120} />
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
       {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
@@ -70,8 +70,8 @@ export function SupportBanner({ onOpen }) {
         {'\u00A0— это помогает проекту расти.'}
       </p>
       <span className="mx-profile-banner__panel">
-        {/* Персонаж по центру панели, ≈89 px шириной. */}
-        <BannerArt art2x={supportArt2x} art3x={supportArt3x} width={89} height={75} />
+        {/* Персонаж по центру панели, ≈107 px шириной, чуть крупнее и ярче. */}
+        <BannerArt art2x={supportArt2x} art3x={supportArt3x} width={107} height={90} />
       </span>
     </button>
   )
@@ -85,8 +85,8 @@ export function WebBanner({ onOpen }) {
       data-testid="profile-banner-web"
       onClick={onOpen}
     >
-      {/* Персонаж справа сверху, окно сайта видно целиком. */}
-      <BannerArt art2x={webArt2x} art3x={webArt3x} width={104} height={72} />
+      {/* Персонаж справа сверху крупнее — окно сайта читается как сайт. */}
+      <BannerArt art2x={webArt2x} art3x={webArt3x} width={150} height={104} />
       <span className="mx-profile-banner__title">Mentalix на сайте</span>
       <span className="mx-profile-banner__text">
         Свяжи аккаунт с сайтом, чтобы записи были и в браузере.

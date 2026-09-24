@@ -48,8 +48,8 @@ button.mx-profile-banner:active {
 
 .mx-profile-banner--potential .mx-profile-banner__art {
   position: absolute;
-  right: -30px;
-  bottom: -30px;
+  right: -34px;
+  bottom: -34px;
   z-index: 0;
 }
 
@@ -119,12 +119,18 @@ button.mx-profile-banner:active {
 .mx-profile-banner__panel {
   display: flex;
   align-self: stretch;
-  width: 89px;
+  width: 112px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
   background: rgb(var(--c-card-raised2));
   color: rgb(var(--c-white));
+}
+
+/* Персонаж по центру панели по вертикали; исходный файл заметно темнее
+   первого баннера — выравниваем яркость и насыщенность фильтром. */
+.mx-profile-banner--support .mx-profile-banner__art {
+  filter: brightness(1.18) saturate(1.25);
 }
 
 /* 3. «Вход» — 175 px, заголовок сверху слева, текст снизу слева,
@@ -144,7 +150,7 @@ button.mx-profile-banner:active {
   position: absolute;
   top: 18px;
   left: 16px;
-  max-width: calc(100% - 140px);
+  max-width: calc(100% - 190px);
   font-size: 24px;
   font-weight: 700;
   line-height: 1.15;
