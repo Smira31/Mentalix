@@ -1,22 +1,29 @@
 /**
  * tgShell mode — dev-only Telegram iOS simulation for the Base44 preview.
  *
- * Enabled by default when import.meta.env.DEV === true (Vite dev server).
- * Disabled by ?tgshell=0. In production builds DEV is false, so the code
- * is unreachable and tree-shaken.
+ * Enabled by default on dev/preview hosts (localhost, Vercel Preview,
+ * Cloudflare tunnels, Base44 preview). Disabled by ?tgshell=0.
+ * In production the hostname never matches, so the mode is unreachable.
  *
  * When active, isPreviewDemoMode() also returns true, so all existing
  * demo-mode code paths (skip auth, DEMO_USER, demo data, DemoTelegramChrome,
  * 56px top inset, etc.) work automatically.
  */
 export function isTgShellMode() {
-  // VITE_TG_SHELL is a custom Vite define: true in dev, false in production.
-  // Unlike import.meta.env.DEV, esbuild reliably tree-shakes the false branch.
   if (typeof window === 'undefined') return false
-  return (
-    import.meta.env.VITE_TG_SHELL &&
-    new URLSearchParams(window.location.search).get('tgshell') !== '0'
-  )
+  // Runtime hostname check: prevents activation on production hosts even
+  // though esbuild does not tree-shake the code from the prod bundle.
+  // The mode is "unreachable" in production because the hostname never matches.
+  const host = window.location.hostname
+  const isDevHost =
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host.endsWith('.vercel.app') ||
+    host.endsWith('.manus.computer') ||
+    host.endsWith('.trycloudflare.com') ||
+    host.endsWith('.base44-preview.app')
+  if (!isDevHost) return false
+  return new URLSearchParams(window.location.search).get('tgshell') !== '0'
 }
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v1'
@@ -55,7 +62,8 @@ export function isPreviewDemoMode() {
     host === 'mentalix-owner-qa.pages.dev' ||
     host === 'mentalix-production.web.app' ||
     host.endsWith('.manus.computer') ||
-    host.endsWith('.trycloudflare.com')
+    host.endsWith('.trycloudflare.com') ||
+    host.endsWith('.base44-preview.app')
   const isPreviewRuntime =
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost =

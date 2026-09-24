@@ -50,7 +50,6 @@ export default defineConfig({
   plugins: [react(), uiLabDecisionWriter()],
   define: {
     'import.meta.env.VERCEL_ENV': JSON.stringify(globalThis.process?.env?.VERCEL_ENV || ''),
-    'import.meta.env.VITE_TG_SHELL': JSON.stringify(process.env.NODE_ENV !== 'production'),
   },
   server: {
     host: true,
