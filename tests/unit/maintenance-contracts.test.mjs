@@ -31,6 +31,7 @@ test('allowlist сохраняет доступные практики и акт
     'lila-discover',
     'rituals',
     'ascezas',
+    'mood',
   ])
 
   assert.equal(isPracticeAvailable('unknown-practice'), false)
