@@ -59,10 +59,15 @@ test('Profile keeps user data visible and does not fetch path sources', async ({
   const requestedUrls = new Set()
   const { context, page } = await openApp(browser, baseURL, new Set(['/api/rituals']))
   try {
+    // Ждём, пока «Сегодня» завершит все запросы (включая retry /api/rituals
+    // из-за 503), чтобы их не посчитала проверка «о тебе.».
+    await page.waitForLoadState('networkidle')
+    await page.getByRole('button', { name: 'Открыть настройки' }).click()
+    // Слушаем сеть только с момента перехода на «о тебе.» —
+    // не считаем запросы «Сегодня» и предзагрузку настроек профиля.
     page.on('request', req => {
       requestedUrls.add(new URL(req.url()).pathname)
     })
-    await page.getByRole('button', { name: 'Открыть настройки' }).click()
     await page.getByTestId('profile-row-about').click()
     await expect(page.getByRole('heading', { name: 'Issue 648' })).toBeVisible()
     // «о тебе.» больше не запрашивает источники пути
