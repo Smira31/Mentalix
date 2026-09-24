@@ -12,7 +12,13 @@ import CheckIn from './CheckIn'
 import ThemeScreen from './ThemeScreen'
 import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
-import CardSystemGlyph from '../components/CardSystemGlyph'
+import cardStart2x from '../assets/today/card-start@2x.webp'
+import cardStart3x from '../assets/today/card-start@3x.webp'
+import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
+import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
+import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
+import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
+
 import History from './History'
 import QuoteView from './QuoteView'
 import SemanticGlyph from '../components/SemanticGlyph'
@@ -717,7 +723,16 @@ export default function Today({
           )}
           <div className="mx-today-day-card__illustration" data-testid="today-card-illustration">
             <div className="mx-today-day-card__illustration-slot">
-              <CardSystemGlyph kind={isMorning ? 'breath-flow' : 'path-corridor'} />
+              <img
+                className="mx-today-day-card__art"
+                src={isMorning ? cardMorningDone2x : cardEveningDone2x}
+                srcSet={`${isMorning ? cardMorningDone2x : cardEveningDone2x} 2x, ${isMorning ? cardMorningDone3x : cardEveningDone3x} 3x`}
+                width={isMorning ? 200 : 200}
+                height={isMorning ? 212 : 230}
+                loading="lazy"
+                alt=""
+                draggable={false}
+              />
             </div>
           </div>
         </>
@@ -725,7 +740,16 @@ export default function Today({
         <>
           {isPrimary && (
             <span className="mx-today-day-card__glyph">
-              <CardSystemGlyph kind={isMorning ? 'breath-flow' : 'path-corridor'} />
+              <img
+                className="mx-today-day-card__art"
+                src={cardStart2x}
+                srcSet={`${cardStart2x} 2x, ${cardStart3x} 3x`}
+                width={200}
+                height={212}
+                loading="lazy"
+                alt=""
+                draggable={false}
+              />
             </span>
           )}
           <span className="mx-today-day-card__label">
