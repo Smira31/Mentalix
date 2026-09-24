@@ -24,9 +24,9 @@ test('Rituals uses a two-column list without streak counters or restore controls
 
 test('Ritual detail has the large toggle, accordions, delete flow and success haptic', () => {
   assert.match(detailSource, /data-testid="practice-detail-toggle"/)
-  assert.match(detailSource, /data-testid="practice-accordion-why"/)
-  assert.match(detailSource, /data-testid="practice-accordion-how"/)
-  assert.match(detailSource, /data-testid="practice-accordion-note"/)
+  assert.match(detailSource, /testId="practice-accordion-why"/)
+  assert.match(detailSource, /testId="practice-accordion-how"/)
+  assert.match(detailSource, /testId="practice-accordion-note"/)
   assert.match(detailSource, /platform\.haptic\('success'\)/)
   assert.match(detailSource, /<DeleteConfirmationDialog/)
   assert.match(cssSource, /prefers-reduced-motion: reduce/)
