@@ -1488,8 +1488,8 @@
   text-align: center;
 }
 .mx-today-day-card[data-state='active'] {
-  border-color: rgb(255 255 255 / 0.06);
-  background: linear-gradient(180deg, #242424 0%, #323232 100%);
+  border-color: transparent;
+  background: rgb(var(--c-text) / 0.07);
 }
 .mx-today-day-card[data-state='active']:active,
 .mx-today-day-card[data-state='done']:active {
@@ -1783,10 +1783,10 @@
    §5.1 A — состояния карточек дня (эталон Stoic)
    ====================================================== */
 
-/* Главная карточка — заметно светлее обычной */
-.mx-today-day-card[data-primary='true'] {
+/* Главная непройденная карточка — заметно светлее второй. */
+.mx-today-day-card[data-state='active'][data-primary='true'] {
   background: rgb(var(--c-text) / 0.14);
-  border-color: rgb(var(--c-text) / 0.14);
+  border-color: transparent;
 }
 
 /* Кнопка «Начать» на главной карточке — белая залитая, чёрный текст */
@@ -1800,47 +1800,87 @@
 .mx-today-day-card[data-state='active']:not([data-primary='true']) .mx-today-day-card__start {
   background: transparent;
   color: rgb(var(--c-text));
-  border: 1px solid rgb(var(--c-text) / 0.25);
+  border: 1px solid rgb(var(--c-text) / 0.15);
 }
 
-/* Пройденная карточка — тёмный фон, тонкая обводка */
+/* Пройденная карточка — фон экрана и тонкая обводка. */
 .mx-today-day-card[data-state='done'] {
-  border-color: rgb(var(--c-text) / 0.08);
-  background: rgb(var(--c-card2));
+  border-color: rgb(var(--c-text) / 0.15);
+  background: rgb(var(--c-bg));
+}
+
+.mx-today-day-card[data-state='active'] .mx-today-day-card__label,
+.mx-today-day-card[data-state='locked'] .mx-today-day-card__label {
+  margin-top: 8px;
+  color: rgb(var(--c-text) / 0.4);
+  font-weight: 400;
+  white-space: normal;
+}
+
+.mx-today-day-card[data-state='active'] .mx-today-day-card__title {
+  margin-top: 14px;
+  font-size: 21px;
+  font-weight: 400;
+  line-height: 1.18;
+  -webkit-line-clamp: 3;
+}
+
+.mx-today-day-card__title strong {
+  font-weight: 700;
+}
+
+.mx-today-day-card[data-state='active'] .mx-today-day-card__start {
+  width: 60%;
+}
+
+.mx-today-day-card[data-state='done'] {
+  position: relative;
 }
 
 .mx-today-day-card[data-state='done'] .mx-today-day-card__done {
-  display: block;
-  margin-top: auto;
-  margin-bottom: auto;
-  color: rgb(var(--c-muted));
-  font-size: 14px;
+  margin: 12px 0 0;
+  color: rgb(var(--c-text) / 0.35);
+  font-size: 21px;
   font-weight: 400;
-  line-height: 1.3;
+  line-height: 1.18;
 }
 
-/* Иллюстрация в пройденной карточке — ≈60% ширины карточки, на тонкой линии */
+/* Персонаж опирается на линию на 78% высоты карточки. */
 .mx-today-day-card__illustration {
+  position: absolute;
+  right: 25%;
+  bottom: 21%;
+  left: 25%;
+  height: 122px;
   display: flex;
-  width: 67%;
-  margin-top: auto;
-  padding-bottom: 12px;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  border-top: 1px solid rgb(var(--c-text) / 0.08);
-  padding-top: 12px;
 }
 
-.mx-today-day-card__illustration img {
-  max-width: 100%;
-  height: auto;
+.mx-today-day-card__illustration::before {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1.5px;
+  background: rgb(var(--c-text) / 0.8);
+  content: '';
 }
 
 .mx-today-day-card__illustration-slot {
+  position: relative;
   display: flex;
   width: 100%;
-  align-items: center;
+  height: 100%;
+  align-items: flex-end;
   justify-content: center;
+}
+
+.mx-today-day-card__illustration .mx-today-day-card__art {
+  width: auto;
+  max-width: 100%;
+  max-height: 122px;
+  object-fit: contain;
 }
 
 /* Подсказка после первого чек-ина — монохромная плашка */

@@ -34,7 +34,8 @@ export function resolveTodayCardStates({
 } = {}) {
   const { hour, minute } = localHourAndMinute(now, timeZone)
   const minutes = hour * 60 + minute
-  const reviewStarts = Math.max(0, Math.min(23, Number(reviewHour) || DEFAULT_REVIEW_HOUR)) * 60
+  const reviewStarts = Math.max(0, Math.min(24, Number(reviewHour ?? DEFAULT_REVIEW_HOUR))) * 60
+  const isNight = hour < 5
   const morningDone = hasMorningFields(checkin)
   const reviewDone = Boolean(checkin?.review_completed_at)
 
@@ -42,10 +43,11 @@ export function resolveTodayCardStates({
   // Состояния 'missed' для сегодняшних карточек нет.
   const morning = morningDone ? 'done' : 'active'
 
-  // Разбор: locked до времени разбора, после — active.
-  const review = reviewDone ? 'done' : minutes >= reviewStarts ? 'active' : 'locked'
+  // Ночью до 05:00 вечерний разбор остаётся доступен для вчерашнего дня.
+  // Дату записи этот расчёт не меняет.
+  const review = reviewDone ? 'done' : isNight || minutes >= reviewStarts ? 'active' : 'locked'
 
-  return { morning, review, hour, minute }
+  return { morning, review, hour, minute, isNight }
 }
 
 /**
