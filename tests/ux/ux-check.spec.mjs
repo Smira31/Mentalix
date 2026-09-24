@@ -139,6 +139,8 @@ function fixtureFor(request) {
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
   if (pathname === '/api/pinned-practices') return jsonResponse(FIXTURES.pinnedPractices)
+  if (pathname === '/api/mood-practices') return jsonResponse([])
+  if (pathname === '/api/practice-days') return jsonResponse({ days: [] })
   if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
   if (pathname === '/api/analytics') return jsonResponse(FIXTURES.analytics)
   if (pathname === '/api/mentalix/consent') return jsonResponse({ context_consent: false })
