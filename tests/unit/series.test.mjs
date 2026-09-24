@@ -1,7 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildSeriesViewModel, currentCheckinStreak, longestCheckinStreak } from '../../src/lib/series.js'
+import {
+  buildSeriesViewModel,
+  currentCheckinStreak,
+  longestCheckinStreak,
+  collectActivityDays,
+} from '../../src/lib/series.js'
 
 test('currentCheckinStreak counts the completed tail in chronological order', () => {
   const checkins = [
@@ -160,4 +165,78 @@ test('withTodayCheckin: утренний чек-ин за сегодня даё�
 
 test('currentCheckinStreak учитывает утреннюю запись только с created_at', () => {
   assert.equal(currentCheckinStreak([{ created_at: '2026-09-24T06:00:00Z' }]), 1)
+})
+
+// ── Новое правило: день засчитывается по любой активности ──
+
+test('collectActivityDays: отметка ритуала сегодня добавляет сегодняшний день', () => {
+  const now = new Date(2026, 8, 24, 10, 0)
+  const days = collectActivityDays({
+    rituals: [{ id: 1, today_level: 2 }],
+    ascezas: [],
+    moodPractices: [],
+    now,
+  })
+  assert.deepEqual(days, ['2026-09-24'])
+})
+
+test('collectActivityDays: отметка аскезы сегодня добавляет сегодняшний день', () => {
+  const now = new Date(2026, 8, 24, 10, 0)
+  const days = collectActivityDays({
+    rituals: [],
+    ascezas: [{ id: 1, today_status: 'held' }],
+    moodPractices: [],
+    now,
+  })
+  assert.deepEqual(days, ['2026-09-24'])
+})
+
+test('collectActivityDays: записи «Настроение» добавляют свои даты', () => {
+  const days = collectActivityDays({
+    rituals: [],
+    ascezas: [],
+    moodPractices: [
+      { recorded_at: '2026-09-22T15:00:00Z' },
+      { recorded_at: '2026-09-23T10:00:00Z' },
+    ],
+  })
+  assert.deepEqual(days.sort(), ['2026-09-22', '2026-09-23'])
+})
+
+test('collectActivityDays: без активности — пустой массив', () => {
+  assert.deepEqual(collectActivityDays({}), [])
+  assert.deepEqual(collectActivityDays({ rituals: [], ascezas: [], moodPractices: [] }), [])
+})
+
+test('mood practice засчитывает день в серию через activityDays', () => {
+  // Вчера — чек-ин, сегодня — только mood practice (без чек-ина)
+  const checkins = [{ date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' }]
+  const activityDays = ['2026-09-24']
+  assert.equal(currentCheckinStreak(checkins, { activityDays }), 2)
+})
+
+test('mood practice не засчитывается, если день уже есть в чек-инах (без дублирования)', () => {
+  const checkins = [
+    { date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' },
+    { date: '2026-09-24', mood: 3, energy: 2 },
+  ]
+  const activityDays = ['2026-09-24'] // та же дата — не дублируется
+  assert.equal(currentCheckinStreak(checkins, { activityDays }), 2)
+})
+
+test('buildSeriesViewModel учитывает moodPractices в серии', () => {
+  const model = buildSeriesViewModel({
+    checkins: [{ date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' }],
+    moodPractices: [{ recorded_at: '2026-09-24T11:00:00Z' }],
+  })
+  assert.equal(model.currentStreak, 2)
+})
+
+test('buildSeriesViewModel: отметка ритуала сегодня продлевает серию', () => {
+  const model = buildSeriesViewModel({
+    checkins: [{ date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' }],
+    rituals: [{ id: 1, today_level: 2 }],
+  })
+  // Сегодня засчитано через ритуал — серия = 2
+  assert.equal(model.currentStreak, 2)
 })
