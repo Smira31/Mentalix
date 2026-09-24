@@ -71,7 +71,6 @@ export default function MoodPractice({ user, onDone }) {
   const [emotion, setEmotion] = useState(null)
   const [context, setContext] = useState(null)
   const [note, setNote] = useState('')
-  const [breathingCompleted, setBreathingCompleted] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -107,7 +106,6 @@ export default function MoodPractice({ user, onDone }) {
       })
 
       platform.haptic('success')
-      setBreathingCompleted(withBreathing)
       setStep(STEP_DONE)
     } catch (saveError) {
       console.error(saveError)
@@ -143,7 +141,10 @@ export default function MoodPractice({ user, onDone }) {
               </div>
             </div>
 
-            <div className="pb-10 flex justify-center" style={{ paddingBottom: 'calc(var(--app-safe-bottom) + 40px)' }}>
+            <div
+              className="pb-10 flex justify-center"
+              style={{ paddingBottom: 'calc(var(--app-safe-bottom) + 40px)' }}
+            >
               <button
                 type="button"
                 data-testid="mood-practice-start"
@@ -206,9 +207,7 @@ export default function MoodPractice({ user, onDone }) {
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
-      <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-      >
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <BackButton onClick={handleBack} />
       </div>
 
@@ -263,9 +262,7 @@ export default function MoodPractice({ user, onDone }) {
                         setEmotion(active ? null : item)
                       }}
                       className={`rounded-full px-5 text-[15px] font-medium transition-colors ${
-                        active
-                          ? 'bg-cream text-emerald-deep'
-                          : 'bg-emerald text-cream'
+                        active ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream'
                       }`}
                       style={{ height: '38px' }}
                     >
@@ -313,9 +310,7 @@ export default function MoodPractice({ user, onDone }) {
                         setContext(active ? null : opt.value)
                       }}
                       className={`rounded-2xl py-3 text-[14px] font-medium transition-colors ${
-                        active
-                          ? 'bg-cream text-emerald-deep'
-                          : 'bg-emerald text-cream'
+                        active ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream'
                       }`}
                     >
                       {opt.label}
@@ -328,7 +323,10 @@ export default function MoodPractice({ user, onDone }) {
 
           {/* ── Шаг: Предложение подышать ── */}
           {step === STEP_BREATHING && (
-            <div className="w-full flex flex-col items-center text-center" style={{ paddingTop: '15vh' }}>
+            <div
+              className="w-full flex flex-col items-center text-center"
+              style={{ paddingTop: '15vh' }}
+            >
               <p className="text-[22px] leading-[1.3] text-cream">
                 <strong className="font-bold">Ты остановился и заметил, что чувствуешь.</strong>
                 <br />
@@ -339,10 +337,7 @@ export default function MoodPractice({ user, onDone }) {
                   {error}
                 </p>
               )}
-              <div
-                className="mt-10 flex gap-2 w-full"
-                style={{ maxWidth: 'calc(100% - 56px)' }}
-              >
+              <div className="mt-10 flex gap-2 w-full" style={{ maxWidth: 'calc(100% - 56px)' }}>
                 <button
                   type="button"
                   data-testid="mood-practice-breathe"
@@ -380,22 +375,13 @@ export default function MoodPractice({ user, onDone }) {
 
       {/* ── Кнопка «Далее» для шагов шкалы, эмоций и контекста ── */}
       {step === STEP_MOOD && (
-        <CheckInNextControls
-          onNext={() => setStep(STEP_EMOTION)}
-          disabled={!mood}
-        />
+        <CheckInNextControls onNext={() => setStep(STEP_EMOTION)} disabled={!mood} />
       )}
       {step === STEP_EMOTION && (
-        <CheckInNextControls
-          onNext={() => setStep(STEP_CONTEXT)}
-          disabled={!emotion}
-        />
+        <CheckInNextControls onNext={() => setStep(STEP_CONTEXT)} disabled={!emotion} />
       )}
       {step === STEP_CONTEXT && (
-        <CheckInNextControls
-          onNext={() => setStep(STEP_BREATHING)}
-          disabled={false}
-        />
+        <CheckInNextControls onNext={() => setStep(STEP_BREATHING)} disabled={false} />
       )}
     </div>,
     getFullscreenPortalTarget()
