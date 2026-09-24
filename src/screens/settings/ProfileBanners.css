@@ -144,55 +144,11 @@ button.mx-profile-banner:active {
 }
 
 /* 3. «Вход» — 190 px, заголовок сверху слева, текст сразу под ним,
-   крупная CSS-плашка браузера посередине, персонаж справа в полный
-   рост карточки указывает пальцем на её правый край. */
+   персонаж справа в полный рост карточки указывает пальцем на
+   маленькую тусклую плашку браузера из иллюстрации владельца. */
 .mx-profile-banner--web {
   min-height: 190px;
   background: rgb(var(--c-card-raised));
-}
-
-/* Крупное «окно браузера» на всё пустое место карточки — CSS-ремейк
-   маленькой плашки из иллюстрации владельца (рамка, три точки,
-   две строки контента), яркая и читается как сайт с любого масштаба. */
-.mx-profile-banner__web-window {
-  position: absolute;
-  top: 64px;
-  right: 122px;
-  width: 62px;
-  height: 60px;
-  overflow: hidden;
-  border: 2px solid rgb(var(--c-white));
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.mx-profile-banner__web-window-bar {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  height: 20px;
-  padding: 0 8px;
-  border-bottom: 2px solid rgb(var(--c-white));
-}
-
-.mx-profile-banner__web-window-bar i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgb(var(--c-white));
-}
-
-.mx-profile-banner__web-window-line {
-  display: block;
-  height: 6px;
-  margin: 14px 10px 0;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.55);
-}
-
-.mx-profile-banner__web-window-line--short {
-  width: 56%;
-  margin-top: 10px;
 }
 
 /* Персонаж целиком в кадре, включая кончик поднятого пальца —
@@ -233,7 +189,7 @@ button.mx-profile-banner:active {
 }
 
 /* Текст сразу под заголовком, без пустого места; ширина — до
-   плашки браузера и персонажа справа. */
+   персонажа справа. */
 .mx-profile-banner--web .mx-profile-banner__text {
   position: absolute;
   top: 48px;

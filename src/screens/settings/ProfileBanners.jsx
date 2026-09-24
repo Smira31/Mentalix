@@ -85,21 +85,9 @@ export function WebBanner({ onOpen }) {
       data-testid="profile-banner-web"
       onClick={onOpen}
     >
-      {/* Плашка браузера перерисована в CSS: в исходнике она маленькая
-          (21×14 pt) и при увеличении «на всё пустое место» теряла чёткость.
-          Форма та же — рамка, три точки, две строки контента. */}
-      <span className="mx-profile-banner__web-window" aria-hidden="true">
-        <span className="mx-profile-banner__web-window-bar">
-          <i />
-          <i />
-          <i />
-        </span>
-        <span className="mx-profile-banner__web-window-line" />
-        <span className="mx-profile-banner__web-window-line mx-profile-banner__web-window-line--short" />
-      </span>
-      {/* Персонаж справа целиком: нарисованное в файле маленькое окно
-          скрыто обрезкой кадра, поднятый палец указывает на правый край
-          CSS-плашки браузера. */}
+      {/* Персонаж справа целиком, кадр берёт файл от кончика поднятого
+          пальца: в иллюстрации владельца рядом с пальцем нарисована
+          маленькая тусклая плашка браузера — персонаж указывает на неё. */}
       <span className="mx-profile-banner__web-character">
         <BannerArt art2x={webArt2x} art3x={webArt3x} width={234} height={162} />
       </span>
