@@ -240,3 +240,35 @@ test('buildSeriesViewModel: отметка ритуала сегодня про�
   // Сегодня засчитано через ритуал — серия = 2
   assert.equal(model.currentStreak, 2)
 })
+
+// ── practiceDays: дни с отметками практик из бэкенд-эндпоинта ──
+
+test('collectActivityDays: practiceDays добавляют прошедшие дни', () => {
+  const days = collectActivityDays({
+    rituals: [],
+    ascezas: [],
+    moodPractices: [],
+    practiceDays: ['2026-09-20', '2026-09-21'],
+  })
+  assert.deepEqual(days.sort(), ['2026-09-20', '2026-09-21'])
+})
+
+test('practiceDays: прошлый день с практикой продлевает серию', () => {
+  const checkins = [{ date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' }]
+  const activityDays = collectActivityDays({ practiceDays: ['2026-09-24'] })
+  assert.equal(currentCheckinStreak(checkins, { activityDays }), 2)
+})
+
+test('practiceDays: при пустом ответе (ошибка/404) серия не меняется', () => {
+  const checkins = [{ date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' }]
+  const activityDays = collectActivityDays({ practiceDays: [] })
+  assert.equal(currentCheckinStreak(checkins, { activityDays }), 1)
+})
+
+test('buildSeriesViewModel учитывает practiceDays в серии', () => {
+  const model = buildSeriesViewModel({
+    checkins: [{ date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' }],
+    practiceDays: ['2026-09-24'],
+  })
+  assert.equal(model.currentStreak, 2)
+})
