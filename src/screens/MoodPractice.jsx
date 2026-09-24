@@ -12,13 +12,14 @@ import {
 } from '../lib/fullscreenSurface'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import {
+  Face,
   SCALE_STEPS,
+  EMOTIONS,
   CheckInQuestion,
   CheckInScaleQuestion,
   CheckInNextControls,
   CheckInCompletionArt,
 } from './CheckIn'
-import EmotionStep from '../components/EmotionStep'
 import {
   STEP_INTRO,
   STEP_MOOD,
@@ -208,6 +209,7 @@ export default function MoodPractice({ user, onDone }) {
   // ── Общий каркас для шагов шкалы/эмоций/контекста/дыхания ──
 
   const moodLevel = mood || 3
+  const emotionOptions = EMOTIONS[moodLevel] || EMOTIONS[3]
 
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
@@ -264,12 +266,29 @@ export default function MoodPractice({ user, onDone }) {
                 headingAs="h2"
                 headingClassName="font-display text-cream text-[22px] font-semibold leading-[1.3]"
               />
-              <EmotionStep
-                initialLevel={moodLevel}
-                emotion={emotion}
-                onEmotionChange={setEmotion}
-                testId="mood-practice-emotion"
-              />
+              <div className="mt-8 flex flex-col items-center gap-1.5 w-full">
+                {emotionOptions.map(item => {
+                  const active = emotion === item
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      data-testid="mood-practice-emotion"
+                      data-emotion={item}
+                      onClick={() => {
+                        platform.haptic('light')
+                        setEmotion(active ? null : item)
+                      }}
+                      className={`rounded-full px-5 text-[15px] font-medium transition-colors ${
+                        active ? 'bg-cream text-emerald-deep' : 'bg-emerald text-cream'
+                      }`}
+                      style={{ height: '38px' }}
+                    >
+                      {item.charAt(0).toUpperCase() + item.slice(1)}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
 
@@ -387,7 +406,6 @@ export default function MoodPractice({ user, onDone }) {
         <CheckInNextControls
           onNext={() => setStep(STEP_CONTEXT)}
           disabled={!canProceedFromStep(STEP_EMOTION, { mood, emotion })}
-          variant="emotion"
         />
       )}
       {step === STEP_CONTEXT && (

@@ -17,7 +17,6 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { consumeMoodDraft } from '../lib/moodCheckDraft'
-import EmotionStep from '../components/EmotionStep'
 import {
   clearCheckinDraft,
   draftHasContent,
@@ -72,9 +71,9 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
+export function CheckInNextControls({ onNext, disabled = false, onSkip = null }) {
   return (
-    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+    <div className="mx-checkin-next-controls">
       {onSkip ? (
         <button type="button" className="mx-checkin-next-controls__skip" onClick={onSkip}>
           Пропустить
@@ -650,6 +649,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
   const [emotion, setEmotion] = useState(fieldSource?.emotion || null)
 
+  const [showAllEmotions, setShowAllEmotions] = useState(false)
 
   const [savedCheckinId, setSavedCheckinId] = useState(null)
 
@@ -1305,13 +1305,17 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const scale = skipScales ? null : MORNING_SCALE_STEPS[step]
 
   const moodLevel = values.mood || existing?.mood || 3
+  const emotionOptions = Array.from(new Set(Object.values(EMOTIONS).flat()))
+  const visibleEmotionOptions = showAllEmotions
+    ? emotionOptions
+    : EMOTIONS[moodLevel] || EMOTIONS[3]
 
   const eveningQuestion =
     isEvening && isCard ? (cardIdx < LESSON_FIELDS.length ? LESSON_FIELDS[cardIdx] : null) : null
   const questionTitle =
     scale?.title ||
     (isEmotionStep
-      ? 'Что ближе всего к тому, что ты чувствуешь?'
+      ? 'Какой был день?'
       : isEvening
         ? eveningQuestion.label
         : cardIdx === 0
@@ -1323,7 +1327,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const questionSubtitle =
     scale?.hint ||
     (isEmotionStep
-      ? null
+      ? 'Назвать чувство — половина работы с ним.'
       : isEvening
         ? 'Пара слов — уже разговор с собой. Можно пропустить.'
         : cardIdx === 0
@@ -1356,11 +1360,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                 'font-display text-cream',
                 isMorningNoteStep
                   ? 'text-[30px] leading-[1.12]'
-                  : isEmotionStep
-                    ? 'text-[22px] font-semibold leading-[1.3]'
-                    : isEvening && isCard
-                      ? 'text-[22px] font-bold leading-[1.2]'
-                      : 'text-[26px] leading-tight',
+                  : isEvening && isCard
+                    ? 'text-[22px] font-bold leading-[1.2]'
+                    : 'text-[26px] leading-tight',
               ].join(' ')}
               hintClassName={[
                 'text-[14px] text-muted',
@@ -1395,14 +1397,49 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
             {/* ── эмоции ── */}
 
             {isEmotionStep && (
-              <EmotionStep
-                key="emo"
-                initialLevel={moodLevel}
-                emotion={emotion}
-                onEmotionChange={setEmotion}
-                onHeavyEmotionClick={openListener}
-                testId="checkin-emotion-pill"
-              />
+              <div key="emo" className="w-full flex flex-col items-center">
+                <div className="mx-checkin-emotion-grid">
+                  {visibleEmotionOptions.map(item => {
+                    const active = emotion === item
+
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        data-testid="checkin-emotion-pill"
+                        data-emotion={item}
+                        onClick={() => {
+                          platform.haptic('light')
+
+                          setEmotion(active ? null : item)
+                        }}
+                        className={`mx-checkin-emotion-button ${active ? 'is-selected' : ''}`}
+                      >
+                        {item.charAt(0).toUpperCase() + item.slice(1)}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {!showAllEmotions && (
+                  <button
+                    type="button"
+                    className="mx-checkin-emotion-more"
+                    onClick={() => setShowAllEmotions(true)}
+                  >
+                    Показать ещё
+                  </button>
+                )}
+
+                {HEAVY_EMOTIONS.includes(emotion) && (
+                  <button
+                    onClick={openListener}
+                    className="mt-6 text-[13px] font-semibold text-gold bg-transparent border-0"
+                  >
+                    Поговорить об этом с Собеседником →
+                  </button>
+                )}
+              </div>
             )}
 
             {/* ── уроки / мысль ── */}
@@ -1529,7 +1566,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
           onNext={compactStepAction}
           disabled={compactStepDisabled}
           onSkip={isScaleStep ? () => setStep(step + 1) : null}
-          variant={isEmotionStep ? 'emotion' : 'scale'}
         />
       ) : null}
       <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />

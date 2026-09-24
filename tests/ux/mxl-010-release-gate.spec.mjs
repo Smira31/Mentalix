@@ -192,7 +192,7 @@ test.describe('MXL-010 automated technical gate', () => {
     await openDayCard(page, 'evening')
 
     // ── Вечерний разбор ──
-    await expect(page.getByRole('heading', { name: 'Что ближе всего к тому, что ты чувствуешь?' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Какой был день?' })).toBeVisible()
     await emotionStep(page, 'ровно')
     await page.locator('[data-testid="checkin-next"]').click()
 
