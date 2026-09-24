@@ -394,6 +394,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
                 <button
                   key={item}
                   type="button"
+                  data-testid="checkin-feedback-option"
                   className={feedback === item ? 'is-selected' : ''}
                   onClick={() => setFeedback(item)}
                 >

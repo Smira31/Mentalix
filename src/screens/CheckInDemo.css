@@ -420,7 +420,8 @@
 .mx-demo-checkin__editor [contenteditable] {
   min-height: 300px;
   background: #000 !important;
-  padding: 4px 0;
+  /* Внутренний отступ поля: §5.2 его не задаёт — 16 px, как --mx-screen-x. */
+  padding: 4px 16px;
 }
 .mx-demo-checkin__scene--upsell {
   max-width: 410px;
@@ -810,7 +811,12 @@
   display: none;
 }
 
+/* Кнопки фиксированной ширины 72 px: колонки той же ширины и ряд по центру,
+   иначе в колонках 1fr кнопки прижимаются к левому краю ячейки и ряд
+   визуально съезжает влево. */
 .mx-demo-checkin__feedback {
+  grid-template-columns: repeat(3, 72px);
+  justify-content: center;
   gap: 8px;
 }
 
