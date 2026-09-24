@@ -37,6 +37,7 @@ import {
   parseHiddenCards,
 } from '../lib/todayCardVisibility'
 import { getAccentColors } from '../lib/accentColor'
+import { getSeriesPreferences, saveSeriesPreference } from '../lib/seriesPreferences'
 import { THEMES } from '../lib/theme'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
@@ -454,6 +455,11 @@ export default function Settings({
   // ── Видимость карточек «Сегодня»: см. src/lib/todayCardVisibility.js.
   const [hiddenCardsRaw, setHiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
+
+  // ── Огонёк серии в шапке «Сегодня»: см. src/lib/seriesPreferences.js.
+  // Тумблер дублируется из экрана серии, потому что когда огонёк скрыт,
+  // сам экран серии из шапки недостижим — вернуть его можно только отсюда.
+  const [seriesPreferences, setSeriesPreferences] = useState(() => getSeriesPreferences(user?.id))
 
   function toggleTodayCard(id) {
     const next = hiddenCards.includes(id)
@@ -923,6 +929,24 @@ export default function Settings({
               checked={moodCheckOn}
               label="Быстрый mood-check при запуске"
               onChange={setMoodCheckOn}
+            />
+          }
+          divider={false}
+        />
+      </Card>
+
+      <SectionLabel>Серия</SectionLabel>
+      <Card>
+        <Row
+          title="Показывать серию"
+          subtitle="Огонёк с числом дней в шапке «Сегодня»"
+          right={
+            <Toggle
+              checked={seriesPreferences.showStreak}
+              label="Показывать серию"
+              onChange={value =>
+                setSeriesPreferences(saveSeriesPreference(user?.id, 'showStreak', value))
+              }
             />
           }
           divider={false}
