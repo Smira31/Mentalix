@@ -93,14 +93,20 @@ function normalizePinnedPractices(value) {
   return Array.isArray(value) ? value : []
 }
 
-export default function PinnedPractices({ user, onOpenPractice }) {
+export default function PinnedPractices({ user, onOpenPractice, rituals = [], ascezas = [] }) {
   const [pinned, setPinned] = useState(() => normalizePinnedPractices(peekPinnedPractices(user.id)))
   const [loading, setLoading] = useState(() => !peekPinnedPractices(user.id))
   const [error, setError] = useState(false)
   const [sheet, setSheet] = useState(null)
   const [busyId, setBusyId] = useState(null)
   const [undo, setUndo] = useState(null)
-  const [todayDone, setTodayDone] = useState({ rituals: false, ascezas: false })
+  const todayDone = useMemo(
+    () => ({
+      rituals: rituals.some(ritual => ritual.today_level),
+      ascezas: ascezas.some(asceza => asceza.today_status === 'held'),
+    }),
+    [rituals, ascezas]
+  )
   const undoTimerRef = useRef(null)
 
   useEffect(() => {
@@ -111,14 +117,10 @@ export default function PinnedPractices({ user, onOpenPractice }) {
 
   useEffect(() => {
     let active = true
-    Promise.all([fetchPinnedPractices(user.id), api.rituals.list(user.id), api.ascezas.list(user.id)])
-      .then(([items, rituals, ascezas]) => {
+    fetchPinnedPractices(user.id)
+      .then(items => {
         if (!active) return
         setPinned(normalizePinnedPractices(items))
-        setTodayDone({
-          rituals: rituals.some(ritual => ritual.today_level),
-          ascezas: ascezas.some(asceza => asceza.today_status === 'held'),
-        })
       })
       .catch(() => {
         if (active) setError(true)
