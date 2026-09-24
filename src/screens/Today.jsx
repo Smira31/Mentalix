@@ -48,6 +48,15 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 // dedicated screens.
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
+// Pill настроения в завершённой главной карточке дня (§5.1, тип A).
+const MOOD_PILL_WORDS = [
+  'Тяжёлое настроение',
+  'Непростое настроение',
+  'Ровное настроение',
+  'Хорошее настроение',
+  'Отличное настроение',
+]
+
 // ── календарь недели + отдельные дневные streak strips ──
 
 function todayGreeting() {
@@ -676,6 +685,7 @@ export default function Today({
   const cardStates = resolveTodayCardStates({ now: new Date(), reviewHour, checkin })
   const primaryKind = primaryCardKind(cardStates)
   const reviewTime = formatReviewTime(reviewHour)
+  const moodPillText = MOOD_PILL_WORDS[Number(checkin?.mood) - 1] || null
 
   function renderDayCard(kind) {
     const isMorning = kind === 'morning'
@@ -690,7 +700,16 @@ export default function Today({
     const content =
       state === 'done' ? (
         <>
+          <span className="mx-today-day-card__label">
+            {isMorning ? 'Утренний чек-ин' : 'Разбор дня'}
+          </span>
           <span className="mx-today-day-card__done">{completedText}</span>
+          {moodPillText && (
+            <span className="mx-today-day-card__pill">
+              <span className="mx-today-day-card__dot" aria-hidden="true" />
+              {moodPillText}
+            </span>
+          )}
           <div className="mx-today-day-card__illustration" data-testid="today-card-illustration">
             <div className="mx-today-day-card__illustration-slot">
               <CardSystemGlyph kind={isMorning ? 'breath-flow' : 'path-corridor'} />
