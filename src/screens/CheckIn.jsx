@@ -72,9 +72,16 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
+export function CheckInNextControls({
+  onNext,
+  disabled = false,
+  onSkip = null,
+  variant = 'scale',
+}) {
   return (
-    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+    <div
+      className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
+    >
       {onSkip ? (
         <button type="button" className="mx-checkin-next-controls__skip" onClick={onSkip}>
           Пропустить
@@ -88,6 +95,7 @@ export function CheckInNextControls({ onNext, disabled = false, onSkip = null, v
         onClick={onNext}
         disabled={disabled}
       >
+        <span>Далее</span>
         <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>
@@ -217,7 +225,18 @@ export function CheckInQuestion({
  */
 function MorningCheckInFlow({ user, onDone, redo = false }) {
   const [step, setStep] = useState(0)
-  const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
+  /*
+   * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
+   * из перезаписываемой записи: поля опускаются в PUT /api/checkin/today,
+   * бэкенд сохраняет прежние значения утра. Настроение и энергия
+   * в redo переспрашиваются заново.
+   */
+  const [values, setValues] = useState(() => ({
+    mood: null,
+    energy: null,
+    anxiety: null,
+    focus: null,
+  }))
   const [note, setNote] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -292,7 +311,9 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
         ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
         : step === doneStep
           ? {
-              text: saving ? '' : 'Завершить',
+              // Текст не убирается на время сохранения: спиннер рисуется
+              // внутри кнопки рядом с подписью, кнопка лишь блокируется.
+              text: 'Завершить',
               testId: 'checkin-complete',
               onClick: finish,
               disabled: saving,
@@ -364,7 +385,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
             <p className="mx-demo-checkin__feedback-prompt">
               Эта практика помогла остановиться и заметить важное?
             </p>
-            <div className="mx-demo-checkin__feedback">
+            <div className="mx-demo-checkin__feedback" data-testid="checkin-feedback-row">
               {[
                 ['Нет', ThumbsDown],
                 ['Немного', Hand],
@@ -381,11 +402,15 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
                 </button>
               ))}
             </div>
-            {error && (
-              <p role="alert" className="mx-demo-checkin__error">
-                {error}
-              </p>
-            )}
+            {/* Слот ошибки всегда занимает место: сообщение об ошибке не
+                сдвигает иллюстрацию и заголовок (компоновка не «прыгает»). */}
+            <div className="mx-demo-checkin__error-slot" aria-live="polite">
+              {error ? (
+                <p role="alert" className="mx-demo-checkin__error">
+                  {error}
+                </p>
+              ) : null}
+            </div>
           </section>
         )}
 
@@ -429,7 +454,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
         />
       ) : null}
       {step === doneStep || step === streakStep ? (
-        <WebActionBar action={action} className="mx-demo-checkin__action-bar" />
+        <WebActionBar action={action} loading={saving} className="mx-demo-checkin__action-bar" />
       ) : null}
     </div>,
     getFullscreenPortalTarget()
@@ -535,7 +560,12 @@ export const MORNING_SCALE_STEPS = [SCALE_STEPS[0], SCALE_STEPS[1]]
 export function CheckInScaleQuestion({ scale, value, onPick }) {
   return (
     <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
-      <div className="mx-checkin-scale" role="radiogroup" aria-label={scale.title}>
+      <div
+        className="mx-checkin-scale"
+        role="radiogroup"
+        aria-label={scale.title}
+        data-testid="checkin-scale-row"
+      >
         {scale.labels.map((label, index) => {
           const level = index + 1
           const active = value === level
@@ -645,12 +675,13 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const [values, setValues] = useState(() => ({
     mood: fieldSource?.mood ?? (isEvening ? null : consumeMoodDraft()),
     energy: fieldSource?.energy ?? null,
-    anxiety: fieldSource?.anxiety ?? null,
-    focus: fieldSource?.focus ?? null,
+    // Вечерний redo не переспрашивает anxiety/focus — переносим их
+    // из перезаписываемой записи, иначе PUT затрёт значения утра.
+    anxiety: (redo ? existing?.anxiety : fieldSource?.anxiety) ?? null,
+    focus: (redo ? existing?.focus : fieldSource?.focus) ?? null,
   }))
 
   const [emotion, setEmotion] = useState(fieldSource?.emotion || null)
-
 
   const [savedCheckinId, setSavedCheckinId] = useState(null)
 
@@ -707,15 +738,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   function pick(key, level) {
     platform.haptic('light')
 
+    // Выбор значения шкалы не двигает шаг: вперёд ведёт только
+    // явное нажатие «Далее» (автопереход убран и здесь, и в утреннем флоу).
     setValues(current => ({
       ...current,
       [key]: level,
     }))
-    if (!isEvening) {
-      window.setTimeout(() => {
-        setStep(current => current + 1)
-      }, 280)
-    }
   }
 
   useEffect(() => {

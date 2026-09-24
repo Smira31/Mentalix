@@ -26,11 +26,7 @@ import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibi
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { currentCheckinStreak } from '../lib/series'
 import { buildSeriesViewModel } from '../lib/series'
-import {
-  getSeriesPreferences,
-  markSeriesTooltipSeen,
-  shouldShowSeriesTooltip,
-} from '../lib/seriesPreferences'
+import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
 import { formatReviewTime, resolveTodayCardStates } from '../lib/todayCardState'
@@ -91,28 +87,23 @@ function ReferenceProfileMark() {
   )
 }
 
-function TodayWorkspaceHeader({
-  onOpenSettings,
-  onOpenSeries,
-  streak = 0,
-  showStreak = true,
-  onStreakClick,
-}) {
+function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 0, onStreakClick }) {
+  const streakLabel =
+    streak > 0
+      ? `Мой путь. ${streak} ${streak === 1 ? 'день' : 'дней'}`
+      : 'Мой путь. Серия ещё не началась'
+
   return (
     <header className="mx-demo-today-header">
-      {showStreak ? (
-        <button
-          type="button"
-          className="mx-demo-today-streak"
-          aria-label={`Мой путь. ${streak} ${streak === 1 ? 'день' : 'дней'}`}
-          onClick={onStreakClick || onOpenSeries}
-        >
-          <ReferenceFlame />
-          <strong>{streak}</strong>
-        </button>
-      ) : (
-        <span className="mx-demo-today-streak-spacer" aria-hidden="true" />
-      )}
+      <button
+        type="button"
+        className={`mx-demo-today-streak${streak > 0 ? '' : ' mx-demo-today-streak--empty'}`}
+        aria-label={streakLabel}
+        onClick={onStreakClick || onOpenSeries}
+      >
+        <ReferenceFlame />
+        {streak > 0 && <strong>{streak}</strong>}
+      </button>
       <strong className="mx-demo-today-greeting">{todayGreeting()}</strong>
       <div className="mx-demo-today-header__tools">
         <button
@@ -233,9 +224,8 @@ export default function Today({
     currentCheckinStreak(initialTodaySnapshot?.checkinHistory || [])
   )
   const [newBadge, setNewBadge] = useState(null)
-  const preferences = getSeriesPreferences(user?.id)
   const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
-    Boolean(user?.id && preferences.showStreak && shouldShowSeriesTooltip(user.id))
+    Boolean(user?.id && shouldShowSeriesTooltip(user.id))
   )
 
   const [reviewHour, setReviewHour] = useState(
@@ -557,7 +547,23 @@ export default function Today({
   // ============================================================
 
   if (loading) {
-    return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
+    /*
+     * Шапка остаётся на экране и во время загрузки дня: в Telegram
+     * fullscreen верхнюю полосу занимает воркмарк MENTALIX, и без шапки
+     * здесь огонёк серии исчезал из виду. streak инициализирован из
+     * локального снапшота, поэтому число известно и до ответа API.
+     */
+    return (
+      <div className="mx-screen-shell">
+        <h1 className="sr-only">Сегодня</h1>
+        <TodayWorkspaceHeader
+          onOpenSettings={onOpenSettings}
+          onOpenSeries={onOpenSeries}
+          streak={streak}
+        />
+        <p className="text-muted text-[13px] px-[var(--mx-screen-x)] pt-8">Загрузка...</p>
+      </div>
+    )
   }
 
   if (loadError) {
@@ -706,7 +712,6 @@ export default function Today({
         onOpenSettings={onOpenSettings}
         onOpenSeries={onOpenSeries}
         streak={streak}
-        showStreak={preferences.showStreak}
         onStreakClick={() => {
           markSeriesTooltipSeen(user?.id)
           setShowSeriesTooltip(false)
@@ -717,7 +722,7 @@ export default function Today({
           changeSub('path')
         }}
       />
-      {preferences.showStreak && showSeriesTooltip && (
+      {showSeriesTooltip && (
         <aside className="mx-today-series-tooltip" role="status">
           <button
             type="button"
@@ -730,8 +735,7 @@ export default function Today({
             ×
           </button>
           <p>
-            Это число — твоя <strong>серия</strong> чек-инов. Её можно скрыть. Нажми, чтобы
-            посмотреть значки.
+            Это число — твоя <strong>серия</strong> чек-инов. Нажми, чтобы посмотреть значки.
           </p>
         </aside>
       )}
