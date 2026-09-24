@@ -23,6 +23,15 @@ import EmptyState from '../components/EmptyState'
 import { X } from 'lucide-react'
 
 import PracticeDetail from '../components/PracticeDetail'
+const BREAK_TRIGGERS = ['Стресс', 'Скука', 'Усталость', 'Тревога', 'Компания', 'Импульс', 'Другое']
+const EMPTY_DRAFT = {
+  name: '',
+  category: 'psycho',
+  reason: '',
+  trigger: '',
+  replacement: '',
+  relapse_cost: '',
+}
 function BreakContextSheet({ asceza, onSave, onClose }) {
   const [trigger, setTrigger] = useState('')
   const [note, setNote] = useState('')
@@ -158,145 +167,6 @@ function BreakContextSheet({ asceza, onSave, onClose }) {
       </div>
     </div>,
     getFullscreenPortalTarget()
-  )
-}
-
-function AscezaCard({ asceza, onLog, onBreak, onDelete, onRestore }) {
-  const status = asceza.today_status
-  const [confirming, setConfirming] = useState(false)
-  const [celebrate, setCelebrate] = useState(false)
-
-  const meta = categoryMeta(asceza.category)
-
-  function handleHeld() {
-    const wasUnset = !status
-
-    platform.haptic('medium')
-
-    if (wasUnset) {
-      platform.haptic('success')
-      setCelebrate(true)
-      setTimeout(() => setCelebrate(false), 700)
-    }
-
-    onLog(asceza.id, 'held')
-  }
-
-  function handleBroke() {
-    platform.haptic('medium')
-
-    // Если срыв уже отмечен, повторное нажатие снимает отметку,
-    // сохраняя прежнее поведение API.
-    if (status === 'broke') {
-      onLog(asceza.id, 'broke')
-      return
-    }
-
-    onBreak(asceza)
-  }
-
-  return (
-    <div
-      className={`practice-motion-card practice-detail-card mx-ascezas-contract-card relative rounded-[28px] overflow-y-auto overscroll-contain shrink-0 snap-center w-[84%] border p-5 flex flex-col ${
-        celebrate ? 'animate-glow-pulse' : ''
-      } ${
-        status === 'broke' ? 'bg-emerald-light/40 border-cream/12' : 'bg-emerald border-cream/12'
-      }`}
-    >
-      {/* серия — вверху, там её ищут глазами первой */}
-      <div className="flex items-center justify-between gap-3 shrink-0">
-        <StreakBar streak={asceza.streak} tone="mint" />
-
-        <span className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            aria-label={`Удалить аскезу «${asceza.name}»`}
-            className="practice-scene__choice text-faint text-[13px] leading-none px-1"
-          >
-            ×
-          </button>
-        </span>
-      </div>
-
-      {confirming && (
-        <DeleteConfirmationDialog
-          itemType="аскезу"
-          itemName={asceza.name}
-          onCancel={() => setConfirming(false)}
-          onConfirm={() => {
-            platform.haptic('rigid')
-            onDelete(asceza.id)
-          }}
-        />
-      )}
-
-      {/*
-       * Верхняя треть — рисунок своей категории. Общий жест у
-       * всех пяти один: коридор из двух прямых, внутри порядок,
-       * снаружи тот же материал в беспорядке.
-       */}
-      <div
-        className={`-mx-[var(--mx-screen-x)] shrink-0 min-h-0 mt-3 bg-artbed border-0 mx-practice-detail-art mx-ascezas-contract-art ${
-          status === 'held' ? 'opacity-100' : 'opacity-70'
-        }`}
-      >
-        <SemanticGlyph kind={semanticKindForAsceza(asceza)} className="w-full h-full" />
-      </div>
-
-      <div className="mt-4 mx-ascezas-contract-title">
-        <div className="font-display text-[18px] text-cream leading-tight">{asceza.name}</div>
-
-        <div className="text-[10px] text-muted mb-3">{meta.label}</div>
-
-        {asceza.reason && <p className="text-[11px] text-muted mb-2">{asceza.reason}</p>}
-
-        <div className="flex gap-2 mt-3 mx-ascezas-contract-actions">
-          <button
-            onClick={handleHeld}
-            className={`practice-scene__choice flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 ${
-              status === 'held' ? 'bg-gold text-emerald-deep' : 'bg-cream/5 text-muted'
-            }`}
-          >
-            <Shield size={13} />
-            Удержался
-          </button>
-
-          <button
-            onClick={handleBroke}
-            className={`practice-scene__choice flex-1 py-2.5 rounded-full text-[12px] font-semibold border-0 flex items-center justify-center gap-1.5 ${
-              status === 'broke' ? 'bg-cream/15 text-cream' : 'bg-cream/5 text-muted'
-            }`}
-          >
-            <ShieldOff size={13} />
-            Сорвался
-          </button>
-        </div>
-
-        {status === 'broke' && asceza.today_break_trigger && (
-          <p className="text-[11px] text-muted mt-3">Причина: {asceza.today_break_trigger}</p>
-        )}
-
-        {status === 'broke' && asceza.today_break_note && (
-          <p className="text-[11px] text-muted mt-1 leading-relaxed">{asceza.today_break_note}</p>
-        )}
-
-        {status === 'broke' && asceza.replacement && (
-          <p className="text-[11px] text-muted mt-2">Замена: {asceza.replacement}</p>
-        )}
-
-        {!status && asceza.trigger && (
-          <p className="text-[11px] text-faint mt-2 italic">Триггер: {asceza.trigger}</p>
-        )}
-
-        <button
-          onClick={() => onRestore(asceza)}
-          className="practice-scene__choice w-full py-2 mt-3 text-[11px] text-muted border-0"
-        >
-          Восстановить пропущенный день
-        </button>
-      </div>
-    </div>
   )
 }
 
@@ -444,15 +314,26 @@ export default function Ascezas({ user, onBack }) {
 
   useEffect(() => {
     document.body.style.overflow = breakTarget ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [breakTarget])
 
   async function logAsceza(ascezaId, status, breakTrigger = null, breakNote = null) {
     try {
       const updated = await api.ascezas.log(ascezaId, user.id, status, breakTrigger, breakNote)
-      const merged = previous => previous.map(asceza => asceza.id === ascezaId ? { ...asceza, ...updated, today_status: updated.today_status || status } : asceza)
+      const merged = previous =>
+        previous.map(asceza =>
+          asceza.id === ascezaId
+            ? { ...asceza, ...updated, today_status: updated.today_status || status }
+            : asceza
+        )
       setAscezas(merged)
-      setSelected(previous => previous?.id === ascezaId ? { ...previous, ...updated, today_status: updated.today_status || status } : previous)
+      setSelected(previous =>
+        previous?.id === ascezaId
+          ? { ...previous, ...updated, today_status: updated.today_status || status }
+          : previous
+      )
       setWriteError(null)
       invalidateTodayData(user.id)
       invalidatePracticesData(user.id)
@@ -493,7 +374,8 @@ export default function Ascezas({ user, onBack }) {
     }
   }
 
-  if (showCreate) return <CreateAscezaScreen onCreate={createAsceza} onCancel={() => setShowCreate(false)} />
+  if (showCreate)
+    return <CreateAscezaScreen onCreate={createAsceza} onCancel={() => setShowCreate(false)} />
   if (selected) {
     return (
       <>
@@ -505,7 +387,13 @@ export default function Ascezas({ user, onBack }) {
           onBreak={setBreakTarget}
           onDelete={deleteAsceza}
         />
-        {breakTarget && <BreakContextSheet asceza={breakTarget} onSave={logAsceza} onClose={() => setBreakTarget(null)} />}
+        {breakTarget && (
+          <BreakContextSheet
+            asceza={breakTarget}
+            onSave={logAsceza}
+            onClose={() => setBreakTarget(null)}
+          />
+        )}
       </>
     )
   }
@@ -517,12 +405,20 @@ export default function Ascezas({ user, onBack }) {
         <h2 className="font-display text-[20px] text-cream lowercase">аскезы.</h2>
       </div>
       <p className="mx-practice-list-screen__intro">от чего ты отказываешься</p>
-      {writeError && <p role="alert" className="text-[12px] text-amber-200 mb-4">{writeError}</p>}
-      {loading ? <p className="text-muted text-[13px]">Загрузка...</p> : ascezas.length === 0 ? (
+      {writeError && (
+        <p role="alert" className="text-[12px] text-amber-200 mb-4">
+          {writeError}
+        </p>
+      )}
+      {loading ? (
+        <p className="text-muted text-[13px]">Загрузка...</p>
+      ) : ascezas.length === 0 ? (
         <EmptyState glyph={<SemanticGlyph kind="asceza" className="w-full h-full" />}>
           <h3 className="font-display text-[16px] text-cream mb-1">Аскез пока нет</h3>
           <p className="text-[13px] text-muted mb-4">Выбери одну привычку и назови её честно.</p>
-          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[13px]">Принять аскезу</button>
+          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[13px]">
+            Принять аскезу
+          </button>
         </EmptyState>
       ) : (
         <div className="mx-practice-grid" data-testid="practice-grid">
@@ -533,15 +429,28 @@ export default function Ascezas({ user, onBack }) {
               className={`mx-practice-tile ${asceza.today_status === 'held' ? 'is-done' : ''}`}
               data-testid="practice-tile"
               data-done={asceza.today_status === 'held'}
-              onClick={() => { platform.haptic('light'); setSelected(asceza) }}
+              onClick={() => {
+                platform.haptic('light')
+                setSelected(asceza)
+              }}
             >
-              <span className="mx-practice-tile__glyph"><SemanticGlyph kind="asceza" className="w-full h-full" /></span>
+              <span className="mx-practice-tile__glyph">
+                <SemanticGlyph kind="asceza" className="w-full h-full" />
+              </span>
               <span className="mx-practice-tile__name">{asceza.name}</span>
             </button>
           ))}
         </div>
       )}
-      {!loading && <button type="button" className="mx-practice-list-screen__create" onClick={() => setShowCreate(true)}>+ Новая аскеза</button>}
+      {!loading && (
+        <button
+          type="button"
+          className="mx-practice-list-screen__create"
+          onClick={() => setShowCreate(true)}
+        >
+          + Новая аскеза
+        </button>
+      )}
     </div>
   )
 }
