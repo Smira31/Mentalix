@@ -64,8 +64,9 @@ export function PotentialBanner({ onOpen }) {
     >
       <PotentialArt />
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
+      {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
-        Все собеседники, полная аналитика и курсы в Mentalix Pro
+        {'Все собеседники, полная аналитика и курсы в Mentalix\u00A0Pro'}
       </p>
       <button
         type="button"
@@ -86,8 +87,10 @@ export function SupportBanner({ onOpen }) {
       data-testid="profile-banner-support"
       onClick={onOpen}
     >
+      {/* Тире не отрывается от предыдущего слова при переносе. */}
       <p className="mx-profile-banner__text">
-        Поддержи <strong>Mentalix</strong> — это помогает проекту расти.
+        Поддержи <strong>Mentalix</strong>
+        {'\u00A0— это помогает проекту расти.'}
       </p>
       <span className="mx-profile-banner__panel">
         <SupportArt />
