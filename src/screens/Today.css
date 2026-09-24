@@ -1628,18 +1628,63 @@
   font-weight: 500;
 }
 
-/* Кнопка профиля — DESIGN_SYSTEM.md §5.4: 56 px, 14 px от правого края экрана,
-   центр на одной линии с чипом серии (строка шапки выравнивает по центру). */
+/* Шапка «Сегодня» — DESIGN_SYSTEM.md §5.4 (эталон Stoic, 440 pt).
+   Чип огонька и кнопка профиля — 43 px высотой, 21 px от краёв экрана;
+   оба центрированы по вертикали строки приветствия. */
+.mx-demo-today-header {
+  min-height: var(--mx-header-control);
+}
+
+.mx-demo-today-streak {
+  left: calc(var(--mx-header-edge) - var(--mx-screen-x));
+  min-width: 62px;
+  height: var(--mx-header-control);
+  gap: 6px;
+  padding: 0 14px 0 12px;
+  border: 1px solid rgb(var(--c-header-chip-border));
+  background: rgb(var(--c-header-chip));
+  color: rgb(var(--c-header-muted));
+}
+
+.mx-demo-today-streak .mx-reference-flame {
+  width: 17px;
+  height: 20px;
+  color: rgb(var(--c-header-muted));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.mx-demo-today-streak .mx-reference-flame__inner {
+  fill: none;
+  stroke: none;
+}
+
+.mx-demo-today-streak strong {
+  color: rgb(var(--c-header-muted));
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mx-demo-today-streak--empty {
+  min-width: var(--mx-header-control);
+  width: var(--mx-header-control);
+  padding: 0;
+}
+
+.mx-demo-today-header__tools {
+  right: calc(var(--mx-header-edge) - var(--mx-screen-x));
+}
+
 .mx-demo-today-profile {
   display: grid;
-  width: 56px;
-  height: 56px;
-  margin-right: calc(14px - var(--mx-screen-x));
+  width: var(--mx-header-control);
+  height: var(--mx-header-control);
   padding: 0;
   place-items: center;
-  border: 0;
+  border: 1px solid rgb(var(--c-header-chip-border));
   border-radius: 50%;
-  background: #8a8a8a;
+  background: rgb(var(--c-profile-ring));
   cursor: pointer;
   transition: transform 160ms ease;
 }
@@ -1650,6 +1695,6 @@
 
 .mx-reference-profile-mark {
   display: block;
-  width: 70%;
-  height: 70%;
+  width: 28px;
+  height: 28px;
 }

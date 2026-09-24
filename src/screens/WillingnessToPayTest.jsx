@@ -7,7 +7,7 @@ const STORAGE_PREFIX = 'mx-wtp-concept-test-v1'
 const CONCEPTS = [
   {
     id: 'track',
-    label: 'Problem-led track',
+    label: 'Разбор одной ситуации',
     title: 'Провести один сложный вопрос до действия',
     description:
       'Короткий маршрут под конкретную ситуацию: понять, что происходит, выбрать следующий шаг и не потерять его.',
@@ -15,7 +15,7 @@ const CONCEPTS = [
   },
   {
     id: 'patterns',
-    label: 'Pattern summary',
+    label: 'Обзор повторений',
     title: 'Увидеть свои повторяющиеся паттерны',
     description:
       'Спокойное резюме сохранённых отметок: что повторяется, где появляется напряжение и что уже помогает.',
@@ -23,7 +23,7 @@ const CONCEPTS = [
   },
   {
     id: 'deepen',
-    label: 'AI deepen',
+    label: 'Глубокий разбор с ИИ',
     title: 'Получить более глубокий разбор',
     description:
       'Дополнительные вопросы и варианты взгляда на запись, когда хочется не просто отметить, а разобраться глубже.',
@@ -175,7 +175,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
             <div className="mb-2 flex items-center gap-2 text-gold">
               <Heart size={15} />
               <span className="text-[11px] font-label uppercase tracking-wider">
-                короткий concept test
+                короткий опрос
               </span>
             </div>
             <h1 className="font-display text-[26px] leading-tight text-cream">

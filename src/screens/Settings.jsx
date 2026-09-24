@@ -30,6 +30,7 @@ import AppLock from './AppLock'
 import PrivacyNotice from './PrivacyNotice'
 import WillingnessToPayTest from './WillingnessToPayTest'
 import Profile from './Profile'
+import { ProfileBanners } from './settings/ProfileBanners'
 import {
   ProfileBody,
   ProfileCard,
@@ -305,7 +306,7 @@ export default function Settings({
   async function eraseAccountAndData() {
     if (!privacyProtectedByTelegram || erasingAccount) return
     const firstConfirmation = window.confirm(
-      'Удалить аккаунт Mentalix и все связанные данные? Будут удалены journal-записи, теги, цели, привычки, шаблоны, история AI и настройки. Отменить это нельзя.'
+      'Удалить аккаунт Mentalix и все связанные данные? Будут удалены записи дневника, теги, цели, привычки, шаблоны, история разговоров с ИИ и настройки. Отменить это нельзя.'
     )
     if (!firstConfirmation) return
     const finalConfirmation = window.confirm(
@@ -332,7 +333,7 @@ export default function Settings({
   async function clearAllReminderSettings() {
     if (
       !window.confirm(
-        'Отключить напоминания и удалить их тихие часы, snooze и цель записей? Journal и другие настройки не изменятся.'
+        'Отключить напоминания и удалить их тихие часы, откладывание и цель записей? Дневник и другие настройки не изменятся.'
       )
     )
       return
@@ -410,7 +411,8 @@ export default function Settings({
   }
 
   const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
-  const [tier, setTier] = useState('base')
+  // null — тариф ещё не загружен: «подписка.» показывает скелетон.
+  const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
   const [sub, setSub] = useState(null) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data'
 
@@ -433,7 +435,11 @@ export default function Settings({
     api.subscription
       .get(user.id)
       .then(s => setTier(s.tier))
-      .catch(console.error)
+      .catch(error => {
+        console.error(error)
+        // Как и раньше: без ответа сервера показываем базовый тариф.
+        setTier(current => current ?? 'base')
+      })
   }, [user, screen])
 
   if (screen === 'quotes') {
@@ -445,7 +451,7 @@ export default function Settings({
   }
 
   if (screen === 'donate') {
-    return <DonateScreen user={user} onBack={() => setScreen(null)} />
+    return <DonateScreen onBack={() => setScreen(null)} />
   }
 
   if (screen === 'link-web') {
@@ -473,7 +479,22 @@ export default function Settings({
     return <WillingnessToPayTest user={user} onBack={() => setScreen(null)} />
   }
 
-  const tierLabel = tier === 'pro' ? 'Про' : 'Базовый'
+  const tierLabel = tier == null ? null : tier === 'pro' ? 'Про' : 'Базовый'
+
+  /*
+   * Баннер «Mentalix на сайте» (§5.4): скрыт, если аккаунт уже связан
+   * (user.linked). В веб-версии без входа ведёт на вход, иначе — в
+   * существующий сценарий «Связать с сайтом».
+   */
+  const showWebBanner = !user?.linked
+  function openWebBanner() {
+    if (platformName === 'web' && !user) {
+      platform.clearUser?.()
+      window.location.reload()
+      return
+    }
+    setScreen('link-web')
+  }
 
   if (accountErased) {
     return (
@@ -509,6 +530,7 @@ export default function Settings({
               title="Когда показывать разбор"
               subtitle="«Сегодня» сам предложит подвести итоги"
               value={hh(reviewHour)}
+              testId="profile-row-review-hour"
             />
             <div className="mx-profile-inset">
               <ProfileChips
@@ -524,7 +546,7 @@ export default function Settings({
         {/* MXL-MOOD-CHECK-001 — opt-in: дефолт '0', см.
             src/lib/moodCheckDraft.js. Не пишет в бэкенд — только черновик
             для CheckIn.jsx при следующем открытии. */}
-        <ProfileGroup label="Быстрый mood-check">
+        <ProfileGroup label="Быстрая отметка настроения">
           <ProfileCard>
             <ProfileRow
               title="Спрашивать настроение при запуске"
@@ -532,10 +554,11 @@ export default function Settings({
               right={
                 <Toggle
                   checked={moodCheckOn}
-                  label="Быстрый mood-check при запуске"
+                  label="Быстрая отметка настроения при запуске"
                   onChange={setMoodCheckOn}
                 />
               }
+              testId="profile-row-mood-check"
             />
           </ProfileCard>
         </ProfileGroup>
@@ -556,6 +579,7 @@ export default function Settings({
                   onChange={saveWritingGoal}
                 />
               }
+              testId="profile-row-writing-goal"
             />
             {writingGoalOn && (
               <div className="mx-profile-inset">
@@ -569,7 +593,10 @@ export default function Settings({
             )}
           </ProfileCard>
           {writingGoalOn && (
-            <div className="mx-profile-panel" style={{ marginTop: 8 }}>
+            <div
+              className="mx-profile-panel"
+              style={{ marginTop: 8, minHeight: writingGoalProgress?.enabled ? undefined : 92 }}
+            >
               {writingGoalProgress?.enabled ? (
                 <div>
                   <div className="flex items-baseline justify-between gap-3">
@@ -880,7 +907,7 @@ export default function Settings({
               <>
                 <ProfileRow
                   title="Политика и данные"
-                  subtitle="Хранение, local draft, синхронизация и ограничения"
+                  subtitle="Хранение, черновики, синхронизация и ограничения"
                   onClick={() => setScreen('privacy-notice')}
                 />
                 <ProfileRow
@@ -903,18 +930,18 @@ export default function Settings({
               <>
                 <ProfileRow
                   title="Политика и данные"
-                  subtitle="Хранение, local draft, синхронизация и ограничения"
+                  subtitle="Хранение, черновики, синхронизация и ограничения"
                   onClick={() => setScreen('privacy-notice')}
                 />
                 <div className="mx-profile-inset text-[13px] leading-relaxed text-muted">
                   Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной
-                  подписью. В web-версии нет серверной сессии, поэтому мы не выполняем
+                  подписью. В веб-версии нет входа на сервере, поэтому мы не выполняем
                   чувствительные операции по переданному id.
                 </div>
               </>
             )}
             <ProfileRow
-              title="Очистить local draft"
+              title="Очистить черновик"
               subtitle="Только незавершённый текст на этом устройстве"
               onClick={clearLocalDraft}
               danger
@@ -935,9 +962,9 @@ export default function Settings({
             </ProfileNote>
           )}
           <ProfileNote>
-            Незавершённый draft остаётся только на текущем устройстве и не является cloud backup.
-            Блокировка приложения — локальный экранный барьер, а не шифрование данных. Подробности о
-            хранении и ограничениях синхронизации — в разделе «Политика и данные».
+            Незавершённый черновик остаётся только на этом устройстве и не является резервной копией
+            в облаке. Блокировка приложения — локальный экранный барьер, а не шифрование данных.
+            Подробности о хранении и ограничениях синхронизации — в разделе «Политика и данные».
           </ProfileNote>
         </ProfileGroup>
       </ProfileBody>
@@ -969,6 +996,12 @@ export default function Settings({
   return (
     <ProfilePage key="root" title="твой профиль." isRoot onBack={onBack} testId="profile-screen">
       <ProfileBody>
+        <ProfileBanners
+          showWeb={showWebBanner}
+          onOpenSubscription={() => setScreen('subscription')}
+          onOpenDonate={() => setScreen('donate')}
+          onOpenWeb={openWebBanner}
+        />
         <ProfileGroup label="Настрой">
           <ProfileCard testId="profile-card-setup">
             <ProfileRow
@@ -1026,10 +1059,9 @@ export default function Settings({
             />
             <ProfileRow
               title="Что было бы полезно?"
-              subtitle="Короткий concept test — без оплаты и подписки"
+              subtitle="Короткий опрос — без оплаты и подписки"
               onClick={() => setScreen('wtp-test')}
             />
-            <ProfileRow title="Поддержать проект" onClick={() => setScreen('donate')} />
           </ProfileCard>
         </ProfileGroup>
 

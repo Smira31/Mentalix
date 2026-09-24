@@ -51,7 +51,11 @@ const ONBOARDED_KEY = 'mx-onboarded-v2'
 const Practices = lazy(() => import('./screens/Practices'))
 const Analytics = lazy(() => import('./screens/Analytics'))
 const MentalixChat = lazy(() => import('./screens/Mentalix'))
-const Settings = lazy(() => import('./screens/Settings'))
+// Профиль и его под-экраны («подписка.», «поддержать проект.», опрос) лежат
+// в одном чанке. Грузим его заранее, когда «Сегодня» уже показан, — иначе
+// первый тап по кнопке профиля ждёт загрузку кода.
+const loadSettings = () => import('./screens/Settings')
+const Settings = lazy(loadSettings)
 const Library = lazy(() => import('./screens/Library'))
 const History = lazy(() => import('./screens/History'))
 
@@ -116,7 +120,7 @@ function DemoTelegramChrome({ onBack }) {
         ? 'Библиотека'
         : chromeTab === 'practices'
           ? 'Практики'
-          : ''
+          : 'MENTALIX'
   const tabMeta = chromeTab === 'progress' ? '14 дней' : ''
 
   return (
@@ -134,7 +138,15 @@ function DemoTelegramChrome({ onBack }) {
         )}
         {!hasBack && <span>Закрыть</span>}
       </button>
-      {tabTitle && <div className="mx-demo-telegram-chrome__title">{tabTitle}</div>}
+      {tabTitle && (
+        <div
+          className={`mx-demo-telegram-chrome__title${
+            tabTitle === 'MENTALIX' ? ' mx-demo-telegram-chrome__title--wordmark' : ''
+          }`}
+        >
+          {tabTitle}
+        </div>
+      )}
       <div className="mx-demo-telegram-chrome__right">
         <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
           <ChevronDown size={22} strokeWidth={2.2} />
@@ -644,6 +656,14 @@ export default function App() {
   useSettingsButton(() => {
     setOverlay('settings')
   })
+
+  useEffect(() => {
+    if (!user) return undefined
+    const timeoutId = window.setTimeout(() => {
+      loadSettings().catch(() => {})
+    }, 1500)
+    return () => window.clearTimeout(timeoutId)
+  }, [user])
 
   /* ============================================================
      ZOOM

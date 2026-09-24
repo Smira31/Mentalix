@@ -78,18 +78,19 @@ function ReferenceFlame() {
   )
 }
 
-// DESIGN_SYSTEM.md §5.4: белый диск 70% кнопки, серый силуэт (голова + плечи),
-// обрезанный кругом диска. Своя иконка — фото из Telegram не используем.
+// DESIGN_SYSTEM.md §5.4: белый диск 28 px внутри тёмного кольца, чёрный силуэт
+// (голова + плечи), плечи срезаны нижним краем диска. Своя иконка — фото из
+// Telegram не используем.
 function ReferenceProfileMark() {
   return (
-    <svg className="mx-reference-profile-mark" viewBox="0 0 40 40" aria-hidden="true">
+    <svg className="mx-reference-profile-mark" viewBox="0 0 28 28" aria-hidden="true">
       <clipPath id="mx-profile-mark-disk">
-        <circle cx="20" cy="20" r="20" />
+        <circle cx="14" cy="14" r="14" />
       </clipPath>
-      <circle cx="20" cy="20" r="20" fill="#fff" />
-      <g clipPath="url(#mx-profile-mark-disk)" fill="#8a8a8a">
-        <circle cx="20" cy="15" r="7" />
-        <path d="M5 40c0-8.6 6.7-14.5 15-14.5S35 31.4 35 40Z" />
+      <circle cx="14" cy="14" r="14" fill="#fff" />
+      <g clipPath="url(#mx-profile-mark-disk)" fill="#000">
+        <circle cx="14" cy="11" r="5" />
+        <path d="M3.5 29c0-6.3 4.7-10.6 10.5-10.6S24.5 22.7 24.5 29Z" />
       </g>
     </svg>
   )

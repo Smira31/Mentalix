@@ -359,6 +359,40 @@ button.mx-profile-row:active {
   transition: width 500ms ease;
 }
 
+/* Неактивная кнопка оплаты: пока оплата не подключена, не похожа на настоящую. */
+.mx-profile-disabled-cta {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  margin-top: 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-muted));
+  font-size: 15px;
+  font-weight: 600;
+  cursor: not-allowed;
+}
+
+/* Скелетон: экран открывается сразу, данные дорисовываются. */
+.mx-profile-skeleton {
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+  animation: mx-profile-skeleton 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes mx-profile-skeleton {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .mx-profile-version {
   margin: 32px 0 0;
   color: rgb(var(--c-faint));
@@ -371,5 +405,9 @@ button.mx-profile-row:active {
   .mx-profile-switch,
   .mx-profile-switch::after {
     transition: none;
+  }
+
+  .mx-profile-skeleton {
+    animation: none;
   }
 }
