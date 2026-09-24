@@ -95,6 +95,7 @@ export function CheckInNextControls({
         onClick={onNext}
         disabled={disabled}
       >
+        <span>Далее</span>
         <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>

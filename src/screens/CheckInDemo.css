@@ -400,6 +400,13 @@
   max-width: 650px;
   font-size: clamp(24px, 5.6vw, 36px);
 }
+/* Вопрос «Что на уме?» и подсказка центрируются, как в шагах шкал;
+   поле ввода остаётся выровненным влево. */
+.mx-demo-checkin__editor-scene h1,
+.mx-demo-checkin__editor-scene .mx-checkin-question__hint {
+  text-align: center;
+  margin-inline: auto;
+}
 .mx-demo-checkin__hint {
   margin: 16px 0 0;
   color: #777;
@@ -667,6 +674,9 @@
   width: min(100%, 337px);
   gap: 8px;
   margin-top: 30px;
+  /* Фиксированная ширина шкалы меньше тела шага — центрируем её саму,
+     иначе шкала прижимается влево (MXL-440). */
+  margin-inline: auto;
 }
 
 .mx-checkin-scale__option {
@@ -718,6 +728,9 @@
   color: rgb(var(--c-muted));
   font-size: 14px;
   font-weight: 500;
+  /* «Через край» и другие крайние подписи — в одну строку:
+     перенос на две строки ломает нижнюю линию шага. */
+  white-space: nowrap;
 }
 
 .mx-checkin-next-controls {
@@ -740,14 +753,17 @@
 }
 
 .mx-checkin-next-controls__next {
-  display: grid;
-  width: 45px;
-  height: 45px;
-  place-items: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 24px;
   border: 0;
-  border-radius: 50%;
+  border-radius: 999px;
   background: #f2f2f2;
   color: rgb(var(--c-bg));
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .mx-checkin-next-controls__next:disabled {
@@ -888,7 +904,9 @@
   font-size: 15px;
   font-weight: 500;
   white-space: nowrap;
-  transition: background 140ms ease, color 140ms ease;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
 }
 
 .mx-emotion-pill.is-selected {
