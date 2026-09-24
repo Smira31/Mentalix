@@ -107,7 +107,7 @@ export default function UiLab({ initialSection = 'hub' }) {
                 <div className="mx-ui-lab__groups">
                   {[
                     'Сегодня',
-                    'Check-in и завершение',
+                    'Чек-ин и завершение',
                     'Практики',
                     'Путь и серии',
                     'Motion и карточки',

@@ -139,11 +139,11 @@ function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
               <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
               <span>
                 {points.length
-                  ? 'После следующего check-in появится первая линия.'
+                  ? 'После следующего чек-ина появится первая линия.'
                   : 'Одна отметка — меньше минуты.'}
               </span>
               <button type="button" onClick={onGoCheckin}>
-                Пройти check-in
+                Пройти чек-ин
               </button>
             </div>
           ) : (
@@ -960,13 +960,13 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
               <Metric
                 label="Энергия"
                 value={scoreLabel('energy')}
-                note="После check-in"
+                note="После чек-ина"
                 progress={scoreProgress('energy')}
               />
               <Metric
                 label="Фокус"
                 value={scoreLabel('focus')}
-                note="После check-in"
+                note="После чек-ина"
                 progress={scoreProgress('focus')}
               />
             </div>

@@ -440,12 +440,14 @@ export default function Today({
 
   if (sub === 'checkinRecap' && checkin) {
     return (
-      <History
-        user={user}
-        initialSelectedDay={{ date: checkin.date, checkin }}
-        onInitialBack={() => changeSub(null)}
-        recapOnly
-      />
+      <div className="px-[var(--mx-screen-x)]">
+        <History
+          user={user}
+          initialSelectedDay={{ date: checkin.date, checkin }}
+          onInitialBack={() => changeSub(null)}
+          recapOnly
+        />
+      </div>
     )
   }
 

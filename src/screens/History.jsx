@@ -8,6 +8,7 @@ import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
 import { platform, platformName } from '../platform'
 import { MoreHorizontal } from 'lucide-react'
+import BackButton from '../components/BackButton'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './mentalix/personas'
 
 // ── История: лента дней из чек-инов, активности и local-only journal, как
@@ -24,6 +25,33 @@ import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './menta
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
+const LESSON_LABELS = ['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?']
+
+function capitalize(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
+
+function moodWord(level) {
+  return capitalize(MOOD_WORDS[(level || 3) - 1])
+}
+
+function parseLessons(lessons) {
+  if (!lessons) return []
+  const lines = lessons.split('\n')
+  const result = []
+  let current = null
+  for (const line of lines) {
+    const label = LESSON_LABELS.find(l => line.startsWith(l + ' '))
+    if (label) {
+      if (current) result.push(current)
+      current = { question: label, answer: line.slice(label.length + 1) }
+    } else if (current) {
+      current.answer += '\n' + line
+    }
+  }
+  if (current) result.push(current)
+  return result
+}
 
 function dayTitle(iso) {
   const d = new Date(iso + 'T00:00:00')
@@ -96,13 +124,7 @@ export function HistoryDetail({
   return (
     <section aria-label={`Запись за ${dayTitle(day.date)}`} className="mt-1 animate-fade-in">
       <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
-        <button
-          type="button"
-          onClick={onBack}
-          className="min-h-11 justify-self-start rounded-full px-3 py-2 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          Назад
-        </button>
+        <BackButton onClick={onBack} />
         <h2 className="font-display mx-type-section text-cream">{dayTitle(day.date)}</h2>
         <span aria-hidden="true" />
       </div>
@@ -111,11 +133,11 @@ export function HistoryDetail({
         <div className="mt-5 rounded-3xl bg-emerald p-5">
           <div className="mb-5 flex items-center justify-between">
             <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
-              Сегодняшний check-in
+              Сегодняшний чек-ин
             </span>
             <button
               type="button"
-              aria-label="Открыть меню check-in"
+              aria-label="Открыть меню чек-ин"
               className="mx-icon-button"
               onClick={() => {}}
             >
@@ -123,13 +145,13 @@ export function HistoryDetail({
             </button>
           </div>
           {[
-            ['Как ты сейчас?', `настроение: ${MOOD_WORDS[(checkin?.mood || 3) - 1]}`],
+            ['Как ты сейчас?', moodWord(checkin?.mood)],
             ['Сколько в тебе энергии?', `${checkin?.energy || 3}/5`],
             ['Сколько шума в голове?', `${checkin?.anxiety || 3}/5`],
             ['Насколько ты собран?', `${checkin?.focus || 3}/5`],
-            checkin?.emotion ? ['Что ты чувствуешь?', checkin.emotion] : null,
+            checkin?.emotion ? ['Что ты чувствуешь?', capitalize(checkin.emotion)] : null,
             checkin?.note ? ['Что на уме?', checkin.note] : null,
-            checkin?.lessons ? ['Что получилось и чему научился?', checkin.lessons] : null,
+            ...parseLessons(checkin?.lessons).map(({ question, answer }) => [question, answer]),
             ...(checkin?.wins || []).map((win, index) => [`Чем ты гордишься? ${index + 1}`, win]),
           ]
             .filter(Boolean)
@@ -151,7 +173,7 @@ export function HistoryDetail({
             <>
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
-                  настроение: {MOOD_WORDS[(checkin.mood || 3) - 1]}
+                  {moodWord(checkin.mood)}
                 </span>
                 {checkin.energy && (
                   <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
@@ -165,7 +187,7 @@ export function HistoryDetail({
                 )}
                 {checkin.emotion && (
                   <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
-                    {checkin.emotion}
+                    {capitalize(checkin.emotion)}
                   </span>
                 )}
               </div>
@@ -182,15 +204,17 @@ export function HistoryDetail({
                 </div>
               )}
 
-              {checkin.lessons && (
-                <div className="rounded-2xl bg-emerald-light p-4">
-                  <div className="mb-2 font-label text-[12px] font-bold uppercase tracking-wide text-muted">
-                    Уроки дня
-                  </div>
-                  <MarkdownText
-                    content={checkin.lessons}
-                    className="space-y-2 text-[14px] leading-relaxed text-cream"
-                  />
+              {parseLessons(checkin.lessons).length > 0 && (
+                <div className="space-y-4">
+                  {parseLessons(checkin.lessons).map(({ question, answer }) => (
+                    <div key={question}>
+                      <h3 className="mb-1 text-[14px] font-bold text-cream">{question}</h3>
+                      <MarkdownText
+                        content={answer}
+                        className="space-y-2 text-[14px] leading-relaxed text-muted"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 
@@ -223,7 +247,7 @@ export function HistoryDetail({
             </>
           ) : (
             <p className="text-[14px] leading-relaxed text-muted">
-              В этот день сохранена активность или практика, но check-in не сохранён.
+              В этот день сохранена активность или практика, но чек-ин не сохранён.
             </p>
           )}
 
@@ -286,7 +310,7 @@ export function HistoryDetail({
                 </p>
               )}
               <p className="mb-3 mt-5 text-[12px] leading-relaxed text-muted">
-                Удаление необратимо: исчезнет только этот check-in и его личные теги. Активность
+                Удаление необратимо: исчезнет только этот чек-ин и его личные теги. Активность
                 ритуалов за день сохранится.
               </p>
               <button
@@ -644,7 +668,7 @@ export default function History({
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[12px] font-bold text-gold bg-gold/10 rounded-full px-3 py-1">
-                      настроение: {MOOD_WORDS[(d.checkin.mood || 3) - 1]}
+                      {moodWord(d.checkin.mood)}
                     </span>
                     <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
                       энергия {d.checkin.energy}/5
@@ -665,15 +689,17 @@ export default function History({
                     />
                   )}
 
-                  {d.checkin.lessons && (
-                    <div className="rounded-2xl bg-emerald-light p-4 mt-3">
-                      <div className="font-label text-[12px] font-bold text-muted uppercase tracking-wide mb-2">
-                        Уроки дня
-                      </div>
-                      <MarkdownText
-                        content={d.checkin.lessons}
-                        className="space-y-2 text-[14px] text-cream leading-relaxed"
-                      />
+                  {parseLessons(d.checkin.lessons).length > 0 && (
+                    <div className="space-y-3 mt-3">
+                      {parseLessons(d.checkin.lessons).map(({ question, answer }) => (
+                        <div key={question}>
+                          <div className="text-[12px] font-bold text-muted mb-1">{question}</div>
+                          <MarkdownText
+                            content={answer}
+                            className="space-y-1 text-[14px] text-cream leading-snug"
+                          />
+                        </div>
+                      ))}
                     </div>
                   )}
 

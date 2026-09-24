@@ -1284,7 +1284,7 @@ export default function App() {
            ====================================================== */}
 
               {!overlay && user && tab === 'history' && (
-                <div className="w-full max-w-md px-5 animate-fade-in">
+                <div className="w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
                   <div className="flex min-h-[42px] items-center">
                     <BackButton
                       showInDemo

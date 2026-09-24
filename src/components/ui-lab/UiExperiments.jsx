@@ -526,7 +526,7 @@ function CheckinExperiment({ mode }) {
       number="05"
       eyebrow="State prototype"
       title="Состояние отвечает формой"
-      purpose="Rive-подобная логика без чужого визуала: одна иллюстрация меняет состояние вслед за выбором энергии и подтверждает, что check-in понят."
+      purpose="Rive-подобная логика без чужого визуала: одна иллюстрация меняет состояние вслед за выбором энергии и подтверждает, что чек-ин понят."
       mode={mode}
     >
       <div className="mx-lab-checkin" data-energy={energy}>
