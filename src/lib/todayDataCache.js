@@ -74,7 +74,11 @@ function sanitizeCheckin(checkin) {
   if (!checkin || typeof checkin !== 'object') return null
 
   return {
+    id: safeId(checkin.id),
+    date: typeof checkin.date === 'string' ? checkin.date : null,
     mood: finiteNumber(checkin.mood) ? checkin.mood : null,
+    energy: finiteNumber(checkin.energy) ? checkin.energy : null,
+    note: typeof checkin.note === 'string' ? checkin.note : null,
     emotion: typeof checkin.emotion === 'string' ? checkin.emotion : null,
     review_completed_at:
       typeof checkin.review_completed_at === 'string' ? checkin.review_completed_at : null,
