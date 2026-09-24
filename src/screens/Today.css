@@ -1514,10 +1514,27 @@
 .mx-today-day-card[data-state='missed'] {
   color: rgb(var(--c-muted));
 }
-.mx-today-day-card__glyph,
-.mx-today-day-card__glyph .mx-card-system-glyph {
+.mx-today-day-card__glyph {
+  display: inline-flex;
   width: 100%;
-  height: 64px;
+  align-items: center;
+  justify-content: center;
+}
+
+.mx-today-day-card__art {
+  max-width: 100%;
+  height: auto;
+  max-height: 100px;
+  object-fit: contain;
+}
+
+.mx-today-day-card__glyph .mx-today-day-card__art {
+  width: 60%;
+}
+
+.mx-today-day-card__illustration .mx-today-day-card__art {
+  width: 100%;
+  max-height: 140px;
 }
 .mx-today-day-card__label {
   display: block;
@@ -1816,10 +1833,10 @@
   line-height: 1.3;
 }
 
-/* Иллюстрация в пройденной карточке — ≈60% ширины, на тонкой линии */
+/* Иллюстрация в пройденной карточке — ≈60% ширины карточки, на тонкой линии */
 .mx-today-day-card__illustration {
   display: flex;
-  width: 60%;
+  width: 67%;
   margin-top: auto;
   padding-bottom: 12px;
   align-items: center;
