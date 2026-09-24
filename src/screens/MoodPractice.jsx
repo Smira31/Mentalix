@@ -33,6 +33,11 @@ import './CheckInDemo.css'
 
 const INTRO_SEEN_KEY = 'mx-mood-practice-intro-seen'
 
+const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
+const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
+const EMOTION_TALK_PROMPT =
+  'Сейчас тяжело — не хочу делать вид, что всё в порядке. Хочу просто сказать вслух, что чувствую.'
+
 const MOOD_SCALE = SCALE_STEPS[0]
 
 const CONTEXT_OPTIONS = [
@@ -91,6 +96,25 @@ export default function MoodPractice({ user, onDone }) {
     }
 
     setStep(current => current - 1)
+  }
+
+  /*
+   * Тот же переход-хендофф, что в CheckIn.jsx (openListener):
+   * к Собеседнику (mayak) с одним универсальным драфтом для тяжёлых эмоций.
+   */
+  function openListener() {
+    platform.haptic('medium')
+
+    try {
+      sessionStorage.setItem(MENTOR_PERSONA_KEY, 'mayak')
+      sessionStorage.setItem(MENTOR_DRAFT_KEY, EMOTION_TALK_PROMPT)
+    } catch (error) {
+      console.error(error)
+    }
+
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', 'mentor')
+    window.location.href = url.toString()
   }
 
   async function save(withBreathing) {
@@ -268,6 +292,7 @@ export default function MoodPractice({ user, onDone }) {
                 initialLevel={moodLevel}
                 emotion={emotion}
                 onEmotionChange={setEmotion}
+                onHeavyEmotionClick={openListener}
                 testId="mood-practice-emotion"
               />
             </div>
