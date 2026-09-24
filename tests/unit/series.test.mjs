@@ -144,3 +144,20 @@ test('series metrics use one completed check-in dataset instead of stale profile
   assert.equal(model.activeDays, 1)
   assert.equal(model.bestStreak, 1)
 })
+
+test('withTodayCheckin: утренний чек-ин за сегодня даёт серию 1, даже если истории ещё нет', async () => {
+  const { withTodayCheckin } = await import('../../src/lib/series.js')
+  const now = new Date(2026, 8, 24, 9, 0)
+  assert.equal(currentCheckinStreak(withTodayCheckin([], { id: 7 }, now)), 1)
+  assert.equal(currentCheckinStreak(withTodayCheckin([], null, now)), 0)
+  const history = [{ date: '2026-09-23' }]
+  assert.equal(currentCheckinStreak(withTodayCheckin(history, { date: '2026-09-24' }, now)), 2)
+  assert.equal(
+    currentCheckinStreak(withTodayCheckin([{ date: '2026-09-24' }], { date: '2026-09-24' }, now)),
+    1
+  )
+})
+
+test('currentCheckinStreak учитывает утреннюю запись только с created_at', () => {
+  assert.equal(currentCheckinStreak([{ created_at: '2026-09-24T06:00:00Z' }]), 1)
+})

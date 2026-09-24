@@ -2,7 +2,7 @@
   display: grid;
   gap: 8px;
   width: 100%;
-  max-width: 430px;
+  max-width: 440px;
   margin-inline: auto;
   padding: 4px var(--mx-space-5) 0;
   color: rgb(var(--c-text));

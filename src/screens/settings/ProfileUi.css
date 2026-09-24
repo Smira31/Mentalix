@@ -1,23 +1,80 @@
 /* Профиль и настройки — DESIGN_SYSTEM.md §5.4. 1 pt эталона = 1 px. */
 
 .mx-profile-page {
+  /* Экраны профиля монохромны: акцент («Лазурный» и др.) их не красит.
+     Выбор акцента в «оформлении» остаётся — образцы рисуются своим hex. */
+  --c-gold: var(--c-text);
+  /* Крупный заголовок — 16 px под нижним краем шапки Telegram
+     (верх контента App). Одна переменная для всех экранов профиля. */
+  --mx-profile-title-gap: 16px;
+  /* Высота свёрнутой шапки и затухание под ней. */
+  --mx-profile-bar-height: 44px;
+  --mx-profile-bar-fade: 16px;
+
   width: 100%;
   max-width: 28rem;
   padding-bottom: 40px;
   color: rgb(var(--c-text));
 }
 
-/* Липкая шапка: кнопка web + свёрнутый заголовок по центру. */
+/* Web: своя круглая кнопка занимает строку 56 px над заголовком. */
+.mx-profile-page--own-button {
+  --mx-profile-bar-height: 56px;
+  --mx-profile-title-gap: 4px;
+}
+
+/* Липкая шапка нулевой высоты: не сдвигает заголовок, свёрнутая
+   полоса лежит поверх контента. */
 .mx-profile-page__bar {
   position: sticky;
   top: 0;
   z-index: 3;
+  height: 0;
+}
+
+.mx-profile-page--own-button .mx-profile-page__bar {
+  height: var(--mx-profile-bar-height);
+}
+
+.mx-profile-page__surface {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 56px;
+  height: var(--mx-profile-bar-height);
   padding-inline: 20px;
   background: rgb(var(--c-bg));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+/* Плавное затухание вниз: контент уходит под шапку, а не обрезается. */
+.mx-profile-page__surface::after {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: var(--mx-profile-bar-fade);
+  background: linear-gradient(rgb(var(--c-bg)), rgb(var(--c-bg) / 0));
+  content: '';
+}
+
+.mx-profile-page--own-button .mx-profile-page__surface {
+  opacity: 1;
+}
+
+.mx-profile-page--own-button .mx-profile-page__surface::after {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.mx-profile-page__surface--collapsed,
+.mx-profile-page--own-button .mx-profile-page__surface--collapsed::after {
+  opacity: 1;
 }
 
 .mx-profile-page__bar-title {
@@ -31,12 +88,13 @@
   transition: opacity 200ms ease;
 }
 
-.mx-profile-page__bar--collapsed .mx-profile-page__bar-title {
+.mx-profile-page__surface--collapsed .mx-profile-page__bar-title {
   opacity: 1;
 }
 
 .mx-profile-page__button {
   position: absolute;
+  z-index: 1;
   top: 6px;
   display: grid;
   width: 44px;
@@ -63,7 +121,7 @@
 }
 
 .mx-profile-page__title {
-  margin: 4px 0 20px;
+  margin: var(--mx-profile-title-gap) 0 20px;
   padding-inline: 20px;
   font-size: 34px;
   font-weight: 700;
@@ -377,6 +435,147 @@ button.mx-profile-row:active {
   cursor: not-allowed;
 }
 
+/* Главная кнопка экранов профиля — белая с тёмным текстом,
+   как «Подробнее» в баннере. */
+.mx-profile-primary {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  margin-top: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-pill-light));
+  color: rgb(var(--c-bg));
+  font-size: 16px;
+  font-weight: 700;
+  transition: transform 160ms ease;
+}
+
+.mx-profile-primary:active {
+  transform: scale(0.97);
+}
+
+.mx-profile-primary:disabled {
+  opacity: 0.4;
+}
+
+/* Шаги («связать с сайтом.»): номер в сером круге + текст. */
+.mx-profile-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+  list-style: none;
+}
+
+.mx-profile-steps__item {
+  display: flex;
+  gap: 12px;
+  color: rgb(var(--c-text));
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.mx-profile-steps__index {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(var(--c-card3));
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Вариант опроса — как карточка профиля; выбранный — светлый. */
+.mx-profile-option {
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  text-align: left;
+  transition: background-color 160ms ease;
+}
+
+.mx-profile-option[aria-pressed='true'] {
+  background: rgb(var(--c-pill-light));
+  color: rgb(var(--c-bg));
+}
+
+.mx-profile-option[aria-pressed='true'] * {
+  color: inherit;
+}
+
+/* Прогресс опроса: пройденные шаги белые, остальные серые. */
+.mx-profile-step-progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.mx-profile-step-progress > span {
+  height: 6px;
+  flex: 1;
+  border-radius: 999px;
+  background: rgb(var(--c-card3));
+}
+
+.mx-profile-step-progress > span[data-done='true'] {
+  background: rgb(var(--c-text));
+}
+
+/* Раскрывающийся раздел («политика и данные.»): строка списка 50 px. */
+.mx-profile-disclosure + .mx-profile-disclosure {
+  border-top: 1px solid rgb(var(--c-border));
+}
+
+.mx-profile-disclosure__summary {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  color: rgb(var(--c-text));
+  font-size: 17px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.mx-profile-disclosure__summary::-webkit-details-marker {
+  display: none;
+}
+
+.mx-profile-disclosure__icon,
+.mx-profile-disclosure__chevron {
+  flex-shrink: 0;
+  color: rgb(var(--c-muted));
+}
+
+.mx-profile-disclosure__title {
+  flex: 1;
+}
+
+.mx-profile-disclosure__chevron {
+  transition: transform 200ms ease;
+}
+
+.mx-profile-disclosure[open] .mx-profile-disclosure__chevron {
+  transform: rotate(180deg);
+}
+
+.mx-profile-disclosure__body {
+  padding: 0 20px 16px 50px;
+}
+
 /* Скелетон: экран открывается сразу, данные дорисовываются. */
 .mx-profile-skeleton {
   border-radius: 16px;
@@ -401,6 +600,8 @@ button.mx-profile-row:active {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .mx-profile-page__surface,
+  .mx-profile-page__surface::after,
   .mx-profile-page__bar-title,
   .mx-profile-switch,
   .mx-profile-switch::after {

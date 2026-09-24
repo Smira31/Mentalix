@@ -41,12 +41,13 @@ function isCompleted(checkin) {
 
 /**
  * День засчитан для серии, если есть запись чек-ина за этот день —
- * утренняя (date) или завершённый разбор (review_completed_at / completed_at).
+ * утренняя (date / created_at) или завершённый разбор (review_completed_at / completed_at).
  * В отличие от isCompleted, учитывает утренний чек-ин без вечернего разбора.
  */
 function hasCheckinRecord(checkin) {
   return Boolean(
     checkin?.date ||
+    checkin?.created_at ||
     checkin?.review_completed_at ||
     checkin?.completed_at ||
     checkin?.status === 'completed'
@@ -64,6 +65,25 @@ function completedDays(checkins = [], timezone = 'UTC') {
   ]
     .sort()
     .map(dayNumber)
+}
+
+function localDayKey(now) {
+  const pad = value => String(value).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}
+
+/**
+ * История чек-инов + сегодняшний чек-ин (GET /checkin/today). История с
+ * бэкенда может отставать от записи за сегодня; утренний чек-ин уже есть —
+ * значит, сегодняшний день засчитан в серию.
+ */
+export function withTodayCheckin(history = [], today = null, now = new Date()) {
+  const list = Array.isArray(history) ? history : []
+  if (!today || typeof today !== 'object') return list
+  const date = Number.isFinite(dayNumber(today.date))
+    ? String(today.date).slice(0, 10)
+    : localDayKey(now)
+  return [...list, { ...today, date }]
 }
 
 export function currentCheckinStreak(checkins = [], options = {}) {

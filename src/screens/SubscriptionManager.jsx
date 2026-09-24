@@ -158,14 +158,15 @@ function SubscriptionTiers({ tier }) {
         return (
           <div
             key={t.key}
-            className={`w-full rounded-2xl border p-5 mb-4 ${
-              isCurrent ? 'border-gold bg-gold/5' : 'border-cream/[0.08] bg-cream/[0.03]'
+            data-testid={`subscription-tier-${t.key}`}
+            className={`w-full rounded-2xl border p-5 mb-4 bg-[rgb(var(--c-card2))] ${
+              isCurrent ? 'border-muted' : 'border-transparent'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
               <h2 className="font-display text-[16px] text-cream">{t.name}</h2>
               {isCurrent && (
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-gold text-emerald-deep">
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-cream text-emerald-deep">
                   Текущий
                 </span>
               )}
@@ -174,7 +175,7 @@ function SubscriptionTiers({ tier }) {
             <ul className="space-y-2 mb-4">
               {t.features.map(f => (
                 <li key={f} className="flex items-start gap-2 text-[13px] text-cream">
-                  <Check size={15} className="text-gold shrink-0 mt-0.5" />
+                  <Check size={15} className="text-muted shrink-0 mt-0.5" />
                   {f}
                 </li>
               ))}

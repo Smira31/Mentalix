@@ -1131,8 +1131,10 @@ export default function App() {
           marginBottom: deviceFrameMode
             ? `${-(demoViewport.height * (1 - demoScale))}px`
             : undefined,
+          /* Профиль (overlay 'settings') в демо живёт под шапкой Telegram,
+             как на устройстве: инсет шапки сохраняется и внутри оверлея. */
           paddingTop:
-            previewDemoMode && !overlay && !todaySeriesOpen && !todayFlowOpen
+            previewDemoMode && (!overlay || overlay === 'settings') && !todaySeriesOpen && !todayFlowOpen
               ? '56px'
               : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
@@ -1140,7 +1142,7 @@ export default function App() {
         }}
       >
         {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName }) &&
-          !overlay &&
+          (!overlay || overlay === 'settings') &&
           !todaySeriesOpen &&
           !todayFlowOpen && (
             // eslint-disable-next-line react-hooks/refs

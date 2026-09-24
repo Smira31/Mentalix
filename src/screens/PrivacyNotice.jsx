@@ -1,20 +1,28 @@
-import { CloudOff, Database, Download, KeyRound, ShieldCheck, Sparkles } from 'lucide-react'
+import {
+  ChevronDown,
+  CloudOff,
+  Database,
+  Download,
+  KeyRound,
+  ShieldCheck,
+  Sparkles,
+} from 'lucide-react'
 
 import { ProfilePage } from './settings/ProfileUi'
 
+// Раздел — строка с заголовком; текст раскрывается по тапу (§5.4, по умолчанию свёрнут).
 function NoticeCard({ icon: Icon, title, children }) {
   return (
-    <article className="rounded-3xl border border-cream/10 bg-emerald p-5">
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/10 text-gold">
-          <Icon size={18} aria-hidden="true" />
-        </span>
-        <div className="min-w-0">
-          <h2 className="text-[16px] font-semibold text-cream">{title}</h2>
-          <div className="mt-2 space-y-3 text-[13px] leading-relaxed text-muted">{children}</div>
-        </div>
+    <details className="mx-profile-disclosure" data-testid="privacy-section">
+      <summary className="mx-profile-disclosure__summary">
+        <Icon size={18} aria-hidden="true" className="mx-profile-disclosure__icon" />
+        <span className="mx-profile-disclosure__title">{title}</span>
+        <ChevronDown size={16} aria-hidden="true" className="mx-profile-disclosure__chevron" />
+      </summary>
+      <div className="mx-profile-disclosure__body space-y-3 text-[13px] leading-relaxed text-muted">
+        {children}
       </div>
-    </article>
+    </details>
   )
 }
 
@@ -27,7 +35,7 @@ export default function PrivacyNotice({ onBack }) {
           работает, и не заменяет юридическую политику обработки персональных данных.
         </p>
 
-        <div className="mt-6 space-y-3">
+        <div className="mx-profile-card mt-6">
           <NoticeCard icon={Database} title="Что сохраняется">
             <p>
               Когда ты сохраняешь действие или запись, профиль Mentalix может хранить чек-ин, ответы
@@ -98,13 +106,13 @@ export default function PrivacyNotice({ onBack }) {
           </NoticeCard>
         </div>
 
-        <div className="mt-6 rounded-2xl border border-gold/20 bg-gold/5 p-4 text-[12px] leading-relaxed text-muted">
+        <div className="mt-6 rounded-2xl border border-[rgb(var(--c-border))] p-4 text-[12px] leading-relaxed text-muted">
           Если текст расходится с фактическим поведением, сообщи об этом в{' '}
           <a
             href="https://t.me/mentalix_support_bot"
             target="_blank"
             rel="noreferrer"
-            className="font-semibold text-gold underline underline-offset-2"
+            className="font-semibold text-cream underline underline-offset-2"
           >
             поддержку Mentalix
           </a>
@@ -113,7 +121,7 @@ export default function PrivacyNotice({ onBack }) {
         </div>
 
         <div className="mt-5 flex items-start gap-2 px-1 text-[12px] leading-relaxed text-faint">
-          <ShieldCheck size={16} className="mt-0.5 shrink-0 text-gold" aria-hidden="true" />
+          <ShieldCheck size={16} className="mt-0.5 shrink-0 text-muted" aria-hidden="true" />
           <p>Каждый видит только свои данные; ограничения входа на сайте описаны выше.</p>
         </div>
       </section>

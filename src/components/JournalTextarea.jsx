@@ -368,7 +368,7 @@ export default function JournalTextarea({
           <div
             className={[
               'fixed bottom-[calc(var(--app-safe-bottom)+10px)] left-[var(--mx-screen-x)] right-[var(--mx-screen-x)] z-[70] mx-auto flex min-w-0 items-center justify-between gap-2',
-              'max-w-[430px]',
+              'max-w-[440px]',
               'journal-textarea__floating-actions',
               desktopInline
                 ? 'md:static md:bottom-auto md:left-auto md:right-auto md:z-0 md:mx-0 md:mt-6 md:w-full md:max-w-none'

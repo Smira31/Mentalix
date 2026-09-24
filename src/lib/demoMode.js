@@ -6,6 +6,9 @@ const TODAY_PREVIEW_STATES = new Set([
   'dayClosed',
 ])
 
+// Канонический адрес веб-версии (Firebase Hosting Live, см. PROJECT_STATE.md).
+export const PRODUCTION_WEB_HOST = 'mentalix-production.web.app'
+
 export const DEMO_USER = {
   id: 900001,
   web_user_id: 'preview-demo-user',
@@ -32,7 +35,7 @@ export function isPreviewDemoMode() {
     host === '127.0.0.1' ||
     host.endsWith('.vercel.app') ||
     host === 'mentalix-owner-qa.pages.dev' ||
-    host === 'mentalix-production.web.app' ||
+    host === PRODUCTION_WEB_HOST ||
     host.endsWith('.manus.computer') ||
     host.endsWith('.trycloudflare.com') ||
     host.endsWith('.base44-preview.app')
@@ -40,7 +43,7 @@ export function isPreviewDemoMode() {
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost =
     host === 'mentalix-preview.vercel.app' || host === 'mentalix-owner-qa.pages.dev'
-  const isProductionDemoHost = host === 'mentalix-production.web.app'
+  const isProductionDemoHost = host === PRODUCTION_WEB_HOST
   // Contract marker: (isPreviewRuntime || isQaProductionHost)
 
   const demoRequested = params.get('demo') === '1'

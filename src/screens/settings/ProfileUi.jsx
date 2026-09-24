@@ -12,7 +12,8 @@ import './ProfileUi.css'
 
 /*
  * Крупный заголовок «твой профиль.» при скролле уходит под липкую шапку —
- * тогда в центре шапки появляется маленький. Следим за самим заголовком,
+ * тогда в центре шапки появляется маленький на фоне экрана с затуханием
+ * вниз (контент уходит под него, а не обрезается). Следим за самим заголовком,
  * а не за scroll-событиями: скроллится корень App, а не этот экран.
  */
 function useTitleCollapsed(headerRef, titleRef) {
@@ -54,11 +55,11 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
   const ButtonIcon = isRoot ? X : ChevronLeft
 
   return (
-    <div className="mx-profile-page" data-testid={testId}>
-      <div
-        ref={headerRef}
-        className={`mx-profile-page__bar${collapsed ? ' mx-profile-page__bar--collapsed' : ''}`}
-      >
+    <div
+      className={`mx-profile-page${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
+      data-testid={testId}
+    >
+      <div className="mx-profile-page__bar">
         {showOwnButton && (
           <button
             type="button"
@@ -73,11 +74,17 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
             <ButtonIcon size={22} aria-hidden="true" />
           </button>
         )}
-        <span className="mx-profile-page__bar-title" aria-hidden={!collapsed}>
-          {title}
-        </span>
+        <div
+          ref={headerRef}
+          data-testid="profile-collapsed-bar"
+          className={`mx-profile-page__surface${collapsed ? ' mx-profile-page__surface--collapsed' : ''}`}
+        >
+          <span className="mx-profile-page__bar-title" aria-hidden={!collapsed}>
+            {title}
+          </span>
+        </div>
       </div>
-      <h1 ref={titleRef} className="mx-profile-page__title">
+      <h1 ref={titleRef} className="mx-profile-page__title" data-testid="profile-page-title">
         {title}
       </h1>
       {children}
