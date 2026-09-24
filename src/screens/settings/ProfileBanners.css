@@ -171,11 +171,10 @@ button.mx-profile-banner:active {
 
 /* max-width: none обязателен: глобальный img{max-width:100%} сжимал
    картинку до ширины кадра и персонаж получался намного меньше.
-   Персонаж краснее и ярче исходника — фильтром добавляем насыщенность. */
+   Без фильтра — тёмный красный, как на первом баннере. */
 .mx-profile-banner--web .mx-profile-banner__art {
   max-width: none;
   margin: 0 0 0 -52px;
-  filter: brightness(1.12) saturate(1.35);
 }
 
 /* Заголовок как в референсе Stoic: один размер шрифта, «Mentalix»
