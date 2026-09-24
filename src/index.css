@@ -121,6 +121,26 @@
   --c-nav: 28 28 28;
   /* #1C1C1C — поверхность нижней навигации */
 
+  /* Шапка «Сегодня» и баннеры профиля — DESIGN_SYSTEM.md §5.4. */
+  --c-header-chip: 31 31 31;
+  /* #1F1F1F — чип огонька */
+  --c-header-chip-border: 46 46 46;
+  /* #2E2E2E — рамка чипа и кнопки профиля, чуть светлее фона */
+  --c-profile-ring: 26 26 26;
+  /* #1A1A1A — внешнее кольцо кнопки профиля */
+  --c-header-muted: 138 138 138;
+  /* #8A8A8A — огонёк и число серии */
+  --c-card-raised: 33 33 33;
+  /* #212121 — баннеры «Потенциал» и «Вход», светлее обычной карточки */
+  --c-card-raised2: 28 28 28;
+  /* #1C1C1C — панель иллюстрации баннера «Поддержать» */
+  --c-pill-light: 212 212 212;
+  /* #D4D4D4 — светлая кнопка-пилюля баннера «Потенциал» */
+  --mx-header-control: 43px;
+  /* диаметр кнопки профиля и высота чипа огонька */
+  --mx-header-edge: 21px;
+  /* отступ чипа и кнопки от края экрана */
+
   --c-nav-border: 51 51 51;
   /* #333333 — граница нижней навигации */
 
@@ -1346,6 +1366,10 @@ button {
   font-weight: 700;
   letter-spacing: -0.02em;
   transform: translateX(-50%);
+}
+.mx-demo-telegram-chrome__title--wordmark {
+  letter-spacing: 0.42em;
+  font-weight: 700;
 }
 .mx-demo-telegram-chrome__right {
   display: flex;

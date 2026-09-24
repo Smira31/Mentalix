@@ -3,6 +3,7 @@ import { Check, Cloud, Lightbulb, Lock, LockKeyhole, PenLine, Sparkles } from 'l
 import { createPortal } from 'react-dom'
 import BackButton from '../components/BackButton'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { ProfileBody, ProfilePage } from './settings/ProfileUi'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import './SubscriptionManager.css'
 
@@ -134,15 +135,24 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
   }
 
   return (
-    <div className="w-full max-w-md px-4 pt-2 pb-28 flex flex-col items-center">
-      <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
-        <div className="justify-self-start">
-          <BackButton showInDemo onClick={onBack} />
-        </div>
-        <h1 className="font-display text-[18px] text-cream">Подписка</h1>
-        <span aria-hidden="true" />
-      </div>
+    <ProfilePage title="подписка." onBack={onBack} testId="profile-screen-subscription">
+      <ProfileBody>
+        {tier == null ? (
+          <div aria-busy="true" data-testid="subscription-skeleton">
+            <div className="mx-profile-skeleton mb-4" style={{ height: 212 }} />
+            <div className="mx-profile-skeleton" style={{ height: 300 }} />
+          </div>
+        ) : (
+          <SubscriptionTiers tier={tier} />
+        )}
+      </ProfileBody>
+    </ProfilePage>
+  )
+}
 
+function SubscriptionTiers({ tier }) {
+  return (
+    <>
       {TIERS.map(t => {
         const isCurrent = tier === t.key
         return (
@@ -185,6 +195,6 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
         Приём платежей за тариф Про пока не подключён — раздел появится здесь в следующем
         обновлении.
       </p>
-    </div>
+    </>
   )
 }
