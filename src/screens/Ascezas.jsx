@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { invalidateTodayData } from '../lib/todayDataCache'
@@ -18,76 +18,11 @@ import {
   FULLSCREEN_HEADER_SLOT_CLASS,
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
-import SemanticGlyph, { semanticKindForAsceza } from '../components/SemanticGlyph'
+import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
-import StreakBar from '../components/StreakBar'
-import StreakRestoreSheet from '../components/StreakRestoreSheet'
-import DeleteConfirmationDialog from '../components/DeleteConfirmationDialog'
-import { Shield, ShieldOff, Cigarette, Brain, Users, Smartphone, Cookie, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
-/*
- * Карточка занимает всё между шапкой экрана и нижней навигацией.
- */
-/*
- * Верхний предел обязателен. Высота считается от 100dvh, и на
- * телефоне это даёт ~470px — то, подо что карточка рисовалась.
- * На широком экране Telegram Desktop то же выражение даёт под
- * семьсот, карточка растягивается и рисунок с текстом расползаются.
- * На телефоне min() ничего не меняет: там всегда выигрывает calc.
- */
-const CATEGORIES = [
-  {
-    key: 'physio',
-    label: 'Физиология',
-    short: 'Тело',
-    Icon: Cigarette,
-    hint: 'курение, алкоголь, вещества',
-  },
-  {
-    key: 'psycho',
-    label: 'Психология',
-    short: 'Психика',
-    Icon: Brain,
-    hint: 'грызть ногти, шопоголизм, жалобы',
-  },
-  {
-    key: 'social',
-    label: 'Поведение',
-    short: 'Общение',
-    Icon: Users,
-    hint: 'перебивать, материться, опаздывать',
-  },
-  {
-    key: 'digital',
-    label: 'Цифровые',
-    short: 'Экран',
-    Icon: Smartphone,
-    hint: 'думскроллинг, игры, телефон',
-  },
-  {
-    key: 'food',
-    label: 'Пищевые',
-    short: 'Еда',
-    Icon: Cookie,
-    hint: 'заедание стресса, сладкое, еда у ТВ',
-  },
-]
-
-const BREAK_TRIGGERS = ['Стресс', 'Скука', 'Усталость', 'Тревога', 'Компания', 'Импульс', 'Другое']
-
-function categoryMeta(key) {
-  return CATEGORIES.find(c => c.key === key) || CATEGORIES[1]
-}
-
-const EMPTY_DRAFT = {
-  name: '',
-  category: 'psycho',
-  reason: '',
-  trigger: '',
-  replacement: '',
-  relapse_cost: '',
-}
-
+import PracticeDetail from '../components/PracticeDetail'
 function BreakContextSheet({ asceza, onSave, onClose }) {
   const [trigger, setTrigger] = useState('')
   const [note, setNote] = useState('')
@@ -494,75 +429,34 @@ export default function Ascezas({ user, onBack }) {
   const [ascezas, setAscezas] = useState([])
   const [loading, setLoading] = useState(true)
   const [showCreate, setShowCreate] = useState(false)
-
   const [breakTarget, setBreakTarget] = useState(null)
-  const [restoreTarget, setRestoreTarget] = useState(null)
-
-  const [active, setActive] = useState(0)
+  const [selected, setSelected] = useState(null)
   const [writeError, setWriteError] = useState(null)
-
-  const trackRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
-
     api.ascezas
       .list(user.id)
       .then(setAscezas)
-      .catch(error => {
-        console.error(error)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+      .catch(error => console.error(error))
+      .finally(() => setLoading(false))
   }, [user])
 
-  /*
-   * Пока открыт разбор срыва, страница под ним не скроллится.
-   */
   useEffect(() => {
     document.body.style.overflow = breakTarget ? 'hidden' : ''
-
-    return () => {
-      document.body.style.overflow = ''
-    }
+    return () => { document.body.style.overflow = '' }
   }, [breakTarget])
 
-  async function logAsceza(
-    ascezaId,
-    status,
-    breakTrigger = null,
-    breakNote = null,
-    restoreDaysAgo = null
-  ) {
+  async function logAsceza(ascezaId, status, breakTrigger = null, breakNote = null) {
     try {
-      const updated = await api.ascezas.log(
-        ascezaId,
-        user.id,
-        status,
-        breakTrigger,
-        breakNote,
-        restoreDaysAgo
-      )
+      const updated = await api.ascezas.log(ascezaId, user.id, status, breakTrigger, breakNote)
+      const merged = previous => previous.map(asceza => asceza.id === ascezaId ? { ...asceza, ...updated, today_status: updated.today_status || status } : asceza)
+      setAscezas(merged)
+      setSelected(previous => previous?.id === ascezaId ? { ...previous, ...updated, today_status: updated.today_status || status } : previous)
       setWriteError(null)
-
-      setAscezas(previous =>
-        previous.map(asceza =>
-          asceza.id === ascezaId
-            ? {
-                ...asceza,
-                streak: updated.streak,
-                total_days: updated.total_days,
-                breaks: updated.breaks,
-                today_status: updated.today_status,
-                today_break_trigger: updated.today_break_trigger,
-                today_break_note: updated.today_break_note,
-              }
-            : asceza
-        )
-      )
       invalidateTodayData(user.id)
       invalidatePracticesData(user.id)
+      if (breakTarget?.id === ascezaId) setBreakTarget(null)
       return updated
     } catch (error) {
       console.error(error)
@@ -574,15 +468,9 @@ export default function Ascezas({ user, onBack }) {
     }
   }
 
-  async function restoreAsceza({ restoreDaysAgo }) {
-    if (!restoreTarget) return null
-    return logAsceza(restoreTarget.id, 'held', null, null, restoreDaysAgo)
-  }
-
   async function createAsceza(draft) {
     try {
       const asceza = await api.ascezas.create(user.id, draft)
-
       setAscezas(previous => [...previous, asceza])
       setShowCreate(false)
       return asceza
@@ -596,8 +484,8 @@ export default function Ascezas({ user, onBack }) {
   async function deleteAsceza(ascezaId) {
     try {
       await api.ascezas.remove(ascezaId)
-
       setAscezas(previous => previous.filter(asceza => asceza.id !== ascezaId))
+      setSelected(null)
       setWriteError(null)
     } catch (error) {
       console.error(error)
@@ -605,130 +493,55 @@ export default function Ascezas({ user, onBack }) {
     }
   }
 
-  function syncActive() {
-    const track = trackRef.current
-    if (!track) return
-    const card = track.firstElementChild
-    if (!card) return
-    const step = card.offsetWidth + 12
-    setActive(Math.round(track.scrollLeft / step))
+  if (showCreate) return <CreateAscezaScreen onCreate={createAsceza} onCancel={() => setShowCreate(false)} />
+  if (selected) {
+    return (
+      <>
+        <PracticeDetail
+          kind="asceza"
+          practice={selected}
+          onBack={() => setSelected(null)}
+          onLog={logAsceza}
+          onBreak={setBreakTarget}
+          onDelete={deleteAsceza}
+        />
+        {breakTarget && <BreakContextSheet asceza={breakTarget} onSave={logAsceza} onClose={() => setBreakTarget(null)} />}
+      </>
+    )
   }
-
-  if (showCreate) {
-    return <CreateAscezaScreen onCreate={createAsceza} onCancel={() => setShowCreate(false)} />
-  }
-
-  const heldToday = ascezas.filter(asceza => asceza.today_status === 'held').length
-
-  const total = ascezas.length
 
   return (
-    <>
-      <div className="w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in mx-ascezas-screen flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="flex items-center gap-3 mb-3 mx-ascezas-screen__header">
-          <BackButton onClick={onBack} />
-
-          <h2 className="font-display text-[20px] text-cream lowercase">аскезы.</h2>
-        </div>
-
-        <p className="text-[12px] text-muted mb-5 px-1 mx-ascezas-screen__summary">
-          {total > 0 ? `${heldToday} из ${total} удержано сегодня` : 'от чего ты отказываешься'}
-        </p>
-
-        {writeError && (
-          <p role="alert" className="text-[12px] text-amber-200 mb-4 px-1 leading-relaxed">
-            {writeError}
-          </p>
-        )}
-
-        {loading ? (
-          <p className="text-muted text-[13px]">Загрузка...</p>
-        ) : ascezas.length === 0 ? (
-          <EmptyState
-            glyph={
-              <div className="w-full h-[150px] max-w-[220px] mx-auto mb-3">
-                <SemanticGlyph kind="asceza" className="w-full h-full" />
-              </div>
-            }
-            className="mb-4"
-          >
-            <h3 className="font-display text-[16px] text-cream mb-1">Аскез пока нет</h3>
-
-            <p className="text-[13px] text-muted mb-4 leading-relaxed">
-              Аскеза — сознательный отказ. Выбери одну вредную привычку и назови её честно.
-            </p>
-
-            <button
-              onClick={() => setShowCreate(true)}
-              className="cta-pill px-9 py-3.5 text-[13px]"
-            >
-              Принять аскезу
-            </button>
-          </EmptyState>
-        ) : (
-          <>
-            <div
-              ref={trackRef}
-              onScroll={syncActive}
-              className="mx-ascezas-screen__carousel flex gap-3 -mx-[var(--mx-screen-x)] px-[var(--mx-screen-x)] pb-1 overflow-x-auto overscroll-x-contain snap-x snap-mandatory [&::-webkit-scrollbar]:hidden flex-1 min-h-0"
-              style={{ scrollbarWidth: 'none' }}
-            >
-              {ascezas.map(asceza => (
-                <AscezaCard
-                  key={asceza.id}
-                  asceza={asceza}
-                  onLog={logAsceza}
-                  onBreak={setBreakTarget}
-                  onDelete={deleteAsceza}
-                  onRestore={setRestoreTarget}
-                />
-              ))}
-
-              <button
-                onClick={() => {
-                  platform.haptic('light')
-                  setShowCreate(true)
-                }}
-                className="practice-motion-card practice-detail-card shrink-0 snap-center w-[84%] rounded-[28px] border border-dashed border-cream/15 bg-transparent flex flex-col items-center justify-center gap-2"
-              >
-                <span className="text-[22px] text-faint leading-none">+</span>
-                <span className="text-[13px] text-muted font-semibold">Новая аскеза</span>
-              </button>
-            </div>
-
-            <div className="flex justify-center gap-1.5 mt-3">
-              {[...ascezas, null].map((_, index) => (
-                <span
-                  key={index}
-                  className={[
-                    'h-[3px] rounded-full transition-all duration-200',
-                    index === active ? 'w-5 bg-gold' : 'w-4 bg-cream/15',
-                  ].join(' ')}
-                />
-              ))}
-            </div>
-          </>
-        )}
+    <div className="mx-ascezas-screen mx-practice-list-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
+      <div className="flex items-center gap-3 mb-5 mx-ascezas-screen__header">
+        <BackButton onClick={onBack} />
+        <h2 className="font-display text-[20px] text-cream lowercase">аскезы.</h2>
       </div>
-
-      {breakTarget && (
-        <BreakContextSheet
-          asceza={breakTarget}
-          onSave={logAsceza}
-          onClose={() => setBreakTarget(null)}
-        />
+      <p className="mx-practice-list-screen__intro">от чего ты отказываешься</p>
+      {writeError && <p role="alert" className="text-[12px] text-amber-200 mb-4">{writeError}</p>}
+      {loading ? <p className="text-muted text-[13px]">Загрузка...</p> : ascezas.length === 0 ? (
+        <EmptyState glyph={<SemanticGlyph kind="asceza" className="w-full h-full" />}>
+          <h3 className="font-display text-[16px] text-cream mb-1">Аскез пока нет</h3>
+          <p className="text-[13px] text-muted mb-4">Выбери одну привычку и назови её честно.</p>
+          <button onClick={() => setShowCreate(true)} className="cta-pill px-9 py-3.5 text-[13px]">Принять аскезу</button>
+        </EmptyState>
+      ) : (
+        <div className="mx-practice-grid" data-testid="practice-grid">
+          {ascezas.map(asceza => (
+            <button
+              type="button"
+              key={asceza.id}
+              className={`mx-practice-tile ${asceza.today_status === 'held' ? 'is-done' : ''}`}
+              data-testid="practice-tile"
+              data-done={asceza.today_status === 'held'}
+              onClick={() => { platform.haptic('light'); setSelected(asceza) }}
+            >
+              <span className="mx-practice-tile__glyph"><SemanticGlyph kind="asceza" className="w-full h-full" /></span>
+              <span className="mx-practice-tile__name">{asceza.name}</span>
+            </button>
+          ))}
+        </div>
       )}
-
-      {restoreTarget && (
-        <StreakRestoreSheet
-          itemName={restoreTarget.name}
-          choices={[
-            { value: 'held', label: 'Удержался', description: 'Восстановить день без срыва.' },
-          ]}
-          onSave={restoreAsceza}
-          onClose={() => setRestoreTarget(null)}
-        />
-      )}
-    </>
+      {!loading && <button type="button" className="mx-practice-list-screen__create" onClick={() => setShowCreate(true)}>+ Новая аскеза</button>}
+    </div>
   )
 }
