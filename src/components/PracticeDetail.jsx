@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ChevronDown, Trash2 } from 'lucide-react'
 import { platform } from '../platform'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
-import { semanticKindForAsceza, semanticKindForRitual, SemanticGlyph } from './SemanticGlyph'
+import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import './PracticeDetail.css'
 
 function AccordionRow({ testId, label, children }) {
@@ -18,25 +18,23 @@ function AccordionRow({ testId, label, children }) {
         onClick={() => setOpen(value => !value)}
       >
         <span>{label}</span>
-        <ChevronDown size={18} className={open ? 'rotate-180 transition-transform' : 'transition-transform'} />
+        <ChevronDown
+          size={18}
+          className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+        />
       </button>
       {open && <div className="mx-practice-detail__accordion-content">{children}</div>}
     </div>
   )
 }
 
-export default function PracticeDetail({
-  kind,
-  practice,
-  onBack,
-  onLog,
-  onBreak,
-  onDelete,
-}) {
+export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak, onDelete }) {
   const [confirming, setConfirming] = useState(false)
   const isRitual = kind === 'ritual'
   const done = isRitual ? Boolean(practice.today_level) : practice.today_status === 'held'
-  const glyphKind = isRitual ? semanticKindForRitual(practice.name) : semanticKindForAsceza(practice)
+  const glyphKind = isRitual
+    ? semanticKindForRitual(practice.name)
+    : semanticKindForAsceza(practice)
   const why = practice.goal || practice.reason
   const how = isRitual
     ? [
@@ -95,7 +93,9 @@ export default function PracticeDetail({
           <SemanticGlyph kind={glyphKind} className="w-full h-full" />
         </span>
         <span className="mx-practice-detail__name">{practice.name}</span>
-        <span className="mx-practice-detail__state">{done ? 'отмечено сегодня' : 'отметить сегодня'}</span>
+        <span className="mx-practice-detail__state">
+          {done ? 'отмечено сегодня' : 'отметить сегодня'}
+        </span>
       </button>
 
       <div className="mx-practice-detail__accordions">
@@ -111,7 +111,11 @@ export default function PracticeDetail({
       </div>
 
       {!isRitual && (
-        <button type="button" className="mx-practice-detail__quiet-action" onClick={() => onBreak(practice)}>
+        <button
+          type="button"
+          className="mx-practice-detail__quiet-action"
+          onClick={() => onBreak(practice)}
+        >
           Сорвался сегодня
         </button>
       )}
