@@ -40,3 +40,32 @@ export function buildMoodPracticePayload({ mood, emotion, context, note }, breat
     breathing_completed: Boolean(breathing_completed),
   }
 }
+
+/**
+ * Извлечь дату (YYYY-MM-DD) из записи практики «Настроение».
+ * Используется в History.jsx для группировки по дню.
+ * @param {{ recorded_at?: string, date?: string }} mp
+ * @returns {string|null}
+ */
+export function moodPracticeDate(mp) {
+  if (!mp) return null
+  const raw = mp.recorded_at || mp.date
+  if (!raw) return null
+  return String(raw).slice(0, 10)
+}
+
+/**
+ * Сгруппировать записи «Настроения» по дате.
+ * @param {Array<{ recorded_at?: string, date?: string }>} moodPractices
+ * @returns {Record<string, Array>} — { 'YYYY-MM-DD': [mp, ...] }
+ */
+export function groupMoodPracticesByDate(moodPractices) {
+  const byDate = {}
+  for (const mp of moodPractices || []) {
+    const date = moodPracticeDate(mp)
+    if (!date) continue
+    if (!byDate[date]) byDate[date] = []
+    byDate[date].push(mp)
+  }
+  return byDate
+}
