@@ -170,13 +170,7 @@ function WeekStrip({ checkin, history = [] }) {
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
               </span>
-              {platformName === 'telegram' || !isCompleted ? (
-                <span className="mx-type-calendar-date">{day.getDate()}</span>
-              ) : (
-                <span className="mx-today-week-day__check" aria-label="Чек-ин пройден" role="img">
-                  ✓
-                </span>
-              )}
+              <span className="mx-type-calendar-date">{day.getDate()}</span>
             </div>
           )
         })}
@@ -789,11 +783,13 @@ export default function Today({
           ПУЛЬС
           ====================================================== */}
 
-      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
+      {!hiddenCards.includes('pulse') && (
         <p className="mx-today-pulse">
-          {activeToday < 20
-            ? `Сегодня в пути вместе с тобой: ${activeToday}`
-            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+          {activeToday == null
+            ? 'Сегодня свой путь продолжают люди по всему миру'
+            : activeToday < 20
+              ? `Сегодня в пути вместе с тобой: ${activeToday}`
+              : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
         </p>
       )}
 

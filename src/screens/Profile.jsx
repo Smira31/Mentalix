@@ -1,19 +1,71 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
+import { useSynced } from '../lib/store'
+import {
+  ProfileBody,
+  ProfileGroup,
+  ProfileCard,
+  ProfileRow,
+  ProfileNote,
+} from './settings/ProfileUi'
 
 // ============================================================
 // О ТЕБЕ
 //
-// Только данные человека: имя и статистика из профиля (один раз, под именем).
-// Лента пути, «личный максимум» и вехи убраны — серия и
-// значки уже есть в шторке серии.
+// День рождения, история и воспоминания — как у Stoic.
+// День рождения хранится локально (useSynced), т.к. на бэкенде
+// нет поля для него. История и воспоминания — из api.profile.get.
 // ============================================================
+
+const BIRTHDAY_KEY = 'mx-birthday'
+
+const MONTHS = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+]
+
+function formatBirthday(value) {
+  if (!value) return null
+  const [m, d] = value.split('-').map(Number)
+  if (!m || !d) return null
+  return `${d} ${MONTHS[m - 1]}`
+}
+
+function daysUntilNextBirthday(value) {
+  if (!value) return null
+  const [m, d] = value.split('-').map(Number)
+  if (!m || !d) return null
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  let next = new Date(now.getFullYear(), m - 1, d)
+  if (next < today) next = new Date(now.getFullYear() + 1, m - 1, d)
+  return Math.ceil((next - today) / (1000 * 60 * 60 * 24))
+}
+
+// Воспоминания — вехи по количеству чек-инов и дней в системе.
+function getMilestones(stats) {
+  if (!stats) return []
+  const milestones = []
+  const checkins = stats.total_checkins || 0
+  const days = stats.days_active || 0
+
+  if (checkins >= 1) milestones.push({ icon: '🌱', title: 'Первый чек-ин', desc: 'Начало пути' })
+  if (checkins >= 10) milestones.push({ icon: '🌿', title: '10 чек-инов', desc: 'Десять отметок' })
+  if (checkins >= 50) milestones.push({ icon: '🔥', title: '50 чек-инов', desc: 'Полсотни отметок' })
+  if (checkins >= 100) milestones.push({ icon: '⭐', title: '100 чек-инов', desc: 'Сотня отметок' })
+  if (days >= 7) milestones.push({ icon: '📅', title: 'Неделя в системе', desc: '7 дней' })
+  if (days >= 30) milestones.push({ icon: '🌙', title: 'Месяц в системе', desc: '30 дней' })
+  if (days >= 100) milestones.push({ icon: '🏆', title: '100 дней в системе', desc: 'Сотня дней' })
+
+  return milestones
+}
 
 export default function Profile({ user }) {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
+  const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
 
   useEffect(() => {
     if (!user) return
@@ -43,23 +95,23 @@ export default function Profile({ user }) {
     setReloadToken(token => token + 1)
   }
 
+  const birthdayFormatted = formatBirthday(birthdayRaw)
+  const daysToBirthday = daysUntilNextBirthday(birthdayRaw)
+  const milestones = getMilestones(stats)
+
   return (
-    <div
-      className="w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
-      data-testid="profile-about"
-    >
-      <div className="flex items-center gap-3.5 mt-4 mb-7">
+    <ProfileBody>
+      {/* Имя и аватар */}
+      <div className="flex items-center gap-3.5 mt-4 mb-6" data-testid="profile-about-header">
         <div className="w-12 h-12 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-card2))] flex items-center justify-center shrink-0">
           <span className="font-display text-[16px] text-cream">
             {user.first_name?.[0]?.toUpperCase() || '?'}
           </span>
         </div>
-
         <div className="min-w-0">
           <h2 className="font-display text-[20px] text-cream leading-tight truncate">
             {user.first_name}
           </h2>
-
           {stats && (
             <p className="text-[12px] text-muted mt-0.5" data-testid="profile-about-stats">
               {stats.days_active} дней в системе · {stats.total_checkins} чек-инов
@@ -71,19 +123,89 @@ export default function Profile({ user }) {
       {loading && <p className="text-muted text-[13px]">Загрузка…</p>}
 
       {error && (
-        <div role="alert" className="mb-4">
-          <p className="text-[13px] leading-relaxed text-muted">
-            Не удалось загрузить профиль. Попробуй ещё раз.
-          </p>
-          <button
-            type="button"
-            onClick={retryProfile}
-            className="mt-5 min-h-11 rounded-full bg-cream px-4 py-2 text-[13px] font-semibold text-emerald-deep"
-          >
+        <ProfileNote role="alert">
+          Не удалось загрузить профиль.{' '}
+          <button type="button" onClick={retryProfile} className="mx-profile-text-button">
             Повторить
           </button>
-        </div>
+        </ProfileNote>
       )}
-    </div>
+
+      {/* День рождения */}
+      <ProfileGroup label="День рождения">
+        <ProfileCard>
+          <ProfileRow
+            title="Дата рождения"
+            subtitle={
+              birthdayFormatted
+                ? daysToBirthday === 0
+                  ? 'С днём рождения! 🎉'
+                  : daysToBirthday != null
+                    ? `До дня рождения ${daysToBirthday} ${daysToBirthday === 1 ? 'день' : daysToBirthday < 5 ? 'дня' : 'дней'}`
+                    : null
+                : 'Отметь, чтобы получать напоминание'
+            }
+            right={
+              <input
+                type="date"
+                value={birthdayRaw ? `2000-${birthdayRaw}` : ''}
+                onChange={e => {
+                  const val = e.target.value
+                  // Храним только месяц-день, год не важен.
+                  if (val) {
+                    const [, m, d] = val.split('-')
+                    setBirthdayRaw(`${m}-${d}`)
+                  } else {
+                    setBirthdayRaw('')
+                  }
+                }}
+                className="mx-profile-date-input"
+                aria-label="Дата рождения"
+                data-testid="profile-birthday-input"
+              />
+            }
+          />
+        </ProfileCard>
+      </ProfileGroup>
+
+      {/* История */}
+      {stats && (
+        <ProfileGroup label="История">
+          <ProfileCard>
+            <ProfileRow title="Дней в системе" value={stats.days_active || 0} />
+            <ProfileRow title="Всего чек-инов" value={stats.total_checkins || 0} />
+            {stats.best_streak != null && (
+              <ProfileRow
+                title="Лучшая серия"
+                value={`${stats.best_streak} ${stats.best_streak === 1 ? 'день' : 'дней'}`}
+              />
+            )}
+            {stats.current_streak != null && (
+              <ProfileRow
+                title="Текущая серия"
+                value={`${stats.current_streak} ${stats.current_streak === 1 ? 'день' : 'дней'}`}
+              />
+            )}
+          </ProfileCard>
+        </ProfileGroup>
+      )}
+
+      {/* Воспоминания */}
+      {milestones.length > 0 && (
+        <ProfileGroup label="Воспоминания">
+          <div className="mx-profile-milestones" data-testid="profile-milestones">
+            {milestones.map(m => (
+              <div key={m.title} className="mx-profile-milestone">
+                <span className="mx-profile-milestone__icon" aria-hidden="true">{m.icon}</span>
+                <span className="mx-profile-milestone__text">
+                  <span className="mx-profile-milestone__title">{m.title}</span>
+                  <span className="mx-profile-milestone__desc">{m.desc}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </ProfileGroup>
+      )}
+    </ProfileBody>
   )
 }
