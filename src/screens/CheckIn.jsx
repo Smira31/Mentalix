@@ -83,6 +83,7 @@ function CheckInNextControls({ onNext, disabled = false, onSkip = null }) {
         type="button"
         className="mx-checkin-next-controls__next"
         aria-label="Далее"
+        data-testid="checkin-next"
         onClick={onNext}
         disabled={disabled}
       >
@@ -331,6 +332,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
               onChange={setNote}
               placeholder="Начни писать…"
               ariaLabel="Что на уме"
+              testId="checkin-text-input"
               className="mx-demo-checkin__editor"
               editorClassName="pb-28"
               floatingToolbar
@@ -541,6 +543,7 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
               role="radio"
               aria-checked={active}
               aria-label={`${level}: ${label}`}
+              data-testid="checkin-scale-option"
               onClick={() => onPick(level)}
               className={`mx-checkin-scale__option ${active ? 'is-selected' : ''}`}
             >
@@ -1397,6 +1400,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                     return (
                       <button
                         key={item}
+                        type="button"
+                        data-testid="checkin-emotion-pill"
                         onClick={() => {
                           platform.haptic('light')
 
@@ -1443,6 +1448,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       }
                       placeholder={eveningQuestion.placeholder}
                       ariaLabel={eveningQuestion.label}
+                      testId="checkin-text-input"
                       className="min-h-[18rem] flex-1"
                       editorClassName="mx-checkin-evening-editor"
                       floatingToolbar
@@ -1451,6 +1457,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       keepFocusOnSubmit
                       submitIcon="arrow"
                       submitLabel="Далее"
+                      submitTestId="checkin-next"
                       onSubmit={() => (cardIdx < cardCount - 1 ? setStep(step + 1) : submit())}
                       onDeepen={() => {}}
                       deepenLabel="Пойти глубже"
@@ -1479,7 +1486,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       value={morningDraft?.brief || ''}
                       onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
                       placeholder={previewDemoMode ? 'Начни писать' : MORNING_NOTE_PLACEHOLDER}
-                      ariaLabel="Что на уме"
+              ariaLabel="Что на уме"
+              testId="checkin-text-input"
                       className="min-h-[18rem] flex-1"
                       editorClassName="pb-24"
                       floatingToolbar
@@ -1488,7 +1496,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       keepFocusOnSubmit={previewDemoMode}
                       submitIcon="arrow"
                       onSubmit={() => submit()}
-                      submitLabel="Завершить чек-ин"
+              submitLabel="Завершить чек-ин"
+              submitTestId="checkin-complete"
                       submitLoading={saving}
                       onDeepen={deepenMorningNote}
                       showAddAction
