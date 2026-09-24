@@ -176,7 +176,7 @@ test.describe('Mood practice smoke', () => {
     // ── Проход до шага дыхания ──
     await moodPracticeStart(page)
     await moodPracticeMoodStep(page, 4)
-    await moodPracticeEmotionStep(page, 'спокойно')
+    await moodPracticeEmotionStep(page, 'доволен')
     await moodPracticeContextStep(page, { note: 'Retry note', context: 'home' })
 
     // Первая попытка сохранения → ошибка
@@ -195,7 +195,7 @@ test.describe('Mood practice smoke', () => {
     // Проверяем, что только одна успешная запись сохранена (первая не дошла)
     expect(fixtures.savedPractices).toHaveLength(1)
     expect(fixtures.savedPractices[0].mood).toBe(4)
-    expect(fixtures.savedPractices[0].emotion).toBe('спокойно')
+    expect(fixtures.savedPractices[0].emotion).toBe('доволен')
     expect(fixtures.savedPractices[0].context).toBe('home')
     expect(fixtures.savedPractices[0].note).toBe('Retry note')
     expect(fixtures.savedPractices[0].breathing_completed).toBe(false)
