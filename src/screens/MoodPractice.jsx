@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { invalidateTodayData } from '../lib/todayDataCache'
 import BackButton from '../components/BackButton'
 import {
   useFullscreenSurface,
@@ -125,6 +126,10 @@ export default function MoodPractice({ user, onDone }) {
       await api.moodPractices.create(
         buildMoodPracticePayload({ mood, emotion, context, note }, withBreathing)
       )
+
+      // Инвалидируем кэш Today, чтобы при возврате серия пересчиталась
+      // с учётом новой записи «Настроение» (огонёк загорается без перезагрузки).
+      if (user?.id) invalidateTodayData(user.id)
 
       platform.haptic('success')
       setStep(STEP_DONE)

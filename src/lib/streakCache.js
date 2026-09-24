@@ -30,9 +30,16 @@ export function rememberStreak(userId, streak) {
 
 /*
  * Число для огонька. До загрузки истории — кэш этого пользователя или null
- * (огонь без числа); после — честный расчёт по истории + сегодняшнему чек-ину.
+ * (огонь без числа); после — честный расчёт по истории + сегодняшнему чек-ину
+ * + дням активности (ритуалы, аскезы, настроение).
  */
-export function resolveDisplayedStreak({ historyLoaded, history, checkin, cachedStreak }) {
+export function resolveDisplayedStreak({
+  historyLoaded,
+  history,
+  checkin,
+  cachedStreak,
+  activityDays,
+}) {
   if (!historyLoaded) return cachedStreak ?? null
-  return currentCheckinStreak(withTodayCheckin(history, checkin))
+  return currentCheckinStreak(withTodayCheckin(history, checkin), { activityDays })
 }

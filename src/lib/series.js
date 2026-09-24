@@ -1,4 +1,5 @@
 import { buildBadges } from './badges.js'
+import { moodPracticeDate } from './moodPracticeLogic.js'
 
 const seriesSnapshots = new Map()
 const SNAPSHOT_PREFIX = 'mx-series-snapshot:'
@@ -54,8 +55,53 @@ function hasCheckinRecord(checkin) {
   )
 }
 
-function completedDays(checkins = [], timezone = 'UTC') {
-  return [
+/**
+ * Собрать дни с активностью из всех источников, кроме чек-инов:
+ * - Отметки ритуалов (today_level) — только за сегодня
+ * - Отметки аскез (today_status) — только за сегодня
+ * - Записи практики «Настроение» (moodPractices) — по recorded_at/date
+ *
+ * Бэкенд отдаёт today_level / today_status только за сегодня;
+ * исторические отметки практик за прошлые дни не доступны.
+ * Если нужен учёт прошлых ритуалов/аскез — требуется отдельный эндпоинт.
+ */
+export function collectActivityDays({
+  rituals,
+  ascezas,
+  moodPractices,
+  practiceDays,
+  now = new Date(),
+} = {}) {
+  const days = new Set()
+
+  // Сегодняшние отметки ритуалов и аскез
+  const hasRitualToday = Array.isArray(rituals) && rituals.some(r => r?.today_level)
+  const hasAscezaToday = Array.isArray(ascezas) && ascezas.some(a => a?.today_status)
+  if (hasRitualToday || hasAscezaToday) {
+    const pad = value => String(value).padStart(2, '0')
+    days.add(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`)
+  }
+
+  // Записи практики «Настроение»
+  if (Array.isArray(moodPractices)) {
+    for (const mp of moodPractices) {
+      const date = moodPracticeDate(mp)
+      if (date) days.add(date)
+    }
+  }
+
+  // Дни с отметками практик (ритуалы/аскезы) из бэкенд-эндпоинта /practice-days
+  if (Array.isArray(practiceDays)) {
+    for (const day of practiceDays) {
+      if (day) days.add(String(day).slice(0, 10))
+    }
+  }
+
+  return [...days]
+}
+
+function completedDays(checkins = [], timezone = 'UTC', activityDays = []) {
+  const checkinDays = [
     ...new Set(
       checkins
         .filter(hasCheckinRecord)
@@ -63,8 +109,8 @@ function completedDays(checkins = [], timezone = 'UTC') {
         .filter(Boolean)
     ),
   ]
-    .sort()
-    .map(dayNumber)
+  const allDays = [...new Set([...checkinDays, ...activityDays.filter(Boolean)])]
+  return allDays.sort().map(dayNumber)
 }
 
 function localDayKey(now) {
@@ -87,7 +133,7 @@ export function withTodayCheckin(history = [], today = null, now = new Date()) {
 }
 
 export function currentCheckinStreak(checkins = [], options = {}) {
-  const days = completedDays(checkins, options.timezone)
+  const days = completedDays(checkins, options.timezone, options.activityDays)
   if (!days.length) return 0
 
   let streak = 1
@@ -99,7 +145,7 @@ export function currentCheckinStreak(checkins = [], options = {}) {
 }
 
 export function longestCheckinStreak(checkins = [], options = {}) {
-  const days = completedDays(checkins, options.timezone)
+  const days = completedDays(checkins, options.timezone, options.activityDays)
   if (!days.length) return 0
 
   let longest = 1
@@ -117,14 +163,17 @@ export function buildSeriesViewModel({
   checkins = [],
   rituals,
   ascezas,
+  moodPractices,
+  practiceDays,
   timezone,
 } = {}) {
   const resolvedTimezone =
     timezone || stats?.timezone || stats?.user_timezone || stats?.time_zone || 'UTC'
+  const activityDays = collectActivityDays({ rituals, ascezas, moodPractices, practiceDays })
   const completed = checkins.filter(isCompleted)
-  const activeDays = completedDays(checkins, resolvedTimezone).length
-  const currentStreak = currentCheckinStreak(checkins, { timezone: resolvedTimezone })
-  const bestStreak = longestCheckinStreak(checkins, { timezone: resolvedTimezone })
+  const activeDays = completedDays(checkins, resolvedTimezone, activityDays).length
+  const currentStreak = currentCheckinStreak(checkins, { timezone: resolvedTimezone, activityDays })
+  const bestStreak = longestCheckinStreak(checkins, { timezone: resolvedTimezone, activityDays })
   const metrics = {
     ...stats,
     total_checkins: completed.length,

@@ -950,19 +950,7 @@
   color: rgb(var(--c-text));
 }
 
-.mx-demo-today-streak .mx-reference-flame {
-  width: 16px;
-  height: 19px;
-  fill: rgb(var(--c-text));
-  stroke: rgb(var(--c-text));
-  stroke-width: 0.8;
-  stroke-linejoin: round;
-}
-
-.mx-demo-today-streak .mx-reference-flame__inner {
-  fill: rgb(var(--c-card2));
-  stroke: rgb(var(--c-card2));
-}
+/* Flame rules consolidated in §5.4 section below. */
 
 .mx-demo-today-streak strong {
   color: rgb(var(--c-text));
@@ -1606,9 +1594,7 @@
   fill: none;
   stroke: currentColor;
 }
-.mx-demo-today-streak .mx-reference-flame__inner {
-  fill: none;
-}
+/* Flame inner rules consolidated in §5.4 section below. */
 .mx-demo-today-streak strong {
   color: rgb(var(--c-text) / 0.7);
   font-size: 17px;
@@ -1646,17 +1632,32 @@
   color: rgb(var(--c-header-muted));
 }
 
+/* ЕДИНЫЙ блок огонька серии (§5.1, эталон Stoic).
+   Серия ≥1: внешний огонь залит цветом цифры, без контура;
+   внутренний огонёк «вырезан» цветом фона чипа.
+   Серия 0 (--empty): внешний огонь — контур (stroke 1.6);
+   внутренний огонёк — залит тем же цветом. */
 .mx-demo-today-streak .mx-reference-flame {
   width: 17px;
   height: 20px;
-  color: rgb(var(--c-header-muted));
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
+  fill: rgb(var(--c-header-muted));
+  stroke: none;
 }
 
 .mx-demo-today-streak .mx-reference-flame__inner {
+  fill: rgb(var(--c-header-chip));
+  stroke: none;
+}
+
+.mx-demo-today-streak--empty .mx-reference-flame {
   fill: none;
+  stroke: rgb(var(--c-header-muted));
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+
+.mx-demo-today-streak--empty .mx-reference-flame__inner {
+  fill: rgb(var(--c-header-muted));
   stroke: none;
 }
 
@@ -1759,4 +1760,108 @@
   line-height: 1.3;
   text-align: center;
   letter-spacing: 0.01em;
+}
+
+/* ======================================================
+   §5.1 A — состояния карточек дня (эталон Stoic)
+   ====================================================== */
+
+/* Главная карточка — заметно светлее обычной */
+.mx-today-day-card[data-primary='true'] {
+  background: rgb(var(--c-text) / 0.14);
+  border-color: rgb(var(--c-text) / 0.14);
+}
+
+/* Кнопка «Начать» на главной карточке — белая залитая, чёрный текст */
+.mx-today-day-card[data-primary='true'] .mx-today-day-card__start {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  border: 0;
+}
+
+/* Кнопка «Начать» на вторичной карточке — контурная, белый текст */
+.mx-today-day-card[data-state='active']:not([data-primary='true']) .mx-today-day-card__start {
+  background: transparent;
+  color: rgb(var(--c-text));
+  border: 1px solid rgb(var(--c-text) / 0.25);
+}
+
+/* Пройденная карточка — тёмный фон, тонкая обводка */
+.mx-today-day-card[data-state='done'] {
+  border-color: rgb(var(--c-text) / 0.08);
+  background: rgb(var(--c-card2));
+}
+
+.mx-today-day-card[data-state='done'] .mx-today-day-card__done {
+  display: block;
+  margin-top: auto;
+  margin-bottom: auto;
+  color: rgb(var(--c-muted));
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* Иллюстрация в пройденной карточке — ≈60% ширины, на тонкой линии */
+.mx-today-day-card__illustration {
+  display: flex;
+  width: 60%;
+  margin-top: auto;
+  padding-bottom: 12px;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgb(var(--c-text) / 0.08);
+  padding-top: 12px;
+}
+
+.mx-today-day-card__illustration img {
+  max-width: 100%;
+  height: auto;
+}
+
+.mx-today-day-card__illustration-slot {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Подсказка после первого чек-ина — монохромная плашка */
+.mx-today-cards-hint {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px 36px 14px 14px;
+  border: 1px solid rgb(var(--c-text) / 0.08);
+  border-radius: 20px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.mx-today-cards-hint__icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: rgb(var(--c-muted));
+}
+
+.mx-today-cards-hint__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
 }

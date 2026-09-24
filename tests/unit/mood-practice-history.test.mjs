@@ -5,7 +5,7 @@ import {
   moodPracticeDate,
   groupMoodPracticesByDate,
 } from '../../src/lib/moodPracticeLogic.js'
-import { currentCheckinStreak } from '../../src/lib/series.js'
+import { currentCheckinStreak, collectActivityDays } from '../../src/lib/series.js'
 
 test('moodPracticeDate извлекает YYYY-MM-DD из recorded_at', () => {
   assert.equal(
@@ -48,28 +48,28 @@ test('groupMoodPracticesByDate: пустой ввод → пустой объе�
   assert.deepEqual(groupMoodPracticesByDate(undefined), {})
 })
 
-test('записи «Настроения» не влияют на подсчёт серии', () => {
+test('запись «Настроения» на новом дне продлевает серию', () => {
   const checkins = [
-    { date: '2026-09-24', review_completed_at: '2026-09-24T20:00:00Z' },
-    { date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' },
     { date: '2026-09-22', review_completed_at: '2026-09-22T20:00:00Z' },
+    { date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' },
+    { date: '2026-09-24', review_completed_at: '2026-09-24T20:00:00Z' },
   ]
   const moodPractices = [
     { id: 1, recorded_at: '2026-09-24T15:30:00Z', mood: 2, emotion: 'устал' },
     { id: 2, recorded_at: '2026-09-25T10:00:00Z', mood: 4, emotion: 'бодро' },
   ]
 
-  // Серия считается только по checkins с review_completed_at
+  // Серия только по чек-инам — 3 дня (22, 23, 24)
   const streakWithoutMood = currentCheckinStreak(checkins)
-  // Даже если «смешать» mood practices в массив, серия не меняется —
-  // у них нет review_completed_at и они не выглядят как checkins
-  const streakWithMood = currentCheckinStreak([...checkins, ...moodPractices])
+  assert.equal(streakWithoutMood, 3)
 
-  assert.equal(streakWithMood, streakWithoutMood)
-  assert.ok(streakWithoutMood >= 1, 'серия должна быть >= 1')
+  // Запись «Настроения» 2026-09-25 добавляет день через activityDays
+  const activityDays = collectActivityDays({ moodPractices })
+  const streakWithMood = currentCheckinStreak(checkins, { activityDays })
+  assert.equal(streakWithMood, 4, 'запись «Настроения» на новом дне продлевает серию')
 })
 
-test('записи «Настроения» в дне без чек-ина не создают ложную серию', () => {
+test('день только с записью «Настроения» продлевает серию; «Пройти заново» не увеличивает', () => {
   const checkins = [
     { date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' },
   ]
@@ -77,8 +77,14 @@ test('записи «Настроения» в дне без чек-ина не 
     { id: 1, recorded_at: '2026-09-24T12:00:00Z', mood: 3, emotion: 'ровно' },
   ]
 
-  // День 2026-09-24 есть только в mood practices — чек-ина нет
-  const streak = currentCheckinStreak([...checkins, ...moodPracticesOnly])
-  // Серия не должна увеличиться от mood practice без review_completed_at
-  assert.equal(streak, currentCheckinStreak(checkins))
+  // День 2026-09-24 есть только в mood practices — чек-ина нет,
+  // но по новому правилу запись «Настроения» засчитывает день в серию
+  const activityDays = collectActivityDays({ moodPractices: moodPracticesOnly })
+  const streak = currentCheckinStreak(checkins, { activityDays })
+  assert.equal(streak, 2, 'серия продлевается до 2 за счёт записи «Настроения»')
+
+  // «Пройти заново» — повторный чек-ин за тот же день не увеличивает серию
+  const redoCheckin = { date: '2026-09-23', review_completed_at: '2026-09-23T22:00:00Z' }
+  const streakWithRedo = currentCheckinStreak([...checkins, redoCheckin], { activityDays })
+  assert.equal(streakWithRedo, 2, '«Пройти заново» не увеличивает серию')
 })
