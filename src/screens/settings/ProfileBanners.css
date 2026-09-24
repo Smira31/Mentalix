@@ -46,10 +46,12 @@ button.mx-profile-banner:active {
   text-align: center;
 }
 
+/* Крупнее и левее: рука со звездой доходит до правого края кнопки,
+   между ними не остаётся пустого места. */
 .mx-profile-banner--potential .mx-profile-banner__art {
   position: absolute;
-  right: -34px;
-  bottom: -34px;
+  right: -24px;
+  bottom: -30px;
   z-index: 0;
 }
 
@@ -154,10 +156,10 @@ button.mx-profile-banner:active {
    две строки контента), яркая и читается как сайт с любого масштаба. */
 .mx-profile-banner__web-window {
   position: absolute;
-  top: 24px;
-  right: 104px;
-  width: 98px;
-  height: 96px;
+  top: 40px;
+  right: 87px;
+  width: 78px;
+  height: 76px;
   overflow: hidden;
   border: 2px solid rgb(var(--c-white));
   border-radius: 12px;
@@ -196,17 +198,25 @@ button.mx-profile-banner:active {
 /* Персонаж справа: копия иллюстрации, обрезанная по нему (86×98 от
    150×104 со сдвигом -62/-3) — маленькое окно из файла не попадает
    в кадр, палец упирается в правый край крупной плашки. */
+/* Персонаж целиком в кадре (голова — шишки видны, ноги до низа
+   обрезки нет), крупнее прежнего; слева в кадре — рука с пальцем,
+   поднятым к правому краю плашки браузера. */
 .mx-profile-banner__web-character {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 86px;
-  height: 98px;
+  top: 20px;
+  right: 12px;
+  width: 92px;
+  height: 119px;
   overflow: hidden;
 }
 
+/* Персонаж краснее и ярче исходника — фильтром добавляем насыщенность. */
+/* max-width: none обязателен: глобальный img{max-width:100%} сжимал
+   картинку до ширины кадра и персонаж получался намного меньше. */
 .mx-profile-banner--web .mx-profile-banner__art {
-  margin: -3px 0 0 -62px;
+  max-width: none;
+  margin: 0 0 0 -79px;
+  filter: brightness(1.12) saturate(1.35);
 }
 
 .mx-profile-banner--web .mx-profile-banner__title {
@@ -223,7 +233,7 @@ button.mx-profile-banner:active {
   position: absolute;
   bottom: 18px;
   left: 16px;
-  max-width: calc(100% - 72px);
+  max-width: calc(100% - 190px);
   color: rgb(var(--c-muted));
   font-size: 15px;
   line-height: 1.35;

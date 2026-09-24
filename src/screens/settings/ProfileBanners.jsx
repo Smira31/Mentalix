@@ -39,7 +39,7 @@ export function PotentialBanner({ onOpen }) {
       onClick={onOpen}
     >
       {/* Персонаж справа снизу, крупный, частично обрезан краем карточки. */}
-      <BannerArt art2x={potentialArt2x} art3x={potentialArt3x} width={172} height={120} />
+      <BannerArt art2x={potentialArt2x} art3x={potentialArt3x} width={200} height={139} />
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
       {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
@@ -98,11 +98,11 @@ export function WebBanner({ onOpen }) {
         <span className="mx-profile-banner__web-window-line" />
         <span className="mx-profile-banner__web-window-line mx-profile-banner__web-window-line--short" />
       </span>
-      {/* Персонаж справа: копия иллюстрации, обрезанная по нему самому —
-          нарисованное в файле маленькое окно скрыто обрезкой, палец
-          указывает на правый край крупной CSS-плашки. */}
+      {/* Персонаж справа целиком: нарисованное в файле маленькое окно
+          скрыто обрезкой кадра, поднятый палец указывает на правый край
+          CSS-плашки браузера. */}
       <span className="mx-profile-banner__web-character">
-        <BannerArt art2x={webArt2x} art3x={webArt3x} width={150} height={104} />
+        <BannerArt art2x={webArt2x} art3x={webArt3x} width={172} height={119} />
       </span>
       <span className="mx-profile-banner__title">Mentalix на сайте</span>
       <span className="mx-profile-banner__text">
