@@ -530,15 +530,15 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
-  const demoToolbar = new URLSearchParams(window.location.search).get('toolbar') === '1'
+  const demoToolbar = previewDemoMode || new URLSearchParams(window.location.search).get('toolbar') === '1'
   const [demoDevice, setDemoDevice] = useState(() => {
     const device = new URLSearchParams(window.location.search).get('device')
-    return device === 'pro' ? 'pro' : 'pro-max'
+    return device === 'max' ? 'max' : 'standard'
   })
   const demoViewport =
-    demoDevice === 'pro'
-      ? { width: 402, height: 874, label: 'iPhone 16 Pro' }
-      : { width: 430, height: 932, label: 'iPhone 16 Pro Max' }
+    demoDevice === 'max'
+      ? { width: 440, height: 956, label: 'iPhone 16 Pro Max' }
+      : { width: 393, height: 852, label: 'iPhone 15 Pro' }
   const [demoScale, setDemoScale] = useState(1)
   const [desktopDeviceFrame, setDesktopDeviceFrame] = useState(
     () =>
@@ -1052,8 +1052,8 @@ export default function App() {
         <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
           <span className="mx-preview-device-switcher__label">Demo viewport</span>
           {[
-            { key: 'pro', label: 'iPhone 16 Pro', size: '402×874' },
-            { key: 'pro-max', label: 'iPhone 16 Pro Max', size: '430×932' },
+            { key: 'standard', label: '393', size: 'iPhone 15 Pro' },
+            { key: 'max', label: '440', size: 'iPhone 16 Pro Max' },
           ].map(device => (
             <button
               key={device.key}

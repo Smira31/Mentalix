@@ -18,6 +18,11 @@ export const DEMO_USER = {
 export function isPreviewDemoMode() {
   if (typeof window === 'undefined') return false
 
+  // tgShell mode (dev-only, dynamically imported in main.jsx) sets this
+  // flag so all existing demo-mode code paths (skip auth, DEMO_USER, demo
+  // data, chrome) work automatically in the Base44 preview.
+  if (window.__MX_TG_SHELL) return true
+
   const host = window.location.hostname
   const params = new URLSearchParams(window.location.search)
   const localPreviewEnabled = import.meta.env.VITE_LOCAL_PREVIEW === 'true'
@@ -29,7 +34,8 @@ export function isPreviewDemoMode() {
     host === 'mentalix-owner-qa.pages.dev' ||
     host === 'mentalix-production.web.app' ||
     host.endsWith('.manus.computer') ||
-    host.endsWith('.trycloudflare.com')
+    host.endsWith('.trycloudflare.com') ||
+    host.endsWith('.base44-preview.app')
   const isPreviewRuntime =
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost =
