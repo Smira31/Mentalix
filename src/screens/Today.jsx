@@ -783,11 +783,13 @@ export default function Today({
           ПУЛЬС
           ====================================================== */}
 
-      {activeToday !== null && activeToday > 1 && !hiddenCards.includes('pulse') && (
+      {!hiddenCards.includes('pulse') && (
         <p className="mx-today-pulse">
-          {activeToday < 20
-            ? `Сегодня в пути вместе с тобой: ${activeToday}`
-            : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
+          {activeToday == null
+            ? 'Сегодня свой путь продолжают люди по всему миру'
+            : activeToday < 20
+              ? `Сегодня в пути вместе с тобой: ${activeToday}`
+              : `Сегодня свой путь продолжили ${activeToday.toLocaleString('ru-RU')} человек`}
         </p>
       )}
 
