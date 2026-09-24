@@ -1035,7 +1035,7 @@ export default function Today({
         </button>
       )}
 
-      <PinnedPractices user={user} onOpenPractice={onOpenPractice} />
+      <PinnedPractices user={user} onOpenPractice={onOpenPractice} rituals={rituals} ascezas={ascezas} />
 
       {/* ======================================================
           ТЕМА НЕДЕЛИ
