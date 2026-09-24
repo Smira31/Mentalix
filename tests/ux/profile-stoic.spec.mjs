@@ -8,7 +8,7 @@ import { VIEWPORTS, centerY, openTelegram, openWeb } from './profile-helpers.mjs
 
 for (const viewport of VIEWPORTS) {
   test.describe(`Профиль Stoic — ${viewport.name} px`, () => {
-    test('кнопка профиля 56 px, 14 px справа, центр на линии огонька', async ({
+    test('кнопка профиля 43 px, 14 px справа, центр на линии огонька', async ({
       browser,
       baseURL,
     }) => {
@@ -16,8 +16,8 @@ for (const viewport of VIEWPORTS) {
       try {
         const button = await page.getByTestId('today-profile-button').boundingBox()
         const chip = await page.getByTestId('today-streak-chip').boundingBox()
-        expect(Math.round(button.width)).toBe(56)
-        expect(Math.round(button.height)).toBe(56)
+        expect(Math.round(button.width)).toBe(43)
+        expect(Math.round(button.height)).toBe(43)
         expect(Math.abs(viewport.width - (button.x + button.width) - 14)).toBeLessThanOrEqual(1)
         expect(Math.abs(centerY(button) - centerY(chip))).toBeLessThanOrEqual(2)
       } finally {
