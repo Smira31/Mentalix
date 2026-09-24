@@ -10,11 +10,11 @@
  * 56px top inset, etc.) work automatically.
  */
 export function isTgShellMode() {
-  // import.meta.env.DEV is false in production builds, so the entire
-  // expression short-circuits to false and esbuild tree-shakes the rest.
+  // VITE_TG_SHELL is a custom Vite define: true in dev, false in production.
+  // Unlike import.meta.env.DEV, esbuild reliably tree-shakes the false branch.
+  if (typeof window === 'undefined') return false
   return (
-    import.meta.env.DEV &&
-    typeof window !== 'undefined' &&
+    import.meta.env.VITE_TG_SHELL &&
     new URLSearchParams(window.location.search).get('tgshell') !== '0'
   )
 }
