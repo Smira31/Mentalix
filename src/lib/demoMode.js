@@ -1,4 +1,4 @@
-const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v1'
+const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v2'
 const TODAY_PREVIEW_STATES = new Set([
   'checkinPending',
   'dayInProgress',
@@ -150,7 +150,28 @@ function seedState(todayState = null) {
       reminder_enabled: false,
       reminder_hour: 9,
     },
-    moodPractices: [],
+    moodPractices: [
+      {
+        id: 900601,
+        user_id: DEMO_USER.id,
+        recorded_at: new Date(`${previousDate}T15:30:00`).toISOString(),
+        mood: 2,
+        emotion: 'устал',
+        context: 'work',
+        note: 'Долгий день, много встреч.',
+        breathing_completed: false,
+      },
+      {
+        id: 900602,
+        user_id: DEMO_USER.id,
+        recorded_at: new Date(`${today.toISOString().slice(0, 10)}T11:00:00`).toISOString(),
+        mood: 4,
+        emotion: 'бодро',
+        context: null,
+        note: null,
+        breathing_completed: true,
+      },
+    ],
   }
 }
 
