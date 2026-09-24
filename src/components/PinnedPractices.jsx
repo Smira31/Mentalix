@@ -100,6 +100,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
   const [sheet, setSheet] = useState(null)
   const [busyId, setBusyId] = useState(null)
   const [undo, setUndo] = useState(null)
+  const [todayDone, setTodayDone] = useState({ rituals: false, ascezas: false })
   const undoTimerRef = useRef(null)
 
   useEffect(() => {
@@ -110,9 +111,14 @@ export default function PinnedPractices({ user, onOpenPractice }) {
 
   useEffect(() => {
     let active = true
-    fetchPinnedPractices(user.id)
-      .then(items => {
-        if (active) setPinned(normalizePinnedPractices(items))
+    Promise.all([fetchPinnedPractices(user.id), api.rituals.list(user.id), api.ascezas.list(user.id)])
+      .then(([items, rituals, ascezas]) => {
+        if (!active) return
+        setPinned(normalizePinnedPractices(items))
+        setTodayDone({
+          rituals: rituals.some(ritual => ritual.today_level),
+          ascezas: ascezas.some(asceza => asceza.today_status === 'held'),
+        })
       })
       .catch(() => {
         if (active) setError(true)
@@ -214,7 +220,9 @@ export default function PinnedPractices({ user, onOpenPractice }) {
           {pinnedPractices.map(practice => (
             <button
               type="button"
-              className="mx-pinned-practice-card"
+              className={`mx-pinned-practice-card ${todayDone[practice.key] ? 'is-done' : ''}`}
+              data-testid="practice-tile"
+              data-done={Boolean(todayDone[practice.key])}
               role="listitem"
               key={practice.key}
               aria-label={`Открыть практику: ${practice.title}`}
