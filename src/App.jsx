@@ -22,7 +22,7 @@ import { api } from './lib/api'
 import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
-import { DEMO_USER, isPreviewDemoMode, isTgShellMode } from './lib/demoMode'
+import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
@@ -530,8 +530,7 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
-  const tgShell = isTgShellMode()
-  const demoToolbar = tgShell || new URLSearchParams(window.location.search).get('toolbar') === '1'
+  const demoToolbar = previewDemoMode || new URLSearchParams(window.location.search).get('toolbar') === '1'
   const [demoDevice, setDemoDevice] = useState(() => {
     const device = new URLSearchParams(window.location.search).get('device')
     return device === 'max' ? 'max' : 'standard'

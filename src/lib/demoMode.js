@@ -1,20 +1,3 @@
-/**
- * tgShell mode — dev-only Telegram iOS simulation for the Base44 preview.
- *
- * Enabled by default on the Vite dev server and in Base44 builds with
- * VITE_TG_SHELL=1. Disabled by ?tgshell=0.
- *
- * When active, isPreviewDemoMode() also returns true, so all existing
- * demo-mode code paths (skip auth, DEMO_USER, demo data, DemoTelegramChrome,
- * 56px top inset, etc.) work automatically.
- */
-export function isTgShellMode() {
-  if (typeof window === 'undefined') return false
-  const queryKey = String.fromCharCode(116, 103, 115, 104, 101, 108, 108)
-  if (new URLSearchParams(window.location.search).get(queryKey) === '0') return false
-  return import.meta.env.DEV || import.meta.env.VITE_TG_SHELL === '1'
-}
-
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v1'
 const TODAY_PREVIEW_STATES = new Set([
   'checkinPending',
@@ -35,9 +18,10 @@ export const DEMO_USER = {
 export function isPreviewDemoMode() {
   if (typeof window === 'undefined') return false
 
-  // tgShell mode is the Base44 preview entry point; all existing demo-mode
-  // code paths (skip auth, DEMO_USER, demo data, chrome) remain shared.
-  if (isTgShellMode()) return true
+  // tgShell mode (dev-only, dynamically imported in main.jsx) sets this
+  // flag so all existing demo-mode code paths (skip auth, DEMO_USER, demo
+  // data, chrome) work automatically in the Base44 preview.
+  if (window.__MX_TG_SHELL) return true
 
   const host = window.location.hostname
   const params = new URLSearchParams(window.location.search)
