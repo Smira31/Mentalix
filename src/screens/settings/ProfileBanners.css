@@ -6,6 +6,11 @@
   flex-direction: column;
   gap: 28px;
   margin-bottom: 28px;
+  /* Референс владельца: все три баннера одинаковые по стилю, фон —
+     приглушённый почти чёрный #1A1A1A (как торс персонажа на референсе),
+     детали не ярче фона, а чуть темнее. */
+  --mx-banner-bg: 26 26 26;
+  --mx-banner-panel: 20 20 20;
 }
 
 .mx-profile-banner {
@@ -27,39 +32,11 @@ button.mx-profile-banner:active {
   transform: scale(0.97);
 }
 
+/* Иллюстрация баннера — готовый WebP владельца с прозрачным фоном;
+   размер задаётся width/height в разметке, здесь только размещение. */
 .mx-profile-banner__art {
   display: block;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2;
-}
-
-.mx-profile-banner__art-fill {
-  fill: currentColor;
-  stroke: none;
-}
-
-/* Персонаж баннеров — цветной референс владельца (#802): красный силуэт,
-   чёрные вырезы, тёмно-красная штриховка, тонкий светлый контур. */
-.mx-persona-red {
-  fill: rgb(var(--c-persona-red));
-  stroke: rgb(var(--c-persona-edge));
-  stroke-width: 1;
-  stroke-linejoin: round;
-}
-
-.mx-persona-void {
-  fill: rgb(var(--c-bg));
-  stroke: none;
-}
-
-.mx-persona-hatch {
-  fill: none;
-  stroke: rgb(var(--c-persona-red-dark));
-  stroke-width: 1;
-  stroke-linecap: round;
+  pointer-events: none;
 }
 
 /* 1. «Потенциал» — 226 px, всё по центру, кролик справа снизу под кнопкой. */
@@ -70,18 +47,17 @@ button.mx-profile-banner:active {
   align-items: center;
   justify-content: center;
   padding: 24px 28px;
-  background: rgb(var(--c-card-raised));
+  background: rgb(var(--mx-banner-bg));
   text-align: center;
 }
 
+/* Крупнее и левее: рука со звездой доходит до правого края кнопки,
+   между ними не остаётся пустого места. */
 .mx-profile-banner--potential .mx-profile-banner__art {
   position: absolute;
-  right: -30px;
+  right: -24px;
   bottom: -30px;
   z-index: 0;
-  width: 172px;
-  height: 150px;
-  color: rgb(var(--c-line-secondary));
 }
 
 /* 393 и 440: balance держит одинаковый перенос строк на обеих ширинах
@@ -127,11 +103,12 @@ button.mx-profile-banner:active {
   transform: scale(0.97);
 }
 
-/* 2. «Поддержать» — 118 px, текст слева, панель 89 px справа на всю высоту. */
+/* 2. «Поддержать» — 118 px, текст слева, панель 128 px справа на всю высоту. */
 .mx-profile-banner--support {
   display: flex;
   min-height: 118px;
   align-items: center;
+  background: rgb(var(--mx-banner-bg));
 }
 
 .mx-profile-banner--support .mx-profile-banner__text {
@@ -148,64 +125,85 @@ button.mx-profile-banner:active {
 }
 
 .mx-profile-banner__panel {
+  position: relative;
   display: flex;
   align-self: stretch;
-  width: 89px;
+  width: 128px;
   flex-shrink: 0;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  background: rgb(var(--c-card-raised2));
+  background: rgb(var(--mx-banner-panel));
   color: rgb(var(--c-white));
 }
 
-.mx-profile-banner__panel .mx-profile-banner__art {
-  width: 89px;
-  height: 118px;
-  stroke-width: 1.6;
+/* Персонаж по центру панели по вертикали; исходный файл заметно темнее
+   первого баннера — выравниваем яркость и насыщенность фильтром.
+   Внутри WebP персонаж прижат к правому краю холста (слева 23 pt пусто),
+   поэтому картинка сдвинута влево на -12 px от края панели — визуальный
+   центр персонажа совпадает с центром панели шириной 128 px. */
+.mx-profile-banner--support .mx-profile-banner__art {
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  transform: translateY(-50%);
+  filter: brightness(1.18) saturate(1.25);
 }
 
-/* 3. «Вход» — 175 px, заголовок сверху слева, текст снизу слева,
-   шеврон снизу справа, иллюстрация сверху справа. */
+/* 3. «Вход» — 190 px, заголовок сверху слева, текст сразу под ним,
+   персонаж справа в полный рост карточки указывает пальцем на
+   маленькую тусклую плашку браузера из иллюстрации владельца. */
 .mx-profile-banner--web {
-  min-height: 175px;
-  background: rgb(var(--c-card-raised));
+  min-height: 190px;
+  background: rgb(var(--mx-banner-bg));
 }
 
-.mx-profile-banner--web .mx-profile-banner__art {
+/* Персонаж целиком в кадре, включая кончик поднятого пальца —
+   он самый левый пиксель исходника (x=48 от 208), поэтому кадр
+   обрезает файл ровно от него. Ноги — почти до низа карточки. */
+.mx-profile-banner__web-character {
   position: absolute;
   top: 16px;
-  right: 16px;
-  width: 104px;
-  height: 83px;
-  color: rgb(var(--c-line));
-  stroke-width: 1.6;
+  right: 12px;
+  width: 180px;
+  height: 162px;
+  overflow: hidden;
 }
 
+/* max-width: none обязателен: глобальный img{max-width:100%} сжимал
+   картинку до ширины кадра и персонаж получался намного меньше.
+   Персонаж краснее и ярче исходника — фильтром добавляем насыщенность. */
+.mx-profile-banner--web .mx-profile-banner__art {
+  max-width: none;
+  margin: 0 0 0 -52px;
+  filter: brightness(1.12) saturate(1.35);
+}
+
+/* Заголовок как в референсе Stoic: один размер шрифта, «Mentalix»
+   выделен жирным, «на сайте» — обычным весом. */
 .mx-profile-banner--web .mx-profile-banner__title {
   position: absolute;
   top: 18px;
   left: 16px;
-  max-width: calc(100% - 140px);
-  font-size: 24px;
-  font-weight: 700;
+  max-width: 220px;
+  font-size: 20px;
+  font-weight: 400;
   line-height: 1.15;
 }
 
+.mx-profile-banner--web .mx-profile-banner__title strong {
+  font-weight: 700;
+}
+
+/* Текст сразу под заголовком, без пустого места; ширина — до
+   персонажа справа. */
 .mx-profile-banner--web .mx-profile-banner__text {
   position: absolute;
-  bottom: 18px;
+  top: 48px;
   left: 16px;
-  max-width: calc(100% - 72px);
+  max-width: calc(100% - 214px);
   color: rgb(var(--c-muted));
   font-size: 15px;
   line-height: 1.35;
-}
-
-.mx-profile-banner__chevron {
-  position: absolute;
-  right: 16px;
-  bottom: 18px;
-  color: rgb(var(--c-muted));
 }
 
 @media (prefers-reduced-motion: reduce) {
