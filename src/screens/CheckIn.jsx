@@ -223,19 +223,19 @@ export function CheckInQuestion({
  * DEMO_USER and api.js intercepts requests only when isPreviewDemoMode() is
  * true. The screens, transitions and editor must not diverge by environment.
  */
-function MorningCheckInFlow({ user, onDone, redo = false, existing = null }) {
+function MorningCheckInFlow({ user, onDone, redo = false }) {
   const [step, setStep] = useState(0)
   /*
-   * Шаги anxiety/focus убраны из утреннего флоу, но PUT /api/checkin/today
-   * требует эти поля: в redo переносим их из перезаписываемой записи,
-   * не спрашивая пользователя. Настроение и энергия остаются пустыми —
-   * redo переспрашивает их заново.
+   * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
+   * из перезаписываемой записи: поля опускаются в PUT /api/checkin/today,
+   * бэкенд сохраняет прежние значения утра. Настроение и энергия
+   * в redo переспрашиваются заново.
    */
   const [values, setValues] = useState(() => ({
     mood: null,
     energy: null,
-    anxiety: redo ? (existing?.anxiety ?? null) : null,
-    focus: redo ? (existing?.focus ?? null) : null,
+    anxiety: null,
+    focus: null,
   }))
   const [note, setNote] = useState('')
   const [feedback, setFeedback] = useState(null)
@@ -1560,7 +1560,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
 function CheckIn({ user, onDone, mode = 'checkin', existing = null, redo = false }) {
   if (mode !== 'evening') {
-    return <MorningCheckInFlow user={user} onDone={onDone} redo={redo} existing={existing} />
+    return <MorningCheckInFlow user={user} onDone={onDone} redo={redo} />
   }
 
   return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} redo={redo} />
