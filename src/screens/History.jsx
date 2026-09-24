@@ -117,32 +117,77 @@ export function HistoryDetail({
   contextError,
   onDiscuss,
   recapOnly = false,
+  onRedo = null,
+  onRedoReview = null,
 }) {
   const checkin = day.checkin
   const wins = checkin?.wins || []
+  const [redoMenuOpen, setRedoMenuOpen] = useState(false)
+  const [redoConfirm, setRedoConfirm] = useState(null)
+
+  const isToday = day.date === new Date().toISOString().slice(0, 10)
+  const canRedo = isToday && (onRedo || onRedoReview)
 
   return (
     <section aria-label={`Запись за ${dayTitle(day.date)}`} className="mt-1 animate-fade-in">
       <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
         <BackButton onClick={onBack} />
         <h2 className="font-display mx-type-section text-cream">{dayTitle(day.date)}</h2>
-        <span aria-hidden="true" />
+        {canRedo ? (
+          <div className="relative flex justify-end">
+            <button
+              type="button"
+              aria-label="Действия с чек-ин"
+              className="mx-icon-button"
+              onClick={() => setRedoMenuOpen(open => !open)}
+            >
+              <MoreHorizontal size={20} aria-hidden="true" />
+            </button>
+            {redoMenuOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 top-full z-50 mt-1 min-w-[200px] rounded-2xl border border-cream/10 bg-emerald p-1 shadow-xl"
+              >
+                {onRedo && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
+                    onClick={() => {
+                      setRedoMenuOpen(false)
+                      setRedoConfirm('morning')
+                    }}
+                  >
+                    Пройти утро заново
+                  </button>
+                )}
+                {onRedoReview && checkin?.review_completed_at && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className="w-full rounded-xl px-4 py-3 text-left text-[14px] font-medium text-cream hover:bg-cream/5"
+                    onClick={() => {
+                      setRedoMenuOpen(false)
+                      setRedoConfirm('evening')
+                    }}
+                  >
+                    Пройти разбор заново
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
+          <span aria-hidden="true" />
+        )}
       </div>
 
       {recapOnly ? (
         <div className="mt-5 rounded-3xl bg-emerald p-5">
-          <div className="mb-5 flex items-center justify-between">
+          <div className="mb-5 flex items-center">
             <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
               Сегодняшний чек-ин
             </span>
-            <button
-              type="button"
-              aria-label="Открыть меню чек-ин"
-              className="mx-icon-button"
-              onClick={() => {}}
-            >
-              <MoreHorizontal size={20} aria-hidden="true" />
-            </button>
           </div>
           {[
             ['Как ты сейчас?', moodWord(checkin?.mood)],
@@ -330,6 +375,50 @@ export function HistoryDetail({
           )}
         </div>
       )}
+
+      {redoConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="redo-confirm-title"
+          aria-describedby="redo-confirm-desc"
+          className="fixed inset-0 z-[90] flex items-end bg-black/70 p-5 sm:items-center"
+          onClick={() => setRedoConfirm(null)}
+        >
+          <div
+            className="w-full max-w-md mx-auto rounded-[28px] bg-emerald p-6 shadow-xl animate-fade-in"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 id="redo-confirm-title" className="font-display text-[22px] text-cream">
+              Пройти заново?
+            </h2>
+            <p id="redo-confirm-desc" className="mt-3 text-[14px] leading-relaxed text-muted">
+              Текущие ответы заменятся.
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setRedoConfirm(null)}
+                className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const fn = redoConfirm === 'evening' ? onRedoReview : onRedo
+                  setRedoConfirm(null)
+                  fn?.()
+                }}
+                className="min-h-12 rounded-full bg-cream px-4 text-[14px] font-bold text-emerald-deep"
+              >
+                Пройти заново
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
@@ -339,6 +428,8 @@ export default function History({
   initialSelectedDay = null,
   onInitialBack = null,
   recapOnly = false,
+  onRedo = null,
+  onRedoReview = null,
 }) {
   const [days, setDays] = useState(null)
   const [badges, setBadges] = useState(null)
@@ -563,6 +654,8 @@ export default function History({
         contextError={contextError}
         onDiscuss={discussSelectedCheckinWithAI}
         recapOnly={recapOnly}
+        onRedo={onRedo}
+        onRedoReview={onRedoReview}
       />
     )
   }
