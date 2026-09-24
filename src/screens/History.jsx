@@ -191,9 +191,9 @@ export function HistoryDetail({
           </div>
           {[
             ['Как ты сейчас?', moodWord(checkin?.mood)],
-            checkin?.energy != null ? ['Сколько в тебе энергии?', `${checkin.energy}/5`] : null,
-            checkin?.anxiety != null ? ['Сколько шума в голове?', `${checkin.anxiety}/5`] : null,
-            checkin?.focus != null ? ['Насколько ты собран?', `${checkin.focus}/5`] : null,
+            ['Сколько в тебе энергии?', `${checkin?.energy || 3}/5`],
+            ['Сколько шума в голове?', `${checkin?.anxiety || 3}/5`],
+            ['Насколько ты собран?', `${checkin?.focus || 3}/5`],
             checkin?.emotion ? ['Что ты чувствуешь?', capitalize(checkin.emotion)] : null,
             checkin?.note ? ['Что на уме?', checkin.note] : null,
             ...parseLessons(checkin?.lessons).map(({ question, answer }) => [question, answer]),
@@ -763,16 +763,12 @@ export default function History({
                     <span className="text-[12px] font-bold text-gold bg-gold/10 rounded-full px-3 py-1">
                       {moodWord(d.checkin.mood)}
                     </span>
-                    {d.checkin.energy != null && (
-                      <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
-                        энергия {d.checkin.energy}/5
-                      </span>
-                    )}
-                    {d.checkin.focus != null && (
-                      <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
-                        фокус {d.checkin.focus}/5
-                      </span>
-                    )}
+                    <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
+                      энергия {d.checkin.energy}/5
+                    </span>
+                    <span className="text-[12px] font-semibold text-muted bg-cream/5 rounded-full px-3 py-1">
+                      фокус {d.checkin.focus}/5
+                    </span>
                   </div>
 
                   {d.checkin.note && (
