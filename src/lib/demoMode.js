@@ -1,9 +1,14 @@
-const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v2'
+const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v3'
 const TODAY_PREVIEW_STATES = new Set([
   'checkinPending',
   'dayInProgress',
   'reviewPending',
   'dayClosed',
+  'morningPrimary',
+  'eveningPrimary',
+  'bothDone',
+  'streak0',
+  'streak5',
 ])
 
 // Канонический адрес веб-версии (Firebase Hosting Live, см. PROJECT_STATE.md).
@@ -72,17 +77,90 @@ function offsetDate(date, amount) {
 
 function seedState(todayState = null) {
   const today = new Date()
+  const todayStr = today.toISOString().slice(0, 10)
   const previousDate = offsetDate(today, -1)
-  const checkin =
-    todayState && todayState !== 'checkinPending'
-      ? {
-          id: 900501,
-          date: today.toISOString().slice(0, 10),
-          mood: 3,
-          emotion: 'ровно',
-          review_completed_at: todayState === 'dayClosed' ? new Date().toISOString() : null,
-        }
-      : null
+
+  // Строим серию из N предыдущих дней (с review_completed_at).
+  function buildHistory(days) {
+    return Array.from({ length: days }, (_, i) => {
+      const d = offsetDate(today, -(i + 1))
+      return {
+        id: 900500 - i,
+        date: d,
+        mood: 3,
+        energy: 2,
+        note: 'Демо-запись.',
+        emotion: 'ровно',
+        review_completed_at: new Date(`${d}T20:00:00Z`).toISOString(),
+      }
+    })
+  }
+
+  const noHistoryStates = new Set(['streak0'])
+  const historyDays = todayState === 'streak5' ? 4 : 1
+  const history = noHistoryStates.has(todayState) ? [] : buildHistory(historyDays)
+
+  // Чекин на сегодня — зависит от состояния.
+  let checkin = null
+  if (todayState === 'dayInProgress' || todayState === 'reviewPending') {
+    checkin = {
+      id: 900501,
+      date: todayStr,
+      mood: 3,
+      energy: 2,
+      note: 'Спокойное утро.',
+      emotion: 'ровно',
+      review_completed_at: null,
+    }
+  } else if (todayState === 'dayClosed' || todayState === 'bothDone') {
+    checkin = {
+      id: 900501,
+      date: todayStr,
+      mood: 3,
+      energy: 2,
+      note: 'Спокойное утро.',
+      emotion: 'ровно',
+      review_completed_at: new Date().toISOString(),
+    }
+  } else if (todayState === 'streak5') {
+    checkin = {
+      id: 900501,
+      date: todayStr,
+      mood: 3,
+      energy: 2,
+      note: 'Спокойное утро.',
+      emotion: 'ровно',
+      review_completed_at: null,
+    }
+  }
+  // morningPrimary, eveningPrimary, streak0, checkinPending → checkin = null
+
+  // Настроения для демо
+  const moodPractices =
+    todayState === 'streak0'
+      ? []
+      : [
+          {
+            id: 900601,
+            user_id: DEMO_USER.id,
+            recorded_at: new Date(`${previousDate}T15:30:00`).toISOString(),
+            mood: 2,
+            emotion: 'устал',
+            context: 'work',
+            note: 'Долгий день, много встреч.',
+            breathing_completed: false,
+          },
+          {
+            id: 900602,
+            user_id: DEMO_USER.id,
+            recorded_at: new Date(`${todayStr}T11:00:00`).toISOString(),
+            mood: 4,
+            emotion: 'бодро',
+            context: null,
+            note: null,
+            breathing_completed: true,
+          },
+        ]
 
   return {
     rituals: [
@@ -133,16 +211,7 @@ function seedState(todayState = null) {
       { practice_id: 'breathing' },
       { practice_id: 'focus' },
     ],
-    checkins: [
-      {
-        id: 900500,
-        date: previousDate,
-        mood: 3,
-        emotion: 'ровно',
-        review_completed_at: new Date(`${previousDate}T20:00:00Z`).toISOString(),
-      },
-      ...(checkin ? [checkin] : []),
-    ],
+    checkins: [...history, ...(checkin ? [checkin] : [])],
     profile: {
       id: DEMO_USER.id,
       first_name: DEMO_USER.first_name,
@@ -150,28 +219,7 @@ function seedState(todayState = null) {
       reminder_enabled: false,
       reminder_hour: 9,
     },
-    moodPractices: [
-      {
-        id: 900601,
-        user_id: DEMO_USER.id,
-        recorded_at: new Date(`${previousDate}T15:30:00`).toISOString(),
-        mood: 2,
-        emotion: 'устал',
-        context: 'work',
-        note: 'Долгий день, много встреч.',
-        breathing_completed: false,
-      },
-      {
-        id: 900602,
-        user_id: DEMO_USER.id,
-        recorded_at: new Date(`${today.toISOString().slice(0, 10)}T11:00:00`).toISOString(),
-        mood: 4,
-        emotion: 'бодро',
-        context: null,
-        note: null,
-        breathing_completed: true,
-      },
-    ],
+    moodPractices,
   }
 }
 
@@ -353,9 +401,9 @@ export function demoRequest(path, options = {}) {
   }
 
   if (pathname === '/profile/settings' && method === 'GET') {
+    const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour:
-        previewTodayState() === 'reviewPending' || previewTodayState() === 'dayClosed' ? 0 : 24,
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : 19,
     })
   }
   if (pathname === '/profile' && method === 'GET') return json(state.profile)
