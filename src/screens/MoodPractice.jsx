@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowRight } from 'lucide-react'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
@@ -21,6 +20,16 @@ import {
   CheckInNextControls,
   CheckInCompletionArt,
 } from './CheckIn'
+import {
+  STEP_INTRO,
+  STEP_MOOD,
+  STEP_EMOTION,
+  STEP_CONTEXT,
+  STEP_BREATHING,
+  STEP_DONE,
+  canProceedFromStep,
+  buildMoodPracticePayload,
+} from '../lib/moodPracticeLogic'
 import './CheckInDemo.css'
 
 const INTRO_SEEN_KEY = 'mx-mood-practice-intro-seen'
@@ -41,13 +50,6 @@ const INTRO_PARAGRAPHS = [
   'Это короткая практика — заметить настроение и эмоцию.',
   'Можно добавить пару слов и подышать, если захочешь.',
 ]
-
-const STEP_INTRO = 0
-const STEP_MOOD = 1
-const STEP_EMOTION = 2
-const STEP_CONTEXT = 3
-const STEP_BREATHING = 4
-const STEP_DONE = 5
 
 function hasIntroBeenSeen() {
   try {
@@ -97,13 +99,9 @@ export default function MoodPractice({ user, onDone }) {
     setError('')
 
     try {
-      await api.moodPractices.create({
-        mood,
-        emotion,
-        context,
-        note: note.trim() || null,
-        breathing_completed: withBreathing,
-      })
+      await api.moodPractices.create(
+        buildMoodPracticePayload({ mood, emotion, context, note }, withBreathing)
+      )
 
       platform.haptic('success')
       setStep(STEP_DONE)
@@ -119,7 +117,11 @@ export default function MoodPractice({ user, onDone }) {
 
   if (step === STEP_INTRO) {
     return createPortal(
-      <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      <div
+        className={FULLSCREEN_SHELL_CLASS}
+        style={surfaceStyle}
+        data-testid="mood-practice-intro"
+      >
         <div
           className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
         >
@@ -170,7 +172,11 @@ export default function MoodPractice({ user, onDone }) {
 
   if (step === STEP_DONE) {
     return createPortal(
-      <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+      <div
+        className={FULLSCREEN_SHELL_CLASS}
+        style={surfaceStyle}
+        data-testid="mood-practice-completion"
+      >
         <div
           className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
         >
@@ -214,6 +220,18 @@ export default function MoodPractice({ user, onDone }) {
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div
           key={step}
+          data-testid="mood-practice-step"
+          data-step={
+            step === STEP_MOOD
+              ? 'mood'
+              : step === STEP_EMOTION
+                ? 'emotion'
+                : step === STEP_CONTEXT
+                  ? 'context'
+                  : step === STEP_BREATHING
+                    ? 'breathing'
+                    : ''
+          }
           className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-1 flex-col items-center justify-center animate-fade-in"
         >
           {/* ── Шаг: Лица (шкала настроения) ── */}
@@ -333,7 +351,11 @@ export default function MoodPractice({ user, onDone }) {
                 Попробуешь короткое дыхание?
               </p>
               {error && (
-                <p role="alert" className="mt-6 text-[14px] text-red-300">
+                <p
+                  role="alert"
+                  data-testid="mood-practice-error"
+                  className="mt-6 text-[14px] text-red-300"
+                >
                   {error}
                 </p>
               )}
@@ -375,13 +397,22 @@ export default function MoodPractice({ user, onDone }) {
 
       {/* ── Кнопка «Далее» для шагов шкалы, эмоций и контекста ── */}
       {step === STEP_MOOD && (
-        <CheckInNextControls onNext={() => setStep(STEP_EMOTION)} disabled={!mood} />
+        <CheckInNextControls
+          onNext={() => setStep(STEP_EMOTION)}
+          disabled={!canProceedFromStep(STEP_MOOD, { mood, emotion })}
+        />
       )}
       {step === STEP_EMOTION && (
-        <CheckInNextControls onNext={() => setStep(STEP_CONTEXT)} disabled={!emotion} />
+        <CheckInNextControls
+          onNext={() => setStep(STEP_CONTEXT)}
+          disabled={!canProceedFromStep(STEP_EMOTION, { mood, emotion })}
+        />
       )}
       {step === STEP_CONTEXT && (
-        <CheckInNextControls onNext={() => setStep(STEP_BREATHING)} disabled={false} />
+        <CheckInNextControls
+          onNext={() => setStep(STEP_BREATHING)}
+          disabled={!canProceedFromStep(STEP_CONTEXT, { mood, emotion })}
+        />
       )}
     </div>,
     getFullscreenPortalTarget()
