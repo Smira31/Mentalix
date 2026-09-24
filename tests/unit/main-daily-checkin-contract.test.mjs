@@ -14,8 +14,8 @@ test('the morning visual flow is the default check-in entry point', () => {
 })
 
 test('the legacy core remains available for evening review and rollback', () => {
-  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, mode = 'checkin', existing = null \}\)/)
-  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} mode=\{mode\} existing=\{existing\} \/>/)
+  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, mode = 'checkin', existing = null, redo = false \}\)/)
+  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} mode=\{mode\} existing=\{existing\} redo=\{redo\} \/>/)
 })
 
 test('evening first text step has no pre-declaration question access', () => {
@@ -88,4 +88,72 @@ test('morning streak screen uses the shared Telegram BackButton and sprout flowe
   assert.match(morningFlow, /<BackButton onClick=\{handleBack\} label="Сегодня" \/>/)
   assert.match(checkinSource, /function StreakFlower\(\)/)
   assert.match(checkinSource, /stroke="rgb\(var\(--c-gold\)\)"/)
+})
+
+test('redo mode calls api.checkin.redo, not api.checkin.save', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  assert.match(core, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+})
+
+test('redo mode starts with empty fields — no pre-fill from existing', () => {
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  assert.match(core, /const fieldSource = redo \? null : existing/)
+  assert.match(core, /mood: fieldSource\?\.mood \?\? /)
+  assert.match(core, /emotion, setEmotion\] = useState\(fieldSource\?\.emotion \|\| null\)/)
+  assert.match(core, /existingLessons\(fieldSource\?\.lessons\)/)
+})
+
+test('redo mode skips streak celebration in morning flow', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /if \(redo\) \{[\s\S]*?onDone\(\)[\s\S]*?return[\s\S]*?\}/)
+})
+
+test('redo evening review sends review_completed: true via redo API', () => {
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  assert.match(core, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+  assert.match(core, /review_completed: true/)
+  assert.match(core, /isEvening && !redo && existing\?\.review_completed_at \? 1 : 0/)
+})
+
+test('redo exit without saving makes no API requests', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  // handleBack at step 0 calls onDone() — no save, no redo, no history fetch
+  const handleBack = morningFlow.slice(
+    morningFlow.indexOf('function handleBack()'),
+    morningFlow.indexOf('async function finish()')
+  )
+  assert.match(handleBack, /step === 0[\s\S]*?onDone\(\)/)
+
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  // requestClose in evening (redo) calls onDone() directly — no API calls
+  const requestClose = core.slice(
+    core.indexOf('function requestClose()'),
+    core.indexOf('function buildNote()')
+  )
+  assert.match(requestClose, /if \(!isEvening && draftHasContent\(morningDraft\)\)/)
+  assert.match(requestClose, /onDone\(\)/)
 })
