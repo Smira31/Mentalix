@@ -147,6 +147,7 @@ function seedState(todayState = null) {
       reminder_enabled: false,
       reminder_hour: 9,
     },
+    moodPractices: [],
   }
 }
 
@@ -309,6 +310,22 @@ export function demoRequest(path, options = {}) {
       checkins: [checkin, ...state.checkins.filter(item => item?.date !== today)],
     })
     return json(checkin)
+  }
+
+  if (pathname === '/mood-practices' && method === 'GET') return json(state.moodPractices || [])
+  if (pathname === '/mood-practices' && method === 'POST') {
+    const record = {
+      id: Date.now(),
+      user_id: DEMO_USER.id,
+      recorded_at: new Date().toISOString(),
+      mood: body.mood,
+      emotion: body.emotion,
+      context: body.context ?? null,
+      note: body.note ?? null,
+      breathing_completed: Boolean(body.breathing_completed),
+    }
+    writeState({ ...state, moodPractices: [record, ...(state.moodPractices || [])] })
+    return json(record)
   }
 
   if (pathname === '/profile/settings' && method === 'GET') {
