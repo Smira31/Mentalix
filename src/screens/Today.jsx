@@ -160,6 +160,7 @@ function WeekStrip({ checkin, history = [] }) {
             <div
               key={day.getTime()}
               className="mx-today-week-day"
+              data-testid="today-week-day"
               data-today={isToday}
               data-completed={isCompleted}
             >

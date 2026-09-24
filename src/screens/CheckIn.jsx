@@ -285,12 +285,13 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
 
   const action =
     step === streakStep
-      ? { text: 'Вернуться в Сегодня', onClick: onDone }
+      ? { text: 'Вернуться в Сегодня', testId: 'checkin-back-to-today', onClick: onDone }
       : step === noteStep
         ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
         : step === doneStep
           ? {
               text: saving ? '' : 'Завершить',
+              testId: 'checkin-complete',
               onClick: finish,
               disabled: saving,
             }
@@ -544,6 +545,7 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
               aria-checked={active}
               aria-label={`${level}: ${label}`}
               data-testid="checkin-scale-option"
+              data-level={level}
               onClick={() => onPick(level)}
               className={`mx-checkin-scale__option ${active ? 'is-selected' : ''}`}
             >
@@ -1118,6 +1120,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
             effectiveMainAction.text === 'Завершить'
               ? 'Сохранить и завершить'
               : effectiveMainAction.text,
+          testId: isEvening ? 'checkin-save' : 'checkin-complete',
           onClick: effectiveMainAction.run,
           disabled: saving,
         }
@@ -1125,7 +1128,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
   const webSecondaryAction =
     skipAction && isCompletion && !saving && !isMorningNoteStep
-      ? { text: skipAction.text, onClick: skipAction.run }
+      ? { text: skipAction.text, testId: 'checkin-open-scout', onClick: skipAction.run }
       : null
 
   const compactStepAction = isEmotionStep
@@ -1191,6 +1194,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
             <button
               type="button"
+              data-testid="checkin-back-to-today"
               onClick={onDone}
               className="min-h-12 w-full max-w-sm rounded-full border-0 bg-cream px-6 py-3 text-[14px] font-bold text-emerald-deep"
             >
@@ -1402,6 +1406,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                         key={item}
                         type="button"
                         data-testid="checkin-emotion-pill"
+                        data-emotion={item}
                         onClick={() => {
                           platform.haptic('light')
 
