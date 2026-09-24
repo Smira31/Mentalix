@@ -11,6 +11,7 @@ import { platform, platformName } from '../platform'
 import { MoreHorizontal } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY, MENTOR_SAFETY_KEY } from './mentalix/personas'
+import { moodPracticeDate } from '../lib/moodPracticeLogic'
 
 // ── История: лента дней из чек-инов, активности и local-only journal, как
 // history. у stoic. ──
@@ -62,12 +63,6 @@ function dayTitle(iso) {
   if (diff === 0) return 'Сегодня'
   if (diff === 1) return 'Вчера'
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`
-}
-
-function moodPracticeDate(mp) {
-  const raw = mp.recorded_at || mp.date
-  if (!raw) return null
-  return String(raw).slice(0, 10)
 }
 
 function moodPracticeTime(mp) {
