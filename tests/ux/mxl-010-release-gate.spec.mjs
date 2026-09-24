@@ -158,6 +158,7 @@ test.describe('MXL-010 automated technical gate', () => {
 
     for (const option of ['Нормально', 'Средне']) {
       await page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') }).click()
+      await page.getByRole('button', { name: 'Далее' }).click()
     }
 
     const morningNote = page.getByRole('textbox', { name: 'Что на уме' })
