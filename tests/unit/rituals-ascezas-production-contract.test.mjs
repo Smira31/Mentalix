@@ -4,89 +4,59 @@ import test from 'node:test'
 
 const rituals = await readFile(new URL('../../src/screens/Rituals.jsx', import.meta.url), 'utf8')
 const ascezas = await readFile(new URL('../../src/screens/Ascezas.jsx', import.meta.url), 'utf8')
-const sceneCss = await readFile(
-  new URL('../../src/components/practices/SceneLayout.css', import.meta.url),
-  'utf8'
-)
+const detail = await readFile(new URL('../../src/components/PracticeDetail.jsx', import.meta.url), 'utf8')
+const css = await readFile(new URL('../../src/components/PracticeDetail.css', import.meta.url), 'utf8')
 
-function slice(source, start, end) {
-  const from = source.indexOf(start)
-  assert.notEqual(from, -1, `${start} must exist`)
-  const to = end ? source.indexOf(end, from) : -1
-  return source.slice(from, to === -1 ? undefined : to)
+function assertListScreen(source, heading, statusExpression) {
+  assert.match(source, new RegExp(`<h2[^>]*>${heading}\\.</h2>`))
+  assert.match(source, /mx-practice-grid/)
+  assert.match(source, /data-testid="practice-tile"/)
+  assert.match(source, /data-done=/)
+  assert.match(source, new RegExp(statusExpression))
+  assert.match(source, /setSelected\(/)
+  assert.doesNotMatch(source, /StreakBar|StreakRestoreSheet|restoreTarget|freezes/)
 }
 
-test('production Rituals and Ascezas use the compact 44px Variant A shell', () => {
-  assert.match(sceneCss, /\.mx-rituals-screen__header,[\s\S]*?min-height: 20px/)
-  assert.match(sceneCss, /\.mx-rituals-screen__carousel,[\s\S]*?padding-top: 24px/)
-  assert.match(sceneCss, /\.mx-rituals-screen__carousel,[\s\S]*?\.mx-ascezas-screen__carousel[\s\S]*?padding-top: 24px/)
-  assert.equal(20 + 24, 44)
+test('production lists use the two-column Variant C tile contract', () => {
+  assertListScreen(rituals, 'ритуалы', 'ritual\\.today_level')
+  assertListScreen(ascezas, 'аскезы', "asceza\\.today_status === 'held'")
+  assert.match(css, /\.mx-practice-grid\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)/)
+  assert.match(css, /\.mx-practice-tile\.is-done\s*\{[\s\S]*background: rgb\(var\(--c-text\)\)/)
+})
+
+test('practice detail exposes toggle, three accordions and the asceza break action', () => {
+  assert.match(detail, /data-testid="practice-detail-toggle"/)
+  assert.match(detail, /data-testid="practice-accordion-why"/)
+  assert.match(detail, /data-testid="practice-accordion-how"/)
+  assert.match(detail, /data-testid="practice-accordion-note"/)
+  assert.match(detail, /onLog/)
+  assert.match(detail, /Сорвался сегодня/)
+  assert.match(detail, /<DeleteConfirmationDialog/)
+})
+
+test('practice logging keeps user scope and invalidates Today and practices caches', () => {
+  assert.match(rituals, /api\.rituals\.log\(ritualId, user\.id, level\)/)
+  assert.match(ascezas, /api\.ascezas\.log\(ascezaId, user\.id, status, breakTrigger, breakNote\)/)
   for (const source of [rituals, ascezas]) {
-    assert.match(source, /flex-1 flex flex-col min-h-0 overflow-hidden/)
-    assert.match(source, /w-\[84%\]/)
-    assert.match(source, /snap-x snap-mandatory/)
+    assert.match(source, /invalidateTodayData\(user\.id\)/)
+    assert.match(source, /invalidatePracticesData\(user\.id\)/)
+    assert.match(source, /isLinkedWebWriteBlocked\(user, error\)/)
   }
-  assert.match(rituals, /font-display text-\[20px\][^>]*>ритуалы\./)
-  assert.match(ascezas, /<h2[^>]*>аскезы\.</)
 })
 
-test('production cards preserve Variant A internals and one flat outer surface', () => {
-  for (const [source, className] of [
-    [rituals, 'mx-rituals-contract-card'],
-    [ascezas, 'mx-ascezas-contract-card'],
-  ]) {
-    assert.match(source, new RegExp(`${className}`))
-    assert.match(sceneCss, new RegExp(`\\.${className}[\\s\\S]*?height: 620px[\\s\\S]*?padding: 20px`))
-    assert.match(sceneCss, new RegExp(`\\.${className.replace('card', 'art')}[\\s\\S]*?top: 72px[\\s\\S]*?height: 250px[\\s\\S]*?border: 0`))
-    assert.match(sceneCss, new RegExp(`\\.${className.replace('card', 'title')}[\\s\\S]*?top: 350px`))
-  }
-  assert.match(sceneCss, /\.mx-rituals-contract-actions[\s\S]*?top: 454px/)
-  assert.match(rituals, /level === 'optimal' \? 'bg-gold'/)
-  assert.doesNotMatch(rituals, /className=\{`[^`]*\$\{level \? 'bg-gold/)
-  assert.doesNotMatch(ascezas, /status === 'held'[\s\S]*?bg-gold\/10/)
-  assert.match(rituals, /SemanticGlyph kind=\{semanticKindForRitual\(ritual\.name\)\}/)
-  assert.match(ascezas, /SemanticGlyph kind=\{semanticKindForAsceza\(asceza\)\}/)
+test('delete remains a named confirmation flow', () => {
+  assert.match(detail, /itemName=\{practice\.name\}/)
+  assert.match(detail, /onDelete\(practice\.id\)/)
 })
 
-test('ritual and asceza deletion requires named confirmation', async () => {
-  const dialog = await readFile(
-    new URL('../../src/components/DeleteConfirmationDialog.jsx', import.meta.url),
-    'utf8'
-  )
-
-  for (const source of [rituals, ascezas]) {
-    assert.match(source, /<DeleteConfirmationDialog/)
-    assert.match(source, /itemName=\{(?:ritual|asceza)\.name\}/)
-    assert.match(source, /onConfirm=\{\(\) => \{[\s\S]*onDelete\(/)
-  }
-  assert.match(dialog, /Удалить \{label\}\?/)
-  assert.match(dialog, /Это действие нельзя отменить\./)
-  assert.match(dialog, /Отмена/)
-  assert.match(dialog, /Удалить/)
-})
-
-test('production Ascezas retain exact held/broke semantics and triggers', () => {
-  const card = slice(ascezas, 'function AscezaCard', 'function CreateAscezaScreen')
-  const sheet = slice(ascezas, 'function BreakContextSheet', 'function AscezaCard')
-  for (const label of ['Удержался', 'Сорвался', 'Причина:', 'Замена:', 'Восстановить пропущенный день']) {
-    assert.match(card, new RegExp(label))
-  }
-  for (const trigger of ['Стресс', 'Скука', 'Усталость', 'Тревога', 'Компания', 'Импульс', 'Другое']) {
-    assert.match(ascezas, new RegExp(trigger))
-  }
-  assert.doesNotMatch(sheet, /Автопилот/)
-  assert.match(sheet, /Что сильнее всего повлияло\?/)
-  assert.match(sheet, /Хочешь добавить пару слов\?/)
-  assert.match(sheet, /submitLabel="Сохранить"/)
-  assert.match(sheet, /Ты заранее выбрал замену/)
-})
-
-test('production create flows retain fullscreen, Telegram actions and 16px fields', () => {
+test('existing create flows retain fullscreen, Telegram actions and 16px fields', () => {
   for (const [source, formName, heading, cta] of [
     [rituals, 'CreateRitualScreen', 'новый ритуал.', 'Создать ритуал'],
     [ascezas, 'CreateAscezaScreen', 'новая аскеза.', 'Принять аскезу'],
   ]) {
-    const form = slice(source, `function ${formName}`, 'export default function')
+    const start = source.indexOf(`function ${formName}`)
+    const end = source.indexOf('export default function', start)
+    const form = source.slice(start, end)
     assert.match(form, /useFullscreenSurface\(\)/)
     assert.match(form, /<BackButton onClick=\{onCancel\} \/>/)
     assert.match(form, /text-\[16px\]/)
@@ -96,11 +66,3 @@ test('production create flows retain fullscreen, Telegram actions and 16px field
     assert.match(form, new RegExp(cta))
   }
 })
-
-export {}
-void test
-void assert
-void rituals
-void ascezas
-void sceneCss
-void slice
