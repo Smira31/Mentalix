@@ -6,7 +6,6 @@
 // на карточке нет. alt="" — рядом есть текст, картинка декоративная;
 // width/height равны месту на баннере, чтобы вёрстка не прыгала.
 
-import { ChevronRight } from 'lucide-react'
 import './ProfileBanners.css'
 import potentialArt2x from '../../assets/profile/banner-potential@2x.webp'
 import potentialArt3x from '../../assets/profile/banner-potential@3x.webp'
@@ -102,7 +101,7 @@ export function WebBanner({ onOpen }) {
           скрыто обрезкой кадра, поднятый палец указывает на правый край
           CSS-плашки браузера. */}
       <span className="mx-profile-banner__web-character">
-        <BannerArt art2x={webArt2x} art3x={webArt3x} width={172} height={119} />
+        <BannerArt art2x={webArt2x} art3x={webArt3x} width={258} height={178} />
       </span>
       {/* Заголовок как в референсе Stoic: «Mentalix» выделен, «на сайте»
           обычным весом, одним размером шрифта, строка одна. */}
@@ -112,7 +111,6 @@ export function WebBanner({ onOpen }) {
       <span className="mx-profile-banner__text">
         Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
       </span>
-      <ChevronRight size={20} aria-hidden="true" className="mx-profile-banner__chevron" />
     </button>
   )
 }

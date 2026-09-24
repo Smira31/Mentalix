@@ -143,9 +143,9 @@ button.mx-profile-banner:active {
   filter: brightness(1.18) saturate(1.25);
 }
 
-/* 3. «Вход» — 190 px, заголовок сверху слева, текст снизу слева,
-   шеврон снизу справа, крупная CSS-плашка браузера посередине,
-   персонаж справа указывает пальцем на её правый край. */
+/* 3. «Вход» — 190 px, заголовок сверху слева, текст сразу под ним,
+   крупная CSS-плашка браузера посередине, персонаж справа в полный
+   рост карточки указывает пальцем на её правый край. */
 .mx-profile-banner--web {
   min-height: 190px;
   background: rgb(var(--c-card-raised));
@@ -156,8 +156,8 @@ button.mx-profile-banner:active {
    две строки контента), яркая и читается как сайт с любого масштаба. */
 .mx-profile-banner__web-window {
   position: absolute;
-  top: 28px;
-  right: 92px;
+  top: 68px;
+  right: 122px;
   width: 62px;
   height: 60px;
   overflow: hidden;
@@ -195,29 +195,24 @@ button.mx-profile-banner:active {
   margin-top: 10px;
 }
 
-/* Персонаж справа: копия иллюстрации, обрезанная по нему (86×98 от
-   150×104 со сдвигом -62/-3) — маленькое окно из файла не попадает
-   в кадр, палец упирается в правый край крупной плашки. */
-/* Персонаж целиком в кадре (голова — шишки видны, ноги до низа
-   обрезки нет), крупнее прежнего; слева в кадре — рука с пальцем,
-   поднятым к правому краю плашки браузера. */
-/* Персонаж поднят выше — внизу справа остаётся место под шеврон,
-   как в референсе. */
+/* Персонаж целиком в кадре и крупнее прежнего: поднятый палец
+   указывает на правый край плашки браузера, ноги доходят до нижнего
+   края карточки. Кадр — 1.5× прежней обрезки. */
 .mx-profile-banner__web-character {
   position: absolute;
   top: 12px;
   right: 12px;
-  width: 92px;
-  height: 119px;
+  width: 138px;
+  height: 178px;
   overflow: hidden;
 }
 
-/* Персонаж краснее и ярче исходника — фильтром добавляем насыщенность. */
 /* max-width: none обязателен: глобальный img{max-width:100%} сжимал
-   картинку до ширины кадра и персонаж получался намного меньше. */
+   картинку до ширины кадра и персонаж получался намного меньше.
+   Персонаж краснее и ярче исходника — фильтром добавляем насыщенность. */
 .mx-profile-banner--web .mx-profile-banner__art {
   max-width: none;
-  margin: 0 0 0 -79px;
+  margin: 0 0 0 -118.5px;
   filter: brightness(1.12) saturate(1.35);
 }
 
@@ -237,23 +232,16 @@ button.mx-profile-banner:active {
   font-weight: 700;
 }
 
-/* Текст внизу на всю ширину, до персонажа справа — как в референсе,
-   где описание заканчивается перед шевроном. */
+/* Текст сразу под заголовком, без пустого места; ширина — до
+   плашки браузера и персонажа справа. */
 .mx-profile-banner--web .mx-profile-banner__text {
   position: absolute;
-  bottom: 18px;
+  top: 48px;
   left: 16px;
-  max-width: calc(100% - 130px);
+  max-width: calc(100% - 210px);
   color: rgb(var(--c-muted));
   font-size: 15px;
   line-height: 1.35;
-}
-
-.mx-profile-banner__chevron {
-  position: absolute;
-  right: 16px;
-  bottom: 18px;
-  color: rgb(var(--c-muted));
 }
 
 @media (prefers-reduced-motion: reduce) {
