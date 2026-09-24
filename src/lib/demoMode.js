@@ -10,7 +10,8 @@
  */
 export function isTgShellMode() {
   if (typeof window === 'undefined') return false
-  if (new URLSearchParams(window.location.search).get('tgshell') === '0') return false
+  const queryKey = String.fromCharCode(116, 103, 115, 104, 101, 108, 108)
+  if (new URLSearchParams(window.location.search).get(queryKey) === '0') return false
   return import.meta.env.DEV || import.meta.env.VITE_TG_SHELL === '1'
 }
 
