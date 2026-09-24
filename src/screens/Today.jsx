@@ -235,6 +235,8 @@ export default function Today({
   // сегодняшнего чек-ина.
   const [historyLoaded, setHistoryLoaded] = useState(() => Boolean(previewFixture))
   const [cachedStreak] = useState(() => (user?.id ? peekCachedStreak(user.id) : null))
+  const [moodPractices, setMoodPractices] = useState([])
+  const [practiceDays, setPracticeDays] = useState([])
   const activityDays = collectActivityDays({ rituals, ascezas, moodPractices, practiceDays })
 
   const streak = resolveDisplayedStreak({
@@ -273,9 +275,6 @@ export default function Today({
   // должно повторно всплывать при каждом ре-рендере Today.
   const [starterSetSkipped, setStarterSetSkipped] = useState(false)
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
-
-  const [moodPractices, setMoodPractices] = useState([])
-  const [practiceDays, setPracticeDays] = useState([])
 
   const [hintDismissed, setHintDismissed] = useSynced('mx-today-cards-hint-dismissed', 'false')
 
