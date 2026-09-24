@@ -64,6 +64,41 @@ function dayTitle(iso) {
   return `${d.getDate()} ${MONTHS[d.getMonth()]}`
 }
 
+function moodPracticeDate(mp) {
+  const raw = mp.recorded_at || mp.date
+  if (!raw) return null
+  return String(raw).slice(0, 10)
+}
+
+function moodPracticeTime(mp) {
+  const raw = mp.recorded_at
+  if (!raw) return ''
+  const d = new Date(raw)
+  if (Number.isNaN(d.getTime())) return ''
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+/*
+ * Запись практики «Настроение» в ленте истории — монохромная строка
+ * в стиле существующих строк (активность, журнал). Без новых цветов
+ * и эмодзи. data-testid — history-mood-entry.
+ */
+function MoodPracticeEntry({ entry }) {
+  const time = moodPracticeTime(entry)
+  const emotion = entry.emotion || moodWord(entry.mood)
+  return (
+    <div
+      data-testid="history-mood-entry"
+      className="flex items-center gap-2 text-[13px] text-muted"
+    >
+      <span className="font-semibold">Настроение</span>
+      {time && <span>{time}</span>}
+      <span className="text-cream">{emotion}</span>
+      {entry.breathing_completed && <span>· дыхание</span>}
+    </div>
+  )
+}
+
 /*
  * Локальный journal-фрагмент дня — переиспользуется и в карточке ленты, и
  * в HistoryDetail. data-testid/тексты ниже намеренно совпадают с тем, что
@@ -312,6 +347,14 @@ export function HistoryDetail({
             </p>
           )}
 
+          {day.moodPractices?.length > 0 && (
+            <div className="space-y-1.5 border-t border-cream/10 pt-3">
+              {day.moodPractices.map(mp => (
+                <MoodPracticeEntry key={mp.id} entry={mp} />
+              ))}
+            </div>
+          )}
+
           {day.journal && <JournalDayCard entry={day.journal} />}
           {day.oneOffPractices && <OneOffPracticeDayCard entries={day.oneOffPractices} />}
 
@@ -479,10 +522,18 @@ export default function History({
 
   useEffect(() => {
     if (!user) return
+    const moodFrom = new Date()
+    moodFrom.setDate(moodFrom.getDate() - 30)
     Promise.all([
       api.checkin.history(user.id, 30).catch(() => []),
       api.analytics.get(user.id, 30).catch(() => null),
-    ]).then(([checkins, analytics]) => {
+      api.moodPractices
+        .list(user.id, {
+          from: moodFrom.toISOString().slice(0, 10),
+          to: new Date().toISOString().slice(0, 10),
+        })
+        .catch(() => []),
+    ]).then(([checkins, analytics, moodPractices]) => {
       const byDate = {}
       for (const c of checkins || []) {
         byDate[c.date] = { ...(byDate[c.date] || {}), checkin: c }
@@ -491,6 +542,12 @@ export default function History({
         if (d.count > 0 || byDate[d.date]) {
           byDate[d.date] = { ...(byDate[d.date] || {}), activity: d }
         }
+      }
+      for (const mp of moodPractices || []) {
+        const date = moodPracticeDate(mp)
+        if (!date) continue
+        if (!byDate[date]) byDate[date] = { date }
+        byDate[date].moodPractices = [...(byDate[date].moodPractices || []), mp]
       }
       const list = Object.entries(byDate)
         .map(([date, v]) => ({ date, ...v }))
@@ -555,7 +612,7 @@ export default function History({
       setDays(current =>
         current
           .map(day => (day.date === selectedDay.date ? { ...day, checkin: null } : day))
-          .filter(day => day.checkin || day.activity?.count > 0)
+          .filter(day => day.checkin || day.activity?.count > 0 || day.moodPractices?.length > 0)
       )
       setSelectedDay(null)
       setHistoryStatus('Запись удалена. Активность ритуалов за этот день сохранена.')
@@ -845,6 +902,14 @@ export default function History({
                   {d.activity.breaks > 0 && (
                     <span className="text-muted"> · срывов аскез: {d.activity.breaks}</span>
                   )}
+                </div>
+              )}
+
+              {d.moodPractices?.length > 0 && (
+                <div className="space-y-1.5">
+                  {d.moodPractices.map(mp => (
+                    <MoodPracticeEntry key={mp.id} entry={mp} />
+                  ))}
                 </div>
               )}
 
