@@ -140,6 +140,12 @@
   /* диаметр кнопки профиля и высота чипа огонька */
   --mx-header-edge: 21px;
   /* отступ чипа и кнопки от края экрана */
+  --c-persona-red: 176 28 28;
+  /* #B01C1C — красный силуэт персонажа баннеров профиля (референс владельца) */
+  --c-persona-red-dark: 122 16 16;
+  /* #7A1010 — тёмно-красная штриховка персонажа */
+  --c-persona-edge: 208 208 208;
+  /* #D0D0D0 — тонкий светлый контур персонажа */
 
   --c-nav-border: 51 51 51;
   /* #333333 — граница нижней навигации */
@@ -414,7 +420,7 @@ svg .animate-celebrate-pop {
 
 .mx-screen-shell {
   width: 100%;
-  max-width: 430px;
+  max-width: 440px;
   margin-inline: auto;
   padding-inline: var(--mx-screen-x);
   animation: mx-stoic-screen-enter 420ms var(--mx-ease-out) both;

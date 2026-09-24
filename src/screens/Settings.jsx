@@ -6,6 +6,7 @@
 // Каждый пункт открывает под-экран с существующими настройками.
 
 import { useCallback, useEffect, useState } from 'react'
+import { Check } from 'lucide-react'
 import { version as appVersion } from '../../package.json'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
@@ -65,7 +66,11 @@ const SUB_TITLES = {
   appearance: 'оформление.',
   notifications: 'уведомления.',
   data: 'твои данные.',
+  timezone: 'часовой пояс.',
 }
+
+// Под-экран, куда ведёт «Назад»: по умолчанию — корень профиля.
+const SUB_PARENT = { timezone: 'notifications' }
 
 const REMINDER_TIMES = [
   { label: 'Утро', hour: 8 },
@@ -84,6 +89,10 @@ const TIMEZONES = [
   ['Asia/Novosibirsk', 'Новосибирск'],
   ['Asia/Vladivostok', 'Владивосток'],
 ]
+
+function timezoneLabel(value) {
+  return TIMEZONES.find(([id]) => id === value)?.[1] || value
+}
 
 export default function Settings({
   user,
@@ -414,7 +423,7 @@ export default function Settings({
   // null — тариф ещё не загружен: «подписка.» показывает скелетон.
   const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
-  const [sub, setSub] = useState(null) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data'
+  const [sub, setSub] = useState(null) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data' | 'timezone'
 
   function openSub(next) {
     setSub(next)
@@ -424,7 +433,9 @@ export default function Settings({
   // Demo Preview: «Назад» демо-шапки Telegram ведёт на шаг назад внутри профиля.
   useEffect(() => {
     if (!onRegisterBack) return undefined
-    onRegisterBack(screen ? () => setScreen(null) : sub ? () => openSub(null) : null)
+    onRegisterBack(
+      screen ? () => setScreen(null) : sub ? () => openSub(SUB_PARENT[sub] || null) : null
+    )
     return () => onRegisterBack(null)
     // openSub стабилен по смыслу: меняет только sub и скролл.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -811,21 +822,17 @@ export default function Settings({
             )}
           </ProfileCard>
           {reminderOn && (
+            <ProfileCard>
+              <ProfileRow
+                title="Часовой пояс"
+                value={timezoneLabel(reminderTimezone)}
+                onClick={() => openSub('timezone')}
+                testId="profile-row-timezone"
+              />
+            </ProfileCard>
+          )}
+          {reminderOn && (
             <div className="mx-profile-panel" style={{ marginTop: 8 }}>
-              <label className="mx-profile-label">
-                Часовой пояс
-                <select
-                  value={reminderTimezone}
-                  onChange={event => saveTimezone(event.target.value)}
-                  className="mx-profile-select"
-                >
-                  {TIMEZONES.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[15px] font-semibold text-cream">Тихие часы</p>
@@ -873,19 +880,18 @@ export default function Settings({
                   </label>
                 </div>
               )}
-              <div className="flex flex-wrap gap-2">
-                <button type="button" onClick={snoozeReminders} className="mx-profile-text-button">
-                  Отложить на 2 часа
-                </button>
-                <button
-                  type="button"
-                  onClick={clearAllReminderSettings}
-                  className="mx-profile-text-button mx-profile-text-button--danger"
-                >
-                  Отключить и очистить
-                </button>
-              </div>
             </div>
+          )}
+          {reminderOn && (
+            <ProfileCard>
+              <ProfileRow title="Отложить на 2 часа" onClick={snoozeReminders} />
+              <ProfileRow
+                title="Отключить и очистить"
+                onClick={clearAllReminderSettings}
+                danger
+                testId="profile-row-reminders-clear"
+              />
+            </ProfileCard>
           )}
           {reminderStatus && <ProfileNote role="status">{reminderStatus}</ProfileNote>}
         </ProfileGroup>
@@ -894,6 +900,32 @@ export default function Settings({
             <ProfileRow title="Мысль дня" value="Мои фразы" onClick={() => setScreen('quotes')} />
           </ProfileCard>
         </ProfileGroup>
+      </ProfileBody>
+    )
+  }
+
+  function renderTimezone() {
+    return (
+      <ProfileBody>
+        <ProfileCard testId="profile-timezone-list">
+          {TIMEZONES.map(([value, label]) => (
+            <ProfileRow
+              key={value}
+              title={label}
+              right={
+                reminderTimezone === value ? (
+                  <Check size={18} aria-hidden="true" className="text-cream" />
+                ) : (
+                  <span className="w-[18px]" aria-hidden="true" />
+                )
+              }
+              onClick={() => {
+                saveTimezone(value)
+                openSub('notifications')
+              }}
+            />
+          ))}
+        </ProfileCard>
       </ProfileBody>
     )
   }
@@ -978,6 +1010,7 @@ export default function Settings({
     appearance: renderAppearance,
     notifications: renderNotifications,
     data: renderData,
+    timezone: renderTimezone,
   }
 
   if (sub && subContent[sub]) {
@@ -985,7 +1018,7 @@ export default function Settings({
       <ProfilePage
         key={sub}
         title={SUB_TITLES[sub]}
-        onBack={() => openSub(null)}
+        onBack={() => openSub(SUB_PARENT[sub] || null)}
         testId={`profile-sub-${sub}`}
       >
         {subContent[sub]()}

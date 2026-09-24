@@ -41,6 +41,27 @@ button.mx-profile-banner:active {
   stroke: none;
 }
 
+/* Персонаж баннеров — цветной референс владельца (#802): красный силуэт,
+   чёрные вырезы, тёмно-красная штриховка, тонкий светлый контур. */
+.mx-persona-red {
+  fill: rgb(var(--c-persona-red));
+  stroke: rgb(var(--c-persona-edge));
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.mx-persona-void {
+  fill: rgb(var(--c-bg));
+  stroke: none;
+}
+
+.mx-persona-hatch {
+  fill: none;
+  stroke: rgb(var(--c-persona-red-dark));
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
 /* 1. «Потенциал» — 226 px, всё по центру, кролик справа снизу под кнопкой. */
 .mx-profile-banner--potential {
   display: flex;
@@ -63,6 +84,8 @@ button.mx-profile-banner:active {
   color: rgb(var(--c-line-secondary));
 }
 
+/* 393 и 440: balance держит одинаковый перенос строк на обеих ширинах
+   (без него вторая строка заголовка оставалась коротким «Mentalix»). */
 .mx-profile-banner--potential .mx-profile-banner__title {
   position: relative;
   z-index: 1;
@@ -71,6 +94,7 @@ button.mx-profile-banner:active {
   font-size: 19px;
   font-weight: 700;
   line-height: 1.25;
+  text-wrap: balance;
 }
 
 .mx-profile-banner--potential .mx-profile-banner__text {
@@ -81,6 +105,7 @@ button.mx-profile-banner:active {
   color: rgb(var(--c-muted));
   font-size: 15px;
   line-height: 1.35;
+  text-wrap: balance;
 }
 
 .mx-profile-banner__pill {
@@ -115,6 +140,7 @@ button.mx-profile-banner:active {
   padding: 16px 12px 16px 16px;
   font-size: 17px;
   line-height: 1.35;
+  text-wrap: balance;
 }
 
 .mx-profile-banner--support .mx-profile-banner__text strong {

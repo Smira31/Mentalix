@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { ArrowLeft, Check, Heart, ShieldCheck } from 'lucide-react'
-import BackButton from '../components/BackButton'
+import { Check, Heart, ShieldCheck } from 'lucide-react'
+import { ProfileBody, ProfilePage } from './settings/ProfileUi'
 
 const STORAGE_PREFIX = 'mx-wtp-concept-test-v1'
 
@@ -37,6 +37,8 @@ const INTENT_OPTIONS = [
   { value: 'no', label: 'Пока нет' },
 ]
 
+const WTP_TITLE = 'что было бы полезно?'
+
 const TEST_STEPS = ['concept', 'intent', 'trust', 'complete']
 
 function storageKey(userId) {
@@ -64,16 +66,7 @@ function writeDraft(userId, value) {
 
 function OptionButton({ selected, onClick, children }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`w-full rounded-2xl border px-4 py-3.5 text-left transition-colors ${
-        selected
-          ? 'border-gold bg-gold/10 text-cream'
-          : 'border-cream/10 bg-cream/[0.03] text-muted active:bg-cream/[0.06]'
-      }`}
-    >
+    <button type="button" onClick={onClick} aria-pressed={selected} className="mx-profile-option">
       {children}
     </button>
   )
@@ -82,12 +75,13 @@ function OptionButton({ selected, onClick, children }) {
 function Progress({ step }) {
   const index = TEST_STEPS.indexOf(step)
   return (
-    <div className="mb-6 flex gap-2" aria-label={`Шаг ${index + 1} из ${TEST_STEPS.length}`}>
+    <div
+      className="mx-profile-step-progress"
+      data-testid="wtp-progress"
+      aria-label={`Шаг ${index + 1} из ${TEST_STEPS.length}`}
+    >
       {TEST_STEPS.map((item, itemIndex) => (
-        <span
-          key={item}
-          className={`h-1.5 flex-1 rounded-full ${itemIndex <= index ? 'bg-gold' : 'bg-cream/10'}`}
-        />
+        <span key={item} data-done={itemIndex <= index} />
       ))}
     </div>
   )
@@ -134,173 +128,165 @@ export default function WillingnessToPayTest({ user, onBack }) {
 
   if (step === 'complete') {
     return (
-      <div className="w-full max-w-md px-[var(--mx-screen-x)] pb-10">
-        <div className="mb-6 flex items-center justify-between">
-          <BackButton showInDemo onClick={onBack} />
-        </div>
-        <div className="rounded-3xl bg-emerald p-6 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gold/15 text-gold">
-            <Check size={22} />
+      <ProfilePage title={WTP_TITLE} onBack={onBack} testId="profile-screen-wtp">
+        <ProfileBody>
+          <div className="rounded-2xl bg-[rgb(var(--c-card2))] p-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgb(var(--c-card3))] text-cream">
+              <Check size={22} />
+            </div>
+            <h2 className="font-display text-[24px] leading-tight text-cream">
+              Спасибо за честный ответ.
+            </h2>
+            <p className="mt-3 text-[14px] leading-relaxed text-muted">
+              Это исследование не открывает оплату и ни к чему тебя не обязывает. Ответ остаётся на
+              этом устройстве и помогает понять, какой результат Mentalix действительно стоит
+              развивать.
+            </p>
+            <button type="button" onClick={onBack} className="mx-profile-primary">
+              Вернуться в настройки
+            </button>
           </div>
-          <h1 className="font-display text-[24px] leading-tight text-cream">
-            Спасибо за честный ответ.
-          </h1>
-          <p className="mt-3 text-[14px] leading-relaxed text-muted">
-            Это исследование не открывает оплату и ни к чему тебя не обязывает. Ответ остаётся на
-            этом устройстве и помогает понять, какой результат Mentalix действительно стоит
-            развивать.
-          </p>
-          <button
-            type="button"
-            onClick={onBack}
-            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px]"
-          >
-            Вернуться в настройки
-          </button>
-        </div>
-      </div>
+        </ProfileBody>
+      </ProfilePage>
     )
   }
 
   return (
-    <div className="w-full max-w-md px-[var(--mx-screen-x)] pb-10">
-      <div className="mb-5 flex items-center justify-between">
-        <BackButton showInDemo onClick={onBack} />
-      </div>
-      <Progress step={step} />
+    <ProfilePage title={WTP_TITLE} onBack={onBack} testId="profile-screen-wtp">
+      <ProfileBody>
+        <Progress step={step} />
 
-      {step === 'concept' && (
-        <section>
-          <div className="mb-6">
-            <div className="mb-2 flex items-center gap-2 text-gold">
-              <Heart size={15} />
-              <span className="text-[11px] font-label uppercase tracking-wider">
-                короткий опрос
-              </span>
+        {step === 'concept' && (
+          <section>
+            <div className="mb-6">
+              <div className="mb-2 flex items-center gap-2 text-muted">
+                <Heart size={15} />
+                <span className="text-[11px] font-label uppercase tracking-wider">
+                  короткий опрос
+                </span>
+              </div>
+              <h2 className="font-display text-[22px] leading-tight text-cream">
+                За какой результат хотелось бы платить?
+              </h2>
+              <p className="mt-3 text-[14px] leading-relaxed text-muted">
+                Представь, что базовый ежедневный цикл Mentalix остаётся бесплатным. Какое
+                дополнительное продолжение было бы для тебя самым ценным?
+              </p>
             </div>
-            <h1 className="font-display text-[26px] leading-tight text-cream">
-              За какой результат хотелось бы платить?
-            </h1>
-            <p className="mt-3 text-[14px] leading-relaxed text-muted">
-              Представь, что базовый ежедневный цикл Mentalix остаётся бесплатным. Какое
-              дополнительное продолжение было бы для тебя самым ценным?
-            </p>
-          </div>
-          <div className="space-y-3">
-            {CONCEPTS.map(item => (
-              <OptionButton
-                key={item.id}
-                selected={concept === item.id}
-                onClick={() => chooseConcept(item.id)}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-[10px] font-label uppercase tracking-wider text-gold">
-                      {item.label}
+            <div className="space-y-3">
+              {CONCEPTS.map(item => (
+                <OptionButton
+                  key={item.id}
+                  selected={concept === item.id}
+                  onClick={() => chooseConcept(item.id)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] font-label uppercase tracking-wider text-muted">
+                        {item.label}
+                      </div>
+                      <div className="mt-1 text-[15px] font-semibold text-cream">{item.title}</div>
+                      <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
+                        {item.description}
+                      </p>
                     </div>
-                    <div className="mt-1 text-[15px] font-semibold text-cream">{item.title}</div>
-                    <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
-                      {item.description}
-                    </p>
+                    {concept === item.id && (
+                      <Check size={17} className="mt-0.5 shrink-0 text-muted" />
+                    )}
                   </div>
-                  {concept === item.id && <Check size={17} className="mt-0.5 shrink-0 text-gold" />}
-                </div>
-              </OptionButton>
-            ))}
-          </div>
-          <button
-            type="button"
-            disabled={!concept}
-            onClick={() => {
-              setStep('intent')
-              persist({ step: 'intent' })
-            }}
-            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px] disabled:opacity-40"
-          >
-            Продолжить
-          </button>
-        </section>
-      )}
-
-      {step === 'intent' && (
-        <section>
-          <div className="mb-6">
-            <span className="text-[11px] font-label uppercase tracking-wider text-gold">
-              о выбранном результате
-            </span>
-            <h1 className="mt-2 font-display text-[26px] leading-tight text-cream">
-              Хотелось бы попробовать?
-            </h1>
-            <p className="mt-3 text-[14px] leading-relaxed text-muted">
-              Ты выбрал: <span className="text-cream">{selectedConcept?.title}</span>. Здесь нет
-              покупки — нам важно понять только твой уровень интереса.
-            </p>
-          </div>
-          <div className="space-y-3">
-            {INTENT_OPTIONS.map(item => (
-              <OptionButton
-                key={item.value}
-                selected={intent === item.value}
-                onClick={() => chooseIntent(item.value)}
-              >
-                <span className="text-[14px] font-semibold">{item.label}</span>
-              </OptionButton>
-            ))}
-          </div>
-          <button
-            type="button"
-            disabled={!intent}
-            onClick={() => {
-              setStep('trust')
-              persist({ step: 'trust' })
-            }}
-            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px] disabled:opacity-40"
-          >
-            Продолжить
-          </button>
-        </section>
-      )}
-
-      {step === 'trust' && (
-        <section>
-          <div className="mb-6">
-            <div className="mb-2 flex items-center gap-2 text-gold">
-              <ShieldCheck size={15} />
-              <span className="text-[11px] font-label uppercase tracking-wider">
-                доверие и границы
-              </span>
+                </OptionButton>
+              ))}
             </div>
-            <h1 className="font-display text-[26px] leading-tight text-cream">
-              Что остановило бы тебя?
-            </h1>
-            <p className="mt-3 text-[14px] leading-relaxed text-muted">
-              Необязательно отвечать. Напиши своими словами, что важно знать до любого платного
-              продолжения Mentalix.
-            </p>
-          </div>
-          <textarea
-            value={trust}
-            onChange={event => setTrust(event.target.value)}
-            onBlur={() => persist({ trust })}
-            placeholder="Например: хочу понимать, что происходит с моими записями…"
-            className="min-h-[148px] w-full resize-none rounded-2xl border border-cream/10 bg-cream/[0.03] px-4 py-3 text-[16px] leading-relaxed text-cream outline-none placeholder:text-faint focus:border-gold/60"
-          />
-          <button
-            type="button"
-            onClick={complete}
-            className="cta-pill mt-6 min-h-11 w-full px-[var(--mx-screen-x)] text-[13px]"
-          >
-            Завершить без оплаты
-          </button>
-          <button
-            type="button"
-            onClick={complete}
-            className="mt-3 min-h-11 w-full text-[12px] font-semibold text-muted"
-          >
-            Пропустить этот вопрос
-          </button>
-        </section>
-      )}
-    </div>
+            <button
+              type="button"
+              disabled={!concept}
+              onClick={() => {
+                setStep('intent')
+                persist({ step: 'intent' })
+              }}
+              className="mx-profile-primary"
+            >
+              Продолжить
+            </button>
+          </section>
+        )}
+
+        {step === 'intent' && (
+          <section>
+            <div className="mb-6">
+              <span className="text-[11px] font-label uppercase tracking-wider text-muted">
+                о выбранном результате
+              </span>
+              <h2 className="mt-2 font-display text-[22px] leading-tight text-cream">
+                Хотелось бы попробовать?
+              </h2>
+              <p className="mt-3 text-[14px] leading-relaxed text-muted">
+                Ты выбрал: <span className="text-cream">{selectedConcept?.title}</span>. Здесь нет
+                покупки — нам важно понять только твой уровень интереса.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {INTENT_OPTIONS.map(item => (
+                <OptionButton
+                  key={item.value}
+                  selected={intent === item.value}
+                  onClick={() => chooseIntent(item.value)}
+                >
+                  <span className="text-[14px] font-semibold">{item.label}</span>
+                </OptionButton>
+              ))}
+            </div>
+            <button
+              type="button"
+              disabled={!intent}
+              onClick={() => {
+                setStep('trust')
+                persist({ step: 'trust' })
+              }}
+              className="mx-profile-primary"
+            >
+              Продолжить
+            </button>
+          </section>
+        )}
+
+        {step === 'trust' && (
+          <section>
+            <div className="mb-6">
+              <div className="mb-2 flex items-center gap-2 text-muted">
+                <ShieldCheck size={15} />
+                <span className="text-[11px] font-label uppercase tracking-wider">
+                  доверие и границы
+                </span>
+              </div>
+              <h2 className="font-display text-[22px] leading-tight text-cream">
+                Что остановило бы тебя?
+              </h2>
+              <p className="mt-3 text-[14px] leading-relaxed text-muted">
+                Необязательно отвечать. Напиши своими словами, что важно знать до любого платного
+                продолжения Mentalix.
+              </p>
+            </div>
+            <textarea
+              value={trust}
+              onChange={event => setTrust(event.target.value)}
+              onBlur={() => persist({ trust })}
+              placeholder="Например: хочу понимать, что происходит с моими записями…"
+              className="min-h-[148px] w-full resize-none rounded-2xl border border-transparent bg-[rgb(var(--c-card2))] px-4 py-3 text-[16px] leading-relaxed text-cream outline-none placeholder:text-faint focus:border-muted"
+            />
+            <button type="button" onClick={complete} className="mx-profile-primary">
+              Завершить без оплаты
+            </button>
+            <button
+              type="button"
+              onClick={complete}
+              className="mt-3 min-h-11 w-full text-[12px] font-semibold text-muted"
+            >
+              Пропустить этот вопрос
+            </button>
+          </section>
+        )}
+      </ProfileBody>
+    </ProfilePage>
   )
 }

@@ -1,42 +1,43 @@
 // src/screens/settings/ProfileBanners.jsx
 //
 // Три баннера в начале «твой профиль.» — DESIGN_SYSTEM.md §5.4 «Баннеры профиля».
-// Геометрия — по эталону Stoic, иллюстрации — свои, линейные, в стиле кролика Mentalix.
+// Геометрия — по эталону Stoic. Иллюстрация — красный рогатый персонаж
+// из цветного референса владельца (PersonaArt.jsx): симметричный силуэт
+// анфас, чёрные глазницы и апертура, штриховка «угольком», светлый контур.
 
 import { ChevronRight } from 'lucide-react'
 import './ProfileBanners.css'
+import { PersonaFigure } from './PersonaArt'
 
-// Кролик выглядывает из-за края карточки: серый, линейный.
+// Персонаж вырастает из нижнего правого края карточки — на весь рост.
 function PotentialArt() {
   return (
     <svg className="mx-profile-banner__art" viewBox="0 0 160 140" aria-hidden="true">
-      <path d="M58 140V92c0-26 18-44 42-44s42 18 42 44v48" />
-      <path d="M78 54C70 30 70 10 80 4c10 6 12 28 6 48" />
-      <path d="M112 52c4-24 14-42 26-44 6 12-2 32-14 48" />
-      <circle cx="88" cy="88" r="3.2" className="mx-profile-banner__art-fill" />
-      <circle cx="116" cy="88" r="3.2" className="mx-profile-banner__art-fill" />
-      <path d="M98 102c2 3 6 3 8 0" />
-      <path d="M30 120c10-6 20-6 28 0M142 118c8-5 14-5 18-2" />
-      <path d="M20 44l4 8 8 4-8 4-4 8-4-8-8-4 8-4Z" />
+      <g transform="translate(30 10)">
+        <PersonaFigure />
+      </g>
     </svg>
   )
 }
 
-// Кролик держит сердце — белая линия на панели справа.
+// Персонаж на панели справа — во всю высоту, с сердцем-поддержкой
+// на чёрном торсе.
 function SupportArt() {
   return (
     <svg className="mx-profile-banner__art" viewBox="0 0 89 118" aria-hidden="true">
-      <path d="M26 118V84c0-14 8-24 19-24s19 10 19 24v34" />
-      <path d="M37 62c-5-16-5-30 1-36 7 5 8 20 5 34" />
-      <path d="M52 60c3-15 9-27 16-28 3 8-1 20-8 30" />
-      <circle cx="39" cy="80" r="1.8" className="mx-profile-banner__art-fill" />
-      <circle cx="52" cy="80" r="1.8" className="mx-profile-banner__art-fill" />
-      <path d="M45.5 106c-6-4-10-7-10-11a4.5 4.5 0 0 1 10-2 4.5 4.5 0 0 1 10 2c0 4-4 7-10 11Z" />
+      <g transform="translate(-0.5 0) scale(0.9)">
+        <PersonaFigure />
+        {/* Сердце-поддержка на чёрном торсе. */}
+        <path
+          className="mx-persona-red"
+          d="M50 123C45.5 119.8 43 117.5 43 115.3A3.5 3.5 0 0 1 50 114.1A3.5 3.5 0 0 1 57 115.3C57 117.5 54.5 119.8 50 123Z"
+        />
+      </g>
     </svg>
   )
 }
 
-// Кролик у окна браузера.
+// Персонаж у окна браузера — «смотрит на сайт».
 function WebArt() {
   return (
     <svg className="mx-profile-banner__art" viewBox="0 0 120 96" aria-hidden="true">
@@ -45,11 +46,9 @@ function WebArt() {
       <circle cx="15" cy="17" r="1.6" className="mx-profile-banner__art-fill" />
       <circle cx="22" cy="17" r="1.6" className="mx-profile-banner__art-fill" />
       <path d="M18 38h40M18 48h28" />
-      <path d="M84 96V74c0-10 7-17 15-17s15 7 15 17v22" />
-      <path d="M92 58c-4-12-3-22 2-26 5 4 6 14 3 25" />
-      <path d="M104 57c3-11 7-19 13-20 2 6-1 15-7 22" />
-      <circle cx="95" cy="73" r="1.6" className="mx-profile-banner__art-fill" />
-      <circle cx="105" cy="73" r="1.6" className="mx-profile-banner__art-fill" />
+      <g transform="translate(76 27) scale(0.44)">
+        <PersonaFigure />
+      </g>
     </svg>
   )
 }
@@ -64,8 +63,9 @@ export function PotentialBanner({ onOpen }) {
     >
       <PotentialArt />
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
+      {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
-        Все собеседники, полная аналитика и курсы в Mentalix Pro
+        {'Все собеседники, полная аналитика и курсы в Mentalix\u00A0Pro'}
       </p>
       <button
         type="button"
@@ -86,8 +86,10 @@ export function SupportBanner({ onOpen }) {
       data-testid="profile-banner-support"
       onClick={onOpen}
     >
+      {/* Тире не отрывается от предыдущего слова при переносе. */}
       <p className="mx-profile-banner__text">
-        Поддержи <strong>Mentalix</strong> — это помогает проекту расти.
+        Поддержи <strong>Mentalix</strong>
+        {'\u00A0— это помогает проекту расти.'}
       </p>
       <span className="mx-profile-banner__panel">
         <SupportArt />
