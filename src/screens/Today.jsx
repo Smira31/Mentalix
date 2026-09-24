@@ -24,7 +24,7 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
-import { currentCheckinStreak } from '../lib/series'
+import { currentCheckinStreak, withTodayCheckin } from '../lib/series'
 import { buildSeriesViewModel } from '../lib/series'
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
@@ -229,9 +229,10 @@ export default function Today({
     () => initialTodaySnapshot?.checkinHistory || []
   )
 
-  const [streak, setStreak] = useState(() =>
-    currentCheckinStreak(initialTodaySnapshot?.checkinHistory || [])
-  )
+  // Серия в шапке считается из истории + сегодняшнего чек-ина: история с
+  // бэкенда может ещё не содержать запись за сегодня (карточка «Утро
+  // отмечено» уже есть, а огонёк без числа — регрессия после #801).
+  const streak = currentCheckinStreak(withTodayCheckin(checkinHistory, checkin))
   const [newBadge, setNewBadge] = useState(null)
   const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
     Boolean(user?.id && shouldShowSeriesTooltip(user.id))
@@ -313,7 +314,6 @@ export default function Today({
       setCheckinHistory(Array.isArray(history) ? history : [])
       const previousModel = buildSeriesViewModel({ checkins: checkinHistory, rituals, ascezas })
       const nextModel = buildSeriesViewModel({ checkins: history, rituals, ascezas })
-      setStreak(nextModel.currentStreak)
       const unlocked = nextModel.badges.find(
         badge =>
           badge.done && !previousModel.badges.find(previous => previous.id === badge.id)?.done
@@ -365,7 +365,6 @@ export default function Today({
           .then(history => {
             const safeHistory = Array.isArray(history) ? history : []
             setCheckinHistory(safeHistory)
-            setStreak(currentCheckinStreak(safeHistory))
           })
           .catch(() => {})
 
