@@ -198,9 +198,8 @@ if (
   import.meta.env.VITE_TG_SHELL !== '0' &&
   !navigator.webdriver
 ) {
-  // Top-level await недоступен в production-цели esbuild, поэтому инициализация
-  // идёт через .then — она и так асинхронная и не блокирует рендер.
-  import('./tgShell').then(({ initTgShell }) => initTgShell())
+  const { initTgShell } = await import('./tgShell')
+  initTgShell()
 }
 
 createRoot(document.getElementById('root')).render(
