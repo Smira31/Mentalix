@@ -101,7 +101,7 @@ export function WebBanner({ onOpen }) {
           скрыто обрезкой кадра, поднятый палец указывает на правый край
           CSS-плашки браузера. */}
       <span className="mx-profile-banner__web-character">
-        <BannerArt art2x={webArt2x} art3x={webArt3x} width={258} height={178} />
+        <BannerArt art2x={webArt2x} art3x={webArt3x} width={234} height={162} />
       </span>
       {/* Заголовок как в референсе Stoic: «Mentalix» выделен, «на сайте»
           обычным весом, одним размером шрифта, строка одна. */}

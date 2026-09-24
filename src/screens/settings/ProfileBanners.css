@@ -156,7 +156,7 @@ button.mx-profile-banner:active {
    две строки контента), яркая и читается как сайт с любого масштаба. */
 .mx-profile-banner__web-window {
   position: absolute;
-  top: 68px;
+  top: 64px;
   right: 122px;
   width: 62px;
   height: 60px;
@@ -195,15 +195,15 @@ button.mx-profile-banner:active {
   margin-top: 10px;
 }
 
-/* Персонаж целиком в кадре и крупнее прежнего: поднятый палец
-   указывает на правый край плашки браузера, ноги доходят до нижнего
-   края карточки. Кадр — 1.5× прежней обрезки. */
+/* Персонаж целиком в кадре, включая кончик поднятого пальца —
+   он самый левый пиксель исходника (x=48 от 208), поэтому кадр
+   обрезает файл ровно от него. Ноги — почти до низа карточки. */
 .mx-profile-banner__web-character {
   position: absolute;
-  top: 12px;
+  top: 16px;
   right: 12px;
-  width: 138px;
-  height: 178px;
+  width: 180px;
+  height: 162px;
   overflow: hidden;
 }
 
@@ -212,7 +212,7 @@ button.mx-profile-banner:active {
    Персонаж краснее и ярче исходника — фильтром добавляем насыщенность. */
 .mx-profile-banner--web .mx-profile-banner__art {
   max-width: none;
-  margin: 0 0 0 -118.5px;
+  margin: 0 0 0 -52px;
   filter: brightness(1.12) saturate(1.35);
 }
 
@@ -238,7 +238,7 @@ button.mx-profile-banner:active {
   position: absolute;
   top: 48px;
   left: 16px;
-  max-width: calc(100% - 210px);
+  max-width: calc(100% - 214px);
   color: rgb(var(--c-muted));
   font-size: 15px;
   line-height: 1.35;
