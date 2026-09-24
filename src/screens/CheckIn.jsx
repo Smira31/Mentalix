@@ -72,9 +72,16 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
+export function CheckInNextControls({
+  onNext,
+  disabled = false,
+  onSkip = null,
+  variant = 'scale',
+}) {
   return (
-    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+    <div
+      className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
+    >
       {onSkip ? (
         <button type="button" className="mx-checkin-next-controls__skip" onClick={onSkip}>
           Пропустить
@@ -255,14 +262,15 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
     setError('')
     try {
       const saveApi = redo ? api.checkin.redo : api.checkin.save
-      await saveApi(user.id, {
+      const morningPayload = {
         mood: values.mood || 3,
         energy: values.energy || 3,
-        anxiety: values.anxiety || 3,
-        focus: values.focus || 3,
         note: note.trim() || undefined,
         emotion: undefined,
-      })
+      }
+      if (values.anxiety != null) morningPayload.anxiety = values.anxiety
+      if (values.focus != null) morningPayload.focus = values.focus
+      await saveApi(user.id, morningPayload)
       platform.haptic('success')
       if (redo) {
         onDone()
@@ -650,7 +658,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
   const [emotion, setEmotion] = useState(fieldSource?.emotion || null)
 
-
   const [savedCheckinId, setSavedCheckinId] = useState(null)
 
   const [scoutBusy, setScoutBusy] = useState(false)
@@ -788,14 +795,10 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
     try {
       const saveApi = redo ? api.checkin.redo : api.checkin.save
-      const savedCheckin = await saveApi(user.id, {
+      const corePayload = {
         mood: values.mood ?? 3,
 
         energy: values.energy ?? 3,
-
-        anxiety: values.anxiety ?? 3,
-
-        focus: values.focus ?? 3,
 
         note: buildNote(),
 
@@ -808,7 +811,10 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
               review_completed: true,
             }
           : {}),
-      })
+      }
+      if (values.anxiety != null) corePayload.anxiety = values.anxiety
+      if (values.focus != null) corePayload.focus = values.focus
+      const savedCheckin = await saveApi(user.id, corePayload)
 
       if (isEvening && !savedCheckin?.review_completed_at) {
         throw new Error('Backend не подтвердил закрытие дня')
@@ -1455,8 +1461,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       value={morningDraft?.brief || ''}
                       onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
                       placeholder={previewDemoMode ? 'Начни писать' : MORNING_NOTE_PLACEHOLDER}
-              ariaLabel="Что на уме"
-              testId="checkin-text-input"
+                      ariaLabel="Что на уме"
+                      testId="checkin-text-input"
                       className="min-h-[18rem] flex-1"
                       editorClassName="pb-24"
                       floatingToolbar
@@ -1465,8 +1471,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       keepFocusOnSubmit={previewDemoMode}
                       submitIcon="arrow"
                       onSubmit={() => submit()}
-              submitLabel="Завершить чек-ин"
-              submitTestId="checkin-complete"
+                      submitLabel="Завершить чек-ин"
+                      submitTestId="checkin-complete"
                       submitLoading={saving}
                       onDeepen={deepenMorningNote}
                       showAddAction

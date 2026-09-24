@@ -45,15 +45,27 @@ test('the default morning flow persists real user data through the check-in API'
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
   assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
-  assert.match(morningFlow, /saveApi\(user\.id, \{/)
+  assert.match(morningFlow, /saveApi\(user\.id, morningPayload\)/)
   assert.match(morningFlow, /mood: values\.mood \|\| 3/)
   assert.match(morningFlow, /energy: values\.energy \|\| 3/)
-  assert.match(morningFlow, /focus: values\.focus \|\| 3/)
   assert.match(morningFlow, /note: note\.trim\(\) \|\| undefined/)
   assert.match(morningFlow, /api\.checkin\.history\(user\.id, 90\)/)
   assert.match(apiSource, /checkin: \{[\s\S]*?save: \(/)
   assert.match(apiSource, /request\('\/checkin', \{[\s\S]*?method: 'POST'/)
   assert.match(apiSource, /request\('\/checkin\/today', \{[\s\S]*?method: 'PUT'/)
+})
+
+test('morning flow does not send anxiety or focus when the user did not answer them', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  // anxiety and focus are conditionally added, not defaulted to 3
+  assert.match(morningFlow, /if \(values\.anxiety != null\) morningPayload\.anxiety = values\.anxiety/)
+  assert.match(morningFlow, /if \(values\.focus != null\) morningPayload\.focus = values\.focus/)
+  // Must NOT contain unconditional defaults
+  assert.doesNotMatch(morningFlow, /anxiety: values\.anxiety \|\| 3/)
+  assert.doesNotMatch(morningFlow, /focus: values\.focus \|\| 3/)
 })
 
 test('seeded demo state remains opt-in and isolated in the API wrapper', () => {
