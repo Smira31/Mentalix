@@ -1774,8 +1774,8 @@
 
 /* Кнопка «Начать» на главной карточке — белая залитая, чёрный текст */
 .mx-today-day-card[data-primary='true'] .mx-today-day-card__start {
-  background: #fff;
-  color: #000;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
   border: 0;
 }
 
