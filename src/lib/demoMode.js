@@ -407,7 +407,7 @@ export function demoRequest(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour: eveningStates.has(previewTodayState()) ? 0 : 19,
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : 24,
     })
   }
   if (pathname === '/profile' && method === 'GET') return json(state.profile)
