@@ -1,32 +1,16 @@
 // src/screens/Settings.jsx
 //
-// Экран настроек Mentalix. Секции: 1. Профиль+тариф  2. Уведомления  3. Разбор дня
-//         4. Карточки «Сегодня»  5. Внешний вид  6. Основные  7. Поддержка
-//         8. Документы  9. Версия  10. Аккаунт
+// Профиль и настройки Mentalix по эталону Stoic (DESIGN_SYSTEM.md §5.4).
+// Корень «твой профиль.»: НАСТРОЙ (чек-ины, о тебе, настройки, оформление) →
+// АККАУНТ (уведомления, твои данные, подписка) → ПОМОЩЬ → ПРИЛОЖЕНИЕ → версия.
+// Каждый пункт открывает под-экран с существующими настройками.
 
 import { useCallback, useEffect, useState } from 'react'
-import BackButton from '../components/BackButton'
-import {
-  ChevronRight,
-  User,
-  Bell,
-  Globe,
-  Lock,
-  LifeBuoy,
-  RefreshCw,
-  Heart,
-  Moon,
-  Download,
-  ShieldCheck,
-  Gift,
-  ChevronLeft,
-  X,
-} from 'lucide-react'
+import { version as appVersion } from '../../package.json'
 import { api } from '../lib/api'
 import { forget, useSynced } from '../lib/store'
 import { requestMessages, biometric } from '../platform/telegram.hooks'
 import { platform, platformName } from '../platform'
-import { isPreviewDemoMode } from '../lib/demoMode'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
 import { MOOD_CHECK_ENABLED_KEY } from '../lib/moodCheckDraft'
 import { clearCheckinDraft } from '../lib/checkinDraft'
@@ -45,62 +29,19 @@ import LinkWebAccount from './LinkWebAccount'
 import AppLock from './AppLock'
 import PrivacyNotice from './PrivacyNotice'
 import WillingnessToPayTest from './WillingnessToPayTest'
-import './SettingsDemo.css'
+import Profile from './Profile'
+import {
+  ProfileBody,
+  ProfileCard,
+  ProfileChips,
+  ProfileGroup,
+  ProfileNote,
+  ProfilePage,
+  ProfileRow,
+  ProfileVersion,
+} from './settings/ProfileUi'
 
-function SectionLabel({ children }) {
-  return (
-    <div className="px-1 mb-2 text-[11px] font-label uppercase tracking-wider text-muted">
-      {children}
-    </div>
-  )
-}
-
-function Card({ children }) {
-  return (
-    <div className="bg-cream/[0.03] border border-cream/[0.08] rounded-2xl overflow-hidden mb-8 w-full">
-      {children}
-    </div>
-  )
-}
-
-function Row({
-  icon: Icon,
-  title,
-  subtitle,
-  onClick,
-  danger = false,
-  right = null,
-  divider = true,
-}) {
-  const Component = onClick ? 'button' : 'div'
-
-  return (
-    <Component
-      {...(onClick ? { type: 'button', onClick } : {})}
-      className={`w-full flex items-center gap-3 px-4 py-4 text-left ${
-        divider ? 'border-b border-cream/[0.06]' : ''
-      } active:bg-cream/[0.04] transition-colors`}
-    >
-      {Icon && (
-        <Icon
-          size={18}
-          aria-hidden="true"
-          className={danger ? 'text-red-400' : 'text-gold shrink-0'}
-        />
-      )}
-      <div className="flex-1 min-w-0">
-        <div className={`font-body text-[14px] ${danger ? 'text-red-400' : 'text-cream'}`}>
-          {title}
-        </div>
-        {subtitle && (
-          <div className="font-body text-[12px] text-muted mt-0.5 truncate">{subtitle}</div>
-        )}
-      </div>
-      {right ?? <ChevronRight size={18} aria-hidden="true" className="text-muted shrink-0" />}
-    </Component>
-  )
-}
-
+// iOS-переключатель, §5.4: включённый — белый.
 function Toggle({ checked, label, onChange }) {
   return (
     <button
@@ -109,36 +50,20 @@ function Toggle({ checked, label, onChange }) {
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${checked ? 'bg-gold' : 'bg-cream/10'}`}
-    >
-      <span
-        className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-cream transition-transform ${
-          checked ? 'translate-x-5' : ''
-        }`}
-      />
-    </button>
+      className="mx-profile-switch"
+    />
   )
 }
 
-function DemoSettingsPromo({ onSubscribe, onGift }) {
-  return (
-    <>
-      <section className="mx-settings-premium">
-        <div>
-          <h2>Открой весь потенциал Mentalix</h2>
-          <p>Больше практик, ИИ-функции, синхронизация и не только.</p>
-          <button type="button" onClick={onSubscribe}>
-            Попробовать 7 дней бесплатно
-          </button>
-        </div>
-        <Lock size={78} strokeWidth={1.2} aria-hidden="true" />
-      </section>
-      <button type="button" className="mx-settings-support-card" onClick={onGift}>
-        <span>Поддержать проект</span>
-        <Gift size={56} strokeWidth={1.1} aria-hidden="true" />
-      </button>
-    </>
-  )
+const hh = hour => `${String(hour).padStart(2, '0')}:00`
+
+const SUB_TITLES = {
+  checkins: 'чек-ины.',
+  about: 'о тебе.',
+  prefs: 'настройки.',
+  appearance: 'оформление.',
+  notifications: 'уведомления.',
+  data: 'твои данные.',
 }
 
 const REMINDER_TIMES = [
@@ -162,13 +87,13 @@ const TIMEZONES = [
 export default function Settings({
   user,
   onBack,
-  onNavigate,
+  onRegisterBack,
+  onScrollTop,
   accent,
   onAccentChange,
   theme,
   onThemeChange,
 }) {
-  const previewDemoMode = isPreviewDemoMode()
   const accentColors = getAccentColors(theme)
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
@@ -486,7 +411,22 @@ export default function Settings({
 
   const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
   const [tier, setTier] = useState('base')
-  const go = key => onNavigate?.(key)
+  // Под-экран профиля: null — корень «твой профиль.».
+  const [sub, setSub] = useState(null) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data'
+
+  function openSub(next) {
+    setSub(next)
+    onScrollTop?.()
+  }
+
+  // Demo Preview: «Назад» демо-шапки Telegram ведёт на шаг назад внутри профиля.
+  useEffect(() => {
+    if (!onRegisterBack) return undefined
+    onRegisterBack(screen ? () => setScreen(null) : sub ? () => openSub(null) : null)
+    return () => onRegisterBack(null)
+    // openSub стабилен по смыслу: меняет только sub и скролл.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, sub, onRegisterBack])
 
   useEffect(() => {
     if (!user) return
@@ -560,610 +500,547 @@ export default function Settings({
     )
   }
 
-  return (
-    <div
-      className={`mx-settings-screen w-full max-w-md px-[var(--mx-screen-x)] flex flex-col items-center ${previewDemoMode ? 'mx-settings-screen--demo' : ''}`}
-    >
-      <div className="w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-6">
-        {previewDemoMode ? (
-          <div className="mx-settings-header-actions justify-self-start">
-            <button
-              type="button"
-              className="mx-settings-header-button"
-              aria-label="Поддержать проект"
-              onClick={() => setScreen('donate')}
-            >
-              <Gift size={20} aria-hidden="true" />
-            </button>
-          </div>
-        ) : (
-          <div className="justify-self-start">
-            <BackButton
-              onClick={onBack}
-              className="max-[359px]:w-10 max-[359px]:justify-center max-[359px]:gap-0 max-[359px]:px-0 max-[359px]:[&>span]:hidden"
+  function renderCheckins() {
+    return (
+      <ProfileBody>
+        <ProfileGroup label="Разбор дня">
+          <ProfileCard>
+            <ProfileRow
+              title="Когда показывать разбор"
+              subtitle="«Сегодня» сам предложит подвести итоги"
+              value={hh(reviewHour)}
             />
-          </div>
-        )}
-        <h1 className="font-display text-[18px] text-cream lowercase">
-          {previewDemoMode ? 'твой профиль.' : 'настройки.'}
-        </h1>
-        {previewDemoMode ? (
-          <button
-            type="button"
-            className="mx-settings-header-button justify-self-end"
-            aria-label="Закрыть профиль"
-            onClick={onBack}
-          >
-            <X size={22} aria-hidden="true" />
-          </button>
-        ) : (
-          <span aria-hidden="true" />
-        )}
-      </div>
-
-      {previewDemoMode && (
-        <DemoSettingsPromo
-          onSubscribe={() => setScreen('subscription')}
-          onGift={() => setScreen('donate')}
-        />
-      )}
-
-      <SectionLabel>Профиль</SectionLabel>
-      <Card>
-        <Row
-          icon={User}
-          title={user?.first_name ?? 'Профиль'}
-          subtitle="Профиль и мой путь"
-          right={
-            <span className="flex items-center gap-2">
-              <span
-                className={`text-[10px] font-medium px-2.5 py-1 rounded-full ${tier === 'pro' ? 'bg-gold text-emerald-deep' : 'bg-cream/10 text-muted'}`}
-              >
-                {tierLabel}
-              </span>
-              <ChevronRight size={18} className="text-muted shrink-0" />
-            </span>
-          }
-          onClick={() => go('profile')}
-        />
-        <Row
-          title="Управлять подпиской"
-          onClick={() => setScreen('subscription')}
-          divider={false}
-        />
-      </Card>
-
-      <SectionLabel>Уведомления</SectionLabel>
-      <Card>
-        <Row title="Мысль дня" subtitle="Мои фразы" onClick={() => setScreen('quotes')} />
-        <Row
-          icon={Bell}
-          title="Напоминание от бота"
-          subtitle={
-            reminderOn
-              ? `Каждый день в ${String(reminderHour).padStart(2, '0')}:00 (МСК)`
-              : 'Выключено'
-          }
-          right={
-            <Toggle
-              checked={reminderOn}
-              label="Напоминание от бота"
-              onChange={() => saveReminder(reminderHour ?? 19, !reminderOn)}
-            />
-          }
-          divider={false}
-        />
-      </Card>
-
-      {reminderOn && (
-        <div className="flex gap-2 mb-8 w-full">
-          {REMINDER_TIMES.map(t => (
-            <button
-              key={t.hour}
-              onClick={() => saveReminder(t.hour, true)}
-              className={[
-                'flex-1 py-3 rounded-2xl text-[12px] font-bold border-0 transition-colors',
-                reminderHour === t.hour
-                  ? 'bg-gold text-emerald-deep'
-                  : 'bg-cream/[0.04] text-muted',
-              ].join(' ')}
-            >
-              {t.label}
-              <span className="block text-[11px] font-semibold opacity-60 mt-0.5">
-                {String(t.hour).padStart(2, '0')}:00
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {reminderOn && (
-        <div className="mb-8 w-full space-y-3 rounded-3xl bg-emerald p-4">
-          <label className="block text-[12px] text-muted">
-            Часовой пояс
-            <select
-              value={reminderTimezone}
-              onChange={event => saveTimezone(event.target.value)}
-              className="mt-2 min-h-11 w-full rounded-2xl bg-emerald-light px-3 text-[14px] text-cream"
-            >
-              {TIMEZONES.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[14px] font-semibold text-cream">Тихие часы</p>
-              <p className="mt-1 text-[12px] text-muted">В это время бот не пишет.</p>
+            <div className="mx-profile-inset">
+              <ProfileChips
+                label="Время разбора"
+                value={reviewHour}
+                onChange={saveReviewHour}
+                options={REVIEW_HOURS.map(h => ({ value: h, label: String(h).padStart(2, '0') }))}
+              />
             </div>
-            <Toggle checked={quietHoursOn} label="Тихие часы" onChange={saveQuietHours} />
-          </div>
-          {quietHoursOn && (
-            <div className="grid grid-cols-2 gap-2">
-              <label className="text-[12px] text-muted">
-                С
-                <select
-                  value={quietStart}
-                  onChange={event => {
-                    const value = Number(event.target.value)
-                    setQuietStart(value)
-                    saveQuietHours(true, value, quietEnd)
-                  }}
-                  className="mt-1 min-h-11 w-full rounded-xl bg-emerald-light px-2 text-cream"
-                >
-                  {Array.from({ length: 24 }, (_, h) => (
-                    <option key={h} value={h}>
-                      {String(h).padStart(2, '0')}:00
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-[12px] text-muted">
-                До
-                <select
-                  value={quietEnd}
-                  onChange={event => {
-                    const value = Number(event.target.value)
-                    setQuietEnd(value)
-                    saveQuietHours(true, quietStart, value)
-                  }}
-                  className="mt-1 min-h-11 w-full rounded-xl bg-emerald-light px-2 text-cream"
-                >
-                  {Array.from({ length: 24 }, (_, h) => (
-                    <option key={h} value={h}>
-                      {String(h).padStart(2, '0')}:00
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={snoozeReminders}
-              className="min-h-11 rounded-full border border-cream/15 px-4 text-[13px] font-semibold text-cream"
-            >
-              Отложить на 2 часа
-            </button>
-            <button
-              type="button"
-              onClick={clearAllReminderSettings}
-              className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300"
-            >
-              Отключить и очистить
-            </button>
-          </div>
-        </div>
-      )}
+          </ProfileCard>
+        </ProfileGroup>
 
-      <SectionLabel>Цель письма</SectionLabel>
-      <Card>
-        <Row
-          icon={Heart}
-          title="Записей в неделю"
-          subtitle={
-            writingGoalOn ? `${writingGoalCount} в неделю — без штрафов за пропуск` : 'Выключено'
-          }
-          right={
-            <Toggle
-              checked={writingGoalOn}
-              label="Цель записей в неделю"
-              onChange={saveWritingGoal}
+        {/* MXL-MOOD-CHECK-001 — opt-in: дефолт '0', см.
+            src/lib/moodCheckDraft.js. Не пишет в бэкенд — только черновик
+            для CheckIn.jsx при следующем открытии. */}
+        <ProfileGroup label="Быстрый mood-check">
+          <ProfileCard>
+            <ProfileRow
+              title="Спрашивать настроение при запуске"
+              subtitle="Один тап поверх приложения, отдельно от полного чек-ина"
+              right={
+                <Toggle
+                  checked={moodCheckOn}
+                  label="Быстрый mood-check при запуске"
+                  onChange={setMoodCheckOn}
+                />
+              }
             />
-          }
-          divider={false}
-        />
-      </Card>
-      {writingGoalOn && (
-        <div className="mb-8 flex gap-2 w-full">
-          {[1, 3, 5, 7].map(count => (
-            <button
-              type="button"
-              key={count}
-              onClick={() => saveWritingGoal(true, count)}
-              className={[
-                'flex-1 min-h-11 rounded-2xl text-[13px] font-bold',
-                writingGoalCount === count
-                  ? 'bg-gold text-emerald-deep'
-                  : 'bg-cream/[0.04] text-muted',
-              ].join(' ')}
-            >
-              {count}
-            </button>
-          ))}
-        </div>
-      )}
-      {writingGoalOn && (
-        <div className="-mt-5 mb-8 w-full rounded-2xl border border-gold/15 bg-gold/5 px-4 py-3.5">
-          {writingGoalProgress?.enabled ? (
-            <>
-              <div className="flex items-baseline justify-between gap-3">
-                <p className="text-[13px] font-semibold text-cream">
-                  Эта неделя: {writingGoalProgress.completed} из {writingGoalProgress.goal}
-                </p>
-                <span className="shrink-0 text-[11px] font-semibold text-gold">
-                  {writingGoalProgress.reached
-                    ? 'Цель достигнута'
-                    : `Осталось ${writingGoalProgress.remaining}`}
-                </span>
-              </div>
-              <div
-                className="mt-3 h-2 overflow-hidden rounded-full bg-emerald-light"
-                aria-label={`Прогресс цели письма: ${writingGoalProgress.completed} из ${writingGoalProgress.goal}`}
-              >
-                <div
-                  className="h-full rounded-full bg-gold transition-[width] duration-500"
-                  style={{
-                    width: `${Math.min(100, Math.round((writingGoalProgress.completed / writingGoalProgress.goal) * 100))}%`,
-                  }}
+          </ProfileCard>
+        </ProfileGroup>
+
+        <ProfileGroup label="Цель письма">
+          <ProfileCard>
+            <ProfileRow
+              title="Записей в неделю"
+              subtitle={
+                writingGoalOn
+                  ? `${writingGoalCount} в неделю — без штрафов за пропуск`
+                  : 'Выключено'
+              }
+              right={
+                <Toggle
+                  checked={writingGoalOn}
+                  label="Цель записей в неделю"
+                  onChange={saveWritingGoal}
+                />
+              }
+            />
+            {writingGoalOn && (
+              <div className="mx-profile-inset">
+                <ProfileChips
+                  label="Записей в неделю"
+                  value={writingGoalCount}
+                  onChange={count => saveWritingGoal(true, count)}
+                  options={[1, 3, 5, 7].map(count => ({ value: count, label: String(count) }))}
                 />
               </div>
-              <p className="mt-3 text-[12px] leading-relaxed text-muted">
-                {writingGoalProgress.reached
-                  ? 'Цель на эту неделю уже выполнена. Можно писать дальше только если тебе хочется.'
-                  : 'Это мягкий ориентир, не серия и не оценка: пропущенные дни не считаются против тебя.'}
-              </p>
-            </>
-          ) : (
-            <p className="text-[12px] leading-relaxed text-muted">
-              Прогресс появится, когда цель будет включена и выбрано число записей в неделю.
-            </p>
-          )}
-          {writingGoalProgressError && (
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <p role="status" className="text-[12px] leading-relaxed text-muted">
-                {writingGoalProgressError}
-              </p>
-              <button
-                type="button"
-                onClick={loadWritingGoalProgress}
-                className="min-h-11 rounded-full border border-cream/15 px-3 text-[12px] font-semibold text-gold"
-              >
-                Повторить
-              </button>
+            )}
+          </ProfileCard>
+          {writingGoalOn && (
+            <div className="mx-profile-panel" style={{ marginTop: 8 }}>
+              {writingGoalProgress?.enabled ? (
+                <div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="text-[15px] font-semibold text-cream">
+                      Эта неделя: {writingGoalProgress.completed} из {writingGoalProgress.goal}
+                    </p>
+                    <span className="shrink-0 text-[13px] font-semibold text-cream">
+                      {writingGoalProgress.reached
+                        ? 'Цель достигнута'
+                        : `Осталось ${writingGoalProgress.remaining}`}
+                    </span>
+                  </div>
+                  <div
+                    className="mx-profile-progress"
+                    aria-label={`Прогресс цели письма: ${writingGoalProgress.completed} из ${writingGoalProgress.goal}`}
+                  >
+                    <div
+                      style={{
+                        width: `${Math.min(100, Math.round((writingGoalProgress.completed / writingGoalProgress.goal) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="mt-3 text-[13px] leading-relaxed text-muted">
+                    {writingGoalProgress.reached
+                      ? 'Цель на эту неделю уже выполнена. Можно писать дальше только если тебе хочется.'
+                      : 'Это мягкий ориентир, не серия и не оценка: пропущенные дни не считаются против тебя.'}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-[13px] leading-relaxed text-muted">
+                  Прогресс появится, когда цель будет включена и выбрано число записей в неделю.
+                </p>
+              )}
+              {writingGoalProgressError && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <p role="status" className="text-[13px] leading-relaxed text-muted">
+                    {writingGoalProgressError}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={loadWritingGoalProgress}
+                    className="mx-profile-text-button"
+                  >
+                    Повторить
+                  </button>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
-      {reminderStatus && (
-        <p role="status" className="mb-5 w-full text-[12px] text-muted">
-          {reminderStatus}
-        </p>
-      )}
+          {reminderStatus && <ProfileNote role="status">{reminderStatus}</ProfileNote>}
+        </ProfileGroup>
+      </ProfileBody>
+    )
+  }
 
-      <SectionLabel>Наблюдения</SectionLabel>
-      <Card>
-        <Row
-          icon={Heart}
-          title="Показывать описательные наблюдения"
-          subtitle={
-            insightsEnabled
-              ? 'Основаны на сохранённых отметках; не являются диагнозом'
-              : 'Скрыты; данные и обычные цифры остаются доступными'
-          }
-          right={
-            <Toggle
-              checked={insightsEnabled}
-              label="Показывать описательные наблюдения"
-              onChange={saveInsightsVisibility}
+  function renderPrefs() {
+    return (
+      <ProfileBody>
+        <ProfileGroup label="Наблюдения">
+          <ProfileCard>
+            <ProfileRow
+              title="Показывать описательные наблюдения"
+              subtitle={
+                insightsEnabled
+                  ? 'Основаны на сохранённых отметках; не являются диагнозом'
+                  : 'Скрыты; данные и обычные цифры остаются доступными'
+              }
+              right={
+                <Toggle
+                  checked={insightsEnabled}
+                  label="Показывать описательные наблюдения"
+                  onChange={saveInsightsVisibility}
+                />
+              }
             />
-          }
-          divider={false}
-        />
-      </Card>
-      {insightsStatus && (
-        <p role="status" className="-mt-5 mb-5 w-full text-[12px] leading-relaxed text-muted">
-          {insightsSaving ? 'Сохраняем настройку…' : insightsStatus}
-        </p>
-      )}
+          </ProfileCard>
+          {insightsStatus && (
+            <ProfileNote role="status">
+              {insightsSaving ? 'Сохраняем настройку…' : insightsStatus}
+            </ProfileNote>
+          )}
+        </ProfileGroup>
 
-      <SectionLabel>Разбор дня</SectionLabel>
-      <Card>
-        <Row
-          icon={Moon}
-          title="Когда показывать разбор"
-          subtitle="«Сегодня» сам предложит подвести итоги"
-          right={
-            <span className="text-[11px] font-mono text-gold bg-gold/10 rounded-full px-2.5 py-1 shrink-0">
-              {String(reviewHour).padStart(2, '0')}:00
-            </span>
-          }
-          divider={false}
-        />
-      </Card>
-      <div className="flex gap-2 mb-8 w-full">
-        {REVIEW_HOURS.map(h => (
-          <button
-            key={h}
-            onClick={() => saveReviewHour(h)}
-            className={[
-              'flex-1 py-3 rounded-2xl text-[12px] font-bold border-0 transition-colors',
-              reviewHour === h ? 'bg-gold text-emerald-deep' : 'bg-cream/[0.04] text-muted',
-            ].join(' ')}
-          >
-            {String(h).padStart(2, '0')}
-          </button>
-        ))}
-      </div>
-
-      {/* MXL-MOOD-CHECK-001 — opt-in: дефолт '0', см.
-          src/lib/moodCheckDraft.js. Не пишет в бэкенд — только черновик
-          для CheckIn.jsx при следующем открытии. */}
-      <SectionLabel>Быстрый mood-check</SectionLabel>
-      <Card>
-        <Row
-          icon={Heart}
-          title="Спрашивать настроение при запуске"
-          subtitle="Один тап поверх приложения, отдельно от полного чек-ина"
-          right={
-            <Toggle
-              checked={moodCheckOn}
-              label="Быстрый mood-check при запуске"
-              onChange={setMoodCheckOn}
-            />
-          }
-          divider={false}
-        />
-      </Card>
-
-      <SectionLabel>Карточки «Сегодня»</SectionLabel>
-      <Card>
-        {TODAY_CARD_IDS.map((id, index) => (
-          <Row
-            key={id}
-            title={TODAY_CARD_LABELS[id].title}
-            subtitle={TODAY_CARD_LABELS[id].subtitle}
-            right={
-              <Toggle
-                checked={!hiddenCards.includes(id)}
-                label={TODAY_CARD_LABELS[id].title}
-                onChange={() => toggleTodayCard(id)}
-              />
-            }
-            divider={index < TODAY_CARD_IDS.length - 1}
-          />
-        ))}
-      </Card>
-
-      {/* Акцентный цвет: состояние живёт в App.jsx (MXL-THEME-ACCENT-001) —
-          см. комментарий у useSynced(ACCENT_COLOR_KEY, ...) там. */}
-      <SectionLabel>Внешний вид</SectionLabel>
-      <Card>
-        <Row
-          title="Тема приложения"
-          subtitle={THEMES[theme].label}
-          right={
-            <div
-              className="flex gap-1 rounded-2xl bg-cream/[0.04] p-1"
-              role="group"
-              aria-label="Тема приложения"
-            >
-              {Object.entries(THEMES).map(([id, { label }]) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={theme === id}
-                  onClick={() => onThemeChange(id)}
-                  className={`rounded-xl px-3 py-2 text-[11px] font-bold transition-colors ${
-                    theme === id ? 'bg-gold text-emerald-deep' : 'text-muted'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          }
-        />
-        <Row
-          title="Акцентный цвет"
-          subtitle={accentColors[accent].label}
-          divider={false}
-          right={
-            <div className="flex gap-2">
-              {Object.entries(accentColors).map(([id, { label, hex }]) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-label={label}
-                  aria-pressed={accent === id}
-                  onClick={() => onAccentChange(id)}
-                  className="h-11 w-11 shrink-0 flex items-center justify-center"
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`w-8 h-8 rounded-full transition-transform ${
-                      accent === id
-                        ? 'ring-2 ring-cream ring-offset-2 ring-offset-emerald-deep'
-                        : ''
-                    }`}
-                    style={{ background: hex }}
+        <ProfileGroup label="Карточки «Сегодня»">
+          <ProfileCard>
+            {TODAY_CARD_IDS.map(id => (
+              <ProfileRow
+                key={id}
+                title={TODAY_CARD_LABELS[id].title}
+                subtitle={TODAY_CARD_LABELS[id].subtitle}
+                right={
+                  <Toggle
+                    checked={!hiddenCards.includes(id)}
+                    label={TODAY_CARD_LABELS[id].title}
+                    onChange={() => toggleTodayCard(id)}
                   />
+                }
+              />
+            ))}
+          </ProfileCard>
+        </ProfileGroup>
+
+        <ProfileGroup label="Основные">
+          <ProfileCard>
+            <ProfileRow
+              title="Блокировка приложения"
+              subtitle={
+                !lockOn
+                  ? 'Код доступа при входе'
+                  : !lockConfiguredHere
+                    ? 'Включено, но не задано на этом устройстве'
+                    : biometricAvailable
+                      ? 'Код + Face ID/Touch ID'
+                      : 'Код доступа'
+              }
+              right={
+                <Toggle checked={lockOn} label="Блокировка приложения" onChange={handleLockPress} />
+              }
+            />
+            <ProfileRow title="Связать с сайтом" onClick={() => setScreen('link-web')} />
+            <ProfileRow
+              title="Пройти знакомство заново"
+              onClick={async () => {
+                /*
+                 * Стираем отметку и локально, и в облаке. Иначе после
+                 * перезагрузки облако вернёт её обратно, и знакомство
+                 * не начнётся — кнопка будет молча не работать.
+                 */
+                await forget('mx-onboarded-v2')
+
+                window.location.reload()
+              }}
+            />
+          </ProfileCard>
+        </ProfileGroup>
+      </ProfileBody>
+    )
+  }
+
+  function renderAppearance() {
+    // Акцентный цвет: состояние живёт в App.jsx (MXL-THEME-ACCENT-001).
+    return (
+      <ProfileBody>
+        <ProfileGroup label="Тема">
+          <ProfileCard>
+            <div className="mx-profile-inset">
+              <ProfileChips
+                label="Тема приложения"
+                value={theme}
+                onChange={onThemeChange}
+                options={Object.entries(THEMES).map(([id, { label }]) => ({ value: id, label }))}
+              />
+            </div>
+          </ProfileCard>
+        </ProfileGroup>
+        <ProfileGroup label="Акцентный цвет">
+          <ProfileCard>
+            <ProfileRow
+              title={accentColors[accent].label}
+              right={
+                <div className="flex gap-1">
+                  {Object.entries(accentColors).map(([id, { label, hex }]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-label={label}
+                      aria-pressed={accent === id}
+                      onClick={() => onAccentChange(id)}
+                      className="mx-profile-swatch"
+                    >
+                      <span aria-hidden="true" style={{ background: hex }} />
+                    </button>
+                  ))}
+                </div>
+              }
+            />
+          </ProfileCard>
+        </ProfileGroup>
+      </ProfileBody>
+    )
+  }
+
+  function renderNotifications() {
+    return (
+      <ProfileBody>
+        <ProfileGroup label="Бот">
+          <ProfileCard>
+            <ProfileRow
+              title="Напоминание от бота"
+              subtitle={reminderOn ? `Каждый день в ${hh(reminderHour)}` : 'Выключено'}
+              right={
+                <Toggle
+                  checked={reminderOn}
+                  label="Напоминание от бота"
+                  onChange={() => saveReminder(reminderHour ?? 19, !reminderOn)}
+                />
+              }
+            />
+            {reminderOn && (
+              <div className="mx-profile-inset">
+                <ProfileChips
+                  label="Время напоминания"
+                  value={reminderHour}
+                  onChange={hour => saveReminder(hour, true)}
+                  options={REMINDER_TIMES.map(t => ({
+                    value: t.hour,
+                    label: t.label,
+                    hint: hh(t.hour),
+                  }))}
+                />
+              </div>
+            )}
+          </ProfileCard>
+          {reminderOn && (
+            <div className="mx-profile-panel" style={{ marginTop: 8 }}>
+              <label className="mx-profile-label">
+                Часовой пояс
+                <select
+                  value={reminderTimezone}
+                  onChange={event => saveTimezone(event.target.value)}
+                  className="mx-profile-select"
+                >
+                  {TIMEZONES.map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[15px] font-semibold text-cream">Тихие часы</p>
+                  <p className="mt-1 text-[13px] text-muted">В это время бот не пишет.</p>
+                </div>
+                <Toggle checked={quietHoursOn} label="Тихие часы" onChange={saveQuietHours} />
+              </div>
+              {quietHoursOn && (
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="mx-profile-label">
+                    С
+                    <select
+                      value={quietStart}
+                      onChange={event => {
+                        const value = Number(event.target.value)
+                        setQuietStart(value)
+                        saveQuietHours(true, value, quietEnd)
+                      }}
+                      className="mx-profile-select"
+                    >
+                      {Array.from({ length: 24 }, (_, h) => (
+                        <option key={h} value={h}>
+                          {hh(h)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="mx-profile-label">
+                    До
+                    <select
+                      value={quietEnd}
+                      onChange={event => {
+                        const value = Number(event.target.value)
+                        setQuietEnd(value)
+                        saveQuietHours(true, quietStart, value)
+                      }}
+                      className="mx-profile-select"
+                    >
+                      {Array.from({ length: 24 }, (_, h) => (
+                        <option key={h} value={h}>
+                          {hh(h)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={snoozeReminders} className="mx-profile-text-button">
+                  Отложить на 2 часа
                 </button>
-              ))}
+                <button
+                  type="button"
+                  onClick={clearAllReminderSettings}
+                  className="mx-profile-text-button mx-profile-text-button--danger"
+                >
+                  Отключить и очистить
+                </button>
+              </div>
             </div>
-          }
-        />
-      </Card>
+          )}
+          {reminderStatus && <ProfileNote role="status">{reminderStatus}</ProfileNote>}
+        </ProfileGroup>
+        <ProfileGroup label="Сообщения">
+          <ProfileCard>
+            <ProfileRow title="Мысль дня" value="Мои фразы" onClick={() => setScreen('quotes')} />
+          </ProfileCard>
+        </ProfileGroup>
+      </ProfileBody>
+    )
+  }
 
-      <SectionLabel>Личные данные</SectionLabel>
-      <Card>
-        {privacyProtectedByTelegram ? (
-          <>
-            <Row
-              icon={ShieldCheck}
-              title="Политика и данные"
-              subtitle="Хранение, local draft, синхронизация и ограничения"
-              onClick={() => setScreen('privacy-notice')}
+  function renderData() {
+    return (
+      <ProfileBody>
+        <ProfileGroup label="Личные данные">
+          <ProfileCard>
+            {privacyProtectedByTelegram ? (
+              <>
+                <ProfileRow
+                  title="Политика и данные"
+                  subtitle="Хранение, local draft, синхронизация и ограничения"
+                  onClick={() => setScreen('privacy-notice')}
+                />
+                <ProfileRow
+                  title="Экспорт JSON"
+                  subtitle="Сохранённые данные и завершённые направленные записи"
+                  onClick={() => downloadPersonalExport('json')}
+                />
+                <ProfileRow
+                  title="Экспорт Markdown"
+                  subtitle="Записи для чтения или передачи специалисту"
+                  onClick={() => downloadPersonalExport('markdown')}
+                />
+                <ProfileRow
+                  title="Экспорт CSV"
+                  subtitle="Табличные метрики и чек-ин"
+                  onClick={() => downloadPersonalExport('csv')}
+                />
+              </>
+            ) : (
+              <>
+                <ProfileRow
+                  title="Политика и данные"
+                  subtitle="Хранение, local draft, синхронизация и ограничения"
+                  onClick={() => setScreen('privacy-notice')}
+                />
+                <div className="mx-profile-inset text-[13px] leading-relaxed text-muted">
+                  Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной
+                  подписью. В web-версии нет серверной сессии, поэтому мы не выполняем
+                  чувствительные операции по переданному id.
+                </div>
+              </>
+            )}
+            <ProfileRow
+              title="Очистить local draft"
+              subtitle="Только незавершённый текст на этом устройстве"
+              onClick={clearLocalDraft}
+              danger
             />
-            <Row
-              icon={Download}
-              title="Экспорт JSON"
-              subtitle="Сохранённые данные и завершённые направленные записи"
-              onClick={() => downloadPersonalExport('json')}
+            {privacyProtectedByTelegram && (
+              <ProfileRow
+                title={erasingAccount ? 'Удаляем данные…' : 'Удалить аккаунт и данные'}
+                subtitle="Необратимо; потребуется два подтверждения"
+                onClick={eraseAccountAndData}
+                danger
+              />
+            )}
+          </ProfileCard>
+          {exportStatus && <ProfileNote role="status">{exportStatus}</ProfileNote>}
+          {accountEraseError && (
+            <ProfileNote role="alert" danger>
+              {accountEraseError}
+            </ProfileNote>
+          )}
+          <ProfileNote>
+            Незавершённый draft остаётся только на текущем устройстве и не является cloud backup.
+            Блокировка приложения — локальный экранный барьер, а не шифрование данных. Подробности о
+            хранении и ограничениях синхронизации — в разделе «Политика и данные».
+          </ProfileNote>
+        </ProfileGroup>
+      </ProfileBody>
+    )
+  }
+
+  const subContent = {
+    checkins: renderCheckins,
+    about: () => <Profile user={user} />,
+    prefs: renderPrefs,
+    appearance: renderAppearance,
+    notifications: renderNotifications,
+    data: renderData,
+  }
+
+  if (sub && subContent[sub]) {
+    return (
+      <ProfilePage
+        key={sub}
+        title={SUB_TITLES[sub]}
+        onBack={() => openSub(null)}
+        testId={`profile-sub-${sub}`}
+      >
+        {subContent[sub]()}
+      </ProfilePage>
+    )
+  }
+
+  return (
+    <ProfilePage key="root" title="твой профиль." isRoot onBack={onBack} testId="profile-screen">
+      <ProfileBody>
+        <ProfileGroup label="Настрой">
+          <ProfileCard testId="profile-card-setup">
+            <ProfileRow
+              title="Чек-ины"
+              value={hh(reviewHour)}
+              onClick={() => openSub('checkins')}
+              testId="profile-row-checkins"
             />
-            <Row
-              icon={Download}
-              title="Экспорт Markdown"
-              subtitle="Записи для чтения или передачи специалисту"
-              onClick={() => downloadPersonalExport('markdown')}
+            <ProfileRow
+              title="О тебе"
+              value={user?.first_name}
+              onClick={() => openSub('about')}
+              testId="profile-row-about"
             />
-            <Row
-              icon={Download}
-              title="Экспорт CSV"
-              subtitle="Табличные метрики и чек-ин"
-              onClick={() => downloadPersonalExport('csv')}
+            <ProfileRow
+              title="Настройки"
+              onClick={() => openSub('prefs')}
+              testId="profile-row-prefs"
             />
-          </>
-        ) : (
-          <>
-            <Row
-              icon={ShieldCheck}
-              title="Политика и данные"
-              subtitle="Хранение, local draft, синхронизация и ограничения"
-              onClick={() => setScreen('privacy-notice')}
+            <ProfileRow
+              title="Оформление"
+              value={THEMES[theme]?.label}
+              onClick={() => openSub('appearance')}
+              testId="profile-row-appearance"
             />
-            <div className="px-4 py-4 text-[13px] leading-relaxed text-muted">
-              Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной
-              подписью. В web-версии нет серверной сессии, поэтому мы не выполняем чувствительные
-              операции по переданному id.
-            </div>
-          </>
-        )}
-        <Row
-          icon={Lock}
-          title="Очистить local draft"
-          subtitle="Только незавершённый текст на этом устройстве"
-          onClick={clearLocalDraft}
-          danger
-          divider={!privacyProtectedByTelegram}
-        />
-        {privacyProtectedByTelegram && (
-          <Row
-            icon={Lock}
-            title={erasingAccount ? 'Удаляем данные…' : 'Удалить аккаунт и данные'}
-            subtitle="Необратимо; потребуется два подтверждения"
-            onClick={eraseAccountAndData}
-            danger
-            divider={false}
-          />
-        )}
-      </Card>
-      {exportStatus && (
-        <p role="status" className="-mt-5 mb-5 w-full text-[12px] text-muted">
-          {exportStatus}
-        </p>
-      )}
-      {accountEraseError && (
-        <p role="alert" className="-mt-5 mb-5 w-full text-[12px] text-red-300">
-          {accountEraseError}
-        </p>
-      )}
-      <p className="-mt-3 mb-8 w-full px-1 text-[12px] leading-relaxed text-muted">
-        Незавершённый draft остаётся только на текущем устройстве и не является cloud backup.
-        Блокировка приложения — локальный экранный барьер, а не шифрование данных. Подробности о
-        хранении и ограничениях синхронизации — в разделе «Политика и данные».
-      </p>
+          </ProfileCard>
+        </ProfileGroup>
 
-      <SectionLabel>Основные</SectionLabel>
-      <Card>
-        <Row
-          icon={Globe}
-          title="Связать с сайтом"
-          subtitle="Использовать те же данные в браузере"
-          onClick={() => setScreen('link-web')}
-        />
-        <Row
-          icon={Lock}
-          title="Блокировка приложения"
-          subtitle={
-            !lockOn
-              ? 'Код доступа при входе'
-              : !lockConfiguredHere
-                ? 'Включено, но не задано на этом устройстве'
-                : biometricAvailable
-                  ? 'Код + Face ID/Touch ID'
-                  : 'Код доступа'
-          }
-          right={
-            <Toggle checked={lockOn} label="Блокировка приложения" onChange={handleLockPress} />
-          }
-          divider={false}
-        />
-      </Card>
+        <ProfileGroup label="Аккаунт">
+          <ProfileCard>
+            <ProfileRow
+              title="Уведомления"
+              value={reminderOn ? 'Вкл.' : 'Выкл.'}
+              onClick={() => openSub('notifications')}
+              testId="profile-row-notifications"
+            />
+            <ProfileRow
+              title="Твои данные"
+              onClick={() => openSub('data')}
+              testId="profile-row-data"
+            />
+            <ProfileRow
+              title="Подписка"
+              value={tierLabel}
+              onClick={() => setScreen('subscription')}
+            />
+          </ProfileCard>
+        </ProfileGroup>
 
-      <SectionLabel>Поддержка</SectionLabel>
-      <Card>
-        <Row
-          icon={LifeBuoy}
-          title="Написать в поддержку"
-          subtitle="@mentalix_support_bot"
-          onClick={() => window.open('https://t.me/mentalix_support_bot', '_blank')}
-        />
-        <Row
-          icon={Heart}
-          title="Поддержать проект"
-          onClick={() => setScreen('donate')}
-          divider={false}
-        />
-      </Card>
+        <ProfileGroup label="Помощь">
+          <ProfileCard>
+            <ProfileRow
+              title="Написать в поддержку"
+              onClick={() => window.open('https://t.me/mentalix_support_bot', '_blank')}
+            />
+            <ProfileRow
+              title="Что было бы полезно?"
+              subtitle="Короткий concept test — без оплаты и подписки"
+              onClick={() => setScreen('wtp-test')}
+            />
+            <ProfileRow title="Поддержать проект" onClick={() => setScreen('donate')} />
+          </ProfileCard>
+        </ProfileGroup>
 
-      <SectionLabel>Помочь Mentalix</SectionLabel>
-      <Card>
-        <Row
-          icon={Heart}
-          title="Что было бы полезно?"
-          subtitle="Короткий concept test — без оплаты и подписки"
-          onClick={() => setScreen('wtp-test')}
-          divider={false}
-        />
-      </Card>
+        <ProfileGroup label="Приложение">
+          <ProfileCard>
+            <ProfileRow title="Конфиденциальность" onClick={() => setScreen('privacy-notice')} />
+          </ProfileCard>
+        </ProfileGroup>
 
-      <SectionLabel>Обновление приложения</SectionLabel>
-      <Card>
-        <div className="w-full flex items-center gap-3 px-4 py-4 border-b border-cream/[0.06]">
-          <RefreshCw size={18} aria-hidden="true" className="text-gold shrink-0" />
-          <span className="flex-1 font-body text-[14px] text-cream">Текущая версия</span>
-          <span className="text-muted text-[13px] font-body">v1.0.0</span>
-        </div>
-        <Row
-          title="Пройти знакомство заново"
-          subtitle="Показать первые экраны и заново собрать план"
-          onClick={async () => {
-            /*
-             * Стираем отметку и локально, и в облаке. Иначе после
-             * перезагрузки облако вернёт её обратно, и знакомство
-             * не начнётся — кнопка будет молча не работать.
-             */
-            await forget('mx-onboarded-v2')
-
-            window.location.reload()
-          }}
-          divider={false}
-        />
-      </Card>
-    </div>
+        <ProfileVersion>Mentalix {appVersion}</ProfileVersion>
+      </ProfileBody>
+    </ProfilePage>
   )
 }

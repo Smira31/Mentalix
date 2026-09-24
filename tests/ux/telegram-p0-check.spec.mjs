@@ -160,11 +160,12 @@ for (const viewport of P0_VIEWPORTS) {
 
     test('Profile → Settings → Today is reversible with native BackButton', async ({ browser }) => {
       const { context, page } = await openTelegramDemo(browser, viewport)
-      await page.getByRole('button', { name: 'Настройки' }).click()
-      await page.getByRole('button', { name: /Профиль и мой путь/ }).click()
-      await expect(page.getByText('профиль.', { exact: true })).toBeVisible()
-      await nativeBack(page)
+      await page.getByTestId('today-profile-button').click()
+      await expect(page.getByTestId('profile-screen')).toBeVisible()
+      await page.getByTestId('profile-row-prefs').click()
       await expect(page.getByRole('heading', { name: 'настройки.' })).toBeVisible()
+      await nativeBack(page)
+      await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
       await nativeBack(page)
       await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
       await context.close()

@@ -58,7 +58,7 @@ test('Profile keeps profile data visible when rituals fail', async ({ browser, b
   const { context, page } = await openApp(browser, baseURL, new Set(['/api/rituals']))
   try {
     await page.getByRole('button', { name: 'Открыть настройки' }).click()
-    await page.getByText('Профиль и мой путь').click()
+    await page.getByTestId('profile-row-about').click()
     await expect(page.getByRole('heading', { name: 'мой путь.' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Issue 648' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
