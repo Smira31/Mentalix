@@ -133,12 +133,17 @@ export function HistoryDetail({
     <section aria-label={`Запись за ${dayTitle(day.date)}`} className="mt-1 animate-fade-in">
       <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
         <BackButton onClick={onBack} />
-        <h2 className="font-display mx-type-section text-cream">{dayTitle(day.date)}</h2>
+        {/* Явные колонки: в Telegram BackButton не рендерится, и без них
+            заголовок и «…» съезжают на колонку левее. */}
+        <h2 className="col-start-2 font-display mx-type-section text-cream">
+          {dayTitle(day.date)}
+        </h2>
         {canRedo ? (
-          <div className="relative flex justify-end">
+          <div className="relative col-start-3 flex justify-end" data-testid="history-redo-slot">
             <button
               type="button"
               aria-label="Действия с чек-ин"
+              data-testid="history-redo-button"
               className="mx-icon-button"
               onClick={() => setRedoMenuOpen(open => !open)}
             >
@@ -147,7 +152,8 @@ export function HistoryDetail({
             {redoMenuOpen && (
               <div
                 role="menu"
-                className="absolute right-0 top-full z-50 mt-1 min-w-[200px] rounded-2xl border border-cream/10 bg-emerald p-1 shadow-xl"
+                data-testid="history-redo-menu"
+                className="absolute right-0 top-full z-50 mt-1 min-w-[200px] whitespace-nowrap rounded-2xl border border-cream/10 bg-emerald p-1 shadow-xl"
               >
                 {onRedo && (
                   <button
@@ -184,7 +190,7 @@ export function HistoryDetail({
       </div>
 
       {recapOnly ? (
-        <div className="mt-5 rounded-3xl bg-emerald p-5">
+        <div className="mt-5 rounded-3xl bg-emerald p-5" data-testid="history-today-card">
           <div className="mb-5 flex items-center">
             <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
               Сегодняшний чек-ин
@@ -214,7 +220,7 @@ export function HistoryDetail({
             ))}
         </div>
       ) : (
-        <div className="mt-5 space-y-4 rounded-3xl bg-emerald p-5">
+        <div className="mt-5 space-y-4 rounded-3xl bg-emerald p-5" data-testid="history-today-card">
           {checkin ? (
             <>
               <div className="flex flex-wrap gap-2">
