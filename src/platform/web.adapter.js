@@ -77,4 +77,8 @@ export const webAdapter = {
     // оплата в вебе будет отдельным потоком (Stripe/ЮKassa checkout), подключим позже
     console.warn('openInvoice недоступен в веб-версии — используйте отдельный чекаут-флоу')
   },
+
+  openTelegramLink(url) {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  },
 }

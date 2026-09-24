@@ -137,14 +137,9 @@ export default function SubscriptionManager({ user: _user, tier, onBack }) {
   return (
     <ProfilePage title="подписка." onBack={onBack} testId="profile-screen-subscription">
       <ProfileBody>
-        {tier == null ? (
-          <div aria-busy="true" data-testid="subscription-skeleton">
-            <div className="mx-profile-skeleton mb-4" style={{ height: 212 }} />
-            <div className="mx-profile-skeleton" style={{ height: 300 }} />
-          </div>
-        ) : (
-          <SubscriptionTiers tier={tier} />
-        )}
+        {/* Тарифы — статичные данные, показываем сразу; с сервера приходит
+            только текущий тариф (tier), плашка «Текущий» появляется после ответа. */}
+        <SubscriptionTiers tier={tier} />
       </ProfileBody>
     </ProfilePage>
   )

@@ -24,7 +24,7 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
-import { currentCheckinStreak, withTodayCheckin } from '../lib/series'
+import { peekCachedStreak, rememberStreak, resolveDisplayedStreak } from '../lib/streakCache'
 import { buildSeriesViewModel } from '../lib/series'
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
@@ -97,10 +97,13 @@ function ReferenceProfileMark() {
 }
 
 function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 0, onStreakClick }) {
+  // streak === null — история ещё грузится и кэша нет: огонь без числа.
   const streakLabel =
-    streak > 0
-      ? `Мой путь. ${streak} ${streak === 1 ? 'день' : 'дней'}`
-      : 'Мой путь. Серия ещё не началась'
+    streak == null
+      ? 'Мой путь'
+      : streak > 0
+        ? `Мой путь. ${streak} ${streak === 1 ? 'день' : 'дней'}`
+        : 'Мой путь. Серия ещё не началась'
 
   return (
     <header className="mx-demo-today-header">
@@ -232,7 +235,22 @@ export default function Today({
   // Серия в шапке считается из истории + сегодняшнего чек-ина: история с
   // бэкенда может ещё не содержать запись за сегодня (карточка «Утро
   // отмечено» уже есть, а огонёк без числа — регрессия после #801).
-  const streak = currentCheckinStreak(withTodayCheckin(checkinHistory, checkin))
+  // Пока история не загружена, показываем последнее известное значение
+  // серии этого пользователя (или огонь без числа), а не «1» от одного
+  // сегодняшнего чек-ина.
+  const [historyLoaded, setHistoryLoaded] = useState(() => Boolean(previewFixture))
+  const [cachedStreak] = useState(() => (user?.id ? peekCachedStreak(user.id) : null))
+  const streak = resolveDisplayedStreak({
+    historyLoaded,
+    history: checkinHistory,
+    checkin,
+    cachedStreak,
+  })
+
+  useEffect(() => {
+    if (previewFixture || !historyLoaded || !user?.id) return
+    rememberStreak(user.id, streak)
+  }, [previewFixture, historyLoaded, user?.id, streak])
   const [newBadge, setNewBadge] = useState(null)
   const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
     Boolean(user?.id && shouldShowSeriesTooltip(user.id))
@@ -312,6 +330,7 @@ export default function Today({
 
       const history = await api.checkin.history(user.id, 90)
       setCheckinHistory(Array.isArray(history) ? history : [])
+      setHistoryLoaded(true)
       const previousModel = buildSeriesViewModel({ checkins: checkinHistory, rituals, ascezas })
       const nextModel = buildSeriesViewModel({ checkins: history, rituals, ascezas })
       const unlocked = nextModel.badges.find(
@@ -365,6 +384,7 @@ export default function Today({
           .then(history => {
             const safeHistory = Array.isArray(history) ? history : []
             setCheckinHistory(safeHistory)
+            setHistoryLoaded(true)
           })
           .catch(error => {
             // Не глотаем молча: без истории огонёк серии в шапке
@@ -566,8 +586,8 @@ export default function Today({
     /*
      * Шапка остаётся на экране и во время загрузки дня: в Telegram
      * fullscreen верхнюю полосу занимает воркмарк MENTALIX, и без шапки
-     * здесь огонёк серии исчезал из виду. streak инициализирован из
-     * локального снапшота, поэтому число известно и до ответа API.
+     * здесь огонёк серии исчезал из виду. До ответа API streak берётся
+     * из кэша этого пользователя (streakCache.js), иначе огонь без числа.
      */
     return (
       <div className="mx-screen-shell">

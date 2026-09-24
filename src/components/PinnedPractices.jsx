@@ -69,6 +69,26 @@ function PracticeGlyph({ practice }) {
   )
 }
 
+// Скелетон ленты: те же классы плиток, что и у реальных карточек, —
+// форма и размер совпадают, вёрстка не прыгает после загрузки.
+function PinnedPracticesSkeleton() {
+  return (
+    <div
+      className="mx-pinned-practices__rail"
+      role="status"
+      aria-label="Загрузка практик"
+      data-testid="pinned-practices-skeleton"
+    >
+      {Array.from({ length: 3 }, (_, index) => (
+        <div className="mx-pinned-practice-card" aria-hidden="true" key={index}>
+          <span className="mx-pinned-practice-glyph animate-pulse" />
+          <span className="mx-auto mb-1 block h-3 w-3/4 rounded-full bg-cream/10 animate-pulse" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function normalizePinnedPractices(value) {
   return Array.isArray(value) ? value : []
 }
@@ -182,7 +202,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
       </div>
 
       {loading ? (
-        <p className="mx-type-meta text-muted mt-3">Загрузка…</p>
+        <PinnedPracticesSkeleton />
       ) : error && pinnedPractices.length === 0 ? (
         <p className="mx-type-list-body text-muted mt-3">Не получилось загрузить практики.</p>
       ) : pinnedPractices.length === 0 ? (

@@ -87,4 +87,14 @@ export const telegramAdapter = {
   openInvoice(url, callback) {
     WebApp.openInvoice?.(url, callback)
   },
+
+  // t.me-ссылки открываются внутри Telegram; window.open в Telegram iOS
+  // уводит во внешний браузер.
+  openTelegramLink(url) {
+    if (WebApp.openTelegramLink) {
+      WebApp.openTelegramLink(url)
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  },
 }
