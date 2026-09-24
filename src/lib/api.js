@@ -132,6 +132,8 @@ async function request(path, options = {}) {
   const timeoutMs = options.timeoutMs || API_TIMEOUT_MS
   const fetchOptions = { ...options }
   delete fetchOptions.timeoutMs
+  delete fetchOptions.silentDiagnostics
+  const silentDiagnostics = options.silentDiagnostics === true
 
   for (let attempt = 0; ; attempt += 1) {
     try {
@@ -151,12 +153,14 @@ async function request(path, options = {}) {
       const raw = await res.text()
 
       if (!res.ok) {
-        emitApiDiagnostic({
-          path,
-          status: res.status,
-          body: raw.slice(0, 500),
-          kind: 'http',
-        })
+        if (!silentDiagnostics) {
+          emitApiDiagnostic({
+            path,
+            status: res.status,
+            body: raw.slice(0, 500),
+            kind: 'http',
+          })
+        }
         const error = new ApiError(`API ${path} failed: ${res.status}`, {
           path,
           status: res.status,
@@ -194,7 +198,7 @@ async function request(path, options = {}) {
           ? error
           : new ApiError(`API ${path} request failed`, { path, kind: 'unknown', cause: error })
 
-      if (normalized.kind !== 'http') {
+      if (normalized.kind !== 'http' && !silentDiagnostics) {
         emitApiDiagnostic({
           path,
           status: normalized.status,
@@ -381,7 +385,9 @@ export const api = {
 
   moodPractices: {
     list: (userId, { from, to } = {}) =>
-      request(withQuery('/mood-practices', { user_id: userId, from, to })),
+      request(withQuery('/mood-practices', { user_id: userId, from, to }), {
+        silentDiagnostics: true,
+      }),
 
     create: ({ mood, emotion, context, note, breathing_completed }) =>
       request('/mood-practices', {
@@ -397,7 +403,9 @@ export const api = {
   practiceDays: {
     list: async (userId, { from, to } = {}) => {
       try {
-        const res = await request(withQuery('/practice-days', { user_id: userId, from, to }))
+        const res = await request(withQuery('/practice-days', { user_id: userId, from, to }), {
+          silentDiagnostics: true,
+        })
         return Array.isArray(res?.days) ? res.days : []
       } catch {
         return []

@@ -417,16 +417,22 @@ export default function Today({
         api.moodPractices
           .list(user.id)
           .then(practices => {
-            setMoodPractices(Array.isArray(practices) ? practices : [])
+            if (active) setMoodPractices(Array.isArray(practices) ? practices : [])
           })
-          .catch(() => {})
+          .catch(() => {
+            if (active) setMoodPractices([])
+          })
 
         // Дни с отметками практик (ритуалы/аскезы) за прошлые дни — для серии.
         // Эндпоинт в бэкенде в разработке: при 404/ошибке вернёт [].
         api.practiceDays
           .list(user.id)
-          .then(days => setPracticeDays(Array.isArray(days) ? days : []))
-          .catch(() => setPracticeDays([]))
+          .then(days => {
+            if (active) setPracticeDays(Array.isArray(days) ? days : [])
+          })
+          .catch(() => {
+            if (active) setPracticeDays([])
+          })
 
         setReviewHour(settingsData?.review_hour ?? 19)
       } catch (error) {
