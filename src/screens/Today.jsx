@@ -557,7 +557,24 @@ export default function Today({
   // ============================================================
 
   if (loading) {
-    return <p className="text-muted text-[13px] px-6 pt-8">Загрузка...</p>
+    /*
+     * Шапка остаётся на экране и во время загрузки дня: в Telegram
+     * fullscreen верхнюю полосу занимает воркмарк MENTALIX, и без шапки
+     * здесь огонёк серии исчезал из виду. streak инициализирован из
+     * локального снапшота, поэтому число известно и до ответа API.
+     */
+    return (
+      <div className="mx-screen-shell">
+        <h1 className="sr-only">Сегодня</h1>
+        <TodayWorkspaceHeader
+          onOpenSettings={onOpenSettings}
+          onOpenSeries={onOpenSeries}
+          streak={streak}
+          showStreak={preferences.showStreak}
+        />
+        <p className="text-muted text-[13px] px-[var(--mx-screen-x)] pt-8">Загрузка...</p>
+      </div>
+    )
   }
 
   if (loadError) {
