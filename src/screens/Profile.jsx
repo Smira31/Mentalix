@@ -207,10 +207,10 @@ export default function Profile({ user }) {
   const hasLoadError = loadResult?.status != null && loadResult.status !== 'success'
   const loadMessage =
     loadResult?.status === 'auth'
-      ? 'Профиль требует повторной авторизации.'
+      ? 'Нужно войти заново.'
       : loadResult?.status === 'partial'
-        ? 'Часть данных пути временно недоступна.'
-        : 'Не удалось загрузить профиль и историю пути.'
+        ? 'Часть данных пути не загрузилась.'
+        : 'Не удалось загрузить.'
 
   return (
     <div className="w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
@@ -240,9 +240,7 @@ export default function Profile({ user }) {
 
       {!loading && hasLoadError && (
         <div className="mb-8" role="alert">
-          <p className="text-[13px] leading-relaxed text-muted">
-            {loadMessage} Попробуйте ещё раз.
-          </p>
+          <p className="text-[13px] leading-relaxed text-muted">{loadMessage} Попробуй ещё раз.</p>
           <button
             type="button"
             onClick={retryProfile}
@@ -278,7 +276,9 @@ export default function Profile({ user }) {
         </div>
       )}
 
-      <Achievements user={user} />
+      {/* При ошибке пути вехи не грузим отдельно: иначе рядом с ошибкой
+          висит вечное «Загружаю вехи…». «Повторить» перезагрузит и их. */}
+      {!loading && !hasLoadError && <Achievements key={reloadToken} user={user} />}
     </div>
   )
 }

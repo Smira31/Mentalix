@@ -90,7 +90,9 @@ export default function Achievements({ user }) {
     return (
       <div className="mb-6" role="alert">
         <p className="text-[13px] text-muted">
-          {auth ? 'Вехи требуют повторной авторизации.' : 'Не удалось загрузить вехи полностью.'}
+          {auth
+            ? 'Нужно войти заново. Попробуй ещё раз.'
+            : 'Не удалось загрузить. Попробуй ещё раз.'}
         </p>
         <button
           type="button"
