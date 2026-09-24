@@ -1,9 +1,8 @@
 /**
  * tgShell mode — dev-only Telegram iOS simulation for the Base44 preview.
  *
- * Enabled by default on dev/preview hosts (localhost, Vercel Preview,
- * Cloudflare tunnels, Base44 preview). Disabled by ?tgshell=0.
- * In production the hostname never matches, so the mode is unreachable.
+ * Enabled by default on the Vite dev server and in Base44 builds with
+ * VITE_TG_SHELL=1. Disabled by ?tgshell=0.
  *
  * When active, isPreviewDemoMode() also returns true, so all existing
  * demo-mode code paths (skip auth, DEMO_USER, demo data, DemoTelegramChrome,
@@ -11,19 +10,8 @@
  */
 export function isTgShellMode() {
   if (typeof window === 'undefined') return false
-  // Runtime hostname check: prevents activation on production hosts even
-  // though esbuild does not tree-shake the code from the prod bundle.
-  // The mode is "unreachable" in production because the hostname never matches.
-  const host = window.location.hostname
-  const isDevHost =
-    host === 'localhost' ||
-    host === '127.0.0.1' ||
-    host.endsWith('.vercel.app') ||
-    host.endsWith('.manus.computer') ||
-    host.endsWith('.trycloudflare.com') ||
-    host.endsWith('.base44-preview.app')
-  if (!isDevHost) return false
-  return new URLSearchParams(window.location.search).get('tgshell') !== '0'
+  if (new URLSearchParams(window.location.search).get('tgshell') === '0') return false
+  return import.meta.env.DEV || import.meta.env.VITE_TG_SHELL === '1'
 }
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v1'
@@ -46,9 +34,8 @@ export const DEMO_USER = {
 export function isPreviewDemoMode() {
   if (typeof window === 'undefined') return false
 
-  // tgShell mode: enabled by default in DEV, disabled by ?tgshell=0.
-  // Short-circuits before the host/param checks below — the Base44 preview
-  // host is not in the allowed-host list, so ?demo=1 alone would not work.
+  // tgShell mode is the Base44 preview entry point; all existing demo-mode
+  // code paths (skip auth, DEMO_USER, demo data, chrome) remain shared.
   if (isTgShellMode()) return true
 
   const host = window.location.hostname
