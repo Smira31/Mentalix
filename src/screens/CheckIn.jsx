@@ -213,7 +213,7 @@ export function CheckInQuestion({
  * DEMO_USER and api.js intercepts requests only when isPreviewDemoMode() is
  * true. The screens, transitions and editor must not diverge by environment.
  */
-function MorningCheckInFlow({ user, onDone }) {
+function MorningCheckInFlow({ user, onDone, redo = false }) {
   const [step, setStep] = useState(0)
   const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
   const [note, setNote] = useState('')
@@ -256,7 +256,8 @@ function MorningCheckInFlow({ user, onDone }) {
     setSaving(true)
     setError('')
     try {
-      await api.checkin.save(user.id, {
+      const saveApi = redo ? api.checkin.redo : api.checkin.save
+      await saveApi(user.id, {
         mood: values.mood || 3,
         energy: values.energy || 3,
         anxiety: values.anxiety || 3,
@@ -1554,9 +1555,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null }) {
   )
 }
 
-function CheckIn({ user, onDone, mode = 'checkin', existing = null }) {
+function CheckIn({ user, onDone, mode = 'checkin', existing = null, redo = false }) {
   if (mode !== 'evening') {
-    return <MorningCheckInFlow user={user} onDone={onDone} />
+    return <MorningCheckInFlow user={user} onDone={onDone} redo={redo} />
   }
 
   return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} />

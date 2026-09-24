@@ -438,6 +438,21 @@ export default function Today({
     )
   }
 
+  if (sub === 'redoCheckin') {
+    return (
+      <CheckIn
+        user={user}
+        existing={checkin}
+        mode="checkin"
+        redo
+        onDone={async () => {
+          await refreshCheckin()
+          changeSub(null)
+        }}
+      />
+    )
+  }
+
   if (sub === 'checkinRecap' && checkin) {
     return (
       <div className="px-[var(--mx-screen-x)]">
@@ -446,6 +461,7 @@ export default function Today({
           initialSelectedDay={{ date: checkin.date, checkin }}
           onInitialBack={() => changeSub(null)}
           recapOnly
+          onRedo={() => changeSub('redoCheckin')}
         />
       </div>
     )

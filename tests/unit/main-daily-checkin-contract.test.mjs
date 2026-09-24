@@ -8,8 +8,8 @@ const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url
 
 
 test('the morning visual flow is the default check-in entry point', () => {
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone \}\)/)
-  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} \/>/s)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, redo = false \}\)/)
+  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} redo=\{redo\} \/>/s)
   assert.doesNotMatch(checkinSource, /if \(previewDemoMode && mode !== 'evening'\)/)
 })
 
@@ -44,7 +44,8 @@ test('the default morning flow persists real user data through the check-in API'
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
-  assert.match(morningFlow, /api\.checkin\.save\(user\.id, \{/)
+  assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+  assert.match(morningFlow, /saveApi\(user\.id, \{/)
   assert.match(morningFlow, /mood: values\.mood \|\| 3/)
   assert.match(morningFlow, /energy: values\.energy \|\| 3/)
   assert.match(morningFlow, /focus: values\.focus \|\| 3/)
@@ -52,6 +53,7 @@ test('the default morning flow persists real user data through the check-in API'
   assert.match(morningFlow, /api\.checkin\.history\(user\.id, 90\)/)
   assert.match(apiSource, /checkin: \{[\s\S]*?save: \(/)
   assert.match(apiSource, /request\('\/checkin', \{[\s\S]*?method: 'POST'/)
+  assert.match(apiSource, /request\('\/checkin\/today', \{[\s\S]*?method: 'PUT'/)
 })
 
 test('seeded demo state remains opt-in and isolated in the API wrapper', () => {

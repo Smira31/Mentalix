@@ -117,6 +117,7 @@ export function HistoryDetail({
   contextError,
   onDiscuss,
   recapOnly = false,
+  onRedo = null,
 }) {
   const checkin = day.checkin
   const wins = checkin?.wins || []
@@ -135,14 +136,25 @@ export function HistoryDetail({
             <span className="text-[12px] font-bold uppercase tracking-wide text-muted">
               Сегодняшний чек-ин
             </span>
-            <button
-              type="button"
-              aria-label="Открыть меню чек-ин"
-              className="mx-icon-button"
-              onClick={() => {}}
-            >
-              <MoreHorizontal size={20} aria-hidden="true" />
-            </button>
+            {onRedo ? (
+              <button
+                type="button"
+                aria-label="Переделать сегодняшний чек-ин"
+                onClick={onRedo}
+                className="rounded-full bg-gold/10 px-4 py-1.5 text-[12px] font-bold text-gold"
+              >
+                Переделать
+              </button>
+            ) : (
+              <button
+                type="button"
+                aria-label="Открыть меню чек-ин"
+                className="mx-icon-button"
+                onClick={() => {}}
+              >
+                <MoreHorizontal size={20} aria-hidden="true" />
+              </button>
+            )}
           </div>
           {[
             ['Как ты сейчас?', moodWord(checkin?.mood)],
@@ -339,6 +351,7 @@ export default function History({
   initialSelectedDay = null,
   onInitialBack = null,
   recapOnly = false,
+  onRedo = null,
 }) {
   const [days, setDays] = useState(null)
   const [badges, setBadges] = useState(null)
@@ -563,6 +576,7 @@ export default function History({
         contextError={contextError}
         onDiscuss={discussSelectedCheckinWithAI}
         recapOnly={recapOnly}
+        onRedo={recapOnly ? onRedo : null}
       />
     )
   }
