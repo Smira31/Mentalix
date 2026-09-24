@@ -96,7 +96,7 @@ button.mx-profile-banner:active {
   transform: scale(0.97);
 }
 
-/* 2. «Поддержать» — 118 px, текст слева, панель 89 px справа на всю высоту. */
+/* 2. «Поддержать» — 118 px, текст слева, панель 128 px справа на всю высоту. */
 .mx-profile-banner--support {
   display: flex;
   min-height: 118px;
@@ -117,9 +117,10 @@ button.mx-profile-banner:active {
 }
 
 .mx-profile-banner__panel {
+  position: relative;
   display: flex;
   align-self: stretch;
-  width: 112px;
+  width: 128px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
@@ -128,29 +129,91 @@ button.mx-profile-banner:active {
 }
 
 /* Персонаж по центру панели по вертикали; исходный файл заметно темнее
-   первого баннера — выравниваем яркость и насыщенность фильтром. */
+   первого баннера — выравниваем яркость и насыщенность фильтром.
+   Внутри WebP персонаж прижат к правому краю холста (слева 23 pt пусто),
+   поэтому картинка сдвинута влево на -12 px от края панели — визуальный
+   центр персонажа совпадает с центром панели шириной 128 px. */
 .mx-profile-banner--support .mx-profile-banner__art {
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  transform: translateY(-50%);
   filter: brightness(1.18) saturate(1.25);
 }
 
-/* 3. «Вход» — 175 px, заголовок сверху слева, текст снизу слева,
-   шеврон снизу справа, иллюстрация сверху справа. */
+/* 3. «Вход» — 190 px, заголовок сверху слева, текст снизу слева,
+   шеврон снизу справа, крупная CSS-плашка браузера посередине,
+   персонаж справа указывает пальцем на её правый край. */
 .mx-profile-banner--web {
-  min-height: 175px;
+  min-height: 190px;
   background: rgb(var(--c-card-raised));
 }
 
-.mx-profile-banner--web .mx-profile-banner__art {
+/* Крупное «окно браузера» на всё пустое место карточки — CSS-ремейк
+   маленькой плашки из иллюстрации владельца (рамка, три точки,
+   две строки контента), яркая и читается как сайт с любого масштаба. */
+.mx-profile-banner__web-window {
+  position: absolute;
+  top: 24px;
+  right: 104px;
+  width: 98px;
+  height: 96px;
+  overflow: hidden;
+  border: 2px solid rgb(var(--c-white));
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mx-profile-banner__web-window-bar {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border-bottom: 2px solid rgb(var(--c-white));
+}
+
+.mx-profile-banner__web-window-bar i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgb(var(--c-white));
+}
+
+.mx-profile-banner__web-window-line {
+  display: block;
+  height: 6px;
+  margin: 14px 10px 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.mx-profile-banner__web-window-line--short {
+  width: 56%;
+  margin-top: 10px;
+}
+
+/* Персонаж справа: копия иллюстрации, обрезанная по нему (86×98 от
+   150×104 со сдвигом -62/-3) — маленькое окно из файла не попадает
+   в кадр, палец упирается в правый край крупной плашки. */
+.mx-profile-banner__web-character {
   position: absolute;
   top: 16px;
   right: 16px;
+  width: 86px;
+  height: 98px;
+  overflow: hidden;
+}
+
+.mx-profile-banner--web .mx-profile-banner__art {
+  margin: -3px 0 0 -62px;
 }
 
 .mx-profile-banner--web .mx-profile-banner__title {
   position: absolute;
   top: 18px;
   left: 16px;
-  max-width: calc(100% - 190px);
+  max-width: 123px;
   font-size: 24px;
   font-weight: 700;
   line-height: 1.15;

@@ -70,8 +70,9 @@ export function SupportBanner({ onOpen }) {
         {'\u00A0— это помогает проекту расти.'}
       </p>
       <span className="mx-profile-banner__panel">
-        {/* Персонаж по центру панели, ≈107 px шириной, чуть крупнее и ярче. */}
-        <BannerArt art2x={supportArt2x} art3x={supportArt3x} width={107} height={90} />
+        {/* Персонаж крупнее (видно сердечко), смещён влево отрицательным
+            отступом в CSS — внутри WebP он прижат к правому краю холста. */}
+        <BannerArt art2x={supportArt2x} art3x={supportArt3x} width={120} height={101} />
       </span>
     </button>
   )
@@ -85,8 +86,24 @@ export function WebBanner({ onOpen }) {
       data-testid="profile-banner-web"
       onClick={onOpen}
     >
-      {/* Персонаж справа сверху крупнее — окно сайта читается как сайт. */}
-      <BannerArt art2x={webArt2x} art3x={webArt3x} width={150} height={104} />
+      {/* Плашка браузера перерисована в CSS: в исходнике она маленькая
+          (21×14 pt) и при увеличении «на всё пустое место» теряла чёткость.
+          Форма та же — рамка, три точки, две строки контента. */}
+      <span className="mx-profile-banner__web-window" aria-hidden="true">
+        <span className="mx-profile-banner__web-window-bar">
+          <i />
+          <i />
+          <i />
+        </span>
+        <span className="mx-profile-banner__web-window-line" />
+        <span className="mx-profile-banner__web-window-line mx-profile-banner__web-window-line--short" />
+      </span>
+      {/* Персонаж справа: копия иллюстрации, обрезанная по нему самому —
+          нарисованное в файле маленькое окно скрыто обрезкой, палец
+          указывает на правый край крупной CSS-плашки. */}
+      <span className="mx-profile-banner__web-character">
+        <BannerArt art2x={webArt2x} art3x={webArt3x} width={150} height={104} />
+      </span>
       <span className="mx-profile-banner__title">Mentalix на сайте</span>
       <span className="mx-profile-banner__text">
         Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
