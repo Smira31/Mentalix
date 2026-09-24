@@ -75,3 +75,76 @@
   > span {
   color: rgb(var(--c-muted)) !important;
 }
+
+/* ============================================================
+   TELEGRAM-STYLE FULL-WIDTH BOTTOM BAR (preview/demo only)
+
+   В превью/демо нижняя навигация — полноширинная полоса
+   как в нативном Telegram, а не плавающая пилюля.
+   ============================================================ */
+
+[data-mentalix-demo-frame='true'] {
+  --bottom-nav-offset: 0px;
+  --bottom-nav-height: 54px;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  max-width: none !important;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div {
+  width: 100% !important;
+  max-width: none !important;
+  height: 54px !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-top: 1px solid #1f1f1f !important;
+  background: #121212 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Сворачивание отключено — полоса всегда полноширинная */
+[data-mentalix-demo-frame='true'] .mx-bottom-nav.mx-demo-bottom-nav--collapsed > div {
+  width: 100% !important;
+  max-width: none !important;
+  height: 54px !important;
+  border-radius: 0 !important;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav {
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div > button[aria-label='Открыть навигацию'] {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Кнопки-вкладки на полноширинной полосе */
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button {
+  border-radius: 0 !important;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button.is-active {
+  flex: 1 1 0 !important;
+  background: transparent !important;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button.is-active svg,
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button.is-active span {
+  color: #ffffff !important;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button svg {
+  color: #8a8a8a !important;
+}
+
+[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button span {
+  color: #8a8a8a !important;
+}

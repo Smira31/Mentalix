@@ -120,7 +120,7 @@ function DemoTelegramChrome({ onBack }) {
         ? 'Библиотека'
         : chromeTab === 'practices'
           ? 'Практики'
-          : ''
+          : 'MENTALIX'
   const tabMeta = chromeTab === 'progress' ? '14 дней' : ''
 
   return (
@@ -138,7 +138,15 @@ function DemoTelegramChrome({ onBack }) {
         )}
         {!hasBack && <span>Закрыть</span>}
       </button>
-      {tabTitle && <div className="mx-demo-telegram-chrome__title">{tabTitle}</div>}
+      {tabTitle && (
+        <div
+          className={`mx-demo-telegram-chrome__title${
+            tabTitle === 'MENTALIX' ? ' mx-demo-telegram-chrome__title--wordmark' : ''
+          }`}
+        >
+          {tabTitle}
+        </div>
+      )}
       <div className="mx-demo-telegram-chrome__right">
         <div className="mx-demo-telegram-chrome__menu" aria-hidden="true">
           <ChevronDown size={22} strokeWidth={2.2} />
