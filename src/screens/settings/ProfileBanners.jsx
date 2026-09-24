@@ -6,7 +6,6 @@
 // на карточке нет. alt="" — рядом есть текст, картинка декоративная;
 // width/height равны месту на баннере, чтобы вёрстка не прыгала.
 
-import { ChevronRight } from 'lucide-react'
 import './ProfileBanners.css'
 import potentialArt2x from '../../assets/profile/banner-potential@2x.webp'
 import potentialArt3x from '../../assets/profile/banner-potential@3x.webp'
@@ -108,7 +107,6 @@ export function WebBanner({ onOpen }) {
       <span className="mx-profile-banner__text">
         Свяжи аккаунт с сайтом, чтобы записи были и в браузере.
       </span>
-      <ChevronRight size={20} aria-hidden="true" className="mx-profile-banner__chevron" />
     </button>
   )
 }

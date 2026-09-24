@@ -156,10 +156,10 @@ button.mx-profile-banner:active {
    две строки контента), яркая и читается как сайт с любого масштаба. */
 .mx-profile-banner__web-window {
   position: absolute;
-  top: 40px;
-  right: 87px;
-  width: 78px;
-  height: 76px;
+  top: 46px;
+  right: 122px;
+  width: 72px;
+  height: 70px;
   overflow: hidden;
   border: 2px solid rgb(var(--c-white));
   border-radius: 12px;
@@ -219,11 +219,12 @@ button.mx-profile-banner:active {
   filter: brightness(1.12) saturate(1.35);
 }
 
+/* Заголовок в одну строку, как раньше: «Mentalix на сайте» целиком. */
 .mx-profile-banner--web .mx-profile-banner__title {
   position: absolute;
   top: 18px;
   left: 16px;
-  max-width: 123px;
+  max-width: 220px;
   font-size: 24px;
   font-weight: 700;
   line-height: 1.15;
@@ -233,17 +234,10 @@ button.mx-profile-banner:active {
   position: absolute;
   bottom: 18px;
   left: 16px;
-  max-width: calc(100% - 190px);
+  max-width: calc(100% - 205px);
   color: rgb(var(--c-muted));
   font-size: 15px;
   line-height: 1.35;
-}
-
-.mx-profile-banner__chevron {
-  position: absolute;
-  right: 16px;
-  bottom: 18px;
-  color: rgb(var(--c-muted));
 }
 
 @media (prefers-reduced-motion: reduce) {
