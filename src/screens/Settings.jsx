@@ -593,7 +593,10 @@ export default function Settings({
             )}
           </ProfileCard>
           {writingGoalOn && (
-            <div className="mx-profile-panel" style={{ marginTop: 8, minHeight: writingGoalProgress?.enabled ? undefined : 92 }}>
+            <div
+              className="mx-profile-panel"
+              style={{ marginTop: 8, minHeight: writingGoalProgress?.enabled ? undefined : 92 }}
+            >
               {writingGoalProgress?.enabled ? (
                 <div>
                   <div className="flex items-baseline justify-between gap-3">
@@ -932,7 +935,7 @@ export default function Settings({
                 />
                 <div className="mx-profile-inset text-[13px] leading-relaxed text-muted">
                   Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной
-                  подписью. В веб-версии нет входа на сервере, поэтому мы не выполняем
+                  подписью. В web-версии нет серверной сессии, поэтому мы не выполняем
                   чувствительные операции по переданному id.
                 </div>
               </>
@@ -959,9 +962,9 @@ export default function Settings({
             </ProfileNote>
           )}
           <ProfileNote>
-            Незавершённый черновик остаётся только на этом устройстве и не является резервной копией
-            в облаке. Блокировка приложения — локальный экранный барьер, а не шифрование данных.
-            Подробности о хранении и ограничениях синхронизации — в разделе «Политика и данные».
+            Незавершённый draft остаётся только на текущем устройстве и не является cloud backup.
+            Блокировка приложения — локальный экранный барьер, а не шифрование данных. Подробности о
+            хранении и ограничениях синхронизации — в разделе «Политика и данные».
           </ProfileNote>
         </ProfileGroup>
       </ProfileBody>
@@ -1056,7 +1059,7 @@ export default function Settings({
             />
             <ProfileRow
               title="Что было бы полезно?"
-              subtitle="Короткий опрос — без оплаты и подписки"
+              subtitle="Короткий concept test — без оплаты и подписки"
               onClick={() => setScreen('wtp-test')}
             />
           </ProfileCard>

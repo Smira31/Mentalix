@@ -198,7 +198,8 @@ if (
   import.meta.env.VITE_TG_SHELL !== '0' &&
   !navigator.webdriver
 ) {
-  import('./tgShell').then(({ initTgShell }) => initTgShell())
+  const { initTgShell } = await import('./tgShell')
+  initTgShell()
 }
 
 createRoot(document.getElementById('root')).render(

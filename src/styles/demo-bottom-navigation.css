@@ -138,7 +138,7 @@
 
 [data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button.is-active svg,
 [data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button.is-active span {
-  color: #ffffff !important;
+  color: rgb(var(--c-cream)) !important;
 }
 
 [data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav button svg {
