@@ -64,7 +64,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
         z-50
 
           w-full
-          max-w-[430px]
+          max-w-[440px]
           mx-auto
 
         pointer-events-none

@@ -41,6 +41,27 @@ button.mx-profile-banner:active {
   stroke: none;
 }
 
+/* Персонаж баннеров — цветной референс владельца (#802): красный силуэт,
+   чёрные вырезы, тёмно-красная штриховка, тонкий светлый контур. */
+.mx-persona-red {
+  fill: rgb(var(--c-persona-red));
+  stroke: rgb(var(--c-persona-edge));
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+
+.mx-persona-void {
+  fill: rgb(var(--c-bg));
+  stroke: none;
+}
+
+.mx-persona-hatch {
+  fill: none;
+  stroke: rgb(var(--c-persona-red-dark));
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
 /* 1. «Потенциал» — 226 px, всё по центру, кролик справа снизу под кнопкой. */
 .mx-profile-banner--potential {
   display: flex;

@@ -8,7 +8,7 @@ import { VIEWPORTS, centerY, openTelegram, openWeb } from './profile-helpers.mjs
 
 for (const viewport of VIEWPORTS) {
   test.describe(`Профиль Stoic — ${viewport.name} px`, () => {
-    test('кнопка профиля 43 px, 14 px справа, центр на линии огонька', async ({
+    test('кнопка профиля 43 px, 21 px справа от края фрейма, центр на линии огонька', async ({
       browser,
       baseURL,
     }) => {
@@ -16,9 +16,15 @@ for (const viewport of VIEWPORTS) {
       try {
         const button = await page.getByTestId('today-profile-button').boundingBox()
         const chip = await page.getByTestId('today-streak-chip').boundingBox()
+        // Отступ считаем от края фрейма приложения (mx-screen-shell), а не viewport:
+        // фрейм центрируется, и на широком экране его край не совпадает с краем окна.
+        const shell = await page
+          .getByTestId('today-profile-button')
+          .locator('xpath=ancestor::div[contains(@class, "mx-screen-shell")][1]')
+          .boundingBox()
         expect(Math.round(button.width)).toBe(43)
         expect(Math.round(button.height)).toBe(43)
-        expect(Math.abs(viewport.width - (button.x + button.width) - 14)).toBeLessThanOrEqual(1)
+        expect(Math.abs(shell.x + shell.width - (button.x + button.width) - 21)).toBeLessThanOrEqual(1)
         expect(Math.abs(centerY(button) - centerY(chip))).toBeLessThanOrEqual(2)
       } finally {
         await context.close()
