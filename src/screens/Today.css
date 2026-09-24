@@ -357,13 +357,10 @@
 }
 
 .mx-pinned-practices__rail {
-  display: flex;
-  gap: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
   margin-top: 0.8rem;
-  padding-bottom: 0.25rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  scroll-snap-type: x proximity;
 }
 
 .mx-pinned-practices__rail::-webkit-scrollbar {
@@ -372,7 +369,8 @@
 
 .mx-pinned-practice-card {
   display: flex;
-  min-height: 10.5rem;
+  aspect-ratio: 1 / 1;
+  min-height: 0;
   min-width: 0;
   flex-direction: column;
   align-items: stretch;
@@ -384,14 +382,18 @@
   background: rgb(var(--c-card2));
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 1rem;
-  transition: transform 150ms ease;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, transform 150ms ease;
 }
 
 .mx-pinned-practices__rail > .mx-pinned-practice-card {
-  width: calc((100% - 1.2rem) / 3);
-  min-width: calc((100% - 1.2rem) / 3);
-  min-height: 8.5rem;
-  scroll-snap-align: start;
+  width: auto;
+  min-width: 0;
+}
+
+.mx-pinned-practice-card.is-done {
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-text));
+  border-color: rgb(var(--c-text));
 }
 
 .mx-pinned-practice-card .mx-type-meta,
@@ -434,6 +436,18 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: 1.8;
+}
+
+.mx-pinned-practice-card.is-done .mx-pinned-practice-glyph {
+  color: rgb(var(--c-bg));
+  background: rgb(var(--c-bg) / 0.08);
+  border-color: rgb(var(--c-bg) / 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-pinned-practice-card {
+    transition: none;
+  }
 }
 
 .mx-pinned-sheet-backdrop {
