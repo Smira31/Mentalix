@@ -311,7 +311,9 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
         ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
         : step === doneStep
           ? {
-              text: saving ? '' : 'Завершить',
+              // Текст не убирается на время сохранения: спиннер рисуется
+              // внутри кнопки рядом с подписью, кнопка лишь блокируется.
+              text: 'Завершить',
               testId: 'checkin-complete',
               onClick: finish,
               disabled: saving,
@@ -400,11 +402,15 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
                 </button>
               ))}
             </div>
-            {error && (
-              <p role="alert" className="mx-demo-checkin__error">
-                {error}
-              </p>
-            )}
+            {/* Слот ошибки всегда занимает место: сообщение об ошибке не
+                сдвигает иллюстрацию и заголовок (компоновка не «прыгает»). */}
+            <div className="mx-demo-checkin__error-slot" aria-live="polite">
+              {error ? (
+                <p role="alert" className="mx-demo-checkin__error">
+                  {error}
+                </p>
+              ) : null}
+            </div>
           </section>
         )}
 
@@ -448,7 +454,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
         />
       ) : null}
       {step === doneStep || step === streakStep ? (
-        <WebActionBar action={action} className="mx-demo-checkin__action-bar" />
+        <WebActionBar action={action} loading={saving} className="mx-demo-checkin__action-bar" />
       ) : null}
     </div>,
     getFullscreenPortalTarget()
@@ -727,15 +733,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   function pick(key, level) {
     platform.haptic('light')
 
+    // Выбор значения шкалы не двигает шаг: вперёд ведёт только
+    // явное нажатие «Далее» (автопереход убран и здесь, и в утреннем флоу).
     setValues(current => ({
       ...current,
       [key]: level,
     }))
-    if (!isEvening) {
-      window.setTimeout(() => {
-        setStep(current => current + 1)
-      }, 280)
-    }
   }
 
   useEffect(() => {
