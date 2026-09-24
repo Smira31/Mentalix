@@ -35,7 +35,7 @@ function JournalBanner({ onOpen }) {
 function PracticeRail({ practices, onOpen }) {
   const lila = getPracticeByKey(practices, 'lila-discover') || {
     key: 'lila-discover',
-    title: 'Разобраться через Лилу',
+    title: 'Разобраться со Следопытом',
     subtitle: 'Карта, несколько вопросов и один рабочий шаг',
     kind: 'journal',
     sub: 'lila-discover',
@@ -43,8 +43,8 @@ function PracticeRail({ practices, onOpen }) {
   const railCards = [
     {
       key: 'lila-discover',
-      title: 'Разобраться через Лилу',
-      category: 'Лила',
+      title: 'Разобраться со Следопытом',
+      category: 'Следопыт',
       description: 'Карта, несколько вопросов и один рабочий шаг',
       status: 'НОВОЕ',
       kind: 'journal',

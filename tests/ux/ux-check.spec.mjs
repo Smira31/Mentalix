@@ -302,7 +302,7 @@ async function assertBottomNavigationLabelsFit(page) {
 async function assertSoonControls(page) {
   const lilaCard = page
     .locator('.mx-layered-catalog__rail-card')
-    .filter({ hasText: 'Разобраться через Лилу' })
+    .filter({ hasText: 'Разобраться со Следопытом' })
   const motivationCard = page
     .locator('.mx-layered-catalog__rail-card')
     .filter({ hasText: 'Импульс к действию' })

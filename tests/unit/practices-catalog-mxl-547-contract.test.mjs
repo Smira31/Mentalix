@@ -19,9 +19,9 @@ const styles = await readFile(
   'utf8'
 )
 
-test('MXL-547: production rail содержит Лилу и две честные карточки «Скоро»', () => {
+test('MXL-547: production rail содержит практику и две честные карточки «Скоро»', () => {
   assert.match(catalog, /Новое и рекомендованное/)
-  assert.match(catalog, /Разобраться через Лилу/)
+  assert.match(catalog, /Разобраться со Следопытом/)
   assert.match(catalog, /Импульс к действию с Львом/)
   assert.match(catalog, /title: 'Фокус'/)
   assert.match(catalog, /disabled={!card\.active}/)
@@ -29,7 +29,7 @@ test('MXL-547: production rail содержит Лилу и две честны�
   assert.doesNotMatch(catalog, /•••/)
 })
 
-test('MXL-547: отдельная Лила скрыта только из отображаемых коллекций', () => {
+test('MXL-547: отдельная коллекция скрыта только из отображаемых коллекций', () => {
   assert.match(catalog, /PRACTICE_COLLECTIONS\.filter\(collection => collection\.key !== 'lila'\)/)
   assert.match(catalog, /VISIBLE_COLLECTIONS\.length/)
   assert.match(
