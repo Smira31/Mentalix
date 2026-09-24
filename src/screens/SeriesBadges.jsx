@@ -252,11 +252,6 @@ function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
       </section>
       <div className="mx-path-preferences">
         <ToggleRow
-          label="Показывать серию"
-          checked={preferences.showStreak}
-          onChange={value => onPreference('showStreak', value)}
-        />
-        <ToggleRow
           label="Показывать значки"
           checked={preferences.showBadges}
           onChange={value => onPreference('showBadges', value)}

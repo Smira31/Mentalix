@@ -6,6 +6,7 @@ import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
 import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
+import HistorySkeleton from '../components/HistorySkeleton'
 import { platform, platformName } from '../platform'
 import { MoreHorizontal } from 'lucide-react'
 import BackButton from '../components/BackButton'
@@ -637,8 +638,7 @@ export default function History({
     window.location.href = url.toString()
   }
 
-  if (days === null)
-    return <p className="text-muted text-sm px-[var(--mx-screen-x)] pt-6">Загрузка...</p>
+  if (days === null) return <HistorySkeleton />
 
   if (selectedDay) {
     return (
@@ -750,7 +750,17 @@ export default function History({
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            {/* «…» у правого края — намёк, что за строкой дня лежит
+                раскрываемая запись (открытие по тапу в карточку ниже). */}
+            <div
+              data-testid="history-day-header"
+              className="mb-2 flex items-center justify-between px-1"
+            >
+              <span className="text-[13px] font-semibold text-muted">{dayTitle(d.date)}</span>
+              <span className="text-[13px] font-semibold text-muted" aria-hidden="true">
+                …
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setSelectedDay(d)}

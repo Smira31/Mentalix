@@ -631,8 +631,14 @@
 }
 
 @keyframes mx-undo-toast-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 .mx-pinned-undo-toast__text {
@@ -1002,36 +1008,46 @@
   transform: scale(0.99);
 }
 
-/* IMG_6435 reference pass: muted Telegram-style header geometry. */
+/*
+ * Чип серии — эталон Stoic (DESIGN_SYSTEM §5.1), без приглушения:
+ * огонёк и число в полном --c-text. Огонёк виден всегда (решение
+ * владельца от 24.09.2026); при серии 0 цифры нет — чип круглый.
+ */
 .mx-demo-today-streak {
-  min-width: 62px;
-  height: 40px;
+  min-width: 57px;
+  height: 38px;
   gap: 6px;
   padding: 0 12px 0 10px;
-  border: 1px solid #303030;
-  border-radius: 20px;
-  background: #1b1b1b;
-  color: #c7c7c7;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
 }
 
 .mx-demo-today-streak .mx-reference-flame {
   width: 16px;
   height: 19px;
-  fill: #b9b9b9;
-  stroke: #b9b9b9;
+  fill: rgb(var(--c-text));
+  stroke: rgb(var(--c-text));
   stroke-width: 0.8;
   stroke-linejoin: round;
 }
 
 .mx-demo-today-streak .mx-reference-flame__inner {
-  fill: #1b1b1b;
-  stroke: #1b1b1b;
+  fill: rgb(var(--c-card2));
+  stroke: rgb(var(--c-card2));
 }
 
 .mx-demo-today-streak strong {
-  color: #c7c7c7;
-  font-size: 15px;
-  font-weight: 700;
+  color: rgb(var(--c-text));
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.mx-demo-today-streak--empty {
+  min-width: 38px;
+  padding: 0;
+  justify-content: center;
 }
 
 .mx-demo-today-profile {
@@ -1441,13 +1457,7 @@
   stroke-width: 1.5;
 }
 
-/* Серия и подсказка по §5.3. Слой не меняет PWA/Safari layout. */
-.mx-demo-today-streak-spacer {
-  width: 62px;
-  height: 40px;
-  flex: 0 0 auto;
-}
-
+/* Подсказка серии по §5.3. Слой не меняет PWA/Safari layout. */
 .mx-today-series-tooltip {
   position: relative;
   z-index: 5;

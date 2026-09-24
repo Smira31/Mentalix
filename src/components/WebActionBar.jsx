@@ -52,7 +52,12 @@ export default function WebActionBar({
           }
         >
           {loading ? (
-            <Loader2 size={22} strokeWidth={2.4} className="animate-spin mx-auto" aria-hidden="true" />
+            // Спиннер внутри кнопки рядом с текстом: подпись не исчезает
+            // на время сохранения, кнопка остаётся на месте (disabled).
+            <span className="inline-flex items-center justify-center gap-2">
+              <Loader2 size={20} strokeWidth={2.4} className="animate-spin" aria-hidden="true" />
+              <span>{action.text}</span>
+            </span>
           ) : compact ? (
             <ArrowRight size={24} strokeWidth={2} />
           ) : (

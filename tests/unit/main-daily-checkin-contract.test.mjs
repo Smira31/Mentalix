@@ -145,6 +145,48 @@ test('redo evening review sends review_completed: true via redo API', () => {
   assert.match(core, /isEvening && !redo && existing\?\.review_completed_at \? 1 : 0/)
 })
 
+test('scale steps never auto-advance — «Далее» is the only way forward', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  const morningPick = morningFlow.slice(
+    morningFlow.indexOf('function pick('),
+    morningFlow.indexOf('async function finish()')
+  )
+  assert.doesNotMatch(morningPick, /setStep/, 'утренний pick не должен двигать шаг')
+  assert.doesNotMatch(morningPick, /setTimeout/)
+
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  const corePick = core.slice(core.indexOf('function pick('), core.indexOf('useEffect('))
+  assert.doesNotMatch(corePick, /setStep/, 'pick ядра не должен двигать шаг')
+  // нигде в флоу не осталось таймера, который сам переключает шаг шкалы
+  assert.doesNotMatch(checkinSource, /setTimeout\(\(\) => \{\s*setStep/)
+})
+
+test('morning redo sends PUT without anxiety and focus', () => {
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
+  // redo не принимает существующую запись — поля утра не переносятся
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, redo = false \}\)/)
+  // в redo значения anxiety/focus остаются null и в payload не попадают
+  assert.match(morningFlow, /anxiety: null/)
+  assert.match(morningFlow, /focus: null/)
+  assert.match(morningFlow, /if \(values\.anxiety != null\) morningPayload\.anxiety = values\.anxiety/)
+  assert.match(morningFlow, /if \(values\.focus != null\) morningPayload\.focus = values\.focus/)
+  // утренний флоу спрашивает только настроение и энергию
+  assert.match(checkinSource, /export const MORNING_SCALE_STEPS = \[SCALE_STEPS\[0\], SCALE_STEPS\[1\]\]/)
+  // redo — атомарный PUT сегодняшней записи
+  assert.match(apiSource, /redo: \(/)
+  assert.match(apiSource, /request\('\/checkin\/today', \{[\s\S]*?method: 'PUT'/)
+})
+
 test('redo exit without saving makes no API requests', () => {
   const morningFlow = checkinSource.slice(
     checkinSource.indexOf('function MorningCheckInFlow'),
