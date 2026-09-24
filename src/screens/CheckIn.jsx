@@ -342,6 +342,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
               keepFocusOnSubmit
               submitIcon="arrow"
               submitLabel="Далее"
+              submitTestId="checkin-next"
               onSubmit={() => setStep(doneStep)}
               onDeepen={() => {}}
               deepenLabel="Пойти глубже"
