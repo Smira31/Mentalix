@@ -156,10 +156,10 @@ button.mx-profile-banner:active {
    две строки контента), яркая и читается как сайт с любого масштаба. */
 .mx-profile-banner__web-window {
   position: absolute;
-  top: 46px;
-  right: 122px;
-  width: 72px;
-  height: 70px;
+  top: 28px;
+  right: 92px;
+  width: 62px;
+  height: 60px;
   overflow: hidden;
   border: 2px solid rgb(var(--c-white));
   border-radius: 12px;
@@ -201,9 +201,11 @@ button.mx-profile-banner:active {
 /* Персонаж целиком в кадре (голова — шишки видны, ноги до низа
    обрезки нет), крупнее прежнего; слева в кадре — рука с пальцем,
    поднятым к правому краю плашки браузера. */
+/* Персонаж поднят выше — внизу справа остаётся место под шеврон,
+   как в референсе. */
 .mx-profile-banner__web-character {
   position: absolute;
-  top: 20px;
+  top: 12px;
   right: 12px;
   width: 92px;
   height: 119px;
@@ -219,25 +221,39 @@ button.mx-profile-banner:active {
   filter: brightness(1.12) saturate(1.35);
 }
 
-/* Заголовок в одну строку, как раньше: «Mentalix на сайте» целиком. */
+/* Заголовок как в референсе Stoic: один размер шрифта, «Mentalix»
+   выделен жирным, «на сайте» — обычным весом. */
 .mx-profile-banner--web .mx-profile-banner__title {
   position: absolute;
   top: 18px;
   left: 16px;
   max-width: 220px;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 400;
   line-height: 1.15;
 }
 
+.mx-profile-banner--web .mx-profile-banner__title strong {
+  font-weight: 700;
+}
+
+/* Текст внизу на всю ширину, до персонажа справа — как в референсе,
+   где описание заканчивается перед шевроном. */
 .mx-profile-banner--web .mx-profile-banner__text {
   position: absolute;
   bottom: 18px;
   left: 16px;
-  max-width: calc(100% - 205px);
+  max-width: calc(100% - 130px);
   color: rgb(var(--c-muted));
   font-size: 15px;
   line-height: 1.35;
+}
+
+.mx-profile-banner__chevron {
+  position: absolute;
+  right: 16px;
+  bottom: 18px;
+  color: rgb(var(--c-muted));
 }
 
 @media (prefers-reduced-motion: reduce) {
