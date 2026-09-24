@@ -379,6 +379,17 @@ export const api = {
       ),
   },
 
+  moodPractices: {
+    list: (userId, { from, to } = {}) =>
+      request(withQuery('/mood-practices', { user_id: userId, from, to })),
+
+    create: ({ mood, emotion, context, note, breathing_completed }) =>
+      request('/mood-practices', {
+        method: 'POST',
+        body: JSON.stringify({ mood, emotion, context, note, breathing_completed }),
+      }),
+  },
+
   checkin: {
     today: userId => request(withQuery('/checkin/today', { user_id: userId })),
 

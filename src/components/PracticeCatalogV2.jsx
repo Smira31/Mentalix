@@ -40,6 +40,7 @@ function PracticeRail({ practices, onOpen }) {
     kind: 'journal',
     sub: 'lila-discover',
   }
+  const mood = getPracticeByKey(practices, 'mood')
   const railCards = [
     {
       key: 'lila-discover',
@@ -50,6 +51,16 @@ function PracticeRail({ practices, onOpen }) {
       kind: 'journal',
       active: true,
       practice: lila,
+    },
+    {
+      key: 'mood',
+      title: 'Настроение',
+      category: 'Эмоции',
+      description: 'Заметь эмоцию и при желании разбери её',
+      status: 'НОВОЕ',
+      kind: 'mood',
+      active: Boolean(mood),
+      practice: mood,
     },
     {
       key: 'lion-action',
@@ -161,7 +172,9 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
       <div className="mx-layered-catalog__section-head">
         <div>
           <span>Тема недели:</span>
-          <h2 className="mx-type-section" id="production-theme-title">Один вопрос.</h2>
+          <h2 className="mx-type-section" id="production-theme-title">
+            Один вопрос.
+          </h2>
         </div>
       </div>
       <div className="mx-layered-catalog__theme-track" ref={trackRef} onScroll={handleScroll}>
@@ -267,7 +280,9 @@ function CollectionScreen({ collection, practices, rituals, ascezas, onOpenPract
     <section className="mx-layered-category" aria-labelledby="production-category-title">
       <header className="mx-layered-category__header">
         <div className="mx-layered-category__heading">
-          <h2 className="mx-type-section" id="production-category-title">{collection.title}.</h2>
+          <h2 className="mx-type-section" id="production-category-title">
+            {collection.title}.
+          </h2>
           <p>{collection.description}</p>
         </div>
         <span aria-hidden="true" />

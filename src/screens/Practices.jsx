@@ -14,6 +14,7 @@ import Ascezas from './Ascezas'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
 import ThemeScreen from './ThemeScreen'
+import MoodPractice from './MoodPractice'
 
 function PracticesCatalogLoading() {
   return (
@@ -58,7 +59,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   const [selectedThemeId, setSelectedThemeId] = useState(null)
   const [isLoading, setIsLoading] = useState(!initialPracticesData)
   const [loadError, setLoadError] = useState(null)
-  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover'].includes(sub)
+  const focusedFlowOpen = ['journal', 'self-discovery', 'lila-discover', 'mood'].includes(sub)
   const nestedFlowOpen = focusedFlowOpen || Boolean(selectedThemeId)
 
   useEffect(() => {
@@ -191,6 +192,10 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         onOpenJournal={() => setSub('journal')}
       />
     )
+  }
+
+  if (sub === 'mood') {
+    return <MoodPractice user={user} onDone={() => setSub(null)} />
   }
 
   if (isLoading) {

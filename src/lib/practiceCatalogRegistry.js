@@ -28,6 +28,15 @@ export const PRACTICE_CATALOG_REGISTRY = [
     completionSource: 'none',
     sub: 'lila-discover',
   },
+  {
+    key: PRACTICE_KEYS.mood,
+    title: 'Настроение',
+    subtitle: 'заметить эмоцию и при желании разобрать её',
+    section: 'Практики',
+    kind: 'mood',
+    completionSource: 'none',
+    sub: 'mood',
+  },
 ]
 
 export const PRACTICE_RAIL_KEYS = [
