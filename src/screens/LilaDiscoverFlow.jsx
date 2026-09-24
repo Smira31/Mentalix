@@ -15,10 +15,10 @@ export const LILA_TOPIC_PROFILE_KEY = 'mx-lila-topic-profile-v1'
 
 export const LILA_CONVERSATION_META = {
   key: 'lila',
-  name: 'Лила',
+  name: 'Следопыт',
   tagline: 'поможет увидеть следующий шаг',
   desc: 'Спокойный проводник для свободного разбора ситуации и проверки одной рабочей гипотезы.',
-  asking: 'Лила спрашивает',
+  asking: 'Следопыт спрашивает',
   typing: 'собирает следующий вопрос…',
 }
 
@@ -57,12 +57,12 @@ function StageShell({ children, title, onBack }) {
 
 function Intro({ onStart, onBack }) {
   return (
-    <StageShell title="Лила" onBack={onBack}>
+    <StageShell title="Следопыт" onBack={onBack}>
       <div className="flex flex-1 flex-col">
         <h1 className="mx-type-flow-title mt-2 text-cream">Когда неясно, с чего начать</h1>
         <p className="mx-type-flow-body mt-3 max-w-[34ch] text-muted">
-          Сначала опиши ситуацию своими словами. Затем выбери одну тему, чтобы начать разговор с
-          Лилой. Это не тест и не диагноз.
+          Сначала опиши ситуацию своими словами. Затем выбери одну тему, чтобы начать разговор со
+          Следопытом. Это не тест и не диагноз.
         </p>
         <div className="mx-lila-action-zone mt-auto pt-6">
           <button
@@ -84,7 +84,7 @@ function ThemePicker({ query, selectedCardId, onPick, onBack }) {
       <div className="flex flex-1 flex-col">
         <h1 className="mx-type-flow-title mt-2 text-cream">На что посмотрим внимательнее?</h1>
         <div className="mx-lila-query-preview mx-type-flow-body mt-3 text-muted">{query}</div>
-        <div className="mt-4 grid gap-2" role="group" aria-label="Темы Лилы">
+        <div className="mt-4 grid gap-2" role="group" aria-label="Темы Следопыта">
           {LILA_DISCOVER_CARDS.map(card => (
             <ChoiceButton
               key={card.id}
@@ -197,14 +197,14 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
 
   if (stage === 'query') {
     return (
-      <StageShell title="Лила" onBack={goBack}>
+      <StageShell title="Следопыт" onBack={goBack}>
         <PracticeWritingCanvas
           question="Что сейчас хочешь разобрать?"
           description="Опиши ситуацию своими словами. Достаточно нескольких предложений — без правильной формулировки."
           value={query}
           onChange={setQuery}
           placeholder="Например: я откладываю разговор и не понимаю, как начать…"
-          ariaLabel="Опиши ситуацию для разговора с Лилой"
+          ariaLabel="Опиши ситуацию для разговора со Следопытом"
           autoFocus
           submitLabel="Выбрать тему"
           submitDisabled={!query.trim()}

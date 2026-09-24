@@ -21,9 +21,9 @@ export const PRACTICE_CATALOG_REGISTRY = [
   },
   {
     key: PRACTICE_KEYS.lilaDiscover || 'lila-discover',
-    title: 'Разобраться через Лилу',
+    title: 'Разобраться со Следопытом',
     subtitle: 'карта, несколько вопросов и один рабочий шаг',
-    section: 'Лила',
+    section: 'Следопыт',
     kind: 'journal',
     completionSource: 'none',
     sub: 'lila-discover',
@@ -61,7 +61,7 @@ export const PRACTICE_COLLECTIONS = [
   },
   {
     key: 'lila',
-    title: 'Лила',
+    title: 'Следопыт',
     description: 'Карта, несколько вопросов и один рабочий шаг.',
     kind: 'journal',
     practiceKeys: ['lila-discover'],

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Settings2, X } from 'lucide-react'
 
@@ -6,32 +6,55 @@ import BackButton from './BackButton'
 import CardSystemGlyph, { practiceGlyphKind } from './CardSystemGlyph'
 import { api } from '../lib/api'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
-import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
+import {
+  getFullscreenPortalTarget,
+  useFullscreenSurface,
+} from '../lib/fullscreenSurface'
+import { isTelegramRuntime } from '../lib/visualViewport'
 import {
   fetchPinnedPractices,
   invalidatePinnedPractices,
   peekPinnedPractices,
 } from '../lib/pinnedPracticesDataCache'
 
-function Sheet({ title, subtitle = null, onClose, children, footer = null }) {
+function Sheet({ title, subtitle = null, onClose, children, footer = null, undo = null, onUndo = null }) {
+  const { style: viewportStyle } = useFullscreenSurface()
+  const telegram = isTelegramRuntime()
+
   const content = (
     <div
       className="mx-pinned-sheet-backdrop"
       role="presentation"
       onMouseDown={event => event.target === event.currentTarget && onClose()}
     >
-      <section className="mx-pinned-sheet" role="dialog" aria-modal="true" aria-label={title}>
+      <section
+        className="mx-pinned-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        style={{ paddingTop: viewportStyle.paddingTop }}
+      >
         <div className="mx-pinned-sheet__header">
           <BackButton onClick={onClose} showInDemo />
           <h2 className="font-display mx-type-card text-cream lowercase">{title}</h2>
           {subtitle && <p className="mx-pinned-sheet__subtitle text-muted">{subtitle}</p>}
-          <button type="button" className="mx-icon-button" aria-label="Закрыть" onClick={onClose}>
-            <X size={19} aria-hidden="true" />
-          </button>
+          {!telegram && (
+            <button type="button" className="mx-icon-button" aria-label="Закрыть" onClick={onClose}>
+              <X size={19} aria-hidden="true" />
+            </button>
+          )}
         </div>
         <div className="mx-pinned-sheet__body">{children}</div>
         {footer && <div className="mx-pinned-sheet__footer">{footer}</div>}
       </section>
+      {undo && (
+        <div className="mx-pinned-undo-toast" role="status">
+          <span className="mx-pinned-undo-toast__text">Удалено</span>
+          <button type="button" className="mx-pinned-undo-toast__action" onClick={onUndo}>
+            Вернуть
+          </button>
+        </div>
+      )}
     </div>
   )
 
@@ -56,6 +79,14 @@ export default function PinnedPractices({ user, onOpenPractice }) {
   const [error, setError] = useState(false)
   const [sheet, setSheet] = useState(null)
   const [busyId, setBusyId] = useState(null)
+  const [undo, setUndo] = useState(null)
+  const undoTimerRef = useRef(null)
+
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -85,22 +116,47 @@ export default function PinnedPractices({ user, onOpenPractice }) {
 
   async function togglePinned(practice) {
     if (busyId) return
+
+    if (pinnedIds.has(practice.key)) {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+      const item = pinned.find(i => i.practice_id === practice.key)
+      const index = pinned.findIndex(i => i.practice_id === practice.key)
+      setPinned(items => items.filter(i => i.practice_id !== practice.key))
+      undoTimerRef.current = setTimeout(() => {
+        api.pinnedPractices.remove(user.id, practice.key).catch(() => setError(true))
+        invalidatePinnedPractices(user.id)
+        setUndo(null)
+        undoTimerRef.current = null
+      }, 4000)
+      setUndo({ item, index })
+      return
+    }
+
     setBusyId(practice.key)
     setError(false)
     try {
-      if (pinnedIds.has(practice.key)) {
-        await api.pinnedPractices.remove(user.id, practice.key)
-        setPinned(items => items.filter(item => item.practice_id !== practice.key))
-      } else {
-        const added = await api.pinnedPractices.add(user.id, practice.key)
-        setPinned(items => [...items, added])
-      }
+      const added = await api.pinnedPractices.add(user.id, practice.key)
+      setPinned(items => [...items, added])
       invalidatePinnedPractices(user.id)
     } catch {
       setError(true)
     } finally {
       setBusyId(null)
     }
+  }
+
+  function undoRemove() {
+    if (!undo) return
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current)
+      undoTimerRef.current = null
+    }
+    setPinned(items => {
+      const next = [...items]
+      next.splice(undo.index, 0, undo.item)
+      return next
+    })
+    setUndo(null)
   }
 
   function openPractice(practice) {
@@ -156,6 +212,8 @@ export default function PinnedPractices({ user, onOpenPractice }) {
           title="твои практики."
           subtitle="Твой дневной набор — нажимай, чтобы начать."
           onClose={() => setSheet(null)}
+          undo={undo}
+          onUndo={undoRemove}
           footer={
             <div className="mx-pinned-sheet__footer-actions">
               <button
@@ -204,7 +262,7 @@ export default function PinnedPractices({ user, onOpenPractice }) {
       )}
 
       {sheet === 'library' && (
-        <Sheet title="библиотека практик" onClose={() => setSheet('manage')}>
+        <Sheet title="библиотека практик." onClose={() => setSheet('manage')} undo={undo} onUndo={undoRemove}>
           <div className="mx-pinned-library" role="list">
             {catalog.map(practice => {
               const isPinned = pinnedIds.has(practice.key)
