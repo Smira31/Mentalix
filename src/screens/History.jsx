@@ -750,7 +750,17 @@ export default function History({
         const wins = d.checkin?.wins || []
         return (
           <div key={d.date}>
-            <div className="text-[13px] text-muted font-semibold mb-2 px-1">{dayTitle(d.date)}</div>
+            {/* «…» у правого края — намёк, что за строкой дня лежит
+                раскрываемая запись (открытие по тапу в карточку ниже). */}
+            <div
+              data-testid="history-day-header"
+              className="mb-2 flex items-center justify-between px-1"
+            >
+              <span className="text-[13px] font-semibold text-muted">{dayTitle(d.date)}</span>
+              <span className="text-[13px] font-semibold text-muted" aria-hidden="true">
+                …
+              </span>
+            </div>
             <button
               type="button"
               onClick={() => setSelectedDay(d)}
