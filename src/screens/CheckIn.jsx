@@ -72,9 +72,16 @@ const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center 
 
 const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
-export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
+export function CheckInNextControls({
+  onNext,
+  disabled = false,
+  onSkip = null,
+  variant = 'scale',
+}) {
   return (
-    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+    <div
+      className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
+    >
       {onSkip ? (
         <button type="button" className="mx-checkin-next-controls__skip" onClick={onSkip}>
           Пропустить
@@ -215,9 +222,20 @@ export function CheckInQuestion({
  * DEMO_USER and api.js intercepts requests only when isPreviewDemoMode() is
  * true. The screens, transitions and editor must not diverge by environment.
  */
-function MorningCheckInFlow({ user, onDone, redo = false }) {
+function MorningCheckInFlow({ user, onDone, redo = false, existing = null }) {
   const [step, setStep] = useState(0)
-  const [values, setValues] = useState({ mood: null, energy: null, anxiety: null, focus: null })
+  /*
+   * Шаги anxiety/focus убраны из утреннего флоу, но PUT /api/checkin/today
+   * требует эти поля: в redo переносим их из перезаписываемой записи,
+   * не спрашивая пользователя. Настроение и энергия остаются пустыми —
+   * redo переспрашивает их заново.
+   */
+  const [values, setValues] = useState(() => ({
+    mood: null,
+    energy: null,
+    anxiety: redo ? (existing?.anxiety ?? null) : null,
+    focus: redo ? (existing?.focus ?? null) : null,
+  }))
   const [note, setNote] = useState('')
   const [feedback, setFeedback] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -645,12 +663,13 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const [values, setValues] = useState(() => ({
     mood: fieldSource?.mood ?? (isEvening ? null : consumeMoodDraft()),
     energy: fieldSource?.energy ?? null,
-    anxiety: fieldSource?.anxiety ?? null,
-    focus: fieldSource?.focus ?? null,
+    // Вечерний redo не переспрашивает anxiety/focus — переносим их
+    // из перезаписываемой записи, иначе PUT затрёт значения утра.
+    anxiety: (redo ? existing?.anxiety : fieldSource?.anxiety) ?? null,
+    focus: (redo ? existing?.focus : fieldSource?.focus) ?? null,
   }))
 
   const [emotion, setEmotion] = useState(fieldSource?.emotion || null)
-
 
   const [savedCheckinId, setSavedCheckinId] = useState(null)
 
@@ -1540,7 +1559,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
 function CheckIn({ user, onDone, mode = 'checkin', existing = null, redo = false }) {
   if (mode !== 'evening') {
-    return <MorningCheckInFlow user={user} onDone={onDone} redo={redo} />
+    return <MorningCheckInFlow user={user} onDone={onDone} redo={redo} existing={existing} />
   }
 
   return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} redo={redo} />
