@@ -366,7 +366,15 @@ export default function Today({
             const safeHistory = Array.isArray(history) ? history : []
             setCheckinHistory(safeHistory)
           })
-          .catch(() => {})
+          .catch(error => {
+            // Не глотаем молча: без истории огонёк серии в шапке
+            // показывает 0 (регрессия после #801). В предупреждении —
+            // только путь и статус, без персональных данных.
+            console.warn('[Today] история чек-инов не загружена', {
+              path: 'GET /api/checkin/history',
+              status: error?.status ?? null,
+            })
+          })
 
         setReviewHour(settingsData?.review_hour ?? 19)
       } catch (error) {

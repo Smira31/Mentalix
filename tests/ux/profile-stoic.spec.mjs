@@ -1,135 +1,10 @@
 import { expect, test } from '@playwright/test'
 
+import { VIEWPORTS, centerY, openTelegram, openWeb } from './profile-helpers.mjs'
+
 // #618 — профиль и настройки по эталону Stoic (DESIGN_SYSTEM.md §5.4).
 // Проверяем на 393 и 440 px: кнопка профиля, экран профиля, строки, карточки,
 // отсутствие своих ✕/назад в Telegram.
-
-const VIEWPORTS = [
-  { name: '393', width: 393, height: 852 },
-  { name: '440', width: 440, height: 956 },
-]
-
-const TEST_USER = { id: 900618, first_name: 'Профиль', username: 'profile_618' }
-
-function json(body, status = 200) {
-  return { status, contentType: 'application/json', body: JSON.stringify(body) }
-}
-
-async function mockApi(context) {
-  await context.route('**/api/**', route => {
-    const { pathname } = new URL(route.request().url())
-    if (route.request().method() !== 'GET') return route.fulfill(json({ ok: true, user: TEST_USER }))
-    if (pathname === '/api/profile') return route.fulfill(json(TEST_USER))
-    if (pathname === '/api/profile/settings') return route.fulfill(json({ review_hour: 19 }))
-    if (pathname === '/api/checkin/today') return route.fulfill(json(null))
-    if (pathname === '/api/subscription') return route.fulfill(json({ tier: 'base' }))
-    if (pathname === '/api/analytics/pulse') return route.fulfill(json({ active_today: 0 }))
-    if (/\/api\/(rituals|ascezas|themes|articles|checkin\/history)$/.test(pathname)) {
-      return route.fulfill(json([]))
-    }
-    return route.fulfill(json({}))
-  })
-}
-
-async function openWeb(browser, baseURL, viewport) {
-  const context = await browser.newContext({
-    baseURL,
-    viewport: { width: viewport.width, height: viewport.height },
-    colorScheme: 'dark',
-    reducedMotion: 'reduce',
-    serviceWorkers: 'block',
-  })
-  await context.addInitScript(user => {
-    localStorage.clear()
-    sessionStorage.clear()
-    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
-    localStorage.setItem('mx-onboarded-v2', '1')
-    localStorage.setItem('mx-app-lock-enabled', '0')
-  }, TEST_USER)
-  await mockApi(context)
-  const page = await context.newPage()
-  await page.goto('/')
-  await expect(page.getByTestId('today-profile-button')).toBeVisible()
-  return { context, page }
-}
-
-async function openTelegram(browser, baseURL, viewport) {
-  const context = await browser.newContext({
-    baseURL,
-    viewport: { width: viewport.width, height: viewport.height },
-    colorScheme: 'dark',
-    reducedMotion: 'reduce',
-    serviceWorkers: 'block',
-  })
-  await context.addInitScript(user => {
-    localStorage.clear()
-    sessionStorage.clear()
-    localStorage.setItem('mx-onboarded-v2', '1')
-    localStorage.setItem('mx-app-lock-enabled', '0')
-    const handlers = new Set()
-    const noop = () => {}
-    const backButton = {
-      isVisible: false,
-      show() {
-        this.isVisible = true
-      },
-      hide() {
-        this.isVisible = false
-      },
-      onClick: handler => handlers.add(handler),
-      offClick: handler => handlers.delete(handler),
-    }
-    window.__telegramBackClick = () => [...handlers].at(-1)?.()
-    const mainButton = {
-      setParams: noop,
-      onClick: noop,
-      offClick: noop,
-      show: noop,
-      hide: noop,
-      enable: noop,
-      disable: noop,
-      showProgress: noop,
-      hideProgress: noop,
-    }
-    const webApp = {
-      initData: `query_id=profile-618&user=${encodeURIComponent(JSON.stringify({ id: user.id }))}`,
-      initDataUnsafe: { user },
-      version: '8.0',
-      platform: 'ios',
-      colorScheme: 'dark',
-      isFullscreen: true,
-      BackButton: backButton,
-      MainButton: mainButton,
-      SecondaryButton: mainButton,
-      HapticFeedback: { impactOccurred: noop, notificationOccurred: noop, selectionChanged: noop },
-      onEvent: noop,
-      offEvent: noop,
-      ready: noop,
-      expand: noop,
-      requestFullscreen: noop,
-      lockOrientation: noop,
-      disableVerticalSwipes: noop,
-      setHeaderColor: noop,
-      setBackgroundColor: noop,
-      setBottomBarColor: noop,
-    }
-    window.Telegram = {}
-    Object.defineProperty(window.Telegram, 'WebApp', {
-      configurable: true,
-      get: () => webApp,
-      set: noop,
-    })
-  }, TEST_USER)
-  await mockApi(context)
-  const page = await context.newPage()
-  await page.goto('/')
-  await expect(page.getByTestId('today-profile-button')).toBeVisible()
-  return { context, page }
-}
-
-function centerY(box) {
-  return box.y + box.height / 2
-}
 
 for (const viewport of VIEWPORTS) {
   test.describe(`Профиль Stoic — ${viewport.name} px`, () => {
@@ -169,7 +44,7 @@ for (const viewport of VIEWPORTS) {
         // Под-экран и возврат.
         await page.getByTestId('profile-row-prefs').click()
         await expect(page.getByRole('heading', { name: 'настройки.' })).toBeVisible()
-        const back = page.getByTestId('profile-close-button')
+        const back = await page.getByTestId('profile-close-button')
         const backBox = await back.boundingBox()
         expect(Math.round(backBox.width)).toBe(44)
         expect(Math.round(backBox.x)).toBe(20)

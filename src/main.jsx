@@ -193,31 +193,21 @@ window.addEventListener('error', e => {
 // tgShell — dev-only Telegram iOS simulation. Dynamically imported so the
 // code never ships in the production bundle. ?tgshell=0 is handled inside.
 // navigator.webdriver excludes Playwright/automated browsers (CI UX tests).
-// Top-level await не входит в build-target продакшен-сборки, поэтому
-// флаг демо-режима ставится в .then(): App рендерится строго после
-// initTgShell, чтобы первый кадр уже видел __MX_TG_SHELL.
-const tgShellRequested =
+if (
   (import.meta.env.DEV || import.meta.env.VITE_TG_SHELL === '1') &&
   import.meta.env.VITE_TG_SHELL !== '0' &&
   !navigator.webdriver
-
-function renderApp() {
-  createRoot(document.getElementById('root')).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <AppProviders>
-          <RootScreen />
-        </AppProviders>
-      </ErrorBoundary>
-    </StrictMode>
-  )
+) {
+  const { initTgShell } = await import('./tgShell')
+  initTgShell()
 }
 
-if (tgShellRequested) {
-  import('./tgShell').then(({ initTgShell }) => {
-    initTgShell()
-    renderApp()
-  })
-} else {
-  renderApp()
-}
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <AppProviders>
+        <RootScreen />
+      </AppProviders>
+    </ErrorBoundary>
+  </StrictMode>
+)

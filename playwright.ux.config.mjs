@@ -7,6 +7,7 @@ export default defineConfig({
     'issue-648-independent-loading.spec.mjs',
     'mood-practice-smoke.spec.mjs',
     'checkin-geometry.spec.mjs',
+    'profile-p11.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
