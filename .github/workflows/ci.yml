@@ -2,6 +2,7 @@ name: Mentalix CI baseline
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     branches:
       - main
   push:
@@ -61,6 +62,21 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
+
+      - name: Защита точек входа (src/main.jsx, src/tgShell.js)
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'allow-entry-change') }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- src/main.jsx src/tgShell.js)"
+          if [ -n "$changed" ] && [ "$HAS_LABEL" != "true" ]; then
+            printf '%s\n' "$changed"
+            echo "::error::src/main.jsx и src/tgShell.js нельзя менять без метки allow-entry-change. Ошибка сборки в контейнере агента — не причина"
+            exit 1
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020

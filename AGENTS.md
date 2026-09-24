@@ -213,6 +213,11 @@ screens, and keep article cards unchanged unless the owner explicitly approves t
 - Firebase Production uses `VITE_API_BASE_URL` to call the Render backend directly.
   `src/lib/api.js` keeps relative `/api` only as a local fallback; Firebase Hosting does not proxy API requests.
 
+## Запреты
+
+- src/main.jsx и src/tgShell.js нельзя менять без метки allow-entry-change. Ошибка сборки в контейнере агента — не причина.
+  Правило принудительно проверяется в CI (job «Frontend quality», входит в «Функциональная проверка проекта»).
+
 ## Context economy
 
 - Читай только файлы из порядка чтения (AGENTS.md → PROJECT_STATE.md → PRODUCT.md →
