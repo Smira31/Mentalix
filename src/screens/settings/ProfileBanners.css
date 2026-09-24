@@ -6,6 +6,11 @@
   flex-direction: column;
   gap: 28px;
   margin-bottom: 28px;
+  /* Референс владельца: все три баннера одинаковые по стилю, фон —
+     приглушённый почти чёрный #1A1A1A (как торс персонажа на референсе),
+     детали не ярче фона, а чуть темнее. */
+  --mx-banner-bg: 26 26 26;
+  --mx-banner-panel: 20 20 20;
 }
 
 .mx-profile-banner {
@@ -42,7 +47,7 @@ button.mx-profile-banner:active {
   align-items: center;
   justify-content: center;
   padding: 24px 28px;
-  background: rgb(var(--c-card-raised));
+  background: rgb(var(--mx-banner-bg));
   text-align: center;
 }
 
@@ -103,6 +108,7 @@ button.mx-profile-banner:active {
   display: flex;
   min-height: 118px;
   align-items: center;
+  background: rgb(var(--mx-banner-bg));
 }
 
 .mx-profile-banner--support .mx-profile-banner__text {
@@ -126,7 +132,7 @@ button.mx-profile-banner:active {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  background: rgb(var(--c-card-raised2));
+  background: rgb(var(--mx-banner-panel));
   color: rgb(var(--c-white));
 }
 
@@ -148,7 +154,7 @@ button.mx-profile-banner:active {
    маленькую тусклую плашку браузера из иллюстрации владельца. */
 .mx-profile-banner--web {
   min-height: 190px;
-  background: rgb(var(--c-card-raised));
+  background: rgb(var(--mx-banner-bg));
 }
 
 /* Персонаж целиком в кадре, включая кончик поднятого пальца —
