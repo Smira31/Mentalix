@@ -26,9 +26,9 @@ test('production lists use the two-column Variant C tile contract', () => {
 
 test('practice detail exposes toggle, three accordions and the asceza break action', () => {
   assert.match(detail, /data-testid="practice-detail-toggle"/)
-  assert.match(detail, /data-testid="practice-accordion-why"/)
-  assert.match(detail, /data-testid="practice-accordion-how"/)
-  assert.match(detail, /data-testid="practice-accordion-note"/)
+  assert.match(detail, /testId="practice-accordion-why"/)
+  assert.match(detail, /testId="practice-accordion-how"/)
+  assert.match(detail, /testId="practice-accordion-note"/)
   assert.match(detail, /onLog/)
   assert.match(detail, /Сорвался сегодня/)
   assert.match(detail, /<DeleteConfirmationDialog/)
