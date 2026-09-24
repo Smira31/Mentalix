@@ -202,34 +202,6 @@
   text-align: center;
 }
 
-.mx-demo-today-profile {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-text));
-}
-
-.mx-demo-today-profile__avatar {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 50%;
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
-}
-
-.mx-demo-today-profile__avatar svg {
-  width: 23px;
-  height: 23px;
-  stroke-width: 1.8;
-}
-
 .mx-today-week__calendar {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -322,37 +294,6 @@
   font-weight: 750;
 }
 
-.mx-demo-today-profile {
-  border: 2px solid #1f1f1f;
-  background: #111;
-}
-
-.mx-stoic-profile-mark {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border-radius: 50%;
-  background: #f4f4f4;
-}
-
-.mx-stoic-profile-mark svg {
-  width: 23px;
-  height: 23px;
-  stroke: #111;
-  stroke-width: 1.8;
-}
-
-.mx-stoic-profile-mark__head {
-  fill: #111;
-}
-
-.mx-stoic-profile-mark__body {
-  fill: none;
-  stroke: #111;
-  stroke-linecap: round;
-}
-
 /* Revert only the Today streak/profile icon treatment to the previous Demo geometry. */
 .mx-demo-today-streak {
   min-width: 62px;
@@ -376,21 +317,6 @@
   color: rgb(var(--c-gold));
   font-size: 14px;
   font-weight: 700;
-}
-
-.mx-demo-today-profile {
-  width: 46px;
-  height: 46px;
-  border: 1px solid rgb(var(--c-border));
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-}
-
-.mx-demo-today-profile svg {
-  width: 23px;
-  height: 23px;
-  color: rgb(var(--c-text));
-  stroke-width: 1.8;
 }
 
 .mx-pinned-practices {
@@ -1050,29 +976,6 @@
   justify-content: center;
 }
 
-.mx-demo-today-profile {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #303030;
-  background: #1b1b1b;
-}
-
-.mx-demo-today-profile__avatar {
-  width: 28px;
-  height: 28px;
-  background: #c9c9c9;
-  color: #252525;
-}
-
-.mx-reference-profile-mark {
-  width: 21px;
-  height: 21px;
-  fill: #252525;
-  stroke: #252525;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-}
-
 .mx-demo-today-header + .mx-today-week .mx-today-week-day {
   min-height: 46px;
   border-radius: 15px;
@@ -1122,25 +1025,6 @@
   padding-inline: 10px;
 }
 
-.mx-demo-today-profile {
-  width: 40px;
-  height: 40px;
-}
-
-.mx-demo-today-profile__avatar {
-  width: 28px;
-  height: 28px;
-  background: #a7a7a7;
-  color: #202020;
-}
-
-.mx-reference-profile-mark {
-  width: 21px;
-  height: 21px;
-  fill: #202020;
-  stroke: #202020;
-}
-
 .mx-demo-today-header + .mx-today-week .mx-today-week-day[data-today='true'] {
   min-width: 38px;
   min-height: 56px;
@@ -1166,15 +1050,7 @@
   justify-self: end;
 }
 
-.mx-demo-today-profile {
-  justify-self: end;
-}
-
 .mx-demo-today-streak .mx-reference-flame {
-  flex: 0 0 auto;
-}
-
-.mx-demo-today-profile__avatar {
   flex: 0 0 auto;
 }
 
@@ -1245,36 +1121,6 @@
   transform: translateY(-50%);
 }
 
-.mx-demo-today-profile {
-  display: grid;
-  width: 46px;
-  height: 46px;
-  padding: 0;
-  place-items: center;
-  border: 1px solid rgb(var(--c-text) / 0.24);
-  border-radius: 50%;
-  background: rgb(var(--c-card));
-  color: rgb(var(--c-text));
-}
-
-.mx-demo-today-profile__avatar {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  border-radius: 50%;
-  background: transparent;
-  color: rgb(var(--c-text));
-}
-
-.mx-demo-today-profile__avatar svg {
-  width: 29px;
-  height: 29px;
-  color: currentColor;
-  stroke: currentColor;
-  stroke-width: 1.7;
-}
-
 @media (max-width: 359px) {
   .mx-demo-today-streak {
     min-width: 66px;
@@ -1290,23 +1136,6 @@
   .mx-demo-today-streak strong {
     font-size: 16px;
   }
-
-  .mx-demo-today-profile,
-  .mx-demo-today-header__tools {
-    width: 42px;
-    height: 42px;
-  }
-}
-
-/* Preserve the previously approved filled profile mark; only its position changes in this pass. */
-.mx-demo-today-profile__avatar {
-  background: rgb(var(--c-text));
-  color: rgb(var(--c-bg));
-}
-
-.mx-demo-today-profile__avatar svg {
-  color: rgb(var(--c-bg));
-  stroke: currentColor;
 }
 
 /* Mentalix Card System v2 final geometry. Keep this block after legacy demo/media rules. */
@@ -1797,4 +1626,30 @@
 .mx-today-day-card__pill {
   font-size: 12px;
   font-weight: 500;
+}
+
+/* Кнопка профиля — DESIGN_SYSTEM.md §5.4: 56 px, 14 px от правого края экрана,
+   центр на одной линии с чипом серии (строка шапки выравнивает по центру). */
+.mx-demo-today-profile {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  margin-right: calc(14px - var(--mx-screen-x));
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: #8a8a8a;
+  cursor: pointer;
+  transition: transform 160ms ease;
+}
+
+.mx-demo-today-profile:active {
+  transform: scale(0.97);
+}
+
+.mx-reference-profile-mark {
+  display: block;
+  width: 70%;
+  height: 70%;
 }

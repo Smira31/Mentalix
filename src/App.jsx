@@ -51,7 +51,6 @@ const ONBOARDED_KEY = 'mx-onboarded-v2'
 const Practices = lazy(() => import('./screens/Practices'))
 const Analytics = lazy(() => import('./screens/Analytics'))
 const MentalixChat = lazy(() => import('./screens/Mentalix'))
-const Profile = lazy(() => import('./screens/Profile'))
 const Settings = lazy(() => import('./screens/Settings'))
 const Library = lazy(() => import('./screens/Library'))
 const History = lazy(() => import('./screens/History'))
@@ -261,7 +260,7 @@ export default function App() {
   const [todaySeriesOpen, setTodaySeriesOpen] = useState(false)
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
-  const demoBackRefs = useRef({ mentor: null, today: null, practices: null })
+  const demoBackRefs = useRef({ mentor: null, today: null, practices: null, settings: null })
   const [demoMotionTick, setDemoMotionTick] = useState(0)
 
   const registerDemoBack = useCallback((key, handler) => {
@@ -276,6 +275,11 @@ export default function App() {
 
   const registerPracticesBack = useCallback(
     handler => registerDemoBack('practices', handler),
+    [registerDemoBack]
+  )
+
+  const registerSettingsBack = useCallback(
+    handler => registerDemoBack('settings', handler),
     [registerDemoBack]
   )
 
@@ -449,17 +453,15 @@ export default function App() {
   }, [overlay, tab, mentorPersonaOpen, todayFlowOpen, todaySeriesOpen, practiceGameOpen])
 
   const demoBackAction =
-    overlay === 'profile'
-      ? () => setOverlay('settings')
-      : overlay === 'settings'
-        ? () => setOverlay(null)
-        : tab === 'mentor'
-          ? demoBackRefs.current.mentor
-          : tab === 'today'
-            ? demoBackRefs.current.today
-            : tab === 'practices'
-              ? demoBackRefs.current.practices
-              : null
+    overlay === 'settings'
+      ? demoBackRefs.current.settings || (() => setOverlay(null))
+      : tab === 'mentor'
+        ? demoBackRefs.current.mentor
+        : tab === 'today'
+          ? demoBackRefs.current.today
+          : tab === 'practices'
+            ? demoBackRefs.current.practices
+            : null
 
   // Разрешены только известные contextual deep-links. Остальные query-параметры не
   // меняют состояние приложения и не могут открыть произвольный экран.
@@ -530,7 +532,8 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
-  const demoToolbar = previewDemoMode || new URLSearchParams(window.location.search).get('toolbar') === '1'
+  const demoToolbar =
+    previewDemoMode || new URLSearchParams(window.location.search).get('toolbar') === '1'
   const [demoDevice, setDemoDevice] = useState(() => {
     const device = new URLSearchParams(window.location.search).get('device')
     return device === 'max' ? 'max' : 'standard'
@@ -1215,68 +1218,13 @@ export default function App() {
                   onBack={() => {
                     setOverlay(null)
                   }}
-                  onNavigate={destination => {
-                    if (destination === 'profile') {
-                      setOverlay('profile')
-                    }
-                  }}
+                  onRegisterBack={registerSettingsBack}
+                  onScrollTop={scrollAppToTop}
                   accent={accent}
                   onAccentChange={setAccentRaw}
                   theme={theme}
                   onThemeChange={setThemeRaw}
                 />
-              )}
-
-              {/* Profile */}
-
-              {overlay === 'profile' && (
-                <div
-                  className="
-              w-full
-              flex
-              flex-col
-              items-center
-            "
-                >
-                  <div
-                    className="
-                w-full
-                max-w-md
-
-                px-5
-                pb-2
-
-                relative
-                grid
-                grid-cols-[1fr_auto_1fr]
-                items-center
-              "
-                  >
-                    <div className="justify-self-start">
-                      <BackButton
-                        showInDemo
-                        onClick={() => {
-                          setOverlay('settings')
-                        }}
-                      />
-                    </div>
-
-                    <span
-                      className="
-                  font-display
-                  mx-type-card
-                  text-cream
-                  lowercase
-                "
-                    >
-                      профиль.
-                    </span>
-
-                    <span aria-hidden="true" />
-                  </div>
-
-                  <Profile user={user} />
-                </div>
               )}
 
               {/* ======================================================

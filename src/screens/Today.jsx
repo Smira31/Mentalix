@@ -78,11 +78,19 @@ function ReferenceFlame() {
   )
 }
 
+// DESIGN_SYSTEM.md §5.4: белый диск 70% кнопки, серый силуэт (голова + плечи),
+// обрезанный кругом диска. Своя иконка — фото из Telegram не используем.
 function ReferenceProfileMark() {
   return (
-    <svg className="mx-reference-profile-mark" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.3" />
-      <path d="M5.8 19.2c.8-3.1 2.9-4.8 6.2-4.8s5.4 1.7 6.2 4.8" />
+    <svg className="mx-reference-profile-mark" viewBox="0 0 40 40" aria-hidden="true">
+      <clipPath id="mx-profile-mark-disk">
+        <circle cx="20" cy="20" r="20" />
+      </clipPath>
+      <circle cx="20" cy="20" r="20" fill="#fff" />
+      <g clipPath="url(#mx-profile-mark-disk)" fill="#8a8a8a">
+        <circle cx="20" cy="15" r="7" />
+        <path d="M5 40c0-8.6 6.7-14.5 15-14.5S35 31.4 35 40Z" />
+      </g>
     </svg>
   )
 }
@@ -97,6 +105,7 @@ function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 0, onStre
     <header className="mx-demo-today-header">
       <button
         type="button"
+        data-testid="today-streak-chip"
         className={`mx-demo-today-streak${streak > 0 ? '' : ' mx-demo-today-streak--empty'}`}
         aria-label={streakLabel}
         onClick={onStreakClick || onOpenSeries}
@@ -109,12 +118,11 @@ function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 0, onStre
         <button
           type="button"
           className="mx-demo-today-profile"
+          data-testid="today-profile-button"
           aria-label="Открыть настройки"
           onClick={onOpenSettings}
         >
-          <span className="mx-demo-today-profile__avatar">
-            <ReferenceProfileMark />
-          </span>
+          <ReferenceProfileMark />
         </button>
       </div>
     </header>
