@@ -24,9 +24,9 @@ test('MXL-PRACTICES-CATALOG-POLISH-001 (G3): пустое состояние р�
   assert.match(source, /Открыть аскезы/)
 })
 
-test('MXL-547: верхний rail сохраняет рабочую Лилу и честно блокирует будущие карточки', () => {
+test('MXL-547: верхний rail сохраняет рабочую практику и честно блокирует будущие карточки', () => {
   assert.match(source, /key: 'lila-discover'/)
-  assert.match(source, /title: 'Разобраться через Лилу'/)
+  assert.match(source, /title: 'Разобраться со Следопытом'/)
   assert.match(source, /title: 'Импульс к действию с Львом'/)
   assert.match(source, /title: 'Фокус'/)
   assert.match(source, /disabled=\{!card\.active\}/)
