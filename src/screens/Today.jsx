@@ -647,6 +647,7 @@ export default function Today({
       )
     const props = {
       className: 'mx-today-day-card animate-fade-in',
+      'data-testid': `today-card-${kind}`,
       'data-kind': kind,
       'data-state': state,
       'aria-label': `${copy.label}: ${state === 'locked' ? lockedText : state === 'missed' ? lockedText : state === 'done' ? completedText : copy.title}`,
