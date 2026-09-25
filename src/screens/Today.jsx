@@ -38,6 +38,7 @@ import { formatReviewTime, resolveTodayCardStates, primaryCardKind } from '../li
 import { collectActivityDays } from '../lib/series'
 import { now as clockNow } from '../lib/clock'
 import { demoScenario } from '../lib/demoMode'
+import { pickVisibleTodayHint } from '../lib/todayHints'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -290,13 +291,26 @@ export default function Today({
   const [seriesTooltipClosing, setSeriesTooltipClosing] = useState(false)
   const seriesTooltipRef = useRef(null)
 
+  // Подсказки показываются по одной: следующая — после закрытия предыдущей.
+  const cardsHintEligible =
+    (checkinHistory.length > 0 || (user?.demo && demoScenario() === 'Новый пользователь')) &&
+    hintDismissed !== 'true'
+  const visibleHint = pickVisibleTodayHint({
+    series: showSeriesTooltip,
+    cards: cardsHintEligible,
+  })
+
   // Автозакрытие подсказок при прокрутке (как у Stoic): если подсказка
   // была видна и полностью ушла за верхний край — помечаем закрытой навсегда.
-  useAutoDismissOnScroll(cardsHintRef, () => setHintDismissed('true'))
-  useAutoDismissOnScroll(seriesTooltipRef, () => {
-    markSeriesTooltipSeen(user?.id)
-    setShowSeriesTooltip(false)
-  })
+  useAutoDismissOnScroll(cardsHintRef, () => setHintDismissed('true'), visibleHint === 'cards')
+  useAutoDismissOnScroll(
+    seriesTooltipRef,
+    () => {
+      markSeriesTooltipSeen(user?.id)
+      setShowSeriesTooltip(false)
+    },
+    visibleHint === 'series'
+  )
 
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
 
@@ -885,7 +899,7 @@ export default function Today({
           changeSub('path')
         }}
       />
-      {showSeriesTooltip && (
+      {visibleHint === 'series' && (
         <aside
           ref={seriesTooltipRef}
           className={`mx-today-series-tooltip${seriesTooltipClosing ? ' mx-today-series-tooltip--closing' : ''}`}
@@ -920,7 +934,7 @@ export default function Today({
       )}
 
       {/* Подсказка после первого чек-ина — монохромная плашка с ✕. */}
-      {(checkinHistory.length > 0 || (user?.demo && demoScenario() === 'Новый пользователь')) && hintDismissed !== 'true' && (
+      {visibleHint === 'cards' && (
         <div
           ref={cardsHintRef}
           className={`mx-today-cards-hint${cardsHintClosing ? ' mx-today-cards-hint--closing' : ''}`}

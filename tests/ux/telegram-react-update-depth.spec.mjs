@@ -213,16 +213,18 @@ for (const mode of modes) {
       })
       await assertNoUpdateDepth(runtimeErrors, 'после загрузки')
 
+      // Подсказки по одной: сначала о серии, после её закрытия — о карточках.
       const cardsHint = page.getByTestId('today-cards-hint')
+      const dismissSeriesTip = page.getByRole('button', { name: 'Закрыть подсказку о серии' })
+      await expect(dismissSeriesTip).toBeVisible()
+      await expect(cardsHint).toBeHidden()
+      await dismissSeriesTip.click()
+      await expect(dismissSeriesTip).toBeHidden()
+
       const dismissHint = cardsHint.getByRole('button', { name: 'Закрыть подсказку', exact: true })
       await expect(cardsHint).toBeVisible()
       await dismissHint.click()
       await expect(cardsHint).toBeHidden()
-
-      const dismissSeriesTip = page.getByRole('button', { name: 'Закрыть подсказку о серии' })
-      await expect(dismissSeriesTip).toBeVisible()
-      await dismissSeriesTip.click()
-      await expect(dismissSeriesTip).toBeHidden()
       await assertNoUpdateDepth(runtimeErrors, 'после открытия и закрытия подсказок')
 
       await page.getByTestId('today-streak-chip').click()
