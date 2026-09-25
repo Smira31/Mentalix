@@ -24,6 +24,17 @@ export const DEMO_USER = {
   demo: true,
 }
 
+export function isRealPhone(windowLike) {
+  const w = windowLike || (typeof window !== 'undefined' ? window : null)
+  if (!w) return false
+
+  const coarsePointer = w.matchMedia?.('(pointer: coarse)')?.matches === true
+  const screenWidth = w.screen?.width ?? w.innerWidth ?? 9999
+  const innerWidth = w.innerWidth ?? screenWidth
+
+  return coarsePointer && Math.min(screenWidth, innerWidth) <= 500
+}
+
 export function isPreviewDemoMode() {
   if (typeof window === 'undefined') return false
 
