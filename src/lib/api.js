@@ -598,13 +598,14 @@ export const api = {
     history: (userId, persona = 'mayak') =>
       request(withQuery('/mentalix/messages', { user_id: userId, persona })),
 
-    send: (userId, content, persona = 'mayak') =>
+    send: (userId, content, persona = 'mayak', handoff = null) =>
       request('/mentalix/messages', {
         method: 'POST',
         body: JSON.stringify({
           user_id: userId,
           content,
           persona,
+          ...(handoff ? { handoff } : {}),
         }),
       }),
 

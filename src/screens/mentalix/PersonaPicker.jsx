@@ -132,6 +132,7 @@ export default function PersonaPicker({ onPick }) {
                   <p className="mx-dialog-card__description mx-type-persona-body">{description}</p>
                   <button
                     type="button"
+                    data-testid={`mentor-start-${persona.key}`}
                     className="mx-dialog-card__start mx-type-control"
                     tabIndex={isActive ? undefined : -1}
                     onClick={event => {
