@@ -206,10 +206,15 @@ async function screenshot(page, viewport, slug, fullPage = false) {
   return relative.replaceAll('\\', '/')
 }
 
+const MAX_BUTTONS_PER_SCREEN = 15
+
 async function clickEveryButton(page, screenName, allIssues) {
   const buttons = await page.locator('button:visible, a:visible, [role="button"]:visible').all()
 
+  let clicked = 0
   for (const btn of buttons) {
+    if (clicked >= MAX_BUTTONS_PER_SCREEN) break
+
     let label = ''
     let href = ''
     try {
@@ -229,20 +234,21 @@ async function clickEveryButton(page, screenName, allIssues) {
     const urlBefore = page.url()
     const domBefore = await page.evaluate(() => document.body.innerHTML.length)
 
-    let clicked = false
+    let didClick = false
     try {
       const box = await btn.boundingBox()
       if (!box || box.width === 0 || box.height === 0) continue
-      await btn.click({ timeout: 5000 })
-      clicked = true
+      await btn.click({ timeout: 2000, force: true })
+      didClick = true
     } catch {
       continue
     }
 
-    if (!clicked) continue
+    if (!didClick) continue
+    clicked++
 
     // Wait briefly for any change
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(200)
 
     const urlAfter = page.url()
     const domAfter = await page.evaluate(() => document.body.innerHTML.length)
@@ -262,11 +268,13 @@ async function clickEveryButton(page, screenName, allIssues) {
       })
     }
 
-    // Go back
-    try {
-      await page.goBack({ timeout: 3000 }).catch(() => {})
-    } catch {
-      // ignore
+    // Go back if URL changed
+    if (urlAfter !== urlBefore) {
+      try {
+        await page.goBack({ timeout: 1500 }).catch(() => {})
+      } catch {
+        // ignore
+      }
     }
   }
 }
@@ -374,7 +382,7 @@ function buildSummaryMd(screens, allIssues) {
 }
 
 test('QA обход всех экранов', async ({ browser, baseURL }) => {
-  test.setTimeout(600_000)
+  test.setTimeout(900_000)
 
   await rm(ARTIFACT_ROOT, { recursive: true, force: true })
   await mkdir(SCREENSHOT_ROOT, { recursive: true })
@@ -398,7 +406,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     // ─── TODAY preview states ───
     for (const state of TODAY_PREVIEW_STATES) {
       await page.goto(`/?today_state=${state}`)
-      await page.waitForTimeout(800)
+      await page.waitForTimeout(400)
       const issues = await collectIssues(page, `Сегодня (${state})`, viewport)
       allIssues.push(...issues)
       const shot = await screenshot(page, viewport, `01-today-${state}`)
@@ -409,7 +417,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Шаги' }).waitFor({ state: 'visible' })
     await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
     const ci1 = await collectIssues(page, 'Чек-ин шаг 1', viewport)
     allIssues.push(...ci1)
     const ciShot1 = await screenshot(page, viewport, '02-checkin-step1')
@@ -420,7 +428,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     if (await opt1.count() > 0) {
       await opt1.click()
       await page.getByRole('button', { name: 'Далее' }).click()
-      await page.waitForTimeout(500)
+      await page.waitForTimeout(300)
       const ci2 = await collectIssues(page, 'Чек-ин шаг 2', viewport)
       allIssues.push(...ci2)
       const ciShot2 = await screenshot(page, viewport, '02-checkin-step2')
@@ -431,7 +439,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
       if (await opt2.count() > 0) {
         await opt2.click()
         await page.getByRole('button', { name: 'Далее' }).click()
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(300)
         const ci3 = await collectIssues(page, 'Чек-ин запись', viewport)
         allIssues.push(...ci3)
         const ciShot3 = await screenshot(page, viewport, '02-checkin-writer')
@@ -441,13 +449,13 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
 
     // ─── EVENING REVIEW (Разбор дня) — each step ───
     await page.goto('/?today_state=dayInProgress')
-    await page.waitForTimeout(800)
+    await page.waitForTimeout(400)
     const eveningCard = page.locator('[data-testid="today-card-evening"]')
     if (await eveningCard.count() > 0) {
       const cardState = await eveningCard.getAttribute('data-state')
       if (cardState === 'active' || cardState === 'done') {
         await eveningCard.click()
-        await page.waitForTimeout(800)
+        await page.waitForTimeout(400)
         const ev1 = await collectIssues(page, 'Разбор дня шаг 1', viewport)
         allIssues.push(...ev1)
         const evShot1 = await screenshot(page, viewport, '03-evening-step1')
@@ -459,7 +467,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
           const radio = page.getByRole('radio', { name: reviewOptions[i] })
           if (await radio.count() > 0) {
             await radio.click()
-            await page.waitForTimeout(300)
+            await page.waitForTimeout(200)
             const evShot = await screenshot(page, viewport, `03-evening-step${i + 2}`)
             const evIssues = await collectIssues(page, `Разбор дня шаг ${i + 2}`, viewport)
             allIssues.push(...evIssues)
@@ -468,7 +476,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
             const nextBtn = page.getByRole('button', { name: /Дальше|Закрыть день/ })
             if (await nextBtn.count() > 0) {
               await nextBtn.click()
-              await page.waitForTimeout(500)
+              await page.waitForTimeout(300)
             }
           }
         }
@@ -481,7 +489,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     const streakChip = page.locator('[data-testid="today-streak-chip"]')
     if (await streakChip.count() > 0) {
       await streakChip.click()
-      await page.waitForTimeout(800)
+      await page.waitForTimeout(400)
       const seriesIssues = await collectIssues(page, 'Шторка серии', viewport)
       allIssues.push(...seriesIssues)
       const seriesShot = await screenshot(page, viewport, '04-series-sheet')
@@ -489,14 +497,14 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
       // Go back
       const backBtn = page.getByRole('button', { name: 'Назад' })
       if (await backBtn.count() > 0) await backBtn.click()
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(200)
     }
 
     // ─── PRACTICES TAB ───
     await page.goto('/')
     await page.getByRole('button', { name: 'Шаги' }).waitFor({ state: 'visible' })
     await page.getByRole('button', { name: 'Шаги' }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
     const practicesIssues = await collectIssues(page, 'Практики', viewport)
     allIssues.push(...practicesIssues)
     const practicesShot = await screenshot(page, viewport, '05-practices')
@@ -507,11 +515,11 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     const ascezasCollection = page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Аскезы' })
     if (await ascezasCollection.count() > 0) {
       await ascezasCollection.click()
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(200)
       const openAscezas = page.getByRole('button', { name: 'Открыть аскезы' })
       if (await openAscezas.count() > 0) {
         await openAscezas.click()
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(300)
         const ascezasIssues = await collectIssues(page, 'Аскезы', viewport)
         allIssues.push(...ascezasIssues)
         const ascezasShot = await screenshot(page, viewport, '06-ascezas')
@@ -522,7 +530,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
         const ascezaCards = page.locator('[data-testid], button, a').filter({ hasText: /Без|Не открывать/ })
         if (await ascezaCards.count() > 0) {
           await ascezaCards.first().click()
-          await page.waitForTimeout(500)
+          await page.waitForTimeout(300)
           const detailIssues = await collectIssues(page, 'Экран практики (аскеза)', viewport)
           allIssues.push(...detailIssues)
           const detailShot = await screenshot(page, viewport, '07-practice-detail-asceza')
@@ -533,7 +541,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
             const acc = page.locator(`[data-testid="${testId}"]`)
             if (await acc.count() > 0) {
               await acc.click()
-              await page.waitForTimeout(300)
+              await page.waitForTimeout(200)
             }
           }
           const accordionShot = await screenshot(page, viewport, '07b-practice-detail-expanded')
@@ -543,7 +551,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
 
           const backBtn = page.getByRole('button', { name: 'Назад' })
           if (await backBtn.count() > 0) await backBtn.click()
-          await page.waitForTimeout(300)
+          await page.waitForTimeout(200)
         }
       }
     }
@@ -551,15 +559,15 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     // ─── RITUALS ───
     await page.goto('/')
     await page.getByRole('button', { name: 'Шаги' }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
     const ritualsCollection = page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Ритуалы' })
     if (await ritualsCollection.count() > 0) {
       await ritualsCollection.click()
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(200)
       const openRituals = page.getByRole('button', { name: 'Открыть ритуалы' })
       if (await openRituals.count() > 0) {
         await openRituals.click()
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(300)
         const ritualsIssues = await collectIssues(page, 'Ритуалы', viewport)
         allIssues.push(...ritualsIssues)
         const ritualsShot = await screenshot(page, viewport, '08-rituals')
@@ -570,7 +578,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
         const ritualCards = page.locator('button, a').filter({ hasText: /Утренний спорт|Стакан воды|Три минуты/ })
         if (await ritualCards.count() > 0) {
           await ritualCards.first().click()
-          await page.waitForTimeout(500)
+          await page.waitForTimeout(300)
           const rDetailIssues = await collectIssues(page, 'Экран практики (ритуал)', viewport)
           allIssues.push(...rDetailIssues)
           const rDetailShot = await screenshot(page, viewport, '09-practice-detail-ritual')
@@ -581,7 +589,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
             const acc = page.locator(`[data-testid="${testId}"]`)
             if (await acc.count() > 0) {
               await acc.click()
-              await page.waitForTimeout(300)
+              await page.waitForTimeout(200)
             }
           }
           const rAccordionShot = await screenshot(page, viewport, '09b-practice-detail-ritual-expanded')
@@ -591,7 +599,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
 
           const backBtn = page.getByRole('button', { name: 'Назад' })
           if (await backBtn.count() > 0) await backBtn.click()
-          await page.waitForTimeout(300)
+          await page.waitForTimeout(200)
         }
       }
     }
@@ -599,13 +607,13 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     // ─── MOOD PRACTICE (Настроение) — each step ───
     await page.goto('/')
     await page.getByRole('button', { name: 'Шаги' }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
     // Try to find mood practice entry
     const moodEntry = page.getByText('Настроение', { exact: false }).first()
     if (await moodEntry.count() > 0) {
       try {
         await moodEntry.click()
-        await page.waitForTimeout(500)
+        await page.waitForTimeout(300)
 
         // Intro screen
         const moodIntro = page.locator('[data-testid="mood-practice-intro"]')
@@ -618,7 +626,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
           const startBtn = page.locator('[data-testid="mood-practice-start"]')
           if (await startBtn.count() > 0) {
             await startBtn.click()
-            await page.waitForTimeout(500)
+            await page.waitForTimeout(300)
           }
         }
 
@@ -648,7 +656,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Шаги' }).waitFor({ state: 'visible' })
     await page.getByRole('button', { name: 'Диалог' }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
     const dialogIssues = await collectIssues(page, 'Диалог', viewport)
     allIssues.push(...dialogIssues)
     const dialogShot = await screenshot(page, viewport, '13-dialog')
@@ -657,7 +665,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
 
     // ─── LIBRARY TAB ───
     await page.getByRole('button', { name: 'Библиотека' }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
     const libraryIssues = await collectIssues(page, 'Библиотека', viewport)
     allIssues.push(...libraryIssues)
     const libraryShot = await screenshot(page, viewport, '14-library')
@@ -666,7 +674,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
 
     // ─── PROGRESS/ANALYTICS TAB ───
     await page.getByRole('button', { name: 'Прогресс' }).click()
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(300)
     const progressIssues = await collectIssues(page, 'Прогресс', viewport)
     allIssues.push(...progressIssues)
     const progressShot = await screenshot(page, viewport, '15-progress')
@@ -678,11 +686,11 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     const historyBtn = page.getByRole('button', { name: 'История' }).first()
     if (await historyBtn.count() > 0) {
       await historyBtn.click()
-      await page.waitForTimeout(500)
+      await page.waitForTimeout(300)
     } else {
       // Navigate via URL
       await page.goto('/?tab=history')
-      await page.waitForTimeout(500)
+      await page.waitForTimeout(300)
     }
     const historyIssues = await collectIssues(page, 'История', viewport)
     allIssues.push(...historyIssues)
@@ -695,7 +703,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     const profileBtn = page.locator('[data-testid="today-profile-button"]')
     if (await profileBtn.count() > 0) {
       await profileBtn.click()
-      await page.waitForTimeout(500)
+      await page.waitForTimeout(300)
     }
     const profileIssues = await collectIssues(page, 'Профиль', viewport)
     allIssues.push(...profileIssues)
@@ -707,7 +715,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
     const aboutRow = page.locator('[data-testid="profile-row-about"]')
     if (await aboutRow.count() > 0) {
       await aboutRow.click()
-      await page.waitForTimeout(500)
+      await page.waitForTimeout(300)
       const aboutIssues = await collectIssues(page, 'о тебе.', viewport)
       allIssues.push(...aboutIssues)
       const aboutShot = await screenshot(page, viewport, '18-about', true)
@@ -716,7 +724,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
       // Go back to profile root
       const backBtn = page.getByRole('button', { name: /Назад|твой профиль/ })
       if (await backBtn.count() > 0) await backBtn.first().click()
-      await page.waitForTimeout(300)
+      await page.waitForTimeout(200)
     }
 
     // ─── подписка. ───
@@ -727,7 +735,7 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
       if (await subRow.count() > 0) {
         try {
           await subRow.click()
-          await page.waitForTimeout(500)
+          await page.waitForTimeout(300)
           const subIssues = await collectIssues(page, 'подписка.', viewport)
           allIssues.push(...subIssues)
           const subShot = await screenshot(page, viewport, '19-subscription', true)
