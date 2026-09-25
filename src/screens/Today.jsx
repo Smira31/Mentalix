@@ -2,11 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
-import {
-  fetchTodayDataWithRetry,
-  invalidateTodayData,
-  peekTodaySnapshot,
-} from '../lib/todayDataCache'
+import { fetchTodayDataWithRetry, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
@@ -459,7 +455,7 @@ export default function Today({
     if (!user) return
 
     try {
-      const current = await api.checkin.today(user.id)
+      const { checkin: current } = await fetchTodayDataWithRetry(user.id, { force: true })
 
       setCheckin(current)
 
