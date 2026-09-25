@@ -24,9 +24,14 @@ import {
  * Текущее действие «Назад» берётся из единого стека useBackButton
  * (telegram.hooks.js). Если стек пуст — свайп ничего не делает.
  *
- * preventDefault вызывается ТОЛЬКО во время уже начатого
- * горизонтального edge-swipe (старт в полосе 24 px, горизонталь >
- * вертикали). Вертикальная прокрутка одним пальцем не блокируется.
+ * touchmove — passive: true. Раньше был passive:false для preventDefault
+ * во время edge-swipe, но на iOS Safari passive: false на предке
+ * скролл-контейнера заставляет браузер ждать main thread перед каждым
+ * скроллом. Когда «Сегодня» грузит данные (10+ async state updates),
+ * main thread занят — скролл «замирает». С passive: true браузер
+ * скроллит на compositor thread без ожидания JS.
+ * Горизонтальный скролл уже блокирует touch-action: pan-y (index.css),
+ * так что preventDefault не нужен.
  *
  * 60 fps: только transform/opacity, без layout.
  * prefers-reduced-motion: без анимации сдвига, только действие.
@@ -155,8 +160,11 @@ export function useGlobalEdgeSwipeBack(ref, { enabled = true } = {}) {
         )
       }
 
-      // Предотвращаем скролл во время жеста
-      if (e.cancelable) e.preventDefault()
+      // preventDefault убран: touch-action: pan-y на корне приложения
+      // уже блокирует горизонтальный скролл, а passive:true не даёт
+      // вызвать preventDefault. Вертикальный скролл во время edge-swipe
+      // минимален (жест стартует только в полосе 24px от левого края
+      // и блокируется только при горизонтальном движении).
     }
 
     function onTouchEnd() {
@@ -203,10 +211,10 @@ export function useGlobalEdgeSwipeBack(ref, { enabled = true } = {}) {
 
     // touchstart — passive, не блокирует прокрутку
     el.addEventListener('touchstart', onTouchStart, { passive: true })
-    // touchmove — passive:false нужен для preventDefault во время жеста.
-    // Блокирует прокрутку ТОЛЬКО когда locked (горизонтальный edge-swipe).
-    // Если жест не активен — обработчик сразу return, прокрутка работает.
-    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    // touchmove — passive: true. Не блокирует compositor-thread скролл.
+    // touch-action: pan-y (index.css) уже предотвращает горизонтальный
+    // скролл; preventDefault больше не нужен.
+    el.addEventListener('touchmove', onTouchMove, { passive: true })
     el.addEventListener('touchend', onTouchEnd, { passive: true })
     el.addEventListener('touchcancel', onTouchEnd, { passive: true })
 

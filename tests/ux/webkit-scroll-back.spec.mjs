@@ -79,6 +79,93 @@ test.describe('WebKit iPhone: скролл «Сегодня»', () => {
     expect(scrollTopAfter).toBeGreaterThan(200)
   })
 
+  test('«Сегодня» через 5 с: elementFromPoint — контент, скролл работает, нет невидимых слоёв', async ({ page }) => {
+    await page.goto('/?demo=1')
+
+    await expect(page.locator('[data-testid="today-streak-chip"]')).toBeVisible({ timeout: 15_000 })
+
+    // Ждём 5 секунд: демо-данные, тултип серии, подсказки, значки
+    await page.waitForTimeout(5000)
+
+    const diagnostics = await page.evaluate(() => {
+      const W = window.innerWidth
+      const H = window.innerHeight
+
+      // 1. elementFromPoint в 5 точках
+      const points = [
+        { name: 'center', x: W / 2, y: H / 2 },
+        { name: 'quarter', x: W / 2, y: H / 4 },
+        { name: 'three-quarter', x: W / 2, y: (H * 3) / 4 },
+      ]
+      const hits = points.map(p => {
+        const el = document.elementFromPoint(p.x, p.y)
+        // Поднимаемся до mx-screen-shell или mx-app-scroll-root
+        let walker = el
+        let belongsToToday = false
+        while (walker) {
+          const cls = walker.className?.toString?.() || ''
+          if (cls.includes('mx-screen-shell') || cls.includes('mx-app-scroll-root')) {
+            belongsToToday = true
+            break
+          }
+          walker = walker.parentElement
+        }
+        return { point: p.name, belongsToToday, tag: el?.tagName?.toLowerCase() }
+      })
+
+      // 2. Программный скролл на 400px (или максимум)
+      const root = document.querySelector('.mx-app-scroll-root')
+      const maxScroll = root ? root.scrollHeight - root.clientHeight : 0
+      const targetScroll = Math.min(400, maxScroll)
+      root?.scrollTo({ top: targetScroll, behavior: 'instant' })
+      const scrollTopAfter = root?.scrollTop ?? 0
+      root?.scrollTo({ top: 0, behavior: 'instant' })
+
+      // 3. Невидимые фиксированные/абсолютные слои ≥50% экрана
+      const all = document.querySelectorAll('*')
+      const invisibleOverlays = []
+      for (const el of all) {
+        const style = getComputedStyle(el)
+        if (style.position !== 'fixed' && style.position !== 'absolute') continue
+        const rect = el.getBoundingClientRect()
+        if (rect.width < W * 0.5 || rect.height < H * 0.5) continue
+        const isVisible = style.visibility !== 'hidden' &&
+          style.display !== 'none' &&
+          parseFloat(style.opacity) > 0
+        const pointerEvents = style.pointerEvents
+        // Невидимый слой с pointer-events ≠ none — баг
+        if (!isVisible && pointerEvents !== 'none') {
+          invisibleOverlays.push({
+            tag: el.tagName?.toLowerCase(),
+            cls: (el.className?.toString?.() || '').slice(0, 100),
+            opacity: style.opacity,
+            visibility: style.visibility,
+            pointerEvents,
+          })
+        }
+      }
+
+      return {
+        hits,
+        scrollTest: { target: targetScroll, actual: scrollTopAfter, maxScroll },
+        invisibleOverlays,
+      }
+    })
+
+    console.log('5s diagnostics:', JSON.stringify(diagnostics, null, 2))
+
+    // elementFromPoint во всех точках принадлежит контенту Today
+    for (const hit of diagnostics.hits) {
+      expect(hit.belongsToToday, `point ${hit.point} should belong to Today content`).toBe(true)
+    }
+
+    // Программный скролл работает
+    expect(diagnostics.scrollTest.actual).toBeGreaterThan(0)
+
+    // Нет невидимых слоёв ≥50% экрана с pointer-events ≠ none
+    expect(diagnostics.invisibleOverlays).toEqual([])
+  })
+
   test('«Шаги» (Practices) — scrollHeight > clientHeight (контроль)', async ({ page }) => {
     await page.goto('/?demo=1&tab=practices')
 
