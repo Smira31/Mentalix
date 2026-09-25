@@ -546,7 +546,7 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
-  const demoPanelAllowed = previewDemoMode && platformName !== 'telegram' && !window.__MX_TG_SHELL
+  const demoPanelAllowed = previewDemoMode && platformName !== 'telegram'
   const [demoPanelOpen, setDemoPanelOpen] = useState(() =>
     new URLSearchParams(window.location.search).get('panel') === '1'
   )

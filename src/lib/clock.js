@@ -22,7 +22,7 @@ export function setDemoClock(preset, days = 0) {
 }
 
 export function now(real = new Date(), demoEnabled = typeof window !== 'undefined' && Boolean(window.location?.hostname) && isPreviewDemoMode()) {
-  if (!demoEnabled || (typeof window !== 'undefined' && (window.__MX_TG_SHELL || window.Telegram?.WebApp?.initData))) return real
+  if (!demoEnabled || (typeof window !== 'undefined' && window.Telegram?.WebApp?.initData)) return real
   const { preset, days } = readDemoClock()
   if (!preset && !days) return real
   const result = new Date(real)
