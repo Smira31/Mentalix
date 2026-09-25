@@ -1,4 +1,5 @@
 import { api } from './api'
+import { withRetry, isRetryableError, RETRY_DELAYS_MS } from './todayRetry'
 
 /*
  * IN-MEMORY КЕШ ДАННЫХ ЭКРАНА «СЕГОДНЯ»
@@ -227,48 +228,12 @@ export async function fetchTodayData(userId, { force = false } = {}) {
 
 /*
  * Автоповтор загрузки данных «Сегодня» — переживает сон бесплатного
- * Render (первый запрос после сна отвечает до 50 с). api.js имеет
- * свой таймаут 10 с и 1 внутренний повтор, но этого мало: сервер
- * может не успеть проснуться за 20 с. Повторяем с паузами 3, 8, 20 с
- * (4 попытки всего), общий срок ожидания ≥ 60 с.
- *
- * Повторяем только «сетевые» ошибки (timeout, network, 5xx, 408/425/429).
- * Прочие (4xx) — сразу выбрасываем, без повтора.
+ * Render (первый запрос после сна отвечает до 50 с). Повторяем с
+ * паузами 3, 8, 20 с (4 попытки), общий срок ожидания ≥ 60 с.
+ * Логика в todayRetry.js, чтобы unit-тесты могли её импортировать.
  */
-const RETRY_DELAYS_MS = [3_000, 8_000, 20_000]
-const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
-
-function isRetryableError(error) {
-  if (!error) return false
-  if (error.kind === 'network' || error.kind === 'timeout') return true
-  if (typeof error.status === 'number') {
-    if (error.status >= 500) return true
-    if (RETRYABLE_STATUS_CODES.has(error.status)) return true
-  }
-  return false
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-export async function fetchTodayDataWithRetry(userId, options = {}) {
-  let lastError = null
-
-  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
-    try {
-      return await fetchTodayData(userId, options)
-    } catch (error) {
-      lastError = error
-      if (attempt < RETRY_DELAYS_MS.length && isRetryableError(error)) {
-        await sleep(RETRY_DELAYS_MS[attempt])
-        continue
-      }
-      throw error
-    }
-  }
-
-  throw lastError
+export function fetchTodayDataWithRetry(userId, options = {}) {
+  return withRetry(() => fetchTodayData(userId, options))
 }
 
 export function invalidateTodayData(userId) {
