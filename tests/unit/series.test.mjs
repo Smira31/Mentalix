@@ -62,7 +62,7 @@ test('buildSeriesViewModel keeps badges derived from existing stats and practice
   assert.equal(model.bestStreak, 1)
   assert.equal(model.totalCheckins, 1)
   assert.equal(model.activeDays, 1)
-  assert.equal(model.badges.length, 6)
+  assert.equal(model.badges.length, 9)
   assert.equal(model.badges.find(badge => badge.id === 'voice-heard').done, false)
   assert.equal(model.badges.find(badge => badge.id === 'ritual-holds').done, true)
 })
@@ -71,7 +71,7 @@ test('buildSeriesViewModel is safe for empty API responses', () => {
   const model = buildSeriesViewModel({})
 
   assert.equal(model.currentStreak, 0)
-  assert.equal(model.badges.length, 6)
+  assert.equal(model.badges.length, 9)
   assert.equal(model.badges.every(badge => badge.done === false), true)
 })
 

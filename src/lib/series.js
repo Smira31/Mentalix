@@ -197,6 +197,41 @@ export function buildSeriesViewModel({
   }
 }
 
+/**
+ * Разделить историю на «до сегодняшнего чек-ина» и «с сегодняшним чек-ином»,
+ * чтобы сравнить значки и определить, какие открылись именно сейчас, а какие
+ * были получены задним числом (ретро-зачёт при первом появлении значка в
+ * каталоге). Обе модели строятся из одной свежей истории — это исключает
+ * гонку с ещё не загруженным React-состоянием checkinHistory.
+ */
+export function splitCheckinsForComparison(history = [], todayCheckin = null, now = clockNow()) {
+  const list = Array.isArray(history) ? history : []
+  if (!todayCheckin || typeof todayCheckin !== 'object') {
+    return { previous: list, next: list }
+  }
+  const todayKey = Number.isFinite(dayNumber(todayCheckin.date))
+    ? String(todayCheckin.date).slice(0, 10)
+    : localDayKey(now)
+  const previous = list.filter(c => String(c.date).slice(0, 10) !== todayKey)
+  const next = withTodayCheckin(list, todayCheckin, now)
+  return { previous, next }
+}
+
+/**
+ * Найти первый значок, который открыт в nextModel, но не был открыт в
+ * previousModel. Используется для шторки «Новый значок» — показывает
+ * только значки, полученные в момент нового чек-ина, а не ретро-зачёт.
+ */
+export function detectNewlyUnlockedBadge(previousModel, nextModel) {
+  if (!nextModel?.badges) return null
+  return (
+    nextModel.badges.find(
+      badge =>
+        badge.done && !previousModel?.badges?.find(previous => previous.id === badge.id)?.done
+    ) || null
+  )
+}
+
 export function peekSeriesSnapshot(userId) {
   if (!userId) return null
   if (seriesSnapshots.has(userId)) return seriesSnapshots.get(userId)
