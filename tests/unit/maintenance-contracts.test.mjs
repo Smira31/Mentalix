@@ -725,8 +725,13 @@ test('MXL-DS-LABEL-FONT-001 разрешает font-label только на eyeb
   // место font-label на вкладке Аналитика (компонент SectionLabel).
   assert.match(analytics, /function SectionLabel\(\{ children \}\)/)
   assert.match(analytics, /<h3 className="mx-progress-section-label font-label"/)
+  const cardPreferences = readFileSync(
+    new URL('../../src/screens/progress/analyticsCardPreferences.js', import.meta.url),
+    'utf8'
+  )
+  assert.match(analytics, /<SectionLabel>\{card\.section\}<\/SectionLabel>/)
   for (const label of ['Общее', 'Эмоции']) {
-    assert.match(analytics, new RegExp(`<SectionLabel>${label}</SectionLabel>`))
+    assert.match(cardPreferences, new RegExp(`section: '${label}'`))
   }
 
   // font-label встречается только в SectionLabel — не расползается на
