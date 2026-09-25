@@ -50,7 +50,22 @@ function fixtureFor(request) {
   if (pathname === '/api/ascezas') return jsonResponse(FIXTURES.ascezas)
   if (pathname === '/api/quotes/today') return jsonResponse(FIXTURES.quote)
   if (pathname === '/api/checkin/today') return jsonResponse(FIXTURES.checkin)
-  if (pathname === '/api/checkin/history') return jsonResponse(FIXTURES.history)
+  if (pathname === '/api/checkin/history') {
+    // Динамическая запись за вчера — нужна для теста свайпа из HistoryDetail
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    return jsonResponse([
+      {
+        id: 900500,
+        date: yesterday.toISOString().slice(0, 10),
+        mood: 3,
+        energy: 4,
+        note: 'Спокойный день.',
+        emotion: 'ровно',
+        review_completed_at: new Date().toISOString(),
+      },
+    ])
+  }
   if (pathname === '/api/themes') return jsonResponse(FIXTURES.themes)
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
@@ -119,6 +134,58 @@ async function swipeDownOnElement(page, selector, distance = 400) {
   )
 }
 
+/*
+ * Симуляция тач-свайпа от левого края экрана (жест «назад»).
+ * Начинается в полосе 24px от левого края (EDGE_WIDTH),
+ * проходит >35% ширины экрана (порог срабатывания).
+ */
+async function swipeRightFromEdge(page, selector) {
+  await page.evaluate(selector => {
+    const el = document.querySelector(selector)
+    if (!el) throw new Error(`Элемент не найден: ${selector}`)
+
+    const startX = 0 // левый край, в полосе EDGE_WIDTH (24px)
+    const rect = el.getBoundingClientRect()
+    const startY = rect.top + rect.height / 2
+    const distance = window.innerWidth * 0.5 // 50% ширины > порога 35%
+
+    function makeTouch(x, y) {
+      return new Touch({
+        identifier: 0,
+        target: el,
+        clientX: x,
+        clientY: y,
+        radiusX: 1,
+        radiusY: 1,
+        rotationAngle: 0,
+        force: 1,
+      })
+    }
+
+    function dispatch(type, touch, cancelable = true) {
+      const event = new TouchEvent(type, {
+        touches: type === 'touchend' ? [] : [touch],
+        targetTouches: type === 'touchend' ? [] : [touch],
+        changedTouches: [touch],
+        bubbles: true,
+        cancelable,
+      })
+      el.dispatchEvent(event)
+    }
+
+    const startTouch = makeTouch(startX, startY)
+    dispatch('touchstart', startTouch)
+
+    const steps = 12
+    for (let i = 1; i <= steps; i++) {
+      const x = startX + (distance * i) / steps
+      dispatch('touchmove', makeTouch(x, startY))
+    }
+
+    dispatch('touchend', makeTouch(startX + distance, startY))
+  }, selector)
+}
+
 test.describe('Свайп-жесты', () => {
   test.beforeEach(async ({ context }) => {
     await context.addInitScript(user => {
@@ -157,5 +224,80 @@ test.describe('Свайп-жесты', () => {
 
     // Шторка должна закрыться (onClose → setSelectedBadge(null))
     await expect(badgeSheet).not.toBeVisible({ timeout: 5_000 })
+  })
+
+  test('свайп от левого края закрывает экран чек-ина', async ({ page }) => {
+    await page.goto('/')
+
+    // Открываем утренний чек-ин через карточку дня
+    const morningCard = page.locator('[data-testid="today-card-morning"]')
+    await expect(morningCard).toBeVisible()
+    await morningCard.click()
+
+    // Ждём появления шкалы настроения
+    await expect(page.locator('[data-testid="checkin-scale-row"]')).toBeVisible()
+
+    // Свайп от левого края по порталу чек-ина
+    await swipeRightFromEdge(page, 'body > .fixed.bg-emerald-deep')
+
+    // Возврат на экран Сегодня
+    await expect(page.locator('[data-testid="today-streak-chip"]')).toBeVisible({ timeout: 5_000 })
+  })
+
+  test('свайп от левого края закрывает экран серии и значков', async ({ page }) => {
+    await page.goto('/')
+
+    // Открываем экран серии/значков через чип огонька
+    const streakChip = page.locator('[data-testid="today-streak-chip"]')
+    await expect(streakChip).toBeVisible()
+    await streakChip.click()
+
+    // Ждём появления экрана значков
+    await expect(page.getByRole('tab', { name: 'Значки' })).toBeVisible()
+
+    // Свайп от левого края по поверхности серии
+    await swipeRightFromEdge(page, '.mx-path-surface')
+
+    // Возврат на экран Сегодня
+    await expect(page.locator('[data-testid="today-streak-chip"]')).toBeVisible({ timeout: 5_000 })
+  })
+
+  test('свайп от левого края закрывает экран профиля', async ({ page }) => {
+    await page.goto('/')
+
+    // Открываем профиль через кнопку профиля
+    const profileButton = page.locator('[data-testid="today-profile-button"]')
+    await expect(profileButton).toBeVisible()
+    await profileButton.click()
+
+    // Ждём появления экрана профиля
+    await expect(page.locator('[data-testid="profile-screen"]')).toBeVisible()
+
+    // Свайп от левого края по экрану профиля
+    await swipeRightFromEdge(page, '[data-testid="profile-screen"]')
+
+    // Возврат на экран Сегодня
+    await expect(page.locator('[data-testid="today-streak-chip"]')).toBeVisible({ timeout: 5_000 })
+  })
+
+  test('свайп от левого края закрывает детальную запись истории', async ({ page }) => {
+    await page.goto('/?tab=history')
+
+    // Ждём загрузки списка истории
+    const dayButton = page.getByRole('button', { name: /Открыть запись за/ })
+    await expect(dayButton).toBeVisible({ timeout: 10_000 })
+
+    // Открываем детальную запись дня
+    await dayButton.click()
+
+    // Ждём появления детального экрана
+    const detailSection = page.locator('[aria-label^="Запись за"]')
+    await expect(detailSection).toBeVisible()
+
+    // Свайп от левого края по секции детальной записи
+    await swipeRightFromEdge(page, '[aria-label^="Запись за"]')
+
+    // Возврат к списку истории — кнопка поиска записей видна снова
+    await expect(page.getByText('Искать и фильтровать записи')).toBeVisible({ timeout: 5_000 })
   })
 })
