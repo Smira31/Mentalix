@@ -61,6 +61,21 @@ export const DEMO_USER = {
   demo: true,
 }
 
+export const DEMO_GUEST_USER = {
+  id: 900002,
+  web_user_id: 'preview-demo-guest',
+  first_name: 'Гость',
+  email: null,
+  linked: false,
+  demo: true,
+  is_guest: true,
+}
+
+export function isDemoGuestMode() {
+  if (typeof window === 'undefined') return false
+  return isPreviewDemoMode() && new URLSearchParams(window.location.search).get('guest') === '1'
+}
+
 export function isRealPhone(windowLike) {
   const w = windowLike || (typeof window !== 'undefined' ? window : null)
   if (!w) return false
@@ -599,6 +614,14 @@ function respond(path, options = {}) {
     writeState({ ...state, checkins })
     return json({ ok: true, value })
   }
+  // Гостевой режим (демо): создание гостя и перенос записей.
+  if (pathname === '/auth/guest' && method === 'POST') {
+    return json({ ok: true, merge_token: 'demo-guest-merge-token', user: DEMO_GUEST_USER })
+  }
+  if (pathname === '/auth/guest/merge' && method === 'POST') {
+    return json({ user: { ...DEMO_USER, merged_from_guest: true } })
+  }
+
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })
 
   if (pathname === '/mentalix/transcribe' && method === 'POST') {
