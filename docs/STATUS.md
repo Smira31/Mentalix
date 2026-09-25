@@ -21,7 +21,6 @@
 8. Подсказки: правило «одна подсказка за раз».
 9. telegram-p0: 6 старых падающих тестов (не в обязательном гейте).
 10. Профиль по Stoic 1:04–1:44 — нужны кадры владельца (#618).
-11. Удалить устаревшие ветки: fix-today-card, feat/today-card-art, feat/swipe-back, fix/no-zoom-hints, feat/mood-in-history, fix-ux-check, branch-cleanup-script.
 
 ## Ждут решения владельца
 - Галочка под днём в календаре недели — вернуть как у Stoic?
