@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { sanitizeTrendsData } from '../lib/trendsDataSanitizer'
-import { loadIndependentSources } from '../lib/pathDataLoader'
+import { loadIndependentSources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
@@ -837,6 +837,11 @@ export default function Analytics({
 
   const [poolCheckins, setPoolCheckins] = useState([])
   const [analyticsData, setAnalyticsData] = useState(null)
+  const [sourceResult, setSourceResult] = useState(null)
+  const [sourceLoading, setSourceLoading] = useState(Boolean(user))
+  const sourceResultRef = useRef(null)
+  const retryFailedSourcesRef = useRef(false)
+  const [reloadKey, setReloadKey] = useState(0)
   const [insightsEnabled, setInsightsEnabled] = useState(true)
   const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
 
@@ -890,28 +895,35 @@ export default function Analytics({
     if (!user) return
 
     let active = true
+    const previous = retryFailedSourcesRef.current ? sourceResultRef.current : null
+    retryFailedSourcesRef.current = false
     loadIndependentSources({
       analytics: () => api.analytics.get(user.id, gran.days),
       checkins: () => api.checkin.history(user.id, 90),
-    })
+    }, previous ? { previous, only: previous.failed } : undefined)
       .then(result => {
         if (!active) return
-        const clean =
-          result.data.analytics && result.data.checkins
-            ? sanitizeTrendsData({ analytics: result.data.analytics, checkins: result.data.checkins })
-            : null
-        if (clean?.analytics) setAnalyticsData(clean.analytics)
-        if (Array.isArray(clean?.checkins)) setPoolCheckins(clean.checkins)
+        sourceResultRef.current = result
+        setSourceResult(result)
+        if (result.data.analytics) {
+          setAnalyticsData(sanitizeTrendsData({ analytics: result.data.analytics }).analytics)
+        }
+        if (Array.isArray(result.data.checkins)) {
+          setPoolCheckins(sanitizeTrendsData({ checkins: result.data.checkins }).checkins)
+        }
       })
       .catch(error => {
         console.error(error)
+      })
+      .finally(() => {
+        if (active) setSourceLoading(false)
       })
 
     return () => {
       active = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, granularity])
+  }, [user, granularity, reloadKey])
 
   // Insights visibility preference
   useEffect(() => {
@@ -957,6 +969,13 @@ export default function Analytics({
     observations: [],
     daily_activity: [],
   }
+  const analyticsState = sourceResult?.states?.analytics
+  const checkinsState = sourceResult?.states?.checkins
+  const analyticsError =
+    !sourceLoading && analyticsState && analyticsState !== SOURCE_STATES.success
+  const analyticsAuth = analyticsState === SOURCE_STATES.auth
+  const checkinsFailed =
+    !sourceLoading && checkinsState && checkinsState !== SOURCE_STATES.success
   const isCurrentPeriod = offset === 0
 
   const descriptiveBackendInsights = selectDescriptiveInsights(safeData.insights)
@@ -983,9 +1002,16 @@ export default function Analytics({
     setOffset(o => Math.max(0, o - 1))
   }
   function selectGranularity(id) {
+    if (id !== granularity) setSourceLoading(true)
     setGranularity(id)
     setOffset(0)
     setPeriodMenuOpen(false)
+  }
+
+  function retryFailedSources() {
+    retryFailedSourcesRef.current = true
+    setSourceLoading(true)
+    setReloadKey(value => value + 1)
   }
 
   return (
@@ -1067,6 +1093,25 @@ export default function Analytics({
           </header>
 
           <MoodCard onStartMood={onStartMood} onGoCheckin={onGoCheckin} />
+
+          {analyticsError && (
+            <div role="alert" className="mx-progress-redesign__status-note">
+              {analyticsAuth
+                ? 'Статистика требует повторной авторизации.'
+                : 'Статистика временно недоступна.'}
+              <button type="button" onClick={retryFailedSources}>
+                Повторить
+              </button>
+            </div>
+          )}
+          {checkinsFailed && !analyticsError && (
+            <p className="mx-progress-redesign__status-note" role="status">
+              История чек-инов временно недоступна; остальные показатели продолжают работать.
+              <button type="button" onClick={retryFailedSources}>
+                Повторить
+              </button>
+            </p>
+          )}
 
           {showNeedData && (
             <NeedDataPlaque checkinsCount={periodCheckins.length} onRemind={onOpenNotifications} />
