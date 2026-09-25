@@ -309,6 +309,10 @@ export function clearSeriesSnapshots() {
   seriesSnapshots.clear()
 }
 
+export function seriesLogicalDateKey(value = clockNow(), timezone) {
+  return logicalDateKey(value, timezone)
+}
+
 export function seriesDateKey(checkin, timezone = 'UTC') {
   return dateKey(checkin, timezone)
 }

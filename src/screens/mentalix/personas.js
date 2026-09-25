@@ -4,6 +4,7 @@ import { pickByDay, PERSONA_STARTER_PROMPTS } from '../../data/prompts'
 export const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
 
 export const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
+export const MENTOR_HANDOFF_KEY = 'mx-mentor-handoff'
 
 // MXL-AI-REFRAME-001: отдельный флаг хендоффа от «Обсудить с AI» на
 // сохранённой записи (History.jsx) — включает лид-дисклеймер и
@@ -71,12 +72,13 @@ export function readPendingMentor() {
     const draft = sessionStorage.getItem(MENTOR_DRAFT_KEY) || ''
 
     const safety = sessionStorage.getItem(MENTOR_SAFETY_KEY) === '1'
-
-    sessionStorage.removeItem(MENTOR_PERSONA_KEY)
-
-    sessionStorage.removeItem(MENTOR_DRAFT_KEY)
-
-    sessionStorage.removeItem(MENTOR_SAFETY_KEY)
+    const storedHandoff = sessionStorage.getItem(MENTOR_HANDOFF_KEY)
+    let handoff = null
+    try {
+      handoff = storedHandoff ? JSON.parse(storedHandoff) : null
+    } catch {
+      // An invalid marker must not prevent the chat from opening.
+    }
 
     const valid = PERSONAS.some(item => item.key === persona)
 
@@ -92,6 +94,12 @@ export function readPendingMentor() {
       persona,
       draft,
       safety,
+      handoff:
+        persona === 'dnevnik' &&
+        handoff?.type === 'evening_review' &&
+        /^\d{4}-\d{2}-\d{2}$/.test(handoff.date)
+          ? handoff
+          : null,
     }
   } catch {
     return {
