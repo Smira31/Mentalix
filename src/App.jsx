@@ -24,7 +24,13 @@ import { returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { parseContextualDeepLink } from './lib/contextualDeepLink'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
-import { DEMO_USER, isPreviewDemoMode, isRealPhone, isDemoGuestMode, DEMO_GUEST_USER } from './lib/demoMode'
+import {
+  DEMO_USER,
+  isPreviewDemoMode,
+  isRealPhone,
+  isDemoGuestMode,
+  DEMO_GUEST_USER,
+} from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
@@ -248,6 +254,10 @@ function App() {
 
   const [authError, setAuthError] = useState(null)
   const [showGuestAuth, setShowGuestAuth] = useState(false)
+
+  // StrictMode запускает эффект дважды — без гварда автогость создаётся
+  // два раза, и второй запрос маскирует ошибку первого (503 → 200).
+  const authCheckStartedRef = useRef(false)
 
   const acceptUser = useCallback(nextUser => {
     if (nextUser?.id) {
@@ -476,8 +486,8 @@ function App() {
   const [tab, setTab] = useState(
     isHistoryInitial ? 'trends' : validTabs.includes(initialTab) ? initialTab : 'today'
   )
-  const [progressHistoryTrigger, setProgressHistoryTrigger] = useState(
-    () => (isHistoryInitial ? 1 : 0)
+  const [progressHistoryTrigger, setProgressHistoryTrigger] = useState(() =>
+    isHistoryInitial ? 1 : 0
   )
   const tabRef = useRef(tab)
   useEffect(() => {
@@ -645,7 +655,8 @@ function App() {
         acceptUser(existing)
       } else if (platformName === 'web' && !platform.getSessionToken?.()) {
         const params = new URLSearchParams(window.location.search)
-        const emailLink = window.location.pathname.startsWith('/auth/') ||
+        const emailLink =
+          window.location.pathname.startsWith('/auth/') ||
           ['email', 'code', 'token'].some(key => params.has(key))
         if (!emailLink) {
           try {
@@ -1109,10 +1120,12 @@ function App() {
         "
       >
         <Suspense fallback={<Splash />}>
-          <WebAuthScreen onAuthed={nextUser => {
-            setShowGuestAuth(false)
-            acceptUser(nextUser)
-          }} />
+          <WebAuthScreen
+            onAuthed={nextUser => {
+              setShowGuestAuth(false)
+              acceptUser(nextUser)
+            }}
+          />
         </Suspense>
       </div>
     )
