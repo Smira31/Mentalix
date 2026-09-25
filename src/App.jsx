@@ -653,6 +653,19 @@ export default function App() {
     lockVerticalSwipes()
   }, [])
 
+  // На реальном телефоне в демо-режиме без фрейма document может
+  // прокручиваться вместо scroll-root. Блокируем прокрутку html/body,
+  // чтобы единственным скролл-контейнером оставался mx-app-scroll-root.
+  useEffect(() => {
+    if (!previewDemoMode || !realPhone) return
+
+    document.documentElement.classList.add('mx-real-phone-demo')
+
+    return () => {
+      document.documentElement.classList.remove('mx-real-phone-demo')
+    }
+  }, [previewDemoMode, realPhone])
+
   /*
    * Настройки уезжают в системное меню «⋯»: они нужны редко,
    * а место на экране занимали каждый день.
@@ -731,7 +744,7 @@ export default function App() {
         return
       }
 
-      const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
+      const currentY = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
 
       const previousY = lastScrollY.current
 
@@ -805,7 +818,7 @@ export default function App() {
       scrollFrame.current = window.requestAnimationFrame(processScroll)
     }
 
-    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, 0)
+    lastScrollY.current = Math.max(scrollRootRef.current?.scrollTop || 0, window.scrollY || 0)
 
     resetGesture()
 
@@ -815,8 +828,13 @@ export default function App() {
 
     scrollRoot.addEventListener('scroll', handleScroll, { passive: true })
 
+    // На реальном телефоне без фрейма document может прокручиваться вместо
+    // scroll-root. Слушаем оба источника — currentY берёт максимум.
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
     return () => {
       scrollRoot.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', handleScroll)
 
       if (scrollFrame.current !== null) {
         window.cancelAnimationFrame(scrollFrame.current)
@@ -1107,7 +1125,7 @@ export default function App() {
         </div>
       )}
       <div
-        data-mentalix-demo-frame={previewDemoMode ? 'true' : undefined}
+        data-mentalix-demo-frame={deviceFrameMode ? 'true' : undefined}
         data-mentalix-desktop-frame={desktopDeviceFrame ? 'true' : undefined}
         data-demo-tab={previewDemoMode ? (tab === 'trends' ? 'progress' : tab) : undefined}
         className={`
