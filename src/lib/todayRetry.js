@@ -29,7 +29,7 @@ function sleep(ms) {
  *
  * Неритребельные ошибки (4xx) выбрасываются сразу, без повтора.
  */
-export async function withRetry(fn) {
+export async function withRetry(fn, { sleepFn = sleep } = {}) {
   let lastError = null
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
@@ -38,7 +38,7 @@ export async function withRetry(fn) {
     } catch (error) {
       lastError = error
       if (attempt < RETRY_DELAYS_MS.length && isRetryableError(error)) {
-        await sleep(RETRY_DELAYS_MS[attempt])
+        await sleepFn(RETRY_DELAYS_MS[attempt])
         continue
       }
       throw error
