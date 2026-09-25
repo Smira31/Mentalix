@@ -667,7 +667,7 @@ export default function Settings({
   function renderPrefs() {
     return (
       <ProfileBody>
-        <ProfileGroup label="Наблюдения">
+        <ProfileGroup label="Общие">
           <ProfileCard>
             <ProfileRow
               title="Показывать описательные наблюдения"
@@ -692,42 +692,8 @@ export default function Settings({
           )}
         </ProfileGroup>
 
-        <ProfileGroup label="Карточки «Сегодня»">
+        <ProfileGroup label="Приложение">
           <ProfileCard>
-            {TODAY_CARD_IDS.map(id => (
-              <ProfileRow
-                key={id}
-                title={TODAY_CARD_LABELS[id].title}
-                subtitle={TODAY_CARD_LABELS[id].subtitle}
-                right={
-                  <Toggle
-                    checked={!hiddenCards.includes(id)}
-                    label={TODAY_CARD_LABELS[id].title}
-                    onChange={() => toggleTodayCard(id)}
-                  />
-                }
-              />
-            ))}
-          </ProfileCard>
-        </ProfileGroup>
-
-        <ProfileGroup label="Основные">
-          <ProfileCard>
-            <ProfileRow
-              title="Блокировка приложения"
-              subtitle={
-                !lockOn
-                  ? 'Код доступа при входе'
-                  : !lockConfiguredHere
-                    ? 'Включено, но не задано на этом устройстве'
-                    : biometricAvailable
-                      ? 'Код + Face ID/Touch ID'
-                      : 'Код доступа'
-              }
-              right={
-                <Toggle checked={lockOn} label="Блокировка приложения" onChange={handleLockPress} />
-              }
-            />
             <ProfileRow title="Связать с сайтом" onClick={() => setScreen('link-web')} />
             <ProfileRow
               title="Пройти знакомство заново"
@@ -752,8 +718,9 @@ export default function Settings({
     // Акцентный цвет: состояние живёт в App.jsx (MXL-THEME-ACCENT-001).
     return (
       <ProfileBody>
-        <ProfileGroup label="Тема">
+        <ProfileGroup label="Общие">
           <ProfileCard>
+            <ProfileRow title="Тема" testId="profile-row-theme" />
             <div className="mx-profile-inset">
               <ProfileChips
                 label="Тема приложения"
@@ -762,12 +729,9 @@ export default function Settings({
                 options={Object.entries(THEMES).map(([id, { label }]) => ({ value: id, label }))}
               />
             </div>
-          </ProfileCard>
-        </ProfileGroup>
-        <ProfileGroup label="Акцентный цвет">
-          <ProfileCard>
             <ProfileRow
-              title={accentColors[accent].label}
+              title="Акцентный цвет"
+              subtitle={accentColors[accent].label}
               right={
                 <div className="flex gap-1">
                   {Object.entries(accentColors).map(([id, { label, hex }]) => (
@@ -785,6 +749,24 @@ export default function Settings({
                 </div>
               }
             />
+          </ProfileCard>
+        </ProfileGroup>
+        <ProfileGroup label="Экран «Сегодня»">
+          <ProfileCard>
+            {TODAY_CARD_IDS.map(id => (
+              <ProfileRow
+                key={id}
+                title={TODAY_CARD_LABELS[id].title}
+                subtitle={TODAY_CARD_LABELS[id].subtitle}
+                right={
+                  <Toggle
+                    checked={!hiddenCards.includes(id)}
+                    label={TODAY_CARD_LABELS[id].title}
+                    onChange={() => toggleTodayCard(id)}
+                  />
+                }
+              />
+            ))}
           </ProfileCard>
         </ProfileGroup>
       </ProfileBody>
@@ -934,6 +916,25 @@ export default function Settings({
   function renderData() {
     return (
       <ProfileBody>
+        <ProfileGroup label="Защита">
+          <ProfileCard>
+            <ProfileRow
+              title="Блокировка приложения"
+              subtitle={
+                !lockOn
+                  ? 'Код доступа при входе'
+                  : !lockConfiguredHere
+                    ? 'Включено, но не задано на этом устройстве'
+                    : biometricAvailable
+                      ? 'Код + Face ID/Touch ID'
+                      : 'Код доступа'
+              }
+              right={
+                <Toggle checked={lockOn} label="Блокировка приложения" onChange={handleLockPress} />
+              }
+            />
+          </ProfileCard>
+        </ProfileGroup>
         <ProfileGroup label="Личные данные">
           <ProfileCard>
             {privacyProtectedByTelegram ? (
@@ -973,6 +974,10 @@ export default function Settings({
                 </div>
               </>
             )}
+          </ProfileCard>
+        </ProfileGroup>
+        <ProfileGroup label="Удаление">
+          <ProfileCard>
             <ProfileRow
               title="Очистить черновик"
               subtitle="Только незавершённый текст на этом устройстве"

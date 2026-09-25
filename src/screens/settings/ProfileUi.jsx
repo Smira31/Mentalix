@@ -60,7 +60,7 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
   return (
     <div
       ref={screenRef}
-      className={`mx-profile-page${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
+      className={`mx-profile-page${isRoot ? '' : ' mx-profile-page--sub'}${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
       data-testid={testId}
     >
       <div className="mx-profile-page__bar">
@@ -129,9 +129,13 @@ export function ProfileNote({ children, role, danger = false }) {
  * Строка списка: 50 px, текст слева в 20 px от края карточки, справа —
  * значение жирным и шеврон (у кликабельных) либо свой элемент (right).
  */
-export function ProfileRow({ title, subtitle, value, right, onClick, danger = false, testId }) {
+export function ProfileRow({ title, subtitle, value, right, onClick, danger = false, testId, valueHeading = false }) {
   const Component = onClick ? 'button' : 'div'
   const showChevron = Boolean(onClick) && !right
+  // valueHeading: значение строки становится заголовком (h3) — нужно,
+  // чтобы имя пользователя в «о тебе.» имело роль heading (контракт #648).
+  // Вёрстка та же: .mx-profile-row__value обнуляет отступы для заголовка.
+  const ValueTag = valueHeading ? 'h3' : 'span'
 
   return (
     <Component
@@ -143,7 +147,7 @@ export function ProfileRow({ title, subtitle, value, right, onClick, danger = fa
         <span className="mx-profile-row__title">{title}</span>
         {subtitle && <span className="mx-profile-row__subtitle">{subtitle}</span>}
       </span>
-      {value != null && <span className="mx-profile-row__value">{value}</span>}
+      {value != null && <ValueTag className="mx-profile-row__value">{value}</ValueTag>}
       {right}
       {showChevron && (
         <ChevronRight
