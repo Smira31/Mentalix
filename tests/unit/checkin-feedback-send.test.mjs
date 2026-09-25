@@ -177,7 +177,7 @@ test('утренний первый проход: finish() вызывает send
   assert.match(finishFn, /sendCheckinFeedback/, 'finish() вызывает sendCheckinFeedback')
 })
 
-test('утренний «Пройти заново»: redo-ветка finish() вызывает sendCheckinFeedback до onDone()', async () => {
+test('утренний «Пройти заново»: finish() вызывает sendCheckinFeedback до onDone() (redo-ветка)', async () => {
   const src = await getSource()
   const morningFlow = src.slice(
     src.indexOf('function MorningCheckInFlow'),
@@ -186,15 +186,19 @@ test('утренний «Пройти заново»: redo-ветка finish() �
 
   const finishFn = morningFlow.slice(morningFlow.indexOf('async function finish()'))
 
-  // Извлекаем redo-ветку
-  const redoBranch = finishFn.slice(finishFn.indexOf('if (redo)'))
+  // sendCheckinFeedback должен стоять ДО проверки redo и до onDone(),
+  // чтобы оценка уходила на пути «Пройти заново» (redo=true).
+  const feedbackPos = finishFn.indexOf('sendCheckinFeedback')
+  const redoPos = finishFn.indexOf('if (redo)')
+  const onDonePos = finishFn.indexOf('onDone()')
 
-  // sendCheckinFeedback должен быть вызван ДО onDone() в redo-ветке
-  const feedbackPos = redoBranch.indexOf('sendCheckinFeedback')
-  const onDonePos = redoBranch.indexOf('onDone()')
-
-  assert.ok(feedbackPos !== -1, 'redo-ветка вызывает sendCheckinFeedback')
-  assert.ok(onDonePos !== -1, 'redo-ветка вызывает onDone()')
+  assert.ok(feedbackPos !== -1, 'finish() вызывает sendCheckinFeedback')
+  assert.ok(redoPos !== -1, 'finish() содержит проверку redo')
+  assert.ok(onDonePos !== -1, 'finish() вызывает onDone()')
+  assert.ok(
+    feedbackPos < redoPos,
+    'sendCheckinFeedback вызывается ДО if (redo) — иначе redo пропускает оценку'
+  )
   assert.ok(
     feedbackPos < onDonePos,
     'sendCheckinFeedback вызывается ДО onDone() — иначе оценка теряется'
