@@ -23,6 +23,9 @@ async function measure(page) {
     const panel = document.querySelector('.mx-bottom-nav > div').getBoundingClientRect()
     const content = document.querySelector('.mx-scroll-content')
     const vw = window.innerWidth
+    // Полноэкранные подложки/обёртки (фон «Диалога» и т.п.) — не «последний элемент»:
+    // считаем только то, что ниже их — реальное содержимое.
+    const maxH = window.innerHeight * 0.6
     const inFixed = el => {
       for (let n = el; n && n !== content; n = n.parentElement) {
         const pos = getComputedStyle(n).position
@@ -34,7 +37,7 @@ async function measure(page) {
     let last = ''
     for (const el of content.querySelectorAll('*')) {
       const r = el.getBoundingClientRect()
-      if (r.width < 1 || r.height < 1) continue
+      if (r.width < 1 || r.height < 1 || r.height > maxH) continue
       if (r.right <= 0 || r.left >= vw) continue
       const cs = getComputedStyle(el)
       if (cs.visibility === 'hidden' || cs.opacity === '0') continue
@@ -69,6 +72,9 @@ for (const browserName of ['chromium', 'webkit']) {
         await page.goto('/?demo=1')
 
         for (const label of TABS) {
+          // При прокрутке демо-панель сворачивается в кружок — разворачиваем перед сменой вкладки.
+          const expand = page.locator('.mx-bottom-nav button[aria-label="Открыть навигацию"]')
+          if (await expand.isVisible()) await expand.click()
           const button = page.locator(`.mx-bottom-nav nav button[aria-label="${label}"]`)
           await expect(button).toBeVisible({ timeout: 15_000 })
           await button.click()
