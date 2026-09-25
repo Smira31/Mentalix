@@ -37,6 +37,15 @@ export const PRACTICE_CATALOG_REGISTRY = [
     completionSource: 'none',
     sub: 'mood',
   },
+  {
+    key: PRACTICE_KEYS.alterEgo,
+    title: 'Альтер-эго',
+    subtitle: 'собери маску, в которой ты сильнее',
+    section: 'Практики',
+    kind: 'alter-ego',
+    completionSource: 'none',
+    sub: 'alter-ego',
+  },
 ]
 
 export const PRACTICE_RAIL_KEYS = [

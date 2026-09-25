@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { CalendarDays, Flame, Leaf, Moon, PartyPopper, Sprout, Star, Trophy } from 'lucide-react'
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
 import { buildSeriesViewModel } from '../lib/series'
@@ -50,13 +51,13 @@ function getMilestones(stats) {
   const checkins = stats.total_checkins || 0
   const days = stats.days_active || 0
 
-  if (checkins >= 1) milestones.push({ icon: '🌱', title: 'Первый чек-ин', desc: 'Начало пути' })
-  if (checkins >= 10) milestones.push({ icon: '🌿', title: '10 чек-инов', desc: 'Десять отметок' })
-  if (checkins >= 50) milestones.push({ icon: '🔥', title: '50 чек-инов', desc: 'Полсотни отметок' })
-  if (checkins >= 100) milestones.push({ icon: '⭐', title: '100 чек-инов', desc: 'Сотня отметок' })
-  if (days >= 7) milestones.push({ icon: '📅', title: 'Неделя в системе', desc: '7 дней' })
-  if (days >= 30) milestones.push({ icon: '🌙', title: 'Месяц в системе', desc: '30 дней' })
-  if (days >= 100) milestones.push({ icon: '🏆', title: '100 дней в системе', desc: 'Сотня дней' })
+  if (checkins >= 1) milestones.push({ Icon: Sprout, title: 'Первый чек-ин', desc: 'Начало пути' })
+  if (checkins >= 10) milestones.push({ Icon: Leaf, title: '10 чек-инов', desc: 'Десять отметок' })
+  if (checkins >= 50) milestones.push({ Icon: Flame, title: '50 чек-инов', desc: 'Полсотни отметок' })
+  if (checkins >= 100) milestones.push({ Icon: Star, title: '100 чек-инов', desc: 'Сотня отметок' })
+  if (days >= 7) milestones.push({ Icon: CalendarDays, title: 'Неделя в системе', desc: '7 дней' })
+  if (days >= 30) milestones.push({ Icon: Moon, title: 'Месяц в системе', desc: '30 дней' })
+  if (days >= 100) milestones.push({ Icon: Trophy, title: '100 дней в системе', desc: 'Сотня дней' })
 
   return milestones
 }
@@ -163,11 +164,16 @@ export default function Profile({ user }) {
             subtitle={
               birthdayFormatted
                 ? daysToBirthday === 0
-                  ? 'С днём рождения! 🎉'
+                  ? (
+                      <>
+                        С днём рождения!{' '}
+                        <PartyPopper size={13} aria-hidden="true" className="inline align-[-2px]" />
+                      </>
+                    )
                   : daysToBirthday != null
                     ? `До дня рождения ${daysToBirthday} ${daysToBirthday === 1 ? 'день' : daysToBirthday < 5 ? 'дня' : 'дней'}`
                     : null
-                : 'Отметь, чтобы получать напоминание'
+                : null
             }
             right={
               <input
@@ -220,7 +226,9 @@ export default function Profile({ user }) {
           <div className="mx-profile-milestones" data-testid="profile-milestones">
             {milestones.map(m => (
               <div key={m.title} className="mx-profile-milestone">
-                <span className="mx-profile-milestone__icon" aria-hidden="true">{m.icon}</span>
+                <span className="mx-profile-milestone__icon" aria-hidden="true">
+                  <m.Icon size={22} strokeWidth={1.75} />
+                </span>
                 <span className="mx-profile-milestone__text">
                   <span className="mx-profile-milestone__title">{m.title}</span>
                   <span className="mx-profile-milestone__desc">{m.desc}</span>
