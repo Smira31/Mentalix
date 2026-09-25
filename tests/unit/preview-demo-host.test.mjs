@@ -3,10 +3,9 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
 // Vite injects import.meta.env at build time; supply the preview build values in Node.
-const source = (await readFile(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8')).replaceAll(
-  'import.meta.env',
-  "{ DEV: false, VITE_LOCAL_PREVIEW: 'true' }"
-)
+const source = (await readFile(new URL('../../src/lib/demoMode.js', import.meta.url), 'utf8'))
+  .replace("import { now } from './clock.js'", 'const now = () => new Date()')
+  .replaceAll('import.meta.env', "{ DEV: false, VITE_LOCAL_PREVIEW: 'true' }")
 const { isPreviewDemoMode } = await import(
   `data:text/javascript,${encodeURIComponent(source)}`
 )

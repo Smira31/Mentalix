@@ -1,5 +1,6 @@
 import { buildBadges } from './badges.js'
 import { moodPracticeDate } from './moodPracticeLogic.js'
+import { now as clockNow } from './clock.js'
 
 const seriesSnapshots = new Map()
 const SNAPSHOT_PREFIX = 'mx-series-snapshot:'
@@ -70,7 +71,7 @@ export function collectActivityDays({
   ascezas,
   moodPractices,
   practiceDays,
-  now = new Date(),
+  now = clockNow(),
 } = {}) {
   const days = new Set()
 
@@ -123,7 +124,7 @@ function localDayKey(now) {
  * бэкенда может отставать от записи за сегодня; утренний чек-ин уже есть —
  * значит, сегодняшний день засчитан в серию.
  */
-export function withTodayCheckin(history = [], today = null, now = new Date()) {
+export function withTodayCheckin(history = [], today = null, now = clockNow()) {
   const list = Array.isArray(history) ? history : []
   if (!today || typeof today !== 'object') return list
   const date = Number.isFinite(dayNumber(today.date))

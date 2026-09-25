@@ -1,4 +1,40 @@
-const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v3'
+import { now } from './clock.js'
+
+const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v4'
+const SCENARIO_KEY = 'mentalix:demo-scenario:v1'
+const NETWORK_KEY = 'mentalix:demo-network:v1'
+export const DEMO_SCENARIOS = ['Новый пользователь', 'Неделя', 'Серия прервалась', 'Много практик']
+export const DEMO_NETWORKS = ['Нормально', 'Медленно', 'Нет сети', 'Ошибка сервера']
+
+export function demoScenario() {
+  const value = sessionStorage.getItem(SCENARIO_KEY)
+  return DEMO_SCENARIOS.includes(value) ? value : 'Неделя'
+}
+
+export function setDemoScenario(value) {
+  if (!DEMO_SCENARIOS.includes(value)) return
+  localStorage.removeItem(DEMO_STATE_KEY)
+  sessionStorage.removeItem('mentalix:today:snapshot:v1:900001')
+  localStorage.removeItem('mx-today-streak:900001')
+  sessionStorage.setItem(SCENARIO_KEY, value)
+}
+
+export function resetDemoState() {
+  localStorage.removeItem(DEMO_STATE_KEY)
+  sessionStorage.removeItem('mentalix:today:snapshot:v1:900001')
+  localStorage.removeItem('mx-today-streak:900001')
+}
+
+export function demoNetwork() {
+  const value = sessionStorage.getItem(NETWORK_KEY)
+  return DEMO_NETWORKS.includes(value) ? value : 'Нормально'
+}
+
+export function setDemoNetwork(value) {
+  if (!DEMO_NETWORKS.includes(value)) return
+  sessionStorage.setItem(NETWORK_KEY, value)
+  sessionStorage.removeItem('mentalix:today:snapshot:v1:900001')
+}
 export const TODAY_PREVIEW_STATES = new Set([
   'checkinPending',
   'dayInProgress',
@@ -89,8 +125,9 @@ function offsetDate(date, amount) {
 }
 
 function seedState(todayState = null) {
-  const today = new Date()
+  const today = now()
   const todayStr = today.toISOString().slice(0, 10)
+  const scenario = demoScenario()
   const previousDate = offsetDate(today, -1)
 
   // Строим серию из N предыдущих дней (с review_completed_at).
@@ -110,8 +147,12 @@ function seedState(todayState = null) {
   }
 
   const noHistoryStates = new Set(['streak0'])
-  const historyDays = todayState === 'streak5' ? 4 : 1
-  const history = noHistoryStates.has(todayState) ? [] : buildHistory(historyDays)
+  const historyDays = todayState === 'streak5' ? 4 : scenario === 'Неделя' ? 5 : 1
+  const history = noHistoryStates.has(todayState) || scenario === 'Новый пользователь'
+    ? []
+    : scenario === 'Серия прервалась'
+      ? buildHistory(4).filter(item => item.date !== previousDate)
+      : buildHistory(historyDays)
 
   // Чекин на сегодня — зависит от состояния.
   let checkin = null
@@ -133,7 +174,7 @@ function seedState(todayState = null) {
       energy: 2,
       note: 'Спокойное утро.',
       emotion: 'ровно',
-      review_completed_at: new Date().toISOString(),
+      review_completed_at: now().toISOString(),
     }
   } else if (todayState === 'streak5') {
     checkin = {
@@ -150,7 +191,7 @@ function seedState(todayState = null) {
 
   // Настроения для демо
   const moodPractices =
-    todayState === 'streak0'
+    todayState === 'streak0' || scenario === 'Серия прервалась'
       ? []
       : [
           {
@@ -175,8 +216,10 @@ function seedState(todayState = null) {
           },
         ]
 
+  const empty = scenario === 'Новый пользователь'
+  const many = scenario === 'Много практик'
   return {
-    rituals: [
+    rituals: empty ? [] : [
       {
         id: 900101,
         name: 'Утренний спорт',
@@ -204,8 +247,11 @@ function seedState(todayState = null) {
         today_level: 'optimal',
         streak: 3,
       },
+      ...(many ? Array.from({ length: 8 }, (_, i) => ({
+        id: 901100 + i, name: `Ритуал ${i + 1}`, today_level: null, streak: 0,
+      })) : []),
     ],
-    ascezas: [
+    ascezas: empty ? [] : [
       {
         id: 900201,
         name: 'Без Reels после 22:00',
@@ -232,8 +278,11 @@ function seedState(todayState = null) {
         today_status: 'held',
         streak: 5,
       },
+      ...(many ? Array.from({ length: 8 }, (_, i) => ({
+        id: 901200 + i, name: `Аскеза ${i + 1}`, today_status: null, streak: 0,
+      })) : []),
     ],
-    goals: [
+    goals: empty ? [] : [
       {
         id: 900301,
         title: 'Собрать спокойное утро',
@@ -267,9 +316,11 @@ function seedState(todayState = null) {
       reminder_enabled: false,
       reminder_hour: 9,
     },
-    moodPractices,
-    // Дни с отметками практик (ритуалы/аскезы) за прошлые дни — для серии.
-    practiceDays: [offsetDate(today, -2), offsetDate(today, -3)],
+    moodPractices: empty ? [] : moodPractices,
+    // В прерванной серии вчера нет ни одной активности.
+    practiceDays: empty ? [] : scenario === 'Серия прервалась'
+      ? [offsetDate(today, -2), offsetDate(today, -3)]
+      : [offsetDate(today, -1), offsetDate(today, -2), offsetDate(today, -3), offsetDate(today, -4), offsetDate(today, -5)],
   }
 }
 
@@ -311,7 +362,7 @@ function numericId(pathname) {
   return match ? Number(match[1]) : null
 }
 
-export function demoRequest(path, options = {}) {
+function respond(path, options = {}) {
   const url = new URL(path, 'https://preview-demo.invalid')
   const pathname = url.pathname
   const method = (options.method || 'GET').toUpperCase()
@@ -392,7 +443,7 @@ export function demoRequest(path, options = {}) {
   }
   if (pathname.match(/^\/courses\/\d+\/notes$/) && method === 'POST') {
     const id = numericId(pathname)
-    const note = { id: Date.now(), text: body.text, created_at: new Date().toISOString() }
+    const note = { id: Date.now(), text: body.text, created_at: now().toISOString() }
     writeState({ ...state, notes: { ...state.notes, [id]: [note, ...(state.notes[id] || [])] } })
     return json(note)
   }
@@ -404,28 +455,28 @@ export function demoRequest(path, options = {}) {
 
   if (pathname === '/checkin/today' && method === 'GET') {
     // checkin/today uses the PR-aware state.checkins[0] fixture anchor.
-    const today = new Date().toISOString().slice(0, 10)
+    const today = now().toISOString().slice(0, 10)
     return json(state.checkins.find(item => item?.date === today) || null)
   }
   if (pathname === '/checkin/history' && method === 'GET') return json(state.checkins)
   if (pathname === '/checkin' && method === 'POST') {
     const checkin = {
       id: Date.now(),
-      date: new Date().toISOString().slice(0, 10),
+      date: now().toISOString().slice(0, 10),
       ...body,
-      ...(body.review_completed ? { review_completed_at: new Date().toISOString() } : {}),
+      ...(body.review_completed ? { review_completed_at: now().toISOString() } : {}),
     }
     writeState({ ...state, checkins: [checkin, ...state.checkins] })
     return json(checkin)
   }
   if (pathname === '/checkin/today' && method === 'PUT') {
-    const today = new Date().toISOString().slice(0, 10)
+    const today = now().toISOString().slice(0, 10)
     const existing = state.checkins.find(item => item?.date === today)
     const checkin = {
       id: existing?.id || Date.now(),
       date: today,
       ...body,
-      ...(body.review_completed ? { review_completed_at: new Date().toISOString() } : {}),
+      ...(body.review_completed ? { review_completed_at: now().toISOString() } : {}),
     }
     writeState({
       ...state,
@@ -441,7 +492,7 @@ export function demoRequest(path, options = {}) {
     const record = {
       id: Date.now(),
       user_id: DEMO_USER.id,
-      recorded_at: new Date().toISOString(),
+      recorded_at: now().toISOString(),
       mood: body.mood,
       emotion: body.emotion,
       context: body.context ?? null,
@@ -455,7 +506,7 @@ export function demoRequest(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour: eveningStates.has(previewTodayState()) ? 0 : 24,
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : 19,
     })
   }
   if (pathname === '/profile' && method === 'GET') return json(state.profile)
@@ -516,4 +567,16 @@ export function demoRequest(path, options = {}) {
   if (method === 'GET') return json([])
   if (method === 'DELETE') return json({ ok: true })
   return json({ ok: true })
+}
+
+export async function demoRequest(path, options = {}) {
+  const network = demoNetwork()
+  if (network === 'Медленно') await new Promise(resolve => setTimeout(resolve, 4000))
+  if (network === 'Нет сети') throw new Error('Нет сети')
+  if (network === 'Ошибка сервера') {
+    const error = new Error('Сервер недоступен: 503')
+    error.status = 503
+    throw error
+  }
+  return respond(path, options)
 }
