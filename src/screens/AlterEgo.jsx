@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowRight, ArrowLeft, Plus, Pencil, Sparkles } from 'lucide-react'
+import { Plus, Pencil } from 'lucide-react'
 
 import { platform } from '../platform'
 import BackButton from '../components/BackButton'
+import JournalTextarea from '../components/JournalTextarea'
+import { CheckInQuestion, CheckInNextControls } from './CheckIn'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -12,56 +14,54 @@ import {
   getFullscreenPortalTarget,
 } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
-import {
-  loadAlterEgos,
-  saveAlterEgo,
-  updateAlterEgo,
-  deleteAlterEgo,
-} from '../lib/alterEgoStorage'
+import { loadAlterEgos, saveAlterEgo, updateAlterEgo, deleteAlterEgo } from '../lib/alterEgoStorage'
 import alterEgoMask from '../assets/alter-ego/alter-ego-mask.webp'
 
 import './AlterEgo.css'
 
 const DISCLAIMER = 'Это упражнение для уверенности, не терапия'
 
-const SITUATION_OPTIONS = [
-  { label: 'Выступление', value: 'Выступление' },
-  { label: 'Трудный разговор', value: 'Трудный разговор' },
-  { label: 'Тренировка', value: 'Тренировка' },
-  { label: 'Свидание', value: 'Свидание' },
+/*
+ * 6 страниц журнала — как вечерний разбор:
+ * каждая страница — отдельный вопрос, сверху заголовок,
+ * под ним серая подсказка, ниже свободное поле текста.
+ * Имя (страница 2) обязательно, остальное можно пропустить.
+ */
+const QUESTIONS = [
+  {
+    key: 'who',
+    title: 'Кем ты хочешь быть, когда трудно?',
+    hint: 'Опиши его одним-двумя предложениями.',
+  },
+  { key: 'name', title: 'Как его зовут?', hint: 'Имя, прозвище — как тебе ближе.', short: true },
+  { key: 'mindset', title: 'Как он думает и держится?' },
+  { key: 'never', title: 'Чего он никогда не делает?' },
+  { key: 'when', title: 'Когда ты надеваешь маску?', hint: 'Ситуации, где он тебе нужен.' },
+  { key: 'phrase', title: 'Одна фраза, которую он себе говорит.' },
 ]
 
-const QUALITY_CHIPS = [
-  'уверенный',
-  'спокойный',
-  'дерзкий',
-  'собранный',
-  'тёплый',
-  'бесстрашный',
-  'точный',
-  'щедрый',
-]
-
-const TOTAL_STEPS = 7
+const TOTAL_PAGES = QUESTIONS.length
 
 const DEMO_CARDS = [
   {
     id: 'demo-1',
+    who: 'Тот, кто не отступает',
     name: 'Командир',
-    situation: 'Выступление',
-    qualities: ['уверенный', 'собранный', 'точный'],
-    posture: 'Прямая спина, спокойный взгляд, низкий голос',
-    anchor: 'Я здесь главный',
+    mindset: 'Думает спокойно, держится прямо, говорит низким голосом',
+    never: 'Не извиняется первым, не избегает взгляда',
+    when: 'Выступление, трудный разговор',
+    phrase: 'Я здесь главный',
     createdAt: Date.now() - 86400000,
     updatedAt: Date.now() - 86400000,
   },
   {
     id: 'demo-2',
+    who: 'Тот, кому тепло с собой',
     name: 'Огонёк',
-    situation: 'Свидание',
-    qualities: ['тёплый', 'спокойный', 'щедрый'],
-    posture: 'Расслабленные плечи, мягкий взгляд, тёплый голос',
-    anchor: 'Мне с собой хорошо',
+    mindset: 'Расслабленные плечи, мягкий взгляд, тёплый голос',
+    never: 'Не торопит, не давит',
+    when: 'Свидание',
+    phrase: 'Мне с собой хорошо',
     createdAt: Date.now() - 3600000,
     updatedAt: Date.now() - 3600000,
   },
@@ -69,88 +69,122 @@ const DEMO_CARDS = [
 
 function emptyDraft() {
   return {
+    who: '',
     name: '',
-    situation: '',
-    situationCustom: '',
-    qualities: [],
-    posture: '',
-    anchor: '',
+    mindset: '',
+    never: '',
+    when: '',
+    phrase: '',
   }
 }
 
-function resolveSituation(draft) {
-  if (draft.situation === 'Своя') return draft.situationCustom.trim() || 'Своя ситуация'
-  return draft.situation
-}
+/* ── Журнал создания/редактирования (6 страниц) ── */
 
-function AlterEgoProgress({ step }) {
-  return (
-    <div className="mx-alter-ego__dots" aria-label={`Шаг ${step + 1} из ${TOTAL_STEPS}`}>
-      {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-        <span
-          key={i}
-          className={i === step ? 'is-active' : i < step ? 'is-done' : ''}
-          aria-hidden="true"
-        />
-      ))}
-    </div>
+function AlterEgoJournal({ initialDraft, editingId, onSave, onCancel }) {
+  const [step, setStep] = useState(0)
+  const [draft, setDraft] = useState(initialDraft || emptyDraft())
+  const { style: surfaceStyle } = useFullscreenSurface()
+
+  const question = QUESTIONS[step]
+  const isLast = step === TOTAL_PAGES - 1
+  const isNameStep = question.short
+  const canProceed = isNameStep ? draft.name.trim().length > 0 : true
+
+  function handleBack() {
+    platform.haptic('light')
+    if (step === 0) {
+      onCancel()
+      return
+    }
+    setStep(s => s - 1)
+  }
+
+  function handleNext() {
+    platform.haptic('light')
+    if (isLast) {
+      onSave(draft)
+      return
+    }
+    setStep(s => s + 1)
+  }
+
+  function update(key, value) {
+    setDraft(prev => ({ ...prev, [key]: value }))
+  }
+
+  const CHECKIN_LONG_CLASS =
+    'w-full min-h-full flex-1 px-[var(--mx-screen-x)] pt-4 pb-2 flex flex-col items-center'
+
+  return createPortal(
+    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle} data-testid="alter-ego-flow">
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
+        <BackButton onClick={handleBack} />
+      </div>
+
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <div key={step} className={`${CHECKIN_LONG_CLASS} mx-checkin-step-enter`}>
+          <CheckInQuestion
+            title={question.title}
+            hint={question.hint}
+            headingAs="h2"
+            className="w-full text-left"
+            headingClassName="font-display text-cream text-[22px] font-bold leading-[1.2]"
+            hintClassName="text-[14px] text-muted mt-[6px] text-[15px]"
+          />
+
+          <div className="w-full pt-6 flex flex-1 flex-col">
+            {isNameStep ? (
+              <input
+                type="text"
+                className="mx-alter-ego__input"
+                placeholder="Например, Командир"
+                value={draft.name}
+                onChange={e => update('name', e.target.value)}
+                data-testid="alter-ego-name"
+                autoFocus
+              />
+            ) : (
+              <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
+                <JournalTextarea
+                  value={draft[question.key]}
+                  onChange={value => update(question.key, value)}
+                  placeholder="Начни писать…"
+                  ariaLabel={question.title}
+                  testId="alter-ego-text-input"
+                  className="min-h-[18rem] flex-1"
+                  editorClassName="pb-24"
+                  floatingToolbar
+                  guidedFlow
+                  autoFocus
+                  keepFocusOnSubmit
+                  submitIcon="arrow"
+                  submitLabel={isLast ? 'Сохранить' : 'Далее'}
+                  submitTestId="alter-ego-next"
+                  onSubmit={handleNext}
+                  onDeepen={() => {}}
+                  deepenLabel="Пойти глубже"
+                  formatting
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isNameStep && <CheckInNextControls onNext={handleNext} disabled={!canProceed} />}
+    </div>,
+    getFullscreenPortalTarget()
   )
 }
 
-function AlterEgoControls({ onBack, onNext, backLabel = 'Назад', nextLabel = 'Далее', nextDisabled = false }) {
-  return (
-    <div className="mx-alter-ego__controls">
-      <button
-        type="button"
-        className="mx-alter-ego__back mx-tap-target"
-        onClick={onBack}
-        aria-label={backLabel}
-      >
-        <ArrowLeft size={20} strokeWidth={2} aria-hidden="true" />
-        <span>{backLabel}</span>
-      </button>
-      <button
-        type="button"
-        className="mx-alter-ego__next mx-tap-target"
-        onClick={onNext}
-        disabled={nextDisabled}
-        aria-label={nextLabel}
-      >
-        <span>{nextLabel}</span>
-        <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
-      </button>
-    </div>
-  )
-}
+/* ── Карточка альтер-эго в списке ── */
 
-/* ── Карточка альтер-эго ── */
-
-function AlterEgoCard({ card, onWear, onEdit, onDelete }) {
+function AlterEgoCard({ card, onWear, onRewrite, onDelete }) {
   return (
     <article className="mx-alter-ego__card" data-testid="alter-ego-card">
-      <img
-        src={alterEgoMask}
-        alt=""
-        className="mx-alter-ego__character"
-        aria-hidden="true"
-      />
+      <img src={alterEgoMask} alt="" className="mx-alter-ego__character" aria-hidden="true" />
       <h3 className="mx-alter-ego__card-name">{card.name}</h3>
-      <p className="mx-alter-ego__card-field">
-        <strong>Ситуация:</strong> {card.situation}
-      </p>
-      <div className="mx-alter-ego__card-qualities">
-        {card.qualities.map(q => (
-          <span key={q} className="mx-alter-ego__card-quality">
-            {q}
-          </span>
-        ))}
-      </div>
-      <p className="mx-alter-ego__card-field">
-        <strong>Как держится:</strong> {card.posture}
-      </p>
-      <p className="mx-alter-ego__card-field">
-        <strong>Фраза-якорь:</strong> «{card.anchor}»
-      </p>
+      {card.phrase && <p className="mx-alter-ego__card-phrase">«{card.phrase}»</p>}
       <div className="mx-alter-ego__card-actions">
         <button
           type="button"
@@ -163,10 +197,10 @@ function AlterEgoCard({ card, onWear, onEdit, onDelete }) {
         <button
           type="button"
           className="mx-alter-ego__card-btn mx-alter-ego__card-btn--secondary mx-tap-target"
-          data-testid="alter-ego-edit"
-          onClick={() => onEdit(card)}
+          data-testid="alter-ego-rewrite"
+          onClick={() => onRewrite(card)}
         >
-          <Pencil size={16} aria-hidden="true" /> Изменить
+          <Pencil size={16} aria-hidden="true" /> Переписать
         </button>
       </div>
       {onDelete && (
@@ -185,27 +219,23 @@ function AlterEgoCard({ card, onWear, onEdit, onDelete }) {
 
 /* ── Полноэкранный режим «Надеть маску» ── */
 
-function WearMask({ card, onDone }) {
+function WearMask({ card, onDone, onRewrite }) {
   const { style: surfaceStyle } = useFullscreenSurface()
-  const [qualityIndex, setQualityIndex] = useState(-1)
 
   useEffect(() => {
     platform.haptic('light')
-    // Показываем качества по очереди: 0 → 1 → 2, каждое 1.5 c
-    const timers = []
-    card.qualities.forEach((_, i) => {
-      timers.push(setTimeout(() => setQualityIndex(i), (i + 1) * 1500))
-    })
-    return () => timers.forEach(clearTimeout)
-  }, [card.qualities])
+  }, [])
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle} data-testid="alter-ego-wear-screen">
-      <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-      >
-        <BackButton onClick={onDone} label="Готов" />
+    <div
+      className={FULLSCREEN_SHELL_CLASS}
+      style={surfaceStyle}
+      data-testid="alter-ego-wear-screen"
+    >
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
+        <BackButton onClick={onDone} label="Закрыть" />
       </div>
+
       <div className={FULLSCREEN_SCROLL_CLASS}>
         <div className="mx-alter-ego__wear">
           <img
@@ -215,266 +245,47 @@ function WearMask({ card, onDone }) {
             aria-hidden="true"
           />
           <h2 className="mx-alter-ego__wear-name">{card.name}</h2>
-          <p className="mx-alter-ego__wear-anchor">«{card.anchor}»</p>
-          {card.qualities.map((q, i) => (
-            <p
-              key={q}
-              className={`mx-alter-ego__wear-quality${i === qualityIndex ? ' is-visible' : ''}`}
-            >
-              {q}
+
+          {card.mindset && (
+            <div className="mx-alter-ego__wear-rule" data-testid="alter-ego-wear-mindset">
+              <span className="mx-alter-ego__wear-label">Как держится</span>
+              <p>{card.mindset}</p>
+            </div>
+          )}
+
+          {card.never && (
+            <div className="mx-alter-ego__wear-rule" data-testid="alter-ego-wear-never">
+              <span className="mx-alter-ego__wear-label">Чего никогда не делает</span>
+              <p>{card.never}</p>
+            </div>
+          )}
+
+          {card.phrase && (
+            <p className="mx-alter-ego__wear-phrase" data-testid="alter-ego-wear-phrase">
+              «{card.phrase}»
             </p>
-          ))}
-          <button
-            type="button"
-            className="mx-alter-ego__wear-done mx-tap-target"
-            data-testid="alter-ego-wear-done"
-            onClick={onDone}
-          >
-            Готов
-          </button>
+          )}
+
+          <div className="mx-alter-ego__wear-actions">
+            <button
+              type="button"
+              className="mx-alter-ego__wear-btn mx-alter-ego__wear-btn--primary mx-tap-target"
+              data-testid="alter-ego-rewrite-from-wear"
+              onClick={() => onRewrite(card)}
+            >
+              Переписать
+            </button>
+            <button
+              type="button"
+              className="mx-alter-ego__wear-btn mx-alter-ego__wear-btn--secondary mx-tap-target"
+              data-testid="alter-ego-close"
+              onClick={onDone}
+            >
+              Закрыть
+            </button>
+          </div>
         </div>
       </div>
-    </div>,
-    getFullscreenPortalTarget()
-  )
-}
-
-/* ── Поток создания/редактирования (7 шагов) ── */
-
-function AlterEgoFlow({ initialDraft, editingId, onSave, onCancel }) {
-  const [step, setStep] = useState(0)
-  const [draft, setDraft] = useState(initialDraft || emptyDraft())
-  const { style: surfaceStyle } = useFullscreenSurface()
-
-  const update = useCallback((patch) => {
-    setDraft(prev => ({ ...prev, ...patch }))
-  }, [])
-
-  function handleBack() {
-    platform.haptic('light')
-    if (step === 0) {
-      onCancel()
-      return
-    }
-    setStep(s => s - 1)
-  }
-
-  function handleNext() {
-    platform.haptic('light')
-    if (step === TOTAL_STEPS - 1) {
-      const card = {
-        ...draft,
-        situation: resolveSituation(draft),
-      }
-      delete card.situationCustom
-      onSave(card)
-      return
-    }
-    setStep(s => s + 1)
-  }
-
-  const canProceed =
-    step === 0 ||
-    (step === 1 && Boolean(draft.situation)) ||
-    (step === 2 && draft.name.trim().length > 0) ||
-    (step === 3 && draft.qualities.length === 3) ||
-    (step === 4 && draft.posture.trim().length > 0) ||
-    (step === 5 && draft.anchor.trim().length > 0) ||
-    step === 6
-
-  function toggleQuality(q) {
-    platform.haptic('light')
-    setDraft(prev => {
-      if (prev.qualities.includes(q)) {
-        return { ...prev, qualities: prev.qualities.filter(x => x !== q) }
-      }
-      if (prev.qualities.length >= 3) return prev
-      return { ...prev, qualities: [...prev.qualities, q] }
-    })
-  }
-
-  return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle} data-testid="alter-ego-flow">
-      <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-      >
-        <BackButton onClick={handleBack} />
-      </div>
-
-      <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-1 flex-col">
-          <AlterEgoProgress step={step} />
-
-          {/* Шаг 0 — Вступление */}
-          {step === 0 && (
-            <div className="mx-alter-ego__step mx-alter-ego__step--center flex-1">
-              <img
-                src={alterEgoMask}
-                alt=""
-                className="mx-alter-ego__character mx-alter-ego__character--lg"
-                aria-hidden="true"
-              />
-              <div className="mx-alter-ego__intro-text">
-                <p>У каждого есть маска, в которой он сильнее.</p>
-                <p>Собери свою.</p>
-              </div>
-            </div>
-          )}
-
-          {/* Шаг 1 — Ситуация */}
-          {step === 1 && (
-            <div className="mx-alter-ego__step mx-alter-ego__step--center flex-1">
-              <h2 className="mx-alter-ego__title">Для какой ситуации маска?</h2>
-              <p className="mx-alter-ego__subtitle">Выбери или впиши свою</p>
-              <div className="mx-alter-ego__options">
-                {SITUATION_OPTIONS.map(opt => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    className={`mx-alter-ego__option mx-tap-target${draft.situation === opt.value ? ' is-selected' : ''}`}
-                    onClick={() => update({ situation: opt.value })}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-                <button
-                  key="custom"
-                  type="button"
-                  className={`mx-alter-ego__option mx-tap-target${draft.situation === 'Своя' ? ' is-selected' : ''}`}
-                  onClick={() => update({ situation: 'Своя' })}
-                >
-                  Своя
-                </button>
-              </div>
-              {draft.situation === 'Своя' && (
-                <input
-                  type="text"
-                  className="mx-alter-ego__input"
-                  placeholder="Опиши ситуацию"
-                  value={draft.situationCustom}
-                  onChange={e => update({ situationCustom: e.target.value })}
-                  data-testid="alter-ego-situation-custom"
-                />
-              )}
-            </div>
-          )}
-
-          {/* Шаг 2 — Имя */}
-          {step === 2 && (
-            <div className="mx-alter-ego__step mx-alter-ego__step--center flex-1">
-              <h2 className="mx-alter-ego__title">Имя альтер-эго</h2>
-              <p className="mx-alter-ego__subtitle">Как зовут твою маску?</p>
-              <input
-                type="text"
-                className="mx-alter-ego__input"
-                placeholder="Например, Командир"
-                value={draft.name}
-                onChange={e => update({ name: e.target.value })}
-                data-testid="alter-ego-name"
-                autoFocus
-              />
-            </div>
-          )}
-
-          {/* Шаг 3 — Три качества */}
-          {step === 3 && (
-            <div className="mx-alter-ego__step mx-alter-ego__step--center flex-1">
-              <h2 className="mx-alter-ego__title">Три качества</h2>
-              <p className="mx-alter-ego__subtitle">Выбери ровно три</p>
-              <div className="mx-alter-ego__chips">
-                {QUALITY_CHIPS.map(q => (
-                  <button
-                    key={q}
-                    type="button"
-                    className={`mx-alter-ego__chip mx-tap-target${draft.qualities.includes(q) ? ' is-selected' : ''}`}
-                    onClick={() => toggleQuality(q)}
-                    disabled={!draft.qualities.includes(q) && draft.qualities.length >= 3}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-              <p className="mx-alter-ego__chip-count">
-                {draft.qualities.length} из 3
-              </p>
-            </div>
-          )}
-
-          {/* Шаг 4 — Как держится */}
-          {step === 4 && (
-            <div className="mx-alter-ego__step mx-alter-ego__step--center flex-1">
-              <h2 className="mx-alter-ego__title">Как держится</h2>
-              <p className="mx-alter-ego__subtitle">Поза, взгляд, голос — одной строкой</p>
-              <input
-                type="text"
-                className="mx-alter-ego__input"
-                placeholder="Прямая спина, спокойный взгляд, низкий голос"
-                value={draft.posture}
-                onChange={e => update({ posture: e.target.value })}
-                data-testid="alter-ego-posture"
-                autoFocus
-              />
-            </div>
-          )}
-
-          {/* Шаг 5 — Фраза-якорь */}
-          {step === 5 && (
-            <div className="mx-alter-ego__step mx-alter-ego__step--center flex-1">
-              <h2 className="mx-alter-ego__title">Фраза-якорь</h2>
-              <p className="mx-alter-ego__subtitle">Одна строка, например «Я здесь главный»</p>
-              <input
-                type="text"
-                className="mx-alter-ego__input"
-                placeholder="Я здесь главный"
-                value={draft.anchor}
-                onChange={e => update({ anchor: e.target.value })}
-                data-testid="alter-ego-anchor"
-                autoFocus
-              />
-            </div>
-          )}
-
-          {/* Шаг 6 — Готово (превью карточки) */}
-          {step === 6 && (
-            <div className="mx-alter-ego__step mx-alter-ego__step--center flex-1">
-              <img
-                src={alterEgoMask}
-                alt=""
-                className="mx-alter-ego__character"
-                aria-hidden="true"
-              />
-              <h2 className="mx-alter-ego__card-name" style={{ marginTop: 12 }}>
-                {draft.name || '—'}
-              </h2>
-              <p className="mx-alter-ego__card-field">
-                <strong>Ситуация:</strong> {resolveSituation(draft)}
-              </p>
-              <div className="mx-alter-ego__card-qualities">
-                {draft.qualities.map(q => (
-                  <span key={q} className="mx-alter-ego__card-quality">
-                    {q}
-                  </span>
-                ))}
-              </div>
-              <p className="mx-alter-ego__card-field">
-                <strong>Как держится:</strong> {draft.posture || '—'}
-              </p>
-              <p className="mx-alter-ego__card-field">
-                <strong>Фраза-якорь:</strong> «{draft.anchor || '—'}»
-              </p>
-            </div>
-          )}
-
-          <p className="mx-alter-ego__disclaimer">{DISCLAIMER}</p>
-        </div>
-      </div>
-
-      <AlterEgoControls
-        onBack={handleBack}
-        onNext={handleNext}
-        nextLabel={step === TOTAL_STEPS - 1 ? 'Сохранить' : 'Далее'}
-        nextDisabled={!canProceed}
-      />
     </div>,
     getFullscreenPortalTarget()
   )
@@ -485,7 +296,7 @@ function AlterEgoFlow({ initialDraft, editingId, onSave, onCancel }) {
 export default function AlterEgo({ user, onBack }) {
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
-  const [mode, setMode] = useState('list') // 'list' | 'flow' | 'wear'
+  const [mode, setMode] = useState('list') // 'list' | 'journal' | 'wear'
   const [editingCard, setEditingCard] = useState(null)
   const [wearCard, setWearCard] = useState(null)
   const demoMode = isPreviewDemoMode()
@@ -512,10 +323,10 @@ export default function AlterEgo({ user, onBack }) {
     loadCards()
   }, [loadCards])
 
-  async function handleSave(cardData) {
+  async function handleSave(draft) {
     if (demoMode) {
       const saved = {
-        ...cardData,
+        ...draft,
         id: editingCard?.id || `demo-${Date.now()}`,
         createdAt: editingCard?.createdAt || Date.now(),
         updatedAt: Date.now(),
@@ -530,10 +341,10 @@ export default function AlterEgo({ user, onBack }) {
     }
     try {
       if (editingCard) {
-        const updated = await updateAlterEgo(editingCard.id, cardData)
+        const updated = await updateAlterEgo(editingCard.id, draft)
         setCards(prev => prev.map(c => (c.id === editingCard.id ? updated : c)))
       } else {
-        const saved = await saveAlterEgo(cardData)
+        const saved = await saveAlterEgo(draft)
         setCards(prev => [saved, ...prev])
       }
     } catch {
@@ -543,14 +354,15 @@ export default function AlterEgo({ user, onBack }) {
     setMode('list')
   }
 
-  function handleEdit(card) {
+  function handleRewrite(card) {
     setEditingCard(card)
-    setMode('flow')
+    setWearCard(null)
+    setMode('journal')
   }
 
   function handleCreate() {
     setEditingCard(null)
-    setMode('flow')
+    setMode('journal')
   }
 
   async function handleDelete(card) {
@@ -576,38 +388,34 @@ export default function AlterEgo({ user, onBack }) {
     setMode('list')
   }
 
-  function handleFlowCancel() {
+  function handleJournalCancel() {
     setEditingCard(null)
     setMode('list')
   }
 
   // ── Wear mask fullscreen ──
   if (mode === 'wear' && wearCard) {
-    return <WearMask card={wearCard} onDone={handleWearDone} />
+    return <WearMask card={wearCard} onDone={handleWearDone} onRewrite={handleRewrite} />
   }
 
-  // ── Creation/edit flow ──
-  if (mode === 'flow') {
+  // ── Creation/edit journal ──
+  if (mode === 'journal') {
     const initialDraft = editingCard
       ? {
-          name: editingCard.name,
-          situation: SITUATION_OPTIONS.some(o => o.value === editingCard.situation)
-            ? editingCard.situation
-            : 'Своя',
-          situationCustom: SITUATION_OPTIONS.some(o => o.value === editingCard.situation)
-            ? ''
-            : editingCard.situation,
-          qualities: editingCard.qualities,
-          posture: editingCard.posture,
-          anchor: editingCard.anchor,
+          who: editingCard.who || '',
+          name: editingCard.name || '',
+          mindset: editingCard.mindset || '',
+          never: editingCard.never || '',
+          when: editingCard.when || '',
+          phrase: editingCard.phrase || '',
         }
       : emptyDraft()
     return (
-      <AlterEgoFlow
+      <AlterEgoJournal
         initialDraft={initialDraft}
         editingId={editingCard?.id}
         onSave={handleSave}
-        onCancel={handleFlowCancel}
+        onCancel={handleJournalCancel}
       />
     )
   }
@@ -615,14 +423,15 @@ export default function AlterEgo({ user, onBack }) {
   // ── List view ──
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={listSurfaceStyle} data-testid="alter-ego-screen">
-      <div
-        className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-      >
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <BackButton onClick={onBack} />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-1 flex-col">
+        <div
+          className="w-full max-w-md mx-auto flex flex-1 flex-col"
+          style={{ paddingInline: '21px' }}
+        >
           <h1 className="font-display mx-type-page text-cream lowercase text-center mt-4 mb-2">
             альтер-эго.
           </h1>
@@ -660,7 +469,7 @@ export default function AlterEgo({ user, onBack }) {
                         key={card.id}
                         card={card}
                         onWear={handleWear}
-                        onEdit={handleEdit}
+                        onRewrite={handleRewrite}
                         onDelete={demoMode ? handleDelete : undefined}
                       />
                     ))}
