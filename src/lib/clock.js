@@ -21,7 +21,7 @@ export function setDemoClock(preset, days = 0) {
   sessionStorage.removeItem('mentalix:today:snapshot:v1:900001')
 }
 
-export function now(real = new Date(), demoEnabled = typeof window !== 'undefined' && isPreviewDemoMode()) {
+export function now(real = new Date(), demoEnabled = typeof window !== 'undefined' && Boolean(window.location?.hostname) && isPreviewDemoMode()) {
   if (!demoEnabled || (typeof window !== 'undefined' && (window.__MX_TG_SHELL || window.Telegram?.WebApp?.initData))) return real
   const { preset, days } = readDemoClock()
   if (!preset && !days) return real

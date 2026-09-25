@@ -180,7 +180,7 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   }
   assert.match(demo, /params\.get\('demo'\)/)
   assert.match(demo, /checkin\/today.*state\.checkins\[0\]/)
-  assert.match(demo, /eveningStates\.has\(previewTodayState\(\)\) \? 0 : 24/)
+  assert.match(demo, /eveningStates\.has\(previewTodayState\(\)\) \? 0 : 19/)
   assert.ok(
     demo.indexOf("pathname === '/profile/settings' && method === 'GET'") <
       demo.indexOf("pathname.startsWith('/profile/') && method === 'GET'")

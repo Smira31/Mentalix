@@ -36,7 +36,7 @@ import { resolveCheckInMode } from '../lib/todayCheckinMode'
 import { formatReviewTime, resolveTodayCardStates, primaryCardKind } from '../lib/todayCardState'
 import { collectActivityDays } from '../lib/series'
 import { now as clockNow } from '../lib/clock'
-import { demoScenario, isPreviewDemoMode } from '../lib/demoMode'
+import { demoScenario } from '../lib/demoMode'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -896,7 +896,7 @@ export default function Today({
       )}
 
       {/* Подсказка после первого чек-ина — монохромная плашка с ✕. */}
-      {(checkinHistory.length > 0 || (isPreviewDemoMode() && demoScenario() === 'Новый пользователь')) && hintDismissed !== 'true' && (
+      {(checkinHistory.length > 0 || (user?.demo && demoScenario() === 'Новый пользователь')) && hintDismissed !== 'true' && (
         <div className="mx-today-cards-hint" data-testid="today-cards-hint">
           <Lightbulb size={20} className="mx-today-cards-hint__icon" aria-hidden="true" />
           <p>

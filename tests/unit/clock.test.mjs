@@ -6,6 +6,7 @@ const storage = new Map()
 globalThis.sessionStorage = {
   getItem: key => storage.get(key) ?? null,
   setItem: (key, value) => storage.set(key, value),
+  removeItem: key => storage.delete(key),
 }
 
 const real = new Date(2026, 8, 25, 9, 15)
