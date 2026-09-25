@@ -595,6 +595,15 @@ export const api = {
   },
 
   mentalix: {
+    dailyTask: date =>
+      request(withQuery('/mentalix/daily-task', { date }), { silentDiagnostics: true }),
+
+    answerDailyTask: (date, taskId, status) =>
+      request('/mentalix/daily-task', {
+        method: 'POST',
+        body: JSON.stringify({ date, task_id: taskId, status }),
+      }),
+
     history: (userId, persona = 'mayak') =>
       request(withQuery('/mentalix/messages', { user_id: userId, persona })),
 

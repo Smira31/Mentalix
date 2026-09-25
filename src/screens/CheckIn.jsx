@@ -27,6 +27,11 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import DailyTaskPrompt from '../components/DailyTaskPrompt'
+import { logOnce } from '../lib/logOnce'
+import { maybeBuildSurprise } from './mentalix/surpriseInsight'
+import { SURPRISE_MESSAGE_KEY, writeInsightSeen } from './mentalix/insightDigest'
+import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
 import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
 import { currentCheckinStreak, seriesLogicalDateKey } from '../lib/series'
@@ -493,6 +498,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
                   isEvening: false,
                 })}
               </p>
+              <DailyTaskPrompt user={user} />
             </section>
           )}
         </StepSlide>
@@ -763,6 +769,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const [streak, setStreak] = useState(0)
 
   const [streakHistory, setStreakHistory] = useState([])
+  const [surprise, setSurprise] = useState(null)
+  const surpriseChecked = useRef(false)
+  const surpriseEvents = useRef(new Set())
 
   const [saving, setSaving] = useState(false)
 
@@ -991,6 +1000,31 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     } finally {
       setSaving(false)
     }
+  }
+
+  useEffect(() => {
+    if (!isEvening || step !== doneStep || surpriseChecked.current) return
+    surpriseChecked.current = true
+    let active = true
+    maybeBuildSurprise(user).then(text => {
+      if (!active || !text) return
+      setSurprise(text)
+      logOnce(surpriseEvents, 'shown', () =>
+        api.events.log(user.id, 'surprise_insight_shown').catch(() => {})
+      )
+    })
+    return () => { active = false }
+  }, [isEvening, step, doneStep, user])
+
+  function openSurprise() {
+    if (!surprise || !logOnce(surpriseEvents, 'opened', () =>
+      api.events.log(user.id, 'surprise_insight_opened').catch(() => {})
+    )) return
+    sessionStorage.setItem(MENTOR_PERSONA_KEY, 'dnevnik')
+    sessionStorage.setItem(SURPRISE_MESSAGE_KEY, surprise)
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', 'mentor')
+    window.location.href = url.toString()
   }
 
   async function openScout() {
@@ -1429,15 +1463,25 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                   </p>
                 </div>
               )}
-              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
-                {buildTomorrowTeaser({
-                  streak,
-                  checkins: streakHistory,
-                  rituals: peekPracticesData(user.id)?.rituals,
-                  ascezas: peekPracticesData(user.id)?.ascezas,
-                  isEvening,
-                })}
-              </p>
+              {isEvening && surprise ? (
+                <div className="mt-6 w-full max-w-sm" data-testid="surprise-insight">
+                  <p className="mx-type-meta text-muted">Следопыт кое-что заметил</p>
+                  <p className="mx-type-body mt-2 text-cream">{surprise}</p>
+                  <button type="button" data-testid="surprise-insight-open" onClick={openSurprise} className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream">
+                    Обсудить со Следопытом
+                  </button>
+                </div>
+              ) : !isEvening ? (
+                <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
+                  {buildTomorrowTeaser({
+                    streak,
+                    checkins: streakHistory,
+                    rituals: peekPracticesData(user.id)?.rituals,
+                    ascezas: peekPracticesData(user.id)?.ascezas,
+                    isEvening,
+                  })}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
