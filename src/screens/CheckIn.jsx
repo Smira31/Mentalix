@@ -89,7 +89,12 @@ export function CheckInNextControls({
       className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
     >
       {onSkip ? (
-        <button type="button" className="mx-checkin-next-controls__skip" onClick={onSkip}>
+        <button
+          type="button"
+          className="mx-checkin-next-controls__skip mx-tap-target"
+          data-testid="checkin-skip"
+          onClick={onSkip}
+        >
           Пропустить
         </button>
       ) : null}
