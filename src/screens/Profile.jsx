@@ -193,7 +193,7 @@ export default function Profile({ user }) {
 
       {/* Твоя история */}
       {stats && (
-        <ProfileGroup label="Твоя история">
+        <ProfileGroup label="Статистика">
           <ProfileCard>
             <ProfileRow title="Дней в системе" value={stats.days_active || 0} />
             <ProfileRow title="Всего чек-инов" value={stats.total_checkins || 0} />
