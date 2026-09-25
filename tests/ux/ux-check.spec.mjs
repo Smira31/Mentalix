@@ -1232,8 +1232,18 @@ test('демо на реальном телефоне 440×956 — капсул�
   const rightOffset = 440 - (profileBox.x + profileBox.width)
   expect(Math.abs(rightOffset - 21), 'отступ контента ≈ 21px').toBeLessThanOrEqual(1)
 
-  // 3. После прокрутки вниз на 600px навбар сворачивается
+  // 3. После прокрутки вниз на 600px навбар сворачивается.
+  // Демо-контент при 440px может не переполнять scroll-root, поэтому
+  // добавляем spacer, чтобы гарантировать возможность прокрутки.
   await page.evaluate(() => {
+    const content = document.querySelector('.mx-app-scroll-root > div')
+    if (content) {
+      const spacer = document.createElement('div')
+      spacer.style.height = '800px'
+      spacer.style.width = '100%'
+      spacer.setAttribute('data-testid', 'scroll-test-spacer')
+      content.appendChild(spacer)
+    }
     const root = document.querySelector('.mx-app-scroll-root')
     if (root) {
       root.scrollTop = 600
