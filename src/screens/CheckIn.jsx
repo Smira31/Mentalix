@@ -316,7 +316,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
 
   const action =
     step === streakStep
-      ? { text: 'Вернуться в Сегодня', testId: 'checkin-back-to-today', onClick: onDone }
+      ? { text: 'Закрыть', testId: 'checkin-back-to-today', onClick: onDone }
       : step === noteStep
         ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
         : step === doneStep

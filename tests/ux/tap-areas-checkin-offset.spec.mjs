@@ -24,11 +24,10 @@ const SCREEN_X_TOLERANCE_PT = 1
 
 const IPHONE_15_PRO_VIEWPORT = { width: 393, height: 852 }
 
-const TODAY_TAP_TARGETS = [
-  'series-tooltip-close',
-  'today-cards-hint-close',
-  'pinned-practices-manage',
-]
+// Подсказки на «Сегодня» видны по одной: сначала о серии, после её
+// закрытия — о карточках. Обе области нажатия проверяются по очереди.
+const TODAY_TAP_TARGETS = ['series-tooltip-close', 'pinned-practices-manage']
+const TODAY_NEXT_HINT_TAP_TARGET = 'today-cards-hint-close'
 
 const SERIES_TAP_TARGETS = ['series-tab-badges', 'series-tab-stats', 'series-close']
 
@@ -118,6 +117,10 @@ test.describe('Области нажатия и отступ «Назад»', ()
     for (const testId of TODAY_TAP_TARGETS) {
       await expectTapArea(page, testId)
     }
+    await expect(page.locator('[data-testid="today-cards-hint"]')).toBeHidden()
+    await page.locator('[data-testid="series-tooltip-close"]').click()
+    await expect(page.locator('[data-testid="series-tooltip-close"]')).toBeHidden()
+    await expectTapArea(page, TODAY_NEXT_HINT_TAP_TARGET)
 
     // Шторка серии: вкладки «Значки» / «Статистика» и «Закрыть».
     await page.locator('[data-testid="today-streak-chip"]').click()
