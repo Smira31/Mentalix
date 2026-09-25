@@ -143,6 +143,9 @@ function fixtureFor(request) {
   if (pathname === '/api/practice-days') return jsonResponse({ days: [] })
   if (pathname === '/api/articles') return jsonResponse(FIXTURES.articles)
   if (pathname === '/api/analytics') return jsonResponse(FIXTURES.analytics)
+  // Today будит бэкенд до загрузки данных — health не должен считаться
+  // ошибкой рантайма в smoke-сценариях.
+  if (pathname === '/api/health') return jsonResponse({ status: 'ok' })
   if (pathname === '/api/mentalix/consent') return jsonResponse({ context_consent: false })
   if (pathname === '/api/mentalix/messages') {
     const persona = url.searchParams.get('persona') || 'unknown'
@@ -1108,6 +1111,11 @@ test('Today не маскирует ошибку критичного API под
     localStorage.setItem('mx-onboarded-v2', '1')
     localStorage.setItem('mx-app-lock-enabled', '0')
   }, TEST_USER)
+  // Ускоряем автоповтор Today: 503 повторяемая, все попытки падают —
+  // экран ошибки должен появиться после исчерпания автоповторов.
+  await context.addInitScript(() => {
+    window.__MX_TODAY_RETRY_DELAYS_MS__ = [0, 0, 0]
+  })
 
   await context.route('**/api/**', route => {
     const pathname = new URL(route.request().url()).pathname
@@ -1123,7 +1131,7 @@ test('Today не маскирует ошибку критичного API под
   await freezePageTime(page)
   await page.goto('/')
 
-  await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
+  await expect(page.getByRole('alert')).toHaveText(/Обычно это меньше минуты/)
   await expect(page.getByText('Добавь первый ритуал')).not.toBeVisible()
   await expect(page.getByRole('button', { name: 'Повторить' })).toBeEnabled()
 
@@ -1148,6 +1156,11 @@ test('Today retry после критичного сбоя повторно за
     localStorage.setItem('mx-onboarded-v2', '1')
     localStorage.setItem('mx-app-lock-enabled', '0')
   }, TEST_USER)
+  // Автоповтор Today переживает кратковременный сбой без участия
+  // пользователя: ускоряем задержки, чтобы 4 попытки уложились в тест.
+  await context.addInitScript(() => {
+    window.__MX_TODAY_RETRY_DELAYS_MS__ = [0, 0, 0]
+  })
   let ritualsRequests = 0
   await context.route('**/api/**', route => {
     const pathname = new URL(route.request().url()).pathname
@@ -1162,8 +1175,8 @@ test('Today retry после критичного сбоя повторно за
   const page = await context.newPage()
   await freezePageTime(page)
   await page.goto('/')
-  await expect(page.getByRole('alert')).toHaveText(/Проверь соединение/)
-  await page.getByRole('button', { name: 'Повторить' }).click()
+  // 3 попытки падают (503 — повторяемая), 4-я успешна: данные дня
+  // загружаются, пустой cache snapshot не создаётся, экран ошибки не нужен.
   await expect.poll(() => ritualsRequests).toBe(4)
   await expect(page.getByRole('alert')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible()
