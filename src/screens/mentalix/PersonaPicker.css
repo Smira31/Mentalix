@@ -206,6 +206,7 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
     0 18px 44px rgb(0 0 0 / 0.18);
   opacity: 0.48;
   scroll-snap-align: center;
+  scroll-snap-stop: always;
   transform: none;
   will-change: opacity;
   transition:
@@ -222,6 +223,10 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 }
 .mx-dialog-card:not(.is-active) .mx-dialog-card__promise {
   color: rgb(var(--c-text) / 0.55);
+}
+
+.mx-dialog-card:not(.is-active) .mx-dialog-card__start {
+  visibility: hidden;
 }
 
 .mx-dialog-card:focus-visible {
