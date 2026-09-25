@@ -6,14 +6,12 @@ import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
 
 import Today from './screens/Today'
-import WebAuthScreen from './screens/WebAuthScreen'
-import Onboarding from './screens/Onboarding'
-import AppLock from './screens/AppLock'
 
 import BookLogo from './components/BookLogo'
 import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
+import SessionRestoreError from './components/SessionRestoreError'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
@@ -44,10 +42,18 @@ const ONBOARDED_KEY = 'mx-onboarded-v2'
 /* ============================================================
    LAZY SCREENS
 
-   Первый экран, авторизация, онбординг и блокировка остаются в
-   стартовом bundle. Остальные вкладки и настройки загружаются
-   только при первом переходе к ним.
+   Первый экран (Today) и Splash остаются в стартовом bundle.
+   Авторизация, онбординг и блокировка загружаются только когда
+   нужны — большинство пользователей их не видит при запуске.
+   Остальные вкладки и настройки — при первом переходе.
    ============================================================ */
+
+// Первый экран (Today) и Splash остаются в стартовом bundle.
+// Авторизация, онбординг и блокировка загружаются только когда нужны —
+// большинство пользователей их не видит при запуске.
+const WebAuthScreen = lazy(() => import('./screens/WebAuthScreen'))
+const Onboarding = lazy(() => import('./screens/Onboarding'))
+const AppLock = lazy(() => import('./screens/AppLock'))
 
 const Practices = lazy(() => import('./screens/Practices'))
 const Analytics = lazy(() => import('./screens/Analytics'))
@@ -235,6 +241,8 @@ export default function App() {
   const [user, setUser] = useState(() => (isPreviewDemoMode() ? DEMO_USER : null))
 
   const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
+
+  const [authError, setAuthError] = useState(null)
 
   const acceptUser = useCallback(nextUser => {
     if (nextUser?.id) {
@@ -606,26 +614,35 @@ export default function App() {
     return () => window.removeEventListener('resize', updateScale)
   }, [demoDevice, demoToolbar, demoViewport.height, deviceFrameMode, previewDemoMode])
 
+  const checkAuth = useCallback(async () => {
+    setAuthError(null)
+    try {
+      const existing = await platform.requestAuth()
+
+      if (existing) {
+        acceptUser(existing)
+      }
+    } catch {
+      // Бэкенд недоступен (Render спит, нет сети, таймаут) — показываем
+      // экран ошибки с «Повторить» вместо бесконечного splash или входа.
+      setAuthError(true)
+    } finally {
+      setAuthChecked(true)
+    }
+  }, [acceptUser])
+
+  const retryAuth = useCallback(() => {
+    setAuthChecked(false)
+    checkAuth()
+  }, [checkAuth])
+
   useEffect(() => {
     platform.init()
 
     if (previewDemoMode) return
 
-    ;(async () => {
-      try {
-        const existing = await platform.requestAuth()
-
-        if (existing) {
-          acceptUser(existing)
-        }
-      } catch {
-        // A missing or temporarily unavailable web session must fall through
-        // to WebAuthScreen instead of leaving standalone Safari on the splash.
-      } finally {
-        setAuthChecked(true)
-      }
-    })()
-  }, [acceptUser, previewDemoMode])
+    checkAuth()
+  }, [checkAuth, previewDemoMode])
 
   /* ============================================================
      БЛОКИРОВКА ПРИЛОЖЕНИЯ
@@ -997,11 +1014,28 @@ export default function App() {
   }
 
   /* ============================================================
+     ОШИБКА ВОССТАНОВЛЕНИЯ СЕССИИ
+
+     Бэкенд недоступен (Render спит, нет сети, таймаут 7с) —
+     показываем понятное сообщение и «Повторить» вместо
+     бесконечного splash или экрана входа. Только для web —
+     Telegram requestAuth не бросает.
+     ============================================================ */
+
+  if (authError && !user && platformName === 'web') {
+    return <SessionRestoreError onRetry={retryAuth} />
+  }
+
+  /* ============================================================
      ONBOARDING
      ============================================================ */
 
   if (user && !onboarded) {
-    return <Onboarding user={user} onFinish={completeOnboarding} />
+    return (
+      <Suspense fallback={<Splash />}>
+        <Onboarding user={user} onFinish={completeOnboarding} />
+      </Suspense>
+    )
   }
 
   /* ============================================================
@@ -1021,7 +1055,9 @@ export default function App() {
           font-body
         "
       >
-        <WebAuthScreen onAuthed={acceptUser} />
+        <Suspense fallback={<Splash />}>
+          <WebAuthScreen onAuthed={acceptUser} />
+        </Suspense>
       </div>
     )
   }
@@ -1035,7 +1071,11 @@ export default function App() {
      ============================================================ */
 
   if (user && locked) {
-    return <AppLock mode="unlock" onUnlock={() => setLocked(false)} />
+    return (
+      <Suspense fallback={<Splash />}>
+        <AppLock mode="unlock" onUnlock={() => setLocked(false)} />
+      </Suspense>
+    )
   }
 
   /* ============================================================
