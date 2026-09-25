@@ -189,6 +189,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Download baselines from main
+        id: download-baselines
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -198,19 +199,26 @@ jobs:
             --branch=main --status=completed --conclusion=success \
             --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
           if [ -z "$RUN_ID" ]; then
-            echo "::notice::Нет артефакта эталонов с main — используются коммиченные эталоны из ветки"
+            echo "baselines_downloaded=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Нет артефакта эталонов с main — bootstrap: генерация из текущей ветки"
             exit 0
           fi
           echo "Скачиваю эталоны из run $RUN_ID"
           gh run download "$RUN_ID" --name visual-baselines \
             --dir tests/ux/ux-check.spec.mjs-snapshots/
+          echo "baselines_downloaded=true" >> "$GITHUB_OUTPUT"
 
       - name: Run visual snapshots
         continue-on-error: true
         env:
           RUN_VISUAL_SNAPSHOTS: 'true'
           UX_FIXED_TIME: '08:00'
-        run: npm run ux:check -- --retries=1
+        run: |
+          if [ "${{ steps.download-baselines.outputs.baselines_downloaded }}" = "true" ]; then
+            npm run ux:check -- --retries=1
+          else
+            npm run ux:check -- --update-snapshots --retries=1
+          fi
 
       - name: Generate diff report
         if: always()
