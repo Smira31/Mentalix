@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ChevronDown, Trash2 } from 'lucide-react'
 import { platform } from '../platform'
+import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import './PracticeDetail.css'
@@ -29,7 +30,9 @@ function AccordionRow({ testId, label, children }) {
 }
 
 export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak, onDelete }) {
+  const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
+  useEdgeSwipeBack(screenRef, onBack)
   const isRitual = kind === 'ritual'
   const done = isRitual ? Boolean(practice.today_level) : practice.today_status === 'held'
   const glyphKind = isRitual
@@ -67,7 +70,7 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   }
 
   return (
-    <div className="mx-practice-detail-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
+    <div ref={screenRef} className="mx-practice-detail-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
       <div className="mx-practice-detail-screen__header">
         <button type="button" className="mx-practice-detail__back" onClick={onBack}>
           ‹ <span>назад</span>

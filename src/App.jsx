@@ -33,6 +33,7 @@ import { clearTrendsDataCache } from './lib/trendsDataCache'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
+import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
 /* ============================================================
    STORAGE
@@ -333,6 +334,11 @@ export default function App() {
   /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
   const scrollRootRef = useRef(null)
 
+  /* Корневой элемент приложения — на нём висит глобальный edge-swipe. */
+  const appRootRef = useRef(null)
+  const [appRootMounted, setAppRootMounted] = useState(false)
+  useGlobalEdgeSwipeBack(appRootRef, { enabled: appRootMounted })
+
   /*
    * Оба значения принадлежат человеку, а не устройству: знакомство
    * пройдено один раз, тема выбрана один раз. Поэтому они живут в
@@ -547,8 +553,8 @@ export default function App() {
 
   const previewDemoMode = isPreviewDemoMode()
   const demoPanelAllowed = previewDemoMode && platformName !== 'telegram'
-  const [demoPanelOpen, setDemoPanelOpen] = useState(() =>
-    new URLSearchParams(window.location.search).get('panel') === '1'
+  const [demoPanelOpen, setDemoPanelOpen] = useState(
+    () => new URLSearchParams(window.location.search).get('panel') === '1'
   )
   const realPhone = isRealPhone()
   const toolbarParam = searchParams.get('toolbar') === '1'
@@ -1098,7 +1104,14 @@ export default function App() {
      ============================================================ */
 
   return (
-    <div className={deviceFrameMode ? 'mx-preview-stage' : undefined}>
+    <div
+      ref={el => {
+        appRootRef.current = el
+        setAppRootMounted(!!el)
+      }}
+      data-mentalix-app-root="true"
+      className={deviceFrameMode ? 'mx-preview-stage' : undefined}
+    >
       {previewDemoMode && demoToolbar && (
         <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
           <span className="mx-preview-device-switcher__label">Demo viewport</span>
@@ -1220,7 +1233,7 @@ export default function App() {
 
         <div
           ref={scrollRootRef}
-          className={`mx-app-scroll-root w-full flex-1 min-h-0 overscroll-contain flex flex-col items-center ${
+          className={`mx-app-scroll-root w-full flex-1 min-h-0 flex flex-col items-center ${
             tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
           }`}
           style={{
@@ -1239,7 +1252,7 @@ export default function App() {
           <div
             key={overlay || 'main'}
             className={[
-              'flex-1 w-full flex flex-col items-center',
+              'mx-scroll-content flex-1 w-full flex flex-col items-center',
               tab === 'mentor' && !overlay
                 ? 'mx-dialog-runtime-shell'
                 : mentorPersonaOpen
@@ -1387,7 +1400,11 @@ export default function App() {
         <PreviewApiDiagnostic />
         {demoPanelAllowed && (
           <Suspense fallback={null}>
-            <DemoPanel open={demoPanelOpen} onOpen={() => setDemoPanelOpen(true)} onClose={() => setDemoPanelOpen(false)} />
+            <DemoPanel
+              open={demoPanelOpen}
+              onOpen={() => setDemoPanelOpen(true)}
+              onClose={() => setDemoPanelOpen(false)}
+            />
           </Suspense>
         )}
       </div>

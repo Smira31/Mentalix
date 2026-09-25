@@ -1,10 +1,11 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { useVisualViewportHeight } from '../lib/visualViewport'
+import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
 
 const RESTORE_DAY_OPTIONS = [1, 2, 3, 4, 5, 6, 7]
 
@@ -15,11 +16,13 @@ function dayLabel(daysAgo) {
 }
 
 export default function StreakRestoreSheet({ itemName, choices, onSave, onClose }) {
+  const sheetRef = useRef(null)
   const [restoreDaysAgo, setRestoreDaysAgo] = useState(null)
   const [choice, setChoice] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const viewportHeight = useVisualViewportHeight()
+  useSheetSwipeDown(sheetRef, onClose)
 
   useBackButton(onClose)
 
@@ -62,6 +65,7 @@ export default function StreakRestoreSheet({ itemName, choices, onSave, onClose 
       />
 
       <div
+        ref={sheetRef}
         className="mx-practice-sheet relative z-10 w-full max-w-sm max-h-[88dvh] rounded-t-[32px] bg-emerald border border-cream/10 px-5 pt-3 pb-8 animate-fade-in flex flex-col overflow-hidden"
         style={viewportHeight ? { maxHeight: `min(88dvh, ${viewportHeight}px)` } : undefined}
       >
