@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { api } from '../lib/api'
 import { platform } from '../platform'
+import { setGuestMergeToken, attemptGuestMerge } from '../lib/guestAuth'
 import './WebAuthScreen.css'
 
 function TelegramLogin({ onSuccess, onError }) {
@@ -13,7 +14,8 @@ function TelegramLogin({ onSuccess, onError }) {
       try {
         const result = await api.auth.telegramLogin(user)
         platform.setUser(result.user)
-        onSuccess(result.user)
+        const mergedUser = await attemptGuestMerge(api)
+        onSuccess(mergedUser || result.user)
       } catch (error) {
         onError(error)
       }
@@ -79,9 +81,26 @@ export default function WebAuthScreen({ onAuthed }) {
       const result = await api.auth.verifyEmailCode(email.trim().toLowerCase(), code.trim())
       if (!result.ok) throw new Error(result.error || 'invalid_code')
       platform.setUser(result.user)
-      onAuthed(result.user)
+      const mergedUser = await attemptGuestMerge(api)
+      onAuthed(mergedUser || result.user)
     } catch {
       setError('Неверный или просроченный код. Запроси новый и попробуй ещё раз.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleGuestLogin() {
+    setError('')
+    setBusy(true)
+    try {
+      const result = await api.auth.guest()
+      if (!result.ok) throw new Error('guest_create_failed')
+      setGuestMergeToken(result.merge_token)
+      platform.setUser(result.user)
+      onAuthed(result.user)
+    } catch {
+      setError('Не удалось войти как гость. Попробуй ещё раз.')
     } finally {
       setBusy(false)
     }
@@ -179,6 +198,16 @@ export default function WebAuthScreen({ onAuthed }) {
         <h2 id="telegram-auth-title">Или через Telegram</h2>
         <TelegramLogin onSuccess={onAuthed} onError={handleTelegramError} />
       </section>
+
+      <button
+        type="button"
+        className="mx-web-auth-guest"
+        disabled={busy}
+        onClick={handleGuestLogin}
+        data-testid="web-auth-guest-button"
+      >
+        {busy ? 'Подожди…' : 'Продолжить без входа'}
+      </button>
 
       {directWebVisit && (
         <p className="mx-web-auth-hint">

@@ -8,9 +8,44 @@ import { readPendingMentor } from './mentalix/personas'
 import { maybeBuildInsightMessage } from './mentalix/insightDigest'
 import { AI_REFRAME_LEAD_MESSAGE, withSafetyNote } from '../lib/aiReframeSafety'
 import { messageContent } from '../lib/journalPresentation'
+import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestAuth'
 
 import PersonaPicker from './mentalix/PersonaPicker'
 import Conversation from './mentalix/Conversation'
+
+// ============================================================
+// ЭКРАН ГОСТЯ ДЛЯ ИИ
+// ============================================================
+
+function isGuestAiForbidden(error) {
+  return error?.status === 403 || String(error?.message || '').includes('guest_ai_forbidden')
+}
+
+export function GuestAiGate({ onLogin }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center text-center px-6 py-16"
+      data-testid="guest-ai-gate"
+    >
+      <p className="text-cream text-[18px] leading-relaxed max-w-xs">
+        Войди, чтобы поговорить со Следопытом
+      </p>
+      <button
+        type="button"
+        className="mt-6 min-h-11 rounded-full bg-gold px-8 text-[14px] font-semibold text-emerald-deep"
+        onClick={onLogin}
+        data-testid="guest-ai-login-button"
+      >
+        Войти
+      </button>
+    </div>
+  )
+}
+
+function handleGuestLogin() {
+  resetGuestState()
+  dispatchGuestMerged()
+}
 
 // ============================================================
 // ЧАТ
@@ -28,6 +63,7 @@ export function ConversationChat({
   contextSlot = null,
   footerSlot = null,
   onBack,
+  onGuestForbidden,
 }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState(initialText)
@@ -70,6 +106,7 @@ export function ConversationChat({
       })
       .catch(error => {
         console.error(error)
+        if (!cancelled && isGuestAiForbidden(error)) onGuestForbidden?.()
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -120,6 +157,10 @@ export function ConversationChat({
       lastFailedSend.current = null
     } catch (error) {
       console.error(error)
+      if (isGuestAiForbidden(error)) {
+        onGuestForbidden?.()
+        return
+      }
       lastFailedSend.current = { text, visibleText }
       setSendError('Не удалось получить ответ. Попробуй ещё раз.')
     } finally {
@@ -169,6 +210,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
   const [pending] = useState(() => readPendingMentor())
   const [persona, setPersona] = useState(pending.persona)
   const [draft, setDraft] = useState(pending.draft)
+  const [guestForbidden, setGuestForbidden] = useState(false)
 
   const exitConversation = useCallback(() => {
     setDraft('')
@@ -191,6 +233,12 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
     }
   }, [onPersonaChange])
 
+  // Гость не может использовать ИИ — показываем экран входа вместо чата.
+  // 403 guest_ai_forbidden обрабатывается тем же экраном.
+  if (isGuestUser(user) || guestForbidden) {
+    return <GuestAiGate onLogin={handleGuestLogin} />
+  }
+
   if (!persona) {
     return (
       <PersonaPicker
@@ -211,6 +259,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       viaHandoff={Boolean(pending.persona)}
       withSafetyNotice={Boolean(pending.safety)}
       onBack={exitConversation}
+      onGuestForbidden={() => setGuestForbidden(true)}
     />
   )
 }

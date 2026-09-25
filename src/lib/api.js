@@ -1,6 +1,7 @@
 import { platform } from '../platform'
 import { withQuery } from './apiQuery'
 import { demoRequest, isPreviewDemoMode } from './demoMode'
+import { resetGuestState, dispatchGuestMerged } from './guestAuth'
 
 const BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 const API_TIMEOUT_MS = 10_000
@@ -156,6 +157,12 @@ async function request(path, options = {}) {
       const raw = await res.text()
 
       if (!res.ok) {
+        // 401 guest_merged: гостевая cookie устарела после переноса записей.
+        // Сбрасываем гостевое состояние и показываем экран входа.
+        if (res.status === 401 && raw.includes('guest_merged')) {
+          resetGuestState()
+          dispatchGuestMerged()
+        }
         if (!silentDiagnostics) {
           emitApiDiagnostic({
             path,
@@ -254,6 +261,16 @@ export const api = {
       request('/auth/link/confirm', {
         method: 'POST',
         body: JSON.stringify({ web_user_id: webUserId, code }),
+      }),
+    guest: () =>
+      request('/auth/guest', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      }),
+    guestMerge: mergeToken =>
+      request('/auth/guest/merge', {
+        method: 'POST',
+        body: JSON.stringify({ merge_token: mergeToken }),
       }),
   },
   habits: {
