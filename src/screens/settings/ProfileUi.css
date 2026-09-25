@@ -112,8 +112,11 @@
   transform: scale(0.97);
 }
 
+/* Внутренние экраны: круглая «‹» 43×43, как у Stoic. */
 .mx-profile-page__button--back {
   left: 20px;
+  width: 43px;
+  height: 43px;
 }
 
 .mx-profile-page__button--close {
@@ -237,6 +240,12 @@ button.mx-profile-row:active {
   font-size: 17px;
   font-weight: 700;
   text-align: right;
+}
+
+/* Внутренние экраны: значение справа — серое, обычным начертанием. */
+.mx-profile-page--sub .mx-profile-row__value {
+  color: rgb(var(--c-muted));
+  font-weight: 400;
 }
 
 .mx-profile-row__chevron {
@@ -613,6 +622,12 @@ button.mx-profile-row:active {
   width: 120px;
   cursor: pointer;
   color-scheme: dark;
+}
+
+.mx-profile-page--sub .mx-profile-date-input {
+  color: rgb(var(--c-muted));
+  font-size: 17px;
+  font-weight: 400;
 }
 
 .mx-profile-date-input::-webkit-calendar-picker-indicator {

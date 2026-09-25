@@ -52,7 +52,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole('heading', { name: 'настройки.' })).toBeVisible()
         const back = await page.getByTestId('profile-close-button')
         const backBox = await back.boundingBox()
-        expect(Math.round(backBox.width)).toBe(44)
+        expect(Math.round(backBox.width)).toBe(43)
         expect(Math.round(backBox.x)).toBe(20)
         await back.click()
         await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()

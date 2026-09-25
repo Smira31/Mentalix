@@ -60,7 +60,7 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
   return (
     <div
       ref={screenRef}
-      className={`mx-profile-page${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
+      className={`mx-profile-page${isRoot ? '' : ' mx-profile-page--sub'}${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
       data-testid={testId}
     >
       <div className="mx-profile-page__bar">
