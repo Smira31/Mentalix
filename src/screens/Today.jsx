@@ -57,6 +57,9 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 // dedicated screens.
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
+// §6 Motion: подсписок subs, закрытие которых анимируется уездом слоя вниз.
+const CHECKIN_SUBS = ['checkin', 'evening', 'redoCheckin', 'redoReview']
+
 // ── календарь недели + отдельные дневные streak strips ──
 
 function todayGreeting() {
@@ -409,7 +412,7 @@ export default function Today({
     let handler
     if (seriesOpen) {
       handler = () => triggerSeriesExit(() => onCloseSeries())
-    } else if (sub === 'checkin' || sub === 'evening' || sub === 'redoCheckin' || sub === 'redoReview') {
+    } else if (CHECKIN_SUBS.includes(sub)) {
       handler = () => triggerCheckInExit(() => changeSub(null))
     } else if (sub) {
       handler = () => changeSub(null)
