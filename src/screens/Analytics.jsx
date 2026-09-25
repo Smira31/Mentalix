@@ -1,22 +1,26 @@
-import { useEffect, useRef, useState } from 'react'
-import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
-import { retrySources, SOURCE_STATES } from '../lib/pathDataLoader'
-import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
-import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { sanitizeTrendsData } from '../lib/trendsDataSanitizer'
+import { loadIndependentSources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 import ProgressHistory from './progress/ProgressHistory'
 import './progress/ProgressScreen.css'
-
-// Production now uses the owner-approved compact mobile composition. The
-// feature flag remains available for local comparison, while production
-// builds use the same visual contract as the validated preview.
-const PROGRESS_LAYOUT_V2_ENABLED =
-  import.meta.env.PROD || import.meta.env.VITE_PROGRESS_LAYOUT_V2 === 'true'
+import './progress/ProgressAnalytics.css'
+import {
+  ANALYTICS_GRANULARITIES,
+  getGranularity,
+  getPeriodWindow,
+  isoDate,
+  sliceCheckinsByPeriod,
+  formatPeriodRange,
+  periodName,
+} from './progress/progressAnalyticsPeriods'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+
+const MOOD_LABELS = ['Очень тяжело', 'Тяжело', 'Ровно', 'Хорошо', 'Отлично']
 
 function MoodFace({ level }) {
   const mouths = [
@@ -42,388 +46,16 @@ function MoodFace({ level }) {
   )
 }
 
-function SectionHeading({ eyebrow, title, id, meta }) {
-  return (
-    <div className="mx-progress-redesign__section-head">
-      <div>
-        <span className="font-label">{eyebrow}</span>
-        {!PROGRESS_LAYOUT_V2_ENABLED && title && <h3 id={id}>{title}</h3>}
-      </div>
-      {meta && <small>{meta}</small>}
-    </div>
-  )
+function average(values) {
+  if (!values.length) return null
+
+  const sum = values.reduce((acc, value) => acc + value, 0)
+
+  return sum / values.length
 }
 
-function chartGeometry(checkins) {
-  const validPoints = checkins.filter(item => Number.isInteger(item?.mood))
-  const points = PROGRESS_LAYOUT_V2_ENABLED ? validPoints : validPoints.slice(-30)
-  if (points.length < 2) return { points, polyline: '' }
-
-  return {
-    points,
-    polyline: points
-      .map((item, index) => {
-        const x = 2 + (index / (points.length - 1)) * 296
-        const y = 132 - ((item.mood - 1) / 4) * 118
-        return `${x.toFixed(1)},${y.toFixed(1)}`
-      })
-      .join(' '),
-  }
-}
-
-function MoodTrend({ checkins, loading, error, onRetry, onGoCheckin, period }) {
-  const { points, polyline } = chartGeometry(checkins)
-  const avgMood = average(points.map(item => item.mood))
-  const axisDates = points.length
-    ? [points[0], points[Math.floor((points.length - 1) / 2)], points[points.length - 1]]
-    : []
-
-  return (
-    <>
-      <section className="mx-progress-redesign__intro" aria-labelledby="progress-intro-title">
-        <h1 id="progress-intro-title">прогресс.</h1>
-        <p>
-          Здесь ты увидишь, как меняется
-          <br />
-          твоё настроение за неделю
-        </p>
-        <small>
-          {points.length ? 'Твои отметки за выбранный период' : 'Пока нет данных для показа'}
-        </small>
-      </section>
-
-      <section
-        className="mx-progress-redesign__mood-prompt"
-        aria-labelledby="progress-mood-prompt-title"
-      >
-        <h2 id="progress-mood-prompt-title">Как ты себя чувствуешь сейчас?</h2>
-        <p>Отметь своё настроение, чтобы добавить первую точку в прогресс</p>
-        <div
-          className="mx-progress-redesign__mood-options"
-          role="group"
-          aria-label="Выбери настроение"
-        >
-          {['Очень тяжело', 'Тяжело', 'Ровно', 'Хорошо', 'Отлично'].map((label, level) => (
-            <button key={label} type="button" aria-label={label} onClick={onGoCheckin}>
-              <MoodFace level={level} />
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-progress-redesign__hero" aria-labelledby="progress-mood-title">
-        <div className="mx-progress-redesign__hero-copy">
-          <span id="progress-mood-title">Настроение за {period} дней</span>
-          <div>
-            <strong>{avgMood === null ? '—' : avgMood.toFixed(1)}</strong>
-            <small>/ 5</small>
-          </div>
-          <p>
-            {points.length >= 2
-              ? 'Линия показывает твои отметки за выбранный период.'
-              : 'Добавь ещё несколько отметок — и здесь появится твой ритм.'}
-          </p>
-        </div>
-
-        <div className="mx-progress-redesign__chart">
-          {loading ? (
-            <div className="mx-progress-redesign__chart-skeleton" aria-label="Загрузка прогресса" />
-          ) : error ? (
-            <div className="mx-progress-redesign__chart-message" role="alert">
-              <strong>Не удалось загрузить прогресс</strong>
-              <span>Проверь соединение и попробуй ещё раз.</span>
-              <button type="button" onClick={onRetry}>
-                Повторить
-              </button>
-            </div>
-          ) : points.length < 2 ? (
-            <div className="mx-progress-redesign__chart-message">
-              <strong>{points.length ? 'Первая точка уже есть' : 'Начни с одной отметки'}</strong>
-              <span>
-                {points.length
-                  ? 'После следующего чек-ина появится первая линия.'
-                  : 'Одна отметка — меньше минуты.'}
-              </span>
-              <button type="button" onClick={onGoCheckin}>
-                Пройти чек-ин
-              </button>
-            </div>
-          ) : (
-            <>
-              <svg viewBox="0 0 300 142" role="img" aria-label="График настроения">
-                <path
-                  className="mx-progress-redesign__chart-grid"
-                  d="M2 14H298 M2 73H298 M2 132H298"
-                />
-                <polyline className="mx-progress-redesign__chart-line" points={polyline} />
-                {points.map((item, index) => {
-                  const x = 2 + (index / (points.length - 1)) * 296
-                  const y = 132 - ((item.mood - 1) / 4) * 118
-                  return <circle key={item.date} cx={x} cy={y} r="3.2" />
-                })}
-              </svg>
-              <div className="mx-progress-redesign__chart-axis">
-                {axisDates.map(item => (
-                  <span key={item.date}>{formatSourceDate(item.date)}</span>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </section>
-    </>
-  )
-}
-
-function ObservationEvidence({ observation, preserveLegacyEmptyCaveat = false }) {
-  return (
-    <div>
-      {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
-        <p>
-          Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
-        </p>
-      )}
-      {observation.sourceDates?.length > 0 && (
-        <details>
-          <summary>Даты в основе наблюдения</summary>
-          <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
-        </details>
-      )}
-      {(observation.caveat || preserveLegacyEmptyCaveat) && (
-        <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
-      )}
-    </div>
-  )
-}
-
-function PrimaryObservationCard({ observation }) {
-  if (!observation) {
-    return (
-      <article className="mx-progress-redesign__observation">
-        {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
-        <span>Пока мало данных</span>
-        <strong>Добавь ещё несколько отметок.</strong>
-        <p>Тогда здесь появится первое наблюдение.</p>
-      </article>
-    )
-  }
-
-  return (
-    <article
-      className="mx-progress-redesign__observation mx-type-insight"
-      data-primary-observation="true"
-    >
-      {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-observations-title">Что повторяется</h3>}
-      <span>Главное наблюдение</span>
-      <strong>{observation.text}</strong>
-      <ObservationEvidence
-        observation={observation}
-        preserveLegacyEmptyCaveat={!PROGRESS_LAYOUT_V2_ENABLED}
-      />
-    </article>
-  )
-}
-
-function ObservationRail({ observations, insightsEnabled, preferenceError }) {
-  const secondary = observations.slice(1, 3)
-
-  return (
-    <section
-      className="mx-progress-redesign__section"
-      aria-labelledby="progress-observations-title"
-    >
-      <SectionHeading
-        eyebrow="Наблюдения"
-        title="Что повторяется"
-        meta={`${Math.max(observations.length, 1)} / 3`}
-        id="progress-observations-title"
-      />
-      <div className="mx-progress-redesign__rail">
-        {insightsEnabled ? (
-          <>
-            <PrimaryObservationCard observation={observations[0] ?? null} />
-            {secondary.map((observation, index) => (
-              <article
-                className="mx-progress-redesign__observation mx-type-insight"
-                key={`${observation.text}-${index}`}
-              >
-                <span>Ещё одно наблюдение</span>
-                <strong>{observation.text}</strong>
-                {PROGRESS_LAYOUT_V2_ENABLED ? (
-                  <ObservationEvidence observation={observation} />
-                ) : (
-                  <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
-                )}
-              </article>
-            ))}
-          </>
-        ) : (
-          <article className="mx-progress-redesign__observation" role="status">
-            <span>Скрыто в настройках</span>
-            <strong>Персональные наблюдения сейчас не показываются.</strong>
-            <p>
-              Персональные описательные наблюдения скрыты. Твои сохранённые данные и обычные цифры
-              ниже не удалены. Включить наблюдения можно в настройках.
-            </p>
-          </article>
-        )}
-      </div>
-      <p className="mx-progress-redesign__caveat">
-        Это описание твоих отметок — не диагнозы и не доказанные причины, не прогноз.
-      </p>
-      {preferenceError && <p className="mx-progress-redesign__status-note">{preferenceError}</p>}
-    </section>
-  )
-}
-
-function ActivityCalendar({ checkins, dailyActivity, period }) {
-  const todayIso = toLocalCalendarDate()
-  const today = new Date(`${todayIso}T00:00:00`)
-  const periodStart = new Date(today)
-  periodStart.setDate(periodStart.getDate() - period + 1)
-  const firstAllowedMonth = new Date(periodStart.getFullYear(), periodStart.getMonth(), 1)
-  const lastAllowedMonth = new Date(today.getFullYear(), today.getMonth(), 1)
-  const [monthCursor, setMonthCursor] = useState(
-    () => new Date(today.getFullYear(), today.getMonth(), 1)
-  )
-  useEffect(() => {
-    if (!PROGRESS_LAYOUT_V2_ENABLED) return
-    // Clamp the cursor after period changes; this is the intentional state sync.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMonthCursor(value => {
-      if (value < firstAllowedMonth) return firstAllowedMonth
-      if (value > lastAllowedMonth) return lastAllowedMonth
-      return value
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, firstAllowedMonth.getTime(), lastAllowedMonth.getTime()])
-  const year = monthCursor.getFullYear()
-  const month = monthCursor.getMonth()
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const offset = (new Date(year, month, 1).getDay() + 6) % 7
-  const activeDates = new Set([
-    ...checkins.map(item => item.date),
-    ...dailyActivity
-      .filter(item => item.count > 0 || item.breaks > 0 || item.held_ascezas > 0)
-      .map(item => item.date),
-  ])
-  const moodByDate = new Map(checkins.map(item => [item.date, item.mood]))
-  const cells = [
-    ...Array.from({ length: offset }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
-  ]
-  const monthLabel = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' }).format(
-    monthCursor
-  )
-  const isBeforePeriod = PROGRESS_LAYOUT_V2_ENABLED && monthCursor <= firstAllowedMonth
-  const isCurrentMonth = PROGRESS_LAYOUT_V2_ENABLED
-    ? monthCursor >= lastAllowedMonth
-    : year === today.getFullYear() && month === today.getMonth()
-  const hasActiveDatesInMonth = [...activeDates].some(date =>
-    date.startsWith(`${year}-${String(month + 1).padStart(2, '0')}-`)
-  )
-
-  return (
-    <section className="mx-progress-redesign__section" aria-labelledby="progress-calendar-title">
-      <div className="mx-progress-redesign__section-head">
-        <div>
-          <span className="font-label">Данные</span>
-          {!PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-calendar-title">Календарь</h3>}
-        </div>
-        <div className="mx-progress-redesign__month-nav">
-          <button
-            type="button"
-            aria-label="Предыдущий месяц"
-            disabled={isBeforePeriod}
-            onClick={() =>
-              setMonthCursor(value => new Date(value.getFullYear(), value.getMonth() - 1, 1))
-            }
-          >
-            ‹
-          </button>
-          <small>{monthLabel}</small>
-          <button
-            type="button"
-            aria-label="Следующий месяц"
-            disabled={isCurrentMonth}
-            onClick={() =>
-              setMonthCursor(value => new Date(value.getFullYear(), value.getMonth() + 1, 1))
-            }
-          >
-            ›
-          </button>
-        </div>
-      </div>
-      <div className="mx-progress-redesign__calendar-card">
-        {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-calendar-title">Календарь</h3>}
-        <div className="mx-progress-redesign__weekdays">
-          {CALENDAR_WEEKDAYS.map(day => (
-            <span key={day}>{day}</span>
-          ))}
-        </div>
-        <div className="mx-progress-redesign__calendar">
-          {cells.map((day, index) => {
-            if (!day) return <i aria-hidden="true" key={`blank-${index}`} data-empty="true" />
-            const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-            const active = activeDates.has(date)
-            return (
-              <i
-                key={date}
-                aria-label={`${day}, ${active ? 'есть отметка' : 'нет отметки'}`}
-                data-day={day}
-                data-filled={active}
-                data-tone={moodByDate.get(date) ?? 0}
-              >
-                <span>{day}</span>
-              </i>
-            )
-          })}
-        </div>
-        <p>
-          {PROGRESS_LAYOUT_V2_ENABLED
-            ? hasActiveDatesInMonth
-              ? 'Отмеченные дни складываются в общий ритм.'
-              : 'Пока нет отметок за этот месяц.'
-            : activeDates.size
-              ? 'Отмеченные дни складываются в общий ритм.'
-              : 'Здесь появятся дни с отметками.'}
-        </p>
-      </div>
-    </section>
-  )
-}
-
-function EmotionCloud({ checkins }) {
-  const counts = new Map()
-  for (const checkin of checkins) {
-    if (checkin.emotion) counts.set(checkin.emotion, (counts.get(checkin.emotion) || 0) + 1)
-  }
-  const emotions = [...counts.entries()].sort((left, right) => right[1] - left[1]).slice(0, 4)
-  const total = PROGRESS_LAYOUT_V2_ENABLED
-    ? [...counts.values()].reduce((sum, count) => sum + count, 0)
-    : emotions.reduce((sum, [, count]) => sum + count, 0)
-
-  return (
-    <section className="mx-progress-redesign__section" aria-labelledby="progress-emotions-title">
-      <SectionHeading eyebrow="Цифры" title="Эмоции" id="progress-emotions-title" />
-      <div className="mx-progress-redesign__emotion-card">
-        {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-emotions-title">Эмоции</h3>}
-        <div className="mx-progress-redesign__emotion-ring" aria-label={`${total} отметок эмоций`}>
-          <span>{total || '—'}</span>
-          <small>отметки</small>
-        </div>
-        <div className="mx-progress-redesign__emotion-list">
-          {(emotions.length ? emotions : [['пока нет данных', 0]]).map(([name, count], index) => (
-            <div key={name} data-tone={index === 0 ? 'high' : 'middle'}>
-              <i />
-              <span>{name}</span>
-              <small>{count || '—'}</small>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
+function pick(list, field) {
+  return list.map(item => item?.[field]).filter(value => typeof value === 'number')
 }
 
 // ============================================================
@@ -447,18 +79,6 @@ function EmotionCloud({ checkins }) {
 const MIN_GROUP = 3
 export const MIN_CHECKINS = 5
 
-function average(values) {
-  if (!values.length) return null
-
-  const sum = values.reduce((acc, value) => acc + value, 0)
-
-  return sum / values.length
-}
-
-function pick(list, field) {
-  return list.map(item => item?.[field]).filter(value => typeof value === 'number')
-}
-
 // Сравнение среднего значения поля в двух группах дней.
 function compareGroups({ withGroup, withoutGroup, field, threshold, build }) {
   // Группы считаются по числу валидных числовых значений, а не по числу
@@ -481,6 +101,7 @@ function compareGroups({ withGroup, withoutGroup, field, threshold, build }) {
   return {
     text: build(delta, a, b),
     weight: Math.abs(delta),
+    direction: delta > 0 ? 'up' : 'down',
   }
 }
 
@@ -562,6 +183,7 @@ export function deriveConclusions(checkins, data) {
             ? 'Во второй половине периода настроение выше, чем в первой.'
             : 'Во второй половине периода настроение ниже, чем в первой.',
         weight: Math.abs(late - early),
+        direction: late > early ? 'up' : 'down',
       })
     }
   }
@@ -585,6 +207,7 @@ export function deriveConclusions(checkins, data) {
       found.push({
         text: `Больше половины срывов приходится на один день недели — ${WEEKDAY_FULL[topIndex]}.`,
         weight: 0.9,
+        direction: 'down',
       })
     }
   }
@@ -596,6 +219,7 @@ export function deriveConclusions(checkins, data) {
     found.push({
       text: `${streak} закрытых дня подряд — серия держится прямо сейчас.`,
       weight: 0.8,
+      direction: 'up',
     })
   }
 
@@ -620,28 +244,579 @@ const WEEKDAY_FULL = [
   'субботу',
 ]
 
-function Metric({ label, value, note, progress, children }) {
+/* ── Элементы §5.5 ── */
+
+function SectionLabel({ children }) {
   return (
-    <article
-      className={PROGRESS_LAYOUT_V2_ENABLED ? 'mx-progress-redesign__activity-card' : undefined}
-      data-progress-label={PROGRESS_LAYOUT_V2_ENABLED ? value : undefined}
-    >
-      <span>{label}</span>
-      {!PROGRESS_LAYOUT_V2_ENABLED && <strong className="font-display">{value}</strong>}
-      <small>{note}</small>
-      {!PROGRESS_LAYOUT_V2_ENABLED && (
-        <i aria-hidden="true">
-          <b style={{ width: `${Math.max(4, Math.min(progress || 0, 100))}%` }} />
-        </i>
-      )}
+    <h3 className="mx-progress-section-label font-label" data-testid="progress-section-label">
+      {children}
+    </h3>
+  )
+}
+
+function CardShell({ title, subtitle, menu, children, testId }) {
+  return (
+    <article className="mx-progress-card" data-testid={testId}>
+      <div className="mx-progress-card__head">
+        <h4 className="mx-progress-card__title">{title}</h4>
+        {subtitle && <p className="mx-progress-card__subtitle">{subtitle}</p>}
+      </div>
+      {menu}
       {children}
     </article>
   )
 }
 
+function CardEmpty({ hint }) {
+  return (
+    <div className="mx-progress-card__empty">
+      <div className="mx-progress-card__empty-ring" aria-hidden="true" />
+      <span className="mx-progress-card__empty-title">Пока нет данных</span>
+      {hint && <span className="mx-progress-card__empty-hint">{hint}</span>}
+    </div>
+  )
+}
+
+function MoodCard({ onStartMood, onGoCheckin }) {
+  function handleFace(level) {
+    if (typeof onStartMood === 'function') onStartMood(level)
+    else if (typeof onGoCheckin === 'function') onGoCheckin()
+  }
+
+  return (
+    <section className="mx-progress-mood-card" aria-labelledby="progress-mood-card-title">
+      <h2 id="progress-mood-card-title" className="mx-progress-mood-card__title">
+        Как ты себя чувствуешь?
+      </h2>
+      <p className="mx-progress-mood-card__hint">
+        Отметь настроение — пройди короткую практику
+        <br />
+        и добавь точку в прогресс
+      </p>
+      <div className="mx-progress-mood-card__faces" role="group" aria-label="Выбери настроение">
+        {MOOD_LABELS.map((label, level) => (
+          <button
+            key={label}
+            type="button"
+            className="mx-progress-mood-card__face"
+            data-testid={`progress-mood-face-${level + 1}`}
+            aria-label={label}
+            onClick={() => handleFace(level + 1)}
+          >
+            <MoodFace level={level} />
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function NeedDataPlaque({ checkinsCount, onRemind }) {
+  const remaining = Math.max(0, MIN_CHECKINS - checkinsCount)
+  if (remaining <= 0) return null
+
+  // Ряд кружков-дней: сделанные (с галочкой) + оставшиеся
+  const done = Math.min(checkinsCount, MIN_CHECKINS)
+  const cells = Array.from({ length: MIN_CHECKINS }, (_, i) => i < done)
+
+  return (
+    <section className="mx-progress-need-data" aria-labelledby="progress-need-data-title">
+      <h2 id="progress-need-data-title" className="mx-progress-need-data__title">
+        Нужны записи ещё за {remaining} {remaining === 1 ? 'день' : remaining < 5 ? 'дня' : 'дней'}, чтобы показать выводы
+      </h2>
+      <div className="mx-progress-need-data__days" aria-hidden="true">
+        {cells.map((isDone, i) => (
+          <span key={i} className={`mx-progress-need-data__day${isDone ? ' mx-progress-need-data__day--done' : ''}`}>
+            {isDone ? '✓' : ''}
+          </span>
+        ))}
+      </div>
+      <button
+        type="button"
+        className="mx-progress-need-data__remind"
+        data-testid="progress-need-data-remind"
+        onClick={typeof onRemind === 'function' ? onRemind : undefined}
+      >
+        Напомнить
+      </button>
+    </section>
+  )
+}
+
+function moodColor(level) {
+  // 1 — тяжёлый (приглушенный), 5 — светлый
+  if (!level) return 'rgb(var(--c-card3, 46 46 46))'
+  const palette = ['#6A6A6A', '#8A8A8A', '#B0B0B0', '#D0D0D0', '#E6E6E6']
+  return palette[Math.min(Math.max(level, 1), 5) - 1]
+}
+
+function PracticesRing({ analyticsData, isCurrentPeriod }) {
+  const rituals = analyticsData?.rituals || []
+  const ascezas = analyticsData?.ascezas || []
+  const items = [
+    ...rituals.map(r => ({ name: r.name, kind: 'ritual' })),
+    ...ascezas.map(a => ({ name: a.name, kind: 'asceza' })),
+  ].slice(0, 4)
+
+  if (!isCurrentPeriod || items.length === 0) {
+    return (
+      <CardShell title="Твои частые практики" subtitle="За текущий период" testId="progress-practices">
+        <CardEmpty hint="Отмечай практики и чек-ины — здесь появится кольцо частых активностей" />
+      </CardShell>
+    )
+  }
+
+  const total = items.length
+  const palette = ['#EDBD60', '#6FB7E0', '#B0B0B0', '#6A6A6A']
+  const dash = 100 / total
+  const segments = items.map((item, i) => ({
+    key: item.name,
+    color: palette[i % palette.length],
+    offset: -i * dash,
+  }))
+
+  return (
+    <CardShell title="Твои частые практики" subtitle="За текущий период" testId="progress-practices">
+      <div className="mx-progress-practices">
+        <div className="mx-progress-practices__ring">
+          <svg viewBox="0 0 36 36" aria-label="Частые практики">
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgb(var(--c-card3, 46 46 46))" strokeWidth="3" />
+            {segments.map(seg => (
+              <circle
+                key={seg.key}
+                cx="18"
+                cy="18"
+                r="15.9"
+                fill="none"
+                stroke={seg.color}
+                strokeWidth="3"
+                strokeDasharray={`${dash} ${100 - dash}`}
+                strokeDashoffset={seg.offset}
+              />
+            ))}
+          </svg>
+          <span className="mx-progress-practices__ring-value">{total}</span>
+        </div>
+        <div className="mx-progress-practices__legend">
+          {items.map((item, i) => (
+            <div className="mx-progress-practices__row" key={item.name}>
+              <span className="mx-progress-practices__dot" style={{ background: palette[i % palette.length] }} />
+              <span className="mx-progress-practices__name">{item.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </CardShell>
+  )
+}
+
+function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
+  const moodByDate = new Map(periodCheckins.map(item => [item.date, item.mood]))
+
+  if (granularity === 'week') {
+    const cells = CALENDAR_WEEKDAYS.map((wd, i) => {
+      const day = new Date(window.start)
+      day.setDate(window.start.getDate() + i)
+      const date = isoDate(day)
+      const mood = moodByDate.get(date)
+      return { wd, date, mood, day: day.getDate() }
+    })
+    return (
+      <CardShell title="Календарь настроения" subtitle="Дни с настроением" testId="progress-mood-calendar">
+        <div className="mx-progress-mood-calendar">
+          <div className="mx-progress-mood-calendar__week">
+            {cells.map(c => (
+              <div className="mx-progress-mood-calendar__cell" key={c.date}>
+                <span
+                  className="mx-progress-mood-calendar__dot"
+                  style={c.mood ? { background: moodColor(c.mood) } : undefined}
+                />
+                <span className="mx-progress-mood-calendar__wd">{c.wd}</span>
+              </div>
+            ))}
+          </div>
+          <button type="button" className="mx-progress-mood-calendar__all" onClick={onOpenFull}>
+            Все дни ›
+          </button>
+        </div>
+      </CardShell>
+    )
+  }
+
+  // month / year — сетка месяца
+  const ref = window.start
+  const year = ref.getFullYear()
+  const month = ref.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const offset = (new Date(year, month, 1).getDay() + 6) % 7
+  const cells = [
+    ...Array.from({ length: offset }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ]
+
+  return (
+    <CardShell title="Календарь настроения" subtitle="Дни с настроением" testId="progress-mood-calendar">
+      <div className="mx-progress-mood-calendar">
+        <div className="mx-progress-mood-calendar__month">
+          {cells.map((day, i) => {
+            if (!day) return <span key={`b-${i}`} className="mx-progress-mood-calendar__month-cell" />
+            const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            const mood = moodByDate.get(date)
+            return (
+              <span className="mx-progress-mood-calendar__month-cell" key={date}>
+                <span
+                  className="mx-progress-mood-calendar__month-dot"
+                  style={mood ? { background: moodColor(mood) } : undefined}
+                />
+              </span>
+            )
+          })}
+        </div>
+        <button type="button" className="mx-progress-mood-calendar__all" onClick={onOpenFull}>
+          Все дни ›
+        </button>
+      </div>
+    </CardShell>
+  )
+}
+
+function trendGeometry(checkins) {
+  const valid = checkins.filter(item => Number.isInteger(item?.mood))
+  if (valid.length < 2) return { points: [], polyline: '' }
+  const points = valid
+  return {
+    points,
+    polyline: points
+      .map((item, index) => {
+        const x = 2 + (index / (points.length - 1)) * 296
+        const y = 56 - ((item.mood - 1) / 4) * 44
+        return `${x.toFixed(1)},${y.toFixed(1)}`
+      })
+      .join(' '),
+  }
+}
+
+function MoodTrendCard({ periodCheckins, prevCheckins }) {
+  const cur = trendGeometry(periodCheckins)
+  const prev = trendGeometry(prevCheckins)
+  const hasData = cur.points.length >= 2 || prev.points.length >= 2
+
+  return (
+    <CardShell title="Настроение" subtitle="Этот период / прошлый период" testId="progress-mood-trend">
+      {hasData ? (
+        <div className="mx-progress-mood-trend">
+          <svg className="mx-progress-mood-trend__chart" viewBox="0 0 300 64" role="img" aria-label="График настроения">
+            <path className="mx-progress-redesign__chart-grid" d="M2 12H298 M2 56H298" />
+            {prev.polyline && (
+              <polyline
+                className="mx-progress-redesign__chart-line"
+                points={prev.polyline}
+                style={{ opacity: 0.4 }}
+              />
+            )}
+            {cur.polyline && (
+              <polyline className="mx-progress-redesign__chart-line" points={cur.polyline} />
+            )}
+          </svg>
+          <div className="mx-progress-mood-trend__axis">
+            <span>Прошлый</span>
+            <span>Этот</span>
+          </div>
+        </div>
+      ) : (
+        <CardEmpty hint="Добавь несколько отметок настроения — здесь появится линия" />
+      )}
+    </CardShell>
+  )
+}
+
+function EmotionsRing({ periodCheckins }) {
+  const counts = new Map()
+  for (const c of periodCheckins) {
+    if (c.emotion) counts.set(c.emotion, (counts.get(c.emotion) || 0) + 1)
+  }
+  const emotions = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4)
+  const total = [...counts.values()].reduce((s, n) => s + n, 0)
+  const palette = ['#EDBD60', '#6FB7E0', '#B0B0B0', '#6A6A6A']
+
+  if (emotions.length === 0) {
+    return (
+      <CardShell title="Частые эмоции" subtitle="За период" testId="progress-emotions">
+        <CardEmpty hint="Отмечай эмоции в чек-ине — здесь появится кольцо" />
+      </CardShell>
+    )
+  }
+
+  const segments = emotions.reduce(
+    (acc, [name, count]) => {
+      const dash = (count / total) * 100
+      const seg = { key: name, dash, offset: -acc.offset }
+      return { offset: acc.offset + dash, list: [...acc.list, seg] }
+    },
+    { offset: 0, list: [] }
+  ).list
+
+  return (
+    <CardShell title="Частые эмоции" subtitle="За период" testId="progress-emotions">
+      <div className="mx-progress-emotions">
+        <div className="mx-progress-emotions__ring">
+          <svg viewBox="0 0 36 36" aria-label={`${total} отметок эмоций`}>
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgb(var(--c-card3, 46 46 46))" strokeWidth="3" />
+            {segments.map((seg, i) => (
+              <circle
+                key={seg.key}
+                cx="18"
+                cy="18"
+                r="15.9"
+                fill="none"
+                stroke={palette[i % palette.length]}
+                strokeWidth="3"
+                strokeDasharray={`${seg.dash} ${100 - seg.dash}`}
+                strokeDashoffset={seg.offset}
+              />
+            ))}
+          </svg>
+          <span className="mx-progress-emotions__ring-value">{total}</span>
+        </div>
+        <div className="mx-progress-emotions__legend">
+          {emotions.map(([name, count], i) => (
+            <div className="mx-progress-emotions__row" key={name}>
+              <span className="mx-progress-emotions__dot" style={{ background: palette[i % palette.length] }} />
+              <span className="mx-progress-emotions__name">{name}</span>
+              <span className="mx-progress-emotions__count">{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </CardShell>
+  )
+}
+
+function ConclusionsCard({ direction, conclusions }) {
+  const title = direction === 'up' ? 'Что тебя поднимает' : 'Что тянет вниз'
+  const items = conclusions.filter(c => c.direction === direction)
+
+  return (
+    <CardShell title={title} subtitle="Из твоих отметок" testId={`progress-conclusions-${direction}`}>
+      {items.length > 0 ? (
+        <div className="mx-progress-conclusions">
+          {items.map((c, i) => (
+            <div key={i}>
+              <p className="mx-progress-conclusion__text">{c.text}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <CardEmpty hint="Соберётся из отметок нескольких дней" />
+      )}
+    </CardShell>
+  )
+}
+
+/* ── Наблюдения (контракт: видимость, evidence, safety caveat) ── */
+
+function ObservationEvidence({ observation, preserveLegacyEmptyCaveat = false }) {
+  return (
+    <div>
+      {typeof observation.sampleSize === 'number' && observation.sampleSize > 0 && (
+        <p>
+          Основа: {observation.sampleSize} {observation.sampleSize === 1 ? 'наблюдение' : 'отметок'}
+        </p>
+      )}
+      {observation.sourceDates?.length > 0 && (
+        <details>
+          <summary>Даты в основе наблюдения</summary>
+          <p>{observation.sourceDates.map(formatSourceDate).join(' · ')}</p>
+        </details>
+      )}
+      {(observation.caveat || preserveLegacyEmptyCaveat) && (
+        <p className="mx-progress-redesign__caveat">{observation.caveat}</p>
+      )}
+    </div>
+  )
+}
+
+function PrimaryObservationCard({ observation }) {
+  if (!observation) {
+    return (
+      <article className="mx-progress-redesign__observation">
+        <span>Пока мало данных</span>
+        <strong>Добавь ещё несколько отметок.</strong>
+        <p>Тогда здесь появится первое наблюдение.</p>
+      </article>
+    )
+  }
+
+  return (
+    <article
+      className="mx-progress-redesign__observation mx-type-insight"
+      data-primary-observation="true"
+    >
+      <span>Главное наблюдение</span>
+      <strong>{observation.text}</strong>
+      <ObservationEvidence observation={observation} />
+    </article>
+  )
+}
+
+function ObservationRail({ observations, insightsEnabled, preferenceError }) {
+  const secondary = observations.slice(1, 3)
+
+  return (
+    <CardShell title="Что повторяется" subtitle="Наблюдения" testId="progress-observations">
+      <div className="mx-progress-redesign__rail">
+        {insightsEnabled ? (
+          <>
+            <PrimaryObservationCard observation={observations[0] ?? null} />
+            {secondary.map((observation, index) => (
+              <article
+                className="mx-progress-redesign__observation mx-type-insight"
+                key={`${observation.text}-${index}`}
+              >
+                <span>Ещё одно наблюдение</span>
+                <strong>{observation.text}</strong>
+                <ObservationEvidence observation={observation} />
+              </article>
+            ))}
+          </>
+        ) : (
+          <article className="mx-progress-redesign__observation" role="status">
+            <span>Скрыто в настройках</span>
+            <strong>Персональные описательные наблюдения скрыты. Твои сохранённые данные и обычные цифры ниже не удалены.</strong>
+            <p>
+              Персональные описательные наблюдения скрыты. Твои сохранённые данные и обычные цифры ниже не удалены.
+              Включить наблюдения можно в настройках.
+            </p>
+          </article>
+        )}
+      </div>
+      <p className="mx-progress-redesign__caveat">
+        Это описание твоих отметок — не диагнозы и не доказанные причины, не прогноз.
+      </p>
+      {preferenceError && <p className="mx-progress-redesign__status-note">{preferenceError}</p>}
+    </CardShell>
+  )
+}
+
+/* ── Полный календарь настроения ── */
+
+function FullCalendar({ poolCheckins, onBack }) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  // 90 дней назад → сегодня, новые недели сверху
+  const start = new Date(today)
+  start.setDate(today.getDate() - 89)
+  const moodByDate = new Map(poolCheckins.map(item => [item.date, item.mood]))
+
+  // Выравниваем на понедельник
+  const gridStart = new Date(start)
+  gridStart.setDate(start.getDate() - ((start.getDay() + 6) % 7))
+
+  const weeks = []
+  const cursor = new Date(gridStart)
+  let lastMonth = -1
+  while (cursor <= today) {
+    const week = []
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(cursor)
+      d.setDate(cursor.getDate() + i)
+      week.push(d)
+    }
+    weeks.push(week)
+    cursor.setDate(cursor.getDate() + 7)
+  }
+
+  return (
+    <div className="mx-progress-full-calendar" data-testid="progress-full-calendar">
+      <button
+        type="button"
+        className="mx-progress-entry__back"
+        aria-label="Назад"
+        data-testid="progress-full-calendar-back"
+        onClick={onBack}
+      >
+        ‹
+      </button>
+      <h2 className="mx-progress-full-calendar__title">календарь настроения.</h2>
+      <p className="mx-progress-full-calendar__subtext">Одна точка — один день</p>
+      <div className="mx-progress-full-calendar__grid">
+        {weeks.map((week, wi) => {
+          const firstDay = week[0]
+          const m = firstDay.getMonth()
+          const showMonth = m !== lastMonth
+          lastMonth = m
+          return (
+            <div key={wi} style={{ display: 'contents' }}>
+              {showMonth && (
+                <div className="mx-progress-full-calendar__month">
+                  {new Intl.DateTimeFormat('ru-RU', { month: 'long' }).format(firstDay)}
+                </div>
+              )}
+              {week.map(d => {
+                const date = isoDate(d)
+                const mood = moodByDate.get(date)
+                const future = d > today
+                return (
+                  <div className="mx-progress-full-calendar__cell" key={date}>
+                    {!future && (
+                      <span
+                        className="mx-progress-full-calendar__dot"
+                        style={mood ? { background: moodColor(mood) } : undefined}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ── Нижняя пилюля периода ── */
+
+function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext }) {
+  const window = getPeriodWindow(granularity, offset)
+  return (
+    <div className="mx-progress-bottom-pill" data-testid="progress-bottom-pill">
+      <button
+        type="button"
+        className="mx-progress-bottom-pill__arrow"
+        aria-label="Предыдущий период"
+        onClick={onPrev}
+      >
+        ‹
+      </button>
+      <span className="mx-progress-bottom-pill__label">
+        <span className="mx-progress-bottom-pill__name">{periodName(granularity, offset)}</span>
+        <span className="mx-progress-bottom-pill__range">{formatPeriodRange(window, granularity)}</span>
+      </span>
+      <button
+        type="button"
+        className="mx-progress-bottom-pill__arrow"
+        aria-label="Следующий период"
+        onClick={onNext}
+        disabled={!canNext}
+      >
+        ›
+      </button>
+    </div>
+  )
+}
+
 const PROGRESS_SEGMENT_KEY = 'mx-progress-segment'
 
-export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, onRedoReview, historyTrigger = 0 }) {
+export default function Analytics({
+  user,
+  onGoCheckin,
+  onRedo,
+  onRedoReview,
+  onStartMood,
+  onOpenNotifications,
+  historyTrigger = 0,
+}) {
   const rootRef = useRef(null)
   const scrollPositions = useRef({ analytics: 0, history: 0 })
   const skipScrollRestore = useRef(true)
@@ -654,6 +829,23 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, on
       return 'analytics'
     }
   })
+
+  const [granularity, setGranularity] = useState('week')
+  const [offset, setOffset] = useState(0)
+  const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
+  const [view, setView] = useState('analytics') // 'analytics' | 'calendar'
+
+  const [poolCheckins, setPoolCheckins] = useState([])
+  const [analyticsData, setAnalyticsData] = useState(null)
+  const [sourceResult, setSourceResult] = useState(null)
+  const [sourceLoading, setSourceLoading] = useState(Boolean(user))
+  const sourceResultRef = useRef(null)
+  const retryFailedSourcesRef = useRef(false)
+  const [reloadKey, setReloadKey] = useState(0)
+  const [insightsEnabled, setInsightsEnabled] = useState(true)
+  const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
+
+  const gran = getGranularity(granularity)
 
   // Persist segment choice in sessionStorage
   useEffect(() => {
@@ -698,63 +890,42 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, on
     setActiveTab(next)
   }
 
-  const [initialTrendsState] = useState(() => {
-    if (!user) return null
-
-    const memoryData = peekTrendsData(user.id, 14)
-    if (memoryData !== null) return { data: memoryData, shouldRefresh: false }
-
-    const snapshotData = peekTrendsSnapshot(user.id, 14)
-    return { data: snapshotData, shouldRefresh: snapshotData !== null }
-  })
-  const initialTrendsSnapshot = initialTrendsState?.data ?? null
-  const [data, setData] = useState(() => initialTrendsSnapshot?.analytics ?? null)
-  const [checkins, setCheckins] = useState(() => initialTrendsSnapshot?.checkins ?? [])
-  const [days, setDays] = useState(14)
-  const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
-  const [loading, setLoading] = useState(() => initialTrendsSnapshot === null)
-  const [loadResult, setLoadResult] = useState(null)
-  const [reloadKey, setReloadKey] = useState(0)
-  const [insightsEnabled, setInsightsEnabled] = useState(true)
-  const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
-
+  // Data: pool checkins (90d) + analytics aggregate (granularity days)
   useEffect(() => {
     if (!user) return
 
     let active = true
-    const previous = reloadKey > 0 ? loadResult : null
-    fetchTrendsData(user.id, days, {
-      force: days !== 14 || initialTrendsState?.shouldRefresh === true || reloadKey > 0,
-      retrySources: previous ? retrySources(previous) : null,
-      previous,
-    })
+    const previous = retryFailedSourcesRef.current ? sourceResultRef.current : null
+    retryFailedSourcesRef.current = false
+    loadIndependentSources({
+      analytics: () => api.analytics.get(user.id, gran.days),
+      checkins: () => api.checkin.history(user.id, 90),
+    }, previous ? { previous, only: previous.failed } : undefined)
       .then(result => {
         if (!active) return
-
-        setLoadResult(result)
-        if (result.data?.analytics) setData(result.data.analytics)
-        if (Array.isArray(result.data?.checkins)) setCheckins(result.data.checkins)
+        sourceResultRef.current = result
+        setSourceResult(result)
+        if (result.data.analytics) {
+          setAnalyticsData(sanitizeTrendsData({ analytics: result.data.analytics }).analytics)
+        }
+        if (Array.isArray(result.data.checkins)) {
+          setPoolCheckins(sanitizeTrendsData({ checkins: result.data.checkins }).checkins)
+        }
       })
       .catch(error => {
         console.error(error)
-        if (!active) return
-        setLoadResult({
-          status: 'error',
-          states: { analytics: SOURCE_STATES.error, checkins: SOURCE_STATES.error },
-          failed: ['analytics', 'checkins'],
-        })
       })
       .finally(() => {
-        if (active) setLoading(false)
+        if (active) setSourceLoading(false)
       })
 
     return () => {
       active = false
     }
-    // loadResult is the intentional retry snapshot, not a fetch dependency.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, days, initialTrendsState, reloadKey])
+  }, [user, granularity, reloadKey])
 
+  // Insights visibility preference
   useEffect(() => {
     if (!user) return
 
@@ -767,9 +938,7 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, on
       .catch(() => {
         if (active) {
           setInsightsEnabled(true)
-          setInsightsPreferenceError(
-            'Не удалось проверить настройку видимости. Наблюдения показаны по умолчанию.'
-          )
+          setInsightsPreferenceError('Наблюдения показаны по умолчанию.')
         }
       })
 
@@ -778,33 +947,39 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, on
     }
   }, [user])
 
-  const safeData = data || {
-    period_days: days,
+  const window = useMemo(() => getPeriodWindow(granularity, offset), [granularity, offset])
+  const prevWindow = useMemo(
+    () => getPeriodWindow(granularity, offset + 1),
+    [granularity, offset]
+  )
+  const periodCheckins = useMemo(
+    () => sliceCheckinsByPeriod(poolCheckins, window),
+    [poolCheckins, window]
+  )
+  const prevCheckins = useMemo(
+    () => sliceCheckinsByPeriod(poolCheckins, prevWindow),
+    [poolCheckins, prevWindow]
+  )
+
+  const safeData = analyticsData || {
+    period_days: gran.days,
     rituals: [],
     ascezas: [],
     insights: [],
     observations: [],
     daily_activity: [],
   }
-  const analyticsReady = loadResult?.states?.analytics === SOURCE_STATES.success || data !== null
-  const analyticsAuth = loadResult?.states?.analytics === SOURCE_STATES.auth
-  const analyticsError = !loading && !analyticsReady
+  const analyticsState = sourceResult?.states?.analytics
+  const checkinsState = sourceResult?.states?.checkins
+  const analyticsError =
+    !sourceLoading && analyticsState && analyticsState !== SOURCE_STATES.success
+  const analyticsAuth = analyticsState === SOURCE_STATES.auth
   const checkinsFailed =
-    loadResult?.states?.checkins && loadResult.states.checkins !== SOURCE_STATES.success
-  const rituals = safeData.rituals || []
-  const ascezas = safeData.ascezas || []
-
-  const avgRituals = rituals.length
-    ? Math.round(rituals.reduce((s, r) => s + r.completion_rate, 0) / rituals.length)
-    : 0
-  const avgClean = ascezas.length
-    ? Math.round(ascezas.reduce((s, a) => s + a.clean_rate, 0) / ascezas.length)
-    : 0
+    !sourceLoading && checkinsState && checkinsState !== SOURCE_STATES.success
+  const isCurrentPeriod = offset === 0
 
   const descriptiveBackendInsights = selectDescriptiveInsights(safeData.insights)
-  const backendObservations = Array.isArray(safeData.observations)
-    ? safeData.observations.slice(0, 3)
-    : []
+  const backendObservations = Array.isArray(safeData.observations) ? safeData.observations.slice(0, 3) : []
   const observations =
     backendObservations.length > 0
       ? backendObservations
@@ -815,23 +990,34 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, on
           caveat: 'Это описание доступных данных, а не диагноз и не доказательство причины.',
         }))
 
-  const score = field => average(pick(checkins, field))
-  const scoreLabel = field => {
-    const value = score(field)
+  const conclusions = deriveConclusions(periodCheckins, safeData)
+  const hasPeriodData = periodCheckins.length > 0
+  const showNeedData = periodCheckins.length < MIN_CHECKINS
 
-    return value === null ? '—' : value.toFixed(1)
+  function handlePrev() {
+    setOffset(o => o + 1)
+    setView('analytics')
   }
-  const scoreProgress = field => {
-    const value = score(field)
-    return value === null ? 0 : (value / 5) * 100
+  function handleNext() {
+    setOffset(o => Math.max(0, o - 1))
+  }
+  function selectGranularity(id) {
+    if (id !== granularity) setSourceLoading(true)
+    setGranularity(id)
+    setOffset(0)
+    setPeriodMenuOpen(false)
+  }
+
+  function retryFailedSources() {
+    retryFailedSourcesRef.current = true
+    setSourceLoading(true)
+    setReloadKey(value => value + 1)
   }
 
   return (
     <div
       ref={rootRef}
-      className={`mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in${
-        PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2' : ''
-      }`}
+      className="mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
     >
       <div className="mx-progress-segment-bar">
         <div
@@ -858,203 +1044,113 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, on
             История
           </button>
         </div>
-      </div>
-      {activeTab === 'analytics' && (
-        <>
-      <header className="mx-progress-redesign__header">
-        <h2
-          className={`font-display mx-type-page text-cream lowercase${
-            PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2__legacy-title' : ''
-          }`}
-        >
-          прогресс.
-        </h2>
-        <div className="flex items-center gap-2">
-          {PROGRESS_LAYOUT_V2_ENABLED ? (
-            <div className="mx-progress-layout-v2__period-control">
-              <button
-                type="button"
-                className="mx-progress-layout-v2__period-trigger mx-type-control"
-                aria-expanded={periodMenuOpen}
-                aria-controls="progress-period-menu"
-                onClick={() => setPeriodMenuOpen(value => !value)}
-              >
-                {days} дней
-                <span aria-hidden="true">⌄</span>
-              </button>
-              {periodMenuOpen && (
-                <div
-                  id="progress-period-menu"
-                  className="mx-progress-layout-v2__period-menu"
-                  role="menu"
-                  aria-label="Период аналитики"
-                >
-                  {ANALYTICS_PERIODS.map(period => (
-                    <button
-                      key={period}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={days === period}
-                      onClick={() => {
-                        if (days !== period) {
-                          setLoading(true)
-                          setDays(period)
-                        }
-                        setPeriodMenuOpen(false)
-                      }}
-                    >
-                      <span>{period} дней</span>
-                      {days === period && <span aria-hidden="true">✓</span>}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <span>{days} дней</span>
-          )}
-        </div>
-      </header>
-
-      {!PROGRESS_LAYOUT_V2_ENABLED && (
-        <div className="mx-progress-redesign__periods" aria-label="Период аналитики">
-          {ANALYTICS_PERIODS.map(period => (
-            <button
-              key={period}
-              type="button"
-              onClick={() => {
-                if (days !== period) {
-                  setLoading(true)
-                  setDays(period)
-                }
-              }}
-              aria-pressed={days === period}
-            >
-              {period} дней
-            </button>
-          ))}
-        </div>
-      )}
-
-      <MoodTrend
-        checkins={checkins}
-        loading={loading}
-        error={
-          analyticsError
-            ? analyticsAuth
-              ? 'Нужна повторная авторизация.'
-              : 'Не удалось загрузить статистику.'
-            : ''
-        }
-        onRetry={() => {
-          setLoading(true)
-          setReloadKey(value => value + 1)
-        }}
-        onGoCheckin={onGoCheckin}
-        period={safeData.period_days}
-      />
-
-      {checkinsFailed && !loading && (
-        <p className="mx-progress-redesign__status-note" role="status">
-          История чек-инов временно недоступна; остальные показатели продолжают работать.
-        </p>
-      )}
-      {analyticsError && (
-        <div role="alert" className="mx-progress-redesign__status-note">
-          {analyticsAuth
-            ? 'Статистика требует повторной авторизации.'
-            : 'Статистика временно недоступна.'}
+        {activeTab === 'analytics' && (
           <button
             type="button"
-            onClick={() => {
-              setLoading(true)
-              setReloadKey(value => value + 1)
-            }}
+            className="mx-progress-period-trigger"
+            data-testid="progress-period-trigger"
+            aria-expanded={periodMenuOpen}
+            aria-controls="progress-period-menu"
+            onClick={() => setPeriodMenuOpen(v => !v)}
           >
-            Повторить
+            {gran.label}
+            <span className="mx-progress-period-trigger__chevron" aria-hidden="true">⌄</span>
           </button>
-        </div>
+        )}
+        {activeTab === 'analytics' && periodMenuOpen && (
+          <div id="progress-period-menu" className="mx-progress-period-menu" role="menu" aria-label="Период аналитики">
+            {ANALYTICS_GRANULARITIES.map(g => (
+              <button
+                key={g.id}
+                type="button"
+                className="mx-progress-period-menu__item"
+                role="menuitemradio"
+                aria-checked={granularity === g.id}
+                onClick={() => selectGranularity(g.id)}
+              >
+                <span>{g.label}</span>
+                {granularity === g.id && <span className="mx-progress-period-menu__check" aria-hidden="true">✓</span>}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {activeTab === 'analytics' && view === 'calendar' && (
+        <FullCalendar poolCheckins={poolCheckins} onBack={() => setView('analytics')} />
       )}
-      {!loading && analyticsReady && (
+
+      {activeTab === 'analytics' && view === 'analytics' && (
         <>
+          <header className="mx-progress-analytics">
+            <h1 className="mx-progress-analytics__title font-display">аналитика.</h1>
+            <p className="mx-progress-analytics__subtext">
+              Здесь видно, как меняется твоё настроение за {gran.word}
+              {!hasPeriodData && (
+                <span className="mx-progress-analytics__subtext-empty"> · Пока данных нет</span>
+              )}
+            </p>
+          </header>
+
+          <MoodCard onStartMood={onStartMood} onGoCheckin={onGoCheckin} />
+
+          {analyticsError && (
+            <div role="alert" className="mx-progress-redesign__status-note">
+              {analyticsAuth
+                ? 'Статистика требует повторной авторизации.'
+                : 'Статистика временно недоступна.'}
+              <button type="button" onClick={retryFailedSources}>
+                Повторить
+              </button>
+            </div>
+          )}
+          {checkinsFailed && !analyticsError && (
+            <p className="mx-progress-redesign__status-note" role="status">
+              История чек-инов временно недоступна; остальные показатели продолжают работать.
+              <button type="button" onClick={retryFailedSources}>
+                Повторить
+              </button>
+            </p>
+          )}
+
+          {showNeedData && (
+            <NeedDataPlaque checkinsCount={periodCheckins.length} onRemind={onOpenNotifications} />
+          )}
+
+          <SectionLabel>Общее</SectionLabel>
+          <PracticesRing analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />
+          <MoodCalendarCard
+            periodCheckins={periodCheckins}
+            granularity={granularity}
+            window={window}
+            onOpenFull={() => setView('calendar')}
+          />
+          <MoodTrendCard periodCheckins={periodCheckins} prevCheckins={prevCheckins} />
+
+          <SectionLabel>Эмоции</SectionLabel>
+          <EmotionsRing periodCheckins={periodCheckins} />
+          <ConclusionsCard direction="up" conclusions={conclusions} />
+          <ConclusionsCard direction="down" conclusions={conclusions} />
           <ObservationRail
             observations={observations}
             insightsEnabled={insightsEnabled}
             preferenceError={insightsPreferenceError}
           />
-          <ActivityCalendar
-            checkins={checkins}
-            dailyActivity={safeData.daily_activity || []}
-            period={safeData.period_days}
-          />
-          <EmotionCloud checkins={checkins} />
 
-          <section
-            className="mx-progress-redesign__section"
-            aria-labelledby="progress-activities-title"
-          >
-            <SectionHeading
-              eyebrow="По существующим данным"
-              title="Активности"
-              meta="4"
-              id="progress-activities-title"
-            />
-            <div className="mx-progress-redesign__activities">
-              {PROGRESS_LAYOUT_V2_ENABLED && <h3 id="progress-activities-title">Активности</h3>}
-              <Metric
-                label="Ритуалы"
-                value={rituals.length ? `${avgRituals}%` : '—'}
-                note={rituals.length ? `${rituals.length} активных` : 'Пока нет отметок'}
-                progress={avgRituals}
-              >
-                {rituals.length > 0 && (
-                  <details>
-                    <summary>Показать ритуалы</summary>
-                    {rituals.map(ritual => (
-                      <p key={ritual.id}>
-                        <span>{ritual.name}</span>
-                        <b>{ritual.completion_rate}%</b>
-                      </p>
-                    ))}
-                  </details>
-                )}
-              </Metric>
-              <Metric
-                label="Аскезы"
-                value={ascezas.length ? `${avgClean}%` : '—'}
-                note={ascezas.length ? `${ascezas.length} активных` : 'Пока нет отметок'}
-                progress={avgClean}
-              >
-                {ascezas.length > 0 && (
-                  <details>
-                    <summary>Показать аскезы</summary>
-                    {ascezas.map(asceza => (
-                      <p key={asceza.id}>
-                        <span>{asceza.name}</span>
-                        <b>{asceza.clean_rate}%</b>
-                      </p>
-                    ))}
-                  </details>
-                )}
-              </Metric>
-              <Metric
-                label="Энергия"
-                value={scoreLabel('energy')}
-                note="После чек-ина"
-                progress={scoreProgress('energy')}
-              />
-              <Metric
-                label="Фокус"
-                value={scoreLabel('focus')}
-                note="После чек-ина"
-                progress={scoreProgress('focus')}
-              />
-            </div>
-          </section>
+          <div className="mx-progress-analytics__bottom-spacer" />
         </>
       )}
-        </>
+
+      {activeTab === 'analytics' && view === 'analytics' && (
+        <BottomPeriodPill
+          granularity={granularity}
+          offset={offset}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          canNext={offset > 0}
+        />
       )}
+
       {activeTab === 'history' && (
         <ProgressHistory
           user={user}

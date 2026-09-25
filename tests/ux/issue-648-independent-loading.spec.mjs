@@ -106,8 +106,8 @@ test('Analytics keeps the mood check-in neighbor visible and interactive when an
   )
   try {
     await page.goto('/?tab=trends')
-    await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeVisible()
-    await expect(page.getByText('Настроение за 14 дней')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeVisible()
+    await expect(page.getByText('Как ты себя чувствуешь?')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
     await expect(page.getByRole('alert').filter({ hasText: 'Статистика временно недоступна.' })).toBeVisible()
   } finally {
@@ -128,7 +128,7 @@ test('Profile and Analytics expose auth recovery for 401/403 responses', async (
   )
   try {
     await page.goto('/?tab=trends')
-    await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeVisible()
     await expect(page.getByRole('alert').filter({ hasText: 'Статистика требует повторной авторизации.' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Повторить' }).first()).toBeEnabled()
   } finally {

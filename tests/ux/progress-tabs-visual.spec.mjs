@@ -206,7 +206,7 @@ test('Progress visual snapshots: Аналитика и История (demo mode
     await page.getByRole('button', { name: 'Прогресс' }).click()
 
     // Дождаться появления заголовка и сегмент-бара
-    await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeAttached({
+    await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeAttached({
       timeout: 10_000,
     })
     await expect(page.getByTestId('progress-tab-analytics')).toBeVisible()
@@ -230,7 +230,7 @@ test('Progress visual snapshots: Аналитика и История (demo mode
           'aria-selected',
           'true'
         )
-        await expect(page.getByRole('heading', { name: 'прогресс.' })).toBeAttached()
+        await expect(page.getByRole('heading', { name: 'аналитика.' })).toBeAttached()
       },
     })
 

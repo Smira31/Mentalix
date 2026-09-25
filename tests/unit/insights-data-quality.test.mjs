@@ -21,7 +21,7 @@ test('sanitizeCheckins исключает malformed даты и удержива
 })
 
 test('Analytics UI использует единые периоды, раскрывает evidence dates и не считает неполные группы достаточной выборкой', () => {
-  assert.match(analyticsSource, /ANALYTICS_PERIODS\.map/)
+  assert.match(analyticsSource, /ANALYTICS_GRANULARITIES\.map/)
   assert.match(analyticsSource, /Даты в основе наблюдения/)
   assert.match(analyticsSource, /sourceDates\.map\(formatSourceDate\)/)
   assert.match(analyticsSource, /withValues\.length < MIN_GROUP/)
