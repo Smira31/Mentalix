@@ -63,6 +63,27 @@ export async function completeCheckin(page) {
 }
 
 /**
+ * Ответить на «Было полезно?» на экране завершения.
+ * @param {import('@playwright/test').Page} page
+ * @param {'no'|'some'|'yes'} value — значение кнопки: «Нет» / «Немного» / «Да»
+ */
+export async function feedbackStep(page, value) {
+  const option = page.locator(`[data-testid="checkin-feedback-option"][data-value="${value}"]`)
+  await expect(option).toBeVisible()
+  await option.click()
+}
+
+/**
+ * Закрыть экран завершения разбора дня («Закрыть»).
+ * @param {import('@playwright/test').Page} page
+ */
+export async function closeCompletion(page) {
+  const close = page.locator('[data-testid="checkin-save"]')
+  await expect(close).toBeVisible()
+  await close.click()
+}
+
+/**
  * Вернуться на экран «Сегодня» после завершения.
  * @param {import('@playwright/test').Page} page
  */

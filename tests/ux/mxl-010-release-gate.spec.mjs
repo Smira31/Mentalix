@@ -4,6 +4,7 @@ import {
   textStep,
   emotionStep,
   completeCheckin,
+  feedbackStep,
   backToToday,
   openDayCard,
   goBack,
@@ -31,10 +32,12 @@ function buildFixtureRouter() {
   let reviewHour = 24
   const savedCheckins = []
   const sentMessages = []
+  const sentFeedback = []
 
   return {
     savedCheckins,
     sentMessages,
+    sentFeedback,
     async handle(route) {
       const request = route.request()
       const url = new URL(request.url())
@@ -69,6 +72,11 @@ function buildFixtureRouter() {
             content: LONG_AI_REPLY,
           })
         )
+      }
+
+      if (pathname.match(/^\/api\/checkins\/\d+\/feedback$/) && request.method() === 'POST') {
+        sentFeedback.push(request.postDataJSON())
+        return route.fulfill(jsonResponse({ ok: true }))
       }
 
       if (request.method() !== 'GET') return route.fulfill(jsonResponse({ ok: true }))
@@ -173,15 +181,19 @@ test.describe('MXL-010 automated technical gate', () => {
     // Текстовый шаг
     await textStep(page, 'Fixture morning note')
 
-    // Экран завершения
-    await expect(page.getByRole('heading', { name: /Утренний чек-ин/ })).toBeVisible()
+    // Экран завершения: персонаж, «Готово.» и необязательный ответ
+    await expect(page.getByRole('heading', { name: /Готово\./ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(0)
+
+    // Ответ «Да» не блокирует завершение и уходит вместе с сохранением
+    await feedbackStep(page, 'yes')
 
     // Завершить → серия
     await completeCheckin(page)
     await expect(page.getByRole('heading', { name: /-дневная серия\./ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
+    expect(fixtures.sentFeedback).toEqual([{ value: 'yes' }])
 
     // ── Возврат и переход к вечернему разбору ──
     // После утреннего чек-ина fixture меняет review_hour на 0 (→ 19:00 в
@@ -202,9 +214,16 @@ test.describe('MXL-010 automated technical gate', () => {
     }
 
     // Экран завершения вечернего разбора
-    await expect(page.getByRole('heading', { name: /Разбор дня/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Готово\./ })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
+
+    // Ответ «Немного» уходит сразу: запись уже сохранена
+    await feedbackStep(page, 'some')
+    await expect
+      .poll(() => fixtures.sentFeedback.length, { message: 'ответ разбора дошёл до бэкенда' })
+      .toBe(2)
+    expect(fixtures.sentFeedback[1]).toEqual({ value: 'some' })
 
     // ── Хендофф к Следопыту ──
     const scoutBtn = page.locator('[data-testid="checkin-open-scout"]')
