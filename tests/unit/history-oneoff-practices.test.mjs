@@ -47,12 +47,20 @@ test('HistoryDetail показывает oneOffPractices как список с�
 })
 
 test('лента дней (list view) показывает oneOffPractices', () => {
-  // list view использует d.oneOffPractices (detail view — day.oneOffPractices),
-  // поэтому достаточно проверить наличие d.oneOffPractices в файле
+  const listStart = historySource.indexOf('datedItems.map(d => {')
+  assert.ok(listStart >= 0, 'datedItems.map не найден')
+  const listEnd = historySource.indexOf('})}', listStart)
+  const listBlock = historySource.slice(listStart, listEnd)
+
   assert.match(
-    historySource,
+    listBlock,
     /d\.oneOffPractices\?\.length > 0/,
     'list view должен проверять d.oneOffPractices?.length > 0'
+  )
+  assert.match(
+    listBlock,
+    /OneOffPracticeEntry/,
+    'list view должен рендерить OneOffPracticeEntry'
   )
 })
 

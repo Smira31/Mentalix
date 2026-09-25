@@ -7,6 +7,8 @@ import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
+import ProgressHistory from './progress/ProgressHistory'
+import './progress/ProgressScreen.css'
 
 // Production now uses the owner-approved compact mobile composition. The
 // feature flag remains available for local comparison, while production
@@ -657,6 +659,7 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
   const [reloadKey, setReloadKey] = useState(0)
   const [insightsEnabled, setInsightsEnabled] = useState(true)
   const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
+  const [activeTab, setActiveTab] = useState('analytics')
 
   useEffect(() => {
     if (!user) return
@@ -772,6 +775,34 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
         PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2' : ''
       }`}
     >
+      <div className="mx-progress-segment-bar">
+        <div
+          className="mx-progress-segment"
+          role="tablist"
+          aria-label="Прогресс: Аналитика и История"
+        >
+          <button
+            type="button"
+            role="tab"
+            data-testid="progress-tab-analytics"
+            aria-selected={activeTab === 'analytics'}
+            onClick={() => setActiveTab('analytics')}
+          >
+            Аналитика
+          </button>
+          <button
+            type="button"
+            role="tab"
+            data-testid="progress-tab-history"
+            aria-selected={activeTab === 'history'}
+            onClick={() => setActiveTab('history')}
+          >
+            История
+          </button>
+        </div>
+      </div>
+      {activeTab === 'analytics' && (
+        <>
       <header className="mx-progress-redesign__header">
         <h2
           className={`font-display mx-type-page text-cream lowercase${
@@ -781,15 +812,6 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
           прогресс.
         </h2>
         <div className="flex items-center gap-2">
-          {onOpenHistory && (
-            <button
-              type="button"
-              className="mx-progress-layout-v2__period-trigger mx-type-control"
-              onClick={onOpenHistory}
-            >
-              История
-            </button>
-          )}
           {PROGRESS_LAYOUT_V2_ENABLED ? (
             <div className="mx-progress-layout-v2__period-control">
               <button
@@ -972,6 +994,11 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
             </div>
           </section>
         </>
+      )}
+        </>
+      )}
+      {activeTab === 'history' && (
+        <ProgressHistory user={user} onGoCheckin={onGoCheckin} />
       )}
     </div>
   )
