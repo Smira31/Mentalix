@@ -14,6 +14,7 @@ import BackButton from './components/BackButton'
 import BottomNavigation from './components/BottomNavigation'
 import PreviewApiDiagnostic from './components/PreviewApiDiagnostic'
 import SessionRestoreError from './components/SessionRestoreError'
+import TabSkeleton from './components/TabSkeleton'
 import { useSynced } from './lib/store'
 import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
@@ -170,15 +171,7 @@ function DemoTelegramChrome({ onBack }) {
 }
 
 function ScreenLoading() {
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="w-full max-w-md px-5 pt-8 text-center text-[13px] text-muted"
-    >
-      Загрузка…
-    </div>
-  )
+  return <TabSkeleton />
 }
 
 /* ============================================================
@@ -713,7 +706,15 @@ function App() {
   useEffect(() => {
     if (!user) return undefined
     const timeoutId = window.setTimeout(() => {
+      // Профиль — грузим заранее (нужен чаще всего).
       loadSettings().catch(() => {})
+      // Остальные вкладки — prefetch после первой отрисовки «Сегодня»,
+      // чтобы первый тап по вкладке не ждал загрузки чанка.
+      import('./screens/Practices').catch(() => {})
+      import('./screens/History').catch(() => {})
+      import('./screens/Library').catch(() => {})
+      import('./screens/Analytics').catch(() => {})
+      import('./screens/Mentalix').catch(() => {})
     }, 1500)
     return () => window.clearTimeout(timeoutId)
   }, [user])
@@ -1307,7 +1308,9 @@ function App() {
             // Нижний отступ — внутри содержимого, а не на скролл-контейнере:
             // WebKit (iPhone/Telegram) игнорирует padding-bottom у flex-контейнера
             // с overflow, и конец экрана уходил под нижнюю панель.
-            style={tab === 'mentor' && !overlay ? undefined : { paddingBottom: contentBottomPadding }}
+            style={
+              tab === 'mentor' && !overlay ? undefined : { paddingBottom: contentBottomPadding }
+            }
           >
             <Suspense fallback={<ScreenLoading />}>
               {!user && (
@@ -1471,12 +1474,7 @@ function ErrorTest() {
 }
 
 export default function AppRoot() {
-  const errorTest =
-    new URLSearchParams(window.location.search).get('error_test') === '1'
+  const errorTest = new URLSearchParams(window.location.search).get('error_test') === '1'
 
-  return (
-    <ErrorBoundary>
-      {errorTest ? <ErrorTest /> : <App />}
-    </ErrorBoundary>
-  )
+  return <ErrorBoundary>{errorTest ? <ErrorTest /> : <App />}</ErrorBoundary>
 }
