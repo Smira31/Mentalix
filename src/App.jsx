@@ -298,6 +298,7 @@ function App() {
   const [demoMotionTick, setDemoMotionTick] = useState(0)
 
   const registerDemoBack = useCallback((key, handler) => {
+    if (demoBackRefs.current[key] === handler) return
     demoBackRefs.current[key] = handler
     setDemoMotionTick(tick => tick + 1)
   }, [])
@@ -323,6 +324,10 @@ function App() {
   )
 
   const closeTodaySeries = useCallback(() => setTodaySeriesOpen(false), [])
+
+  const openSettings = useCallback(() => setOverlay('settings'), [])
+  const openTodaySeries = useCallback(() => setTodaySeriesOpen(true), [])
+  const openDemoPanel = useCallback(() => setDemoPanelOpen(true), [])
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return undefined
@@ -1418,9 +1423,9 @@ function App() {
                       onGoMentor={goMentor}
                       onFlowChange={setTodayFlowOpen}
                       onRegisterBack={registerTodayBack}
-                      onOpenSettings={() => setOverlay('settings')}
-                      onOpenDemoPanel={demoPanelAllowed ? () => setDemoPanelOpen(true) : undefined}
-                      onOpenSeries={() => setTodaySeriesOpen(true)}
+                      onOpenSettings={openSettings}
+                      onOpenDemoPanel={demoPanelAllowed ? openDemoPanel : undefined}
+                      onOpenSeries={openTodaySeries}
                       seriesOpen={todaySeriesOpen}
                       onCloseSeries={closeTodaySeries}
                     />
