@@ -507,6 +507,20 @@ function respond(path, options = {}) {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
       review_hour: eveningStates.has(previewTodayState()) ? 0 : 19,
+      writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
+      writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
+    })
+  }
+  if (pathname === '/profile/writing-goal/progress' && method === 'GET') {
+    const enabled = Boolean(state.profile.writing_goal_enabled)
+    const goal = state.profile.writing_goal_weekly_count || 3
+    const completed = enabled ? 2 : 0
+    return json({
+      enabled,
+      completed,
+      goal,
+      reached: completed >= goal,
+      remaining: Math.max(0, goal - completed),
     })
   }
   if (pathname === '/profile' && method === 'GET') return json(state.profile)
