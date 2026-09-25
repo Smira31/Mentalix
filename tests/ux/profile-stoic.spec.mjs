@@ -39,7 +39,7 @@ for (const viewport of VIEWPORTS) {
       try {
         await page.getByTestId('today-profile-button').click()
         await expect(page.getByTestId('profile-screen')).toBeVisible()
-        await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'профиль.' })).toBeVisible()
 
         const row = await page.getByTestId('profile-row-checkins').boundingBox()
         expect(Math.round(row.height)).toBe(50)
@@ -55,7 +55,7 @@ for (const viewport of VIEWPORTS) {
         expect(Math.round(backBox.width)).toBe(44)
         expect(Math.round(backBox.x)).toBe(20)
         await back.click()
-        await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'профиль.' })).toBeVisible()
 
         // Закрытие профиля — круглая кнопка web.
         await page.getByTestId('profile-close-button').click()
@@ -81,7 +81,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByTestId('profile-close-button')).toHaveCount(0)
 
         await page.evaluate(() => window.__telegramBackClick())
-        await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'профиль.' })).toBeVisible()
         await page.evaluate(() => window.__telegramBackClick())
         await expect(page.getByTestId('profile-screen')).toHaveCount(0)
         await expect(page.getByTestId('today-profile-button')).toBeVisible()

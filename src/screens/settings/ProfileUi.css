@@ -117,7 +117,9 @@
 }
 
 .mx-profile-page__button--close {
-  right: 20px;
+  right: 21px;
+  width: 43px;
+  height: 43px;
 }
 
 .mx-profile-page__title {
@@ -235,7 +237,8 @@ button.mx-profile-row:active {
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 400;
+  color: rgb(var(--c-muted));
   text-align: right;
 }
 

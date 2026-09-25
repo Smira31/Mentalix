@@ -1,7 +1,7 @@
 // src/screens/Settings.jsx
 //
 // Профиль и настройки Mentalix по эталону Stoic (DESIGN_SYSTEM.md §5.4).
-// Корень «твой профиль.»: НАСТРОЙ (чек-ины, о тебе, настройки, оформление) →
+// Корень «профиль.»: НАСТРОЙ (чек-ины, о тебе, настройки, оформление) →
 // АККАУНТ (уведомления, твои данные, подписка) → ПОМОЩЬ → ПРИЛОЖЕНИЕ → версия.
 // Каждый пункт открывает под-экран с существующими настройками.
 
@@ -423,7 +423,7 @@ export default function Settings({
   const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
   // null — тариф ещё не загружен: «подписка.» показывает скелетон.
   const [tier, setTier] = useState(null)
-  // Под-экран профиля: null — корень «твой профиль.».
+  // Под-экран профиля: null — корень «профиль.».
   const [sub, setSub] = useState(null) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data' | 'timezone'
 
   function openSub(next) {
@@ -1028,7 +1028,7 @@ export default function Settings({
   }
 
   return (
-    <ProfilePage key="root" title="твой профиль." isRoot onBack={onBack} testId="profile-screen">
+    <ProfilePage key="root" title="профиль." isRoot onBack={onBack} testId="profile-screen">
       <ProfileBody>
         <ProfileBanners
           showWeb={showWebBanner}
@@ -1087,15 +1087,13 @@ export default function Settings({
 
         <ProfileGroup label="Помощь">
           <ProfileCard>
+            <ProfileRow title="Поддержка" onClick={() => openSupportChat()} />
             <ProfileRow
-              title="Написать в поддержку"
-              onClick={() => openSupportChat()}
-            />
-            <ProfileRow
-              title="Что было бы полезно?"
+              title="Предложить идею"
               subtitle="Короткий опрос — без оплаты и подписки"
               onClick={() => setScreen('wtp-test')}
             />
+            <ProfileRow title="Сообщить об ошибке" onClick={() => openSupportChat()} />
           </ProfileCard>
         </ProfileGroup>
 
@@ -1105,7 +1103,7 @@ export default function Settings({
           </ProfileCard>
         </ProfileGroup>
 
-        <ProfileVersion>Mentalix {appVersion}</ProfileVersion>
+        <ProfileVersion>mentalix версия {appVersion}</ProfileVersion>
       </ProfileBody>
     </ProfilePage>
   )

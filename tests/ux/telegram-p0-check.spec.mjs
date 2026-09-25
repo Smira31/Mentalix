@@ -165,7 +165,7 @@ for (const viewport of P0_VIEWPORTS) {
       await page.getByTestId('profile-row-prefs').click()
       await expect(page.getByRole('heading', { name: 'настройки.' })).toBeVisible()
       await nativeBack(page)
-      await expect(page.getByRole('heading', { name: 'твой профиль.' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'профиль.' })).toBeVisible()
       await nativeBack(page)
       await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
       await context.close()
