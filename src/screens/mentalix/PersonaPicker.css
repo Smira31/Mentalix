@@ -225,7 +225,8 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 }
 
 .mx-dialog-card:not(.is-active) .mx-dialog-card__start {
-  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .mx-dialog-card:focus-visible {
