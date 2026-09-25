@@ -133,3 +133,17 @@ test('повреждённые данные не падают — возвращ
   const list = loadAlterEgosSync()
   assert.deepEqual(list, [])
 })
+
+test('ID уникальны при быстром последовательном сохранении', () => {
+  stubLocalStorage()
+
+  const ids = new Set()
+  for (let i = 0; i < 50; i++) {
+    const saved = saveAlterEgoSync({ name: `Персона ${i}`, situation: 'X', qualities: [], posture: '', anchor: '' })
+    ids.add(saved.id)
+  }
+
+  assert.equal(ids.size, 50, 'все 50 ID уникальны — нет коллизий')
+  const list = loadAlterEgosSync()
+  assert.equal(list.length, 50, 'все 50 карточек сохранены')
+})

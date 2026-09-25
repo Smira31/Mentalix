@@ -9,6 +9,24 @@
 const STORAGE_KEY = 'mx-alter-egos'
 
 /*
+ * Генерация уникального ID.
+ * Приоритет: crypto.randomUUID() (доступен в современных браузерах и Node ≥ 19).
+ * Запасной вариант: Date.now() + криптослучайный суффикс — защищает от коллизий
+ * при быстром последовательном сохранении в пределах одной миллисекунды.
+ */
+function generateId() {
+  try {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID()
+    }
+  } catch {
+    /* fall through */
+  }
+  const suffix = Math.random().toString(36).slice(2, 10)
+  return `${Date.now()}-${suffix}`
+}
+
+/*
  * Объект карточки альтер-эго:
  * { id, name, situation, situationCustom, qualities: [3], posture, anchor, createdAt, updatedAt }
  */
@@ -131,7 +149,7 @@ export async function loadAlterEgos() {
 export async function saveAlterEgo(card) {
   const list = await loadAlterEgos()
   const now = Date.now()
-  const record = { ...card, id: card.id || String(now), createdAt: now, updatedAt: now }
+  const record = { ...card, id: card.id || generateId(), createdAt: now, updatedAt: now }
   const next = [record, ...list.filter(item => item.id !== record.id)]
   await writeRaw(JSON.stringify(next))
   return record
@@ -174,7 +192,7 @@ export function loadAlterEgosSync() {
 export function saveAlterEgoSync(card) {
   const list = loadAlterEgosSync()
   const now = Date.now()
-  const record = { ...card, id: card.id || String(now), createdAt: now, updatedAt: now }
+  const record = { ...card, id: card.id || generateId(), createdAt: now, updatedAt: now }
   const next = [record, ...list.filter(item => item.id !== record.id)]
   lsSetItem(STORAGE_KEY, JSON.stringify(next))
   return record
