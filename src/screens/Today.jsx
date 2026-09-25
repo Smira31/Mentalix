@@ -36,6 +36,8 @@ import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
 import { formatReviewTime, resolveTodayCardStates, primaryCardKind } from '../lib/todayCardState'
 import { collectActivityDays } from '../lib/series'
+import { now as clockNow } from '../lib/clock'
+import { demoScenario } from '../lib/demoMode'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -56,7 +58,7 @@ const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 // ── календарь недели + отдельные дневные streak strips ──
 
 function todayGreeting() {
-  const hour = new Date().getHours()
+  const hour = clockNow().getHours()
   if (hour >= 5 && hour <= 11) return 'доброе утро.'
   if (hour >= 12 && hour <= 17) return 'добрый день.'
   if (hour >= 18 && hour <= 22) return 'добрый вечер.'
@@ -93,7 +95,15 @@ function ReferenceProfileMark() {
   )
 }
 
-function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 0, onStreakClick }) {
+function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, onOpenDemoPanel, streak = 0, onStreakClick }) {
+  const pressTimer = useRef(null)
+  useEffect(() => () => clearTimeout(pressTimer.current), [])
+  const startPress = () => {
+    if (!onOpenDemoPanel) return
+    clearTimeout(pressTimer.current)
+    pressTimer.current = setTimeout(onOpenDemoPanel, 1000)
+  }
+  const endPress = () => clearTimeout(pressTimer.current)
   // streak === null — история ещё грузится и кэша нет: огонь без числа.
   const streakLabel =
     streak == null
@@ -114,7 +124,7 @@ function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 0, onStre
         <ReferenceFlame />
         {streak > 0 && <strong>{streak}</strong>}
       </button>
-      <strong className="mx-demo-today-greeting">{todayGreeting()}</strong>
+      <strong className="mx-demo-today-greeting" onPointerDown={startPress} onPointerUp={endPress} onPointerCancel={endPress} onPointerLeave={endPress}>{todayGreeting()}</strong>
       <div className="mx-demo-today-header__tools">
         <button
           type="button"
@@ -132,7 +142,7 @@ function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, streak = 0, onStre
 
 function WeekStrip({ checkin, history = [] }) {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-  const now = new Date()
+  const now = clockNow()
   const monday = new Date(now)
   monday.setDate(now.getDate() - ((now.getDay() + 6) % 7))
   const days = Array.from({ length: 7 }, (_, index) => {
@@ -195,6 +205,7 @@ export default function Today({
   onFlowChange,
   onRegisterBack,
   onOpenSettings,
+  onOpenDemoPanel,
   onOpenSeries,
   seriesOpen = false,
   onCloseSeries,
@@ -457,7 +468,7 @@ export default function Today({
     }
   }, [user, sub, initialTodaySnapshot, previewFixture, reloadToken])
 
-  const hourNow = new Date().getHours()
+  const hourNow = clockNow().getHours()
 
   const isReviewTime = hourNow >= reviewHour
 
@@ -641,6 +652,7 @@ export default function Today({
         <h1 className="sr-only">Сегодня</h1>
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
+          onOpenDemoPanel={onOpenDemoPanel}
           onOpenSeries={onOpenSeries}
           streak={streak}
         />
@@ -655,6 +667,7 @@ export default function Today({
         <h1 className="sr-only">Сегодня</h1>
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
+          onOpenDemoPanel={onOpenDemoPanel}
           onOpenSeries={onOpenSeries}
           streak={streak}
         />
@@ -696,7 +709,7 @@ export default function Today({
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
   // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
-  const cardNow = new Date()
+  const cardNow = clockNow()
   if (
     previewState === 'night' ||
     (import.meta.env.DEV &&
@@ -859,6 +872,7 @@ export default function Today({
       <h1 className="sr-only">Сегодня</h1>
       <TodayWorkspaceHeader
         onOpenSettings={onOpenSettings}
+        onOpenDemoPanel={onOpenDemoPanel}
         onOpenSeries={onOpenSeries}
         streak={streak}
         onStreakClick={() => {
@@ -904,7 +918,7 @@ export default function Today({
       )}
 
       {/* Подсказка после первого чек-ина — монохромная плашка с ✕. */}
-      {checkinHistory.length > 0 && hintDismissed !== 'true' && (
+      {(checkinHistory.length > 0 || (user?.demo && demoScenario() === 'Новый пользователь')) && hintDismissed !== 'true' && (
         <div
           ref={cardsHintRef}
           className={`mx-today-cards-hint${cardsHintClosing ? ' mx-today-cards-hint--closing' : ''}`}
