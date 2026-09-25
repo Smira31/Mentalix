@@ -26,6 +26,7 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
@@ -728,11 +729,42 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
   const [error, setError] = useState(false)
 
+  // Альтер-эго: необязательная страница вечернего разбора.
+  // Показывается только если у пользователя есть созданное альтер-эго.
+  const [alterEgoName, setAlterEgoName] = useState(null)
+  const [alterEgoAnswer, setAlterEgoAnswer] = useState('')
+
+  useEffect(() => {
+    if (!isEvening) return undefined
+
+    // Синхронная проверка (localStorage) — мгновенно для тестов и вне Telegram.
+    const syncList = loadAlterEgosSync()
+    if (syncList.length > 0) {
+      setAlterEgoName(syncList[0].name || null)
+      return undefined
+    }
+
+    // Асинхронная проверка (CloudStorage) — для Telegram.
+    let cancelled = false
+    loadAlterEgos()
+      .then(list => {
+        if (!cancelled && list.length > 0) {
+          setAlterEgoName(list[0].name || null)
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [isEvening])
+
   const note = isEvening ? '' : morningDraftToNote(morningDraft)
 
   const scaleCount = skipScales ? 0 : MORNING_SCALE_STEPS.length
 
-  const cardCount = isEvening ? LESSON_FIELDS.length : 1
+  const hasAlterEgo = Boolean(alterEgoName)
+  const cardCount = isEvening ? LESSON_FIELDS.length + (hasAlterEgo ? 1 : 0) : 1
 
   const emotionStep = isEvening ? scaleCount : -1
 
@@ -820,6 +852,10 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     const filled = LESSON_FIELDS.map(field => [field.label, (lessons[field.key] || '').trim()])
       .filter(([, text]) => text)
       .map(([label, text]) => `${label} ${text}`)
+
+    if (hasAlterEgo && alterEgoAnswer.trim()) {
+      filled.push(`Был ли ты сегодня ${alterEgoName}? ${alterEgoAnswer.trim()}`)
+    }
 
     return filled.length ? filled.join('\n') : undefined
   }
@@ -1357,12 +1393,13 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
   const eveningQuestion =
     isEvening && isCard ? (cardIdx < LESSON_FIELDS.length ? LESSON_FIELDS[cardIdx] : null) : null
+  const isAlterEgoCard = isEvening && isCard && hasAlterEgo && cardIdx === LESSON_FIELDS.length
   const questionTitle =
     scale?.title ||
     (isEmotionStep
       ? 'Что ближе всего к тому, что ты чувствуешь?'
       : isEvening
-        ? eveningQuestion.label
+        ? (eveningQuestion?.label || (isAlterEgoCard ? `Был ли ты сегодня ${alterEgoName}?` : ''))
         : cardIdx === 0
           ? previewDemoMode
             ? 'Что сегодня важно не потерять?'
@@ -1374,7 +1411,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     (isEmotionStep
       ? null
       : isEvening
-        ? 'Пара слов — уже разговор с собой. Можно пропустить.'
+        ? (isAlterEgoCard ? 'Когда получилось, а когда нет?' : 'Пара слов — уже разговор с собой. Можно пропустить.')
         : cardIdx === 0
           ? previewDemoMode
             ? 'Запиши одну мысль — коротко или подробно.'
@@ -1523,6 +1560,40 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                     />
                   </div>
                 )}
+                {error && (
+                  <p className="text-[13px] text-muted text-center mt-4">
+                    Не получилось сохранить — проверь связь
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* ── альтер-эго (последняя страница разбора) ── */}
+            {isCard && isAlterEgoCard && (
+              <div key="alter-ego" className="w-full flex flex-1 flex-col items-center">
+                <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
+                  <JournalTextarea
+                    value={alterEgoAnswer}
+                    onChange={setAlterEgoAnswer}
+                    placeholder="Начни писать…"
+                    ariaLabel={`Был ли ты сегодня ${alterEgoName}?`}
+                    testId="alter-ego-evening-input"
+                    className="min-h-[18rem] flex-1"
+                    editorClassName="mx-checkin-evening-editor"
+                    floatingToolbar
+                    guidedFlow
+                    autoFocus
+                    keepFocusOnSubmit
+                    submitIcon="arrow"
+                    submitLabel="Закрыть день"
+                    submitTestId="checkin-save"
+                    onSubmit={() => submit()}
+                    onDeepen={() => {}}
+                    deepenLabel="Пойти глубже"
+                    submitLoading={saving}
+                    formatting
+                  />
+                </div>
                 {error && (
                   <p className="text-[13px] text-muted text-center mt-4">
                     Не получилось сохранить — проверь связь
