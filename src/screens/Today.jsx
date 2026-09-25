@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import { fetchTodayDataWithRetry, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
@@ -225,7 +226,7 @@ export default function Today({
   user,
   onOpenPractice,
   initialSub = null,
-  returnFlowActive = false,
+  returnFlowActive = null,
   onReturnFlowEvent,
   onFlowChange,
   onRegisterBack,
@@ -286,6 +287,20 @@ export default function Today({
     rememberStreak(user.id, streak)
   }, [previewFixture, historyLoaded, user?.id, streak])
   const [newBadge, setNewBadge] = useState(null)
+  const returnFlowCompleted = useRef(false)
+  useEffect(() => {
+    if (returnFlowActive && initialSub === (returnFlowActive === 'evening_v1' ? 'evening' : 'checkin')) {
+      onReturnFlowEvent?.('action_started')
+    }
+  }, [returnFlowActive, initialSub, onReturnFlowEvent])
+  useEffect(() => {
+    if (!newBadge?.id) return
+    logEngagementEvent({
+      user, demo: Boolean(user?.demo), event: 'badge_earned',
+      entityType: 'badge', entityId: newBadge.id, once: newBadge.id,
+      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+    })
+  }, [newBadge, user])
   const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
     Boolean(user?.id && shouldShowSeriesTooltip(user.id))
   )
@@ -357,8 +372,11 @@ export default function Today({
     nextSub => {
       onFlowChange?.(Boolean(nextSub))
 
-      if (returnFlowActive && nextSub === 'checkin') {
-        onReturnFlowEvent?.('morning_action_started')
+      if (returnFlowActive && nextSub === (returnFlowActive === 'evening_v1' ? 'evening' : 'checkin')) {
+        onReturnFlowEvent?.('action_started')
+      }
+      if (returnFlowActive && !nextSub && !returnFlowCompleted.current) {
+        onReturnFlowEvent?.('flow_skipped')
       }
 
       setSub(nextSub)
@@ -638,12 +656,12 @@ export default function Today({
         user={user}
         existing={checkin}
         mode={resolveCheckInMode({ sub: activeSub, initialSub })}
+        onCompleted={() => {
+          returnFlowCompleted.current = true
+          if (returnFlowActive) onReturnFlowEvent?.('action_completed')
+        }}
         onDone={async () => {
           const result = await refreshCheckin()
-
-          if (returnFlowActive) {
-            await onReturnFlowEvent?.('morning_action_completed')
-          }
 
           triggerCheckInExit(() => {
             changeSub(null)
