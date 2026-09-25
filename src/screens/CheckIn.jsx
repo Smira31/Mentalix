@@ -30,6 +30,11 @@ import { isPreviewDemoMode } from '../lib/demoMode'
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
 import { resolveDesyncStep } from '../lib/checkinDesync'
+import { CHECKIN_FEEDBACK_OPTIONS, checkinFeedbackValue } from '../lib/checkinFeedback'
+import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
+import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
+import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
+import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
 import './CheckInDemo.css'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
@@ -138,6 +143,13 @@ function buildStreakDays(streakHistory, streak) {
   })
 }
 
+/* Иконки кнопок «Нет / Немного / Да» на экране завершения. */
+const FEEDBACK_ICONS = {
+  no: ThumbsDown,
+  some: Hand,
+  yes: ThumbsUp,
+}
+
 function StreakFlower() {
   return (
     <svg
@@ -156,45 +168,30 @@ function StreakFlower() {
   )
 }
 
-export function CheckInCompletionArt() {
+/*
+ * Персонаж владельца на экране завершения: утро — голова вправо, активный взгляд;
+ * разбор дня — закрытые глаза. Кадры уже используются карточками «Сегодня»
+ * (src/assets/today), новых рисунков не рисуем.
+ */
+function CompletionArt({ variant = 'morning' }) {
+  const evening = variant === 'evening'
+  const src2x = evening ? cardEveningDone2x : cardMorningDone2x
+  const src3x = evening ? cardEveningDone3x : cardMorningDone3x
+
   return (
-    <svg
-      viewBox="0 0 120 136"
-      role="img"
-      aria-label="Птица с пером и карандашом"
-      className="mx-demo-checkin__bird"
-      fill="none"
-    >
-      <path
-        d="M41 62c4-11 14-18 27-19 11-1 20 3 27 11-8 12-23 18-37 15-8-1-14-4-17-7Z"
-        fill="rgb(var(--c-text))"
-      />
-      <path d="M93 52 105 57l-13 4" fill="rgb(var(--c-text))" />
-      <path d="M69 43c-3-13 2-25 14-32 8 13 5 27-7 35" fill="rgb(var(--c-text))" />
-      <circle cx="82" cy="17" r="3" fill="rgb(var(--c-bg))" />
-      <path
-        d="M57 53c10-7 20-8 30-3"
-        stroke="rgb(var(--c-bg))"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path d="M24 83 91 70l6 12-68 15-9-7 4-7Z" fill="rgb(var(--c-text))" />
-      <path d="m91 70 12 6-6 6-6-12Z" fill="rgb(var(--c-gold))" />
-      <path d="m29 97 14 4-19 8 5-12Z" fill="rgb(var(--c-muted))" />
-      <path
-        d="M32 108c11 1 24 5 38 13"
-        stroke="rgb(var(--c-text))"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-      <path
-        d="M39 107c13 2 25 6 36 13"
-        stroke="rgb(var(--c-text))"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-    </svg>
+    <img
+      src={src2x}
+      srcSet={`${src2x} 2x, ${src3x} 3x`}
+      width={200}
+      height={evening ? 230 : 212}
+      alt={evening ? 'Персонаж с закрытыми глазами' : 'Персонаж со взглядом вправо'}
+      className="mx-demo-checkin__character"
+    />
   )
+}
+
+export function CheckInCompletionArt() {
+  return <CompletionArt variant="morning" />
 }
 
 export function CheckInQuestion({
@@ -283,12 +280,17 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       }
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
-      await saveApi(user.id, morningPayload)
+      const saved = await saveApi(user.id, morningPayload)
       platform.haptic('success')
       if (redo) {
         onDone()
         return
       }
+      /*
+       * Ответ на «Было полезно?» необязателен и уходит вместе с id сохранённой
+       * записи. Ошибка сети не мешает закрыть экран — см. sendFeedback.
+       */
+      await sendFeedback(saved?.id, feedback)
       try {
         const history = await api.checkin.history(user.id, 90)
         setStreakHistory(Array.isArray(history) ? history : [])
@@ -302,6 +304,22 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       setError('Не удалось сохранить. Попробуй ещё раз.')
     } finally {
       setSaving(false)
+    }
+  }
+
+  /*
+   * Обратная связь необязательна: ответ не блокирует экран, а ошибка сети
+   * не мешает закрыть чек-ин.
+   */
+  async function sendFeedback(checkinId, label) {
+    const value = checkinFeedbackValue(label)
+
+    if (!checkinId || !value) return
+
+    try {
+      await api.checkin.feedback(checkinId, value)
+    } catch (feedbackError) {
+      console.error(feedbackError)
     }
   }
 
@@ -381,30 +399,29 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
         {step === doneStep && (
           <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
             <CheckInCompletionArt />
-            <h1>
-              Утренний чек-ин
-              <strong>завершён.</strong>
-            </h1>
-            <p className="mx-demo-checkin__feedback-prompt">
-              Эта практика помогла остановиться и заметить важное?
-            </p>
+            <h1>Готово.</h1>
+            <p className="mx-demo-checkin__feedback-prompt">Было полезно?</p>
             <div className="mx-demo-checkin__feedback" data-testid="checkin-feedback-row">
-              {[
-                ['Нет', ThumbsDown],
-                ['Немного', Hand],
-                ['Да', ThumbsUp],
-              ].map(([item, Icon]) => (
-                <button
-                  key={item}
-                  type="button"
-                  data-testid="checkin-feedback-option"
-                  className={feedback === item ? 'is-selected' : ''}
-                  onClick={() => setFeedback(item)}
-                >
-                  <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
-                  {item}
-                </button>
-              ))}
+              {CHECKIN_FEEDBACK_OPTIONS.map(option => {
+                const Icon = FEEDBACK_ICONS[option.value]
+
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    data-testid="checkin-feedback-option"
+                    data-value={option.value}
+                    className={feedback === option.label ? 'is-selected' : ''}
+                    onClick={() => {
+                      platform.haptic('light')
+                      setFeedback(option.label)
+                    }}
+                  >
+                    <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
+                    {option.label}
+                  </button>
+                )
+              })}
             </div>
             {/* Слот ошибки всегда занимает место: сообщение об ошибке не
                 сдвигает иллюстрацию и заголовок (компоновка не «прыгает»). */}
@@ -892,6 +909,22 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     }
   }
 
+  /*
+   * Обратная связь необязательна: ответ не блокирует экран, а ошибка сети
+   * не мешает закрыть разбор.
+   */
+  async function sendFeedback(checkinId, label) {
+    const value = checkinFeedbackValue(label)
+
+    if (!checkinId || !value) return
+
+    try {
+      await api.checkin.feedback(checkinId, value)
+    } catch (feedbackError) {
+      console.error(feedbackError)
+    }
+  }
+
   async function openScout() {
     platform.haptic('medium')
 
@@ -1084,7 +1117,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Сохранить', run: onDone }
+        ? { text: 'Закрыть', run: onDone }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
@@ -1258,41 +1291,40 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className={CHECKIN_CENTER_CLASS}>
             <div className={CHECKIN_SUCCESS_CLASS}>
-              <CheckInCompletionArt />
+              <CompletionArt variant={isEvening ? 'evening' : 'morning'} />
 
-              <h2 className="mx-checkin-completion-title">
-                {isEvening ? 'Разбор дня' : 'Утренний чек-ин'}
-                <strong>завершён.</strong>
-              </h2>
+              <h2 className="mx-checkin-completion-title">Готово.</h2>
 
-              {
-                <div className="mt-7 w-full max-w-sm">
-                  <p className="text-[13px] text-muted">
-                    Чек-ин помог остановиться и заметить важное?
-                  </p>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {[
-                      ['Нет', ThumbsDown],
-                      ['Немного', Hand],
-                      ['Да', ThumbsUp],
-                    ].map(([label, Icon]) => (
+              <div className="mt-7 w-full max-w-sm">
+                <p className="text-[13px] text-muted">Было полезно?</p>
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {CHECKIN_FEEDBACK_OPTIONS.map(option => {
+                    const Icon = FEEDBACK_ICONS[option.value]
+
+                    return (
                       <button
-                        key={label}
+                        key={option.value}
                         type="button"
-                        onClick={() => setFeedback(label)}
+                        data-testid="checkin-feedback-option"
+                        data-value={option.value}
+                        onClick={() => {
+                          platform.haptic('light')
+                          setFeedback(option.label)
+                          sendFeedback(savedCheckinId ?? existing?.id, option.label)
+                        }}
                         className={`flex min-h-[102px] flex-col items-center justify-center gap-3 rounded-3xl border text-[14px] font-medium ${
-                          feedback === label
+                          feedback === option.label
                             ? 'border-[rgb(var(--c-line))] bg-[rgb(var(--c-line))] text-[rgb(var(--c-bg))]'
                             : 'border-[rgb(var(--c-border))] bg-emerald text-cream'
                         }`}
                       >
                         <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
-                        {label}
+                        {option.label}
                       </button>
-                    ))}
-                  </div>
+                    )
+                  })}
                 </div>
-              }
+              </div>
 
               {scoutError && (
                 <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">

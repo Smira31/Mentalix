@@ -187,7 +187,7 @@ export default function MoodPractice({ user, onDone }) {
                   markIntroSeen()
                   setStep(STEP_MOOD)
                 }}
-                className="min-h-10 rounded-full bg-cream px-6 text-[15px] font-semibold text-emerald-deep"
+                className="mx-hit-area rounded-full bg-cream px-6 text-[15px] font-semibold text-emerald-deep"
                 style={{ width: '82px', height: '40px' }}
               >
                 Начать
