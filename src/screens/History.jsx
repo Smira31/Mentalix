@@ -29,6 +29,7 @@ import { moodPracticeDate } from '../lib/moodPracticeLogic'
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
 const MONTHS = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек']
 const LESSON_LABELS = ['Что получилось?', 'Что было трудно?', 'Какой вывод забираешь?']
+const ALTER_EGO_PREFIX = 'Был ли ты сегодня '
 
 function capitalize(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
@@ -48,6 +49,14 @@ function parseLessons(lessons) {
     if (label) {
       if (current) result.push(current)
       current = { question: label, answer: line.slice(label.length + 1) }
+    } else if (line.startsWith(ALTER_EGO_PREFIX)) {
+      const qEnd = line.indexOf('? ')
+      if (qEnd !== -1) {
+        if (current) result.push(current)
+        current = { question: line.slice(0, qEnd + 1), answer: line.slice(qEnd + 2) }
+      } else if (current) {
+        current.answer += '\n' + line
+      }
     } else if (current) {
       current.answer += '\n' + line
     }
