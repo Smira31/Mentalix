@@ -2,6 +2,14 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 
+/** Локальный YYYY-MM-DD относительно сегодняшнего дня. */
+function dayKey(offset = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + offset)
+  const pad = v => String(v).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
 const todaySource = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 const settingsSource = await readFile(new URL('../../src/screens/Settings.jsx', import.meta.url), 'utf8')
 const seriesBadgesSource = await readFile(
@@ -83,12 +91,12 @@ test('streak is 0 with no check-ins, 1 after the first check-in of the day, unch
   assert.equal(currentCheckinStreak([]), 0)
 
   // Первый чек-ин дня — «1».
-  assert.equal(currentCheckinStreak([{ date: '2026-09-24', mood: 3, energy: 2 }]), 1)
+  assert.equal(currentCheckinStreak([{ date: dayKey(0), mood: 3, energy: 2 }]), 1)
 
   // «Пройти заново» не увеличивает число: тот же день, та же запись.
   assert.equal(
     currentCheckinStreak([
-      { date: '2026-09-24', mood: 4, energy: 3, updated_at: '2026-09-24T09:30:00Z' },
+      { date: dayKey(0), mood: 4, energy: 3, updated_at: `${dayKey(0)}T09:30:00Z` },
     ]),
     1
   )
@@ -96,9 +104,9 @@ test('streak is 0 with no check-ins, 1 after the first check-in of the day, unch
   // Redo поверх истории не добавляет новых дней подряд.
   assert.equal(
     currentCheckinStreak([
-      { date: '2026-09-23', review_completed_at: '2026-09-23T20:00:00Z' },
-      { date: '2026-09-24', mood: 3 },
-      { date: '2026-09-24', mood: 5, updated_at: '2026-09-24T10:00:00Z' },
+      { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
+      { date: dayKey(0), mood: 3 },
+      { date: dayKey(0), mood: 5, updated_at: `${dayKey(0)}T10:00:00Z` },
     ]),
     2
   )
