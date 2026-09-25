@@ -23,7 +23,7 @@ import { api } from './lib/api'
 import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
-import { DEMO_USER, isPreviewDemoMode, isRealPhone } from './lib/demoMode'
+import { DEMO_USER, isPreviewDemoMode, isRealPhone, isDemoGuestMode, DEMO_GUEST_USER } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
@@ -31,6 +31,7 @@ import { clearTodayDataCache } from './lib/todayDataCache'
 import { clearHistoryCache } from './lib/mentalixHistoryCache'
 import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
+import { GUEST_MERGED_EVENT } from './lib/guestAuth'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -233,7 +234,9 @@ function applyDarkTheme() {
    ============================================================ */
 
 function App() {
-  const [user, setUser] = useState(() => (isPreviewDemoMode() ? DEMO_USER : null))
+  const [user, setUser] = useState(() =>
+    isPreviewDemoMode() ? (isDemoGuestMode() ? DEMO_GUEST_USER : DEMO_USER) : null
+  )
 
   const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
 
@@ -643,6 +646,17 @@ function App() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     checkAuth()
   }, [checkAuth, previewDemoMode])
+
+  // 401 guest_merged: гостевая cookie устарела после переноса записей.
+  // Сбрасываем user → показывается экран входа.
+  useEffect(() => {
+    function handleGuestMerged() {
+      setUser(null)
+    }
+
+    window.addEventListener(GUEST_MERGED_EVENT, handleGuestMerged)
+    return () => window.removeEventListener(GUEST_MERGED_EVENT, handleGuestMerged)
+  }, [])
 
   /* ============================================================
      БЛОКИРОВКА ПРИЛОЖЕНИЯ
