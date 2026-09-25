@@ -22,7 +22,7 @@ import { api } from './lib/api'
 import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
-import { DEMO_USER, isPreviewDemoMode } from './lib/demoMode'
+import { DEMO_USER, isPreviewDemoMode, isRealPhone } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
@@ -544,8 +544,12 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
-  const demoToolbar =
-    previewDemoMode || new URLSearchParams(window.location.search).get('toolbar') === '1'
+  const realPhone = isRealPhone()
+  const toolbarParam = searchParams.get('toolbar') === '1'
+  const frameParam = searchParams.get('frame')
+  // На настоящем телефоне в демо-режиме инструменты ПК выключены;
+  // ?toolbar=1 принудительно включает переключатель, ?frame=0 — выключает фрейм на ПК.
+  const demoToolbar = previewDemoMode ? !realPhone || toolbarParam : toolbarParam
   const [demoDevice, setDemoDevice] = useState(() => {
     const device = new URLSearchParams(window.location.search).get('device')
     return device === 'max' ? 'max' : 'standard'
@@ -575,7 +579,7 @@ export default function App() {
     return () => window.removeEventListener('resize', updateDesktopFrame)
   }, [])
 
-  const deviceFrameMode = previewDemoMode || desktopDeviceFrame
+  const deviceFrameMode = previewDemoMode ? !realPhone && frameParam !== '0' : desktopDeviceFrame
 
   useEffect(() => {
     if (!deviceFrameMode) return undefined
@@ -1134,14 +1138,18 @@ export default function App() {
           /* Профиль (overlay 'settings') в демо живёт под шапкой Telegram,
              как на устройстве: инсет шапки сохраняется и внутри оверлея. */
           paddingTop:
-            previewDemoMode && (!overlay || overlay === 'settings') && !todaySeriesOpen && !todayFlowOpen
+            previewDemoMode &&
+            !realPhone &&
+            (!overlay || overlay === 'settings') &&
+            !todaySeriesOpen &&
+            !todayFlowOpen
               ? '56px'
               : topSafeArea,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
       >
-        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName }) &&
+        {shouldRenderDemoTelegramChrome({ previewDemoMode, platformName, realPhone }) &&
           (!overlay || overlay === 'settings') &&
           !todaySeriesOpen &&
           !todayFlowOpen && (
