@@ -2,7 +2,6 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/ux',
-  testMatch: ['swipe-gestures.spec.mjs', 'webkit-scroll-back.spec.mjs'],
   outputDir: 'artifacts/swipe-check/playwright-output',
   fullyParallel: false,
   workers: 1,
@@ -22,12 +21,14 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testMatch: ['swipe-gestures.spec.mjs'],
       use: {
         baseURL: 'http://127.0.0.1:3000',
       },
     },
     {
       name: 'webkit-iphone-15-pro',
+      testMatch: ['webkit-scroll-back.spec.mjs'],
       use: {
         baseURL: 'http://127.0.0.1:3000',
         ...devices['iPhone 15 Pro'],
@@ -36,6 +37,7 @@ export default defineConfig({
     },
     {
       name: 'webkit-iphone-15-pro-max',
+      testMatch: ['webkit-scroll-back.spec.mjs'],
       use: {
         baseURL: 'http://127.0.0.1:3000',
         ...devices['iPhone 15 Pro Max'],
