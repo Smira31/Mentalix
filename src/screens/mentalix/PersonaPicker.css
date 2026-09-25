@@ -224,6 +224,11 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   color: rgb(var(--c-text) / 0.55);
 }
 
+.mx-dialog-card:not(.is-active) .mx-dialog-card__start {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .mx-dialog-card:focus-visible {
   outline: 2px solid rgb(var(--c-gold));
   outline-offset: 3px;

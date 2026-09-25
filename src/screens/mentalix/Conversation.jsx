@@ -512,7 +512,7 @@ export default function Conversation({
               }
             }}
 
-            placeholder={`Написать ${meta.name}…`}
+            placeholder={`Написать ${meta.dative ?? meta.name}…`}
 
             name="mentor-message"
             autoComplete="off"

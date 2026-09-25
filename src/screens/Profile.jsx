@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
+import { buildSeriesViewModel } from '../lib/series'
 import {
   ProfileBody,
   ProfileGroup,
@@ -66,6 +67,7 @@ export default function Profile({ user }) {
   const [error, setError] = useState(false)
   const [reloadToken, setReloadToken] = useState(0)
   const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
+  const [bestStreak, setBestStreak] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -83,6 +85,28 @@ export default function Profile({ user }) {
         setError(true)
         setLoading(false)
       })
+
+    // Серия считается той же функцией, что огонёк в шапке Today
+    // (buildSeriesViewModel), а не бэкенд-полем stats.best_streak.
+    Promise.all([
+      api.checkin.history(user.id, 90).catch(() => []),
+      api.rituals.list(user.id).catch(() => []),
+      api.ascezas.list(user.id).catch(() => []),
+      api.moodPractices.list(user.id).catch(() => []),
+      api.practiceDays.list(user.id),
+    ])
+      .then(([checkins, rituals, ascezas, moodPractices, practiceDays]) => {
+        if (!active) return
+        const model = buildSeriesViewModel({
+          checkins: Array.isArray(checkins) ? checkins : [],
+          rituals: Array.isArray(rituals) ? rituals : [],
+          ascezas: Array.isArray(ascezas) ? ascezas : [],
+          moodPractices: Array.isArray(moodPractices) ? moodPractices : [],
+          practiceDays: Array.isArray(practiceDays) ? practiceDays : [],
+        })
+        setBestStreak(model.bestStreak)
+      })
+      .catch(() => {})
 
     return () => {
       active = false
@@ -174,10 +198,10 @@ export default function Profile({ user }) {
           <ProfileCard>
             <ProfileRow title="Дней в системе" value={stats.days_active || 0} />
             <ProfileRow title="Всего чек-инов" value={stats.total_checkins || 0} />
-            {stats.best_streak != null && (
+            {bestStreak != null && (
               <ProfileRow
                 title="Лучшая серия"
-                value={`${stats.best_streak} ${stats.best_streak === 1 ? 'день' : 'дней'}`}
+                value={`${bestStreak} ${bestStreak === 1 ? 'день' : 'дней'}`}
               />
             )}
             {stats.current_streak != null && (

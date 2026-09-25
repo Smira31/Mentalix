@@ -38,6 +38,8 @@ async function openApp(browser, baseURL, failures) {
     if (pathname === '/api/profile') return route.fulfill(json(TEST_USER))
     if (pathname === '/api/rituals' || pathname === '/api/ascezas') return route.fulfill(json([]))
     if (pathname === '/api/checkin/history') return route.fulfill(json([]))
+    if (pathname === '/api/mood-practices') return route.fulfill(json([]))
+    if (pathname === '/api/practice-days') return route.fulfill(json({ days: [] }))
     if (pathname === '/api/checkin/today') return route.fulfill(json(null))
     if (pathname === '/api/themes') return route.fulfill(json([]))
     if (pathname === '/api/profile/settings') return route.fulfill(json({ insights_enabled: true }))
@@ -70,12 +72,11 @@ test('Profile keeps user data visible and does not fetch path sources', async ({
     })
     await page.getByTestId('profile-row-about').click()
     await expect(page.getByRole('heading', { name: 'Issue 648' })).toBeVisible()
-    // «о тебе.» больше не запрашивает источники пути
-    assert(!requestedUrls.has('/api/rituals'))
-    assert(!requestedUrls.has('/api/ascezas'))
+    // «о тебе.» запрашивает ритуалы, аскезы, историю чек-инов,
+    // mood-practices и practice-days для расчёта серии (buildSeriesViewModel),
+    // но не запрашивает темы и аналитику
     assert(!requestedUrls.has('/api/themes'))
     assert(!requestedUrls.has('/api/analytics'))
-    assert(!requestedUrls.has('/api/checkin/history'))
   } finally {
     await context.close()
   }

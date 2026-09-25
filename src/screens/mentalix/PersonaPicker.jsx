@@ -133,6 +133,7 @@ export default function PersonaPicker({ onPick }) {
                   <button
                     type="button"
                     className="mx-dialog-card__start mx-type-control"
+                    tabIndex={isActive ? undefined : -1}
                     onClick={event => {
                       event.stopPropagation()
                       startRole(persona)
