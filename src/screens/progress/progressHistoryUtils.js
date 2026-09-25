@@ -230,3 +230,279 @@ export function buildEntriesByDay(checkins, moodPractices, journalEntries, activ
 
   return Object.values(byDate).sort((a, b) => (a.date < b.date ? 1 : -1))
 }
+
+/* ============================================================
+   ГРУППИРОВКА (§5.5, шаг 3)
+   Дни / Недели / Месяцы / Годы
+   ============================================================ */
+
+export const HISTORY_GRANULARITIES = Object.freeze([
+  { id: 'day', label: 'Дни' },
+  { id: 'week', label: 'Недели' },
+  { id: 'month', label: 'Месяцы' },
+  { id: 'year', label: 'Годы' },
+])
+
+// Полные названия месяцев в именительном падеже — для заголовков и карточек
+const MONTHS_FULL = [
+  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+]
+
+// Названия месяцев в родительном падеже — для диапазонов «21–27 сентября»
+const MONTHS_GENITIVE = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+]
+
+/**
+ * ISO-номер недели (понедельник — первый день).
+ */
+function isoWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const dayNum = (d.getUTCDay() + 6) % 7
+  d.setUTCDate(d.getUTCDate() - dayNum + 3)
+  const firstThursday = new Date(Date.UTC(d.getUTCFullYear(), 0, 4))
+  return 1 + Math.round(((d - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7)
+}
+
+/**
+ * Понедельник недели, содержащей date.
+ */
+function startOfWeek(date) {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
+  return d
+}
+
+function isoDate(d) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+/**
+ * Группирует дни по неделям, недели — по месяцам (§5.5).
+ * Возвращает [{ monthLabel, cards: [{ weekNumber, rangeLabel, startDate, endDate, days }] }]
+ */
+export function groupDaysByWeek(days) {
+  const groups = []
+  const byWeek = {}
+
+  for (const day of days) {
+    const d = new Date(day.date + 'T00:00:00')
+    const ws = startOfWeek(d)
+    const we = new Date(ws)
+    we.setDate(ws.getDate() + 6)
+    const key = isoDate(ws)
+    if (!byWeek[key]) {
+      byWeek[key] = {
+        weekNumber: isoWeekNumber(ws),
+        rangeLabel: formatWeekRange(ws, we),
+        startDate: isoDate(ws),
+        endDate: isoDate(we),
+        days: [],
+        _monthKey: `${ws.getFullYear()}-${ws.getMonth()}`,
+        _monthLabel: MONTHS_FULL[ws.getMonth()],
+      }
+    }
+    byWeek[key].days.push(day)
+  }
+
+  const sorted = Object.values(byWeek).sort((a, b) => (a.startDate < b.startDate ? 1 : -1))
+
+  // Группируем недели по месяцам
+  for (const week of sorted) {
+    let group = groups.find(g => g.monthLabel === week._monthLabel)
+    if (!group) {
+      group = { monthLabel: week._monthLabel, cards: [] }
+      groups.push(group)
+    }
+    group.cards.push({
+      weekNumber: week.weekNumber,
+      rangeLabel: week.rangeLabel,
+      startDate: week.startDate,
+      endDate: week.endDate,
+      days: week.days,
+    })
+  }
+
+  return groups
+}
+
+function formatWeekRange(start, end) {
+  const sameMonth = start.getMonth() === end.getMonth()
+  if (sameMonth) {
+    return `${start.getDate()}–${end.getDate()} ${MONTHS_GENITIVE[end.getMonth()]}`
+  }
+  return `${start.getDate()} ${MONTHS_GENITIVE[start.getMonth()]} – ${end.getDate()} ${MONTHS_GENITIVE[end.getMonth()]}`
+}
+
+/**
+ * Группирует дни по месяцам, месяцы — по годам (§5.5).
+ * Возвращает [{ yearLabel, cards: [{ label, startDate, endDate, days }] }]
+ */
+export function groupDaysByMonth(days) {
+  const groups = []
+  const byMonth = {}
+
+  for (const day of days) {
+    const d = new Date(day.date + 'T00:00:00')
+    const key = `${d.getFullYear()}-${d.getMonth()}`
+    if (!byMonth[key]) {
+      const start = new Date(d.getFullYear(), d.getMonth(), 1)
+      const end = new Date(d.getFullYear(), d.getMonth() + 1, 0)
+      byMonth[key] = {
+        label: `${MONTHS_FULL[d.getMonth()]} ${d.getFullYear()}`,
+        startDate: isoDate(start),
+        endDate: isoDate(end),
+        days: [],
+        _yearLabel: String(d.getFullYear()),
+      }
+    }
+    byMonth[key].days.push(day)
+  }
+
+  const sorted = Object.values(byMonth).sort((a, b) => (a.startDate < b.startDate ? 1 : -1))
+
+  for (const month of sorted) {
+    let group = groups.find(g => g.yearLabel === month._yearLabel)
+    if (!group) {
+      group = { yearLabel: month._yearLabel, cards: [] }
+      groups.push(group)
+    }
+    group.cards.push({
+      label: month.label,
+      startDate: month.startDate,
+      endDate: month.endDate,
+      days: month.days,
+    })
+  }
+
+  return groups
+}
+
+/**
+ * Группирует дни по годам (§5.5).
+ * Возвращает [{ label, startDate, endDate, days }]
+ */
+export function groupDaysByYear(days) {
+  const byYear = {}
+
+  for (const day of days) {
+    const d = new Date(day.date + 'T00:00:00')
+    const key = String(d.getFullYear())
+    if (!byYear[key]) {
+      byYear[key] = {
+        label: key,
+        startDate: `${key}-01-01`,
+        endDate: `${key}-12-31`,
+        days: [],
+      }
+    }
+    byYear[key].days.push(day)
+  }
+
+  return Object.values(byYear).sort((a, b) => (a.startDate < b.startDate ? 1 : -1))
+}
+
+/* ============================================================
+   ФИЛЬТРЫ (§5.5, шаг 3)
+   ============================================================ */
+
+export const FILTER_GROUPS = Object.freeze([
+  {
+    label: 'Чек-ины',
+    types: [
+      { id: ENTRY_TYPES.MORNING, label: 'Утренний чек-ин' },
+      { id: ENTRY_TYPES.EVENING, label: 'Вечерний разбор' },
+    ],
+  },
+  {
+    label: 'Практики',
+    types: [
+      { id: ENTRY_TYPES.MOOD, label: 'Настроение' },
+      { id: ENTRY_TYPES.JOURNAL, label: 'Дневник' },
+    ],
+  },
+])
+
+/**
+ * Возвращает множество типов записей, которые реально есть в данных.
+ */
+export function getAvailableFilterTypes(days) {
+  const types = new Set()
+  for (const day of days) {
+    for (const entry of day.entries) {
+      types.add(entry.type)
+    }
+  }
+  return types
+}
+
+/**
+ * Фильтрует дни по выбранным типам записей.
+ * Если types пуст/null — возвращает дни без изменений.
+ * Дни без записей выбранного типа удаляются.
+ */
+export function filterDaysByTypes(days, types) {
+  if (!types || types.size === 0) return days
+  return days
+    .map(day => ({
+      ...day,
+      entries: day.entries.filter(e => types.has(e.type)),
+    }))
+    .filter(day => day.entries.length > 0)
+}
+
+/* ============================================================
+   ПОИСК (§5.5, шаг 3)
+   ============================================================ */
+
+const MOOD_WORDS_SEARCH = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
+
+/**
+ * Извлекает весь searchable-текст записи (для клиентского поиска).
+ */
+export function getEntrySearchableText(entry) {
+  const parts = []
+  const c = entry.checkin
+  if (c) {
+    if (c.note) parts.push(c.note)
+    if (c.lessons) parts.push(c.lessons)
+    if (c.wins) parts.push(...(c.wins || []))
+    if (c.emotion) parts.push(c.emotion)
+    if (c.mood != null) parts.push(MOOD_WORDS_SEARCH[(c.mood || 3) - 1])
+  }
+  const mp = entry.moodPractice
+  if (mp) {
+    if (mp.note) parts.push(mp.note)
+    if (mp.emotion) parts.push(mp.emotion)
+    if (mp.mood != null) parts.push(MOOD_WORDS_SEARCH[(mp.mood || 3) - 1])
+  }
+  const j = entry.journal
+  if (j?.phases) {
+    for (const phase of j.phases) {
+      if (phase.text) parts.push(phase.text)
+      if (phase.label) parts.push(phase.label)
+    }
+  }
+  return parts.join(' ').toLowerCase()
+}
+
+/**
+ * Ищет записи по тексту на клиенте.
+ * Возвращает дни с записями, содержащими query (без учёта регистра).
+ */
+export function searchEntries(days, query) {
+  if (!query || !query.trim()) return []
+  const q = query.trim().toLowerCase()
+  return days
+    .map(day => ({
+      ...day,
+      entries: day.entries.filter(e => getEntrySearchableText(e).includes(q)),
+    }))
+    .filter(day => day.entries.length > 0)
+}
