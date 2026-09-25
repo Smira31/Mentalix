@@ -2,7 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
-import { fetchTodayDataWithRetry, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
+import {
+  fetchTodayDataWithRetry,
+  invalidateTodayData,
+  peekTodaySnapshot,
+} from '../lib/todayDataCache'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
@@ -31,7 +35,11 @@ import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { peekCachedStreak, rememberStreak, resolveDisplayedStreak } from '../lib/streakCache'
-import { buildSeriesViewModel } from '../lib/series'
+import {
+  buildSeriesViewModel,
+  splitCheckinsForComparison,
+  detectNewlyUnlockedBadge,
+} from '../lib/series'
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
@@ -100,7 +108,13 @@ function ReferenceProfileMark() {
   )
 }
 
-function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, onOpenDemoPanel, streak = 0, onStreakClick }) {
+function TodayWorkspaceHeader({
+  onOpenSettings,
+  onOpenSeries,
+  onOpenDemoPanel,
+  streak = 0,
+  onStreakClick,
+}) {
   const pressTimer = useRef(null)
   useEffect(() => () => clearTimeout(pressTimer.current), [])
   const startPress = () => {
@@ -129,7 +143,15 @@ function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, onOpenDemoPanel, s
         <ReferenceFlame />
         {streak > 0 && <strong>{streak}</strong>}
       </button>
-      <strong className="mx-demo-today-greeting" onPointerDown={startPress} onPointerUp={endPress} onPointerCancel={endPress} onPointerLeave={endPress}>{todayGreeting()}</strong>
+      <strong
+        className="mx-demo-today-greeting"
+        onPointerDown={startPress}
+        onPointerUp={endPress}
+        onPointerCancel={endPress}
+        onPointerLeave={endPress}
+      >
+        {todayGreeting()}
+      </strong>
       <div className="mx-demo-today-header__tools">
         <button
           type="button"
@@ -423,7 +445,15 @@ export default function Today({
     onRegisterBack?.(handler)
 
     return () => onRegisterBack?.(null)
-  }, [changeSub, onCloseSeries, onRegisterBack, seriesOpen, sub, triggerCheckInExit, triggerSeriesExit])
+  }, [
+    changeSub,
+    onCloseSeries,
+    onRegisterBack,
+    seriesOpen,
+    sub,
+    triggerCheckInExit,
+    triggerSeriesExit,
+  ])
 
   async function refreshCheckin() {
     if (!user) return
@@ -434,29 +464,33 @@ export default function Today({
       setCheckin(current)
 
       const history = await api.checkin.history(user.id, 90)
-      setCheckinHistory(Array.isArray(history) ? history : [])
+      const safeHistory = Array.isArray(history) ? history : []
+      setCheckinHistory(safeHistory)
       setHistoryLoaded(true)
+      // Обе модели строятся из одной свежей истории: previous — без
+      // сегодняшнего чек-ина, next — с ним. Ретро-значки (полученные
+      // задним числом из исторических данных) открыты в обеих моделях
+      // и не запускают шторку; шторка — только для значков, открытых
+      // именно новым чек-ином.
+      const { previous, next } = splitCheckinsForComparison(safeHistory, current)
       const previousModel = buildSeriesViewModel({
-        checkins: checkinHistory,
+        checkins: previous,
         rituals,
         ascezas,
         moodPractices,
         practiceDays,
       })
       const nextModel = buildSeriesViewModel({
-        checkins: history,
+        checkins: next,
         rituals,
         ascezas,
         moodPractices,
         practiceDays,
       })
-      const unlocked = nextModel.badges.find(
-        badge =>
-          badge.done && !previousModel.badges.find(previous => previous.id === badge.id)?.done
-      )
+      const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
 
       invalidateTodayData(user.id)
-      return { history, newBadge: unlocked || null }
+      return { history: safeHistory, newBadge: unlocked }
     } catch (error) {
       console.error(error)
     }
@@ -1181,7 +1215,12 @@ export default function Today({
         </button>
       )}
 
-      <PinnedPractices user={user} onOpenPractice={onOpenPractice} rituals={rituals} ascezas={ascezas} />
+      <PinnedPractices
+        user={user}
+        onOpenPractice={onOpenPractice}
+        rituals={rituals}
+        ascezas={ascezas}
+      />
 
       {/* ======================================================
           ТЕМА НЕДЕЛИ
