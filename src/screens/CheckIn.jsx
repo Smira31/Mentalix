@@ -231,6 +231,15 @@ export function CheckInQuestion({
  */
 function MorningCheckInFlow({ user, onDone, redo = false }) {
   const [step, setStep] = useState(0)
+  // §6 часть 1: горизонтальный переход между шагами. animatingRef блокирует
+  // повторное «Далее»/«Назад»/«Пропустить» во время 300 мс анимации.
+  const animatingRef = useRef(false)
+  const [direction, setDirection] = useState('forward')
+  function goToStep(target, dir) {
+    if (animatingRef.current) return
+    setDirection(dir)
+    setStep(target)
+  }
   /*
    * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
    * из перезаписываемой записи: поля опускаются в PUT /api/checkin/today,
@@ -795,6 +804,15 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const [step, setStep] = useState(() =>
     isEvening && !redo && existing?.review_completed_at ? 1 : 0
   )
+  // §6 часть 1: горизонтальный переход между шагами внутри основного портала
+  // (шкалы → эмоции → карточки). Переходы в done/streak — смена портала, не слайд.
+  const animatingRef = useRef(false)
+  const [direction, setDirection] = useState('forward')
+  function goToStep(target, dir) {
+    if (animatingRef.current) return
+    setDirection(dir)
+    setStep(target)
+  }
 
   const { style: viewportStyle } = useFullscreenSurface()
 
