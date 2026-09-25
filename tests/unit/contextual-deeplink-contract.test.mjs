@@ -1,33 +1,61 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
+import { parseContextualDeepLink, resolveContextualCheckin } from '../../src/lib/contextualDeepLink.js'
 
 const app = readFileSync(new URL('../../src/App.jsx', import.meta.url), 'utf8')
 const today = readFileSync(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
-const returnFlow = readFileSync(new URL('../../src/lib/returnFlow.js', import.meta.url), 'utf8')
 
-test('contextual actions open only the existing allowlisted screens', () => {
-  assert.match(app, /initialAction === 'breathing' \? 'practices' : 'today'/)
-  assert.match(app, /initialAction === 'checkin' \|\| initialAction === 'evening' \? initialAction : null/)
+// Фиксируем поведение по локальному времени относительно текущего дня, а не календарную дату.
+const todayAt = (hour, minute = 0) => {
+  const date = new Date()
+  date.setHours(hour, minute, 0, 0)
+  return date
+}
+
+test('только известные contextual-ссылки открывают вложенный экран Сегодня', () => {
+  assert.deepEqual(parseContextualDeepLink('?action=checkin', ''), {
+    sub: 'contextualCheckin', returnFlow: null,
+  })
+  assert.deepEqual(parseContextualDeepLink('?action=evening', ''), {
+    sub: 'evening', returnFlow: null,
+  })
+  assert.deepEqual(parseContextualDeepLink('?action=breathing', ''), {
+    sub: 'breathing', returnFlow: null,
+  })
+  assert.deepEqual(parseContextualDeepLink('?action=unknown', ''), {
+    sub: null, returnFlow: null,
+  })
+  assert.deepEqual(parseContextualDeepLink('?action=checkin-extra', ''), {
+    sub: null, returnFlow: null,
+  })
+  assert.deepEqual(parseContextualDeepLink('', ''), { sub: null, returnFlow: null })
+})
+
+test('morning_v1 открывает утро и имеет приоритет над обычным action', () => {
+  assert.deepEqual(parseContextualDeepLink('?action=breathing', 'morning_v1'), {
+    sub: 'checkin', returnFlow: 'morning_v1',
+  })
+  assert.deepEqual(parseContextualDeepLink('', 'morning_v1'), {
+    sub: 'checkin', returnFlow: 'morning_v1',
+  })
+  assert.deepEqual(parseContextualDeepLink('', 'other'), { sub: null, returnFlow: null })
+})
+
+test('checkin ведёт в вечер только после пройденного утра и наступления времени разбора', () => {
+  const morning = { mood: 3, energy: 2 }
+  assert.equal(resolveContextualCheckin({ now: todayAt(18, 59), reviewHour: 19, checkin: morning }), 'checkin')
+  assert.equal(resolveContextualCheckin({ now: todayAt(19), reviewHour: 19, checkin: null }), 'checkin')
+  assert.equal(resolveContextualCheckin({ now: todayAt(19), reviewHour: 19, checkin: morning }), 'evening')
+  assert.equal(resolveContextualCheckin({ now: todayAt(20), reviewHour: 21, checkin: morning }), 'checkin')
+  assert.equal(resolveContextualCheckin({ now: todayAt(19), reviewHour: 19, checkin: { ...morning, review_completed_at: new Date().toISOString() } }), 'checkin')
+})
+
+test('контекстный экран использует существующую навигацию Сегодня и нативную кнопку назад', () => {
+  assert.match(app, /parseContextualDeepLink\(/)
   assert.match(app, /initialSub=\{initialTodaySub\}/)
-  assert.match(app, /initialAction === 'breathing' \? 'breathing' : null/)
-  assert.doesNotMatch(app, /initialAction.*window\.location\.href/)
-})
-
-test('Today accepts a contextual initial sub-route and uses the existing Check-in screen', () => {
-  assert.match(today, /initialSub = null/)
-  assert.match(today, /useState\(initialSub\)/)
-  assert.match(today, /if \(sub === 'checkin' \|\| sub === 'evening'\)/)
-  assert.match(today, /<CheckIn/)
-  assert.match(today, /resolveCheckInMode\(\{ sub, initialSub \}\)/)
-})
-
-test('morning return flow accepts only the canonical startapp value', () => {
-  assert.match(app, /platform\.getStartParam\?\./)
-  assert.match(app, /parseReturnFlow\(platform\.getStartParam/)
-  assert.match(app, /initialReturnFlow/)
-  assert.match(returnFlow, /startParam === MORNING_RETURN_FLOW \? MORNING_RETURN_FLOW : null/)
-  assert.match(app, /morning_flow_opened/)
-  assert.match(today, /morning_action_started/)
-  assert.match(today, /morning_action_completed/)
+  assert.match(today, /resolveContextualCheckin\(/)
+  assert.match(today, /onRegisterBack\?\.\(handler\)/)
+  assert.match(today, /<BreathingPractice onBack=\{\(\) => changeSub\(null\)\}/)
+  assert.match(today, /mode=\{resolveCheckInMode\(\{ sub: activeSub, initialSub \}\)\}/)
 })

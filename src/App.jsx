@@ -20,7 +20,8 @@ import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
-import { parseReturnFlow, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
+import { returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
+import { parseContextualDeepLink } from './lib/contextualDeepLink'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
 import { DEMO_USER, isPreviewDemoMode, isRealPhone, isDemoGuestMode, DEMO_GUEST_USER } from './lib/demoMode'
@@ -462,18 +463,17 @@ function App() {
   })
 
   const searchParams = new URLSearchParams(window.location.search)
-  const initialReturnFlow = parseReturnFlow(platform.getStartParam?.())
-  const initialTab = initialReturnFlow ? null : searchParams.get('tab')
-  const initialAction = searchParams.get('action')
+  const { sub: initialTodaySub, returnFlow: initialReturnFlow } = parseContextualDeepLink(
+    window.location.search,
+    platform.getStartParam?.()
+  )
+  const initialTab = initialTodaySub ? null : searchParams.get('tab')
   const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
-  const actionTab = initialAction === 'breathing' ? 'practices' : 'today'
-  const initialTodaySub =
-    initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
 
   // ?tab=history → открывает «Прогресс» на вкладке «История»
   const isHistoryInitial = initialTab === 'history'
   const [tab, setTab] = useState(
-    isHistoryInitial ? 'trends' : validTabs.includes(initialTab) ? initialTab : actionTab
+    isHistoryInitial ? 'trends' : validTabs.includes(initialTab) ? initialTab : 'today'
   )
   const [progressHistoryTrigger, setProgressHistoryTrigger] = useState(
     () => (isHistoryInitial ? 1 : 0)
@@ -515,11 +515,8 @@ function App() {
             ? demoBackRefs.current.practices
             : null
 
-  // Разрешены только известные contextual deep-links. Остальные query-параметры не
-  // меняют состояние приложения и не могут открыть произвольный экран.
-  const [practicesSub, setPracticesSub] = useState(
-    initialAction === 'breathing' ? 'breathing' : null
-  )
+  // Только разрешённые contextual deep-links открывают вложенный экран «Сегодня».
+  const [practicesSub, setPracticesSub] = useState(null)
 
   const reportReturnFlowEvent = useCallback(
     async event => {

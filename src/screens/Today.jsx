@@ -39,6 +39,8 @@ import {
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
+import { resolveContextualCheckin } from '../lib/contextualDeepLink'
+import BreathingPractice from './BreathingPractice'
 import { formatReviewTime, resolveTodayCardStates, primaryCardKind } from '../lib/todayCardState'
 import { collectActivityDays } from '../lib/series'
 import { now as clockNow } from '../lib/clock'
@@ -243,7 +245,9 @@ export default function Today({
 
   const [ascezas, setAscezas] = useState(() => initialTodaySnapshot?.ascezas || [])
 
-  const [loading, setLoading] = useState(() => !initialTodaySnapshot)
+  const [loading, setLoading] = useState(
+    () => !initialTodaySnapshot || (initialSub === 'contextualCheckin' && !previewFixture)
+  )
 
   const [loadError, setLoadError] = useState(false)
 
@@ -295,6 +299,10 @@ export default function Today({
   const [activeToday, setActiveToday] = useState(null)
 
   const [sub, setSub] = useState(initialSub)
+  const activeSub =
+    sub === 'contextualCheckin'
+      ? resolveContextualCheckin({ now: clockNow(), reviewHour, checkin })
+      : sub
 
   const [pathTab, setPathTab] = useState('path')
 
@@ -430,9 +438,9 @@ export default function Today({
     let handler
     if (seriesOpen) {
       handler = () => triggerSeriesExit(() => onCloseSeries())
-    } else if (CHECKIN_SUBS.includes(sub)) {
+    } else if (CHECKIN_SUBS.includes(activeSub)) {
       handler = () => triggerCheckInExit(() => changeSub(null))
-    } else if (sub) {
+    } else if (activeSub) {
       handler = () => changeSub(null)
     } else {
       handler = null
@@ -446,7 +454,7 @@ export default function Today({
     onCloseSeries,
     onRegisterBack,
     seriesOpen,
-    sub,
+    activeSub,
     triggerCheckInExit,
     triggerSeriesExit,
   ])
@@ -494,7 +502,7 @@ export default function Today({
 
   useEffect(() => {
     if (previewFixture) return undefined
-    if (!user || sub !== null) {
+    if (!user || (sub !== null && !initialSub)) {
       return
     }
 
@@ -583,7 +591,7 @@ export default function Today({
     return () => {
       active = false
     }
-  }, [user, sub, initialTodaySnapshot, previewFixture, reloadToken])
+  }, [user, sub, initialSub, initialTodaySnapshot, previewFixture, reloadToken])
 
   const hourNow = clockNow().getHours()
 
@@ -620,12 +628,16 @@ export default function Today({
   // ЧЕК-ИН / АНАЛИЗ ДНЯ
   // ============================================================
 
-  if (sub === 'checkin' || sub === 'evening') {
+  if (activeSub === 'breathing') {
+    return <BreathingPractice onBack={() => changeSub(null)} />
+  }
+
+  if (!loading && !loadError && (activeSub === 'checkin' || activeSub === 'evening')) {
     return (
       <CheckIn
         user={user}
         existing={checkin}
-        mode={resolveCheckInMode({ sub, initialSub })}
+        mode={resolveCheckInMode({ sub: activeSub, initialSub })}
         onDone={async () => {
           const result = await refreshCheckin()
 
