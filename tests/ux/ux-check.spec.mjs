@@ -1185,3 +1185,88 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   await expect(page.getByRole('button', { name: 'Разобрать день' }).last()).toBeVisible()
   await context.close()
 })
+
+test('демо на реальном телефоне 440×956 — капсула активной вкладки, сворачивание навбара, production-размеры', async ({
+  browser,
+}) => {
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4173',
+    viewport: { width: 440, height: 956 },
+    isMobile: true,
+    hasTouch: true,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+
+  // В демо-режиме API перехватывается демо-данными (demoRequest в demoMode.js).
+  await context.route('**/api/**', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+  )
+
+  const page = await context.newPage()
+  await page.goto('/?demo=1')
+
+  // Дождаться загрузки приложения
+  await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible({ timeout: 15_000 })
+
+  // data-mentalix-demo-frame не должен быть установлен на реальном телефоне
+  // (иначе активная вкладка прозрачная, nav полноширинный, заголовки скрыты)
+  const shell = page.locator('.mx-app-shell')
+  await expect(shell).not.toHaveAttribute('data-mentalix-demo-frame', 'true')
+
+  // 1. Активная вкладка имеет видимую капсулу (не прозрачный фон)
+  const activeTab = page.locator('.mx-bottom-nav > div nav button.is-active').first()
+  await expect(activeTab).toBeVisible()
+  const activeBg = await activeTab.evaluate(el => getComputedStyle(el).backgroundColor)
+  expect(activeBg, 'активная вкладка должна иметь видимый фон-капсулу').not.toBe('rgba(0, 0, 0, 0)')
+  expect(activeBg, 'активная вкладка не должна быть прозрачной').not.toBe('transparent')
+
+  // 2. Размеры кнопки профиля 43×43 (±1) и отступ контента 21 (±1)
+  const profileButton = page.getByTestId('today-profile-button')
+  await expect(profileButton).toBeVisible()
+  const profileBox = await profileButton.boundingBox()
+  expect(Math.abs(profileBox.width - 43), 'ширина кнопки профиля ≈ 43px').toBeLessThanOrEqual(1)
+  expect(Math.abs(profileBox.height - 43), 'высота кнопки профиля ≈ 43px').toBeLessThanOrEqual(1)
+  // Отступ от правого края экрана до кнопки профиля = --mx-header-edge (21px)
+  const rightOffset = 440 - (profileBox.x + profileBox.width)
+  expect(Math.abs(rightOffset - 21), 'отступ контента ≈ 21px').toBeLessThanOrEqual(1)
+
+  // 3. После прокрутки вниз на 600px навбар сворачивается.
+  // Демо-контент при 440px может не переполнять scroll-root, поэтому
+  // добавляем spacer, чтобы гарантировать возможность прокрутки.
+  await page.evaluate(() => {
+    const content = document.querySelector('.mx-app-scroll-root > div')
+    if (content) {
+      const spacer = document.createElement('div')
+      spacer.style.height = '800px'
+      spacer.style.width = '100%'
+      spacer.setAttribute('data-testid', 'scroll-test-spacer')
+      content.appendChild(spacer)
+    }
+    const root = document.querySelector('.mx-app-scroll-root')
+    if (root) {
+      root.scrollTop = 600
+      root.dispatchEvent(new Event('scroll', { bubbles: true }))
+    }
+  })
+  await expect(
+    page.locator('.mx-bottom-nav.mx-demo-bottom-nav--collapsed'),
+    'навбар должен свернуться после прокрутки вниз'
+  ).toHaveCount(1, { timeout: 5_000 })
+
+  // 4. После прокрутки вверх навбар раскрывается
+  await page.evaluate(() => {
+    const root = document.querySelector('.mx-app-scroll-root')
+    if (root) {
+      root.scrollTop = 0
+      root.dispatchEvent(new Event('scroll', { bubbles: true }))
+    }
+  })
+  await expect(
+    page.locator('.mx-bottom-nav.mx-demo-bottom-nav--collapsed'),
+    'навбар должен раскрыться после прокрутки вверх'
+  ).toHaveCount(0, { timeout: 5_000 })
+
+  await context.close()
+})
