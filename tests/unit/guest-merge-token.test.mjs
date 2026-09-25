@@ -157,14 +157,15 @@ test('App.jsx: слушает GUEST_MERGED_EVENT и сбрасывает user', 
 
 /* ── Контракт: WebAuthScreen — гостевой вход и merge ── */
 
-test('WebAuthScreen: кнопка «Продолжить без входа» вызывает api.auth.guest', async () => {
+test('WebAuthScreen: кнопка «Продолжить без входа» использует общий гостевой вход', async () => {
   const screenSource = await readFile(
     new URL('../../src/screens/WebAuthScreen.jsx', import.meta.url),
     'utf8'
   )
   assert.match(screenSource, /handleGuestLogin/)
-  assert.match(screenSource, /api\.auth\.guest\(\)/)
-  assert.match(screenSource, /setGuestMergeToken\(result\.merge_token\)/)
+  assert.match(screenSource, /loginAsGuest\(api, onAuthed\)/)
+  assert.match(source, /apiInstance\.auth\.guest\(\)/)
+  assert.match(source, /setGuestMergeToken\(result\.merge_token\)/)
   assert.match(screenSource, /data-testid="web-auth-guest-button"/)
 })
 
@@ -193,13 +194,13 @@ test('Mentalix.jsx: 403 guest_ai_forbidden обрабатывается', async 
 
 /* ── Контракт: Settings — гостевые подсказки ── */
 
-test('Settings.jsx: гостевой баннер и кнопка входа', async () => {
+test('Settings.jsx: гостевой email-вход не сбрасывает merge-токен', async () => {
   const settingsSource = await readFile(
     new URL('../../src/screens/Settings.jsx', import.meta.url),
     'utf8'
   )
   assert.match(settingsSource, /isGuestUser\(user\)/)
-  assert.match(settingsSource, /resetGuestState\(\)/)
-  assert.match(settingsSource, /dispatchGuestMerged\(\)/)
-  assert.match(settingsSource, /data-testid="profile-guest-login-link"/)
+  assert.match(settingsSource, /title="Сохранить прогресс по email"/)
+  assert.match(settingsSource, /onClick=\{onGuestLogin\}/)
+  assert.doesNotMatch(settingsSource, /resetGuestState\(\)/)
 })

@@ -15,6 +15,14 @@ export function isGuestUser(user) {
   return Boolean(user?.is_guest)
 }
 
+export async function loginAsGuest(apiInstance, onAuthed) {
+  const result = await apiInstance.auth.guest()
+  if (!result.ok) throw new Error('guest_create_failed')
+  setGuestMergeToken(result.merge_token)
+  platform.setUser(result.user)
+  onAuthed(result.user)
+}
+
 export function getGuestMergeToken() {
   if (typeof window === 'undefined') return null
   return window.localStorage.getItem(GUEST_MERGE_TOKEN_KEY)
