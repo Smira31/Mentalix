@@ -104,7 +104,7 @@ async function openMentorConversation(page) {
 async function openSeries(page) {
   await page.getByRole('button', { name: /Мой путь/ }).click()
   await expect(page.locator('.mx-path-surface')).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Награды' })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Значки' })).toBeVisible()
 }
 
 for (const viewport of P0_VIEWPORTS) {
