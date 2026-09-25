@@ -33,15 +33,6 @@ function isExcludedLink(href) {
   return EXCLUDE_HREF.some(re => re.test(href))
 }
 
-function overlap(a, b) {
-  return (
-    a.x < b.x + b.width &&
-    a.x + a.width > b.x &&
-    a.y < b.y + b.height &&
-    a.y + a.height > b.y
-  )
-}
-
 /**
  * Collects all auto-check issues on the current page. Accumulates without throwing.
  */
@@ -68,6 +59,14 @@ async function collectIssues(page, screenName, viewport) {
   // Geometry checks
   const geometry = await page.evaluate(() => {
     const issues = []
+    function overlap(a, b) {
+      return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+      )
+    }
     const scrollEl = document.scrollingElement || document.body
     const innerW = window.innerWidth
     const scrollW = scrollEl.scrollWidth

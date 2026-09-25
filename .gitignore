@@ -4,6 +4,7 @@ graphify-out/
 artifacts/ux-check/
 artifacts/**/playwright-output/
 .claude/settings.local.json
+qa-report/
 .vercel
 .firebaserc
 .env*
