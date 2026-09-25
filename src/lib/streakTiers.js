@@ -16,3 +16,13 @@ export function tierForStreak(streak) {
 
   return tier?.name || null
 }
+
+/**
+ * Следующий уровень серии — ближайший порог, которого текущая серия
+ * ещё не достигла. Возвращает { min, name } или null, если серия уже
+ * на высшем уровне. Используется для прогресс-баров к ближайшим вехам.
+ */
+export function nextTierForStreak(streak) {
+  const sorted = [...TIERS].sort((a, b) => a.min - b.min)
+  return sorted.find(t => streak < t.min) || null
+}
