@@ -49,7 +49,7 @@ test('HistoryDetail показывает oneOffPractices как список с�
 test('лента дней (list view) показывает oneOffPractices', () => {
   const listStart = historySource.indexOf('datedItems.map(d => {')
   assert.ok(listStart >= 0, 'datedItems.map не найден')
-  const listEnd = historySource.indexOf('})', listStart)
+  const listEnd = historySource.indexOf('})}', listStart)
   const listBlock = historySource.slice(listStart, listEnd)
 
   assert.match(
