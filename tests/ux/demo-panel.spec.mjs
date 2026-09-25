@@ -5,6 +5,11 @@ test('демо-панель на телефоне: вечер и пустой а
     viewport: { width: 440, height: 956 }, isMobile: true, hasTouch: true,
     colorScheme: 'dark', reducedMotion: 'reduce', serviceWorkers: 'block',
   })
+  // Подсказки на «Сегодня» видны по одной; подсказка о серии уже закрыта,
+  // поэтому следующей в очереди показывается подсказка о карточках.
+  await context.addInitScript(() => {
+    localStorage.setItem('mx-series-preferences:900001:tooltip-seen', '1')
+  })
   const page = await context.newPage()
   await page.goto('http://127.0.0.1:4173/?demo=1&panel=1')
   await expect(page.getByTestId('demo-panel')).toBeVisible()
