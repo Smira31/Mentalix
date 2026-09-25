@@ -255,10 +255,6 @@ function App() {
   const [authError, setAuthError] = useState(null)
   const [showGuestAuth, setShowGuestAuth] = useState(false)
 
-  // StrictMode запускает эффект дважды — без гварда автогость создаётся
-  // два раза, и второй запрос маскирует ошибку первого (503 → 200).
-  const authCheckStartedRef = useRef(false)
-
   const acceptUser = useCallback(nextUser => {
     if (nextUser?.id) {
       const changed = switchUserDataScope(nextUser.id)

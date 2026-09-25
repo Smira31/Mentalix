@@ -15,12 +15,36 @@ export function isGuestUser(user) {
   return Boolean(user?.is_guest)
 }
 
+/*
+ * In-flight промис гостевого входа на уровне модуля.
+ *
+ * React StrictMode в dev запускает эффект дважды: без дедупликации
+ * второй монтаж создавал второго гостя, маскируя ошибку первого (503 → 200).
+ * Ref компонента не работает — StrictMode размонтирует и монтирует заново,
+ * ref сбрасывается, и второй монтаж может остаться без результата.
+ *
+ * Оба запуска эффекта ждут один и тот же промис: один POST /api/auth/guest,
+ * оба получают одинаковый результат (успех → приложение, ошибка → WebAuthScreen).
+ * После завершения промис сбрасывается, чтобы кнопка «Продолжить без входа»
+ * в WebAuthScreen могла повторить вход.
+ */
+let guestLoginInFlight = null
+
 export async function loginAsGuest(apiInstance, onAuthed) {
-  const result = await apiInstance.auth.guest()
-  if (!result.ok) throw new Error('guest_create_failed')
-  setGuestMergeToken(result.merge_token)
-  platform.setUser(result.user)
-  onAuthed(result.user)
+  if (!guestLoginInFlight) {
+    guestLoginInFlight = (async () => {
+      const result = await apiInstance.auth.guest()
+      if (!result.ok) throw new Error('guest_create_failed')
+      setGuestMergeToken(result.merge_token)
+      platform.setUser(result.user)
+      return result.user
+    })().finally(() => {
+      guestLoginInFlight = null
+    })
+  }
+
+  const user = await guestLoginInFlight
+  onAuthed(user)
 }
 
 export function getGuestMergeToken() {
