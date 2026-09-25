@@ -95,7 +95,7 @@
   --bottom-nav-offset: 8px;
   --bottom-nav-edge: 20px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
-  --bottom-nav-content-gap: 46px;
+  --bottom-nav-content-gap: 16px;
   --mx-bottom-nav-space: calc(
     var(--app-safe-bottom) + var(--bottom-nav-offset) + var(--bottom-nav-height) +
       var(--bottom-nav-content-gap)
