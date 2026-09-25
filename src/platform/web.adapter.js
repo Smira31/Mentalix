@@ -1,15 +1,48 @@
 const STORAGE_KEY = 'mentalix_web_user'
+const SESSION_TOKEN_KEY = 'mentalix_session_token'
+
+function getSessionToken() {
+  try {
+    return localStorage.getItem(SESSION_TOKEN_KEY)
+  } catch {
+    return null
+  }
+}
+
+function setSessionToken(token) {
+  if (!token) return
+  try {
+    localStorage.setItem(SESSION_TOKEN_KEY, token)
+  } catch {
+    // Private browsing can disable storage; cookie auth remains available.
+  }
+}
+
+function clearSessionToken() {
+  try {
+    localStorage.removeItem(SESSION_TOKEN_KEY)
+  } catch {
+    // Cookie auth remains available when storage is blocked.
+  }
+}
 
 export const webAdapter = {
   name: 'web',
+  getSessionToken,
+  setSessionToken,
+  clearSessionToken,
 
   init() {
     // фон/цвет статус-бара в браузере не программируется — управляется через CSS/manifest
   },
 
   getUser() {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
   },
 
   // нет Telegram-контекста в браузере — подписанного initData не существует
@@ -30,14 +63,17 @@ export const webAdapter = {
     const timeout = setTimeout(() => controller.abort(), 7000)
     let response
     try {
+      const token = getSessionToken()
       response = await fetch(`${apiBase}/auth/session`, {
         credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         signal: controller.signal,
       })
     } finally {
       clearTimeout(timeout)
     }
     if (!response.ok) {
+      if (response.status === 401) clearSessionToken()
       if (localFixtureMode) return this.getUser()
       throw new Error(`Web session restore failed: ${response.status}`)
     }
@@ -54,11 +90,19 @@ export const webAdapter = {
   },
 
   setUser(user) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+    } catch {
+      // Keep the active session in memory when private storage is unavailable.
+    }
   },
 
   clearUser() {
-    localStorage.removeItem(STORAGE_KEY)
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      // Storage may be disabled in private browsing.
+    }
   },
 
   haptic() {
