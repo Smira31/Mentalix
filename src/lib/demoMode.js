@@ -480,7 +480,10 @@ function respond(path, options = {}) {
   if (pathname === '/checkin/today' && method === 'PUT') {
     const today = now().toISOString().slice(0, 10)
     const existing = state.checkins.find(item => item?.date === today)
+    // Как на сервере: поля, которых нет в запросе, остаются прежними —
+    // повтор утра не стирает разбор, повтор разбора не стирает утро.
     const checkin = {
+      ...existing,
       id: existing?.id || Date.now(),
       date: today,
       ...body,
