@@ -1639,6 +1639,24 @@ button {
   border-radius: inherit;
 }
 
+/*
+ * Невидимая область нажатия не меньше 44×44 вокруг центра элемента.
+ * Видимый размер, отступы и раскладка не меняются. :where() обнуляет
+ * специфичность, чтобы не перебить position: absolute у самих кнопок.
+ */
+:where(.mx-tap-target) {
+  position: relative;
+}
+.mx-tap-target::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
 /* iOS Home Screen / standalone: match Safari's edge-to-edge regular tabs. */
 @media (display-mode: standalone) and (max-width: 700px) {
   /*
