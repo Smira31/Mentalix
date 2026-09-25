@@ -44,6 +44,7 @@ async function openTelegramDemo(browser, viewport) {
       platform: 'ios',
       colorScheme: 'dark',
       isFullscreen: true,
+      isVersionAtLeast: ver => '8.0' >= ver,
       BackButton: button,
       MainButton: {
         setParams() {},
