@@ -207,47 +207,50 @@ async function screenshot(page, viewport, slug, fullPage = false) {
 }
 
 const MAX_BUTTONS_PER_SCREEN = 15
+const CLICK_DEADLINE_MS = 30_000
 
 async function clickEveryButton(page, screenName, allIssues) {
-  const buttons = await page.locator('button:visible, a:visible, [role="button"]:visible').all()
+  // Collect all clickable elements in one evaluate call (single round-trip)
+  const candidates = await page.evaluate(() => {
+    const els = [...document.querySelectorAll('button, a, [role="button"]')]
+    return els
+      .filter(el => {
+        const r = el.getBoundingClientRect()
+        if (r.width === 0 || r.height === 0) return false
+        const s = getComputedStyle(el)
+        return s.display !== 'none' && s.visibility !== 'hidden' && s.opacity !== '0'
+      })
+      .map(el => {
+        const r = el.getBoundingClientRect()
+        return {
+          label: (el.getAttribute('aria-label') || el.textContent?.trim()?.slice(0, 80) || el.tagName),
+          href: el.getAttribute('href') || '',
+          x: r.x + r.width / 2,
+          y: r.y + r.height / 2,
+        }
+      })
+  }).catch(() => [])
 
+  const deadline = Date.now() + CLICK_DEADLINE_MS
   let clicked = 0
-  for (const btn of buttons) {
+
+  for (const c of candidates) {
     if (clicked >= MAX_BUTTONS_PER_SCREEN) break
+    if (Date.now() > deadline) break
 
-    let label = ''
-    let href = ''
-    try {
-      label = (await btn.getAttribute('aria-label')) || (await btn.textContent()).trim().slice(0, 80) || btn.evaluate(el => el.tagName)
-    } catch {
-      continue
-    }
-    try {
-      href = await btn.getAttribute('href') || ''
-    } catch {
-      // not an anchor
-    }
-
-    if (isExcludedButton(label)) continue
-    if (href && isExcludedLink(href)) continue
+    if (isExcludedButton(c.label)) continue
+    if (c.href && isExcludedLink(c.href)) continue
 
     const urlBefore = page.url()
     const domBefore = await page.evaluate(() => document.body.innerHTML.length)
 
-    let didClick = false
     try {
-      const box = await btn.boundingBox()
-      if (!box || box.width === 0 || box.height === 0) continue
-      await btn.click({ timeout: 2000, force: true })
-      didClick = true
+      await page.mouse.click(c.x, c.y)
     } catch {
       continue
     }
-
-    if (!didClick) continue
     clicked++
 
-    // Wait briefly for any change
     await page.waitForTimeout(200)
 
     const urlAfter = page.url()
@@ -257,24 +260,22 @@ async function clickEveryButton(page, screenName, allIssues) {
     for (const d of dialogSeen) {
       allIssues.push({ type: 'dialog', screen: screenName, detail: d })
     }
-    // Clear dialog issues for next iteration
     await page.evaluate(() => { window.__qaDialogSeen = [] }).catch(() => {})
 
     if (urlAfter === urlBefore && domAfter === domBefore) {
       allIssues.push({
         type: 'no_change_on_click',
         screen: screenName,
-        detail: `«${label}» — DOM и URL не изменились`,
+        detail: `«${c.label}» — DOM и URL не изменились`,
       })
     }
 
-    // Go back if URL changed
+    // Restore page state: go back if URL changed, or press Escape to close overlays
     if (urlAfter !== urlBefore) {
-      try {
-        await page.goBack({ timeout: 1500 }).catch(() => {})
-      } catch {
-        // ignore
-      }
+      await page.goBack({ timeout: 1500 }).catch(() => {})
+    } else if (domAfter !== domBefore) {
+      await page.keyboard.press('Escape').catch(() => {})
+      await page.waitForTimeout(100)
     }
   }
 }
