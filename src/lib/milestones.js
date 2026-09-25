@@ -108,15 +108,18 @@ export function getNearestMilestones({ badges = [], streak = 0, theme = null } =
   }
 
   // 2. Следующий уровень серии — пропускаем, если порог совпадает с
-  //    целью неполученного серийного значка (streak-two/three/five).
+  //    целью выбранного серийного значка (streak-two/three/five).
+  //    Дедуплицируем только против показанного значка, а не всех
+  //    неполученных: если ближайший значок — first-step, уровень
+  //    серии «Держится» несёт отдельную информацию.
   const streakM = buildStreakMilestone(streak)
   if (streakM) {
-    const streakBadgeGoals = new Set(
-      badges
-        .filter(b => !b.done && STREAK_BADGE_IDS.has(b.id))
-        .map(b => b.goal)
-    )
-    if (!streakBadgeGoals.has(streakM.targetMin)) {
+    const selectedBadge = milestones.find(m => m.kind === 'badge')
+    const dupWithSelected =
+      selectedBadge &&
+      STREAK_BADGE_IDS.has(selectedBadge.id.replace('badge:', '')) &&
+      selectedBadge.remaining === streakM.remaining
+    if (!dupWithSelected) {
       milestones.push(streakM)
     }
   }

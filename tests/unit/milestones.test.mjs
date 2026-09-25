@@ -149,7 +149,11 @@ test('процент темы: 3 из 7 → 43%', () => {
 // ── Все значки получены ──
 
 test('все значки получены — значок не показывается, но серия и тема могут', () => {
-  const badges = buildBadges({ stats: { days_active: 100, total_checkins: 100, best_streak: 100 } })
+  const badges = buildBadges({
+    stats: { days_active: 100, total_checkins: 100, best_streak: 100 },
+    rituals: [{ streak: 100 }],
+    ascezas: [{ streak: 100 }],
+  })
   const milestones = getNearestMilestones({ badges, streak: 5, theme: makeTheme({ currentDay: 3 }) })
   const badgeM = milestones.find(m => m.kind === 'badge')
   assert.equal(badgeM, undefined, 'все значки получены — нет badge milestone')
