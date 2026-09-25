@@ -97,6 +97,7 @@ async function openMentorConversation(page) {
   await page.getByRole('button', { name: 'Диалог' }).click()
   await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
   await page.getByTestId('mentor-persona-card').filter({ hasText: 'Наставник' }).click()
+  await page.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
   await expect(page.getByRole('heading', { name: 'Наставник' })).toBeVisible()
 }
 
