@@ -63,4 +63,12 @@ export default defineConfig({
       },
     },
   },
+  // sourcemap + keepNames: в проде сохраняются имена компонентов в
+  // componentStack React-ошибок. Minify остаётся включённым.
+  build: {
+    sourcemap: true,
+  },
+  esbuild: {
+    keepNames: true,
+  },
 })
