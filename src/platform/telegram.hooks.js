@@ -75,6 +75,11 @@ export function getCurrentBackAction() {
   return stack.length ? stack[stack.length - 1] : null
 }
 
+// Debug-экспорт для тестов edge-swipe back (только в dev, не влияет на прод)
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  window.__mxGetCurrentBackAction = getCurrentBackAction
+}
+
 export function useBackButton(handler, active = true) {
   const ref = useRef(handler)
 

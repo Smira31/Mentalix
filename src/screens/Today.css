@@ -382,7 +382,11 @@
   background: rgb(var(--c-card2));
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 1rem;
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, transform 150ms ease;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    transform 150ms ease;
 }
 
 .mx-pinned-practices__rail > .mx-pinned-practice-card {
@@ -1747,27 +1751,27 @@
 }
 
 .mx-today-week {
-  animation: mx-today-card-enter 380ms var(--mx-ease-out) both;
+  animation: mx-today-card-enter 380ms var(--mx-ease-out) backwards;
 }
 
 .mx-today-day-card-slot {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 80ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 80ms backwards;
 }
 
 .mx-today-pulse {
-  animation: mx-today-card-enter 400ms var(--mx-ease-out) 160ms both;
+  animation: mx-today-card-enter 400ms var(--mx-ease-out) 160ms backwards;
 }
 
 .mx-pinned-practices {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 220ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 220ms backwards;
 }
 
 .mx-today-theme-card {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms backwards;
 }
 
 .mx-today-affirmation-card {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

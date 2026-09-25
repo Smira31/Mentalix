@@ -423,7 +423,15 @@ svg .animate-celebrate-pop {
   max-width: 440px;
   margin-inline: auto;
   padding-inline: var(--mx-screen-x);
-  animation: mx-stoic-screen-enter 420ms var(--mx-ease-out) both;
+  /*
+   * animation-fill-mode: backwards (не both) — после анимации элемент
+   * возвращается к своему обычному стилю, transform: none.
+   * С both iOS Safari оставляет transform: translateY(0) (matrix),
+   * что создаёт containing block и ломает тач-скролл в WebKit.
+   * backwards применяет from-состояние до старта (без flash), но
+   * не удерживает to-состояние после завершения.
+   */
+  animation: mx-stoic-screen-enter 420ms var(--mx-ease-out) backwards;
 }
 
 /*
@@ -1356,7 +1364,11 @@ button {
 
 .mx-demo-screen-transition--0,
 .mx-demo-screen-transition--1 {
-  animation: mxDemoScreenEnter var(--mx-motion-slow) var(--mx-ease-out) both;
+  /*
+   * backwards (не both) — после анимации transform: none,
+   * иначе iOS Safari оставляет matrix и ломает тач-скролл.
+   */
+  animation: mxDemoScreenEnter var(--mx-motion-slow) var(--mx-ease-out) backwards;
 }
 
 /* Preview-only tactile simulation: Telegram/Web cannot expose the native
