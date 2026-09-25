@@ -10,7 +10,7 @@ import { platformName } from '../platform'
 import { buildSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
 import { getSeriesPreferences, saveSeriesPreference } from '../lib/seriesPreferences'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
-import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
+
 import BackButton from '../components/BackButton'
 import './SeriesBadges.css'
 
@@ -350,7 +350,6 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const demoMode = isPreviewDemoMode()
 
   const screenRef = useRef(null)
-  useEdgeSwipeBack(screenRef, onBack)
 
   useEffect(() => {
     let active = true

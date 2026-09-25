@@ -33,6 +33,7 @@ import { clearTrendsDataCache } from './lib/trendsDataCache'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
+import { useGlobalEdgeSwipeBack } from './lib/gestures/useGlobalEdgeSwipeBack'
 
 /* ============================================================
    STORAGE
@@ -330,6 +331,10 @@ export default function App() {
 
   /* Единый scroll-root обычных вкладок, ограниченный видимым viewport. */
   const scrollRootRef = useRef(null)
+
+  /* Корневой элемент приложения — на нём висит глобальный edge-swipe. */
+  const appRootRef = useRef(null)
+  useGlobalEdgeSwipeBack(appRootRef)
 
   /*
    * Оба значения принадлежат человеку, а не устройству: знакомство
@@ -1092,7 +1097,11 @@ export default function App() {
      ============================================================ */
 
   return (
-    <div className={deviceFrameMode ? 'mx-preview-stage' : undefined}>
+    <div
+      ref={appRootRef}
+      data-mentalix-app-root="true"
+      className={deviceFrameMode ? 'mx-preview-stage' : undefined}
+    >
       {previewDemoMode && demoToolbar && (
         <div className="mx-preview-device-switcher" role="tablist" aria-label="Размер экрана">
           <span className="mx-preview-device-switcher__label">Demo viewport</span>

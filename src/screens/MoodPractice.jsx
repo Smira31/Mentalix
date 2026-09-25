@@ -30,7 +30,7 @@ import {
   canProceedFromStep,
   buildMoodPracticePayload,
 } from '../lib/moodPracticeLogic'
-import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
+
 import './CheckInDemo.css'
 
 const INTRO_SEEN_KEY = 'mx-mood-practice-intro-seen'
@@ -101,7 +101,6 @@ export default function MoodPractice({ user, onDone }) {
   }
 
   const screenRef = useRef(null)
-  useEdgeSwipeBack(screenRef, handleBack)
 
   /*
    * Тот же переход-хендофф, что в CheckIn.jsx (openListener):

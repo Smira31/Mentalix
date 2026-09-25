@@ -833,9 +833,10 @@ body::-webkit-scrollbar,
 
 html {
   background: rgb(var(--c-bg));
-  /* Двойной тап не должен приближать; pan-y на прокручиваемых областях
-     сохраняется — manipulation разрешает панорамирование. */
-  touch-action: manipulation;
+  /* pinch-zoom отключён через pan-x pan-y (без pinch-zoom).
+     Прокрутка одним пальцем работает без задержек — нет passive:false
+     touchmove на window, который заставлял iOS ждать JS. */
+  touch-action: pan-x pan-y;
 }
 
 body {
@@ -847,7 +848,7 @@ body {
 
   background: rgb(var(--c-bg));
 
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
 
   color: rgb(var(--c-text));
 

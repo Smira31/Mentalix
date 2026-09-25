@@ -26,7 +26,7 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
-import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
+
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
 import { resolveDesyncStep } from '../lib/checkinDesync'
@@ -332,7 +332,6 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
   useSecondaryButton({ text: '', onClick: () => {}, visible: false })
 
   const screenRef = useRef(null)
-  useEdgeSwipeBack(screenRef, handleBack)
 
   return createPortal(
     <div ref={screenRef} className="mx-demo-checkin" style={demoSurfaceStyle}>
@@ -1068,7 +1067,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   }
 
   const screenRef = useRef(null)
-  useEdgeSwipeBack(screenRef, handleBack)
 
   /*
    * ДЕЙСТВИЯ ЖИВУТ В СИСТЕМНОЙ КНОПКЕ
