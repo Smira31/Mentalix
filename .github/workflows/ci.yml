@@ -151,6 +151,9 @@ jobs:
       - name: Run Telegram React update-depth regression in WebKit
         run: npm run ux:telegram-react-depth
 
+      - name: Run tap areas and «Назад» offset gate in WebKit
+        run: npm run ux:tap-areas -- --retries=1
+
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -159,6 +162,7 @@ jobs:
           path: |
             artifacts/ux-check/
             artifacts/telegram-react-update-depth/
+            artifacts/tap-areas/
             test-results/
           if-no-files-found: ignore
 

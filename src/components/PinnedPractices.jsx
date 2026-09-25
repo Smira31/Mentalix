@@ -201,7 +201,8 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
         </h2>
         <button
           type="button"
-          className="mx-icon-button mx-pinned-practices__filter"
+          className="mx-icon-button mx-pinned-practices__filter mx-tap-target"
+          data-testid="pinned-practices-manage"
           aria-label="Настроить твои практики"
           onClick={() => setSheet('manage')}
         >
