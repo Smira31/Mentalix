@@ -7,7 +7,7 @@ const P0_VIEWPORTS = [
 
 const DEMO_URL =
   process.env.MENTALIX_TELEGRAM_P0_URL ||
-  'http://127.0.0.1:5173/?demo=1&toolbar=1&device=pro-max&tab=today'
+  'http://127.0.0.1:5173/?demo=1&toolbar=1&device=pro-max&tab=today&frame=0'
 
 async function openTelegramDemo(browser, viewport) {
   const context = await browser.newContext({
@@ -97,13 +97,14 @@ async function openMentorConversation(page) {
   await page.getByRole('button', { name: 'Диалог' }).click()
   await expect(page.getByRole('heading', { name: /О чём хочешь/ })).toBeVisible()
   await page.getByTestId('mentor-persona-card').filter({ hasText: 'Наставник' }).click()
+  await page.getByRole('button', { name: 'Начать разговор: Наставник' }).click()
   await expect(page.getByRole('heading', { name: 'Наставник' })).toBeVisible()
 }
 
 async function openSeries(page) {
   await page.getByRole('button', { name: /Мой путь/ }).click()
   await expect(page.locator('.mx-path-surface')).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Награды' })).toBeVisible()
+  await expect(page.getByTestId('series-tab-badges')).toBeVisible()
 }
 
 for (const viewport of P0_VIEWPORTS) {
@@ -143,7 +144,8 @@ for (const viewport of P0_VIEWPORTS) {
         const dock = document.querySelector('.practice-writing-canvas__dock')
         return {
           shellBottom: shell?.getBoundingClientRect().bottom,
-          dockBottom: dock?.getBoundingClientRect().bottom,
+          dockBottom: dock?.getBoundingClientRect()?.bottom ?? null,
+          dockExists: Boolean(dock),
           viewportHeight: window.innerHeight,
           bodyOverflow: getComputedStyle(document.body).overflow,
           focused: document.activeElement === document.querySelector('textarea'),
@@ -151,7 +153,12 @@ for (const viewport of P0_VIEWPORTS) {
       })
 
       expect(geometry.shellBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
-      expect(geometry.dockBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
+      // dock рендерится только когда PracticeWritingCanvas получает onSubmit/onDeepen/onFormat.
+      // GuidedSelfDiscoveryFlow (sub='journal') использует нативный MainButton вместо dock —
+      // панели нет по дизайну, проверяем только когда она есть.
+      if (geometry.dockExists) {
+        expect(geometry.dockBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
+      }
       expect(geometry.bodyOverflow).toBe('hidden')
       expect(geometry.focused).toBe(true)
       await nativeBack(page)
