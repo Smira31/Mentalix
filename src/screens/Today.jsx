@@ -3,6 +3,7 @@ import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
 import { fetchTodayDataWithRetry, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
 import './Today.css'
@@ -333,6 +334,59 @@ export default function Today({
     [onFlowChange, onReturnFlowEvent, returnFlowActive]
   )
 
+  /*
+   * §6 Motion — анимация закрытия слоя чек-ина (уезд вниз, 170 ms ease-in).
+   * ref защищает от двойных нажатий во время анимации: слой не открывается
+   * дважды, состояние не ломается. CSS-анимация запускается через data-атрибут
+   * на портале, после таймаута — размонтирование.
+   */
+  const checkInExitingRef = useRef(false)
+
+  const triggerCheckInExit = useCallback(callback => {
+    if (checkInExitingRef.current) return
+    checkInExitingRef.current = true
+
+    const root = getFullscreenPortalTarget()
+    if (root) root.setAttribute('data-fullscreen-exit', 'true')
+
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    const duration = reducedMotion ? 150 : 170
+
+    setTimeout(() => {
+      if (root) root.removeAttribute('data-fullscreen-exit')
+      checkInExitingRef.current = false
+      callback()
+    }, duration)
+  }, [])
+
+  /*
+   * §6 Motion — анимация закрытия шторки серии (уезд вниз, 200 ms ease-in).
+   */
+  const seriesExitingRef = useRef(false)
+
+  const triggerSeriesExit = useCallback(callback => {
+    if (seriesExitingRef.current) return
+    seriesExitingRef.current = true
+
+    const root = getFullscreenPortalTarget()
+    if (root) root.setAttribute('data-sheet-exit', 'true')
+
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    const duration = reducedMotion ? 150 : 200
+
+    setTimeout(() => {
+      if (root) root.removeAttribute('data-sheet-exit')
+      seriesExitingRef.current = false
+      callback()
+    }, duration)
+  }, [])
+
   function retryTodayData() {
     if (!user) return
 
@@ -349,12 +403,21 @@ export default function Today({
   }, [onFlowChange])
 
   useEffect(() => {
-    const handler = seriesOpen ? onCloseSeries : sub ? () => changeSub(null) : null
+    let handler
+    if (seriesOpen) {
+      handler = () => triggerSeriesExit(() => onCloseSeries())
+    } else if (sub === 'checkin' || sub === 'evening' || sub === 'redoCheckin' || sub === 'redoReview') {
+      handler = () => triggerCheckInExit(() => changeSub(null))
+    } else if (sub) {
+      handler = () => changeSub(null)
+    } else {
+      handler = null
+    }
 
     onRegisterBack?.(handler)
 
     return () => onRegisterBack?.(null)
-  }, [changeSub, onCloseSeries, onRegisterBack, seriesOpen, sub])
+  }, [changeSub, onCloseSeries, onRegisterBack, seriesOpen, sub, triggerCheckInExit, triggerSeriesExit])
 
   async function refreshCheckin() {
     if (!user) return
@@ -508,10 +571,12 @@ export default function Today({
     return (
       <SeriesBadges
         user={user}
-        onBack={onCloseSeries}
+        onBack={() => triggerSeriesExit(() => onCloseSeries())}
         onOpenPractice={practice => {
-          onCloseSeries?.()
-          onOpenPractice?.(practice)
+          triggerSeriesExit(() => {
+            onCloseSeries?.()
+            onOpenPractice?.(practice)
+          })
         }}
       />
     )
@@ -534,8 +599,10 @@ export default function Today({
             await onReturnFlowEvent?.('morning_action_completed')
           }
 
-          changeSub(null)
-          if (result?.newBadge) setNewBadge(result.newBadge)
+          triggerCheckInExit(() => {
+            changeSub(null)
+            if (result?.newBadge) setNewBadge(result.newBadge)
+          })
         }}
       />
     )
@@ -550,7 +617,7 @@ export default function Today({
         redo
         onDone={async () => {
           await refreshCheckin()
-          changeSub(null)
+          triggerCheckInExit(() => changeSub(null))
         }}
       />
     )
@@ -565,7 +632,7 @@ export default function Today({
         redo
         onDone={async () => {
           await refreshCheckin()
-          changeSub(null)
+          triggerCheckInExit(() => changeSub(null))
         }}
       />
     )
