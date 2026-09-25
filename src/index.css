@@ -833,10 +833,7 @@ body::-webkit-scrollbar,
 
 html {
   background: rgb(var(--c-bg));
-  /* pinch-zoom отключён через pan-x pan-y (без pinch-zoom).
-     Прокрутка одним пальцем работает без задержек — нет passive:false
-     touchmove на window, который заставлял iOS ждать JS. */
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
 }
 
 body {
@@ -848,9 +845,34 @@ body {
 
   background: rgb(var(--c-bg));
 
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
 
   color: rgb(var(--c-text));
+
+  /*
+   * touch-action НЕ наследуется в CSS. html/body недостаточно —
+   * дочерние элементы имеют default `auto` и допускают pinch-zoom.
+   * pan-y на всех элементах внутри приложения:
+   *   — запрещает pinch-zoom везде;
+   *   — вертикальная прокрутка работает нативно, без задержек;
+   *   — браузер ждёт JS для горизонтальных движений, поэтому
+   *     edge-swipe от левого края полностью контролирует жест.
+   * Горизонтальные карусели получают pan-x pan-y точечно (см. ниже).
+   */
+}
+
+[data-mentalix-app-root],
+[data-mentalix-app-root] *,
+[data-mentalix-demo-frame],
+[data-mentalix-demo-frame] * {
+  touch-action: pan-y;
+}
+
+/* Горизонтальные карусели: нативный горизонтальный скролл */
+.mx-emotion-carousel,
+.mx-library-catalog__rail,
+.mx-dialog-carousel {
+  touch-action: pan-x pan-y !important;
 
   transition:
     background-color var(--mx-motion-slow) var(--mx-ease-out),
