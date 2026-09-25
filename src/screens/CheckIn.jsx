@@ -30,6 +30,8 @@ import { isPreviewDemoMode } from '../lib/demoMode'
 import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
 import { currentCheckinStreak } from '../lib/series'
+import { buildTomorrowTeaser } from '../lib/tomorrowTeaser'
+import { peekPracticesData } from '../lib/practicesDataCache'
 import { energyFillPercent } from '../lib/checkinScale'
 import { eveningMorningFields } from '../lib/checkinMorningFields'
 import { resolveDesyncStep } from '../lib/checkinDesync'
@@ -442,6 +444,15 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
                   </p>
                 ) : null}
               </div>
+              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
+                {buildTomorrowTeaser({
+                  streak,
+                  checkins: streakHistory,
+                  rituals: peekPracticesData(user.id)?.rituals,
+                  ascezas: peekPracticesData(user.id)?.ascezas,
+                  isEvening: false,
+                })}
+              </p>
             </section>
           )}
 
@@ -472,6 +483,15 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
                   )
                 })}
               </div>
+              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
+                {buildTomorrowTeaser({
+                  streak,
+                  checkins: streakHistory,
+                  rituals: peekPracticesData(user.id)?.rituals,
+                  ascezas: peekPracticesData(user.id)?.ascezas,
+                  isEvening: false,
+                })}
+              </p>
             </section>
           )}
         </StepSlide>
@@ -1404,6 +1424,15 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                   </p>
                 </div>
               )}
+              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
+                {buildTomorrowTeaser({
+                  streak,
+                  checkins: streakHistory,
+                  rituals: peekPracticesData(user.id)?.rituals,
+                  ascezas: peekPracticesData(user.id)?.ascezas,
+                  isEvening,
+                })}
+              </p>
             </div>
           </div>
         </div>
