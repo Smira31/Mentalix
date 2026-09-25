@@ -29,6 +29,7 @@ import { isPreviewDemoMode } from '../lib/demoMode'
 
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
+import { eveningMorningFields } from '../lib/checkinMorningFields'
 import { resolveDesyncStep } from '../lib/checkinDesync'
 import { CHECKIN_FEEDBACK_OPTIONS, sendCheckinFeedback } from '../lib/checkinFeedback'
 import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
@@ -829,12 +830,14 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
     try {
       const saveApi = redo ? api.checkin.redo : api.checkin.save
+      // Вечер (и повторный) не меняет утренние поля записи дня.
+      const morning = isEvening ? eveningMorningFields(existing, values) : values
       const corePayload = {
-        mood: values.mood ?? 3,
+        mood: morning.mood ?? 3,
 
-        energy: values.energy ?? 3,
+        energy: morning.energy ?? 3,
 
-        note: buildNote(),
+        note: isEvening ? morning.note : buildNote(),
 
         emotion,
 
@@ -846,8 +849,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
             }
           : {}),
       }
-      if (values.anxiety != null) corePayload.anxiety = values.anxiety
-      if (values.focus != null) corePayload.focus = values.focus
+      if (morning.anxiety != null) corePayload.anxiety = morning.anxiety
+      if (morning.focus != null) corePayload.focus = morning.focus
       const savedCheckin = await saveApi(user.id, corePayload)
 
       if (isEvening && !savedCheckin?.review_completed_at) {
