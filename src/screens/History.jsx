@@ -105,6 +105,25 @@ function MoodPracticeEntry({ entry }) {
 }
 
 /*
+ * Разовая практика в ленте истории — монохромная строка в стиле
+ * MoodPracticeEntry: название практики + время. data-testid —
+ * history-oneoff-entry.
+ */
+function OneOffPracticeEntry({ entry }) {
+  const time = moodPracticeTime(entry)
+  const name = entry.name || entry.title || 'Практика'
+  return (
+    <div
+      data-testid="history-oneoff-entry"
+      className="flex items-center gap-2 text-[13px] text-muted"
+    >
+      <span className="font-semibold">{name}</span>
+      {time && <span>{time}</span>}
+    </div>
+  )
+}
+
+/*
  * Локальный journal-фрагмент дня — переиспользуется и в карточке ленты, и
  * в HistoryDetail. data-testid/тексты ниже намеренно совпадают с тем, что
  * уже проверяет tests/unit/maintenance-contracts.test.mjs
@@ -367,7 +386,13 @@ export function HistoryDetail({
           )}
 
           {day.journal && <JournalDayCard entry={day.journal} />}
-          {day.oneOffPractices && <OneOffPracticeDayCard entries={day.oneOffPractices} />}
+          {day.oneOffPractices?.length > 0 && (
+            <div className="space-y-1.5 border-t border-cream/10 pt-3">
+              {day.oneOffPractices.map(p => (
+                <OneOffPracticeEntry key={p.id} entry={p} />
+              ))}
+            </div>
+          )}
 
           {checkin && (
             <div className="border-t border-cream/10 pt-4">
@@ -920,6 +945,14 @@ export default function History({
                 <div className="space-y-1.5">
                   {d.moodPractices.map(mp => (
                     <MoodPracticeEntry key={mp.id} entry={mp} />
+                  ))}
+                </div>
+              )}
+
+              {d.oneOffPractices?.length > 0 && (
+                <div className="space-y-1.5">
+                  {d.oneOffPractices.map(p => (
+                    <OneOffPracticeEntry key={p.id} entry={p} />
                   ))}
                 </div>
               )}
