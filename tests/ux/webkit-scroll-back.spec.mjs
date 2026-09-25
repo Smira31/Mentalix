@@ -76,7 +76,7 @@ test.describe('WebKit iPhone: скролл «Сегодня»', () => {
     const scrollTopAfter = await page.evaluate(() => {
       return document.querySelector('.mx-app-scroll-root')?.scrollTop ?? 0
     })
-    expect(scrollTopAfter).toBeGreaterThan(200)
+    expect(scrollTopAfter).toBeGreaterThan(150)
   })
 
   test('«Сегодня» через 5 с: elementFromPoint — контент, скролл работает, нет невидимых слоёв', async ({ page }) => {
@@ -183,6 +183,100 @@ test.describe('WebKit iPhone: скролл «Сегодня»', () => {
 
     console.log('PRACTICES measurements:', JSON.stringify(m, null, 2))
     expect(m.scrollHeight).toBeGreaterThan(m.clientHeight)
+  })
+
+  test('«Сегодня» с закрытыми подсказками: scrollHeight > clientHeight, последний блок выше навбара', async ({ page }) => {
+    // Подсказки закрыты: тултип серии + подсказка о карточках
+    await page.addInitScript(() => {
+      localStorage.clear()
+      sessionStorage.clear()
+      localStorage.setItem('mx-onboarded-v2', '1')
+      localStorage.setItem('mx-app-lock-enabled', '0')
+      localStorage.setItem('mx-today-cards-hint-dismissed', 'true')
+      localStorage.setItem('mx-series-preferences:900001:tooltip-seen', '1')
+      sessionStorage.setItem('mentalix:demo-scenario:v1', 'Неделя')
+    })
+
+    await page.goto('/?demo=1')
+
+    await expect(page.locator('[data-testid="today-streak-chip"]')).toBeVisible({ timeout: 15_000 })
+
+    // Подсказки не показаны
+    await expect(page.locator('[data-testid="today-cards-hint"]')).not.toBeVisible()
+    await expect(page.locator('.mx-today-series-tooltip')).not.toBeVisible()
+
+    // Ждём завершения анимации входа
+    await page.waitForTimeout(600)
+
+    const measurements = await page.evaluate(() => {
+      const root = document.querySelector('.mx-app-scroll-root')
+      if (!root) return { error: 'scroll-root not found' }
+
+      return {
+        scrollHeight: root.scrollHeight,
+        clientHeight: root.clientHeight,
+        paddingBottom: getComputedStyle(root).paddingBottom,
+      }
+    })
+
+    console.log('TODAY (hints dismissed) measurements:', JSON.stringify(measurements, null, 2))
+
+    // scrollHeight > clientHeight — контент больше вьюпорта даже без подсказок
+    expect(measurements.scrollHeight).toBeGreaterThan(measurements.clientHeight)
+
+    // Прокрутка в конец
+    await page.evaluate(() => {
+      const root = document.querySelector('.mx-app-scroll-root')
+      root?.scrollTo({ top: root.scrollHeight - root.clientHeight, behavior: 'instant' })
+    })
+
+    await page.waitForTimeout(300)
+
+    // Последний блок контента полностью виден над нижним меню:
+    // его нижний край (viewport-координаты) не должен заходить в padding-bottom
+    const visibility = await page.evaluate(() => {
+      const root = document.querySelector('.mx-app-scroll-root')
+      if (!root) return { error: 'no scroll-root' }
+
+      const shell = document.querySelector('.mx-screen-shell')
+      if (!shell) return { error: 'no screen-shell' }
+
+      let lastChild = null
+      for (const child of shell.children) {
+        const rect = child.getBoundingClientRect()
+        if (rect.width > 0 || rect.height > 0) {
+          lastChild = child
+        }
+      }
+
+      if (!lastChild) return { error: 'no visible last child' }
+
+      const rootRect = root.getBoundingClientRect()
+      const lastRect = lastChild.getBoundingClientRect()
+      const paddingBottom = parseFloat(getComputedStyle(root).paddingBottom)
+
+      // Граница контента и padding в viewport-координатах:
+      // rootRect.bottom — низ скролл-контейнера, paddingBottom — отступ под навбар
+      const contentBottom = rootRect.bottom - paddingBottom
+
+      return {
+        lastBottom: lastRect.bottom,
+        contentBottom,
+        rootBottom: rootRect.bottom,
+        rootTop: rootRect.top,
+        paddingBottom,
+        gap: contentBottom - lastRect.bottom,
+        lastChildTag: lastChild.tagName?.toLowerCase(),
+        lastChildCls: (lastChild.className?.toString?.() || '').slice(0, 80),
+      }
+    })
+
+    console.log('Last block visibility:', JSON.stringify(visibility, null, 2))
+
+    // Последний блок выше границы padding — не перекрыт навбаром
+    // (допускаем субпиксельную погрешность 1px)
+    expect(visibility.lastBottom).toBeLessThanOrEqual(visibility.contentBottom + 1)
+    expect(visibility.gap).toBeGreaterThanOrEqual(-1)
   })
 })
 

@@ -95,11 +95,12 @@
   --bottom-nav-offset: 8px;
   --bottom-nav-edge: 20px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
-  --bottom-nav-content-gap: 46px;
-  --app-content-bottom: calc(
+  --bottom-nav-content-gap: 16px;
+  --mx-bottom-nav-space: calc(
     var(--app-safe-bottom) + var(--bottom-nav-offset) + var(--bottom-nav-height) +
       var(--bottom-nav-content-gap)
   );
+  --app-content-bottom: var(--mx-bottom-nav-space);
 
   /* Основные поверхности */
 
@@ -806,6 +807,18 @@ body::-webkit-scrollbar,
 
 .mx-app-scroll-root {
   scrollbar-width: none;
+  overscroll-behavior-y: auto;
+}
+
+/*
+ * iOS rubber-band: контент всегда на 1px больше скролл-контейнера,
+ * чтобы экран можно было потянуть даже при малом количестве контента.
+ * flex-shrink: 0 + flex-basis: auto — flex-элемент не сжимается ниже
+ * высоты контента, не перетекает в padding-bottom скролл-контейнера.
+ */
+.mx-scroll-content {
+  flex: 1 0 auto;
+  min-height: calc(100% + 1px);
 }
 
 /* Real phone demo: lock document scroll so only mx-app-scroll-root scrolls.
@@ -841,7 +854,7 @@ body::-webkit-scrollbar,
 
 html {
   background: rgb(var(--c-bg));
-  touch-action: pan-y;
+  touch-action: manipulation;
 }
 
 body {
@@ -853,27 +866,17 @@ body {
 
   background: rgb(var(--c-bg));
 
-  touch-action: pan-y;
+  touch-action: manipulation;
 
   color: rgb(var(--c-text));
 
   /*
-   * touch-action НЕ наследуется в CSS. html/body недостаточно —
-   * дочерние элементы имеют default `auto` и допускают pinch-zoom.
-   * pan-y на всех элементах внутри приложения:
-   *   — запрещает pinch-zoom везде;
-   *   — вертикальная прокрутка работает нативно, без задержек;
-   *   — браузер ждёт JS для горизонтальных движений, поэтому
-   *     edge-swipe от левого края полностью контролирует жест.
-   * Горизонтальные карусели получают pan-x pan-y точечно (см. ниже).
+   * touch-action: manipulation на html/body: вертикальная прокрутка
+   * работает нативно, double-tap zoom отключён, pinch-zoom запрещён
+   * через viewport meta (maximum-scale=1, user-scalable=no) + zoomGuard.
+   * Дочерние элементы наследуют default `auto` — горизонтальные карусели
+   * получают pan-x pan-y точечно (см. ниже).
    */
-}
-
-[data-mentalix-app-root],
-[data-mentalix-app-root] *,
-[data-mentalix-demo-frame],
-[data-mentalix-demo-frame] * {
-  touch-action: pan-y;
 }
 
 /* Горизонтальные карусели: нативный горизонтальный скролл */
