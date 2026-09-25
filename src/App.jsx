@@ -345,6 +345,10 @@ export default function App() {
   /* Корневой элемент приложения — на нём висит глобальный edge-swipe. */
   const appRootRef = useRef(null)
   const [appRootMounted, setAppRootMounted] = useState(false)
+  const setAppRootElement = useCallback(el => {
+    appRootRef.current = el
+    setAppRootMounted(Boolean(el))
+  }, [])
   useGlobalEdgeSwipeBack(appRootRef, { enabled: appRootMounted })
 
   /*
@@ -1146,10 +1150,7 @@ export default function App() {
 
   return (
     <div
-      ref={el => {
-        appRootRef.current = el
-        setAppRootMounted(!!el)
-      }}
+      ref={setAppRootElement}
       data-mentalix-app-root="true"
       className={deviceFrameMode ? 'mx-preview-stage' : undefined}
     >

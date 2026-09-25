@@ -7,7 +7,10 @@ const API_TIMEOUT_MS = 10_000
 const API_MAX_RETRIES = 1
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
-const API_DIAGNOSTICS_ENABLED = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+const API_DIAGNOSTICS_ENABLED =
+  import.meta.env.DEV ||
+  (typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('debug') === 'api')
 export const MAX_JOURNEY_TAGS_PER_ENTRY = 8
 
 function emitApiDiagnostic(detail) {
@@ -462,6 +465,17 @@ export const api = {
           wins,
           ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
         }),
+      }),
+
+    /*
+     * Обратная связь с экрана завершения чек-ина (утро и разбор). Необязательная:
+     * экран закрывается независимо от ответа, ошибка сети не блокирует выход.
+     * Контракт: POST /api/checkins/{id}/feedback { value: 'no' | 'some' | 'yes' }.
+     */
+    feedback: (checkinId, value) =>
+      request(`/checkins/${checkinId}/feedback`, {
+        method: 'POST',
+        body: JSON.stringify({ value }),
       }),
   },
 

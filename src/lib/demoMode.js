@@ -507,6 +507,20 @@ function respond(path, options = {}) {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
       review_hour: eveningStates.has(previewTodayState()) ? 0 : 19,
+      writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
+      writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
+    })
+  }
+  if (pathname === '/profile/writing-goal/progress' && method === 'GET') {
+    const enabled = Boolean(state.profile.writing_goal_enabled)
+    const goal = state.profile.writing_goal_weekly_count || 3
+    const completed = enabled ? 2 : 0
+    return json({
+      enabled,
+      completed,
+      goal,
+      reached: completed >= goal,
+      remaining: Math.max(0, goal - completed),
     })
   }
   if (pathname === '/profile' && method === 'GET') return json(state.profile)
@@ -560,6 +574,19 @@ function respond(path, options = {}) {
     return json(reply)
   }
   if (pathname === '/mentalix/feedback' && method === 'POST') return json({ ok: true })
+  /*
+   * Обратная связь с экрана завершения чек-ина. В демо ответ просто
+   * сохраняется в состоянии — экран завершения должен работать без бэкенда.
+   */
+  if (pathname.match(/^\/checkins\/\d+\/feedback$/) && method === 'POST') {
+    const id = numericId(pathname)
+    const value = body.value || null
+    const checkins = state.checkins.map(item =>
+      item?.id === id ? { ...item, feedback: value } : item
+    )
+    writeState({ ...state, checkins })
+    return json({ ok: true, value })
+  }
   if (pathname === '/mentalix/transcribe' && method === 'POST') {
     return json({ text: 'Хочу разобраться в том, что сейчас для меня важно.' })
   }

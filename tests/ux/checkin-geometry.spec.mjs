@@ -158,7 +158,7 @@ test('ряды шкал и «Нет/Немного/Да» центрирован
     await editor.pressSequentially('Спокойное утро')
     await page.locator('[data-testid="checkin-next"]').click()
 
-    await expect(page.getByRole('heading', { name: /Утренний чек-ин/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Готово\./ })).toBeVisible()
     await expectButtonsCenteredOnScreen(page, 'checkin-feedback-option', viewport.name)
 
     await context.close()
