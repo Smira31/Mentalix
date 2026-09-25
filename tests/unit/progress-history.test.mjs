@@ -19,14 +19,43 @@ test('Analytics: вкладка по умолчанию — «Аналитика
     new URL('../../src/screens/Analytics.jsx', import.meta.url),
     'utf8'
   )
-  // useState('analytics') — начальное значение activeTab
-  assert.match(source, /useState\('analytics'\)/)
+  // sessionStorage-инициализация с дефолтом 'analytics'
+  assert.match(source, /PROGRESS_SEGMENT_KEY/)
+  assert.match(source, /sessionStorage\.getItem/)
+  assert.match(source, /return 'analytics'/)
   // Сегмент содержит «Аналитика» и «История»
   assert.match(source, /Аналитика/)
   assert.match(source, /История/)
   // data-testid для вкладок
   assert.match(source, /progress-tab-analytics/)
   assert.match(source, /progress-tab-history/)
+  // historyTrigger — внешний переключатель на «История»
+  assert.match(source, /historyTrigger/)
+})
+
+// ── Переход «Все записи» → История (App.jsx) ──
+
+test('App.jsx: onOpenHistory переключает на сегмент «История», а не на отдельную вкладку', () => {
+  const source = readFileSync(
+    new URL('../../src/App.jsx', import.meta.url),
+    'utf8'
+  )
+  // onOpenHistory использует setProgressHistoryTrigger, а не setTab('history')
+  assert.match(source, /setProgressHistoryTrigger/)
+  // historyTrigger передаётся в Analytics
+  assert.match(source, /historyTrigger=\{progressHistoryTrigger\}/)
+  // 'history' больше не отдельная вкладка в validTabs
+  assert.doesNotMatch(
+    source,
+    /validTabs\s*=\s*\[[^\]]*'history'[^\]]*\]/,
+    'history не должен быть в validTabs'
+  )
+  // Нет отдельного блока рендера для tab === 'history'
+  assert.doesNotMatch(
+    source,
+    /tab === 'history' && \(/,
+    'не должно быть отдельного рендера для tab === "history"'
+  )
 })
 
 // ── Группировка записей по дням ──
