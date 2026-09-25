@@ -97,7 +97,6 @@ async function newPage(browser) {
 
 test('чек-ин: открыть, дождаться первого шага, закрыть — нет #185', async ({ browser }) => {
   test.setTimeout(90_000)
-  test.setTimeout(90_000)
 
   const { page, context } = await newPage(browser)
   const errors = collectDepthErrors(page)
@@ -107,9 +106,11 @@ test('чек-ин: открыть, дождаться первого шага, �
 
     // Дождаться карточки чек-ина на экране «Сегодня».
     const checkinCard = page.locator('[data-testid="today-card-morning"]')
-    const cardVisible = await checkinCard.isVisible({ timeout: 10_000 }).catch(() => false)
-    if (!cardVisible) {
-      // Если карточка не появилась — помечаем как нестабильное, не тратим итерации.
+    const cardReady = await checkinCard
+      .waitFor({ state: 'visible', timeout: 10_000 })
+      .then(() => true)
+      .catch(() => false)
+    if (!cardReady) {
       test.fixme(true, 'Карточка чек-ина не появилась за 10 с — открытие нестабильно')
       return
     }
@@ -118,10 +119,11 @@ test('чек-ин: открыть, дождаться первого шага, �
 
     // Дождаться первого шага — заголовок шкалы настроения.
     const moodHeading = page.getByRole('heading', { name: 'Как ты сейчас?' })
-    const stepVisible = await moodHeading
-      .isVisible({ timeout: 10_000 })
+    const stepReady = await moodHeading
+      .waitFor({ state: 'visible', timeout: 10_000 })
+      .then(() => true)
       .catch(() => false)
-    if (!stepVisible) {
+    if (!stepReady) {
       test.fixme(true, 'Первый шаг чек-ина не появился за 10 с — открытие нестабильно')
       return
     }
