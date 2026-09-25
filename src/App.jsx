@@ -1281,7 +1281,6 @@ function App() {
             tab === 'mentor' && !overlay ? 'mx-dialog-runtime-scroll' : 'overflow-y-auto'
           }`}
           style={{
-            paddingBottom: contentBottomPadding,
             scrollPaddingBottom: contentBottomPadding,
           }}
         >
@@ -1305,6 +1304,10 @@ function App() {
               previewDemoMode && 'mx-demo-screen-transition',
               previewDemoMode && `mx-demo-screen-transition--${demoMotionTick % 2}`,
             ].join(' ')}
+            // Нижний отступ — внутри содержимого, а не на скролл-контейнере:
+            // WebKit (iPhone/Telegram) игнорирует padding-bottom у flex-контейнера
+            // с overflow, и конец экрана уходил под нижнюю панель.
+            style={tab === 'mentor' && !overlay ? undefined : { paddingBottom: contentBottomPadding }}
           >
             <Suspense fallback={<ScreenLoading />}>
               {!user && (
