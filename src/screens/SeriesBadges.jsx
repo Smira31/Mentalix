@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -9,6 +9,7 @@ import { pluralize, formatCount } from '../lib/pluralize'
 import { platformName } from '../platform'
 import { buildSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
 import { getSeriesPreferences, saveSeriesPreference } from '../lib/seriesPreferences'
+import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
 import BackButton from '../components/BackButton'
 import './SeriesBadges.css'
 
@@ -99,11 +100,15 @@ function badgePractice(badge) {
 }
 
 export function BadgeSheet({ badge, onClose, onOpenPractice }) {
+  const sheetRef = useRef(null)
+  useSheetSwipeDown(sheetRef, onClose)
+
   if (!badge) return null
   const practice = badgePractice(badge)
   return createPortal(
     <div className="mx-badge-sheet-layer" role="presentation" onClick={onClose}>
       <section
+        ref={sheetRef}
         className="mx-badge-sheet"
         role="dialog"
         aria-modal="true"
@@ -142,10 +147,14 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
 }
 
 export function NewBadgeSheet({ badge, onClose }) {
+  const sheetRef = useRef(null)
+  useSheetSwipeDown(sheetRef, onClose)
+
   if (!badge) return null
   return createPortal(
     <div className="mx-badge-sheet-layer" role="presentation" onClick={onClose}>
       <section
+        ref={sheetRef}
         className="mx-badge-sheet mx-badge-sheet--new"
         role="dialog"
         aria-modal="true"
@@ -418,14 +427,16 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
           <p className="mx-path-status">Загружаю последние данные…</p>
         )}
       </main>
-      <BadgeSheet
-        badge={selectedBadge}
-        onClose={() => setSelectedBadge(null)}
-        onOpenPractice={practice => {
-          setSelectedBadge(null)
-          onOpenPractice?.(practice)
-        }}
-      />
+      {selectedBadge && (
+        <BadgeSheet
+          badge={selectedBadge}
+          onClose={() => setSelectedBadge(null)}
+          onOpenPractice={practice => {
+            setSelectedBadge(null)
+            onOpenPractice?.(practice)
+          }}
+        />
+      )}
     </div>
   )
 
