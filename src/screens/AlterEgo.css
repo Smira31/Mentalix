@@ -1,0 +1,208 @@
+/*
+ * Практика «Альтер-эго» — монохром, цвет только у персонажа.
+ * Журнал создания использует те же компоненты, что вечерний разбор
+ * (CheckInQuestion, JournalTextarea, CheckInNextControls).
+ * Отступы: где пишешь — 16 от края (--mx-screen-x),
+ *          где смотришь — 21.
+ */
+
+/* ── Character ── */
+
+.mx-alter-ego__character {
+  width: clamp(140px, 38vw, 200px);
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
+}
+
+.mx-alter-ego__character--lg {
+  width: clamp(180px, 48vw, 260px);
+}
+
+/* ── Text input (short field для имени) ── */
+
+.mx-alter-ego__input {
+  width: 100%;
+  max-width: 360px;
+  margin: 20px auto 0;
+  display: block;
+  min-height: 48px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  font-size: 16px;
+  line-height: 1.4;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.mx-alter-ego__input:focus {
+  border-color: rgb(var(--c-line-secondary));
+}
+.mx-alter-ego__input::placeholder {
+  color: rgb(var(--c-faint));
+}
+
+/* ── Disclaimer ── */
+
+.mx-alter-ego__disclaimer {
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgb(var(--c-faint));
+  text-align: center;
+  padding: 0 24px 8px;
+}
+
+/* ── Card list (practice screen) ── */
+
+.mx-alter-ego__list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+.mx-alter-ego__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 16px 16px;
+  border-radius: 24px;
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card));
+}
+.mx-alter-ego__card-name {
+  margin-top: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  color: rgb(var(--c-text));
+  line-height: 1.2;
+}
+.mx-alter-ego__card-phrase {
+  margin-top: 8px;
+  font-size: 15px;
+  color: rgb(var(--c-muted));
+  line-height: 1.4;
+  font-style: italic;
+}
+.mx-alter-ego__card-actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+.mx-alter-ego__card-btn {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.mx-alter-ego__card-btn--primary {
+  border: 0;
+  background: rgb(var(--c-line));
+  color: rgb(var(--c-bg));
+}
+.mx-alter-ego__card-btn--secondary {
+  border: 1px solid rgb(var(--c-border));
+  background: transparent;
+  color: rgb(var(--c-text));
+}
+
+.mx-alter-ego__create {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  width: 100%;
+  border-radius: 999px;
+  border: 1px dashed rgb(var(--c-border));
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ── Wear mask (fullscreen, read-only) ── */
+
+.mx-alter-ego__wear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 21px;
+  min-height: 100%;
+}
+.mx-alter-ego__wear-name {
+  margin-top: 20px;
+  font-size: 32px;
+  font-weight: 700;
+  color: rgb(var(--c-text));
+  line-height: 1.15;
+}
+.mx-alter-ego__wear-rule {
+  margin-top: 24px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+.mx-alter-ego__wear-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(var(--c-faint));
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.mx-alter-ego__wear-rule p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgb(var(--c-text));
+}
+.mx-alter-ego__wear-phrase {
+  margin-top: 36px;
+  font-size: clamp(22px, 5vw, 28px);
+  font-weight: 600;
+  color: rgb(var(--c-text));
+  line-height: 1.3;
+}
+.mx-alter-ego__wear-actions {
+  margin-top: auto;
+  padding-top: 32px;
+  padding-bottom: calc(var(--app-safe-bottom) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+}
+.mx-alter-ego__wear-btn {
+  min-height: 48px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mx-alter-ego__wear-btn--primary {
+  border: 1px solid rgb(var(--c-border));
+  background: transparent;
+  color: rgb(var(--c-text));
+}
+.mx-alter-ego__wear-btn--secondary {
+  border: 0;
+  background: rgb(var(--c-line));
+  color: rgb(var(--c-bg));
+}

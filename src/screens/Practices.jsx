@@ -15,6 +15,7 @@ import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
 import ThemeScreen from './ThemeScreen'
 import MoodPractice from './MoodPractice'
+import AlterEgo from './AlterEgo'
 
 function PracticesCatalogLoading() {
   return (
@@ -196,6 +197,10 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
 
   if (sub === 'mood') {
     return <MoodPractice user={user} onDone={() => setSub(null)} />
+  }
+
+  if (sub === 'alter-ego') {
+    return <AlterEgo user={user} onBack={() => setSub(null)} />
   }
 
   if (isLoading) {

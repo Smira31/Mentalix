@@ -27,7 +27,7 @@ import {
 } from '../../src/lib/checkinDraft.js'
 
 test('allowlist сохраняет доступные практики и активирует Lila entry', () => {
-  assert.deepEqual(AVAILABLE_PRACTICES, ['lila-discover', 'rituals', 'ascezas', 'mood'])
+  assert.deepEqual(AVAILABLE_PRACTICES, ['lila-discover', 'rituals', 'ascezas', 'mood', 'alter-ego'])
 
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
