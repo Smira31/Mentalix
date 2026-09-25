@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
 import { ChevronDown, Ellipsis, X } from 'lucide-react'
 
+import ErrorBoundary from './components/ErrorBoundary'
+
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
 
@@ -231,7 +233,7 @@ function applyDarkTheme() {
    APP
    ============================================================ */
 
-export default function App() {
+function App() {
   const [user, setUser] = useState(() => (isPreviewDemoMode() ? DEMO_USER : null))
 
   const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
@@ -1410,5 +1412,27 @@ export default function App() {
         )}
       </div>
     </div>
+  )
+}
+
+/* ============================================================
+   ERROR BOUNDARY WRAPPER
+   ============================================================
+   ErrorBoundary оборачивает всё приложение. Тестовый компонент
+   активируется через ?error_test=1 для проверки ловушки.
+   */
+
+function ErrorTest() {
+  throw new Error('Тестовая ошибка ErrorBoundary')
+}
+
+export default function AppRoot() {
+  const errorTest =
+    new URLSearchParams(window.location.search).get('error_test') === '1'
+
+  return (
+    <ErrorBoundary>
+      {errorTest ? <ErrorTest /> : <App />}
+    </ErrorBoundary>
   )
 }
