@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { platform } from '../platform'
@@ -30,6 +30,7 @@ import {
   canProceedFromStep,
   buildMoodPracticePayload,
 } from '../lib/moodPracticeLogic'
+import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
 import './CheckInDemo.css'
 
 const INTRO_SEEN_KEY = 'mx-mood-practice-intro-seen'
@@ -99,6 +100,9 @@ export default function MoodPractice({ user, onDone }) {
     setStep(current => current - 1)
   }
 
+  const screenRef = useRef(null)
+  useEdgeSwipeBack(screenRef, handleBack)
+
   /*
    * Тот же переход-хендофф, что в CheckIn.jsx (openListener):
    * к Собеседнику (mayak) с одним универсальным драфтом для тяжёлых эмоций.
@@ -146,6 +150,7 @@ export default function MoodPractice({ user, onDone }) {
   if (step === STEP_INTRO) {
     return createPortal(
       <div
+        ref={screenRef}
         className={FULLSCREEN_SHELL_CLASS}
         style={surfaceStyle}
         data-testid="mood-practice-intro"
@@ -201,6 +206,7 @@ export default function MoodPractice({ user, onDone }) {
   if (step === STEP_DONE) {
     return createPortal(
       <div
+        ref={screenRef}
         className={FULLSCREEN_SHELL_CLASS}
         style={surfaceStyle}
         data-testid="mood-practice-completion"
@@ -239,7 +245,7 @@ export default function MoodPractice({ user, onDone }) {
   const moodLevel = mood || 3
 
   return createPortal(
-    <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
+    <div ref={screenRef} className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
         <BackButton onClick={handleBack} />
       </div>

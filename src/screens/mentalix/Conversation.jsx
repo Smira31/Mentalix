@@ -1,5 +1,6 @@
 import { getFullscreenPortalTarget } from '../../lib/fullscreenSurface'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEdgeSwipeBack } from '../../lib/gestures/useEdgeSwipeBack'
 import { createPortal } from 'react-dom'
 
 import { ArrowRight, LoaderCircle, Mic, Square } from 'lucide-react'
@@ -50,6 +51,8 @@ export default function Conversation({
   const { style: surfaceStyle, keyboardOpen } = useFullscreenSurface()
 
   const scrollRef = useRef(null)
+  const screenRef = useRef(null)
+  useEdgeSwipeBack(screenRef, onBack)
   const inputRef = useRef(null)
   const restoreComposerFocusRef = useRef(false)
   const previousMessageCount = useRef(0)
@@ -320,6 +323,7 @@ export default function Conversation({
 
   return createPortal(
     <div
+      ref={screenRef}
       className={`${FULLSCREEN_SHELL_CLASS} ${demoVoice ? 'mx-conversation-surface--demo' : ''}`}
       style={{
         ...surfaceStyle,

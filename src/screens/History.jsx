@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
 import { api } from '../lib/api'
 import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
@@ -159,8 +160,15 @@ export function HistoryDetail({
   const isToday = day.date === new Date().toISOString().slice(0, 10)
   const canRedo = isToday && (onRedo || onRedoReview)
 
+  const screenRef = useRef(null)
+  useEdgeSwipeBack(screenRef, onBack)
+
   return (
-    <section aria-label={`Запись за ${dayTitle(day.date)}`} className="mt-1 animate-fade-in">
+    <section
+      ref={screenRef}
+      aria-label={`Запись за ${dayTitle(day.date)}`}
+      className="mt-1 animate-fade-in"
+    >
       <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
         <BackButton onClick={onBack} />
         {/* Явные колонки: в Telegram BackButton не рендерится, и без них

@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { platform, platformName } from '../../platform'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { isPreviewDemoMode } from '../../lib/demoMode'
+import { useEdgeSwipeBack } from '../../lib/gestures/useEdgeSwipeBack'
 import './ProfileUi.css'
 
 /*
@@ -52,10 +53,14 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
     onBack?.()
   })
 
+  const screenRef = useRef(null)
+  useEdgeSwipeBack(screenRef, onBack)
+
   const ButtonIcon = isRoot ? X : ChevronLeft
 
   return (
     <div
+      ref={screenRef}
       className={`mx-profile-page${showOwnButton ? ' mx-profile-page--own-button' : ''}`}
       data-testid={testId}
     >
