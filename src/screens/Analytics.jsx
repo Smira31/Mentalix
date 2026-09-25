@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
 import { retrySources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
@@ -639,7 +639,65 @@ function Metric({ label, value, note, progress, children }) {
   )
 }
 
-export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
+const PROGRESS_SEGMENT_KEY = 'mx-progress-segment'
+
+export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, onRedoReview, historyTrigger = 0 }) {
+  const rootRef = useRef(null)
+  const scrollPositions = useRef({ analytics: 0, history: 0 })
+  const skipScrollRestore = useRef(true)
+
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(PROGRESS_SEGMENT_KEY)
+      return saved === 'history' ? 'history' : 'analytics'
+    } catch {
+      return 'analytics'
+    }
+  })
+
+  // Persist segment choice in sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(PROGRESS_SEGMENT_KEY, activeTab)
+    } catch {
+      /* sessionStorage может быть недоступен (приватный режим) */
+    }
+  }, [activeTab])
+
+  // External trigger: onOpenHistory switches to History segment
+  useEffect(() => {
+    if (historyTrigger > 0) {
+      saveScroll()
+      setActiveTab('history')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyTrigger])
+
+  // Restore scroll position after tab switch
+  useEffect(() => {
+    if (skipScrollRestore.current) {
+      skipScrollRestore.current = false
+      return
+    }
+    const scrollRoot = rootRef.current?.closest('.mx-app-scroll-root')
+    if (scrollRoot) {
+      scrollRoot.scrollTop = scrollPositions.current[activeTab] || 0
+    }
+  }, [activeTab])
+
+  function saveScroll() {
+    const scrollRoot = rootRef.current?.closest('.mx-app-scroll-root')
+    if (scrollRoot) {
+      scrollPositions.current[activeTab] = scrollRoot.scrollTop
+    }
+  }
+
+  function handleSegmentClick(next) {
+    if (next === activeTab) return
+    saveScroll()
+    setActiveTab(next)
+  }
+
   const [initialTrendsState] = useState(() => {
     if (!user) return null
 
@@ -771,6 +829,7 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
 
   return (
     <div
+      ref={rootRef}
       className={`mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in${
         PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2' : ''
       }`}
@@ -786,7 +845,7 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
             role="tab"
             data-testid="progress-tab-analytics"
             aria-selected={activeTab === 'analytics'}
-            onClick={() => setActiveTab('analytics')}
+            onClick={() => handleSegmentClick('analytics')}
           >
             Аналитика
           </button>
@@ -795,7 +854,7 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
             role="tab"
             data-testid="progress-tab-history"
             aria-selected={activeTab === 'history'}
-            onClick={() => setActiveTab('history')}
+            onClick={() => handleSegmentClick('history')}
           >
             История
           </button>
@@ -998,7 +1057,12 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
         </>
       )}
       {activeTab === 'history' && (
-        <ProgressHistory user={user} onGoCheckin={onGoCheckin} />
+        <ProgressHistory
+          user={user}
+          onGoCheckin={onGoCheckin}
+          onRedo={onRedo}
+          onRedoReview={onRedoReview}
+        />
       )}
     </div>
   )
