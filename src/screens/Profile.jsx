@@ -140,16 +140,9 @@ export default function Profile({ user }) {
       {/* Ты: имя и дата рождения */}
       <ProfileGroup label="Ты">
         <ProfileCard testId="profile-about-card">
-          {/*
-            Имя — заголовок экрана (h3 под h2 «Ты»): данные пользователя
-            видны до ответа /api/profile, т.к. берутся из localStorage.
-            valueHeading сохраняет вёрстку строки-значения, но даёт имени
-            роль heading — его видят скринридеры и контракт-тесты (#648).
-          */}
           <ProfileRow
             title="Имя"
             value={user.first_name}
-            valueHeading
             subtitle={
               stats ? (
                 <span data-testid="profile-about-stats">

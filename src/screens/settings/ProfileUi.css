@@ -112,8 +112,11 @@
   transform: scale(0.97);
 }
 
+/* Внутренние экраны: круглая «‹» 43×43, как у Stoic. */
 .mx-profile-page__button--back {
   left: 20px;
+  width: 43px;
+  height: 43px;
 }
 
 .mx-profile-page__button--close {
