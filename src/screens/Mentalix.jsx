@@ -4,7 +4,13 @@ import { api } from '../lib/api'
 import { fetchHistory, invalidateHistory } from '../lib/mentalixHistoryCache'
 import { mergeConversationMessages } from '../lib/mentalixConversationUtils'
 
-import { readPendingMentor } from './mentalix/personas'
+import {
+  MENTOR_DRAFT_KEY,
+  MENTOR_HANDOFF_KEY,
+  MENTOR_PERSONA_KEY,
+  MENTOR_SAFETY_KEY,
+  readPendingMentor,
+} from './mentalix/personas'
 import { maybeBuildInsightMessage } from './mentalix/insightDigest'
 import { AI_REFRAME_LEAD_MESSAGE, withSafetyNote } from '../lib/aiReframeSafety'
 import { messageContent } from '../lib/journalPresentation'
@@ -57,6 +63,7 @@ export function ConversationChat({
   initialText = '',
   initialPrompt = null,
   initialDisplayText = null,
+  initialHandoff = null,
   viaHandoff = false,
   withSafetyNotice = false,
   conversationMeta = null,
@@ -72,6 +79,7 @@ export function ConversationChat({
   const [sendError, setSendError] = useState('')
   const lastFailedSend = useRef(null)
   const initialPromptSent = useRef(false)
+  const handoffRef = useRef(initialHandoff)
   const localMessageSequence = useRef(0)
   const userId = user?.id
 
@@ -143,9 +151,20 @@ export function ConversationChat({
 
     setSending(true)
     platform.haptic('light')
+    const handoff = handoffRef.current
+    handoffRef.current = null
+    if (handoff) {
+      try {
+        sessionStorage.removeItem(MENTOR_HANDOFF_KEY)
+      } catch {
+        // Chat remains usable when sessionStorage is unavailable.
+      }
+    }
 
     try {
-      const reply = await api.mentalix.send(user.id, text, persona)
+      const reply = handoff
+        ? await api.mentalix.send(user.id, text, persona, handoff)
+        : await api.mentalix.send(user.id, text, persona)
       const replyContent = messageContent(reply)
       const safeReply = {
         ...reply,
@@ -207,14 +226,31 @@ export function ConversationChat({
 // ============================================================
 
 export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) {
-  const [pending] = useState(() => readPendingMentor())
+  const [pending, setPending] = useState(() => readPendingMentor())
   const [persona, setPersona] = useState(pending.persona)
   const [draft, setDraft] = useState(pending.draft)
   const [guestForbidden, setGuestForbidden] = useState(false)
 
+  useEffect(() => {
+    // Read without side effects during render: StrictMode repeats state initializers.
+    try {
+      sessionStorage.removeItem(MENTOR_PERSONA_KEY)
+      sessionStorage.removeItem(MENTOR_DRAFT_KEY)
+      sessionStorage.removeItem(MENTOR_SAFETY_KEY)
+    } catch {
+      // The chat also works without sessionStorage.
+    }
+  }, [])
+
   const exitConversation = useCallback(() => {
+    try {
+      sessionStorage.removeItem(MENTOR_HANDOFF_KEY)
+    } catch {
+      // Leaving the chat must work without sessionStorage.
+    }
     setDraft('')
     setPersona(null)
+    setPending({ persona: null, draft: '', safety: false, handoff: null })
   }, [])
 
   useEffect(() => {
@@ -256,6 +292,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       user={user}
       persona={persona}
       initialText={draft}
+      initialHandoff={persona === 'dnevnik' && pending.persona === 'dnevnik' ? pending.handoff : null}
       viaHandoff={Boolean(pending.persona)}
       withSafetyNotice={Boolean(pending.safety)}
       onBack={exitConversation}

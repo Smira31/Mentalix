@@ -6,6 +6,7 @@ import {
   currentCheckinStreak,
   longestCheckinStreak,
   collectActivityDays,
+  seriesLogicalDateKey,
 } from '../../src/lib/series.js'
 
 /**
@@ -31,6 +32,13 @@ function checkin(date) {
 function noon(date) {
   return new Date(`${date}T12:00:00`)
 }
+
+test('seriesLogicalDateKey maps 02:00 to yesterday and 05:00 to today', () => {
+  const today = dayKey()
+  assert.equal(seriesLogicalDateKey(new Date(`${today}T02:00:00`)), dayKey(-1))
+  assert.equal(seriesLogicalDateKey(new Date(`${today}T05:00:00`)), today)
+  assert.equal(seriesLogicalDateKey(new Date(`${today}T19:00:00`)), today)
+})
 
 test('currentCheckinStreak counts the completed tail in chronological order', () => {
   const checkins = [

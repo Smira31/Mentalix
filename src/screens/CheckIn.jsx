@@ -29,10 +29,11 @@ import {
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
-import { currentCheckinStreak } from '../lib/series'
+import { currentCheckinStreak, seriesLogicalDateKey } from '../lib/series'
 import { buildTomorrowTeaser } from '../lib/tomorrowTeaser'
 import { peekPracticesData } from '../lib/practicesDataCache'
 import { energyFillPercent } from '../lib/checkinScale'
+import { MENTOR_HANDOFF_KEY } from './mentalix/personas'
 import { eveningMorningFields } from '../lib/checkinMorningFields'
 import { resolveDesyncStep } from '../lib/checkinDesync'
 import { CHECKIN_FEEDBACK_OPTIONS, sendCheckinFeedback } from '../lib/checkinFeedback'
@@ -1038,6 +1039,10 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       sessionStorage.setItem(MENTOR_PERSONA_KEY, 'dnevnik')
 
       sessionStorage.setItem(MENTOR_DRAFT_KEY, DAY_REVIEW_PROMPT)
+      sessionStorage.setItem(
+        MENTOR_HANDOFF_KEY,
+        JSON.stringify({ type: 'evening_review', date: seriesLogicalDateKey() })
+      )
     } catch (error) {
       console.error(error)
     }
