@@ -869,7 +869,9 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
 
     if (viewport.width <= 430) {
       const track = page.getByTestId('mentor-persona-track')
-      await expect(track).toHaveCSS('touch-action', 'pan-x')
+      // pan-x pan-y: горизонтальный свайп карусели + вертикальная прокрутка
+      // (anti-zoom: pan-y глобально, pan-x добавлен точечно для каруселей)
+      await expect(track).toHaveCSS('touch-action', 'pan-x pan-y')
       const cardWidth = await cards
         .first()
         .evaluate(element => element.getBoundingClientRect().width)

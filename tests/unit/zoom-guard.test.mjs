@@ -37,8 +37,10 @@ test('zoomGuard регистрирует preventDefault-обработчик н�
     assert.equal(listeners.gesturestart.options.passive, false, 'passive должен быть false')
     assert.ok(listeners.gesturechange, 'обработчик gesturechange не зарегистрирован')
     assert.ok(listeners.gestureend, 'обработчик gestureend не зарегистрирован')
-    assert.ok(listeners.touchmove, 'обработчик touchmove не зарегистрирован')
-    assert.equal(listeners.touchmove.options.passive, false, 'touchmove passive должен быть false')
+    // touchmove НЕ регистрируется — passive:false слушатель на window
+    // блокирует прокрутку одним пальцем на iOS. Pinch-zoom отключён
+    // через CSS touch-action: pan-x pan-y (см. index.css).
+    assert.equal(listeners.touchmove, undefined, 'touchmove не должен регистрироваться')
   } finally {
     globalThis.window = originalWindow
   }
@@ -66,7 +68,7 @@ test('zoomGuard не регистрирует обработчики повто�
   }
 })
 
-test('touchmove preventDefault срабатывает только при multi-touch', () => {
+test('zoomGuard не регистрирует touchmove на window', () => {
   const listeners = {}
   const fakeWindow = {
     __mxZoomGuardInstalled: false,
@@ -78,27 +80,9 @@ test('touchmove preventDefault срабатывает только при multi-
   globalThis.window = fakeWindow
   try {
     installZoomGuard()
-
-    let prevented = false
-    const fakeEvent = touches => ({
-      touches,
-      preventDefault() {
-        prevented = true
-      },
-    })
-
-    // Один палец — не блокируем
-    prevented = false
-    listeners.touchmove.handler(fakeEvent([{ clientX: 0, clientY: 0 }]))
-    assert.equal(prevented, false, 'прокрутка одним пальцем не должна блокироваться')
-
-    // Два пальца — блокируем
-    prevented = false
-    listeners.touchmove.handler(fakeEvent([
-      { clientX: 0, clientY: 0 },
-      { clientX: 100, clientY: 100 },
-    ]))
-    assert.equal(prevented, true, 'multi-touch touchmove должен блокироваться')
+    // touchmove не должен быть зарегистрирован — это ломает прокрутку
+    // одним пальцем на iOS (passive:false заставляет браузер ждать JS)
+    assert.equal(listeners.touchmove, undefined, 'touchmove не должен регистрироваться')
   } finally {
     globalThis.window = originalWindow
   }
