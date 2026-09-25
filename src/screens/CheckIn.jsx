@@ -30,7 +30,7 @@ import { isPreviewDemoMode } from '../lib/demoMode'
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
 import { resolveDesyncStep } from '../lib/checkinDesync'
-import { CHECKIN_FEEDBACK_OPTIONS, checkinFeedbackValue } from '../lib/checkinFeedback'
+import { CHECKIN_FEEDBACK_OPTIONS, sendCheckinFeedback } from '../lib/checkinFeedback'
 import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
 import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
@@ -287,15 +287,17 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       if (values.focus != null) morningPayload.focus = values.focus
       const saved = await saveApi(user.id, morningPayload)
       platform.haptic('success')
+      /*
+       * Ответ на «Было полезно?» необязателен и уходит вместе с id сохранённой
+       * записи. Ошибка сети не мешает закрыть экран — см. sendCheckinFeedback.
+       * Вызов стоит до проверки redo, чтобы «Пройти заново» тоже отправлял
+       * оценку — раньше redo-ветка делала onDone() и return до отправки.
+       */
+      await sendCheckinFeedback(api.checkin.feedback, saved?.id, feedback)
       if (redo) {
         onDone()
         return
       }
-      /*
-       * Ответ на «Было полезно?» необязателен и уходит вместе с id сохранённой
-       * записи. Ошибка сети не мешает закрыть экран — см. sendFeedback.
-       */
-      await sendFeedback(saved?.id, feedback)
       try {
         const history = await api.checkin.history(user.id, 90)
         setStreakHistory(Array.isArray(history) ? history : [])
@@ -309,22 +311,6 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       setError('Не удалось сохранить. Попробуй ещё раз.')
     } finally {
       setSaving(false)
-    }
-  }
-
-  /*
-   * Обратная связь необязательна: ответ не блокирует экран, а ошибка сети
-   * не мешает закрыть чек-ин.
-   */
-  async function sendFeedback(checkinId, label) {
-    const value = checkinFeedbackValue(label)
-
-    if (!checkinId || !value) return
-
-    try {
-      await api.checkin.feedback(checkinId, value)
-    } catch (feedbackError) {
-      console.error(feedbackError)
     }
   }
 
@@ -914,22 +900,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     }
   }
 
-  /*
-   * Обратная связь необязательна: ответ не блокирует экран, а ошибка сети
-   * не мешает закрыть разбор.
-   */
-  async function sendFeedback(checkinId, label) {
-    const value = checkinFeedbackValue(label)
-
-    if (!checkinId || !value) return
-
-    try {
-      await api.checkin.feedback(checkinId, value)
-    } catch (feedbackError) {
-      console.error(feedbackError)
-    }
-  }
-
   async function openScout() {
     platform.haptic('medium')
 
@@ -1315,7 +1285,11 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                         onClick={() => {
                           platform.haptic('light')
                           setFeedback(option.label)
-                          sendFeedback(savedCheckinId ?? existing?.id, option.label)
+                          sendCheckinFeedback(
+                            api.checkin.feedback,
+                            savedCheckinId ?? existing?.id,
+                            option.label
+                          )
                         }}
                         className={`flex min-h-[102px] flex-col items-center justify-center gap-3 rounded-3xl border text-[14px] font-medium ${
                           feedback === option.label

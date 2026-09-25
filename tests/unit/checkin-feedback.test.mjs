@@ -39,11 +39,27 @@ test('контракт эндпоинта зафиксирован во фрон
 })
 
 test('ошибка сети на обратной связи не пробрасывается из экрана завершения', async () => {
+  const feedbackSource = await readFile(
+    new URL('../../src/lib/checkinFeedback.js', import.meta.url),
+    'utf8'
+  )
+  // sendCheckinFeedback — единая функция для обоих потоков (утро и разбор),
+  // вынесена из CheckIn.jsx, чтобы тестировать с подменой API.
+  assert.match(feedbackSource, /export async function sendCheckinFeedback\(/)
+  assert.match(feedbackSource, /catch \(feedbackError\)/)
+  assert.match(feedbackSource, /console\.error\(feedbackError\)/)
+
+  // Оба потока в CheckIn.jsx используют sendCheckinFeedback
   const checkinSource = await readFile(new URL('../../src/screens/CheckIn.jsx', import.meta.url), 'utf8')
-  const helpers = checkinSource.match(/async function sendFeedback\([\s\S]*?\n  \}/g) || []
-  assert.equal(helpers.length, 2, 'sendFeedback есть в обоих потоках — утро и разбор')
-  for (const helper of helpers) {
-    assert.match(helper, /catch \(feedbackError\)/)
-    assert.match(helper, /console\.error\(feedbackError\)/)
-  }
+  const morningFlow = checkinSource.slice(
+    checkinSource.indexOf('function MorningCheckInFlow'),
+    checkinSource.indexOf('// ── Чек-ин и вечерний')
+  )
+  assert.match(morningFlow, /sendCheckinFeedback/, 'утренний поток использует sendCheckinFeedback')
+
+  const core = checkinSource.slice(
+    checkinSource.indexOf('function CheckInCore'),
+    checkinSource.indexOf('function CheckIn({')
+  )
+  assert.match(core, /sendCheckinFeedback/, 'вечерний поток использует sendCheckinFeedback')
 })
