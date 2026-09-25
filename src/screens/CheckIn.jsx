@@ -18,6 +18,7 @@ import {
 } from '../lib/fullscreenSurface'
 import { consumeMoodDraft } from '../lib/moodCheckDraft'
 import EmotionStep from '../components/EmotionStep'
+import StepSlide from '../components/StepSlide'
 import {
   clearCheckinDraft,
   draftHasContent,
@@ -230,6 +231,15 @@ export function CheckInQuestion({
  */
 function MorningCheckInFlow({ user, onDone, redo = false }) {
   const [step, setStep] = useState(0)
+  // §6 часть 1: горизонтальный переход между шагами. animatingRef блокирует
+  // повторное «Далее»/«Назад»/«Пропустить» во время 300 мс анимации.
+  const animatingRef = useRef(false)
+  const [direction, setDirection] = useState('forward')
+  function goToStep(target, dir) {
+    if (animatingRef.current) return
+    setDirection(dir)
+    setStep(target)
+  }
   /*
    * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
    * из перезаписываемой записи: поля опускаются в PUT /api/checkin/today,
@@ -266,7 +276,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       return
     }
 
-    setStep(current => Math.max(0, current - 1))
+    goToStep(Math.max(0, step - 1), 'back')
   }
 
   function pick(key, level) {
@@ -320,7 +330,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
     step === streakStep
       ? { text: 'Закрыть', testId: 'checkin-back-to-today', onClick: onDone }
       : step === noteStep
-        ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
+        ? { text: 'Продолжить', onClick: () => goToStep(doneStep, 'forward'), disabled: !note.trim() }
         : step === doneStep
           ? {
               // Текст не убирается на время сохранения: спиннер рисуется
@@ -330,7 +340,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
               onClick: finish,
               disabled: saving,
             }
-          : { text: 'Продолжить', onClick: () => setStep(current => current + 1), disabled: false }
+          : { text: 'Продолжить', onClick: () => goToStep(step + 1, 'forward'), disabled: false }
 
   useMainButton({
     text: action.text,
@@ -351,13 +361,14 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       </header>
 
       <main className={`mx-demo-checkin__body ${step === noteStep ? 'is-editor' : ''}`}>
-        {scale && (
-          <CheckInScaleQuestion
-            scale={scale}
-            value={values[scale.key]}
-            onPick={level => pick(scale.key, level)}
-          />
-        )}
+        <StepSlide stepKey={step} direction={direction} animatingRef={animatingRef}>
+          {scale && (
+            <CheckInScaleQuestion
+              scale={scale}
+              value={values[scale.key]}
+              onPick={level => pick(scale.key, level)}
+            />
+          )}
 
         {step === noteStep && (
           <CheckInQuestion
@@ -380,7 +391,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
               submitIcon="arrow"
               submitLabel="Далее"
               submitTestId="checkin-next"
-              onSubmit={() => setStep(doneStep)}
+              onSubmit={() => goToStep(doneStep, 'forward')}
               onDeepen={() => {}}
               deepenLabel="Пойти глубже"
               showAddAction
@@ -457,13 +468,14 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
             </div>
           </section>
         )}
+        </StepSlide>
       </main>
       {step < noteStep ? (
         <CheckInNextControls
-          onNext={() => setStep(current => Math.min(doneStep, current + 1))}
+          onNext={() => goToStep(Math.min(doneStep, step + 1), 'forward')}
           disabled={step < noteStep ? !values[MORNING_SCALE_STEPS[step].key] : !note.trim()}
           onSkip={
-            step < noteStep ? () => setStep(current => Math.min(doneStep, current + 1)) : null
+            step < noteStep ? () => goToStep(Math.min(doneStep, step + 1), 'forward') : null
           }
         />
       ) : null}
@@ -777,6 +789,15 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const [step, setStep] = useState(() =>
     isEvening && !redo && existing?.review_completed_at ? 1 : 0
   )
+  // §6 часть 1: горизонтальный переход между шагами внутри основного портала
+  // (шкалы → эмоции → карточки). Переходы в done/streak — смена портала, не слайд.
+  const animatingRef = useRef(false)
+  const [direction, setDirection] = useState('forward')
+  function goToStep(target, dir) {
+    if (animatingRef.current) return
+    setDirection(dir)
+    setStep(target)
+  }
 
   const { style: viewportStyle } = useFullscreenSurface()
 
@@ -1110,7 +1131,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       return
     }
 
-    setStep(current => current - 1)
+    goToStep(step - 1, 'back')
   }
 
   const screenRef = useRef(null)
@@ -1136,12 +1157,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       : isEmotionStep
         ? {
             text: 'Дальше',
-            run: () => setStep(step + 1),
+            run: () => goToStep(step + 1, 'forward'),
           }
         : isScaleStep
           ? {
               text: 'Далее',
-              run: () => setStep(step + 1),
+              run: () => goToStep(step + 1, 'forward'),
               disabled: !values[scale?.key],
             }
           : isCard
@@ -1156,9 +1177,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                 run: () =>
                   isEvening
                     ? cardIdx < cardCount - 1
-                      ? setStep(step + 1)
+                      ? goToStep(step + 1, 'forward')
                       : submit()
-                    : setStep(doneStep),
+                    : goToStep(doneStep, 'forward'),
               }
             : null
 
@@ -1214,9 +1235,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       : null
 
   const compactStepAction = isEmotionStep
-    ? () => setStep(step + 1)
+    ? () => goToStep(step + 1, 'forward')
     : isScaleStep
-      ? () => setStep(step + 1)
+      ? () => goToStep(step + 1, 'forward')
       : null
 
   const compactStepDisabled = isEmotionStep
@@ -1429,11 +1450,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
-        <div
-          key={step}
-          className={`${isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS} mx-checkin-step-enter`}
-        >
-          {!isScaleStep && (
+        <StepSlide stepKey={step} direction={directionRef.current} animatingRef={animatingRef}>
+          <div className={isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
+            {!isScaleStep && (
             <CheckInQuestion
               title={questionTitle}
               hint={questionSubtitle}
@@ -1514,7 +1533,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       submitIcon="arrow"
                       submitLabel="Далее"
                       submitTestId="checkin-next"
-                      onSubmit={() => (cardIdx < cardCount - 1 ? setStep(step + 1) : submit())}
+                      onSubmit={() => (cardIdx < cardCount - 1 ? goToStep(step + 1, 'forward') : submit())}
                       onDeepen={() => {}}
                       deepenLabel="Пойти глубже"
                       submitLoading={saving}
@@ -1603,6 +1622,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
             )}
           </div>
         </div>
+        </StepSlide>
       </div>
 
       {closeConfirmationOpen && (
@@ -1649,7 +1669,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
         <CheckInNextControls
           onNext={compactStepAction}
           disabled={compactStepDisabled}
-          onSkip={isScaleStep ? () => setStep(step + 1) : null}
+          onSkip={isScaleStep ? () => goToStep(step + 1, 'forward') : null}
           variant={isEmotionStep ? 'emotion' : 'scale'}
         />
       ) : null}

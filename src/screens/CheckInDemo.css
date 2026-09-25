@@ -973,3 +973,48 @@
 .mx-checkin-completion-title strong {
   font-weight: 700;
 }
+
+/* ── StepSlide: горизонтальный переход между шагами чек-ина (§6, часть 1) ──
+ * Трек в покое имеет transform: none — position: fixed потомки (тулбар
+ * JournalTextarea) остаются привязаны к viewport. Только во время 300 мс
+ * слайда трек получает transform; panes заполняют высоту, поэтому
+ * вертикального «щелчка» тулбара на смене containing block не возникает.
+ */
+.mx-step-slide {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.mx-step-slide__track {
+  display: flex;
+  flex: 1 1 0%;
+  min-height: 0;
+  width: 100%;
+  will-change: transform;
+}
+.mx-step-slide__pane {
+  flex: 0 0 100%;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Утренний флоу: вертикальное центрирование шкалы через margin:auto,
+ * как раньше делал селектор .mx-demo-checkin__body:not(.is-editor) > .mx-checkin-question.
+ * Сцены done/streak центрируются собственным margin:auto на классе сцены.
+ */
+.mx-demo-checkin__body:not(.is-editor) .mx-step-slide__pane > .mx-checkin-question {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-step-slide__track {
+    transition: none !important;
+  }
+}
