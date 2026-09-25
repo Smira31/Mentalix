@@ -10,6 +10,15 @@ import {
   entryListName,
   entryScreenTitle,
   ENTRY_TYPES,
+  HISTORY_GRANULARITIES,
+  groupDaysByWeek,
+  groupDaysByMonth,
+  groupDaysByYear,
+  FILTER_GROUPS,
+  getAvailableFilterTypes,
+  filterDaysByTypes,
+  getEntrySearchableText,
+  searchEntries,
 } from '../../src/screens/progress/progressHistoryUtils.js'
 
 // ── Вкладка по умолчанию — «Аналитика» ──
@@ -184,4 +193,265 @@ test('formatEntryDateCaps: дата капителью для экрана за�
   yesterday.setDate(yesterday.getDate() - 1)
   const yIso = yesterday.toISOString().slice(0, 10)
   assert.equal(formatEntryDateCaps(yIso, '20:46'), 'ВЧЕРА В 20:46')
+})
+
+// ── Шаг 3: группировка (Дни / Недели / Месяцы / Годы) ──
+
+test('HISTORY_GRANULARITIES: 4 варианта без «Умной»', () => {
+  assert.equal(HISTORY_GRANULARITIES.length, 4)
+  const ids = HISTORY_GRANULARITIES.map(g => g.id)
+  assert.deepEqual(ids, ['day', 'week', 'month', 'year'])
+  assert.ok(!ids.includes('smart'), '«Умная» не должна быть в списке')
+})
+
+test('groupDaysByWeek: группирует дни по неделям, недели по месяцам', () => {
+  const today = new Date()
+  const days = []
+  // 3 дня: сегодня, вчера, 10 дней назад
+  for (const offset of [0, 1, 10]) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - offset)
+    const iso = d.toISOString().slice(0, 10)
+    days.push({ date: iso, entries: [{ type: ENTRY_TYPES.MORNING, date: iso, time: '08:00', checkin: { date: iso, mood: 4 } }] })
+  }
+
+  const groups = groupDaysByWeek(days)
+  assert.ok(groups.length >= 1, 'должна быть хотя бы одна группа-месяц')
+
+  // Каждая группа имеет monthLabel и cards
+  for (const g of groups) {
+    assert.ok(g.monthLabel, 'у группы должен быть monthLabel')
+    assert.ok(Array.isArray(g.cards), 'cards должен быть массивом')
+    for (const card of g.cards) {
+      assert.ok(typeof card.weekNumber === 'number', 'у карточки должен быть weekNumber')
+      assert.ok(card.rangeLabel, 'у карточки должен быть rangeLabel')
+      assert.ok(card.startDate, 'у карточки должен быть startDate')
+      assert.ok(card.endDate, 'у карточки должен быть endDate')
+      assert.ok(Array.isArray(card.days), 'days должен быть массивом')
+    }
+  }
+
+  // 10 дней назад — другая неделя, поэтому карточек минимум 2
+  const allCards = groups.flatMap(g => g.cards)
+  assert.ok(allCards.length >= 2, 'должно быть минимум 2 карточки недели')
+})
+
+test('groupDaysByMonth: группирует дни по месяцам, месяцы по годам', () => {
+  const today = new Date()
+  const days = []
+  for (const offset of [0, 40]) {
+    const d = new Date(today)
+    d.setDate(today.getDate() - offset)
+    const iso = d.toISOString().slice(0, 10)
+    days.push({ date: iso, entries: [{ type: ENTRY_TYPES.MOOD, date: iso, time: '12:00', moodPractice: { mood: 3 } }] })
+  }
+
+  const groups = groupDaysByMonth(days)
+  assert.ok(groups.length >= 1, 'должна быть хотя бы одна группа-год')
+
+  for (const g of groups) {
+    assert.ok(g.yearLabel, 'у группы должен быть yearLabel')
+    for (const card of g.cards) {
+      assert.ok(card.label, 'у карточки должен быть label (название месяца)')
+      assert.ok(card.startDate && card.endDate)
+      assert.ok(Array.isArray(card.days))
+    }
+  }
+
+  // 40 дней назад — другой месяц, поэтому карточек минимум 2
+  const allCards = groups.flatMap(g => g.cards)
+  assert.ok(allCards.length >= 2, 'должно быть минимум 2 карточки месяца')
+})
+
+test('groupDaysByYear: группирует дни по годам', () => {
+  const today = new Date()
+  const pastYear = today.getFullYear() - 1
+  const days = [
+    { date: today.toISOString().slice(0, 10), entries: [{ type: ENTRY_TYPES.MORNING, date: today.toISOString().slice(0, 10), time: '08:00', checkin: { mood: 4 } }] },
+    { date: `${pastYear}-06-15`, entries: [{ type: ENTRY_TYPES.JOURNAL, date: `${pastYear}-06-15`, time: '', journal: { phases: [] } }] },
+  ]
+
+  const groups = groupDaysByYear(days)
+  assert.equal(groups.length, 2, 'должно быть 2 группы-года')
+
+  // Новый год — первый
+  assert.equal(groups[0].label, String(today.getFullYear()))
+  assert.equal(groups[1].label, String(pastYear))
+  assert.ok(groups[0].days.length === 1)
+  assert.ok(groups[1].days.length === 1)
+})
+
+test('groupDaysByWeek: пустые данные → пустой массив', () => {
+  assert.deepEqual(groupDaysByWeek([]), [])
+})
+
+test('groupDaysByMonth: пустые данные → пустой массив', () => {
+  assert.deepEqual(groupDaysByMonth([]), [])
+})
+
+test('groupDaysByYear: пустые данные → пустой массив', () => {
+  assert.deepEqual(groupDaysByYear([]), [])
+})
+
+// ── Шаг 3: фильтры ──
+
+test('FILTER_GROUPS: группы «Чек-ины» и «Практики»', () => {
+  assert.equal(FILTER_GROUPS.length, 2)
+  assert.equal(FILTER_GROUPS[0].label, 'Чек-ины')
+  assert.equal(FILTER_GROUPS[1].label, 'Практики')
+  // Чек-ины: утренний, вечерний разбор
+  const checkinTypes = FILTER_GROUPS[0].types.map(t => t.id)
+  assert.ok(checkinTypes.includes(ENTRY_TYPES.MORNING))
+  assert.ok(checkinTypes.includes(ENTRY_TYPES.EVENING))
+  // Практики: настроение, дневник
+  const practiceTypes = FILTER_GROUPS[1].types.map(t => t.id)
+  assert.ok(practiceTypes.includes(ENTRY_TYPES.MOOD))
+  assert.ok(practiceTypes.includes(ENTRY_TYPES.JOURNAL))
+})
+
+test('getAvailableFilterTypes: возвращает только существующие типы', () => {
+  const today = new Date().toISOString().slice(0, 10)
+  const days = [
+    { date: today, entries: [
+      { type: ENTRY_TYPES.MORNING, date: today, time: '08:00', checkin: { mood: 4 } },
+      { type: ENTRY_TYPES.MOOD, date: today, time: '12:00', moodPractice: { mood: 3 } },
+    ] },
+  ]
+  const types = getAvailableFilterTypes(days)
+  assert.ok(types.has(ENTRY_TYPES.MORNING))
+  assert.ok(types.has(ENTRY_TYPES.MOOD))
+  assert.ok(!types.has(ENTRY_TYPES.EVENING))
+  assert.ok(!types.has(ENTRY_TYPES.JOURNAL))
+})
+
+test('filterDaysByTypes: фильтрует записи по выбранным типам', () => {
+  const today = new Date().toISOString().slice(0, 10)
+  const days = [
+    { date: today, entries: [
+      { type: ENTRY_TYPES.MORNING, date: today, time: '08:00', checkin: { mood: 4 } },
+      { type: ENTRY_TYPES.MOOD, date: today, time: '12:00', moodPractice: { mood: 3 } },
+    ] },
+  ]
+
+  // Фильтр по утреннему чек-ину — остаётся только он
+  const filtered = filterDaysByTypes(days, new Set([ENTRY_TYPES.MORNING]))
+  assert.equal(filtered.length, 1)
+  assert.equal(filtered[0].entries.length, 1)
+  assert.equal(filtered[0].entries[0].type, ENTRY_TYPES.MORNING)
+
+  // Без фильтра — все записи
+  const noFilter = filterDaysByTypes(days, new Set())
+  assert.equal(noFilter, days)
+
+  // Фильтр по несуществующему типу — день удаляется
+  const empty = filterDaysByTypes(days, new Set([ENTRY_TYPES.EVENING]))
+  assert.equal(empty.length, 0)
+})
+
+// ── Шаг 3: поиск ──
+
+test('getEntrySearchableText: извлекает текст из записи', () => {
+  const entry = {
+    type: ENTRY_TYPES.MORNING,
+    checkin: { note: 'Сегодня хороший день', mood: 4, emotion: 'спокойствие' },
+  }
+  const text = getEntrySearchableText(entry)
+  assert.ok(text.includes('сегодня хороший день'))
+  assert.ok(text.includes('спокойствие'))
+  assert.ok(text.includes('хорошо')) // moodWord(4) = 'хорошо'
+})
+
+test('searchEntries: находит записи по тексту', () => {
+  const today = new Date().toISOString().slice(0, 10)
+  const days = [
+    { date: today, entries: [
+      { type: ENTRY_TYPES.MORNING, date: today, time: '08:00', checkin: { note: 'Утро было продуктивным', mood: 4 } },
+      { type: ENTRY_TYPES.MOOD, date: today, time: '12:00', moodPractice: { mood: 3, emotion: 'радость' } },
+    ] },
+  ]
+
+  const results = searchEntries(days, 'продуктивным')
+  assert.equal(results.length, 1)
+  assert.equal(results[0].entries.length, 1)
+  assert.equal(results[0].entries[0].type, ENTRY_TYPES.MORNING)
+
+  const results2 = searchEntries(days, 'радость')
+  assert.equal(results2.length, 1)
+  assert.equal(results2[0].entries[0].type, ENTRY_TYPES.MOOD)
+})
+
+test('searchEntries: ничего не найдено → пустой массив', () => {
+  const today = new Date().toISOString().slice(0, 10)
+  const days = [
+    { date: today, entries: [
+      { type: ENTRY_TYPES.MORNING, date: today, time: '08:00', checkin: { note: 'Обычное утро', mood: 3 } },
+    ] },
+  ]
+
+  const results = searchEntries(days, 'несуществующее слово')
+  assert.equal(results.length, 0)
+
+  // Пустой запрос → пустой массив
+  assert.equal(searchEntries(days, '').length, 0)
+  assert.equal(searchEntries(days, '   ').length, 0)
+})
+
+// ── Шаг 3: data-testid и localStorage в ProgressHistory ──
+
+test('ProgressHistory: data-testid для кнопок действий', () => {
+  const source = readFileSync(
+    new URL('../../src/screens/progress/ProgressHistory.jsx', import.meta.url),
+    'utf8'
+  )
+  assert.match(source, /data-testid="history-grouping-pill"/)
+  assert.match(source, /data-testid="history-filter-btn"/)
+  assert.match(source, /data-testid="history-search-btn"/)
+  assert.match(source, /data-testid="history-grouping-menu"/)
+})
+
+test('ProgressHistory: localStorage для группировки и фильтра', () => {
+  const source = readFileSync(
+    new URL('../../src/screens/progress/ProgressHistory.jsx', import.meta.url),
+    'utf8'
+  )
+  assert.match(source, /GRANULARITY_KEY/)
+  assert.match(source, /FILTER_KEY/)
+  assert.match(source, /localStorage\.getItem\(GRANULARITY_KEY\)/)
+  assert.match(source, /localStorage\.getItem\(FILTER_KEY\)/)
+  assert.match(source, /localStorage\.setItem\(GRANULARITY_KEY/)
+  assert.match(source, /localStorage\.setItem\(FILTER_KEY/)
+})
+
+test('ProgressHistory: useBackButton для меню группировки', () => {
+  const source = readFileSync(
+    new URL('../../src/screens/progress/ProgressHistory.jsx', import.meta.url),
+    'utf8'
+  )
+  assert.match(source, /useBackButton\(/)
+  assert.match(source, /granularityMenuOpen\)/)
+})
+
+test('HistoryFilterSheet: useBackButton закрывает лист', () => {
+  const source = readFileSync(
+    new URL('../../src/screens/progress/HistoryFilterSheet.jsx', import.meta.url),
+    'utf8'
+  )
+  assert.match(source, /useBackButton/)
+  assert.match(source, /data-testid="history-filter-sheet"/)
+  assert.match(source, /data-testid="history-filter-close"/)
+})
+
+test('HistorySearchSheet: useBackButton закрывает поиск', () => {
+  const source = readFileSync(
+    new URL('../../src/screens/progress/HistorySearchSheet.jsx', import.meta.url),
+    'utf8'
+  )
+  assert.match(source, /useBackButton/)
+  assert.match(source, /data-testid="history-search-sheet"/)
+  assert.match(source, /data-testid="history-search-close"/)
+  assert.match(source, /data-testid="history-search-input"/)
+  // Пустое состояние «Что ищешь?»
+  assert.match(source, /Что ищешь\?/)
+  // Чипы-подсказки
+  assert.match(source, /history-search-chip-/)
 })

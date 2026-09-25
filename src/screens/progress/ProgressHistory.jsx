@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { MoreHorizontal } from 'lucide-react'
+import { createPortal } from 'react-dom'
+import { Filter, MoreHorizontal, Search } from 'lucide-react'
 
 import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
@@ -15,7 +16,15 @@ import {
   formatDayLabel,
   formatEntryDateCaps,
   ENTRY_TYPES,
+  HISTORY_GRANULARITIES,
+  groupDaysByWeek,
+  groupDaysByMonth,
+  groupDaysByYear,
+  getAvailableFilterTypes,
+  filterDaysByTypes,
 } from './progressHistoryUtils'
+import HistoryFilterSheet from './HistoryFilterSheet'
+import HistorySearchSheet from './HistorySearchSheet'
 import './ProgressScreen.css'
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
@@ -410,7 +419,85 @@ function JournalBody({ entry }) {
   )
 }
 
+/* ── Подкомпоненты группировки (§5.5, шаг 3) ── */
+
+function PeriodCard({ rangeLabel, title, onClick, testId }) {
+  return (
+    <button
+      type="button"
+      className="mx-progress-history__period-card"
+      data-testid={testId}
+      onClick={onClick}
+    >
+      {rangeLabel && (
+        <span className="mx-progress-history__period-card-range">{rangeLabel}</span>
+      )}
+      <span className="mx-progress-history__period-card-title">{title}</span>
+    </button>
+  )
+}
+
+function DayList({ days, onSelectEntry }) {
+  return days.map(day => (
+    <div className="mx-progress-history__group" key={day.date}>
+      <div className="mx-progress-history__day-label">
+        <span>{formatDayLabel(day.date)}</span>
+        <span className="mx-progress-history__day-chevron" aria-hidden="true">›</span>
+      </div>
+      {day.entries.map((entry, index) => (
+        <button
+          type="button"
+          key={`${entry.type}-${index}`}
+          className="mx-progress-history__row"
+          data-testid="progress-history-row"
+          onClick={() => onSelectEntry(entry)}
+        >
+          <span className="mx-progress-history__row-name">
+            {entryListName(entry.type)}
+          </span>
+          {entry.time && (
+            <span className="mx-progress-history__row-time">{entry.time}</span>
+          )}
+        </button>
+      ))}
+    </div>
+  ))
+}
+
+function PeriodDetail({ label, days, onBack, onSelectEntry }) {
+  useBackButton(() => {
+    platform.haptic('light')
+    onBack()
+  }, true)
+
+  return (
+    <div className="mx-progress-history" data-testid="progress-period-detail">
+      <div className="mx-progress-entry__top-bar">
+        {platformName !== 'telegram' ? (
+          <button
+            type="button"
+            className="mx-progress-entry__back"
+            aria-label="Назад"
+            data-testid="progress-period-back"
+            onClick={onBack}
+          >
+            ‹
+          </button>
+        ) : (
+          <span aria-hidden="true" />
+        )}
+        <span aria-hidden="true" />
+      </div>
+      <h2 className="mx-progress-history__title">{label.toLowerCase()}</h2>
+      <DayList days={days} onSelectEntry={onSelectEntry} />
+    </div>
+  )
+}
+
 /* ── Главная компонента ── */
+
+const GRANULARITY_KEY = 'mx-history-granularity'
+const FILTER_KEY = 'mx-history-filter'
 
 export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoReview }) {
   const [days, setDays] = useState(null)
@@ -419,6 +506,29 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
   const [deleteError, setDeleteError] = useState('')
   const [savingContext, setSavingContext] = useState(false)
   const [contextError, setContextError] = useState('')
+
+  // ── Шаг 3: группировка, фильтр, поиск ──
+  const [granularity, setGranularity] = useState(() => {
+    try {
+      const saved = localStorage.getItem(GRANULARITY_KEY)
+      return HISTORY_GRANULARITIES.some(g => g.id === saved) ? saved : 'day'
+    } catch {
+      return 'day'
+    }
+  })
+  const [granularityMenuOpen, setGranularityMenuOpen] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const [filterTypes, setFilterTypes] = useState(() => {
+    try {
+      const saved = localStorage.getItem(FILTER_KEY)
+      return saved ? new Set(JSON.parse(saved)) : new Set()
+    } catch {
+      return new Set()
+    }
+  })
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [selectedPeriod, setSelectedPeriod] = useState(null)
+  const [portalTarget, setPortalTarget] = useState(null)
 
   const userId = user?.id
   const canManageAiContext = platformName === 'telegram' && Number(user?.id) > 0
@@ -431,6 +541,27 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
       return []
     }
   }, [user, userId])
+
+  // ── Портал кнопок в сегмент-бар ──
+  useEffect(() => {
+    const el = document.querySelector('.mx-progress-segment-bar')
+    if (el) setPortalTarget(el)
+  }, [])
+
+  // ── Сохранение выбора в localStorage ──
+  useEffect(() => {
+    try { localStorage.setItem(GRANULARITY_KEY, granularity) } catch { /* приватный режим */ }
+  }, [granularity])
+
+  useEffect(() => {
+    try { localStorage.setItem(FILTER_KEY, JSON.stringify([...filterTypes])) } catch { /* приватный режим */ }
+  }, [filterTypes])
+
+  // ── «Назад» для меню группировки ──
+  useBackButton(() => {
+    platform.haptic('light')
+    setGranularityMenuOpen(false)
+  }, granularityMenuOpen)
 
   useEffect(() => {
     if (!user) return
@@ -545,6 +676,101 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
     window.location.href = url.toString()
   }
 
+  // ── Вычисляемые значения ──
+  const availableTypes = useMemo(
+    () => (days ? getAvailableFilterTypes(days) : new Set()),
+    [days]
+  )
+  const filteredDays = useMemo(
+    () => (days ? filterDaysByTypes(days, filterTypes) : days),
+    [days, filterTypes]
+  )
+  const granLabel = HISTORY_GRANULARITIES.find(g => g.id === granularity)?.label || 'Дни'
+
+  function selectGranularity(id) {
+    platform.haptic('light')
+    setGranularity(id)
+    setGranularityMenuOpen(false)
+    setSelectedPeriod(null)
+  }
+
+  function handleFilterClose(selectedTypes) {
+    setFilterTypes(selectedTypes)
+    setFilterOpen(false)
+  }
+
+  function handleSearchSelect(entry) {
+    setSearchOpen(false)
+    setSelectedEntry(entry)
+  }
+
+  function openPeriod(card) {
+    platform.haptic('light')
+    setSelectedPeriod(card)
+  }
+
+  // ── Портал кнопок в сегмент-бар ──
+  const actionButtons = portalTarget && createPortal(
+    <>
+      <div className="mx-progress-history-actions" data-testid="history-action-buttons">
+        <button
+          type="button"
+          className="mx-progress-grouping-pill"
+          data-testid="history-grouping-pill"
+          aria-expanded={granularityMenuOpen}
+          aria-controls="history-grouping-menu"
+          onClick={() => setGranularityMenuOpen(v => !v)}
+        >
+          <span>{granLabel}</span>
+          <span className="mx-progress-grouping-pill__chevron" aria-hidden="true">⌄</span>
+        </button>
+        <button
+          type="button"
+          className="mx-progress-action-btn"
+          data-testid="history-filter-btn"
+          aria-label="Фильтры"
+          onClick={() => { platform.haptic('light'); setFilterOpen(true) }}
+        >
+          <Filter size={20} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="mx-progress-action-btn"
+          data-testid="history-search-btn"
+          aria-label="Поиск"
+          onClick={() => { platform.haptic('light'); setSearchOpen(true) }}
+        >
+          <Search size={20} aria-hidden="true" />
+        </button>
+      </div>
+      {granularityMenuOpen && (
+        <div
+          id="history-grouping-menu"
+          className="mx-progress-grouping-menu"
+          role="menu"
+          aria-label="Группировка истории"
+          data-testid="history-grouping-menu"
+        >
+          {HISTORY_GRANULARITIES.map(g => (
+            <button
+              key={g.id}
+              type="button"
+              className="mx-progress-grouping-menu__item"
+              role="menuitemradio"
+              aria-checked={granularity === g.id}
+              data-testid={`history-grouping-${g.id}`}
+              onClick={() => selectGranularity(g.id)}
+            >
+              {granularity === g.id && <span className="mx-progress-grouping-menu__check" aria-hidden="true">✓</span>}
+              <span>{g.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </>,
+    portalTarget
+  )
+
   /* ── Загрузка ── */
   if (days === null) {
     return (
@@ -555,80 +781,152 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
     )
   }
 
+  /* ── Лист фильтров ── */
+  if (filterOpen) {
+    return (
+      <>
+        {actionButtons}
+        <HistoryFilterSheet
+          availableTypes={availableTypes}
+          initialSelected={filterTypes}
+          onClose={handleFilterClose}
+        />
+      </>
+    )
+  }
+
+  /* ── Лист поиска ── */
+  if (searchOpen) {
+    return (
+      <>
+        {actionButtons}
+        <HistorySearchSheet
+          days={days}
+          onClose={() => setSearchOpen(false)}
+          onSelectEntry={handleSearchSelect}
+        />
+      </>
+    )
+  }
+
   /* ── Экран записи ── */
   if (selectedEntry) {
     return (
-      <EntryScreen
-        entry={selectedEntry}
-        onBack={() => setSelectedEntry(null)}
-        onDelete={deleteSelectedCheckin}
-        deleting={deleting}
-        deleteError={deleteError}
-        canManageAiContext={canManageAiContext}
-        onContextChange={updateSelectedCheckinContext}
-        savingContext={savingContext}
-        contextError={contextError}
-        onDiscuss={discussSelectedCheckinWithAI}
-        onRedo={onRedo}
-        onRedoReview={onRedoReview}
-      />
+      <>
+        {actionButtons}
+        <EntryScreen
+          entry={selectedEntry}
+          onBack={() => setSelectedEntry(null)}
+          onDelete={deleteSelectedCheckin}
+          deleting={deleting}
+          deleteError={deleteError}
+          canManageAiContext={canManageAiContext}
+          onContextChange={updateSelectedCheckinContext}
+          savingContext={savingContext}
+          contextError={contextError}
+          onDiscuss={discussSelectedCheckinWithAI}
+          onRedo={onRedo}
+          onRedoReview={onRedoReview}
+        />
+      </>
+    )
+  }
+
+  /* ── Период (неделя/месяц/год) — записи периода ── */
+  if (selectedPeriod) {
+    return (
+      <>
+        {actionButtons}
+        <PeriodDetail
+          label={selectedPeriod.label || selectedPeriod.title || ''}
+          days={selectedPeriod.days}
+          onBack={() => setSelectedPeriod(null)}
+          onSelectEntry={setSelectedEntry}
+        />
+      </>
     )
   }
 
   /* ── Пустое состояние ── */
-  if (days.length === 0) {
+  if (filteredDays.length === 0) {
     return (
-      <div className="mx-progress-history">
-        <h2 className="mx-progress-history__title">история.</h2>
-        <div className="mx-progress-history__empty">
-          <div className="mx-progress-history__empty-title">Здесь появятся твои записи</div>
-          <div className="mx-progress-history__empty-subtitle">
-            Пройди чек-ин или отметь настроение — и здесь появится первая запись.
+      <>
+        {actionButtons}
+        <div className="mx-progress-history">
+          <h2 className="mx-progress-history__title">история.</h2>
+          <div className="mx-progress-history__empty">
+            <div className="mx-progress-history__empty-title">
+              {days.length === 0 ? 'Здесь появятся твои записи' : 'Ничего не найдено'}
+            </div>
+            <div className="mx-progress-history__empty-subtitle">
+              {days.length === 0
+                ? 'Пройди чек-ин или отметь настроение — и здесь появится первая запись.'
+                : 'Измени фильтр, чтобы увидеть записи.'}
+            </div>
+            {days.length === 0 && onGoCheckin && (
+              <button
+                type="button"
+                className="mx-progress-history__empty-button"
+                onClick={onGoCheckin}
+              >
+                Пройти чек-ин
+              </button>
+            )}
           </div>
-          {onGoCheckin && (
-            <button
-              type="button"
-              className="mx-progress-history__empty-button"
-              onClick={onGoCheckin}
-            >
-              Пройти чек-ин
-            </button>
-          )}
         </div>
-      </div>
+      </>
     )
   }
 
-  /* ── Список по дням ── */
+  /* ── Список по группировке ── */
   return (
-    <div className="mx-progress-history" data-testid="progress-history-list">
-      <h2 className="mx-progress-history__title">история.</h2>
-      {days.map(day => (
-        <div className="mx-progress-history__group" key={day.date}>
-          <div className="mx-progress-history__day-label">
-            <span>{formatDayLabel(day.date)}</span>
-            <span className="mx-progress-history__day-chevron" aria-hidden="true">
-              ›
-            </span>
+    <>
+      {actionButtons}
+      <div className="mx-progress-history" data-testid="progress-history-list">
+        <h2 className="mx-progress-history__title">история.</h2>
+
+        {granularity === 'day' && (
+          <DayList days={filteredDays} onSelectEntry={setSelectedEntry} />
+        )}
+
+        {granularity === 'week' && groupDaysByWeek(filteredDays).map(group => (
+          <div className="mx-progress-history__period-section" key={group.monthLabel}>
+            <h3 className="mx-progress-history__period-header">{group.monthLabel}</h3>
+            {group.cards.map(card => (
+              <PeriodCard
+                key={card.startDate}
+                rangeLabel={card.rangeLabel}
+                title={`Неделя ${card.weekNumber}`}
+                testId="history-week-card"
+                onClick={() => openPeriod(card)}
+              />
+            ))}
           </div>
-          {day.entries.map((entry, index) => (
-            <button
-              type="button"
-              key={`${entry.type}-${index}`}
-              className="mx-progress-history__row"
-              data-testid="progress-history-row"
-              onClick={() => setSelectedEntry(entry)}
-            >
-              <span className="mx-progress-history__row-name">
-                {entryListName(entry.type)}
-              </span>
-              {entry.time && (
-                <span className="mx-progress-history__row-time">{entry.time}</span>
-              )}
-            </button>
-          ))}
-        </div>
-      ))}
-    </div>
+        ))}
+
+        {granularity === 'month' && groupDaysByMonth(filteredDays).map(group => (
+          <div className="mx-progress-history__period-section" key={group.yearLabel}>
+            <h3 className="mx-progress-history__period-header">{group.yearLabel}</h3>
+            {group.cards.map(card => (
+              <PeriodCard
+                key={card.startDate}
+                title={card.label}
+                testId="history-month-card"
+                onClick={() => openPeriod(card)}
+              />
+            ))}
+          </div>
+        ))}
+
+        {granularity === 'year' && groupDaysByYear(filteredDays).map(card => (
+          <PeriodCard
+            key={card.startDate}
+            title={card.label}
+            testId="history-year-card"
+            onClick={() => openPeriod(card)}
+          />
+        ))}
+      </div>
+    </>
   )
 }
