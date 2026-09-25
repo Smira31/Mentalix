@@ -80,15 +80,4 @@ export default [
       'no-restricted-imports': 'off',
     },
   },
-
-  // TODO(#766): ESLint 10 начал отслеживать JSX-ссылки, и no-undef теперь
-  // ловит неимпортированные JSX-компоненты. History.jsx использует
-  // <OneOffPracticeDayCard> без импорта (1 нарушение) — файл правят отдельно,
-  // правило отключено точечно до исправления.
-  {
-    files: ['src/screens/History.jsx'],
-    rules: {
-      'no-undef': 'off',
-    },
-  },
 ]
