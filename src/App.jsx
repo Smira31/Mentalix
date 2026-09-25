@@ -641,6 +641,7 @@ export default function App() {
 
     if (previewDemoMode) return
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkAuth()
   }, [checkAuth, previewDemoMode])
 
