@@ -144,7 +144,8 @@ for (const viewport of P0_VIEWPORTS) {
         const dock = document.querySelector('.practice-writing-canvas__dock')
         return {
           shellBottom: shell?.getBoundingClientRect().bottom,
-          dockBottom: dock?.getBoundingClientRect().bottom,
+          dockBottom: dock?.getBoundingClientRect()?.bottom ?? null,
+          dockExists: Boolean(dock),
           viewportHeight: window.innerHeight,
           bodyOverflow: getComputedStyle(document.body).overflow,
           focused: document.activeElement === document.querySelector('textarea'),
@@ -152,7 +153,12 @@ for (const viewport of P0_VIEWPORTS) {
       })
 
       expect(geometry.shellBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
-      expect(geometry.dockBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
+      // dock рендерится только когда PracticeWritingCanvas получает onSubmit/onDeepen/onFormat.
+      // GuidedSelfDiscoveryFlow (sub='journal') использует нативный MainButton вместо dock —
+      // панели нет по дизайну, проверяем только когда она есть.
+      if (geometry.dockExists) {
+        expect(geometry.dockBottom).toBeLessThanOrEqual(geometry.viewportHeight + 1)
+      }
       expect(geometry.bodyOverflow).toBe('hidden')
       expect(geometry.focused).toBe(true)
       await nativeBack(page)
