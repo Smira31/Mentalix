@@ -24,7 +24,7 @@ import {
 import { getAccentColors } from '../lib/accentColor'
 import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
-import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestAuth'
+import { isGuestUser } from '../lib/guestAuth'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -105,6 +105,7 @@ export default function Settings({
   onAccentChange,
   theme,
   onThemeChange,
+  onGuestLogin,
 }) {
   const accentColors = getAccentColors(theme)
   const [reminderHour, setReminderHour] = useState(null)
@@ -494,11 +495,6 @@ export default function Settings({
 
   const tierLabel = tier == null ? null : tier === 'pro' ? 'Про' : 'Базовый'
   const guest = isGuestUser(user)
-
-  function handleGuestLogin() {
-    resetGuestState()
-    dispatchGuestMerged()
-  }
 
   /*
    * Баннер «Mentalix на сайте» (§5.4): скрыт, если аккаунт уже связан
@@ -1048,19 +1044,6 @@ export default function Settings({
           onOpenDonate={() => setScreen('donate')}
           onOpenWeb={openWebBanner}
         />
-        {guest && (
-          <ProfileNote>
-            Войди, чтобы не потерять записи{' '}
-            <button
-              type="button"
-              onClick={handleGuestLogin}
-              className="mx-profile-text-button"
-              data-testid="profile-guest-login-link"
-            >
-              Войти
-            </button>
-          </ProfileNote>
-        )}
         <ProfileGroup label="Настрой">
           <ProfileCard testId="profile-card-setup">
             <ProfileRow
@@ -1091,6 +1074,13 @@ export default function Settings({
 
         <ProfileGroup label="Аккаунт">
           <ProfileCard>
+            {guest && platformName === 'web' && (
+              <ProfileRow
+                title="Сохранить прогресс по email"
+                onClick={onGuestLogin}
+                testId="profile-guest-login-link"
+              />
+            )}
             <ProfileRow
               title="Уведомления"
               value={reminderOn ? 'Вкл.' : 'Выкл.'}

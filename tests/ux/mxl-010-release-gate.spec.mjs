@@ -122,7 +122,7 @@ async function seedUser(context) {
 }
 
 test.describe('MXL-010 automated technical gate', () => {
-  test('web auth contract is deterministic and does not expose private data', async ({ browser, baseURL }) => {
+  test('web auth fallback after guest failure exposes email and Telegram without private data', async ({ browser, baseURL }) => {
     const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } })
     const fixtures = buildFixtureRouter()
     await context.addInitScript(() => {
@@ -134,7 +134,14 @@ test.describe('MXL-010 automated technical gate', () => {
         window.Telegram = undefined
       }
     })
-    await context.route('**/api/**', route => fixtures.handle(route))
+    let guestRequests = 0
+    await context.route('**/api/**', route => {
+      if (new URL(route.request().url()).pathname === '/api/auth/guest') {
+        guestRequests += 1
+        return route.fulfill(jsonResponse({ error: 'unavailable' }, 503))
+      }
+      return fixtures.handle(route)
+    })
     const page = await context.newPage()
 
     await page.goto('/')
@@ -146,6 +153,8 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.locator('form')).toHaveCount(1)
     await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Получить письмо' })).toBeVisible()
+    await expect(page.getByTestId('web-auth-guest-button')).toBeEnabled()
+    expect(guestRequests).toBe(1)
 
     await context.close()
   })

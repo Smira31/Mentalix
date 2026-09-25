@@ -24,7 +24,13 @@ import { returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { parseContextualDeepLink } from './lib/contextualDeepLink'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
-import { DEMO_USER, isPreviewDemoMode, isRealPhone, isDemoGuestMode, DEMO_GUEST_USER } from './lib/demoMode'
+import {
+  DEMO_USER,
+  isPreviewDemoMode,
+  isRealPhone,
+  isDemoGuestMode,
+  DEMO_GUEST_USER,
+} from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
 import { switchUserDataScope } from './lib/userDataScope'
@@ -32,7 +38,7 @@ import { clearTodayDataCache } from './lib/todayDataCache'
 import { clearHistoryCache } from './lib/mentalixHistoryCache'
 import { clearSeriesSnapshots } from './lib/series'
 import { clearTrendsDataCache } from './lib/trendsDataCache'
-import { GUEST_MERGED_EVENT } from './lib/guestAuth'
+import { GUEST_MERGED_EVENT, loginAsGuest } from './lib/guestAuth'
 
 import { getFullscreenSnapshot, initFullscreen } from './lib/tgFullscreen'
 import { useVisualViewportHeight } from './lib/visualViewport'
@@ -247,6 +253,7 @@ function App() {
   const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
 
   const [authError, setAuthError] = useState(null)
+  const [showGuestAuth, setShowGuestAuth] = useState(false)
 
   const acceptUser = useCallback(nextUser => {
     if (nextUser?.id) {
@@ -475,8 +482,8 @@ function App() {
   const [tab, setTab] = useState(
     isHistoryInitial ? 'trends' : validTabs.includes(initialTab) ? initialTab : 'today'
   )
-  const [progressHistoryTrigger, setProgressHistoryTrigger] = useState(
-    () => (isHistoryInitial ? 1 : 0)
+  const [progressHistoryTrigger, setProgressHistoryTrigger] = useState(() =>
+    isHistoryInitial ? 1 : 0
   )
   const tabRef = useRef(tab)
   useEffect(() => {
@@ -642,6 +649,18 @@ function App() {
 
       if (existing) {
         acceptUser(existing)
+      } else if (platformName === 'web' && !platform.getSessionToken?.()) {
+        const params = new URLSearchParams(window.location.search)
+        const emailLink =
+          window.location.pathname.startsWith('/auth/') ||
+          ['email', 'code', 'token'].some(key => params.has(key))
+        if (!emailLink) {
+          try {
+            await loginAsGuest(api, acceptUser)
+          } catch {
+            // Не прячем email и Telegram вход, если гостевой сервер недоступен.
+          }
+        }
       }
     } catch {
       // Бэкенд недоступен (Render спит, нет сети, таймаут) — показываем
@@ -1071,7 +1090,7 @@ function App() {
      ONBOARDING
      ============================================================ */
 
-  if (user && !onboarded) {
+  if (user && !onboarded && !showGuestAuth) {
     return (
       <Suspense fallback={<Splash />}>
         <Onboarding user={user} onFinish={completeOnboarding} />
@@ -1083,7 +1102,7 @@ function App() {
      WEB AUTH
      ============================================================ */
 
-  if (!user && platformName === 'web') {
+  if ((!user || showGuestAuth) && platformName === 'web') {
     return (
       <div
         className="mx-web-auth-shell
@@ -1097,7 +1116,12 @@ function App() {
         "
       >
         <Suspense fallback={<Splash />}>
-          <WebAuthScreen onAuthed={acceptUser} />
+          <WebAuthScreen
+            onAuthed={nextUser => {
+              setShowGuestAuth(false)
+              acceptUser(nextUser)
+            }}
+          />
         </Suspense>
       </div>
     )
@@ -1374,6 +1398,7 @@ function App() {
                   onAccentChange={setAccentRaw}
                   theme={theme}
                   onThemeChange={setThemeRaw}
+                  onGuestLogin={() => setShowGuestAuth(true)}
                 />
               )}
 
