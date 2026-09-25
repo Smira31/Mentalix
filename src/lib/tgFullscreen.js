@@ -122,6 +122,15 @@ function startNegotiation() {
   }
 
   /*
+   * SDK 8 определяет requestFullscreen/safeArea*-методы на WebApp-объекте
+   * всегда, но на клиентах < 8.0 вызов пишет console.error и бросает
+   * WebAppMethodUnsupported. Проверяем версию до вызова, чтобы на старых
+   * клиентах тихо пропустить — как было до обновления SDK.
+   */
+  const supportsBotApi8 =
+    typeof webApp?.isVersionAtLeast === 'function' && webApp.isVersionAtLeast('8.0')
+
+  /*
    * Pessimistic default (MXL-FULLSCREEN-SURFACE-RACE-001 pre-mortem, «слон»):
    * requestFullscreen() ниже — асинхронный round-trip к нативному Telegram
    * слою, и React обязан отрисовать первый кадр раньше, чем подтверждение
@@ -198,21 +207,25 @@ function startNegotiation() {
   safelyRun(() => {
     webApp?.onEvent?.('fullscreenChanged', onWebAppFullscreen)
     webApp?.onEvent?.('fullscreenFailed', onFullscreenFailed)
-    webApp?.onEvent?.('safeAreaChanged', onWebAppSafeArea)
-    webApp?.onEvent?.('contentSafeAreaChanged', onWebAppContentSafeArea)
+    if (supportsBotApi8) {
+      webApp?.onEvent?.('safeAreaChanged', onWebAppSafeArea)
+      webApp?.onEvent?.('contentSafeAreaChanged', onWebAppContentSafeArea)
+    }
   }, 'WebApp event subscription')
 
   safelyRun(() => {
     webView?.onEvent?.('fullscreen_changed', onWebViewFullscreen)
     webView?.onEvent?.('fullscreen_failed', onFullscreenFailed)
-    webView?.onEvent?.('safe_area_changed', onWebViewSafeArea)
-    webView?.onEvent?.('content_safe_area_changed', onWebViewContentSafeArea)
+    if (supportsBotApi8) {
+      webView?.onEvent?.('safe_area_changed', onWebViewSafeArea)
+      webView?.onEvent?.('content_safe_area_changed', onWebViewContentSafeArea)
+    }
   }, 'WebView event subscription')
 
   // Если уже fullscreen (Telegram запомнил состояние с прошлой сессии),
   // ни один negotiation event не обязан прийти — таймаут ниже подтвердит
   // то же значение, никакого видимого эффекта это не даст.
-  if (!state.fullscreen && typeof webApp?.requestFullscreen === 'function') {
+  if (!state.fullscreen && typeof webApp?.requestFullscreen === 'function' && supportsBotApi8) {
     const result = safelyRun(() => webApp.requestFullscreen(), 'requestFullscreen()')
 
     if (result && typeof result.catch === 'function') {
@@ -222,8 +235,10 @@ function startNegotiation() {
     postWebViewEvent(webView, 'web_app_request_fullscreen')
   }
 
-  postWebViewEvent(webView, 'web_app_request_safe_area')
-  postWebViewEvent(webView, 'web_app_request_content_safe_area')
+  if (supportsBotApi8) {
+    postWebViewEvent(webView, 'web_app_request_safe_area')
+    postWebViewEvent(webView, 'web_app_request_content_safe_area')
+  }
 
   confirmationTimer = setTimeout(() => {
     if (confirmed) return

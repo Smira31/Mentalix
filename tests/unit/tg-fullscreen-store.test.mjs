@@ -36,6 +36,8 @@ function setupTelegramWebApp(overrides = {}) {
 
   const webApp = {
     initData: 'mock-init-data',
+    version: '8.0',
+    isVersionAtLeast: ver => '8.0' >= ver,
     isFullscreen: false,
     safeAreaInset: {},
     contentSafeAreaInset: {},
@@ -240,4 +242,18 @@ test('MXL-FULLSCREEN-SURFACE-RACE-001 initFullscreen (legacy API): вызыва�
   emit(listeners, 'fullscreenChanged', { isFullscreen: true })
 
   assert.deepEqual(seen, [true, false])
+})
+
+test('SDK 8: при версии клиента < 8.0 requestFullscreen не вызывается', async () => {
+  setupDom()
+  const { calls } = setupTelegramWebApp({
+    version: '6.0',
+    isVersionAtLeast: ver => '6.0' >= ver,
+  })
+
+  const mod = await freshModule()
+
+  mod.subscribeFullscreen(() => {})
+
+  assert.equal(calls.requestFullscreen, 0, 'requestFullscreen не должен вызываться на версии < 8.0')
 })

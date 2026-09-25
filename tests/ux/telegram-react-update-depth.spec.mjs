@@ -51,6 +51,7 @@ function installTelegramMock(page) {
       platform: 'ios',
       colorScheme: 'dark',
       isFullscreen: true,
+      isVersionAtLeast: ver => '8.0' >= ver,
       get viewportHeight() {
         return viewportHeight
       },
