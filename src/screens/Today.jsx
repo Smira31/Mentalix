@@ -574,12 +574,10 @@ export default function Today({
     return (
       <SeriesBadges
         user={user}
-        onBack={() => triggerSeriesExit(() => onCloseSeries())}
+        onBack={onCloseSeries}
         onOpenPractice={practice => {
-          triggerSeriesExit(() => {
-            onCloseSeries?.()
-            onOpenPractice?.(practice)
-          })
+          onCloseSeries?.()
+          onOpenPractice?.(practice)
         }}
       />
     )
