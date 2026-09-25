@@ -62,6 +62,8 @@ const History = lazy(() => import('./screens/History'))
 // Opt-in (MOOD_CHECK_ENABLED_KEY по умолчанию '0') — большинство никогда
 // его не увидит, поэтому вне стартового bundle, в отличие от AppLock.
 const MoodCheckGate = lazy(() => import('./screens/MoodCheckGate'))
+// Код панели попадает в сеть только после проверки демо и отсутствия Telegram.
+const DemoPanel = lazy(() => import('./components/DemoPanel'))
 
 /* ============================================================
    SPLASH
@@ -544,6 +546,10 @@ export default function App() {
      ============================================================ */
 
   const previewDemoMode = isPreviewDemoMode()
+  const demoPanelAllowed = previewDemoMode && platformName !== 'telegram' && !window.__MX_TG_SHELL
+  const [demoPanelOpen, setDemoPanelOpen] = useState(() =>
+    new URLSearchParams(window.location.search).get('panel') === '1'
+  )
   const realPhone = isRealPhone()
   const toolbarParam = searchParams.get('toolbar') === '1'
   const frameParam = searchParams.get('frame')
@@ -1307,6 +1313,7 @@ export default function App() {
                       onFlowChange={setTodayFlowOpen}
                       onRegisterBack={registerTodayBack}
                       onOpenSettings={() => setOverlay('settings')}
+                      onOpenDemoPanel={demoPanelAllowed ? () => setDemoPanelOpen(true) : undefined}
                       onOpenSeries={() => setTodaySeriesOpen(true)}
                       seriesOpen={todaySeriesOpen}
                       onCloseSeries={closeTodaySeries}
@@ -1378,6 +1385,11 @@ export default function App() {
         )}
 
         <PreviewApiDiagnostic />
+        {demoPanelAllowed && (
+          <Suspense fallback={null}>
+            <DemoPanel open={demoPanelOpen} onOpen={() => setDemoPanelOpen(true)} onClose={() => setDemoPanelOpen(false)} />
+          </Suspense>
+        )}
       </div>
     </div>
   )
