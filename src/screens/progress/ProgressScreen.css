@@ -35,7 +35,9 @@
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .mx-progress-segment button[aria-selected='true'] {
@@ -93,7 +95,7 @@
   justify-content: space-between;
   height: 53px;
   margin-bottom: 8px;
-  padding: 0 17px;
+  padding: 0 20px 0 17px;
   border: 0;
   border-radius: 16px;
   background: rgb(var(--c-card2, 17 17 17));
@@ -371,7 +373,7 @@
   background: rgba(237, 189, 96, 0.15);
   font-size: 11px;
   font-weight: 700;
-  color: rgb(var(--c-gold, 237 189  96));
+  color: rgb(var(--c-gold, 237 189 96));
 }
 
 /* Секция AI-контекста */
