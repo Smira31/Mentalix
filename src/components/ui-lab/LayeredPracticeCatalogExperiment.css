@@ -126,6 +126,7 @@
   position: relative;
   display: grid;
   gap: 22px;
+  overflow-x: clip;
 }
 .mx-layered-catalog__accent {
   display: flex;

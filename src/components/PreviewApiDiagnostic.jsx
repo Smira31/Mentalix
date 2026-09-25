@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 
-const enabled = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+const enabled =
+  (import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview') &&
+  !navigator.webdriver
 
 export default function PreviewApiDiagnostic() {
   const [diagnostic, setDiagnostic] = useState(null)

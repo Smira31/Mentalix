@@ -7,7 +7,10 @@ const API_TIMEOUT_MS = 10_000
 const API_MAX_RETRIES = 1
 const RETRYABLE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429])
-const API_DIAGNOSTICS_ENABLED = import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview'
+const API_DIAGNOSTICS_ENABLED =
+  (import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview') &&
+  typeof navigator !== 'undefined' &&
+  !navigator.webdriver
 export const MAX_JOURNEY_TAGS_PER_ENTRY = 8
 
 function emitApiDiagnostic(detail) {
