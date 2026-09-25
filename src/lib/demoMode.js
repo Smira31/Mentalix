@@ -560,6 +560,19 @@ function respond(path, options = {}) {
     return json(reply)
   }
   if (pathname === '/mentalix/feedback' && method === 'POST') return json({ ok: true })
+  /*
+   * Обратная связь с экрана завершения чек-ина. В демо ответ просто
+   * сохраняется в состоянии — экран завершения должен работать без бэкенда.
+   */
+  if (pathname.match(/^\/checkins\/\d+\/feedback$/) && method === 'POST') {
+    const id = numericId(pathname)
+    const value = body.value || null
+    const checkins = state.checkins.map(item =>
+      item?.id === id ? { ...item, feedback: value } : item
+    )
+    writeState({ ...state, checkins })
+    return json({ ok: true, value })
+  }
   if (pathname === '/mentalix/transcribe' && method === 'POST') {
     return json({ text: 'Хочу разобраться в том, что сейчас для меня важно.' })
   }
