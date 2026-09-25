@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+/** Локальный YYYY-MM-DD относительно сегодняшнего дня. */
+function dayKey(offset = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + offset)
+  const pad = v => String(v).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
 function createStorage() {
   const values = new Map()
   return {
@@ -17,7 +25,7 @@ function createStorage() {
       values.set(String(key), String(value))
     },
     removeItem(key) {
-      values.delete(String(key))
+      values.delete(key)
     },
   }
 }
@@ -40,7 +48,7 @@ test('до загрузки истории огонёк показывает к�
   const streak = resolveDisplayedStreak({
     historyLoaded: false,
     history: [],
-    checkin: { date: '2026-09-24' },
+    checkin: { date: dayKey(0) },
     cachedStreak: peekCachedStreak(501),
   })
   assert.equal(streak, 6)
@@ -50,7 +58,7 @@ test('без кэша до загрузки истории — огонь без
   const streak = resolveDisplayedStreak({
     historyLoaded: false,
     history: [],
-    checkin: { date: '2026-09-24' },
+    checkin: { date: dayKey(0) },
     cachedStreak: peekCachedStreak(999),
   })
   assert.equal(streak, null)
