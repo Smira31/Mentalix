@@ -122,6 +122,7 @@ test('demoMode.js экспортирует isDemoGuestMode и DEMO_GUEST_USER', 
   assert.match(demoSource, /export const DEMO_GUEST_USER/)
   assert.match(demoSource, /is_guest: true/)
   assert.match(demoSource, /export function isDemoGuestMode\(\)/)
+  assert.match(demoSource, /isPreviewDemoMode\(\) && new URLSearchParams/)
   assert.match(demoSource, /get\('guest'\) === '1'/)
 })
 
@@ -140,9 +141,11 @@ test('demoMode.js: демо-эндпоинт /auth/guest/merge возвраща�
 
 /* ── Контракт: App.jsx использует демо-гостевой режим ── */
 
-test('App.jsx: демо-гость используется при isDemoGuestMode', async () => {
+test('App.jsx: демо-гость переключается через useEffect при isDemoGuestMode', async () => {
   const appSource = await readFile(new URL('../../src/App.jsx', import.meta.url), 'utf8')
-  assert.match(appSource, /isDemoGuestMode\(\) \? DEMO_GUEST_USER : DEMO_USER/)
+  assert.match(appSource, /useState\(\(\) => \(isPreviewDemoMode\(\) \? DEMO_USER : null\)\)/)
+  assert.match(appSource, /isDemoGuestMode\(\)/)
+  assert.match(appSource, /setUser\(DEMO_GUEST_USER\)/)
 })
 
 test('App.jsx: слушает GUEST_MERGED_EVENT и сбрасывает user', async () => {

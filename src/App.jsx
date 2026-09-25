@@ -234,9 +234,14 @@ function applyDarkTheme() {
    ============================================================ */
 
 function App() {
-  const [user, setUser] = useState(() =>
-    isPreviewDemoMode() ? (isDemoGuestMode() ? DEMO_GUEST_USER : DEMO_USER) : null
-  )
+  const [user, setUser] = useState(() => (isPreviewDemoMode() ? DEMO_USER : null))
+
+  // Демо-гостевой режим: ?guest=1 переключает на гостевого пользователя.
+  // isDemoGuestMode уже включает проверку isPreviewDemoMode — нового пути
+  // включения демо нет.
+  useEffect(() => {
+    if (isDemoGuestMode()) setUser(DEMO_GUEST_USER)
+  }, [])
 
   const [authChecked, setAuthChecked] = useState(() => isPreviewDemoMode())
 

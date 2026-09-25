@@ -73,7 +73,7 @@ export const DEMO_GUEST_USER = {
 
 export function isDemoGuestMode() {
   if (typeof window === 'undefined') return false
-  return new URLSearchParams(window.location.search).get('guest') === '1'
+  return isPreviewDemoMode() && new URLSearchParams(window.location.search).get('guest') === '1'
 }
 
 export function isRealPhone(windowLike) {
