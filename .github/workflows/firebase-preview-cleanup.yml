@@ -41,8 +41,11 @@ jobs:
           CHANNEL: pr-${{ github.event.number }}
         run: |
           set -euo pipefail
-          if firebase hosting:channel:list --project "$FIREBASE_PROJECT_ID" --json \
-               | jq -e --arg c "$CHANNEL" '[.[]?.name] | any(. == $c or endswith("/" + $c))' >/dev/null; then
+          raw="$(firebase hosting:channel:list --project "$FIREBASE_PROJECT_ID" --json)"
+          # stdout firebase может содержать лишние строки перед JSON — берём от первой «{».
+          json="$(printf '%s' "$raw" | sed -n '/^[[:space:]]*{/,$p')"
+          if printf '%s' "$json" | jq -e --arg c "$CHANNEL" \
+               '[.result.channels[]?.name] | any(. == $c or endswith("/" + $c))' >/dev/null; then
             firebase hosting:channel:delete "$CHANNEL" --project "$FIREBASE_PROJECT_ID" --force
             echo "Канал $CHANNEL удалён."
           else
@@ -89,24 +92,54 @@ jobs:
               `firebase hosting:channel:list --project ${projectId} --json`,
               { encoding: 'utf8' }
             );
-            let channels;
-            try {
-              channels = JSON.parse(raw);
-            } catch {
-              core.setFailed('Не удалось разобрать вывод hosting:channel:list --json');
+
+            // stdout firebase может содержать лишние строки перед JSON — берём от первого «{» или «[».
+            const startIdx = raw.search(/[[{]/);
+            if (startIdx === -1) {
+              core.setFailed('hosting:channel:list --json не вернул JSON. Первые 500 символов ответа:\n' + raw.slice(0, 500));
               return;
             }
+
+            let parsed;
+            try {
+              parsed = JSON.parse(raw.slice(startIdx));
+            } catch {
+              core.setFailed('Не удалось разобрать вывод hosting:channel:list --json. Первые 500 символов ответа:\n' + raw.slice(0, 500));
+              return;
+            }
+
+            // Разбираем список надёжно: result.channels → result → channels → корень.
+            let channels = null;
+            if (Array.isArray(parsed?.result?.channels)) {
+              channels = parsed.result.channels;
+            } else if (Array.isArray(parsed?.result)) {
+              channels = parsed.result;
+            } else if (Array.isArray(parsed?.channels)) {
+              channels = parsed.channels;
+            } else if (Array.isArray(parsed)) {
+              channels = parsed;
+            }
+
+            if (!Array.isArray(channels)) {
+              core.setFailed('Не удалось найти массив каналов в ответе. Первые 500 символов ответа:\n' + raw.slice(0, 500));
+              return;
+            }
+
+            core.info(`Найдено каналов: ${channels.length}.`);
 
             const prRe = /^pr-(\d+)$/;
             let deleted = 0;
             let skipped = 0;
+            const deletedNames = [];
+            const keptNames = [];
 
             for (const ch of channels) {
-              const lastSeg = String(ch.name).split('/').pop();
+              const lastSeg = String(ch?.name ?? '').split('/').pop();
 
               // Канал live НИКОГДА не трогаем.
               if (lastSeg === 'live') {
                 core.info('Канал live — пропущен (не трогаем).');
+                keptNames.push(`${lastSeg} (live)`);
                 skipped++;
                 continue;
               }
@@ -114,6 +147,7 @@ jobs:
               const m = lastSeg.match(prRe);
               if (!m) {
                 core.info(`Канал ${lastSeg} не вида pr-<N> — пропущен.`);
+                keptNames.push(`${lastSeg} (не pr-<N>)`);
                 skipped++;
                 continue;
               }
@@ -126,12 +160,14 @@ jobs:
                 pr = res.data;
               } catch (e) {
                 core.warning(`PR #${num} не найден (status ${e.status}) — канал ${lastSeg} пропущен.`);
+                keptNames.push(`${lastSeg} (PR #${num} не найден)`);
                 skipped++;
                 continue;
               }
 
               if (pr.state === 'open') {
                 core.info(`PR #${num} открыт — канал ${lastSeg} не трогаем.`);
+                keptNames.push(`${lastSeg} (PR #${num} открыт)`);
                 skipped++;
                 continue;
               }
@@ -144,9 +180,13 @@ jobs:
                   { encoding: 'utf8', stdio: 'inherit' }
                 );
                 deleted++;
+                deletedNames.push(lastSeg);
               } catch (e) {
                 core.warning(`Не удалось удалить канал ${lastSeg}: ${e.message}`);
               }
             }
 
-            core.info(`Готово. Удалено: ${deleted}, пропущено: ${skipped}.`);
+            core.info('--- Итог чистки ---');
+            core.info(`Всего каналов: ${channels.length}.`);
+            core.info(`Удалено: ${deleted}${deletedNames.length ? ' — ' + deletedNames.join(', ') : ''}.`);
+            core.info(`Оставлено: ${skipped}${keptNames.length ? ' — ' + keptNames.join('; ') : ''}.`);
