@@ -2,6 +2,7 @@ export const PRACTICE_KEYS = Object.freeze({
   rituals: 'rituals',
   ascezas: 'ascezas',
   mood: 'mood',
+  alterEgo: 'alter-ego',
 })
 
 export const AVAILABLE_PRACTICES = Object.freeze([
@@ -9,6 +10,7 @@ export const AVAILABLE_PRACTICES = Object.freeze([
   PRACTICE_KEYS.rituals,
   PRACTICE_KEYS.ascezas,
   PRACTICE_KEYS.mood,
+  PRACTICE_KEYS.alterEgo,
 ])
 
 export function isPracticeAvailable(practiceKey) {
