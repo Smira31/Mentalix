@@ -63,6 +63,12 @@ export function primaryCardKind({ morning, review }) {
   return null
 }
 
+/**
+ * Время открытия разбора для подписи «Откроется в HH:00».
+ * Час вне 1..23 (0, 24, мусор) не показываем — подставляем 19:00 по умолчанию.
+ */
 export function formatReviewTime(reviewHour = DEFAULT_REVIEW_HOUR) {
-  return `${String(Number(reviewHour) || DEFAULT_REVIEW_HOUR).padStart(2, '0')}:00`
+  const hour = Number(reviewHour)
+  const valid = Number.isInteger(hour) && hour > 0 && hour < 24
+  return `${String(valid ? hour : DEFAULT_REVIEW_HOUR).padStart(2, '0')}:00`
 }
