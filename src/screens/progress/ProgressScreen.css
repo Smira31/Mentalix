@@ -1,0 +1,538 @@
+/* ── Экран «Прогресс»: сегмент «Аналитика | История» + вкладка «История» ── */
+/* §5.5 DESIGN_SYSTEM.md, эталон Stoic 25.09.2026, 440 pt, 1 pt = 3 px     */
+
+/* ── Сегмент (тот же вид и размеры, что «Значки | Статистика» в §5.3) ── */
+
+.mx-progress-segment-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 0;
+  background: rgb(var(--c-bg, 5 4 3));
+}
+
+.mx-progress-segment {
+  display: grid;
+  width: 177px;
+  height: 42px;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  border: 1px solid rgb(var(--c-border, 41 41 41));
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+}
+
+.mx-progress-segment button {
+  min-width: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(var(--c-muted, 133 133 133));
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mx-progress-segment button[aria-selected='true'] {
+  background: rgb(var(--c-nav-active, 58 58 58));
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+/* ── Вкладка «История»: список по дням ── */
+
+.mx-progress-history {
+  padding-top: 8px;
+}
+
+.mx-progress-history__title {
+  margin: 0 0 20px;
+  padding-left: 6px; /* x = 22 px от края экрана при --mx-screen-x: 16 px */
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text, 243 243 243));
+  text-align: left;
+}
+
+/* Группа дня */
+.mx-progress-history__group {
+  margin-bottom: 67px;
+}
+
+.mx-progress-history__group:last-child {
+  margin-bottom: 0;
+}
+
+.mx-progress-history__day-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-left: 17px; /* x = 33 px от края экрана при --mx-screen-x: 16 px */
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-history__day-chevron {
+  font-size: 12px;
+  color: rgb(var(--c-muted, 133 133 133));
+  margin-right: 4px; /* 20 px от правого края при --mx-screen-x: 16 px */
+}
+
+/* Строка записи */
+.mx-progress-history__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 53px;
+  margin-bottom: 8px;
+  padding: 0 17px;
+  border: 0;
+  border-radius: 16px;
+  background: rgb(var(--c-card2, 17 17 17));
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  transition: transform 0.15s ease;
+}
+
+.mx-progress-history__row:last-child {
+  margin-bottom: 0;
+}
+
+.mx-progress-history__row:active {
+  transform: scale(0.97);
+}
+
+.mx-progress-history__row-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgb(var(--c-text, 243 243 243));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-progress-history__row-time {
+  flex-shrink: 0;
+  margin-left: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── Пустое состояние ── */
+
+.mx-progress-history__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 20px 40px;
+}
+
+.mx-progress-history__empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-history__empty-subtitle {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 400;
+  color: rgb(var(--c-muted, 133 133 133));
+  line-height: 1.4;
+}
+
+.mx-progress-history__empty-button {
+  margin-top: 24px;
+  min-height: 44px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-line, 230 230 230));
+  color: rgb(var(--c-bg, 5 4 3));
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mx-progress-history__empty-button:active {
+  transform: scale(0.97);
+}
+
+/* ── Экран записи ── */
+
+.mx-progress-entry {
+  padding-top: 8px;
+}
+
+.mx-progress-entry__top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  margin-bottom: 8px;
+}
+
+.mx-progress-entry__back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mx-progress-entry__back:active {
+  transform: scale(0.97);
+}
+
+.mx-progress-entry__menu-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mx-progress-entry__menu-button:active {
+  transform: scale(0.97);
+}
+
+.mx-progress-entry__menu {
+  position: absolute;
+  right: 16px;
+  z-index: 50;
+  min-width: 200px;
+  border-radius: 16px;
+  background: rgb(var(--c-nav, 28 28 28));
+  padding: 4px;
+  box-shadow: var(--shadow-float, 0 8px 32px rgba(0, 0, 0, 0.35));
+}
+
+.mx-progress-entry__menu-item {
+  display: block;
+  width: 100%;
+  padding: 13px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  font-size: 17px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mx-progress-entry__menu-item:active {
+  background: rgb(var(--c-card2, 17 17 17));
+}
+
+.mx-progress-entry__menu-item--danger {
+  color: #ef6b6b;
+}
+
+.mx-progress-entry__date {
+  padding-left: 1px; /* x = 17 px от края экрана */
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-entry__title {
+  margin: 16px 0 0;
+  padding-left: 1px;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text, 243 243 243));
+  text-align: left;
+}
+
+.mx-progress-entry__body {
+  margin-top: 24px;
+}
+
+/* Тело записи — переиспользует структуру из History.jsx */
+.mx-progress-entry__field {
+  margin-bottom: 20px;
+}
+
+.mx-progress-entry__field:last-child {
+  margin-bottom: 0;
+}
+
+.mx-progress-entry__field-label {
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-entry__field-value {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgb(var(--c-muted, 133 133 133));
+  white-space: pre-wrap;
+}
+
+.mx-progress-entry__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mx-progress-entry__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(237, 189, 96, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(var(--c-gold, 237 189 96));
+}
+
+.mx-progress-entry__pill--neutral {
+  background: rgba(243, 243, 243, 0.05);
+  color: rgb(var(--c-muted, 133 133 133));
+  font-weight: 600;
+}
+
+.mx-progress-entry__wins {
+  margin-top: 16px;
+  border-radius: 16px;
+  background: rgb(var(--c-card2, 17 17 17));
+  padding: 16px;
+}
+
+.mx-progress-entry__wins-label {
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-entry__wins-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mx-progress-entry__win {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.mx-progress-entry__win-num {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(237, 189, 96, 0.15);
+  font-size: 11px;
+  font-weight: 700;
+  color: rgb(var(--c-gold, 237 189  96));
+}
+
+/* Секция AI-контекста */
+.mx-progress-entry__ai-section {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgb(var(--c-border, 41 41 41));
+}
+
+.mx-progress-entry__ai-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-entry__ai-desc {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-entry__ai-toggle {
+  margin-top: 12px;
+  min-height: 44px;
+  border-radius: 999px;
+  background: rgba(243, 243, 243, 0.05);
+  padding: 0 12px;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(var(--c-gold, 237 189 96));
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.mx-progress-entry__ai-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mx-progress-entry__ai-discuss {
+  margin-top: 12px;
+  min-height: 44px;
+  border-radius: 999px;
+  background: rgba(237, 189, 96, 0.1);
+  padding: 0 12px;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(var(--c-gold, 237 189 96));
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.mx-progress-entry__ai-hint {
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-entry__delete-hint {
+  margin: 20px 0 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-entry__delete-button {
+  min-height: 44px;
+  border-radius: 999px;
+  padding: 0 16px;
+  border: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ef6b6b;
+  cursor: pointer;
+}
+
+.mx-progress-entry__delete-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mx-progress-entry__error {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #ef6b6b;
+}
+
+/* Подтверждение redo */
+.mx-progress-entry__confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px;
+}
+
+.mx-progress-entry__confirm-dialog {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 28px;
+  background: rgb(var(--c-card, 9 9 9));
+  padding: 24px;
+  box-shadow: var(--shadow-float, 0 8px 32px rgba(0, 0, 0, 0.35));
+}
+
+.mx-progress-entry__confirm-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-entry__confirm-desc {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-entry__confirm-buttons {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mx-progress-entry__confirm-cancel {
+  min-height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgba(243, 243, 243, 0.15);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgb(var(--c-text, 243 243 243));
+  cursor: pointer;
+}
+
+.mx-progress-entry__confirm-accept {
+  min-height: 48px;
+  border-radius: 999px;
+  border: 0;
+  background: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgb(var(--c-bg, 5 4 3));
+  cursor: pointer;
+}
