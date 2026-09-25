@@ -814,4 +814,8 @@ export const api = {
         }),
       }),
   },
+
+  health: {
+    check: () => request('/health', { silentDiagnostics: true }),
+  },
 }
