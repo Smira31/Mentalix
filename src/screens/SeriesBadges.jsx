@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -99,6 +99,31 @@ function CloseButton({ onClose, label = 'Закрыть' }) {
   )
 }
 
+/*
+ * §6 Motion — анимация закрытия шторки значка (уезд вниз, 200 ms ease-in).
+ * useSheetSwipeDown уже делает свою анимацию через inline-стили, поэтому
+ * хук получает оригинальный onClose. Для клика по фону и кнопкам закрытия
+ * используется requestClose: добавляет CSS-классы анимации и задерживает
+ * размонтирование на duration ms.
+ */
+function useSheetExit(onClose) {
+  const [closing, setClosing] = useState(false)
+  const timerRef = useRef(null)
+
+  const requestClose = useCallback(() => {
+    if (closing) return
+    setClosing(true)
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    timerRef.current = setTimeout(onClose, reducedMotion ? 150 : 200)
+  }, [closing, onClose])
+
+  useEffect(() => () => clearTimeout(timerRef.current), [])
+
+  return { closing, requestClose }
+}
+
 function badgePractice(badge) {
   if (badge?.id === 'voice-heard') return { route: 'checkin', label: 'Утренний чек-ин' }
   if (badge?.id === 'ritual-holds') return { route: 'rituals', label: 'Ритуалы' }
@@ -108,21 +133,26 @@ function badgePractice(badge) {
 
 export function BadgeSheet({ badge, onClose, onOpenPractice }) {
   const sheetRef = useRef(null)
+  const { closing, requestClose } = useSheetExit(onClose)
   useSheetSwipeDown(sheetRef, onClose)
 
   if (!badge) return null
   const practice = badgePractice(badge)
   return createPortal(
-    <div className="mx-badge-sheet-layer" role="presentation" onClick={onClose}>
+    <div
+      className={`mx-badge-sheet-layer${closing ? ' mx-badge-sheet-layer--exit' : ''}`}
+      role="presentation"
+      onClick={requestClose}
+    >
       <section
         ref={sheetRef}
-        className="mx-badge-sheet"
+        className={`mx-badge-sheet${closing ? ' mx-badge-sheet--exit' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="mx-badge-sheet-title"
         onClick={event => event.stopPropagation()}
       >
-        <CloseButton onClose={onClose} />
+        <CloseButton onClose={requestClose} />
         <div className="mx-badge-sheet__scene">
           <RewardIcon variant={badge.done ? badge.id : 'locked'} size={92} />
         </div>
@@ -146,7 +176,7 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
             </button>
           )}
         </div>
-        <BackButton onClick={onClose} />
+        <BackButton onClick={requestClose} />
       </section>
     </div>,
     getFullscreenPortalTarget()
@@ -155,20 +185,25 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
 
 export function NewBadgeSheet({ badge, onClose }) {
   const sheetRef = useRef(null)
+  const { closing, requestClose } = useSheetExit(onClose)
   useSheetSwipeDown(sheetRef, onClose)
 
   if (!badge) return null
   return createPortal(
-    <div className="mx-badge-sheet-layer" role="presentation" onClick={onClose}>
+    <div
+      className={`mx-badge-sheet-layer${closing ? ' mx-badge-sheet-layer--exit' : ''}`}
+      role="presentation"
+      onClick={requestClose}
+    >
       <section
         ref={sheetRef}
-        className="mx-badge-sheet mx-badge-sheet--new"
+        className={`mx-badge-sheet mx-badge-sheet--new${closing ? ' mx-badge-sheet--exit' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="mx-new-badge-title"
         onClick={event => event.stopPropagation()}
       >
-        <CloseButton onClose={onClose} />
+        <CloseButton onClose={requestClose} />
         <div className="mx-badge-sheet__scene">
           <RewardIcon variant={badge.id} size={92} />
         </div>
@@ -183,12 +218,12 @@ export function NewBadgeSheet({ badge, onClose }) {
           <button
             type="button"
             className="mx-badge-sheet__action mx-badge-sheet__share"
-            onClick={onClose}
+            onClick={requestClose}
           >
             Поделиться
           </button>
         </div>
-        <BackButton onClick={onClose} />
+        <BackButton onClick={requestClose} />
       </section>
     </div>,
     getFullscreenPortalTarget()

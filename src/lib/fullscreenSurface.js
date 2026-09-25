@@ -53,7 +53,7 @@ import { isPreviewDemoMode } from './demoMode'
 export const TG_CONTROLS_HEIGHT = 56
 
 export const FULLSCREEN_SHELL_CLASS =
-  'fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden'
+  'mx-fullscreen-surface fixed top-0 left-0 right-0 z-[60] bg-emerald-deep flex flex-col overflow-hidden'
 
 export const FULLSCREEN_HEADER_SLOT_CLASS = 'h-[52px] shrink-0'
 
