@@ -20,7 +20,7 @@ import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
-import { returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
+import { claimReturnFlowEvent, returnFlowEvent, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
 import { parseContextualDeepLink } from './lib/contextualDeepLink'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
@@ -526,22 +526,26 @@ function App() {
   const [practicesSub, setPracticesSub] = useState(null)
 
   const reportReturnFlowEvent = useCallback(
-    async event => {
-      if (!user || !initialReturnFlow) return
+    async suffix => {
+      if (!user?.id || user.demo || (user.is_guest && !platform.getSessionToken?.()) ||
+          isPreviewDemoMode() || !initialReturnFlow) return
 
+      const event = returnFlowEvent(initialReturnFlow, suffix)
+      if (!claimReturnFlowEvent(user.id, initialReturnFlow, event)) return
       try {
-        await api.returnFlow.log(event, returnFlowEventKey(user.id, event), returnFlowOccurredAt())
-      } catch (error) {
-        console.warn('Не удалось записать событие утреннего flow', error)
+        await api.returnFlow.log(
+          event, returnFlowEventKey(user.id, event, initialReturnFlow),
+          returnFlowOccurredAt(), initialReturnFlow
+        )
+      } catch {
+        // События необязательны; недоступность сети не влияет на чек-ин.
       }
     },
     [initialReturnFlow, user]
   )
 
   useEffect(() => {
-    if (user && initialReturnFlow) {
-      reportReturnFlowEvent('morning_flow_opened')
-    }
+    if (user && initialReturnFlow) reportReturnFlowEvent('flow_opened')
   }, [initialReturnFlow, reportReturnFlowEvent, user])
 
   /* ============================================================
@@ -1413,7 +1417,7 @@ function App() {
                       user={user}
                       onOpenPractice={openPractice}
                       initialSub={initialTodaySub}
-                      returnFlowActive={Boolean(initialReturnFlow)}
+                      returnFlowActive={initialReturnFlow}
                       onReturnFlowEvent={reportReturnFlowEvent}
                       onGoMentor={goMentor}
                       onFlowChange={setTodayFlowOpen}

@@ -39,6 +39,9 @@ test('morning_v1 открывает утро и имеет приоритет н
   assert.deepEqual(parseContextualDeepLink('', 'morning_v1'), {
     sub: 'checkin', returnFlow: 'morning_v1',
   })
+  assert.deepEqual(parseContextualDeepLink('', 'evening_v1'), {
+    sub: 'evening', returnFlow: 'evening_v1',
+  })
   assert.deepEqual(parseContextualDeepLink('', 'other'), { sub: null, returnFlow: null })
 })
 

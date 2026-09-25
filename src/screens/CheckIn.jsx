@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import { ArrowRight, Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -232,7 +233,7 @@ export function CheckInQuestion({
  * DEMO_USER and api.js intercepts requests only when isPreviewDemoMode() is
  * true. The screens, transitions and editor must not diverge by environment.
  */
-function MorningCheckInFlow({ user, onDone, redo = false }) {
+function MorningCheckInFlow({ user, onDone, onCompleted, redo = false }) {
   const [step, setStep] = useState(0)
   /*
    * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
@@ -261,6 +262,16 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
   const noteStep = MORNING_SCALE_STEPS.length
   const doneStep = noteStep + 1
   const streakStep = doneStep + 1
+  const teaserLogged = useRef(false)
+  useEffect(() => {
+    if (teaserLogged.current || (step !== doneStep && step !== streakStep)) return
+    teaserLogged.current = true
+    logEngagementEvent({
+      user, demo: isPreviewDemoMode(), event: 'teaser_shown',
+      entityType: 'teaser', entityId: 'morning',
+      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+    })
+  }, [step, doneStep, streakStep, user])
 
   /*
    * §6: во время горизонтального перехода (300 мс) повторная навигация
@@ -307,6 +318,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
       const saved = await saveApi(user.id, morningPayload)
+      onCompleted?.()
       platform.haptic('success')
       /*
        * Ответ на «Было полезно?» необязателен и уходит вместе с id сохранённой
@@ -706,7 +718,7 @@ function existingLessons(value) {
   )
 }
 
-function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = false }) {
+function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = null, redo = false }) {
   const isEvening = mode === 'evening'
   const previewDemoMode = isPreviewDemoMode()
   const skipScales = isEvening && !!existing
@@ -946,6 +958,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       if (isEvening && !savedCheckin?.review_completed_at) {
         throw new Error('Backend не подтвердил закрытие дня')
       }
+      onCompleted?.()
 
       // MXL-AI-HANDOFF-001: вечерний разбор сохраняется заранее, чтобы
       // хендофф к Следопыту мог отметить сегодняшнюю запись для AI-контекста.
@@ -1116,6 +1129,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   const isCard = isEvening ? step > emotionStep : step >= scaleCount
 
   const isScaleStep = !isCard && !isEmotionStep
+  const scale = skipScales ? null : MORNING_SCALE_STEPS[step]
 
   /*
    * Рассинхрон (P0): если existing изменился во время шага шкалы,
@@ -1150,6 +1164,16 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     : undefined
 
   const isCompletion = step === doneStep
+  const teaserLogged = useRef(false)
+  useEffect(() => {
+    if (!isCompletion || teaserLogged.current) return
+    teaserLogged.current = true
+    logEngagementEvent({
+      user, demo: previewDemoMode, event: 'teaser_shown',
+      entityType: 'teaser', entityId: isEvening ? 'evening' : 'morning',
+      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+    })
+  }, [isCompletion, user, previewDemoMode, isEvening])
 
   const isStreakStep = !isEvening && step === streakStep
 
@@ -1454,8 +1478,6 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
    * и брать их заголовки по индексу нельзя: подписи
    * уезжали на карточки уроков и гордости.
    */
-  const scale = skipScales ? null : MORNING_SCALE_STEPS[step]
-
   const moodLevel = values.mood || existing?.mood || 3
 
   const eveningQuestion =
@@ -1729,12 +1751,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   )
 }
 
-function CheckIn({ user, onDone, mode = 'checkin', existing = null, redo = false }) {
+function CheckIn({ user, onDone, onCompleted, mode = 'checkin', existing = null, redo = false }) {
   if (mode !== 'evening') {
-    return <MorningCheckInFlow user={user} onDone={onDone} redo={redo} />
+    return <MorningCheckInFlow user={user} onDone={onDone} onCompleted={onCompleted} redo={redo} />
   }
 
-  return <CheckInCore user={user} onDone={onDone} mode={mode} existing={existing} redo={redo} />
+  return <CheckInCore user={user} onDone={onDone} onCompleted={onCompleted} mode={mode} existing={existing} redo={redo} />
 }
 
 export default CheckIn
