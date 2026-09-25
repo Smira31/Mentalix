@@ -85,9 +85,12 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })
 
-test('morning completion uses design-system SVG art instead of the raster bird', () => {
+test('completion screen uses the owner character art, not the Stoic bird', () => {
   assert.match(checkinSource, /function CheckInCompletionArt\(\)/)
   assert.match(checkinSource, /<CheckInCompletionArt \/>/)
+  assert.match(checkinSource, /<CompletionArt variant=\{isEvening \? 'evening' : 'morning'\} \/>/)
+  assert.match(checkinSource, /import cardMorningDone2x from '\.\.\/assets\/today\/card-morning-done@2x\.webp'/)
+  assert.match(checkinSource, /import cardEveningDone2x from '\.\.\/assets\/today\/card-evening-done@2x\.webp'/)
   assert.match(checkinSource, /rgb\(var\(--c-(text|gold|muted|bg)\)\)/)
   assert.doesNotMatch(checkinSource, /checkin-bird-reference\.png/)
 })

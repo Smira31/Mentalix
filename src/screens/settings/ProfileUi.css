@@ -601,6 +601,8 @@ button.mx-profile-row:active {
 
 /* ── День рождения: input[type=date] в строке профиля ── */
 .mx-profile-date-input {
+  flex: 0 1 auto;
+  min-width: 0;
   border: 0;
   background: transparent;
   color: rgb(var(--c-text));

@@ -14,8 +14,8 @@ test('PWA preview uses the three-question morning set in the agreed order', () =
   assert.match(checkinSource, /const doneStep = noteStep \+ 1/)
   assert.match(checkinSource, /<CheckInScaleQuestion\s+scale=\{scale\}/)
   assert.match(checkinSource, /<CheckInQuestion\s+title="Что на уме\?"/)
-  assert.match(checkinSource, /Утренний чек-ин/)
-  assert.match(checkinSource, /завершён\./)
+  assert.match(checkinSource, /<h1>Готово\.<\/h1>/)
+  assert.match(checkinSource, /Было полезно\?/)
   assert.match(checkinSource, /Вернуться в Сегодня/)
 })
 
