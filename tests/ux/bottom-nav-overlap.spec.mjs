@@ -50,10 +50,9 @@ async function measure(page) {
 
 for (const browserName of ['chromium', 'webkit']) {
   test.describe(`нижняя панель не закрывает конец вкладок (${browserName})`, () => {
-    test.use({ browserName })
-
     for (const viewport of VIEWPORTS) {
-      test(`${viewport.width}: последний элемент выше панели на всех 5 вкладках`, async ({ browser }) => {
+      test(`${viewport.width}: последний элемент выше панели на всех 5 вкладках`, async ({ playwright }) => {
+        const browser = await playwright[browserName].launch()
         const context = await browser.newContext({
           baseURL,
           viewport,
@@ -84,6 +83,7 @@ for (const browserName of ['chromium', 'webkit']) {
         }
 
         await context.close()
+        await browser.close()
       })
     }
   })
