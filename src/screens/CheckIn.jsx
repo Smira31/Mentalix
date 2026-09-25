@@ -30,8 +30,7 @@ import { isPreviewDemoMode } from '../lib/demoMode'
 import DailyTaskPrompt from '../components/DailyTaskPrompt'
 import { logOnce } from '../lib/logOnce'
 import { maybeBuildSurprise } from './mentalix/surpriseInsight'
-import { SURPRISE_MESSAGE_KEY, writeInsightSeen } from './mentalix/insightDigest'
-import { toLocalCalendarDate } from '../lib/dateTimezonePolicy'
+import { SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
 import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
 import { currentCheckinStreak, seriesLogicalDateKey } from '../lib/series'
@@ -1013,13 +1012,19 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
         api.events.log(user.id, 'surprise_insight_shown').catch(() => {})
       )
     })
-    return () => { active = false }
+    return () => {
+      active = false
+    }
   }, [isEvening, step, doneStep, user])
 
   function openSurprise() {
-    if (!surprise || !logOnce(surpriseEvents, 'opened', () =>
-      api.events.log(user.id, 'surprise_insight_opened').catch(() => {})
-    )) return
+    if (
+      !surprise ||
+      !logOnce(surpriseEvents, 'opened', () =>
+        api.events.log(user.id, 'surprise_insight_opened').catch(() => {})
+      )
+    )
+      return
     sessionStorage.setItem(MENTOR_PERSONA_KEY, 'dnevnik')
     sessionStorage.setItem(SURPRISE_MESSAGE_KEY, surprise)
     const url = new URL(window.location.href)
@@ -1467,7 +1472,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                 <div className="mt-6 w-full max-w-sm" data-testid="surprise-insight">
                   <p className="mx-type-meta text-muted">Следопыт кое-что заметил</p>
                   <p className="mx-type-body mt-2 text-cream">{surprise}</p>
-                  <button type="button" data-testid="surprise-insight-open" onClick={openSurprise} className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream">
+                  <button
+                    type="button"
+                    data-testid="surprise-insight-open"
+                    onClick={openSurprise}
+                    className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream"
+                  >
                     Обсудить со Следопытом
                   </button>
                 </div>
