@@ -7,7 +7,7 @@ const P0_VIEWPORTS = [
 
 const DEMO_URL =
   process.env.MENTALIX_TELEGRAM_P0_URL ||
-  'http://127.0.0.1:5173/?demo=1&toolbar=1&device=pro-max&tab=today'
+  'http://127.0.0.1:5173/?demo=1&toolbar=1&device=pro-max&tab=today&frame=0'
 
 async function openTelegramDemo(browser, viewport) {
   const context = await browser.newContext({
@@ -104,7 +104,7 @@ async function openMentorConversation(page) {
 async function openSeries(page) {
   await page.getByRole('button', { name: /Мой путь/ }).click()
   await expect(page.locator('.mx-path-surface')).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Значки' })).toBeVisible()
+  await expect(page.getByTestId('series-tab-badges')).toBeVisible()
 }
 
 for (const viewport of P0_VIEWPORTS) {
