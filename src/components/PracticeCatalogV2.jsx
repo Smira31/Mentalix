@@ -234,7 +234,6 @@ function CollectionTile({ collection, onOpen }) {
       </span>
       <strong>{collection.title}</strong>
       <small>{isSoon ? 'Скоро' : collection.description}</small>
-      {isSoon && <span className="mx-layered-category__completion">Скоро</span>}
       <ChevronRight
         className="mx-layered-catalog__collection-chevron"
         size={17}
