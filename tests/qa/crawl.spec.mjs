@@ -82,11 +82,29 @@ async function collectIssues(page, screenName, viewport) {
       const style = getComputedStyle(el)
       if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') continue
       const label = el.getAttribute('aria-label') || el.textContent?.trim()?.slice(0, 60) || el.tagName
-      rects.push({ label, x: r.x, y: r.y, width: r.width, height: r.height })
+      const isFixed = (function isInsideFixed(node) {
+        let n = node
+        while (n && n !== document.body) {
+          if (getComputedStyle(n).position === 'fixed') return true
+          n = n.parentElement
+        }
+        return false
+      })(el)
+      rects.push({ label, x: r.x, y: r.y, width: r.width, height: r.height, fixed: isFixed })
 
-      // 2. Small tap target (< 44×44)
-      if (r.width < 44 || r.height < 44) {
-        issues.push({ type: 'small_tap_target', detail: `«${label}» ${Math.round(r.width)}×${Math.round(r.height)}px` })
+      // 2. Small tap target (< 43×43) — account for ::before/::after tap area
+      let tapW = r.width
+      let tapH = r.height
+      for (const pseudo of ['::before', '::after']) {
+        const ps = getComputedStyle(el, pseudo)
+        if (!ps.content || ps.content === 'none' || ps.content === 'normal') continue
+        const pw = parseFloat(ps.width) || 0
+        const ph = parseFloat(ps.height) || 0
+        if (pw > tapW) tapW = pw
+        if (ph > tapH) tapH = ph
+      }
+      if (tapW < 43 || tapH < 43) {
+        issues.push({ type: 'small_tap_target', detail: `«${label}» ${Math.round(tapW)}×${Math.round(tapH)}px` })
       }
 
       // 3. Off-screen right
@@ -107,10 +125,12 @@ async function collectIssues(page, screenName, viewport) {
       }
     }
 
-    // 6. Overlapping interactive elements (both in viewport)
+    // 6. Overlapping interactive elements — only non-fixed vs non-fixed
+    //    (content scrolling under fixed nav/header is by design, not a bug)
     for (let i = 0; i < rects.length; i++) {
       for (let j = i + 1; j < rects.length; j++) {
         const a = rects[i], b = rects[j]
+        if (a.fixed || b.fixed) continue
         if (a.y >= 0 && b.y >= 0 && a.y < innerH && b.y < innerH && overlap(a, b)) {
           issues.push({ type: 'overlap', detail: `«${a.label}» × «${b.label}»` })
         }
@@ -121,7 +141,12 @@ async function collectIssues(page, screenName, viewport) {
     const textEls = [...document.querySelectorAll('p, span, h1, h2, h3, h4, div')]
     for (const el of textEls) {
       if (el.children.length > 0) continue
+      // Skip hidden/invisible elements
+      if (el.getAttribute('aria-hidden') === 'true') continue
+      if (el.classList.contains('sr-only')) continue
       const style = getComputedStyle(el)
+      if (style.visibility === 'hidden' || style.display === 'none') continue
+      if (el.clientWidth <= 2) continue
       if (style.overflow !== 'hidden' && style.textOverflow !== 'ellipsis') continue
       if (el.scrollWidth > el.clientWidth + 1) {
         const text = el.textContent?.trim()?.slice(0, 50) || '(empty)'
@@ -342,6 +367,27 @@ ${screenSections}
 </html>`
 }
 
+/** Extract base screen name (strip state suffix like " — checkinPending" or " (default)"). */
+function baseScreenName(screen) {
+  return screen.replace(/\s*[—-]\s*\S+$/, '').replace(/\s*\([^)]*\)\s*$/, '').trim()
+}
+
+/** Collapse identical issues (same type+detail) across states of the same base screen. */
+function collapseIssues(issues) {
+  const map = new Map()
+  for (const i of issues) {
+    const key = `${i.type}||${i.detail || ''}`
+    if (!map.has(key)) {
+      map.set(key, { ...i, screens: [i.screen], count: 1 })
+    } else {
+      const entry = map.get(key)
+      if (!entry.screens.includes(i.screen)) entry.screens.push(i.screen)
+      entry.count++
+    }
+  }
+  return [...map.values()]
+}
+
 function buildSummaryMd(screens, allIssues) {
   const byType = {}
   for (const issue of allIssues) byType[issue.type] = (byType[issue.type] || 0) + 1
@@ -351,8 +397,27 @@ function buildSummaryMd(screens, allIssues) {
     .map(([type, count]) => `- ${type}: ${count}`)
     .join('\n')
 
-  const topIssues = allIssues.slice(0, 20)
-    .map(i => `- [${i.type}] ${i.screen}: ${i.detail || ''}`)
+  // Collapse duplicates for the top section
+  const collapsed = collapseIssues(allIssues)
+  const topIssues = collapsed.slice(0, 20)
+    .map(i => {
+      const screenStr = i.screens.length > 1
+        ? `${baseScreenName(i.screens[0])} (×${i.screens.length} состояний)`
+        : i.screens[0]
+      return `- [${i.type}] ${screenStr}: ${i.detail || ''}`
+    })
+    .join('\n')
+
+  // "Требует внимания" — ALL critical issues with full detail
+  const ATTENTION_TYPES = ['console_error', 'failed_request', 'screen_stuck', 'off_screen_right', 'edge_padding_21']
+  const attentionIssues = collapseIssues(allIssues.filter(i => ATTENTION_TYPES.includes(i.type)))
+  const attentionList = attentionIssues
+    .map(i => {
+      const screenStr = i.screens.length > 1
+        ? `${baseScreenName(i.screens[0])} (×${i.screens.length})`
+        : i.screens[0]
+      return `- [${i.type}] ${screenStr}: ${i.detail || ''}`
+    })
     .join('\n')
 
   const lines = [
@@ -368,6 +433,9 @@ function buildSummaryMd(screens, allIssues) {
     ``,
     `## Топ-20 проблем`,
     topIssues || '— нет проблем —',
+    ``,
+    `## Требует внимания`,
+    attentionList || '— нет критических проблем —',
   ]
   return lines.join('\n')
 }
