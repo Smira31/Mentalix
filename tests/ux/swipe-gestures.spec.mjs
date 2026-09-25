@@ -238,7 +238,7 @@ test.describe('Свайп-жесты', () => {
     await expect(page.locator('[data-testid="checkin-scale-row"]')).toBeVisible()
 
     // Свайп от левого края по порталу чек-ина
-    await swipeRightFromEdge(page, 'body > .fixed.bg-emerald-deep')
+    await swipeRightFromEdge(page, '.mx-demo-checkin')
 
     // Возврат на экран Сегодня
     await expect(page.locator('[data-testid="today-streak-chip"]')).toBeVisible({ timeout: 5_000 })
