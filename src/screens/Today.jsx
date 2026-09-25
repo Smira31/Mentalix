@@ -12,8 +12,6 @@ import CheckIn from './CheckIn'
 import ThemeScreen from './ThemeScreen'
 import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
-import cardStart2x from '../assets/today/card-start@2x.webp'
-import cardStart3x from '../assets/today/card-start@3x.webp'
 import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
 import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
@@ -53,15 +51,6 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 // the main flow; the underlying data and destination remain available in their
 // dedicated screens.
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
-
-// Pill настроения в завершённой главной карточке дня (§5.1, тип A).
-const MOOD_PILL_WORDS = [
-  'Тяжёлое настроение',
-  'Непростое настроение',
-  'Ровное настроение',
-  'Хорошее настроение',
-  'Отличное настроение',
-]
 
 // ── календарь недели + отдельные дневные streak strips ──
 
@@ -693,10 +682,17 @@ export default function Today({
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
   // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
-  const cardStates = resolveTodayCardStates({ now: new Date(), reviewHour, checkin })
+  const cardNow = new Date()
+  if (
+    previewState === 'night' ||
+    (import.meta.env.DEV &&
+      new URLSearchParams(window.location.search).get('today_state') === 'night')
+  ) {
+    cardNow.setHours(1, 30, 0, 0)
+  }
+  const cardStates = resolveTodayCardStates({ now: cardNow, reviewHour, checkin })
   const primaryKind = primaryCardKind(cardStates)
   const reviewTime = formatReviewTime(reviewHour)
-  const moodPillText = MOOD_PILL_WORDS[Number(checkin?.mood) - 1] || null
 
   function renderDayCard(kind) {
     const isMorning = kind === 'morning'
@@ -704,23 +700,48 @@ export default function Today({
     const isPrimary = primaryKind === kind
     const labelTop = isMorning ? 'Утренний' : 'Разбор'
     const labelBottom = isMorning ? 'чек-ин' : 'дня'
-    const title = isMorning ? 'Как ты сегодня?' : 'Забрать главное из дня.'
+    const title = isMorning
+      ? cardStates.isNight
+        ? 'Вернись к началу вчера.'
+        : 'Как ты сегодня?'
+      : cardStates.isNight
+        ? 'Подведи итог вчера.'
+        : 'Закрой этот день.'
+    const titleStart = isMorning
+      ? cardStates.isNight
+        ? 'Вернись к началу '
+        : 'Как ты '
+      : cardStates.isNight
+        ? 'Подведи итог '
+        : 'Закрой '
+    const titleEmphasis = isMorning
+      ? cardStates.isNight
+        ? 'вчера.'
+        : 'сегодня?'
+      : cardStates.isNight
+        ? 'вчера.'
+        : 'этот день.'
     const completedText = isMorning ? 'Утро отмечено.' : 'День закрыт.'
     const lockedText = isMorning ? 'Утро прошло' : `Откроется в ${reviewTime}`
 
     const content =
       state === 'done' ? (
         <>
-          <span className="mx-today-day-card__label">
-            {isMorning ? 'Утренний чек-ин' : 'Разбор дня'}
+          <span className="mx-today-day-card__done">
+            {isMorning ? (
+              <>
+                Утро
+                <br />
+                отмечено.
+              </>
+            ) : (
+              <>
+                День
+                <br />
+                закрыт.
+              </>
+            )}
           </span>
-          <span className="mx-today-day-card__done">{completedText}</span>
-          {moodPillText && (
-            <span className="mx-today-day-card__pill">
-              <span className="mx-today-day-card__dot" aria-hidden="true" />
-              {moodPillText}
-            </span>
-          )}
           <div className="mx-today-day-card__illustration" data-testid="today-card-illustration">
             <div className="mx-today-day-card__illustration-slot">
               <img
@@ -738,27 +759,18 @@ export default function Today({
         </>
       ) : state === 'active' ? (
         <>
-          {isPrimary && (
-            <span className="mx-today-day-card__glyph">
-              <img
-                className="mx-today-day-card__art"
-                src={cardStart2x}
-                srcSet={`${cardStart2x} 2x, ${cardStart3x} 3x`}
-                width={200}
-                height={212}
-                loading="lazy"
-                alt=""
-                draggable={false}
-              />
-            </span>
-          )}
           <span className="mx-today-day-card__label">
             {labelTop}
             <br />
             {labelBottom}
           </span>
-          <span className="mx-today-day-card__title mx-type-checkin-title">{title}</span>
-          <span className="mx-today-day-card__start">Начать</span>
+          <span className="mx-today-day-card__title mx-type-checkin-title">
+            {titleStart}
+            <strong>{titleEmphasis}</strong>
+          </span>
+          <span className="mx-today-day-card__start" data-testid={`today-card-start-${kind}`}>
+            Начать
+          </span>
         </>
       ) : (
         <>

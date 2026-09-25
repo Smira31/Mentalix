@@ -80,6 +80,7 @@ export async function backToToday(page) {
 export async function openDayCard(page, kind) {
   const card = page.locator(`[data-testid="today-card-${kind}"]`)
   await expect(card).toBeVisible()
+  await expect(card).toHaveAttribute('data-state', /active|done/)
   await card.click()
 }
 
@@ -130,7 +131,9 @@ export async function moodPracticeMoodStep(page, level) {
   const next = page.locator('[data-testid="checkin-next"]')
   await expect(next).toBeEnabled()
   await next.click()
-  await expect(page.locator('[data-testid="mood-practice-step"][data-step="emotion"]')).toBeVisible()
+  await expect(
+    page.locator('[data-testid="mood-practice-step"][data-step="emotion"]')
+  ).toBeVisible()
 }
 
 /**
@@ -146,7 +149,9 @@ export async function moodPracticeEmotionStep(page, emotion) {
   const next = page.locator('[data-testid="checkin-next"]')
   await expect(next).toBeEnabled()
   await next.click()
-  await expect(page.locator('[data-testid="mood-practice-step"][data-step="context"]')).toBeVisible()
+  await expect(
+    page.locator('[data-testid="mood-practice-step"][data-step="context"]')
+  ).toBeVisible()
 }
 
 /**

@@ -27,12 +27,7 @@ import {
 } from '../../src/lib/checkinDraft.js'
 
 test('allowlist сохраняет доступные практики и активирует Lila entry', () => {
-  assert.deepEqual(AVAILABLE_PRACTICES, [
-    'lila-discover',
-    'rituals',
-    'ascezas',
-    'mood',
-  ])
+  assert.deepEqual(AVAILABLE_PRACTICES, ['lila-discover', 'rituals', 'ascezas', 'mood'])
 
   assert.equal(isPracticeAvailable('unknown-practice'), false)
 })
@@ -185,10 +180,7 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   }
   assert.match(demo, /params\.get\('demo'\)/)
   assert.match(demo, /checkin\/today.*state\.checkins\[0\]/)
-  assert.match(
-    demo,
-    /eveningStates\.has\(previewTodayState\(\)\) \? 0 : 24/
-  )
+  assert.match(demo, /eveningStates\.has\(previewTodayState\(\)\) \? 0 : 24/)
   assert.ok(
     demo.indexOf("pathname === '/profile/settings' && method === 'GET'") <
       demo.indexOf("pathname.startsWith('/profile/') && method === 'GET'")
@@ -208,10 +200,7 @@ test('MXL-PREVIEW-CLOUDFLARE-001 разрешает Quick Tunnel только ч
     demo,
     /const isQaProductionHost =\s+host === 'mentalix-preview\.vercel\.app' \|\| host === 'mentalix-owner-qa\.pages\.dev'/
   )
-  assert.match(
-    demo,
-    /const demoRequested = params\.get\('demo'\) === '1'/
-  )
+  assert.match(demo, /const demoRequested = params\.get\('demo'\) === '1'/)
   assert.match(demo, /const pwaDemoRequested = params\.get\('source'\) === 'pwa'/)
   assert.match(demo, /\(isPreviewRuntime \|\| isQaProductionHost\)/)
 })
@@ -774,7 +763,7 @@ test('MXL-HOME-QUIET-FOUNDATION-001 публикует одну главную �
   assert.match(today, /renderDayCard\('evening'\)/)
   assert.match(today, /'data-state': state/)
   assert.match(today, /const cardStates = resolveTodayCardStates/)
-  assert.match(today, /const moodPillText = MOOD_PILL_WORDS/)
+  assert.doesNotMatch(today, /mx-today-day-card__pill/)
   assert.match(today, /checkinRecap/)
   assert.match(today, /checkin\?\.mood/)
   assert.doesNotMatch(today, /TodayFocusCard|TodayFocusFlow|Разгрузить голову/)
