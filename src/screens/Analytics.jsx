@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { currentCheckinStreak } from '../lib/series'
+import {
+  ANALYTICS_CARDS,
+  moveCard,
+  readCardPreferences,
+  writeCardPreferences,
+} from './progress/analyticsCardPreferences'
 import { sanitizeTrendsData } from '../lib/trendsDataSanitizer'
 import { loadIndependentSources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
@@ -105,19 +112,8 @@ function compareGroups({ withGroup, withoutGroup, field, threshold, build }) {
   }
 }
 
-function currentStreak(checkins) {
-  let streak = 0
 
-  for (let i = checkins.length - 1; i >= 0; i -= 1) {
-    if (!checkins[i]?.review_completed_at) break
-
-    streak += 1
-  }
-
-  return streak
-}
-
-export function deriveConclusions(checkins, data) {
+export function deriveConclusions(checkins, data, seriesCheckins = checkins) {
   const list = Array.isArray(checkins) ? checkins : []
   const found = []
 
@@ -213,7 +209,7 @@ export function deriveConclusions(checkins, data) {
   }
 
   // 6. Серия закрытых дней
-  const streak = currentStreak(list)
+  const streak = currentCheckinStreak(seriesCheckins)
 
   if (streak >= 3) {
     found.push({
@@ -254,14 +250,35 @@ function SectionLabel({ children }) {
   )
 }
 
-function CardShell({ title, subtitle, menu, children, testId }) {
+const CardActions = createContext(null)
+
+function CardShell({ title, subtitle, children, testId }) {
+  const actions = useContext(CardActions)
+  const menuOpen = actions?.openId === actions?.id
   return (
     <article className="mx-progress-card" data-testid={testId}>
       <div className="mx-progress-card__head">
         <h4 className="mx-progress-card__title">{title}</h4>
         {subtitle && <p className="mx-progress-card__subtitle">{subtitle}</p>}
       </div>
-      {menu}
+      {actions && (
+        <>
+          <button
+            type="button"
+            className="mx-progress-card__menu"
+            aria-label={`Меню графика: ${title}`}
+            aria-expanded={menuOpen}
+            onClick={() => actions.setOpenId(menuOpen ? null : actions.id)}
+          >
+            …
+          </button>
+          {menuOpen && (
+            <button type="button" className="mx-progress-card__hide" onClick={() => actions.hide(actions.id)}>
+              <span aria-hidden="true">👁</span> Скрыть этот график
+            </button>
+          )}
+        </>
+      )}
       {children}
     </article>
   )
@@ -777,9 +794,36 @@ function FullCalendar({ poolCheckins, onBack }) {
 
 /* ── Нижняя пилюля периода ── */
 
-function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext }) {
+function CardOrderPanel({ preferences, onMove, onToggle, onClose }) {
+  return (
+    <div className="mx-progress-card-order" role="dialog" aria-label="Порядок графиков">
+      <div className="mx-progress-card-order__head">
+        <h2>Порядок графиков</h2>
+        <button type="button" onClick={onClose} aria-label="Закрыть порядок графиков">✕</button>
+      </div>
+      {preferences.order.map((id, index) => {
+        const card = ANALYTICS_CARDS.find(item => item.id === id)
+        return (
+          <div className="mx-progress-card-order__row" key={id}>
+            <span>{card.title}</span>
+            <button type="button" aria-label={`Выше: ${card.title}`} disabled={index === 0} onClick={() => onMove(id, -1)}>↑</button>
+            <button type="button" aria-label={`Ниже: ${card.title}`} disabled={index === preferences.order.length - 1} onClick={() => onMove(id, 1)}>↓</button>
+            <label className="mx-progress-card-order__toggle">
+              <input type="checkbox" checked={!preferences.hidden.includes(id)} onChange={() => onToggle(id)} aria-label={`Показывать: ${card.title}`} />
+              <span aria-hidden="true">✓</span>
+            </label>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, onOrder, orderOpen }) {
   const window = getPeriodWindow(granularity, offset)
   return (
+    <div className="mx-progress-bottom-controls">
+    <button type="button" className="mx-progress-bottom-controls__order" aria-label="Порядок графиков" aria-expanded={orderOpen} onClick={onOrder}>☷</button>
     <div className="mx-progress-bottom-pill" data-testid="progress-bottom-pill">
       <button
         type="button"
@@ -802,6 +846,7 @@ function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext }) {
       >
         ›
       </button>
+    </div>
     </div>
   )
 }
@@ -834,6 +879,27 @@ export default function Analytics({
   const [offset, setOffset] = useState(0)
   const [periodMenuOpen, setPeriodMenuOpen] = useState(false)
   const [view, setView] = useState('analytics') // 'analytics' | 'calendar'
+  const [cardPreferences, setCardPreferences] = useState(readCardPreferences)
+  const [openCardMenu, setOpenCardMenu] = useState(null)
+  const [orderOpen, setOrderOpen] = useState(false)
+
+  useEffect(() => {
+    writeCardPreferences(cardPreferences)
+  }, [cardPreferences])
+
+  function updateCardPreferences(update) {
+    setCardPreferences(update)
+  }
+
+  function toggleCard(id) {
+    updateCardPreferences(previous => ({
+      ...previous,
+      hidden: previous.hidden.includes(id)
+        ? previous.hidden.filter(item => item !== id)
+        : [...previous.hidden, id],
+    }))
+    setOpenCardMenu(null)
+  }
 
   const [poolCheckins, setPoolCheckins] = useState([])
   const [analyticsData, setAnalyticsData] = useState(null)
@@ -990,7 +1056,7 @@ export default function Analytics({
           caveat: 'Это описание доступных данных, а не диагноз и не доказательство причины.',
         }))
 
-  const conclusions = deriveConclusions(periodCheckins, safeData)
+  const conclusions = deriveConclusions(periodCheckins, safeData, poolCheckins)
   const hasPeriodData = periodCheckins.length > 0
   const showNeedData = periodCheckins.length < MIN_CHECKINS
 
@@ -1012,6 +1078,16 @@ export default function Analytics({
     retryFailedSourcesRef.current = true
     setSourceLoading(true)
     setReloadKey(value => value + 1)
+  }
+
+  const cards = {
+    practices: <PracticesRing analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />,
+    calendar: <MoodCalendarCard periodCheckins={periodCheckins} granularity={granularity} window={window} onOpenFull={() => setView('calendar')} />,
+    trend: <MoodTrendCard periodCheckins={periodCheckins} prevCheckins={prevCheckins} />,
+    emotions: <EmotionsRing periodCheckins={periodCheckins} />,
+    up: <ConclusionsCard direction="up" conclusions={conclusions} />,
+    down: <ConclusionsCard direction="down" conclusions={conclusions} />,
+    observations: <ObservationRail observations={observations} insightsEnabled={insightsEnabled} preferenceError={insightsPreferenceError} />,
   }
 
   return (
@@ -1117,38 +1193,46 @@ export default function Analytics({
             <NeedDataPlaque checkinsCount={periodCheckins.length} onRemind={onOpenNotifications} />
           )}
 
-          <SectionLabel>Общее</SectionLabel>
-          <PracticesRing analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />
-          <MoodCalendarCard
-            periodCheckins={periodCheckins}
-            granularity={granularity}
-            window={window}
-            onOpenFull={() => setView('calendar')}
-          />
-          <MoodTrendCard periodCheckins={periodCheckins} prevCheckins={prevCheckins} />
-
-          <SectionLabel>Эмоции</SectionLabel>
-          <EmotionsRing periodCheckins={periodCheckins} />
-          <ConclusionsCard direction="up" conclusions={conclusions} />
-          <ConclusionsCard direction="down" conclusions={conclusions} />
-          <ObservationRail
-            observations={observations}
-            insightsEnabled={insightsEnabled}
-            preferenceError={insightsPreferenceError}
-          />
+          {cardPreferences.order.filter(id => !cardPreferences.hidden.includes(id)).map((id, index, visible) => {
+            const card = ANALYTICS_CARDS.find(item => item.id === id)
+            const previous = ANALYTICS_CARDS.find(item => item.id === visible[index - 1])
+            return (
+              <div key={id}>
+                {card.section !== previous?.section && <SectionLabel>{card.section}</SectionLabel>}
+                <CardActions.Provider value={{ id, openId: openCardMenu, setOpenId: setOpenCardMenu, hide: toggleCard }}>
+                  {cards[id]}
+                </CardActions.Provider>
+              </div>
+            )
+          })}
 
           <div className="mx-progress-analytics__bottom-spacer" />
         </>
       )}
 
       {activeTab === 'analytics' && view === 'analytics' && (
-        <BottomPeriodPill
-          granularity={granularity}
-          offset={offset}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          canNext={offset > 0}
-        />
+        <>
+          {orderOpen && (
+            <CardOrderPanel
+              preferences={cardPreferences}
+              onMove={(id, direction) => updateCardPreferences(previous => ({
+                ...previous,
+                order: moveCard(previous.order, id, direction),
+              }))}
+              onToggle={toggleCard}
+              onClose={() => setOrderOpen(false)}
+            />
+          )}
+          <BottomPeriodPill
+            granularity={granularity}
+            offset={offset}
+            onPrev={handlePrev}
+            onNext={handleNext}
+            canNext={offset > 0}
+            orderOpen={orderOpen}
+            onOrder={() => setOrderOpen(value => !value)}
+          />
+        </>
       )}
 
       {activeTab === 'history' && (
