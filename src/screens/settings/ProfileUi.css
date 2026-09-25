@@ -637,9 +637,9 @@ button.mx-profile-row:active {
 }
 
 .mx-profile-milestone__icon {
-  font-size: 24px;
-  line-height: 1;
+  display: flex;
   flex-shrink: 0;
+  color: rgb(var(--c-muted));
 }
 
 .mx-profile-milestone__text {
