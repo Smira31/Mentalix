@@ -463,6 +463,17 @@ export const api = {
           ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
         }),
       }),
+
+    /*
+     * Обратная связь с экрана завершения чек-ина (утро и разбор). Необязательная:
+     * экран закрывается независимо от ответа, ошибка сети не блокирует выход.
+     * Контракт: POST /api/checkins/{id}/feedback { value: 'no' | 'some' | 'yes' }.
+     */
+    feedback: (checkinId, value) =>
+      request(`/checkins/${checkinId}/feedback`, {
+        method: 'POST',
+        body: JSON.stringify({ value }),
+      }),
   },
 
   journalTemplates: {
