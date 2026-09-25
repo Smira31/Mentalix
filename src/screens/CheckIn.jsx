@@ -26,6 +26,7 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import EdgeSwipeBack from '../lib/gestures/EdgeSwipeBack'
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
 import { resolveDesyncStep } from '../lib/checkinDesync'
