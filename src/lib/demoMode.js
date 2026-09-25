@@ -460,13 +460,21 @@ function respond(path, options = {}) {
   }
   if (pathname === '/checkin/history' && method === 'GET') return json(state.checkins)
   if (pathname === '/checkin' && method === 'POST') {
+    // Одна запись на день: вечерний разбор дополняет утреннюю запись,
+    // а не создаёт дубль (иначе История показывала утро без эмоции разбора).
+    const today = now().toISOString().slice(0, 10)
+    const existing = state.checkins.find(item => item?.date === today)
     const checkin = {
-      id: Date.now(),
-      date: now().toISOString().slice(0, 10),
+      ...existing,
+      id: existing?.id || Date.now(),
+      date: today,
       ...body,
       ...(body.review_completed ? { review_completed_at: now().toISOString() } : {}),
     }
-    writeState({ ...state, checkins: [checkin, ...state.checkins] })
+    writeState({
+      ...state,
+      checkins: [checkin, ...state.checkins.filter(item => item?.date !== today)],
+    })
     return json(checkin)
   }
   if (pathname === '/checkin/today' && method === 'PUT') {
@@ -506,7 +514,7 @@ function respond(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour: eveningStates.has(previewTodayState()) ? 0 : 19,
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? 19),
       writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
       writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
     })
