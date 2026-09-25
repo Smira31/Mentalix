@@ -270,6 +270,75 @@ jobs:
               await github.rest.issues.createComment({ owner, repo, issue_number, body })
             }
 
+  ux-visual-progress:
+    name: Progress visual snapshots (demo mode, informational)
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Download progress baselines from main
+        id: download-baselines
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          RUN_ID=$(gh run list --workflow=visual-baselines.yml \
+            --branch=main --status=completed --conclusion=success \
+            --limit=1 --json databaseId --jq '.[0].databaseId' 2>/dev/null || echo "")
+          if [ -z "$RUN_ID" ]; then
+            echo "baselines_downloaded=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Нет артефакта эталонов Прогресса с main — bootstrap: генерация из текущей ветки"
+            exit 0
+          fi
+          echo "Скачиваю эталоны Прогресса из run $RUN_ID"
+          gh run download "$RUN_ID" --name visual-baselines-progress \
+            --dir tests/ux/progress-tabs-visual.spec.mjs-snapshots/
+          echo "baselines_downloaded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run progress visual snapshots
+        continue-on-error: true
+        env:
+          RUN_VISUAL_SNAPSHOTS: 'true'
+          UX_FIXED_TIME: '08:00'
+        run: |
+          if [ "${{ steps.download-baselines.outputs.baselines_downloaded }}" = "true" ]; then
+            npm run ux:progress-visual -- --retries=1
+          else
+            npm run ux:progress-visual -- --update-snapshots --retries=1
+          fi
+
+      - name: Upload progress visual artifacts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: progress-visual-diff-${{ github.event.pull_request.number }}
+          path: |
+            artifacts/progress-visual/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
   backend-health:
     name: Backend health
     needs: change-scope
