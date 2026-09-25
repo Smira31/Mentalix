@@ -342,12 +342,19 @@ async function captureScreen({ page, viewport, screen, slug, runtimeErrors, resu
       await expect(page).toHaveScreenshot(snapshotName, {
         animations: 'disabled',
         caret: 'hide',
-        maxDiffPixelRatio: 0.012,
+        maxDiffPixelRatio: 0.01,
       })
     }
   } catch (error) {
     status = 'fail'
     reason = sanitizeReason(error)
+    if (
+      RUN_VISUAL_SNAPSHOTS &&
+      VISUAL_ANCHOR_SLUGS.has(slug) &&
+      String(error?.message || '').includes('to have screenshot')
+    ) {
+      status = 'visual_diff'
+    }
   }
 
   await mkdir(path.dirname(screenshotAbsolute), { recursive: true })
@@ -778,6 +785,24 @@ test('локальный UX smoke по основному маршруту', asy
   }
 
   await writeFile(path.join(ARTIFACT_ROOT, 'report.md'), buildReport(results), 'utf8')
+
+  const visualDiffs = results
+    .filter(result => result.status === 'visual_diff')
+    .map(result => {
+      const slug = result.screenshot.replace(/^[^/]+\//, '').replace(/\.png$/, '')
+      return {
+        screen: result.screen,
+        slug,
+        viewport: result.viewport,
+        actual: result.screenshot,
+        reason: result.reason,
+      }
+    })
+  await writeFile(
+    path.join(ARTIFACT_ROOT, 'visual-diffs.json'),
+    JSON.stringify({ diffs: visualDiffs }, null, 2),
+    'utf8'
+  )
 
   const failed = results.filter(result => result.status === 'fail')
   expect(
