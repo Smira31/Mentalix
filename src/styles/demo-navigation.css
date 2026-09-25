@@ -1,12 +1,25 @@
 .mx-demo-back-button {
+  position: relative;
   display: grid;
-  width: 46px;
-  height: 46px;
+  width: 43px;
+  height: 43px;
   place-items: center;
   border: 1px solid rgb(255 255 255 / 0.1);
   border-radius: 50%;
   background: rgb(255 255 255 / 0.08);
   color: #f2f2f2;
+}
+
+/* Видимый круг 43×43 (как в Stoic); область нажатия расширена невидимо до 44×44. */
+.mx-demo-back-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .mx-demo-back-button svg {
