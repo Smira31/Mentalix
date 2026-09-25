@@ -973,3 +973,63 @@
 .mx-checkin-completion-title strong {
   font-weight: 700;
 }
+
+/* ── StepSlide — §6, горизонтальный переход между шагами вбок ── */
+
+.mx-step-slide {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /*
+   * overflow-x: hidden обрезает уходящий клон при горизонтальном сдвиге.
+   * По спеке CSS, когда одна ось не visible, вторая вычисляется как auto —
+   * поэтому вертикальный контент (текстовые шаги) скроллится внутри сцены.
+   */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+.mx-step-slide__panel {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mx-step-slide__clone {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Клон неинтерактивен (inert задаётся из JS); pointer-events —
+     страховка на случай, если inert не поддерживается. */
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-step-slide__clone {
+    display: none;
+  }
+}
+
+/*
+ * Утренний флоу (mx-demo-checkin): центрирование контента шага по вертикали
+ * раньше держалось на body > .mx-checkin-question { margin: auto }. StepSlide
+ * добавляет панель между body и контентом — переносим то же правило на
+ * прямых детей панели.
+ */
+.mx-demo-checkin__body .mx-step-slide__panel {
+  min-height: 0;
+}
+
+.mx-demo-checkin__body:not(.is-editor) .mx-step-slide__panel > .mx-checkin-question,
+.mx-demo-checkin__body:not(.is-editor) .mx-step-slide__panel > section {
+  margin-top: auto;
+  margin-bottom: auto;
+}
