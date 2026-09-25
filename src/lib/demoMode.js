@@ -1,5 +1,5 @@
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v3'
-const TODAY_PREVIEW_STATES = new Set([
+export const TODAY_PREVIEW_STATES = new Set([
   'checkinPending',
   'dayInProgress',
   'reviewPending',
@@ -42,6 +42,7 @@ export function isPreviewDemoMode() {
     host.endsWith('.vercel.app') ||
     host === 'mentalix-owner-qa.pages.dev' ||
     host === PRODUCTION_WEB_HOST ||
+    (host.endsWith('.web.app') && host.includes('--pr-')) ||
     host.endsWith('.manus.computer') ||
     host.endsWith('.trycloudflare.com') ||
     host.endsWith('.base44-preview.app')
