@@ -717,7 +717,6 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, on
   const [reloadKey, setReloadKey] = useState(0)
   const [insightsEnabled, setInsightsEnabled] = useState(true)
   const [insightsPreferenceError, setInsightsPreferenceError] = useState('')
-  const [activeTab, setActiveTab] = useState('analytics')
 
   useEffect(() => {
     if (!user) return
