@@ -47,6 +47,30 @@ function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
           />
           <circle className="mx-reward-icon__dot" cx="80" cy="68" r="4" />
         </>
+      ) : variant === 'streak-two' ? (
+        [0, 1].map(index => (
+          <circle className="mx-reward-icon__dot" key={index} cx={76 + index * 8} cy={66} r="3.5" />
+        ))
+      ) : variant === 'streak-three' ? (
+        [0, 1, 2].map(index => (
+          <circle
+            className="mx-reward-icon__dot"
+            key={index}
+            cx={72 + index * 8}
+            cy={68 - Math.abs(1 - index) * 4}
+            r="3.5"
+          />
+        ))
+      ) : variant === 'streak-five' ? (
+        [0, 1, 2, 3, 4].map(index => (
+          <circle
+            className="mx-reward-icon__dot"
+            key={index}
+            cx={64 + index * 8}
+            cy={68 - Math.abs(2 - index) * 4}
+            r="3.5"
+          />
+        ))
       ) : variant === 'week-on-path' ? (
         [0, 1, 2, 3, 4, 5, 6].map(index => (
           <circle
@@ -126,6 +150,8 @@ function useSheetExit(onClose) {
 
 function badgePractice(badge) {
   if (badge?.id === 'voice-heard') return { route: 'checkin', label: 'Утренний чек-ин' }
+  if (badge?.id === 'streak-two' || badge?.id === 'streak-three' || badge?.id === 'streak-five')
+    return { route: 'checkin', label: 'Утренний чек-ин' }
   if (badge?.id === 'ritual-holds') return { route: 'rituals', label: 'Ритуалы' }
   if (badge?.id === 'asceza-power') return { route: 'ascezas', label: 'Аскезы' }
   return null

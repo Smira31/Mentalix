@@ -5,6 +5,7 @@ export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas =
   const bestAsceza = Math.max(0, ...ascezas.map(asceza => Number(asceza?.streak) || 0))
   const checkinsCount = Math.max(checkins.length, Number(stats.total_checkins) || 0)
   const days = Number(stats.days_active) || 0
+  const bestStreak = Number(stats.best_streak) || 0
 
   return [
     {
@@ -15,6 +16,33 @@ export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas =
       done: checkinsCount >= 1,
       progress: Math.min(checkinsCount, 1),
       goal: 1,
+    },
+    {
+      id: 'streak-two',
+      motif: 'ryad',
+      title: 'Второй день',
+      desc: 'Серия — 2 дня',
+      done: bestStreak >= 2,
+      progress: Math.min(bestStreak, 2),
+      goal: 2,
+    },
+    {
+      id: 'streak-three',
+      motif: 'ryad',
+      title: 'Три дня подряд',
+      desc: 'Серия — 3 дня',
+      done: bestStreak >= 3,
+      progress: Math.min(bestStreak, 3),
+      goal: 3,
+    },
+    {
+      id: 'streak-five',
+      motif: 'ryad',
+      title: 'Пять дней подряд',
+      desc: 'Серия — 5 дней',
+      done: bestStreak >= 5,
+      progress: Math.min(bestStreak, 5),
+      goal: 5,
     },
     {
       id: 'voice-heard',
