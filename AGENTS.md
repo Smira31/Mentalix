@@ -7,6 +7,17 @@ last_verified: 2026-09-22
 
 Точка входа по документации: [`docs/INDEX.md`](docs/INDEX.md).
 
+## Стандарт работы агента (выполнять всегда, даже если промпт короткий)
+
+- Перед работой прочитай docs/MENTALIX_CONTEXT.md и docs/STATUS.md.
+- Проверь репозиторий (git remote -v, git fetch --all --prune). Ветка из промпта: есть на origin — переключись и продолжай, готовое не переделывай; нет — создай от свежего origin/main и сразу запушь.
+- Сохранение: после каждого изменённого файла commit + push; перед тестами — commit + push.
+- Экономия: не читать репозиторий целиком, только нужные файлы, остальное grep. Тесты по одному файлу, полный набор (lint, build, test:unit, docs:check, MXL-010, ux:check) — один раз в конце.
+- Запреты: src/main.jsx и src/tgShell.js не трогать (падение build в контейнере на top-level await — окружение, арбитр — Checks в PR). В main не коммитить, не мержить. MXL-010 не ослаблять. Изоляцию пользователей (#780) не ломать. Не менять то, о чём не просили (дизайн, картинки, тексты).
+- В main 0 падающих тестов: любое падение после твоих правок — твоё, не «предсуществующее». Тест проверяет старое правило, которое задача меняет, — обнови тест; ловит поломку — чини код.
+- Даты в тестах — только относительно текущего дня.
+- В конце: сам создай PR в main; дождись комментария бота Firebase и пришли ГОТОВУЮ ссылку-превью с ?demo=1; дождись Checks, если обязательная проверка красная — почини; обнови свою строку в docs/STATUS.md; отчёт до 8 строк.
+
 Guidance for AI coding agents (Codex, Claude Code, and others) working in this
 repository. Claude Code loads this file automatically via the `@AGENTS.md` import in
 `CLAUDE.md`; Codex and other AGENTS.md-aware tools read it directly.
