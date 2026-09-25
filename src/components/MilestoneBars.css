@@ -1,18 +1,6 @@
-/* ── Ближайшее — блок прогресс-баров к ближайшим вехам (H11) ──
+/* ── Ближайшее — карточка прогресс-баров к ближайшим вехам (H11) ──
    Тонкая полоса с золотым заполнением, радиус 24px, фон --c-card2.
    Переиспользуется в шторке огонька (StatsView) и в Профиле. */
-
-.mx-milestone-block {
-  margin-top: 40px;
-}
-
-.mx-milestone-title {
-  margin: 0 0 16px;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 600;
-  color: rgb(var(--c-text, 243 243 243));
-}
 
 .mx-milestone-list {
   display: flex;
@@ -26,10 +14,6 @@
 .mx-milestone-row {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-}
-
-.mx-milestone-row:last-child {
   gap: 7px;
 }
 

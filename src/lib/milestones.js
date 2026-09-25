@@ -7,6 +7,11 @@
 //
 // Приоритет: ближайший не полученный значок → следующий уровень серии →
 // конец темы недели. Вехи, до которых больше 30 дней, не показываем.
+//
+// Дедупликация: уровень серии пропускается, если его порог совпадает с
+// целью неполученного серийного значка (streak-two/three/five) — это
+// единственный реальный повтор. Тема недели — отдельное понятие, не
+// дедуплицируется.
 
 import { pluralize } from './pluralize.js'
 import { nextTierForStreak } from './streakTiers.js'
@@ -17,6 +22,9 @@ const CHECKIN_FORMS = ['чек-ин', 'чек-ина', 'чек-инов']
 
 // Значки, которые считаются в чек-инах, а не в днях.
 const CHECKIN_BADGES = new Set(['first-step', 'voice-heard'])
+
+// Серийные значки — их цель может совпасть с порогом уровня серии.
+const STREAK_BADGE_IDS = new Set(['streak-two', 'streak-three', 'streak-five'])
 
 function badgeIsDayBased(id) {
   return !CHECKIN_BADGES.has(id)
@@ -50,6 +58,7 @@ function buildStreakMilestone(currentStreak) {
     id: `streak:${next.min}`,
     kind: 'streak',
     title: next.name,
+    targetMin: next.min,
     remaining,
     unit: pluralize(remaining, DAY_FORMS),
     percent,
@@ -86,30 +95,37 @@ function buildThemeMilestone(theme) {
  */
 export function getNearestMilestones({ badges = [], streak = 0, theme = null } = {}) {
   const milestones = []
-  const dayRemainingUsed = new Set()
-
-  function tryAdd(milestone, isDayBased) {
-    if (!milestone) return false
-    if (isDayBased) {
-      if (dayRemainingUsed.has(milestone.remaining)) return false
-      dayRemainingUsed.add(milestone.remaining)
-    }
-    milestones.push(milestone)
-    return true
-  }
 
   // 1. Ближайший не полученный значок (с наименьшим остатком).
   const unearned = badges.filter(b => !b.done).slice()
   unearned.sort((a, b) => a.goal - a.progress - (b.goal - b.progress))
   for (const badge of unearned) {
-    if (tryAdd(buildBadgeMilestone(badge), badgeIsDayBased(badge.id))) break
+    const m = buildBadgeMilestone(badge)
+    if (m) {
+      milestones.push(m)
+      break
+    }
   }
 
-  // 2. Следующий уровень серии.
-  tryAdd(buildStreakMilestone(streak), true)
+  // 2. Следующий уровень серии — пропускаем, если порог совпадает с
+  //    целью неполученного серийного значка (streak-two/three/five).
+  const streakM = buildStreakMilestone(streak)
+  if (streakM) {
+    const streakBadgeGoals = new Set(
+      badges
+        .filter(b => !b.done && STREAK_BADGE_IDS.has(b.id))
+        .map(b => b.goal)
+    )
+    if (!streakBadgeGoals.has(streakM.targetMin)) {
+      milestones.push(streakM)
+    }
+  }
 
   // 3. Конец темы недели.
-  tryAdd(buildThemeMilestone(theme), true)
+  const themeM = buildThemeMilestone(theme)
+  if (themeM) {
+    milestones.push(themeM)
+  }
 
   return milestones.slice(0, 3)
 }

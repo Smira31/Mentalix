@@ -331,7 +331,25 @@ function seedState(todayState = null) {
       email: DEMO_USER.email,
       reminder_enabled: false,
       reminder_hour: 9,
+      days_active: empty ? 0 : scenario === 'Неделя' ? 6 : 3,
+      total_checkins: empty ? 0 : scenario === 'Неделя' ? 6 : 3,
+      best_streak: empty ? 0 : scenario === 'Неделя' ? 5 : 2,
+      current_streak: empty ? 0 : scenario === 'Серия прервалась' ? 0 : scenario === 'Неделя' ? 5 : 2,
     },
+    themes: [
+      {
+        id: 900701,
+        title: 'Фокус без перегруза',
+        subtitle: 'Неделя про внимание и усталость',
+        is_current: true,
+        current_day: empty ? 1 : 3,
+        free_days: 2,
+        days: Array.from({ length: 7 }, (_, i) => ({
+          day: i + 1,
+          reflection: i < (empty ? 0 : 2) ? 'Демо-разбор.' : null,
+        })),
+      },
+    ],
     moodPractices: empty ? [] : moodPractices,
     // В прерванной серии вчера нет ни одной активности.
     practiceDays: empty ? [] : scenario === 'Серия прервалась'
@@ -559,7 +577,11 @@ function respond(path, options = {}) {
   }
   if (pathname === '/analytics' && method === 'GET') return json({ daily: [], summary: {} })
   if (pathname === '/articles' && method === 'GET') return json([])
-  if (pathname === '/themes' && method === 'GET') return json([])
+  if (pathname === '/themes' && method === 'GET') return json(state.themes || [])
+  if (pathname.match(/^\/themes\/\d+$/) && method === 'GET') {
+    const id = numericId(pathname)
+    return json((state.themes || []).find(t => t.id === id) || null)
+  }
   if (pathname === '/quotes' && method === 'GET') return json([])
   if (pathname === '/analytics/pulse' && method === 'GET') return json({})
 

@@ -3,6 +3,9 @@ import { CalendarDays, Flame, Leaf, Moon, PartyPopper, Sprout, Star, Trophy } fr
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
 import { buildSeriesViewModel } from '../lib/series'
+import { getNearestMilestones } from '../lib/milestones'
+import { pickCurrentTheme } from '../lib/themeHelpers'
+import MilestoneBars from '../components/MilestoneBars'
 import {
   ProfileBody,
   ProfileGroup,
@@ -69,6 +72,8 @@ export default function Profile({ user }) {
   const [reloadToken, setReloadToken] = useState(0)
   const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
   const [bestStreak, setBestStreak] = useState(null)
+  const [seriesModel, setSeriesModel] = useState(null)
+  const [theme, setTheme] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -106,6 +111,23 @@ export default function Profile({ user }) {
           practiceDays: Array.isArray(practiceDays) ? practiceDays : [],
         })
         setBestStreak(model.bestStreak)
+        setSeriesModel(model)
+      })
+      .catch(() => {})
+
+    api.themes
+      .list(user.id)
+      .then(list => {
+        if (!active) return
+        const current = pickCurrentTheme(Array.isArray(list) ? list : [])
+        if (!current) return setTheme(null)
+        api.themes
+          .get(current.id, user.id)
+          .then(detail => {
+            if (!active) return
+            setTheme({ ...current, ...detail })
+          })
+          .catch(() => {})
       })
       .catch(() => {})
 
@@ -211,6 +233,19 @@ export default function Profile({ user }) {
               />
             )}
           </ProfileCard>
+        </ProfileGroup>
+      )}
+
+      {/* Ближайшее — прогресс-бары к ближайшим вехам (H11) */}
+      {seriesModel && (
+        <ProfileGroup label="Ближайшее">
+          <MilestoneBars
+            milestones={getNearestMilestones({
+              badges: seriesModel.badges,
+              streak: seriesModel.currentStreak,
+              theme,
+            })}
+          />
         </ProfileGroup>
       )}
 
