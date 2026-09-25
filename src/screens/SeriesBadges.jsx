@@ -87,7 +87,13 @@ function CloseButton({ onClose, label = 'Закрыть' }) {
   // Свой ✕ остаётся только в web/PWA.
   if (platformName === 'telegram') return null
   return (
-    <button type="button" className="mx-path-close" aria-label={label} onClick={onClose}>
+    <button
+      type="button"
+      className="mx-path-close mx-tap-target"
+      data-testid="series-close"
+      aria-label={label}
+      onClick={onClose}
+    >
       <X size={18} strokeWidth={1.8} aria-hidden="true" />
     </button>
   )
@@ -391,6 +397,8 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
           <button
             type="button"
             role="tab"
+            className="mx-tap-target"
+            data-testid="series-tab-badges"
             aria-selected={activeTab === 'badges'}
             onClick={() => setActiveTab('badges')}
           >
@@ -399,6 +407,8 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
           <button
             type="button"
             role="tab"
+            className="mx-tap-target"
+            data-testid="series-tab-stats"
             aria-selected={activeTab === 'stats'}
             onClick={() => setActiveTab('stats')}
           >

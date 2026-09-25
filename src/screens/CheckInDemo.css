@@ -15,7 +15,9 @@
   align-items: center;
   justify-content: space-between;
   flex: 0 0 auto;
-  padding: 4px 20px 8px;
+  /* 16 px, как у тела шага и левого края текста: капсула «Назад» на той же
+     линии. Вертикальные отступы прежние — высота кнопки не меняется. */
+  padding: 4px var(--mx-screen-x) 8px;
 }
 
 .mx-demo-checkin__header-left {

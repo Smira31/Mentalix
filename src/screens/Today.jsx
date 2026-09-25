@@ -893,6 +893,8 @@ export default function Today({
         >
           <button
             type="button"
+            className="mx-tap-target"
+            data-testid="series-tooltip-close"
             aria-label="Закрыть подсказку о серии"
             onClick={() => {
               setSeriesTooltipClosing(true)
@@ -931,7 +933,8 @@ export default function Today({
           </p>
           <button
             type="button"
-            className="mx-today-cards-hint__close"
+            className="mx-today-cards-hint__close mx-tap-target"
+            data-testid="today-cards-hint-close"
             aria-label="Закрыть подсказку"
             onClick={() => {
               setCardsHintClosing(true)
