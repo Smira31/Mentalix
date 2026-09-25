@@ -465,19 +465,36 @@ function App() {
   const initialReturnFlow = parseReturnFlow(platform.getStartParam?.())
   const initialTab = initialReturnFlow ? null : searchParams.get('tab')
   const initialAction = searchParams.get('action')
-  const validTabs = ['today', 'practices', 'mentor', 'library', 'trends', 'history']
+  const validTabs = ['today', 'practices', 'mentor', 'library', 'trends']
   const actionTab = initialAction === 'breathing' ? 'practices' : 'today'
   const initialTodaySub =
     initialAction === 'checkin' || initialAction === 'evening' ? initialAction : null
 
-  const [tab, setTab] = useState(validTabs.includes(initialTab) ? initialTab : actionTab)
+  // ?tab=history → открывает «Прогресс» на вкладке «История»
+  const isHistoryInitial = initialTab === 'history'
+  const [tab, setTab] = useState(
+    isHistoryInitial ? 'trends' : validTabs.includes(initialTab) ? initialTab : actionTab
+  )
+  const [progressHistoryTrigger, setProgressHistoryTrigger] = useState(
+    () => (isHistoryInitial ? 1 : 0)
+  )
   const tabRef = useRef(tab)
   useEffect(() => {
     tabRef.current = tab
   }, [tab])
 
+  // ?tab=history → заменяем на ?tab=trends (история теперь сегмент внутри Прогресса)
+  useEffect(() => {
+    if (isHistoryInitial) {
+      const url = new URL(window.location.href)
+      url.searchParams.set('tab', 'trends')
+      window.history.replaceState(null, '', url)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const bottomNavigationHidden =
-    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen || tab === 'history'
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return
@@ -1367,22 +1384,7 @@ function App() {
             MAIN TABS
            ====================================================== */}
 
-              {!overlay && user && tab === 'history' && (
-                <div className="w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
-                  <div className="mx-history-back-offset flex min-h-[42px] items-center">
-                    <BackButton
-                      showInDemo
-                      onClick={() => {
-                        setTab('trends')
-                        scrollAppToTop()
-                      }}
-                    />
-                  </div>
-                  <History user={user} />
-                </div>
-              )}
-
-              {!overlay && tab !== 'history' && (
+              {!overlay && (
                 <>
                   {user && tab === 'today' && (
                     <Today
@@ -1425,9 +1427,10 @@ function App() {
                   {user && tab === 'trends' && (
                     <Analytics
                       user={user}
+                      historyTrigger={progressHistoryTrigger}
                       onOpenHistory={() => {
                         platform.haptic('light')
-                        setTab('history')
+                        setProgressHistoryTrigger(n => n + 1)
                         scrollAppToTop()
                       }}
                       onGoCheckin={() => {
@@ -1443,6 +1446,24 @@ function App() {
 
                         resetNavigationGesture()
 
+                        scrollAppToTop()
+                      }}
+                      onRedo={() => {
+                        platform.haptic('light')
+                        setMentorPersonaOpen(false)
+                        setTab('today')
+                        setPracticesSub(null)
+                        setNavCollapsed(false)
+                        resetNavigationGesture()
+                        scrollAppToTop()
+                      }}
+                      onRedoReview={() => {
+                        platform.haptic('light')
+                        setMentorPersonaOpen(false)
+                        setTab('today')
+                        setPracticesSub(null)
+                        setNavCollapsed(false)
+                        resetNavigationGesture()
                         scrollAppToTop()
                       }}
                     />

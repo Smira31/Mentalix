@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { fetchTrendsData, peekTrendsData, peekTrendsSnapshot } from '../lib/trendsDataCache'
 import { retrySources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { ANALYTICS_PERIODS } from '../lib/trendsDataSanitizer'
@@ -7,6 +7,8 @@ import { selectDescriptiveInsights } from '../lib/descriptiveInsights'
 import { api } from '../lib/api'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
+import ProgressHistory from './progress/ProgressHistory'
+import './progress/ProgressScreen.css'
 
 // Production now uses the owner-approved compact mobile composition. The
 // feature flag remains available for local comparison, while production
@@ -637,7 +639,65 @@ function Metric({ label, value, note, progress, children }) {
   )
 }
 
-export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
+const PROGRESS_SEGMENT_KEY = 'mx-progress-segment'
+
+export default function Analytics({ user, onGoCheckin, onOpenHistory, onRedo, onRedoReview, historyTrigger = 0 }) {
+  const rootRef = useRef(null)
+  const scrollPositions = useRef({ analytics: 0, history: 0 })
+  const skipScrollRestore = useRef(true)
+
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(PROGRESS_SEGMENT_KEY)
+      return saved === 'history' ? 'history' : 'analytics'
+    } catch {
+      return 'analytics'
+    }
+  })
+
+  // Persist segment choice in sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(PROGRESS_SEGMENT_KEY, activeTab)
+    } catch {
+      /* sessionStorage может быть недоступен (приватный режим) */
+    }
+  }, [activeTab])
+
+  // External trigger: onOpenHistory switches to History segment
+  useEffect(() => {
+    if (historyTrigger > 0) {
+      saveScroll()
+      setActiveTab('history')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [historyTrigger])
+
+  // Restore scroll position after tab switch
+  useEffect(() => {
+    if (skipScrollRestore.current) {
+      skipScrollRestore.current = false
+      return
+    }
+    const scrollRoot = rootRef.current?.closest('.mx-app-scroll-root')
+    if (scrollRoot) {
+      scrollRoot.scrollTop = scrollPositions.current[activeTab] || 0
+    }
+  }, [activeTab])
+
+  function saveScroll() {
+    const scrollRoot = rootRef.current?.closest('.mx-app-scroll-root')
+    if (scrollRoot) {
+      scrollPositions.current[activeTab] = scrollRoot.scrollTop
+    }
+  }
+
+  function handleSegmentClick(next) {
+    if (next === activeTab) return
+    saveScroll()
+    setActiveTab(next)
+  }
+
   const [initialTrendsState] = useState(() => {
     if (!user) return null
 
@@ -768,10 +828,39 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
 
   return (
     <div
+      ref={rootRef}
       className={`mx-progress-redesign mx-progress-redesign--live mx-type-page w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in${
         PROGRESS_LAYOUT_V2_ENABLED ? ' mx-progress-layout-v2' : ''
       }`}
     >
+      <div className="mx-progress-segment-bar">
+        <div
+          className="mx-progress-segment"
+          role="tablist"
+          aria-label="Прогресс: Аналитика и История"
+        >
+          <button
+            type="button"
+            role="tab"
+            data-testid="progress-tab-analytics"
+            aria-selected={activeTab === 'analytics'}
+            onClick={() => handleSegmentClick('analytics')}
+          >
+            Аналитика
+          </button>
+          <button
+            type="button"
+            role="tab"
+            data-testid="progress-tab-history"
+            aria-selected={activeTab === 'history'}
+            onClick={() => handleSegmentClick('history')}
+          >
+            История
+          </button>
+        </div>
+      </div>
+      {activeTab === 'analytics' && (
+        <>
       <header className="mx-progress-redesign__header">
         <h2
           className={`font-display mx-type-page text-cream lowercase${
@@ -781,15 +870,6 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
           прогресс.
         </h2>
         <div className="flex items-center gap-2">
-          {onOpenHistory && (
-            <button
-              type="button"
-              className="mx-progress-layout-v2__period-trigger mx-type-control"
-              onClick={onOpenHistory}
-            >
-              История
-            </button>
-          )}
           {PROGRESS_LAYOUT_V2_ENABLED ? (
             <div className="mx-progress-layout-v2__period-control">
               <button
@@ -972,6 +1052,16 @@ export default function Analytics({ user, onGoCheckin, onOpenHistory }) {
             </div>
           </section>
         </>
+      )}
+        </>
+      )}
+      {activeTab === 'history' && (
+        <ProgressHistory
+          user={user}
+          onGoCheckin={onGoCheckin}
+          onRedo={onRedo}
+          onRedoReview={onRedoReview}
+        />
       )}
     </div>
   )
