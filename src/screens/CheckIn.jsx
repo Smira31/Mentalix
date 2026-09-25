@@ -18,6 +18,7 @@ import {
 } from '../lib/fullscreenSurface'
 import { consumeMoodDraft } from '../lib/moodCheckDraft'
 import EmotionStep from '../components/EmotionStep'
+import StepSlide from '../components/StepSlide'
 import {
   clearCheckinDraft,
   draftHasContent,
@@ -258,6 +259,21 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
   const doneStep = noteStep + 1
   const streakStep = doneStep + 1
 
+  /*
+   * §6: во время горизонтального перехода (300 мс) повторная навигация
+   * блокируется, чтобы не пропустить шаг и не сломать состояние.
+   */
+  const animatingRef = useRef(false)
+
+  function goToStep(updater) {
+    if (animatingRef.current) return
+    setStep(updater)
+  }
+
+  function handleAnimatingChange(animating) {
+    animatingRef.current = animating
+  }
+
   function handleBack() {
     platform.haptic('light')
 
@@ -266,7 +282,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       return
     }
 
-    setStep(current => Math.max(0, current - 1))
+    goToStep(current => Math.max(0, current - 1))
   }
 
   function pick(key, level) {
@@ -320,7 +336,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
     step === streakStep
       ? { text: 'Закрыть', testId: 'checkin-back-to-today', onClick: onDone }
       : step === noteStep
-        ? { text: 'Продолжить', onClick: () => setStep(doneStep), disabled: !note.trim() }
+        ? { text: 'Продолжить', onClick: () => goToStep(doneStep), disabled: !note.trim() }
         : step === doneStep
           ? {
               // Текст не убирается на время сохранения: спиннер рисуется
@@ -330,7 +346,7 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
               onClick: finish,
               disabled: saving,
             }
-          : { text: 'Продолжить', onClick: () => setStep(current => current + 1), disabled: false }
+          : { text: 'Продолжить', onClick: () => goToStep(current => current + 1), disabled: false }
 
   useMainButton({
     text: action.text,
@@ -351,119 +367,121 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
       </header>
 
       <main className={`mx-demo-checkin__body ${step === noteStep ? 'is-editor' : ''}`}>
-        {scale && (
-          <CheckInScaleQuestion
-            scale={scale}
-            value={values[scale.key]}
-            onPick={level => pick(scale.key, level)}
-          />
-        )}
-
-        {step === noteStep && (
-          <CheckInQuestion
-            title="Что на уме?"
-            hint="Пара слов — уже разговор с собой."
-            className="mx-demo-checkin__editor-scene"
-          >
-            <JournalTextarea
-              value={note}
-              onChange={setNote}
-              placeholder="Начни писать…"
-              ariaLabel="Что на уме"
-              testId="checkin-text-input"
-              className="mx-demo-checkin__editor"
-              editorClassName="pb-28"
-              floatingToolbar
-              guidedFlow
-              autoFocus
-              keepFocusOnSubmit
-              submitIcon="arrow"
-              submitLabel="Далее"
-              submitTestId="checkin-next"
-              onSubmit={() => setStep(doneStep)}
-              onDeepen={() => {}}
-              deepenLabel="Пойти глубже"
-              showAddAction
-              formatting
+        <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
+          {scale && (
+            <CheckInScaleQuestion
+              scale={scale}
+              value={values[scale.key]}
+              onPick={level => pick(scale.key, level)}
             />
-          </CheckInQuestion>
-        )}
+          )}
 
-        {step === doneStep && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-            <CheckInCompletionArt />
-            <h1>Готово.</h1>
-            <p className="mx-demo-checkin__feedback-prompt">Было полезно?</p>
-            <div className="mx-demo-checkin__feedback" data-testid="checkin-feedback-row">
-              {CHECKIN_FEEDBACK_OPTIONS.map(option => {
-                const Icon = FEEDBACK_ICONS[option.value]
-
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    data-testid="checkin-feedback-option"
-                    data-value={option.value}
-                    className={feedback === option.label ? 'is-selected' : ''}
-                    onClick={() => {
-                      platform.haptic('light')
-                      setFeedback(option.label)
-                    }}
-                  >
-                    <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
-                    {option.label}
-                  </button>
-                )
-              })}
-            </div>
-            {/* Слот ошибки всегда занимает место: сообщение об ошибке не
-                сдвигает иллюстрацию и заголовок (компоновка не «прыгает»). */}
-            <div className="mx-demo-checkin__error-slot" aria-live="polite">
-              {error ? (
-                <p role="alert" className="mx-demo-checkin__error">
-                  {error}
-                </p>
-              ) : null}
-            </div>
-          </section>
-        )}
-
-        {step === streakStep && (
-          <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-            <StreakFlower />
-            <h1>{streak}-дневная серия.</h1>
-            <p>внутренняя работа — это путь. ты только что сделал ещё один шаг.</p>
-            <div
-              className="mt-6 grid w-full max-w-sm gap-2"
-              style={{
-                gridTemplateColumns: `repeat(${buildStreakDays(streakHistory, streak).length}, minmax(0, 1fr))`,
-              }}
-              role="group"
-              aria-label="Дни текущей серии"
+          {step === noteStep && (
+            <CheckInQuestion
+              title="Что на уме?"
+              hint="Пара слов — уже разговор с собой."
+              className="mx-demo-checkin__editor-scene"
             >
-              {buildStreakDays(streakHistory, streak).map(day => {
-                const active = day.completed || day.isToday
-                return (
-                  <div key={day.isoDate} className="flex flex-col items-center gap-1">
-                    <span
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border ${active ? 'border-cream bg-cream text-emerald-deep' : 'border-cream/10 bg-emerald text-muted'}`}
+              <JournalTextarea
+                value={note}
+                onChange={setNote}
+                placeholder="Начни писать…"
+                ariaLabel="Что на уме"
+                testId="checkin-text-input"
+                className="mx-demo-checkin__editor"
+                editorClassName="pb-28"
+                floatingToolbar
+                guidedFlow
+                autoFocus
+                keepFocusOnSubmit
+                submitIcon="arrow"
+                submitLabel="Далее"
+                submitTestId="checkin-next"
+                onSubmit={() => goToStep(doneStep)}
+                onDeepen={() => {}}
+                deepenLabel="Пойти глубже"
+                showAddAction
+                formatting
+              />
+            </CheckInQuestion>
+          )}
+
+          {step === doneStep && (
+            <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
+              <CheckInCompletionArt />
+              <h1>Готово.</h1>
+              <p className="mx-demo-checkin__feedback-prompt">Было полезно?</p>
+              <div className="mx-demo-checkin__feedback" data-testid="checkin-feedback-row">
+                {CHECKIN_FEEDBACK_OPTIONS.map(option => {
+                  const Icon = FEEDBACK_ICONS[option.value]
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      data-testid="checkin-feedback-option"
+                      data-value={option.value}
+                      className={feedback === option.label ? 'is-selected' : ''}
+                      onClick={() => {
+                        platform.haptic('light')
+                        setFeedback(option.label)
+                      }}
                     >
-                      {active ? <Flame size={15} aria-hidden="true" /> : null}
-                    </span>
-                    <span className="text-[10px] text-muted">{day.label}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-        )}
+                      <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
+                      {option.label}
+                    </button>
+                  )
+                })}
+              </div>
+              {/* Слот ошибки всегда занимает место: сообщение об ошибке не
+                сдвигает иллюстрацию и заголовок (компоновка не «прыгает»). */}
+              <div className="mx-demo-checkin__error-slot" aria-live="polite">
+                {error ? (
+                  <p role="alert" className="mx-demo-checkin__error">
+                    {error}
+                  </p>
+                ) : null}
+              </div>
+            </section>
+          )}
+
+          {step === streakStep && (
+            <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
+              <StreakFlower />
+              <h1>{streak}-дневная серия.</h1>
+              <p>внутренняя работа — это путь. ты только что сделал ещё один шаг.</p>
+              <div
+                className="mt-6 grid w-full max-w-sm gap-2"
+                style={{
+                  gridTemplateColumns: `repeat(${buildStreakDays(streakHistory, streak).length}, minmax(0, 1fr))`,
+                }}
+                role="group"
+                aria-label="Дни текущей серии"
+              >
+                {buildStreakDays(streakHistory, streak).map(day => {
+                  const active = day.completed || day.isToday
+                  return (
+                    <div key={day.isoDate} className="flex flex-col items-center gap-1">
+                      <span
+                        className={`flex h-9 w-9 items-center justify-center rounded-full border ${active ? 'border-cream bg-cream text-emerald-deep' : 'border-cream/10 bg-emerald text-muted'}`}
+                      >
+                        {active ? <Flame size={15} aria-hidden="true" /> : null}
+                      </span>
+                      <span className="text-[10px] text-muted">{day.label}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+        </StepSlide>
       </main>
       {step < noteStep ? (
         <CheckInNextControls
-          onNext={() => setStep(current => Math.min(doneStep, current + 1))}
+          onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
           disabled={step < noteStep ? !values[MORNING_SCALE_STEPS[step].key] : !note.trim()}
           onSkip={
-            step < noteStep ? () => setStep(current => Math.min(doneStep, current + 1)) : null
+            step < noteStep ? () => goToStep(current => Math.min(doneStep, current + 1)) : null
           }
         />
       ) : null}
@@ -779,6 +797,21 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   )
 
   const { style: viewportStyle } = useFullscreenSurface()
+
+  /*
+   * §6: во время горизонтального перехода (300 мс) повторная навигация
+   * блокируется, чтобы не пропустить шаг и не сломать состояние.
+   */
+  const animatingRef = useRef(false)
+
+  function goToStep(updater) {
+    if (animatingRef.current) return
+    setStep(updater)
+  }
+
+  function handleAnimatingChange(animating) {
+    animatingRef.current = animating
+  }
 
   function pick(key, level) {
     platform.haptic('light')
@@ -1110,7 +1143,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       return
     }
 
-    setStep(current => current - 1)
+    goToStep(current => current - 1)
   }
 
   const screenRef = useRef(null)
@@ -1136,12 +1169,12 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       : isEmotionStep
         ? {
             text: 'Дальше',
-            run: () => setStep(step + 1),
+            run: () => goToStep(current => current + 1),
           }
         : isScaleStep
           ? {
               text: 'Далее',
-              run: () => setStep(step + 1),
+              run: () => goToStep(current => current + 1),
               disabled: !values[scale?.key],
             }
           : isCard
@@ -1156,9 +1189,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                 run: () =>
                   isEvening
                     ? cardIdx < cardCount - 1
-                      ? setStep(step + 1)
+                      ? goToStep(current => current + 1)
                       : submit()
-                    : setStep(doneStep),
+                    : goToStep(doneStep),
               }
             : null
 
@@ -1214,9 +1247,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       : null
 
   const compactStepAction = isEmotionStep
-    ? () => setStep(step + 1)
+    ? () => goToStep(current => current + 1)
     : isScaleStep
-      ? () => setStep(step + 1)
+      ? () => goToStep(current => current + 1)
       : null
 
   const compactStepDisabled = isEmotionStep
@@ -1399,7 +1432,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     (isEmotionStep
       ? 'Что ближе всего к тому, что ты чувствуешь?'
       : isEvening
-        ? (eveningQuestion?.label || (isAlterEgoCard ? `Был ли ты сегодня ${alterEgoName}?` : ''))
+        ? eveningQuestion?.label || (isAlterEgoCard ? `Был ли ты сегодня ${alterEgoName}?` : '')
         : cardIdx === 0
           ? previewDemoMode
             ? 'Что сегодня важно не потерять?'
@@ -1411,7 +1444,9 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     (isEmotionStep
       ? null
       : isEvening
-        ? (isAlterEgoCard ? 'Когда получилось, а когда нет?' : 'Пара слов — уже разговор с собой. Можно пропустить.')
+        ? isAlterEgoCard
+          ? 'Когда получилось, а когда нет?'
+          : 'Пара слов — уже разговор с собой. Можно пропустить.'
         : cardIdx === 0
           ? previewDemoMode
             ? 'Запиши одну мысль — коротко или подробно.'
@@ -1429,82 +1464,155 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
-        <div
-          key={step}
-          className={`${isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS} mx-checkin-step-enter`}
-        >
-          {!isScaleStep && (
-            <CheckInQuestion
-              title={questionTitle}
-              hint={questionSubtitle}
-              headingAs="h2"
-              className={isCard ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
-              headingClassName={[
-                'font-display text-cream',
-                isMorningNoteStep
-                  ? 'text-[30px] leading-[1.12]'
-                  : isEmotionStep
-                    ? 'text-[22px] font-semibold leading-[1.3]'
+        <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
+          <div className={isCard ? CHECKIN_LONG_CLASS : CHECKIN_CENTER_CLASS}>
+            {!isScaleStep && (
+              <CheckInQuestion
+                title={questionTitle}
+                hint={questionSubtitle}
+                headingAs="h2"
+                className={isCard ? 'w-full text-left' : CHECKIN_QUESTION_CLASS}
+                headingClassName={[
+                  'font-display text-cream',
+                  isMorningNoteStep
+                    ? 'text-[30px] leading-[1.12]'
+                    : isEmotionStep
+                      ? 'text-[22px] font-semibold leading-[1.3]'
+                      : isEvening && isCard
+                        ? 'text-[22px] font-bold leading-[1.2]'
+                        : 'text-[26px] leading-tight',
+                ].join(' ')}
+                hintClassName={[
+                  'text-[14px] text-muted',
+                  isMorningNoteStep
+                    ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
                     : isEvening && isCard
-                      ? 'text-[22px] font-bold leading-[1.2]'
-                      : 'text-[26px] leading-tight',
-              ].join(' ')}
-              hintClassName={[
-                'text-[14px] text-muted',
-                isMorningNoteStep
-                  ? 'mt-5 border-l border-gold pl-4 leading-relaxed'
-                  : isEvening && isCard
-                    ? 'mt-[6px] text-[15px]'
-                    : 'mt-2',
-              ].join(' ')}
-            />
-          )}
-
-          <div
-            className={
-              isCard
-                ? `${isMorningNoteStep ? 'w-full pt-6' : CHECKIN_INTERACTIVE_CLASS} flex flex-1 flex-col`
-                : CHECKIN_INTERACTIVE_CLASS
-            }
-          >
-            {/* ── шкалы ── */}
-
-            {isScaleStep && scale && (
-              <div key={step} className="w-full flex flex-col items-center">
-                <CheckInScaleQuestion
-                  scale={scale}
-                  value={values[scale.key]}
-                  onPick={level => pick(scale.key, level)}
-                />
-              </div>
-            )}
-
-            {/* ── эмоции ── */}
-
-            {isEmotionStep && (
-              <EmotionStep
-                key="emo"
-                initialLevel={moodLevel}
-                emotion={emotion}
-                onEmotionChange={setEmotion}
-                onHeavyEmotionClick={openListener}
-                testId="checkin-emotion-pill"
+                      ? 'mt-[6px] text-[15px]'
+                      : 'mt-2',
+                ].join(' ')}
               />
             )}
 
-            {/* ── уроки / мысль ── */}
-            {isCard && cardIdx < LESSON_FIELDS.length && (
-              <div key="c1" className="w-full flex flex-1 flex-col items-center">
-                {isEvening ? (
+            <div
+              className={
+                isCard
+                  ? `${isMorningNoteStep ? 'w-full pt-6' : CHECKIN_INTERACTIVE_CLASS} flex flex-1 flex-col`
+                  : CHECKIN_INTERACTIVE_CLASS
+              }
+            >
+              {/* ── шкалы ── */}
+
+              {isScaleStep && scale && (
+                <div key={step} className="w-full flex flex-col items-center">
+                  <CheckInScaleQuestion
+                    scale={scale}
+                    value={values[scale.key]}
+                    onPick={level => pick(scale.key, level)}
+                  />
+                </div>
+              )}
+
+              {/* ── эмоции ── */}
+
+              {isEmotionStep && (
+                <EmotionStep
+                  key="emo"
+                  initialLevel={moodLevel}
+                  emotion={emotion}
+                  onEmotionChange={setEmotion}
+                  onHeavyEmotionClick={openListener}
+                  testId="checkin-emotion-pill"
+                />
+              )}
+
+              {/* ── уроки / мысль ── */}
+              {isCard && cardIdx < LESSON_FIELDS.length && (
+                <div key="c1" className="w-full flex flex-1 flex-col items-center">
+                  {isEvening ? (
+                    <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
+                      <JournalTextarea
+                        value={lessons[eveningQuestion.key] || ''}
+                        onChange={value =>
+                          setLessons(current => ({ ...current, [eveningQuestion.key]: value }))
+                        }
+                        placeholder={eveningQuestion.placeholder}
+                        ariaLabel={eveningQuestion.label}
+                        testId="checkin-text-input"
+                        className="min-h-[18rem] flex-1"
+                        editorClassName="mx-checkin-evening-editor"
+                        floatingToolbar
+                        guidedFlow
+                        autoFocus
+                        keepFocusOnSubmit
+                        submitIcon="arrow"
+                        submitLabel="Далее"
+                        submitTestId="checkin-next"
+                        onSubmit={() =>
+                          cardIdx < cardCount - 1 ? goToStep(current => current + 1) : submit()
+                        }
+                        onDeepen={() => {}}
+                        deepenLabel="Пойти глубже"
+                        submitLoading={saving}
+                        formatting
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
+                      <p
+                        role="status"
+                        aria-live="polite"
+                        className="min-h-5 mt-3 text-[12px] text-muted"
+                      >
+                        {draftStatus === 'pending'
+                          ? 'Есть несохранённая запись'
+                          : draftStatus === 'saved'
+                            ? 'Черновик сохранён локально'
+                            : draftStatus === 'restored'
+                              ? 'Черновик восстановлен на этом устройстве'
+                              : draftStatus === 'error'
+                                ? 'Не удалось сохранить черновик локально'
+                                : 'Текст сохраняется только после завершения чек-ина'}
+                      </p>
+                      <JournalTextarea
+                        value={morningDraft?.brief || ''}
+                        onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
+                        placeholder={previewDemoMode ? 'Начни писать' : MORNING_NOTE_PLACEHOLDER}
+                        ariaLabel="Что на уме"
+                        testId="checkin-text-input"
+                        className="min-h-[18rem] flex-1"
+                        editorClassName="pb-24"
+                        floatingToolbar
+                        guidedFlow={previewDemoMode}
+                        autoFocus
+                        keepFocusOnSubmit={previewDemoMode}
+                        submitIcon="arrow"
+                        onSubmit={() => submit()}
+                        submitLabel="Завершить чек-ин"
+                        submitTestId="checkin-complete"
+                        submitLoading={saving}
+                        onDeepen={deepenMorningNote}
+                        showAddAction
+                      />
+                    </div>
+                  )}
+                  {error && (
+                    <p className="text-[13px] text-muted text-center mt-4">
+                      Не получилось сохранить — проверь связь
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* ── альтер-эго (последняя страница разбора) ── */}
+              {isCard && isAlterEgoCard && (
+                <div key="alter-ego" className="w-full flex flex-1 flex-col items-center">
                   <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
                     <JournalTextarea
-                      value={lessons[eveningQuestion.key] || ''}
-                      onChange={value =>
-                        setLessons(current => ({ ...current, [eveningQuestion.key]: value }))
-                      }
-                      placeholder={eveningQuestion.placeholder}
-                      ariaLabel={eveningQuestion.label}
-                      testId="checkin-text-input"
+                      value={alterEgoAnswer}
+                      onChange={setAlterEgoAnswer}
+                      placeholder="Начни писать…"
+                      ariaLabel={`Был ли ты сегодня ${alterEgoName}?`}
+                      testId="alter-ego-evening-input"
                       className="min-h-[18rem] flex-1"
                       editorClassName="mx-checkin-evening-editor"
                       floatingToolbar
@@ -1512,97 +1620,25 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
                       autoFocus
                       keepFocusOnSubmit
                       submitIcon="arrow"
-                      submitLabel="Далее"
-                      submitTestId="checkin-next"
-                      onSubmit={() => (cardIdx < cardCount - 1 ? setStep(step + 1) : submit())}
+                      submitLabel="Закрыть день"
+                      submitTestId="checkin-save"
+                      onSubmit={() => submit()}
                       onDeepen={() => {}}
                       deepenLabel="Пойти глубже"
                       submitLoading={saving}
                       formatting
                     />
                   </div>
-                ) : (
-                  <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
-                    <p
-                      role="status"
-                      aria-live="polite"
-                      className="min-h-5 mt-3 text-[12px] text-muted"
-                    >
-                      {draftStatus === 'pending'
-                        ? 'Есть несохранённая запись'
-                        : draftStatus === 'saved'
-                          ? 'Черновик сохранён локально'
-                          : draftStatus === 'restored'
-                            ? 'Черновик восстановлен на этом устройстве'
-                            : draftStatus === 'error'
-                              ? 'Не удалось сохранить черновик локально'
-                              : 'Текст сохраняется только после завершения чек-ина'}
+                  {error && (
+                    <p className="text-[13px] text-muted text-center mt-4">
+                      Не получилось сохранить — проверь связь
                     </p>
-                    <JournalTextarea
-                      value={morningDraft?.brief || ''}
-                      onChange={value => updateMorningDraft({ mode: 'brief', brief: value })}
-                      placeholder={previewDemoMode ? 'Начни писать' : MORNING_NOTE_PLACEHOLDER}
-                      ariaLabel="Что на уме"
-                      testId="checkin-text-input"
-                      className="min-h-[18rem] flex-1"
-                      editorClassName="pb-24"
-                      floatingToolbar
-                      guidedFlow={previewDemoMode}
-                      autoFocus
-                      keepFocusOnSubmit={previewDemoMode}
-                      submitIcon="arrow"
-                      onSubmit={() => submit()}
-                      submitLabel="Завершить чек-ин"
-                      submitTestId="checkin-complete"
-                      submitLoading={saving}
-                      onDeepen={deepenMorningNote}
-                      showAddAction
-                    />
-                  </div>
-                )}
-                {error && (
-                  <p className="text-[13px] text-muted text-center mt-4">
-                    Не получилось сохранить — проверь связь
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* ── альтер-эго (последняя страница разбора) ── */}
-            {isCard && isAlterEgoCard && (
-              <div key="alter-ego" className="w-full flex flex-1 flex-col items-center">
-                <div className="w-full max-w-md mx-auto flex min-h-0 flex-1 flex-col">
-                  <JournalTextarea
-                    value={alterEgoAnswer}
-                    onChange={setAlterEgoAnswer}
-                    placeholder="Начни писать…"
-                    ariaLabel={`Был ли ты сегодня ${alterEgoName}?`}
-                    testId="alter-ego-evening-input"
-                    className="min-h-[18rem] flex-1"
-                    editorClassName="mx-checkin-evening-editor"
-                    floatingToolbar
-                    guidedFlow
-                    autoFocus
-                    keepFocusOnSubmit
-                    submitIcon="arrow"
-                    submitLabel="Закрыть день"
-                    submitTestId="checkin-save"
-                    onSubmit={() => submit()}
-                    onDeepen={() => {}}
-                    deepenLabel="Пойти глубже"
-                    submitLoading={saving}
-                    formatting
-                  />
+                  )}
                 </div>
-                {error && (
-                  <p className="text-[13px] text-muted text-center mt-4">
-                    Не получилось сохранить — проверь связь
-                  </p>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </StepSlide>
       </div>
 
       {closeConfirmationOpen && (
@@ -1649,7 +1685,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
         <CheckInNextControls
           onNext={compactStepAction}
           disabled={compactStepDisabled}
-          onSkip={isScaleStep ? () => setStep(step + 1) : null}
+          onSkip={isScaleStep ? () => goToStep(current => current + 1) : null}
           variant={isEmotionStep ? 'emotion' : 'scale'}
         />
       ) : null}
