@@ -11,6 +11,27 @@ function dayNumber(value) {
   return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) / 86400000
 }
 
+function logicalDateKey(value, timezone) {
+  if (!timezone) return localDayKey(value)
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(value)
+    const fields = Object.fromEntries(parts.map(part => [part.type, part.value]))
+    const day = `${fields.year}-${fields.month}-${fields.day}`
+    return Number(fields.hour) < 5
+      ? new Date((dayNumber(day) - 1) * 86400000).toISOString().slice(0, 10)
+      : day
+  } catch {
+    return localDayKey(value)
+  }
+}
+
 function dateKey(checkin, timezone = 'UTC') {
   if (checkin?.date && Number.isFinite(dayNumber(checkin.date))) {
     return String(checkin.date).slice(0, 10)
@@ -21,18 +42,7 @@ function dateKey(checkin, timezone = 'UTC') {
   const parsed = new Date(raw)
   if (Number.isNaN(parsed.getTime())) return null
 
-  try {
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: timezone || 'UTC',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    }).formatToParts(parsed)
-    const values = Object.fromEntries(parts.map(part => [part.type, part.value]))
-    return `${values.year}-${values.month}-${values.day}`
-  } catch {
-    return parsed.toISOString().slice(0, 10)
-  }
+  return logicalDateKey(parsed, timezone || 'UTC')
 }
 
 function isCompleted(checkin) {
@@ -79,8 +89,7 @@ export function collectActivityDays({
   const hasRitualToday = Array.isArray(rituals) && rituals.some(r => r?.today_level)
   const hasAscezaToday = Array.isArray(ascezas) && ascezas.some(a => a?.today_status)
   if (hasRitualToday || hasAscezaToday) {
-    const pad = value => String(value).padStart(2, '0')
-    days.add(`${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`)
+    days.add(logicalDateKey(now))
   }
 
   // Записи практики «Настроение»
@@ -115,8 +124,46 @@ function completedDays(checkins = [], timezone = 'UTC', activityDays = []) {
 }
 
 function localDayKey(now) {
+  const day = new Date(now)
+  if (day.getHours() < 5) day.setDate(day.getDate() - 1)
   const pad = value => String(value).padStart(2, '0')
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+  return `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}`
+}
+
+function weekStart(day) {
+  return day - ((new Date(day * 86400000).getUTCDay() + 6) % 7)
+}
+
+function streakRuns(days) {
+  let longest = 0
+  let run = 0
+  let frozenWeeks = new Set()
+  let previous = null
+
+  for (const day of days) {
+    if (!Number.isFinite(day)) continue
+    const missed = previous === null ? 0 : day - previous - 1
+    // Две и более подряд пропущенные даты могут быть допустимы только на стыке вс/пн.
+    let allowed = missed <= 2
+    if (allowed && previous !== null) {
+      for (let gap = previous + 1; gap < day; gap += 1) {
+        const week = weekStart(gap)
+        if (frozenWeeks.has(week)) {
+          allowed = false
+          break
+        }
+        frozenWeeks.add(week)
+      }
+    }
+    if (!allowed) {
+      run = 0
+      frozenWeeks = new Set()
+    }
+    run += 1
+    longest = Math.max(longest, run)
+    previous = day
+  }
+  return { longest, run, frozenWeeks }
 }
 
 /**
@@ -137,26 +184,23 @@ export function currentCheckinStreak(checkins = [], options = {}) {
   const days = completedDays(checkins, options.timezone, options.activityDays)
   if (!days.length) return 0
 
-  let streak = 1
-  for (let index = days.length - 1; index > 0; index -= 1) {
-    if (days[index] - days[index - 1] !== 1) break
-    streak += 1
+  const { run, frozenWeeks } = streakRuns(days)
+  const today = dayNumber(logicalDateKey(options.now || clockNow(), options.timezone))
+  const lastDay = days[days.length - 1]
+  const missed = today - lastDay - 1
+  // Сегодня ещё можно завершить: проверяем только прошедшие дни.
+  if (missed > 2) return 0
+  for (let day = lastDay + 1; day < today; day += 1) {
+    const week = weekStart(day)
+    if (frozenWeeks.has(week)) return 0
+    frozenWeeks.add(week)
   }
-  return streak
+  return run
 }
 
 export function longestCheckinStreak(checkins = [], options = {}) {
   const days = completedDays(checkins, options.timezone, options.activityDays)
-  if (!days.length) return 0
-
-  let longest = 1
-  let run = 1
-  for (let index = 1; index < days.length; index += 1) {
-    if (days[index] - days[index - 1] === 1) run += 1
-    else run = 1
-    longest = Math.max(longest, run)
-  }
-  return longest
+  return streakRuns(days).longest
 }
 
 export function buildSeriesViewModel({
@@ -169,7 +213,12 @@ export function buildSeriesViewModel({
   timezone,
 } = {}) {
   const resolvedTimezone =
-    timezone || stats?.timezone || stats?.user_timezone || stats?.time_zone || 'UTC'
+    timezone ||
+    stats?.timezone ||
+    stats?.user_timezone ||
+    stats?.time_zone ||
+    Intl.DateTimeFormat().resolvedOptions().timeZone ||
+    'UTC'
   const activityDays = collectActivityDays({ rituals, ascezas, moodPractices, practiceDays })
   const completed = checkins.filter(isCompleted)
   const activeDays = completedDays(checkins, resolvedTimezone, activityDays).length

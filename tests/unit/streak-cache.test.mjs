@@ -67,7 +67,7 @@ test('без кэша до загрузки истории — огонь без
 test('после загрузки истории число считается по истории', () => {
   const streak = resolveDisplayedStreak({
     historyLoaded: true,
-    history: [{ date: '2020-01-01' }],
+    history: [{ date: dayKey(0) }],
     checkin: null,
     cachedStreak: 6,
   })
