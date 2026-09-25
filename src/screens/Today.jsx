@@ -3,6 +3,7 @@ import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
 import { fetchTodayDataWithRetry, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
+import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
 import './Today.css'
@@ -55,6 +56,9 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 // the main flow; the underlying data and destination remain available in their
 // dedicated screens.
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
+
+// §6 Motion: подсписок subs, закрытие которых анимируется уездом слоя вниз.
+const CHECKIN_SUBS = ['checkin', 'evening', 'redoCheckin', 'redoReview']
 
 // ── календарь недели + отдельные дневные streak strips ──
 
@@ -288,6 +292,9 @@ export default function Today({
   const [cardsHintClosing, setCardsHintClosing] = useState(false)
   const cardsHintRef = useRef(null)
 
+  // §6 Motion — сжатие карточки при возврате из чек-ина (260→233, 130 ms)
+  const [cardCompressing, setCardCompressing] = useState(false)
+
   const [seriesTooltipClosing, setSeriesTooltipClosing] = useState(false)
   const seriesTooltipRef = useRef(null)
 
@@ -333,6 +340,59 @@ export default function Today({
     [onFlowChange, onReturnFlowEvent, returnFlowActive]
   )
 
+  /*
+   * §6 Motion — анимация закрытия слоя чек-ина (уезд вниз, 170 ms ease-in).
+   * ref защищает от двойных нажатий во время анимации: слой не открывается
+   * дважды, состояние не ломается. CSS-анимация запускается через data-атрибут
+   * на портале, после таймаута — размонтирование.
+   */
+  const checkInExitingRef = useRef(false)
+
+  const triggerCheckInExit = useCallback(callback => {
+    if (checkInExitingRef.current) return
+    checkInExitingRef.current = true
+
+    const root = getFullscreenPortalTarget()
+    if (root) root.setAttribute('data-fullscreen-exit', 'true')
+
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    const duration = reducedMotion ? 150 : 170
+
+    setTimeout(() => {
+      if (root) root.removeAttribute('data-fullscreen-exit')
+      checkInExitingRef.current = false
+      callback()
+    }, duration)
+  }, [])
+
+  /*
+   * §6 Motion — анимация закрытия шторки серии (уезд вниз, 200 ms ease-in).
+   */
+  const seriesExitingRef = useRef(false)
+
+  const triggerSeriesExit = useCallback(callback => {
+    if (seriesExitingRef.current) return
+    seriesExitingRef.current = true
+
+    const root = getFullscreenPortalTarget()
+    if (root) root.setAttribute('data-sheet-exit', 'true')
+
+    const reducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+
+    const duration = reducedMotion ? 150 : 200
+
+    setTimeout(() => {
+      if (root) root.removeAttribute('data-sheet-exit')
+      seriesExitingRef.current = false
+      callback()
+    }, duration)
+  }, [])
+
   function retryTodayData() {
     if (!user) return
 
@@ -349,12 +409,21 @@ export default function Today({
   }, [onFlowChange])
 
   useEffect(() => {
-    const handler = seriesOpen ? onCloseSeries : sub ? () => changeSub(null) : null
+    let handler
+    if (seriesOpen) {
+      handler = () => triggerSeriesExit(() => onCloseSeries())
+    } else if (CHECKIN_SUBS.includes(sub)) {
+      handler = () => triggerCheckInExit(() => changeSub(null))
+    } else if (sub) {
+      handler = () => changeSub(null)
+    } else {
+      handler = null
+    }
 
     onRegisterBack?.(handler)
 
     return () => onRegisterBack?.(null)
-  }, [changeSub, onCloseSeries, onRegisterBack, seriesOpen, sub])
+  }, [changeSub, onCloseSeries, onRegisterBack, seriesOpen, sub, triggerCheckInExit, triggerSeriesExit])
 
   async function refreshCheckin() {
     if (!user) return
@@ -534,8 +603,12 @@ export default function Today({
             await onReturnFlowEvent?.('morning_action_completed')
           }
 
-          changeSub(null)
-          if (result?.newBadge) setNewBadge(result.newBadge)
+          triggerCheckInExit(() => {
+            changeSub(null)
+            setCardCompressing(true)
+            if (result?.newBadge) setNewBadge(result.newBadge)
+            setTimeout(() => setCardCompressing(false), 130)
+          })
         }}
       />
     )
@@ -550,7 +623,7 @@ export default function Today({
         redo
         onDone={async () => {
           await refreshCheckin()
-          changeSub(null)
+          triggerCheckInExit(() => changeSub(null))
         }}
       />
     )
@@ -565,7 +638,7 @@ export default function Today({
         redo
         onDone={async () => {
           await refreshCheckin()
-          changeSub(null)
+          triggerCheckInExit(() => changeSub(null))
         }}
       />
     )
@@ -892,7 +965,7 @@ export default function Today({
   }
 
   return (
-    <div className="mx-screen-shell">
+    <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
       <TodayWorkspaceHeader
         onOpenSettings={onOpenSettings}
