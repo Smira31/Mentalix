@@ -800,6 +800,16 @@ body::-webkit-scrollbar,
   scrollbar-width: none;
 }
 
+/* Real phone demo: lock document scroll so only mx-app-scroll-root scrolls.
+   Without the device frame the outer shell uses 100dvh, but html/body keep
+   overflow-y: auto (CSS quirk from overflow-x: hidden), so the body can
+   scroll instead of the scroll-root — breaking nav collapse. */
+.mx-real-phone-demo,
+.mx-real-phone-demo body {
+  overflow: hidden !important;
+  height: 100dvh !important;
+}
+
 .mx-app-scroll-root::-webkit-scrollbar {
   display: none;
   width: 0;

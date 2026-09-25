@@ -45,3 +45,27 @@ test('Telegram-контекст скрывает кастомные кнопки
     false
   )
 })
+
+test('настоящему телефону imитация шапки Telegram не нужна', () => {
+  assert.equal(
+    shouldRenderDemoTelegramChrome({
+      previewDemoMode: true,
+      platformName: 'web',
+      realPhone: true,
+      windowLike: browserWindow,
+    }),
+    false
+  )
+})
+
+test('на ПК в демо-режиме шапка Telegram имитируется', () => {
+  assert.equal(
+    shouldRenderDemoTelegramChrome({
+      previewDemoMode: true,
+      platformName: 'web',
+      realPhone: false,
+      windowLike: browserWindow,
+    }),
+    true
+  )
+})

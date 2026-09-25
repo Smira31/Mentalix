@@ -1,0 +1,91 @@
+name: Firebase PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+concurrency:
+  group: firebase-pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22.22.1
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build demo preview
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: /api
+          VITE_LOCAL_PREVIEW: 'true'
+
+      - name: Deploy PR preview
+        id: deploy
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          channelId: pr-${{ github.event.pull_request.number }}
+          expires: 7d
+
+      - name: Comment demo links
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.details_url }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { TODAY_PREVIEW_STATES } = await import(
+              `file://${process.env.GITHUB_WORKSPACE}/src/lib/demoMode.js`
+            )
+            const base = new URL(process.env.PREVIEW_URL)
+            const link = state => {
+              const url = new URL('/', base)
+              url.searchParams.set('demo', '1')
+              if (state) url.searchParams.set('today_state', state)
+              return url.toString()
+            }
+            const marker = '<!-- mx-preview-links -->'
+            const body = [
+              marker,
+              'Демо-превью PR (доступно 7 дней):',
+              `- [Сегодня — демо](${link()})`,
+              ...[...TODAY_PREVIEW_STATES].map(state =>
+                `- [Сегодня — ${state}](${link(state)})`
+              ),
+            ].join('\n')
+            const { owner, repo } = context.repo
+            const issue_number = context.issue.number
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number, per_page: 100,
+            })
+            const previous = comments.find(comment =>
+              comment.body?.includes(marker) && comment.user?.type === 'Bot'
+            )
+            if (previous) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body })
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body })
+            }

@@ -1,5 +1,5 @@
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v3'
-const TODAY_PREVIEW_STATES = new Set([
+export const TODAY_PREVIEW_STATES = new Set([
   'checkinPending',
   'dayInProgress',
   'reviewPending',
@@ -24,6 +24,17 @@ export const DEMO_USER = {
   demo: true,
 }
 
+export function isRealPhone(windowLike) {
+  const w = windowLike || (typeof window !== 'undefined' ? window : null)
+  if (!w) return false
+
+  const coarsePointer = w.matchMedia?.('(pointer: coarse)')?.matches === true
+  const screenWidth = w.screen?.width ?? w.innerWidth ?? 9999
+  const innerWidth = w.innerWidth ?? screenWidth
+
+  return coarsePointer && Math.min(screenWidth, innerWidth) <= 500
+}
+
 export function isPreviewDemoMode() {
   if (typeof window === 'undefined') return false
 
@@ -42,6 +53,7 @@ export function isPreviewDemoMode() {
     host.endsWith('.vercel.app') ||
     host === 'mentalix-owner-qa.pages.dev' ||
     host === PRODUCTION_WEB_HOST ||
+    (host.endsWith('.web.app') && host.includes('--pr-')) ||
     host.endsWith('.manus.computer') ||
     host.endsWith('.trycloudflare.com') ||
     host.endsWith('.base44-preview.app')

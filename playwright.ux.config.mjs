@@ -9,6 +9,7 @@ export default defineConfig({
     'checkin-geometry.spec.mjs',
     'profile-p11.spec.mjs',
     'profile-stoic.spec.mjs',
+    'demo-phone.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
