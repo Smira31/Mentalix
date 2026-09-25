@@ -95,7 +95,7 @@
   --bottom-nav-offset: 8px;
   --bottom-nav-edge: 20px;
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
-  --bottom-nav-content-gap: 46px;
+  --bottom-nav-content-gap: 16px;
   --mx-bottom-nav-space: calc(
     var(--app-safe-bottom) + var(--bottom-nav-offset) + var(--bottom-nav-height) +
       var(--bottom-nav-content-gap)
@@ -1615,6 +1615,17 @@ button {
     transform: none !important;
     margin-bottom: 0 !important;
   }
+}
+
+/* Невидимое расширение области нажатия до ≥43px без изменения видимого размера. */
+.mx-hit-area {
+  position: relative;
+}
+.mx-hit-area::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
 }
 
 /* Невидимое расширение области нажатия до ≥43px без изменения видимого размера. */
