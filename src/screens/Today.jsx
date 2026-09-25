@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
-import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
+import { fetchTodayDataWithRetry, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
 import './Today.css'
@@ -118,7 +118,7 @@ function TodayWorkspaceHeader({ onOpenSettings, onOpenSeries, onOpenDemoPanel, s
       <button
         type="button"
         data-testid="today-streak-chip"
-        className={`mx-demo-today-streak${streak > 0 ? '' : ' mx-demo-today-streak--empty'}`}
+        className={`mx-demo-today-streak${streak === 0 ? ' mx-demo-today-streak--empty' : ''}`}
         aria-label={streakLabel}
         onClick={onStreakClick || onOpenSeries}
       >
@@ -401,6 +401,10 @@ export default function Today({
 
     let active = true
 
+    // Будим сервер заранее, не дожидаясь остального (Render free tier
+    // спит: первый запрос после сна отвечает до 50 с).
+    api.health.check().catch(() => {})
+
     ;(async () => {
       try {
         const {
@@ -409,7 +413,7 @@ export default function Today({
           checkin: checkinData,
           themes: themesData,
           settings: settingsData,
-        } = await fetchTodayData(user.id, { force: Boolean(initialTodaySnapshot) })
+        } = await fetchTodayDataWithRetry(user.id, { force: Boolean(initialTodaySnapshot) })
 
         if (!active) return
 
@@ -689,12 +693,18 @@ export default function Today({
           <EmptyState
             className="p-5"
             glyph={
-              <div className="w-16 h-16 rounded-full border border-dashed border-cream/15 mx-auto mb-4" />
+              <img
+                className="w-[120px] h-[138px] mx-auto mb-4 opacity-70"
+                src={cardEveningDone2x}
+                srcSet={`${cardEveningDone2x} 2x, ${cardEveningDone3x} 3x`}
+                alt=""
+                draggable={false}
+              />
             }
           >
-            <h2 className="font-display mx-type-card text-cream mb-1">Не удалось загрузить день</h2>
+            <h2 className="font-display mx-type-card text-cream mb-1">Сервер просыпается</h2>
             <p className="mx-type-list-body text-muted mb-4" role="alert">
-              Проверь соединение и попробуй ещё раз. Данные дня не были заменены пустым состоянием.
+              Обычно это меньше минуты. Попробуй ещё раз.
             </p>
             <button onClick={retryTodayData} className="cta-pill mx-type-control px-7 py-3">
               Повторить

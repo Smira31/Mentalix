@@ -46,6 +46,7 @@ export const TODAY_PREVIEW_STATES = new Set([
   'night',
   'streak0',
   'streak5',
+  'error',
 ])
 
 // Канонический адрес веб-версии (Firebase Hosting Live, см. PROJECT_STATE.md).
@@ -598,6 +599,8 @@ function respond(path, options = {}) {
     writeState({ ...state, checkins })
     return json({ ok: true, value })
   }
+  if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })
+
   if (pathname === '/mentalix/transcribe' && method === 'POST') {
     return json({ text: 'Хочу разобраться в том, что сейчас для меня важно.' })
   }
@@ -614,6 +617,13 @@ export async function demoRequest(path, options = {}) {
   if (network === 'Ошибка сервера') {
     const error = new Error('Сервер недоступен: 503')
     error.status = 503
+    throw error
+  }
+  // today_state=error: имитируем ошибку загрузки дня (не повторяемую —
+  // 400, чтобы автоповтор сразу выбросил и показал экран ошибки).
+  if (previewTodayState() === 'error' && !path.startsWith('/health')) {
+    const error = new Error('Демо: ошибка загрузки дня')
+    error.status = 400
     throw error
   }
   return respond(path, options)

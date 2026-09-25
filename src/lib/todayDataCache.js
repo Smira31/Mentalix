@@ -1,4 +1,5 @@
 import { api } from './api'
+import { withRetry, isRetryableError, RETRY_DELAYS_MS } from './todayRetry'
 
 /*
  * IN-MEMORY КЕШ ДАННЫХ ЭКРАНА «СЕГОДНЯ»
@@ -225,6 +226,16 @@ export async function fetchTodayData(userId, { force = false } = {}) {
   return request
 }
 
+/*
+ * Автоповтор загрузки данных «Сегодня» — переживает сон бесплатного
+ * Render (первый запрос после сна отвечает до 50 с). Повторяем с
+ * паузами 3, 8, 20 с (4 попытки), общий срок ожидания ≥ 60 с.
+ * Логика в todayRetry.js, чтобы unit-тесты могли её импортировать.
+ */
+export function fetchTodayDataWithRetry(userId, options = {}) {
+  return withRetry(() => fetchTodayData(userId, options))
+}
+
 export function invalidateTodayData(userId) {
   cache.delete(userId)
 }
@@ -233,3 +244,5 @@ export function clearTodayDataCache() {
   cache.clear()
   inFlight.clear()
 }
+
+export { isRetryableError, RETRY_DELAYS_MS }
