@@ -1628,6 +1628,17 @@ button {
   border-radius: inherit;
 }
 
+/* Невидимое расширение области нажатия до ≥43px без изменения видимого размера. */
+.mx-hit-area {
+  position: relative;
+}
+.mx-hit-area::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+}
+
 /* iOS Home Screen / standalone: match Safari's edge-to-edge regular tabs. */
 @media (display-mode: standalone) and (max-width: 700px) {
   /*

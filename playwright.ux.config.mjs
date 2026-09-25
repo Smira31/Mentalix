@@ -13,6 +13,7 @@ export default defineConfig({
     'demo-panel.spec.mjs',
     'bottom-nav-overlap.spec.mjs',
     'library-read-opens-catalog.spec.mjs',
+    'library-read-opens-catalog.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
