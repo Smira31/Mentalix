@@ -244,6 +244,7 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 }
 
 .mx-dialog-card__start {
+  position: relative;
   min-height: 38px;
   margin: var(--mx-space-4) auto 0;
   padding: 0 22px;
@@ -254,6 +255,13 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   font-size: 0.9rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.mx-dialog-card__start::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
 }
 
 .mx-dialog-card__start:focus-visible {

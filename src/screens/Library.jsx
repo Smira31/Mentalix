@@ -24,7 +24,7 @@ function LibraryV2FeaturedBanner({ title, description, art, action, onOpen, neut
       <div className="mx-library-v2__featured-copy">
         <h3>{title}</h3>
         <p>{description}</p>
-        <button type="button" className="mx-library-v2__pill" onClick={onOpen}>
+        <button type="button" className="mx-library-v2__pill" onClick={() => onOpen()}>
           {action} <ArrowRight size={15} />
         </button>
       </div>
