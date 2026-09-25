@@ -231,12 +231,19 @@ button.mx-profile-row:active {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 50%;
+  margin: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: 17px;
   font-weight: 700;
   text-align: right;
+}
+
+/* Внутренние экраны: значение справа — серое, обычным начертанием. */
+.mx-profile-page--sub .mx-profile-row__value {
+  color: rgb(var(--c-muted));
+  font-weight: 400;
 }
 
 .mx-profile-row__chevron {
@@ -613,6 +620,12 @@ button.mx-profile-row:active {
   width: 120px;
   cursor: pointer;
   color-scheme: dark;
+}
+
+.mx-profile-page--sub .mx-profile-date-input {
+  color: rgb(var(--c-muted));
+  font-size: 17px;
+  font-weight: 400;
 }
 
 .mx-profile-date-input::-webkit-calendar-picker-indicator {
