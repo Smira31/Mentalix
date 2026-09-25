@@ -1,0 +1,52 @@
+name: Visual baselines
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: visual-baselines-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 22.22.1
+
+jobs:
+  update-baselines:
+    name: Update visual baselines from main
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Generate fresh baselines
+        env:
+          RUN_VISUAL_SNAPSHOTS: 'true'
+          UX_FIXED_TIME: '08:00'
+        run: npm run test:visual:update -- --retries=1
+
+      - name: Upload baselines artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: visual-baselines
+          path: tests/ux/ux-check.spec.mjs-snapshots/
+          retention-days: 90
+          if-no-files-found: error
