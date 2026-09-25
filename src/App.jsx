@@ -336,7 +336,8 @@ export default function App() {
 
   /* Корневой элемент приложения — на нём висит глобальный edge-swipe. */
   const appRootRef = useRef(null)
-  useGlobalEdgeSwipeBack(appRootRef)
+  const [appRootMounted, setAppRootMounted] = useState(false)
+  useGlobalEdgeSwipeBack(appRootRef, { enabled: appRootMounted })
 
   /*
    * Оба значения принадлежат человеку, а не устройству: знакомство
@@ -552,8 +553,8 @@ export default function App() {
 
   const previewDemoMode = isPreviewDemoMode()
   const demoPanelAllowed = previewDemoMode && platformName !== 'telegram'
-  const [demoPanelOpen, setDemoPanelOpen] = useState(() =>
-    new URLSearchParams(window.location.search).get('panel') === '1'
+  const [demoPanelOpen, setDemoPanelOpen] = useState(
+    () => new URLSearchParams(window.location.search).get('panel') === '1'
   )
   const realPhone = isRealPhone()
   const toolbarParam = searchParams.get('toolbar') === '1'
@@ -1104,7 +1105,10 @@ export default function App() {
 
   return (
     <div
-      ref={appRootRef}
+      ref={el => {
+        appRootRef.current = el
+        setAppRootMounted(!!el)
+      }}
       data-mentalix-app-root="true"
       className={deviceFrameMode ? 'mx-preview-stage' : undefined}
     >
@@ -1396,7 +1400,11 @@ export default function App() {
         <PreviewApiDiagnostic />
         {demoPanelAllowed && (
           <Suspense fallback={null}>
-            <DemoPanel open={demoPanelOpen} onOpen={() => setDemoPanelOpen(true)} onClose={() => setDemoPanelOpen(false)} />
+            <DemoPanel
+              open={demoPanelOpen}
+              onOpen={() => setDemoPanelOpen(true)}
+              onClose={() => setDemoPanelOpen(false)}
+            />
           </Suspense>
         )}
       </div>
