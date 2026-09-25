@@ -41,6 +41,8 @@
     "ux:telegram-p0": "playwright test --config=playwright.telegram-p0.config.mjs",
     "test:gate": "npm run lint && npm run test:unit && npm run build && npm run ux:check",
     "test:visual:update": "playwright test --config=playwright.ux.config.mjs --update-snapshots",
+    "ux:progress-visual": "playwright test --config=playwright.progress-visual.config.mjs",
+    "test:progress-visual:update": "playwright test --config=playwright.progress-visual.config.mjs --update-snapshots",
     "check:core": "npm run test:unit && npm run lint && npm run build && npm run docs:check",
     "format": "prettier --write .",
     "prepare": "husky",
