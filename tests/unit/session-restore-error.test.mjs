@@ -23,7 +23,15 @@ test('retryAuth сбрасывает authChecked и перезапускает c
   assert.match(appSource, /checkAuth\(\)/)
 })
 
-test('экран ошибки показывается до WebAuthScreen только для web', () => {
+test('web без сессии вызывает общий гостевой вход и оставляет WebAuthScreen при сбое', () => {
+  assert.match(appSource, /platformName === 'web' && !platform\.getSessionToken\?\.\(\)/)
+  assert.match(appSource, /await loginAsGuest\(api, acceptUser\)/)
+  assert.match(appSource, /if \(!emailLink\)/)
+  assert.match(appSource, /\['email', 'code', 'token'\]/)
+  assert.match(appSource, /if \(\(!user \|\| showGuestAuth\) && platformName === 'web'\)/)
+})
+
+test('экран ошибки восстановления существующей сессии показывается до WebAuthScreen только для web', () => {
   assert.match(appSource, /authError && !user && platformName === 'web'/)
   assert.match(appSource, /SessionRestoreError onRetry=\{retryAuth\}/)
 })

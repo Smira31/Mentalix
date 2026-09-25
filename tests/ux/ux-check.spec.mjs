@@ -1055,40 +1055,110 @@ test.skip('Legacy: History показывает user-scoped local Journal на m
   }
 })
 
-test('прямая web-ссылка открывает production email и Telegram auth', async ({
-  browser,
-  baseURL,
-}) => {
-  const context = await browser.newContext({
-    baseURL,
-    viewport: { width: 390, height: 844 },
-    colorScheme: 'dark',
-    reducedMotion: 'reduce',
-    serviceWorkers: 'block',
-  })
+test('прямая web-ссылка автоматически создаёт гостя; email и Telegram доступны из Профиля', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' })
   await context.addInitScript(() => {
     localStorage.clear()
     sessionStorage.clear()
+    localStorage.setItem('mx-onboarded-v2', '1')
   })
-
-  await context.route('**/api/**', async route => {
-    await route.fulfill(jsonResponse({ ok: true }))
+  const guest = { id: 900002, first_name: 'Гость', is_guest: true }
+  let guestRequests = 0
+  let mergeRequests = 0
+  await context.route('**/api/**', route => {
+    const path = new URL(route.request().url()).pathname
+    if (path === '/api/auth/guest') {
+      guestRequests += 1
+      return route.fulfill(jsonResponse({ ok: true, user: guest, merge_token: 'merge-guest', session_token: 'guest-session' }))
+    }
+    if (path === '/api/auth/email/verify') return route.fulfill(jsonResponse({ ok: true, user: TEST_USER, session_token: 'email-session' }))
+    if (path === '/api/auth/guest/merge') {
+      mergeRequests += 1
+      expect(route.request().postDataJSON().merge_token).toBe('merge-guest')
+      return route.fulfill(jsonResponse({ user: TEST_USER }))
+    }
+    return route.fulfill(fixtureFor(route.request()))
   })
-
   const page = await context.newPage()
-  await freezePageTime(page)
   await page.goto('/')
+  await expect(page.getByTestId('today-profile-button')).toBeVisible()
+  expect(guestRequests).toBe(1)
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toHaveCount(0)
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_session_token'))).toBe('guest-session')
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_guest_merge_token'))).toBe('merge-guest')
 
-  await expect(
-    page.getByRole('heading', { name: 'Продолжай расти даже вне приложения.' })
-  ).toBeVisible()
+  await page.getByTestId('today-profile-button').click()
+  await page.getByTestId('profile-guest-login-link').click()
   await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()
-  await expect(page.locator('form')).toHaveCount(1)
   await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Получить письмо' })).toBeVisible()
-  expect(await page.evaluate(() => localStorage.getItem('mentalix_web_user'))).toBeNull()
+  await page.getByRole('textbox', { name: 'Email' }).fill('test@example.com')
+  await page.getByRole('button', { name: 'Получить письмо' }).click()
+  await page.getByRole('textbox', { name: 'Код из email' }).fill('123456')
+  await page.getByRole('button', { name: 'Войти' }).click()
+  await expect(page.getByTestId('profile-screen')).toBeVisible()
+  await expect(page.getByTestId('profile-guest-login-link')).toHaveCount(0)
+  expect(mergeRequests).toBe(1)
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_guest_merge_token'))).toBeNull()
+  await context.close()
+})
 
+test('ошибка гостевого входа оставляет рабочий email и повтор гостевого входа', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+  await context.addInitScript(() => { localStorage.clear(); sessionStorage.clear() })
+  let attempts = 0
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/auth/guest') {
+      attempts += 1
+      return route.fulfill(jsonResponse(attempts === 1 ? { error: 'unavailable' } : { ok: true, user: TEST_USER, merge_token: 'retry' }, attempts === 1 ? 503 : 200))
+    }
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Или через Telegram' })).toBeHidden()
+  await page.getByTestId('web-auth-guest-button').click()
+  await expect(page.getByText(/Пара вопросов — и приложение/)).toBeVisible()
+  expect(attempts).toBe(2)
+  await context.close()
+})
+
+test('email-подтверждение не запускает автогостя', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+  await context.addInitScript(() => { localStorage.clear(); sessionStorage.clear() })
+  let guestRequests = 0
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/auth/guest') guestRequests += 1
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/?email=test%40example.com&code=123456')
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+  expect(guestRequests).toBe(0)
+  await page.goto('/?token=magic-link-token')
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toBeVisible()
+  expect(guestRequests).toBe(0)
+  await context.close()
+})
+
+test('Telegram Mini App не создаёт web-гостя', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+  await context.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+    window.TelegramWebviewProxy = { postEvent() {} }
+  })
+  let guestRequests = 0
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/auth/guest') guestRequests += 1
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  await expect(page.getByText('Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя')).toBeVisible()
+  expect(guestRequests).toBe(0)
+  await expect(page.getByRole('heading', { name: 'Вход по email' })).toHaveCount(0)
   await context.close()
 })
 

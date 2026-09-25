@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { api } from '../lib/api'
 import { platform } from '../platform'
-import { setGuestMergeToken, attemptGuestMerge } from '../lib/guestAuth'
+import { loginAsGuest, attemptGuestMerge } from '../lib/guestAuth'
 import './WebAuthScreen.css'
 
 function TelegramLogin({ onSuccess, onError }) {
@@ -94,11 +94,7 @@ export default function WebAuthScreen({ onAuthed }) {
     setError('')
     setBusy(true)
     try {
-      const result = await api.auth.guest()
-      if (!result.ok) throw new Error('guest_create_failed')
-      setGuestMergeToken(result.merge_token)
-      platform.setUser(result.user)
-      onAuthed(result.user)
+      await loginAsGuest(api, onAuthed)
     } catch {
       setError('Не удалось войти как гость. Попробуй ещё раз.')
     } finally {
