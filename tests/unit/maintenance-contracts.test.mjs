@@ -721,22 +721,18 @@ test('MXL-DS-LABEL-FONT-001 разрешает font-label только на eyeb
   // Manrope — ответственность design-system слоя, не отдельного экрана.
   assert.match(tailwindConfig, /label:\s*\[\s*['"]Manrope['"]/)
 
-  assert.match(analytics, /function SectionHeading/)
-  assert.match(analytics, /<span className="font-label">\{eyebrow\}<\/span>/)
-  assert.match(analytics, /<span className="font-label">Данные<\/span>/)
-  for (const label of ['Наблюдения', 'Цифры', 'По существующим данным']) {
-    assert.match(analytics, new RegExp(`eyebrow="${label}"`))
+  // §5.5: секционные caps-лейблы «Общее»/«Эмоции»/«Практики» — единственное
+  // место font-label на вкладке Аналитика (компонент SectionLabel).
+  assert.match(analytics, /function SectionLabel\(\{ children \}\)/)
+  assert.match(analytics, /<h3 className="mx-progress-section-label font-label"/)
+  for (const label of ['Общее', 'Эмоции']) {
+    assert.match(analytics, new RegExp(`<SectionLabel>${label}</SectionLabel>`))
   }
 
-  // font-label встречается только в общем eyebrow-компоненте и календаре —
-  // не расползается на Metric/графики/остальной экран.
+  // font-label встречается только в SectionLabel — не расползается на
+  // числа/графики/остальной экран.
   const fontLabelOccurrences = (analytics.match(/font-label/g) || []).length
-  assert.equal(fontLabelOccurrences, 2)
-
-  const metricComponent = analytics.slice(analytics.indexOf('function Metric('))
-  const metricValueBlock = metricComponent.slice(0, metricComponent.indexOf('{value}'))
-  assert.doesNotMatch(metricValueBlock, /font-label/)
-  assert.match(metricValueBlock, /font-display/)
+  assert.equal(fontLabelOccurrences, 1)
 })
 
 test('MXL-527 отображает один главный вывод с evidence и safety caveat', () => {
