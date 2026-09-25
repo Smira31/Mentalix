@@ -46,6 +46,12 @@ jobs:
           UX_FIXED_TIME: '08:00'
         run: npm run test:visual:update -- --retries=1
 
+      - name: Generate progress baselines (demo mode)
+        env:
+          RUN_VISUAL_SNAPSHOTS: 'true'
+          UX_FIXED_TIME: '08:00'
+        run: npm run test:progress-visual:update -- --retries=1
+
       - name: Upload baselines artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
@@ -53,3 +59,11 @@ jobs:
           path: tests/ux/ux-check.spec.mjs-snapshots/
           retention-days: 90
           if-no-files-found: error
+
+      - name: Upload progress baselines artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: visual-baselines-progress
+          path: tests/ux/progress-tabs-visual.spec.mjs-snapshots/
+          retention-days: 90
+          if-no-files-found: warn

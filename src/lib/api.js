@@ -110,11 +110,16 @@ function authHeader() {
   if (initData) return { Authorization: `tma ${initData}` }
 
   const webUserId = platform.getUser?.()?.web_user_id
-  return webUserId ? { 'X-Web-User-ID': String(webUserId) } : {}
+  const token = platform.getSessionToken?.()
+  return {
+    ...(webUserId ? { 'X-Web-User-ID': String(webUserId) } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
 }
 
 async function download(path, filename) {
-  const response = await fetch(`${BASE}${path}`, { headers: authHeader() })
+  const response = await fetch(`${BASE}${path}`, { credentials: 'include', headers: authHeader() })
+  if (response.status === 401) platform.clearSessionToken?.()
   if (!response.ok) throw new Error(`Export ${path} failed: ${response.status}`)
   const blob = await response.blob()
   const href = URL.createObjectURL(blob)
@@ -157,6 +162,7 @@ async function request(path, options = {}) {
       const raw = await res.text()
 
       if (!res.ok) {
+        if (res.status === 401) platform.clearSessionToken?.()
         // 401 guest_merged: гостевая cookie устарела после переноса записей.
         // Сбрасываем гостевое состояние и показываем экран входа.
         if (res.status === 401 && raw.includes('guest_merged')) {
@@ -193,7 +199,14 @@ async function request(path, options = {}) {
       }
 
       try {
-        return JSON.parse(raw)
+        const result = JSON.parse(raw)
+        if (
+          ['/auth/guest', '/auth/guest/merge', '/auth/email/verify'].includes(path) &&
+          result?.session_token
+        ) {
+          platform.setSessionToken?.(result.session_token)
+        }
+        return result
       } catch (error) {
         throw new ApiError(`API ${path} вернул не JSON`, {
           path,
@@ -246,7 +259,13 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(payload),
       }),
-    logout: () => request('/auth/logout', { method: 'POST' }),
+    logout: async () => {
+      try {
+        return await request('/auth/logout', { method: 'POST' })
+      } finally {
+        platform.clearSessionToken?.()
+      }
+    },
     requestCode: email =>
       request('/auth/email/request-code', {
         method: 'POST',

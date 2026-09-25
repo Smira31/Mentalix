@@ -20,11 +20,23 @@ function dayKey(offset = 0) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
+// Понедельник относительно текущего дня: стабильные проверки границ пн–вс.
+const mondayOffset = -((new Date().getDay() + 6) % 7)
+function weekday(weekOffset, dayOffset) {
+  return dayKey(mondayOffset + weekOffset * 7 + dayOffset)
+}
+function checkin(date) {
+  return { date }
+}
+function noon(date) {
+  return new Date(`${date}T12:00:00`)
+}
+
 test('currentCheckinStreak counts the completed tail in chronological order', () => {
   const checkins = [
-    { date: '2026-08-26', review_completed_at: '2026-08-26T20:00:00Z' },
-    { date: '2026-08-28', review_completed_at: '2026-08-28T20:00:00Z' },
-    { date: '2026-08-27', review_completed_at: '2026-08-27T20:00:00Z' },
+    { date: dayKey(-2), review_completed_at: `${dayKey(-2)}T20:00:00Z` },
+    { date: dayKey(0), review_completed_at: `${dayKey(0)}T20:00:00Z` },
+    { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
   ]
 
   assert.equal(currentCheckinStreak(checkins), 3)
@@ -32,28 +44,23 @@ test('currentCheckinStreak counts the completed tail in chronological order', ()
 
 test('currentCheckinStreak counts morning-only check-ins (date without review_completed_at)', () => {
   const checkins = [
-    { date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' },
-    { date: '2026-08-26', review_completed_at: null },
-    { date: '2026-08-27', review_completed_at: '2026-08-27T20:00:00Z' },
+    { date: dayKey(-3), review_completed_at: `${dayKey(-3)}T20:00:00Z` },
+    { date: dayKey(-2), review_completed_at: null },
+    { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
   ]
 
   assert.equal(currentCheckinStreak(checkins), 3)
 })
 
 test('currentCheckinStreak ignores records without a date or completion marker', () => {
-  const checkins = [
-    { date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' },
-    { review_completed_at: null },
-    { date: '2026-08-27', review_completed_at: '2026-08-27T20:00:00Z' },
-  ]
-
-  assert.equal(currentCheckinStreak(checkins), 1)
+  const checkins = [checkin(weekday(0, 0)), { review_completed_at: null }, checkin(weekday(0, 3))]
+  assert.equal(currentCheckinStreak(checkins, { now: noon(weekday(0, 3)) }), 1)
 })
 
 test('buildSeriesViewModel keeps badges derived from existing stats and practice lists', () => {
   const model = buildSeriesViewModel({
     stats: { total_checkins: 5, days_active: 7, best_streak: 4 },
-    checkins: [{ date: '2026-08-28', review_completed_at: '2026-08-28T20:00:00Z' }],
+    checkins: [{ date: dayKey(0), review_completed_at: `${dayKey(0)}T20:00:00Z` }],
     rituals: [{ streak: 7 }],
     ascezas: [{ streak: 2 }],
   })
@@ -67,6 +74,21 @@ test('buildSeriesViewModel keeps badges derived from existing stats and practice
   assert.equal(model.badges.find(badge => badge.id === 'ritual-holds').done, true)
 })
 
+test('freeze does not unlock 2/3/5-day badges for a missed day', () => {
+  const dates = [0, 2, 3, 4, 5].map(day => weekday(-1, day))
+  for (const count of [1, 2, 4, 5]) {
+    const model = buildSeriesViewModel({ checkins: dates.slice(0, count).map(checkin) })
+    assert.equal(model.bestStreak, count)
+    for (const goal of [2, 3, 5]) {
+      const badge = model.badges.find(
+        item => item.id === `streak-${{ 2: 'two', 3: 'three', 5: 'five' }[goal]}`
+      )
+      assert.equal(badge.done, count >= goal)
+      assert.equal(badge.progress, Math.min(count, goal))
+    }
+  }
+})
+
 test('buildSeriesViewModel is safe for empty API responses', () => {
   const model = buildSeriesViewModel({})
 
@@ -75,19 +97,15 @@ test('buildSeriesViewModel is safe for empty API responses', () => {
   assert.equal(model.badges.every(badge => badge.done === false), true)
 })
 
-test('currentCheckinStreak stops when completed check-ins have a calendar gap', () => {
-  const checkins = [
-    { date: '2026-08-26', review_completed_at: '2026-08-26T20:00:00Z' },
-    { date: '2026-08-28', review_completed_at: '2026-08-28T20:00:00Z' },
-  ]
-
-  assert.equal(currentCheckinStreak(checkins), 1)
+test('currentCheckinStreak stops after two missed days in one week', () => {
+  const checkins = [checkin(weekday(0, 0)), checkin(weekday(0, 3))]
+  assert.equal(currentCheckinStreak(checkins, { now: noon(weekday(0, 3)) }), 1)
 })
 
 test('currentCheckinStreak treats midnight as the next user calendar day', () => {
   const checkins = [
-    { review_completed_at: '2026-08-26T23:59:00Z' },
-    { review_completed_at: '2026-08-27T00:01:00Z' },
+    { review_completed_at: `${dayKey(-1)}T23:59:00Z` },
+    { review_completed_at: `${dayKey(0)}T05:01:00Z` },
   ]
 
   assert.equal(currentCheckinStreak(checkins, { timezone: 'UTC' }), 2)
@@ -95,26 +113,52 @@ test('currentCheckinStreak treats midnight as the next user calendar day', () =>
 
 test('currentCheckinStreak groups timestamps by the user timezone', () => {
   const checkins = [
-    { review_completed_at: '2026-08-26T20:30:00Z' },
-    { review_completed_at: '2026-08-27T00:30:00Z' },
+    { review_completed_at: `${dayKey(-1)}T20:30:00Z` },
+    { review_completed_at: `${dayKey(0)}T03:30:00Z` },
   ]
 
   assert.equal(currentCheckinStreak(checkins, { timezone: 'Europe/Moscow' }), 2)
   assert.equal(currentCheckinStreak(checkins, { timezone: 'America/New_York' }), 1)
 })
 
-test('currentCheckinStreak becomes zero after a missed calendar day', () => {
-  const checkins = [
-    { date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' },
-    { date: '2026-08-27', review_completed_at: '2026-08-27T20:00:00Z' },
-  ]
+test('currentCheckinStreak keeps one missed calendar day without counting it', () => {
+  const checkins = [checkin(weekday(0, 0)), checkin(weekday(0, 2))]
+  assert.equal(currentCheckinStreak(checkins, { now: noon(weekday(0, 2)) }), 2)
+  assert.equal(longestCheckinStreak(checkins), 2)
+})
 
-  assert.equal(currentCheckinStreak(checkins), 1)
-  assert.equal(longestCheckinStreak(checkins), 1)
+test('two missed days in the same week reset the current series even without a new check-in', () => {
+  const days = [checkin(weekday(0, 0)), checkin(weekday(0, 2))]
+  assert.equal(currentCheckinStreak(days, { now: noon(weekday(0, 4)) }), 0)
+  assert.equal(longestCheckinStreak(days), 2)
+})
+
+test('one missed day in each adjacent week keeps the series', () => {
+  const days = [checkin(weekday(-1, 4)), checkin(weekday(-1, 6)), checkin(weekday(0, 1))]
+  assert.equal(currentCheckinStreak(days, { now: noon(weekday(0, 1)) }), 3)
+  assert.equal(longestCheckinStreak(days), 3)
+})
+
+test('Sunday and Monday misses use separate weekly allowances', () => {
+  const days = [checkin(weekday(-1, 5)), checkin(weekday(0, 1))]
+  assert.equal(currentCheckinStreak(days, { now: noon(weekday(0, 1)) }), 2)
+  assert.equal(longestCheckinStreak(days), 2)
+})
+
+test('00:00–04:59 belongs to yesterday and does not spend a freeze', () => {
+  const monday = weekday(0, 0)
+  const tuesday = weekday(0, 1)
+  const checkins = [
+    { review_completed_at: `${monday}T22:00:00Z` },
+    { review_completed_at: `${tuesday}T02:30:00Z` },
+  ]
+  assert.equal(currentCheckinStreak(checkins, { timezone: 'UTC', now: new Date(`${tuesday}T04:59:00Z`) }), 1)
+  assert.equal(currentCheckinStreak(checkins, { timezone: 'UTC', now: new Date(`${tuesday}T05:00:00Z`) }), 1)
+  assert.equal(longestCheckinStreak(checkins, { timezone: 'UTC' }), 1)
 })
 
 test('first completed check-in starts at one and an empty history stays at zero', () => {
-  assert.equal(currentCheckinStreak([{ date: '2026-08-25', review_completed_at: '2026-08-25T20:00:00Z' }]), 1)
+  assert.equal(currentCheckinStreak([checkin(dayKey(0))]), 1)
   assert.equal(currentCheckinStreak([]), 0)
 })
 

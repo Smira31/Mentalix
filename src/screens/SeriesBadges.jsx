@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -362,7 +362,7 @@ function StatsView({ model }) {
           <span>{pluralize(model.totalCheckins, ['чек-ин', 'чек-ина', 'чек-инов'])}</span>
         </div>
       </div>
-      <StatSection title="Серия" rows={rows} />
+      <StatSection title="Серия" rows={rows} note="Один пропуск в неделю серию не обрывает" />
       <StatSection
         title="Чек-ины"
         rows={[
@@ -388,16 +388,19 @@ function StatsView({ model }) {
   )
 }
 
-function StatSection({ title, rows }) {
+function StatSection({ title, rows, note }) {
   return (
     <section className="mx-path-stat-section">
       <h2>{title}</h2>
       <div className="mx-path-stat-card">
-        {rows.map(([label, value]) => (
-          <div className="mx-path-stat-row" key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-          </div>
+        {rows.map(([label, value], index) => (
+          <Fragment key={label}>
+            <div className="mx-path-stat-row">
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+            {index === 0 && note && <p className="px-5 py-2 text-xs text-muted">{note}</p>}
+          </Fragment>
         ))}
       </div>
     </section>
