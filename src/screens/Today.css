@@ -1936,3 +1936,34 @@
   line-height: 1;
   cursor: pointer;
 }
+
+/* Анимация закрытия по крестику: fade + collapse ~200 мс */
+.mx-today-cards-hint--closing {
+  animation: mx-hint-collapse 200ms ease forwards;
+}
+
+.mx-today-series-tooltip--closing {
+  animation: mx-hint-collapse 200ms ease forwards;
+}
+
+@keyframes mx-hint-collapse {
+  from {
+    opacity: 1;
+    max-height: 200px;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-cards-hint--closing,
+  .mx-today-series-tooltip--closing {
+    animation: none;
+    opacity: 0;
+  }
+}
