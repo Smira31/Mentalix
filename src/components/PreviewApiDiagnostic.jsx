@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 
 const enabled =
-  (import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview') &&
-  !navigator.webdriver
+  import.meta.env.DEV ||
+  (typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('debug') === 'api')
 
 export default function PreviewApiDiagnostic() {
   const [diagnostic, setDiagnostic] = useState(null)
