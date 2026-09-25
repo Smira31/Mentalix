@@ -7,6 +7,7 @@ const TODAY_PREVIEW_STATES = new Set([
   'morningPrimary',
   'eveningPrimary',
   'bothDone',
+  'night',
   'streak0',
   'streak5',
 ])
@@ -133,7 +134,7 @@ function seedState(todayState = null) {
       review_completed_at: null,
     }
   }
-  // morningPrimary, eveningPrimary, streak0, checkinPending → checkin = null
+  // morningPrimary, eveningPrimary, night, streak0, checkinPending → checkin = null
 
   // Настроения для демо
   const moodPractices =
