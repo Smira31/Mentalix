@@ -1,42 +1,55 @@
 #!/usr/bin/env node
 /**
- * Парсит artifacts/ux-check/report.md из прогона ux:check,
- * находит экраны с визуальными diff (toHaveScreenshot) и
- * генерирует markdown-тело комментария «было / стало» для PR.
+ * Формирует markdown-тело комментария «было / стало» для PR.
+ *
+ * Источники:
+ * - artifacts/ux-check/visual-diffs.json — структурированные визуальные diff
+ *   (пишется тестом: статус visual_diff вместо fail);
+ * - artifacts/ux-check/report.md — общее число экранов и прочие (не визуальные) падения.
  *
  * Выход: artifacts/ux-check/visual-diff-report.md
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import path from 'node:path'
 
-const REPORT_PATH = path.resolve('artifacts/ux-check/report.md')
-const OUTPUT_PATH = path.resolve('artifacts/ux-check/visual-diff-report.md')
+const ARTIFACT_ROOT = path.resolve('artifacts/ux-check')
+const REPORT_PATH = path.join(ARTIFACT_ROOT, 'report.md')
+const DIFFS_PATH = path.join(ARTIFACT_ROOT, 'visual-diffs.json')
+const OUTPUT_PATH = path.join(ARTIFACT_ROOT, 'visual-diff-report.md')
 const RUN_URL = process.env.GITHUB_RUN_URL || ''
-const RUN_ID = process.env.GITHUB_RUN_ID || ''
 
-function parseReport() {
-  if (!existsSync(REPORT_PATH)) return { total: 0, failed: [], visualDiffs: [] }
+function parseReportRows() {
+  if (!existsSync(REPORT_PATH)) return []
   const text = readFileSync(REPORT_PATH, 'utf8')
   const rows = []
   for (const line of text.split('\n')) {
-    const m = line.match(/^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*\[(.*?)\]\((.*?)\)\s*\|$/)
+    const m = line.match(
+      /^\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*\[(.*?)\]\((.*?)\)\s*\|$/
+    )
     if (!m) continue
-    const [, screen, viewport, status, reason, , screenshot] = m
-    if (screen === 'Экран') continue // header
-    rows.push({ screen, viewport, status: status.trim(), reason: reason.trim(), screenshot })
+    const [, screen, viewport, status, reason] = m
+    if (screen === 'Экран') continue
+    rows.push({ screen, viewport, status: status.trim(), reason: reason.trim() })
   }
-  const failed = rows.filter(r => r.status === 'fail')
-  // Визуальный diff — причина упоминает screenshot
-  const visualDiffs = failed.filter(r => /screenshot/i.test(r.reason))
-  return { total: rows.length, failed, visualDiffs }
+  return rows
 }
 
-function buildReport({ total, failed, visualDiffs }) {
+function parseVisualDiffs() {
+  if (!existsSync(DIFFS_PATH)) return []
+  try {
+    const data = JSON.parse(readFileSync(DIFFS_PATH, 'utf8'))
+    return Array.isArray(data.diffs) ? data.diffs : []
+  } catch {
+    return []
+  }
+}
+
+function buildReport({ total, visualDiffs, otherFailures }) {
   const lines = []
   lines.push('## 📸 Визуальные изменения: было / стало')
   lines.push('')
 
-  if (visualDiffs.length === 0 && failed.length === 0) {
+  if (visualDiffs.length === 0 && otherFailures.length === 0) {
     lines.push(`✅ Все ${total} экранов прошли проверку. Визуальных изменений не обнаружено.`)
     lines.push('')
     lines.push('_Проверка informational — мерж не блокирует._')
@@ -54,7 +67,6 @@ function buildReport({ total, failed, visualDiffs }) {
     lines.push('')
   }
 
-  const otherFailures = failed.filter(r => !/screenshot/i.test(r.reason))
   if (otherFailures.length > 0) {
     lines.push(`### Другие проблемы (${otherFailures.length})`)
     lines.push('')
@@ -66,14 +78,12 @@ function buildReport({ total, failed, visualDiffs }) {
     lines.push('')
   }
 
-  const passed = total - failed.length
+  const passed = total - visualDiffs.length - otherFailures.length
   lines.push(`**Без изменений:** ${passed} из ${total} экранов прошли проверку.`)
   lines.push('')
 
   if (RUN_URL) {
     lines.push(`📦 [Скачать артефакт с diff-изображениями](${RUN_URL}) — содержит actual/expected/diff для каждого экрана.`)
-  } else if (RUN_ID) {
-    lines.push(`📦 Артефакт с diff-изображениями: run ${RUN_ID}`)
   }
   lines.push('')
   lines.push('_Проверка informational — мерж не блокирует._')
@@ -81,8 +91,10 @@ function buildReport({ total, failed, visualDiffs }) {
   return lines.join('\n')
 }
 
-const data = parseReport()
-const report = buildReport(data)
+const rows = parseReportRows()
+const visualDiffs = parseVisualDiffs()
+const otherFailures = rows.filter(r => r.status === 'fail')
+const report = buildReport({ total: rows.length, visualDiffs, otherFailures })
 mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true })
 writeFileSync(OUTPUT_PATH, report, 'utf8')
 console.log(report)
