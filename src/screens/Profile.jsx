@@ -143,6 +143,7 @@ export default function Profile({ user }) {
           <ProfileRow
             title="Имя"
             value={user.first_name}
+            valueHeading
             subtitle={
               stats ? (
                 <span data-testid="profile-about-stats">
