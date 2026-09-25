@@ -287,6 +287,23 @@
   cursor: pointer;
 }
 
+.mx-progress-card__hide {
+  position: absolute;
+  z-index: 2;
+  top: 48px;
+  right: 16px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-nav, 28 28 28));
+  box-shadow: var(--shadow-float);
+  color: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 /* ── Пустое состояние карточки ── */
 .mx-progress-card__empty {
   display: flex;
@@ -602,17 +619,105 @@
   background: rgb(var(--c-card3, 46 46 46));
 }
 
-/* ── Нижняя плавающая пилюля периода ── */
-.mx-progress-bottom-pill {
+/* ── Порядок графиков ── */
+.mx-progress-bottom-controls {
   position: fixed;
   bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 8px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: max-content;
+  max-width: calc(100% - 32px);
+}
+
+.mx-progress-bottom-controls__order {
+  flex: 0 0 50px;
+  height: 50px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.mx-progress-card-order {
+  position: fixed;
+  z-index: 21;
+  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 68px);
+  left: max(16px, calc((100% - 440px) / 2));
+  right: max(16px, calc((100% - 440px) / 2));
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgb(var(--c-nav, 28 28 28));
+  box-shadow: var(--shadow-float);
+}
+
+.mx-progress-card-order__head,
+.mx-progress-card-order__row {
+  display: flex;
+  align-items: center;
+}
+
+.mx-progress-card-order__head {
+  justify-content: space-between;
+  padding: 0 4px 8px;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-card-order__head h2 { margin: 0; font-size: 17px; font-weight: 700; }
+.mx-progress-card-order__head button,
+.mx-progress-card-order__row button {
+  flex: 0 0 34px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  cursor: pointer;
+}
+.mx-progress-card-order__row button:disabled { color: rgb(var(--c-muted, 133 133 133)); cursor: default; }
+
+.mx-progress-card-order__row {
+  min-height: 52px;
+  margin-top: 2px;
+  padding: 0 8px 0 17px;
+  border-radius: 16px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  font-size: 16px;
+}
+.mx-progress-card-order__row > span { flex: 1; min-width: 0; }
+.mx-progress-card-order__toggle { flex: 0 0 34px; display: grid; place-items: center; cursor: pointer; }
+.mx-progress-card-order__toggle input { position: absolute; width: 22px; height: 22px; opacity: 0; }
+.mx-progress-card-order__toggle span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid rgb(var(--c-border, 41 41 41));
+  border-radius: 999px;
+  color: transparent;
+}
+.mx-progress-card-order__toggle input:checked + span {
+  border: 0;
+  background: rgb(var(--c-line, 230 230 230));
+  color: rgb(var(--c-bg, 5 4 3));
+}
+.mx-progress-card-order__toggle input:focus-visible + span { outline: 2px solid rgb(var(--c-text)); }
+
+/* ── Нижняя плавающая пилюля периода ── */
+.mx-progress-bottom-pill {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  max-width: calc(100% - 32px);
+  min-width: 0;
   height: 50px;
   padding: 0 14px;
   border-radius: 999px;
