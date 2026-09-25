@@ -530,5 +530,11 @@ export function requestMessages() {
 // Иконка на домашнем экране — самый честный ответ на вопрос
 // «почему человек откроет Mentalix завтра».
 export function offerHomeScreen() {
-  safely(() => api()?.addToHomeScreen?.(), 'addToHomeScreen')
+  const webApp = api()
+
+  // addToHomeScreen появился в Bot API 8.0; на старых клиентах SDK 8
+  // пишет console.error и бросает WebAppMethodUnsupported.
+  if (typeof webApp?.isVersionAtLeast === 'function' && !webApp.isVersionAtLeast('8.0')) return
+
+  safely(() => webApp?.addToHomeScreen?.(), 'addToHomeScreen')
 }
