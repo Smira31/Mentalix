@@ -130,6 +130,9 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Install WebKit
+        run: npx playwright install --with-deps webkit
+
       - name: Run UX smoke
         env:
           RUN_VISUAL_SNAPSHOTS: 'false'
@@ -145,6 +148,9 @@ jobs:
       - name: Run MXL-010 production-like gate
         run: npm run ux:mxl010 -- --retries=1
 
+      - name: Run Telegram React update-depth regression in WebKit
+        run: npm run ux:telegram-react-depth
+
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -152,6 +158,7 @@ jobs:
           name: playwright-artifacts
           path: |
             artifacts/ux-check/
+            artifacts/telegram-react-update-depth/
             test-results/
           if-no-files-found: ignore
 
