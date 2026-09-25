@@ -74,7 +74,9 @@ for (const browserName of ['chromium', 'webkit']) {
         for (const label of TABS) {
           // При прокрутке демо-панель сворачивается в кружок — разворачиваем перед сменой вкладки.
           const expand = page.locator('.mx-bottom-nav button[aria-label="Открыть навигацию"]')
-          if (await expand.isVisible()) await expand.click()
+          if ((await page.locator('.mx-bottom-nav nav').getAttribute('aria-hidden')) === 'true') {
+            await expand.click()
+          }
           const button = page.locator(`.mx-bottom-nav nav button[aria-label="${label}"]`)
           await expect(button).toBeVisible({ timeout: 15_000 })
           await button.click()
