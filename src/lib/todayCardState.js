@@ -1,3 +1,5 @@
+import { now as clockNow } from './clock.js'
+
 const DEFAULT_REVIEW_HOUR = 19
 
 function localHourAndMinute(date, timeZone) {
@@ -27,7 +29,7 @@ function hasMorningFields(checkin) {
 }
 
 export function resolveTodayCardStates({
-  now = new Date(),
+  now = clockNow(),
   reviewHour = DEFAULT_REVIEW_HOUR,
   checkin = null,
   timeZone,

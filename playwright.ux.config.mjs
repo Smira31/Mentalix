@@ -10,6 +10,7 @@ export default defineConfig({
     'profile-p11.spec.mjs',
     'profile-stoic.spec.mjs',
     'demo-phone.spec.mjs',
+    'demo-panel.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
