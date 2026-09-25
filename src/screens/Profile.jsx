@@ -126,25 +126,6 @@ export default function Profile({ user }) {
 
   return (
     <ProfileBody>
-      {/* Имя и аватар */}
-      <div className="flex items-center gap-3.5 mt-4 mb-6" data-testid="profile-about-header">
-        <div className="w-12 h-12 rounded-full border border-[rgb(var(--c-border))] bg-[rgb(var(--c-card2))] flex items-center justify-center shrink-0">
-          <span className="font-display text-[16px] text-cream">
-            {user.first_name?.[0]?.toUpperCase() || '?'}
-          </span>
-        </div>
-        <div className="min-w-0">
-          <h2 className="font-display text-[20px] text-cream leading-tight truncate">
-            {user.first_name}
-          </h2>
-          {stats && (
-            <p className="text-[12px] text-muted mt-0.5" data-testid="profile-about-stats">
-              {stats.days_active} дней в системе · {stats.total_checkins} чек-инов
-            </p>
-          )}
-        </div>
-      </div>
-
       {loading && <p className="text-muted text-[13px]">Загрузка…</p>}
 
       {error && (
@@ -156,9 +137,22 @@ export default function Profile({ user }) {
         </ProfileNote>
       )}
 
-      {/* День рождения */}
-      <ProfileGroup label="День рождения">
-        <ProfileCard>
+      {/* Ты: имя и дата рождения */}
+      <ProfileGroup label="Ты">
+        <ProfileCard testId="profile-about-card">
+          <ProfileRow
+            title="Имя"
+            value={user.first_name}
+            valueHeading
+            subtitle={
+              stats ? (
+                <span data-testid="profile-about-stats">
+                  {stats.days_active || 0} дней в системе · {stats.total_checkins || 0} чек-инов
+                </span>
+              ) : null
+            }
+            testId="profile-about-name"
+          />
           <ProfileRow
             title="Дата рождения"
             subtitle={
@@ -198,9 +192,9 @@ export default function Profile({ user }) {
         </ProfileCard>
       </ProfileGroup>
 
-      {/* История */}
+      {/* Твоя история */}
       {stats && (
-        <ProfileGroup label="История">
+        <ProfileGroup label="Статистика">
           <ProfileCard>
             <ProfileRow title="Дней в системе" value={stats.days_active || 0} />
             <ProfileRow title="Всего чек-инов" value={stats.total_checkins || 0} />
