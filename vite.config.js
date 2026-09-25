@@ -67,6 +67,19 @@ export default defineConfig({
   // componentStack React-ошибок. Minify остаётся включённым.
   build: {
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // Крупные библиотеки — в стабильные именованные чанки, чтобы
+        // код приложения не перевыгружался при правке экранов.
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          icons: ['lucide-react'],
+          charts: ['recharts'],
+          query: ['@tanstack/react-query'],
+          telegram: ['@twa-dev/sdk'],
+        },
+      },
+    },
   },
   esbuild: {
     keepNames: true,
