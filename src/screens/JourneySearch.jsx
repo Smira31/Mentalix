@@ -256,7 +256,7 @@ export default function JourneySearch({ user }) {
               onChange={event => setEmotion(event.target.value)}
               maxLength={60}
               placeholder="Например, спокойно"
-              className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-[14px] text-cream outline-none placeholder:text-faint"
+              className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-2 text-[16px] text-cream outline-none placeholder:text-faint"
             />
           </label>
           <div className="grid grid-cols-2 gap-1">
@@ -267,7 +267,7 @@ export default function JourneySearch({ user }) {
                 value={fromDate}
                 max={toDate || undefined}
                 onChange={event => setFromDate(event.target.value)}
-                className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-1 text-[12px] text-cream"
+                className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-1 text-[16px] text-cream"
               />
             </label>
             <label className="text-[11px] text-muted">
@@ -277,7 +277,7 @@ export default function JourneySearch({ user }) {
                 value={toDate}
                 min={fromDate || undefined}
                 onChange={event => setToDate(event.target.value)}
-                className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-1 text-[12px] text-cream"
+                className="mt-1 min-h-10 w-full rounded-xl bg-emerald-light px-1 text-[16px] text-cream"
               />
             </label>
           </div>
@@ -320,7 +320,7 @@ export default function JourneySearch({ user }) {
               }}
               placeholder="Новый тег"
               aria-label="Новый личный тег"
-              className="w-20 bg-transparent text-[13px] text-cream outline-none placeholder:text-faint"
+              className="w-24 bg-transparent text-[16px] text-cream outline-none placeholder:text-faint"
             />
           </label>
         </div>
