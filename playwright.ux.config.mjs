@@ -11,6 +11,7 @@ export default defineConfig({
     'profile-stoic.spec.mjs',
     'demo-phone.spec.mjs',
     'demo-panel.spec.mjs',
+    'bottom-nav-overlap.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
