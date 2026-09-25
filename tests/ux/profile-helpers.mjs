@@ -98,6 +98,7 @@ export async function openTelegram(browser, baseURL, viewport) {
       platform: 'ios',
       colorScheme: 'dark',
       isFullscreen: true,
+      isVersionAtLeast: ver => '8.0' >= ver,
       BackButton: backButton,
       MainButton: mainButton,
       SecondaryButton: mainButton,
