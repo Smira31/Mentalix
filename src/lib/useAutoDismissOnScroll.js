@@ -47,8 +47,10 @@ export function createDismissCallback(onDismiss) {
  *
  * @param {React.RefObject<HTMLElement>} ref — ссылка на элемент-подсказку
  * @param {() => void} onDismiss — вызывается один раз при уходе вверх
+ * @param {boolean} [active] — подсказка сейчас на экране; при появлении
+ *   позже (очередь подсказок) observer подключается заново
  */
-export function useAutoDismissOnScroll(ref, onDismiss) {
+export function useAutoDismissOnScroll(ref, onDismiss, active = true) {
   // Стабильная ссылка, чтобы не пересоздавать observer при каждом рендере
   const onDismissRef = useRef(onDismiss)
   useEffect(() => {
@@ -57,12 +59,12 @@ export function useAutoDismissOnScroll(ref, onDismiss) {
 
   useEffect(() => {
     const el = ref.current
-    if (!el || typeof IntersectionObserver === 'undefined') return
+    if (!active || !el || typeof IntersectionObserver === 'undefined') return
 
     const callback = createDismissCallback(() => onDismissRef.current?.())
     const observer = new IntersectionObserver(callback, { threshold: [0, 0.5, 1] })
 
     observer.observe(el)
     return () => observer.disconnect()
-  }, [ref])
+  }, [ref, active])
 }

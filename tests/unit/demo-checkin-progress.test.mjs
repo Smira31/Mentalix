@@ -16,7 +16,10 @@ test('PWA preview uses the three-question morning set in the agreed order', () =
   assert.match(checkinSource, /<CheckInQuestion\s+title="Что на уме\?"/)
   assert.match(checkinSource, /<h1>Готово\.<\/h1>/)
   assert.match(checkinSource, /Было полезно\?/)
-  assert.match(checkinSource, /Вернуться в Сегодня/)
+  assert.match(
+    checkinSource,
+    /\{ text: 'Закрыть', testId: 'checkin-back-to-today', onClick: onDone \}/
+  )
 })
 
 test('PWA and core flows share the same question renderer and do not render scale numbers', () => {
