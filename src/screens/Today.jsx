@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
+import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
 import { fetchTodayData, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
@@ -283,6 +284,19 @@ export default function Today({
   const [hiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
 
   const [hintDismissed, setHintDismissed] = useSynced('mx-today-cards-hint-dismissed', 'false')
+  const [cardsHintClosing, setCardsHintClosing] = useState(false)
+  const cardsHintRef = useRef(null)
+
+  const [seriesTooltipClosing, setSeriesTooltipClosing] = useState(false)
+  const seriesTooltipRef = useRef(null)
+
+  // Автозакрытие подсказок при прокрутке (как у Stoic): если подсказка
+  // была видна и полностью ушла за верхний край — помечаем закрытой навсегда.
+  useAutoDismissOnScroll(cardsHintRef, () => setHintDismissed('true'))
+  useAutoDismissOnScroll(seriesTooltipRef, () => {
+    markSeriesTooltipSeen(user?.id)
+    setShowSeriesTooltip(false)
+  })
 
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
 
@@ -872,13 +886,21 @@ export default function Today({
         }}
       />
       {showSeriesTooltip && (
-        <aside className="mx-today-series-tooltip" role="status">
+        <aside
+          ref={seriesTooltipRef}
+          className={`mx-today-series-tooltip${seriesTooltipClosing ? ' mx-today-series-tooltip--closing' : ''}`}
+          role="status"
+        >
           <button
             type="button"
             aria-label="Закрыть подсказку о серии"
             onClick={() => {
-              markSeriesTooltipSeen(user?.id)
-              setShowSeriesTooltip(false)
+              setSeriesTooltipClosing(true)
+              setTimeout(() => {
+                markSeriesTooltipSeen(user?.id)
+                setShowSeriesTooltip(false)
+                setSeriesTooltipClosing(false)
+              }, 200)
             }}
           >
             ×
@@ -897,7 +919,11 @@ export default function Today({
 
       {/* Подсказка после первого чек-ина — монохромная плашка с ✕. */}
       {(checkinHistory.length > 0 || (user?.demo && demoScenario() === 'Новый пользователь')) && hintDismissed !== 'true' && (
-        <div className="mx-today-cards-hint" data-testid="today-cards-hint">
+        <div
+          ref={cardsHintRef}
+          className={`mx-today-cards-hint${cardsHintClosing ? ' mx-today-cards-hint--closing' : ''}`}
+          data-testid="today-cards-hint"
+        >
           <Lightbulb size={20} className="mx-today-cards-hint__icon" aria-hidden="true" />
           <p>
             Две карточки ниже — твои ежедневные рефлексии: одна начинает день, другая подводит итог.
@@ -907,7 +933,13 @@ export default function Today({
             type="button"
             className="mx-today-cards-hint__close"
             aria-label="Закрыть подсказку"
-            onClick={() => setHintDismissed('true')}
+            onClick={() => {
+              setCardsHintClosing(true)
+              setTimeout(() => {
+                setHintDismissed('true')
+                setCardsHintClosing(false)
+              }, 200)
+            }}
           >
             <X size={18} />
           </button>

@@ -1,5 +1,9 @@
 import { telegramAdapter } from './telegram.adapter'
 import { webAdapter } from './web.adapter'
+import { installZoomGuard } from './zoomGuard'
+
+// Блокируем pinch-zoom на iOS при старте — до первого рендера.
+installZoomGuard()
 
 function detectPlatform() {
   if (typeof window === 'undefined') return 'web'

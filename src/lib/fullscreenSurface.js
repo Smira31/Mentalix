@@ -71,7 +71,11 @@ export const FULLSCREEN_SCROLL_CLASS =
 export function getFullscreenPortalTarget() {
   if (typeof document === 'undefined') return null
 
-  return document.querySelector('[data-mentalix-demo-frame]') || document.body
+  return (
+    document.querySelector('[data-mentalix-demo-frame]') ||
+    document.querySelector('[data-mentalix-app-root]') ||
+    document.body
+  )
 }
 
 export function useFullscreenSurface() {

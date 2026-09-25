@@ -66,6 +66,20 @@ function handleBackClick() {
   top?.()
 }
 
+/**
+ * Текущее действие «Назад» — верхний элемент стека.
+ * Используется глобальным edge-swipe слушателем на корне приложения.
+ * Возвращает null, если стек пуст (корень вкладки — «Назад» нет).
+ */
+export function getCurrentBackAction() {
+  return stack.length ? stack[stack.length - 1] : null
+}
+
+// Debug-экспорт для тестов edge-swipe back (только в dev, не влияет на прод)
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  window.__mxGetCurrentBackAction = getCurrentBackAction
+}
+
 export function useBackButton(handler, active = true) {
   const ref = useRef(handler)
 
@@ -76,15 +90,15 @@ export function useBackButton(handler, active = true) {
   useEffect(() => {
     if (!active) return
 
-    const backButton = api()?.BackButton
-
-    if (!backButton) return
-
     const entry = () => ref.current?.()
 
+    // Стек всегда поддерживается — даже в web-режиме, где нет системной
+    // кнопки Telegram. Глобальный edge-swipe читает верхний элемент стека.
     stack.push(entry)
 
-    if (!bound) {
+    const backButton = api()?.BackButton
+
+    if (backButton && !bound) {
       safely(() => backButton.onClick(handleBackClick), 'BackButton.onClick')
 
       bound = true

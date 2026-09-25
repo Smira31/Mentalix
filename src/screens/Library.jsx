@@ -6,6 +6,7 @@ import ArticleCover from '../components/ArticleCover'
 import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
 import { platform } from '../platform'
+import { useBackButton } from '../platform/telegram.hooks'
 import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
 import './Library.css'
@@ -443,6 +444,25 @@ export default function Library({ user }) {
   const [initialArticle, setInitialArticle] = useState(null)
   const [libraryV2Article, setLibraryV2Article] = useState(null)
   const [libraryV2Program, setLibraryV2Program] = useState('Самодисциплина')
+
+  /*
+   * Edge-swipe «назад» для вложенных экранов библиотеки.
+   * Под-экраны V2 (каталог программ, детальная программа, каталог статей,
+   * читалка статьи) не используют компонент BackButton, поэтому без
+   * явной регистрации в стеке useBackButton свайп от левого края не работает.
+   * Под-экраны articles и journals имеют собственный BackButton —
+   * их запись в стеке выше, Library-уровень срабатывает только когда
+   * внутренний экран уже закрыт.
+   */
+  const libraryBackHandler = libraryV2Article
+    ? () => setLibraryV2Article(null)
+    : screen === 'library-v2-program'
+      ? () => setScreen('library-v2-programs')
+      : screen !== 'home'
+        ? () => setScreen('home')
+        : null
+
+  useBackButton(libraryBackHandler, Boolean(libraryBackHandler))
 
   if (screen === 'library-v2-programs' && LIBRARY_V2_ENABLED) {
     return (

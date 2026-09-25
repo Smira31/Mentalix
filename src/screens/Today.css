@@ -382,7 +382,11 @@
   background: rgb(var(--c-card2));
   border: 1px solid rgb(var(--c-line) / 0.08);
   border-radius: 1rem;
-  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, transform 150ms ease;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    transform 150ms ease;
 }
 
 .mx-pinned-practices__rail > .mx-pinned-practice-card {
@@ -1747,27 +1751,27 @@
 }
 
 .mx-today-week {
-  animation: mx-today-card-enter 380ms var(--mx-ease-out) both;
+  animation: mx-today-card-enter 380ms var(--mx-ease-out) backwards;
 }
 
 .mx-today-day-card-slot {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 80ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 80ms backwards;
 }
 
 .mx-today-pulse {
-  animation: mx-today-card-enter 400ms var(--mx-ease-out) 160ms both;
+  animation: mx-today-card-enter 400ms var(--mx-ease-out) 160ms backwards;
 }
 
 .mx-pinned-practices {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 220ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 220ms backwards;
 }
 
 .mx-today-theme-card {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 280ms backwards;
 }
 
 .mx-today-affirmation-card {
-  animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms both;
+  animation: mx-today-card-enter 480ms var(--mx-ease-out) 340ms backwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1935,4 +1939,35 @@
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
+}
+
+/* Анимация закрытия по крестику: fade + collapse ~200 мс */
+.mx-today-cards-hint--closing {
+  animation: mx-hint-collapse 200ms ease forwards;
+}
+
+.mx-today-series-tooltip--closing {
+  animation: mx-hint-collapse 200ms ease forwards;
+}
+
+@keyframes mx-hint-collapse {
+  from {
+    opacity: 1;
+    max-height: 200px;
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-today-cards-hint--closing,
+  .mx-today-series-tooltip--closing {
+    animation: none;
+    opacity: 0;
+  }
 }

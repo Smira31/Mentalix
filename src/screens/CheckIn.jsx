@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
@@ -26,6 +26,7 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
+
 import { currentCheckinStreak } from '../lib/series'
 import { energyFillPercent } from '../lib/checkinScale'
 import { resolveDesyncStep } from '../lib/checkinDesync'
@@ -330,8 +331,10 @@ function MorningCheckInFlow({ user, onDone, redo = false }) {
 
   useSecondaryButton({ text: '', onClick: () => {}, visible: false })
 
+  const screenRef = useRef(null)
+
   return createPortal(
-    <div className="mx-demo-checkin" style={demoSurfaceStyle}>
+    <div ref={screenRef} className="mx-demo-checkin" style={demoSurfaceStyle}>
       <header className="mx-demo-checkin__header">
         <BackButton onClick={handleBack} label="Сегодня" />
       </header>
@@ -1063,6 +1066,8 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
     setStep(current => current - 1)
   }
 
+  const screenRef = useRef(null)
+
   /*
    * ДЕЙСТВИЯ ЖИВУТ В СИСТЕМНОЙ КНОПКЕ
    *
@@ -1177,7 +1182,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
   if (isStreakStep) {
     return createPortal(
-      <div className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
+      <div ref={screenRef} className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
         <div
           className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
         >
@@ -1240,6 +1245,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
   if (step >= doneStep) {
     return createPortal(
       <div
+        ref={screenRef}
         className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
         style={viewportStyle}
       >
@@ -1363,6 +1369,7 @@ function CheckInCore({ user, onDone, mode = 'checkin', existing = null, redo = f
 
   return createPortal(
     <div
+      ref={screenRef}
       className={`${FULLSCREEN_SHELL_CLASS} ${previewDemoMode ? 'mx-checkin-demo' : ''}`}
       style={viewportStyle}
     >
