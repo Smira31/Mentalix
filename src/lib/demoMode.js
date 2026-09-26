@@ -320,9 +320,11 @@ function seedState(todayState = null) {
     notes: { 900401: [] },
     messages: [],
     pinnedPractices: [
-      { practice_id: 'first-step' },
-      { practice_id: 'breathing' },
-      { practice_id: 'focus' },
+      { practice_id: 'lila-discover' },
+      { practice_id: 'rituals' },
+      { practice_id: 'ascezas' },
+      { practice_id: 'mood' },
+      { practice_id: 'alter-ego' },
     ],
     checkins: [...history, ...(checkin ? [checkin] : [])],
     profile: {
