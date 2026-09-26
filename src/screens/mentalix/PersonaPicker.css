@@ -48,6 +48,7 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   flex-direction: column;
   background: rgb(var(--c-bg));
   color: rgb(var(--c-text));
+  font-family: 'Onest', sans-serif;
   padding-top: var(--app-safe-top);
   /* Dialog ends directly above the fixed 68px BottomNavigation. */
   padding-bottom: calc(
@@ -145,10 +146,10 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
   gap: 1px;
   margin: 0 0 24px;
   color: rgb(var(--c-text));
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 2rem;
-  line-height: 1.02;
-  letter-spacing: -0.045em;
+  font-family: 'Onest', sans-serif;
+  font-size: var(--mx-type-section-size);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .mx-dialog-surface__header h2 span {
@@ -349,7 +350,6 @@ body:has(.mx-dialog-entry) .mx-dialog-app-shell {
 
   .mx-dialog-surface__header h2 {
     margin-bottom: 12px;
-    font-size: 1.6rem;
   }
 
   .mx-dialog-card {

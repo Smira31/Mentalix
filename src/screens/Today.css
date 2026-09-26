@@ -1433,7 +1433,7 @@
 }
 
 .mx-today-day-card[data-complete='true'] {
-  height: 233px;
+  height: 260px;
   padding: 87px 16px 35px;
   border-color: rgb(var(--c-nav-border));
   background: rgb(var(--c-bg));
@@ -1833,56 +1833,10 @@
   border: 1px solid rgb(var(--c-text) / 0.15);
 }
 
-/* Пройденная карточка — фон экрана и тонкая обводка.
-   §6: высота 233 px (completed card, эталон Stoic кадр 03). */
+/* Пройденная карточка сохраняет высоту соседней карточки в любом состоянии. */
 .mx-today-day-card[data-state='done'] {
-  height: 233px;
   border-color: rgb(var(--c-text) / 0.15);
   background: rgb(var(--c-bg));
-}
-
-/* §6 Motion — сжатие карточки 260→233 (130 ms).
-   Только transform и clip-path, без анимации height.
-   Во время анимации карточка держит 260 px, clip-path сжимает видимую
-   область до 233 px. Секции ниже сдвигаются transform: translateY(-27px).
-   После анимации класс снимается — height становится 233 px (instant),
-   clip и transform убираются. Визуальная позиция секций не меняется. */
-.mx-screen-shell--compressing .mx-today-day-card[data-state='done'] {
-  height: 260px;
-  animation: mx-card-compress 130ms ease-in forwards;
-}
-
-@keyframes mx-card-compress {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-  to {
-    clip-path: inset(0 0 27px 0);
-  }
-}
-
-.mx-screen-shell--compressing .mx-today-day-card-slot ~ * {
-  animation: mx-sections-pull-up 130ms ease-in forwards;
-}
-
-@keyframes mx-sections-pull-up {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-27px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .mx-screen-shell--compressing .mx-today-day-card[data-state='done'] {
-    height: 233px;
-    animation: none;
-  }
-
-  .mx-screen-shell--compressing .mx-today-day-card-slot ~ * {
-    animation: none;
-  }
 }
 
 .mx-today-day-card[data-state='active'] .mx-today-day-card__label,

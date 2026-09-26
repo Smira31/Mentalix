@@ -333,9 +333,6 @@ export default function Today({
   const [cardsHintClosing, setCardsHintClosing] = useState(false)
   const cardsHintRef = useRef(null)
 
-  // §6 Motion — сжатие карточки при возврате из чек-ина (260→233, 130 ms)
-  const [cardCompressing, setCardCompressing] = useState(false)
-
   const [seriesTooltipClosing, setSeriesTooltipClosing] = useState(false)
   const seriesTooltipRef = useRef(null)
 
@@ -665,9 +662,7 @@ export default function Today({
 
           triggerCheckInExit(() => {
             changeSub(null)
-            setCardCompressing(true)
             if (result?.newBadge) setNewBadge(result.newBadge)
-            setTimeout(() => setCardCompressing(false), 130)
           })
         }}
       />
@@ -1025,7 +1020,7 @@ export default function Today({
   }
 
   return (
-    <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
+    <div className="mx-screen-shell">
       <h1 className="sr-only">Сегодня</h1>
       <TodayWorkspaceHeader
         onOpenSettings={onOpenSettings}
