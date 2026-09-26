@@ -31,6 +31,9 @@ const MOOD_LABELS = ['Очень тяжело', 'Тяжело', 'Ровно', '�
 /** Минимальное число дней с записями для показа карточек. */
 const MIN_DAYS = 2
 
+/** Минимальное число чек-инов для выводов (используется insightDigest, surpriseInsight). */
+export const MIN_CHECKINS = 5
+
 function MoodFace({ level }) {
   const mouths = [
     'M9 21.5C11.2 18.4 20.8 18.4 23 21.5',
