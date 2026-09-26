@@ -364,7 +364,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
 
     return createPortal(
       <Shell style={style} footer={<WebActionBar action={webAction} />}>
-        <BackButton onClick={back} />
+        <RoundBackButton onClick={back} />
 
         <div className="text-left mt-4 mb-7">
           <div className="font-label text-[12px] text-faint font-semibold uppercase tracking-wide mb-2">
@@ -432,7 +432,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   if (view === 'list') {
     return createPortal(
       <Shell style={style}>
-        <BackButton onClick={back} />
+        <RoundBackButton onClick={back} />
 
         <h2 className="font-display text-[22px] text-cream lowercase leading-tight mt-4 mb-1">
           все темы.
@@ -497,7 +497,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   return createPortal(
     <Shell style={style} footer={<WebActionBar action={webAction} />}>
       <div className="flex items-center justify-between gap-3 mb-5">
-        <BackButton onClick={onBack} />
+        <RoundBackButton onClick={onBack} />
 
         <button
           type="button"

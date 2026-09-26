@@ -58,7 +58,7 @@ test('existing create flows retain fullscreen, Telegram actions and 16px fields'
     const end = source.indexOf('export default function', start)
     const form = source.slice(start, end)
     assert.match(form, /useFullscreenSurface\(\)/)
-    assert.match(form, /<BackButton onClick=\{onCancel\} \/>/)
+    assert.match(form, /useBackButton\(onCancel\)/)
     assert.match(form, /text-\[16px\]/)
     assert.match(form, /<WebActionBar action=\{webAction\} \/>/)
     assert.match(form, /useMainButton\(/)
