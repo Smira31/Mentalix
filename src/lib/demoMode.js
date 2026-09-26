@@ -603,6 +603,24 @@ function respond(path, options = {}) {
     return json({ ok: true })
   }
 
+  if (pathname === '/mentalix/daily-task' && method === 'GET') {
+    return json({
+      task: {
+        id: 900701,
+        title: 'Заметь один спокойный момент',
+        body: 'Остановись на пару минут и запиши, что сейчас помогает тебе дышать свободнее.',
+        minutes: 3,
+      },
+      status: state.dailyTask?.date === url.searchParams.get('date')
+        ? state.dailyTask.status
+        : 'new',
+    })
+  }
+  if (pathname === '/mentalix/daily-task' && method === 'POST') {
+    writeState({ ...state, dailyTask: { date: body.date, status: body.status } })
+    return json({ ok: true })
+  }
+
   if (pathname === '/mentalix/messages' && method === 'GET') {
     return json(state.messages || [])
   }

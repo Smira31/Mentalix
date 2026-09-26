@@ -595,6 +595,15 @@ export const api = {
   },
 
   mentalix: {
+    dailyTask: date =>
+      request(withQuery('/mentalix/daily-task', { date }), { silentDiagnostics: true }),
+
+    answerDailyTask: (date, taskId, status) =>
+      request('/mentalix/daily-task', {
+        method: 'POST',
+        body: JSON.stringify({ date, task_id: taskId, status }),
+      }),
+
     history: (userId, persona = 'mayak') =>
       request(withQuery('/mentalix/messages', { user_id: userId, persona })),
 
@@ -829,6 +838,7 @@ export const api = {
   events: {
     log: (userId, eventType, entityType = null, entityId = null) =>
       request('/events', {
+        silentDiagnostics: true,
         method: 'POST',
         body: JSON.stringify({
           user_id: userId,
@@ -840,11 +850,12 @@ export const api = {
   },
 
   returnFlow: {
-    log: (event, idempotencyKey, occurredAt = new Date().toISOString()) =>
+    log: (event, idempotencyKey, occurredAt = new Date().toISOString(), flow = 'morning_v1') =>
       request('/return-flow/events', {
+        silentDiagnostics: true,
         method: 'POST',
         body: JSON.stringify({
-          flow: 'morning_v1',
+          flow,
           event,
           idempotency_key: idempotencyKey,
           occurred_at: occurredAt,

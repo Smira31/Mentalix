@@ -8,14 +8,14 @@ const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url
 
 
 test('the morning visual flow is the default check-in entry point', () => {
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, redo = false \}\)/)
-  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} redo=\{redo\} \/>/s)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false \}\)/)
+  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} redo=\{redo\} \/>/s)
   assert.doesNotMatch(checkinSource, /if \(previewDemoMode && mode !== 'evening'\)/)
 })
 
 test('the legacy core remains available for evening review and rollback', () => {
-  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, mode = 'checkin', existing = null, redo = false \}\)/)
-  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} mode=\{mode\} existing=\{existing\} redo=\{redo\} \/>/)
+  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, onCompleted, mode = 'checkin', existing = null, redo = false \}\)/)
+  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} mode=\{mode\} existing=\{existing\} redo=\{redo\} \/>/)
 })
 
 test('evening first text step has no pre-declaration question access', () => {
@@ -177,7 +177,7 @@ test('morning redo sends PUT without anxiety and focus', () => {
   )
   assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
   // redo не принимает существующую запись — поля утра не переносятся
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, redo = false \}\)/)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false \}\)/)
   // в redo значения anxiety/focus остаются null и в payload не попадают
   assert.match(morningFlow, /anxiety: null/)
   assert.match(morningFlow, /focus: null/)

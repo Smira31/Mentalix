@@ -5,6 +5,8 @@ import { X } from 'lucide-react'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
+import { platform } from '../platform'
+import { logEngagementEvent } from '../lib/engagementEvents'
 import { pluralize, formatCount } from '../lib/pluralize'
 import { platformName } from '../platform'
 import { buildSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
@@ -481,6 +483,15 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   }, [user.id])
 
   const visibleModel = modelUserId === user.id ? model : null
+  const freezeSeen = useRef(false)
+  useEffect(() => {
+    if (activeTab !== 'stats' || !visibleModel || freezeSeen.current) return
+    freezeSeen.current = true
+    logEngagementEvent({
+      user, demo: isPreviewDemoMode(), event: 'streak_freeze_seen',
+      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+    })
+  }, [activeTab, visibleModel, user])
 
   const content = (
     <div
