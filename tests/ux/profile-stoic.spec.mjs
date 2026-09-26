@@ -14,14 +14,26 @@ for (const viewport of VIEWPORTS) {
     }) => {
       const { context, page } = await openWeb(browser, baseURL, viewport)
       try {
-        const button = await page.getByTestId('today-profile-button').boundingBox()
-        const chip = await page.getByTestId('today-streak-chip').boundingBox()
+        const profileButton = page.getByTestId('today-profile-button')
+        const streakChip = page.getByTestId('today-streak-chip')
         // Отступ считаем от края фрейма приложения (mx-screen-shell), а не viewport:
         // фрейм центрируется, и на широком экране его край не совпадает с краем окна.
-        const shell = await page
-          .getByTestId('today-profile-button')
-          .locator('xpath=ancestor::div[contains(@class, "mx-screen-shell")][1]')
-          .boundingBox()
+        const screenShell = profileButton.locator(
+          'xpath=ancestor::div[contains(@class, "mx-screen-shell")][1]',
+        )
+
+        await expect(profileButton).toBeVisible()
+        await expect(streakChip).toBeVisible()
+        await expect(screenShell).toBeVisible()
+
+        const button = await profileButton.boundingBox()
+        const chip = await streakChip.boundingBox()
+        const shell = await screenShell.boundingBox()
+
+        expect(button).not.toBeNull()
+        expect(chip).not.toBeNull()
+        expect(shell).not.toBeNull()
+
         expect(Math.round(button.width)).toBe(43)
         expect(Math.round(button.height)).toBe(43)
         expect(Math.abs(shell.x + shell.width - (button.x + button.width) - 21)).toBeLessThanOrEqual(1)
