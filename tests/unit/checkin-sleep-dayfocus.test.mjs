@@ -76,14 +76,14 @@ test('day_focus отправляется только если заполнен 
 // ── Повторное открытие ──
 
 test('при повторном открытии sleep_quality и day_focus предзаполняются из existing', () => {
-  assert.match(morningFlow, /sleep_quality: redo \? null : existing\?\.sleep_quality \?\? null/)
-  assert.match(morningFlow, /focus: redo \? null : existing\?\.focus \?\? null/)
+  assert.match(morningFlow, /sleep_quality: redo \? null : \(existing\?\.sleep_quality \?\? null\)/)
+  assert.match(morningFlow, /focus: redo \? null : \(existing\?\.focus \?\? null\)/)
   assert.match(morningFlow, /existing\?\.day_focus \?\? ''/)
 })
 
 test('redo не предзаполняет sleep_quality, focus и day_focus', () => {
-  assert.match(morningFlow, /sleep_quality: redo \? null : existing\?\.sleep_quality \?\? null/)
-  assert.match(morningFlow, /dayFocus, setDayFocus\] = useState\(\(\) => \(redo \? '' : existing\?\.day_focus \?\? ''\)\)/)
+  assert.match(morningFlow, /sleep_quality: redo \? null : \(existing\?\.sleep_quality \?\? null\)/)
+  assert.match(morningFlow, /dayFocus, setDayFocus\] = useState\(\(\) => \(redo \? '' : \(existing\?\.day_focus \?\? ''\)\)\)/)
 })
 
 // ── Вечерний флоу не меняется ──
@@ -102,13 +102,13 @@ test('eveningMorningFields сохраняет sleep_quality и day_focus из ex
 
 // ── Шаги в правильном порядке ──
 
-test('day_focus шаг находится после note и перед done', () => {
-  assert.match(morningFlow, /const noteStep = allScales\.length/)
-  assert.match(morningFlow, /const dayFocusStep = noteStep \+ 1/)
-  assert.match(morningFlow, /const doneStep = dayFocusStep \+ 1/)
+test('day_focus шаг находится перед note и перед done', () => {
+  assert.match(morningFlow, /const dayFocusStep = allScales\.length/)
+  assert.match(morningFlow, /const noteStep = dayFocusStep \+ 1/)
+  assert.match(morningFlow, /const doneStep = noteStep \+ 1/)
 })
 
 test('необязательные шкалы имеют кнопку «Пропустить»', () => {
-  assert.match(morningFlow, /step >= requiredScaleCount && step < allScales\.length/)
+  assert.match(morningFlow, /step < allScales\.length && !allScales\[step\]\?\.required/)
   assert.match(morningFlow, /\|\| step === dayFocusStep/)
 })
