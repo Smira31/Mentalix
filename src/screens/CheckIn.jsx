@@ -28,7 +28,6 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
-import DailyTaskPrompt from '../components/DailyTaskPrompt'
 import { logOnce } from '../lib/logOnce'
 import { maybeBuildSurprise } from './mentalix/surpriseInsight'
 import { SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
@@ -261,7 +260,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   }))
   const [note, setNote] = useState('')
   const [dayFocus, setDayFocus] = useState(() => (redo ? '' : (existing?.day_focus ?? '')))
-  const [feedback, setFeedback] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [streak, setStreak] = useState(0)
@@ -271,16 +269,24 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     ...viewportStyle,
     paddingBottom: 0,
   }
-  const allScales = [...MORNING_SCALE_STEPS, ...MORNING_OPTIONAL_SCALES]
-  const requiredScaleCount = MORNING_SCALE_STEPS.length
+  /*
+   * Порядок утренних шкал: настроение → сон → энергия → концентрация.
+   * sleep_quality и focus — необязательные (required: false), их можно
+   * пропустить; mood и energy — обязательные.
+   */
+  const allScales = [
+    { ...SCALE_STEPS[0], required: true },
+    { ...SLEEP_QUALITY_STEP, required: false },
+    { ...SCALE_STEPS[1], required: true },
+    { ...MORNING_FOCUS_STEP, required: false },
+  ]
   const scale = step < allScales.length ? allScales[step] : null
-  const noteStep = allScales.length
-  const dayFocusStep = noteStep + 1
-  const doneStep = dayFocusStep + 1
-  const streakStep = doneStep + 1
+  const dayFocusStep = allScales.length
+  const noteStep = dayFocusStep + 1
+  const doneStep = noteStep + 1
   const teaserLogged = useRef(false)
   useEffect(() => {
-    if (teaserLogged.current || (step !== doneStep && step !== streakStep)) return
+    if (teaserLogged.current || step !== doneStep) return
     teaserLogged.current = true
     logEngagementEvent({
       user,
@@ -291,7 +297,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       hasSession: Boolean(platform.getSessionToken?.()),
       send: api.events.log,
     })
-  }, [step, doneStep, streakStep, user])
+  }, [step, doneStep, user])
 
   /*
    * §6: во время горизонтального перехода (300 мс) повторная навигация
@@ -311,7 +317,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   function handleBack() {
     platform.haptic('light')
 
-    if (step === streakStep || step === doneStep || step === 0) {
+    if (step === doneStep || step === 0) {
       onDone()
       return
     }
@@ -339,16 +345,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       if (values.focus != null) morningPayload.focus = values.focus
       if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
       if (dayFocus.trim()) morningPayload.day_focus = dayFocus.trim()
-      const saved = await saveApi(user.id, morningPayload)
+      await saveApi(user.id, morningPayload)
       onCompleted?.()
       platform.haptic('success')
-      /*
-       * Ответ на «Было полезно?» необязателен и уходит вместе с id сохранённой
-       * записи. Ошибка сети не мешает закрыть экран — см. sendCheckinFeedback.
-       * Вызов стоит до проверки redo, чтобы «Пройти заново» тоже отправлял
-       * оценку — раньше redo-ветка делала onDone() и return до отправки.
-       */
-      await sendCheckinFeedback(api.checkin.feedback, saved?.id, feedback)
       if (redo) {
         onDone()
         return
@@ -360,7 +359,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       } catch (historyError) {
         console.error(historyError)
       }
-      setStep(streakStep)
+      setStep(doneStep)
     } catch (saveError) {
       console.error(saveError)
       setError('Не удалось сохранить. Попробуй ещё раз.')
@@ -370,31 +369,20 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   }
 
   const action =
-    step === streakStep
-      ? { text: 'Закрыть', testId: 'checkin-back-to-today', onClick: onDone }
-      : step === noteStep
-        ? { text: 'Продолжить', onClick: () => goToStep(dayFocusStep), disabled: !note.trim() }
-        : step === dayFocusStep
-          ? { text: 'Далее', onClick: () => goToStep(doneStep), disabled: false }
-          : step === doneStep
-            ? {
-                // Текст не убирается на время сохранения: спиннер рисуется
-                // внутри кнопки рядом с подписью, кнопка лишь блокируется.
-                text: 'Завершить',
-                testId: 'checkin-complete',
-                onClick: finish,
-                disabled: saving,
-              }
-            : {
-                text: 'Продолжить',
-                onClick: () => goToStep(current => current + 1),
-                disabled: false,
-              }
+    step === doneStep
+      ? { text: 'Вернуться в Сегодня', testId: 'checkin-back-to-today', onClick: onDone }
+      : step === dayFocusStep
+        ? { text: 'Далее', onClick: () => goToStep(noteStep), disabled: false }
+        : {
+            text: 'Продолжить',
+            onClick: () => goToStep(current => current + 1),
+            disabled: false,
+          }
 
   useMainButton({
     text: action.text,
     onClick: action.onClick,
-    visible: step === doneStep || step === streakStep,
+    visible: step === doneStep,
     enabled: !action.disabled,
     loading: saving,
   })
@@ -438,14 +426,20 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 autoFocus
                 keepFocusOnSubmit
                 submitIcon="arrow"
-                submitLabel="Далее"
-                submitTestId="checkin-next"
-                onSubmit={() => goToStep(dayFocusStep)}
+                submitLabel="Завершить"
+                submitTestId="checkin-complete"
+                onSubmit={finish}
+                submitLoading={saving}
                 onDeepen={() => {}}
                 deepenLabel="Пойти глубже"
                 showAddAction
                 formatting
               />
+              {error ? (
+                <p role="alert" className="mx-demo-checkin__error mt-4 text-center">
+                  {error}
+                </p>
+              ) : null}
             </CheckInQuestion>
           )}
 
@@ -478,105 +472,33 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
           {step === doneStep && (
             <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-              <CheckInCompletionArt />
-              <h1>Готово.</h1>
-              <p className="mx-demo-checkin__feedback-prompt">Было полезно?</p>
-              <div className="mx-demo-checkin__feedback" data-testid="checkin-feedback-row">
-                {CHECKIN_FEEDBACK_OPTIONS.map(option => {
-                  const Icon = FEEDBACK_ICONS[option.value]
-
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      data-testid="checkin-feedback-option"
-                      data-value={option.value}
-                      className={feedback === option.label ? 'is-selected' : ''}
-                      onClick={() => {
-                        platform.haptic('light')
-                        setFeedback(option.label)
-                      }}
-                    >
-                      <Icon size={42} strokeWidth={1.7} aria-hidden="true" />
-                      {option.label}
-                    </button>
-                  )
-                })}
-              </div>
-              {/* Слот ошибки всегда занимает место: сообщение об ошибке не
-                сдвигает иллюстрацию и заголовок (компоновка не «прыгает»). */}
-              <div className="mx-demo-checkin__error-slot" aria-live="polite">
-                {error ? (
-                  <p role="alert" className="mx-demo-checkin__error">
-                    {error}
-                  </p>
-                ) : null}
-              </div>
-              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
-                {buildTomorrowTeaser({
-                  streak,
-                  checkins: streakHistory,
-                  rituals: peekPracticesData(user.id)?.rituals,
-                  ascezas: peekPracticesData(user.id)?.ascezas,
-                  isEvening: false,
-                })}
-              </p>
-            </section>
-          )}
-
-          {step === streakStep && (
-            <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
               <StreakFlower />
-              <h1>{streak}-дневная серия.</h1>
-              <p>внутренняя работа — это путь. ты только что сделал ещё один шаг.</p>
-              <div
-                className="mt-6 grid w-full max-w-sm gap-2"
-                style={{
-                  gridTemplateColumns: `repeat(${buildStreakDays(streakHistory, streak).length}, minmax(0, 1fr))`,
-                }}
-                role="group"
-                aria-label="Дни текущей серии"
-              >
-                {buildStreakDays(streakHistory, streak).map(day => {
-                  const active = day.completed || day.isToday
-                  return (
-                    <div key={day.isoDate} className="flex flex-col items-center gap-1">
-                      <span
-                        className={`flex h-9 w-9 items-center justify-center rounded-full border ${active ? 'border-cream bg-cream text-emerald-deep' : 'border-cream/10 bg-emerald text-muted'}`}
-                      >
-                        {active ? <Flame size={15} aria-hidden="true" /> : null}
-                      </span>
-                      <span className="text-[10px] text-muted">{day.label}</span>
-                    </div>
-                  )
-                })}
-              </div>
-              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
-                {buildTomorrowTeaser({
-                  streak,
-                  checkins: streakHistory,
-                  rituals: peekPracticesData(user.id)?.rituals,
-                  ascezas: peekPracticesData(user.id)?.ascezas,
-                  isEvening: false,
-                })}
-              </p>
-              <DailyTaskPrompt user={user} />
+              <h1>Чек-ин завершён</h1>
+              {streak > 0 ? (
+                <p className="mx-type-body text-muted mt-4" data-testid="checkin-streak">
+                  {streak}-дневная серия
+                </p>
+              ) : null}
             </section>
           )}
         </StepSlide>
       </main>
-      {step < noteStep || step === dayFocusStep ? (
+      {step < noteStep ? (
         <CheckInNextControls
           onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
-          disabled={step < requiredScaleCount ? !values[allScales[step].key] : false}
+          disabled={
+            step < allScales.length && allScales[step]?.required
+              ? !values[allScales[step].key]
+              : false
+          }
           onSkip={
-            (step >= requiredScaleCount && step < allScales.length) || step === dayFocusStep
+            (step < allScales.length && !allScales[step]?.required) || step === dayFocusStep
               ? () => goToStep(current => Math.min(doneStep, current + 1))
               : null
           }
         />
       ) : null}
-      {step === doneStep || step === streakStep ? (
+      {step === doneStep ? (
         <WebActionBar action={action} loading={saving} className="mx-demo-checkin__action-bar" />
       ) : null}
     </div>,

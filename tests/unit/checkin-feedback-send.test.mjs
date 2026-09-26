@@ -155,54 +155,28 @@ async function getSource() {
   return checkinSource
 }
 
-test('экран завершения содержит «Готово.» и «Было полезно?»', async () => {
+test('экран завершения вечера содержит «Готово.» и «Было полезно?»', async () => {
   const src = await getSource()
-  assert.match(src, /Готово\./)
-  assert.match(src, /Было полезно\?/)
-  assert.match(src, /data-testid="checkin-feedback-option"/)
+  const core = src.slice(
+    src.indexOf('function CheckInCore'),
+    src.indexOf('function CheckIn({')
+  )
+  assert.match(core, /Готово\./)
+  assert.match(core, /Было полезно\?/)
+  assert.match(core, /data-testid="checkin-feedback-option"/)
 })
 
-test('утренний первый проход: finish() вызывает sendCheckinFeedback после save (не redo)', async () => {
+test('утренний поток не вызывает sendCheckinFeedback — вопрос об оценке убран', async () => {
   const src = await getSource()
   const morningFlow = src.slice(
     src.indexOf('function MorningCheckInFlow'),
     src.indexOf('// ── Чек-ин и вечерний')
   )
 
-  // sendCheckinFeedback импортирован
-  assert.match(morningFlow, /sendCheckinFeedback/, 'утренний поток использует sendCheckinFeedback')
-
-  // В не-redo ветке finish() вызывает sendCheckinFeedback
-  const finishFn = morningFlow.slice(morningFlow.indexOf('async function finish()'))
-  assert.match(finishFn, /sendCheckinFeedback/, 'finish() вызывает sendCheckinFeedback')
-})
-
-test('утренний «Пройти заново»: finish() вызывает sendCheckinFeedback до onDone() (redo-ветка)', async () => {
-  const src = await getSource()
-  const morningFlow = src.slice(
-    src.indexOf('function MorningCheckInFlow'),
-    src.indexOf('// ── Чек-ин и вечерний')
-  )
-
-  const finishFn = morningFlow.slice(morningFlow.indexOf('async function finish()'))
-
-  // sendCheckinFeedback должен стоять ДО проверки redo и до onDone(),
-  // чтобы оценка уходила на пути «Пройти заново» (redo=true).
-  const feedbackPos = finishFn.indexOf('sendCheckinFeedback')
-  const redoPos = finishFn.indexOf('if (redo)')
-  const onDonePos = finishFn.indexOf('onDone()')
-
-  assert.ok(feedbackPos !== -1, 'finish() вызывает sendCheckinFeedback')
-  assert.ok(redoPos !== -1, 'finish() содержит проверку redo')
-  assert.ok(onDonePos !== -1, 'finish() вызывает onDone()')
-  assert.ok(
-    feedbackPos < redoPos,
-    'sendCheckinFeedback вызывается ДО if (redo) — иначе redo пропускает оценку'
-  )
-  assert.ok(
-    feedbackPos < onDonePos,
-    'sendCheckinFeedback вызывается ДО onDone() — иначе оценка теряется'
-  )
+  // Утренний поток больше не отправляет оценку практики
+  assert.doesNotMatch(morningFlow, /sendCheckinFeedback/, 'утренний поток не использует sendCheckinFeedback')
+  assert.doesNotMatch(morningFlow, /Было полезно\?/, 'утренний поток не спрашивает «Было полезно?»')
+  assert.doesNotMatch(morningFlow, /checkin-feedback-option/, 'утренний поток не рендерит кнопки оценки')
 })
 
 test('вечерний поток: экран завершения вызывает sendCheckinFeedback по клику на кнопку', async () => {
