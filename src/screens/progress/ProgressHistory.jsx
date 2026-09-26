@@ -47,6 +47,12 @@ function moodWord(level) {
   return capitalize(MOOD_WORDS[(level || 3) - 1])
 }
 
+function moodColor(level) {
+  if (!level) return 'rgb(var(--c-card3, 46 46 46))'
+  const palette = ['#6A6A6A', '#8A8A8A', '#B0B0B0', '#D0D0D0', '#E6E6E6']
+  return palette[Math.min(Math.max(level, 1), 5) - 1]
+}
+
 function parseLessons(lessons) {
   if (!lessons) return []
   const lines = lessons.split('\n')
@@ -467,8 +473,8 @@ function PeriodCard({ rangeLabel, title, onClick, testId }) {
 }
 
 function entryMoodChip(entry) {
-  if (entry.checkin?.mood != null) return moodWord(entry.checkin.mood)
-  if (entry.moodPractice?.mood != null) return moodWord(entry.moodPractice.mood)
+  if (entry.checkin?.mood != null) return { text: moodWord(entry.checkin.mood), mood: entry.checkin.mood }
+  if (entry.moodPractice?.mood != null) return { text: moodWord(entry.moodPractice.mood), mood: entry.moodPractice.mood }
   return null
 }
 
@@ -495,7 +501,11 @@ function DayList({ days, onSelectEntry }) {
               <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
               {moodChip && (
                 <span className="mx-progress-history__row-mood" aria-hidden="true">
-                  {moodChip}
+                  <span
+                    className="mx-progress-history__row-mood-dot"
+                    style={{ background: moodColor(moodChip.mood) }}
+                  />
+                  {moodChip.text}
                 </span>
               )}
             </span>
