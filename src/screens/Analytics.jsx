@@ -837,8 +837,11 @@ export default function Analytics({
     practices: <PracticesCard analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />,
   }
 
-  // Нижний отступ: пилюля (50) + панель (53 + 8 offset) + 16 = 127
-  const bottomSpacerHeight = 50 + 53 + 8 + 16
+  // Нижний отступ: пилюля (50) + панель (53 + 8 offset) + 16 = 127.
+  // При свёрнутой навигации пилюля скрыта, панель схлопнута (58) — отступ меньше (A6).
+  const bottomSpacerHeight = navCollapsed
+    ? 58 + 8 + 16
+    : 50 + 53 + 8 + 16
 
   return (
     <div
