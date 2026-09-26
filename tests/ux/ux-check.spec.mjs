@@ -144,6 +144,16 @@ function fixtureFor(request) {
   if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
+  if (pathname === '/api/analytics/influences') {
+    return jsonResponse({
+      period: { from: '2026-09-21', to: '2026-09-27' },
+      days_with_data: 0,
+      top_emotions: [],
+      lifts: [],
+      drags: [],
+      enough_data: false,
+    })
+  }
   if (pathname === '/api/pinned-practices') return jsonResponse(FIXTURES.pinnedPractices)
   if (pathname === '/api/mood-practices') return jsonResponse([])
   if (pathname === '/api/practice-days') return jsonResponse({ days: [] })

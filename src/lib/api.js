@@ -608,6 +608,11 @@ export const api = {
 
   analytics: {
     get: (userId, days = 14) => request(withQuery('/analytics', { user_id: userId, days })),
+
+    influences: (userId, period, offset = 0) =>
+      request(withQuery('/analytics/influences', { user_id: userId, period, offset }), {
+        silentDiagnostics: true,
+      }),
   },
 
   mentalix: {
