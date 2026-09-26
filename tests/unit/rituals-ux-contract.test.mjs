@@ -42,7 +42,7 @@ test('Rituals logging uses the maximal level and invalidates Today cache', () =>
 test('Rituals create form retains fullscreen, native BackButton and 16px inputs', () => {
   const form = formSlice(ritualsSource, 'CreateRitualScreen')
   assert.match(form, /useFullscreenSurface\(\)/)
-  assert.match(form, /<BackButton onClick=\{onCancel\} \/>/)
+  assert.match(form, /useBackButton\(onCancel\)/)
   assert.match(form, /text-\[16px\]/)
   assert.match(form, /<WebActionBar action=\{webAction\} \/>/)
   assert.match(form, /useMainButton\(/)

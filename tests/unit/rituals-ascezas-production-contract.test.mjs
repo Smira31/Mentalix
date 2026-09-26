@@ -8,7 +8,7 @@ const detail = await readFile(new URL('../../src/components/PracticeDetail.jsx',
 const css = await readFile(new URL('../../src/components/PracticeDetail.css', import.meta.url), 'utf8')
 
 function assertListScreen(source, heading, statusExpression) {
-  assert.match(source, new RegExp(`<h2[^>]*>${heading}\\.</h2>`))
+  assert.match(source, new RegExp(`NestedScreenHeader[^>]*title="${heading}\\."`))
   assert.match(source, /mx-practice-grid/)
   assert.match(source, /data-testid="practice-tile"/)
   assert.match(source, /data-done=/)
@@ -58,7 +58,7 @@ test('existing create flows retain fullscreen, Telegram actions and 16px fields'
     const end = source.indexOf('export default function', start)
     const form = source.slice(start, end)
     assert.match(form, /useFullscreenSurface\(\)/)
-    assert.match(form, /<BackButton onClick=\{onCancel\} \/>/)
+    assert.match(form, /useBackButton\(onCancel\)/)
     assert.match(form, /text-\[16px\]/)
     assert.match(form, /<WebActionBar action=\{webAction\} \/>/)
     assert.match(form, /useMainButton\(/)

@@ -26,11 +26,7 @@ function PracticesCatalogLoading() {
       role="status"
       aria-live="polite"
     >
-      <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
-        <span aria-hidden="true" />
-        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
-        <span aria-hidden="true" />
-      </div>
+      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
       <div className="mx-practices-catalog-loading" aria-hidden="true">
         <span className="mx-practices-catalog-loading__hero" />
         <span className="mx-practices-catalog-loading__label" />
@@ -230,11 +226,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
 
   return (
     <div className="mx-practices-catalog-shell w-full max-w-md px-[var(--mx-screen-x)]">
-      <div className="mx-practices-catalog-title w-full grid grid-cols-[1fr_auto_1fr] items-center min-h-[42px] mb-[28px]">
-        <span aria-hidden="true" />
-        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
-        <span aria-hidden="true" />
-      </div>
+      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
       <PracticeCatalogV2
         practices={catalogPractices}
         rituals={rituals}
