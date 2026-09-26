@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import { ChevronDown, Trash2 } from 'lucide-react'
 import { platform } from '../platform'
 import { useEdgeSwipeBack } from '../lib/gestures/useEdgeSwipeBack'
+import { useBackButton } from '../platform/telegram.hooks'
+import { RoundBackButton } from './NestedScreenHeader'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import './PracticeDetail.css'
@@ -33,6 +35,7 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
   useEdgeSwipeBack(screenRef, onBack)
+  useBackButton(onBack)
   const isRitual = kind === 'ritual'
   const done = isRitual ? Boolean(practice.today_level) : practice.today_status === 'held'
   const glyphKind = isRitual
@@ -72,9 +75,7 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   return (
     <div ref={screenRef} className="mx-practice-detail-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
       <div className="mx-practice-detail-screen__header">
-        <button type="button" className="mx-practice-detail__back" onClick={onBack}>
-          ‹ <span>назад</span>
-        </button>
+        <RoundBackButton onClick={onBack} />
         <button
           type="button"
           className="mx-practice-detail__delete"
@@ -84,6 +85,9 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
           <Trash2 size={18} />
         </button>
       </div>
+      <h1 className="font-display mx-type-page text-cream lowercase mb-5">
+        {practice.name.toLowerCase()}.
+      </h1>
 
       <button
         type="button"
