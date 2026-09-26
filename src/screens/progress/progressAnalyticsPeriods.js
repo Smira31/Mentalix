@@ -11,9 +11,9 @@
  */
 
 export const ANALYTICS_GRANULARITIES = Object.freeze([
-  { id: 'week', label: 'Неделя', word: 'неделю', days: 7 },
-  { id: 'month', label: 'Месяц', word: 'месяц', days: 30 },
-  { id: 'year', label: 'Год', word: 'год', days: 90 },
+  { id: 'week', label: 'Недели', word: 'неделю', days: 7 },
+  { id: 'month', label: 'Месяцы', word: 'месяц', days: 30 },
+  { id: 'year', label: 'Годы', word: 'год', days: 90 },
 ])
 
 export function getGranularity(id) {

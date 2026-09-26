@@ -34,6 +34,7 @@ import {
 import './CheckInDemo.css'
 
 const INTRO_SEEN_KEY = 'mx-mood-practice-intro-seen'
+const INITIAL_MOOD_KEY = 'mx-mood-practice-initial'
 
 const MENTOR_PERSONA_KEY = 'mx-mentor-persona'
 const MENTOR_DRAFT_KEY = 'mx-mentor-draft'
@@ -73,9 +74,25 @@ function markIntroSeen() {
   }
 }
 
+function readInitialMood() {
+  try {
+    const value = sessionStorage.getItem(INITIAL_MOOD_KEY)
+    sessionStorage.removeItem(INITIAL_MOOD_KEY)
+    const num = Number(value)
+    return Number.isInteger(num) && num >= 1 && num <= 5 ? num : null
+  } catch {
+    return null
+  }
+}
+
 export default function MoodPractice({ user, onDone }) {
-  const [step, setStep] = useState(() => (hasIntroBeenSeen() ? STEP_MOOD : STEP_INTRO))
-  const [mood, setMood] = useState(null)
+  const initialMood = useRef(readInitialMood())
+  const [step, setStep] = useState(() => {
+    const preset = initialMood.current
+    if (preset) return STEP_EMOTION
+    return hasIntroBeenSeen() ? STEP_MOOD : STEP_INTRO
+  })
+  const [mood, setMood] = useState(() => initialMood.current)
   const [emotion, setEmotion] = useState(null)
   const [context, setContext] = useState(null)
   const [note, setNote] = useState('')

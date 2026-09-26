@@ -17,13 +17,13 @@ test('hidden card can be restored and custom order survives reloading', () => {
     setItem: (key, value) => memory.set(key, value),
   }
   const initial = readCardPreferences(storage)
-  const hidden = { ...initial, hidden: ['trend'] }
+  const hidden = { ...initial, hidden: ['up'] }
   writeCardPreferences(hidden, storage)
-  assert(!readCardPreferences(storage).order.filter(id => !readCardPreferences(storage).hidden.includes(id)).includes('trend'))
+  assert(!readCardPreferences(storage).order.filter(id => !readCardPreferences(storage).hidden.includes(id)).includes('up'))
   const restored = { ...readCardPreferences(storage), hidden: [] }
-  writeCardPreferences({ ...restored, order: moveCard(restored.order, 'trend', -1) }, storage)
-  assert(readCardPreferences(storage).order.filter(id => !readCardPreferences(storage).hidden.includes(id)).includes('trend'))
-  assert.equal(readCardPreferences(storage).order.indexOf('trend'), 1)
+  writeCardPreferences({ ...restored, order: moveCard(restored.order, 'up', -1) }, storage)
+  assert(readCardPreferences(storage).order.filter(id => !readCardPreferences(storage).hidden.includes(id)).includes('up'))
+  assert.equal(readCardPreferences(storage).order.indexOf('up'), 1)
   assert(memory.has(ANALYTICS_CARDS_KEY))
 })
 
@@ -34,7 +34,10 @@ test('unavailable storage and malformed preferences use default order', () => {
   }
   assert.deepEqual(readCardPreferences(blocked).order, ANALYTICS_CARDS.map(card => card.id))
   assert.doesNotThrow(() => writeCardPreferences({ order: [], hidden: [] }, blocked))
-  assert.deepEqual(normalizeCardPreferences({ order: ['trend', 'trend', 'unknown'], hidden: ['unknown', 'trend'] }).order.slice(0, 2), ['trend', 'practices'])
+  // Старые/неизвестные id (trend, unknown) игнорируются; известные сохраняются
+  const normalized = normalizeCardPreferences({ order: ['trend', 'calendar', 'unknown'], hidden: ['unknown', 'trend'] })
+  assert.deepEqual(normalized.order.slice(0, 2), ['calendar', 'emotions'])
+  assert.deepEqual(normalized.hidden, [])
 })
 
 test('series counts a single skipped day this week', () => {
