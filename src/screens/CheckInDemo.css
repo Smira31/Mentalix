@@ -508,6 +508,13 @@
   color: rgb(var(--c-muted));
   line-height: 1.45;
 }
+.mx-demo-checkin__scene--complete [data-testid='daily-task'] p {
+  margin: 0;
+  max-width: none;
+}
+.mx-demo-checkin__scene--complete [data-testid='daily-task'] .text-cream {
+  color: rgb(var(--c-text));
+}
 .mx-demo-checkin__note-chip {
   display: inline-flex;
   align-items: center;
