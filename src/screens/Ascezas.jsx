@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { invalidateTodayData } from '../lib/todayDataCache'
 import { invalidatePracticesData } from '../lib/practicesDataCache'
 import BackButton from '../components/BackButton'
+import NestedScreenHeader from '../components/NestedScreenHeader'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
@@ -400,10 +401,7 @@ export default function Ascezas({ user, onBack }) {
 
   return (
     <div className="mx-ascezas-screen mx-practice-list-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
-      <div className="flex items-center gap-3 mb-5 mx-ascezas-screen__header">
-        <BackButton onClick={onBack} />
-        <h2 className="font-display text-[20px] text-cream lowercase">аскезы.</h2>
-      </div>
+      <NestedScreenHeader title="аскезы." onBack={onBack} />
       <p className="mx-practice-list-screen__intro">от чего ты отказываешься</p>
       {writeError && (
         <p role="alert" className="text-[12px] text-amber-200 mb-4">

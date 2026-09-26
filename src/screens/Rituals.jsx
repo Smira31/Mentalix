@@ -14,6 +14,7 @@ import {
 import SemanticGlyph, { semanticKindForRitual } from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import BackButton from '../components/BackButton'
+import NestedScreenHeader from '../components/NestedScreenHeader'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
@@ -229,10 +230,7 @@ export default function Rituals({ user, onBack }) {
 
   return (
     <div className="mx-rituals-screen mx-practice-list-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
-      <div className="flex items-center gap-3 mb-5 mx-rituals-screen__header">
-        <BackButton onClick={onBack} />
-        <h2 className="font-display text-[20px] text-cream lowercase">ритуалы.</h2>
-      </div>
+      <NestedScreenHeader title="ритуалы." onBack={onBack} />
       <p className="mx-practice-list-screen__intro">обряды, что держат твой день</p>
       {writeError && (
         <p role="alert" className="text-[12px] text-amber-200 mb-4">
