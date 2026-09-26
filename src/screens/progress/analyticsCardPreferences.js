@@ -1,11 +1,9 @@
 export const ANALYTICS_CARDS = [
-  { id: 'practices', title: 'Твои частые практики', section: 'Общее' },
   { id: 'calendar', title: 'Календарь настроения', section: 'Общее' },
-  { id: 'trend', title: 'Настроение', section: 'Общее' },
-  { id: 'emotions', title: 'Частые эмоции', section: 'Эмоции' },
+  { id: 'emotions', title: 'Главные эмоции', section: 'Эмоции' },
   { id: 'up', title: 'Что тебя поднимает', section: 'Эмоции' },
-  { id: 'down', title: 'Что тянет вниз', section: 'Эмоции' },
-  { id: 'observations', title: 'Что повторяется', section: 'Эмоции' },
+  { id: 'down', title: 'Что тебя опускает', section: 'Эмоции' },
+  { id: 'practices', title: 'Твои практики', section: 'Упражнения' },
 ]
 
 export const ANALYTICS_CARDS_KEY = 'mentalix_analytics_cards'
