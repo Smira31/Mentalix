@@ -10,6 +10,10 @@ const practices = await readFile(
   new URL('../../src/screens/Practices.jsx', import.meta.url),
   'utf8'
 )
+const themesCache = await readFile(
+  new URL('../../src/lib/themesDataCache.js', import.meta.url),
+  'utf8'
+)
 const lab = await readFile(
   new URL('../../src/components/ui-lab/LayeredPracticeCatalogExperiment.jsx', import.meta.url),
   'utf8'
@@ -39,8 +43,9 @@ test('MXL-547: отдельная коллекция скрыта только �
 })
 
 test('MXL-547: каталог показывает максимум четыре реальных дня текущей темы', () => {
-  assert.match(practices, /api\.themes\.get\(currentTheme\.id, user\.id\)/)
-  assert.match(practices, /setThemes\(\[\{ \.\.\.currentTheme, \.\.\.detail \}\]\)/)
+  // api.themes.get и merge перенесены из Practices.jsx в themesDataCache.js.
+  assert.match(themesCache, /api\.themes\.get\(currentTheme\.id, userId\)/)
+  assert.match(themesCache, /data = \[\{ \.\.\.currentTheme, \.\.\.detail \}\]/)
   assert.match(catalog, /theme\.days\.slice\(0, 4\)/)
   assert.match(catalog, /question\.day/)
   assert.match(catalog, /question\.text/)
