@@ -14,14 +14,21 @@ for (const viewport of VIEWPORTS) {
     }) => {
       const { context, page } = await openWeb(browser, baseURL, viewport)
       try {
-        const button = await page.getByTestId('today-profile-button').boundingBox()
-        const chip = await page.getByTestId('today-streak-chip').boundingBox()
+        // Честно ждём отрисовку Today: кнопка профиля, огонёк и shell должны быть
+        // видны до измерения boundingBox — иначе в момент загрузки box = null.
+        const buttonLocator = page.getByTestId('today-profile-button')
+        const chipLocator = page.getByTestId('today-streak-chip')
+        const shellLocator = buttonLocator.locator(
+          'xpath=ancestor::div[contains(@class, "mx-screen-shell")][1]',
+        )
+        await expect(buttonLocator).toBeVisible()
+        await expect(chipLocator).toBeVisible()
+        await expect(shellLocator).toBeVisible()
+        const button = await buttonLocator.boundingBox()
+        const chip = await chipLocator.boundingBox()
         // Отступ считаем от края фрейма приложения (mx-screen-shell), а не viewport:
         // фрейм центрируется, и на широком экране его край не совпадает с краем окна.
-        const shell = await page
-          .getByTestId('today-profile-button')
-          .locator('xpath=ancestor::div[contains(@class, "mx-screen-shell")][1]')
-          .boundingBox()
+        const shell = await shellLocator.boundingBox()
         expect(Math.round(button.width)).toBe(43)
         expect(Math.round(button.height)).toBe(43)
         expect(Math.abs(shell.x + shell.width - (button.x + button.width) - 21)).toBeLessThanOrEqual(1)
