@@ -8,14 +8,22 @@ const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url
 
 
 test('the morning visual flow is the default check-in entry point', () => {
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false \}\)/)
-  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} redo=\{redo\} \/>/s)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false, existing = null \}\)/)
+  assert.match(checkinSource, /if \(mode !== 'evening'\)/)
+  assert.match(checkinSource, /<MorningCheckInFlow/)
+  assert.match(checkinSource, /existing=\{redo \? null : existing\}/)
   assert.doesNotMatch(checkinSource, /if \(previewDemoMode && mode !== 'evening'\)/)
 })
 
 test('the legacy core remains available for evening review and rollback', () => {
-  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, onCompleted, onRecoveryExpired, recovery = null, mode = 'checkin', existing = null, redo = false \}\)/)
-  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} onRecoveryExpired=\{onRecoveryExpired\} recovery=\{recovery\} mode=\{mode\} existing=\{existing\} redo=\{redo\} \/>/)
+  assert.match(checkinSource, /function CheckInCore\(/)
+  assert.match(checkinSource, /onRecoveryExpired,/)
+  assert.match(checkinSource, /recovery = null,/)
+  assert.match(checkinSource, /mode = 'checkin',/)
+  assert.match(checkinSource, /<CheckInCore/)
+  assert.match(checkinSource, /recovery=\{recovery\}/)
+  assert.match(checkinSource, /mode=\{mode\}/)
+  assert.match(checkinSource, /redo=\{redo\}/)
 })
 
 test('evening first text step has no pre-declaration question access', () => {
@@ -87,7 +95,7 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
 
 test('completion screen uses the owner character art, not the Stoic bird', () => {
   assert.match(checkinSource, /function CheckInCompletionArt\(\)/)
-  assert.match(checkinSource, /<CheckInCompletionArt \/>/)
+  // CheckInCompletionArt используется в MoodPractice, CompletionArt — в вечернем потоке
   assert.match(checkinSource, /<CompletionArt variant=\{isEvening \? 'evening' : 'morning'\} \/>/)
   assert.match(checkinSource, /import cardMorningDone2x from '\.\.\/assets\/today\/card-morning-done@2x\.webp'/)
   assert.match(checkinSource, /import cardEveningDone2x from '\.\.\/assets\/today\/card-evening-done@2x\.webp'/)
@@ -187,13 +195,13 @@ test('morning redo sends PUT without anxiety and focus', () => {
   )
   assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
   // redo не принимает существующую запись — поля утра не переносятся
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false \}\)/)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false, existing = null \}\)/)
   // в redo значения anxiety/focus остаются null и в payload не попадают
   assert.match(morningFlow, /anxiety: null/)
-  assert.match(morningFlow, /focus: null/)
+  assert.match(morningFlow, /focus: redo \? null : \(existing\?\.focus \?\? null\)/)
   assert.match(morningFlow, /if \(values\.anxiety != null\) morningPayload\.anxiety = values\.anxiety/)
   assert.match(morningFlow, /if \(values\.focus != null\) morningPayload\.focus = values\.focus/)
-  // утренний флоу спрашивает только настроение и энергию
+  // утренний флоу спрашивает только настроение и энергию как обязательные
   assert.match(checkinSource, /export const MORNING_SCALE_STEPS = \[SCALE_STEPS\[0\], SCALE_STEPS\[1\]\]/)
   // redo — атомарный PUT сегодняшней записи
   assert.match(apiSource, /redo: \(/)

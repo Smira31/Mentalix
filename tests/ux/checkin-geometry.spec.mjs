@@ -113,7 +113,7 @@ async function expectRowCenteredOnScreen(page, testId, viewportName) {
   ).toBeLessThanOrEqual(2)
 }
 
-test('ряды шкал и «Нет/Немного/Да» центрированы по экрану на 393 и 440', async ({
+test('ряды шкал центрированы по экрану на 393 и 440', async ({
   browser,
   baseURL,
 }) => {
@@ -144,22 +144,24 @@ test('ряды шкал и «Нет/Немного/Да» центрирован
     await page.goto('/')
     await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
 
-    // Обе шкалы (настроение, затем энергия): ряд по центру экрана.
-    for (const heading of ['Как ты сейчас?', 'Сколько в тебе энергии?']) {
+    // Четыре шкалы (настроение → сон → энергия → концентрация): ряд по центру экрана.
+    for (const heading of ['Как ты сейчас?', 'Как ты спал?', 'Сколько в тебе энергии?', 'Уровень концентрации']) {
       await expect(page.getByRole('heading', { name: heading })).toBeVisible()
       await expectRowCenteredOnScreen(page, 'checkin-scale-row', viewport.name)
       await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
       await page.locator('[data-testid="checkin-next"]').click()
     }
 
+    // Шаг «Главный фокус дня» — необязательный, пропускаем.
+    await page.locator('[data-testid="checkin-next"]').click()
+
     // Текстовый шаг → экран завершения.
     const editor = page.getByRole('textbox', { name: 'Что на уме' })
     await expect(editor).toBeVisible()
     await editor.pressSequentially('Спокойное утро')
-    await page.locator('[data-testid="checkin-next"]').click()
+    await page.locator('[data-testid="checkin-complete"]').click()
 
-    await expect(page.getByRole('heading', { name: /Готово\./ })).toBeVisible()
-    await expectButtonsCenteredOnScreen(page, 'checkin-feedback-option', viewport.name)
+    await expect(page.getByRole('heading', { name: 'Чек-ин завершён' })).toBeVisible()
 
     await context.close()
   }
@@ -270,13 +272,16 @@ test('ошибка сохранения чек-ина: понятное сооб
   await page.goto('/')
   await page.getByRole('button', { name: /Утренний чек-ин/ }).click()
 
-  for (const level of ['4', '2']) {
+  // Четыре шкалы: mood=4, sleep_quality=3, energy=2, focus=3
+  for (const level of ['4', '3', '2', '3']) {
     await page.locator(`[data-testid="checkin-scale-option"][data-level="${level}"]`).click()
     await page.locator('[data-testid="checkin-next"]').click()
   }
+  // Шаг «Главный фокус дня» — пропускаем.
+  await page.locator('[data-testid="checkin-next"]').click()
+
   const editor = page.getByRole('textbox', { name: 'Что на уме' })
   await editor.pressSequentially('Спокойное утро')
-  await page.locator('[data-testid="checkin-next"]').click()
 
   const complete = page.locator('[data-testid="checkin-complete"]')
   await complete.click()
@@ -286,7 +291,7 @@ test('ошибка сохранения чек-ина: понятное сооб
   await complete.click()
   await expect.poll(() => bodies.length).toBe(2)
   expect(bodies[1]).toEqual(bodies[0])
-  expect(bodies[0]).toMatchObject({ mood: 4, energy: 2, note: 'Спокойное утро' })
+  expect(bodies[0]).toMatchObject({ mood: 4, sleep_quality: 3, energy: 2, focus: 3, note: 'Спокойное утро' })
 
   await context.close()
 })

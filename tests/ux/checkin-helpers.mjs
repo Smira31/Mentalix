@@ -63,6 +63,32 @@ export async function completeCheckin(page) {
 }
 
 /**
+ * Пропустить необязательный шаг (шкала или day_focus).
+ * @param {import('@playwright/test').Page} page
+ */
+export async function skipStep(page) {
+  const skip = page.locator('[data-testid="checkin-skip"]')
+  await expect(skip).toBeVisible()
+  await skip.click()
+}
+
+/**
+ * Шаг «Главный фокус дня»: заполнить текстовый input и нажать «Далее».
+ * @param {import('@playwright/test').Page} page
+ * @param {string} text — текст фокуса дня
+ */
+export async function dayFocusStep(page, text) {
+  const input = page.locator('[data-testid="checkin-day-focus-input"]')
+  await expect(input).toBeVisible()
+  await input.fill(text)
+
+  const next = page.locator('[data-testid="checkin-next"]')
+  await expect(next).toBeVisible()
+  await expect(next).toBeEnabled()
+  await next.click()
+}
+
+/**
  * Ответить на «Было полезно?» на экране завершения.
  * @param {import('@playwright/test').Page} page
  * @param {'no'|'some'|'yes'} value — значение кнопки: «Нет» / «Немного» / «Да»

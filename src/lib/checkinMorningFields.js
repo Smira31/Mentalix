@@ -15,6 +15,8 @@ export function eveningMorningFields(existing, values) {
     energy: existing.energy ?? values.energy,
     anxiety: existing.anxiety ?? values.anxiety,
     focus: existing.focus ?? values.focus,
+    sleep_quality: existing.sleep_quality ?? values.sleep_quality,
+    day_focus: existing.day_focus ?? values.day_focus,
     note: existing.note || undefined,
   }
 }
