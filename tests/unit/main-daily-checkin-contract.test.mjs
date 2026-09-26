@@ -8,8 +8,8 @@ const apiSource = await readFile(new URL('../../src/lib/api.js', import.meta.url
 
 
 test('the morning visual flow is the default check-in entry point', () => {
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false \}\)/)
-  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} redo=\{redo\} \/>/s)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false, existing = null \}\)/)
+  assert.match(checkinSource, /if \(mode !== 'evening'\) \{\s*return <MorningCheckInFlow user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} redo=\{redo\} existing=\{redo \? null : existing\} \/>/s)
   assert.doesNotMatch(checkinSource, /if \(previewDemoMode && mode !== 'evening'\)/)
 })
 
@@ -187,13 +187,13 @@ test('morning redo sends PUT without anxiety and focus', () => {
   )
   assert.match(morningFlow, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
   // redo не принимает существующую запись — поля утра не переносятся
-  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false \}\)/)
+  assert.match(checkinSource, /function MorningCheckInFlow\(\{ user, onDone, onCompleted, redo = false, existing = null \}\)/)
   // в redo значения anxiety/focus остаются null и в payload не попадают
   assert.match(morningFlow, /anxiety: null/)
-  assert.match(morningFlow, /focus: null/)
+  assert.match(morningFlow, /focus: redo \? null : existing\?\.focus \?\? null/)
   assert.match(morningFlow, /if \(values\.anxiety != null\) morningPayload\.anxiety = values\.anxiety/)
   assert.match(morningFlow, /if \(values\.focus != null\) morningPayload\.focus = values\.focus/)
-  // утренний флоу спрашивает только настроение и энергию
+  // утренний флоу спрашивает только настроение и энергию как обязательные
   assert.match(checkinSource, /export const MORNING_SCALE_STEPS = \[SCALE_STEPS\[0\], SCALE_STEPS\[1\]\]/)
   // redo — атомарный PUT сегодняшней записи
   assert.match(apiSource, /redo: \(/)
