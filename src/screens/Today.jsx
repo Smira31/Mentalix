@@ -48,6 +48,8 @@ import { collectActivityDays } from '../lib/series'
 import { now as clockNow } from '../lib/clock'
 import { demoScenario } from '../lib/demoMode'
 import { pickVisibleTodayHint } from '../lib/todayHints'
+import { isRecoveryDemoRequested } from '../lib/demoMode'
+import StreakRecovery from './StreakRecovery'
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -66,7 +68,7 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
 // §6 Motion: подсписок subs, закрытие которых анимируется уездом слоя вниз.
-const CHECKIN_SUBS = ['checkin', 'evening', 'redoCheckin', 'redoReview']
+const CHECKIN_SUBS = ['checkin', 'evening', 'redoCheckin', 'redoReview', 'recoveryReview']
 
 // ── календарь недели + отдельные дневные streak strips ──
 
@@ -238,6 +240,7 @@ export default function Today({
   onCloseSeries,
   previewFixture = null,
   previewState = null,
+  recoveryAllowed = true,
 }) {
   const [initialTodaySnapshot] = useState(
     () => previewFixture || (user ? peekTodaySnapshot(user.id) : null)
@@ -254,6 +257,26 @@ export default function Today({
   const [loadError, setLoadError] = useState(false)
 
   const [reloadToken, setReloadToken] = useState(0)
+  const [recovery, setRecovery] = useState(null)
+  const [recoveryStage, setRecoveryStage] = useState('offer')
+  const recoveryRequested = useRef(null)
+  const recoveryCompleted = useRef(false)
+
+  const recoveryEvent = useCallback((event, date) => {
+    logEngagementEvent({
+      user, demo: Boolean(user?.demo), event,
+      entityType: 'streak_recovery', entityId: date,
+      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+    })
+  }, [user])
+
+  function dismissRecovery() {
+    if (recovery?.date) {
+      try { localStorage.setItem(`mx-streak-recovery-dismissed:${user.id}:${recovery.date}`, '1') } catch { /* */ }
+      recoveryEvent('streak_recovery_dismissed', recovery.date)
+    }
+    setRecovery(null)
+  }
 
   const [thoughtOfDay] = useState(() => getDailyThought())
 
@@ -612,6 +635,23 @@ export default function Today({
     }
   }, [user, sub, initialSub, initialTodaySnapshot, previewFixture, reloadToken])
 
+  useEffect(() => {
+    if (!recoveryAllowed || loading || loadError || !user?.id || initialSub || sub ||
+        (clockNow().getHours() < 5 && !isRecoveryDemoRequested()) ||
+        recoveryRequested.current === user.id) return
+    recoveryRequested.current = user.id
+    let active = true
+    api.checkin.recovery(user.id).then(result => {
+      if (!active || !result?.recoverable || !result.date) return
+      try {
+        if (localStorage.getItem(`mx-streak-recovery-dismissed:${user.id}:${result.date}`) === '1') return
+      } catch { /* storage unavailable */ }
+      setRecovery(result)
+      recoveryEvent('streak_recovery_shown', result.date)
+    }).catch(() => {})
+    return () => { active = false }
+  }, [recoveryAllowed, loading, loadError, user, initialSub, sub, recoveryEvent])
+
   const hourNow = clockNow().getHours()
 
   const isReviewTime = hourNow >= reviewHour
@@ -649,6 +689,32 @@ export default function Today({
 
   if (activeSub === 'breathing') {
     return <BreathingPractice onBack={() => changeSub(null)} />
+  }
+
+  if (activeSub === 'recoveryReview' && recovery) {
+    return (
+      <CheckIn
+        user={user}
+        mode="evening"
+        recovery={recovery}
+        onRecoveryExpired={() => {
+          changeSub(null)
+          setRecoveryStage('expired')
+        }}
+        onCompleted={() => {
+          recoveryCompleted.current = true
+          changeSub(null)
+          setRecoveryStage('saved')
+          refreshCheckin()
+        }}
+        onDone={() => {
+          if (!recoveryCompleted.current) {
+            changeSub(null)
+            setRecovery(null)
+          }
+        }}
+      />
+    )
   }
 
   if (!loading && !loadError && (activeSub === 'checkin' || activeSub === 'evening')) {
@@ -1028,6 +1094,21 @@ export default function Today({
   return (
     <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
+      {recovery && (
+        <StreakRecovery
+          recovery={recovery}
+          stage={recoveryStage}
+          onDismiss={dismissRecovery}
+          onStart={() => {
+            recoveryEvent('streak_recovery_started', recovery.date)
+            changeSub('recoveryReview')
+          }}
+          onClose={() => {
+            setRecovery(null)
+            setRecoveryStage('offer')
+          }}
+        />
+      )}
       <TodayWorkspaceHeader
         onOpenSettings={onOpenSettings}
         onOpenDemoPanel={onOpenDemoPanel}

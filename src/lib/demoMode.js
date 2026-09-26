@@ -126,6 +126,10 @@ export function isPreviewDemoMode() {
   )
 }
 
+export function isRecoveryDemoRequested() {
+  return isPreviewDemoMode() && new URLSearchParams(window.location.search).get('streak_recovery') === '1'
+}
+
 function previewTodayState() {
   if (typeof window === 'undefined') return null
 
@@ -489,6 +493,27 @@ function respond(path, options = {}) {
     return json({ ok: true })
   }
 
+  if (pathname === '/streak/recovery' && method === 'GET') {
+    if (url.searchParams.get('user_id') && new URLSearchParams(window.location.search).get('streak_recovery') === '1') {
+      const yesterday = offsetDate(now(), -1)
+      return json({ recoverable: state.recoverySavedDate !== yesterday, date: yesterday, streak_before: 3 })
+    }
+    return json({ recoverable: false, date: null, streak_before: 0 })
+  }
+  if (pathname === '/checkin/yesterday' && method === 'PUT') {
+    const yesterday = offsetDate(now(), -1)
+    const checkin = {
+      id: Date.now(), date: yesterday, ...body,
+      review_completed_at: now().toISOString(),
+    }
+    writeState({
+      ...state,
+      checkins: [checkin, ...state.checkins.filter(item => item.date !== yesterday)],
+      practiceDays: [...new Set([...(state.practiceDays || []), yesterday])],
+      recoverySavedDate: yesterday,
+    })
+    return json(checkin)
+  }
   if (pathname === '/checkin/today' && method === 'GET') {
     // checkin/today uses the PR-aware state.checkins[0] fixture anchor.
     const today = now().toISOString().slice(0, 10)

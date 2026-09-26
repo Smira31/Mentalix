@@ -386,6 +386,7 @@ function App() {
   // Vercel Preview, without writing the user's synced onboarding flag.
   // isPreviewDemoMode itself requires ?demo=1 and an allowed preview host.
   const onboarded = onboardedFlag === '1' || isPreviewDemoMode()
+  const [recoveryAllowedAtLaunch] = useState(() => onboardedFlag === '1' || isPreviewDemoMode())
 
   /*
    * Блокировка приложения (PIN/биометрия). Синхронизируется только факт
@@ -1421,6 +1422,7 @@ function App() {
                   {user && tab === 'today' && (
                     <Today
                       user={user}
+                      recoveryAllowed={recoveryAllowedAtLaunch}
                       onOpenPractice={openPractice}
                       initialSub={initialTodaySub}
                       returnFlowActive={initialReturnFlow}

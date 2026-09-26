@@ -14,8 +14,8 @@ test('the morning visual flow is the default check-in entry point', () => {
 })
 
 test('the legacy core remains available for evening review and rollback', () => {
-  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, onCompleted, mode = 'checkin', existing = null, redo = false \}\)/)
-  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} mode=\{mode\} existing=\{existing\} redo=\{redo\} \/>/)
+  assert.match(checkinSource, /function CheckInCore\(\{ user, onDone, onCompleted, onRecoveryExpired, recovery = null, mode = 'checkin', existing = null, redo = false \}\)/)
+  assert.match(checkinSource, /return <CheckInCore user=\{user\} onDone=\{onDone\} onCompleted=\{onCompleted\} onRecoveryExpired=\{onRecoveryExpired\} recovery=\{recovery\} mode=\{mode\} existing=\{existing\} redo=\{redo\} \/>/)
 })
 
 test('evening first text step has no pre-declaration question access', () => {
@@ -103,6 +103,16 @@ test('morning streak screen uses the shared Telegram BackButton and sprout flowe
   assert.match(morningFlow, /<BackButton onClick=\{handleBack\} label="Сегодня" \/>/)
   assert.match(checkinSource, /function StreakFlower\(\)/)
   assert.match(checkinSource, /stroke="rgb\(var\(--c-gold\)\)"/)
+})
+
+test('восстановление сохраняет только вчерашний разбор через PUT и не меняет утренний redo', () => {
+  assert.match(apiSource, /recovery: async userId =>/)
+  assert.match(apiSource, /if \(error\.status === 404\) return null/)
+  assert.match(apiSource, /request\('\/checkin\/yesterday', \{\s*method: 'PUT'/)
+  assert.match(apiSource, /review_completed: true/)
+  assert.match(checkinSource, /withRetry\(\(\) => api\.checkin\.saveYesterday\(userId, payload\)\)/)
+  assert.match(checkinSource, /if \(recovery && error\?\.status === 409\)/)
+  assert.match(demoModeSource, /pathname === '\/checkin\/yesterday' && method === 'PUT'/)
 })
 
 test('redo mode calls api.checkin.redo, not api.checkin.save', () => {

@@ -124,6 +124,21 @@ export async function expectWeekStrip(page) {
   await expect(days).toHaveCount(7)
 }
 
+/** Открыть вчерашний разбор из предложения восстановления серии. */
+export async function startStreakRecovery(page) {
+  const offer = page.locator('[data-testid="streak-recovery-surface"]')
+  await expect(offer).toBeVisible()
+  await page.locator('[data-testid="streak-recovery-start"]').click()
+  await expect(page.locator('[data-testid="streak-recovery-date"]')).toBeVisible()
+}
+
+/** Проверить подтверждение после сохранения вчерашнего разбора. */
+export async function expectStreakRecovered(page) {
+  await expect(page.locator('[data-testid="streak-recovery-title"]')).toContainText('Серия спасена')
+  await page.locator('[data-testid="streak-recovery-finish"]').click()
+  await expect(page.locator('[data-testid="today-streak-chip"]')).toBeVisible()
+}
+
 // ── Помощники для практики «Настроение» (MoodPractice) ──
 
 /**
