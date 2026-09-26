@@ -4,12 +4,12 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { Lock, Check, Sparkles } from 'lucide-react'
-import BackButton from '../components/BackButton'
+import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
 import MarkdownText from '../components/MarkdownText'
 import Motif, { MotifArt } from '../components/Motif'
 import WebActionBar from '../components/WebActionBar'
-import { useMainButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
+import { useMainButton, useBackButton, offerHomeScreen, cloud } from '../platform/telegram.hooks'
 import { MENTOR_DRAFT_KEY, MENTOR_PERSONA_KEY } from './mentalix/personas'
 import {
   useFullscreenSurface,
@@ -77,6 +77,15 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   const [view, setView] = useState(null)
 
   const { style } = useFullscreenSurface()
+
+  useBackButton(() => {
+    if (view === 'review' || view === 'list') {
+      platform.haptic('light')
+      setView('day')
+    } else {
+      onBack()
+    }
+  })
 
   /*
    * Три ниже — синхронизация локального состояния с внешним пропом/
@@ -293,7 +302,7 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   if (!data) {
     return createPortal(
       <Shell style={style}>
-        <BackButton onClick={onBack} />
+        <RoundBackButton onClick={onBack} />
 
         <p className="w-full m-auto px-6 text-center text-muted text-[13px]">Загрузка...</p>
       </Shell>,
@@ -313,14 +322,14 @@ export default function ThemeScreen({ user, themeId, onBack }) {
   if (view === 'intro') {
     return createPortal(
       <Shell style={style} footer={<WebActionBar action={webAction} />}>
-        <BackButton onClick={onBack} />
+        <RoundBackButton onClick={onBack} />
 
         <div className="flex-1 flex flex-col pt-4 pb-6">
           <div className="-mx-[var(--mx-screen-x)] h-[150px] text-gold mb-6">
             <Motif name="ryad" className="w-full h-full" />
           </div>
 
-          <h2 className="font-display text-[24px] text-cream lowercase leading-tight text-left">
+          <h2 className="font-display mx-type-page text-cream lowercase leading-tight text-left">
             {data.title}
           </h2>
 
