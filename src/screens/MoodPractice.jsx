@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
 import { invalidateTodayData } from '../lib/todayDataCache'
-import BackButton from '../components/BackButton'
+import { RoundBackButton } from '../components/NestedScreenHeader'
 import {
   useFullscreenSurface,
   FULLSCREEN_SHELL_CLASS,
@@ -12,6 +12,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
 } from '../lib/fullscreenSurface'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
+import { useBackButton } from '../platform/telegram.hooks'
 import {
   SCALE_STEPS,
   CheckInQuestion,
@@ -101,6 +102,14 @@ export default function MoodPractice({ user, onDone }) {
 
   const { style: surfaceStyle } = useFullscreenSurface()
 
+  useBackButton(() => {
+    if (step === STEP_INTRO || step === STEP_MOOD || step === STEP_DONE) {
+      onDone()
+    } else {
+      setStep(current => current - 1)
+    }
+  })
+
   useEffect(() => {
     api.events.log(user.id, 'mood_practice_start', 'mood_practice').catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,13 +183,13 @@ export default function MoodPractice({ user, onDone }) {
         <div
           className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
         >
-          <BackButton onClick={handleBack} />
+          <RoundBackButton onClick={handleBack} />
         </div>
 
         <div className={FULLSCREEN_SCROLL_CLASS}>
           <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-col min-h-full">
             <div className="flex-1 flex flex-col justify-center">
-              <h1 className="font-display mx-type-page text-cream lowercase text-center mb-10">
+              <h1 className="font-display mx-type-page text-cream lowercase mb-10">
                 настроение.
               </h1>
               <div className="px-7 space-y-2">
@@ -230,7 +239,7 @@ export default function MoodPractice({ user, onDone }) {
         <div
           className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
         >
-          <BackButton onClick={onDone} />
+          <RoundBackButton onClick={onDone} />
         </div>
 
         <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -263,7 +272,7 @@ export default function MoodPractice({ user, onDone }) {
   return createPortal(
     <div ref={screenRef} className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle}>
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <BackButton onClick={handleBack} />
+        <RoundBackButton onClick={handleBack} />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
