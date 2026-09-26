@@ -42,6 +42,13 @@ test('private template detail требует подтверждение soft del
   assert.doesNotMatch(source, /setActiveSessions\(current => current\.filter/)
 })
 
+test('запуск направленной записи передаёт user_id в query и открывает возвращённую сессию', () => {
+  assert.match(apiSource, /startOrResume: \(templateId, userId\) =>\s*request\(withQuery\(`\/journal\/templates\/\$\{templateId\}\/sessions`, \{ user_id: userId \}\), \{\s*method: 'POST'/)
+  assert.doesNotMatch(apiSource, /startOrResume: \(templateId, userId\) =>\s*request\(`\/journal\/templates\/\$\{templateId\}\/sessions`, \{\s*method: 'POST',\s*body:/)
+  assert.match(source, /const nextSession = await api\.journalTemplates\.startOrResume\(selected\.id, user\.id\)/)
+  assert.match(source, /setSession\(nextSession\)/)
+})
+
 test('completion text честно не обещает появления template session в Journey', () => {
   assert.match(source, /не станет отдельной записью в Journey автоматически/)
 })

@@ -535,9 +535,8 @@ export const api = {
         method: 'DELETE',
       }),
     startOrResume: (templateId, userId) =>
-      request(`/journal/templates/${templateId}/sessions`, {
+      request(withQuery(`/journal/templates/${templateId}/sessions`, { user_id: userId }), {
         method: 'POST',
-        body: JSON.stringify({ user_id: userId }),
       }),
     updateSession: (sessionId, userId, answers, complete = false) =>
       request(`/journal/templates/sessions/${sessionId}`, {
