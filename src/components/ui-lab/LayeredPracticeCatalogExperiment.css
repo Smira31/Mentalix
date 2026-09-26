@@ -1578,6 +1578,14 @@
   padding: 30px 18px;
   background: rgb(var(--c-card));
 }
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-skeleton {
+  display: flex;
+  justify-content: center;
+}
+.mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-skeleton .mx-layered-catalog__theme-copy {
+  width: var(--mxl-question-card-width);
+  min-height: 330px;
+}
 .mx-layered-catalog--mxl-547-preview .mx-layered-catalog__theme-number {
   color: rgb(var(--c-catalog-accent, var(--c-gold)));
   font-size: 40px;

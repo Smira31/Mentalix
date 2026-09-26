@@ -118,10 +118,11 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
 
   useEffect(() => {
     let active = true
-    fetchPinnedPractices(user.id)
+    fetchPinnedPractices(user.id, { force: true })
       .then(items => {
         if (!active) return
         setPinned(normalizePinnedPractices(items))
+        setError(false)
       })
       .catch(() => {
         if (active) setError(true)

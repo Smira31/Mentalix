@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { withRetry } from '../lib/todayRetry'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 
@@ -127,7 +128,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     setThemesError(false)
 
     try {
-      const themesData = await api.themes.list(user.id)
+      const themesData = await withRetry(() => api.themes.list(user.id))
       const list = Array.isArray(themesData) ? themesData : []
       // MXL-525 G5: текущая неделя (is_current) должна идти первой в карусели.
       const sorted = list
@@ -140,7 +141,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         return
       }
 
-      const detail = await api.themes.get(currentTheme.id, user.id)
+      const detail = await withRetry(() => api.themes.get(currentTheme.id, user.id))
       if (themeRequestRef.current !== requestId) return
 
       setThemes([{ ...currentTheme, ...detail }])
@@ -241,6 +242,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         themes={themes}
         themeLoading={themeLoading}
         themesError={themesError}
+        onRetryThemes={loadThemes}
         selectedCollectionKey={selectedCollectionKey}
         onCollectionChange={setSelectedCollectionKey}
         onOpenPractice={(practice, collectionKey = null) => {
