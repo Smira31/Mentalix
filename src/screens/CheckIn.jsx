@@ -40,6 +40,8 @@ import { peekPracticesData } from '../lib/practicesDataCache'
 import { energyFillPercent } from '../lib/checkinScale'
 import { MENTOR_HANDOFF_KEY } from './mentalix/personas'
 import { eveningMorningFields } from '../lib/checkinMorningFields'
+import { withRetry } from '../lib/todayRetry'
+import { yesterdayLabel } from './StreakRecovery'
 import { resolveDesyncStep } from '../lib/checkinDesync'
 import { CHECKIN_FEEDBACK_OPTIONS, sendCheckinFeedback } from '../lib/checkinFeedback'
 import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
@@ -723,10 +725,10 @@ function existingLessons(value) {
   )
 }
 
-function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = null, redo = false }) {
-  const isEvening = mode === 'evening'
+function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = null, mode = 'checkin', existing = null, redo = false }) {
+  const isEvening = mode === 'evening' || Boolean(recovery)
   const previewDemoMode = isPreviewDemoMode()
-  const skipScales = isEvening && !!existing
+  const skipScales = isEvening && (!!existing || Boolean(recovery))
   const fieldSource = redo ? null : existing
 
   /*
@@ -940,6 +942,9 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
 
     try {
       const saveApi = redo ? api.checkin.redo : api.checkin.save
+      const selectedSaveApi = recovery
+        ? (userId, payload) => withRetry(() => api.checkin.saveYesterday(userId, payload))
+        : saveApi
       // Вечер (и повторный) не меняет утренние поля записи дня.
       const morning = isEvening ? eveningMorningFields(existing, values) : values
       const corePayload = {
@@ -961,12 +966,17 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
       }
       if (morning.anxiety != null) corePayload.anxiety = morning.anxiety
       if (morning.focus != null) corePayload.focus = morning.focus
-      const savedCheckin = await saveApi(user.id, corePayload)
+      const savedCheckin = await selectedSaveApi(user.id, corePayload)
 
       if (isEvening && !savedCheckin?.review_completed_at) {
         throw new Error('Backend не подтвердил закрытие дня')
       }
       onCompleted?.()
+      if (recovery) {
+        platform.haptic('success')
+        onDone()
+        return
+      }
 
       // MXL-AI-HANDOFF-001: вечерний разбор сохраняется заранее, чтобы
       // хендофф к Следопыту мог отметить сегодняшнюю запись для AI-контекста.
@@ -1006,9 +1016,14 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
         setStep(doneStep)
       }
     } catch (error) {
+      if (recovery && error?.status === 409) {
+        onRecoveryExpired?.()
+        return
+      }
       console.error(error)
-
-      setError(true)
+      setError(recovery && error?.status === 422
+        ? 'Заверши вчерашний разбор и попробуй снова'
+        : 'Не получилось сохранить — проверь связь')
     } finally {
       setSaving(false)
     }
@@ -1271,7 +1286,7 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
                   ? 'Сохраняю...'
                   : isEvening
                     ? cardIdx === cardCount - 1
-                      ? 'Закрыть день'
+                      ? recovery ? 'Сохранить' : 'Закрыть день'
                       : 'Дальше'
                     : 'Далее',
                 run: () =>
@@ -1571,6 +1586,7 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
     >
       <div className={CHECKIN_HEADER_CLASS}>
         <BackButton onClick={handleBack} />
+        {recovery && <span className="text-[13px] text-muted" data-testid="streak-recovery-date">{yesterdayLabel(recovery.date)}</span>}
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
@@ -1655,8 +1671,8 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
                         autoFocus
                         keepFocusOnSubmit
                         submitIcon="arrow"
-                        submitLabel="Далее"
-                        submitTestId="checkin-next"
+                        submitLabel={recovery && cardIdx === cardCount - 1 ? 'Сохранить' : 'Далее'}
+                        submitTestId={recovery && cardIdx === cardCount - 1 ? 'checkin-save' : 'checkin-next'}
                         onSubmit={() =>
                           cardIdx < cardCount - 1 ? goToStep(current => current + 1) : submit()
                         }
@@ -1707,7 +1723,7 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
                   )}
                   {error && (
                     <p className="text-[13px] text-muted text-center mt-4">
-                      Не получилось сохранить — проверь связь
+                      {error}
                     </p>
                   )}
                 </div>
@@ -1741,7 +1757,7 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
                   </div>
                   {error && (
                     <p className="text-[13px] text-muted text-center mt-4">
-                      Не получилось сохранить — проверь связь
+                      {error}
                     </p>
                   )}
                 </div>
@@ -1805,12 +1821,12 @@ function CheckInCore({ user, onDone, onCompleted, mode = 'checkin', existing = n
   )
 }
 
-function CheckIn({ user, onDone, onCompleted, mode = 'checkin', existing = null, redo = false }) {
+function CheckIn({ user, onDone, onCompleted, onRecoveryExpired, recovery = null, mode = 'checkin', existing = null, redo = false }) {
   if (mode !== 'evening') {
     return <MorningCheckInFlow user={user} onDone={onDone} onCompleted={onCompleted} redo={redo} />
   }
 
-  return <CheckInCore user={user} onDone={onDone} onCompleted={onCompleted} mode={mode} existing={existing} redo={redo} />
+  return <CheckInCore user={user} onDone={onDone} onCompleted={onCompleted} onRecoveryExpired={onRecoveryExpired} recovery={recovery} mode={mode} existing={existing} redo={redo} />
 }
 
 export default CheckIn
