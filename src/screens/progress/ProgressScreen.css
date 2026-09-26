@@ -45,6 +45,17 @@
   color: rgb(var(--c-text, 243 243 243));
 }
 
+/* У Истории три действия: не ставим их поверх центрированного сегмента. */
+.mx-progress-segment-bar:has(.mx-progress-history-actions) {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.mx-progress-segment-bar:has(.mx-progress-history-actions) .mx-progress-segment {
+  align-self: flex-start;
+}
+
 /* ── Вкладка «История»: список по дням ── */
 
 .mx-progress-history {
@@ -176,6 +187,34 @@
   transform: scale(0.97);
 }
 
+/* ── Загрузка ленты ── */
+.mx-progress-history__skeleton-group {
+  margin-bottom: 32px;
+  animation: mx-history-loading 1.4s ease-in-out infinite alternate;
+}
+
+.mx-progress-history__skeleton-label {
+  width: 110px;
+  height: 14px;
+  margin: 0 0 12px 17px;
+  border-radius: 8px;
+  background: rgb(var(--c-card3, 46 46 46));
+}
+
+.mx-progress-history__skeleton-row {
+  height: 53px;
+  border-radius: 16px;
+  background: rgb(var(--c-card2, 17 17 17));
+}
+
+@keyframes mx-history-loading {
+  to { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-progress-history__skeleton-group { animation: none; }
+}
+
 /* ── Экран записи ── */
 
 .mx-progress-entry {
@@ -188,6 +227,17 @@
   justify-content: space-between;
   min-height: 44px;
   margin-bottom: 8px;
+}
+
+.mx-progress-entry__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mx-progress-entry__heading > div:first-child {
+  min-width: 0;
 }
 
 .mx-progress-entry__back {
@@ -542,11 +592,9 @@
 /* ── Шаг 3: кнопки действий вкладки «История» (§5.5) ── */
 
 .mx-progress-history-actions {
-  position: absolute;
-  right: 0;
-  top: 8px;
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  align-self: flex-end;
   gap: 12px;
 }
 
@@ -598,7 +646,7 @@
 .mx-progress-grouping-menu {
   position: absolute;
   right: 0;
-  top: 56px;
+  top: 108px;
   z-index: 30;
   width: 250px;
   border-radius: 16px;
@@ -695,7 +743,10 @@
 
 .mx-progress-filter-sheet {
   position: fixed;
-  inset: 0;
+  top: var(--mx-progress-overlay-top, var(--app-safe-top, 0px));
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 100;
   background: rgb(var(--c-bg, 5 4 3));
   padding: 8px 0 0;
@@ -721,7 +772,7 @@
 
 .mx-progress-filter-sheet__title {
   margin: 0;
-  padding: 0 20px;
+  padding: 0 72px 0 20px;
   font-size: 34px;
   font-weight: 700;
   line-height: 1;
@@ -750,8 +801,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: calc(100% - 32px);
   min-height: 52px;
-  margin: 0 0 2px;
+  margin: 0 16px 8px;
   padding: 0 16px 0 17px;
   border: 0;
   border-radius: 16px;
@@ -766,6 +818,8 @@
 
 .mx-progress-filter-sheet__row-text {
   flex: 1;
+  min-width: 0;
+  padding-right: 16px;
 }
 
 .mx-progress-filter-sheet__check {
@@ -790,7 +844,10 @@
 
 .mx-progress-search-sheet {
   position: fixed;
-  inset: 0;
+  top: var(--mx-progress-overlay-top, var(--app-safe-top, 0px));
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 100;
   display: flex;
   flex-direction: column;
@@ -799,8 +856,9 @@
 
 .mx-progress-search-sheet__tabs {
   display: flex;
-  gap: 24px;
-  padding: 8px 20px 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px 0 20px;
 }
 
 .mx-progress-search-sheet__tab {
@@ -817,8 +875,9 @@
 
 .mx-progress-search-sheet__body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 20px 0 80px;
+  padding: 20px 0 40px;
 }
 
 .mx-progress-search-sheet__empty {
@@ -836,6 +895,7 @@
 
 .mx-progress-search-sheet__empty-title {
   font-size: 17px;
+  line-height: 1.35;
   font-weight: 700;
   color: rgb(var(--c-text, 243 243 243));
 }
@@ -843,6 +903,7 @@
 .mx-progress-search-sheet__empty-subtitle {
   margin-top: 6px;
   font-size: 14px;
+  line-height: 1.4;
   font-weight: 400;
   color: rgb(var(--c-muted, 133 133 133));
 }
@@ -878,15 +939,11 @@
 }
 
 .mx-progress-search-sheet__field-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px calc(12px + var(--app-safe-bottom, 0px));
+  padding: 12px 16px;
   background: rgb(var(--c-bg, 5 4 3));
 }
 
 .mx-progress-search-sheet__field {
-  flex: 1;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -915,6 +972,28 @@
 
 .mx-progress-search-sheet__field-input::placeholder {
   color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-search-sheet__field-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.mx-progress-search-sheet__clear {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(var(--c-nav-active, 58 58 58));
+  color: rgb(var(--c-text, 243 243 243));
+  cursor: pointer;
+}
+
+/* Поиск — полноэкранный режим: навигация не заслоняет поле и результаты. */
+.mx-app-shell:has(.mx-progress-search-sheet) .mx-bottom-nav {
+  display: none;
 }
 
 .mx-progress-search-sheet__close {

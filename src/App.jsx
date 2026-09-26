@@ -1213,6 +1213,13 @@ function App() {
     ? 'var(--app-safe-bottom)'
     : 'var(--app-content-bottom)'
 
+  // Полноэкранные листы Истории остаются внутри shell, но не закрывают шапку Telegram.
+  const shellTopPadding =
+    previewDemoMode && !realPhone && (!overlay || overlay === 'settings') &&
+    !todaySeriesOpen && !todayFlowOpen
+      ? '56px'
+      : topSafeArea
+
   /* ============================================================
      UI
      ============================================================ */
@@ -1285,14 +1292,8 @@ function App() {
             : undefined,
           /* Профиль (overlay 'settings') в демо живёт под шапкой Telegram,
              как на устройстве: инсет шапки сохраняется и внутри оверлея. */
-          paddingTop:
-            previewDemoMode &&
-            !realPhone &&
-            (!overlay || overlay === 'settings') &&
-            !todaySeriesOpen &&
-            !todayFlowOpen
-              ? '56px'
-              : topSafeArea,
+          paddingTop: shellTopPadding,
+          '--mx-progress-overlay-top': shellTopPadding,
           paddingRight: 'var(--app-safe-right)',
           paddingLeft: 'var(--app-safe-left)',
         }}
