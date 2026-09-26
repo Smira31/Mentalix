@@ -1,6 +1,6 @@
 import { now } from './clock.js'
 
-const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v4'
+const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v5'
 const SCENARIO_KEY = 'mentalix:demo-scenario:v1'
 const NETWORK_KEY = 'mentalix:demo-network:v1'
 export const DEMO_SCENARIOS = ['Новый пользователь', 'Неделя', 'Серия прервалась', 'Много практик']

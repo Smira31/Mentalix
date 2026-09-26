@@ -151,7 +151,8 @@
   height: 54px;
   border: 0;
   border-radius: 999px;
-  background: transparent;
+  background: rgb(var(--c-card3, 46 46 46));
+  color: rgb(var(--c-text, 243 243 243));
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -161,8 +162,8 @@
 }
 
 .mx-progress-mood-card__face svg {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
 }
 
 /* ── Плашка «Нужно больше данных» ── */
@@ -289,18 +290,19 @@
 
 .mx-progress-card__hide {
   position: absolute;
-  z-index: 2;
-  top: 48px;
-  right: 16px;
-  min-height: 44px;
+  z-index: 5;
+  top: 44px;
+  right: 12px;
+  min-height: 40px;
   padding: 0 16px;
   border: 0;
   border-radius: 999px;
   background: rgb(var(--c-nav, 28 28 28));
-  box-shadow: var(--shadow-float);
+  box-shadow: var(--shadow-float, 0 8px 32px rgba(0, 0, 0, 0.35));
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
   font-size: 14px;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -619,100 +621,193 @@
   background: rgb(var(--c-card3, 46 46 46));
 }
 
-/* ── Порядок графиков ── */
-.mx-progress-bottom-controls {
+/* ── Распределение настроения (столбики, месяц/год) ── */
+.mx-progress-mood-distribution {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 12px;
+  min-height: 120px;
+  padding: 8px 0 4px;
+}
+
+.mx-progress-mood-distribution__bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 48px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.mx-progress-mood-distribution__fill {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 8px 8px 0 0;
+  transition: height 0.3s ease;
+}
+
+.mx-progress-mood-distribution__label {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── Пилюля «Настроить» в потоке контента ── */
+.mx-progress-customize-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 16px auto 0;
+  min-height: 44px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mx-progress-customize-pill:active {
+  transform: scale(0.97);
+}
+
+/* ── Полноэкранный слой «Настроить» (A7) ── */
+.mx-progress-customize {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  padding: calc(var(--app-safe-top, 0px) + 56px) 20px 20px;
+  background: rgb(var(--c-bg, 5 4 3));
+  overflow-y: auto;
+}
+
+.mx-progress-customize__close {
+  position: fixed;
+  top: calc(var(--app-safe-top, 0px) + 56px + 8px);
+  right: 20px;
+  z-index: 101;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  font: inherit;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.mx-progress-customize__title {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-customize__subtext {
+  margin: 10px 0 24px;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-customize__section {
+  margin-bottom: 8px;
+}
+
+.mx-progress-customize__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 0 16px;
+  border-radius: 16px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 2px;
+}
+
+.mx-progress-customize__toggle {
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+}
+
+.mx-progress-customize__toggle input {
+  position: absolute;
+  width: 44px;
+  height: 26px;
+  opacity: 0;
+}
+
+.mx-progress-customize__toggle span {
+  display: block;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgb(var(--c-card3, 46 46 46));
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.mx-progress-customize__toggle span::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgb(var(--c-text, 243 243 243));
+  transition: transform 0.2s ease;
+}
+
+.mx-progress-customize__toggle input:checked + span {
+  background: rgb(var(--c-line, 230 230 230));
+}
+
+.mx-progress-customize__toggle input:checked + span::after {
+  transform: translateX(18px);
+  background: rgb(var(--c-bg, 5 4 3));
+}
+
+.mx-progress-customize__toggle input:focus-visible + span {
+  outline: 2px solid rgb(var(--c-text));
+}
+
+/* ── Нижняя плавающая пилюля периода ── */
+.mx-progress-bottom-pill-wrapper {
   position: fixed;
   bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 8px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: max-content;
-  max-width: calc(100% - 32px);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
 }
 
-.mx-progress-bottom-controls__order {
-  flex: 0 0 50px;
-  height: 50px;
-  border: 0;
-  border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
-  color: rgb(var(--c-text, 243 243 243));
-  font: inherit;
-  font-size: 22px;
-  cursor: pointer;
+.mx-progress-bottom-pill-wrapper--hidden {
+  transform: translateX(-50%) translateY(120%);
+  opacity: 0;
+  pointer-events: none;
 }
 
-.mx-progress-card-order {
-  position: fixed;
-  z-index: 21;
-  bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 68px);
-  left: max(16px, calc((100% - 440px) / 2));
-  right: max(16px, calc((100% - 440px) / 2));
-  max-height: min(70vh, 520px);
-  overflow-y: auto;
-  padding: 12px;
-  border-radius: 16px;
-  background: rgb(var(--c-nav, 28 28 28));
-  box-shadow: var(--shadow-float);
-}
-
-.mx-progress-card-order__head,
-.mx-progress-card-order__row {
-  display: flex;
-  align-items: center;
-}
-
-.mx-progress-card-order__head {
-  justify-content: space-between;
-  padding: 0 4px 8px;
-  color: rgb(var(--c-text, 243 243 243));
-}
-
-.mx-progress-card-order__head h2 { margin: 0; font-size: 17px; font-weight: 700; }
-.mx-progress-card-order__head button,
-.mx-progress-card-order__row button {
-  flex: 0 0 34px;
-  height: 44px;
-  border: 0;
-  background: transparent;
-  color: rgb(var(--c-text, 243 243 243));
-  font: inherit;
-  cursor: pointer;
-}
-.mx-progress-card-order__row button:disabled { color: rgb(var(--c-muted, 133 133 133)); cursor: default; }
-
-.mx-progress-card-order__row {
-  min-height: 52px;
-  margin-top: 2px;
-  padding: 0 8px 0 17px;
-  border-radius: 16px;
-  background: rgb(var(--c-card2, 17 17 17));
-  color: rgb(var(--c-text, 243 243 243));
-  font-size: 16px;
-}
-.mx-progress-card-order__row > span { flex: 1; min-width: 0; }
-.mx-progress-card-order__toggle { flex: 0 0 34px; display: grid; place-items: center; cursor: pointer; }
-.mx-progress-card-order__toggle input { position: absolute; width: 22px; height: 22px; opacity: 0; }
-.mx-progress-card-order__toggle span {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1.5px solid rgb(var(--c-border, 41 41 41));
-  border-radius: 999px;
-  color: transparent;
-}
-.mx-progress-card-order__toggle input:checked + span {
-  border: 0;
-  background: rgb(var(--c-line, 230 230 230));
-  color: rgb(var(--c-bg, 5 4 3));
-}
-.mx-progress-card-order__toggle input:focus-visible + span { outline: 2px solid rgb(var(--c-text)); }
-
-/* ── Нижняя плавающая пилюля периода ── */
 .mx-progress-bottom-pill {
   display: inline-flex;
   align-items: center;
@@ -763,7 +858,7 @@
 }
 
 .mx-progress-analytics__bottom-spacer {
-  height: 66px; /* высота пилюли (50) + зазор (16), чтобы последний элемент не перекрыть */
+  /* Высота задаётся инлайн (пилюля 50 + панель 53 + offset 8 + 16) */
 }
 
 /* ── Полный календарь настроения ── */

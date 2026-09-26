@@ -121,6 +121,9 @@ function fixtureFor(request) {
   const method = request.method()
 
   if (method !== 'GET') {
+    if (method === 'PUT' && pathname === '/api/checkin/yesterday') {
+      return jsonResponse({ detail: 'not_recoverable' }, 409)
+    }
     if (pathname === '/api/checkin') {
       return jsonResponse({ mood: 3, energy: 3, anxiety: 3, focus: 3 })
     }
@@ -128,6 +131,9 @@ function fixtureFor(request) {
     return jsonResponse({ ok: true })
   }
 
+  if (pathname === '/api/streak/recovery') {
+    return jsonResponse({ recoverable: false, date: null, streak_before: 0 })
+  }
   if (pathname === '/api/profile') return jsonResponse(TEST_USER)
   if (pathname === '/api/rituals') return jsonResponse(FIXTURES.rituals)
   if (pathname === '/api/ascezas') return jsonResponse(FIXTURES.ascezas)
