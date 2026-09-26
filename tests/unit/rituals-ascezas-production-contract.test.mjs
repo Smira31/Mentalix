@@ -8,7 +8,7 @@ const detail = await readFile(new URL('../../src/components/PracticeDetail.jsx',
 const css = await readFile(new URL('../../src/components/PracticeDetail.css', import.meta.url), 'utf8')
 
 function assertListScreen(source, heading, statusExpression) {
-  assert.match(source, new RegExp(`<h2[^>]*>${heading}\\.</h2>`))
+  assert.match(source, new RegExp(`NestedScreenHeader[^>]*title="${heading}\\."`))
   assert.match(source, /mx-practice-grid/)
   assert.match(source, /data-testid="practice-tile"/)
   assert.match(source, /data-done=/)
