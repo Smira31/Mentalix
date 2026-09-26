@@ -23,14 +23,17 @@ test('Settings persists descriptive Insights visibility with owner settings cont
 
 test('opt-out explains that deterministic observations are hidden without deleting data', () => {
   assert.match(normalizedSettings, /Описательные наблюдения скрыты\. Сохранённые данные и обычные цифры не удалены\./)
-  assert.match(normalizedAnalytics, /Персональные описательные наблюдения скрыты\. Твои сохранённые данные и обычные цифры ниже не удалены\./)
-  assert.match(analytics, /\{insightsEnabled \? \(/)
+  // Новый дизайн: скрытие карточек сохраняет данные (кнопка «Скрыть график»)
+  assert.match(normalizedAnalytics, /Скрыть график/)
+  assert.match(analytics, /readCardPreferences/)
 })
 
-test('Analytics reads a persisted preference and falls back to shown observations on error', () => {
-  assert.match(analytics, /api\.profile\s*\.getSettings\(user\.id\)/)
-  assert.match(analytics, /settings\?\.insights_enabled !== false/)
-  assert.match(normalizedAnalytics, /Наблюдения показаны по умолчанию\./)
+test('Analytics reads a persisted preference and falls back to shown cards on error', () => {
+  // Новый дизайн: настройки карточек читаются из localStorage через readCardPreferences
+  assert.match(analytics, /readCardPreferences/)
+  assert.match(analytics, /useState\(readCardPreferences\)/)
+  // По умолчанию все карточки видимы (не в hidden)
+  assert.match(normalizedAnalytics, /!cardPreferences\.hidden\.includes/)
 })
 
 test('visibility setting remains separate from AI consent and diagnostic claims', () => {

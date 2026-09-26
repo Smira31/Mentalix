@@ -246,8 +246,8 @@ test('MXL-007 публикует reference Today chrome with streak/calendar and
   assert.match(today, /mx-demo-today-streak/)
   assert.doesNotMatch(today, /<DayThread|DayThreadTrigger/)
   assert.doesNotMatch(conversation, /AiFlowIndicator|flowPhase/)
-  assert.match(analytics, /mx-progress-redesign__chart-line/)
-  assert.match(analytics, /График настроения/)
+  assert.match(analytics, /mx-progress-mood-calendar/)
+  assert.match(analytics, /Календарь настроения/)
   assert.doesNotMatch(analytics, /🛡/)
 })
 
@@ -536,7 +536,7 @@ test('MXL-009 ограничивает insights описательными на�
     'utf8'
   )
 
-  assert.match(analytics, /selectDescriptiveInsights\(safeData\.insights\)/)
+  assert.match(analytics, /deriveConclusions\(periodCheckins/)
   assert.match(analytics, /не диагнозы и не доказанные причины/)
   assert.match(analytics, /чаще совпадала/)
   assert.doesNotMatch(analytics, /Собранность не зависит от энергии/)
@@ -746,12 +746,12 @@ test('MXL-527 отображает один главный вывод с evidenc
     'utf8'
   )
 
-  assert.match(analytics, /function PrimaryObservationCard\(\{ observation \}\)/)
-  assert.match(analytics, /data-primary-observation="true"/)
-  assert.match(analytics, /observations\[0\] \?\? null/)
-  assert.match(analytics, /sampleSize/)
-  assert.match(analytics, /sourceDates/)
-  assert.match(analytics, /observation\.caveat/)
+  assert.match(analytics, /function ConclusionsCard\(\{ direction, conclusions \}\)/)
+  assert.match(analytics, /testId=\{`progress-conclusions-/)
+  assert.match(analytics, /conclusions = deriveConclusions\(periodCheckins/)
+  assert.match(analytics, /MIN_GROUP/)
+  assert.match(analytics, /compareGroups/)
+  assert.match(analytics, /не диагнозы и не доказанные причины/)
   assert.doesNotMatch(analytics, /observations\.map\(/)
 })
 
