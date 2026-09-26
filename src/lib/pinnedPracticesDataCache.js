@@ -11,7 +11,7 @@ function freshEntry(userId) {
 }
 
 export function peekPinnedPractices(userId) {
-  return freshEntry(userId)?.data ?? null
+  return cache.get(userId)?.data ?? null
 }
 
 export async function fetchPinnedPractices(userId, { force = false } = {}) {
@@ -32,5 +32,6 @@ export async function fetchPinnedPractices(userId, { force = false } = {}) {
 }
 
 export function invalidatePinnedPractices(userId) {
-  cache.delete(userId)
+  const entry = cache.get(userId)
+  if (entry) entry.fetchedAt = 0
 }
