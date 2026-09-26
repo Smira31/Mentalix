@@ -1459,6 +1459,7 @@ function App() {
                     <Analytics
                       user={user}
                       historyTrigger={progressHistoryTrigger}
+                      navCollapsed={navCollapsed}
                       onOpenHistory={() => {
                         platform.haptic('light')
                         setProgressHistoryTrigger(n => n + 1)
@@ -1478,6 +1479,20 @@ function App() {
                         resetNavigationGesture()
 
                         scrollAppToTop()
+                      }}
+                      onStartMood={() => {
+                        platform.haptic('light')
+                        setMentorPersonaOpen(false)
+                        setTab('practices')
+                        setPracticesSub('mood')
+                        setNavCollapsed(false)
+                        resetNavigationGesture()
+                        scrollAppToTop()
+                      }}
+                      onOpenNotifications={() => {
+                        platform.haptic('light')
+                        try { sessionStorage.setItem('mx-settings-initial-sub', 'notifications') } catch { /* */ }
+                        setOverlay('settings')
                       }}
                       onRedo={() => {
                         platform.haptic('light')
