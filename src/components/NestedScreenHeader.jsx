@@ -18,13 +18,10 @@ export default function NestedScreenHeader({
   registerSystemBack = true,
   testId = 'back-button',
 }) {
-  useBackButton(
-    () => {
-      platform.haptic('light')
-      onBack?.()
-    },
-    registerSystemBack
-  )
+  useBackButton(() => {
+    platform.haptic('light')
+    onBack?.()
+  }, registerSystemBack)
 
   return (
     <div className="mx-nested-screen-header">
@@ -50,7 +47,7 @@ export default function NestedScreenHeader({
  * где заголовок уже есть (например, заголовок шага сессии),
  * а нужна только круглая кнопка вместо текстовой «‹ Назад».
  */
-export function RoundBackButton({ onBack, testId = 'back-button', label = 'Назад' }) {
+export function RoundBackButton({ onClick, testId = 'back-button', label = 'Назад' }) {
   return (
     <button
       type="button"
@@ -58,7 +55,7 @@ export function RoundBackButton({ onBack, testId = 'back-button', label = 'На�
       aria-label={label}
       onClick={() => {
         platform.haptic('light')
-        onBack?.()
+        onClick?.()
       }}
       className="mx-nested-screen-back"
     >
