@@ -1,4 +1,5 @@
 import { now } from './clock.js'
+import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v5'
 const SCENARIO_KEY = 'mentalix:demo-scenario:v1'
@@ -578,7 +579,7 @@ function respond(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? 19),
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? DEFAULT_REVIEW_HOUR),
       writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
       writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
     })
