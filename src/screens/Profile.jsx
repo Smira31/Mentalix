@@ -3,6 +3,8 @@ import { CalendarDays, Flame, Leaf, Moon, PartyPopper, Sprout, Star, Trophy } fr
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
 import { buildSeriesViewModel } from '../lib/series'
+import { getNearestMilestones } from '../lib/milestones'
+import MilestoneBars from '../components/MilestoneBars'
 import {
   ProfileBody,
   ProfileGroup,
@@ -69,6 +71,7 @@ export default function Profile({ user }) {
   const [reloadToken, setReloadToken] = useState(0)
   const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
   const [bestStreak, setBestStreak] = useState(null)
+  const [seriesModel, setSeriesModel] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -106,6 +109,7 @@ export default function Profile({ user }) {
           practiceDays: Array.isArray(practiceDays) ? practiceDays : [],
         })
         setBestStreak(model.bestStreak)
+        setSeriesModel(model)
       })
       .catch(() => {})
 
@@ -123,6 +127,12 @@ export default function Profile({ user }) {
   const birthdayFormatted = formatBirthday(birthdayRaw)
   const daysToBirthday = daysUntilNextBirthday(birthdayRaw)
   const milestones = getMilestones(stats)
+  const nearestMilestones = seriesModel
+    ? getNearestMilestones({
+        badges: seriesModel.badges,
+        streak: seriesModel.currentStreak,
+      })
+    : []
 
   return (
     <ProfileBody>
@@ -211,6 +221,15 @@ export default function Profile({ user }) {
               />
             )}
           </ProfileCard>
+        </ProfileGroup>
+      )}
+
+      {/* Ближайшее — прогресс-бары к ближайшим вехам (H11).
+          Профиль не запрашивает /api/themes (#648), поэтому вехи по теме
+          недели здесь не показываются — только значки и серия. */}
+      {nearestMilestones.length > 0 && (
+        <ProfileGroup label="Ближайшее">
+          <MilestoneBars milestones={nearestMilestones} />
         </ProfileGroup>
       )}
 

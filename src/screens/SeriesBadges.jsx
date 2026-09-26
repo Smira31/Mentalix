@@ -12,8 +12,11 @@ import { platformName } from '../platform'
 import { buildSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
 import { getSeriesPreferences, saveSeriesPreference } from '../lib/seriesPreferences'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
+import { getNearestMilestones } from '../lib/milestones'
+import { pickCurrentTheme } from '../lib/themeHelpers'
 
 import BackButton from '../components/BackButton'
+import MilestoneBars from '../components/MilestoneBars'
 import './SeriesBadges.css'
 
 function RewardIcon({ variant = 'locked', size = 72, className = '' }) {
@@ -340,12 +343,17 @@ function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
   )
 }
 
-function StatsView({ model }) {
+function StatsView({ model, theme }) {
   const rows = [
     ['Текущая серия', formatDays(model.currentStreak)],
     ['Всего завершённых дней', model.activeDays],
     ['Самая длинная серия', formatDays(model.bestStreak)],
   ]
+  const milestones = getNearestMilestones({
+    badges: model.badges,
+    streak: model.currentStreak,
+    theme,
+  })
   return (
     <div className="mx-path-content">
       <div className="mx-path-summary-grid">
@@ -364,6 +372,12 @@ function StatsView({ model }) {
           <span>{pluralize(model.totalCheckins, ['чек-ин', 'чек-ина', 'чек-инов'])}</span>
         </div>
       </div>
+      {milestones.length > 0 && (
+        <section className="mx-path-stat-section" data-testid="milestone-section">
+          <h2>Ближайшее</h2>
+          <MilestoneBars milestones={milestones} />
+        </section>
+      )}
       <StatSection title="Серия" rows={rows} note="Один пропуск в неделю серию не обрывает" />
       <StatSection
         title="Чек-ины"
@@ -418,6 +432,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const [errorUserId, setErrorUserId] = useState(null)
   const [selectedBadge, setSelectedBadge] = useState(null)
   const [preferences, setPreferences] = useState(() => getSeriesPreferences(user?.id))
+  const [theme, setTheme] = useState(null)
   const { style: surfaceStyle } = useFullscreenSurface()
   const demoMode = isPreviewDemoMode()
 
@@ -445,6 +460,23 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
         setError(true)
         setErrorUserId(user.id)
       })
+
+    api.themes
+      .list(user.id)
+      .then(list => {
+        if (!active) return
+        const current = pickCurrentTheme(Array.isArray(list) ? list : [])
+        if (!current) return setTheme(null)
+        api.themes
+          .get(current.id, user.id)
+          .then(detail => {
+            if (!active) return
+            setTheme({ ...current, ...detail })
+          })
+          .catch(() => {})
+      })
+      .catch(() => {})
+
     return () => {
       active = false
     }
@@ -510,7 +542,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
               onOpenBadge={setSelectedBadge}
             />
           ) : (
-            <StatsView model={visibleModel} />
+            <StatsView model={visibleModel} theme={theme} />
           )
         ) : (
           <p className="mx-path-status">Загружаю последние данные…</p>
