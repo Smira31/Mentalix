@@ -96,7 +96,13 @@ function compareGroups({ withGroup, withoutGroup, field, threshold, build }) {
 }
 
 const WEEKDAY_FULL = [
-  'воскресенье', 'понедельник', 'вторник', 'среду', 'четверг', 'пятницу', 'субботу',
+  'воскресенье',
+  'понедельник',
+  'вторник',
+  'среду',
+  'четверг',
+  'пятницу',
+  'субботу',
 ]
 
 export function deriveConclusions(checkins, data, seriesCheckins = checkins) {
@@ -107,28 +113,40 @@ export function deriveConclusions(checkins, data, seriesCheckins = checkins) {
   const notClosed = list.filter(c => !c.review_completed_at)
 
   const anxiety = compareGroups({
-    withGroup: notClosed, withoutGroup: closed, field: 'anxiety', threshold: 0.6,
-    build: delta => delta > 0
-      ? 'В этой выборке тревога чаще отмечалась в дни без завершённого вечернего разбора.'
-      : 'В этой выборке тревога чаще отмечалась в дни с завершённым вечерним разбором — возможно, это были более тяжёлые дни.',
+    withGroup: notClosed,
+    withoutGroup: closed,
+    field: 'anxiety',
+    threshold: 0.6,
+    build: delta =>
+      delta > 0
+        ? 'В этой выборке тревога чаще отмечалась в дни без завершённого вечернего разбора.'
+        : 'В этой выборке тревога чаще отмечалась в дни с завершённым вечерним разбором — возможно, это были более тяжёлые дни.',
   })
   if (anxiety) found.push(anxiety)
 
   const mood = compareGroups({
-    withGroup: closed, withoutGroup: notClosed, field: 'mood', threshold: 0.5,
-    build: delta => delta > 0
-      ? 'В этой выборке настроение было выше в дни с завершённым вечерним разбором.'
-      : 'В этой выборке настроение было ниже в дни с завершённым вечерним разбором — такие дни могли быть сложнее.',
+    withGroup: closed,
+    withoutGroup: notClosed,
+    field: 'mood',
+    threshold: 0.5,
+    build: delta =>
+      delta > 0
+        ? 'В этой выборке настроение было выше в дни с завершённым вечерним разбором.'
+        : 'В этой выборке настроение было ниже в дни с завершённым вечерним разбором — такие дни могли быть сложнее.',
   })
   if (mood) found.push(mood)
 
   const energetic = list.filter(c => c.energy >= 4)
   const tired = list.filter(c => c.energy <= 2)
   const focus = compareGroups({
-    withGroup: energetic, withoutGroup: tired, field: 'focus', threshold: 0.7,
-    build: delta => delta > 0
-      ? 'В этой выборке более высокая энергия чаще совпадала с более высокой собранностью.'
-      : 'В этой выборке энергия и собранность заметно не различались между группами.',
+    withGroup: energetic,
+    withoutGroup: tired,
+    field: 'focus',
+    threshold: 0.7,
+    build: delta =>
+      delta > 0
+        ? 'В этой выборке более высокая энергия чаще совпадала с более высокой собранностью.'
+        : 'В этой выборке энергия и собранность заметно не различались между группами.',
   })
   if (focus) found.push(focus)
 
@@ -145,7 +163,8 @@ export function deriveConclusions(checkins, data, seriesCheckins = checkins) {
     if (topCount / breakDays.length >= 0.5) {
       found.push({
         text: `Больше половины срывов приходится на ${WEEKDAY_FULL[topIndex]}.`,
-        weight: 0.9, direction: 'down',
+        weight: 0.9,
+        direction: 'down',
       })
     }
   }
@@ -155,7 +174,8 @@ export function deriveConclusions(checkins, data, seriesCheckins = checkins) {
   if (streak >= 3) {
     found.push({
       text: `${streak} закрытых ${pluralize(streak, ['день', 'дня', 'дней'])} подряд — серия держится прямо сейчас.`,
-      weight: 0.8, direction: 'up',
+      weight: 0.8,
+      direction: 'up',
     })
   }
 
@@ -229,12 +249,11 @@ function MoodCard({ onStartMood }) {
   return (
     <section className="mx-progress-mood-card" aria-labelledby="progress-mood-card-title">
       <h2 id="progress-mood-card-title" className="mx-progress-mood-card__title">
-        Как ты сейчас?
+        Как ты себя чувствуешь?
       </h2>
       <p className="mx-progress-mood-card__hint">
         Отметь настроение — пройди короткую практику
-        <br />
-        и добавь точку в прогресс
+        <br />и добавь точку в прогресс
       </p>
       <div className="mx-progress-mood-card__faces" role="group" aria-label="Выбери настроение">
         {MOOD_LABELS.map((label, level) => (
@@ -277,7 +296,10 @@ function NeedDataPlaque({ daysWithRecords, onRemind }) {
       </h2>
       <div className="mx-progress-need-data__days" aria-hidden="true">
         {cells.map((isDone, i) => (
-          <span key={i} className={`mx-progress-need-data__day${isDone ? ' mx-progress-need-data__day--done' : ''}`}>
+          <span
+            key={i}
+            className={`mx-progress-need-data__day${isDone ? ' mx-progress-need-data__day--done' : ''}`}
+          >
             {isDone ? '✓' : ''}
           </span>
         ))}
@@ -314,7 +336,11 @@ function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
       return { wd, date, mood, day: day.getDate() }
     })
     return (
-      <CardShell title="Календарь настроения" subtitle="Дни с настроением" testId="progress-mood-calendar">
+      <CardShell
+        title="Календарь настроения"
+        subtitle="Дни с настроением"
+        testId="progress-mood-calendar"
+      >
         <div className="mx-progress-mood-calendar">
           <div className="mx-progress-mood-calendar__week">
             {cells.map(c => (
@@ -344,12 +370,19 @@ function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
   const total = counts.reduce((s, n) => s + n, 0)
 
   return (
-    <CardShell title="Распределение настроения" subtitle="За период" testId="progress-mood-calendar">
+    <CardShell
+      title="Распределение настроения"
+      subtitle="За период"
+      testId="progress-mood-calendar"
+    >
       {total > 0 ? (
         <div className="mx-progress-mood-distribution">
           {counts.map((count, i) => (
             <div className="mx-progress-mood-distribution__bar" key={i}>
-              <div className="mx-progress-mood-distribution__fill" style={{ height: `${(count / max) * 100}%`, background: moodColor(i + 1) }} />
+              <div
+                className="mx-progress-mood-distribution__fill"
+                style={{ height: `${(count / max) * 100}%`, background: moodColor(i + 1) }}
+              />
               <span className="mx-progress-mood-distribution__label">{count}</span>
             </div>
           ))}
@@ -394,12 +427,23 @@ function EmotionsRing({ periodCheckins }) {
       <div className="mx-progress-emotions">
         <div className="mx-progress-emotions__ring">
           <svg viewBox="0 0 36 36" aria-label={`${total} отметок эмоций`}>
-            <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgb(var(--c-card3, 46 46 46))" strokeWidth="3" />
+            <circle
+              cx="18"
+              cy="18"
+              r="15.9"
+              fill="none"
+              stroke="rgb(var(--c-card3, 46 46 46))"
+              strokeWidth="3"
+            />
             {segments.map((seg, i) => (
               <circle
                 key={seg.key}
-                cx="18" cy="18" r="15.9" fill="none"
-                stroke={palette[i % palette.length]} strokeWidth="3"
+                cx="18"
+                cy="18"
+                r="15.9"
+                fill="none"
+                stroke={palette[i % palette.length]}
+                strokeWidth="3"
                 strokeDasharray={`${seg.dash} ${100 - seg.dash}`}
                 strokeDashoffset={seg.offset}
               />
@@ -410,7 +454,10 @@ function EmotionsRing({ periodCheckins }) {
         <div className="mx-progress-emotions__legend">
           {emotions.map(([name, count], i) => (
             <div className="mx-progress-emotions__row" key={name}>
-              <span className="mx-progress-emotions__dot" style={{ background: palette[i % palette.length] }} />
+              <span
+                className="mx-progress-emotions__dot"
+                style={{ background: palette[i % palette.length] }}
+              />
               <span className="mx-progress-emotions__name">{name}</span>
               <span className="mx-progress-emotions__count">{count}</span>
             </div>
@@ -428,7 +475,11 @@ function ConclusionsCard({ direction, conclusions }) {
   const items = conclusions.filter(c => c.direction === direction)
 
   return (
-    <CardShell title={title} subtitle="Из твоих отметок" testId={`progress-conclusions-${direction}`}>
+    <CardShell
+      title={title}
+      subtitle="Из твоих отметок"
+      testId={`progress-conclusions-${direction}`}
+    >
       {items.length > 0 ? (
         <div className="mx-progress-conclusions">
           {items.map((c, i) => (
@@ -467,7 +518,9 @@ function PracticesCard({ analyticsData, isCurrentPeriod }) {
   const palette = ['#EDBD60', '#6FB7E0', '#B0B0B0', '#6A6A6A']
   const dash = 100 / total
   const segments = items.map((item, i) => ({
-    key: item.name, color: palette[i % palette.length], offset: -i * dash,
+    key: item.name,
+    color: palette[i % palette.length],
+    offset: -i * dash,
   }))
 
   return (
@@ -475,12 +528,23 @@ function PracticesCard({ analyticsData, isCurrentPeriod }) {
       <div className="mx-progress-practices">
         <div className="mx-progress-practices__ring">
           <svg viewBox="0 0 36 36" aria-label="Частые практики">
-            <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgb(var(--c-card3, 46 46 46))" strokeWidth="3" />
+            <circle
+              cx="18"
+              cy="18"
+              r="15.9"
+              fill="none"
+              stroke="rgb(var(--c-card3, 46 46 46))"
+              strokeWidth="3"
+            />
             {segments.map(seg => (
               <circle
                 key={seg.key}
-                cx="18" cy="18" r="15.9" fill="none"
-                stroke={seg.color} strokeWidth="3"
+                cx="18"
+                cy="18"
+                r="15.9"
+                fill="none"
+                stroke={seg.color}
+                strokeWidth="3"
                 strokeDasharray={`${dash} ${100 - dash}`}
                 strokeDashoffset={seg.offset}
               />
@@ -491,7 +555,10 @@ function PracticesCard({ analyticsData, isCurrentPeriod }) {
         <div className="mx-progress-practices__legend">
           {items.map((item, i) => (
             <div className="mx-progress-practices__row" key={item.name}>
-              <span className="mx-progress-practices__dot" style={{ background: palette[i % palette.length] }} />
+              <span
+                className="mx-progress-practices__dot"
+                style={{ background: palette[i % palette.length] }}
+              />
               <span className="mx-progress-practices__name">{item.name}</span>
             </div>
           ))}
@@ -640,7 +707,9 @@ function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, hidden
         </button>
         <span className="mx-progress-bottom-pill__label">
           <span className="mx-progress-bottom-pill__name">{periodName(granularity, offset)}</span>
-          <span className="mx-progress-bottom-pill__range">{formatPeriodRange(window, granularity)}</span>
+          <span className="mx-progress-bottom-pill__range">
+            {formatPeriodRange(window, granularity)}
+          </span>
         </span>
         <button
           type="button"
@@ -715,7 +784,9 @@ export default function Analytics({
   useEffect(() => {
     try {
       sessionStorage.setItem(PROGRESS_SEGMENT_KEY, activeTab)
-    } catch { /* sessionStorage может быть недоступен */ }
+    } catch {
+      /* sessionStorage может быть недоступен */
+    }
   }, [activeTab])
 
   useEffect(() => {
@@ -757,10 +828,13 @@ export default function Analytics({
     let active = true
     const previous = retryFailedSourcesRef.current ? sourceResultRef.current : null
     retryFailedSourcesRef.current = false
-    loadIndependentSources({
-      analytics: () => api.analytics.get(user.id, gran.days),
-      checkins: () => api.checkin.history(user.id, 90),
-    }, previous ? { previous, only: previous.failed } : undefined)
+    loadIndependentSources(
+      {
+        analytics: () => api.analytics.get(user.id, gran.days),
+        checkins: () => api.checkin.history(user.id, 90),
+      },
+      previous ? { previous, only: previous.failed } : undefined
+    )
       .then(result => {
         if (!active) return
         sourceResultRef.current = result
@@ -772,10 +846,16 @@ export default function Analytics({
           setPoolCheckins(sanitizeTrendsData({ checkins: result.data.checkins }).checkins)
         }
       })
-      .catch(error => { console.error(error) })
-      .finally(() => { if (active) setSourceLoading(false) })
+      .catch(error => {
+        console.error(error)
+      })
+      .finally(() => {
+        if (active) setSourceLoading(false)
+      })
 
-    return () => { active = false }
+    return () => {
+      active = false
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, granularity, reloadKey])
 
@@ -795,7 +875,8 @@ export default function Analytics({
   }
   const analyticsState = sourceResult?.states?.analytics
   const checkinsState = sourceResult?.states?.checkins
-  const analyticsError = !sourceLoading && analyticsState && analyticsState !== SOURCE_STATES.success
+  const analyticsError =
+    !sourceLoading && analyticsState && analyticsState !== SOURCE_STATES.success
   const analyticsAuth = analyticsState === SOURCE_STATES.auth
   const checkinsFailed = !sourceLoading && checkinsState && checkinsState !== SOURCE_STATES.success
   const isCurrentPeriod = offset === 0
@@ -825,13 +906,24 @@ export default function Analytics({
   }
 
   function handleStartMood(level) {
-    try { sessionStorage.setItem('mx-mood-practice-initial', String(level)) } catch { /* */ }
+    try {
+      sessionStorage.setItem('mx-mood-practice-initial', String(level))
+    } catch {
+      /* */
+    }
     if (typeof onStartMood === 'function') onStartMood(level)
     else if (typeof onGoCheckin === 'function') onGoCheckin()
   }
 
   const cards = {
-    calendar: <MoodCalendarCard periodCheckins={periodCheckins} granularity={granularity} window={window} onOpenFull={() => setView('calendar')} />,
+    calendar: (
+      <MoodCalendarCard
+        periodCheckins={periodCheckins}
+        granularity={granularity}
+        window={window}
+        onOpenFull={() => setView('calendar')}
+      />
+    ),
     emotions: <EmotionsRing periodCheckins={periodCheckins} />,
     up: <ConclusionsCard direction="up" conclusions={conclusions} />,
     down: <ConclusionsCard direction="down" conclusions={conclusions} />,
@@ -840,9 +932,7 @@ export default function Analytics({
 
   // Нижний отступ: пилюля (50) + панель (53 + 8 offset) + 16 = 127.
   // При свёрнутой навигации пилюля скрыта, панель схлопнута (58) — отступ меньше (A6).
-  const bottomSpacerHeight = navCollapsed
-    ? 58 + 8 + 16
-    : 50 + 53 + 8 + 16
+  const bottomSpacerHeight = navCollapsed ? 58 + 8 + 16 : 50 + 53 + 8 + 16
 
   return (
     <div
@@ -884,11 +974,18 @@ export default function Analytics({
             onClick={() => setPeriodMenuOpen(v => !v)}
           >
             {gran.label}
-            <span className="mx-progress-period-trigger__chevron" aria-hidden="true">⌄</span>
+            <span className="mx-progress-period-trigger__chevron" aria-hidden="true">
+              ⌄
+            </span>
           </button>
         )}
         {activeTab === 'analytics' && periodMenuOpen && (
-          <div id="progress-period-menu" className="mx-progress-period-menu" role="menu" aria-label="Период аналитики">
+          <div
+            id="progress-period-menu"
+            className="mx-progress-period-menu"
+            role="menu"
+            aria-label="Период аналитики"
+          >
             {ANALYTICS_GRANULARITIES.map(g => (
               <button
                 key={g.id}
@@ -899,7 +996,11 @@ export default function Analytics({
                 onClick={() => selectGranularity(g.id)}
               >
                 <span>{g.label}</span>
-                {granularity === g.id && <span className="mx-progress-period-menu__check" aria-hidden="true">✓</span>}
+                {granularity === g.id && (
+                  <span className="mx-progress-period-menu__check" aria-hidden="true">
+                    ✓
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -931,14 +1032,20 @@ export default function Analytics({
 
           {analyticsError && (
             <div role="alert" className="mx-progress-redesign__status-note">
-              {analyticsAuth ? 'Статистика требует повторной авторизации.' : 'Статистика временно недоступна.'}
-              <button type="button" onClick={retryFailedSources}>Повторить</button>
+              {analyticsAuth
+                ? 'Статистика требует повторной авторизации.'
+                : 'Статистика временно недоступна.'}
+              <button type="button" onClick={retryFailedSources}>
+                Повторить
+              </button>
             </div>
           )}
           {checkinsFailed && !analyticsError && (
             <p className="mx-progress-redesign__status-note" role="status">
               История чек-инов временно недоступна; остальные показатели продолжают работать.
-              <button type="button" onClick={retryFailedSources}>Повторить</button>
+              <button type="button" onClick={retryFailedSources}>
+                Повторить
+              </button>
             </p>
           )}
 
@@ -946,18 +1053,31 @@ export default function Analytics({
             <NeedDataPlaque daysWithRecords={daysWithRecords} onRemind={onOpenNotifications} />
           )}
 
-          {cardPreferences.order.filter(id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)).map((id, index, visible) => {
-            const card = ANALYTICS_CARDS.find(item => item.id === id)
-            const previous = ANALYTICS_CARDS.find(item => item.id === visible[index - 1])
-            return (
-              <div key={id}>
-                {card.section !== previous?.section && <SectionLabel>{card.section}</SectionLabel>}
-                <CardActions.Provider value={{ id, openId: openCardMenu, setOpenId: setOpenCardMenu, hide: toggleCard }}>
-                  {cards[id]}
-                </CardActions.Provider>
-              </div>
+          {cardPreferences.order
+            .filter(
+              id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)
             )
-          })}
+            .map((id, index, visible) => {
+              const card = ANALYTICS_CARDS.find(item => item.id === id)
+              const previous = ANALYTICS_CARDS.find(item => item.id === visible[index - 1])
+              return (
+                <div key={id}>
+                  {card.section !== previous?.section && (
+                    <SectionLabel>{card.section}</SectionLabel>
+                  )}
+                  <CardActions.Provider
+                    value={{
+                      id,
+                      openId: openCardMenu,
+                      setOpenId: setOpenCardMenu,
+                      hide: toggleCard,
+                    }}
+                  >
+                    {cards[id]}
+                  </CardActions.Provider>
+                </div>
+              )
+            })}
 
           {/* Пилюля «Настроить» в потоке контента */}
           <button
@@ -969,7 +1089,10 @@ export default function Analytics({
             ✎ Настроить
           </button>
 
-          <div className="mx-progress-analytics__bottom-spacer" style={{ height: `${bottomSpacerHeight}px` }} />
+          <div
+            className="mx-progress-analytics__bottom-spacer"
+            style={{ height: `${bottomSpacerHeight}px` }}
+          />
         </>
       )}
 
