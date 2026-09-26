@@ -39,5 +39,5 @@ test('Analytics reads a persisted preference and falls back to shown cards on er
 test('visibility setting remains separate from AI consent and diagnostic claims', () => {
   assert.doesNotMatch(settings, /ai_context_enabled: nextEnabled/)
   assert.match(normalizedSettings, /не являются диагнозом/)
-  assert.match(normalizedAnalytics, /api\.analytics\.influences/)
+  assert.match(normalizedAnalytics, /api\.analytics\s*\.influences/)
 })

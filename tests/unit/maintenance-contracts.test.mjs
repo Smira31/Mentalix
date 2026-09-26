@@ -536,7 +536,7 @@ test('MXL-009 ограничивает insights описательными на�
     'utf8'
   )
 
-  assert.match(analytics, /api\.analytics\.influences/)
+  assert.match(analytics, /api\.analytics\s*\.influences/)
   assert.match(analytics, /deriveConclusions/)
   assert.match(analytics, /чаще совпадала/)
   assert.doesNotMatch(analytics, /Собранность не зависит от энергии/)
@@ -748,7 +748,7 @@ test('MXL-527 отображает серверные факторы влиян�
 
   assert.match(analytics, /function InfluencesCard\(\{ direction, influences \}\)/)
   assert.match(analytics, /testId=\{`progress-conclusions-/)
-  assert.match(analytics, /api\.analytics\.influences/)
+  assert.match(analytics, /api\.analytics\s*\.influences/)
   assert.match(analytics, /MIN_GROUP/)
   assert.match(analytics, /compareGroups/)
   assert.doesNotMatch(analytics, /observations\.map\(/)

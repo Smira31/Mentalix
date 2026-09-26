@@ -23,7 +23,7 @@ test('sanitizeCheckins исключает malformed даты и удержива
 test('Analytics UI использует единые периоды, серверные influences и не считает неполные группы достаточной выборкой', () => {
   assert.match(analyticsSource, /ANALYTICS_GRANULARITIES\.map/)
   assert.match(analyticsSource, /deriveConclusions/)
-  assert.match(analyticsSource, /api\.analytics\.influences/)
+  assert.match(analyticsSource, /api\.analytics\s*\.influences/)
   assert.match(analyticsSource, /withValues\.length < MIN_GROUP/)
   assert.match(analyticsSource, /withoutValues\.length < MIN_GROUP/)
 })
