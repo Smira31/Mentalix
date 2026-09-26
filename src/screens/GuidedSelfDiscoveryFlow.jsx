@@ -1,5 +1,5 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -232,6 +232,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
   const [stepIndex, setStepIndex] = useState(0)
   const [completionFeedback, setCompletionFeedback] = useState(null)
   const [answers, setAnswers] = useState(() => ({ ...emptyAnswers(), ...(initial?.answers || {}) }))
+  const [pendingComplete, setPendingComplete] = useState(false)
   const step = STEPS[stepIndex]
   const value = step ? answers[step.key] || '' : ''
 
@@ -266,7 +267,23 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
       console.error(error)
     }
     platform.haptic('success')
-    setStage('complete')
+
+    // Blur the active field so the soft keyboard closes before we swap
+    // to the completion screen — without this the completion renders
+    // under the still-open keyboard and the header overlaps the title.
+    const active = document.activeElement
+    if (active && typeof active.blur === 'function') {
+      active.blur()
+    }
+
+    const vv = window.visualViewport
+    if (!vv || vv.height >= window.innerHeight - 80) {
+      setStage('complete')
+      return
+    }
+
+    // Keyboard is open — defer completion until visualViewport stabilises.
+    setPendingComplete(true)
   }
 
   function goBack() {
@@ -292,15 +309,49 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
     setStage('writing')
   }
 
+  // Wait for the soft keyboard to close (visualViewport resize) before
+  // showing the completion screen. Driven by the real viewport event,
+  // not an arbitrary fixed delay — with a short safety fallback only.
+  useEffect(() => {
+    if (!pendingComplete) return
+
+    const vv = window.visualViewport
+    const isStable = () => !vv || vv.height >= window.innerHeight - 80
+
+    if (isStable()) {
+      setPendingComplete(false)
+      setStage('complete')
+      return
+    }
+
+    function onViewportResize() {
+      if (isStable()) {
+        setPendingComplete(false)
+        setStage('complete')
+      }
+    }
+
+    vv.addEventListener('resize', onViewportResize)
+    const fallback = setTimeout(() => {
+      setPendingComplete(false)
+      setStage('complete')
+    }, 400)
+
+    return () => {
+      vv.removeEventListener('resize', onViewportResize)
+      clearTimeout(fallback)
+    }
+  }, [pendingComplete])
+
   const action =
-    stage === 'writing'
+    stage === 'writing' && !pendingComplete
       ? {
           text: stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить',
           onClick: continueFlow,
           disabled: !answered(value),
         }
       : stage === 'complete'
-        ? { text: 'Вернуться в дневник', onClick: onClose, disabled: false }
+        ? { text: 'Вернуться в журнал', onClick: onClose, disabled: false }
         : null
 
   useMainButton({
@@ -333,7 +384,7 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
               submitLabel={
                 stepIndex === STEPS.length - 1 ? 'Сохранить эксперимент' : 'Сохранить и продолжить'
               }
-              submitDisabled={!answered(value)}
+              submitDisabled={!answered(value) || pendingComplete}
               className="guided-self-discovery__writing min-h-0 flex-1"
             />
           </div>

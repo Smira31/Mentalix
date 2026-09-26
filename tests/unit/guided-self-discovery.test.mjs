@@ -43,6 +43,26 @@ test('MXL-SELF-DISCOVERY-001 keeps the existing Practices routing contract', () 
   assert.doesNotMatch(practices, /onOpenPractice\([^)]*self-discovery/)
 })
 
+test('MXL-SELF-DISCOVERY-002 blurs active field and waits for viewport before completion', () => {
+  // The completion transition must blur the focused field first so the
+  // soft keyboard closes, then wait for visualViewport to stabilise —
+  // no arbitrary fixed delay, driven by the real resize event.
+  assert.match(flow, /useEffect/)
+  assert.match(flow, /pendingComplete/)
+  assert.match(flow, /active\.blur/)
+  assert.match(flow, /visualViewport/)
+  assert.match(flow, /addEventListener\('resize'/)
+  assert.match(flow, /setStage\('complete'\)/)
+  // The submit button must be disabled during the pending transition
+  // to prevent a double-tap from re-entering continueFlow.
+  assert.match(flow, /submitDisabled=\{!answered\(value\) \|\| pendingComplete\}/)
+})
+
+test('MXL-SELF-DISCOVERY-002 uses approved CTA «Вернуться в журнал»', () => {
+  assert.match(flow, /Вернуться в журнал/)
+  assert.doesNotMatch(flow, /Вернуться в дневник/)
+})
+
 test('MXL-SELF-DISCOVERY-001 uses the shared typography scale and chevron CTA', () => {
   assert.match(css, /guided-self-discovery__intro-title[\s\S]*font-size: clamp\(1\.375rem, 5\.6vw, 1\.75rem\)/)
   assert.match(css, /practice-writing-canvas__question[\s\S]*font-size: clamp\(1\.375rem, 5\.6vw, 1\.75rem\)/)
