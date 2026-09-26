@@ -433,9 +433,10 @@ function ConclusionsCard({ direction, conclusions }) {
         <div className="mx-progress-conclusions">
           {items.map((c, i) => (
             <div key={i}>
-              <p className="mx-progress-conclusion__text">{c.text}</p>
+              <p className="mx-progress-conclusion__text mx-type-insight">{c.text}</p>
             </div>
           ))}
+          <p className="mx-progress-conclusions__safety">не диагнозы и не доказанные причины</p>
         </div>
       ) : (
         <CardEmpty hint="Соберётся из отметок нескольких дней" />
@@ -595,7 +596,7 @@ function CustomizeLayer({ preferences, onToggle, onClose }) {
       <p className="mx-progress-customize__subtext">Что показывать в аналитике</p>
       {sections.map(section => (
         <div className="mx-progress-customize__section" key={section}>
-          <h3 className="mx-progress-section-label font-label">{section}</h3>
+          <SectionLabel>{section}</SectionLabel>
           {ANALYTICS_CARDS.filter(c => c.section === section).map(card => {
             const visible = !preferences.hidden.includes(card.id)
             return (
@@ -945,7 +946,7 @@ export default function Analytics({
             <NeedDataPlaque daysWithRecords={daysWithRecords} onRemind={onOpenNotifications} />
           )}
 
-          {cardPreferences.order.filter(id => !cardPreferences.hidden.includes(id)).map((id, index, visible) => {
+          {cardPreferences.order.filter(id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)).map((id, index, visible) => {
             const card = ANALYTICS_CARDS.find(item => item.id === id)
             const previous = ANALYTICS_CARDS.find(item => item.id === visible[index - 1])
             return (
