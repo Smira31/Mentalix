@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { platform } from '../platform'
-import { api } from '../lib/api'
-import { withRetry } from '../lib/todayRetry'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
+import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
@@ -48,10 +47,11 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   const returnToPracticeOrigin = () => setSub(null)
 
   const [initialPracticesData] = useState(() => (user ? peekPracticesData(user.id) : null))
+  const [initialThemesData] = useState(() => (user ? peekThemesData(user.id) : null))
   const [rituals, setRituals] = useState(initialPracticesData?.rituals ?? [])
   const [ascezas, setAscezas] = useState(initialPracticesData?.ascezas ?? [])
-  const [themes, setThemes] = useState([])
-  const [themeLoading, setThemeLoading] = useState(true)
+  const [themes, setThemes] = useState(initialThemesData ?? [])
+  const [themeLoading, setThemeLoading] = useState(!initialThemesData)
   const [themesError, setThemesError] = useState(false)
   const themeRequestRef = useRef(0)
   const [selectedThemeId, setSelectedThemeId] = useState(null)
@@ -116,49 +116,39 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
     Promise.resolve().then(() => loadPractices())
   }, [initialPracticesData, loadPractices, sub, user])
 
-  const loadThemes = useCallback(async () => {
-    if (!user) return
+  const loadThemes = useCallback(
+    async ({ force = false } = {}) => {
+      if (!user) return
 
-    const requestId = ++themeRequestRef.current
-    setThemeLoading(true)
-    setThemesError(false)
-
-    try {
-      const themesData = await withRetry(() => api.themes.list(user.id))
-      const list = Array.isArray(themesData) ? themesData : []
-      // MXL-525 G5: текущая неделя (is_current) должна идти первой в карусели.
-      const sorted = list
-        .slice()
-        .sort((a, b) => (b.is_current === true ? 1 : 0) - (a.is_current === true ? 1 : 0))
-      const currentTheme = sorted[0]
-
-      if (!currentTheme) {
-        if (themeRequestRef.current === requestId) setThemes([])
-        return
-      }
-
-      const detail = await withRetry(() => api.themes.get(currentTheme.id, user.id))
-      if (themeRequestRef.current !== requestId) return
-
-      setThemes([{ ...currentTheme, ...detail }])
+      const requestId = ++themeRequestRef.current
+      setThemeLoading(true)
       setThemesError(false)
-    } catch {
-      if (themeRequestRef.current !== requestId) return
-      setThemes([])
-      setThemesError(true)
-    } finally {
-      if (themeRequestRef.current === requestId) setThemeLoading(false)
-    }
-  }, [user])
+
+      try {
+        const themesData = await fetchThemesData(user.id, { force })
+        if (themeRequestRef.current !== requestId) return
+
+        setThemes(themesData)
+        setThemesError(false)
+      } catch {
+        if (themeRequestRef.current !== requestId) return
+        setThemes([])
+        setThemesError(true)
+      } finally {
+        if (themeRequestRef.current === requestId) setThemeLoading(false)
+      }
+    },
+    [user]
+  )
 
   useEffect(() => {
-    if (!user || sub !== null) return
-    Promise.resolve().then(loadThemes)
+    if (!user || sub !== null || initialThemesData) return
+    Promise.resolve().then(() => loadThemes())
 
     return () => {
       themeRequestRef.current += 1
     }
-  }, [loadThemes, sub, user])
+  }, [initialThemesData, loadThemes, sub, user])
 
   if (selectedThemeId) {
     return (
@@ -234,7 +224,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         themes={themes}
         themeLoading={themeLoading}
         themesError={themesError}
-        onRetryThemes={loadThemes}
+        onRetryThemes={() => loadThemes({ force: true })}
         selectedCollectionKey={selectedCollectionKey}
         onCollectionChange={setSelectedCollectionKey}
         onOpenPractice={(practice, collectionKey = null) => {
