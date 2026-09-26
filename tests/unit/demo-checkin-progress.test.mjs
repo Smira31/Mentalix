@@ -7,11 +7,12 @@ const checkinSource = await readFile(
   'utf8'
 )
 
-test('PWA preview uses the three-question morning set in the agreed order', () => {
+test('PWA preview uses the morning set in the agreed order', () => {
   assert.match(checkinSource, /export const MORNING_SCALE_STEPS = \[/)
   assert.match(checkinSource, /SCALE_STEPS\[0\],\s*SCALE_STEPS\[1\]/s)
-  assert.match(checkinSource, /const noteStep = MORNING_SCALE_STEPS\.length/)
-  assert.match(checkinSource, /const doneStep = noteStep \+ 1/)
+  assert.match(checkinSource, /const noteStep = allScales\.length/)
+  assert.match(checkinSource, /const dayFocusStep = noteStep \+ 1/)
+  assert.match(checkinSource, /const doneStep = dayFocusStep \+ 1/)
   assert.match(checkinSource, /<CheckInScaleQuestion\s+scale=\{scale\}/)
   assert.match(checkinSource, /<CheckInQuestion\s+title="Что на уме\?"/)
   assert.match(checkinSource, /<h1>Готово\.<\/h1>/)

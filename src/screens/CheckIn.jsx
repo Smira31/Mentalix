@@ -239,21 +239,28 @@ export function CheckInQuestion({
  * DEMO_USER and api.js intercepts requests only when isPreviewDemoMode() is
  * true. The screens, transitions and editor must not diverge by environment.
  */
-function MorningCheckInFlow({ user, onDone, onCompleted, redo = false }) {
+function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing = null }) {
   const [step, setStep] = useState(0)
   /*
    * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
    * из перезаписываемой записи: поля опускаются в PUT /api/checkin/today,
    * бэкенд сохраняет прежние значения утра. Настроение и энергия
    * в redo переспрашиваются заново.
+   *
+   * sleep_quality и day_focus — необязательные поля (backend PR #103):
+   * при повторном открытии (не redo) предзаполняются из существующей записи,
+   * при redo стартуют пустыми. Пропущенные поля не отправляются (omitted),
+   * чтобы бэкенд сохранил прежние значения.
    */
   const [values, setValues] = useState(() => ({
     mood: null,
     energy: null,
     anxiety: null,
-    focus: null,
+    focus: redo ? null : (existing?.focus ?? null),
+    sleep_quality: redo ? null : (existing?.sleep_quality ?? null),
   }))
   const [note, setNote] = useState('')
+  const [dayFocus, setDayFocus] = useState(() => (redo ? '' : (existing?.day_focus ?? '')))
   const [feedback, setFeedback] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -264,18 +271,25 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false }) {
     ...viewportStyle,
     paddingBottom: 0,
   }
-  const scale = step < MORNING_SCALE_STEPS.length ? MORNING_SCALE_STEPS[step] : null
-  const noteStep = MORNING_SCALE_STEPS.length
-  const doneStep = noteStep + 1
+  const allScales = [...MORNING_SCALE_STEPS, ...MORNING_OPTIONAL_SCALES]
+  const requiredScaleCount = MORNING_SCALE_STEPS.length
+  const scale = step < allScales.length ? allScales[step] : null
+  const noteStep = allScales.length
+  const dayFocusStep = noteStep + 1
+  const doneStep = dayFocusStep + 1
   const streakStep = doneStep + 1
   const teaserLogged = useRef(false)
   useEffect(() => {
     if (teaserLogged.current || (step !== doneStep && step !== streakStep)) return
     teaserLogged.current = true
     logEngagementEvent({
-      user, demo: isPreviewDemoMode(), event: 'teaser_shown',
-      entityType: 'teaser', entityId: 'morning',
-      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+      user,
+      demo: isPreviewDemoMode(),
+      event: 'teaser_shown',
+      entityType: 'teaser',
+      entityId: 'morning',
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
     })
   }, [step, doneStep, streakStep, user])
 
@@ -323,6 +337,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false }) {
       }
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
+      if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
+      if (dayFocus.trim()) morningPayload.day_focus = dayFocus.trim()
       const saved = await saveApi(user.id, morningPayload)
       onCompleted?.()
       platform.haptic('success')
@@ -357,17 +373,23 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false }) {
     step === streakStep
       ? { text: 'Закрыть', testId: 'checkin-back-to-today', onClick: onDone }
       : step === noteStep
-        ? { text: 'Продолжить', onClick: () => goToStep(doneStep), disabled: !note.trim() }
-        : step === doneStep
-          ? {
-              // Текст не убирается на время сохранения: спиннер рисуется
-              // внутри кнопки рядом с подписью, кнопка лишь блокируется.
-              text: 'Завершить',
-              testId: 'checkin-complete',
-              onClick: finish,
-              disabled: saving,
-            }
-          : { text: 'Продолжить', onClick: () => goToStep(current => current + 1), disabled: false }
+        ? { text: 'Продолжить', onClick: () => goToStep(dayFocusStep), disabled: !note.trim() }
+        : step === dayFocusStep
+          ? { text: 'Далее', onClick: () => goToStep(doneStep), disabled: false }
+          : step === doneStep
+            ? {
+                // Текст не убирается на время сохранения: спиннер рисуется
+                // внутри кнопки рядом с подписью, кнопка лишь блокируется.
+                text: 'Завершить',
+                testId: 'checkin-complete',
+                onClick: finish,
+                disabled: saving,
+              }
+            : {
+                text: 'Продолжить',
+                onClick: () => goToStep(current => current + 1),
+                disabled: false,
+              }
 
   useMainButton({
     text: action.text,
@@ -418,12 +440,39 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false }) {
                 submitIcon="arrow"
                 submitLabel="Далее"
                 submitTestId="checkin-next"
-                onSubmit={() => goToStep(doneStep)}
+                onSubmit={() => goToStep(dayFocusStep)}
                 onDeepen={() => {}}
                 deepenLabel="Пойти глубже"
                 showAddAction
                 formatting
               />
+            </CheckInQuestion>
+          )}
+
+          {step === dayFocusStep && (
+            <CheckInQuestion
+              title="Главный фокус дня"
+              hint="Одна мысль, которой не хочешь потерять. Можно пропустить."
+              className="mx-demo-checkin__editor-scene"
+            >
+              <div className="mx-demo-checkin__day-focus">
+                <input
+                  type="text"
+                  value={dayFocus}
+                  onChange={e => setDayFocus(e.target.value.slice(0, DAY_FOCUS_MAX))}
+                  maxLength={DAY_FOCUS_MAX}
+                  placeholder="Например: закончить важный разговор"
+                  aria-label="Главный фокус дня"
+                  data-testid="checkin-day-focus-input"
+                  className="mx-demo-checkin__day-focus-input"
+                />
+                <span
+                  className="mx-demo-checkin__day-focus-counter"
+                  data-testid="checkin-day-focus-counter"
+                >
+                  {dayFocus.length}/{DAY_FOCUS_MAX}
+                </span>
+              </div>
             </CheckInQuestion>
           )}
 
@@ -516,12 +565,14 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false }) {
           )}
         </StepSlide>
       </main>
-      {step < noteStep ? (
+      {step < noteStep || step === dayFocusStep ? (
         <CheckInNextControls
           onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
-          disabled={step < noteStep ? !values[MORNING_SCALE_STEPS[step].key] : !note.trim()}
+          disabled={step < requiredScaleCount ? !values[allScales[step].key] : false}
           onSkip={
-            step < noteStep ? () => goToStep(current => Math.min(doneStep, current + 1)) : null
+            (step >= requiredScaleCount && step < allScales.length) || step === dayFocusStep
+              ? () => goToStep(current => Math.min(doneStep, current + 1))
+              : null
           }
         />
       ) : null}
@@ -629,6 +680,30 @@ export const SCALE_STEPS = [
 
 export const MORNING_SCALE_STEPS = [SCALE_STEPS[0], SCALE_STEPS[1]]
 
+/*
+ * Необязательные утренние шкалы после настроения и энергии.
+ * sleep_quality — оценка качества сна 1–5 (backend PR #103).
+ * focus — существующий «Уровень концентрации» 1–5, явно назван,
+ *   чтобы отличать от текстового day_focus.
+ */
+const SLEEP_QUALITY_STEP = {
+  key: 'sleep_quality',
+  title: 'Как ты спал?',
+  hint: 'Оцени качество сна',
+  labels: ['Очень плохо', 'Плохо', 'Нормально', 'Хорошо', 'Отлично'],
+}
+
+const MORNING_FOCUS_STEP = {
+  key: 'focus',
+  title: 'Уровень концентрации',
+  hint: 'Где сейчас твоё внимание',
+  labels: ['Рассеян', 'Плыву', 'Держусь', 'Собран', 'Кристально'],
+}
+
+export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
+
+const DAY_FOCUS_MAX = 140
+
 export function CheckInScaleQuestion({ scale, value, onPick }) {
   return (
     <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
@@ -725,7 +800,16 @@ function existingLessons(value) {
   )
 }
 
-function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = null, mode = 'checkin', existing = null, redo = false }) {
+function CheckInCore({
+  user,
+  onDone,
+  onCompleted,
+  onRecoveryExpired,
+  recovery = null,
+  mode = 'checkin',
+  existing = null,
+  redo = false,
+}) {
   const isEvening = mode === 'evening' || Boolean(recovery)
   const previewDemoMode = isPreviewDemoMode()
   const skipScales = isEvening && (!!existing || Boolean(recovery))
@@ -1021,9 +1105,11 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
         return
       }
       console.error(error)
-      setError(recovery && error?.status === 422
-        ? 'Заверши вчерашний разбор и попробуй снова'
-        : 'Не получилось сохранить — проверь связь')
+      setError(
+        recovery && error?.status === 422
+          ? 'Заверши вчерашний разбор и попробуй снова'
+          : 'Не получилось сохранить — проверь связь'
+      )
     } finally {
       setSaving(false)
     }
@@ -1223,9 +1309,13 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
     if (!isCompletion || teaserLogged.current) return
     teaserLogged.current = true
     logEngagementEvent({
-      user, demo: previewDemoMode, event: 'teaser_shown',
-      entityType: 'teaser', entityId: isEvening ? 'evening' : 'morning',
-      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+      user,
+      demo: previewDemoMode,
+      event: 'teaser_shown',
+      entityType: 'teaser',
+      entityId: isEvening ? 'evening' : 'morning',
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
     })
   }, [isCompletion, user, previewDemoMode, isEvening])
 
@@ -1286,7 +1376,9 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
                   ? 'Сохраняю...'
                   : isEvening
                     ? cardIdx === cardCount - 1
-                      ? recovery ? 'Сохранить' : 'Закрыть день'
+                      ? recovery
+                        ? 'Сохранить'
+                        : 'Закрыть день'
                       : 'Дальше'
                     : 'Далее',
                 run: () =>
@@ -1586,7 +1678,11 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
     >
       <div className={CHECKIN_HEADER_CLASS}>
         <BackButton onClick={handleBack} />
-        {recovery && <span className="text-[13px] text-muted" data-testid="streak-recovery-date">{yesterdayLabel(recovery.date)}</span>}
+        {recovery && (
+          <span className="text-[13px] text-muted" data-testid="streak-recovery-date">
+            {yesterdayLabel(recovery.date)}
+          </span>
+        )}
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS} style={interactiveStyle}>
@@ -1672,7 +1768,9 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
                         keepFocusOnSubmit
                         submitIcon="arrow"
                         submitLabel={recovery && cardIdx === cardCount - 1 ? 'Сохранить' : 'Далее'}
-                        submitTestId={recovery && cardIdx === cardCount - 1 ? 'checkin-save' : 'checkin-next'}
+                        submitTestId={
+                          recovery && cardIdx === cardCount - 1 ? 'checkin-save' : 'checkin-next'
+                        }
                         onSubmit={() =>
                           cardIdx < cardCount - 1 ? goToStep(current => current + 1) : submit()
                         }
@@ -1721,11 +1819,7 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
                       />
                     </div>
                   )}
-                  {error && (
-                    <p className="text-[13px] text-muted text-center mt-4">
-                      {error}
-                    </p>
-                  )}
+                  {error && <p className="text-[13px] text-muted text-center mt-4">{error}</p>}
                 </div>
               )}
 
@@ -1755,11 +1849,7 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
                       formatting
                     />
                   </div>
-                  {error && (
-                    <p className="text-[13px] text-muted text-center mt-4">
-                      {error}
-                    </p>
-                  )}
+                  {error && <p className="text-[13px] text-muted text-center mt-4">{error}</p>}
                 </div>
               )}
             </div>
@@ -1821,12 +1911,40 @@ function CheckInCore({ user, onDone, onCompleted, onRecoveryExpired, recovery = 
   )
 }
 
-function CheckIn({ user, onDone, onCompleted, onRecoveryExpired, recovery = null, mode = 'checkin', existing = null, redo = false }) {
+function CheckIn({
+  user,
+  onDone,
+  onCompleted,
+  onRecoveryExpired,
+  recovery = null,
+  mode = 'checkin',
+  existing = null,
+  redo = false,
+}) {
   if (mode !== 'evening') {
-    return <MorningCheckInFlow user={user} onDone={onDone} onCompleted={onCompleted} redo={redo} />
+    return (
+      <MorningCheckInFlow
+        user={user}
+        onDone={onDone}
+        onCompleted={onCompleted}
+        redo={redo}
+        existing={redo ? null : existing}
+      />
+    )
   }
 
-  return <CheckInCore user={user} onDone={onDone} onCompleted={onCompleted} onRecoveryExpired={onRecoveryExpired} recovery={recovery} mode={mode} existing={existing} redo={redo} />
+  return (
+    <CheckInCore
+      user={user}
+      onDone={onDone}
+      onCompleted={onCompleted}
+      onRecoveryExpired={onRecoveryExpired}
+      recovery={recovery}
+      mode={mode}
+      existing={existing}
+      redo={redo}
+    />
+  )
 }
 
 export default CheckIn
