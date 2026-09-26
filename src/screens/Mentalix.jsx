@@ -11,7 +11,7 @@ import {
   MENTOR_SAFETY_KEY,
   readPendingMentor,
 } from './mentalix/personas'
-import { maybeBuildInsightMessage } from './mentalix/insightDigest'
+import { maybeBuildInsightMessage, SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
 import { AI_REFRAME_LEAD_MESSAGE, withSafetyNote } from '../lib/aiReframeSafety'
 import { messageContent } from '../lib/journalPresentation'
 import { isGuestUser, resetGuestState, dispatchGuestMerged } from '../lib/guestAuth'
@@ -64,6 +64,7 @@ export function ConversationChat({
   initialPrompt = null,
   initialDisplayText = null,
   initialHandoff = null,
+  initialInsight = null,
   viaHandoff = false,
   withSafetyNotice = false,
   conversationMeta = null,
@@ -92,7 +93,9 @@ export function ConversationChat({
       .then(async history => {
         if (cancelled) return
 
-        let combined = history
+        let combined = initialInsight
+          ? [{ role: 'assistant', content: `Кое-что заметил, пока смотрел твои дни. ${initialInsight}` }, ...history]
+          : history
 
         // «Дайджест от Следопыта» (ROADMAP.md, идея 3): только при обычном
         // входе в dnevnik, не через openScout()-хендофф вечернего разбора.
@@ -227,6 +230,9 @@ export function ConversationChat({
 
 export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) {
   const [pending, setPending] = useState(() => readPendingMentor())
+  const [surpriseMessage] = useState(() =>
+    pending.persona === 'dnevnik' ? sessionStorage.getItem(SURPRISE_MESSAGE_KEY) : null
+  )
   const [persona, setPersona] = useState(pending.persona)
   const [draft, setDraft] = useState(pending.draft)
   const [guestForbidden, setGuestForbidden] = useState(false)
@@ -237,6 +243,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       sessionStorage.removeItem(MENTOR_PERSONA_KEY)
       sessionStorage.removeItem(MENTOR_DRAFT_KEY)
       sessionStorage.removeItem(MENTOR_SAFETY_KEY)
+      sessionStorage.removeItem(SURPRISE_MESSAGE_KEY)
     } catch {
       // The chat also works without sessionStorage.
     }
@@ -292,6 +299,7 @@ export default function MentalixChat({ user, onPersonaChange, onRegisterBack }) 
       user={user}
       persona={persona}
       initialText={draft}
+      initialInsight={surpriseMessage}
       initialHandoff={persona === 'dnevnik' && pending.persona === 'dnevnik' ? pending.handoff : null}
       viaHandoff={Boolean(pending.persona)}
       withSafetyNotice={Boolean(pending.safety)}
