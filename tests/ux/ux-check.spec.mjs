@@ -497,7 +497,8 @@ test('локальный UX smoke по основному маршруту', asy
     })
 
     // Scale answers advance only after pressing the main «Далее» button.
-    for (const option of ['Нормально', 'Средне']) {
+    // Порядок: mood → sleep_quality → energy → focus
+    for (const option of ['Нормально', 'Нормально', 'Средне', 'Держусь']) {
       const answer = page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') })
       await expect(answer).toBeVisible()
       await expect(answer).toBeEnabled()
@@ -505,6 +506,14 @@ test('локальный UX smoke по основному маршруту', asy
       await assertClickable(page.getByRole('button', { name: 'Далее' }))
       await page.getByRole('button', { name: 'Далее' }).click()
     }
+
+    // Главный фокус дня (необязательный текстовый шаг)
+    const dayFocusInput = page.locator('[data-testid="checkin-day-focus-input"]')
+    await expect(dayFocusInput).toBeVisible()
+    await dayFocusInput.fill('Фокус дня')
+    await assertClickable(page.getByRole('button', { name: 'Далее' }))
+    await page.getByRole('button', { name: 'Далее' }).click()
+
     await captureScreen({
       page,
       viewport,
@@ -518,8 +527,8 @@ test('локальный UX smoke по основному маршруту', asy
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
         await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
-        await expect(page.getByRole('button', { name: 'Далее' })).toHaveCount(1)
-        await assertClickable(page.getByRole('button', { name: 'Далее' }))
+        await expect(page.getByRole('button', { name: 'Завершить' })).toHaveCount(1)
+        await assertClickable(page.getByRole('button', { name: 'Завершить' }))
       },
     })
     // После editor-шага общий BackButton использует label «Сегодня»;
@@ -528,7 +537,13 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(checkinBackButton).toBeVisible()
     await expect(checkinBackButton).toBeEnabled()
     await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Главный фокус дня' })).toBeVisible()
+    await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Уровень концентрации' })).toBeVisible()
+    await checkinBackButton.click()
     await expect(page.getByRole('heading', { name: 'Сколько в тебе энергии?' })).toBeVisible()
+    await checkinBackButton.click()
+    await expect(page.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
     await checkinBackButton.click()
     await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
     await checkinBackButton.click()
