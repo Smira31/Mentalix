@@ -455,6 +455,23 @@ export const api = {
   checkin: {
     today: userId => request(withQuery('/checkin/today', { user_id: userId })),
 
+    recovery: async userId => {
+      try {
+        return await request(withQuery('/streak/recovery', { user_id: userId }), {
+          silentDiagnostics: true,
+        })
+      } catch (error) {
+        if (error.status === 404) return null
+        throw error
+      }
+    },
+
+    saveYesterday: (userId, payload) =>
+      request('/checkin/yesterday', {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: userId, ...payload, review_completed: true }),
+      }),
+
     history: (userId, days = 14) =>
       request(withQuery('/checkin/history', { user_id: userId, days })),
 
@@ -591,6 +608,11 @@ export const api = {
 
   analytics: {
     get: (userId, days = 14) => request(withQuery('/analytics', { user_id: userId, days })),
+
+    influences: (userId, period, offset = 0) =>
+      request(withQuery('/analytics/influences', { user_id: userId, period, offset }), {
+        silentDiagnostics: true,
+      }),
   },
 
   mentalix: {

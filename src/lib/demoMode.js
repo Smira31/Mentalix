@@ -1,4 +1,5 @@
 import { now } from './clock.js'
+import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v5'
 const SCENARIO_KEY = 'mentalix:demo-scenario:v1'
@@ -124,6 +125,10 @@ export function isPreviewDemoMode() {
     isAllowedHost &&
     (isPreviewRuntime || isQaProductionHost || isProductionDemoHost)
   )
+}
+
+export function isRecoveryDemoRequested() {
+  return isPreviewDemoMode() && new URLSearchParams(window.location.search).get('streak_recovery') === '1'
 }
 
 function previewTodayState() {
@@ -489,6 +494,27 @@ function respond(path, options = {}) {
     return json({ ok: true })
   }
 
+  if (pathname === '/streak/recovery' && method === 'GET') {
+    if (url.searchParams.get('user_id') && new URLSearchParams(window.location.search).get('streak_recovery') === '1') {
+      const yesterday = offsetDate(now(), -1)
+      return json({ recoverable: state.recoverySavedDate !== yesterday, date: yesterday, streak_before: 3 })
+    }
+    return json({ recoverable: false, date: null, streak_before: 0 })
+  }
+  if (pathname === '/checkin/yesterday' && method === 'PUT') {
+    const yesterday = offsetDate(now(), -1)
+    const checkin = {
+      id: Date.now(), date: yesterday, ...body,
+      review_completed_at: now().toISOString(),
+    }
+    writeState({
+      ...state,
+      checkins: [checkin, ...state.checkins.filter(item => item.date !== yesterday)],
+      practiceDays: [...new Set([...(state.practiceDays || []), yesterday])],
+      recoverySavedDate: yesterday,
+    })
+    return json(checkin)
+  }
   if (pathname === '/checkin/today' && method === 'GET') {
     // checkin/today uses the PR-aware state.checkins[0] fixture anchor.
     const today = now().toISOString().slice(0, 10)
@@ -553,7 +579,7 @@ function respond(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? 19),
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? DEFAULT_REVIEW_HOUR),
       writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
       writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
     })
@@ -578,6 +604,109 @@ function respond(path, options = {}) {
     return json(profile)
   }
   if (pathname === '/analytics' && method === 'GET') return json({ daily: [], summary: {} })
+  if (pathname === '/analytics/influences' && method === 'GET') {
+    const period = url.searchParams.get('period') || 'week'
+    const offset = parseInt(url.searchParams.get('offset') || '0', 10)
+    const empty =
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('empty') === '1'
+
+    const today = now()
+    let from, to
+    if (period === 'week') {
+      const monday = new Date(today)
+      monday.setDate(today.getDate() - ((today.getDay() + 6) % 7))
+      monday.setDate(monday.getDate() - offset * 7)
+      from = monday.toISOString().slice(0, 10)
+      const end = new Date(monday)
+      end.setDate(monday.getDate() + 6)
+      to = end.toISOString().slice(0, 10)
+    } else if (period === 'month') {
+      from = new Date(today.getFullYear(), today.getMonth() - offset, 1)
+        .toISOString()
+        .slice(0, 10)
+      to = new Date(today.getFullYear(), today.getMonth() - offset + 1, 0)
+        .toISOString()
+        .slice(0, 10)
+    } else {
+      const year = today.getFullYear() - offset
+      from = `${year}-01-01`
+      to = `${year}-12-31`
+    }
+
+    if (empty) {
+      return json({
+        period: { from, to },
+        days_with_data: 1,
+        top_emotions: [],
+        lifts: [],
+        drags: [],
+        enough_data: false,
+      })
+    }
+
+    const fixtures = {
+      week: {
+        days_with_data: 5,
+        top_emotions: [
+          { emotion: 'спокойствие', count: 4 },
+          { emotion: 'радость', count: 3 },
+          { emotion: 'усталость', count: 2 },
+        ],
+        lifts: [
+          { factor: 'Утренний спорт', kind: 'practice', delta: 1.2, days: 4 },
+          { factor: 'спокойствие', kind: 'emotion', delta: 0.8, days: 3 },
+        ],
+        drags: [{ factor: 'Недосып', kind: 'tag', delta: -1.5, days: 3 }],
+        enough_data: true,
+      },
+      month: {
+        days_with_data: 18,
+        top_emotions: [
+          { emotion: 'спокойствие', count: 12 },
+          { emotion: 'радость', count: 8 },
+          { emotion: 'усталость', count: 6 },
+          { emotion: 'напряжение', count: 4 },
+          { emotion: 'интерес', count: 3 },
+        ],
+        lifts: [
+          { factor: 'Утренний спорт', kind: 'practice', delta: 1.4, days: 12 },
+          { factor: 'Медитация', kind: 'practice', delta: 0.9, days: 8 },
+          { factor: 'спокойствие', kind: 'emotion', delta: 0.7, days: 10 },
+        ],
+        drags: [
+          { factor: 'Недосып', kind: 'tag', delta: -1.8, days: 8 },
+          { factor: 'Напряжённый день', kind: 'tag', delta: -1.2, days: 6 },
+          { factor: 'усталость', kind: 'emotion', delta: -0.6, days: 5 },
+        ],
+        enough_data: true,
+      },
+      year: {
+        days_with_data: 120,
+        top_emotions: [
+          { emotion: 'спокойствие', count: 45 },
+          { emotion: 'радость', count: 32 },
+          { emotion: 'усталость', count: 28 },
+          { emotion: 'интерес', count: 18 },
+          { emotion: 'напряжение', count: 12 },
+        ],
+        lifts: [
+          { factor: 'Утренний спорт', kind: 'practice', delta: 1.6, days: 80 },
+          { factor: 'Медитация', kind: 'practice', delta: 1.1, days: 60 },
+          { factor: 'Достаточный сон', kind: 'tag', delta: 0.9, days: 70 },
+        ],
+        drags: [
+          { factor: 'Недосып', kind: 'tag', delta: -2.0, days: 45 },
+          { factor: 'Напряжённый день', kind: 'tag', delta: -1.4, days: 30 },
+          { factor: 'усталость', kind: 'emotion', delta: -0.8, days: 25 },
+        ],
+        enough_data: true,
+      },
+    }
+
+    const result = fixtures[period] || fixtures.week
+    return json({ period: { from, to }, ...result })
+  }
   if (pathname === '/articles' && method === 'GET') return json([])
   if (pathname === '/themes' && method === 'GET') return json(state.themes || [])
   if (pathname.match(/^\/themes\/\d+$/) && method === 'GET') {

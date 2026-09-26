@@ -1,18 +1,18 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
-import { fetchTodayDataWithRetry, invalidateTodayData, peekTodaySnapshot } from '../lib/todayDataCache'
+import {
+  fetchTodayDataWithRetry,
+  invalidateTodayData,
+  peekTodaySnapshot,
+} from '../lib/todayDataCache'
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
 import './Today.css'
 
-import Path from './Path'
-import YearPath from './YearPath'
-import CheckIn from './CheckIn'
-import ThemeScreen from './ThemeScreen'
 import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
@@ -20,14 +20,11 @@ import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
 import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
 
-import History from './History'
-import QuoteView from './QuoteView'
 import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
 import PinnedPractices from '../components/PinnedPractices'
 import GuestSaveReminder from '../components/GuestSaveReminder'
-import SeriesBadges from './SeriesBadges'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
@@ -39,15 +36,32 @@ import {
   detectNewlyUnlockedBadge,
 } from '../lib/series'
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
-import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
 import { resolveContextualCheckin } from '../lib/contextualDeepLink'
-import BreathingPractice from './BreathingPractice'
-import { formatReviewTime, resolveTodayCardStates, primaryCardKind } from '../lib/todayCardState'
+import { formatReviewTime, resolveTodayCardStates, primaryCardKind, DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { collectActivityDays } from '../lib/series'
 import { now as clockNow } from '../lib/clock'
 import { demoScenario } from '../lib/demoMode'
 import { pickVisibleTodayHint } from '../lib/todayHints'
+import { isRecoveryDemoRequested } from '../lib/demoMode'
+
+/* ============================================================
+   LAZY SUB-SCREENS
+   Тяжёлые под-экраны Today (чек-ин, история, тема, путь, цитаты,
+   дыхание, восстановление серии, значки) грузятся только при
+   переходе. Стартовый bundle содержит только главный экран «Сегодня».
+   ============================================================ */
+
+const Path = lazy(() => import('./Path'))
+const YearPath = lazy(() => import('./YearPath'))
+const CheckIn = lazy(() => import('./CheckIn'))
+const ThemeScreen = lazy(() => import('./ThemeScreen'))
+const History = lazy(() => import('./History'))
+const QuoteView = lazy(() => import('./QuoteView'))
+const BreathingPractice = lazy(() => import('./BreathingPractice'))
+const StreakRecovery = lazy(() => import('./StreakRecovery'))
+const SeriesBadges = lazy(() => import('./SeriesBadges'))
+const NewBadgeSheet = lazy(() => import('./SeriesBadges').then(m => ({ default: m.NewBadgeSheet })))
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -66,7 +80,7 @@ const STARTER_SET_ENABLED = import.meta.env.VITE_STARTER_SET_ENABLED === 'true'
 const LEGACY_TODAY_SUMMARY_CARDS_ENABLED = false
 
 // §6 Motion: подсписок subs, закрытие которых анимируется уездом слоя вниз.
-const CHECKIN_SUBS = ['checkin', 'evening', 'redoCheckin', 'redoReview']
+const CHECKIN_SUBS = ['checkin', 'evening', 'redoCheckin', 'redoReview', 'recoveryReview']
 
 // ── календарь недели + отдельные дневные streak strips ──
 
@@ -238,6 +252,7 @@ export default function Today({
   onCloseSeries,
   previewFixture = null,
   previewState = null,
+  recoveryAllowed = true,
 }) {
   const [initialTodaySnapshot] = useState(
     () => previewFixture || (user ? peekTodaySnapshot(user.id) : null)
@@ -254,6 +269,37 @@ export default function Today({
   const [loadError, setLoadError] = useState(false)
 
   const [reloadToken, setReloadToken] = useState(0)
+  const [recovery, setRecovery] = useState(null)
+  const [recoveryStage, setRecoveryStage] = useState('offer')
+  const recoveryRequested = useRef(null)
+  const recoveryCompleted = useRef(false)
+
+  const recoveryEvent = useCallback(
+    (event, date) => {
+      logEngagementEvent({
+        user,
+        demo: Boolean(user?.demo),
+        event,
+        entityType: 'streak_recovery',
+        entityId: date,
+        hasSession: Boolean(platform.getSessionToken?.()),
+        send: api.events.log,
+      })
+    },
+    [user]
+  )
+
+  function dismissRecovery() {
+    if (recovery?.date) {
+      try {
+        localStorage.setItem(`mx-streak-recovery-dismissed:${user.id}:${recovery.date}`, '1')
+      } catch {
+        /* */
+      }
+      recoveryEvent('streak_recovery_dismissed', recovery.date)
+    }
+    setRecovery(null)
+  }
 
   const [thoughtOfDay] = useState(() => getDailyThought())
 
@@ -290,16 +336,24 @@ export default function Today({
   const [newBadge, setNewBadge] = useState(null)
   const returnFlowCompleted = useRef(false)
   useEffect(() => {
-    if (returnFlowActive && initialSub === (returnFlowActive === 'evening_v1' ? 'evening' : 'checkin')) {
+    if (
+      returnFlowActive &&
+      initialSub === (returnFlowActive === 'evening_v1' ? 'evening' : 'checkin')
+    ) {
       onReturnFlowEvent?.('action_started')
     }
   }, [returnFlowActive, initialSub, onReturnFlowEvent])
   useEffect(() => {
     if (!newBadge?.id) return
     logEngagementEvent({
-      user, demo: Boolean(user?.demo), event: 'badge_earned',
-      entityType: 'badge', entityId: newBadge.id, once: newBadge.id,
-      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+      user,
+      demo: Boolean(user?.demo),
+      event: 'badge_earned',
+      entityType: 'badge',
+      entityId: newBadge.id,
+      once: newBadge.id,
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
     })
   }, [newBadge, user])
   const [showSeriesTooltip, setShowSeriesTooltip] = useState(() =>
@@ -307,7 +361,7 @@ export default function Today({
   )
 
   const [reviewHour, setReviewHour] = useState(
-    () => initialTodaySnapshot?.settings?.review_hour ?? 19
+    () => initialTodaySnapshot?.settings?.review_hour ?? DEFAULT_REVIEW_HOUR
   )
 
   const [theme, setTheme] = useState(() => pickCurrentTheme(initialTodaySnapshot?.themes))
@@ -373,7 +427,10 @@ export default function Today({
     nextSub => {
       onFlowChange?.(Boolean(nextSub))
 
-      if (returnFlowActive && nextSub === (returnFlowActive === 'evening_v1' ? 'evening' : 'checkin')) {
+      if (
+        returnFlowActive &&
+        nextSub === (returnFlowActive === 'evening_v1' ? 'evening' : 'checkin')
+      ) {
         onReturnFlowEvent?.('action_started')
       }
       if (returnFlowActive && !nextSub && !returnFlowCompleted.current) {
@@ -598,7 +655,7 @@ export default function Today({
             if (active) setPracticeDays([])
           })
 
-        setReviewHour(settingsData?.review_hour ?? 19)
+        setReviewHour(settingsData?.review_hour ?? DEFAULT_REVIEW_HOUR)
       } catch (error) {
         console.error(error)
         if (active) setLoadError(true)
@@ -611,6 +668,41 @@ export default function Today({
       active = false
     }
   }, [user, sub, initialSub, initialTodaySnapshot, previewFixture, reloadToken])
+
+  useEffect(() => {
+    if (
+      !recoveryAllowed ||
+      loading ||
+      loadError ||
+      !user?.id ||
+      initialSub ||
+      sub ||
+      (clockNow().getHours() < 5 && !isRecoveryDemoRequested()) ||
+      recoveryRequested.current === user.id
+    )
+      return
+    recoveryRequested.current = user.id
+    let active = true
+    api.checkin
+      .recovery(user.id)
+      .then(result => {
+        if (!active || !result?.recoverable || !result.date) return
+        try {
+          if (
+            localStorage.getItem(`mx-streak-recovery-dismissed:${user.id}:${result.date}`) === '1'
+          )
+            return
+        } catch {
+          /* storage unavailable */
+        }
+        setRecovery(result)
+        recoveryEvent('streak_recovery_shown', result.date)
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [recoveryAllowed, loading, loadError, user, initialSub, sub, recoveryEvent])
 
   const hourNow = clockNow().getHours()
 
@@ -632,14 +724,16 @@ export default function Today({
 
   if (seriesOpen) {
     return (
-      <SeriesBadges
-        user={user}
-        onBack={onCloseSeries}
-        onOpenPractice={practice => {
-          onCloseSeries?.()
-          onOpenPractice?.(practice)
-        }}
-      />
+      <Suspense fallback={null}>
+        <SeriesBadges
+          user={user}
+          onBack={onCloseSeries}
+          onOpenPractice={practice => {
+            onCloseSeries?.()
+            onOpenPractice?.(practice)
+          }}
+        />
+      </Suspense>
     )
   }
 
@@ -648,74 +742,114 @@ export default function Today({
   // ============================================================
 
   if (activeSub === 'breathing') {
-    return <BreathingPractice onBack={() => changeSub(null)} />
+    return (
+      <Suspense fallback={null}>
+        <BreathingPractice onBack={() => changeSub(null)} />
+      </Suspense>
+    )
+  }
+
+  if (activeSub === 'recoveryReview' && recovery) {
+    return (
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          mode="evening"
+          recovery={recovery}
+          onRecoveryExpired={() => {
+            changeSub(null)
+            setRecoveryStage('expired')
+          }}
+          onCompleted={() => {
+            recoveryCompleted.current = true
+            changeSub(null)
+            setRecoveryStage('saved')
+            refreshCheckin()
+          }}
+          onDone={() => {
+            if (!recoveryCompleted.current) {
+              changeSub(null)
+              setRecovery(null)
+            }
+          }}
+        />
+      </Suspense>
+    )
   }
 
   if (!loading && !loadError && (activeSub === 'checkin' || activeSub === 'evening')) {
     return (
-      <CheckIn
-        user={user}
-        existing={checkin}
-        mode={resolveCheckInMode({ sub: activeSub, initialSub })}
-        onCompleted={() => {
-          returnFlowCompleted.current = true
-          if (returnFlowActive) onReturnFlowEvent?.('action_completed')
-        }}
-        onDone={async () => {
-          const result = await refreshCheckin()
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          existing={checkin}
+          mode={resolveCheckInMode({ sub: activeSub, initialSub })}
+          onCompleted={() => {
+            returnFlowCompleted.current = true
+            if (returnFlowActive) onReturnFlowEvent?.('action_completed')
+          }}
+          onDone={async () => {
+            const result = await refreshCheckin()
 
-          triggerCheckInExit(() => {
-            changeSub(null)
-            setCardCompressing(true)
-            if (result?.newBadge) setNewBadge(result.newBadge)
-            setTimeout(() => setCardCompressing(false), 130)
-          })
-        }}
-      />
+            triggerCheckInExit(() => {
+              changeSub(null)
+              setCardCompressing(true)
+              if (result?.newBadge) setNewBadge(result.newBadge)
+              setTimeout(() => setCardCompressing(false), 130)
+            })
+          }}
+        />
+      </Suspense>
     )
   }
 
   if (sub === 'redoCheckin') {
     return (
-      <CheckIn
-        user={user}
-        existing={checkin}
-        mode="checkin"
-        redo
-        onDone={async () => {
-          await refreshCheckin()
-          triggerCheckInExit(() => changeSub(null))
-        }}
-      />
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          existing={checkin}
+          mode="checkin"
+          redo
+          onDone={async () => {
+            await refreshCheckin()
+            triggerCheckInExit(() => changeSub(null))
+          }}
+        />
+      </Suspense>
     )
   }
 
   if (sub === 'redoReview') {
     return (
-      <CheckIn
-        user={user}
-        existing={checkin}
-        mode="evening"
-        redo
-        onDone={async () => {
-          await refreshCheckin()
-          triggerCheckInExit(() => changeSub(null))
-        }}
-      />
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          existing={checkin}
+          mode="evening"
+          redo
+          onDone={async () => {
+            await refreshCheckin()
+            triggerCheckInExit(() => changeSub(null))
+          }}
+        />
+      </Suspense>
     )
   }
 
   if (sub === 'checkinRecap' && checkin) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <History
-          user={user}
-          initialSelectedDay={{ date: checkin.date, checkin }}
-          onInitialBack={() => changeSub(null)}
-          recapOnly
-          onRedo={() => changeSub('redoCheckin')}
-          onRedoReview={() => changeSub('redoReview')}
-        />
+        <Suspense fallback={null}>
+          <History
+            user={user}
+            initialSelectedDay={{ date: checkin.date, checkin }}
+            onInitialBack={() => changeSub(null)}
+            recapOnly
+            onRedo={() => changeSub('redoCheckin')}
+            onRedoReview={() => changeSub('redoReview')}
+          />
+        </Suspense>
       </div>
     )
   }
@@ -725,7 +859,11 @@ export default function Today({
   // ============================================================
 
   if (sub === 'theme' && theme) {
-    return <ThemeScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
+    return (
+      <Suspense fallback={null}>
+        <ThemeScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
+      </Suspense>
+    )
   }
 
   // ============================================================
@@ -733,7 +871,11 @@ export default function Today({
   // ============================================================
 
   if (sub === 'quote') {
-    return <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
+    return (
+      <Suspense fallback={null}>
+        <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
+      </Suspense>
+    )
   }
 
   // ============================================================
@@ -769,21 +911,23 @@ export default function Today({
           </div>
         </div>
 
-        <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-          <YearPath user={user} onContinueToday={() => changeSub(null)} />
-        </div>
-
-        {pathTab === 'path' ? (
-          <Path user={user} onContinueToday={() => changeSub(null)} />
-        ) : (
+        <Suspense fallback={null}>
           <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-            <History
-              user={user}
-              onRedo={() => changeSub('redoCheckin')}
-              onRedoReview={() => changeSub('redoReview')}
-            />
+            <YearPath user={user} onContinueToday={() => changeSub(null)} />
           </div>
-        )}
+
+          {pathTab === 'path' ? (
+            <Path user={user} onContinueToday={() => changeSub(null)} />
+          ) : (
+            <div className="w-full max-w-md px-[var(--mx-screen-x)]">
+              <History
+                user={user}
+                onRedo={() => changeSub('redoCheckin')}
+                onRedoReview={() => changeSub('redoReview')}
+              />
+            </div>
+          )}
+        </Suspense>
       </div>
     )
   }
@@ -1028,6 +1172,23 @@ export default function Today({
   return (
     <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
+      {recovery && (
+        <Suspense fallback={null}>
+          <StreakRecovery
+            recovery={recovery}
+            stage={recoveryStage}
+            onDismiss={dismissRecovery}
+            onStart={() => {
+              recoveryEvent('streak_recovery_started', recovery.date)
+              changeSub('recoveryReview')
+            }}
+            onClose={() => {
+              setRecovery(null)
+              setRecoveryStage('offer')
+            }}
+          />
+        </Suspense>
+      )}
       <TodayWorkspaceHeader
         onOpenSettings={onOpenSettings}
         onOpenDemoPanel={onOpenDemoPanel}
@@ -1070,7 +1231,11 @@ export default function Today({
           </p>
         </aside>
       )}
-      {newBadge && <NewBadgeSheet badge={newBadge} onClose={() => setNewBadge(null)} />}
+      {newBadge && (
+        <Suspense fallback={null}>
+          <NewBadgeSheet badge={newBadge} onClose={() => setNewBadge(null)} />
+        </Suspense>
+      )}
       <WeekStrip checkin={checkin} history={checkinHistory} />
 
       {TODAY_COMPARE_REQUESTED && (

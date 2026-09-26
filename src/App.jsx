@@ -20,7 +20,12 @@ import { hasPinRecord, APP_LOCK_ENABLED_KEY } from './lib/appLock'
 import { ACCENT_COLOR_KEY, DEFAULT_ACCENT, parseAccent } from './lib/accentColor'
 import { DEFAULT_THEME, parseTheme, THEME_KEY } from './lib/theme'
 import { api } from './lib/api'
-import { claimReturnFlowEvent, returnFlowEvent, returnFlowEventKey, returnFlowOccurredAt } from './lib/returnFlow'
+import {
+  claimReturnFlowEvent,
+  returnFlowEvent,
+  returnFlowEventKey,
+  returnFlowOccurredAt,
+} from './lib/returnFlow'
 import { parseContextualDeepLink } from './lib/contextualDeepLink'
 import { MOOD_CHECK_ENABLED_KEY, shouldOfferMoodCheck } from './lib/moodCheckDraft'
 import { MOOD_CHECK_CHECKIN_ERROR, shouldShowMoodCheckGate } from './lib/moodCheckGate'
@@ -387,6 +392,7 @@ function App() {
   // Vercel Preview, without writing the user's synced onboarding flag.
   // isPreviewDemoMode itself requires ?demo=1 and an allowed preview host.
   const onboarded = onboardedFlag === '1' || isPreviewDemoMode()
+  const [recoveryAllowedAtLaunch] = useState(() => onboardedFlag === '1' || isPreviewDemoMode())
 
   /*
    * Блокировка приложения (PIN/биометрия). Синхронизируется только факт
@@ -533,15 +539,23 @@ function App() {
 
   const reportReturnFlowEvent = useCallback(
     async suffix => {
-      if (!user?.id || user.demo || (user.is_guest && !platform.getSessionToken?.()) ||
-          isPreviewDemoMode() || !initialReturnFlow) return
+      if (
+        !user?.id ||
+        user.demo ||
+        (user.is_guest && !platform.getSessionToken?.()) ||
+        isPreviewDemoMode() ||
+        !initialReturnFlow
+      )
+        return
 
       const event = returnFlowEvent(initialReturnFlow, suffix)
       if (!claimReturnFlowEvent(user.id, initialReturnFlow, event)) return
       try {
         await api.returnFlow.log(
-          event, returnFlowEventKey(user.id, event, initialReturnFlow),
-          returnFlowOccurredAt(), initialReturnFlow
+          event,
+          returnFlowEventKey(user.id, event, initialReturnFlow),
+          returnFlowOccurredAt(),
+          initialReturnFlow
         )
       } catch {
         // События необязательны; недоступность сети не влияет на чек-ин.
@@ -767,7 +781,9 @@ function App() {
 
   useEffect(() => {
     if (!user) return undefined
-    const timeoutId = window.setTimeout(() => {
+    // Prefetch вкладок после первой отрисовки «Сегодня» —
+    // requestIdleCallback не блокирует отрисовку, setTimeout — fallback.
+    const prefetch = () => {
       // Профиль — грузим заранее (нужен чаще всего).
       loadSettings().catch(() => {})
       // Остальные вкладки — prefetch после первой отрисовки «Сегодня»,
@@ -777,7 +793,12 @@ function App() {
       import('./screens/Library').catch(() => {})
       import('./screens/Analytics').catch(() => {})
       import('./screens/Mentalix').catch(() => {})
-    }, 1500)
+    }
+    if (typeof window.requestIdleCallback === 'function') {
+      const ricId = window.requestIdleCallback(prefetch, { timeout: 2000 })
+      return () => window.cancelIdleCallback?.(ricId)
+    }
+    const timeoutId = window.setTimeout(prefetch, 1500)
     return () => window.clearTimeout(timeoutId)
   }, [user])
 
@@ -1216,8 +1237,11 @@ function App() {
 
   // Полноэкранные листы Истории остаются внутри shell, но не закрывают шапку Telegram.
   const shellTopPadding =
-    previewDemoMode && !realPhone && (!overlay || overlay === 'settings') &&
-    !todaySeriesOpen && !todayFlowOpen
+    previewDemoMode &&
+    !realPhone &&
+    (!overlay || overlay === 'settings') &&
+    !todaySeriesOpen &&
+    !todayFlowOpen
       ? '56px'
       : topSafeArea
 
@@ -1422,6 +1446,7 @@ function App() {
                   {user && tab === 'today' && (
                     <Today
                       user={user}
+                      recoveryAllowed={recoveryAllowedAtLaunch}
                       onOpenPractice={openPractice}
                       initialSub={initialTodaySub}
                       returnFlowActive={initialReturnFlow}
@@ -1495,7 +1520,11 @@ function App() {
                       }}
                       onOpenNotifications={() => {
                         platform.haptic('light')
-                        try { sessionStorage.setItem('mx-settings-initial-sub', 'notifications') } catch { /* */ }
+                        try {
+                          sessionStorage.setItem('mx-settings-initial-sub', 'notifications')
+                        } catch {
+                          /* */
+                        }
                         setOverlay('settings')
                       }}
                       onRedo={() => {

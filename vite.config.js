@@ -8,6 +8,32 @@ const DECISION_PATH = path.resolve('docs/working/ui-lab/DECISION_LOG.md')
 const DECISIONS = new Set(['accept', 'repeat', 'defer', 'reject'])
 const LABELS = { accept: 'принять', repeat: 'повторить', defer: 'отложить', reject: 'отклонить' }
 
+function fontPreloadPlugin() {
+  return {
+    name: 'font-preload',
+    writeBundle(options) {
+      const outDir = options.dir || 'dist'
+      const assetsDir = path.resolve(outDir, 'assets')
+      if (!fs.existsSync(assetsDir)) return
+
+      // Основной шрифт (Onest 400, кириллица) — preload для параллельной
+      // загрузки с CSS/JS, чтобы первый кадр не ждал разбора @font-face.
+      const fontFile = fs
+        .readdirSync(assetsDir)
+        .find(name => name.startsWith('onest-cyrillic-400-normal') && name.endsWith('.woff2'))
+      if (!fontFile) return
+
+      const htmlPath = path.resolve(outDir, 'index.html')
+      let html = fs.readFileSync(htmlPath, 'utf8')
+      if (html.includes('rel="preload"')) return
+
+      const preload = `<link rel="preload" href="/assets/${fontFile}" as="font" type="font/woff2" crossorigin />`
+      html = html.replace('<title>Mentalix</title>', `${preload}\n  <title>Mentalix</title>`)
+      fs.writeFileSync(htmlPath, html)
+    },
+  }
+}
+
 function uiLabDecisionWriter() {
   return {
     name: 'ui-lab-decision-writer',
@@ -47,7 +73,7 @@ function uiLabDecisionWriter() {
 
 export default defineConfig({
   base: globalThis.process?.env?.GITHUB_PAGES === 'true' ? '/Mentalix/' : '/',
-  plugins: [react(), uiLabDecisionWriter()],
+  plugins: [react(), fontPreloadPlugin(), uiLabDecisionWriter()],
   define: {
     'import.meta.env.VERCEL_ENV': JSON.stringify(globalThis.process?.env?.VERCEL_ENV || ''),
   },

@@ -182,7 +182,7 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   assert.match(demo, /checkin\/today.*state\.checkins\[0\]/)
   assert.match(
     demo,
-    /eveningStates\.has\(previewTodayState\(\)\) \? 0 : \(state\.profile\.review_hour \?\? 19\)/
+    /eveningStates\.has\(previewTodayState\(\)\) \? 0 : \(state\.profile\.review_hour \?\? DEFAULT_REVIEW_HOUR\)/
   )
   assert.ok(
     demo.indexOf("pathname === '/profile/settings' && method === 'GET'") <
@@ -536,8 +536,8 @@ test('MXL-009 ограничивает insights описательными на�
     'utf8'
   )
 
-  assert.match(analytics, /deriveConclusions\(periodCheckins/)
-  assert.match(analytics, /не диагнозы и не доказанные причины/)
+  assert.match(analytics, /api\.analytics\s*\.influences/)
+  assert.match(analytics, /deriveConclusions/)
   assert.match(analytics, /чаще совпадала/)
   assert.doesNotMatch(analytics, /Собранность не зависит от энергии/)
   assert.match(safety, /UNSAFE_INSIGHT_PATTERNS/)
@@ -740,18 +740,17 @@ test('MXL-DS-LABEL-FONT-001 разрешает font-label только на eyeb
   assert.equal(fontLabelOccurrences, 1)
 })
 
-test('MXL-527 отображает один главный вывод с evidence и safety caveat', () => {
+test('MXL-527 отображает серверные факторы влияния с метрикой delta', () => {
   const analytics = readFileSync(
     new URL('../../src/screens/Analytics.jsx', import.meta.url),
     'utf8'
   )
 
-  assert.match(analytics, /function ConclusionsCard\(\{ direction, conclusions \}\)/)
+  assert.match(analytics, /function InfluencesCard\(\{ direction, influences \}\)/)
   assert.match(analytics, /testId=\{`progress-conclusions-/)
-  assert.match(analytics, /conclusions = deriveConclusions\(periodCheckins/)
+  assert.match(analytics, /api\.analytics\s*\.influences/)
   assert.match(analytics, /MIN_GROUP/)
   assert.match(analytics, /compareGroups/)
-  assert.match(analytics, /не диагнозы и не доказанные причины/)
   assert.doesNotMatch(analytics, /observations\.map\(/)
 })
 

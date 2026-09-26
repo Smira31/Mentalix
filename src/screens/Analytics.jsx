@@ -394,29 +394,30 @@ function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
   )
 }
 
-/* ── Главные эмоции (кольцо) ── */
+/* ── Главные эмоции (кольцо, серверный расчёт) ── */
 
-function EmotionsRing({ periodCheckins }) {
-  const counts = new Map()
-  for (const c of periodCheckins) {
-    if (c.emotion) counts.set(c.emotion, (counts.get(c.emotion) || 0) + 1)
-  }
-  const emotions = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4)
-  const total = [...counts.values()].reduce((s, n) => s + n, 0)
-  const palette = ['#EDBD60', '#6FB7E0', '#B0B0B0', '#6A6A6A']
+function EmotionsRing({ influences }) {
+  const topEmotions = influences?.top_emotions || []
+  const enoughData = influences?.enough_data !== false
+  const daysWithData = influences?.days_with_data || 0
+  const palette = ['#EDBD60', '#6FB7E0', '#B0B0B0', '#6A6A6A', '#8A8A8A']
 
-  if (emotions.length === 0) {
+  if (!enoughData || topEmotions.length === 0) {
+    const remaining = Math.max(1, 3 - daysWithData)
     return (
       <CardShell title="Главные эмоции" subtitle="За период" testId="progress-emotions">
-        <CardEmpty hint="Отмечай эмоции в чек-ине — здесь появится кольцо" />
+        <CardEmpty hint={`Пока мало данных — отметь настроение ещё ${formatDays(remaining)}`} />
       </CardShell>
     )
   }
 
+  const total = topEmotions.reduce((s, e) => s + e.count, 0)
+  const emotions = topEmotions.slice(0, 5)
+
   const segments = emotions.reduce(
-    (acc, [name, count]) => {
-      const dash = (count / total) * 100
-      const seg = { key: name, dash, offset: -acc.offset }
+    (acc, item) => {
+      const dash = (item.count / total) * 100
+      const seg = { key: item.emotion, dash, offset: -acc.offset }
       return { offset: acc.offset + dash, list: [...acc.list, seg] }
     },
     { offset: 0, list: [] }
@@ -452,14 +453,14 @@ function EmotionsRing({ periodCheckins }) {
           <span className="mx-progress-emotions__ring-value">{total}</span>
         </div>
         <div className="mx-progress-emotions__legend">
-          {emotions.map(([name, count], i) => (
-            <div className="mx-progress-emotions__row" key={name}>
+          {emotions.map((item, i) => (
+            <div className="mx-progress-emotions__row" key={item.emotion}>
               <span
                 className="mx-progress-emotions__dot"
                 style={{ background: palette[i % palette.length] }}
               />
-              <span className="mx-progress-emotions__name">{name}</span>
-              <span className="mx-progress-emotions__count">{count}</span>
+              <span className="mx-progress-emotions__name">{item.emotion}</span>
+              <span className="mx-progress-emotions__count">{item.count}</span>
             </div>
           ))}
         </div>
@@ -468,11 +469,26 @@ function EmotionsRing({ periodCheckins }) {
   )
 }
 
-/* ── Что поднимает / Что опускает ── */
+/* ── Что поднимает / Что опускает (серверный расчёт) ── */
 
-function ConclusionsCard({ direction, conclusions }) {
+function InfluencesCard({ direction, influences }) {
   const title = direction === 'up' ? 'Что тебя поднимает' : 'Что тебя опускает'
-  const items = conclusions.filter(c => c.direction === direction)
+  const items = direction === 'up' ? influences?.lifts || [] : influences?.drags || []
+  const enoughData = influences?.enough_data !== false
+  const daysWithData = influences?.days_with_data || 0
+
+  if (!enoughData || items.length === 0) {
+    const remaining = Math.max(1, 3 - daysWithData)
+    return (
+      <CardShell
+        title={title}
+        subtitle="Из твоих отметок"
+        testId={`progress-conclusions-${direction}`}
+      >
+        <CardEmpty hint={`Пока мало данных — отметь настроение ещё ${formatDays(remaining)}`} />
+      </CardShell>
+    )
+  }
 
   return (
     <CardShell
@@ -480,18 +496,17 @@ function ConclusionsCard({ direction, conclusions }) {
       subtitle="Из твоих отметок"
       testId={`progress-conclusions-${direction}`}
     >
-      {items.length > 0 ? (
-        <div className="mx-progress-conclusions">
-          {items.map((c, i) => (
-            <div key={i}>
-              <p className="mx-progress-conclusion__text mx-type-insight">{c.text}</p>
-            </div>
-          ))}
-          <p className="mx-progress-conclusions__safety">не диагнозы и не доказанные причины</p>
-        </div>
-      ) : (
-        <CardEmpty hint="Соберётся из отметок нескольких дней" />
-      )}
+      <div className="mx-progress-conclusions">
+        {items.slice(0, 3).map((item, i) => (
+          <div key={i}>
+            <p className="mx-progress-conclusion__text mx-type-insight">{item.factor}</p>
+            <p className="mx-progress-conclusion__hint">
+              в {formatDays(item.days)} настроение {direction === 'up' ? 'выше' : 'ниже'} на{' '}
+              {Math.abs(item.delta).toFixed(1)}
+            </p>
+          </div>
+        ))}
+      </div>
     </CardShell>
   )
 }
@@ -773,6 +788,7 @@ export default function Analytics({
 
   const [poolCheckins, setPoolCheckins] = useState([])
   const [analyticsData, setAnalyticsData] = useState(null)
+  const [influencesData, setInfluencesData] = useState(null)
   const [sourceResult, setSourceResult] = useState(null)
   const [sourceLoading, setSourceLoading] = useState(Boolean(user))
   const sourceResultRef = useRef(null)
@@ -859,6 +875,23 @@ export default function Analytics({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, granularity, reloadKey])
 
+  // Server-side influences (emotions, lifts, drags) — mentalix-bot #99.
+  useEffect(() => {
+    if (!user) return
+    let active = true
+    api.analytics
+      .influences(user.id, granularity, offset)
+      .then(data => {
+        if (active) setInfluencesData(data)
+      })
+      .catch(() => {
+        if (active) setInfluencesData(null)
+      })
+    return () => {
+      active = false
+    }
+  }, [user, granularity, offset, reloadKey])
+
   const window = useMemo(() => getPeriodWindow(granularity, offset), [granularity, offset])
   const periodCheckins = useMemo(
     () => sliceCheckinsByPeriod(poolCheckins, window),
@@ -881,7 +914,6 @@ export default function Analytics({
   const checkinsFailed = !sourceLoading && checkinsState && checkinsState !== SOURCE_STATES.success
   const isCurrentPeriod = offset === 0
 
-  const conclusions = deriveConclusions(periodCheckins, safeData, poolCheckins)
   const daysWithRecords = countDaysWithRecords(periodCheckins)
   const showNeedData = daysWithRecords < MIN_DAYS
 
@@ -924,9 +956,9 @@ export default function Analytics({
         onOpenFull={() => setView('calendar')}
       />
     ),
-    emotions: <EmotionsRing periodCheckins={periodCheckins} />,
-    up: <ConclusionsCard direction="up" conclusions={conclusions} />,
-    down: <ConclusionsCard direction="down" conclusions={conclusions} />,
+    emotions: <EmotionsRing influences={influencesData} />,
+    up: <InfluencesCard direction="up" influences={influencesData} />,
+    down: <InfluencesCard direction="down" influences={influencesData} />,
     practices: <PracticesCard analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />,
   }
 
