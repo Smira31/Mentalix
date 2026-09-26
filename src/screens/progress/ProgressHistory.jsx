@@ -110,19 +110,20 @@ function EntryScreen({
 
   return (
     <div className="mx-progress-entry animate-fade-in" data-testid="progress-entry-screen">
-      <div className="mx-progress-entry__top-bar">
-        {platformName !== 'telegram' ? (
-          <button
-            type="button"
-            className="mx-progress-entry__back"
-            aria-label="Назад"
-            onClick={onBack}
-          >
-            ‹
-          </button>
-        ) : (
-          <span aria-hidden="true" />
-        )}
+      {platformName !== 'telegram' && (
+        <button type="button" className="mx-progress-entry__back" aria-label="Назад" onClick={onBack}>
+          ‹
+        </button>
+      )}
+      <div className="mx-progress-entry__heading">
+        <div>
+          <div className="mx-progress-entry__date" data-testid="progress-entry-date">
+            {formatEntryDateCaps(entry.date, entry.time)}
+          </div>
+          <h2 className="mx-progress-entry__title" data-testid="progress-entry-title">
+            {entryScreenTitle(entry.type)}
+          </h2>
+        </div>
         {(canRedoMorning || canRedoEvening || canDelete) && (
           <div style={{ position: 'relative' }}>
             <button
@@ -184,13 +185,6 @@ function EntryScreen({
           </div>
         )}
       </div>
-
-      <div className="mx-progress-entry__date" data-testid="progress-entry-date">
-        {formatEntryDateCaps(entry.date, entry.time)}
-      </div>
-      <h2 className="mx-progress-entry__title" data-testid="progress-entry-title">
-        {entryScreenTitle(entry.type)}
-      </h2>
 
       <div className="mx-progress-entry__body">
         <EntryBody entry={entry} />
@@ -774,10 +768,20 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
   /* ── Загрузка ── */
   if (days === null) {
     return (
-      <div className="mx-progress-history">
-        <h2 className="mx-progress-history__title">история.</h2>
-        <p className="mx-progress-history__empty-subtitle">Загружаю записи…</p>
-      </div>
+      <>
+        {actionButtons}
+        <div className="mx-progress-history" role="status" aria-label="Загружаю записи">
+          <h2 className="mx-progress-history__title">история.</h2>
+          <div className="mx-progress-history__skeleton" aria-hidden="true">
+            {[0, 1, 2].map(index => (
+              <div className="mx-progress-history__skeleton-group" key={index}>
+                <div className="mx-progress-history__skeleton-label" />
+                <div className="mx-progress-history__skeleton-row" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
     )
   }
 
