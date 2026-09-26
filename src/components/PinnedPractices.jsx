@@ -108,6 +108,7 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
     [rituals, ascezas]
   )
   const undoTimerRef = useRef(null)
+  const railRef = useRef(null)
 
   useEffect(() => {
     return () => {
@@ -141,6 +142,14 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
   const pinnedPractices = pinned
     .map(item => catalog.find(practice => practice.key === item.practice_id))
     .filter(Boolean)
+
+  useEffect(() => {
+    const rail = railRef.current
+    if (!rail) return
+    const stopEdgeSwipe = event => event.stopPropagation()
+    rail.addEventListener('touchstart', stopEdgeSwipe, { passive: true })
+    return () => rail.removeEventListener('touchstart', stopEdgeSwipe)
+  }, [loading, pinnedPractices.length])
 
   async function togglePinned(practice) {
     if (busyId) return
@@ -219,7 +228,7 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
           Выбери практики, которые хочешь видеть здесь.
         </p>
       ) : (
-        <div className="mx-pinned-practices__rail" role="list">
+        <div ref={railRef} className="mx-pinned-practices__rail" role="list">
           {pinnedPractices.map(practice => (
             <button
               type="button"
