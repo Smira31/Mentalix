@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+
 import { BatteryLow, ChevronRight, Clock3 } from 'lucide-react'
 
 import { platform } from '../platform'
@@ -56,15 +57,13 @@ export default function MorningPilotCard({
 
   /*
    * Смена userId — редкий кейс (переключение пользователя без ремонта
-   * компонента), но обработан: перечитываем localStorage при смене ключа
-   * прямо во время рендера (readMorningPilotDay — чистое чтение, не
-   * побочный эффект), а не в useEffect — тот же приём, что и ниже.
+   * компонента). Раньше перечитывали localStorage прямо в рендере через
+   * setState — это могло запускать лишние ре-рендеры (React #185).
+   * Теперь синхронизируем через useEffect: один проход, без цикла.
    */
-  const [seenUserId, setSeenUserId] = useState(userId)
-  if (seenUserId !== userId) {
-    setSeenUserId(userId)
+  useEffect(() => {
     setDayState(readMorningPilotDay(userId, currentDate))
-  }
+  }, [userId, currentDate])
 
   useEffect(() => {
     if (!isMorning || dayState?.viewed_at) {

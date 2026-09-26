@@ -924,7 +924,7 @@ export default function Analytics({
 
   // External trigger: onOpenHistory switches to History segment
   useEffect(() => {
-    if (historyTrigger > 0) {
+    if (historyTrigger > 0 && activeTab !== 'history') {
       saveScroll()
       setActiveTab('history')
     }
