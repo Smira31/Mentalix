@@ -127,7 +127,7 @@ test('Огонёк при загрузке/ошибке не серый: --empty
 })
 
 test('Today использует fetchTodayDataWithRetry, а не fetchTodayData напрямую', () => {
-  assert.match(todaySource, /import \{ fetchTodayDataWithRetry/)
+  assert.match(todaySource, /import\s*\{[^}]*fetchTodayDataWithRetry/)
   assert.match(todaySource, /await fetchTodayDataWithRetry\(user\.id/)
 })
 
