@@ -724,14 +724,16 @@ export default function Today({
 
   if (seriesOpen) {
     return (
-      <SeriesBadges
-        user={user}
-        onBack={onCloseSeries}
-        onOpenPractice={practice => {
-          onCloseSeries?.()
-          onOpenPractice?.(practice)
-        }}
-      />
+      <Suspense fallback={null}>
+        <SeriesBadges
+          user={user}
+          onBack={onCloseSeries}
+          onOpenPractice={practice => {
+            onCloseSeries?.()
+            onOpenPractice?.(practice)
+          }}
+        />
+      </Suspense>
     )
   }
 
@@ -740,86 +742,98 @@ export default function Today({
   // ============================================================
 
   if (activeSub === 'breathing') {
-    return <BreathingPractice onBack={() => changeSub(null)} />
+    return (
+      <Suspense fallback={null}>
+        <BreathingPractice onBack={() => changeSub(null)} />
+      </Suspense>
+    )
   }
 
   if (activeSub === 'recoveryReview' && recovery) {
     return (
-      <CheckIn
-        user={user}
-        mode="evening"
-        recovery={recovery}
-        onRecoveryExpired={() => {
-          changeSub(null)
-          setRecoveryStage('expired')
-        }}
-        onCompleted={() => {
-          recoveryCompleted.current = true
-          changeSub(null)
-          setRecoveryStage('saved')
-          refreshCheckin()
-        }}
-        onDone={() => {
-          if (!recoveryCompleted.current) {
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          mode="evening"
+          recovery={recovery}
+          onRecoveryExpired={() => {
             changeSub(null)
-            setRecovery(null)
-          }
-        }}
-      />
+            setRecoveryStage('expired')
+          }}
+          onCompleted={() => {
+            recoveryCompleted.current = true
+            changeSub(null)
+            setRecoveryStage('saved')
+            refreshCheckin()
+          }}
+          onDone={() => {
+            if (!recoveryCompleted.current) {
+              changeSub(null)
+              setRecovery(null)
+            }
+          }}
+        />
+      </Suspense>
     )
   }
 
   if (!loading && !loadError && (activeSub === 'checkin' || activeSub === 'evening')) {
     return (
-      <CheckIn
-        user={user}
-        existing={checkin}
-        mode={resolveCheckInMode({ sub: activeSub, initialSub })}
-        onCompleted={() => {
-          returnFlowCompleted.current = true
-          if (returnFlowActive) onReturnFlowEvent?.('action_completed')
-        }}
-        onDone={async () => {
-          const result = await refreshCheckin()
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          existing={checkin}
+          mode={resolveCheckInMode({ sub: activeSub, initialSub })}
+          onCompleted={() => {
+            returnFlowCompleted.current = true
+            if (returnFlowActive) onReturnFlowEvent?.('action_completed')
+          }}
+          onDone={async () => {
+            const result = await refreshCheckin()
 
-          triggerCheckInExit(() => {
-            changeSub(null)
-            setCardCompressing(true)
-            if (result?.newBadge) setNewBadge(result.newBadge)
-            setTimeout(() => setCardCompressing(false), 130)
-          })
-        }}
-      />
+            triggerCheckInExit(() => {
+              changeSub(null)
+              setCardCompressing(true)
+              if (result?.newBadge) setNewBadge(result.newBadge)
+              setTimeout(() => setCardCompressing(false), 130)
+            })
+          }}
+        />
+      </Suspense>
     )
   }
 
   if (sub === 'redoCheckin') {
     return (
-      <CheckIn
-        user={user}
-        existing={checkin}
-        mode="checkin"
-        redo
-        onDone={async () => {
-          await refreshCheckin()
-          triggerCheckInExit(() => changeSub(null))
-        }}
-      />
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          existing={checkin}
+          mode="checkin"
+          redo
+          onDone={async () => {
+            await refreshCheckin()
+            triggerCheckInExit(() => changeSub(null))
+          }}
+        />
+      </Suspense>
     )
   }
 
   if (sub === 'redoReview') {
     return (
-      <CheckIn
-        user={user}
-        existing={checkin}
-        mode="evening"
-        redo
-        onDone={async () => {
-          await refreshCheckin()
-          triggerCheckInExit(() => changeSub(null))
-        }}
-      />
+      <Suspense fallback={null}>
+        <CheckIn
+          user={user}
+          existing={checkin}
+          mode="evening"
+          redo
+          onDone={async () => {
+            await refreshCheckin()
+            triggerCheckInExit(() => changeSub(null))
+          }}
+        />
+      </Suspense>
     )
   }
 
@@ -845,7 +859,11 @@ export default function Today({
   // ============================================================
 
   if (sub === 'theme' && theme) {
-    return <ThemeScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
+    return (
+      <Suspense fallback={null}>
+        <ThemeScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
+      </Suspense>
+    )
   }
 
   // ============================================================
@@ -853,7 +871,11 @@ export default function Today({
   // ============================================================
 
   if (sub === 'quote') {
-    return <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
+    return (
+      <Suspense fallback={null}>
+        <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
+      </Suspense>
+    )
   }
 
   // ============================================================
