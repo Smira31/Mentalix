@@ -2,7 +2,7 @@
  * Лист поиска вкладки «История» (§5.5, шаг 3).
  *
  * Вкладка только «Твои записи». Пустое состояние «Что ищешь?» с чипами-
- * подсказками. Поле внизу над клавиатурой, ✕ закрывает.
+ * подсказками. Поле сверху с очисткой, ✕ закрывает.
  * Поиск по тексту записей на клиенте. Ничего не нашлось — пустое состояние.
  * Нативная «Назад» Telegram закрывает поиск.
  */
@@ -57,6 +57,43 @@ export default function HistorySearchSheet({ days, onClose, onSelectEntry }) {
         <span className="mx-progress-search-sheet__tab mx-progress-search-sheet__tab--active">
           Твои записи
         </span>
+        <button
+          type="button"
+          className="mx-progress-search-sheet__close"
+          aria-label="Закрыть поиск"
+          data-testid="history-search-close"
+          onClick={() => {
+            platform.haptic('light')
+            onClose()
+          }}
+        >
+          <X size={20} aria-hidden="true" />
+        </button>
+      </div>
+      <div className="mx-progress-search-sheet__field-bar">
+        <div className="mx-progress-search-sheet__field">
+          <Search size={18} className="mx-progress-search-sheet__field-icon" aria-hidden="true" />
+          <input
+            type="search"
+            className="mx-progress-search-sheet__field-input"
+            placeholder="Поиск…"
+            aria-label="Поиск по записям"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            data-testid="history-search-input"
+            autoFocus
+          />
+          {query && (
+            <button
+              type="button"
+              className="mx-progress-search-sheet__clear"
+              aria-label="Очистить поиск"
+              onClick={() => setQuery('')}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="mx-progress-search-sheet__body">
@@ -122,32 +159,6 @@ export default function HistorySearchSheet({ days, onClose, onSelectEntry }) {
         )}
       </div>
 
-      <div className="mx-progress-search-sheet__field-bar">
-        <div className="mx-progress-search-sheet__field">
-          <Search size={18} className="mx-progress-search-sheet__field-icon" aria-hidden="true" />
-          <input
-            type="text"
-            className="mx-progress-search-sheet__field-input"
-            placeholder="Поиск…"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            data-testid="history-search-input"
-            autoFocus
-          />
-        </div>
-        <button
-          type="button"
-          className="mx-progress-search-sheet__close"
-          aria-label="Закрыть поиск"
-          data-testid="history-search-close"
-          onClick={() => {
-            platform.haptic('light')
-            onClose()
-          }}
-        >
-          <X size={20} aria-hidden="true" />
-        </button>
-      </div>
     </div>
   )
 }
