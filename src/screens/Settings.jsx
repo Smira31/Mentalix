@@ -25,6 +25,9 @@ import { getAccentColors } from '../lib/accentColor'
 import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
+import { isPreviewDemoMode } from '../lib/demoMode'
+import { MASK_STAGES } from '../config/maskStages'
+import { getMaskStage } from '../lib/maskStage'
 import QuotesManager from './QuotesManager'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
@@ -108,6 +111,41 @@ export default function Settings({
   onGuestLogin,
 }) {
   const accentColors = getAccentColors(theme)
+  const [profileStats, setProfileStats] = useState(null)
+  const [profileLoading, setProfileLoading] = useState(true)
+  const [profileError, setProfileError] = useState(false)
+  const [profileReloadToken, setProfileReloadToken] = useState(0)
+
+  useEffect(() => {
+    if (!user) return
+    let active = true
+    setProfileStats(null)
+    api.profile.get(user.id).then(data => {
+      if (active) setProfileStats(data)
+    }).catch(() => {
+      if (active) setProfileError(true)
+    }).finally(() => {
+      if (active) setProfileLoading(false)
+    })
+    return () => { active = false }
+  }, [user, profileReloadToken])
+
+  function retryProfile() {
+    setProfileLoading(true)
+    setProfileError(false)
+    setProfileReloadToken(token => token + 1)
+  }
+
+  const demoStage = isPreviewDemoMode()
+    ? new URLSearchParams(window.location.search).get('mask_stage')
+    : null
+  const demoIndex = demoStage !== null && /^[0-3]$/.test(demoStage) ? Number(demoStage) : null
+  const maskProgress = getMaskStage(
+    demoIndex !== null ? MASK_STAGES[demoIndex].minDays : profileStats?.days_active
+  )
+  const maskStage = profileStats || demoIndex !== null ? maskProgress.stage : null
+  const maskNext = maskStage ? maskProgress.next : null
+  const maskDaysUntilNext = maskProgress.daysUntilNext
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
   const [reviewHour, setReviewHour] = useState(19)
@@ -1014,7 +1052,7 @@ export default function Settings({
 
   const subContent = {
     checkins: renderCheckins,
-    about: () => <Profile user={user} />,
+    about: () => <Profile user={user} stats={profileStats} loading={profileLoading} error={profileError} retryProfile={retryProfile} />,
     prefs: renderPrefs,
     appearance: renderAppearance,
     notifications: renderNotifications,
@@ -1043,6 +1081,9 @@ export default function Settings({
           onOpenSubscription={() => setScreen('subscription')}
           onOpenDonate={() => setScreen('donate')}
           onOpenWeb={openWebBanner}
+          maskStage={maskStage}
+          maskNext={maskNext}
+          maskDaysUntilNext={maskDaysUntilNext}
         />
         <ProfileGroup label="Настрой">
           <ProfileCard testId="profile-card-setup">

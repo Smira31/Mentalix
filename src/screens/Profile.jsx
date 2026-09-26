@@ -64,11 +64,7 @@ function getMilestones(stats) {
   return milestones
 }
 
-export default function Profile({ user }) {
-  const [stats, setStats] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-  const [reloadToken, setReloadToken] = useState(0)
+export default function Profile({ user, stats, loading, error, retryProfile }) {
   const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
   const [bestStreak, setBestStreak] = useState(null)
   const [seriesModel, setSeriesModel] = useState(null)
@@ -76,19 +72,6 @@ export default function Profile({ user }) {
   useEffect(() => {
     if (!user) return
     let active = true
-
-    api.profile
-      .get(user.id)
-      .then(data => {
-        if (!active) return
-        setStats(data)
-        setLoading(false)
-      })
-      .catch(() => {
-        if (!active) return
-        setError(true)
-        setLoading(false)
-      })
 
     // Серия считается той же функцией, что огонёк в шапке Today
     // (buildSeriesViewModel), а не бэкенд-полем stats.best_streak.
@@ -116,13 +99,7 @@ export default function Profile({ user }) {
     return () => {
       active = false
     }
-  }, [user, reloadToken])
-
-  function retryProfile() {
-    setLoading(true)
-    setError(false)
-    setReloadToken(token => token + 1)
-  }
+  }, [user])
 
   const birthdayFormatted = formatBirthday(birthdayRaw)
   const daysToBirthday = daysUntilNextBirthday(birthdayRaw)
