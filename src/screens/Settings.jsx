@@ -464,7 +464,15 @@ export default function Settings({
   // null — тариф ещё не загружен: «подписка.» показывает скелетон.
   const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
-  const [sub, setSub] = useState(null) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data' | 'timezone'
+  const [sub, setSub] = useState(() => {
+    try {
+      const initial = sessionStorage.getItem('mx-settings-initial-sub')
+      sessionStorage.removeItem('mx-settings-initial-sub')
+      return initial || null
+    } catch {
+      return null
+    }
+  }) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data' | 'timezone'
 
   function openSub(next) {
     setSub(next)
