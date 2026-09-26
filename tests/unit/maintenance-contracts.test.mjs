@@ -182,7 +182,7 @@ test('MXL-TODAY-PROD-HERO-001 Preview использует PR-aware demo fixture
   assert.match(demo, /checkin\/today.*state\.checkins\[0\]/)
   assert.match(
     demo,
-    /eveningStates\.has\(previewTodayState\(\)\) \? 0 : \(state\.profile\.review_hour \?\? 19\)/
+    /eveningStates\.has\(previewTodayState\(\)\) \? 0 : \(state\.profile\.review_hour \?\? DEFAULT_REVIEW_HOUR\)/
   )
   assert.ok(
     demo.indexOf("pathname === '/profile/settings' && method === 'GET'") <

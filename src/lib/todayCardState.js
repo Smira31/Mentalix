@@ -1,6 +1,6 @@
 import { now as clockNow } from './clock.js'
 
-const DEFAULT_REVIEW_HOUR = 19
+export const DEFAULT_REVIEW_HOUR = 19
 
 function localHourAndMinute(date, timeZone) {
   if (!timeZone) return { hour: date.getHours(), minute: date.getMinutes() }

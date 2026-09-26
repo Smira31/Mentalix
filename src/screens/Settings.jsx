@@ -26,6 +26,7 @@ import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { MASK_STAGES } from '../config/maskStages'
 import { getMaskStage } from '../lib/maskStage'
 import QuotesManager from './QuotesManager'
@@ -80,7 +81,8 @@ const SUB_PARENT = { timezone: 'notifications' }
 const REMINDER_TIMES = [
   { label: 'Утро', hour: 8 },
   { label: 'День', hour: 14 },
-  { label: 'Вечер', hour: 19 },
+  // «Вечер» синхронизирован с review_hour — подставляется динамически
+  // в компоненте (reminderTimes ниже), не захардкожен.
   { label: 'Ночь', hour: 22 },
 ]
 
@@ -148,7 +150,15 @@ export default function Settings({
   const maskDaysUntilNext = maskProgress.daysUntilNext
   const [reminderHour, setReminderHour] = useState(null)
   const [reminderOn, setReminderOn] = useState(false)
-  const [reviewHour, setReviewHour] = useState(19)
+  const [reviewHour, setReviewHour] = useState(DEFAULT_REVIEW_HOUR)
+
+  // «Вечер» в напоминаниях = review_hour (единый источник времени разбора).
+  // Утро/День/Ночь — независимые слоты напоминания.
+  const reminderTimes = [
+    ...REMINDER_TIMES.slice(0, 2),
+    { label: 'Вечер', hour: reviewHour },
+    ...REMINDER_TIMES.slice(2),
+  ]
   const [reminderTimezone, setReminderTimezone] = useState('Europe/Moscow')
   const [quietHoursOn, setQuietHoursOn] = useState(false)
   const [quietStart, setQuietStart] = useState(22)
@@ -173,9 +183,9 @@ export default function Settings({
     api.profile
       .getSettings(user.id)
       .then(s => {
-        setReminderHour(s?.reminder_hour ?? 19)
+        setReminderHour(s?.reminder_hour ?? DEFAULT_REVIEW_HOUR)
         setReminderOn(!!s?.reminder_enabled)
-        setReviewHour(s?.review_hour ?? 19)
+        setReviewHour(s?.review_hour ?? DEFAULT_REVIEW_HOUR)
         setReminderTimezone(s?.reminder_timezone ?? 'Europe/Moscow')
         setQuietHoursOn(s?.quiet_hours_start !== null && s?.quiet_hours_start !== undefined)
         setQuietStart(s?.quiet_hours_start ?? 22)
@@ -185,7 +195,7 @@ export default function Settings({
         setInsightsEnabled(s?.insights_enabled !== false)
       })
       .catch(() => {
-        setReminderHour(19)
+        setReminderHour(DEFAULT_REVIEW_HOUR)
       })
   }, [user])
 
@@ -401,9 +411,15 @@ export default function Settings({
 
   async function saveReviewHour(hour) {
     const prev = reviewHour
+    // Если напоминание было синхронизировано с разбором (вечерний слот),
+    // меняем его вместе с review_hour — одно значение везде.
+    const wasInSync = reminderHour === reviewHour
     setReviewHour(hour)
+    if (wasInSync) setReminderHour(hour)
     try {
-      await api.profile.saveSettings(user.id, { review_hour: hour })
+      const payload = { review_hour: hour }
+      if (wasInSync) payload.reminder_hour = hour
+      await api.profile.saveSettings(user.id, payload)
     } catch (e) {
       console.error(e)
       setReviewHour(prev)
@@ -834,7 +850,7 @@ export default function Settings({
                 <Toggle
                   checked={reminderOn}
                   label="Напоминание от бота"
-                  onChange={() => saveReminder(reminderHour ?? 19, !reminderOn)}
+                  onChange={() => saveReminder(reminderHour ?? DEFAULT_REVIEW_HOUR, !reminderOn)}
                 />
               }
             />
@@ -844,7 +860,7 @@ export default function Settings({
                   label="Время напоминания"
                   value={reminderHour}
                   onChange={hour => saveReminder(hour, true)}
-                  options={REMINDER_TIMES.map(t => ({
+                  options={reminderTimes.map(t => ({
                     value: t.hour,
                     label: t.label,
                     hint: hh(t.hour),
