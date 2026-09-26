@@ -1,0 +1,49 @@
+.mx-guest-save-reminder {
+  width: 100%;
+  margin-top: 24px;
+}
+
+.mx-guest-save-reminder__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 32px 20px 24px;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  text-align: center;
+}
+
+.mx-guest-save-reminder__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  cursor: pointer;
+}
+
+.mx-guest-save-reminder__icon {
+  color: rgb(var(--c-muted));
+}
+
+.mx-guest-save-reminder__card strong {
+  max-width: 290px;
+}
+
+.mx-guest-save-reminder__card p {
+  max-width: 290px;
+  margin: 0;
+}
+
+.mx-guest-save-reminder__action {
+  margin-top: 8px;
+  padding: 12px 24px;
+}

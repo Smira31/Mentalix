@@ -26,6 +26,7 @@ import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
 import PinnedPractices from '../components/PinnedPractices'
+import GuestSaveReminder from '../components/GuestSaveReminder'
 import SeriesBadges from './SeriesBadges'
 import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
@@ -1317,6 +1318,12 @@ export default function Today({
           <span className="block font-display mx-type-card text-cream">{thoughtOfDay.text}</span>
         </button>
       )}
+
+      <GuestSaveReminder
+        user={user}
+        hasEntries={Boolean(checkin || checkinHistory.length || moodPractices.length)}
+        onOpenSettings={onOpenSettings}
+      />
     </div>
   )
 }
