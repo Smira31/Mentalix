@@ -118,10 +118,11 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
 
   useEffect(() => {
     let active = true
-    fetchPinnedPractices(user.id)
+    fetchPinnedPractices(user.id, { force: true })
       .then(items => {
         if (!active) return
         setPinned(normalizePinnedPractices(items))
+        setError(false)
       })
       .catch(() => {
         if (active) setError(true)
@@ -225,7 +226,7 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
         <p className="mx-type-list-body text-muted mt-3">Не получилось загрузить практики.</p>
       ) : pinnedPractices.length === 0 ? (
         <p className="mx-type-list-body text-muted mt-3">
-          Выбери практики, которые хочешь видеть здесь.
+          Здесь пока пусто. Добавь любимые практики кнопкой настройки или скрой раздел.
         </p>
       ) : (
         <div ref={railRef} className="mx-pinned-practices__rail" role="list">

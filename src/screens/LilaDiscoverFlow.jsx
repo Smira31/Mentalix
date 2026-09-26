@@ -55,9 +55,8 @@ function StageShell({ children, title, onBack }) {
   )
 }
 
-function Intro({ onStart, onBack }) {
+function Intro({ onStart }) {
   return (
-    <StageShell title="Следопыт" onBack={onBack}>
       <div className="flex flex-1 flex-col">
         <h1 className="mx-type-flow-title mt-2 text-cream">Когда неясно, с чего начать</h1>
         <p className="mx-type-flow-body mt-3 max-w-[34ch] text-muted">
@@ -74,13 +73,11 @@ function Intro({ onStart, onBack }) {
           </button>
         </div>
       </div>
-    </StageShell>
   )
 }
 
-function ThemePicker({ query, selectedCardId, onPick, onBack }) {
+function ThemePicker({ query, selectedCardId, onPick }) {
   return (
-    <StageShell title="Тема" onBack={onBack}>
       <div className="flex flex-1 flex-col">
         <h1 className="mx-type-flow-title mt-2 text-cream">На что посмотрим внимательнее?</h1>
         <div className="mx-lila-query-preview mx-type-flow-body mt-3 text-muted">{query}</div>
@@ -100,7 +97,6 @@ function ThemePicker({ query, selectedCardId, onPick, onBack }) {
           Тема — только символический ориентир для разговора, не диагноз и не готовый ответ.
         </p>
       </div>
-    </StageShell>
   )
 }
 
@@ -193,11 +189,12 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
     platform.haptic('light')
   }
 
-  if (stage === 'intro') return <Intro onStart={startQuery} onBack={onBack} />
-
-  if (stage === 'query') {
+  if (stage === 'intro' || stage === 'query' || stage === 'theme') {
     return (
-      <StageShell title="Следопыт" onBack={goBack}>
+      <StageShell title={stage === 'theme' ? 'Тема' : 'Следопыт'} onBack={stage === 'intro' ? onBack : goBack}>
+        {stage === 'intro' ? <Intro onStart={startQuery} /> : stage === 'theme' ? (
+          <ThemePicker query={query} selectedCardId={selectedCardId} onPick={selectTheme} />
+        ) : (
         <PracticeWritingCanvas
           question="Что сейчас хочешь разобрать?"
           description="Опиши ситуацию своими словами. Достаточно нескольких предложений — без правильной формулировки."
@@ -211,18 +208,8 @@ export default function LilaDiscoverFlow({ userId, onBack, onOpenJournal }) {
           onSubmit={continueToTheme}
           className="mx-lila-query-canvas min-h-0 flex-1"
         />
+        )}
       </StageShell>
-    )
-  }
-
-  if (stage === 'theme') {
-    return (
-      <ThemePicker
-        query={query}
-        selectedCardId={selectedCardId}
-        onPick={selectTheme}
-        onBack={goBack}
-      />
     )
   }
 

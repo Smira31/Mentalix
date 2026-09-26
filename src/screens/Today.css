@@ -559,7 +559,7 @@
 
 .mx-pinned-undo-toast {
   position: fixed;
-  bottom: 1.5rem;
+  bottom: calc(1.5rem + 5rem + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
