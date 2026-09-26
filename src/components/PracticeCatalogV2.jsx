@@ -123,7 +123,7 @@ function PracticeRail({ practices, onOpen }) {
   )
 }
 
-function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen }) {
+function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen, onRetry }) {
   const [questionIndex, setQuestionIndex] = useState(0)
   const trackRef = useRef(null)
   const questions = useMemo(
@@ -151,26 +151,28 @@ function ThemeCarousel({ theme, themeLoading = false, themeError = false, onOpen
   }
 
   if (themeLoading || themeError || !theme || questions.length === 0) {
-    const title = themeLoading
-      ? 'Загружаю вопросы'
-      : themeError
-        ? 'Вопросы не загрузились'
-        : 'Пока нет вопросов'
-    const copy = themeLoading
-      ? 'Текущая тема появится через несколько секунд.'
-      : themeError
-        ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
-        : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'
-
     return (
-      <section className="mx-layered-catalog__section" aria-label="Тема недели" aria-live="polite">
+      <section className="mx-layered-catalog__section mx-layered-catalog__theme-section" aria-label="Тема недели" aria-live="polite">
         <div className="mx-layered-catalog__section-head">
           <div>
             <span>Тема недели:</span>
-            <h2 className="mx-type-section">{title}</h2>
+            <h2 className="mx-type-section">{themeLoading ? 'Один вопрос.' : themeError ? 'Вопросы не загрузились' : 'Пока нет вопросов'}</h2>
           </div>
         </div>
-        <p className="mx-layered-catalog__empty-copy">{copy}</p>
+        {themeLoading ? (
+          <div className="mx-layered-catalog__theme-skeleton" role="status" aria-label="Загрузка вопросов">
+            <span className="mx-layered-catalog__theme-copy animate-pulse" aria-hidden="true" />
+          </div>
+        ) : (
+          <>
+            <p className="mx-layered-catalog__empty-copy">
+              {themeError
+                ? 'Не удалось загрузить тему. Проверь соединение и попробуй ещё раз.'
+                : 'Опубликованная тема появится здесь, когда будет доступна для тебя.'}
+            </p>
+            {themeError && <button type="button" className="mx-layered-catalog__pill" onClick={onRetry}>Повторить</button>}
+          </>
+        )}
       </section>
     )
   }
@@ -380,6 +382,7 @@ export default function PracticeCatalogV2({
   themes,
   themeLoading = false,
   themesError = false,
+  onRetryThemes,
   onOpenPractice,
   selectedCollectionKey = null,
   onCollectionChange,
@@ -417,6 +420,7 @@ export default function PracticeCatalogV2({
         theme={themes?.[0] || null}
         themeLoading={themeLoading}
         themeError={themesError}
+        onRetry={onRetryThemes}
         onOpen={onOpenTheme}
       />
       <CollectionGrid onOpen={collection => onCollectionChange?.(collection.key)} />

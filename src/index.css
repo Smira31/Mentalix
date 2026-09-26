@@ -97,7 +97,8 @@
   /* Дополнительный воздух после последнего контента перед fixed-навигацией. */
   --bottom-nav-content-gap: 16px;
   --mx-bottom-nav-space: calc(
-    var(--app-safe-bottom) + var(--bottom-nav-offset) + var(--bottom-nav-height) +
+    var(--app-safe-bottom) + var(--bottom-nav-offset) +
+      max(var(--bottom-nav-height), var(--bottom-nav-collapsed-size)) +
       var(--bottom-nav-content-gap)
   );
   --app-content-bottom: var(--mx-bottom-nav-space);
@@ -764,7 +765,7 @@ select:focus-visible {
 
 :root {
   font-family:
-    'Manrope',
+    'Onest',
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
