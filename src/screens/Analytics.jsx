@@ -473,7 +473,7 @@ function EmotionsRing({ influences }) {
 
 function InfluencesCard({ direction, influences }) {
   const title = direction === 'up' ? 'Что тебя поднимает' : 'Что тебя опускает'
-  const items = direction === 'up' ? (influences?.lifts || []) : (influences?.drags || [])
+  const items = direction === 'up' ? influences?.lifts || [] : influences?.drags || []
   const enoughData = influences?.enough_data !== false
   const daysWithData = influences?.days_with_data || 0
 
@@ -890,7 +890,6 @@ export default function Analytics({
     return () => {
       active = false
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, granularity, offset, reloadKey])
 
   const window = useMemo(() => getPeriodWindow(granularity, offset), [granularity, offset])
