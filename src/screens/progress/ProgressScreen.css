@@ -106,7 +106,7 @@
   justify-content: space-between;
   height: 53px;
   margin-bottom: 8px;
-  padding: 0 20px 0 17px;
+  padding: 0 21px 0 17px;
   border: 0;
   border-radius: 16px;
   background: rgb(var(--c-card2, 17 17 17));
@@ -125,6 +125,14 @@
   transform: scale(0.97);
 }
 
+.mx-progress-history__row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
 .mx-progress-history__row-name {
   font-size: 16px;
   font-weight: 600;
@@ -132,6 +140,26 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.mx-progress-history__row-mood {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(243, 243, 243, 0.05);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-history__row-mood-dot {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
 }
 
 .mx-progress-history__row-time {
@@ -208,11 +236,15 @@
 }
 
 @keyframes mx-history-loading {
-  to { opacity: 0.45; }
+  to {
+    opacity: 0.45;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mx-progress-history__skeleton-group { animation: none; }
+  .mx-progress-history__skeleton-group {
+    animation: none;
+  }
 }
 
 /* ── Экран записи ── */
@@ -589,6 +621,16 @@
   cursor: pointer;
 }
 
+.mx-progress-entry__confirm-accept:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mx-progress-entry__confirm-accept--danger {
+  background: #ef4444;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
 /* ── Шаг 3: кнопки действий вкладки «История» (§5.5) ── */
 
 .mx-progress-history-actions {
@@ -640,6 +682,11 @@
 
 .mx-progress-action-btn:active {
   transform: scale(0.97);
+}
+
+.mx-progress-action-btn--active {
+  background: rgb(var(--c-text, 243 243 243));
+  color: rgb(var(--c-bg, 5 4 3));
 }
 
 /* Выпадающее меню группировки */

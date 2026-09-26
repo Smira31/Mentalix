@@ -15,7 +15,8 @@ test('privacy delete API всегда передаёт owner id и server-side c
 })
 
 test('History удаляет только выбранный check-in после явного confirmation и сохраняет activity', () => {
-  assert.match(historySource, /Удалить эту сохранённую запись\? Это действие нельзя отменить\./)
+  assert.match(historySource, /Удалить запись\?/)
+  assert.match(historySource, /Это нельзя отменить\./)
   assert.match(historySource, /api\.privacy\.deleteCheckin\(user\.id, checkin\.id\)/)
   assert.match(historySource, /\{ \.\.\.day, checkin: null \}/)
   assert.match(historySource, /Активность ритуалов за этот день сохранена\./)

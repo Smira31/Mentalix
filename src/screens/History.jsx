@@ -184,6 +184,7 @@ export function HistoryDetail({
   const wins = checkin?.wins || []
   const [redoMenuOpen, setRedoMenuOpen] = useState(false)
   const [redoConfirm, setRedoConfirm] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   const isToday = day.date === new Date().toISOString().slice(0, 10)
   const canRedo = isToday && (onRedo || onRedoReview)
@@ -446,7 +447,7 @@ export function HistoryDetail({
               </p>
               <button
                 type="button"
-                onClick={onDelete}
+                onClick={() => setDeleteConfirm(true)}
                 disabled={deleting}
                 className="min-h-11 rounded-full px-4 text-[13px] font-semibold text-red-300 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -459,6 +460,56 @@ export function HistoryDetail({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {deleteConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-confirm-title"
+          aria-describedby="delete-confirm-desc"
+          className="fixed inset-0 z-[90] flex items-end bg-black/70 p-5 sm:items-center"
+          onClick={() => !deleting && setDeleteConfirm(false)}
+        >
+          <div
+            className="w-full max-w-md mx-auto rounded-[28px] bg-emerald p-6 shadow-xl animate-fade-in"
+            onClick={e => e.stopPropagation()}
+          >
+            <h2 id="delete-confirm-title" className="font-display text-[22px] text-cream">
+              Удалить запись?
+            </h2>
+            <p id="delete-confirm-desc" className="mt-3 text-[14px] leading-relaxed text-muted">
+              Это нельзя отменить.
+            </p>
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setDeleteConfirm(false)}
+                disabled={deleting}
+                className="min-h-12 rounded-full border border-cream/15 px-4 text-[14px] font-semibold text-cream disabled:opacity-60"
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteConfirm(false)
+                  onDelete()
+                }}
+                disabled={deleting}
+                className="min-h-12 rounded-full bg-red-500 px-4 text-[14px] font-bold text-cream disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {deleting ? 'Удаляем…' : 'Удалить'}
+              </button>
+            </div>
+            {deleteError && (
+              <p role="alert" className="mt-3 text-[12px] text-red-300">
+                {deleteError}
+              </p>
+            )}
+          </div>
         </div>
       )}
 
@@ -639,7 +690,6 @@ export default function History({
   async function deleteSelectedCheckin() {
     const checkin = selectedDay?.checkin
     if (!checkin || deletingCheckin) return
-    if (!window.confirm('Удалить эту сохранённую запись? Это действие нельзя отменить.')) return
 
     setDeletingCheckin(true)
     setDeleteError('')

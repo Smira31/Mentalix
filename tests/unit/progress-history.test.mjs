@@ -295,11 +295,11 @@ test('groupDaysByYear: пустые данные → пустой массив',
 
 // ── Шаг 3: фильтры ──
 
-test('FILTER_GROUPS: группы «Чек-ины» и «Практики»', () => {
+test('FILTER_GROUPS: группы «Ежедневные» и «Практики»', () => {
   assert.equal(FILTER_GROUPS.length, 2)
-  assert.equal(FILTER_GROUPS[0].label, 'Чек-ины')
+  assert.equal(FILTER_GROUPS[0].label, 'Ежедневные')
   assert.equal(FILTER_GROUPS[1].label, 'Практики')
-  // Чек-ины: утренний, вечерний разбор
+  // Ежедневные: утренний, вечерний разбор
   const checkinTypes = FILTER_GROUPS[0].types.map(t => t.id)
   assert.ok(checkinTypes.includes(ENTRY_TYPES.MORNING))
   assert.ok(checkinTypes.includes(ENTRY_TYPES.EVENING))

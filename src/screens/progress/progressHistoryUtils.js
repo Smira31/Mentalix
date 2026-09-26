@@ -6,15 +6,7 @@
  * React-окружения.
  */
 
-const WEEKDAYS = [
-  'Воскресенье',
-  'Понедельник',
-  'Вторник',
-  'Среда',
-  'Четверг',
-  'Пятница',
-  'Суббота',
-]
+const WEEKDAYS = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота']
 
 // Короткие названия месяцев — как в эталоне Stoic (§5.5): «сент», «июл».
 const MONTHS_SHORT = [
@@ -245,14 +237,34 @@ export const HISTORY_GRANULARITIES = Object.freeze([
 
 // Полные названия месяцев в именительном падеже — для заголовков и карточек
 const MONTHS_FULL = [
-  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+  'Январь',
+  'Февраль',
+  'Март',
+  'Апрель',
+  'Май',
+  'Июнь',
+  'Июль',
+  'Август',
+  'Сентябрь',
+  'Октябрь',
+  'Ноябрь',
+  'Декабрь',
 ]
 
 // Названия месяцев в родительном падеже — для диапазонов «21–27 сентября»
 const MONTHS_GENITIVE = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+  'января',
+  'февраля',
+  'марта',
+  'апреля',
+  'мая',
+  'июня',
+  'июля',
+  'августа',
+  'сентября',
+  'октября',
+  'ноября',
+  'декабря',
 ]
 
 /**
@@ -263,7 +275,9 @@ function isoWeekNumber(date) {
   const dayNum = (d.getUTCDay() + 6) % 7
   d.setUTCDate(d.getUTCDate() - dayNum + 3)
   const firstThursday = new Date(Date.UTC(d.getUTCFullYear(), 0, 4))
-  return 1 + Math.round(((d - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7)
+  return (
+    1 + Math.round(((d - firstThursday) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7)
+  )
 }
 
 /**
@@ -333,11 +347,7 @@ export function groupDaysByWeek(days) {
 }
 
 function formatWeekRange(start, end) {
-  const sameMonth = start.getMonth() === end.getMonth()
-  if (sameMonth) {
-    return `${start.getDate()}–${end.getDate()} ${MONTHS_GENITIVE[end.getMonth()]}`
-  }
-  return `${start.getDate()} ${MONTHS_GENITIVE[start.getMonth()]} – ${end.getDate()} ${MONTHS_GENITIVE[end.getMonth()]}`
+  return `${start.getDate()}–${end.getDate()}`
 }
 
 /**
@@ -414,7 +424,7 @@ export function groupDaysByYear(days) {
 
 export const FILTER_GROUPS = Object.freeze([
   {
-    label: 'Чек-ины',
+    label: 'Ежедневные',
     types: [
       { id: ENTRY_TYPES.MORNING, label: 'Утренний чек-ин' },
       { id: ENTRY_TYPES.EVENING, label: 'Вечерний разбор' },

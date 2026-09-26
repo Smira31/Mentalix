@@ -47,6 +47,12 @@ function moodWord(level) {
   return capitalize(MOOD_WORDS[(level || 3) - 1])
 }
 
+function moodColor(level) {
+  if (!level) return 'rgb(var(--c-card3, 46 46 46))'
+  const palette = ['#6A6A6A', '#8A8A8A', '#B0B0B0', '#D0D0D0', '#E6E6E6']
+  return palette[Math.min(Math.max(level, 1), 5) - 1]
+}
+
 function parseLessons(lessons) {
   if (!lessons) return []
   const lines = lessons.split('\n')
@@ -95,6 +101,7 @@ function EntryScreen({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [redoConfirm, setRedoConfirm] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   const isToday = entry.date === todayIso()
   const checkin = entry.checkin
@@ -111,7 +118,12 @@ function EntryScreen({
   return (
     <div className="mx-progress-entry animate-fade-in" data-testid="progress-entry-screen">
       {platformName !== 'telegram' && (
-        <button type="button" className="mx-progress-entry__back" aria-label="Назад" onClick={onBack}>
+        <button
+          type="button"
+          className="mx-progress-entry__back"
+          aria-label="Назад"
+          onClick={onBack}
+        >
           ‹
         </button>
       )}
@@ -174,7 +186,7 @@ function EntryScreen({
                     className="mx-progress-entry__menu-item mx-progress-entry__menu-item--danger"
                     onClick={() => {
                       setMenuOpen(false)
-                      onDelete()
+                      setDeleteConfirm(true)
                     }}
                   >
                     Удалить
@@ -225,11 +237,7 @@ function EntryScreen({
             </p>
           )}
           {checkin.ai_context_enabled ? (
-            <button
-              type="button"
-              onClick={onDiscuss}
-              className="mx-progress-entry__ai-discuss"
-            >
+            <button type="button" onClick={onDiscuss} className="mx-progress-entry__ai-discuss">
               Обсудить с AI
             </button>
           ) : (
@@ -238,12 +246,12 @@ function EntryScreen({
             </p>
           )}
           <p className="mx-progress-entry__delete-hint">
-            Удаление необратимо: исчезнет только этот чек-ин и его личные теги. Активность
-            ритуалов за день сохранится.
+            Удаление необратимо: исчезнет только этот чек-ин и его личные теги. Активность ритуалов
+            за день сохранится.
           </p>
           <button
             type="button"
-            onClick={onDelete}
+            onClick={() => setDeleteConfirm(true)}
             disabled={deleting}
             className="mx-progress-entry__delete-button"
           >
@@ -257,6 +265,53 @@ function EntryScreen({
         </div>
       )}
 
+      {deleteConfirm && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-confirm-title"
+          aria-describedby="delete-confirm-desc"
+          className="mx-progress-entry__confirm-overlay"
+          onClick={() => !deleting && setDeleteConfirm(false)}
+        >
+          <div className="mx-progress-entry__confirm-dialog" onClick={e => e.stopPropagation()}>
+            <h2 id="delete-confirm-title" className="mx-progress-entry__confirm-title">
+              Удалить запись?
+            </h2>
+            <p id="delete-confirm-desc" className="mx-progress-entry__confirm-desc">
+              Это нельзя отменить.
+            </p>
+            <div className="mx-progress-entry__confirm-buttons">
+              <button
+                type="button"
+                autoFocus
+                className="mx-progress-entry__confirm-cancel"
+                onClick={() => setDeleteConfirm(false)}
+                disabled={deleting}
+              >
+                Отмена
+              </button>
+              <button
+                type="button"
+                className="mx-progress-entry__confirm-accept mx-progress-entry__confirm-accept--danger"
+                onClick={() => {
+                  setDeleteConfirm(false)
+                  onDelete()
+                }}
+                disabled={deleting}
+              >
+                {deleting ? 'Удаляем…' : 'Удалить'}
+              </button>
+            </div>
+            {deleteError && (
+              <p role="alert" className="mx-progress-entry__error">
+                {deleteError}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {redoConfirm && (
         <div
           role="dialog"
@@ -264,10 +319,7 @@ function EntryScreen({
           className="mx-progress-entry__confirm-overlay"
           onClick={() => setRedoConfirm(null)}
         >
-          <div
-            className="mx-progress-entry__confirm-dialog"
-            onClick={e => e.stopPropagation()}
-          >
+          <div className="mx-progress-entry__confirm-dialog" onClick={e => e.stopPropagation()}>
             <h2 className="mx-progress-entry__confirm-title">Пройти заново?</h2>
             <p className="mx-progress-entry__confirm-desc">Текущие ответы заменятся.</p>
             <div className="mx-progress-entry__confirm-buttons">
@@ -341,10 +393,7 @@ function EveningBody({ checkin }) {
       {lessons.map(({ question, answer }) => (
         <div className="mx-progress-entry__field" key={question}>
           <div className="mx-progress-entry__field-label">{question}</div>
-          <MarkdownText
-            content={answer}
-            className="mx-progress-entry__field-value"
-          />
+          <MarkdownText content={answer} className="mx-progress-entry__field-value" />
         </div>
       ))}
       {wins.length > 0 && (
@@ -354,10 +403,7 @@ function EveningBody({ checkin }) {
             {wins.map((win, index) => (
               <li key={index} className="mx-progress-entry__win">
                 <span className="mx-progress-entry__win-num">{index + 1}</span>
-                <MarkdownText
-                  content={win}
-                  className="mx-progress-entry__field-value"
-                />
+                <MarkdownText content={win} className="mx-progress-entry__field-value" />
               </li>
             ))}
           </ul>
@@ -403,10 +449,7 @@ function JournalBody({ entry }) {
       {entry.phases.map(phase => (
         <div className="mx-progress-entry__field" key={phase.key}>
           <div className="mx-progress-entry__field-label">{phase.label}</div>
-          <MarkdownText
-            content={phase.text}
-            className="mx-progress-entry__field-value"
-          />
+          <MarkdownText content={phase.text} className="mx-progress-entry__field-value" />
         </div>
       ))}
     </>
@@ -423,12 +466,16 @@ function PeriodCard({ rangeLabel, title, onClick, testId }) {
       data-testid={testId}
       onClick={onClick}
     >
-      {rangeLabel && (
-        <span className="mx-progress-history__period-card-range">{rangeLabel}</span>
-      )}
+      {rangeLabel && <span className="mx-progress-history__period-card-range">{rangeLabel}</span>}
       <span className="mx-progress-history__period-card-title">{title}</span>
     </button>
   )
+}
+
+function entryMoodChip(entry) {
+  if (entry.checkin?.mood != null) return { text: moodWord(entry.checkin.mood), mood: entry.checkin.mood }
+  if (entry.moodPractice?.mood != null) return { text: moodWord(entry.moodPractice.mood), mood: entry.moodPractice.mood }
+  return null
 }
 
 function DayList({ days, onSelectEntry }) {
@@ -436,24 +483,36 @@ function DayList({ days, onSelectEntry }) {
     <div className="mx-progress-history__group" key={day.date}>
       <div className="mx-progress-history__day-label">
         <span>{formatDayLabel(day.date)}</span>
-        <span className="mx-progress-history__day-chevron" aria-hidden="true">›</span>
+        <span className="mx-progress-history__day-chevron" aria-hidden="true">
+          ›
+        </span>
       </div>
-      {day.entries.map((entry, index) => (
-        <button
-          type="button"
-          key={`${entry.type}-${index}`}
-          className="mx-progress-history__row"
-          data-testid="progress-history-row"
-          onClick={() => onSelectEntry(entry)}
-        >
-          <span className="mx-progress-history__row-name">
-            {entryListName(entry.type)}
-          </span>
-          {entry.time && (
-            <span className="mx-progress-history__row-time">{entry.time}</span>
-          )}
-        </button>
-      ))}
+      {day.entries.map((entry, index) => {
+        const moodChip = entryMoodChip(entry)
+        return (
+          <button
+            type="button"
+            key={`${entry.type}-${index}`}
+            className="mx-progress-history__row"
+            data-testid="progress-history-row"
+            onClick={() => onSelectEntry(entry)}
+          >
+            <span className="mx-progress-history__row-left">
+              <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
+              {moodChip && (
+                <span className="mx-progress-history__row-mood" aria-hidden="true">
+                  <span
+                    className="mx-progress-history__row-mood-dot"
+                    style={{ background: moodColor(moodChip.mood) }}
+                  />
+                  {moodChip.text}
+                </span>
+              )}
+            </span>
+            {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+          </button>
+        )
+      })}
     </div>
   ))
 }
@@ -544,11 +603,19 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
 
   // ── Сохранение выбора в localStorage ──
   useEffect(() => {
-    try { localStorage.setItem(GRANULARITY_KEY, granularity) } catch { /* приватный режим */ }
+    try {
+      localStorage.setItem(GRANULARITY_KEY, granularity)
+    } catch {
+      /* приватный режим */
+    }
   }, [granularity])
 
   useEffect(() => {
-    try { localStorage.setItem(FILTER_KEY, JSON.stringify([...filterTypes])) } catch { /* приватный режим */ }
+    try {
+      localStorage.setItem(FILTER_KEY, JSON.stringify([...filterTypes]))
+    } catch {
+      /* приватный режим */
+    }
   }, [filterTypes])
 
   // ── «Назад» для меню группировки ──
@@ -580,7 +647,6 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
   async function deleteSelectedCheckin() {
     const checkin = selectedEntry?.checkin
     if (!checkin || deleting) return
-    if (!window.confirm('Удалить эту сохранённую запись? Это действие нельзя отменить.')) return
 
     setDeleting(true)
     setDeleteError('')
@@ -671,10 +737,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
   }
 
   // ── Вычисляемые значения ──
-  const availableTypes = useMemo(
-    () => (days ? getAvailableFilterTypes(days) : new Set()),
-    [days]
-  )
+  const availableTypes = useMemo(() => (days ? getAvailableFilterTypes(days) : new Set()), [days])
   const filteredDays = useMemo(
     () => (days ? filterDaysByTypes(days, filterTypes) : days),
     [days, filterTypes]
@@ -704,66 +767,80 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
   }
 
   // ── Портал кнопок в сегмент-бар ──
-  const actionButtons = portalTarget && createPortal(
-    <>
-      <div className="mx-progress-history-actions" data-testid="history-action-buttons">
-        <button
-          type="button"
-          className="mx-progress-grouping-pill"
-          data-testid="history-grouping-pill"
-          aria-expanded={granularityMenuOpen}
-          aria-controls="history-grouping-menu"
-          onClick={() => setGranularityMenuOpen(v => !v)}
-        >
-          <span>{granLabel}</span>
-          <span className="mx-progress-grouping-pill__chevron" aria-hidden="true">⌄</span>
-        </button>
-        <button
-          type="button"
-          className="mx-progress-action-btn"
-          data-testid="history-filter-btn"
-          aria-label="Фильтры"
-          onClick={() => { platform.haptic('light'); setFilterOpen(true) }}
-        >
-          <Filter size={20} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="mx-progress-action-btn"
-          data-testid="history-search-btn"
-          aria-label="Поиск"
-          onClick={() => { platform.haptic('light'); setSearchOpen(true) }}
-        >
-          <Search size={20} aria-hidden="true" />
-        </button>
-      </div>
-      {granularityMenuOpen && (
-        <div
-          id="history-grouping-menu"
-          className="mx-progress-grouping-menu"
-          role="menu"
-          aria-label="Группировка истории"
-          data-testid="history-grouping-menu"
-        >
-          {HISTORY_GRANULARITIES.map(g => (
-            <button
-              key={g.id}
-              type="button"
-              className="mx-progress-grouping-menu__item"
-              role="menuitemradio"
-              aria-checked={granularity === g.id}
-              data-testid={`history-grouping-${g.id}`}
-              onClick={() => selectGranularity(g.id)}
-            >
-              {granularity === g.id && <span className="mx-progress-grouping-menu__check" aria-hidden="true">✓</span>}
-              <span>{g.label}</span>
-            </button>
-          ))}
+  const actionButtons =
+    portalTarget &&
+    createPortal(
+      <>
+        <div className="mx-progress-history-actions" data-testid="history-action-buttons">
+          <button
+            type="button"
+            className="mx-progress-grouping-pill"
+            data-testid="history-grouping-pill"
+            aria-expanded={granularityMenuOpen}
+            aria-controls="history-grouping-menu"
+            onClick={() => setGranularityMenuOpen(v => !v)}
+          >
+            <span>{granLabel}</span>
+            <span className="mx-progress-grouping-pill__chevron" aria-hidden="true">
+              ⌄
+            </span>
+          </button>
+          <button
+            type="button"
+            className={`mx-progress-action-btn${filterTypes.size > 0 ? ' mx-progress-action-btn--active' : ''}`}
+            data-testid="history-filter-btn"
+            aria-label="Фильтры"
+            onClick={() => {
+              platform.haptic('light')
+              setFilterOpen(true)
+            }}
+          >
+            <Filter size={20} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="mx-progress-action-btn"
+            data-testid="history-search-btn"
+            aria-label="Поиск"
+            onClick={() => {
+              platform.haptic('light')
+              setSearchOpen(true)
+            }}
+          >
+            <Search size={20} aria-hidden="true" />
+          </button>
         </div>
-      )}
-    </>,
-    portalTarget
-  )
+        {granularityMenuOpen && (
+          <div
+            id="history-grouping-menu"
+            className="mx-progress-grouping-menu"
+            role="menu"
+            aria-label="Группировка истории"
+            data-testid="history-grouping-menu"
+          >
+            {HISTORY_GRANULARITIES.map(g => (
+              <button
+                key={g.id}
+                type="button"
+                className="mx-progress-grouping-menu__item"
+                role="menuitemradio"
+                aria-checked={granularity === g.id}
+                data-testid={`history-grouping-${g.id}`}
+                onClick={() => selectGranularity(g.id)}
+              >
+                {granularity === g.id && (
+                  <span className="mx-progress-grouping-menu__check" aria-hidden="true">
+                    ✓
+                  </span>
+                )}
+                <span>{g.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </>,
+      portalTarget
+    )
 
   /* ── Загрузка ── */
   if (days === null) {
@@ -889,47 +966,47 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
       <div className="mx-progress-history" data-testid="progress-history-list">
         <h2 className="mx-progress-history__title">история.</h2>
 
-        {granularity === 'day' && (
-          <DayList days={filteredDays} onSelectEntry={setSelectedEntry} />
-        )}
+        {granularity === 'day' && <DayList days={filteredDays} onSelectEntry={setSelectedEntry} />}
 
-        {granularity === 'week' && groupDaysByWeek(filteredDays).map(group => (
-          <div className="mx-progress-history__period-section" key={group.monthLabel}>
-            <h3 className="mx-progress-history__period-header">{group.monthLabel}</h3>
-            {group.cards.map(card => (
-              <PeriodCard
-                key={card.startDate}
-                rangeLabel={card.rangeLabel}
-                title={`Неделя ${card.weekNumber}`}
-                testId="history-week-card"
-                onClick={() => openPeriod(card)}
-              />
-            ))}
-          </div>
-        ))}
+        {granularity === 'week' &&
+          groupDaysByWeek(filteredDays).map(group => (
+            <div className="mx-progress-history__period-section" key={group.monthLabel}>
+              <h3 className="mx-progress-history__period-header">{group.monthLabel}</h3>
+              {group.cards.map(card => (
+                <PeriodCard
+                  key={card.startDate}
+                  title={`${card.rangeLabel} · Неделя`}
+                  testId="history-week-card"
+                  onClick={() => openPeriod(card)}
+                />
+              ))}
+            </div>
+          ))}
 
-        {granularity === 'month' && groupDaysByMonth(filteredDays).map(group => (
-          <div className="mx-progress-history__period-section" key={group.yearLabel}>
-            <h3 className="mx-progress-history__period-header">{group.yearLabel}</h3>
-            {group.cards.map(card => (
-              <PeriodCard
-                key={card.startDate}
-                title={card.label}
-                testId="history-month-card"
-                onClick={() => openPeriod(card)}
-              />
-            ))}
-          </div>
-        ))}
+        {granularity === 'month' &&
+          groupDaysByMonth(filteredDays).map(group => (
+            <div className="mx-progress-history__period-section" key={group.yearLabel}>
+              <h3 className="mx-progress-history__period-header">{group.yearLabel}</h3>
+              {group.cards.map(card => (
+                <PeriodCard
+                  key={card.startDate}
+                  title={card.label}
+                  testId="history-month-card"
+                  onClick={() => openPeriod(card)}
+                />
+              ))}
+            </div>
+          ))}
 
-        {granularity === 'year' && groupDaysByYear(filteredDays).map(card => (
-          <PeriodCard
-            key={card.startDate}
-            title={card.label}
-            testId="history-year-card"
-            onClick={() => openPeriod(card)}
-          />
-        ))}
+        {granularity === 'year' &&
+          groupDaysByYear(filteredDays).map(card => (
+            <PeriodCard
+              key={card.startDate}
+              title={card.label}
+              testId="history-year-card"
+              onClick={() => openPeriod(card)}
+            />
+          ))}
       </div>
     </>
   )
