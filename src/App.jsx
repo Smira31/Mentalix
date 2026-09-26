@@ -299,6 +299,7 @@ function App() {
   const [todaySeriesOpen, setTodaySeriesOpen] = useState(false)
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
+  const [libraryInputMode, setLibraryInputMode] = useState(false)
   const demoBackRefs = useRef({ mentor: null, today: null, practices: null, settings: null })
   const [demoMotionTick, setDemoMotionTick] = useState(0)
 
@@ -512,7 +513,7 @@ function App() {
   }, [])
 
   const bottomNavigationHidden =
-    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen
+    mentorPersonaOpen || todayFlowOpen || todaySeriesOpen || practiceGameOpen || libraryInputMode
 
   useEffect(() => {
     if (!isPreviewDemoMode()) return
@@ -1479,7 +1480,9 @@ function App() {
                     />
                   )}
 
-                  {user && tab === 'library' && <Library user={user} />}
+                  {user && tab === 'library' && (
+                    <Library user={user} onInputModeChange={setLibraryInputMode} />
+                  )}
 
                   {user && tab === 'trends' && (
                     <Analytics

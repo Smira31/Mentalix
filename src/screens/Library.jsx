@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 import SemanticGlyph, { semanticKindForArticle } from '../components/SemanticGlyph'
+import NestedScreenHeader from '../components/NestedScreenHeader'
 import ArticleCover from '../components/ArticleCover'
 import { ARTICLES } from '../data/articles'
 import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/libraryDataCache'
@@ -112,19 +113,10 @@ function LibraryV2JournalLanding({ onOpen }) {
 function LibraryV2ProgramDetail({ title, onBack }) {
   return (
     <div className="mx-library-v2__program-detail animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
+      <NestedScreenHeader title={title.toLowerCase() + '.'} onBack={onBack} registerSystemBack={false} />
       <div className="mx-library-v2__program-detail-art" aria-hidden="true">
         <SemanticGlyph kind="focus" animated={false} />
       </div>
-      <span className="mx-library-v2__article-tag">ПРОГРАММЫ</span>
-      <h1>{title}</h1>
       <p>Выстроить устойчивый ритм и доводить важное до конца без давления на себя.</p>
       <strong>Скоро</strong>
     </div>
@@ -150,15 +142,7 @@ function LibraryV2CatalogCard({ title, description, kind, article, onOpen }) {
 function LibraryV2ProgramsCatalog({ onBack, onOpen }) {
   return (
     <div className="mx-library-v2__catalog animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
-      <h1 className="font-display mx-type-page text-cream lowercase">программы.</h1>
+      <NestedScreenHeader title="программы." onBack={onBack} registerSystemBack={false} />
       <div className="mx-library-v2__catalog-grid" aria-label="Каталог программ">
         {LIBRARY_V2_PROGRAMS.map(([title, kind, description]) => (
           <LibraryV2CatalogCard
@@ -177,15 +161,7 @@ function LibraryV2ProgramsCatalog({ onBack, onOpen }) {
 function LibraryV2ArticlesCatalog({ onBack, onOpen }) {
   return (
     <div className="mx-library-v2__catalog animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
-      <h1 className="font-display mx-type-page text-cream lowercase">статьи.</h1>
+      <NestedScreenHeader title="статьи." onBack={onBack} registerSystemBack={false} />
       <div className="mx-library-v2__catalog-grid" aria-label="Каталог статей">
         {ARTICLES.map(article => (
           <LibraryV2CatalogCard
@@ -207,14 +183,7 @@ function LibraryV2ArticleReader({ article, onBack }) {
     .filter(Boolean)
   return (
     <div className="mx-library-v2__reader animate-fade-in">
-      <button
-        type="button"
-        className="mx-library-collection-back"
-        onClick={onBack}
-        aria-label="Назад"
-      >
-        <ArrowLeft size={19} />
-      </button>
+      <NestedScreenHeader title="статья." onBack={onBack} registerSystemBack={false} />
       <ArticleCover article={article} variant="banner" className="mb-5" />
       <h1>{article.title}</h1>
       <div className="mx-library-v2__reader-meta">
@@ -439,7 +408,7 @@ function LibraryHome({
   )
 }
 
-export default function Library({ user }) {
+export default function Library({ user, onInputModeChange }) {
   const [screen, setScreen] = useState('home')
   const [initialArticle, setInitialArticle] = useState(null)
   const [libraryV2Article, setLibraryV2Article] = useState(null)
@@ -533,7 +502,7 @@ export default function Library({ user }) {
   if (screen === 'journals') {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <GuidedJournals user={user} onExit={() => setScreen('home')} />
+        <GuidedJournals user={user} onExit={() => setScreen('home')} onInputModeChange={onInputModeChange} />
       </div>
     )
   }

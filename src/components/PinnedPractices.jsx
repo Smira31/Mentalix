@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Check, Settings2, X } from 'lucide-react'
 
-import BackButton from './BackButton'
+import { RoundBackButton } from './NestedScreenHeader'
 import CardSystemGlyph, { practiceGlyphKind } from './CardSystemGlyph'
 import { api } from '../lib/api'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
@@ -11,6 +11,7 @@ import {
   useFullscreenSurface,
 } from '../lib/fullscreenSurface'
 import { isTelegramRuntime } from '../lib/visualViewport'
+import { useBackButton } from '../platform/telegram.hooks'
 import {
   fetchPinnedPractices,
   invalidatePinnedPractices,
@@ -20,6 +21,8 @@ import {
 function Sheet({ title, subtitle = null, onClose, children, footer = null, undo = null, onUndo = null }) {
   const { style: viewportStyle } = useFullscreenSurface()
   const telegram = isTelegramRuntime()
+
+  useBackButton(onClose)
 
   const content = (
     <div
@@ -35,14 +38,16 @@ function Sheet({ title, subtitle = null, onClose, children, footer = null, undo 
         style={{ paddingTop: viewportStyle.paddingTop }}
       >
         <div className="mx-pinned-sheet__header">
-          <BackButton onClick={onClose} showInDemo />
-          <h2 className="font-display mx-type-card text-cream lowercase">{title}</h2>
+          <div className="mx-pinned-sheet__header-top">
+            <RoundBackButton onClick={onClose} />
+            {!telegram && (
+              <button type="button" className="mx-icon-button" aria-label="Закрыть" onClick={onClose}>
+                <X size={19} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+          <h2 className="font-display mx-type-page text-cream lowercase">{title}</h2>
           {subtitle && <p className="mx-pinned-sheet__subtitle text-muted">{subtitle}</p>}
-          {!telegram && (
-            <button type="button" className="mx-icon-button" aria-label="Закрыть" onClick={onClose}>
-              <X size={19} aria-hidden="true" />
-            </button>
-          )}
         </div>
         <div className="mx-pinned-sheet__body">{children}</div>
         {footer && <div className="mx-pinned-sheet__footer">{footer}</div>}

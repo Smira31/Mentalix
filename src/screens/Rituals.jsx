@@ -13,9 +13,9 @@ import {
 } from '../lib/fullscreenSurface'
 import SemanticGlyph, { semanticKindForRitual } from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
-import BackButton from '../components/BackButton'
+import NestedScreenHeader, { RoundBackButton } from '../components/NestedScreenHeader'
 import WebActionBar from '../components/WebActionBar'
-import { useMainButton } from '../platform/telegram.hooks'
+import { useMainButton, useBackButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
 import '../components/practices/SceneLayout.css'
 const EMPTY_DRAFT = {
@@ -30,6 +30,7 @@ const EMPTY_DRAFT = {
 import PracticeDetail from '../components/PracticeDetail'
 function CreateRitualScreen({ onCreate, onCancel }) {
   const { style: surfaceStyle } = useFullscreenSurface()
+  useBackButton(onCancel)
 
   const [draft, setDraft] = useState(EMPTY_DRAFT)
   const [saving, setSaving] = useState(false)
@@ -87,14 +88,14 @@ function CreateRitualScreen({ onCreate, onCancel }) {
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} mx-practice-flow__header px-[var(--mx-screen-x)]`}
       >
         <div className="w-full max-w-md mx-auto">
-          <BackButton onClick={onCancel} />
+          <RoundBackButton onClick={onCancel} />
         </div>
       </div>
 
       <div className={`${FULLSCREEN_SCROLL_CLASS} mx-practice-flow__body practice-form__scroll`}>
         <div className="practice-form__inner w-full max-w-md mx-auto px-[var(--mx-screen-x)] flex flex-col">
           <div className="mb-8">
-            <h2 className="font-display text-[24px] font-semibold text-cream lowercase">
+            <h2 className="font-display mx-type-page text-cream lowercase">
               новый ритуал.
             </h2>
           </div>
@@ -229,10 +230,7 @@ export default function Rituals({ user, onBack }) {
 
   return (
     <div className="mx-rituals-screen mx-practice-list-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
-      <div className="flex items-center gap-3 mb-5 mx-rituals-screen__header">
-        <BackButton onClick={onBack} />
-        <h2 className="font-display text-[20px] text-cream lowercase">ритуалы.</h2>
-      </div>
+      <NestedScreenHeader title="ритуалы." onBack={onBack} />
       <p className="mx-practice-list-screen__intro">обряды, что держат твой день</p>
       {writeError && (
         <p role="alert" className="text-[12px] text-amber-200 mb-4">

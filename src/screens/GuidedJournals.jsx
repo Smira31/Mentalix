@@ -1,8 +1,9 @@
 import { getFullscreenPortalTarget } from '../lib/fullscreenSurface'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowLeft, Check, Plus, Search, Trash2 } from 'lucide-react'
+import { Check, Plus, Search, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import NestedScreenHeader, { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import {
@@ -177,10 +178,12 @@ function CompletedSessionViewer({ completedSession, onClose }) {
       <header
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
       >
-        <BackButton onClick={onClose} label="К архиву" />
+        <div className="w-full max-w-md mx-auto">
+          <RoundBackButton onClick={onClose} label="К архиву" />
+        </div>
       </header>
       <div className={FULLSCREEN_SCROLL_CLASS}>
-        <div className="w-full max-w-md px-[var(--mx-screen-x)] pb-8">
+        <div className="w-full max-w-md mx-auto px-[var(--mx-screen-x)] pb-8">
           <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Архив записи</p>
           <h3 className="mt-3 font-display text-[28px] leading-tight text-cream">
             {template.title || 'Направленная запись'}
@@ -280,19 +283,11 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
 
   return (
     <section className="animate-fade-in">
-      <div className="grid min-h-[42px] grid-cols-[1fr_auto_1fr] items-center">
-        <button
-          type="button"
-          onClick={onBack}
-          className="justify-self-start rounded-full px-3 py-2 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          Назад
-        </button>
-        <h3 className="font-display text-[20px] text-cream">
-          {isEditing ? 'Редактировать шаблон' : 'Свой шаблон'}
-        </h3>
-        <span aria-hidden="true" />
-      </div>
+      <NestedScreenHeader
+        title={isEditing ? 'редактировать шаблон.' : 'свой шаблон.'}
+        onBack={onBack}
+        registerSystemBack={false}
+      />
 
       <div className="mt-5 space-y-4">
         <input
@@ -406,7 +401,7 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
   )
 }
 
-export default function GuidedJournals({ user, onExit }) {
+export default function GuidedJournals({ user, onExit, onInputModeChange }) {
   const canUseGuidedJournals = platformName === 'telegram' && Number(user?.id) > 0
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
@@ -421,6 +416,12 @@ export default function GuidedJournals({ user, onExit }) {
   const [session, setSession] = useState(null)
   const [stepIndex, setStepIndex] = useState(0)
   const [builderOpen, setBuilderOpen] = useState(false)
+
+  // G8: панель вкладок скрыта на экране создания/редактирования шаблона
+  useEffect(() => {
+    onInputModeChange?.(builderOpen)
+    return () => onInputModeChange?.(false)
+  }, [builderOpen, onInputModeChange])
   const [editingTemplate, setEditingTemplate] = useState(null)
   const [deletingTemplate, setDeletingTemplate] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -637,14 +638,7 @@ export default function GuidedJournals({ user, onExit }) {
     return (
       <section className="mt-8 animate-fade-in">
         {onExit && (
-          <button
-            type="button"
-            className="mx-library-collection-back"
-            aria-label="Вернуться в библиотеку"
-            onClick={onExit}
-          >
-            <ArrowLeft size={19} />
-          </button>
+          <NestedScreenHeader title="направленные записи." onBack={onExit} registerSystemBack={false} />
         )}
         <div className="rounded-3xl bg-emerald p-5">
           <h2 className="font-display text-[25px] text-cream">Направленные записи</h2>
@@ -712,14 +706,7 @@ export default function GuidedJournals({ user, onExit }) {
 
     return (
       <section className="animate-fade-in">
-        <button
-          type="button"
-          onClick={() => setSession(null)}
-          className="flex min-h-11 items-center gap-2 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          <ArrowLeft size={16} />
-          Сохранить и выйти
-        </button>
+        <RoundBackButton onClick={() => setSession(null)} label="Сохранить и выйти" />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
           {selected?.title || session.template.title} · {stepIndex + 1} из {steps.length}
         </p>
@@ -757,13 +744,7 @@ export default function GuidedJournals({ user, onExit }) {
   if (selected) {
     return (
       <section className="animate-fade-in">
-        <button
-          type="button"
-          onClick={() => setSelected(null)}
-          className="flex min-h-11 items-center gap-2 text-[13px] font-semibold text-muted active:text-gold"
-        >
-          <ArrowLeft size={16} />К каталогу
-        </button>
+        <RoundBackButton onClick={() => setSelected(null)} label="К каталогу" />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
           {selected.category}
         </p>
@@ -818,19 +799,10 @@ export default function GuidedJournals({ user, onExit }) {
     <section className="animate-fade-in">
       {onExit && (
         <>
-          <button
-            type="button"
-            className="mx-library-collection-back"
-            aria-label="Вернуться в библиотеку"
-            onClick={onExit}
-          >
-            <ArrowLeft size={19} />
-          </button>
-          <header className="mx-library-collection-header">
-            <span>Коллекция</span>
-            <h2>Направленные записи.</h2>
-            <p>Готовые вопросы и личные шаблоны для спокойной рефлексии.</p>
-          </header>
+          <NestedScreenHeader title="направленные записи." onBack={onExit} registerSystemBack={false} />
+          <p className="text-[13px] leading-relaxed text-muted -mt-2 mb-5">
+            Готовые вопросы и личные шаблоны для спокойной рефлексии.
+          </p>
         </>
       )}
       <div className="flex items-center justify-between gap-3">

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Plus, Pencil } from 'lucide-react'
 
 import { platform } from '../platform'
-import BackButton from '../components/BackButton'
+import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
 import { CheckInQuestion, CheckInNextControls } from './CheckIn'
 import {
@@ -13,6 +13,7 @@ import {
   FULLSCREEN_SCROLL_CLASS,
   getFullscreenPortalTarget,
 } from '../lib/fullscreenSurface'
+import { useBackButton } from '../platform/telegram.hooks'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { loadAlterEgos, saveAlterEgo, updateAlterEgo, deleteAlterEgo } from '../lib/alterEgoStorage'
 import alterEgoMask from '../assets/alter-ego/alter-ego-mask.webp'
@@ -84,6 +85,13 @@ function AlterEgoJournal({ initialDraft, editingId, onSave, onCancel }) {
   const [step, setStep] = useState(0)
   const [draft, setDraft] = useState(initialDraft || emptyDraft())
   const { style: surfaceStyle } = useFullscreenSurface()
+  useBackButton(() => {
+    if (step === 0) {
+      onCancel()
+    } else {
+      setStep(s => s - 1)
+    }
+  })
 
   const question = QUESTIONS[step]
   const isLast = step === TOTAL_PAGES - 1
@@ -118,7 +126,7 @@ function AlterEgoJournal({ initialDraft, editingId, onSave, onCancel }) {
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={surfaceStyle} data-testid="alter-ego-flow">
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <BackButton onClick={handleBack} />
+        <RoundBackButton onClick={handleBack} />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -221,6 +229,7 @@ function AlterEgoCard({ card, onWear, onRewrite, onDelete }) {
 
 function WearMask({ card, onDone, onRewrite }) {
   const { style: surfaceStyle } = useFullscreenSurface()
+  useBackButton(onDone)
 
   useEffect(() => {
     platform.haptic('light')
@@ -233,7 +242,7 @@ function WearMask({ card, onDone, onRewrite }) {
       data-testid="alter-ego-wear-screen"
     >
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <BackButton onClick={onDone} label="Закрыть" />
+        <RoundBackButton onClick={onDone} label="Закрыть" />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -301,6 +310,7 @@ export default function AlterEgo({ user, onBack }) {
   const [wearCard, setWearCard] = useState(null)
   const demoMode = isPreviewDemoMode()
   const { style: listSurfaceStyle } = useFullscreenSurface()
+  useBackButton(onBack)
 
   const loadCards = useCallback(async () => {
     setLoading(true)
@@ -424,7 +434,7 @@ export default function AlterEgo({ user, onBack }) {
   return createPortal(
     <div className={FULLSCREEN_SHELL_CLASS} style={listSurfaceStyle} data-testid="alter-ego-screen">
       <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
-        <BackButton onClick={onBack} />
+        <RoundBackButton onClick={onBack} />
       </div>
 
       <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -432,7 +442,7 @@ export default function AlterEgo({ user, onBack }) {
           className="w-full max-w-md mx-auto flex flex-1 flex-col"
           style={{ paddingInline: '21px' }}
         >
-          <h1 className="font-display mx-type-page text-cream lowercase text-center mt-4 mb-2">
+          <h1 className="font-display mx-type-page text-cream lowercase mt-4 mb-2">
             альтер-эго.
           </h1>
 
