@@ -208,11 +208,15 @@
 }
 
 @keyframes mx-history-loading {
-  to { opacity: 0.45; }
+  to {
+    opacity: 0.45;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mx-progress-history__skeleton-group { animation: none; }
+  .mx-progress-history__skeleton-group {
+    animation: none;
+  }
 }
 
 /* ── Экран записи ── */
@@ -587,6 +591,16 @@
   font-weight: 700;
   color: rgb(var(--c-bg, 5 4 3));
   cursor: pointer;
+}
+
+.mx-progress-entry__confirm-accept:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mx-progress-entry__confirm-accept--danger {
+  background: #ef4444;
+  color: rgb(var(--c-text, 243 243 243));
 }
 
 /* ── Шаг 3: кнопки действий вкладки «История» (§5.5) ── */
