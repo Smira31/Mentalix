@@ -466,6 +466,12 @@ function PeriodCard({ rangeLabel, title, onClick, testId }) {
   )
 }
 
+function entryMoodChip(entry) {
+  if (entry.checkin?.mood != null) return moodWord(entry.checkin.mood)
+  if (entry.moodPractice?.mood != null) return moodWord(entry.moodPractice.mood)
+  return null
+}
+
 function DayList({ days, onSelectEntry }) {
   return days.map(day => (
     <div className="mx-progress-history__group" key={day.date}>
@@ -475,18 +481,28 @@ function DayList({ days, onSelectEntry }) {
           ›
         </span>
       </div>
-      {day.entries.map((entry, index) => (
-        <button
-          type="button"
-          key={`${entry.type}-${index}`}
-          className="mx-progress-history__row"
-          data-testid="progress-history-row"
-          onClick={() => onSelectEntry(entry)}
-        >
-          <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
-          {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
-        </button>
-      ))}
+      {day.entries.map((entry, index) => {
+        const moodChip = entryMoodChip(entry)
+        return (
+          <button
+            type="button"
+            key={`${entry.type}-${index}`}
+            className="mx-progress-history__row"
+            data-testid="progress-history-row"
+            onClick={() => onSelectEntry(entry)}
+          >
+            <span className="mx-progress-history__row-left">
+              <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
+              {moodChip && (
+                <span className="mx-progress-history__row-mood" aria-hidden="true">
+                  {moodChip}
+                </span>
+              )}
+            </span>
+            {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+          </button>
+        )
+      })}
     </div>
   ))
 }
@@ -761,7 +777,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
           </button>
           <button
             type="button"
-            className="mx-progress-action-btn"
+            className={`mx-progress-action-btn${filterTypes.size > 0 ? ' mx-progress-action-btn--active' : ''}`}
             data-testid="history-filter-btn"
             aria-label="Фильтры"
             onClick={() => {
@@ -949,8 +965,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
               {group.cards.map(card => (
                 <PeriodCard
                   key={card.startDate}
-                  rangeLabel={card.rangeLabel}
-                  title={`Неделя ${card.weekNumber}`}
+                  title={`${card.rangeLabel} · Неделя`}
                   testId="history-week-card"
                   onClick={() => openPeriod(card)}
                 />
