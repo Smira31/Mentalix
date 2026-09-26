@@ -6,6 +6,10 @@ const practicesSource = await readFile(
   new URL('../../src/screens/Practices.jsx', import.meta.url),
   'utf8'
 )
+const cacheSource = await readFile(
+  new URL('../../src/lib/themesDataCache.js', import.meta.url),
+  'utf8'
+)
 const catalogSource = await readFile(
   new URL('../../src/components/PracticeCatalogV2.jsx', import.meta.url),
   'utf8'
@@ -16,8 +20,9 @@ const layeredStyles = await readFile(
 )
 
 test('MXL-525 (G5): тема недели ставит is_current первой', () => {
+  // Сортировка перенесена из Practices.jsx в themesDataCache.js.
   assert.match(
-    practicesSource,
+    cacheSource,
     /\(b\.is_current === true \? 1 : 0\) - \(a\.is_current === true \? 1 : 0\)/
   )
 })
@@ -31,7 +36,8 @@ test('MXL-525 (G5): ошибка загрузки тем отделена от �
 })
 
 test('MXL-547: каталог использует четыре реальных вопроса текущей темы', () => {
-  assert.match(practicesSource, /api\.themes\.get\(currentTheme\.id, user\.id\)/)
+  // api.themes.get перенесён из Practices.jsx в themesDataCache.js.
+  assert.match(cacheSource, /api\.themes\.get\(currentTheme\.id, userId\)/)
   assert.match(catalogSource, /theme\.days\.slice\(0, 4\)/)
   assert.match(catalogSource, /\{question\.day \?\? index \+ 1\}/)
   assert.doesNotMatch(catalogSource, /padStart/)
