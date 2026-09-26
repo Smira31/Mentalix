@@ -1,5 +1,6 @@
 import { api } from './api'
 import { withRetry, isRetryableError, RETRY_DELAYS_MS } from './todayRetry'
+import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 
 /*
  * IN-MEMORY КЕШ ДАННЫХ ЭКРАНА «СЕГОДНЯ»
@@ -107,7 +108,7 @@ function sanitizeTodayData(data) {
     checkin: sanitizeCheckin(data?.checkin),
     themes: sanitizeThemes(data?.themes),
     settings: {
-      review_hour: finiteNumber(data?.settings?.review_hour) ? data.settings.review_hour : 19,
+      review_hour: finiteNumber(data?.settings?.review_hour) ? data.settings.review_hour : DEFAULT_REVIEW_HOUR,
     },
   }
 }

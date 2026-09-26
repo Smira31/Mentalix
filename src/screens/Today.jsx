@@ -43,7 +43,7 @@ import { NewBadgeSheet } from './SeriesBadges'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
 import { resolveContextualCheckin } from '../lib/contextualDeepLink'
 import BreathingPractice from './BreathingPractice'
-import { formatReviewTime, resolveTodayCardStates, primaryCardKind } from '../lib/todayCardState'
+import { formatReviewTime, resolveTodayCardStates, primaryCardKind, DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { collectActivityDays } from '../lib/series'
 import { now as clockNow } from '../lib/clock'
 import { demoScenario } from '../lib/demoMode'
@@ -330,7 +330,7 @@ export default function Today({
   )
 
   const [reviewHour, setReviewHour] = useState(
-    () => initialTodaySnapshot?.settings?.review_hour ?? 19
+    () => initialTodaySnapshot?.settings?.review_hour ?? DEFAULT_REVIEW_HOUR
   )
 
   const [theme, setTheme] = useState(() => pickCurrentTheme(initialTodaySnapshot?.themes))
@@ -621,7 +621,7 @@ export default function Today({
             if (active) setPracticeDays([])
           })
 
-        setReviewHour(settingsData?.review_hour ?? 19)
+        setReviewHour(settingsData?.review_hour ?? DEFAULT_REVIEW_HOUR)
       } catch (error) {
         console.error(error)
         if (active) setLoadError(true)
