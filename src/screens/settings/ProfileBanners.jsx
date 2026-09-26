@@ -29,7 +29,7 @@ function BannerArt({ art2x, art3x, width, height }) {
   )
 }
 
-export function PotentialBanner({ onOpen }) {
+export function PotentialBanner({ onOpen, stageImage }) {
   return (
     // Тап по всей карточке ведёт туда же, куда кнопка: клик по кнопке всплывает сюда.
     <div
@@ -38,7 +38,7 @@ export function PotentialBanner({ onOpen }) {
       onClick={onOpen}
     >
       {/* Персонаж справа снизу, крупный, частично обрезан краем карточки. */}
-      <BannerArt art2x={potentialArt2x} art3x={potentialArt3x} width={200} height={139} />
+      <BannerArt art2x={stageImage || potentialArt2x} art3x={stageImage || potentialArt3x} width={200} height={139} />
       <h2 className="mx-profile-banner__title">Открой весь потенциал Mentalix</h2>
       {/* «Mentalix Pro» не разрывается переносом строки. */}
       <p className="mx-profile-banner__text">
@@ -103,10 +103,22 @@ export function WebBanner({ onOpen }) {
   )
 }
 
-export function ProfileBanners({ showWeb, onOpenSubscription, onOpenDonate, onOpenWeb }) {
+export function ProfileBanners({ showWeb, onOpenSubscription, onOpenDonate, onOpenWeb, maskStage, maskNext, maskDaysUntilNext }) {
   return (
     <div className="mx-profile-banners" data-testid="profile-banners">
-      <PotentialBanner onOpen={onOpenSubscription} />
+      <div>
+        <PotentialBanner onOpen={onOpenSubscription} stageImage={maskStage?.image} />
+        {maskStage && (
+          <div className="mx-profile-mask-stage" data-testid="profile-mask-stage">
+            <p className="mx-profile-mask-stage__name">{maskStage.name}</p>
+            {maskNext && (
+              <p className="mx-profile-mask-stage__next">
+                До „{maskNext.name}“ — {maskDaysUntilNext} {maskDaysUntilNext === 1 ? 'день' : maskDaysUntilNext < 5 ? 'дня' : 'дней'}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
       <SupportBanner onOpen={onOpenDonate} />
       {showWeb && <WebBanner onOpen={onOpenWeb} />}
     </div>
