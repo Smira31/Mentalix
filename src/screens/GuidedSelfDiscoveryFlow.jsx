@@ -332,9 +332,15 @@ export default function GuidedSelfDiscoveryFlow({ userId, onClose }) {
     }
 
     vv.addEventListener('resize', onViewportResize)
+    // Safety re-check: some browsers fire resize late or not at all.
+    // Re-verify viewport state after a short delay, but only complete
+    // if the keyboard has actually closed — never force completion
+    // while the viewport is still unstable.
     const fallback = setTimeout(() => {
-      setPendingComplete(false)
-      setStage('complete')
+      if (isStable()) {
+        setPendingComplete(false)
+        setStage('complete')
+      }
     }, 400)
 
     return () => {
