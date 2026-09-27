@@ -24,7 +24,7 @@ Each item below restates a decision already recorded in `docs/core/PRODUCT_DECIS
 - The first core experiment is the daily loop, not payment, AI depth or visual expansion.
 - Guided self-discovery first uses a prompt-only flow; no AI deepening, cloud memory or new backend contract is implied.
 - WTP research compares problem-led track, descriptive pattern summary and AI deepen without checkout; responses in the current prototype are local-only.
-- The light theme remains preview-only until the owner separately reviews and approves it.
+- The light theme remains for demonstration only until the owner separately reviews and approves it.
 - Descriptive insights must show provenance, uncertainty and user correction; they must not diagnose or claim causality.
 - The historical MXL-DEC-021 youth safety/privacy gate remains relevant to deferred v1.1 planning for 16–17; it does not permit 16–17 into the current 18+ public MVP.
 
@@ -64,7 +64,7 @@ The table below is historical, **not** the current PR list or merge queue. On 27
 | PR                                                   | Workstream            | Scope                                              | Merge/deploy note                              |
 | ---------------------------------------------------- | --------------------- | -------------------------------------------------- | ---------------------------------------------- |
 | [#439](https://github.com/Smira31/Mentalix/pull/439) | Guided self-discovery | Prompt-only flow, local draft                      | Manual review still matters                    |
-| [#441](https://github.com/Smira31/Mentalix/pull/441) | Light theme           | Preview-only warm parchment theme                  | Vercel rate-limit checks may block merge       |
+| [#441](https://github.com/Smira31/Mentalix/pull/441) | Light theme           | Demonstration-only warm light theme                  | Vercel rate-limit checks may block merge       |
 | [#442](https://github.com/Smira31/Mentalix/pull/442) | Design guard          | Deterministic static design checks                 | No runtime UX change                           |
 | [#444](https://github.com/Smira31/Mentalix/pull/444) | WTP concept test      | Local-only three-concept research flow             | No checkout or backend                         |
 | [#445](https://github.com/Smira31/Mentalix/pull/445) | Reference library     | Source-of-truth visual references                  | Docs-only                                      |

@@ -20,14 +20,14 @@ last_verified: 2026-09-27
 | Frontend            | `Smira31/Mentalix`, default branch `main`                                            | [GitHub](https://github.com/Smira31/Mentalix)                                                                        |
 | Frontend `main`     | commit `767a3b55e69d670cb3ea9b2adbd6704f0d734a70` после мержа PR #904 | [commit](https://github.com/Smira31/Mentalix/commit/767a3b55e69d670cb3ea9b2adbd6704f0d734a70) |
 | Production frontend | Policy: `main → Firebase Hosting Live channel → https://mentalix-production.web.app`; exact deployed SHA для #904 в этой сверке не подтверждён | [Firebase workflow](https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml); run 35119350799 подтверждал прежний snapshot, не #904 |
-| Demo Preview        | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev` | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)        |
+| `Demo Preview`        | Cloudflare Pages project `mentalix-owner-qa` → `https://mentalix-owner-qa.pages.dev` | workflow [Cloudflare Owner QA](https://github.com/Smira31/Mentalix/actions/workflows/cloudflare-owner-qa.yml)        |
 | Backend             | `Smira31/mentalix-bot`, `main`                                                       | [GitHub](https://github.com/Smira31/mentalix-bot)                                                                    |
 | Backend runtime     | Исторический адрес health: `https://mentalix-bot.onrender.com/api/health`; текущий статус backend не проверялся в этой docs-сверке | Приватный `mentalix-bot` и отдельная runtime-проверка обязательны для актуального статуса |
 | Vercel              | Git integration отключена у проектов `mentalix` и `mentalix-preview`                 | Vercel git context: linked projects отсутствуют                                                                      |
 
 ## Канонический словарь окружений
 
-- **Demo Preview:** Cloudflare Pages, ручной exact-SHA deploy для быстрой визуальной и Telegram/iPhone QA-проверки.
+- **`Demo Preview`:** Cloudflare Pages, ручной exact-SHA deploy для быстрой визуальной и Telegram/iPhone QA-проверки.
 - **Production:** Firebase Hosting Live channel, автоматический deploy только из `main`.
 - **Local Preview:** `vite preview` после production build.
 - **UI Lab:** экспериментальные маршруты внутри репозитория; не Production.
@@ -35,10 +35,10 @@ last_verified: 2026-09-27
 
 ## Hosting policy
 
-1. Разработка и быстрая визуальная проверка выполняются через Cloudflare Demo Preview.
+1. Разработка и быстрая визуальная проверка выполняются через Cloudflare `Demo Preview`.
 2. После QA изменения проходят обычный PR и обязательный GitHub check `Базовая проверка проекта`.
 3. Merge в `main` запускает Firebase Hosting Production deploy.
-4. Firebase Preview Channels, Vercel Preview и Vercel watchdog не используются.
+4. `Firebase Preview Channels`, `Vercel Preview` и Vercel watchdog не используются.
 5. Render backend не переносится в рамках frontend-задач.
 
 Полная policy: [`docs/handoffs/2026-09-16-hosting-policy.md`](docs/handoffs/2026-09-16-hosting-policy.md).
@@ -65,5 +65,5 @@ last_verified: 2026-09-27
 
 [1]: https://github.com/Smira31/Mentalix/commit/767a3b55e69d670cb3ea9b2adbd6704f0d734a70 'Current frontend main after PR #904'
 [2]: https://mentalix-production.web.app 'Mentalix Firebase Production'
-[3]: https://mentalix-owner-qa.pages.dev 'Mentalix Cloudflare Demo Preview'
+[3]: https://mentalix-owner-qa.pages.dev 'Mentalix Cloudflare QA'
 [4]: https://github.com/Smira31/Mentalix/actions/workflows/firebase-hosting.yml 'Firebase Hosting workflow'

@@ -21,7 +21,7 @@ Backend находится в приватном `Smira31/mentalix-bot`; его 
 - lucide-react;
 - Recharts.
 
-Production frontend автоматически публикуется из `main` в Firebase Hosting Live channel. Demo Preview публикуется отдельно в Cloudflare Pages. В Firebase frontend получает Render API через `VITE_API_BASE_URL`; относительный `/api` остаётся локальным fallback.
+Production frontend автоматически публикуется из `main` в Firebase Hosting Live channel. `Demo Preview` публикуется отдельно в Cloudflare Pages. В Firebase frontend получает Render API через `VITE_API_BASE_URL`; относительный `/api` остаётся локальным fallback.
 
 Отдельный приватный `mentalix-bot` содержит FastAPI, SQLAlchemy, aiogram и PostgreSQL; актуальный deployment-контур — Render + Neon. Подробности и текущие secrets/contracts должны проверяться только в `mentalix-bot/main` и его `RENDER.md`.
 

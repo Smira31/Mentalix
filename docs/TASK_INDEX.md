@@ -14,7 +14,7 @@ last_verified: 2026-09-27
 | [#851](https://github.com/Smira31/Mentalix/issues/851) | Открытое исследование вовлечённости, не разрешение на новую механику | Рассмотреть результаты исследования с владельцем |
 | [#771](https://github.com/Smira31/Mentalix/issues/771) | Отложенная миграция Tailwind CSS 4 | План миграции и визуальный gate перед началом |
 | [#683](https://github.com/Smira31/Mentalix/issues/683) | Отложенная админка и ротация «мысли дня» | Отдельное owner-решение и проверка приватного backend-контракта |
-| [#582](https://github.com/Smira31/Mentalix/issues/582) | Preview-only Library UI Lab | Отдельное решение владельца о переносе в Production |
+| [#582](https://github.com/Smira31/Mentalix/issues/582) | Library UI Lab (только демонстрация) | Отдельное решение владельца о переносе в Production |
 | [#516](https://github.com/Smira31/Mentalix/issues/516) | Иллюстрации и SemanticGlyph; открыта | Сверить актуальный scope с владельцем до реализации |
 
 **Административное закрытие, не active implementation:** [#767](https://github.com/Smira31/Mentalix/issues/767) и [#766](https://github.com/Smira31/Mentalix/issues/766) всё ещё открыты, хотя SDK 8.0.2 / ESLint 10 уже в `main` через #862 / #852. Владелец должен проверить acceptance и закрыть их, если выполнены; агент не закрывает Issues самостоятельно.
