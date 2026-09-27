@@ -8,6 +8,7 @@ export function parseContextualDeepLink(search, startParam) {
   if (returnFlow) return { sub: returnFlow === 'evening_v1' ? 'evening' : 'checkin', returnFlow }
   if (action === 'checkin') return { sub: 'contextualCheckin', returnFlow: null }
   if (action === 'evening' || action === 'breathing') return { sub: action, returnFlow: null }
+  if (action === 'theme') return { sub: 'theme', returnFlow: null }
   return { sub: null, returnFlow: null }
 }
 

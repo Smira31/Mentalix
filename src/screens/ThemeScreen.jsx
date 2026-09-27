@@ -67,7 +67,7 @@ function Fact({ children }) {
   )
 }
 
-export default function ThemeScreen({ user, themeId, onBack }) {
+export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   const [themes, setThemes] = useState([])
   const [activeId, setActiveId] = useState(themeId)
   const [data, setData] = useState(null)
@@ -133,16 +133,17 @@ export default function ThemeScreen({ user, themeId, onBack }) {
         if (!alive) return
 
         setData(fresh)
-        setDay(Math.min(fresh.current_day || 1, fresh.days.length))
+        setDay(Math.min(initialDay || fresh.current_day || 1, fresh.days.length))
 
         /*
          * Первый вид выбирается по состоянию, а не по умолчанию:
          * тот, кто уже пишет вторую неделю подряд, не должен
          * каждый раз проходить через вступление.
+         * initialDay передаётся из карусели — пропускаем intro.
          */
         const started = fresh.days.some(d => d.reflection)
 
-        setView(started ? 'day' : 'intro')
+        setView(initialDay || started ? 'day' : 'intro')
       })
       .catch(console.error)
 
