@@ -1011,7 +1011,7 @@ export default function Settings({
                 />
                 <ProfileRow
                   title="Экспорт JSON"
-                  subtitle="Профиль, чек-ины и часть других записей; не все категории данных"
+                  subtitle="Часть данных: профиль, чек-ины, завершённые направленные записи"
                   onClick={() => downloadPersonalExport('json')}
                 />
                 <ProfileRow

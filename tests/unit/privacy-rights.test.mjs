@@ -27,7 +27,7 @@ test('Settings не обещают privacy actions для web identity без se
   assert.match(settingsSource, /потребуется два подтверждения/)
   assert.match(settingsSource, /Веб-вход доступен/)
   assert.doesNotMatch(settingsSource, /В веб-версии нет входа на сервере/)
-  assert.match(settingsSource, /Профиль, чек-ины и часть других записей; не все категории данных/)
+  assert.match(settingsSource, /Часть данных: профиль, чек-ины, завершённые направленные записи/)
   assert.match(settingsSource, /Только данные чек-инов для чтения/)
   assert.match(settingsSource, /Только данные чек-инов в таблице/)
   assert.match(settingsSource, /Удалить аккаунт и связанные данные Mentalix/)

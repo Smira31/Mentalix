@@ -22,7 +22,7 @@ test('privacy notice describes retention and deletion boundaries without a false
   assert.match(noticeText, /Автоматический срок удаления сохранённых серверных данных сейчас не настроен/)
   assert.match(noticeText, /удаляет связанные пользовательские данные\s+из активной базы Mentalix/)
   assert.match(noticeText, /не обещает мгновенную очистку резервных\s+копий и журналов провайдеров/)
-  assert.match(noticeText, /Markdown и CSV содержат\s+только данные чек-инов/)
+  assert.match(noticeText, /Markdown и CSV содержат только данные чек-инов/)
   assert.match(noticeText, /но не все категории данных/)
   assert.doesNotMatch(noticeText, /со всеми твоими данными|полный экспорт|Только вы видите/)
   assert.doesNotMatch(noticeText, /удаляются автоматически через \d+/)
