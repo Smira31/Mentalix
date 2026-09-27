@@ -94,8 +94,6 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
           checkins: Array.isArray(checkins) ? checkins : [],
           rituals: Array.isArray(rituals) ? rituals : [],
           ascezas: Array.isArray(ascezas) ? ascezas : [],
-          moodPractices: Array.isArray(moodPractices) ? moodPractices : [],
-          practiceDays: Array.isArray(practiceDays) ? practiceDays : [],
         })
         setSeriesModel({ userId: user.id, value: model })
       })
