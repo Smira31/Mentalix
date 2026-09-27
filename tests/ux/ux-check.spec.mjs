@@ -131,6 +131,15 @@ function fixtureFor(request) {
     return jsonResponse({ ok: true })
   }
 
+  // Canonical streak (GET /api/streak): пустая history-фикстура — нулевая серия.
+  if (pathname === '/api/streak') {
+    return jsonResponse({
+      current_streak: 0,
+      longest_streak: 0,
+      total_active_days: 0,
+      is_active_today: false,
+    })
+  }
   if (pathname === '/api/streak/recovery') {
     return jsonResponse({ recoverable: false, date: null, streak_before: 0 })
   }

@@ -554,6 +554,16 @@ function respond(path, options = {}) {
     return json({ ok: true })
   }
 
+  if (pathname === '/streak' && method === 'GET') {
+    const today = now().toISOString().slice(0, 10)
+    return json({
+      current_streak: state.profile.current_streak ?? 0,
+      longest_streak: state.profile.best_streak ?? 0,
+      total_active_days: state.profile.days_active ?? 0,
+      is_active_today: state.checkins.some(item => item?.date === today),
+    })
+  }
+
   if (pathname === '/streak/recovery' && method === 'GET') {
     if (url.searchParams.get('user_id') && new URLSearchParams(window.location.search).get('streak_recovery') === '1') {
       const yesterday = offsetDate(now(), -1)
