@@ -155,13 +155,13 @@ async function getSource() {
   return checkinSource
 }
 
-test('экран завершения вечера содержит «Готово.» и «Было полезно?»', async () => {
+test('экран завершения вечера содержит «Чек-ин завершён» и «Было полезно?»', async () => {
   const src = await getSource()
   const core = src.slice(
     src.indexOf('function CheckInCore'),
     src.indexOf('function CheckIn({')
   )
-  assert.match(core, /Готово\./)
+  assert.match(core, /Чек-ин завершён/)
   assert.match(core, /Было полезно\?/)
   assert.match(core, /data-testid="checkin-feedback-option"/)
 })

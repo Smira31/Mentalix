@@ -1020,6 +1020,13 @@ function CheckInCore({
         setStep(streakStep)
       } else {
         setStep(doneStep)
+        try {
+          const history = await api.checkin.history(user.id, 90)
+          setStreakHistory(Array.isArray(history) ? history : [])
+          setStreak(Math.max(1, currentCheckinStreak(Array.isArray(history) ? history : [])))
+        } catch (historyError) {
+          console.error(historyError)
+        }
       }
     } catch (error) {
       if (recovery && error?.status === 409) {
@@ -1279,7 +1286,7 @@ function CheckInCore({
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Закрыть', run: onDone }
+        ? { text: 'Вернуться в Сегодня', run: onDone }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
@@ -1352,7 +1359,7 @@ function CheckInCore({
             effectiveMainAction.text === 'Завершить'
               ? 'Сохранить и завершить'
               : effectiveMainAction.text,
-          testId: isEvening ? 'checkin-save' : 'checkin-complete',
+          testId: isEvening ? 'checkin-back-to-today' : 'checkin-complete',
           onClick: effectiveMainAction.run,
           disabled: saving,
         }
@@ -1457,7 +1464,14 @@ function CheckInCore({
             <div className={CHECKIN_SUCCESS_CLASS}>
               <CompletionArt variant={isEvening ? 'evening' : 'morning'} />
 
-              <h2 className="mx-checkin-completion-title">Готово.</h2>
+              <h2 className="mx-checkin-completion-title">
+                {isEvening ? 'Чек-ин завершён' : 'Готово.'}
+              </h2>
+              {isEvening && streak > 0 ? (
+                <p className="mx-type-body text-muted mt-4" data-testid="checkin-streak">
+                  {streak}-дневная серия
+                </p>
+              ) : null}
 
               <div className="mt-7 w-full max-w-sm">
                 <p className="text-[13px] text-muted">Было полезно?</p>

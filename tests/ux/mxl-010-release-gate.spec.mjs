@@ -225,7 +225,7 @@ test.describe('MXL-010 automated technical gate', () => {
     }
 
     // Экран завершения вечернего разбора
-    await expect(page.getByRole('heading', { name: /Готово\./ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Чек-ин завершён' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
 
