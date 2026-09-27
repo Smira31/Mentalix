@@ -3,6 +3,7 @@ import { CalendarDays, Flame, Leaf, Moon, PartyPopper, Sprout, Star, Trophy } fr
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
 import { buildSeriesViewModel } from '../lib/series'
+import { readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { getNearestMilestones } from '../lib/milestones'
 import MilestoneBars from '../components/MilestoneBars'
 import {
@@ -66,15 +67,22 @@ function getMilestones(stats) {
 
 export default function Profile({ user, stats, loading, error, retryProfile }) {
   const [birthdayRaw, setBirthdayRaw] = useSynced(BIRTHDAY_KEY, '')
-  const [bestStreak, setBestStreak] = useState(null)
+  const [canonicalStats, setCanonicalStats] = useState(null)
   const [seriesModel, setSeriesModel] = useState(null)
 
   useEffect(() => {
     if (!user) return
     let active = true
 
-    // Серия считается той же функцией, что огонёк в шапке Today
-    // (buildSeriesViewModel), а не бэкенд-полем stats.best_streak.
+    api.streak(user.id)
+      .then(payload => {
+        if (active) setCanonicalStats({ userId: user.id, value: readCanonicalStreakStats(payload) })
+      })
+      .catch(() => {
+        if (active) setCanonicalStats({ userId: user.id, value: null })
+      })
+
+    // История остаётся источником значков в «Ближайшее» и fallback серии.
     Promise.all([
       api.checkin.history(user.id, 90).catch(() => []),
       api.rituals.list(user.id).catch(() => []),
@@ -91,8 +99,7 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
           moodPractices: Array.isArray(moodPractices) ? moodPractices : [],
           practiceDays: Array.isArray(practiceDays) ? practiceDays : [],
         })
-        setBestStreak(model.bestStreak)
-        setSeriesModel(model)
+        setSeriesModel({ userId: user.id, value: model })
       })
       .catch(() => {})
 
@@ -101,13 +108,17 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
     }
   }, [user])
 
+  const canonical = canonicalStats?.userId === user?.id ? canonicalStats.value : null
+  const legacy = seriesModel?.userId === user?.id ? seriesModel.value : null
+  const currentStreak = canonical?.currentStreak ?? legacy?.currentStreak ?? stats?.current_streak
+  const bestStreak = canonical?.bestStreak ?? legacy?.bestStreak
   const birthdayFormatted = formatBirthday(birthdayRaw)
   const daysToBirthday = daysUntilNextBirthday(birthdayRaw)
   const milestones = getMilestones(stats)
-  const nearestMilestones = seriesModel
+  const nearestMilestones = legacy
     ? getNearestMilestones({
-        badges: seriesModel.badges,
-        streak: seriesModel.currentStreak,
+        badges: legacy.badges,
+        streak: currentStreak ?? legacy.currentStreak,
       })
     : []
 
@@ -191,10 +202,10 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
                 value={`${bestStreak} ${bestStreak === 1 ? 'день' : 'дней'}`}
               />
             )}
-            {stats.current_streak != null && (
+            {currentStreak != null && (
               <ProfileRow
                 title="Текущая серия"
-                value={`${stats.current_streak} ${stats.current_streak === 1 ? 'день' : 'дней'}`}
+                value={`${currentStreak} ${currentStreak === 1 ? 'день' : 'дней'}`}
               />
             )}
           </ProfileCard>
