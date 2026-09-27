@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { CalendarDays, Flame, Leaf, Moon, PartyPopper, Sprout, Star, Trophy } from 'lucide-react'
 import { api } from '../lib/api'
 import { useSynced } from '../lib/store'
-import { buildSeriesViewModel } from '../lib/series'
-import { readCanonicalStreakStats } from '../lib/canonicalStreak'
+import { buildServerSeriesViewModel } from '../lib/series'
+import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
 import { getNearestMilestones } from '../lib/milestones'
 import MilestoneBars from '../components/MilestoneBars'
 import {
@@ -82,17 +82,15 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
         if (active) setCanonicalStats({ userId: user.id, value: null })
       })
 
-    // История остаётся источником значков в «Ближайшее» и fallback серии.
+    // История нужна только для значков чек-инов; серия приходит с сервера.
     Promise.all([
       api.checkin.history(user.id, 90).catch(() => []),
       api.rituals.list(user.id).catch(() => []),
       api.ascezas.list(user.id).catch(() => []),
-      api.moodPractices.list(user.id).catch(() => []),
-      api.practiceDays.list(user.id),
     ])
-      .then(([checkins, rituals, ascezas, moodPractices, practiceDays]) => {
+      .then(([checkins, rituals, ascezas]) => {
         if (!active) return
-        const model = buildSeriesViewModel({
+        const model = buildServerSeriesViewModel({
           checkins: Array.isArray(checkins) ? checkins : [],
           rituals: Array.isArray(rituals) ? rituals : [],
           ascezas: Array.isArray(ascezas) ? ascezas : [],
@@ -110,15 +108,15 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
 
   const canonical = canonicalStats?.userId === user?.id ? canonicalStats.value : null
   const legacy = seriesModel?.userId === user?.id ? seriesModel.value : null
-  const currentStreak = canonical?.currentStreak ?? legacy?.currentStreak ?? stats?.current_streak
-  const bestStreak = canonical?.bestStreak ?? legacy?.bestStreak
+  const currentStreak = canonical?.currentStreak
+  const bestStreak = canonical?.bestStreak
   const birthdayFormatted = formatBirthday(birthdayRaw)
   const daysToBirthday = daysUntilNextBirthday(birthdayRaw)
   const milestones = getMilestones(stats)
   const nearestMilestones = legacy
     ? getNearestMilestones({
-        badges: legacy.badges,
-        streak: currentStreak ?? legacy.currentStreak,
+        badges: serverSeriesBadges(legacy.badges, canonical),
+        streak: currentStreak,
       })
     : []
 

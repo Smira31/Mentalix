@@ -246,6 +246,24 @@ export function buildSeriesViewModel({
   }
 }
 
+// View-model значков без клиентского восстановления серии из неполной истории.
+// Числа мягкой серии приходят исключительно из GET /api/streak.
+export function buildServerSeriesViewModel({ stats = {}, checkins = [], rituals = [], ascezas = [], canonicalStats = null } = {}) {
+  const completed = checkins.filter(isCompleted)
+  return {
+    currentStreak: canonicalStats?.currentStreak ?? null,
+    bestStreak: canonicalStats?.bestStreak ?? null,
+    activeDays: canonicalStats?.activeDays ?? null,
+    totalCheckins: stats.total_checkins ?? completed.length,
+    badges: buildBadges({
+      stats: { ...stats, best_streak: canonicalStats?.bestStreak ?? 0, days_active: canonicalStats?.activeDays ?? 0 },
+      checkins: completed,
+      rituals,
+      ascezas,
+    }),
+  }
+}
+
 /**
  * Разделить историю на «до сегодняшнего чек-ина» и «с сегодняшним чек-ином»,
  * чтобы сравнить значки и определить, какие открылись именно сейчас, а какие

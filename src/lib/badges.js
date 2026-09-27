@@ -29,7 +29,7 @@ export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas =
     {
       id: 'streak-three',
       motif: 'ryad',
-      title: 'Три дня подряд',
+      title: 'Серия: три дня',
       desc: 'Серия — 3 дня',
       done: bestStreak >= 3,
       progress: Math.min(bestStreak, 3),
@@ -38,7 +38,7 @@ export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas =
     {
       id: 'streak-five',
       motif: 'ryad',
-      title: 'Пять дней подряд',
+      title: 'Серия: пять дней',
       desc: 'Серия — 5 дней',
       done: bestStreak >= 5,
       progress: Math.min(bestStreak, 5),
