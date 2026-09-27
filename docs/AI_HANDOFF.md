@@ -5,7 +5,15 @@ last_verified: 2026-09-27
 
 # Mentalix — AI handoff
 
-This file is the canonical handoff for Claude Code and other AI agents working in this repository. Read it before changing code, documentation, GitHub Issues or pull requests. The file describes project decisions and operational boundaries; the repository and GitHub remain the source of truth for actual code and current PR status. For product decisions specifically, `docs/core/PRODUCT_DECISIONS.md` is the source of truth — this file summarizes and links to it, and never states a decision on its own authority.
+This file is the canonical handoff for Claude Code and other AI agents working in this repository. Read it before changing code, documentation, GitHub Issues or pull requests. The file describes project decisions and operational boundaries; the repository and GitHub remain the source of truth for actual code and current PR status. For historical product decisions, `docs/core/PRODUCT_DECISIONS.md` records earlier rationale; the owner's 27.09 instructions recorded below supersede conflicting earlier decisions until the normative record is reconciled. This file is a handoff, not evidence of implementation.
+
+## Решения владельца от 27.09.2026 — актуальный handoff
+
+Этот блок обновляет прежние приоритеты после #905; старые формулировки ниже сохраняются как история и **заменены решением 27.09** при противоречии. Один оркестратор — Claude; агент A — `mentalix-bot` (мягкая серия, `feat/soft-streak`, в работе), B и C — `Mentalix`. Сначала визуал «как Stoic» (Шаги/Explore, поток записи, значки, профиль, низ «Сегодня»), затем v1.0 **только Telegram Mini App**. Web/PWA gate — после v1.0, не блокер. 18+ остаётся.
+
+Целевая мягкая серия: любая завершённая активность — чек-ин, журнал, ритуал, аскеза, «Настроение», направленная запись; один пропуск в календарную неделю не рвёт серию, «Верни серию» — за вчера. Прежняя «Canonical streak v1» (только чек-ин/журнал, строго подряд) **заменена решением 27.09**, не описывать её как будущий контракт. Засечки — только в заголовках разделов Explore-экранов; карточки «Сегодня» 260/233 и анимация сжатия — эталон Stoic.
+
+Последовательность задач — [`TASK_INDEX.md`](TASK_INDEX.md); Telegram release checklist — [`testing/RELEASE_GATE.md`](testing/RELEASE_GATE.md). Перед v1.0 нужны визуал по референсам, мягкая серия, опубликованная в приложении Privacy Policy v1.0, честные PrivacyNotice/Settings, финальный QA владельца на iPhone и отсутствие P0/P1. **Проверить с юристом до публичного запуска:** 152-ФЗ, данные о настроении/психсостоянии как особая категория, согласие, уведомление РКН. Ни один пункт здесь не заявлен выполненным.
 
 ## Product direction
 
@@ -21,7 +29,7 @@ Today is the primary entry point. Journal, Practices and AI support this loop; d
 
 Each item below restates a decision already recorded in `docs/core/PRODUCT_DECISIONS.md`. This list exists so an agent does not have to open that file for routine scoping; it is not an independent confirmation, and a mismatch means this file is stale, not that this file wins.
 
-- The first core experiment is the daily loop, not payment, AI depth or visual expansion.
+- Исторический приоритет daily loop вместо visual expansion **заменён решением 27.09**: сейчас сначала визуал «как Stoic», затем Telegram-only v1.0; платежи и углубление AI этим не разрешены.
 - Guided self-discovery first uses a prompt-only flow; no AI deepening, cloud memory or new backend contract is implied.
 - WTP research compares problem-led track, descriptive pattern summary and AI deepen without checkout; responses in the current prototype are local-only.
 - The light theme remains for demonstration only until the owner separately reviews and approves it.
