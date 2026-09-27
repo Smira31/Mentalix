@@ -590,6 +590,16 @@ export const api = {
       }),
     sessions: (userId, status) =>
       request(withQuery('/journal/templates/sessions/mine', { user_id: userId, status })),
+    completeSession: (userId, templateId, answers, idempotencyKey) =>
+      request('/journal/templates/sessions/complete', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: userId,
+          template_id: templateId,
+          answers,
+          idempotency_key: idempotencyKey,
+        }),
+      }),
   },
 
   journey: {
