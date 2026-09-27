@@ -28,6 +28,7 @@ import {
   saveCheckinDraft,
 } from '../lib/checkinDraft'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { readCanonicalCurrentStreak } from '../lib/canonicalStreak'
 import { logOnce } from '../lib/logOnce'
 import { maybeBuildSurprise } from './mentalix/surpriseInsight'
 import { SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
@@ -352,12 +353,36 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         onDone()
         return
       }
+      /*
+       * Canonical streak (GET /api/streak) — primary source числа серии
+       * на экране завершения. Legacy history-расчёт остаётся fallback:
+       * он используется, пока canonical грузится, недоступен или вернул
+       * некорректный ответ. Сбой любого из запросов не ломает завершение.
+       */
       try {
-        const history = await api.checkin.history(user.id, 90)
-        setStreakHistory(Array.isArray(history) ? history : [])
-        setStreak(Math.max(1, currentCheckinStreak(Array.isArray(history) ? history : [])))
-      } catch (historyError) {
-        console.error(historyError)
+        const [historyResult, streakResult] = await Promise.allSettled([
+          api.checkin.history(user.id, 90),
+          api.streak(user.id),
+        ])
+
+        if (historyResult.status === 'fulfilled') {
+          const history = Array.isArray(historyResult.value) ? historyResult.value : []
+          setStreakHistory(history)
+          setStreak(Math.max(1, currentCheckinStreak(history)))
+        } else {
+          console.error(historyResult.reason)
+        }
+
+        if (streakResult.status === 'fulfilled') {
+          const currentStreak = readCanonicalCurrentStreak(streakResult.value)
+          if (currentStreak != null) {
+            setStreak(currentStreak)
+          }
+        } else {
+          console.error(streakResult.reason)
+        }
+      } catch (streakError) {
+        console.error(streakError)
       }
       setStep(doneStep)
     } catch (saveError) {
