@@ -703,10 +703,10 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(
           page.getByRole('heading', { name: 'Хорошо. Следующий шаг готов.' })
         ).toBeVisible()
-        await assertClickable(page.getByRole('button', { name: 'Вернуться в дневник' }))
+        await assertClickable(page.getByRole('button', { name: 'Вернуться в журнал' }))
       },
     })
-    await page.getByRole('button', { name: 'Вернуться в дневник' }).click()
+    await page.getByRole('button', { name: 'Вернуться в журнал' }).click()
     await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
     await page.locator('article.mx-layered-catalog__journal-hero button').click()
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()

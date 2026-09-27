@@ -21,6 +21,17 @@ function dayKey(offset = 0) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
+// Логическая дата с отсечкой 5:00 — как localDayKey в series.js.
+// dayKey() этой отсечки не имеет, поэтому до 5 утра UTC расходится
+// с logicalDateKey / collectActivityDays, которые используют localDayKey.
+function logicalDayKey(offset = 0) {
+  const d = new Date()
+  if (d.getHours() < 5) d.setDate(d.getDate() - 1)
+  d.setDate(d.getDate() + offset)
+  const pad = v => String(v).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
 // Понедельник относительно текущего дня: стабильные проверки границ пн–вс.
 const mondayOffset = -((new Date().getDay() + 6) % 7)
 function weekday(weekOffset, dayOffset) {
@@ -241,7 +252,7 @@ test('collectActivityDays: отметка ритуала сегодня доба
     moodPractices: [],
     now,
   })
-  assert.deepEqual(days, [dayKey(0)])
+  assert.deepEqual(days, [seriesLogicalDateKey(now)])
 })
 
 test('collectActivityDays: отметка аскезы сегодня добавляет сегодняшний день', () => {
@@ -252,7 +263,7 @@ test('collectActivityDays: отметка аскезы сегодня добав
     moodPractices: [],
     now,
   })
-  assert.deepEqual(days, [dayKey(0)])
+  assert.deepEqual(days, [seriesLogicalDateKey(now)])
 })
 
 test('collectActivityDays: записи «Настроение» добавляют свои даты', () => {
@@ -298,7 +309,7 @@ test('buildSeriesViewModel учитывает moodPractices в серии', () =
 
 test('buildSeriesViewModel: отметка ритуала сегодня продлевает серию', () => {
   const model = buildSeriesViewModel({
-    checkins: [{ date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` }],
+    checkins: [{ date: logicalDayKey(-1), review_completed_at: `${logicalDayKey(-1)}T20:00:00Z` }],
     rituals: [{ id: 1, today_level: 2 }],
   })
   // Сегодня засчитано через ритуал — серия = 2
