@@ -14,16 +14,16 @@ const noticeText = privacyNotice.replace(/\s+/g, ' ')
 
 test('JSON export entry honestly names completed guided sessions', () => {
   assert.match(settings, /title="Экспорт JSON"/)
-  assert.match(settings, /Сохранённые данные и завершённые направленные записи/)
+  assert.match(settings, /Часть данных: профиль, чек-ины, завершённые направленные записи/)
 })
 
 test('privacy disclosure keeps completed guided sessions separate from Journey and History', () => {
-  assert.match(noticeText, /Экспорт в JSON также содержит завершённые направленные записи с сохранёнными вопросами и ответами как отдельный архив/)
-  assert.match(noticeText, /не как записи пути или истории/)
+  assert.match(noticeText, /JSON включает профиль, чек-ины, завершённые направленные записи с вопросами и ответами/)
+  assert.match(noticeText, /Направленные записи представлены отдельно от пути и истории/)
   assert.doesNotMatch(noticeText, /автоматически становятся записью пути/)
 })
 
-test('privacy disclosure does not equate JSON archive with Markdown or metrics-only CSV', () => {
-  assert.match(noticeText, /Markdown и CSV не являются эквивалентным экспортом этого архива/)
-  assert.match(noticeText, /CSV остаётся форматом только для метрик/)
+test('privacy disclosure limits Markdown and CSV to check-in data', () => {
+  assert.match(noticeText, /Markdown и CSV содержат только данные чек-инов, а не этот архив/)
+  assert.doesNotMatch(noticeText, /CSV остаётся форматом только для метрик/)
 })

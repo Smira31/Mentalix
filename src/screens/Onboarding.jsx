@@ -57,7 +57,7 @@ const REMINDER_OPTIONS = [
 ]
 
 const PLAN_CARDS = [
-  'Всё, что ты пишешь, остаётся только твоим',
+  'Твои записи сохраняются в профиле Mentalix',
   'Наставник, Собеседник и Следопыт готовы к разговору',
   'Первый шаг уже ждёт тебя на главной',
 ]
@@ -140,6 +140,7 @@ export default function Onboarding({ user, onFinish }) {
   }, [step])
 
   function next() {
+    if (step === 2 && (!age || age === 'До 18')) return
     platform.haptic('light')
     setStep(s => s + 1)
   }
@@ -261,10 +262,18 @@ export default function Onboarding({ user, onFinish }) {
                 />
               ))}
             </div>
-            <p className="text-[12px] text-muted text-center mt-6">Это остаётся только у тебя.</p>
+            {age === 'До 18' ? (
+              <p role="alert" className="text-[12px] text-muted text-center mt-6">
+                Mentalix доступен с 18 лет
+              </p>
+            ) : (
+              <p className="text-[12px] text-muted text-center mt-6">
+                Возрастная группа сохраняется в настройках знакомства.
+              </p>
+            )}
             <button
               onClick={next}
-              disabled={!age}
+              disabled={!age || age === 'До 18'}
               className="cta-pill text-[16px] px-14 py-4 mx-auto mt-8 disabled:opacity-30"
             >
               Дальше
