@@ -100,11 +100,11 @@ export async function feedbackStep(page, value) {
 }
 
 /**
- * Закрыть экран завершения разбора дня («Закрыть»).
+ * Закрыть экран завершения разбора дня («Вернуться в Сегодня»).
  * @param {import('@playwright/test').Page} page
  */
 export async function closeCompletion(page) {
-  const close = page.locator('[data-testid="checkin-save"]')
+  const close = page.locator('[data-testid="checkin-back-to-today"]')
   await expect(close).toBeVisible()
   await close.click()
 }
