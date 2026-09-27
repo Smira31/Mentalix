@@ -27,15 +27,15 @@ test('Evening: canonical GET вызывается после успешного 
   assert.match(evening, /Promise\.allSettled\(\[/)
 })
 
-test('Evening: canonical current_streak главнее истории, даже если history ответит позже', () => {
+test('Evening: серверная серия — единственный источник текста серии', () => {
   assert.match(submit, /readCanonicalCurrentStreak\(response\)/)
   assert.match(submit, /if \(currentStreak != null\) setCanonicalEveningStreak\(currentStreak\)/)
-  assert.match(completion, /isEvening && \(canonicalEveningStreak \?\? streak\) > 0/)
-  assert.match(completion, /\{canonicalEveningStreak \?\? streak\}-дневная серия/)
+  assert.match(completion, /isEvening && canonicalEveningStreak > 0/)
+  assert.match(completion, /\{canonicalEveningStreak\}-дневная серия/)
   assert.equal(readCanonicalCurrentStreak({ current_streak: 7 }), 7)
 })
 
-test('Evening: ноль валиден; при loading, ошибке или malformed остаётся legacy fallback', () => {
+test('Evening: ноль валиден; при loading, ошибке или malformed текст серии не показывается', () => {
   assert.equal(readCanonicalCurrentStreak({ current_streak: 0 }), 0)
   for (const response of [
     null,
@@ -47,10 +47,11 @@ test('Evening: ноль валиден; при loading, ошибке или malf
     assert.equal(readCanonicalCurrentStreak(response), null)
   }
   assert.match(core, /useState\(null\)/)
-  assert.match(submit, /setStreak\(Math\.max\(1, currentCheckinStreak\(entries\)\)\)/)
+  // Legacy-расчёт по истории удалён: сбой canonical не подменяется числом.
+  assert.doesNotMatch(core, /currentCheckinStreak/)
+  assert.doesNotMatch(completion, /canonicalEveningStreak \?\? streak/)
   assert.match(submit, /historyResult\.status === 'rejected'/)
   assert.match(submit, /streakResult\.status === 'rejected'/)
-  assert.match(completion, /canonicalEveningStreak \?\? streak/)
 })
 
 test('Evening: completion copy, feedback, Scout и surprise остаются прежними', () => {
