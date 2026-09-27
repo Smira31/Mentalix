@@ -13,7 +13,7 @@ import {
   useFullscreenSurface,
 } from '../lib/fullscreenSurface'
 import { api } from '../lib/api'
-import { platform, platformName } from '../platform'
+import { platform } from '../platform'
 import {
   readJournalDraft,
   saveJournalDraft,
