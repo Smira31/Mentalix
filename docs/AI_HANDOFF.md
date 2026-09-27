@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-09-27
 ---
 
 # Mentalix — AI handoff
@@ -9,7 +9,7 @@ This file is the canonical handoff for Claude Code and other AI agents working i
 
 ## Product direction
 
-Mentalix serves the working audience defined in `docs/core/PRODUCT_DECISIONS.md` → **MXL-DEC-021** (Обновление 31.08.2026): **16–35 years old**, analysed as 16–17, 18–24 and 25–35 separate cohorts. Treat that entry, not this paragraph, as authoritative if the two ever diverge. The first problem statement is narrow: a person cannot start an important task. Mentalix is a reflection-and-action product, not therapy, diagnosis, emergency response or a substitute for a qualified professional.
+Mentalix public MVP is **18+** (owner decision dated 27.09.2026 in `docs/core/PRODUCT_DECISIONS.md`, superseding MXL-DEC-021 for this release; see also `PRODUCT.md` §2 and PR #904). The 16–17 cohort is deferred to v1.1; the historical 16–35 segmentation remains in MXL-DEC-021, not the current release eligibility. Treat the newer owner decision as authoritative. The first problem statement is narrow: a person cannot start an important task. Mentalix is a reflection-and-action product, not therapy, diagnosis, emergency response or a substitute for a qualified professional.
 
 The primary loop is:
 
@@ -24,9 +24,9 @@ Each item below restates a decision already recorded in `docs/core/PRODUCT_DECIS
 - The first core experiment is the daily loop, not payment, AI depth or visual expansion.
 - Guided self-discovery first uses a prompt-only flow; no AI deepening, cloud memory or new backend contract is implied.
 - WTP research compares problem-led track, descriptive pattern summary and AI deepen without checkout; responses in the current prototype are local-only.
-- The light theme remains preview-only until the owner separately reviews and approves it.
+- The light theme remains for demonstration only until the owner separately reviews and approves it.
 - Descriptive insights must show provenance, uncertainty and user correction; they must not diagnose or claim causality.
-- The 16–17 cohort requires a safety/privacy gate before testing (age-appropriate language, minimal data, Journal privacy, AI boundaries, sensitive-message handling) — see `docs/core/PRODUCT_DECISIONS.md` → MXL-DEC-021, Обновление 31.08.2026, for the current wording; that entry is where this requirement became a decision, not this file.
+- The historical MXL-DEC-021 youth safety/privacy gate remains relevant to deferred v1.1 planning for 16–17; it does not permit 16–17 into the current 18+ public MVP.
 
 ## Rules for parallel agents
 
@@ -57,14 +57,14 @@ npm run check:core
 
 Docs-only changes normally require `npm run docs:check`, `npm run docs:drift` and `git diff --check`. Runtime changes require targeted tests plus `npm run check:core`; UI changes should also run `npm run ux:check` when feasible.
 
-## Current PR map
+## Historical PR map (September 2026 archive)
 
-Check live GitHub status before acting; the list below records the workstream and intended scope, not a guarantee that a PR is still open.
+The table below is historical, **not** the current PR list or merge queue. On 27.09.2026 GitHub reported no open PRs before this documentation reconciliation; check [live PRs](https://github.com/Smira31/Mentalix/pulls) and [`docs/TASK_INDEX.md`](TASK_INDEX.md) before selecting work.
 
 | PR                                                   | Workstream            | Scope                                              | Merge/deploy note                              |
 | ---------------------------------------------------- | --------------------- | -------------------------------------------------- | ---------------------------------------------- |
 | [#439](https://github.com/Smira31/Mentalix/pull/439) | Guided self-discovery | Prompt-only flow, local draft                      | Manual review still matters                    |
-| [#441](https://github.com/Smira31/Mentalix/pull/441) | Light theme           | Preview-only warm parchment theme                  | Vercel rate-limit checks may block merge       |
+| [#441](https://github.com/Smira31/Mentalix/pull/441) | Light theme           | Demonstration-only warm light theme                  | Vercel rate-limit checks may block merge       |
 | [#442](https://github.com/Smira31/Mentalix/pull/442) | Design guard          | Deterministic static design checks                 | No runtime UX change                           |
 | [#444](https://github.com/Smira31/Mentalix/pull/444) | WTP concept test      | Local-only three-concept research flow             | No checkout or backend                         |
 | [#445](https://github.com/Smira31/Mentalix/pull/445) | Reference library     | Source-of-truth visual references                  | Docs-only                                      |
@@ -79,11 +79,11 @@ Check live GitHub status before acting; the list below records the workstream an
 | [#454](https://github.com/Smira31/Mentalix/pull/454) | API request cancellation | Caller-driven `AbortSignal` support in `src/lib/api.js`; distinguishes cancel from timeout | Merged; API client only, isolated |
 | [#455](https://github.com/Smira31/Mentalix/pull/455) | Font self-hosting perf | Replaces render-blocking Google Fonts `@import` with `@fontsource/onest` + `@fontsource/jetbrains-mono` | Merged; touches `src/index.css`, `package.json` |
 
-PR #443 belongs to another agent and must not be modified without checking its live owner and files first. The PR list is intentionally not a merge queue; review each diff independently.
+Historical ownership notes (including PR #443) do not describe current open work. This PR list is not a merge queue; use live GitHub status instead.
 
 ## What to do next
 
-When the owner asks for the next task, first select an unclaimed backlog item whose files do not overlap active agent work. Good candidates are docs/protocol foundations or isolated frontend improvements. Avoid backend-blocked Issues #351, #352 and #353 unless the required backend scope is explicitly approved. Avoid claiming manual device gates #358 and #359 as passed when no device test was performed.
+For current tasks and gates, read [`TASK_INDEX.md`](TASK_INDEX.md) and the live GitHub Issues/PRs; the older Issue numbers in the historical table above are not a current queue. Select only a scoped, unclaimed item; do not infer backend readiness or claim a manual device gate without evidence.
 
 For each task, report: selected Issue, files changed, why it is isolated, checks run, PR link, manual gates still pending and anything intentionally not done. Stop at PR handoff rather than merge/deploy unless the owner explicitly requests that exact action.
 

@@ -1,54 +1,36 @@
 ---
 status: current
-last_verified: 2026-09-16
+last_verified: 2026-09-27
 ---
 
 # Mentalix — активный task index
 
-Этот файл — единственный активный backlog. GitHub Issue/PR являются первичными карточками работы; этот индекс задаёт только порядок и границы. `TASKS.md` и `CHANGES.md` не являются backlog.
+Сверено с [открытыми Issues](https://github.com/Smira31/Mentalix/issues?q=is%3Aissue+is%3Aopen) и PR GitHub на 27.09.2026, `main` `767a3b55`. Issue/PR — первичный scope; наличие открытой Issue не означает разрешения начать реализацию. `TASKS.md` и `docs/STATUS.md` не являются активным backlog.
 
-## Каноническая очередь
+| Issue | Состояние / граница | Следующий gate |
+| --- | --- | --- |
+| [#615](https://github.com/Smira31/Mentalix/issues/615) | Открыта; исходный local-only guest контракт частично вытеснен реализацией #847/#861/#863/#883 | Сверить оставшийся scope и web/PWA release gate с владельцем; не трактовать как отсутствие guest в `main` |
+| [#789](https://github.com/Smira31/Mentalix/issues/789) | Открыта; вопрос локального или серверного хранения исторический, фактически выбран server-backed guest в `main` без новой записи owner-decision | Уточнить у владельца остаток scope: конфликтующие записи, ограничения AI, потеря сессии |
+| [#851](https://github.com/Smira31/Mentalix/issues/851) | Открытое исследование вовлечённости, не разрешение на новую механику | Рассмотреть результаты исследования с владельцем |
+| [#771](https://github.com/Smira31/Mentalix/issues/771) | Отложенная миграция Tailwind CSS 4 | План миграции и визуальный gate перед началом |
+| [#683](https://github.com/Smira31/Mentalix/issues/683) | Отложенная админка и ротация «мысли дня» | Отдельное owner-решение и проверка приватного backend-контракта |
+| [#582](https://github.com/Smira31/Mentalix/issues/582) | Library UI Lab (только демонстрация) | Отдельное решение владельца о переносе в Production |
+| [#516](https://github.com/Smira31/Mentalix/issues/516) | Иллюстрации и SemanticGlyph; открыта | Сверить актуальный scope с владельцем до реализации |
 
-| Порядок | Трек                                                                                                | Состояние                    | Следующий gate                                                                |
-| ------: | --------------------------------------------------------------------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------- |
-|       1 | [Issue #623](https://github.com/Smira31/Mentalix/issues/623) — Today Hero pixel contract            | Активная визуальная задача   | Сверить реализацию с видео-референсом и провести owner Telegram/iPhone gate   |
-|       2 | [Issue #620](https://github.com/Smira31/Mentalix/issues/620) — Daily Check-In + Practices contract  | Активная reference-задача    | Зафиксировать измеримый контракт и границы реализации до изменения Production |
-|       3 | [Issue #618](https://github.com/Smira31/Mentalix/issues/618) — Demo Preview по PNG-референсам       | Активная Demo Preview задача | Подготовить exact-SHA Cloudflare Demo и получить owner Telegram/iPhone PASS   |
-|       4 | [Issue #615](https://github.com/Smira31/Mentalix/issues/615) — guest onboarding и deferred web auth | Активная продуктовая задача  | Проверить scope Issue, auth-сценарии и обязательные web/Telegram gates        |
-|       5 | [Issue #612](https://github.com/Smira31/Mentalix/issues/612) — мониторинг Progress                  | Post-release наблюдение      | Записать evidence; закрывать только по отдельному решению владельца           |
+**Административное закрытие, не active implementation:** [#767](https://github.com/Smira31/Mentalix/issues/767) и [#766](https://github.com/Smira31/Mentalix/issues/766) всё ещё открыты, хотя SDK 8.0.2 / ESLint 10 уже в `main` через #862 / #852. Владелец должен проверить acceptance и закрыть их, если выполнены; агент не закрывает Issues самостоятельно.
 
-## Отложено
-
-|                                                  Issue | Причина                                                                   |
-| -----------------------------------------------------: | ------------------------------------------------------------------------- |
-| [#600](https://github.com/Smira31/Mentalix/issues/600) | Координационный evaluator–optimizer трек; не заменяет продуктовую очередь |
-| [#582](https://github.com/Smira31/Mentalix/issues/582) | Preview-only Library UI Lab; не начинать production-монетизацию           |
-| [#516](https://github.com/Smira31/Mentalix/issues/516) | Preview-only illustration system                                          |
-| [#480](https://github.com/Smira31/Mentalix/issues/480) | Backend-dependent AI handoff                                              |
-
-## Закрытые текущие треки
-
-Dialog role flow по Issue #515 выполнен и опубликован из `main` через PR #613. PR #608 и #609 закрыты, их ветки удалены. Новую работу по Dialog не начинать без новой Issue и отдельного owner-решения.
+Закрытые #623, #620, #618, #612, #600, #480 исключены из очереди. Новая работа начинается только после согласования scope и соответствующего manual/backend gate. Публикация — только из защищённого `main`; зелёная сборка не заменяет ручной iPhone/Telegram или Web/PWA gate.
 
 ## Автономная очередь
 
 Сейчас очередь `autonomous` пуста. Новая автономная задача появляется только после явной записи с однозначным scope и owner-решением.
 
-## Правила готовности
-
-**Ready:** определены цель, scope, то, что не меняется, проверки, rollback и manual gate. **Done:** проверки зелёные, evidence сохранён, а обязательный manual gate пройден. Production публикуется только из `main`.
-
 ## Product decision register
 
-| Тема             | Решение                                                              |
-| ---------------- | -------------------------------------------------------------------- |
-| Navigation       | Пять основных разделов; Today — главный вход.                        |
-| Dialog           | Role flow выполнен; новые изменения только через новую Issue.        |
-| Product priority | Очередь определяется открытыми Issues #623, #620, #618, #615 и #612. |
-| Production       | Публикация только из защищённого `main`.                             |
-| Manual gate      | iPhone/Telegram проверка обязательна перед product release.          |
-
-## References
-
-[1]: https://github.com/Smira31/Mentalix/pulls 'Открытые pull requests Mentalix'
-[2]: https://github.com/Smira31/Mentalix/issues 'Открытые issues Mentalix'
+| Тема             | Решение                                                                 |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Navigation       | Пять основных разделов; Today — главный вход.                                                                                        |
+| Dialog           | Role flow выполнен; новые изменения только через новую Issue.                                                                       |
+| Product priority | Очередь определяется открытыми Issues #615, #789, #851, #771, #683, #582 и #516; закрытые задачи в backlog не возвращаются.             |
+| Production       | Публикация только из защищённого `main`.                                                                                              |
+| Manual gate      | iPhone/Telegram проверка обязательна перед product release; для web/PWA действует отдельный release gate.                              |
