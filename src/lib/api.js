@@ -452,6 +452,11 @@ export const api = {
     },
   },
 
+  streak: userId =>
+    request(withQuery('/streak', { user_id: userId }), {
+      silentDiagnostics: true,
+    }),
+
   checkin: {
     today: userId => request(withQuery('/checkin/today', { user_id: userId })),
 
