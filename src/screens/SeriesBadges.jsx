@@ -5,6 +5,7 @@ import { X } from 'lucide-react'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
+import { readCanonicalStreakStats } from '../lib/canonicalStreak'
 import { platform } from '../platform'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import { pluralize, formatCount } from '../lib/pluralize'
@@ -343,24 +344,25 @@ function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
   )
 }
 
-function StatsView({ model, theme }) {
+function StatsView({ model, canonicalStats, theme }) {
+  const { currentStreak, bestStreak, activeDays } = canonicalStats ?? model
   const rows = [
-    ['Текущая серия', formatDays(model.currentStreak)],
-    ['Всего завершённых дней', model.activeDays],
-    ['Самая длинная серия', formatDays(model.bestStreak)],
+    ['Текущая серия', formatDays(currentStreak)],
+    ['Всего завершённых дней', activeDays],
+    ['Самая длинная серия', formatDays(bestStreak)],
   ]
   const milestones = getNearestMilestones({
     badges: model.badges,
-    streak: model.currentStreak,
+    streak: currentStreak,
     theme,
   })
   return (
     <div className="mx-path-content">
       <div className="mx-path-summary-grid">
         <div className="mx-path-summary-card">
-          <strong>{model.activeDays}</strong>
+          <strong>{activeDays}</strong>
           <span>
-            {pluralize(model.activeDays, [
+            {pluralize(activeDays, [
               'завершённый день',
               'завершённых дня',
               'завершённых дней',
@@ -427,6 +429,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const initial = useMemo(() => peekSeriesSnapshot(user?.id), [user?.id])
   const [model, setModel] = useState(initial)
   const [modelUserId, setModelUserId] = useState(user?.id)
+  const [canonicalStats, setCanonicalStats] = useState(null)
   const [activeTab, setActiveTab] = useState('badges')
   const [error, setError] = useState(false)
   const [errorUserId, setErrorUserId] = useState(null)
@@ -440,6 +443,14 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
 
   useEffect(() => {
     let active = true
+    api.streak(user.id)
+      .then(payload => {
+        if (active) setCanonicalStats({ userId: user.id, value: readCanonicalStreakStats(payload) })
+      })
+      .catch(() => {
+        if (active) setCanonicalStats({ userId: user.id, value: null })
+      })
+
     Promise.all([
       api.profile.get(user.id),
       api.checkin.history(user.id, 90),
@@ -542,7 +553,11 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
               onOpenBadge={setSelectedBadge}
             />
           ) : (
-            <StatsView model={visibleModel} theme={theme} />
+            <StatsView
+              model={visibleModel}
+              canonicalStats={canonicalStats?.userId === user.id ? canonicalStats.value : null}
+              theme={theme}
+            />
           )
         ) : (
           <p className="mx-path-status">Загружаю последние данные…</p>
