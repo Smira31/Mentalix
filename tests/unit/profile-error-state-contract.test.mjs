@@ -13,12 +13,14 @@ test('Profile exposes error copy and retry action', () => {
   assert.match(settings, /setProfileReloadToken\(token => token \+ 1\)/)
 })
 
-test('Profile fetches profile + series data (buildSeriesViewModel) — no path, themes, analytics or achievements', () => {
+test('Profile fetches canonical streak and keeps legacy model for badges/fallback only', () => {
   assert.match(settings, /api\.profile\.get\(user\.id\)/)
   assert.doesNotMatch(source, /api\.profile\.get\(user\.id\)/)
-  // Серия «Лучшая серия» считается через buildSeriesViewModel — тот же
-  // источник, что огонёк в шапке Today. Для этого нужны checkins, rituals,
-  // ascezas, moodPractices и practiceDays.
+  assert.match(source, /api\.streak\(user\.id\)/)
+  assert.match(source, /readCanonicalStreakStats\(payload\)/)
+  assert.match(source, /canonical\?\.currentStreak \?\? legacy\?\.currentStreak/)
+  assert.match(source, /canonical\?\.bestStreak \?\? legacy\?\.bestStreak/)
+  assert.match(source, /streak: currentStreak \?\? legacy\.currentStreak/)
   assert.match(source, /buildSeriesViewModel/)
   assert.doesNotMatch(source, /loadIndependentSources/)
   assert.doesNotMatch(source, /api\.themes\.list/)
