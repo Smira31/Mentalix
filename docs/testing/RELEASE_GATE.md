@@ -5,7 +5,18 @@ last_verified: 2026-09-27
 
 # Release Gate — Pre-Release Testing Sequence
 
-Последовательность автоматических и ручных проверок перед releasе.
+Последовательность автоматических и ручных проверок. Решение владельца 27.09.2026 после #905: v1.0 — **только Telegram Mini App**, Web/PWA gate ниже — после v1.0, **не блокер**. Никакие чекбоксы здесь не подтверждают фактический PASS без evidence.
+
+## Telegram v1.0 — релизный чек-лист владельца
+
+- [ ] Визуал «как Stoic» проверен по референсам: Шаги/Explore (засечки только в заголовках разделов), поток записи, значки, профиль, низ «Сегодня» (карточки 260/233 и анимация сжатия — эталон).
+- [ ] Мягкая серия реализована и проверена: любая завершённая активность (чек-ин, журнал, ритуал, аскеза, «Настроение», направленная запись), один пропуск в календарную неделю не рвёт серию, «Верни серию» за вчера. A (`mentalix-bot`, `feat/soft-streak`) работает над backend; «Canonical streak v1» (только чек-ин/журнал, строго подряд) **заменено решением 27.09**.
+- [ ] Privacy Policy v1.0 опубликована **в приложении**.
+- [ ] PrivacyNotice/Settings не обещают больше, чем реально умеет сервер; проверены реальные сценарии и тексты.
+- [ ] Финальный QA владельца на реальном iPhone в Telegram пройден.
+- [ ] Нет открытых P0/P1 для Telegram v1.0.
+
+Один оркестратор — Claude; A в `mentalix-bot`, B и C в `Mentalix`. Приоритет — сначала визуал, затем релиз; 18+ сохраняется. **Проверить с юристом до публичного запуска:** 152-ФЗ, данные о настроении/психсостоянии как особая категория, согласие, уведомление РКН. Это отдельная юридическая проверка, не утверждение о соответствии.
 
 ---
 
@@ -93,9 +104,9 @@ npm run test:contracts
 
 ---
 
-## Web/PWA gate (существующий web-сценарий)
+## Web/PWA gate (после Telegram-only v1.0; не блокер v1.0)
 
-Перед публичным релизом проверить в реальном браузере/PWA с доступным API, отдельно от Telegram/iPhone gate. Это checklist, **не свидетельство прохождения**:
+Прежнее «перед публичным релизом» **заменено решением 27.09** применительно к Telegram v1.0. Перед отдельным Web/PWA-релизом проверить сценарии ниже в реальном браузере/PWA с доступным API. Это checklist, **не свидетельство прохождения**:
 
 - [ ] Новый браузер без сессии открывает приложение → автоматический гостевой вход → доступен основной экран; при ошибке входа доступен явный retry/email/Telegram вход.
 - [ ] Перезагрузка и повторное открытие PWA восстанавливают гостевую bearer session и данные того же гостя, не создавая новый аккаунт.
@@ -130,7 +141,7 @@ Profile → /start → onboarding → Today → Check-in → Practice → Ritual
 
 **Экран:** iPhone 14 Pro (standard), можно также SE2 (legacy).
 
-**Pass criteria:** владелец подтверждает ручной check-off.
+**Pass criteria:** владелец подтверждает ручной check-off; для Telegram v1.0 это обязательный, а не optional gate.
 
 ---
 
@@ -165,7 +176,7 @@ Manual code review (AI_RULES.md, architecture, no unrelated changes)
   ↓
 Local test: npm run preview (if changes are significant)
   ↓
-Optional: Manual Telegram/iPhone verification (critical features)
+Mandatory: финальный QA владельца на iPhone в Telegram для v1.0
   ↓
 Approve & merge → main
   ↓
@@ -182,16 +193,7 @@ RELEASE ✓
 
 ## Определение "Production Ready"
 
-Коммит в `main` считается Production Ready, если:
-
-- [x] `npm run lint` passes;
-- [x] `npm run build` succeeds;
-- [x] `npm run ux:check` passes all states;
-- [x] Visual regression passes (or no baseline exists yet);
-- [x] Performance baseline maintained (or first baseline established);
-- [x] Manual code review approved;
-- [x] Manual Telegram/iPhone gate passed (product owner);
-- [x] Firebase Hosting Production deployment successful.
+Этот исторический общий шаблон **заменён решением 27.09** для Telegram v1.0: checklist выше — действующий критерий. До evidence ни одна проверка не отмечена пройденной. Для каждого кандидата отдельно подтвердить lint, build, UX-проверку, review, Telegram/iPhone QA владельца и успешный deployment; Web/PWA gate проверяется отдельно после v1.0.
 
 ---
 
