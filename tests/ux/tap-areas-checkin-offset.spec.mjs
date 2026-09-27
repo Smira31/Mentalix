@@ -131,8 +131,14 @@ test.describe('Области нажатия и отступ «Назад»', ()
     await page.locator('[data-testid="series-close"]').click()
     await expect(page.locator('[data-testid="series-tab-badges"]')).toBeHidden()
 
-    // Чек-ин: «Пропустить».
+    // Чек-ин: «Пропустить» — доступен на необязательных шагах
+    // (sleep_quality, focus, day_focus). Шаг mood — обязательный,
+    // выбираем значение и переходим к sleep_quality.
     await page.locator('[data-testid="today-card-morning"]').click()
+    await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
+    await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()
+    await page.locator('[data-testid="checkin-next"]').click()
+    await expect(page.getByRole('heading', { name: 'Как ты спал?' })).toBeVisible()
     for (const testId of CHECKIN_TAP_TARGETS) {
       await expectTapArea(page, testId)
     }
