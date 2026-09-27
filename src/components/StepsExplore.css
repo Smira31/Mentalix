@@ -1,0 +1,689 @@
+/* ============================================================
+   STEPS EXPLORE — стили экрана «Шаги» (Stoic Explore-редизайн)
+   ============================================================ */
+
+.mx-steps-explore {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-8);
+  padding-bottom: var(--mx-space-6);
+}
+
+/* --- 1. Шапка --- */
+.mx-steps-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 43px;
+}
+
+.mx-steps-header h1 {
+  margin: 0;
+}
+
+.mx-steps-search-btn {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 50%;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  transition: transform 140ms var(--mx-ease-out);
+}
+
+.mx-steps-search-btn:active {
+  transform: scale(0.94);
+}
+
+/* --- 2. Герой-карточка --- */
+.mx-steps-hero {
+  display: flex;
+  gap: var(--mx-space-4);
+  border-radius: var(--mx-radius-hero);
+  background: rgb(var(--c-card2));
+  padding: var(--mx-space-5);
+  min-height: 140px;
+}
+
+.mx-steps-hero__art {
+  flex-shrink: 0;
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mx-steps-hero__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.mx-steps-hero__label {
+  font-size: var(--mx-type-meta-size);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+.mx-steps-hero__title {
+  font-size: 1.125rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-hero__desc {
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  flex: 1;
+}
+
+.mx-steps-hero .mx-steps-pill--light {
+  align-self: flex-end;
+}
+
+/* --- Пилюля (общая) --- */
+.mx-steps-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid rgb(var(--c-border));
+  transition: transform 140ms var(--mx-ease-out);
+}
+
+.mx-steps-pill:active {
+  transform: scale(0.96);
+}
+
+.mx-steps-pill--light {
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+}
+
+.mx-steps-pill--surprise {
+  margin-top: var(--mx-space-3);
+}
+
+/* --- 3. Сетка практик --- */
+.mx-steps-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-3);
+}
+
+.mx-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--mx-space-2);
+}
+
+.mx-steps-card {
+  position: relative;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  padding: var(--mx-space-4);
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mx-steps-card[data-soon='true'] {
+  opacity: 0.5;
+}
+
+.mx-steps-card__main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  flex: 1;
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
+  transition: transform 140ms var(--mx-ease-out);
+}
+
+.mx-steps-card__main:active {
+  transform: scale(0.97);
+}
+
+.mx-steps-card__main:disabled {
+  cursor: default;
+}
+
+.mx-steps-card__icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(var(--c-border));
+  margin-bottom: var(--mx-space-1);
+}
+
+.mx-steps-card__badge {
+  position: absolute;
+  top: var(--mx-space-3);
+  right: var(--mx-space-8);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-card3));
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-card__badge--new {
+  background: rgb(var(--c-glyph-secondary));
+  color: #fff;
+}
+
+.mx-steps-card__category {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+.mx-steps-card__title {
+  font-size: 0.9375rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-card__desc {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Меню «…» */
+.mx-steps-card__menu {
+  position: absolute;
+  top: var(--mx-space-3);
+  right: var(--mx-space-3);
+}
+
+.mx-steps-card__menu-btn {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  transition: background-color 160ms ease;
+}
+
+.mx-steps-card__menu-btn:hover {
+  background: rgb(var(--c-card3));
+}
+
+.mx-steps-card__menu-dropdown {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-nav));
+  padding: 6px;
+  box-shadow: var(--shadow-float);
+}
+
+.mx-steps-card__menu-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgb(var(--c-text));
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-align: left;
+  transition: background-color 120ms ease;
+}
+
+.mx-steps-card__menu-dropdown button:hover {
+  background: rgb(var(--c-card3));
+}
+
+/* --- 4. Чек-ин эмоций --- */
+.mx-steps-emotion {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-4);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card));
+  padding: var(--mx-space-5);
+  min-height: 120px;
+}
+
+.mx-steps-emotion__art {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mx-steps-head-silhouette {
+  width: 64px;
+  height: 64px;
+}
+
+.mx-steps-emotion__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  flex: 1;
+}
+
+.mx-steps-emotion__label {
+  font-size: var(--mx-type-meta-size);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--c-muted));
+}
+
+.mx-steps-emotion__title {
+  font-size: 1rem;
+  line-height: 1.25;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+/* --- 5. Тема недели --- */
+.mx-steps-serif-title {
+  font-family: var(--font-serif);
+  font-size: var(--mx-type-section-size);
+  line-height: 1.25;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-section-title {
+  font-size: var(--mx-type-section-size);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-theme-track {
+  display: flex;
+  gap: var(--mx-space-3);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+
+.mx-steps-theme-track::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-steps-theme-q {
+  scroll-snap-align: center;
+  flex-shrink: 0;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  padding: var(--mx-space-5);
+  min-height: 160px;
+}
+
+.mx-steps-theme-q__num {
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 700;
+  color: rgb(var(--c-gold));
+}
+
+.mx-steps-theme-q__text {
+  font-size: 0.9375rem;
+  line-height: 1.3;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-theme-q__prompt {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: rgb(var(--c-muted));
+}
+
+.mx-steps-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mx-steps-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(var(--c-border));
+  transition: background-color 200ms ease;
+}
+
+.mx-steps-dots i[data-active='true'] {
+  background: rgb(var(--c-text));
+}
+
+.mx-steps-theme-skeleton {
+  height: 160px;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mx-steps-theme-skeleton span {
+  display: block;
+  width: 80%;
+  height: 20px;
+  border-radius: 6px;
+  background: rgb(var(--c-card3));
+}
+
+.mx-steps-empty-copy {
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+}
+
+/* --- 6. Другие темы --- */
+.mx-steps-themes-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+}
+
+.mx-steps-theme-row {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-3);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  padding: var(--mx-space-4);
+  text-align: left;
+  border: none;
+  color: inherit;
+  transition: transform 140ms var(--mx-ease-out);
+}
+
+.mx-steps-theme-row:active {
+  transform: scale(0.98);
+}
+
+.mx-steps-theme-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mx-steps-theme-row__title {
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-theme-row__desc {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: rgb(var(--c-muted));
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mx-steps-theme-row__progress {
+  display: block;
+  height: 2px;
+  border-radius: 999px;
+  background: rgb(var(--c-border));
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+.mx-steps-theme-row__bar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: rgb(var(--c-gold));
+  transition: width 300ms var(--mx-ease-out);
+}
+
+.mx-steps-theme-row__chevron {
+  flex-shrink: 0;
+  color: rgb(var(--c-muted));
+}
+
+/* --- 7. Все темы + чипы --- */
+.mx-steps-chips {
+  display: flex;
+  gap: var(--mx-space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mx-steps-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.mx-steps-chip {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-card2));
+  border: 1px solid rgb(var(--c-border));
+  color: rgb(var(--c-muted));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 160ms ease;
+}
+
+.mx-steps-chip.is-active {
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  border-color: rgb(var(--c-text));
+}
+
+.mx-steps-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--mx-space-3);
+  padding: var(--mx-space-8) var(--mx-space-4);
+  text-align: center;
+}
+
+.mx-steps-empty__art {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+}
+
+.mx-steps-empty__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-empty__desc {
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  max-width: 280px;
+}
+
+/* --- Коллекции --- */
+.mx-steps-collections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-2);
+}
+
+.mx-steps-collection {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-3);
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  padding: var(--mx-space-4);
+  text-align: left;
+  border: none;
+  color: inherit;
+  transition: transform 140ms var(--mx-ease-out);
+}
+
+.mx-steps-collection:active {
+  transform: scale(0.98);
+}
+
+.mx-steps-collection__icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgb(var(--c-border));
+  flex-shrink: 0;
+}
+
+.mx-steps-collection strong {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: rgb(var(--c-text));
+}
+
+.mx-steps-collection small {
+  font-size: 0.75rem;
+  color: rgb(var(--c-muted));
+  display: block;
+}
+
+.mx-steps-collection__chevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: rgb(var(--c-muted));
+}
+
+/* --- Поиск --- */
+.mx-steps-search {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-4);
+}
+
+.mx-steps-search__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-2);
+}
+
+.mx-steps-search__input {
+  flex: 1;
+  min-height: 43px;
+  padding: 0 16px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.mx-steps-search__input:focus {
+  border-color: rgb(var(--c-gold) / 0.6);
+}
+
+.mx-steps-search__close {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  place-items: center;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 50%;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  flex-shrink: 0;
+}
+
+.mx-steps-search__results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mx-space-1);
+}
+
+.mx-steps-search__result {
+  display: flex;
+  align-items: center;
+  gap: var(--mx-space-3);
+  padding: var(--mx-space-3) var(--mx-space-4);
+  border: none;
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.mx-steps-search__result svg {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.mx-steps-search__empty {
+  font-size: var(--mx-type-body-size);
+  color: rgb(var(--c-muted));
+  padding: var(--mx-space-4);
+  text-align: center;
+}
