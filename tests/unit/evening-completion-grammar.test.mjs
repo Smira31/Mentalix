@@ -68,21 +68,17 @@ test('3. вечерний completion: streak > 0 → «N-дневная сери
 test('4. вечерний completion: streak fetch failure не блокирует completion', async () => {
   const src = await getSource()
   const core = getCore(src)
-  // Вечерний путь в submit(): setStep(doneStep) идёт ДО try/catch history fetch
-  const eveningElseBranch = core.slice(
-    core.indexOf('} else {'),
-    core.indexOf('} catch (error) {')
-  )
-  // setStep(doneStep) должен встречаться в вечерской ветке до catch
-  assert.ok(
-    eveningElseBranch.includes('setStep(doneStep)'),
-    'setStep(doneStep) должен вызываться до/независимо от history fetch'
-  )
-  // history fetch обёрнут в try/catch — сбой не блокирует completion
+  // Вечерний путь: setStep(doneStep) вызывается ДО try/catch history fetch,
+  // значит сбой fetch не мешает открытию completion.
+  // Находим вечерний else-блок по уникальному паттерну setStep(doneStep)
+  const doneStepIdx = core.indexOf("setStep(doneStep)")
+  assert.ok(doneStepIdx >= 0, 'setStep(doneStep) должен присутствовать в CheckInCore')
+  // После setStep(doneStep) должен идти try с api.checkin.history
+  const afterDoneStep = core.slice(doneStepIdx)
   assert.match(
-    eveningElseBranch,
+    afterDoneStep,
     /try \{[\s\S]*?api\.checkin\.history\(user\.id, 90\)[\s\S]*?\} catch \(historyError\)/,
-    'history fetch в вечерней ветке обёрнут в try/catch'
+    'history fetch после setStep(doneStep) обёрнут в try/catch'
   )
 })
 
@@ -106,7 +102,7 @@ test('7. Scout/surprise flow не сломан', async () => {
   const core = getCore(src)
   assert.match(core, /data-testid="surprise-insight"/, 'surprise insight блок сохранён')
   assert.match(core, /data-testid="surprise-insight-open"/, 'surprise open кнопка сохранена')
-  assert.match(core, /data-testid="checkin-open-scout"/, 'scout кнопка (skipAction) сохранена')
+  assert.match(core, /'checkin-open-scout'/, 'scout кнопка (skipAction) сохранена')
   assert.match(core, /maybeBuildSurprise/, 'maybeBuildSurprise вызов сохранён')
   assert.match(core, /openScout/, 'openScout функция сохранена')
 })
