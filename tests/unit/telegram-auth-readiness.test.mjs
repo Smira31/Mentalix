@@ -26,15 +26,46 @@ test('Telegram platform detection does not depend only on already-populated init
   assert.match(platformSource, /!standaloneSafari/)
 })
 
-test('Telegram requestAuth waits for a valid user id before App mounts user-scoped screens', () => {
+test('Telegram requestAuth waits for user id AND signed initData before user-owned screens mount', async () => {
   assert.match(telegramSource, /Number\.isSafeInteger\(id\)/)
   assert.match(telegramSource, /id <= 0/)
   assert.match(telegramSource, /timeoutMs = 3000/)
-  assert.match(telegramSource, /while \(!user && Date\.now\(\) < deadline\)/)
   assert.match(appSource, /const existing = await platform\.requestAuth\(\)/)
   assert.match(appSource, /user && tab === 'today'/)
   assert.match(appSource, /user && tab === 'practices'/)
   assert.match(appSource, /user && tab === 'trends'/)
+
+  const webApp = { initDataUnsafe: { user: { id: 123 } }, initData: '' }
+  globalThis.__telegramAuthWebApp = webApp
+  try {
+    const source = telegramSource.replace(
+      "import WebApp from '@twa-dev/sdk'",
+      'const WebApp = globalThis.__telegramAuthWebApp'
+    )
+    const { telegramAdapter } = await import(
+      `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
+    )
+    assert.equal(await telegramAdapter.requestAuth({ timeoutMs: 0 }), null)
+    assert.equal(await telegramAdapter.requestAuth({ timeoutMs: 3, intervalMs: 1 }), null)
+
+    webApp.initData = 'query_id=signed&hash=signature'
+    assert.equal((await telegramAdapter.requestAuth({ timeoutMs: 0 }))?.id, 123)
+
+    webApp.initDataUnsafe.user = null
+    assert.equal(await telegramAdapter.requestAuth({ timeoutMs: 0 }), null)
+    setTimeout(() => {
+      webApp.initDataUnsafe.user = { id: 456 }
+    }, 5)
+    assert.equal((await telegramAdapter.requestAuth({ timeoutMs: 200, intervalMs: 2 }))?.id, 456)
+
+    webApp.initData = ''
+    setTimeout(() => {
+      webApp.initData = 'query_id=late&hash=signature'
+    }, 5)
+    assert.equal((await telegramAdapter.requestAuth({ timeoutMs: 200, intervalMs: 2 }))?.id, 456)
+  } finally {
+    delete globalThis.__telegramAuthWebApp
+  }
 })
 
 test('standalone regular screens match Safari while Dialog keeps its safe-area contract', () => {
