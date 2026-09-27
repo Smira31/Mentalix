@@ -122,6 +122,11 @@ function ReferenceProfileMark() {
   )
 }
 
+function readCanonicalCurrentStreak(payload) {
+  const value = payload?.current_streak
+  return Number.isSafeInteger(value) && value >= 0 ? value : null
+}
+
 function TodayWorkspaceHeader({
   onOpenSettings,
   onOpenSeries,
@@ -309,25 +314,26 @@ export default function Today({
     () => initialTodaySnapshot?.checkinHistory || []
   )
 
-  // Серия в шапке считается из истории + сегодняшнего чек-ина: история с
-  // бэкенда может ещё не содержать запись за сегодня (карточка «Утро
-  // отмечено» уже есть, а огонёк без числа — регрессия после #801).
-  // Пока история не загружена, показываем последнее известное значение
-  // серии этого пользователя (или огонь без числа), а не «1» от одного
-  // сегодняшнего чек-ина.
+  // Canonical source для числа в огоньке — GET /api/streak.
+  // Существующий frontend-расчёт и кэш сохраняем только как fallback,
+  // пока canonical ответ грузится или временно недоступен.
   const [historyLoaded, setHistoryLoaded] = useState(() => Boolean(previewFixture))
   const [cachedStreak] = useState(() => (user?.id ? peekCachedStreak(user.id) : null))
+  const [canonicalStreak, setCanonicalStreak] = useState(null)
   const [moodPractices, setMoodPractices] = useState([])
   const [practiceDays, setPracticeDays] = useState([])
   const activityDays = collectActivityDays({ rituals, ascezas, moodPractices, practiceDays })
 
-  const streak = resolveDisplayedStreak({
+  const fallbackStreak = resolveDisplayedStreak({
     historyLoaded,
     history: checkinHistory,
     checkin,
     cachedStreak,
     activityDays,
   })
+  const canonicalStreakValue =
+    canonicalStreak?.userId === user?.id ? canonicalStreak.value : null
+  const streak = canonicalStreakValue ?? fallbackStreak
 
   useEffect(() => {
     if (previewFixture || !historyLoaded || !user?.id) return
@@ -543,8 +549,21 @@ export default function Today({
 
       setCheckin(current)
 
-      const history = await api.checkin.history(user.id, 90)
-      const safeHistory = Array.isArray(history) ? history : []
+      const [historyResult, streakResult] = await Promise.allSettled([
+        api.checkin.history(user.id, 90),
+        api.streak(user.id),
+      ])
+
+      if (streakResult.status === 'fulfilled') {
+        const currentStreak = readCanonicalCurrentStreak(streakResult.value)
+        if (currentStreak != null) {
+          setCanonicalStreak({ userId: user.id, value: currentStreak })
+        }
+      }
+
+      if (historyResult.status === 'rejected') throw historyResult.reason
+
+      const safeHistory = Array.isArray(historyResult.value) ? historyResult.value : []
       setCheckinHistory(safeHistory)
       setHistoryLoaded(true)
       // Обе модели строятся из одной свежей истории: previous — без
@@ -587,6 +606,17 @@ export default function Today({
     // Будим сервер заранее, не дожидаясь остального (Render free tier
     // спит: первый запрос после сна отвечает до 50 с).
     api.health.check().catch(() => {})
+
+    api.streak(user.id)
+      .then(result => {
+        const currentStreak = readCanonicalCurrentStreak(result)
+        if (active && currentStreak != null) {
+          setCanonicalStreak({ userId: user.id, value: currentStreak })
+        }
+      })
+      .catch(() => {
+        // Existing history/cache path remains a non-blocking fallback.
+      })
 
     ;(async () => {
       try {
