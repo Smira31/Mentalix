@@ -2,6 +2,66 @@ import { now } from './clock.js'
 import { DEFAULT_REVIEW_HOUR } from './todayCardState.js'
 
 const DEMO_STATE_KEY = 'mentalix_preview_demo_state_v5'
+
+const DEMO_JOURNAL_TEMPLATES = [
+  {
+    id: 1,
+    title: 'Разбор ситуации',
+    description: 'Спокойно отдели факты от предположений и выбери один шаг.',
+    category: 'личное',
+    visibility: 'public',
+    version: 1,
+    stepCount: 3,
+    steps: [
+      {
+        id: 'step-1',
+        type: 'free_text',
+        title: 'Что сейчас происходит?',
+        helper: 'Опиши ситуацию так, как она выглядит сегодня.',
+        required: true,
+      },
+      {
+        id: 'step-2',
+        type: 'free_text',
+        title: 'Что здесь точно известно?',
+        helper: 'Запиши наблюдаемые факты.',
+        required: false,
+      },
+      {
+        id: 'step-3',
+        type: 'free_text',
+        title: 'Что зависит от тебя сегодня?',
+        helper: 'Один небольшой шаг.',
+        required: true,
+      },
+    ],
+  },
+  {
+    id: 2,
+    title: 'Вечерняя рефлексия',
+    description: 'Короткая запись в конце дня — без оценки.',
+    category: 'вечер',
+    visibility: 'public',
+    version: 1,
+    stepCount: 2,
+    steps: [
+      {
+        id: 'step-1',
+        type: 'free_text',
+        title: 'Что было главным сегодня?',
+        helper: 'Одно наблюдение, не итог.',
+        required: true,
+      },
+      {
+        id: 'step-2',
+        type: 'free_text',
+        title: 'Что возьму с собой в завтра?',
+        helper: 'Не план, а направление.',
+        required: false,
+      },
+    ],
+  },
+]
 const SCENARIO_KEY = 'mentalix:demo-scenario:v1'
 const NETWORK_KEY = 'mentalix:demo-network:v1'
 export const DEMO_SCENARIOS = ['Новый пользователь', 'Неделя', 'Серия прервалась', 'Много практик']
@@ -791,6 +851,40 @@ function respond(path, options = {}) {
   }
   if (pathname === '/auth/guest/merge' && method === 'POST') {
     return json({ user: { ...DEMO_USER, merged_from_guest: true } })
+  }
+
+  // ── Journal templates (demo) ──
+
+  if (pathname === '/journal/templates' && method === 'GET') {
+    return json(DEMO_JOURNAL_TEMPLATES)
+  }
+  if (pathname.match(/^\/journal\/templates\/(\d+)$/) && method === 'GET') {
+    const id = numericId(pathname)
+    return json(DEMO_JOURNAL_TEMPLATES.find(t => t.id === id) || null)
+  }
+  if (pathname === '/journal/templates/sessions/complete' && method === 'POST') {
+    const template = DEMO_JOURNAL_TEMPLATES.find(t => t.id === Number(body.template_id))
+    const session = {
+      id: Date.now(),
+      user_id: body.user_id,
+      template_id: body.template_id,
+      answers: body.answers,
+      idempotency_key: body.idempotency_key,
+      status: 'completed',
+      template: template || null,
+      completedAt: now().toISOString(),
+      updatedAt: now().toISOString(),
+    }
+    writeState({
+      ...state,
+      journalCompletedSessions: [session, ...(state.journalCompletedSessions || [])],
+    })
+    return json(session)
+  }
+  if (pathname === '/journal/templates/sessions/mine' && method === 'GET') {
+    const status = url.searchParams.get('status')
+    if (status === 'completed') return json(state.journalCompletedSessions || [])
+    return json([])
   }
 
   if (pathname === '/health' && method === 'GET') return json({ status: 'ok' })

@@ -36,7 +36,8 @@ test('MXL-526 сохраняет честные границы функций', 
   assert.match(articles, /initialArticle = null, onExit/)
   assert.match(articles, /ArticlesCollectionHeader onExit=\{onExit\}/)
   assert.match(journals, /GuidedJournals\(\{[^}]*\buser\b[^}]*\bonExit\b[^}]*\}\)/)
-  assert.match(journals, /platformName === 'telegram'/)
+  // Journal v3: local drafts work on web too — gate is user-id only, no longer Telegram-only
+  assert.match(journals, /Number\(user\?\.id\) > 0/)
 })
 
 test('MXL-526 использует изолированный свайп-rail без document touch handlers', () => {

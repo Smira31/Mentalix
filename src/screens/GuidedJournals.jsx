@@ -13,7 +13,16 @@ import {
   useFullscreenSurface,
 } from '../lib/fullscreenSurface'
 import { api } from '../lib/api'
-import { platform, platformName } from '../platform'
+import { platform } from '../platform'
+import {
+  readJournalDraft,
+  saveJournalDraft,
+  clearJournalDraft,
+  listJournalDrafts,
+  generateIdempotencyKey,
+  isKeyValid,
+} from '../lib/journalDraftV3'
+import MoodPractice from './MoodPractice'
 
 const STEP_TYPES = [
   ['prompt', 'Вопрос'],
@@ -402,19 +411,21 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
 }
 
 export default function GuidedJournals({ user, onExit, onInputModeChange }) {
-  const canUseGuidedJournals = platformName === 'telegram' && Number(user?.id) > 0
+  const canUseGuidedJournals = Number(user?.id) > 0
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('')
   const [templates, setTemplates] = useState(null)
   const [allCategories, setAllCategories] = useState([])
-  const [activeSessions, setActiveSessions] = useState([])
+  const [activeDrafts, setActiveDrafts] = useState([])
   const [completedSessions, setCompletedSessions] = useState(null)
   const [completedSessionsLoading, setCompletedSessionsLoading] = useState(true)
   const [completedSessionsError, setCompletedSessionsError] = useState('')
   const [completedSession, setCompletedSession] = useState(null)
   const [selected, setSelected] = useState(null)
-  const [session, setSession] = useState(null)
+  const [draft, setDraft] = useState(null)
   const [stepIndex, setStepIndex] = useState(0)
+  const [flowStage, setFlowStage] = useState(null) // 'writing' | 'submitting' | 'mood-offer' | 'mood' | 'result' | 'error'
+  const [submitError, setSubmitError] = useState(null)
   const [builderOpen, setBuilderOpen] = useState(false)
 
   // G8: панель вкладок скрыта на экране создания/редактирования шаблона
@@ -472,19 +483,8 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
   }, [canUseGuidedJournals, user.id])
 
   useEffect(() => {
-    if (!canUseGuidedJournals) return undefined
-    let active = true
-    api.journalTemplates
-      .sessions(user.id, 'draft')
-      .then(items => {
-        if (active) setActiveSessions(Array.isArray(items) ? items : [])
-      })
-      .catch(() => {
-        if (active) setActiveSessions([])
-      })
-    return () => {
-      active = false
-    }
+    if (!canUseGuidedJournals) return
+    setActiveDrafts(listJournalDrafts(user.id))
   }, [canUseGuidedJournals, user.id])
 
   const loadCompletedSessions = useCallback(async () => {
@@ -526,63 +526,85 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     }
   }
 
-  function resumeSession(existingSession) {
-    const steps = existingSession.template?.steps || []
-    const firstUnanswered = steps.findIndex(
-      step => !stepAnswerIsPresent(existingSession.answers?.[step.id])
-    )
-    setSelected(existingSession.template || null)
+  function resumeDraft(templateId, templateTitle) {
+    const existing = readJournalDraft(user.id, templateId)
+    const answers = existing?.answers || {}
+    // Найти шаблон в загруженном списке, если есть
+    const template = templates?.find(t => t.id === templateId) || null
+    setSelected(template)
+    const steps = template?.steps || []
+    const firstUnanswered = steps.findIndex(step => !stepAnswerIsPresent(answers[step.id]))
     setStepIndex(firstUnanswered === -1 ? Math.max(steps.length - 1, 0) : firstUnanswered)
-    setSession(existingSession)
+    setDraft({
+      answers,
+      template_id: templateId,
+      idempotency_key: existing?.idempotency_key || null,
+    })
+    setFlowStage('writing')
+    setSubmitError(null)
   }
 
-  async function startOrResume() {
+  function startDraft() {
     if (!canUseGuidedJournals || !selected) return
-    setLoading(true)
-    setError('')
-    try {
-      const nextSession = await api.journalTemplates.startOrResume(selected.id, user.id)
-      const steps = nextSession.template.steps || []
-      const firstUnanswered = steps.findIndex(
-        step => !stepAnswerIsPresent(nextSession.answers?.[step.id])
-      )
-      setStepIndex(firstUnanswered === -1 ? Math.max(steps.length - 1, 0) : firstUnanswered)
-      setSession(nextSession)
-    } catch {
-      setError('Не удалось начать запись. Ничего не сохранено.')
-    } finally {
-      setLoading(false)
-    }
+    const existing = readJournalDraft(user.id, selected.id)
+    const answers = existing?.answers || {}
+    const steps = selected.steps || []
+    const firstUnanswered = steps.findIndex(step => !stepAnswerIsPresent(answers[step.id]))
+    setStepIndex(firstUnanswered === -1 ? Math.max(steps.length - 1, 0) : firstUnanswered)
+    setDraft({
+      answers,
+      template_id: selected.id,
+      idempotency_key: existing?.idempotency_key || null,
+    })
+    setFlowStage('writing')
+    setSubmitError(null)
   }
 
-  async function saveProgress({ complete = false } = {}) {
-    if (!canUseGuidedJournals) return
-    const steps = session?.template.steps || []
-    const step = steps[stepIndex]
-    if (!step) return
-    setLoading(true)
-    setError('')
+  function updateAnswer(stepId, value) {
+    const nextAnswers = { ...(draft?.answers || {}), [stepId]: value }
+    const updatedDraft = { ...draft, answers: nextAnswers }
+    setDraft(updatedDraft)
+    // Debounced autosave to localStorage (no server call)
+    saveJournalDraft(
+      user.id,
+      selected.id,
+      nextAnswers,
+      updatedDraft.idempotency_key,
+      selected.title
+    )
+  }
+
+  async function submitComplete() {
+    if (flowStage === 'submitting') return // double-tap prevention
+    if (!draft?.answers || !selected) return
+    setFlowStage('submitting')
+    setSubmitError(null)
+
+    // Idempotency: reuse key if content unchanged, generate new if changed
+    let key = draft.idempotency_key
+    if (!key || !isKeyValid(key, draft.answers)) {
+      key = generateIdempotencyKey(draft.answers)
+      saveJournalDraft(user.id, selected.id, draft.answers, key, selected.title)
+      setDraft(prev => ({ ...prev, idempotency_key: key }))
+    }
+
     try {
-      const nextSession = await api.journalTemplates.updateSession(
-        session.id,
-        user.id,
-        session.answers || {},
-        complete
-      )
-      setSession(nextSession)
-      if (complete) {
-        setActiveSessions(items => items.filter(item => item.id !== nextSession.id))
-        setCompletedSessions(current => [
-          nextSession,
-          ...(current || []).filter(item => item.id !== nextSession.id),
-        ])
-        return
-      }
-      setStepIndex(index => Math.min(index + 1, steps.length - 1))
-    } catch {
-      setError('Не удалось сохранить ответ. Остаёмся на этом шаге, чтобы текст не потерялся.')
-    } finally {
-      setLoading(false)
+      await api.journalTemplates.completeSession(user.id, selected.id, draft.answers, key)
+      // Success: clear local draft + key
+      clearJournalDraft(user.id, selected.id)
+      setActiveDrafts(items => items.filter(item => item.templateId !== String(selected.id)))
+      platform.haptic('success')
+
+      // Blur active field to close keyboard before transition
+      const active = document.activeElement
+      if (active && typeof active.blur === 'function') active.blur()
+
+      setFlowStage('mood-offer')
+    } catch (error) {
+      // Draft is NOT deleted on any error
+      setSubmitError(error)
+      setFlowStage('error')
+      platform.haptic('error')
     }
   }
 
@@ -638,16 +660,16 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     return (
       <section className="mt-8 animate-fade-in">
         {onExit && (
-          <NestedScreenHeader title="направленные записи." onBack={onExit} registerSystemBack={false} />
+          <NestedScreenHeader
+            title="направленные записи."
+            onBack={onExit}
+            registerSystemBack={false}
+          />
         )}
         <div className="rounded-3xl bg-emerald p-5">
           <h2 className="font-display text-[25px] text-cream">Направленные записи</h2>
           <p className="mt-3 text-[14px] leading-relaxed text-muted">
-            Личные шаблоны и сохранённые ответы доступны в Telegram Mini App с проверенной подписью.
-          </p>
-          <p className="mt-2 text-[12px] leading-relaxed text-faint">
-            Веб-версия временно не открывает этот раздел, пока для неё не появятся server-side
-            sessions.
+            Направленные записи доступны после входа.
           </p>
         </div>
       </section>
@@ -674,56 +696,166 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     )
   }
 
-  if (session) {
-    const steps = session.template.steps || []
-    const step = steps[stepIndex]
-    const isLast = stepIndex === steps.length - 1
-    const answer = session.answers?.[step?.id]
-    const canContinue = !step?.required || stepAnswerIsPresent(answer)
+  // ── Writing / completion / mood / result flow ──
 
-    if (session.status === 'completed') {
-      return (
-        <section className="mt-8 animate-fade-in text-center">
-          <Check size={42} className="mx-auto text-gold" />
-          <h3 className="mt-5 font-display text-[24px] text-cream">Запись сохранена</h3>
-          <p className="mx-auto mt-3 max-w-sm text-[14px] leading-relaxed text-muted">
-            Сессия сохранена. Она не станет отдельной записью в Journey автоматически: интеграция
-            template-ответов с History пока не реализована.
-          </p>
+  if (flowStage === 'mood') {
+    return <MoodPractice user={user} onDone={() => setFlowStage('result')} />
+  }
+
+  if (flowStage === 'result') {
+    return (
+      <section className="mt-8 animate-fade-in text-center">
+        <Check size={42} className="mx-auto text-gold" />
+        <h3 className="mt-5 font-display text-[24px] text-cream">Запись сохранена</h3>
+        <p className="mx-auto mt-3 max-w-sm text-[14px] leading-relaxed text-muted">
+          Ответы отправлены. Черновик удалён с этого устройства.
+        </p>
+        <button
+          type="button"
+          data-testid="journal-v3-back-to-journal"
+          onClick={() => {
+            setFlowStage(null)
+            setSelected(null)
+            setDraft(null)
+            setStepIndex(0)
+            setActiveDrafts(listJournalDrafts(user.id))
+          }}
+          className="mt-7 min-h-12 rounded-full bg-gold px-6 text-[14px] font-semibold text-emerald-deep"
+        >
+          Вернуться в журнал
+        </button>
+      </section>
+    )
+  }
+
+  if (flowStage === 'mood-offer') {
+    return (
+      <section className="mt-8 animate-fade-in text-center">
+        <Check size={42} className="mx-auto text-gold" />
+        <h3 className="mt-5 font-display text-[24px] text-cream">Запись сохранена</h3>
+        <p className="mx-auto mt-3 max-w-sm text-[14px] leading-relaxed text-muted">
+          Хочешь отметить настроение?
+        </p>
+        <div className="mt-7 flex flex-col gap-2">
           <button
             type="button"
-            onClick={() => {
-              setSession(null)
-              setSelected(null)
-            }}
-            className="mt-7 min-h-12 rounded-full bg-gold px-6 text-[14px] font-semibold text-emerald-deep"
+            data-testid="journal-v3-mood-yes"
+            onClick={() => setFlowStage('mood')}
+            className="min-h-12 rounded-full bg-gold px-6 text-[14px] font-semibold text-emerald-deep"
           >
-            К каталогу
+            Отметить настроение
           </button>
-        </section>
-      )
-    }
+          <button
+            type="button"
+            data-testid="journal-v3-mood-skip"
+            onClick={() => setFlowStage('result')}
+            className="min-h-12 rounded-full border border-cream/15 px-6 text-[14px] font-semibold text-cream"
+          >
+            Пропустить
+          </button>
+        </div>
+      </section>
+    )
+  }
+
+  if (flowStage === 'error' && draft) {
+    const steps = selected?.steps || []
+    const step = steps[stepIndex]
+    const isLast = stepIndex === steps.length - 1
+    const answer = draft.answers?.[step?.id]
+    const canContinue = !step?.required || stepAnswerIsPresent(answer)
+    const isConflict = submitError?.status === 409
+    const isClientError = submitError?.status === 404 || submitError?.status === 422
+    const isNetworkError =
+      submitError?.kind === 'network' ||
+      submitError?.kind === 'timeout' ||
+      (submitError?.status && submitError.status >= 500)
+
+    const errorMessage = isConflict
+      ? 'Конфликт: запись с таким ключом уже существует. Измени содержимое и попробуй снова.'
+      : isClientError
+        ? 'Не удалось завершить запись. Проверь шаблон и попробуй ещё раз.'
+        : isNetworkError
+          ? 'Нет связи. Черновик сохранён на устройстве — попробуй ещё раз, когда появится сеть.'
+          : 'Не удалось завершить запись. Черновик сохранён.'
 
     return (
       <section className="animate-fade-in">
-        <RoundBackButton onClick={() => setSession(null)} label="Сохранить и выйти" />
+        <RoundBackButton onClick={() => setFlowStage('writing')} label="Назад к записи" />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
-          {selected?.title || session.template.title} · {stepIndex + 1} из {steps.length}
+          {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
         <h3 className="mt-3 font-display text-[27px] leading-tight text-cream">{step?.title}</h3>
         {step?.helper && (
           <p className="mt-3 text-[14px] leading-relaxed text-muted">{step.helper}</p>
         )}
-        <StepInput
-          step={step}
-          value={answer}
-          onChange={value =>
-            setSession(current => ({
-              ...current,
-              answers: { ...current.answers, [step.id]: value },
-            }))
-          }
+        <StepInput step={step} value={answer} onChange={value => updateAnswer(step.id, value)} />
+        <p role="alert" data-testid="journal-v3-error" className="mt-4 text-[13px] text-muted">
+          {errorMessage}
+        </p>
+        <button
+          type="button"
+          data-testid="journal-v3-retry"
+          disabled={!canContinue}
+          onClick={submitComplete}
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
+        >
+          Попробовать снова
+        </button>
+      </section>
+    )
+  }
+
+  if (flowStage === 'submitting' && draft) {
+    const steps = selected?.steps || []
+    const step = steps[stepIndex]
+    return (
+      <section className="animate-fade-in">
+        <RoundBackButton onClick={() => {}} label="Завершаем…" />
+        <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
+          {selected?.title} · {stepIndex + 1} из {steps.length}
+        </p>
+        <h3 className="mt-3 font-display text-[27px] leading-tight text-cream">{step?.title}</h3>
+        {step?.helper && (
+          <p className="mt-3 text-[14px] leading-relaxed text-muted">{step.helper}</p>
+        )}
+        <StepInput step={step} value={draft.answers?.[step?.id]} onChange={() => {}} />
+        <button
+          type="button"
+          disabled
+          className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep opacity-50"
+        >
+          Завершаем…
+        </button>
+      </section>
+    )
+  }
+
+  if ((flowStage === 'writing' || flowStage === 'error') && draft) {
+    const steps = selected?.steps || []
+    const step = steps[stepIndex]
+    const isLast = stepIndex === steps.length - 1
+    const answer = draft.answers?.[step?.id]
+    const canContinue = !step?.required || stepAnswerIsPresent(answer)
+
+    return (
+      <section className="animate-fade-in">
+        <RoundBackButton
+          onClick={() => {
+            setFlowStage(null)
+            setDraft(null)
+            setStepIndex(0)
+          }}
+          label="Сохранить и выйти"
         />
+        <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
+          {selected?.title} · {stepIndex + 1} из {steps.length}
+        </p>
+        <h3 className="mt-3 font-display text-[27px] leading-tight text-cream">{step?.title}</h3>
+        {step?.helper && (
+          <p className="mt-3 text-[14px] leading-relaxed text-muted">{step.helper}</p>
+        )}
+        <StepInput step={step} value={answer} onChange={value => updateAnswer(step.id, value)} />
         {error && (
           <p role="alert" className="mt-4 text-[13px] text-muted">
             {error}
@@ -731,11 +863,19 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         )}
         <button
           type="button"
-          disabled={loading || !canContinue}
-          onClick={() => saveProgress({ complete: isLast })}
+          data-testid="journal-v3-next"
+          disabled={!canContinue}
+          onClick={() => {
+            if (isLast) {
+              submitComplete()
+            } else {
+              platform.haptic('light')
+              setStepIndex(index => Math.min(index + 1, steps.length - 1))
+            }
+          }}
           className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
         >
-          {loading ? 'Сохраняю…' : isLast ? 'Завершить запись' : 'Сохранить и продолжить'}
+          {isLast ? 'Завершить' : 'Сохранить и продолжить'}
         </button>
       </section>
     )
@@ -786,7 +926,8 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
         <button
           type="button"
           disabled={loading || deletingTemplate}
-          onClick={startOrResume}
+          onClick={startDraft}
+          data-testid="journal-v3-start"
           className="mt-7 min-h-14 w-full rounded-full bg-gold px-[var(--mx-screen-x)] text-[15px] font-semibold text-emerald-deep disabled:opacity-35"
         >
           {loading ? 'Открываю…' : 'Начать или продолжить'}
@@ -799,7 +940,11 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     <section className="animate-fade-in">
       {onExit && (
         <>
-          <NestedScreenHeader title="направленные записи." onBack={onExit} registerSystemBack={false} />
+          <NestedScreenHeader
+            title="направленные записи."
+            onBack={onExit}
+            registerSystemBack={false}
+          />
           <p className="text-[13px] leading-relaxed text-muted -mt-2 mb-5">
             Готовые вопросы и личные шаблоны для спокойной рефлексии.
           </p>
@@ -822,19 +967,22 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           <Plus size={20} />
         </button>
       </div>
-      {activeSessions.length > 0 && (
+      {activeDrafts.length > 0 && (
         <div className="mt-5 rounded-3xl border border-gold/25 bg-emerald p-4">
           <p className="text-[12px] font-bold uppercase tracking-wide text-gold">Продолжить</p>
           <div className="mt-3 space-y-2">
-            {activeSessions.slice(0, 3).map(item => (
+            {activeDrafts.slice(0, 3).map(item => (
               <button
-                key={item.id}
+                key={item.templateId}
                 type="button"
-                onClick={() => resumeSession(item)}
+                data-testid="journal-v3-resume"
+                onClick={() => resumeDraft(item.templateId, item.templateTitle)}
                 className="flex min-h-12 w-full items-center justify-between rounded-2xl bg-emerald-light px-4 text-left"
               >
                 <span className="text-[14px] font-semibold text-cream">
-                  {item.template?.title || 'Незавершённая запись'}
+                  {item.templateTitle ||
+                    templates?.find(t => t.id === Number(item.templateId))?.title ||
+                    'Незавершённая запись'}
                 </span>
                 <span className="text-[12px] text-gold">Открыть</span>
               </button>

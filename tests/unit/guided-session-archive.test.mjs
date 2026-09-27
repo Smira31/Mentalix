@@ -12,7 +12,8 @@ const archiveViewer = source
   .split('function TemplateBuilder')[0]
 
 test('guided session archive fetches completed sessions without obsolete active status', () => {
-  assert.match(source, /sessions\(user\.id, 'draft'\)/)
+  // V3: draft sessions replaced by local drafts — only completed sessions fetched from server
+  assert.doesNotMatch(source, /sessions\(user\.id, 'draft'\)/)
   assert.match(source, /sessions\(user\.id, 'completed'\)/)
   assert.doesNotMatch(source, /sessions\(user\.id, 'active'\)/)
 })
@@ -27,7 +28,6 @@ test('completed session viewer renders persisted answers read-only', () => {
 test('archive copy does not claim automatic Journey or History integration', () => {
   assert.match(source, /не создаёт записи в Journey/)
   assert.match(source, /не интегрирован с History/)
-  assert.match(source, /Она не станет отдельной записью в Journey автоматически/)
 })
 
 
