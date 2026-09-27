@@ -366,11 +366,11 @@ export default function Settings({
   async function eraseAccountAndData() {
     if (!privacyProtectedByTelegram || erasingAccount) return
     const firstConfirmation = window.confirm(
-      'Удалить аккаунт Mentalix и все связанные данные? Будут удалены записи дневника, теги, цели, привычки, шаблоны, история разговоров с ИИ и настройки. Отменить это нельзя.'
+      'Удалить аккаунт и связанные данные из активной базы Mentalix? Это нельзя отменить. Резервные копии и журналы провайдеров могут храниться отдельно.'
     )
     if (!firstConfirmation) return
     const finalConfirmation = window.confirm(
-      'Это последнее подтверждение. Удалить все данные сейчас?'
+      'Это последнее подтверждение. Удалить аккаунт и связанные данные Mentalix?'
     )
     if (!finalConfirmation) return
 
@@ -1011,17 +1011,17 @@ export default function Settings({
                 />
                 <ProfileRow
                   title="Экспорт JSON"
-                  subtitle="Сохранённые данные и завершённые направленные записи"
+                  subtitle="Часть данных: профиль, чек-ины, завершённые направленные записи"
                   onClick={() => downloadPersonalExport('json')}
                 />
                 <ProfileRow
                   title="Экспорт Markdown"
-                  subtitle="Записи для чтения или передачи специалисту"
+                  subtitle="Только данные чек-инов для чтения"
                   onClick={() => downloadPersonalExport('markdown')}
                 />
                 <ProfileRow
                   title="Экспорт CSV"
-                  subtitle="Табличные метрики и чек-ин"
+                  subtitle="Только данные чек-инов в таблице"
                   onClick={() => downloadPersonalExport('csv')}
                 />
               </>
@@ -1033,9 +1033,8 @@ export default function Settings({
                   onClick={() => setScreen('privacy-notice')}
                 />
                 <div className="mx-profile-inset text-[13px] leading-relaxed text-muted">
-                  Экспорт и серверное удаление доступны только в Telegram Mini App с проверенной
-                  подписью. В веб-версии нет входа на сервере, поэтому мы не выполняем
-                  чувствительные операции по переданному id.
+                  Экспорт и удаление аккаунта сейчас доступны через Telegram Mini App с проверенной
+                  подписью. Веб-вход доступен, но эти действия пока не предлагаются в веб-интерфейсе.
                 </div>
               </>
             )}
