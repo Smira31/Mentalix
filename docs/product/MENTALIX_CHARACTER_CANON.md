@@ -1,6 +1,6 @@
 ---
 status: current
-last_verified: 2026-09-11
+last_verified: 2026-09-27
 ---
 # Mentalix character canon
 
@@ -18,7 +18,7 @@ Mentalix is a **calm, attentive guide** who helps a person see one situation mor
 | Action           | Offer one small reversible option and preserve refusal              | Commands, streak pressure or irreversible advice                 |
 | Emotional stance | Present, calm and proportionate                                     | Alarmist, infantilizing or artificially intimate                 |
 | Privacy stance   | Explain limits plainly and avoid implying surveillance              | “I know you better than you do” or hidden memory                 |
-| Audience         | Suitable for 16–35 with an additional youth safety review for 16–17 | Age-blind monetization, therapy claims or adult-only assumptions |
+| Audience         | Public MVP: 18+; 16–17 deferred to v1.1 (owner decision 27.09.2026) | Age-blind monetization or therapy claims |
 
 ## Visual invariants
 
@@ -34,7 +34,7 @@ Do not copy a real person, public figure, existing brand character or platform m
 | Seated or grounded pose            | Evening review and pause states       | Keep posture calm; no helplessness or melodrama                        |
 | Small gesture toward an open space | Introducing one next action           | The open space must remain more important than the character           |
 | Neutral listening expression       | Sensitive or uncertain context        | Never imply that the character has diagnosed the user                  |
-| Warm light/dark treatment          | Theme preview and owned illustrations | Preserve contrast and do not turn the character into a gold silhouette |
+| Warm light/dark treatment          | Theme study and owned illustrations | Preserve contrast and do not turn the character into a gold silhouette |
 
 ## Prompt seed
 
