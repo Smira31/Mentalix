@@ -34,11 +34,22 @@ function buildFixtureRouter() {
   const savedCheckins = []
   const sentMessages = []
   const sentFeedback = []
+  const streakRequests = []
+  let streakResponse = {
+    current_streak: 0,
+    longest_streak: 0,
+    total_active_days: 0,
+    is_active_today: false,
+  }
 
   return {
     savedCheckins,
     sentMessages,
     sentFeedback,
+    streakRequests,
+    setStreakResponse(value) {
+      streakResponse = value
+    },
     async handle(route) {
       const request = route.request()
       const url = new URL(request.url())
@@ -84,30 +95,49 @@ function buildFixtureRouter() {
 
       if (request.method() !== 'GET') return route.fulfill(jsonResponse({ ok: true }))
 
+      if (pathname === '/api/streak') {
+        streakRequests.push(url.searchParams.get('user_id'))
+        return route.fulfill(jsonResponse(streakResponse))
+      }
       if (pathname === '/api/profile') return route.fulfill(jsonResponse(TEST_USER))
       if (pathname === '/api/checkin/today') return route.fulfill(jsonResponse(checkin))
       if (pathname === '/api/checkin/history') {
         return route.fulfill(jsonResponse(checkin ? [checkin] : []))
       }
       if (pathname === '/api/rituals') {
-        return route.fulfill(jsonResponse([{ id: 701, title: 'Fixture ritual', today_level: null }]))
+        return route.fulfill(
+          jsonResponse([{ id: 701, title: 'Fixture ritual', today_level: null }])
+        )
       }
       if (pathname === '/api/ascezas') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/quotes/today') {
         return route.fulfill(jsonResponse({ text: 'Fixture quote.' }))
       }
-      if (pathname === '/api/profile/settings') return route.fulfill(jsonResponse({ review_hour: reviewHour }))
-      if (pathname === '/api/analytics/pulse') return route.fulfill(jsonResponse({ active_today: 1 }))
+      if (pathname === '/api/profile/settings')
+        return route.fulfill(jsonResponse({ review_hour: reviewHour }))
+      if (pathname === '/api/analytics/pulse')
+        return route.fulfill(jsonResponse({ active_today: 1 }))
       if (pathname === '/api/analytics') {
-        return route.fulfill(jsonResponse({ period_days: 14, rituals: [], ascezas: [], insights: [], daily_activity: [] }))
+        return route.fulfill(
+          jsonResponse({
+            period_days: 14,
+            rituals: [],
+            ascezas: [],
+            insights: [],
+            daily_activity: [],
+          })
+        )
       }
       if (pathname === '/api/pinned-practices') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/articles') return route.fulfill(jsonResponse([]))
       if (pathname === '/api/themes') return route.fulfill(jsonResponse([]))
-      if (pathname === '/api/mentalix/consent') return route.fulfill(jsonResponse({ context_consent: false }))
+      if (pathname === '/api/mentalix/consent')
+        return route.fulfill(jsonResponse({ context_consent: false }))
       if (pathname === '/api/mentalix/messages') {
         return route.fulfill(
-          jsonResponse([{ id: 'fixture-history-1', role: 'assistant', content: 'История fixture.' }])
+          jsonResponse([
+            { id: 'fixture-history-1', role: 'assistant', content: 'История fixture.' },
+          ])
         )
       }
 
@@ -125,7 +155,10 @@ async function seedUser(context) {
 }
 
 test.describe('MXL-010 automated technical gate', () => {
-  test('web auth fallback after guest failure exposes email and Telegram without private data', async ({ browser, baseURL }) => {
+  test('web auth fallback after guest failure exposes email and Telegram without private data', async ({
+    browser,
+    baseURL,
+  }) => {
     const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 } })
     const fixtures = buildFixtureRouter()
     await context.addInitScript(() => {
@@ -162,7 +195,10 @@ test.describe('MXL-010 automated technical gate', () => {
     await context.close()
   })
 
-  test('fixture-backed journey covers check-in, completion, evening review, handoff, AI response and reopen', async ({ browser, baseURL }) => {
+  test('fixture-backed journey covers check-in, completion, evening review, handoff, AI response and reopen', async ({
+    browser,
+    baseURL,
+  }) => {
     const context = await browser.newContext({
       baseURL,
       viewport: { width: 390, height: 844 },
@@ -213,9 +249,18 @@ test.describe('MXL-010 automated technical gate', () => {
     await page.clock.setFixedTime('2026-09-23T19:00:00Z')
     await backToToday(page)
     await openDayCard(page, 'evening')
+    fixtures.setStreakResponse({
+      current_streak: 4,
+      longest_streak: 4,
+      total_active_days: 4,
+      is_active_today: true,
+    })
+    const streakRequestsBeforeEvening = fixtures.streakRequests.length
 
     // ── Вечерний разбор ──
-    await expect(page.getByRole('heading', { name: 'Что ближе всего к тому, что ты чувствуешь?' })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Что ближе всего к тому, что ты чувствуешь?' })
+    ).toBeVisible()
     await emotionStep(page, 'ровно')
     await page.locator('[data-testid="checkin-next"]').click()
 
@@ -228,6 +273,12 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('heading', { name: 'Чек-ин завершён' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
+    await expect(page.getByTestId('checkin-streak')).toHaveText('4-дневная серия')
+    expect(fixtures.streakRequests.slice(streakRequestsBeforeEvening)).toContain(
+      String(TEST_USER.id)
+    )
+    await expect(page.getByText('Было полезно?')).toBeVisible()
+    await expect(page.getByTestId('checkin-back-to-today')).toHaveText('Вернуться в Сегодня')
 
     // Ответ «Немного» уходит сразу: запись уже сохранена
     await feedbackStep(page, 'some')

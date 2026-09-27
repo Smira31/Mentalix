@@ -811,6 +811,7 @@ function CheckInCore({
   const [feedback, setFeedback] = useState(null)
 
   const [streak, setStreak] = useState(0)
+  const [canonicalEveningStreak, setCanonicalEveningStreak] = useState(null)
 
   const [streakHistory, setStreakHistory] = useState([])
   const [surprise, setSurprise] = useState(null)
@@ -1045,13 +1046,20 @@ function CheckInCore({
         setStep(streakStep)
       } else {
         setStep(doneStep)
-        try {
-          const history = await api.checkin.history(user.id, 90)
-          setStreakHistory(Array.isArray(history) ? history : [])
-          setStreak(Math.max(1, currentCheckinStreak(Array.isArray(history) ? history : [])))
-        } catch (historyError) {
-          console.error(historyError)
-        }
+        // Пока canonical загружается или недоступен, остаётся прежняя серия из истории.
+        const [historyResult, streakResult] = await Promise.allSettled([
+          api.checkin.history(user.id, 90).then(history => {
+            const entries = Array.isArray(history) ? history : []
+            setStreakHistory(entries)
+            setStreak(Math.max(1, currentCheckinStreak(entries)))
+          }),
+          api.streak(user.id).then(response => {
+            const currentStreak = readCanonicalCurrentStreak(response)
+            if (currentStreak != null) setCanonicalEveningStreak(currentStreak)
+          }),
+        ])
+        if (historyResult.status === 'rejected') console.error(historyResult.reason)
+        if (streakResult.status === 'rejected') console.error(streakResult.reason)
       }
     } catch (error) {
       if (recovery && error?.status === 409) {
@@ -1492,9 +1500,9 @@ function CheckInCore({
               <h2 className="mx-checkin-completion-title">
                 {isEvening ? 'Чек-ин завершён' : 'Готово.'}
               </h2>
-              {isEvening && streak > 0 ? (
+              {isEvening && (canonicalEveningStreak ?? streak) > 0 ? (
                 <p className="mx-type-body text-muted mt-4" data-testid="checkin-streak">
-                  {streak}-дневная серия
+                  {canonicalEveningStreak ?? streak}-дневная серия
                 </p>
               ) : null}
 

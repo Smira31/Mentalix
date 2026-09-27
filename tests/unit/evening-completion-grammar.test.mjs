@@ -58,11 +58,15 @@ test('3. вечерний completion: streak > 0 → «N-дневная сери
   // Условный рендер streak только для вечера при streak > 0
   assert.match(
     core,
-    /isEvening && streak > 0/,
+    /isEvening && \(canonicalEveningStreak \?\? streak\) > 0/,
     'streak отображается только для вечера и только при streak > 0'
   )
   assert.match(core, /data-testid="checkin-streak"/, 'streak имеет testId checkin-streak')
-  assert.match(core, /\{streak\}-дневная серия/, 'текст streak: «N-дневная серия»')
+  assert.match(
+    core,
+    /\{canonicalEveningStreak \?\? streak\}-дневная серия/,
+    'текст streak: «N-дневная серия»'
+  )
 })
 
 test('4. вечерний completion: streak fetch failure не блокирует completion', async () => {
@@ -71,15 +75,12 @@ test('4. вечерний completion: streak fetch failure не блокируе
   // Вечерний путь: setStep(doneStep) вызывается ДО try/catch history fetch,
   // значит сбой fetch не мешает открытию completion.
   // Находим вечерний else-блок по уникальному паттерну setStep(doneStep)
-  const doneStepIdx = core.indexOf("setStep(doneStep)")
+  const doneStepIdx = core.indexOf('setStep(doneStep)')
   assert.ok(doneStepIdx >= 0, 'setStep(doneStep) должен присутствовать в CheckInCore')
-  // После setStep(doneStep) должен идти try с api.checkin.history
   const afterDoneStep = core.slice(doneStepIdx)
-  assert.match(
-    afterDoneStep,
-    /try \{[\s\S]*?api\.checkin\.history\(user\.id, 90\)[\s\S]*?\} catch \(historyError\)/,
-    'history fetch после setStep(doneStep) обёрнут в try/catch'
-  )
+  assert.match(afterDoneStep, /Promise\.allSettled\(\[/, 'ошибка серии не блокирует завершение')
+  assert.match(afterDoneStep, /api\.checkin\.history\(user\.id, 90\)/)
+  assert.match(afterDoneStep, /api\.streak\(user\.id\)/)
 })
 
 test('5. morning completion не изменился: заголовок «Чек-ин завершён»', async () => {
@@ -107,21 +108,12 @@ test('7. Scout/surprise flow не сломан', async () => {
   assert.match(core, /openScout/, 'openScout функция сохранена')
 })
 
-test('вечерний streak использует тот же способ, что morning: api.checkin.history(90) + currentCheckinStreak', async () => {
+test('вечерний streak сохраняет history как fallback для canonical', async () => {
   const src = await getSource()
   const core = getCore(src)
-  // Обе ветки (утро и вечер) должны вызывать api.checkin.history(user.id, 90)
-  // и currentCheckinStreak одинаковым образом
-  const historyCalls = core.match(/api\.checkin\.history\(user\.id, 90\)/g) || []
-  const streakCalls = core.match(/currentCheckinStreak\(Array\.isArray\(history\) \? history : \[\]\)/g) || []
-  assert.ok(
-    historyCalls.length >= 2,
-    'должно быть минимум 2 вызова api.checkin.history (утро + вечер)'
-  )
-  assert.ok(
-    streakCalls.length >= 2,
-    'должно быть минимум 2 вызова currentCheckinStreak (утро + вечер)'
-  )
+  assert.match(core, /api\.checkin\.history\(user\.id, 90\)\.then\(history =>/)
+  assert.match(core, /setStreak\(Math\.max\(1, currentCheckinStreak\(entries\)\)\)/)
+  assert.match(core, /canonicalEveningStreak \?\? streak/)
 })
 
 console.log('Evening completion grammar regression tests loaded')
