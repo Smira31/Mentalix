@@ -188,10 +188,7 @@ export function isPreviewDemoMode() {
 }
 
 export function isRecoveryDemoRequested() {
-  return (
-    isPreviewDemoMode() &&
-    new URLSearchParams(window.location.search).get('streak_recovery') === '1'
-  )
+  return isPreviewDemoMode() && new URLSearchParams(window.location.search).get('streak_recovery') === '1'
 }
 
 function previewTodayState() {
@@ -232,12 +229,11 @@ function seedState(todayState = null) {
 
   const noHistoryStates = new Set(['streak0'])
   const historyDays = todayState === 'streak5' ? 4 : scenario === 'Неделя' ? 5 : 1
-  const history =
-    noHistoryStates.has(todayState) || scenario === 'Новый пользователь'
-      ? []
-      : scenario === 'Серия прервалась'
-        ? buildHistory(4).filter(item => item.date !== previousDate)
-        : buildHistory(historyDays)
+  const history = noHistoryStates.has(todayState) || scenario === 'Новый пользователь'
+    ? []
+    : scenario === 'Серия прервалась'
+      ? buildHistory(4).filter(item => item.date !== previousDate)
+      : buildHistory(historyDays)
 
   // Чекин на сегодня — зависит от состояния.
   let checkin = null
@@ -304,94 +300,78 @@ function seedState(todayState = null) {
   const empty = scenario === 'Новый пользователь'
   const many = scenario === 'Много практик'
   return {
-    rituals: empty
-      ? []
-      : [
-          {
-            id: 900101,
-            name: 'Утренний спорт',
-            goal: 'Разбудить тело и внимание.',
-            min_version: '10 минут движения',
-            optimal_version: '30 минут тренировки',
-            skip_consequence: 'День начинается тяжелее.',
-            today_level: 'optimal',
-            streak: 4,
-          },
-          {
-            id: 900102,
-            name: 'Стакан воды',
-            goal: 'Начать день с простого действия в пользу тела.',
-            min_version: 'Один стакан',
-            optimal_version: 'Два стакана и пауза',
-            today_level: null,
-            streak: 1,
-          },
-          {
-            id: 900103,
-            name: 'Три минуты тишины',
-            goal: 'Вернуть внимание к текущему моменту.',
-            optimal_version: 'Три минуты без экрана',
-            today_level: 'optimal',
-            streak: 3,
-          },
-          ...(many
-            ? Array.from({ length: 8 }, (_, i) => ({
-                id: 901100 + i,
-                name: `Ритуал ${i + 1}`,
-                today_level: null,
-                streak: 0,
-              }))
-            : []),
-        ],
-    ascezas: empty
-      ? []
-      : [
-          {
-            id: 900201,
-            name: 'Без Reels после 22:00',
-            category: 'narrow-focus',
-            replacement: 'Открыть книгу или лечь спать.',
-            today_status: 'held',
-            streak: 2,
-          },
-          {
-            id: 900202,
-            name: 'Без телефона за столом',
-            category: 'narrow-focus',
-            reason: 'Есть внимательнее и быть рядом с людьми.',
-            trigger: 'Автоматически тянуться к экрану.',
-            replacement: 'Сделать один спокойный вдох.',
-            today_status: null,
-            streak: 0,
-          },
-          {
-            id: 900203,
-            name: 'Не открывать ленту до завтрака',
-            category: 'narrow-focus',
-            reason: 'Сохранить своё внимание для начала дня.',
-            today_status: 'held',
-            streak: 5,
-          },
-          ...(many
-            ? Array.from({ length: 8 }, (_, i) => ({
-                id: 901200 + i,
-                name: `Аскеза ${i + 1}`,
-                today_status: null,
-                streak: 0,
-              }))
-            : []),
-        ],
-    goals: empty
-      ? []
-      : [
-          {
-            id: 900301,
-            title: 'Собрать спокойное утро',
-            description: 'Сделать утренний ритуал устойчивой опорой.',
-            target_date: '2026-09-30',
-            progress: 3,
-          },
-        ],
+    rituals: empty ? [] : [
+      {
+        id: 900101,
+        name: 'Утренний спорт',
+        goal: 'Разбудить тело и внимание.',
+        min_version: '10 минут движения',
+        optimal_version: '30 минут тренировки',
+        skip_consequence: 'День начинается тяжелее.',
+        today_level: 'optimal',
+        streak: 4,
+      },
+      {
+        id: 900102,
+        name: 'Стакан воды',
+        goal: 'Начать день с простого действия в пользу тела.',
+        min_version: 'Один стакан',
+        optimal_version: 'Два стакана и пауза',
+        today_level: null,
+        streak: 1,
+      },
+      {
+        id: 900103,
+        name: 'Три минуты тишины',
+        goal: 'Вернуть внимание к текущему моменту.',
+        optimal_version: 'Три минуты без экрана',
+        today_level: 'optimal',
+        streak: 3,
+      },
+      ...(many ? Array.from({ length: 8 }, (_, i) => ({
+        id: 901100 + i, name: `Ритуал ${i + 1}`, today_level: null, streak: 0,
+      })) : []),
+    ],
+    ascezas: empty ? [] : [
+      {
+        id: 900201,
+        name: 'Без Reels после 22:00',
+        category: 'narrow-focus',
+        replacement: 'Открыть книгу или лечь спать.',
+        today_status: 'held',
+        streak: 2,
+      },
+      {
+        id: 900202,
+        name: 'Без телефона за столом',
+        category: 'narrow-focus',
+        reason: 'Есть внимательнее и быть рядом с людьми.',
+        trigger: 'Автоматически тянуться к экрану.',
+        replacement: 'Сделать один спокойный вдох.',
+        today_status: null,
+        streak: 0,
+      },
+      {
+        id: 900203,
+        name: 'Не открывать ленту до завтрака',
+        category: 'narrow-focus',
+        reason: 'Сохранить своё внимание для начала дня.',
+        today_status: 'held',
+        streak: 5,
+      },
+      ...(many ? Array.from({ length: 8 }, (_, i) => ({
+        id: 901200 + i, name: `Аскеза ${i + 1}`, today_status: null, streak: 0,
+      })) : []),
+    ],
+    goals: empty ? [] : [
+      {
+        id: 900301,
+        title: 'Собрать спокойное утро',
+        description: 'Сделать утренний ритуал устойчивой опорой.',
+        target_date: '2026-09-30',
+        progress: 3,
+      },
+    ],
     courses: [
       {
         id: 900401,
@@ -421,13 +401,7 @@ function seedState(todayState = null) {
       days_active: empty ? 0 : scenario === 'Неделя' ? 6 : 3,
       total_checkins: empty ? 0 : scenario === 'Неделя' ? 6 : 3,
       best_streak: empty ? 0 : scenario === 'Неделя' ? 5 : 2,
-      current_streak: empty
-        ? 0
-        : scenario === 'Серия прервалась'
-          ? 0
-          : scenario === 'Неделя'
-            ? 5
-            : 2,
+      current_streak: empty ? 0 : scenario === 'Серия прервалась' ? 0 : scenario === 'Неделя' ? 5 : 2,
     },
     themes: [
       {
@@ -445,17 +419,9 @@ function seedState(todayState = null) {
     ],
     moodPractices: empty ? [] : moodPractices,
     // В прерванной серии вчера нет ни одной активности.
-    practiceDays: empty
-      ? []
-      : scenario === 'Серия прервалась'
-        ? [offsetDate(today, -2), offsetDate(today, -3)]
-        : [
-            offsetDate(today, -1),
-            offsetDate(today, -2),
-            offsetDate(today, -3),
-            offsetDate(today, -4),
-            offsetDate(today, -5),
-          ],
+    practiceDays: empty ? [] : scenario === 'Серия прервалась'
+      ? [offsetDate(today, -2), offsetDate(today, -3)]
+      : [offsetDate(today, -1), offsetDate(today, -2), offsetDate(today, -3), offsetDate(today, -4), offsetDate(today, -5)],
   }
 }
 
@@ -589,25 +555,16 @@ function respond(path, options = {}) {
   }
 
   if (pathname === '/streak/recovery' && method === 'GET') {
-    if (
-      url.searchParams.get('user_id') &&
-      new URLSearchParams(window.location.search).get('streak_recovery') === '1'
-    ) {
+    if (url.searchParams.get('user_id') && new URLSearchParams(window.location.search).get('streak_recovery') === '1') {
       const yesterday = offsetDate(now(), -1)
-      return json({
-        recoverable: state.recoverySavedDate !== yesterday,
-        date: yesterday,
-        streak_before: 3,
-      })
+      return json({ recoverable: state.recoverySavedDate !== yesterday, date: yesterday, streak_before: 3 })
     }
     return json({ recoverable: false, date: null, streak_before: 0 })
   }
   if (pathname === '/checkin/yesterday' && method === 'PUT') {
     const yesterday = offsetDate(now(), -1)
     const checkin = {
-      id: Date.now(),
-      date: yesterday,
-      ...body,
+      id: Date.now(), date: yesterday, ...body,
       review_completed_at: now().toISOString(),
     }
     writeState({
@@ -682,9 +639,7 @@ function respond(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour: eveningStates.has(previewTodayState())
-        ? 0
-        : (state.profile.review_hour ?? DEFAULT_REVIEW_HOUR),
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? DEFAULT_REVIEW_HOUR),
       writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
       writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
     })
@@ -727,7 +682,9 @@ function respond(path, options = {}) {
       end.setDate(monday.getDate() + 6)
       to = end.toISOString().slice(0, 10)
     } else if (period === 'month') {
-      from = new Date(today.getFullYear(), today.getMonth() - offset, 1).toISOString().slice(0, 10)
+      from = new Date(today.getFullYear(), today.getMonth() - offset, 1)
+        .toISOString()
+        .slice(0, 10)
       to = new Date(today.getFullYear(), today.getMonth() - offset + 1, 0)
         .toISOString()
         .slice(0, 10)
@@ -845,8 +802,9 @@ function respond(path, options = {}) {
         body: 'Остановись на пару минут и запиши, что сейчас помогает тебе дышать свободнее.',
         minutes: 3,
       },
-      status:
-        state.dailyTask?.date === url.searchParams.get('date') ? state.dailyTask.status : 'new',
+      status: state.dailyTask?.date === url.searchParams.get('date')
+        ? state.dailyTask.status
+        : 'new',
     })
   }
   if (pathname === '/mentalix/daily-task' && method === 'POST') {
