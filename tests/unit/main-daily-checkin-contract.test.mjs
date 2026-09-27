@@ -33,7 +33,7 @@ test('evening first text step has no pre-declaration question access', () => {
   )
   const compactStepDisabled = core.slice(
     core.indexOf('const compactStepDisabled'),
-    core.indexOf('const streakDays')
+    core.indexOf('if (isStreakStep)')
   )
   const eveningQuestionDeclaration = core.indexOf('const eveningQuestion =')
   const firstEveningQuestionUse = core.indexOf('eveningQuestion', eveningQuestionDeclaration + 1)
@@ -80,7 +80,7 @@ test('seeded demo state remains opt-in and isolated in the API wrapper', () => {
   assert.match(demoModeSource, /const demoRequested = params\.get\('demo'\) === '1'/)
   assert.match(demoModeSource, /const pwaDemoRequested = params\.get\('source'\) === 'pwa'/)
   assert.match(demoModeSource, /return \(\s*\(demoRequested \|\| pwaDemoRequested\)/s)
-  assert.match(apiSource, /if \(isPreviewDemoMode\(\)\) return demoRequest\(path, options\)/)
+  assert.match(apiSource, /if \(isPreviewDemoMode\(\)\) \{\s*const result = await demoRequest\(path, options\)/)
 })
 
 test('morning flow keeps the visual viewport height when the keyboard opens', () => {
