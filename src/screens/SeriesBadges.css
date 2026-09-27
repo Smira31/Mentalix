@@ -196,6 +196,7 @@
 }
 .mx-path-award-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 7px;
 }
 .mx-path-award-row {
@@ -237,6 +238,9 @@
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.mx-path-row-progress-copy {
+  white-space: normal;
 }
 .mx-path-row-value {
   display: flex;

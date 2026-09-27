@@ -6,6 +6,8 @@ import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscre
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { readCanonicalStreakStats } from '../lib/canonicalStreak'
+import { buildMvpBadges } from '../lib/badgesMvp'
+import { readJournalHistory } from '../lib/journalHistory'
 import { platform } from '../platform'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import { pluralize, formatCount } from '../lib/pluralize'
@@ -194,9 +196,7 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
           <p>{badge.desc}</p>
           <div className="mx-badge-sheet__progress">
             <strong>Твой прогресс</strong>
-            <span>
-              {badge.progress}/{badge.goal}
-            </span>
+            <span>{badge.progressLabel || `${badge.progress}/${badge.goal}`}</span>
           </div>
           {practice && (
             <button
@@ -269,11 +269,15 @@ function BadgeRow({ badge, onOpen }) {
       className="mx-path-award-row"
       onClick={onOpen}
       aria-label={`Открыть значок: ${badge.title}`}
+      data-testid={`series-badge-${badge.id}`}
     >
       <RewardIcon variant={badge.done ? badge.id : 'locked'} size={54} />
       <span className="mx-path-row-copy-wrap">
         <strong className="mx-path-row-title">{badge.title}</strong>
         <span className="mx-path-row-copy">{badge.desc}</span>
+        {badge.progressLabel && (
+          <span className="mx-path-row-copy mx-path-row-progress-copy">{badge.progressLabel}</span>
+        )}
       </span>
       <span className="mx-path-row-value">
         <strong>
@@ -299,10 +303,11 @@ function formatDays(value) {
   return formatCount(value, ['день', 'дня', 'дней'])
 }
 
-function AwardsView({ model, onOpenBadge, preferences, onPreference }) {
+function AwardsView({ model, mvpBadges, onOpenBadge, preferences, onPreference }) {
   const [showAll, setShowAll] = useState(false)
-  const unlocked = model.badges.filter(badge => badge.done)
-  const upcoming = model.badges.filter(badge => !badge.done)
+  const badges = [...mvpBadges, ...model.badges]
+  const unlocked = badges.filter(badge => badge.done)
+  const upcoming = badges.filter(badge => !badge.done)
   const latest = unlocked[0]
   const visible = showAll
     ? [...upcoming, ...unlocked]
@@ -362,11 +367,7 @@ function StatsView({ model, canonicalStats, theme }) {
         <div className="mx-path-summary-card">
           <strong>{activeDays}</strong>
           <span>
-            {pluralize(activeDays, [
-              'завершённый день',
-              'завершённых дня',
-              'завершённых дней',
-            ])}
+            {pluralize(activeDays, ['завершённый день', 'завершённых дня', 'завершённых дней'])}
           </span>
         </div>
         <div className="mx-path-summary-card">
@@ -430,6 +431,9 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const [model, setModel] = useState(initial)
   const [modelUserId, setModelUserId] = useState(user?.id)
   const [canonicalStats, setCanonicalStats] = useState(null)
+  const [checkinHistory, setCheckinHistory] = useState(null)
+  const [checkinTotal, setCheckinTotal] = useState(null)
+  const [completedSessions, setCompletedSessions] = useState(null)
   const [activeTab, setActiveTab] = useState('badges')
   const [error, setError] = useState(false)
   const [errorUserId, setErrorUserId] = useState(null)
@@ -443,12 +447,23 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
 
   useEffect(() => {
     let active = true
-    api.streak(user.id)
+    const streakRequest = api.streak(user.id)
+    streakRequest
       .then(payload => {
         if (active) setCanonicalStats({ userId: user.id, value: readCanonicalStreakStats(payload) })
       })
       .catch(() => {
         if (active) setCanonicalStats({ userId: user.id, value: null })
+      })
+
+    api.journalTemplates
+      .sessions(user.id, 'completed')
+      .then(items => {
+        if (active)
+          setCompletedSessions({ userId: user.id, items: Array.isArray(items) ? items : [] })
+      })
+      .catch(() => {
+        if (active) setCompletedSessions({ userId: user.id, items: [] })
       })
 
     Promise.all([
@@ -460,6 +475,8 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
       .then(([stats, checkins, rituals, ascezas]) => {
         if (!active) return
         const next = buildSeriesViewModel({ stats, checkins, rituals, ascezas })
+        setCheckinHistory({ userId: user.id, items: checkins })
+        setCheckinTotal({ userId: user.id, count: stats?.total_checkins })
         setModel(next)
         setModelUserId(user.id)
         setError(false)
@@ -494,13 +511,24 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   }, [user.id])
 
   const visibleModel = modelUserId === user.id ? model : null
+  const journalEntries = useMemo(() => readJournalHistory(user.id), [user.id])
+  const mvpBadges = buildMvpBadges({
+    checkins: checkinHistory?.userId === user.id ? checkinHistory.items : [],
+    totalCheckins: checkinTotal?.userId === user.id ? checkinTotal.count : 0,
+    journalEntries,
+    completedSessions: completedSessions?.userId === user.id ? completedSessions.items : [],
+    canonicalStats: canonicalStats?.userId === user.id ? canonicalStats.value : null,
+  })
   const freezeSeen = useRef(false)
   useEffect(() => {
     if (activeTab !== 'stats' || !visibleModel || freezeSeen.current) return
     freezeSeen.current = true
     logEngagementEvent({
-      user, demo: isPreviewDemoMode(), event: 'streak_freeze_seen',
-      hasSession: Boolean(platform.getSessionToken?.()), send: api.events.log,
+      user,
+      demo: isPreviewDemoMode(),
+      event: 'streak_freeze_seen',
+      hasSession: Boolean(platform.getSessionToken?.()),
+      send: api.events.log,
     })
   }, [activeTab, visibleModel, user])
 
@@ -546,6 +574,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
           activeTab === 'badges' ? (
             <AwardsView
               model={visibleModel}
+              mvpBadges={mvpBadges}
               preferences={preferences}
               onPreference={(name, value) =>
                 setPreferences(saveSeriesPreference(user.id, name, value))
