@@ -477,7 +477,19 @@ export const api = {
 
     save: (
       userId,
-      { mood, energy, anxiety, focus, note, emotion, lessons, wins, review_completed }
+      {
+        mood,
+        energy,
+        anxiety,
+        focus,
+        note,
+        emotion,
+        lessons,
+        wins,
+        review_completed,
+        sleep_quality,
+        day_focus,
+      }
     ) =>
       request('/checkin', {
         method: 'POST',
@@ -492,6 +504,8 @@ export const api = {
           lessons,
           wins,
           ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
+          sleep_quality,
+          day_focus,
         }),
       }),
 
@@ -502,7 +516,19 @@ export const api = {
      */
     redo: (
       userId,
-      { mood, energy, anxiety, focus, note, emotion, lessons, wins, review_completed }
+      {
+        mood,
+        energy,
+        anxiety,
+        focus,
+        note,
+        emotion,
+        lessons,
+        wins,
+        review_completed,
+        sleep_quality,
+        day_focus,
+      }
     ) =>
       request('/checkin/today', {
         method: 'PUT',
@@ -517,6 +543,8 @@ export const api = {
           lessons,
           wins,
           ...(typeof review_completed === 'boolean' ? { review_completed } : {}),
+          sleep_quality,
+          day_focus,
         }),
       }),
 

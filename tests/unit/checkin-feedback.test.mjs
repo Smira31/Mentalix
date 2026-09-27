@@ -49,13 +49,13 @@ test('ошибка сети на обратной связи не пробрас
   assert.match(feedbackSource, /catch \(feedbackError\)/)
   assert.match(feedbackSource, /console\.error\(feedbackError\)/)
 
-  // Оба потока в CheckIn.jsx используют sendCheckinFeedback
+  // Вечерний поток в CheckIn.jsx использует sendCheckinFeedback
   const checkinSource = await readFile(new URL('../../src/screens/CheckIn.jsx', import.meta.url), 'utf8')
   const morningFlow = checkinSource.slice(
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
-  assert.match(morningFlow, /sendCheckinFeedback/, 'утренний поток использует sendCheckinFeedback')
+  assert.doesNotMatch(morningFlow, /sendCheckinFeedback/, 'утренний поток не использует sendCheckinFeedback')
 
   const core = checkinSource.slice(
     checkinSource.indexOf('function CheckInCore'),

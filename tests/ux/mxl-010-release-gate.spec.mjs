@@ -9,6 +9,7 @@ import {
   openDayCard,
   goBack,
   expectWeekStrip,
+  dayFocusStep,
 } from './checkin-helpers.mjs'
 
 const TEST_USER = {
@@ -53,6 +54,8 @@ function buildFixtureRouter() {
           energy: payload.energy,
           anxiety: payload.anxiety,
           focus: payload.focus,
+          sleep_quality: payload.sleep_quality,
+          day_focus: payload.day_focus || null,
           note: payload.note || null,
           lessons: payload.lessons || null,
           wins: payload.wins || null,
@@ -183,26 +186,25 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
     await expect(page.locator('[data-testid="checkin-next"]')).toBeVisible()
 
-    // Шкалы: mood=3 (Нормально), energy=3 (Средне)
+    // Шкалы: mood=3, sleep_quality=3, energy=3, focus=3
+    await scaleStep(page, 3)
+    await scaleStep(page, 3)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
 
-    // Текстовый шаг
-    await textStep(page, 'Fixture morning note')
+    // Главный фокус дня
+    await dayFocusStep(page, 'Fixture day focus')
 
-    // Экран завершения: персонаж, «Готово.» и необязательный ответ
-    await expect(page.getByRole('heading', { name: /Готово\./ })).toBeVisible()
-    expect(fixtures.savedCheckins).toHaveLength(0)
+    // Текстовый шаг → завершение (submitTestId=checkin-complete вызывает finish)
+    await textStep(page, 'Fixture morning note', 'checkin-complete')
 
-    // Ответ «Да» не блокирует завершение и уходит вместе с сохранением
-    await feedbackStep(page, 'yes')
-
-    // Завершить → серия
-    await completeCheckin(page)
-    await expect(page.getByRole('heading', { name: /-дневная серия\./ })).toBeVisible()
+    // Экран завершения
+    await expect(page.getByRole('heading', { name: 'Чек-ин завершён' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
-    expect(fixtures.sentFeedback).toEqual([{ value: 'yes' }])
+    expect(fixtures.savedCheckins[0].sleep_quality).toBe(3)
+    expect(fixtures.savedCheckins[0].day_focus).toBe('Fixture day focus')
+    expect(fixtures.sentFeedback).toEqual([])
 
     // ── Возврат и переход к вечернему разбору ──
     // После утреннего чек-ина fixture меняет review_hour на 0 (→ 19:00 в
@@ -231,8 +233,8 @@ test.describe('MXL-010 automated technical gate', () => {
     await feedbackStep(page, 'some')
     await expect
       .poll(() => fixtures.sentFeedback.length, { message: 'ответ разбора дошёл до бэкенда' })
-      .toBe(2)
-    expect(fixtures.sentFeedback[1]).toEqual({ value: 'some' })
+      .toBe(1)
+    expect(fixtures.sentFeedback[0]).toEqual({ value: 'some' })
 
     // ── Хендофф к Следопыту ──
     const scoutBtn = page.locator('[data-testid="checkin-open-scout"]')
