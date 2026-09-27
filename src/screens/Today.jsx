@@ -149,7 +149,7 @@ function TodayWorkspaceHeader({
       <button
         type="button"
         data-testid="today-streak-chip"
-        className={`mx-demo-today-streak${!isActiveToday && !(streak > 0) ? ' mx-demo-today-streak--empty' : ''}`}
+        className={`mx-demo-today-streak${streak === 0 && !isActiveToday ? ' mx-demo-today-streak--empty' : ''}`}
         aria-label={streakLabel}
         onClick={onStreakClick || onOpenSeries}
       >
