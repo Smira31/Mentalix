@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
-import { isPreviewDemoMode } from '../lib/demoMode'
+import { isPreviewDemoMode, previewSeriesAction } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
 import { badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
@@ -462,9 +462,9 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const [error, setError] = useState(false)
   const [errorUserId, setErrorUserId] = useState(null)
   const [selectedBadge, setSelectedBadge] = useState(null)
-  const [showAll, setShowAll] = useState(false)
+  const [showAll, setShowAll] = useState(() => previewSeriesAction() === 'all_badges')
   const [theme, setTheme] = useState(null)
-  const { style: surfaceStyle } = useFullscreenSurface()
+  const { style: surfaceStyle, tgFullscreen } = useFullscreenSurface()
   const demoMode = isPreviewDemoMode()
 
   const screenRef = useRef(null)
@@ -568,14 +568,14 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     <div className="mx-path-layer" style={{ top: surfaceStyle.top, height: surfaceStyle.height }} onClick={() => { if (!selectedBadge) onBack() }}>
     <section
       ref={screenRef}
-      className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${showAll ? ' mx-path-surface--all' : ''}`}
+      className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${showAll ? ' mx-path-surface--all' : ''}${tgFullscreen ? ' mx-path-surface--tg-fullscreen' : ''}`}
+      style={{ paddingTop: surfaceStyle.paddingTop }}
       onClick={event => event.stopPropagation()}
       role="dialog"
       aria-modal="true"
       aria-label={showAll ? 'Все значки' : 'Значки и статистика'}
     >
       <header className="mx-path-header">
-        {showAll && <button className="mx-path-all-back" type="button" onClick={() => setShowAll(false)} aria-label="Назад к значкам">‹</button>}
         {!showAll && <div className="mx-path-tabs" role="tablist" aria-label="Раздел серии и значков">
           <button
             type="button"
@@ -598,7 +598,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
             Статистика
           </button>
         </div>}
-        <CloseButton onClose={onBack} />
+        {!showAll && <CloseButton onClose={onBack} />}
         <BackButton onClick={showAll ? () => setShowAll(false) : onBack} />
       </header>
       <main className="mx-path-scroll">
