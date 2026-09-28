@@ -89,7 +89,7 @@
   margin-bottom: 10px;
   padding-left: 17px; /* x = 33 px от края экрана при --mx-screen-x: 16 px */
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
@@ -150,8 +150,8 @@
   padding: 2px 10px;
   border-radius: 999px;
   background: rgba(243, 243, 243, 0.05);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
@@ -165,9 +165,8 @@
 .mx-progress-history__row-time {
   flex-shrink: 0;
   margin-left: 12px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.15em;
+  font-size: 13px;
+  font-weight: 400;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
