@@ -84,32 +84,22 @@ test('seriesPreferences ignores and strips the legacy showStreak value', async (
   delete globalThis.localStorage
 })
 
-test('streak is 0 with no check-ins, 1 after the first check-in of the day, unchanged after redo', async () => {
-  const { currentCheckinStreak } = await import('../../src/lib/series.js')
+test('число огонька приходит с сервера: 0 — без цифры, 1 — после первого чек-ина', async () => {
+  const { readCanonicalCurrentStreak } = await import('../../src/lib/canonicalStreak.js')
 
-  // До первого чек-ина — 0: огонёк есть, цифры нет.
-  assert.equal(currentCheckinStreak([]), 0)
+  // Серверная серия 0 — валидное значение: огонёк отрисован, цифры нет.
+  assert.equal(readCanonicalCurrentStreak({ current_streak: 0 }), 0)
 
-  // Первый чек-ин дня — «1».
-  assert.equal(currentCheckinStreak([{ date: dayKey(0), mood: 3, energy: 2 }]), 1)
+  // Первый чек-ин дня — сервер отвечает «1».
+  assert.equal(readCanonicalCurrentStreak({ current_streak: 1 }), 1)
 
-  // «Пройти заново» не увеличивает число: тот же день, та же запись.
-  assert.equal(
-    currentCheckinStreak([
-      { date: dayKey(0), mood: 4, energy: 3, updated_at: `${dayKey(0)}T09:30:00Z` },
-    ]),
-    1
-  )
+  // «Пройти заново» не увеличивает число: сервер считает уникальные дни,
+  // клиент не пересчитывает серию из истории.
+  assert.equal(readCanonicalCurrentStreak({ current_streak: 1 }), 1)
 
-  // Redo поверх истории не добавляет новых дней подряд.
-  assert.equal(
-    currentCheckinStreak([
-      { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
-      { date: dayKey(0), mood: 3 },
-      { date: dayKey(0), mood: 5, updated_at: `${dayKey(0)}T10:00:00Z` },
-    ]),
-    2
-  )
+  // Нет корректных данных — null, не 0: цифра не подменяется расчётом.
+  assert.equal(readCanonicalCurrentStreak({}), null)
+  assert.equal(readCanonicalCurrentStreak({ current_streak: -1 }), null)
 })
 
 test('preferences source keeps only the badges visibility toggle', () => {
