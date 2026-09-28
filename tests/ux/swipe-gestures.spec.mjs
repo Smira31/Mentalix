@@ -199,7 +199,7 @@ test.describe('Свайп-жесты', () => {
     await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
   })
 
-  test('свайп вниз закрывает шторку огонька', async ({ page }) => {
+  test('свайп вниз закрывает шторку значка на странице огонька', async ({ page }) => {
     await page.goto('/')
 
     // Открываем экран серии/значков через чип огонька
