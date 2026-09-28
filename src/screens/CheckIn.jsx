@@ -72,7 +72,7 @@ import { buildTomorrowTeaser } from '../lib/tomorrowTeaser'
 import { peekPracticesData } from '../lib/practicesDataCache'
 import { energyFillPercent } from '../lib/checkinScale'
 import { MENTOR_HANDOFF_KEY } from './mentalix/personas'
-import { eveningMorningFields } from '../lib/checkinMorningFields'
+import { eveningMorningFields, morningResetPayload } from '../lib/checkinMorningFields'
 import { withRetry } from '../lib/todayRetry'
 import { yesterdayLabel } from './StreakRecovery'
 import { resolveDesyncStep } from '../lib/checkinDesync'
@@ -346,8 +346,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       const morningPayload = {
         mood: values.mood || 3,
         energy: values.energy || 3,
-        note: note.trim() || undefined,
-        emotion: undefined,
+        note: note.trim() || (redo ? null : undefined),
+        emotion: redo ? existing?.emotion : undefined,
       }
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
@@ -364,14 +364,13 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         if (existing.lessons) morningPayload.lessons = existing.lessons
         if (existing.review_completed_at) morningPayload.review_completed = true
       }
-      const savedMorning = await saveApi(user.id, morningPayload)
+      const savedMorning = await saveApi(
+        user.id,
+        redo ? { ...morningResetPayload(existing), ...morningPayload } : morningPayload
+      )
       setSavedMorningId(savedMorning?.id ?? null)
       onCompleted?.()
       platform.haptic('success')
-      if (redo) {
-        onDone()
-        return
-      }
       /*
        * Canonical streak (GET /api/streak) — primary source числа серии
        * на экране завершения. Legacy history-расчёт остаётся fallback:
@@ -1982,7 +1981,7 @@ function CheckIn({
         onDone={onDone}
         onCompleted={onCompleted}
         redo={redo}
-        existing={redo ? null : existing}
+        existing={existing}
       />
     )
   }
