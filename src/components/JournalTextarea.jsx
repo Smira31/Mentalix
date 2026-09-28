@@ -163,6 +163,7 @@ export default function JournalTextarea({
   floatingToolbar = false,
   stickyToolbar = true,
   onSubmit,
+  onSkip,
   submitLabel = 'Сохранить',
   submitDisabled = false,
   submitLoading = false,
@@ -415,6 +416,17 @@ export default function JournalTextarea({
             </div>
 
             <div className="flex min-w-0 shrink items-center justify-end gap-1.5">
+              {onSkip ? (
+                <button
+                  type="button"
+                  data-testid="checkin-skip"
+                  onClick={onSkip}
+                  disabled={submitLoading}
+                  className="mx-checkin-next-controls__skip mx-tap-target"
+                >
+                  Пропустить
+                </button>
+              ) : null}
               {onDeepen ? (
                 <button
                   type="button"
