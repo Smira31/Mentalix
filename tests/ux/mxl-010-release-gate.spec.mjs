@@ -9,7 +9,7 @@ import {
   openDayCard,
   goBack,
   expectWeekStrip,
-  dayFocusStep,
+  dayFocusOptionStep,
 } from './checkin-helpers.mjs'
 
 const TEST_USER = {
@@ -222,14 +222,20 @@ test.describe('MXL-010 automated technical gate', () => {
     await expect(page.getByRole('button', { name: /^(Назад|Сегодня)$/ })).toBeVisible()
     await expect(page.locator('[data-testid="checkin-next"]')).toBeVisible()
 
+    // Все пять кружков показывают уровень заливки 0/25/50/75/100%.
+    const circles = page.locator('[data-testid="checkin-scale-option"] .mx-checkin-scale__inner')
+    await expect(circles).toHaveCount(5)
+    for (const [index, fill] of [0, 25, 50, 75, 100].entries()) {
+      await expect(circles.nth(index)).toHaveCSS('background-image', new RegExp(`${fill}%`))
+    }
     // Шкалы: mood=3, sleep_quality=3, energy=3, focus=3
     await scaleStep(page, 3)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
     await scaleStep(page, 3)
 
-    // Главный фокус дня
-    await dayFocusStep(page, 'Fixture day focus')
+    // Главный фокус дня: 10-я плитка за «Показать все».
+    await dayFocusOptionStep(page, 'Продуктивность')
 
     // Текстовый шаг → завершение (submitTestId=checkin-complete вызывает finish)
     await textStep(page, 'Fixture morning note', 'checkin-complete')
@@ -239,7 +245,7 @@ test.describe('MXL-010 automated technical gate', () => {
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
     expect(fixtures.savedCheckins[0].sleep_quality).toBe(3)
-    expect(fixtures.savedCheckins[0].day_focus).toBe('Fixture day focus')
+    expect(fixtures.savedCheckins[0].day_focus).toBe('Продуктивность')
     expect(fixtures.sentFeedback).toEqual([])
 
     // ── Возврат и переход к вечернему разбору ──
