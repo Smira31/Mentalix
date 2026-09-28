@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test'
 import { VIEWPORTS, json, openWeb } from './profile-helpers.mjs'
+import { pluralize } from '../../src/lib/pluralize.js'
+
+const DAY_FORMS = ['день', 'дня', 'дней']
+const CHECKIN_FORMS = ['чек-ин', 'чек-ина', 'чек-инов']
+const streakWord = n => pluralize(n, DAY_FORMS)
+const checkinWord = n => pluralize(n, CHECKIN_FORMS)
 
 // created_at — 76 дней назад, чтобы daysSinceRegistration вернул 77
 // (функция добавляет +1 к разнице в днях).
@@ -48,8 +54,8 @@ test('Profile: серия скрыта, пока мягкая серия гру�
     await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toHaveCount(0)
     await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toHaveCount(0)
     releaseStreak()
-    await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText('4 дней')
-    await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText('8 дней')
+    await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText(`4 ${streakWord(4)}`)
+    await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText(`8 ${streakWord(8)}`)
   } finally {
     releaseStreak()
     await context.close()
@@ -73,12 +79,12 @@ for (const { name, response, current, best, next } of [
         await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toHaveCount(0)
         await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toHaveCount(0)
       } else {
-        await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText(`${current} ${current === 1 ? 'день' : 'дней'}`)
-        await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText(`${best} ${best === 1 ? 'день' : 'дней'}`)
+        await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText(`${current} ${streakWord(current)}`)
+        await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText(`${best} ${streakWord(best)}`)
       }
       await expect(about.getByText('Дней в системе', { exact: true }).locator('../..')).toContainText('77')
       await expect(about.locator('.mx-profile-row', { hasText: 'Всего чек-инов' })).toContainText('42')
-      await expect(page.getByTestId('profile-about-stats')).toContainText('77 дней в системе · 42 чек-инов')
+      await expect(page.getByTestId('profile-about-stats')).toContainText(`77 дней в системе · 42 ${checkinWord(42)}`)
       await expect(about.getByRole('progressbar', { name: next })).toBeVisible()
     } finally {
       await context.close()
