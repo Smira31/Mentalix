@@ -1,3 +1,10 @@
+/* Шторка значка на выходе (200 ms анимации) больше не ловит тапы:
+   сегмент «Значки | Статистика» под ней отвечает на первый тап сразу. */
+.mx-badge-sheet-layer--exit,
+.mx-badge-sheet-layer--exit * {
+  pointer-events: none;
+}
+
 .mx-path-surface {
   position: fixed;
   inset: 0;

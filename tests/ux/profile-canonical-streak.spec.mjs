@@ -31,12 +31,15 @@ async function openAbout(browser, baseURL, response) {
   return { context, page, releaseStreak: () => releaseStreak?.() }
 }
 
-test('Profile: legacy during canonical loading, then canonical wins', async ({ browser, baseURL }) => {
+test('Profile: серия скрыта, пока мягкая серия грузится; сервер — единственный источник', async ({ browser, baseURL }) => {
   const { context, page, releaseStreak } = await openAbout(browser, baseURL, 'pending')
   try {
     const about = page.getByTestId('profile-sub-about')
-    await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText('2 дней')
-    await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText('2 дней')
+    // Пока /api/streak не ответил, серийных строк нет вовсе —
+    // локального расчёта по истории чек-инов больше не существует.
+    await expect(about.getByText('Дней в системе', { exact: true })).toBeVisible()
+    await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toHaveCount(0)
+    await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toHaveCount(0)
     releaseStreak()
     await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText('4 дней')
     await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText('8 дней')
@@ -49,15 +52,23 @@ test('Profile: legacy during canonical loading, then canonical wins', async ({ b
 for (const { name, response, current, best, next } of [
   { name: 'canonical primary', response: { current_streak: 4, longest_streak: 8, total_active_days: 99 }, current: 4, best: 8, next: 'Ещё 3 дня до «Неделя ровно»' },
   { name: 'canonical zero', response: { current_streak: 0, longest_streak: 0, total_active_days: 0 }, current: 0, best: 0, next: 'Ещё 3 дня до «Держится»' },
-  { name: 'network error', response: 'error', current: 2, best: 2, next: 'Ещё 1 день до значка «Три дня подряд»' },
-  { name: 'invalid payload', response: { current_streak: '4', longest_streak: 8, total_active_days: 99 }, current: 2, best: 2, next: 'Ещё 1 день до значка «Три дня подряд»' },
+  { name: 'network error', response: 'error', current: null, best: null, next: 'Ещё 2 дня до значка «Второй день»' },
+  { name: 'invalid payload', response: { current_streak: '4', longest_streak: 8, total_active_days: 99 }, current: null, best: null, next: 'Ещё 2 дня до значка «Второй день»' },
 ]) {
   test(`Profile: ${name}, non-streak stats and nearest`, async ({ browser, baseURL }) => {
     const { context, page } = await openAbout(browser, baseURL, response)
     try {
       const about = page.getByTestId('profile-sub-about')
-      await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText(`${current} ${current === 1 ? 'день' : 'дней'}`)
-      await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText(`${best} ${best === 1 ? 'день' : 'дней'}`)
+      if (current == null) {
+        // Нет корректных серверных данных — серийные строки скрыты целиком,
+        // история чек-инов серию не подменяет.
+        await expect(about.getByText('Дней в системе', { exact: true })).toBeVisible()
+        await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toHaveCount(0)
+        await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toHaveCount(0)
+      } else {
+        await expect(about.locator('.mx-profile-row', { hasText: 'Текущая серия' })).toContainText(`${current} ${current === 1 ? 'день' : 'дней'}`)
+        await expect(about.locator('.mx-profile-row', { hasText: 'Лучшая серия' })).toContainText(`${best} ${best === 1 ? 'день' : 'дней'}`)
+      }
       await expect(about.getByText('Дней в системе', { exact: true }).locator('../..')).toContainText('77')
       await expect(about.locator('.mx-profile-row', { hasText: 'Всего чек-инов' })).toContainText('42')
       await expect(page.getByTestId('profile-about-stats')).toContainText('77 дней в системе · 42 чек-инов')

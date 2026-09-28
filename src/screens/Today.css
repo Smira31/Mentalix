@@ -251,6 +251,30 @@
   color: inherit;
 }
 
+.mx-today-week-day[data-frozen='true'] {
+  border-color: rgb(var(--c-header-muted) / 0.55);
+  color: rgb(var(--c-header-muted));
+}
+
+.mx-today-week__freeze-note {
+  margin-top: 6px;
+  color: rgb(var(--c-muted));
+  font-size: 12px;
+  text-align: center;
+}
+
+.mx-today-recovery-banner {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  text-align: left;
+  font-weight: 600;
+}
+
 @media (max-width: 359px) {
   .mx-today-week__calendar {
     gap: 4px;

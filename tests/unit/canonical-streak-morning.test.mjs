@@ -12,9 +12,9 @@ const canonicalSource = await readFile(
 )
 
 /*
- * Canonical streak (GET /api/streak?user_id=<id>, backend PR #108):
- * Morning Check-in completion берёт число серии из canonical current_streak,
- * legacy history-расчёт остаётся только fallback (loading/error/invalid).
+ * Мягкая серия (GET /api/streak?user_id=<id>): утреннее завершение берёт
+ * число серии только с сервера. Клиентский расчёт по истории удалён —
+ * сервер владеет календарной границей и правилом заморозки.
  */
 
 const morningFlow = checkinSource.slice(
@@ -42,7 +42,7 @@ test('Morning completion: после успешного чек-ина запра
   )
 })
 
-test('Morning completion: canonical current_streak — primary source', () => {
+test('Morning completion: серверная серия — единственный источник числа', () => {
   assert.match(
     finishBlock,
     /const currentStreak = readCanonicalCurrentStreak\(streakResult\.value\)/,
@@ -53,11 +53,12 @@ test('Morning completion: canonical current_streak — primary source', () => {
     /if \(currentStreak != null\) \{\s*setStreak\(currentStreak\)/,
     'валидный canonical перезаписывает streak'
   )
-  // canonical применяется после legacy-расчёта и главнее него.
-  const legacyIndex = finishBlock.indexOf('setStreak(Math.max(1, currentCheckinStreak(history)))')
-  const canonicalIndex = finishBlock.indexOf('setStreak(currentStreak)')
-  assert.ok(legacyIndex > -1, 'legacy-расчёт сохранён')
-  assert.ok(canonicalIndex > legacyIndex, 'canonical применяется поверх legacy')
+  // Клиентский расчёт серии по истории удалён вместе с soft-streak миграцией.
+  assert.doesNotMatch(
+    morningFlow,
+    /currentCheckinStreak/,
+    'legacy-расчёт серии из истории удалён'
+  )
 })
 
 test('Morning completion: streak=0 — валидное canonical-значение, не fallback', () => {
@@ -68,16 +69,15 @@ test('Morning completion: streak=0 — валидное canonical-значени
   assert.match(morningFlow, /\{streak > 0 \?/)
 })
 
-test('Morning completion: fallback работает при error/loading/invalid canonical', () => {
-  // Legacy history-расчёт остаётся и применяется без canonical.
-  assert.match(
-    finishBlock,
-    /setStreak\(Math\.max\(1, currentCheckinStreak\(history\)\)\)/,
-    'fallback-значение из истории'
+test('Morning completion: сбой canonical не ломает завершение', () => {
+  // Сервер — единственный источник: при error/loading/invalid canonical
+  // число серии просто не показывается (streak остаётся 0), без расчёта по истории.
+  assert.doesNotMatch(
+    morningFlow,
+    /currentCheckinStreak/,
+    'fallback-расчёт из истории не возвращается'
   )
-  // Canonical применяется только при fulfilled и валидном ответе:
-  // loading (не пришёл), network error (rejected) и malformed
-  // (readCanonicalCurrentStreak → null) оставляют legacy-значение.
+  // Canonical применяется только при fulfilled и валидном ответе.
   assert.match(finishBlock, /if \(streakResult\.status === 'fulfilled'\)/)
   assert.match(finishBlock, /if \(currentStreak != null\)/)
   // Сбой canonical не ломает завершение: allSettled, ветка else только логирует.
