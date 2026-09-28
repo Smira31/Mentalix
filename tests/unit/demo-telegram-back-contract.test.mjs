@@ -7,9 +7,10 @@ const mentalix = await readFile(new URL('../../src/screens/Mentalix.jsx', import
 const today = await readFile(new URL('../../src/screens/Today.jsx', import.meta.url), 'utf8')
 const practices = await readFile(new URL('../../src/screens/Practices.jsx', import.meta.url), 'utf8')
 
-test('Demo Telegram chrome exposes Back for nested product screens', () => {
+test('Demo Telegram chrome does not duplicate nested screen back control', () => {
   assert.match(app, /function DemoTelegramChrome\(\{ onBack \}\)/)
-  assert.match(app, /aria-label=\{hasBack \? 'Назад' : 'Закрыть превью'\}/)
+  assert.match(app, /\{!hasBack && \(/)
+  assert.doesNotMatch(app, /aria-label=\{hasBack \? 'Назад' : 'Закрыть превью'\}/)
   assert.match(app, /<DemoTelegramChrome onBack=\{demoBackAction\} \/>/)
   assert.match(app, /onRegisterBack=\{register(Today|Practices|Mentor)Back\}/)
   assert.match(mentalix, /onRegisterBack\?\.\(persona \? exitConversation : null\)/)

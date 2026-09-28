@@ -188,7 +188,7 @@ function CompletedSessionViewer({ completedSession, onClose }) {
         className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
       >
         <div className="w-full max-w-md mx-auto">
-          <RoundBackButton onClick={onClose} label="К архиву" />
+          <RoundBackButton registerSystemBack onClick={onClose} label="К архиву" />
         </div>
       </header>
       <div className={FULLSCREEN_SCROLL_CLASS}>
@@ -295,7 +295,6 @@ function TemplateBuilder({ user, onBack, onSaved, initialTemplate = null }) {
       <NestedScreenHeader
         title={isEditing ? 'редактировать шаблон.' : 'свой шаблон.'}
         onBack={onBack}
-        registerSystemBack={false}
       />
 
       <div className="mt-5 space-y-4">
@@ -663,8 +662,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           <NestedScreenHeader
             title="направленные записи."
             onBack={onExit}
-            registerSystemBack={false}
-          />
+              />
         )}
         <div className="rounded-3xl bg-emerald p-5">
           <h2 className="font-display text-[25px] text-cream">Направленные записи</h2>
@@ -781,7 +779,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
 
     return (
       <section className="animate-fade-in">
-        <RoundBackButton onClick={() => setFlowStage('writing')} label="Назад к записи" />
+        <RoundBackButton registerSystemBack onClick={() => setFlowStage('writing')} label="Назад к записи" />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
           {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
@@ -811,7 +809,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
     const step = steps[stepIndex]
     return (
       <section className="animate-fade-in">
-        <RoundBackButton onClick={() => {}} label="Завершаем…" />
+        <RoundBackButton registerSystemBack onClick={() => {}} label="Завершаем…" />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
           {selected?.title} · {stepIndex + 1} из {steps.length}
         </p>
@@ -840,7 +838,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
 
     return (
       <section className="animate-fade-in">
-        <RoundBackButton
+        <RoundBackButton registerSystemBack
           onClick={() => {
             setFlowStage(null)
             setDraft(null)
@@ -884,7 +882,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
   if (selected) {
     return (
       <section className="animate-fade-in">
-        <RoundBackButton onClick={() => setSelected(null)} label="К каталогу" />
+        <RoundBackButton registerSystemBack onClick={() => setSelected(null)} label="К каталогу" />
         <p className="mt-5 text-[12px] font-bold uppercase tracking-wide text-gold">
           {selected.category}
         </p>
@@ -943,8 +941,7 @@ export default function GuidedJournals({ user, onExit, onInputModeChange }) {
           <NestedScreenHeader
             title="направленные записи."
             onBack={onExit}
-            registerSystemBack={false}
-          />
+              />
           <p className="text-[13px] leading-relaxed text-muted -mt-2 mb-5">
             Готовые вопросы и личные шаблоны для спокойной рефлексии.
           </p>
