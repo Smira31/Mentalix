@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { isTelegramBackMode } from '../lib/backButtonMode'
 
 /*
@@ -84,11 +84,16 @@ if (typeof window !== 'undefined' && import.meta.env.DEV) {
 export function useBackButton(handler, active = true) {
   const ref = useRef(handler)
 
-  useEffect(() => {
+  /*
+   * Регистрация стека обязана быть синхронной (useLayoutEffect):
+   * useEffect срабатывает после отрисовки, и системный «Назад»,
+   * нажатый в момент перехода, попадал в устаревшую запись стека.
+   */
+  useLayoutEffect(() => {
     ref.current = handler
   })
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!active) return
 
     const entry = () => ref.current?.()
