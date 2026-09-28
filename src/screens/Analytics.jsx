@@ -493,7 +493,12 @@ function InfluencesCard({ direction, influences }) {
         subtitle="Из твоих отметок"
         testId={`progress-conclusions-${direction}`}
       >
-        <CardEmpty hint={`Пока мало данных — отметь настроение ещё ${formatDays(remaining)}`} />
+        <div className="mx-progress-card__empty">
+          <span className="mx-progress-card__empty-title">Пока нет данных</span>
+          <span className="mx-progress-card__empty-hint">
+            Отметь настроение ещё {formatDays(remaining)} — здесь появятся выводы
+          </span>
+        </div>
       </CardShell>
     )
   }
