@@ -93,14 +93,14 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })
 
-test('completion screen uses the owner character art, not the Stoic bird', () => {
+test('completion screen uses an original monochrome flower; MoodPractice keeps its art', async () => {
+  const component = await readFile(new URL('../../src/components/CheckInCompletion.jsx', import.meta.url), 'utf8')
   assert.match(checkinSource, /function CheckInCompletionArt\(\)/)
-  // CheckInCompletionArt используется в MoodPractice, CompletionArt — в вечернем потоке
-  assert.match(checkinSource, /<CompletionArt variant=\{isEvening \? 'evening' : 'morning'\} \/>/)
-  assert.match(checkinSource, /import cardMorningDone2x from '\.\.\/assets\/today\/card-morning-done@2x\.webp'/)
-  assert.match(checkinSource, /import cardEveningDone2x from '\.\.\/assets\/today\/card-evening-done@2x\.webp'/)
-  assert.match(checkinSource, /rgb\(var\(--c-(text|gold|muted|bg)\)\)/)
-  assert.doesNotMatch(checkinSource, /checkin-bird-reference\.png/)
+  assert.match(checkinSource, /<CheckInCompletion/)
+  assert.match(component, /function CompletionFlower\(\)/)
+  assert.match(component, /rgb\(var\(--c-text\)\)/)
+  assert.match(component, /rgb\(var\(--c-bg\)\)/)
+  assert.doesNotMatch(component, /checkin-bird-reference|cardMorningDone/)
 })
 
 test('morning streak screen uses the shared Telegram BackButton and sprout flower', () => {

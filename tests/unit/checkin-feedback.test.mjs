@@ -55,7 +55,7 @@ test('ошибка сети на обратной связи не пробрас
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
-  assert.doesNotMatch(morningFlow, /sendCheckinFeedback/, 'утренний поток не использует sendCheckinFeedback')
+  assert.match(morningFlow, /sendCheckinFeedback/, 'утренний поток использует sendCheckinFeedback')
 
   const core = checkinSource.slice(
     checkinSource.indexOf('function CheckInCore'),
