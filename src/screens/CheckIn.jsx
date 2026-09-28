@@ -5,7 +5,11 @@ import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
-import { ArrowRight, Check, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
+import {
+  ArrowRight, BookOpen, BriefcaseBusiness, Check, ClipboardList, Heart,
+  HeartPulse, House, Lightbulb, Palette, Sofa, ThumbsDown,
+  ThumbsUp, Users, Hand,
+} from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -68,6 +72,21 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 // MXL-PROMPT-ROTATION-001: один и тот же вариант на весь календарный день
 // по МСК (см. src/data/prompts.js) — не пересчитывается на каждый рендер.
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
+
+// day_focus остаётся строкой API: плитки лишь предлагают готовый текст,
+// поле ниже позволяет сохранить свой вариант, как и прежде.
+const DAY_FOCUS_OPTIONS = [
+  { label: 'Работа', Icon: BriefcaseBusiness },
+  { label: 'Забота о себе', Icon: Heart },
+  { label: 'Люди', Icon: Users },
+  { label: 'Хобби', Icon: Palette },
+  { label: 'Дела', Icon: ClipboardList },
+  { label: 'Учёба', Icon: BookOpen },
+  { label: 'Отдых', Icon: Sofa },
+  { label: 'Здоровье', Icon: HeartPulse },
+  { label: 'Семья', Icon: House },
+  { label: 'Продуктивность', Icon: Lightbulb },
+]
 
 /*
  * Короткие сцены (шкалы и эмоции) занимают доступную высоту и держат
@@ -186,11 +205,6 @@ export function CheckInQuestion({
 function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing = null }) {
   const [step, setStep] = useState(0)
   /*
-   * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
-   * из перезаписываемой записи: поля опускаются в PUT /api/checkin/today,
-   * бэкенд сохраняет прежние значения утра. Настроение и энергия
-   * в redo переспрашиваются заново.
-   *
    * sleep_quality и day_focus — необязательные поля (backend PR #103):
    * при повторном открытии (не redo) предзаполняются из существующей записи,
    * при redo стартуют пустыми. Пропущенные поля не отправляются (omitted),
@@ -205,6 +219,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   }))
   const [note, setNote] = useState('')
   const [dayFocus, setDayFocus] = useState(() => (redo ? '' : (existing?.day_focus ?? '')))
+  const [showAllFocus, setShowAllFocus] = useState(
+    () => !redo && DAY_FOCUS_OPTIONS.slice(9).some(option => option.label === existing?.day_focus)
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [streak, setStreak] = useState(0)
@@ -365,13 +382,14 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         <BackButton onClick={handleBack} label="Сегодня" />
       </header>
 
-      <main className={`mx-demo-checkin__body ${step === noteStep ? 'is-editor' : ''}`}>
+      <main className={`mx-demo-checkin__body ${step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           {scale && (
             <CheckInScaleQuestion
               scale={scale}
               value={values[scale.key]}
               onPick={level => pick(scale.key, level)}
+              filled
             />
           )}
 
@@ -394,12 +412,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 autoFocus
                 keepFocusOnSubmit
                 submitIcon="arrow"
-                submitLabel="Завершить"
+                submitLabel="Далее"
                 submitTestId="checkin-complete"
                 onSubmit={finish}
+                onSkip={finish}
                 submitLoading={saving}
-                onDeepen={() => {}}
-                deepenLabel="Пойти глубже"
                 showAddAction
                 formatting
               />
@@ -415,15 +432,41 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
             <CheckInQuestion
               title="Главный фокус дня"
               hint="Одна мысль, которой не хочешь потерять. Можно пропустить."
-              className="mx-demo-checkin__editor-scene"
+              className="mx-demo-checkin__editor-scene mx-demo-checkin__editor-scene--focus"
             >
               <div className="mx-demo-checkin__day-focus">
+                <div className="mx-demo-checkin__focus-grid" role="group" aria-label="Выбери главный фокус">
+                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(({ label, Icon }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      data-testid="checkin-day-focus-option"
+                      data-value={label}
+                      aria-pressed={dayFocus === label}
+                      className={dayFocus === label ? 'is-selected' : ''}
+                      onClick={() => { platform.haptic('light'); setDayFocus(label) }}
+                    >
+                      <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+                {!showAllFocus && (
+                  <button
+                    type="button"
+                    className="mx-demo-checkin__show-all"
+                    data-testid="checkin-day-focus-show-all"
+                    onClick={() => setShowAllFocus(true)}
+                  >
+                    Показать все
+                  </button>
+                )}
                 <input
                   type="text"
                   value={dayFocus}
                   onChange={e => setDayFocus(e.target.value.slice(0, DAY_FOCUS_MAX))}
                   maxLength={DAY_FOCUS_MAX}
-                  placeholder="Например: закончить важный разговор"
+                  placeholder="Или напиши свой фокус…"
                   aria-label="Главный фокус дня"
                   data-testid="checkin-day-focus-input"
                   className="mx-demo-checkin__day-focus-input"
@@ -594,11 +637,11 @@ export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
 
 const DAY_FOCUS_MAX = 140
 
-export function CheckInScaleQuestion({ scale, value, onPick }) {
+export function CheckInScaleQuestion({ scale, value, onPick, filled = false }) {
   return (
     <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
       <div
-        className="mx-checkin-scale"
+        className={`mx-checkin-scale${filled ? ' mx-checkin-scale--filled' : ''}`}
         role="radiogroup"
         aria-label={scale.title}
         data-testid="checkin-scale-row"
@@ -620,7 +663,7 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
               className={`mx-checkin-scale__option ${active ? 'is-selected' : ''}`}
             >
               <span className="mx-checkin-scale__circle">
-                {scale.faces ? (
+                {scale.faces && !filled ? (
                   <span className="mx-checkin-scale__inner mx-checkin-scale__inner--face">
                     <Face level={level} active={active} size={35} showFrame={false} />
                   </span>
@@ -628,11 +671,13 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
                   <span
                     className="mx-checkin-scale__inner"
                     style={
-                      scale.key === 'energy'
-                        ? {
-                            background: `linear-gradient(to top, #e6e6e6 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
-                          }
-                        : undefined
+                      filled
+                        ? { '--scale-fill': `${energyFillPercent(level)}%` }
+                        : scale.key === 'energy'
+                          ? {
+                              background: `linear-gradient(to top, #e6e6e6 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
+                            }
+                          : undefined
                     }
                   />
                 )}

@@ -15,6 +15,8 @@ export async function scaleStep(page, level) {
   const option = page.locator(`[data-testid="checkin-scale-option"][data-level="${level}"]`)
   await expect(option).toBeVisible()
   await option.click()
+  await expect(option).toHaveAttribute('aria-checked', 'true')
+  await expect(page.locator('[data-testid="checkin-scale-option"][aria-checked="true"]')).toHaveCount(1)
 
   const next = page.locator('[data-testid="checkin-next"]')
   if (await next.isVisible()) {
@@ -73,7 +75,30 @@ export async function skipStep(page) {
 }
 
 /**
- * Шаг «Главный фокус дня»: заполнить текстовый input и нажать «Далее».
+ * Шаг «Главный фокус дня»: выбрать плитку, раскрыв остальные при необходимости.
+ * Проверяем выбранное значение, а не только наличие кнопки.
+ */
+export async function dayFocusOptionStep(page, label) {
+  const tiles = page.locator('[data-testid="checkin-day-focus-option"]')
+  await expect(tiles).toHaveCount(9)
+  const showAll = page.locator('[data-testid="checkin-day-focus-show-all"]')
+  await expect(showAll).toBeVisible()
+  if (label === 'Продуктивность') {
+    await showAll.click()
+    await expect(tiles).toHaveCount(10)
+  }
+  const tile = page.locator(`[data-testid="checkin-day-focus-option"][data-value="${label}"]`)
+  await expect(tile).toBeVisible()
+  await tile.click()
+  await expect(tile).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('[data-testid="checkin-day-focus-input"]')).toHaveValue(label)
+  const next = page.locator('[data-testid="checkin-next"]')
+  await expect(next).toBeEnabled()
+  await next.click()
+}
+
+/**
+ * Шаг «Главный фокус дня»: заполнить свободный текст и нажать «Далее».
  * @param {import('@playwright/test').Page} page
  * @param {string} text — текст фокуса дня
  */
