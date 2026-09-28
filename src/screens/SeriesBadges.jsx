@@ -4,6 +4,8 @@ import { X } from 'lucide-react'
 
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
+import { peekBadgesSnapshot, saveBadgesSnapshot } from '../lib/badgesSnapshotCache'
+import { enrichBadgesWithEarnedDate, lastEarnedBadge } from '../lib/badgeEarnedDate'
 import { api } from '../lib/api'
 import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
 import { badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
@@ -195,6 +197,7 @@ function badgePractice(badge) {
 export function BadgeSheet({ badge, onClose, onOpenPractice }) {
   const sheetRef = useRef(null)
   const { closing, requestClose } = useSheetExit(onClose)
+  const { style: surfaceStyle } = useFullscreenSurface()
   useSheetSwipeDown(sheetRef, onClose)
 
   if (!badge) return null
@@ -202,6 +205,7 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
   return createPortal(
     <div
       className={`mx-badge-sheet-layer${closing ? ' mx-badge-sheet-layer--exit' : ''}`}
+      style={{ top: surfaceStyle.top, height: surfaceStyle.height }}
       role="presentation"
       onClick={requestClose}
     >
@@ -213,6 +217,7 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
         aria-labelledby="mx-badge-sheet-title"
         onClick={event => event.stopPropagation()}
       >
+        <span className="mx-badge-sheet__handle" aria-hidden="true" />
         <CloseButton onClose={requestClose} testId="badge-sheet-close" />
         <div className="mx-badge-sheet__scene">
           <RewardIcon variant={badge.done ? badge.id : 'locked'} size={92} />
@@ -323,17 +328,27 @@ function formatDays(value) {
 
 function AwardsView({ badges, onOpenBadge, onShowAll }) {
   const upcoming = upcomingBadges(badges)
-  const next = upcoming[0]
+  const earned = badges.filter(badge => badge.done)
+  // T5: главный значок — последний полученный по дате; если ещё никто
+  // не получен — показываем следующий незавершённый как мотивацию.
+  const featured = earned.length ? lastEarnedBadge(badges) : upcoming[0]
+  const featuredEarned = Boolean(featured?.done)
   return (
     <div className="mx-path-content">
       <section className="mx-path-featured-award">
-        <strong className="mx-path-award-count">{badges.filter(badge => badge.done).length}.</strong>
+        <strong className="mx-path-award-count">{earned.length}.</strong>
         <span className="mx-path-featured-award-label">ЗНАЧКОВ ПОЛУЧЕНО</span>
         <div className="mx-path-featured-scene">
-          <RewardIcon variant={next?.id || 'first-step'} size={118} />
+          <RewardIcon variant={featured?.id || 'first-step'} size={118} />
         </div>
-        <div className="mx-path-featured-title">{next?.title || 'Все значки получены'}</div>
-        <div className="mx-path-featured-copy">{next ? `${next.progress}/${next.goal} до получения` : 'Продолжай свой путь'}</div>
+        <div className="mx-path-featured-title">{featured?.title || 'Пока нет значков'}</div>
+        <div className="mx-path-featured-copy">
+          {featuredEarned
+            ? featured.desc
+            : featured
+              ? `${featured.progress}/${featured.goal} до получения`
+              : 'Продолжай свой путь'}
+        </div>
       </section>
       <button type="button" className="mx-path-see-all" onClick={onShowAll}>
         Все значки <span aria-hidden="true">›</span>
@@ -363,12 +378,29 @@ function AllBadgesView({ badges, onOpenBadge }) {
               <button type="button" key={badge.id} onClick={() => onOpenBadge(badge)} data-testid={`all-badge-${badge.id}`}>
                 <RewardIcon variant={badge.done ? badge.id : 'locked'} size={64} />
                 <strong>{badge.title}</strong>
-                <span>{badge.progress}/{badge.goal}</span>
+                {!badge.done && <span>{badge.progress}/{badge.goal}</span>}
               </button>
             ))}
           </div>
         </section>
       ))}
+    </div>
+  )
+}
+
+function BadgesSkeleton() {
+  return (
+    <div className="mx-path-content" data-testid="badges-skeleton" aria-busy="true" aria-label="Загружаю значки">
+      <div className="mx-path-featured-award mx-path-skeleton-featured">
+        <div className="mx-path-skeleton-line mx-path-skeleton-line--lg" />
+        <div className="mx-path-skeleton-circle" />
+        <div className="mx-path-skeleton-line" />
+      </div>
+      <div className="mx-path-skeleton-rows">
+        <div className="mx-path-skeleton-row" />
+        <div className="mx-path-skeleton-row" />
+        <div className="mx-path-skeleton-row" />
+      </div>
     </div>
   )
 }
@@ -462,7 +494,12 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   const [error, setError] = useState(false)
   const [errorUserId, setErrorUserId] = useState(null)
   const [selectedBadge, setSelectedBadge] = useState(null)
-  const [showAll, setShowAll] = useState(false)
+  const [showAll, setShowAll] = useState(
+    () =>
+      isPreviewDemoMode() &&
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('action') === 'all_badges'
+  )
   const [theme, setTheme] = useState(null)
   const { style: surfaceStyle } = useFullscreenSurface()
   const demoMode = isPreviewDemoMode()
@@ -551,6 +588,27 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     canonicalStats: serverStats,
   }) : []
   const badges = [...mvpBadges, ...serverBadges]
+  // T5: дата получения для каждого значка — главный значок шторки.
+  const enrichedBadges = useMemo(
+    () =>
+      enrichBadgesWithEarnedDate(badges, {
+        checkins: checkinHistory?.userId === user.id ? checkinHistory.items : [],
+        registrationDate:
+          profileStats?.userId === user.id ? profileStats.value?.created_at : user?.created_at,
+        journalEntries,
+      }),
+    [badges, checkinHistory, profileStats, user.id, journalEntries]
+  )
+  // T4: последнее известное состояние значков из кэша — шторка сразу
+  // показывает его, потом тихо обновляет с сервера (#918, как стрик).
+  const [snapshot, setSnapshot] = useState(() => peekBadgesSnapshot(user?.id))
+  const cachedBadges = snapshot?.userId === user.id ? snapshot.badges : null
+  const displayBadges = catalogReady ? enrichedBadges : cachedBadges
+  useEffect(() => {
+    if (!catalogReady || !enrichedBadges.length) return
+    saveBadgesSnapshot(user.id, enrichedBadges)
+    setSnapshot({ userId: user.id, badges: enrichedBadges })
+  }, [catalogReady, enrichedBadges, user.id])
   const freezeSeen = useRef(false)
   useEffect(() => {
     if (activeTab !== 'stats' || !visibleModel || freezeSeen.current) return
@@ -602,25 +660,27 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
         <BackButton onClick={showAll ? () => setShowAll(false) : onBack} />
       </header>
       <main className="mx-path-scroll">
-        {error && errorUserId === user.id && (
+        {error && errorUserId === user.id && !displayBadges && (
           <p className="mx-path-status">
             Не удалось загрузить данные. Попробуй открыть экран ещё раз.
           </p>
         )}
-        {catalogReady ? (
-          showAll ? <AllBadgesView badges={badges} onOpenBadge={setSelectedBadge} /> :
+        {catalogReady || displayBadges ? (
+          showAll ? <AllBadgesView badges={displayBadges} onOpenBadge={setSelectedBadge} /> :
           activeTab === 'badges' ? (
-            <AwardsView badges={badges} onShowAll={() => setShowAll(true)} onOpenBadge={setSelectedBadge} />
-          ) : (
+            <AwardsView badges={displayBadges} onShowAll={() => setShowAll(true)} onOpenBadge={setSelectedBadge} />
+          ) : catalogReady ? (
             <StatsView
               model={{ ...visibleModel, badges: serverBadges }}
               canonicalStats={serverStats}
               theme={theme}
               journalEntries={journalEntries}
             />
+          ) : (
+            <BadgesSkeleton />
           )
         ) : (
-          <p className="mx-path-status">Загружаю последние данные…</p>
+          <BadgesSkeleton />
         )}
       </main>
       {selectedBadge && (
