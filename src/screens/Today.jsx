@@ -37,6 +37,7 @@ import {
 } from '../lib/series'
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
+import { morningResetPayload } from '../lib/checkinMorningFields'
 import { resolveContextualCheckin } from '../lib/contextualDeepLink'
 import { formatReviewTime, resolveTodayCardStates, primaryCardKind, DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { now as clockNow } from '../lib/clock'
@@ -588,6 +589,30 @@ export default function Today({
     }
   }
 
+  /*
+   * «Пройти утро заново»: утренние ответы этого дня сбрасываются сразу
+   * после подтверждения — шкалы, фокус дня и «Что на уме?» обнуляются,
+   * карточка утра на «Сегодня» возвращается в «не пройдено». Вечерняя
+   * половина записи (эмоция, уроки, закрытие дня) не меняется. Если сброс
+   * не дошёл до сервера, повтор всё равно стартует пустым и заменит
+   * прежние ответы при сохранении.
+   */
+  const handleRedoMorning = useCallback(() => {
+    platform.haptic('light')
+
+    if (checkin) {
+      api.checkin
+        .redo(user.id, morningResetPayload(checkin))
+        .then(updated => {
+          if (updated) setCheckin(updated)
+          invalidateTodayData(user.id)
+        })
+        .catch(() => {})
+    }
+
+    changeSub('redoCheckin')
+  }, [checkin, changeSub, user])
+
   useEffect(() => {
     if (previewFixture) return undefined
     if (!user || (sub !== null && !initialSub)) {
@@ -842,7 +867,7 @@ export default function Today({
             initialSelectedDay={{ date: checkin.date, checkin }}
             onInitialBack={() => changeSub(null)}
             recapOnly
-            onRedo={() => changeSub('redoCheckin')}
+            onRedo={handleRedoMorning}
             onRedoReview={() => changeSub('redoReview')}
           />
         </Suspense>
@@ -918,7 +943,7 @@ export default function Today({
             <div className="w-full max-w-md px-[var(--mx-screen-x)]">
               <History
                 user={user}
-                onRedo={() => changeSub('redoCheckin')}
+                onRedo={handleRedoMorning}
                 onRedoReview={() => changeSub('redoReview')}
               />
             </div>

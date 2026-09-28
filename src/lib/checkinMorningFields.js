@@ -1,4 +1,27 @@
 /*
+ * Payload мгновенного сброса утренней половины при «Пройти утро заново»:
+ * шкалы (настроение, энергия, тревожность, концентрация, сон), фокус дня
+ * и «Что на уме?» обнуляются явными null — PUT /checkin/today замещает
+ * запись целиком, поэтому простое отсутствие полей её не очистит.
+ * Вечерняя половина (эмоция, уроки, закрытие дня) переносится без
+ * изменений: повтор утра не трогает разбор.
+ */
+export function morningResetPayload(existing) {
+  return {
+    mood: null,
+    energy: null,
+    anxiety: null,
+    focus: null,
+    sleep_quality: null,
+    day_focus: null,
+    note: null,
+    emotion: existing?.emotion ?? undefined,
+    lessons: existing?.lessons ?? undefined,
+    ...(existing?.review_completed_at ? { review_completed: true } : {}),
+  }
+}
+
+/*
  * Утренние поля записи дня, которые отправляет вечерний разбор.
  *
  * Вечер (в том числе «Пройти заново») не спрашивает настроение, энергию и

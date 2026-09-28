@@ -6,6 +6,7 @@ import { useBackButton } from '../platform/telegram.hooks'
 import { RoundBackButton } from './NestedScreenHeader'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
+import { isRitualDoneToday } from '../lib/practiceDoneToday'
 import './PracticeDetail.css'
 
 function AccordionRow({ testId, label, children }) {
@@ -37,7 +38,7 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   useEdgeSwipeBack(screenRef, onBack)
   useBackButton(onBack)
   const isRitual = kind === 'ritual'
-  const done = isRitual ? Boolean(practice.today_level) : practice.today_status === 'held'
+  const done = isRitual ? isRitualDoneToday(practice.today_level) : practice.today_status === 'held'
   const glyphKind = isRitual
     ? semanticKindForRitual(practice.name)
     : semanticKindForAsceza(practice)
@@ -107,13 +108,13 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
 
       <div className="mx-practice-detail__accordions">
         <AccordionRow testId="practice-accordion-why" label="Зачем">
-          <p>{why}</p>
+          {why && <p>{why}</p>}
         </AccordionRow>
         <AccordionRow testId="practice-accordion-how" label="Как">
-          <p className="whitespace-pre-line">{how}</p>
+          {how && <p className="whitespace-pre-line">{how}</p>}
         </AccordionRow>
         <AccordionRow testId="practice-accordion-note" label="Заметка">
-          <p>{note}</p>
+          {note && <p>{note}</p>}
         </AccordionRow>
       </div>
 
