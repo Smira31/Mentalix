@@ -91,11 +91,11 @@ test('Morning completion: сбой canonical не ломает завершен�
 
 test('Morning completion: persistence/payload не изменились', () => {
   assert.match(finishBlock, /const saveApi = redo \? api\.checkin\.redo : api\.checkin\.save/)
-  assert.match(finishBlock, /saveApi\(user\.id, morningPayload\)/)
+  assert.match(finishBlock, /redo \? \{ \.\.\.morningResetPayload\(existing\), \.\.\.morningPayload \} : morningPayload/)
   assert.match(finishBlock, /mood: values\.mood \|\| 3/)
   assert.match(finishBlock, /energy: values\.energy \|\| 3/)
-  // redo завершается без completion-экрана — canonical там не нужен.
-  assert.match(finishBlock, /if \(redo\) \{\s*onDone\(\)\s*return\s*\}/)
+  // При повторе canonical читается, но не увеличивается повторным PUT.
+  assert.match(finishBlock, /setStep\(doneStep\)/)
 })
 
 test('Morning completion contract не регрессирует', () => {

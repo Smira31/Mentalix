@@ -38,11 +38,10 @@ import {
 } from '../lib/series'
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
-import { morningResetPayload } from '../lib/checkinMorningFields'
 import { resolveContextualCheckin } from '../lib/contextualDeepLink'
 import { formatReviewTime, resolveTodayCardStates, primaryCardKind, DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
 import { now as clockNow } from '../lib/clock'
-import { demoScenario } from '../lib/demoMode'
+import { demoScenario, demoReviewNow } from '../lib/demoMode'
 import { pickVisibleTodayHint } from '../lib/todayHints'
 
 /* ============================================================
@@ -598,29 +597,11 @@ export default function Today({
     }
   }
 
-  /*
-   * «Пройти утро заново»: утренние ответы этого дня сбрасываются сразу
-   * после подтверждения — шкалы, фокус дня и «Что на уме?» обнуляются,
-   * карточка утра на «Сегодня» возвращается в «не пройдено». Вечерняя
-   * половина записи (эмоция, уроки, закрытие дня) не меняется. Если сброс
-   * не дошёл до сервера, повтор всё равно стартует пустым и заменит
-   * прежние ответы при сохранении.
-   */
+  // Повтор открывает пустую форму; запись дня не меняется до сохранения.
   const handleRedoMorning = useCallback(() => {
     platform.haptic('light')
-
-    if (checkin) {
-      api.checkin
-        .redo(user.id, morningResetPayload(checkin))
-        .then(updated => {
-          if (updated) setCheckin(updated)
-          invalidateTodayData(user.id)
-        })
-        .catch(() => {})
-    }
-
     changeSub('redoCheckin')
-  }, [checkin, changeSub, user])
+  }, [changeSub])
 
   useEffect(() => {
     if (previewFixture) return undefined
@@ -734,7 +715,7 @@ export default function Today({
     }
   }, [recoveryAllowed, loading, loadError, user, initialSub, sub, recoveryEvent, canonical?.recoverable])
 
-  const hourNow = clockNow().getHours()
+  const hourNow = demoReviewNow(reviewHour).getHours()
 
   const isReviewTime = hourNow >= reviewHour
 
@@ -1043,7 +1024,7 @@ export default function Today({
   const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
   // Contract compatibility: MOOD_WORDS[(checkin?.mood || 3) - 1]; legacy checkin.mood readers.
 
-  const cardNow = clockNow()
+  const cardNow = demoReviewNow(reviewHour)
   if (
     previewState === 'night' ||
     (import.meta.env.DEV &&
