@@ -1,4 +1,32 @@
 /* Card System v2 keeps demo and production navigation geometrically identical. */
+.mx-bottom-nav.mx-demo-bottom-nav--collapsed > div {
+  width: var(--bottom-nav-collapsed-size) !important;
+  max-width: var(--bottom-nav-collapsed-size) !important;
+  height: var(--bottom-nav-collapsed-size) !important;
+  border-radius: 50% !important;
+  background: rgb(var(--c-nav) / 0.82) !important;
+}
+
+.mx-bottom-nav__restore {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: rgb(var(--c-text));
+  cursor: pointer;
+}
+
+.mx-bottom-nav__restore svg {
+  width: 22px;
+  height: 22px;
+  color: rgb(var(--c-text)) !important;
+}
+
 .mx-bottom-nav {
   bottom: calc(var(--app-safe-bottom) + var(--bottom-nav-offset)) !important;
 }
@@ -107,28 +135,21 @@
   backdrop-filter: none !important;
 }
 
-/* Сворачивание отключено — полоса всегда полноширинная */
+/* В демо-фрейме компактная кнопка сохраняет то же поведение. */
+[data-mentalix-demo-frame='true'] .mx-bottom-nav.mx-demo-bottom-nav--collapsed {
+  left: var(--bottom-nav-edge) !important;
+  bottom: var(--bottom-nav-offset) !important;
+}
+
 [data-mentalix-demo-frame='true'] .mx-bottom-nav.mx-demo-bottom-nav--collapsed > div {
-  width: 100% !important;
-  max-width: none !important;
-  height: 54px !important;
-  border-radius: 0 !important;
-}
-
-/* P1: в demo frame панель не уезжает — transform отменён */
-[data-mentalix-demo-frame='true'] .mx-bottom-nav {
-  transform: none !important;
-}
-
-[data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav {
-  opacity: 1 !important;
-  transform: none !important;
-  pointer-events: auto !important;
-}
-
-[data-mentalix-demo-frame='true'] .mx-bottom-nav > div > button[aria-label='Открыть навигацию'] {
-  opacity: 0 !important;
-  pointer-events: none !important;
+  width: var(--bottom-nav-collapsed-size) !important;
+  max-width: var(--bottom-nav-collapsed-size) !important;
+  height: var(--bottom-nav-collapsed-size) !important;
+  border: 1px solid rgb(var(--c-nav-border)) !important;
+  border-radius: 50% !important;
+  background: rgb(var(--c-nav) / 0.82) !important;
+  box-shadow: var(--shadow-float) !important;
+  backdrop-filter: blur(20px) !important;
 }
 
 /* Кнопки-вкладки на полноширинной полосе */
