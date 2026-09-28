@@ -8,3 +8,5 @@ qa-report/
 .vercel
 .firebaserc
 .env*
+test-results/
+playwright-report/
