@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { readFile } from 'node:fs/promises'
+
 import {
   moodPracticeDate,
   groupMoodPracticesByDate,
 } from '../../src/lib/moodPracticeLogic.js'
-import { currentCheckinStreak, collectActivityDays } from '../../src/lib/series.js'
+import { readCanonicalStreakStats } from '../../src/lib/canonicalStreak.js'
+
+const seriesSource = await readFile(new URL('../../src/lib/series.js', import.meta.url), 'utf8')
 
 /** Локальный YYYY-MM-DD относительно сегодняшнего дня. */
 function dayKey(offset = 0) {
@@ -56,43 +60,28 @@ test('groupMoodPracticesByDate: пустой ввод → пустой объе�
   assert.deepEqual(groupMoodPracticesByDate(undefined), {})
 })
 
-test('запись «Настроения» на новом дне продлевает серию', () => {
-  const checkins = [
-    { date: dayKey(-2), review_completed_at: `${dayKey(-2)}T20:00:00Z` },
-    { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
-    { date: dayKey(0), review_completed_at: `${dayKey(0)}T20:00:00Z` },
-  ]
-  const moodPractices = [
-    { id: 1, recorded_at: `${dayKey(0)}T15:30:00Z`, mood: 2, emotion: 'устал' },
-    { id: 2, recorded_at: `${dayKey(1)}T10:00:00Z`, mood: 4, emotion: 'бодро' },
-  ]
+// ── Мягкая серия: учёт «любой активности» — на сервере ──
 
-  // Серия только по чек-инам — 3 дня
-  const streakWithoutMood = currentCheckinStreak(checkins)
-  assert.equal(streakWithoutMood, 3)
-
-  // Запись «Настроения» на новом дне добавляет день через activityDays
-  const activityDays = collectActivityDays({ moodPractices })
-  const streakWithMood = currentCheckinStreak(checkins, { activityDays })
-  assert.equal(streakWithMood, 4, 'запись «Настроения» на новом дне продлевает серию')
+test('записи «Настроения» не пересчитываются в серию на клиенте', () => {
+  // По решению от 27.09 серия мягкая: день засчитывается по любой
+  // активности, и считает её сервер (GET /api/streak). Клиент больше
+  // не собирает activityDays из mood practices — утилита удалена.
+  assert.doesNotMatch(seriesSource, /collectActivityDays/)
+  assert.doesNotMatch(seriesSource, /moodPracticeDate/)
 })
 
-test('день только с записью «Настроения» продлевает серию; «Пройти заново» не увеличивает', () => {
-  const checkins = [
-    { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
-  ]
-  const moodPracticesOnly = [
-    { id: 1, recorded_at: `${dayKey(0)}T12:00:00Z`, mood: 3, emotion: 'ровно' },
-  ]
-
-  // День есть только в mood practices — чек-ина нет,
-  // но по новому правилу запись «Настроения» засчитывает день в серию
-  const activityDays = collectActivityDays({ moodPractices: moodPracticesOnly })
-  const streak = currentCheckinStreak(checkins, { activityDays })
-  assert.equal(streak, 2, 'серия продлевается до 2 за счёт записи «Настроения»')
-
-  // «Пройти заново» — повторный чек-ин за тот же день не увеличивает серию
-  const redoCheckin = { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T22:00:00Z` }
-  const streakWithRedo = currentCheckinStreak([...checkins, redoCheckin], { activityDays })
-  assert.equal(streakWithRedo, 2, '«Пройти заново» не увеличивает серию')
+test('серия за день только с записью «Настроения» приходит с сервера', () => {
+  // Сервер засчитывает день с mood-практикой: клиент получает уже
+  // посчитанные current_streak / total_active_days и флаги, не выводя
+  // их из истории записей. Проверяем контракт: любое число серии
+  // из ответа проходит без пересчёта.
+  const stats = readCanonicalStreakStats({
+    current_streak: 2,
+    longest_streak: 2,
+    total_active_days: 2,
+    is_active_today: true,
+  })
+  assert.equal(stats.currentStreak, 2)
+  assert.equal(stats.activeDays, 2)
+  assert.equal(stats.isActiveToday, true)
 })

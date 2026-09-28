@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import {
   ANALYTICS_CARDS,
@@ -8,7 +9,6 @@ import {
   readCardPreferences,
   writeCardPreferences,
 } from '../../src/screens/progress/analyticsCardPreferences.js'
-import { currentCheckinStreak } from '../../src/lib/series.js'
 
 test('hidden card can be restored and custom order survives reloading', () => {
   const memory = new Map()
@@ -40,14 +40,21 @@ test('unavailable storage and malformed preferences use default order', () => {
   assert.deepEqual(normalized.hidden, [])
 })
 
-test('series counts a single skipped day this week', () => {
-  const now = new Date()
-  now.setHours(12, 0, 0, 0)
-  const date = daysAgo => {
-    const value = new Date(now)
-    value.setDate(value.getDate() - daysAgo)
-    return value.toISOString().slice(0, 10)
-  }
-  const checkins = [3, 2, 0].map(daysAgo => ({ date: date(daysAgo), review_completed_at: `${date(daysAgo)}T20:00:00Z` }))
-  assert.equal(currentCheckinStreak(checkins, { now, timezone: 'UTC' }), 3)
+test('заморозка недели приходит с сервера, аналитика не считает серию локально', async () => {
+  // Один пропуск в календарную неделю не рвёт мягкую серию — это
+  // серверное правило (GET /api/streak, freeze_used_this_week).
+  // Клиент больше не пересчитывает серию по истории чек-инов.
+  const { readCanonicalStreakStats } = await import('../../src/lib/canonicalStreak.js')
+  const stats = readCanonicalStreakStats({
+    current_streak: 3,
+    longest_streak: 3,
+    total_active_days: 4,
+    freeze_used_this_week: true,
+  })
+  assert.equal(stats.currentStreak, 3)
+  assert.equal(stats.freezeUsedThisWeek, true, 'заморозка недели передаётся из ответа сервера')
+
+  const analyticsSource = await readFile(new URL('../../src/screens/Analytics.jsx', import.meta.url), 'utf8')
+  assert.doesNotMatch(analyticsSource, /currentCheckinStreak/)
+  assert.doesNotMatch(analyticsSource, /streakCache/)
 })

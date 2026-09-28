@@ -77,8 +77,20 @@ export function useSheetSwipeDown(ref, onClose, { enabled = true } = {}) {
       el.style.willChange = ''
     }
 
+    // Свайп-жест не должен захватывать тапы по интерактивным элементам
+    // (кнопкам, табам, полям): такой touchstart оставляем браузеру,
+    // иначе первый тап по контролу внутри зоны жеста «съедается».
+    function isInteractiveTarget(target) {
+      return Boolean(
+        target?.closest?.(
+          'button, a, input, textarea, select, label, [role="tab"], [role="button"]'
+        )
+      )
+    }
+
     function onTouchStart(e) {
       if (e.touches.length !== 1) return
+      if (isInteractiveTarget(e.target)) return
       const touch = e.touches[0]
       const rect = el.getBoundingClientRect()
       const yWithinSheet = touch.clientY - rect.top

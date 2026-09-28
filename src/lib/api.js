@@ -132,8 +132,29 @@ async function download(path, filename) {
   URL.revokeObjectURL(href)
 }
 
+// Только подтверждённые записи активности: сигнал не зависит от конкретного экрана.
+const ACTIVITY_WRITE = [
+  /^\/checkin(?:\/today)?$/,
+  /^\/(?:rituals|ascezas)\/\d+\/log$/,
+  /^\/mood-practices$/,
+  /^\/journal\/templates\/sessions\/complete$/,
+  /^\/journey\/entries(?:\/[^/]+)?$/,
+]
+
+function notifyActivity(path, options) {
+  const method = (options.method || 'GET').toUpperCase()
+  if (!['POST', 'PUT', 'PATCH'].includes(method) || !ACTIVITY_WRITE.some(pattern => pattern.test(path))) return
+  let userId = null
+  try { userId = JSON.parse(options.body)?.user_id ?? null } catch { /* empty body */ }
+  window.dispatchEvent(new CustomEvent('mentalix:activity-saved', { detail: { userId } }))
+}
+
 async function request(path, options = {}) {
-  if (isPreviewDemoMode()) return demoRequest(path, options)
+  if (isPreviewDemoMode()) {
+    const result = await demoRequest(path, options)
+    notifyActivity(path, options)
+    return result
+  }
 
   const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
   const method = (options.method || 'GET').toUpperCase()
@@ -206,6 +227,7 @@ async function request(path, options = {}) {
         ) {
           platform.setSessionToken?.(result.session_token)
         }
+        notifyActivity(path, options)
         return result
       } catch (error) {
         throw new ApiError(`API ${path} вернул не JSON`, {

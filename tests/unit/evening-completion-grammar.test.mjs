@@ -55,16 +55,16 @@ test('2. вечерний completion: primary CTA = «Вернуться в Се
 test('3. вечерний completion: streak > 0 → «N-дневная серия» (testId checkin-streak)', async () => {
   const src = await getSource()
   const core = getCore(src)
-  // Условный рендер streak только для вечера при streak > 0
+  // Условный рендер streak только для вечера при серверной серии > 0
   assert.match(
     core,
-    /isEvening && \(canonicalEveningStreak \?\? streak\) > 0/,
-    'streak отображается только для вечера и только при streak > 0'
+    /isEvening && canonicalEveningStreak > 0/,
+    'streak отображается только для вечера и только при серверной серии > 0'
   )
   assert.match(core, /data-testid="checkin-streak"/, 'streak имеет testId checkin-streak')
   assert.match(
     core,
-    /\{canonicalEveningStreak \?\? streak\}-дневная серия/,
+    /\{canonicalEveningStreak\}-дневная серия/,
     'текст streak: «N-дневная серия»'
   )
 })
@@ -108,12 +108,15 @@ test('7. Scout/surprise flow не сломан', async () => {
   assert.match(core, /openScout/, 'openScout функция сохранена')
 })
 
-test('вечерний streak сохраняет history как fallback для canonical', async () => {
+test('вечерняя история сохраняется для значков, без клиентского расчёта серии', async () => {
   const src = await getSource()
   const core = getCore(src)
+  // История по-прежнему нужна (значки, surprise), но число серии
+  // приходит только из canonical-ответа сервера.
   assert.match(core, /api\.checkin\.history\(user\.id, 90\)\.then\(history =>/)
-  assert.match(core, /setStreak\(Math\.max\(1, currentCheckinStreak\(entries\)\)\)/)
-  assert.match(core, /canonicalEveningStreak \?\? streak/)
+  assert.match(core, /setStreakHistory\(entries\)/)
+  assert.doesNotMatch(core, /currentCheckinStreak/, 'legacy-расчёт серии удалён')
+  assert.doesNotMatch(core, /canonicalEveningStreak \?\? streak/, 'fallback-подмена удалена')
 })
 
 console.log('Evening completion grammar regression tests loaded')

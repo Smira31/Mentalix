@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
-  buildSeriesViewModel,
+  buildServerSeriesViewModel,
   splitCheckinsForComparison,
   detectNewlyUnlockedBadge,
 } from '../../src/lib/series.js'
@@ -22,22 +22,22 @@ function checkinDay(offset) {
   return { date: key, review_completed_at: `${key}T08:00:00Z` }
 }
 
-const SERIES_BADGE_IDS = ['streak-two', 'streak-three', 'streak-five']
+const STREAK_BADGE_IDS = ['streak-two', 'streak-three', 'streak-five', 'week-on-path', 'month-on-path']
 
 // ── Ретро-зачёт: значки из истории не запускают шторку ──
 
-test('ретро-значки при bestStreak ≥ 5 не запускают шторку (история уже содержит серию)', () => {
+test('ретро-значки при длинной истории не запускают шторку (история уже содержит их)', () => {
   // Пользователь с серией 5 дней в прошлом + сегодняшний чек-ин.
-  // bestStreak ≥ 5 достигнут историческими данными, не сегодняшним чек-ином.
+  // Значки first-step/voice-heard открыты историческими данными.
   const history = [-5, -4, -3, -2, -1, 0].map(checkinDay)
   const todayCheckin = checkinDay(0)
   const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
 
-  const previousModel = buildSeriesViewModel({ checkins: previous })
-  const nextModel = buildSeriesViewModel({ checkins: next })
+  const previousModel = buildServerSeriesViewModel({ checkins: previous })
+  const nextModel = buildServerSeriesViewModel({ checkins: next })
 
-  // Все три серийных значка открыты в обеих моделях — ретро-зачёт.
-  for (const id of SERIES_BADGE_IDS) {
+  // Оба значка открыты в обеих моделях — ретро-зачёт.
+  for (const id of ['first-step', 'voice-heard']) {
     assert.equal(
       previousModel.badges.find(b => b.id === id).done,
       true,
@@ -51,9 +51,8 @@ test('ретро-значки при bestStreak ≥ 5 не запускают ш
   assert.equal(unlocked, null, 'ретро-значки не должны запускать шторку')
 })
 
-test('ретро-значки при разорванной серии (bestStreak из прошлого) не запускают шторку', () => {
-  // 5 дней подряд в прошлом, пропуск, затем сегодняшний чек-ин (серия = 1).
-  // bestStreak = 5 — из истории, не из сегодняшнего чек-ина.
+test('ретро-значки при разорванной серии (история из прошлого) не запускают шторку', () => {
+  // 5 дней в прошлом, пропуск, затем сегодняшний чек-ин.
   const history = [
     ...[-9, -8, -7, -6, -5].map(checkinDay),
     checkinDay(0),
@@ -61,14 +60,11 @@ test('ретро-значки при разорванной серии (bestStre
   const todayCheckin = checkinDay(0)
   const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
 
-  const previousModel = buildSeriesViewModel({ checkins: previous })
-  const nextModel = buildSeriesViewModel({ checkins: next })
+  const previousModel = buildServerSeriesViewModel({ checkins: previous })
+  const nextModel = buildServerSeriesViewModel({ checkins: next })
 
-  assert.equal(previousModel.bestStreak, 5)
-  assert.equal(nextModel.bestStreak, 5)
-  for (const id of SERIES_BADGE_IDS) {
-    assert.equal(previousModel.badges.find(b => b.id === id).done, true)
-  }
+  assert.equal(previousModel.badges.find(b => b.id === 'voice-heard').done, true)
+  assert.equal(nextModel.badges.find(b => b.id === 'voice-heard').done, true)
 
   const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
   assert.equal(unlocked, null, 'ретро-значки из прошлой серии не запускают шторку')
@@ -76,40 +72,23 @@ test('ретро-значки при разорванной серии (bestStre
 
 // ── Новый чек-ин: значок, полученный именно сейчас, запускает шторку ──
 
-test('новый чек-ин, доводящий серию до 5, запускает шторку для streak-five', () => {
-  // 4 дня подряд в прошлом + сегодняшний = 5.
+test('новый чек-ин, доводящий счётчик до 5, запускает шторку для voice-heard', () => {
+  // 4 чек-ина в прошлом + сегодняшний = 5.
   const history = [-4, -3, -2, -1, 0].map(checkinDay)
   const todayCheckin = checkinDay(0)
   const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
 
-  const previousModel = buildSeriesViewModel({ checkins: previous })
-  const nextModel = buildSeriesViewModel({ checkins: next })
+  const previousModel = buildServerSeriesViewModel({ checkins: previous })
+  const nextModel = buildServerSeriesViewModel({ checkins: next })
 
-  // previous: bestStreak = 4 → streak-five не открыт
-  assert.equal(previousModel.bestStreak, 4)
-  assert.equal(previousModel.badges.find(b => b.id === 'streak-five').done, false)
+  // previous: 4 чек-ина → voice-heard не открыт
+  assert.equal(previousModel.badges.find(b => b.id === 'voice-heard').done, false)
 
-  // next: bestStreak = 5 → streak-five открыт
-  assert.equal(nextModel.bestStreak, 5)
-  assert.equal(nextModel.badges.find(b => b.id === 'streak-five').done, true)
+  // next: 5 чек-инов → voice-heard открыт
+  assert.equal(nextModel.badges.find(b => b.id === 'voice-heard').done, true)
 
   const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
-  assert.equal(unlocked?.id, 'streak-five', 'шторка для streak-five, полученного новым чек-ином')
-})
-
-test('новый чек-ин, доводящий серию до 2, запускает шторку для streak-two', () => {
-  const history = [-1, 0].map(checkinDay)
-  const todayCheckin = checkinDay(0)
-  const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
-
-  const previousModel = buildSeriesViewModel({ checkins: previous })
-  const nextModel = buildSeriesViewModel({ checkins: next })
-
-  assert.equal(previousModel.bestStreak, 1)
-  assert.equal(nextModel.bestStreak, 2)
-
-  const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
-  assert.equal(unlocked?.id, 'streak-two')
+  assert.equal(unlocked?.id, 'voice-heard', 'шторка для voice-heard, полученного новым чек-ином')
 })
 
 test('первый чек-ин запускает шторку для first-step', () => {
@@ -117,8 +96,8 @@ test('первый чек-ин запускает шторку для first-step
   const todayCheckin = checkinDay(0)
   const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
 
-  const previousModel = buildSeriesViewModel({ checkins: previous })
-  const nextModel = buildSeriesViewModel({ checkins: next })
+  const previousModel = buildServerSeriesViewModel({ checkins: previous })
+  const nextModel = buildServerSeriesViewModel({ checkins: next })
 
   assert.equal(previousModel.badges.find(b => b.id === 'first-step').done, false)
   assert.equal(nextModel.badges.find(b => b.id === 'first-step').done, true)
@@ -127,30 +106,49 @@ test('первый чек-ин запускает шторку для first-step
   assert.equal(unlocked?.id, 'first-step')
 })
 
-// ── Гонка с пустым состоянием: fresh history используется для обеих моделей ──
+// ── Серийные значки не запускают шторку на клиенте ──
 
-test('гонка: даже если состояние было пустым, ретро-значки не запускают шторку', () => {
-  // Имитация гонки: API вернуло историю с серией 5, включая сегодня.
-  // Раньше previousModel строился из пустого checkinHistory state.
-  // Теперь previous строится из той же свежей истории без сегодняшнего дня.
+test('серийные значки закрыты в моделях сравнения и не запускают шторку', () => {
+  // Числа мягкой серии приходят с сервера; в моделях сравнения
+  // (buildServerSeriesViewModel без canonicalStats) серийные значки
+  // закрыты, и шторка для них не срабатывает — их открывает только
+  // серверная статистика, а Today дополнительно фильтрует их.
   const history = [-4, -3, -2, -1, 0].map(checkinDay)
   const todayCheckin = checkinDay(0)
   const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
 
-  // previous содержит 4 дня (без сегодня) — bestStreak = 4
-  const previousModel = buildSeriesViewModel({ checkins: previous })
-  // next содержит 5 дней — bestStreak = 5
-  const nextModel = buildSeriesViewModel({ checkins: next })
+  const previousModel = buildServerSeriesViewModel({ checkins: previous })
+  const nextModel = buildServerSeriesViewModel({ checkins: next })
 
-  // В этом случае streak-five открыт новым чек-ином — шторка должна показать.
-  // Это НЕ ретро-зачёт: серия 5 достигнута именно сегодняшним чек-ином.
+  for (const id of STREAK_BADGE_IDS) {
+    assert.equal(nextModel.badges.find(b => b.id === id).done, false, `${id} закрыт без серверной статистики`)
+  }
+
   const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
-  assert.equal(unlocked?.id, 'streak-five')
+  assert.notEqual(unlocked?.id, undefined)
+  assert.ok(!STREAK_BADGE_IDS.includes(unlocked.id), 'серийный значок не запускает шторку')
+})
+
+// ── Гонка с пустым состоянием: fresh history используется для обеих моделей ──
+
+test('гонка: даже если состояние было пустым, ретро-значки не запускают шторку', () => {
+  // Имитация гонки: API вернуло историю с 5 чек-инами, включая сегодня.
+  // previous строится из той же свежей истории без сегодняшнего дня.
+  const history = [-4, -3, -2, -1, 0].map(checkinDay)
+  const todayCheckin = checkinDay(0)
+  const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
+
+  // previous содержит 4 дня (без сегодня) → voice-heard (порог 5) закрыт
+  const previousModel = buildServerSeriesViewModel({ checkins: previous })
+  // next содержит 5 дней → voice-heard открыт именно сегодняшним чек-ином.
+  const nextModel = buildServerSeriesViewModel({ checkins: next })
+
+  const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
+  assert.equal(unlocked?.id, 'voice-heard')
 })
 
 test('гонка: серия 5 из далёкого прошлого + сегодняшний чек-ин — ретро, шторки нет', () => {
   // Серия 5 была месяц назад, сегодня — одиночный чек-ин.
-  // bestStreak = 5 из истории, не из сегодняшнего дня.
   const history = [
     ...[-35, -34, -33, -32, -31].map(checkinDay),
     checkinDay(0),
@@ -158,11 +156,11 @@ test('гонка: серия 5 из далёкого прошлого + сего
   const todayCheckin = checkinDay(0)
   const { previous, next } = splitCheckinsForComparison(history, todayCheckin)
 
-  const previousModel = buildSeriesViewModel({ checkins: previous })
-  const nextModel = buildSeriesViewModel({ checkins: next })
+  const previousModel = buildServerSeriesViewModel({ checkins: previous })
+  const nextModel = buildServerSeriesViewModel({ checkins: next })
 
-  assert.equal(previousModel.bestStreak, 5)
-  assert.equal(nextModel.bestStreak, 5)
+  assert.equal(previousModel.badges.find(b => b.id === 'voice-heard').done, true)
+  assert.equal(nextModel.badges.find(b => b.id === 'voice-heard').done, true)
 
   const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
   assert.equal(unlocked, null, 'ретро-значки из далёкого прошлого не запускают шторку')

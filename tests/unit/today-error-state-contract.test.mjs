@@ -112,17 +112,21 @@ test('RETRY_DELAYS_MS: паузы 3, 8, 20 с (общий срок ≥ 60 с)', 
 
 // ── Огонёк при загрузке и ошибке ──
 
-test('Огонёк при загрузке/ошибке не серый: --empty только при streak === 0', () => {
-  // streak === 0 → --empty (серый контур)
+test('Огонёк при загрузке/ошибке не серый: --empty только при серверном streak === 0', () => {
+  // streak === 0 и день не активен → --empty (серый контур)
   // streak > 0 → без --empty (залитый, нормальный)
-  // streak == null (загрузка, кэша нет) → без --empty (залитый, не серый)
+  // streak == null (сервер ещё не ответил или ошибка) → без --empty (залитый, не серый)
   assert.match(
     todaySource,
-    /streak === 0 \? ' mx-demo-today-streak--empty' : ''/
+    /streak === 0 && !isActiveToday \? ' mx-demo-today-streak--empty' : ''/
   )
   assert.doesNotMatch(
     todaySource,
     /streak > 0 \? '' : ' mx-demo-today-streak--empty'/
+  )
+  assert.doesNotMatch(
+    todaySource,
+    /!\(streak > 0\) \? ' mx-demo-today-streak--empty' : ''/
   )
 })
 
