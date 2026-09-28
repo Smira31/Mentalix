@@ -1,5 +1,5 @@
 .mx-practice-list-screen {
-  padding-bottom: 2rem;
+  padding-bottom: calc(var(--mx-bottom-nav-space) + var(--cta-pill-height));
 }
 
 .mx-practice-list-screen__intro {

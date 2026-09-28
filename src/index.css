@@ -110,6 +110,8 @@
       var(--bottom-nav-content-gap)
   );
   --app-content-bottom: var(--mx-bottom-nav-space);
+  /* Запас под плавающую cta-pill на list-экранах. */
+  --cta-pill-height: 52px;
 
   /* Основные поверхности */
 
