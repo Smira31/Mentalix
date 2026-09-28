@@ -139,7 +139,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* 62 px шаг = 54 круг + 8 зазор */
+  gap: 10px;
   margin-top: auto;
   margin-bottom: 24px;
 }
@@ -147,8 +147,8 @@
 .mx-progress-mood-card__face {
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
   border: 0;
   border-radius: 999px;
   background: rgb(var(--c-card3, 46 46 46));
@@ -162,8 +162,27 @@
 }
 
 .mx-progress-mood-card__face svg {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
+}
+
+/* P2: лица настроения — светлые линии на тёмном круге */
+.mx-progress-redesign__mood-face circle:first-of-type {
+  fill: none;
+  stroke: rgba(243, 243, 243, 0.75);
+  stroke-width: 1.5;
+}
+
+.mx-progress-redesign__mood-eye {
+  fill: rgba(243, 243, 243, 0.75);
+}
+
+.mx-progress-redesign__mood-face path {
+  fill: none;
+  stroke: rgba(243, 243, 243, 0.75);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ── Плашка «Нужно больше данных» ── */
@@ -916,10 +935,10 @@
 
 @media (max-width: 360px) {
   .mx-progress-mood-card__faces {
-    gap: 4px;
+    gap: 6px;
   }
   .mx-progress-mood-card__face {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
 }
