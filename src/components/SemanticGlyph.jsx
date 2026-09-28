@@ -731,6 +731,17 @@ function Drawing({ kind, debugSource }) {
           <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4.5" />
         </>
       )
+    case 'alter-ego':
+      return (
+        <>
+          <Guide />
+          <g className="mx-semantic-glyph__brackets">
+            <path d="M52 46V32H66M108 46V32H94M52 66V80H66M108 66V80H94" />
+          </g>
+          <path className="mx-semantic-glyph__template-axis" d="M62 56H98M80 38V74" />
+          <circle className="mx-semantic-glyph__point" cx="80" cy="56" r="4" />
+        </>
+      )
     default:
       if (import.meta.env.DEV) {
         console.error(
