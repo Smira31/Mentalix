@@ -9,6 +9,7 @@ import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
+import { previewPracticeAction } from '../lib/demoMode'
 import '../components/practices/SceneLayout.css'
 import { createPortal } from 'react-dom'
 import { useVisualViewportHeight } from '../lib/visualViewport'
@@ -314,6 +315,13 @@ export default function Ascezas({ user, onBack }) {
   }, [user])
 
   useEffect(() => {
+    if (ascezas.length === 0) return
+    if (previewPracticeAction() === 'asceza_detail') {
+      setSelected(ascezas[0])
+    }
+  }, [ascezas])
+
+  useEffect(() => {
     document.body.style.overflow = breakTarget ? 'hidden' : ''
     return () => {
       document.body.style.overflow = ''
@@ -443,7 +451,7 @@ export default function Ascezas({ user, onBack }) {
       {!loading && (
         <button
           type="button"
-          className="cta-pill mx-type-flow-action mx-practice-list-screen__create"
+          className="mx-practice-list-screen__create"
           onClick={() => setShowCreate(true)}
         >
           + Новая аскеза
