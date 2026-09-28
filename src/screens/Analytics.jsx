@@ -969,8 +969,8 @@ export default function Analytics({
   }
 
   // Нижний отступ: пилюля (50) + панель (53 + 8 offset) + 16 = 127.
-  // При свёрнутой навигации пилюля скрыта, панель схлопнута (58) — отступ меньше (A6).
-  const bottomSpacerHeight = navCollapsed ? 58 + 8 + 16 : 50 + 53 + 8 + 16
+  // При скрытой навигации (P1: уехала целиком) пилюля тоже скрыта — отступ 16.
+  const bottomSpacerHeight = navCollapsed ? 16 : 50 + 53 + 8 + 16
 
   return (
     <div
