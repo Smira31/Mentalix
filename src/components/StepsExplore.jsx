@@ -87,7 +87,7 @@ function HeroCard({ onOpen }) {
           Семь простых вопросов, чтобы увидеть главное — что важно, что мешает
           и какой шаг сделать прямо сейчас.
         </p>
-        <button type="button" className="mx-steps-pill mx-steps-pill--light" onClick={onOpen}>
+        <button type="button" className="mx-steps-pill mx-steps-pill--light" aria-label="Открыть журнал" onClick={onOpen}>
           Начать <ArrowRight size={15} />
         </button>
       </div>
