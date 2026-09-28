@@ -532,8 +532,8 @@ test('QA обход всех экранов', async ({ browser, baseURL }) => {
       })
     }
 
-    // ─── STREAK / SERIES SHEET ───
-    await visitScreen(page, viewport, '04-series-sheet', 'Шторка серии', allScreens, allIssues, {
+    // ─── STREAK / SERIES PAGE ───
+    await visitScreen(page, viewport, '04-series-sheet', 'Страница серии', allScreens, allIssues, {
       navigate: async () => {
         await page.goto('/')
         await page.getByRole('button', { name: 'Шаги' }).waitFor({ state: 'visible' })

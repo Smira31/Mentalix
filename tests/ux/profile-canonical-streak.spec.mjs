@@ -63,8 +63,8 @@ test('Profile: серия скрыта, пока мягкая серия гру�
 })
 
 for (const { name, response, current, best, next } of [
-  { name: 'canonical primary', response: { current_streak: 4, longest_streak: 8, total_active_days: 99 }, current: 4, best: 8, next: 'Ещё 3 дня до «Неделя ровно»' },
-  { name: 'canonical zero', response: { current_streak: 0, longest_streak: 0, total_active_days: 0 }, current: 0, best: 0, next: 'Ещё 3 дня до «Держится»' },
+  { name: 'canonical primary', response: { current_streak: 4, longest_streak: 8, total_active_days: 99 }, current: 4, best: 8, next: 'Ещё 3 чек-ина до значка «Голос услышан»' },
+  { name: 'canonical zero', response: { current_streak: 0, longest_streak: 0, total_active_days: 0 }, current: 0, best: 0, next: 'Ещё 2 дня до значка «Второй день»' },
   { name: 'network error', response: 'error', current: null, best: null, next: 'Ещё 2 дня до значка «Второй день»' },
   { name: 'invalid payload', response: { current_streak: '4', longest_streak: 8, total_active_days: 99 }, current: null, best: null, next: 'Ещё 2 дня до значка «Второй день»' },
 ]) {
@@ -86,6 +86,8 @@ for (const { name, response, current, best, next } of [
       await expect(about.locator('.mx-profile-row', { hasText: 'Всего чек-инов' })).toContainText('42')
       await expect(page.getByTestId('profile-about-stats')).toContainText(`77 дней в системе · 42 ${checkinWord(42)}`)
       await expect(about.getByRole('progressbar', { name: next })).toBeVisible()
+      // PR2: лестница званий серии больше не показывается среди ближайших вех.
+      await expect(about.getByTestId('milestone-bar').filter({ hasText: /«(Держится|Неделя ровно)»/ })).toHaveCount(0)
     } finally {
       await context.close()
     }
