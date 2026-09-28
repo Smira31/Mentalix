@@ -14,9 +14,16 @@ import WebActionBar from './WebActionBar'
 import './CheckInCompletion.css'
 import './StreakCelebration.css'
 
-const PETAL_PATH = 'M0 -3C-6 -9 -10 -15 -10 -22A10 10 0 1 1 10 -22C10 -15 6 -9 0 -3Z'
+/* Замеры Stoic: верхняя миндалина 16×27 с острыми концами, четыре полумесяца
+ * той же длины (≈30 по дуге) наклонены на +5°, зазоры между лепестками 4.7–6.6,
+ * в центре пусто (⌀12), общий размер цветка ≈61×65 при viewBox 66. */
+const ALMOND_PATH = 'M33 0C28.6 5.2 25 10.2 25 13.5C25 16.8 28.6 21.8 33 27C37.4 21.8 41 16.8 41 13.5C41 10.2 37.4 5.2 33 0Z'
+const CRESCENT_PATH =
+  'M33 27C39.8 24.4 44 19.6 45.3 12.4C46.3 8.3 46.3 5.3 46.8 2.6C44.8 5.7 43.2 10.2 42.2 14.4C40.9 19.1 36.3 23.4 33 27Z'
+const PETAL_TILT = 5
 
-/* Цветок из пяти лепестков-капель: светлые — дни серии в текущем круге. */
+/* Цветок из пяти отдельных лепестков (миндалина + 4 полумесяца):
+ * светлые — дни серии в текущем круге, тёмные — оставшиеся. */
 function StreakPetals({ streak }) {
   const lit = litStreakPetals(streak)
   return (
@@ -29,12 +36,12 @@ function StreakPetals({ streak }) {
       data-testid="streak-petals"
       data-lit={lit}
     >
-      <g transform="translate(33 33)">
+      <g transform="translate(-2.9 0.5)">
         {Array.from({ length: STREAK_PETALS }, (_, index) => (
           <path
             key={index}
-            d={PETAL_PATH}
-            transform={`rotate(${index * (360 / STREAK_PETALS)})`}
+            d={index === 0 ? ALMOND_PATH : CRESCENT_PATH}
+            transform={`rotate(${index * (360 / STREAK_PETALS) + (index ? PETAL_TILT : 0)} 33 33)`}
             className={[
               'mx-streak-celebration__petal',
               index < lit ? 'is-lit' : '',
@@ -84,9 +91,9 @@ export default function StreakCelebration({ streak, days = [], onDone }) {
                 <li key={day.key} data-state={day.state}>
                   <span className="mx-streak-celebration__dot">
                     {day.state === 'today' ? (
-                      <Flame size={18} strokeWidth={2} fill="currentColor" aria-hidden="true" />
+                      <Flame size={16} strokeWidth={2} fill="currentColor" aria-hidden="true" />
                     ) : day.state === 'done' ? (
-                      <Check size={18} strokeWidth={3} aria-hidden="true" />
+                      <Check size={14} strokeWidth={2} aria-hidden="true" />
                     ) : null}
                   </span>
                   <span className="mx-streak-celebration__day-label">{day.label}</span>
