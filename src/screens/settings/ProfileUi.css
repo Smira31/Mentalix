@@ -657,7 +657,7 @@ button.mx-profile-row:active {
   border-radius: 8px;
   background: rgb(var(--c-card));
   color: rgb(var(--c-muted));
-  font-size: 13px;
+  font-size: 16px;
   cursor: pointer;
   color-scheme: dark;
 }
