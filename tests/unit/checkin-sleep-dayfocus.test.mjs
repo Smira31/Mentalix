@@ -116,7 +116,8 @@ test('каждая утренняя шкала имеет кнопку «Про�
 
 test('плитка и собственный текст не дублируют друг друга', () => {
   assert.match(morningFlow, /aria-pressed=\{selectedFocus === label\}/)
-  assert.match(morningFlow, /setSelectedFocus\(label\)/)
+  // Повторный тап снимает выбор: toggle вместо прямого set
+  assert.match(morningFlow, /setSelectedFocus\(prev => \(prev === label \? null : label\)\)/)
   assert.match(morningFlow, /setDayFocus\(''\)/)
   assert.match(morningFlow, /setSelectedFocus\(null\)/)
   assert.doesNotMatch(morningFlow, /setDayFocus\(label\)/)

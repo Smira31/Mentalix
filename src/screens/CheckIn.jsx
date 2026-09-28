@@ -11,12 +11,25 @@ import {
   BriefcaseBusiness,
   Check,
   ClipboardList,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Hand,
   Heart,
+  HeartHandshake,
   HeartPulse,
+  Home,
   House,
+  Leaf,
   Lightbulb,
+  MoonStar,
+  PartyPopper,
   Palette,
   Sofa,
+  Stethoscope,
+  Sun,
+  ThumbsDown,
+  ThumbsUp,
   Users,
 } from 'lucide-react'
 import BackButton from '../components/BackButton'
@@ -91,17 +104,20 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
 // day_focus остаётся строкой API: выбор плитки и собственный ввод — отдельные способы задать один фокус.
+// 12 категорий (иконки по смыслу, эталон Stoic «What's your main focus for today?»).
 const DAY_FOCUS_OPTIONS = [
   { label: 'Работа', Icon: BriefcaseBusiness },
-  { label: 'Забота о себе', Icon: Heart },
+  { label: 'Забота о себе', Icon: Sun },
   { label: 'Люди', Icon: Users },
   { label: 'Хобби', Icon: Palette },
-  { label: 'Дела', Icon: ClipboardList },
+  { label: 'Дом', Icon: Home },
   { label: 'Учёба', Icon: BookOpen },
-  { label: 'Отдых', Icon: Sofa },
-  { label: 'Здоровье', Icon: HeartPulse },
-  { label: 'Семья', Icon: House },
-  { label: 'Продуктивность', Icon: Lightbulb },
+  { label: 'Веселье', Icon: PartyPopper },
+  { label: 'Отдых', Icon: MoonStar },
+  { label: 'Природа', Icon: Leaf },
+  { label: 'Здоровье', Icon: Stethoscope },
+  { label: 'Семья', Icon: HeartHandshake },
+  { label: 'Продуктивность', Icon: ClipboardList },
 ]
 
 /*
@@ -211,7 +227,15 @@ export function CheckInQuestion({
  * true. The screens, transitions and editor must not diverge by environment.
  */
 function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing = null }) {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(() => {
+    // Demo-only: ?demo=1&action=focus_step — сразу открывает шаг фокуса.
+    // allScales.length = 4 (mood, sleep_quality, energy, focus) → dayFocusStep = 4.
+    if (isPreviewDemoMode()) {
+      const params = new URLSearchParams(window.location.search)
+      if (params.get('action') === 'focus_step') return 4
+    }
+    return 0
+  })
   /*
    * sleep_quality и day_focus — необязательные поля (backend PR #103):
    * при повторном открытии (не redo) предзаполняются из существующей записи,
@@ -491,8 +515,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
           {step === dayFocusStep && (
             <CheckInQuestion
-              title="Главный фокус дня"
-              hint="Одна мысль, которой не хочешь потерять. Можно пропустить."
+              title="Главный фокус на сегодня?"
               className="mx-demo-checkin__editor-scene mx-demo-checkin__editor-scene--focus"
             >
               <div className="mx-demo-checkin__day-focus">
@@ -512,26 +535,34 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                         className={selectedFocus === label ? 'is-selected' : ''}
                         onClick={() => {
                           platform.haptic('light')
-                          setSelectedFocus(label)
+                          setSelectedFocus(prev => (prev === label ? null : label))
                           setDayFocus('')
                         }}
                       >
-                        <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
+                        <Icon size={23} strokeWidth={0} fill="currentColor" aria-hidden="true" />
                         <span>{label}</span>
                       </button>
                     )
                   )}
                 </div>
-                {!showAllFocus && (
-                  <button
-                    type="button"
-                    className="mx-demo-checkin__show-all"
-                    data-testid="checkin-day-focus-show-all"
-                    onClick={() => setShowAllFocus(true)}
-                  >
-                    Показать все
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="mx-demo-checkin__show-all"
+                  data-testid="checkin-day-focus-show-all"
+                  onClick={() => setShowAllFocus(prev => !prev)}
+                >
+                  {showAllFocus ? (
+                    <>
+                      Свернуть
+                      <ChevronUp size={18} strokeWidth={2.5} aria-hidden="true" />
+                    </>
+                  ) : (
+                    <>
+                      Показать все
+                      <ChevronDown size={18} strokeWidth={2.5} aria-hidden="true" />
+                    </>
+                  )}
+                </button>
                 <input
                   type="text"
                   value={dayFocus}
@@ -569,7 +600,27 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
           )}
         </StepSlide>
       </main>
-      {step < noteStep ? (
+      {step === dayFocusStep ? (
+        <div className="mx-checkin-next-controls mx-checkin-focus-controls">
+          <button
+            type="button"
+            className="mx-checkin-next-controls__skip mx-tap-target"
+            data-testid="checkin-skip"
+            onClick={() => goToStep(current => Math.min(doneStep, current + 1))}
+          >
+            Пропустить
+          </button>
+          <button
+            type="button"
+            className="mx-checkin-focus-next"
+            aria-label="Далее"
+            data-testid="checkin-next"
+            onClick={() => goToStep(noteStep)}
+          >
+            <ChevronRight size={22} strokeWidth={2.5} aria-hidden="true" />
+          </button>
+        </div>
+      ) : step < noteStep ? (
         <CheckInNextControls
           onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
           disabled={

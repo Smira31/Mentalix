@@ -234,7 +234,7 @@ test.describe('MXL-010 automated technical gate', () => {
     await scaleStep(page, 3)
     await scaleStep(page, 3)
 
-    // Главный фокус дня: 10-я плитка за «Показать все».
+    // Главный фокус дня: 12 плиток за «Показать все».
     await dayFocusOptionStep(page, 'Продуктивность')
 
     // Текстовый шаг → завершение (submitTestId=checkin-complete вызывает finish)
