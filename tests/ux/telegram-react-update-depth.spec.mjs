@@ -232,7 +232,7 @@ for (const mode of modes) {
       await expect(page.locator('.mx-path-surface')).toBeVisible()
       await page.evaluate(() => window.__telegramLoopMock.pressBack())
       await expect(page.getByRole('button', { name: 'Сегодня', exact: true })).toBeVisible()
-      await assertNoUpdateDepth(runtimeErrors, 'после открытия и закрытия шторки пути')
+      await assertNoUpdateDepth(runtimeErrors, 'после открытия и закрытия страницы серии')
 
       const scrollAndCheck = async label => {
         await page.evaluate(() => {
