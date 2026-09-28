@@ -17,6 +17,7 @@ export default defineConfig({
     'bottom-nav-overlap.spec.mjs',
     'library-read-opens-catalog.spec.mjs',
     'library-read-opens-catalog.spec.mjs',
+    'today-subscreen-navigation.spec.mjs',
   ],
   outputDir: 'artifacts/ux-check/playwright-output',
   fullyParallel: false,
