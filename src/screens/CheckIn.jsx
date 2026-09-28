@@ -307,6 +307,16 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       if (values.focus != null) morningPayload.focus = values.focus
       if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
       if (dayFocus.trim()) morningPayload.day_focus = dayFocus.trim()
+      /*
+       * Повтор утра не трогает вечернюю половину записи дня: эмоция,
+       * уроки и закрытие дня переносятся из перезаписываемой записи
+       * без изменений — иначе PUT /checkin/today затрёт разбор.
+       */
+      if (redo && existing) {
+        if (existing.emotion) morningPayload.emotion = existing.emotion
+        if (existing.lessons) morningPayload.lessons = existing.lessons
+        if (existing.review_completed_at) morningPayload.review_completed = true
+      }
       await saveApi(user.id, morningPayload)
       onCompleted?.()
       platform.haptic('success')

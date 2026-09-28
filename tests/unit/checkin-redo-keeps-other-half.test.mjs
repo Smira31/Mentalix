@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { eveningMorningFields } from '../../src/lib/checkinMorningFields.js'
+import { eveningMorningFields, morningResetPayload } from '../../src/lib/checkinMorningFields.js'
 
 // Запись дня делится на утреннюю половину (настроение, энергия, «Что на уме?»)
 // и вечернюю (эмоция, уроки, закрытие дня). Повторный проход одной половины
@@ -120,6 +120,37 @@ test('утро заново не стирает вечерние поля (де�
     'день остаётся закрытым'
   )
   assert.equal(afterRedo.id, afterEvening.id, 'та же запись дня')
+})
+
+test('«Пройти утро заново» сразу сбрасывает утренние поля и не трогает вечер', async () => {
+  freshDemoStorage()
+  await morningFirstPass()
+  const afterMorning = await today()
+  await send(
+    '/checkin',
+    'POST',
+    eveningPayload({
+      values: { mood: 5, energy: 1, anxiety: null, focus: null },
+      existing: afterMorning,
+      emotion: 'спокойно',
+      lessons: 'Что получилось? Вечер',
+    })
+  )
+  const afterEvening = await today()
+
+  // Сброс при подтверждении повтора: утро — явные null, вечер — как есть.
+  await send('/checkin/today', 'PUT', { user_id: USER_ID, ...morningResetPayload(afterEvening) })
+
+  const afterReset = await today()
+  assert.equal(afterReset.mood, null, 'настроение сброшено')
+  assert.equal(afterReset.energy, null, 'энергия сброшена')
+  assert.equal(afterReset.note, null, '«Что на уме?» сброшено')
+  assert.equal(afterReset.day_focus, null, 'фокус дня сброшен')
+  assert.equal(afterReset.sleep_quality, null, 'качество сна сброшено')
+  assert.equal(afterReset.emotion, 'спокойно', 'эмоция разбора осталась')
+  assert.equal(afterReset.lessons, 'Что получилось? Вечер', 'уроки разбора остались')
+  assert.ok(afterReset.review_completed_at, 'день остаётся закрытым')
+  assert.equal(afterReset.id, afterEvening.id, 'та же запись дня')
 })
 
 test('без записи дня вечер отправляет ответы своих шкал', () => {
