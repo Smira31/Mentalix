@@ -4,7 +4,7 @@ import test from 'node:test'
 
 const historySource = await readFile(new URL('../../src/screens/History.jsx', import.meta.url), 'utf8')
 
-test('recapOnly view does not show anxiety/focus with default value 3', () => {
+test('recapOnly view shows all morning answers in check-in order, no default-3 fallback', () => {
   // Extract the recapOnly branch from HistoryDetail
   const recapStart = historySource.indexOf('{recapOnly ? (')
   assert.ok(recapStart >= 0, 'recapOnly branch not found')
@@ -13,14 +13,19 @@ test('recapOnly view does not show anxiety/focus with default value 3', () => {
   assert.ok(elseStart >= 0, 'else branch not found')
   const recapBlock = historySource.slice(recapStart, elseStart)
 
-  // Must conditionally include anxiety and focus, not default to 3
+  // T11: all morning answers must be conditional (no default-3 fallback)
+  assert.match(recapBlock, /checkin\?\.mood != null \? \[/)
+  assert.match(recapBlock, /checkin\?\.sleep_quality != null\s*\n\s*\? \[/)
   assert.match(recapBlock, /checkin\?\.energy != null \? \[/)
-  assert.match(recapBlock, /checkin\?\.anxiety != null \? \[/)
   assert.match(recapBlock, /checkin\?\.focus != null \? \[/)
+  assert.match(recapBlock, /checkin\?\.day_focus \? \[/)
+  assert.match(recapBlock, /checkin\?\.note \? \[/)
   // Must NOT use the old || 3 fallback
   assert.doesNotMatch(recapBlock, /anxiety \|\| 3/)
   assert.doesNotMatch(recapBlock, /focus \|\| 3/)
   assert.doesNotMatch(recapBlock, /energy \|\| 3/)
+  // anxiety is not a morning check-in step — must not appear in recap
+  assert.doesNotMatch(recapBlock, /anxiety/)
 })
 
 test('history list conditionally shows energy and focus pills', () => {

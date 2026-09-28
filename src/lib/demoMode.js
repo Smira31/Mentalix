@@ -300,6 +300,9 @@ function seedState(todayState = null) {
       date: todayStr,
       mood: 3,
       energy: 2,
+      sleep_quality: 4,
+      focus: 3,
+      day_focus: 'Работа',
       note: 'Спокойное утро.',
       emotion: 'ровно',
       review_completed_at: null,
@@ -823,18 +826,17 @@ function respond(path, options = {}) {
     const existing = state.checkins.find(item => item?.date === today)
     // Как на сервере: поля, которых нет в запросе, остаются прежними —
     // повтор утра не стирает разбор, повтор разбора не стирает утро.
-    // Повтор утра несёт review_completed:true, чтобы сохранить закрытие
-    // вечера, — но не должен перезаписывать метку закрытия новым временем.
-    const reviewCompletedAt =
-      body.review_completed && !existing?.review_completed_at
-        ? now().toISOString()
-        : existing?.review_completed_at
+    // Время закрытия дня ставится один раз: повторный PUT с
+    // review_completed: true (например, «Пройти утро заново»)
+    // перезаписывает запись, но не переоткрывает и не перезакрывает день.
     const checkin = {
       ...existing,
       id: existing?.id || Date.now(),
       date: today,
       ...body,
-      ...(reviewCompletedAt ? { review_completed_at: reviewCompletedAt } : {}),
+      ...(body.review_completed
+        ? { review_completed_at: existing?.review_completed_at || now().toISOString() }
+        : {}),
     }
     writeState({
       ...state,
