@@ -193,7 +193,7 @@
 
 .mx-steps-card__badge--new {
   background: rgb(var(--c-glyph-secondary));
-  color: #fff;
+  color: rgb(var(--c-text));
 }
 
 .mx-steps-card__category {

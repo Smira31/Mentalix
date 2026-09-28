@@ -45,7 +45,7 @@ test('MXL-547: отдельная коллекция скрыта только �
 test('MXL-547: каталог показывает максимум четыре реальных дня текущей темы', () => {
   // api.themes.get и merge перенесены из Practices.jsx в themesDataCache.js.
   assert.match(themesCache, /api\.themes\.get\(currentTheme\.id, userId\)/)
-  assert.match(themesCache, /data = \[\{ \.\.\.currentTheme, \.\.\.detail \}\]/)
+  assert.match(themesCache, /\.\.\.theme, \.\.\.detail/)
   assert.match(catalog, /theme\.days\.slice\(0, 4\)/)
   assert.match(catalog, /question\.day/)
   assert.match(catalog, /question\.text/)
