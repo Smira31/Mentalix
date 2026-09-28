@@ -4,6 +4,7 @@ import { Filter, MoreHorizontal, Search } from 'lucide-react'
 
 import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
+import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
 import { readJournalHistory } from '../../lib/journalHistory'
 import { moodPracticeDate } from '../../lib/moodPracticeLogic'
@@ -110,23 +111,9 @@ function EntryScreen({
     isToday && onRedoReview && entry.type === ENTRY_TYPES.EVENING && checkin?.review_completed_at
   const canDelete = Boolean(checkin)
 
-  useBackButton(() => {
-    platform.haptic('light')
-    onBack()
-  })
-
   return (
     <div className="mx-progress-entry animate-fade-in" data-testid="progress-entry-screen">
-      {platformName !== 'telegram' && (
-        <button
-          type="button"
-          className="mx-progress-entry__back"
-          aria-label="Назад"
-          onClick={onBack}
-        >
-          ‹
-        </button>
-      )}
+      <ScreenBack onBack={onBack} />
       <div className="mx-progress-entry__heading">
         <div>
           <div className="mx-progress-entry__date" data-testid="progress-entry-date">
@@ -518,27 +505,10 @@ function DayList({ days, onSelectEntry }) {
 }
 
 function PeriodDetail({ label, days, onBack, onSelectEntry }) {
-  useBackButton(() => {
-    platform.haptic('light')
-    onBack()
-  }, true)
-
   return (
     <div className="mx-progress-history" data-testid="progress-period-detail">
       <div className="mx-progress-entry__top-bar">
-        {platformName !== 'telegram' ? (
-          <button
-            type="button"
-            className="mx-progress-entry__back"
-            aria-label="Назад"
-            data-testid="progress-period-back"
-            onClick={onBack}
-          >
-            ‹
-          </button>
-        ) : (
-          <span aria-hidden="true" />
-        )}
+        <ScreenBack onBack={onBack} testId="progress-period-back" />
         <span aria-hidden="true" />
       </div>
       <h2 className="mx-progress-history__title">{label.toLowerCase()}</h2>

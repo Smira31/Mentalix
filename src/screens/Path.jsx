@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { api } from '../lib/api'
-import { Target, ArrowUp, ArrowLeft, ArrowRight, Flame, TrendingUp, Trash2 } from 'lucide-react'
+import { Target, ArrowUp, ArrowRight, Flame, TrendingUp, Trash2 } from 'lucide-react'
 import BackButton from '../components/BackButton'
+import ScreenBack from '../components/ScreenBack'
 import JourneyLineArt from '../components/JourneyLineArt'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
@@ -225,9 +226,7 @@ function GoalDetail({ goal, onBack, onDelete }) {
   return (
     <div className="w-full max-w-md px-[var(--mx-screen-x)]">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="flex items-center gap-1.5 text-muted text-[13px]">
-          <ArrowLeft size={16} /> Назад
-        </button>
+        <ScreenBack onBack={onBack} />
 
         {error && (
           <p

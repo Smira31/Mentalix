@@ -463,7 +463,7 @@ export default function Library({ user, onInputModeChange }) {
   if (screen === 'library-v2-program' && LIBRARY_V2_ENABLED) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('home')} />
+        <LibraryV2ProgramDetail title={libraryV2Program} onBack={() => setScreen('library-v2-programs')} />
       </div>
     )
   }
@@ -475,7 +475,7 @@ export default function Library({ user, onInputModeChange }) {
           article={libraryV2Article}
           onBack={() => {
             setLibraryV2Article(null)
-            setScreen('home')
+            setScreen('library-v2-articles')
           }}
           onOpen={articleId =>
             setLibraryV2Article(ARTICLES.find(article => article.id === articleId))
