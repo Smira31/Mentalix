@@ -434,7 +434,8 @@
 
 .mx-badge-sheet-layer {
   position: fixed;
-  inset: 0;
+  left: 0;
+  right: 0;
   z-index: 90;
   background: rgba(0, 0, 0, 0.6);
 }
@@ -443,15 +444,28 @@
   right: 0;
   bottom: 0;
   left: 0;
-  max-height: 88%;
+  max-height: 100%;
   overflow-y: auto;
   scrollbar-width: none;
+  padding-top: 12px;
   padding-bottom: calc(var(--app-safe-bottom, 0px) + 24px);
   border-radius: 24px 24px 0 0;
   background: rgb(var(--c-bg, 5 4 3));
   color: rgb(var(--c-text, 243 243 243));
+  transition: transform 200ms ease-in;
 }
 .mx-badge-sheet::-webkit-scrollbar { display: none; }
+.mx-badge-sheet__handle {
+  display: block;
+  width: 36px;
+  height: 5px;
+  margin: 0 auto 8px;
+  border-radius: 999px;
+  background: rgb(var(--c-border, 41 41 41));
+}
+.mx-badge-sheet--exit {
+  transform: translateY(100%);
+}
 .mx-badge-sheet--new { min-height: 0; }
 .mx-badge-sheet > .mx-path-close {
   position: absolute;
@@ -524,9 +538,62 @@
   min-width: 76px;
 }
 
+/* T4: skeleton-плейсхолдеры для мгновенной отрисовки шторки
+   значков до прихода данных с сервера. Мерцание — мягкий shimmer
+   по карточному фону, не отвлекает от контента. */
+@keyframes mx-skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.mx-path-skeleton-line,
+.mx-path-skeleton-circle,
+.mx-path-skeleton-row {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--c-card2, 17 17 17)) 25%,
+    rgb(var(--c-card-raised, 33 33 33)) 50%,
+    rgb(var(--c-card2, 17 17 17)) 75%
+  );
+  background-size: 200% 100%;
+  animation: mx-skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}
+.mx-path-skeleton-line {
+  height: 16px;
+  margin: 0 auto;
+}
+.mx-path-skeleton-line--lg {
+  height: 22px;
+  width: 60%;
+}
+.mx-path-skeleton-circle {
+  width: 118px;
+  height: 118px;
+  margin: 16px auto;
+  border-radius: 50%;
+}
+.mx-path-skeleton-featured {
+  text-align: center;
+}
+.mx-path-skeleton-rows {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mx-path-skeleton-row {
+  height: 54px;
+  border-radius: 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-path-row-value,
   .mx-path-toggle::after {
     transition: none;
+  }
+  .mx-path-skeleton-line,
+  .mx-path-skeleton-circle,
+  .mx-path-skeleton-row {
+    animation: none;
   }
 }

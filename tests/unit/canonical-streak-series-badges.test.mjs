@@ -51,7 +51,7 @@ test('canonical stats: invalid or partial payload falls back as a whole', () => 
     assert.equal(readCanonicalStreakStats(payload), null)
   }
   // Блок «Серия» показывается только по серверным данным.
-  assert.match(source, /\{canonicalStats && <StatSection title="Серия"/)
+  assert.match(source, /\{canonicalStats &&\s*\(?\s*<StatSection\s+title="Серия"/)
   // Значки серии пересчитываются серверной статистикой, не историей.
   assert.match(source, /serverSeriesBadges\(visibleModel\?\.badges, serverStats, registrationDays\)/)
 })

@@ -78,8 +78,8 @@ test('первая Journal запись: final в локальной истор�
   assert.match(source, /api\.checkin\.history\(user\.id, 90\)/)
   assert.match(source, /readCanonicalStreakStats\(payload\)/)
   // Каталог значков собирается из MVP и серверных значков после готовности данных.
-  assert.match(source, /catalogReady \? buildMvpBadges\(\{/)
-  assert.match(source, /const badges = \[\.\.\.mvpBadges, \.\.\.serverBadges\]/)
+  assert.match(source, /catalogReady\s*\?\s*buildMvpBadges\(\{/)
+  assert.match(source, /const badges = useMemo\(\(\) => \[\.\.\.mvpBadges, \.\.\.serverBadges\]/)
   // «Записей» считает записи журнала, а не чек-ины.
   assert.match(source, /\['Записей', journalEntries\.length\]/)
 })
