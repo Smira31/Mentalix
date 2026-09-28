@@ -1701,7 +1701,7 @@ button {
   animation: mx-fullscreen-exit 170ms ease-in forwards;
 }
 
-/* Шторка «Серия и значки»: въезд снизу 270 ms + доводка (§6) */
+/* Страница «Серия и значки»: въезд снизу 270 ms + доводка (§6) */
 @keyframes mx-sheet-enter {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
@@ -1711,7 +1711,7 @@ button {
   animation: mx-sheet-enter 270ms cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* Шторка: уезд вниз 200 ms ease-in (§6) */
+/* Страница: уезд вниз 200 ms ease-in (§6) */
 @keyframes mx-sheet-exit {
   from { transform: translateY(0); }
   to { transform: translateY(100%); }
