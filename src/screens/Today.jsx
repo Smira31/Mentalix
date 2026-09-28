@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
@@ -28,6 +28,9 @@ import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
 import { readCanonicalStreakStats } from '../lib/canonicalStreak'
+import { peekStreakSnapshot, saveStreakSnapshot } from '../lib/streakSnapshotCache'
+import { lazyWithRetry } from '../lib/lazyWithRetry'
+import SubScreenBoundary from '../components/SubScreenBoundary'
 import {
   buildServerSeriesViewModel,
   splitCheckinsForComparison,
@@ -49,17 +52,19 @@ import { pickVisibleTodayHint } from '../lib/todayHints'
    переходе. Стартовый bundle содержит только главный экран «Сегодня».
    ============================================================ */
 
-const Path = lazy(() => import('./Path'))
-const YearPath = lazy(() => import('./YearPath'))
-const CheckIn = lazy(() => import('./CheckIn'))
-const ThemeScreen = lazy(() => import('./ThemeScreen'))
-const ThemeCarouselScreen = lazy(() => import('./ThemeCarouselScreen'))
-const History = lazy(() => import('./History'))
-const QuoteView = lazy(() => import('./QuoteView'))
-const BreathingPractice = lazy(() => import('./BreathingPractice'))
-const StreakRecovery = lazy(() => import('./StreakRecovery'))
-const SeriesBadges = lazy(() => import('./SeriesBadges'))
-const NewBadgeSheet = lazy(() => import('./SeriesBadges').then(m => ({ default: m.NewBadgeSheet })))
+const Path = lazyWithRetry(() => import('./Path'))
+const YearPath = lazyWithRetry(() => import('./YearPath'))
+const CheckIn = lazyWithRetry(() => import('./CheckIn'))
+const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
+const ThemeCarouselScreen = lazyWithRetry(() => import('./ThemeCarouselScreen'))
+const History = lazyWithRetry(() => import('./History'))
+const QuoteView = lazyWithRetry(() => import('./QuoteView'))
+const BreathingPractice = lazyWithRetry(() => import('./BreathingPractice'))
+const StreakRecovery = lazyWithRetry(() => import('./StreakRecovery'))
+const SeriesBadges = lazyWithRetry(() => import('./SeriesBadges'))
+const NewBadgeSheet = lazyWithRetry(() =>
+  import('./SeriesBadges').then(m => ({ default: m.NewBadgeSheet }))
+)
 
 const TODAY_COMPARE_REQUESTED =
   import.meta.env.DEV && new URLSearchParams(window.location.search).get('today_compare') === '1'
@@ -309,7 +314,9 @@ export default function Today({
   )
 
   // Сервер владеет календарной границей и правилом заморозки.
-  const [canonicalStreak, setCanonicalStreak] = useState(null)
+  // Персистентный снимок серии (streakSnapshotCache.js) — огонёк в шапке
+  // сразу с числом, без пустого кадра на каждый переход на вкладку.
+  const [canonicalStreak, setCanonicalStreak] = useState(() => peekStreakSnapshot(user?.id))
   const [moodPractices, setMoodPractices] = useState([])
   const canonical = canonicalStreak?.userId === user?.id ? canonicalStreak.value : null
   const streak = canonical?.currentStreak ?? null
@@ -319,7 +326,9 @@ export default function Today({
     const requestId = ++streakRequest.current
     api.streak(user.id).then(payload => {
       if (requestId !== streakRequest.current) return
-      setCanonicalStreak({ userId: user.id, value: readCanonicalStreakStats(payload) })
+      const value = readCanonicalStreakStats(payload)
+      saveStreakSnapshot(user.id, value)
+      setCanonicalStreak({ userId: user.id, value })
     }).catch(() => {})
   }, [user?.id])
 
@@ -551,7 +560,9 @@ export default function Today({
       ])
 
       if (streakResult.status === 'fulfilled') {
-        setCanonicalStreak({ userId: user.id, value: readCanonicalStreakStats(streakResult.value) })
+        const streakValue = readCanonicalStreakStats(streakResult.value)
+        saveStreakSnapshot(user.id, streakValue)
+        setCanonicalStreak({ userId: user.id, value: streakValue })
       }
 
       if (historyResult.status === 'rejected') throw historyResult.reason
@@ -743,7 +754,7 @@ export default function Today({
 
   if (seriesOpen) {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey="series" onExit={onCloseSeries}>
         <SeriesBadges
           user={user}
           onBack={onCloseSeries}
@@ -752,7 +763,7 @@ export default function Today({
             onOpenPractice?.(practice)
           }}
         />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
@@ -762,15 +773,15 @@ export default function Today({
 
   if (activeSub === 'breathing') {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey="breathing" onExit={() => changeSub(null)}>
         <BreathingPractice onBack={() => changeSub(null)} />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
   if (activeSub === 'recoveryReview' && recovery) {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey="recoveryReview" onExit={() => changeSub(null)}>
         <CheckIn
           user={user}
           mode="evening"
@@ -792,13 +803,13 @@ export default function Today({
             }
           }}
         />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
   if (!loading && !loadError && (activeSub === 'checkin' || activeSub === 'evening')) {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey={activeSub} onExit={() => changeSub(null)}>
         <CheckIn
           user={user}
           existing={checkin}
@@ -818,13 +829,13 @@ export default function Today({
             })
           }}
         />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
   if (sub === 'redoCheckin') {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey="redoCheckin" onExit={() => changeSub(null)}>
         <CheckIn
           user={user}
           existing={checkin}
@@ -835,13 +846,13 @@ export default function Today({
             triggerCheckInExit(() => changeSub(null))
           }}
         />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
   if (sub === 'redoReview') {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey="redoReview" onExit={() => changeSub(null)}>
         <CheckIn
           user={user}
           existing={checkin}
@@ -852,14 +863,14 @@ export default function Today({
             triggerCheckInExit(() => changeSub(null))
           }}
         />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
   if (sub === 'checkinRecap' && checkin) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
-        <Suspense fallback={null}>
+        <SubScreenBoundary resetKey="checkinRecap" onExit={() => changeSub(null)}>
           <History
             user={user}
             initialSelectedDay={{ date: checkin.date, checkin }}
@@ -868,7 +879,7 @@ export default function Today({
             onRedo={handleRedoMorning}
             onRedoReview={() => changeSub('redoReview')}
           />
-        </Suspense>
+        </SubScreenBoundary>
       </div>
     )
   }
@@ -879,9 +890,9 @@ export default function Today({
 
   if (sub === 'theme' && theme) {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey="theme" onExit={() => changeSub(null)}>
         <ThemeCarouselScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
@@ -891,9 +902,9 @@ export default function Today({
 
   if (sub === 'quote') {
     return (
-      <Suspense fallback={null}>
+      <SubScreenBoundary resetKey="quote" onExit={() => changeSub(null)}>
         <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
-      </Suspense>
+      </SubScreenBoundary>
     )
   }
 
@@ -930,7 +941,7 @@ export default function Today({
           </div>
         </div>
 
-        <Suspense fallback={null}>
+        <SubScreenBoundary resetKey="path" onExit={() => changeSub(null)}>
           <div className="w-full max-w-md px-[var(--mx-screen-x)]">
             <YearPath user={user} onContinueToday={() => changeSub(null)} />
           </div>
@@ -946,7 +957,7 @@ export default function Today({
               />
             </div>
           )}
-        </Suspense>
+        </SubScreenBoundary>
       </div>
     )
   }
@@ -1180,7 +1191,7 @@ export default function Today({
     <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
       {recovery && recoveryStage !== 'offer' && (
-        <Suspense fallback={null}>
+        <SubScreenBoundary resetKey={recoveryStage} onExit={dismissRecovery}>
           <StreakRecovery
             recovery={recovery}
             stage={recoveryStage}
@@ -1194,7 +1205,7 @@ export default function Today({
               setRecoveryStage('offer')
             }}
           />
-        </Suspense>
+        </SubScreenBoundary>
       )}
       <TodayWorkspaceHeader
         onOpenSettings={onOpenSettings}
@@ -1240,9 +1251,9 @@ export default function Today({
         </aside>
       )}
       {newBadge && (
-        <Suspense fallback={null}>
+        <SubScreenBoundary resetKey="new-badge" onExit={() => setNewBadge(null)}>
           <NewBadgeSheet badge={newBadge} onClose={() => setNewBadge(null)} />
-        </Suspense>
+        </SubScreenBoundary>
       )}
       <WeekStrip streakStats={canonical} />
       {recovery && recoveryStage === 'offer' && canonical?.recoverable && (
@@ -1446,6 +1457,7 @@ export default function Today({
 
             changeSub('theme')
           }}
+          data-testid="today-theme-card"
           className="mx-today-theme-card w-full px-[var(--mx-screen-x)] py-5 mt-4 text-center active:scale-[0.99] transition-transform duration-150 ease-[cubic-bezier(0.22,1,0.36,1)] animate-fade-in"
         >
           <span className="block font-label mx-type-meta text-muted uppercase tracking-wider mb-2">
@@ -1497,6 +1509,7 @@ export default function Today({
 
             changeSub('quote')
           }}
+          data-testid="today-quote-card"
           className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"
         >
           <span className="block mx-type-meta text-muted mb-3">Мысль дня</span>
