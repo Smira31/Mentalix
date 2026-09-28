@@ -68,6 +68,8 @@ export function withTodayCheckin(history = [], today = null, now = clockNow()) {
   const date = Number.isFinite(dayNumber(today.date))
     ? String(today.date).slice(0, 10)
     : localDayKey(now)
+  // Сегодняшний день уже засчитан в истории — дубль не нужен.
+  if (list.some(checkin => String(checkin?.date ?? '').slice(0, 10) === date)) return list
   return [...list, { ...today, date }]
 }
 

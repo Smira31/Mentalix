@@ -71,7 +71,8 @@ test('seriesLogicalDateKey maps 02:00 to yesterday and 05:00 to today', () => {
 // ── withTodayCheckin: якорь сегодняшнего чек-ина для сравнения значков ──
 
 test('withTodayCheckin добавляет сегодняшний чек-ин к истории без дублей', () => {
-  const now = new Date()
+  // Фиксированный полдень: фолбэк-дата без отсечки 05:00 не зависит от времени прогона.
+  const now = new Date(`${dayKey(0)}T12:00:00`)
   const today = { id: 7 }
   const list = withTodayCheckin([], today, now)
   assert.equal(list.length, 1)
