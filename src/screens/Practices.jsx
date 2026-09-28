@@ -6,7 +6,6 @@ import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
-import StepsExplore from '../components/StepsExplore'
 
 import './PracticeFlow.css'
 
@@ -14,7 +13,7 @@ import Rituals from './Rituals'
 import Ascezas from './Ascezas'
 import GuidedSelfDiscoveryFlow from './GuidedSelfDiscoveryFlow'
 import LilaDiscoverFlow from './LilaDiscoverFlow'
-import ThemeScreen from './ThemeScreen'
+import ThemeCarouselScreen from './ThemeCarouselScreen'
 import MoodPractice from './MoodPractice'
 import AlterEgo from './AlterEgo'
 
@@ -26,7 +25,7 @@ function PracticesCatalogLoading() {
       role="status"
       aria-live="polite"
     >
-      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">шаги.</h1>
+      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
       <div className="mx-practices-catalog-loading" aria-hidden="true">
         <span className="mx-practices-catalog-loading__hero" />
         <span className="mx-practices-catalog-loading__label" />
@@ -153,7 +152,12 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
 
   if (selectedThemeId) {
     return (
-      <ThemeScreen user={user} themeId={selectedThemeId} onBack={() => setSelectedThemeId(null)} />
+      <ThemeCarouselScreen
+        user={user}
+        themeId={selectedThemeId}
+        themes={themes}
+        onBack={() => setSelectedThemeId(null)}
+      />
     )
   }
 
@@ -198,7 +202,7 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
   if (loadError) {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]" role="alert">
-        <h1 className="font-display mx-type-page text-cream lowercase">шаги.</h1>
+        <h1 className="font-display mx-type-page text-cream lowercase">практики.</h1>
         <p className="mt-6 text-[13px] leading-relaxed text-muted">
           Не удалось загрузить практики. Попробуйте ещё раз.
         </p>
@@ -215,47 +219,10 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
 
   const catalogPractices = buildPracticeViewModels({ rituals, ascezas })
 
-  // Экран коллекции — переиспользуем PracticeCatalogV2 (он рендерит
-  // CollectionScreen при selectedCollectionKey). Главный вид — StepsExplore.
-  if (selectedCollectionKey) {
-    return (
-      <div className="mx-practices-catalog-shell w-full max-w-md px-[var(--mx-screen-x)]">
-        <PracticeCatalogV2
-          practices={catalogPractices}
-          rituals={rituals}
-          ascezas={ascezas}
-          themes={themes}
-          themeLoading={themeLoading}
-          themesError={themesError}
-          onRetryThemes={() => loadThemes({ force: true })}
-          selectedCollectionKey={selectedCollectionKey}
-          onCollectionChange={setSelectedCollectionKey}
-          onOpenPractice={(practice, collectionKey = null) => {
-            platform.haptic('light')
-            if (practice.key === 'lila-discover') {
-              setSelectedCollectionKey(null)
-              setSub('lila-discover')
-              return
-            }
-            setSelectedCollectionKey(collectionKey)
-            setSub(practice.sub)
-          }}
-          onOpenJournal={() => {
-            platform.haptic('light')
-            setSub('journal')
-          }}
-          onOpenTheme={theme => {
-            platform.haptic('light')
-            setSelectedThemeId(theme.id)
-          }}
-        />
-      </div>
-    )
-  }
-
   return (
     <div className="mx-practices-catalog-shell w-full max-w-md px-[var(--mx-screen-x)]">
-      <StepsExplore
+      <h1 className="font-display mx-type-page text-cream lowercase mb-[28px]">практики.</h1>
+      <PracticeCatalogV2
         practices={catalogPractices}
         rituals={rituals}
         ascezas={ascezas}
@@ -263,13 +230,16 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
         themeLoading={themeLoading}
         themesError={themesError}
         onRetryThemes={() => loadThemes({ force: true })}
-        onOpenPractice={practice => {
+        selectedCollectionKey={selectedCollectionKey}
+        onCollectionChange={setSelectedCollectionKey}
+        onOpenPractice={(practice, collectionKey = null) => {
           platform.haptic('light')
           if (practice.key === 'lila-discover') {
             setSelectedCollectionKey(null)
             setSub('lila-discover')
             return
           }
+          setSelectedCollectionKey(collectionKey)
           setSub(practice.sub)
         }}
         onOpenJournal={() => {
@@ -280,15 +250,6 @@ export default function Practices({ user, initialSub = null, onGameChange, onReg
           platform.haptic('light')
           setSelectedThemeId(theme.id)
         }}
-        onOpenMood={() => {
-          platform.haptic('light')
-          setSub('mood')
-        }}
-        onOpenCollection={collection => {
-          platform.haptic('light')
-          setSelectedCollectionKey(collection.key)
-        }}
-        user={user}
       />
     </div>
   )

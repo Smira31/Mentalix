@@ -24,7 +24,7 @@ function JournalBanner({ onOpen }) {
         <span>ЖУРНАЛ · СЕГОДНЯ</span>
         <h2 className="mx-type-section">Разбери день на части</h2>
         <p>Семь простых вопросов, чтобы увидеть главное</p>
-        <button type="button" className="mx-layered-catalog__pill" onClick={onOpen}>
+        <button type="button" className="mx-layered-catalog__pill" aria-label="Открыть журнал" onClick={onOpen}>
           Открыть журнал <ArrowRight size={15} />
         </button>
       </div>

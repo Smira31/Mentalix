@@ -372,6 +372,7 @@ export default function Today({
   )
 
   const [theme, setTheme] = useState(() => pickCurrentTheme(initialTodaySnapshot?.themes))
+  const [themesList, setThemesList] = useState(() => initialTodaySnapshot?.themes || [])
 
   const [activeToday, setActiveToday] = useState(null)
 
@@ -633,6 +634,7 @@ export default function Today({
 
         setLoadError(false)
         setTheme(pickCurrentTheme(themesData))
+        setThemesList(themesData)
 
         api.pulse
           .today()
@@ -892,7 +894,7 @@ export default function Today({
   if (sub === 'theme' && theme) {
     return (
       <Suspense fallback={null}>
-        <ThemeCarouselScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
+        <ThemeCarouselScreen user={user} themeId={theme.id} themes={themesList} onBack={() => changeSub(null)} />
       </Suspense>
     )
   }
