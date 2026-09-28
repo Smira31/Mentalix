@@ -77,8 +77,11 @@ test('первая Journal запись: final в локальной истор�
   assert.match(source, /api\.journalTemplates\s*\.sessions\(user\.id, 'completed'\)/)
   assert.match(source, /api\.checkin\.history\(user\.id, 90\)/)
   assert.match(source, /readCanonicalStreakStats\(payload\)/)
-  assert.match(source, /mvpBadges=\{mvpBadges\}/)
-  assert.match(source, /\.\.\.mvpBadges, \.\.\.model\.badges/)
+  // Каталог значков собирается из MVP и серверных значков после готовности данных.
+  assert.match(source, /catalogReady \? buildMvpBadges\(\{/)
+  assert.match(source, /const badges = \[\.\.\.mvpBadges, \.\.\.serverBadges\]/)
+  // «Записей» считает записи журнала, а не чек-ины.
+  assert.match(source, /\['Записей', journalEntries\.length\]/)
 })
 
 test('MVP копирайт и уникальность ID', () => {

@@ -373,7 +373,7 @@ function AllBadgesView({ badges, onOpenBadge }) {
   )
 }
 
-function StatsView({ model, canonicalStats, theme }) {
+function StatsView({ model, canonicalStats, theme, journalEntries = [] }) {
   const { currentStreak, bestStreak, activeDays } = canonicalStats ?? { currentStreak: 0, bestStreak: 0, activeDays: 0 }
   const rows = [
     ['Текущая серия', formatDays(currentStreak)],
@@ -410,7 +410,7 @@ function StatsView({ model, canonicalStats, theme }) {
         title="Чек-ины"
         rows={[
           ['Всего чек-инов', model.totalCheckins],
-          ['Дней с чек-ином', model.activeDays],
+          ['Дней с чек-ином', activeDays ?? model.activeDays],
         ]}
       />
       <StatSection
@@ -423,7 +423,7 @@ function StatsView({ model, canonicalStats, theme }) {
       <StatSection
         title="Записи"
         rows={[
-          ['Записей', model.totalCheckins],
+          ['Записей', journalEntries.length],
           ['Сохранено цитат', 0],
         ]}
       />
@@ -612,7 +612,12 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
           activeTab === 'badges' ? (
             <AwardsView badges={badges} onShowAll={() => setShowAll(true)} onOpenBadge={setSelectedBadge} />
           ) : (
-            <StatsView model={{ ...visibleModel, badges: serverBadges }} canonicalStats={serverStats} theme={theme} />
+            <StatsView
+              model={{ ...visibleModel, badges: serverBadges }}
+              canonicalStats={serverStats}
+              theme={theme}
+              journalEntries={journalEntries}
+            />
           )
         ) : (
           <p className="mx-path-status">Загружаю последние данные…</p>

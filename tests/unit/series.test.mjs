@@ -154,14 +154,23 @@ test('serverSeriesBadges открывает значки серии по сер�
   assert.equal(badges.find(b => b.id === 'streak-five').progress, 3)
 })
 
-test('serverSeriesBadges: «Неделя/Месяц пути» — по серверным activeDays, не по bestStreak', () => {
+test('serverSeriesBadges: «Неделя/Месяц пути» — по дням с регистрации, не по bestStreak', () => {
   const badges = serverSeriesBadges(
     buildServerSeriesViewModel({ checkins: [checkinDay(0)] }).badges,
-    softStats({ bestStreak: 30, activeDays: 6 })
+    softStats({ bestStreak: 30, activeDays: 6 }),
+    6
   )
   assert.equal(badges.find(b => b.id === 'week-on-path').done, false)
   assert.equal(badges.find(b => b.id === 'week-on-path').progress, 6)
   assert.equal(badges.find(b => b.id === 'streak-five').done, true)
+  // Без дней регистрации значки пути закрыты, activeDays их не подменяет.
+  const noRegistration = serverSeriesBadges(
+    buildServerSeriesViewModel({ checkins: [checkinDay(0)] }).badges,
+    softStats({ bestStreak: 30, activeDays: 6 }),
+    null
+  )
+  assert.equal(noRegistration.find(b => b.id === 'week-on-path').done, false)
+  assert.equal(noRegistration.find(b => b.id === 'week-on-path').progress, 0)
 })
 
 test('serverSeriesBadges: без серверной статистики серийные значки закрыты', () => {
