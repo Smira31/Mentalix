@@ -67,6 +67,9 @@
 }
 
 .mx-practice-list-screen__create {
+  position: sticky;
+  /* Не даём пиле заезжать в зону fixed-панели вкладок на низких вьюпортах. */
+  bottom: var(--mx-bottom-nav-space);
   display: flex;
   align-items: center;
   justify-content: center;
