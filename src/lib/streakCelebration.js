@@ -7,7 +7,8 @@ import { seriesDateKey } from './series.js'
  */
 
 export const STREAK_PETALS = 5
-export const STREAK_DAYS_MAX = 7
+/* В ряду всегда ровно три кружка: позавчера, вчера, сегодня (как у Stoic). */
+export const STREAK_DAYS_MAX = 3
 
 const WEEKDAYS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
@@ -44,35 +45,41 @@ function weekdayLabel(key) {
 }
 
 /*
- * Кружки последних дней серии (не больше семи): сегодня — огонёк,
- * прошлые — галочка. Пропуск (кружок без значка) показываем, только
- * если сервер сообщил об использованной заморозке мягкой серии и
- * по истории видно одиночный пропуск между активными днями.
+ * Ровно три кружка: позавчера, вчера, сегодня. Сегодня — огонёк,
+ * день серии с записью — галочка, день без записи — тёмный кружок
+ * без значка (пропуск мягкой серии — день, входящий в серию,
+ * но без записи и с использованной заморозкой).
  */
 export function buildStreakDays({ streak, checkins = [], freezeUsed = false, today }) {
-  const count = Math.min(Number.isSafeInteger(streak) ? streak : 0, STREAK_DAYS_MAX)
+  const count = Number.isSafeInteger(streak) ? streak : 0
   if (count < 1 || !today) return []
 
   const active = new Set(
     (Array.isArray(checkins) ? checkins : []).map(item => seriesDateKey(item)).filter(Boolean)
   )
-  const days = [{ key: today, state: 'today' }]
-  let remaining = count - 1
-  let gapAvailable = freezeUsed
-  let cursor = today
+  const days = []
 
-  while (remaining > 0 && days.length < STREAK_DAYS_MAX) {
-    cursor = shiftDay(cursor, -1)
-    if (gapAvailable && !active.has(cursor) && active.has(shiftDay(cursor, -1))) {
-      days.push({ key: cursor, state: 'gap' })
-      gapAvailable = false
-      continue
-    }
-    days.push({ key: cursor, state: 'done' })
-    remaining -= 1
+  for (let offset = STREAK_DAYS_MAX - 1; offset >= 1; offset -= 1) {
+    const key = shiftDay(today, -offset)
+    const withinStreak = offset < count
+    const hasEntry = active.has(key)
+    const singleHole = !hasEntry && active.has(shiftDay(key, -1))
+    const state =
+      withinStreak && !hasEntry && freezeUsed && singleHole
+        ? 'gap'
+        : withinStreak || hasEntry
+          ? 'done'
+          : 'gap'
+    days.push({ key, state })
   }
+  days.push({ key: today, state: 'today' })
 
-  return days.reverse().map(day => ({ ...day, label: weekdayLabel(day.key) }))
+  return days.map(day => ({ ...day, label: weekdayLabel(day.key) }))
+}
+
+/* Текст шеринга серии из круглой кнопки в правом верхнем углу. */
+export function streakShareText(count) {
+  return `Серия ${count} ${streakDaysWord(count)} в Mentalix`
 }
 
 /*
