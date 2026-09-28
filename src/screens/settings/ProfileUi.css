@@ -50,9 +50,13 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 200ms ease;
+  /* PR20: шапка не должна просвечивать — фон глухой, как у Stoic. */
+  isolation: isolate;
 }
 
-/* Плавное затухание вниз: контент уходит под шапку, а не обрезается. */
+/* Плавное затухание вниз: контент уходит под шапку, а не обрезается.
+   PR20: градиент продлевает непрозрачный фон, чтобы подписи секций
+   не перекрывались прилипающим заголовком. */
 .mx-profile-page__surface::after {
   position: absolute;
   top: 100%;
@@ -61,6 +65,7 @@
   height: var(--mx-profile-bar-fade);
   background: linear-gradient(rgb(var(--c-bg)), rgb(var(--c-bg) / 0));
   content: '';
+  z-index: -1;
 }
 
 .mx-profile-page--own-button .mx-profile-page__surface {
@@ -208,7 +213,8 @@ button.mx-profile-row:active {
 
 .mx-profile-row__text {
   display: flex;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  min-width: 0;
   flex-direction: column;
 }
 
@@ -216,7 +222,7 @@ button.mx-profile-row:active {
   font-size: 17px;
   font-weight: 400;
   line-height: 22px;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .mx-profile-row__subtitle {
@@ -634,6 +640,26 @@ button.mx-profile-row:active {
 .mx-profile-date-input::-webkit-calendar-picker-indicator {
   filter: invert(0.6);
   cursor: pointer;
+}
+
+/* ── День рождения: выбор года + календарь ── */
+.mx-profile-birthday-controls {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.mx-profile-year-select {
+  min-height: 32px;
+  padding: 0 6px;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 8px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  cursor: pointer;
+  color-scheme: dark;
 }
 
 /* ── Воспоминания: вехи-карточки ── */
