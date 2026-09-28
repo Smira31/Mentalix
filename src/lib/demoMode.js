@@ -807,12 +807,17 @@ function respond(path, options = {}) {
     const existing = state.checkins.find(item => item?.date === today)
     // Как на сервере: поля, которых нет в запросе, остаются прежними —
     // повтор утра не стирает разбор, повтор разбора не стирает утро.
+    // Время закрытия дня ставится один раз: повторный PUT с
+    // review_completed: true (например, «Пройти утро заново»)
+    // перезаписывает запись, но не переоткрывает и не перезакрывает день.
     const checkin = {
       ...existing,
       id: existing?.id || Date.now(),
       date: today,
       ...body,
-      ...(body.review_completed ? { review_completed_at: now().toISOString() } : {}),
+      ...(body.review_completed
+        ? { review_completed_at: existing?.review_completed_at || now().toISOString() }
+        : {}),
     }
     writeState({
       ...state,
