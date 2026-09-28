@@ -5,7 +5,7 @@ import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
-import { ArrowRight, Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { ArrowRight, Check, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -34,7 +34,7 @@ import { maybeBuildSurprise } from './mentalix/surpriseInsight'
 import { SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
 import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
-import { currentCheckinStreak, seriesLogicalDateKey } from '../lib/series'
+import { seriesLogicalDateKey } from '../lib/series'
 import { buildTomorrowTeaser } from '../lib/tomorrowTeaser'
 import { peekPracticesData } from '../lib/practicesDataCache'
 import { energyFillPercent } from '../lib/checkinScale'
@@ -89,76 +89,20 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
-const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-
-export function CheckInNextControls({
-  onNext,
-  disabled = false,
-  onSkip = null,
-  variant = 'scale',
-}) {
+export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
   return (
-    <div
-      className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
-    >
-      {onSkip ? (
-        <button
-          type="button"
-          className="mx-checkin-next-controls__skip mx-tap-target"
-          data-testid="checkin-skip"
-          onClick={onSkip}
-        >
+    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+      {onSkip && (
+        <button type="button" className="mx-checkin-next-controls__skip mx-tap-target" data-testid="checkin-skip" onClick={onSkip}>
           Пропустить
         </button>
-      ) : null}
-      <button
-        type="button"
-        className="mx-checkin-next-controls__next"
-        aria-label="Далее"
-        data-testid="checkin-next"
-        onClick={onNext}
-        disabled={disabled}
-      >
+      )}
+      <button type="button" className="mx-checkin-next-controls__next" aria-label="Далее" data-testid="checkin-next" onClick={onNext} disabled={disabled}>
         <span>Далее</span>
         <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>
   )
-}
-
-function dayStart(date) {
-  const value = new Date(date)
-  value.setHours(0, 0, 0, 0)
-  return value
-}
-
-function buildStreakDays(streakHistory, streak) {
-  const today = dayStart(new Date())
-  const completedDates = new Set(
-    streakHistory
-      .filter(checkin => checkin?.review_completed_at && checkin?.date)
-      .map(checkin => String(checkin.date).slice(0, 10))
-  )
-  const startDate = new Date(today)
-  startDate.setDate(today.getDate() - Math.max(0, Number(streak) - 1))
-  const visibleStart = new Date(startDate)
-  visibleStart.setDate(startDate.getDate() - Math.max(0, 3 - Number(streak)))
-  const length = Math.max(1, Math.round((today - visibleStart) / 86400000) + 1)
-
-  return Array.from({ length }, (_, index) => {
-    const date = new Date(visibleStart)
-    date.setDate(visibleStart.getDate() + index)
-    const isoDate = date.toISOString().slice(0, 10)
-    const isToday = date.getTime() === today.getTime()
-
-    return {
-      isoDate,
-      isToday,
-      completed: completedDates.has(isoDate),
-      label: WEEK_DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1],
-      dateLabel: date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
-    }
-  })
 }
 
 /* Иконки кнопок «Нет / Немного / Да» на экране завершения. */
@@ -368,7 +312,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         if (historyResult.status === 'fulfilled') {
           const history = Array.isArray(historyResult.value) ? historyResult.value : []
           setStreakHistory(history)
-          setStreak(Math.max(1, currentCheckinStreak(history)))
         } else {
           console.error(historyResult.reason)
         }
@@ -1038,7 +981,6 @@ function CheckInCore({
         try {
           const history = await api.checkin.history(user.id, 90)
           setStreakHistory(Array.isArray(history) ? history : [])
-          setStreak(Math.max(1, currentCheckinStreak(Array.isArray(history) ? history : [])))
         } catch (historyError) {
           console.error(historyError)
         }
@@ -1051,7 +993,6 @@ function CheckInCore({
           api.checkin.history(user.id, 90).then(history => {
             const entries = Array.isArray(history) ? history : []
             setStreakHistory(entries)
-            setStreak(Math.max(1, currentCheckinStreak(entries)))
           }),
           api.streak(user.id).then(response => {
             const currentStreak = readCanonicalCurrentStreak(response)
@@ -1415,7 +1356,6 @@ function CheckInCore({
       ? !values[MORNING_SCALE_STEPS[step]?.key]
       : false
 
-  const streakDays = buildStreakDays(streakHistory, streak)
 
   if (isStreakStep) {
     return createPortal(
@@ -1436,32 +1376,6 @@ function CheckInCore({
                 внутренняя работа — это путь. ты только что сделал ещё один шаг.
               </p>
 
-              <div
-                className="mt-10 grid w-full max-w-sm gap-2"
-                style={{ gridTemplateColumns: `repeat(${streakDays.length}, minmax(0, 1fr))` }}
-                role="group"
-                aria-label="Дни текущей серии"
-              >
-                {streakDays.map(day => {
-                  const active = day.completed || day.isToday
-
-                  return (
-                    <div key={day.isoDate} className="flex flex-col items-center gap-2">
-                      <span
-                        className={`flex h-10 w-10 items-center justify-center rounded-full border ${
-                          active
-                            ? 'border-cream bg-cream text-emerald-deep'
-                            : 'border-cream/10 bg-emerald text-muted'
-                        }`}
-                        aria-label={`${day.label}: ${active ? 'пройдено' : 'пусто'}`}
-                      >
-                        {active ? <Flame size={17} strokeWidth={2.5} aria-hidden="true" /> : null}
-                      </span>
-                      <span className="text-[11px] text-muted">{day.label}</span>
-                    </div>
-                  )
-                })}
-              </div>
             </section>
 
             <button
@@ -1500,9 +1414,9 @@ function CheckInCore({
               <h2 className="mx-checkin-completion-title">
                 {isEvening ? 'Чек-ин завершён' : 'Готово.'}
               </h2>
-              {isEvening && (canonicalEveningStreak ?? streak) > 0 ? (
+              {isEvening && canonicalEveningStreak > 0 ? (
                 <p className="mx-type-body text-muted mt-4" data-testid="checkin-streak">
-                  {canonicalEveningStreak ?? streak}-дневная серия
+                  {canonicalEveningStreak}-дневная серия
                 </p>
               ) : null}
 

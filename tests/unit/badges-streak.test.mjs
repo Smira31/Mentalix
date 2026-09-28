@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { buildBadges } from '../../src/lib/badges.js'
-import { buildSeriesViewModel } from '../../src/lib/series.js'
+import { buildServerSeriesViewModel } from '../../src/lib/series.js'
 
 /**
  * Локальный YYYY-MM-DD относительно сегодняшнего дня.
@@ -12,6 +12,10 @@ function dayKey(offset = 0) {
   d.setDate(d.getDate() + offset)
   const pad = v => String(v).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+function softStats({ currentStreak = 0, bestStreak = 0, activeDays = 0 } = {}) {
+  return { currentStreak, bestStreak, activeDays }
 }
 
 const STREAK_IDS = ['streak-two', 'streak-three', 'streak-five']
@@ -54,50 +58,60 @@ test('прогресс значков серии ограничен целью',
   assert.equal(badges.find(b => b.id === 'streak-five').goal, 5)
 })
 
-// ── Ретро-зачёт по истории ──
+// ── Мягкая серия: числа приходят с сервера, значки — из них ──
 
-test('значки серии засчитываются по истории чек-инов (ретро-зачёт)', () => {
-  const checkins = [-4, -3, -2, -1, 0].map(offset => ({
-    date: dayKey(offset),
-    review_completed_at: `${dayKey(offset)}T08:00:00Z`,
-  }))
-  const model = buildSeriesViewModel({ checkins })
-  assert.equal(model.bestStreak, 5)
+test('серийные значки открываются по серверному bestStreak (любая активность)', () => {
+  // Сервер мягкой серии засчитывает за день любую активность:
+  // чек-ин, журнал, ритуал, аскезу, «Настроение». Клиенту достаточно
+  // одного числа longest_streak — историю для этого не восстанавливаем.
+  const model = buildServerSeriesViewModel({
+    checkins: [{ date: dayKey(0), review_completed_at: `${dayKey(0)}T08:00:00Z` }],
+    canonicalStats: softStats({ bestStreak: 5 }),
+  })
   for (const id of STREAK_IDS) {
     assert.equal(
       model.badges.find(b => b.id === id).done,
       true,
-      `${id} должен быть открыт при bestStreak = 5`
+      `${id} должен быть открыт при серверном bestStreak = 5`
     )
   }
 })
 
-test('прошлая серия из 3 дней засчитывает streak-two и streak-three, но не streak-five', () => {
-  const checkins = [-2, -1, 0].map(offset => ({
-    date: dayKey(offset),
-    review_completed_at: `${dayKey(offset)}T08:00:00Z`,
-  }))
-  const model = buildSeriesViewModel({ checkins })
-  assert.equal(model.bestStreak, 3)
+test('серверный bestStreak = 3 открывает streak-two и streak-three, но не streak-five', () => {
+  const model = buildServerSeriesViewModel({
+    canonicalStats: softStats({ bestStreak: 3 }),
+  })
   assert.equal(model.badges.find(b => b.id === 'streak-two').done, true)
   assert.equal(model.badges.find(b => b.id === 'streak-three').done, true)
   assert.equal(model.badges.find(b => b.id === 'streak-five').done, false)
 })
 
-test('разорванная серия не обнуляет прошлые значки (best_streak хранит максимум)', () => {
-  // 5 дней подряд в прошлом, затем пропуск, затем 1 день
-  const checkins = [
-    ...[-9, -8, -7, -6, -5].map(offset => ({
+test('разорванная серия не обнуляет прошлые значки (сервер хранит максимум)', () => {
+  // Прошлая серия 5 дней (в т.ч. с заморозкой пропуска), сейчас серия 1:
+  // сервер сообщает longest_streak = 5, current_streak = 1.
+  const model = buildServerSeriesViewModel({
+    canonicalStats: softStats({ currentStreak: 1, bestStreak: 5 }),
+  })
+  assert.equal(model.currentStreak, 1)
+  assert.equal(model.bestStreak, 5)
+  for (const id of STREAK_IDS) {
+    assert.equal(model.badges.find(b => b.id === id).done, true)
+  }
+})
+
+test('без серверной статистики серийные значки закрыты и числа серии null', () => {
+  const model = buildServerSeriesViewModel({
+    checkins: [-4, -3, -2, -1, 0].map(offset => ({
       date: dayKey(offset),
       review_completed_at: `${dayKey(offset)}T08:00:00Z`,
     })),
-    { date: dayKey(0), review_completed_at: `${dayKey(0)}T08:00:00Z` },
-  ]
-  const model = buildSeriesViewModel({ checkins })
-  assert.equal(model.bestStreak, 5)
-  assert.equal(model.currentStreak, 1)
+  })
+  // История из 5 дней подряд не открывает серийные значки на клиенте:
+  // мягкая серия считается только сервером.
+  assert.equal(model.currentStreak, null)
+  assert.equal(model.bestStreak, null)
   for (const id of STREAK_IDS) {
-    assert.equal(model.badges.find(b => b.id === id).done, true)
+    assert.equal(model.badges.find(b => b.id === id).done, false)
   }
 })
 

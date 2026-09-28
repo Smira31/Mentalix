@@ -560,12 +560,19 @@ function respond(path, options = {}) {
       current_streak: state.profile.current_streak ?? 0,
       longest_streak: state.profile.best_streak ?? 0,
       total_active_days: state.profile.days_active ?? 0,
-      is_active_today: state.checkins.some(item => item?.date === today),
+      is_active_today: state.checkins.some(item => item?.date === today) ||
+        state.rituals.some(item => item.today_level) ||
+        state.ascezas.some(item => item.today_status) ||
+        (state.moodPractices || []).some(item => item.recorded_at?.slice(0, 10) === today) ||
+        (state.journalCompletedSessions || []).some(item => item.completedAt?.slice(0, 10) === today),
+      freeze_used_this_week: demoScenario() === 'Неделя',
+      recoverable: (demoScenario() === 'Серия прервалась' || isRecoveryDemoRequested()) &&
+        state.recoverySavedDate !== offsetDate(now(), -1),
     })
   }
 
   if (pathname === '/streak/recovery' && method === 'GET') {
-    if (url.searchParams.get('user_id') && new URLSearchParams(window.location.search).get('streak_recovery') === '1') {
+    if (url.searchParams.get('user_id') && (demoScenario() === 'Серия прервалась' || isRecoveryDemoRequested())) {
       const yesterday = offsetDate(now(), -1)
       return json({ recoverable: state.recoverySavedDate !== yesterday, date: yesterday, streak_before: 3 })
     }
@@ -579,6 +586,7 @@ function respond(path, options = {}) {
     }
     writeState({
       ...state,
+      profile: { ...state.profile, current_streak: 4, best_streak: Math.max(4, state.profile.best_streak || 0) },
       checkins: [checkin, ...state.checkins.filter(item => item.date !== yesterday)],
       practiceDays: [...new Set([...(state.practiceDays || []), yesterday])],
       recoverySavedDate: yesterday,

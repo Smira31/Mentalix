@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { currentCheckinStreak } from '../lib/series'
+
 import { pluralize } from '../lib/pluralize'
 import {
   ANALYTICS_CARDS,
@@ -109,7 +109,7 @@ const WEEKDAY_FULL = [
   'субботу',
 ]
 
-export function deriveConclusions(checkins, data, seriesCheckins = checkins) {
+export function deriveConclusions(checkins, data, streak = null) {
   const list = Array.isArray(checkins) ? checkins : []
   const found = []
 
@@ -173,11 +173,10 @@ export function deriveConclusions(checkins, data, seriesCheckins = checkins) {
     }
   }
 
-  // 6. Серия закрытых дней — склонение исправлено (A5)
-  const streak = currentCheckinStreak(seriesCheckins)
+  // Серия приходит только с сервера: история чек-инов не отражает все активности.
   if (streak >= 3) {
     found.push({
-      text: `${streak} закрытых ${pluralize(streak, ['день', 'дня', 'дней'])} подряд — серия держится прямо сейчас.`,
+      text: `${streak} ${pluralize(streak, ['день', 'дня', 'дней'])} в серии — она держится прямо сейчас.`,
       weight: 0.8,
       direction: 'up',
     })

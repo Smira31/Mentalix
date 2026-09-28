@@ -5,14 +5,14 @@ import { X } from 'lucide-react'
 import { getFullscreenPortalTarget, useFullscreenSurface } from '../lib/fullscreenSurface'
 import { isPreviewDemoMode } from '../lib/demoMode'
 import { api } from '../lib/api'
-import { readCanonicalStreakStats } from '../lib/canonicalStreak'
+import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
 import { buildMvpBadges } from '../lib/badgesMvp'
 import { readJournalHistory } from '../lib/journalHistory'
 import { platform } from '../platform'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import { pluralize, formatCount } from '../lib/pluralize'
 import { platformName } from '../platform'
-import { buildSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
+import { buildServerSeriesViewModel, peekSeriesSnapshot, rememberSeriesSnapshot } from '../lib/series'
 import { getSeriesPreferences, saveSeriesPreference } from '../lib/seriesPreferences'
 import { useSheetSwipeDown } from '../lib/gestures/useSheetSwipeDown'
 import { getNearestMilestones } from '../lib/milestones'
@@ -350,7 +350,7 @@ function AwardsView({ model, mvpBadges, onOpenBadge, preferences, onPreference }
 }
 
 function StatsView({ model, canonicalStats, theme }) {
-  const { currentStreak, bestStreak, activeDays } = canonicalStats ?? model
+  const { currentStreak, bestStreak, activeDays } = canonicalStats ?? { currentStreak: 0, bestStreak: 0, activeDays: 0 }
   const rows = [
     ['Текущая серия', formatDays(currentStreak)],
     ['Всего завершённых дней', activeDays],
@@ -358,7 +358,7 @@ function StatsView({ model, canonicalStats, theme }) {
   ]
   const milestones = getNearestMilestones({
     badges: model.badges,
-    streak: currentStreak,
+    streak: canonicalStats ? currentStreak : null,
     theme,
   })
   return (
@@ -381,7 +381,7 @@ function StatsView({ model, canonicalStats, theme }) {
           <MilestoneBars milestones={milestones} />
         </section>
       )}
-      <StatSection title="Серия" rows={rows} note="Один пропуск в неделю серию не обрывает" />
+      {canonicalStats && <StatSection title="Серия" rows={rows} note={canonicalStats.freezeUsedThisWeek ? 'Заморозка: 1 пропуск в неделю не рвёт серию' : null} />}
       <StatSection
         title="Чек-ины"
         rows={[
@@ -474,7 +474,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     ])
       .then(([stats, checkins, rituals, ascezas]) => {
         if (!active) return
-        const next = buildSeriesViewModel({ stats, checkins, rituals, ascezas })
+        const next = buildServerSeriesViewModel({ stats, checkins, rituals, ascezas })
         setCheckinHistory({ userId: user.id, items: checkins })
         setCheckinTotal({ userId: user.id, count: stats?.total_checkins })
         setModel(next)
@@ -511,6 +511,8 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   }, [user.id])
 
   const visibleModel = modelUserId === user.id ? model : null
+  const serverStats = canonicalStats?.userId === user.id ? canonicalStats.value : null
+  const serverBadges = serverSeriesBadges(visibleModel?.badges, serverStats)
   const journalEntries = useMemo(() => readJournalHistory(user.id), [user.id])
   const mvpBadges = buildMvpBadges({
     checkins: checkinHistory?.userId === user.id ? checkinHistory.items : [],
@@ -573,7 +575,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
         {visibleModel ? (
           activeTab === 'badges' ? (
             <AwardsView
-              model={visibleModel}
+              model={{ ...visibleModel, badges: serverBadges }}
               mvpBadges={mvpBadges}
               preferences={preferences}
               onPreference={(name, value) =>
@@ -583,8 +585,8 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
             />
           ) : (
             <StatsView
-              model={visibleModel}
-              canonicalStats={canonicalStats?.userId === user.id ? canonicalStats.value : null}
+              model={{ ...visibleModel, badges: serverBadges }}
+              canonicalStats={serverStats}
               theme={theme}
             />
           )

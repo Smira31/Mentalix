@@ -60,7 +60,7 @@ export function buildMvpBadges({
     ...badges,
     badge(
       'streak_7',
-      '7 дней подряд',
+      'Серия: 7 дней',
       'Пока серия меньше 7 дней.',
       '7 активных дней подряд.',
       bestStreak >= 7,
