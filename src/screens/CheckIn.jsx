@@ -6,10 +6,31 @@ import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import {
-  ArrowRight, BookOpen, BriefcaseBusiness, Check, ClipboardList,
-  ChevronDown, ChevronRight, ChevronUp, Hand, HeartHandshake,
-  Home, Leaf, MoonStar, PartyPopper, Palette, Stethoscope, Sun,
-  ThumbsDown, ThumbsUp, Users,
+  ArrowRight,
+  BookOpen,
+  BriefcaseBusiness,
+  Check,
+  ClipboardList,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Hand,
+  Heart,
+  HeartHandshake,
+  HeartPulse,
+  Home,
+  House,
+  Leaf,
+  Lightbulb,
+  MoonStar,
+  PartyPopper,
+  Palette,
+  Sofa,
+  Stethoscope,
+  Sun,
+  ThumbsDown,
+  ThumbsUp,
+  Users,
 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -32,7 +53,7 @@ import {
   readCheckinDraft,
   saveCheckinDraft,
 } from '../lib/checkinDraft'
-import { isPreviewDemoMode } from '../lib/demoMode'
+import { isPreviewDemoMode, previewDemoAction } from '../lib/demoMode'
 import { readCanonicalCurrentStreak } from '../lib/canonicalStreak'
 import { logOnce } from '../lib/logOnce'
 import { maybeBuildSurprise } from './mentalix/surpriseInsight'
@@ -48,7 +69,8 @@ import { eveningMorningFields } from '../lib/checkinMorningFields'
 import { withRetry } from '../lib/todayRetry'
 import { yesterdayLabel } from './StreakRecovery'
 import { resolveDesyncStep } from '../lib/checkinDesync'
-import { CHECKIN_FEEDBACK_OPTIONS, sendCheckinFeedback } from '../lib/checkinFeedback'
+import { sendCheckinFeedback } from '../lib/checkinFeedback'
+import CheckInCompletion from '../components/CheckInCompletion'
 import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
 import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
@@ -107,31 +129,41 @@ const CHECKIN_QUESTION_CLASS = 'w-full text-center'
 
 const CHECKIN_INTERACTIVE_CLASS = 'w-full pt-7'
 
-const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
-
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
-export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
+export function CheckInNextControls({
+  onNext,
+  disabled = false,
+  onSkip = null,
+  variant = 'scale',
+}) {
   return (
-    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+    <div
+      className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
+    >
       {onSkip && (
-        <button type="button" className="mx-checkin-next-controls__skip mx-tap-target" data-testid="checkin-skip" onClick={onSkip}>
+        <button
+          type="button"
+          className="mx-checkin-next-controls__skip mx-tap-target"
+          data-testid="checkin-skip"
+          onClick={onSkip}
+        >
           Пропустить
         </button>
       )}
-      <button type="button" className="mx-checkin-next-controls__next" aria-label="Далее" data-testid="checkin-next" onClick={onNext} disabled={disabled}>
+      <button
+        type="button"
+        className="mx-checkin-next-controls__next"
+        aria-label="Далее"
+        data-testid="checkin-next"
+        onClick={onNext}
+        disabled={disabled}
+      >
         <span>Далее</span>
         <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>
   )
-}
-
-/* Иконки кнопок «Нет / Немного / Да» на экране завершения. */
-const FEEDBACK_ICONS = {
-  no: ThumbsDown,
-  some: Hand,
-  yes: ThumbsUp,
 }
 
 function StreakFlower() {
@@ -246,6 +278,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   const [error, setError] = useState('')
   const [streak, setStreak] = useState(0)
   const [streakHistory, setStreakHistory] = useState([])
+  const [savedMorningId, setSavedMorningId] = useState(null)
   const { style: viewportStyle } = useFullscreenSurface()
   const demoSurfaceStyle = {
     ...viewportStyle,
@@ -326,6 +359,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
       if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
+      // prettier-ignore
       if (selectedFocus || dayFocus.trim()) morningPayload.day_focus = selectedFocus || dayFocus.trim()
       /*
        * Повтор утра не трогает вечернюю половину записи дня: эмоция,
@@ -337,7 +371,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         if (existing.lessons) morningPayload.lessons = existing.lessons
         if (existing.review_completed_at) morningPayload.review_completed = true
       }
-      await saveApi(user.id, morningPayload)
+      const savedMorning = await saveApi(user.id, morningPayload)
+      setSavedMorningId(savedMorning?.id ?? null)
       onCompleted?.()
       platform.haptic('success')
       if (redo) {
@@ -385,7 +420,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
 
   const action =
     step === doneStep
-      ? { text: 'Вернуться в Сегодня', testId: 'checkin-back-to-today', onClick: onDone }
+      ? { text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: onDone }
       : step === dayFocusStep
         ? { text: 'Далее', onClick: () => goToStep(noteStep), disabled: false }
         : {
@@ -412,7 +447,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         <BackButton onClick={handleBack} label="Сегодня" />
       </header>
 
-      <main className={`mx-demo-checkin__body ${step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}>
+      <main
+        className={`mx-demo-checkin__body ${step === doneStep ? 'is-complete' : step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}
+      >
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           {scale && (
             <CheckInScaleQuestion
@@ -464,25 +501,31 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
               className="mx-demo-checkin__editor-scene mx-demo-checkin__editor-scene--focus"
             >
               <div className="mx-demo-checkin__day-focus">
-                <div className="mx-demo-checkin__focus-grid" role="group" aria-label="Выбери главный фокус">
-                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(({ label, Icon }) => (
-                    <button
-                      key={label}
-                      type="button"
-                      data-testid="checkin-day-focus-option"
-                      data-value={label}
-                      aria-pressed={selectedFocus === label}
-                      className={selectedFocus === label ? 'is-selected' : ''}
-                      onClick={() => {
-                        platform.haptic('light')
-                        setSelectedFocus(prev => (prev === label ? null : label))
-                        setDayFocus('')
-                      }}
-                    >
-                      <Icon size={23} strokeWidth={0} fill="currentColor" aria-hidden="true" />
-                      <span>{label}</span>
-                    </button>
-                  ))}
+                <div
+                  className="mx-demo-checkin__focus-grid"
+                  role="group"
+                  aria-label="Выбери главный фокус"
+                >
+                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(
+                    ({ label, Icon }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        data-testid="checkin-day-focus-option"
+                        data-value={label}
+                        aria-pressed={selectedFocus === label}
+                        className={selectedFocus === label ? 'is-selected' : ''}
+                        onClick={() => {
+                          platform.haptic('light')
+                          setSelectedFocus(prev => (prev === label ? null : label))
+                          setDayFocus('')
+                        }}
+                      >
+                        <Icon size={23} strokeWidth={0} fill="currentColor" aria-hidden="true" />
+                        <span>{label}</span>
+                      </button>
+                    )
+                  )}
                 </div>
                 <button
                   type="button"
@@ -526,15 +569,16 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
           )}
 
           {step === doneStep && (
-            <section className="mx-demo-checkin__scene mx-demo-checkin__scene--complete">
-              <StreakFlower />
-              <h1>Чек-ин завершён</h1>
-              {streak > 0 ? (
-                <p className="mx-type-body text-muted mt-4" data-testid="checkin-streak">
+            <CheckInCompletion
+              evening={false}
+              onFeedback={label => sendCheckinFeedback(api.checkin.feedback, savedMorningId, label)}
+            >
+              {streak > 0 && (
+                <span className="sr-only" data-testid="checkin-streak">
                   {streak}-дневная серия
-                </p>
-              ) : null}
-            </section>
+                </span>
+              )}
+            </CheckInCompletion>
           )}
         </StepSlide>
       </main>
@@ -570,7 +614,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         />
       ) : null}
       {step === doneStep ? (
-        <WebActionBar action={action} loading={saving} className="mx-demo-checkin__action-bar" />
+        <WebActionBar action={action} loading={saving} className="mx-completion-action" />
       ) : null}
     </div>,
     getFullscreenPortalTarget()
@@ -855,8 +899,6 @@ function CheckInCore({
   const [closeConfirmationOpen, setCloseConfirmationOpen] = useState(false)
 
   const [savedMorningNote, setSavedMorningNote] = useState('')
-
-  const [feedback, setFeedback] = useState(null)
 
   const [streak, setStreak] = useState(0)
   const [canonicalEveningStreak, setCanonicalEveningStreak] = useState(null)
@@ -1365,7 +1407,7 @@ function CheckInCore({
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Вернуться в Сегодня', run: onDone }
+        ? { text: 'Сохранить и выйти', run: onDone }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
@@ -1461,7 +1503,6 @@ function CheckInCore({
       ? !values[MORNING_SCALE_STEPS[step]?.key]
       : false
 
-
   if (isStreakStep) {
     return createPortal(
       <div ref={screenRef} className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
@@ -1480,7 +1521,6 @@ function CheckInCore({
               <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-muted">
                 внутренняя работа — это путь. ты только что сделал ещё один шаг.
               </p>
-
             </section>
 
             <button
@@ -1512,110 +1552,77 @@ function CheckInCore({
         </div>
 
         <div className={FULLSCREEN_SCROLL_CLASS}>
-          <div className={CHECKIN_CENTER_CLASS}>
-            <div className={CHECKIN_SUCCESS_CLASS}>
-              <CompletionArt variant={isEvening ? 'evening' : 'morning'} />
-
-              <h2 className="mx-checkin-completion-title">
-                {isEvening ? 'Чек-ин завершён' : 'Готово.'}
-              </h2>
-              {isEvening && canonicalEveningStreak > 0 ? (
-                <p className="mx-type-body text-muted mt-4" data-testid="checkin-streak">
-                  {canonicalEveningStreak}-дневная серия
-                </p>
-              ) : null}
-
-              <div className="mt-7 w-full max-w-sm">
-                <p className="text-[13px] text-muted">Было полезно?</p>
-                <div className="mt-3 grid grid-cols-3 gap-2">
-                  {CHECKIN_FEEDBACK_OPTIONS.map(option => {
-                    const Icon = FEEDBACK_ICONS[option.value]
-
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        data-testid="checkin-feedback-option"
-                        data-value={option.value}
-                        onClick={() => {
-                          platform.haptic('light')
-                          setFeedback(option.label)
-                          sendCheckinFeedback(
-                            api.checkin.feedback,
-                            savedCheckinId ?? existing?.id,
-                            option.label
-                          )
-                        }}
-                        className={`flex min-h-[102px] flex-col items-center justify-center gap-3 rounded-3xl border text-[14px] font-medium ${
-                          feedback === option.label
-                            ? 'border-[rgb(var(--c-line))] bg-[rgb(var(--c-line))] text-[rgb(var(--c-bg))]'
-                            : 'border-[rgb(var(--c-border))] bg-emerald text-cream'
-                        }`}
-                      >
-                        <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
-                        {option.label}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {scoutError && (
-                <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
-                  {scoutError}
-                </p>
-              )}
-              {!isEvening && (
-                <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
-                      настроение: {SCALE_STEPS[0].labels[(values.mood || 3) - 1].toLowerCase()}
+          <CheckInCompletion
+            evening={isEvening}
+            onFeedback={label => {
+              platform.haptic('light')
+              sendCheckinFeedback(api.checkin.feedback, savedCheckinId ?? existing?.id, label)
+            }}
+          >
+            {isEvening && canonicalEveningStreak > 0 ? (
+              <span className="sr-only" data-testid="checkin-streak">
+                {canonicalEveningStreak}-дневная серия
+              </span>
+            ) : null}
+            {scoutError && (
+              <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
+                {scoutError}
+              </p>
+            )}
+            {!isEvening && (
+              <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
+                    настроение: {SCALE_STEPS[0].labels[(values.mood || 3) - 1].toLowerCase()}
+                  </span>
+                  {emotion && (
+                    <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                      {emotion}
                     </span>
-                    {emotion && (
-                      <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
-                        {emotion}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-3 text-[13px] leading-relaxed text-muted">
-                    {savedMorningNote
-                      ? 'Текст сохранён в сегодняшнем чек-ине.'
-                      : 'Состояние сохранено без текстовой записи.'}
-                  </p>
-                  <p className="mt-2 text-[12px] text-muted">
-                    Дальше — один добровольный шаг, который тебе сейчас подходит.
-                  </p>
+                  )}
                 </div>
-              )}
-              {isEvening && surprise ? (
-                <div className="mt-6 w-full max-w-sm" data-testid="surprise-insight">
-                  <p className="mx-type-meta text-muted">Следопыт кое-что заметил</p>
-                  <p className="mx-type-body mt-2 text-cream">{surprise}</p>
-                  <button
-                    type="button"
-                    data-testid="surprise-insight-open"
-                    onClick={openSurprise}
-                    className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream"
-                  >
-                    Обсудить со Следопытом
-                  </button>
-                </div>
-              ) : !isEvening ? (
-                <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
-                  {buildTomorrowTeaser({
-                    streak,
-                    checkins: streakHistory,
-                    rituals: peekPracticesData(user.id)?.rituals,
-                    ascezas: peekPracticesData(user.id)?.ascezas,
-                    isEvening,
-                  })}
+                <p className="mt-3 text-[13px] leading-relaxed text-muted">
+                  {savedMorningNote
+                    ? 'Текст сохранён в сегодняшнем чек-ине.'
+                    : 'Состояние сохранено без текстовой записи.'}
                 </p>
-              ) : null}
-            </div>
-          </div>
+                <p className="mt-2 text-[12px] text-muted">
+                  Дальше — один добровольный шаг, который тебе сейчас подходит.
+                </p>
+              </div>
+            )}
+            {isEvening && surprise ? (
+              <div className="mt-6 w-full max-w-sm" data-testid="surprise-insight">
+                <p className="mx-type-meta text-muted">Следопыт кое-что заметил</p>
+                <p className="mx-type-body mt-2 text-cream">{surprise}</p>
+                <button
+                  type="button"
+                  data-testid="surprise-insight-open"
+                  onClick={openSurprise}
+                  className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream"
+                >
+                  Обсудить со Следопытом
+                </button>
+              </div>
+            ) : !isEvening ? (
+              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
+                {buildTomorrowTeaser({
+                  streak,
+                  checkins: streakHistory,
+                  rituals: peekPracticesData(user.id)?.rituals,
+                  ascezas: peekPracticesData(user.id)?.ascezas,
+                  isEvening,
+                })}
+              </p>
+            ) : null}
+          </CheckInCompletion>
         </div>
 
-        <WebActionBar action={webAction} secondaryAction={webSecondaryAction} />
+        <WebActionBar
+          action={webAction}
+          secondaryAction={webSecondaryAction}
+          className="mx-completion-action"
+        />
       </div>,
       getFullscreenPortalTarget()
     )
@@ -1899,6 +1906,36 @@ function CheckInCore({
   )
 }
 
+function DemoCompletionScreen({ evening, onDone }) {
+  const { style: viewportStyle } = useFullscreenSurface()
+  const action = {
+    text: 'Вернуться в Сегодня',
+    testId: 'checkin-back-to-today',
+    onClick: onDone,
+  }
+
+  return createPortal(
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} ${isPreviewDemoMode() ? 'mx-checkin-demo' : ''}`}
+      style={viewportStyle}
+    >
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
+        <BackButton onClick={onDone} />
+      </div>
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <CheckInCompletion
+          evening={evening}
+          onFeedback={() => {
+            /* демо-превью: обратная связь не отправляется */
+          }}
+        />
+      </div>
+      <WebActionBar action={action} className="mx-completion-action" />
+    </div>,
+    getFullscreenPortalTarget()
+  )
+}
+
 function CheckIn({
   user,
   onDone,
@@ -1909,6 +1946,14 @@ function CheckIn({
   existing = null,
   redo = false,
 }) {
+  const demoAction = previewDemoAction()
+  if (demoAction === 'complete_morning') {
+    return <DemoCompletionScreen evening={false} onDone={onDone} />
+  }
+  if (demoAction === 'complete_evening') {
+    return <DemoCompletionScreen evening onDone={onDone} />
+  }
+
   if (mode !== 'evening') {
     return (
       <MorningCheckInFlow

@@ -32,6 +32,15 @@ test('только известные contextual-ссылки открывают
   assert.deepEqual(parseContextualDeepLink('', ''), { sub: null, returnFlow: null })
 })
 
+test('демо-превью завершения открывают соответствующий подэкран чек-ина', () => {
+  assert.deepEqual(parseContextualDeepLink('?action=complete_morning', ''), {
+    sub: 'checkin', returnFlow: null,
+  })
+  assert.deepEqual(parseContextualDeepLink('?action=complete_evening', ''), {
+    sub: 'evening', returnFlow: null,
+  })
+})
+
 test('morning_v1 открывает утро и имеет приоритет над обычным action', () => {
   assert.deepEqual(parseContextualDeepLink('?action=breathing', 'morning_v1'), {
     sub: 'checkin', returnFlow: 'morning_v1',

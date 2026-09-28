@@ -1,0 +1,132 @@
+.mx-completion {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: clamp(80px, calc(37dvh - 102px), 250px) 16px 28px;
+  background: rgb(var(--c-bg));
+}
+
+.mx-completion__art {
+  width: 100px;
+  height: 120px;
+  flex: none;
+}
+
+.mx-completion__title {
+  display: flex;
+  flex-direction: column;
+  margin: 24px 0 0;
+  color: rgb(var(--c-text) / 0.85);
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+}
+
+.mx-completion__title strong { font-weight: 700; }
+
+.mx-completion__feedback { margin-top: 64px; }
+.mx-completion__feedback p {
+  max-width: 260px;
+  margin: 0 auto 24px;
+  color: rgb(var(--c-muted));
+  font-size: 17px;
+  font-weight: 400;
+  line-height: 23px;
+}
+
+.mx-completion__choices {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+.mx-completion__choices button {
+  display: flex;
+  width: 72px;
+  height: 101px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 0;
+  border: 1px solid rgb(var(--c-border));
+  border-radius: 22px;
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-text));
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.mx-completion__choices button.is-selected {
+  border-color: rgb(var(--c-text));
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+}
+
+/* Одна пилюля внизу, независимо от высоты области с вопросом. */
+.mx-completion-action {
+  flex: none;
+  width: 100%;
+  padding: 0 28px calc(var(--app-safe-bottom) + 38px);
+  background: rgb(var(--c-bg));
+}
+.mx-completion-action button {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 999px;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.mx-demo-checkin__body.is-complete {
+  padding: 0;
+  overflow-y: auto;
+}
+.mx-demo-checkin__body.is-complete .mx-step-slide__panel {
+  min-height: 100%;
+}
+.mx-demo-checkin__body.is-complete .mx-completion {
+  margin: 0;
+}
+.mx-demo-checkin .mx-completion-action,
+.mx-fullscreen-surface .mx-completion-action {
+  max-width: none;
+  margin: 0;
+  padding: 0 28px calc(var(--app-safe-bottom) + 38px);
+  background: rgb(var(--c-bg));
+}
+.mx-demo-checkin .mx-completion-action .cta-pill,
+.mx-fullscreen-surface .mx-completion-action .cta-pill {
+  min-height: 56px;
+  padding: 0;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  font-size: 17px;
+  font-weight: 700;
+}
+
+/* Утренний экран наследует типографику шагов; completion исключён из неё. */
+.mx-demo-checkin .mx-completion__title,
+.mx-fullscreen-surface .mx-completion__title {
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 32px;
+  letter-spacing: -0.025em;
+  margin: 24px auto 0;
+}
+.mx-demo-checkin__body.is-complete .mx-step-slide__panel > .mx-completion {
+  margin: 0;
+}
+
+@media (max-height: 740px) {
+  .mx-completion { padding-top: clamp(32px, calc(37dvh - 180px), 110px); }
+  .mx-completion__feedback { margin-top: 32px; }
+  .mx-completion__title,
+  .mx-demo-checkin .mx-completion__title { margin-top: 18px; }
+}

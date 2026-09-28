@@ -66,7 +66,7 @@ test('Morning completion: streak=0 — валидное canonical-значени
   // нулевая серия — законный canonical-ответ и не должна подменяться legacy.
   assert.match(canonicalSource, /Number\.isSafeInteger\(value\) && value >= 0 \? value : null/)
   // На completion-экране streak показывается только при > 0 (product contract).
-  assert.match(morningFlow, /\{streak > 0 \?/)
+  assert.match(morningFlow, /\{streak > 0 &&/)
 })
 
 test('Morning completion: сбой canonical не ломает завершение', () => {
@@ -99,13 +99,13 @@ test('Morning completion: persistence/payload не изменились', () => 
 })
 
 test('Morning completion contract не регрессирует', () => {
-  assert.match(morningFlow, /<h1>Чек-ин завершён<\/h1>/, 'заголовок «Чек-ин завершён»')
+  assert.match(morningFlow, /<CheckInCompletion[\s\S]*?evening=\{false\}/, 'общий экран утреннего завершения')
   assert.match(morningFlow, /data-testid="checkin-streak"/)
   assert.match(morningFlow, /дневная серия/)
   assert.match(
     morningFlow,
-    /\{ text: 'Вернуться в Сегодня', testId: 'checkin-back-to-today', onClick: onDone \}/,
-    'CTA «Вернуться в Сегодня»'
+    /\{ text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: onDone \}/,
+    'CTA «Сохранить и выйти»'
   )
-  assert.doesNotMatch(morningFlow, /Было полезно\?/, 'для Morning feedback не добавляется')
+  assert.match(morningFlow, /sendCheckinFeedback\(api\.checkin\.feedback, savedMorningId, label\)/, 'утро отправляет оценку сохранённой записи')
 })
