@@ -263,11 +263,15 @@ export function HistoryDetail({
             </span>
           </div>
           {[
-            ['Как ты сейчас?', moodWord(checkin?.mood)],
+            // T11: все ответы утра в порядке шагов чек-ина.
+            // Незаполненные (null/пусто) не показываются.
+            checkin?.mood != null ? ['Как ты сейчас?', moodWord(checkin.mood)] : null,
+            checkin?.sleep_quality != null
+              ? ['Как ты спал?', `${checkin.sleep_quality}/5`]
+              : null,
             checkin?.energy != null ? ['Сколько в тебе энергии?', `${checkin.energy}/5`] : null,
-            checkin?.anxiety != null ? ['Сколько шума в голове?', `${checkin.anxiety}/5`] : null,
             checkin?.focus != null ? ['Насколько ты собран?', `${checkin.focus}/5`] : null,
-            checkin?.emotion ? ['Что ты чувствуешь?', capitalize(checkin.emotion)] : null,
+            checkin?.day_focus ? ['Главный фокус на сегодня?', checkin.day_focus] : null,
             checkin?.note ? ['Что на уме?', checkin.note] : null,
             ...parseLessons(checkin?.lessons).map(({ question, answer }) => [question, answer]),
             ...(checkin?.wins || []).map((win, index) => [`Чем ты гордишься? ${index + 1}`, win]),
@@ -787,8 +791,10 @@ export default function History({
     window.location.href = url.toString()
   }
 
-  if (days === null) return <HistorySkeleton />
-
+  // T10: при переходе из карточки «Утро отмечено» / «Разбор дня»
+  // (initialSelectedDay) показываем экран дня сразу, без промежуточного
+  // скелетона «история.» — он нужен только для ленты, а не для детальной
+  // записи, данные которой уже переданы.
   if (selectedDay) {
     return (
       <HistoryDetail
@@ -808,6 +814,8 @@ export default function History({
       />
     )
   }
+
+  if (days === null) return <HistorySkeleton />
 
   if (journeySearchOpen) {
     return (
