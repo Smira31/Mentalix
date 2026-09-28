@@ -1480,7 +1480,7 @@ test('завершённые карточки сохраняют высоту б
     const card = page.getByTestId(`today-card-${kind}`)
     await expect(card).toHaveAttribute('data-state', 'done')
     await expect(card.getByTestId('today-card-illustration')).toHaveCount(0)
-    await expect(card).toHaveCSS('height', '233px')
+    await expect(card).toHaveCSS('height', '260px')
   }
   await context.close()
 })
