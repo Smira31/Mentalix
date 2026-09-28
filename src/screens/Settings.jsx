@@ -13,7 +13,6 @@ import { forget, useSynced } from '../lib/store'
 import { requestMessages, biometric } from '../platform/telegram.hooks'
 import { platform, platformName } from '../platform'
 import { hasPinRecord, clearPinRecord, APP_LOCK_ENABLED_KEY } from '../lib/appLock'
-import { MOOD_CHECK_ENABLED_KEY } from '../lib/moodCheckDraft'
 import { clearCheckinDraft } from '../lib/checkinDraft'
 import {
   TODAY_CARDS_HIDDEN_KEY,
@@ -435,14 +434,6 @@ export default function Settings({
   const lockConfiguredHere = hasPinRecord()
   const [biometricAvailable, setBiometricAvailable] = useState(false)
 
-  // ── Быстрый mood-check при запуске: см. src/lib/moodCheckDraft.js.
-  const [moodCheckEnabledFlag, setMoodCheckEnabledFlag] = useSynced(MOOD_CHECK_ENABLED_KEY, '0')
-  const moodCheckOn = moodCheckEnabledFlag === '1'
-
-  function setMoodCheckOn(next) {
-    setMoodCheckEnabledFlag(next ? '1' : '0')
-  }
-
   // ── Видимость карточек «Сегодня»: см. src/lib/todayCardVisibility.js.
   const [hiddenCardsRaw, setHiddenCardsRaw] = useSynced(TODAY_CARDS_HIDDEN_KEY, '[]')
   const hiddenCards = parseHiddenCards(hiddenCardsRaw)
@@ -617,26 +608,6 @@ export default function Settings({
                 options={REVIEW_HOURS.map(h => ({ value: h, label: String(h).padStart(2, '0') }))}
               />
             </div>
-          </ProfileCard>
-        </ProfileGroup>
-
-        {/* MXL-MOOD-CHECK-001 — opt-in: дефолт '0', см.
-            src/lib/moodCheckDraft.js. Не пишет в бэкенд — только черновик
-            для CheckIn.jsx при следующем открытии. */}
-        <ProfileGroup label="Быстрая отметка настроения">
-          <ProfileCard>
-            <ProfileRow
-              title="Спрашивать настроение при запуске"
-              subtitle="Один тап поверх приложения, отдельно от полного чек-ина"
-              right={
-                <Toggle
-                  checked={moodCheckOn}
-                  label="Быстрая отметка настроения при запуске"
-                  onChange={setMoodCheckOn}
-                />
-              }
-              testId="profile-row-mood-check"
-            />
           </ProfileCard>
         </ProfileGroup>
 
