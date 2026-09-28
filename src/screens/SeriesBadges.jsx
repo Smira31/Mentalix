@@ -126,7 +126,7 @@ function ProgressBar({ progress, goal }) {
   )
 }
 
-function CloseButton({ onClose, label = 'Закрыть' }) {
+function CloseButton({ onClose, label = 'Закрыть', testId = 'series-close' }) {
   // В Telegram закрытие — только нативная «Назад» (BackButton).
   // Свой ✕ остаётся только в web/PWA.
   if (platformName === 'telegram') return null
@@ -134,7 +134,7 @@ function CloseButton({ onClose, label = 'Закрыть' }) {
     <button
       type="button"
       className="mx-path-close mx-tap-target"
-      data-testid="series-close"
+      data-testid={testId}
       aria-label={label}
       onClick={onClose}
     >
@@ -213,7 +213,7 @@ export function BadgeSheet({ badge, onClose, onOpenPractice }) {
         aria-labelledby="mx-badge-sheet-title"
         onClick={event => event.stopPropagation()}
       >
-        <CloseButton onClose={requestClose} />
+        <CloseButton onClose={requestClose} testId="badge-sheet-close" />
         <div className="mx-badge-sheet__scene">
           <RewardIcon variant={badge.done ? badge.id : 'locked'} size={92} />
         </div>
@@ -263,7 +263,7 @@ export function NewBadgeSheet({ badge, onClose }) {
         aria-labelledby="mx-new-badge-title"
         onClick={event => event.stopPropagation()}
       >
-        <CloseButton onClose={requestClose} />
+        <CloseButton onClose={requestClose} testId="new-badge-close" />
         <div className="mx-badge-sheet__scene">
           <RewardIcon variant={badge.id} size={92} />
         </div>
@@ -565,7 +565,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
   }, [activeTab, visibleModel, user])
 
   const content = (
-    <div className="mx-path-layer" style={{ top: surfaceStyle.top, height: surfaceStyle.height }} onClick={onBack}>
+    <div className="mx-path-layer" style={{ top: surfaceStyle.top, height: surfaceStyle.height }} onClick={() => { if (!selectedBadge) onBack() }}>
     <section
       ref={screenRef}
       className={`mx-path-surface ${demoMode ? 'mx-path-surface--demo' : ''}${showAll ? ' mx-path-surface--all' : ''}`}
