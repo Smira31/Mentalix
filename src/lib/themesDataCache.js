@@ -77,7 +77,12 @@ export async function fetchThemesData(userId, { force = false } = {}) {
     }
 
     const detail = await withRetry(() => api.themes.get(currentTheme.id, userId))
-    const data = [{ ...currentTheme, ...detail }]
+    // Возвращаем все темы из списка; текущая (is_current) обогащена
+    // деталями (days[]). Остальные — с полями уровня списка
+    // (total_days, reflected_days) для прогресса в «Другие темы» / «Все темы».
+    const data = sorted.map(theme =>
+      theme.id === currentTheme.id ? { ...theme, ...detail } : theme
+    )
 
     cache.set(userId, { data, fetchedAt: Date.now() })
     return data

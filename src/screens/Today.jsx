@@ -54,6 +54,7 @@ const Path = lazy(() => import('./Path'))
 const YearPath = lazy(() => import('./YearPath'))
 const CheckIn = lazy(() => import('./CheckIn'))
 const ThemeScreen = lazy(() => import('./ThemeScreen'))
+const ThemeCarouselScreen = lazy(() => import('./ThemeCarouselScreen'))
 const History = lazy(() => import('./History'))
 const QuoteView = lazy(() => import('./QuoteView'))
 const BreathingPractice = lazy(() => import('./BreathingPractice'))
@@ -856,7 +857,7 @@ export default function Today({
   if (sub === 'theme' && theme) {
     return (
       <Suspense fallback={null}>
-        <ThemeScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
+        <ThemeCarouselScreen user={user} themeId={theme.id} onBack={() => changeSub(null)} />
       </Suspense>
     )
   }
