@@ -35,6 +35,8 @@
 
 .mx-theme-carousel-track {
   display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
   gap: var(--mx-space-3);
   overflow-x: auto;
   scroll-snap-type: x mandatory;

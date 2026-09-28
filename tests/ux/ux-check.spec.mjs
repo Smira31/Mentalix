@@ -52,6 +52,13 @@ const FIXTURES = {
       total_days: 7,
       reflected_days: 1,
     },
+    {
+      id: 702,
+      title: 'Границы и забота о себе',
+      subtitle: 'Неделя про «нет», которое бережёт «да».',
+      total_days: 7,
+      reflected_days: 0,
+    },
   ],
   theme: {
     id: 701,
@@ -86,6 +93,29 @@ const FIXTURES = {
   settings: { review_hour: 24 },
   pulse: { active_today: 12 },
   pinnedPractices: [],
+  theme2: {
+    id: 702,
+    title: 'Границы и забота о себе',
+    subtitle: 'Неделя про «нет», которое бережёт «да».',
+    current_day: 1,
+    free_days: 7,
+    days: [
+      {
+        day: 1,
+        text: 'Какое «нет» сегодня было трудным и почему?',
+        prompt: 'Запиши одно наблюдение без оценки.',
+        reflection: '',
+        locked: false,
+      },
+      ...Array.from({ length: 6 }, (_, index) => ({
+        day: index + 2,
+        text: 'Следующий вопрос недели.',
+        prompt: 'Что замечаешь?',
+        reflection: '',
+        locked: false,
+      })),
+    ],
+  },
   articles: [
     {
       id: 1,
@@ -151,6 +181,7 @@ function fixtureFor(request) {
   if (pathname === '/api/checkin/history') return jsonResponse(FIXTURES.history)
   if (pathname === '/api/themes') return jsonResponse(FIXTURES.themes)
   if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
+  if (pathname === '/api/themes/702') return jsonResponse(FIXTURES.theme2)
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
   if (pathname === '/api/analytics/influences') {
@@ -560,6 +591,14 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+    // Карусель темы недели: видимая карточка вопроса имеет высоту > 120px
+    // и виден текст вопроса.
+    const carouselCard = page.locator('.mx-theme-carousel-q').first()
+    await expect(carouselCard).toBeVisible()
+    const carouselCardBox = await carouselCard.boundingBox()
+    expect(carouselCardBox?.height || 0).toBeGreaterThan(120)
+    await expect(carouselCard.locator('.mx-theme-carousel-q__text')).toBeVisible()
+
     // Карусель темы недели: CTA «Начать запись» открывает ThemeScreen
     await page.getByTestId('theme-carousel-cta').click()
     await captureScreen({
@@ -606,6 +645,10 @@ test('локальный UX smoke по основному маршруту', asy
     expect(reflectionPayload.text).toBe('**Важное**')
     // «Назад» из ThemeScreen → карусель, ещё «Назад» → Сегодня
     await page.getByRole('button', { name: 'Назад' }).click()
+    // После открытия другой темы из «Другие темы» — есть хотя бы один вопрос
+    await page.getByRole('button', { name: /Границы и забота о себе/ }).first().click()
+    await expect(page.locator('.mx-theme-carousel-q').first()).toBeVisible()
+    await expect(page.locator('.mx-theme-carousel-q__text').first()).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Шаги' }).click()
