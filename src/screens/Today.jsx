@@ -57,7 +57,7 @@ const YearPath = lazy(() => import('./YearPath'))
 const CheckIn = lazy(() => import('./CheckIn'))
 const ThemeScreen = lazy(() => import('./ThemeScreen'))
 const History = lazy(() => import('./History'))
-const QuoteView = lazy(() => import('./QuoteView'))
+const DailyThoughtScreen = lazy(() => import('./DailyThoughtScreen'))
 const BreathingPractice = lazy(() => import('./BreathingPractice'))
 const StreakRecovery = lazy(() => import('./StreakRecovery'))
 const SeriesBadges = lazy(() => import('./SeriesBadges'))
@@ -903,7 +903,7 @@ export default function Today({
   if (sub === 'quote') {
     return (
       <Suspense fallback={null}>
-        <QuoteView user={user} todayQuote={thoughtOfDay} onClose={() => changeSub(null)} />
+        <DailyThoughtScreen user={user} thought={thoughtOfDay} onClose={() => changeSub(null)} />
       </Suspense>
     )
   }
@@ -1501,6 +1501,8 @@ export default function Today({
 
       {!hiddenCards.includes('quote') && thoughtOfDay && (
         <button
+          type="button"
+          data-testid="daily-thought-card"
           onClick={() => {
             platform.haptic('light')
 

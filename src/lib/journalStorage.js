@@ -73,6 +73,7 @@ function normalizeEntry(value, date) {
       .map(item => ({
         id: typeof item.id === 'string' ? item.id : `${date}-${item.text.slice(0, 12)}`,
         text: item.text,
+        ...(typeof item.title === 'string' && item.title ? { title: item.title } : {}),
         status: item.status === 'final' ? 'final' : 'draft',
         updatedAt: typeof item.updatedAt === 'string' ? item.updatedAt : null,
       }))
@@ -250,6 +251,26 @@ function saveJournalPhase({ date = todayKey(), phase, text, status = 'draft', us
   return entry
 }
 
+// Свободная запись дня (например, по «Мысли дня»): заголовок + текст.
+function saveJournalFreeWrite({ date = todayKey(), title = '', text, userId }) {
+  const key = journalStorageKey(userId)
+  const store = readJournalStore(userId)
+  const entry = store.entries[date] || emptyEntry(date)
+  const updatedAt = new Date().toISOString()
+  const item = {
+    id: `${date}-free-${Date.now()}`,
+    text: typeof text === 'string' ? text : '',
+    ...(title ? { title } : {}),
+    status: 'final',
+    updatedAt,
+  }
+  entry.freeWrites = [...entry.freeWrites, item]
+  entry.updatedAt = updatedAt
+  store.entries[date] = entry
+  persistOrThrow(key, store)
+  return item
+}
+
 function clearJournalStore(userId) {
   return removeRaw(journalStorageKey(userId))
 }
@@ -265,6 +286,7 @@ export {
   migrateLegacyJournalToUser,
   readJournalEntry,
   readJournalStore,
+  saveJournalFreeWrite,
   saveJournalPhase,
   todayKey,
 }

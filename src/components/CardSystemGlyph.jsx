@@ -4,6 +4,9 @@ const GLYPH_BY_PRACTICE = {
   breathing: 'breath-flow',
   meditation: 'meditation-contours',
   journal: 'focus-convergence',
+  rituals: 'ritual-orbit',
+  mood: 'mood-wave',
+  'alter-ego': 'alter-mask',
 }
 
 function GlyphShape({ kind }) {
@@ -41,6 +44,30 @@ function GlyphShape({ kind }) {
           <path d="M12 14v10M12 14h10M52 14H42M52 14v10M12 50V40M12 50h10M52 50H42M52 50V40" />
           <path d="m20 22 9 9M44 22l-9 9M20 42l9-9M44 42l-9-9" />
           <circle cx="32" cy="32" r="4" className="mx-card-system-glyph__accent" />
+        </>
+      )
+    case 'ritual-orbit':
+      return (
+        <>
+          <ellipse cx="32" cy="32" rx="21" ry="12" transform="rotate(-18 32 32)" />
+          <path d="M32 11v6M32 47v6" />
+          <circle cx="32" cy="32" r="4" className="mx-card-system-glyph__accent" />
+        </>
+      )
+    case 'mood-wave':
+      return (
+        <>
+          <path d="M11 32c7-10 14-10 21 0s14 10 21 0" />
+          <path d="M11 32c7 10 14 10 21 0s14-10 21 0" opacity="0.5" />
+          <circle cx="32" cy="32" r="4" className="mx-card-system-glyph__accent" />
+        </>
+      )
+    case 'alter-mask':
+      return (
+        <>
+          <path d="M13 20c6-3 13-4 19-1 6-3 13-2 19 1 0 14-5 26-19 28-14-2-19-14-19-28Z" />
+          <path d="M19 29c2-2 5-2 7 0M38 29c2-2 5-2 7 0" />
+          <circle cx="32" cy="38" r="3" className="mx-card-system-glyph__accent" />
         </>
       )
     case 'meditation-contours':

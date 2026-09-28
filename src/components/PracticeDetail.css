@@ -66,14 +66,11 @@
   white-space: nowrap;
 }
 
+/* Кнопка создания — стандартная пилюля .cta-pill, здесь только раскладка. */
 .mx-practice-list-screen__create {
   display: block;
-  margin: 1.25rem auto 0;
-  padding: 0.5rem 0;
-  color: rgb(var(--c-muted));
-  font-size: 0.8125rem;
-  background: transparent;
-  border: 0;
+  width: 100%;
+  margin: 1.25rem 0 0;
 }
 
 .mx-practice-detail-screen {

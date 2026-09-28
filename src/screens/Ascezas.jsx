@@ -4,6 +4,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { invalidateTodayData } from '../lib/todayDataCache'
 import { invalidatePracticesData } from '../lib/practicesDataCache'
+import { isAscezaHeldToday } from '../lib/practiceDoneToday'
 import NestedScreenHeader, { RoundBackButton } from '../components/NestedScreenHeader'
 import PracticeWritingCanvas from '../components/PracticeWritingCanvas'
 import WebActionBar from '../components/WebActionBar'
@@ -424,9 +425,9 @@ export default function Ascezas({ user, onBack }) {
             <button
               type="button"
               key={asceza.id}
-              className={`mx-practice-tile ${asceza.today_status === 'held' ? 'is-done' : ''}`}
+              className={`mx-practice-tile ${isAscezaHeldToday(asceza) ? 'is-done' : ''}`}
               data-testid="practice-tile"
-              data-done={asceza.today_status === 'held'}
+              data-done={isAscezaHeldToday(asceza)}
               onClick={() => {
                 platform.haptic('light')
                 setSelected(asceza)
@@ -443,7 +444,8 @@ export default function Ascezas({ user, onBack }) {
       {!loading && (
         <button
           type="button"
-          className="mx-practice-list-screen__create"
+          className="mx-practice-list-screen__create cta-pill"
+          data-testid="practice-create"
           onClick={() => setShowCreate(true)}
         >
           + Новая аскеза

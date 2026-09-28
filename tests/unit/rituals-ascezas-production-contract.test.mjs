@@ -18,8 +18,8 @@ function assertListScreen(source, heading, statusExpression) {
 }
 
 test('production lists use the two-column Variant C tile contract', () => {
-  assertListScreen(rituals, 'ритуалы', 'ritual\\.today_level')
-  assertListScreen(ascezas, 'аскезы', "asceza\\.today_status === 'held'")
+  assertListScreen(rituals, 'ритуалы', 'isRitualDoneToday\\(ritual\\)')
+  assertListScreen(ascezas, 'аскезы', 'isAscezaHeldToday\\(asceza\\)')
   assert.match(css, /\.mx-practice-grid\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)/)
   assert.match(css, /\.mx-practice-tile\.is-done\s*\{[\s\S]*background: rgb\(var\(--c-text\)\)/)
 })

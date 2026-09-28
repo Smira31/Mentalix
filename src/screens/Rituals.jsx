@@ -4,6 +4,7 @@ import { platform } from '../platform'
 import { api } from '../lib/api'
 import { invalidateTodayData } from '../lib/todayDataCache'
 import { invalidatePracticesData } from '../lib/practicesDataCache'
+import { isRitualDoneToday } from '../lib/practiceDoneToday'
 import { createPortal } from 'react-dom'
 import {
   useFullscreenSurface,
@@ -253,9 +254,9 @@ export default function Rituals({ user, onBack }) {
             <button
               type="button"
               key={ritual.id}
-              className={`mx-practice-tile ${ritual.today_level ? 'is-done' : ''}`}
+              className={`mx-practice-tile ${isRitualDoneToday(ritual) ? 'is-done' : ''}`}
               data-testid="practice-tile"
-              data-done={Boolean(ritual.today_level)}
+              data-done={isRitualDoneToday(ritual)}
               onClick={() => {
                 platform.haptic('light')
                 setSelected(ritual)
@@ -275,7 +276,8 @@ export default function Rituals({ user, onBack }) {
       {!loading && (
         <button
           type="button"
-          className="mx-practice-list-screen__create"
+          className="mx-practice-list-screen__create cta-pill"
+          data-testid="practice-create"
           onClick={() => setShowCreate(true)}
         >
           + Новый ритуал
