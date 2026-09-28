@@ -15,6 +15,7 @@ import {
 } from '../lib/fullscreenSurface'
 
 import ThemeScreen from './ThemeScreen'
+import ThemeDirectory from './ThemeDirectory'
 import './ThemeCarouselScreen.css'
 
 /*
@@ -31,6 +32,8 @@ import './ThemeCarouselScreen.css'
  */
 export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const [data, setData] = useState(null)
+  const [themes, setThemes] = useState([])
+  const [activeId, setActiveId] = useState(themeId)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [writing, setWriting] = useState(false)
   const [selectedDay, setSelectedDay] = useState(1)
@@ -48,32 +51,50 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   })
 
   useEffect(() => {
-    if (!user || !themeId) return
+    if (!user) return
     let alive = true
     api.themes
-      .get(themeId, user.id)
-      .then(fresh => {
-        if (!alive) return
-        setData(fresh)
+      .list(user.id)
+      .then(list => {
+        if (alive) setThemes(Array.isArray(list) ? list : [])
       })
       .catch(console.error)
     return () => {
       alive = false
     }
-  }, [user, themeId])
+  }, [user])
+
+  useEffect(() => {
+    if (!user || !activeId) return
+    let alive = true
+    api.themes
+      .get(activeId, user.id)
+      .then(fresh => {
+        if (alive) setData(fresh)
+      })
+      .catch(console.error)
+    return () => {
+      alive = false
+    }
+  }, [user, activeId])
 
   function refreshData() {
-    if (!user || !themeId) return
+    if (!user || !activeId) return
+    api.themes.get(activeId, user.id).then(setData).catch(console.error)
     api.themes
-      .get(themeId, user.id)
-      .then(setData)
+      .list(user.id)
+      .then(list => setThemes(Array.isArray(list) ? list : []))
       .catch(console.error)
   }
 
-  const questions = useMemo(
-    () => (Array.isArray(data?.days) ? data.days.slice(0, 7) : []),
-    [data]
-  )
+  function openTheme(id) {
+    platform.haptic('light')
+    setData(null)
+    setQuestionIndex(0)
+    setActiveId(id)
+  }
+
+  const questions = useMemo(() => (Array.isArray(data?.days) ? data.days.slice(0, 7) : []), [data])
   const safeIndex = Math.min(questionIndex, Math.max(0, questions.length - 1))
   const currentQuestion = questions[safeIndex]
 
@@ -123,7 +144,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
     return (
       <ThemeScreen
         user={user}
-        themeId={themeId}
+        themeId={activeId}
         initialDay={selectedDay}
         onBack={() => {
           setWriting(false)
@@ -160,9 +181,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
           <div className="mx-theme-carousel-header">
             <span className="mx-theme-carousel-label">Тема недели</span>
             <h2 className="mx-theme-carousel-title">{data.title}</h2>
-            {data.subtitle && (
-              <p className="mx-theme-carousel-subtitle">{data.subtitle}</p>
-            )}
+            {data.subtitle && <p className="mx-theme-carousel-subtitle">{data.subtitle}</p>}
           </div>
 
           {questions.length > 0 ? (
@@ -182,12 +201,8 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
                   >
                     <span className="mx-theme-carousel-q__num">{q.day ?? i + 1}</span>
                     <strong className="mx-theme-carousel-q__text">{q.text}</strong>
-                    {q.prompt && (
-                      <span className="mx-theme-carousel-q__prompt">{q.prompt}</span>
-                    )}
-                    {q.reflection && (
-                      <span className="mx-theme-carousel-q__badge">✓ Записано</span>
-                    )}
+                    {q.prompt && <span className="mx-theme-carousel-q__prompt">{q.prompt}</span>}
+                    {q.reflection && <span className="mx-theme-carousel-q__badge">✓ Записано</span>}
                   </article>
                 ))}
               </div>
@@ -220,6 +235,7 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
               В этой теме пока нет вопросов.
             </p>
           )}
+          <ThemeDirectory themes={themes} currentId={activeId} onOpen={openTheme} />
         </div>
       </div>
     </div>,
