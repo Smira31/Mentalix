@@ -20,7 +20,7 @@ export default function RoundSubmitButton({
       data-testid={testId}
       onClick={onClick}
       disabled={disabled}
-      className="mx-keyboard-control mx-keyboard-submit flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-[#F2F2F2] text-emerald-deep transition-transform active:scale-95 disabled:opacity-35"
+      className="mx-keyboard-control mx-keyboard-submit mx-tap-target flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-[#F2F2F2] text-emerald-deep transition-transform active:scale-95 disabled:opacity-35"
     >
       {icon === 'arrow' ? (
         <ArrowRight size={25} strokeWidth={2.4} />
