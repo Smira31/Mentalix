@@ -115,6 +115,11 @@
   border-radius: 0 !important;
 }
 
+/* P1: в demo frame панель не уезжает — transform отменён */
+[data-mentalix-demo-frame='true'] .mx-bottom-nav {
+  transform: none !important;
+}
+
 [data-mentalix-demo-frame='true'] .mx-bottom-nav > div nav {
   opacity: 1 !important;
   transform: none !important;

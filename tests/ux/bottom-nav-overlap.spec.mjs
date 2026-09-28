@@ -20,7 +20,6 @@ async function measure(page) {
     root.scrollTop = root.scrollHeight
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))
 
-    const panel = document.querySelector('.mx-bottom-nav > div').getBoundingClientRect()
     const content = document.querySelector('.mx-scroll-content')
     const vw = window.innerWidth
     // Полноэкранные подложки/обёртки (фон «Диалога» и т.п.) — не «последний элемент»:
@@ -47,6 +46,13 @@ async function measure(page) {
         last = el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : '')
       }
     }
+
+    // P1 (#876): при прокрутке вниз панель уезжает целиком — конец вкладки
+    // открыт. Проверяем, что и видимая панель не перекроет контент:
+    // возвращаем её коротким скроллом вверх (EXPAND_DISTANCE = 14px).
+    root.scrollTop -= 40
+    await new Promise(r => setTimeout(r, 500))
+    const panel = document.querySelector('.mx-bottom-nav > div').getBoundingClientRect()
     return { lastBottom: bottom, panelTop: panel.top, last }
   })
 }
@@ -72,11 +78,8 @@ for (const browserName of ['chromium', 'webkit']) {
         await page.goto('/?demo=1')
 
         for (const label of TABS) {
-          // При прокрутке демо-панель сворачивается в кружок — разворачиваем перед сменой вкладки.
-          const expand = page.locator('.mx-bottom-nav button[aria-label="Открыть навигацию"]')
-          if ((await page.locator('.mx-bottom-nav nav').getAttribute('aria-hidden')) === 'true') {
-            await expand.click()
-          }
+          // P1 (#876): measure() возвращает панель скроллом вверх,
+          // поэтому кнопки навигации доступны для следующей вкладки.
           const button = page.locator(`.mx-bottom-nav nav button[aria-label="${label}"]`)
           await expect(button).toBeVisible({ timeout: 15_000 })
           await button.click()
