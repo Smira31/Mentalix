@@ -14,7 +14,8 @@ import { expect } from '@playwright/test'
 export async function scaleStep(page, level) {
   const option = page.locator(`[data-testid="checkin-scale-option"][data-level="${level}"]`)
   await expect(option).toBeVisible()
-  await expect(page.locator('[data-testid="checkin-skip"]')).toBeVisible()
+  await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
+  await expect(page.locator('[data-testid="checkin-next"]')).toBeDisabled()
   await option.click()
   await expect(option).toHaveAttribute('aria-checked', 'true')
   await expect(page.locator('[data-testid="checkin-scale-option"][aria-checked="true"]')).toHaveCount(1)
@@ -66,13 +67,15 @@ export async function completeCheckin(page) {
 }
 
 /**
- * Пропустить необязательный шаг (шкала или day_focus).
+ * Пройти шаг без ответа: «Пропустить» нет, круглая «→» активна
+ * (шаг «Главный фокус дня» и «Что на уме?»).
  * @param {import('@playwright/test').Page} page
  */
 export async function skipStep(page) {
-  const skip = page.locator('[data-testid="checkin-skip"]')
-  await expect(skip).toBeVisible()
-  await skip.click()
+  await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
+  const next = page.locator('[data-testid="checkin-next"]')
+  await expect(next).toBeEnabled()
+  await next.click()
 }
 
 /**
@@ -92,25 +95,9 @@ export async function dayFocusOptionStep(page, label) {
   await expect(tile).toBeVisible()
   await tile.click()
   await expect(tile).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.locator('[data-testid="checkin-day-focus-input"]')).toHaveValue('')
+  await expect(page.locator('[data-testid="checkin-day-focus-input"]')).toHaveCount(0)
   await expect(page.locator('[data-testid="checkin-day-focus-option"][aria-pressed="true"]')).toHaveCount(1)
   const next = page.locator('[data-testid="checkin-next"]')
-  await expect(next).toBeEnabled()
-  await next.click()
-}
-
-/**
- * Шаг «Главный фокус дня»: заполнить свободный текст и нажать «Далее».
- * @param {import('@playwright/test').Page} page
- * @param {string} text — текст фокуса дня
- */
-export async function dayFocusStep(page, text) {
-  const input = page.locator('[data-testid="checkin-day-focus-input"]')
-  await expect(input).toBeVisible()
-  await input.fill(text)
-
-  const next = page.locator('[data-testid="checkin-next"]')
-  await expect(next).toBeVisible()
   await expect(next).toBeEnabled()
   await next.click()
 }

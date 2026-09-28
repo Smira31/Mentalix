@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowRight, Bold, Check, Highlighter, Italic, Plus } from 'lucide-react'
+import { Bold, Highlighter, Italic, Plus } from 'lucide-react'
 
 import { platform } from '../platform'
 import { parseInlineMarkdown, parseMarkdownBlocks } from '../lib/journalMarkdown'
@@ -9,6 +9,7 @@ import {
   useVisualViewportGeometry,
 } from '../lib/visualViewport'
 import PracticeWritingCanvas from './PracticeWritingCanvas'
+import RoundSubmitButton from './RoundSubmitButton'
 import './WritingControls.css'
 
 const FORMATS = [
@@ -163,7 +164,6 @@ export default function JournalTextarea({
   floatingToolbar = false,
   stickyToolbar = true,
   onSubmit,
-  onSkip,
   submitLabel = 'Сохранить',
   submitDisabled = false,
   submitLoading = false,
@@ -417,17 +417,6 @@ export default function JournalTextarea({
             </div>
 
             <div className="flex min-w-0 shrink items-center justify-end gap-1.5">
-              {onSkip ? (
-                <button
-                  type="button"
-                  data-testid="checkin-skip"
-                  onClick={onSkip}
-                  disabled={submitLoading}
-                  className="mx-checkin-next-controls__skip mx-tap-target"
-                >
-                  Пропустить
-                </button>
-              ) : null}
               {onDeepen ? (
                 <button
                   type="button"
@@ -443,11 +432,10 @@ export default function JournalTextarea({
                 </button>
               ) : null}
 
-              <button
-                type="button"
-                aria-label={submitLabel}
-                title={submitLabel}
-                data-testid={submitTestId}
+              <RoundSubmitButton
+                label={submitLabel}
+                testId={submitTestId}
+                icon={submitIcon}
                 onClick={() => {
                   if (!keepFocusOnSubmit) {
                     editorRef.current?.blur()
@@ -455,14 +443,7 @@ export default function JournalTextarea({
                   onSubmit?.()
                 }}
                 disabled={submitDisabled || submitLoading || deepenLoading}
-                className="mx-keyboard-control mx-keyboard-submit flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-[#F2F2F2] text-emerald-deep transition-transform active:scale-95 disabled:opacity-35"
-              >
-                {submitIcon === 'arrow' ? (
-                  <ArrowRight size={25} strokeWidth={2.4} />
-                ) : (
-                  <Check size={25} strokeWidth={2.4} />
-                )}
-              </button>
+              />
             </div>
           </div>
           {showAddAction && addOpen && (
