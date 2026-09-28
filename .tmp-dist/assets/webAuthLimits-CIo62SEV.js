@@ -1,2 +1,0 @@
-var t=Object.defineProperty;var i=(e,n)=>t(e,"name",{value:n,configurable:!0});import{G as a}from"./index-CMNQFMxd.js";function o(e){return a==="web"&&!!(e!=null&&e.linked)}i(o,"isLinkedWebAccount");function l(e){return/\bfailed: 401\b/.test((e==null?void 0:e.message)||"")}i(l,"isUnverifiedTelegramWriteError");const m="Открой Mentalix в Telegram, чтобы выполнить это действие — привязанному аккаунту запись доступна только там.";function d(e,n){return o(e)&&l(n)}i(d,"isLinkedWebWriteBlocked");export{m as L,d as i};
-//# sourceMappingURL=webAuthLimits-CIo62SEV.js.map
