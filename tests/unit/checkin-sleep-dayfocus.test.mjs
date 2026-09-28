@@ -69,7 +69,7 @@ test('sleep_quality отправляется только если выбран 
 })
 
 test('day_focus отправляется только если заполнен (omitted/null-семантика)', () => {
-  assert.match(morningFlow, /if \(dayFocus\.trim\(\)\) morningPayload\.day_focus = dayFocus\.trim\(\)/)
+  assert.match(morningFlow, /if \(selectedFocus \|\| dayFocus\.trim\(\)\) morningPayload\.day_focus = selectedFocus \|\| dayFocus\.trim\(\)/)
   assert.doesNotMatch(morningFlow, /day_focus: dayFocus \|\|/)
 })
 
@@ -83,7 +83,8 @@ test('при повторном открытии sleep_quality и day_focus пр
 
 test('redo не предзаполняет sleep_quality, focus и day_focus', () => {
   assert.match(morningFlow, /sleep_quality: redo \? null : \(existing\?\.sleep_quality \?\? null\)/)
-  assert.match(morningFlow, /dayFocus, setDayFocus\] = useState\(\(\) => \(redo \? '' : \(existing\?\.day_focus \?\? ''\)\)\)/)
+  assert.match(morningFlow, /redo \|\| DAY_FOCUS_OPTIONS\.some/)
+  assert.match(morningFlow, /\? ''\s*: \(existing\?\.day_focus \?\? ''\)/)
 })
 
 // ── Вечерний флоу не меняется ──
@@ -108,7 +109,20 @@ test('day_focus шаг находится перед note и перед done', (
   assert.match(morningFlow, /const doneStep = noteStep \+ 1/)
 })
 
-test('необязательные шкалы имеют кнопку «Пропустить»', () => {
-  assert.match(morningFlow, /step < allScales\.length && !allScales\[step\]\?\.required/)
-  assert.match(morningFlow, /\|\| step === dayFocusStep/)
+test('каждая утренняя шкала имеет кнопку «Пропустить», даже при обязательном ответе для «Далее»', () => {
+  assert.match(morningFlow, /onSkip=\{\(\) => goToStep\(current => Math\.min\(doneStep, current \+ 1\)\)\}/)
+  assert.match(morningFlow, /allScales\[step\]\?\.required/)
+})
+
+test('плитка и собственный текст не дублируют друг друга', () => {
+  assert.match(morningFlow, /aria-pressed=\{selectedFocus === label\}/)
+  assert.match(morningFlow, /setSelectedFocus\(label\)/)
+  assert.match(morningFlow, /setDayFocus\(''\)/)
+  assert.match(morningFlow, /setSelectedFocus\(null\)/)
+  assert.doesNotMatch(morningFlow, /setDayFocus\(label\)/)
+})
+
+test('на шаге «Что на уме?» нет кнопки добавления вложения', () => {
+  assert.match(morningFlow, /hideAddAction/)
+  assert.doesNotMatch(morningFlow, /showAddAction/)
 })

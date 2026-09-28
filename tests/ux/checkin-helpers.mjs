@@ -14,6 +14,7 @@ import { expect } from '@playwright/test'
 export async function scaleStep(page, level) {
   const option = page.locator(`[data-testid="checkin-scale-option"][data-level="${level}"]`)
   await expect(option).toBeVisible()
+  await expect(page.locator('[data-testid="checkin-skip"]')).toBeVisible()
   await option.click()
   await expect(option).toHaveAttribute('aria-checked', 'true')
   await expect(page.locator('[data-testid="checkin-scale-option"][aria-checked="true"]')).toHaveCount(1)
@@ -91,7 +92,8 @@ export async function dayFocusOptionStep(page, label) {
   await expect(tile).toBeVisible()
   await tile.click()
   await expect(tile).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.locator('[data-testid="checkin-day-focus-input"]')).toHaveValue(label)
+  await expect(page.locator('[data-testid="checkin-day-focus-input"]')).toHaveValue('')
+  await expect(page.locator('[data-testid="checkin-day-focus-option"][aria-pressed="true"]')).toHaveCount(1)
   const next = page.locator('[data-testid="checkin-next"]')
   await expect(next).toBeEnabled()
   await next.click()
