@@ -54,27 +54,32 @@ test('the showStreak setting is removed from Settings and the series sheet', () 
   assert.ok(!settingsSource.includes('Показывать серию'), 'тумблер удалён из Настроек')
   assert.ok(!seriesBadgesSource.includes('Показывать серию'), 'тумблер удалён из шторки серии')
   assert.ok(!settingsSource.includes('showStreak'), 'в Настройках нет showStreak')
-  // T7: настройка «Показывать значки» тоже убрана — и UI, и хранилище.
-  assert.ok(!seriesBadgesSource.includes('Показывать значки'), 'тумблер значков удалён из шторки')
-  assert.ok(!seriesBadgesSource.includes('mx-path-toggle'), 'раздел настроек значков удалён')
 })
 
-test('seriesPreferences exposes only the series tooltip helpers', async () => {
+test('seriesPreferences ignores and strips the legacy showStreak value', async () => {
   const storage = new Map()
   globalThis.localStorage = {
-    getItem: k => (storage.has(k) ? storage.get(k) : null),
-    setItem: (k, value) => storage.set(k, String(value)),
-    removeItem: k => storage.delete(k),
+    getItem: key => (storage.has(key) ? storage.get(key) : null),
+    setItem: (key, value) => storage.set(key, String(value)),
+    removeItem: key => storage.delete(key),
   }
 
-  const { shouldShowSeriesTooltip, markSeriesTooltipSeen } = await import(
+  storage.set('mx-series-preferences:7', '{"showStreak":false,"showBadges":true}')
+
+  const { getSeriesPreferences, saveSeriesPreference } = await import(
     '../../src/lib/seriesPreferences.js'
   )
 
-  // T7: настройки видимости значков больше нет — остались только тултип-хелперы.
-  assert.equal(shouldShowSeriesTooltip(7), true, 'тултип виден до первого закрытия')
-  markSeriesTooltipSeen(7)
-  assert.equal(shouldShowSeriesTooltip(7), false, 'тултип не показывается повторно')
+  const preferences = getSeriesPreferences(7)
+  assert.equal(preferences.showBadges, true)
+  assert.equal('showStreak' in preferences, false, 'showStreak не возвращается вовсе')
+
+  const stored = JSON.parse(storage.get('mx-series-preferences:7'))
+  assert.equal('showStreak' in stored, false, 'старое поле удаляется при чтении')
+
+  const next = saveSeriesPreference(7, 'showBadges', false)
+  assert.equal(next.showBadges, false)
+  assert.equal('showStreak' in next, false)
 
   delete globalThis.localStorage
 })
@@ -97,16 +102,8 @@ test('число огонька приходит с сервера: 0 — без
   assert.equal(readCanonicalCurrentStreak({ current_streak: -1 }), null)
 })
 
-test('preferences source has no badges visibility toggle', () => {
-  // T7: настройка «Показывать значки» удалена целиком — ни поля, ни геттера/сеттера.
-  assert.ok(!preferencesSource.includes('showBadges'), 'showBadges удалён из источника')
-  assert.ok(
-    !preferencesSource.includes('getSeriesPreferences'),
-    'getSeriesPreferences удалён'
-  )
-  assert.ok(
-    !preferencesSource.includes('saveSeriesPreference'),
-    'saveSeriesPreference удалён'
-  )
-  assert.match(preferencesSource, /shouldShowSeriesTooltip/, 'тултип-хелпер остался')
+test('preferences source keeps only the badges visibility toggle', () => {
+  assert.ok(!preferencesSource.includes("saveSeriesPreference(user?.id, 'showStreak'"))
+  assert.match(preferencesSource, /showBadges: parsed\?\.showBadges !== false/)
+  assert.match(preferencesSource, /return \{ showBadges: true \}/)
 })
