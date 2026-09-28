@@ -6,8 +6,18 @@ import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import {
-  ArrowRight, BookOpen, BriefcaseBusiness, Check, ClipboardList, Heart,
-  HeartPulse, House, Lightbulb, Palette, Sofa, Users,
+  ArrowRight,
+  BookOpen,
+  BriefcaseBusiness,
+  Check,
+  ClipboardList,
+  Heart,
+  HeartPulse,
+  House,
+  Lightbulb,
+  Palette,
+  Sofa,
+  Users,
 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
@@ -30,7 +40,7 @@ import {
   readCheckinDraft,
   saveCheckinDraft,
 } from '../lib/checkinDraft'
-import { isPreviewDemoMode } from '../lib/demoMode'
+import { isPreviewDemoMode, previewDemoAction } from '../lib/demoMode'
 import { readCanonicalCurrentStreak } from '../lib/canonicalStreak'
 import { logOnce } from '../lib/logOnce'
 import { maybeBuildSurprise } from './mentalix/surpriseInsight'
@@ -105,15 +115,34 @@ const CHECKIN_INTERACTIVE_CLASS = 'w-full pt-7'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
-export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
+export function CheckInNextControls({
+  onNext,
+  disabled = false,
+  onSkip = null,
+  variant = 'scale',
+}) {
   return (
-    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+    <div
+      className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
+    >
       {onSkip && (
-        <button type="button" className="mx-checkin-next-controls__skip mx-tap-target" data-testid="checkin-skip" onClick={onSkip}>
+        <button
+          type="button"
+          className="mx-checkin-next-controls__skip mx-tap-target"
+          data-testid="checkin-skip"
+          onClick={onSkip}
+        >
           Пропустить
         </button>
       )}
-      <button type="button" className="mx-checkin-next-controls__next" aria-label="Далее" data-testid="checkin-next" onClick={onNext} disabled={disabled}>
+      <button
+        type="button"
+        className="mx-checkin-next-controls__next"
+        aria-label="Далее"
+        data-testid="checkin-next"
+        onClick={onNext}
+        disabled={disabled}
+      >
         <span>Далее</span>
         <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
       </button>
@@ -306,7 +335,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
       if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
-      if (selectedFocus || dayFocus.trim()) morningPayload.day_focus = selectedFocus || dayFocus.trim()
+      if (selectedFocus || dayFocus.trim())
+        morningPayload.day_focus = selectedFocus || dayFocus.trim()
       /*
        * Повтор утра не трогает вечернюю половину записи дня: эмоция,
        * уроки и закрытие дня переносятся из перезаписываемой записи
@@ -393,7 +423,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         <BackButton onClick={handleBack} label="Сегодня" />
       </header>
 
-      <main className={`mx-demo-checkin__body ${step === doneStep ? 'is-complete' : step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}>
+      <main
+        className={`mx-demo-checkin__body ${step === doneStep ? 'is-complete' : step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}
+      >
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           {scale && (
             <CheckInScaleQuestion
@@ -446,25 +478,31 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
               className="mx-demo-checkin__editor-scene mx-demo-checkin__editor-scene--focus"
             >
               <div className="mx-demo-checkin__day-focus">
-                <div className="mx-demo-checkin__focus-grid" role="group" aria-label="Выбери главный фокус">
-                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(({ label, Icon }) => (
-                    <button
-                      key={label}
-                      type="button"
-                      data-testid="checkin-day-focus-option"
-                      data-value={label}
-                      aria-pressed={selectedFocus === label}
-                      className={selectedFocus === label ? 'is-selected' : ''}
-                      onClick={() => {
-                        platform.haptic('light')
-                        setSelectedFocus(label)
-                        setDayFocus('')
-                      }}
-                    >
-                      <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
-                      <span>{label}</span>
-                    </button>
-                  ))}
+                <div
+                  className="mx-demo-checkin__focus-grid"
+                  role="group"
+                  aria-label="Выбери главный фокус"
+                >
+                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(
+                    ({ label, Icon }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        data-testid="checkin-day-focus-option"
+                        data-value={label}
+                        aria-pressed={selectedFocus === label}
+                        className={selectedFocus === label ? 'is-selected' : ''}
+                        onClick={() => {
+                          platform.haptic('light')
+                          setSelectedFocus(label)
+                          setDayFocus('')
+                        }}
+                      >
+                        <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
+                        <span>{label}</span>
+                      </button>
+                    )
+                  )}
                 </div>
                 {!showAllFocus && (
                   <button
@@ -504,7 +542,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
               evening={false}
               onFeedback={label => sendCheckinFeedback(api.checkin.feedback, savedMorningId, label)}
             >
-              {streak > 0 && <span className="sr-only" data-testid="checkin-streak">{streak}-дневная серия</span>}
+              {streak > 0 && (
+                <span className="sr-only" data-testid="checkin-streak">
+                  {streak}-дневная серия
+                </span>
+              )}
             </CheckInCompletion>
           )}
         </StepSlide>
@@ -1410,7 +1452,6 @@ function CheckInCore({
       ? !values[MORNING_SCALE_STEPS[step]?.key]
       : false
 
-
   if (isStreakStep) {
     return createPortal(
       <div ref={screenRef} className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
@@ -1429,7 +1470,6 @@ function CheckInCore({
               <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-muted">
                 внутренняя работа — это путь. ты только что сделал ещё один шаг.
               </p>
-
             </section>
 
             <button
@@ -1473,61 +1513,65 @@ function CheckInCore({
                 {canonicalEveningStreak}-дневная серия
               </span>
             ) : null}
-              {scoutError && (
-                <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
-                  {scoutError}
-                </p>
-              )}
-              {!isEvening && (
-                <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
-                  <div className="flex flex-wrap gap-2">
-                    <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
-                      настроение: {SCALE_STEPS[0].labels[(values.mood || 3) - 1].toLowerCase()}
+            {scoutError && (
+              <p role="alert" className="mt-4 text-[13px] text-red-300 leading-relaxed max-w-sm">
+                {scoutError}
+              </p>
+            )}
+            {!isEvening && (
+              <div className="mt-6 w-full max-w-sm rounded-3xl bg-emerald p-4 text-left">
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-gold/10 px-3 py-1 text-[12px] font-bold text-gold">
+                    настроение: {SCALE_STEPS[0].labels[(values.mood || 3) - 1].toLowerCase()}
+                  </span>
+                  {emotion && (
+                    <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
+                      {emotion}
                     </span>
-                    {emotion && (
-                      <span className="rounded-full bg-cream/5 px-3 py-1 text-[12px] font-semibold text-muted">
-                        {emotion}
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-3 text-[13px] leading-relaxed text-muted">
-                    {savedMorningNote
-                      ? 'Текст сохранён в сегодняшнем чек-ине.'
-                      : 'Состояние сохранено без текстовой записи.'}
-                  </p>
-                  <p className="mt-2 text-[12px] text-muted">
-                    Дальше — один добровольный шаг, который тебе сейчас подходит.
-                  </p>
+                  )}
                 </div>
-              )}
-              {isEvening && surprise ? (
-                <div className="mt-6 w-full max-w-sm" data-testid="surprise-insight">
-                  <p className="mx-type-meta text-muted">Следопыт кое-что заметил</p>
-                  <p className="mx-type-body mt-2 text-cream">{surprise}</p>
-                  <button
-                    type="button"
-                    data-testid="surprise-insight-open"
-                    onClick={openSurprise}
-                    className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream"
-                  >
-                    Обсудить со Следопытом
-                  </button>
-                </div>
-              ) : !isEvening ? (
-                <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
-                  {buildTomorrowTeaser({
-                    streak,
-                    checkins: streakHistory,
-                    rituals: peekPracticesData(user.id)?.rituals,
-                    ascezas: peekPracticesData(user.id)?.ascezas,
-                    isEvening,
-                  })}
+                <p className="mt-3 text-[13px] leading-relaxed text-muted">
+                  {savedMorningNote
+                    ? 'Текст сохранён в сегодняшнем чек-ине.'
+                    : 'Состояние сохранено без текстовой записи.'}
                 </p>
-              ) : null}
+                <p className="mt-2 text-[12px] text-muted">
+                  Дальше — один добровольный шаг, который тебе сейчас подходит.
+                </p>
+              </div>
+            )}
+            {isEvening && surprise ? (
+              <div className="mt-6 w-full max-w-sm" data-testid="surprise-insight">
+                <p className="mx-type-meta text-muted">Следопыт кое-что заметил</p>
+                <p className="mx-type-body mt-2 text-cream">{surprise}</p>
+                <button
+                  type="button"
+                  data-testid="surprise-insight-open"
+                  onClick={openSurprise}
+                  className="mx-type-control mt-4 min-h-11 rounded-full border border-[rgb(var(--c-border))] px-5 text-cream"
+                >
+                  Обсудить со Следопытом
+                </button>
+              </div>
+            ) : !isEvening ? (
+              <p className="mx-type-body text-muted mt-6" data-testid="tomorrow-teaser">
+                {buildTomorrowTeaser({
+                  streak,
+                  checkins: streakHistory,
+                  rituals: peekPracticesData(user.id)?.rituals,
+                  ascezas: peekPracticesData(user.id)?.ascezas,
+                  isEvening,
+                })}
+              </p>
+            ) : null}
           </CheckInCompletion>
         </div>
 
-        <WebActionBar action={webAction} secondaryAction={webSecondaryAction} className="mx-completion-action" />
+        <WebActionBar
+          action={webAction}
+          secondaryAction={webSecondaryAction}
+          className="mx-completion-action"
+        />
       </div>,
       getFullscreenPortalTarget()
     )
@@ -1811,6 +1855,36 @@ function CheckInCore({
   )
 }
 
+function DemoCompletionScreen({ evening, onDone }) {
+  const { style: viewportStyle } = useFullscreenSurface()
+  const action = {
+    text: 'Вернуться в Сегодня',
+    testId: 'checkin-back-to-today',
+    onClick: onDone,
+  }
+
+  return createPortal(
+    <div
+      className={`${FULLSCREEN_SHELL_CLASS} ${isPreviewDemoMode() ? 'mx-checkin-demo' : ''}`}
+      style={viewportStyle}
+    >
+      <div className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}>
+        <BackButton onClick={onDone} />
+      </div>
+      <div className={FULLSCREEN_SCROLL_CLASS}>
+        <CheckInCompletion
+          evening={evening}
+          onFeedback={() => {
+            /* демо-превью: обратная связь не отправляется */
+          }}
+        />
+      </div>
+      <WebActionBar action={action} className="mx-completion-action" />
+    </div>,
+    getFullscreenPortalTarget()
+  )
+}
+
 function CheckIn({
   user,
   onDone,
@@ -1821,6 +1895,14 @@ function CheckIn({
   existing = null,
   redo = false,
 }) {
+  const demoAction = previewDemoAction()
+  if (demoAction === 'complete_morning') {
+    return <DemoCompletionScreen evening={false} onDone={onDone} />
+  }
+  if (demoAction === 'complete_evening') {
+    return <DemoCompletionScreen evening onDone={onDone} />
+  }
+
   if (mode !== 'evening') {
     return (
       <MorningCheckInFlow
