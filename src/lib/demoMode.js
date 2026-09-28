@@ -221,6 +221,30 @@ export function previewDemoAction() {
  *   ?demo=1&action=streak_celebration&streak_days=N — другое число дней
  * Вне демо-режима возвращает null.
  */
+/*
+ * Прямые превью-ссылки на экраны ритуалов и аскез:
+ *   ?demo=1&tab=practices&action=rituals_list  — список «ритуалы.»
+ *   ?demo=1&tab=practices&action=ritual_detail — экран ритуала
+ *   ?demo=1&tab=practices&action=ascezas_list  — список «аскезы.»
+ *   ?demo=1&tab=practices&action=asceza_detail  — экран аскезы
+ * Действует только в демо-режиме; вне демо возвращает null.
+ */
+export const DEMO_PRACTICE_ACTIONS = new Set([
+  'rituals_list',
+  'ritual_detail',
+  'ascezas_list',
+  'asceza_detail',
+])
+
+export function previewPracticeAction() {
+  if (typeof window === 'undefined') return null
+  if (!isPreviewDemoMode()) return null
+
+  const requested = new URLSearchParams(window.location.search).get('action')
+
+  return DEMO_PRACTICE_ACTIONS.has(requested) ? requested : null
+}
+
 export function previewStreakCelebrationDays() {
   if (typeof window === 'undefined') return null
   if (!isPreviewDemoMode()) return null
