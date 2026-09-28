@@ -15,7 +15,7 @@ test('recapOnly view shows all morning answers in check-in order, no default-3 f
 
   // T11: all morning answers must be conditional (no default-3 fallback)
   assert.match(recapBlock, /checkin\?\.mood != null \? \[/)
-  assert.match(recapBlock, /checkin\?\.sleep_quality != null \? \[/)
+  assert.match(recapBlock, /checkin\?\.sleep_quality != null\s*\n\s*\? \[/)
   assert.match(recapBlock, /checkin\?\.energy != null \? \[/)
   assert.match(recapBlock, /checkin\?\.focus != null \? \[/)
   assert.match(recapBlock, /checkin\?\.day_focus \? \[/)
