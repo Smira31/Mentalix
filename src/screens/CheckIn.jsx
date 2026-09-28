@@ -73,8 +73,7 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 // по МСК (см. src/data/prompts.js) — не пересчитывается на каждый рендер.
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
-// day_focus остаётся строкой API: плитки лишь предлагают готовый текст,
-// поле ниже позволяет сохранить свой вариант, как и прежде.
+// day_focus остаётся строкой API: выбор плитки и собственный ввод — отдельные способы задать один фокус.
 const DAY_FOCUS_OPTIONS = [
   { label: 'Работа', Icon: BriefcaseBusiness },
   { label: 'Забота о себе', Icon: Heart },
@@ -218,7 +217,16 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     sleep_quality: redo ? null : (existing?.sleep_quality ?? null),
   }))
   const [note, setNote] = useState('')
-  const [dayFocus, setDayFocus] = useState(() => (redo ? '' : (existing?.day_focus ?? '')))
+  const [selectedFocus, setSelectedFocus] = useState(() =>
+    !redo && DAY_FOCUS_OPTIONS.some(option => option.label === existing?.day_focus)
+      ? existing.day_focus
+      : null
+  )
+  const [dayFocus, setDayFocus] = useState(() =>
+    redo || DAY_FOCUS_OPTIONS.some(option => option.label === existing?.day_focus)
+      ? ''
+      : (existing?.day_focus ?? '')
+  )
   const [showAllFocus, setShowAllFocus] = useState(
     () => !redo && DAY_FOCUS_OPTIONS.slice(9).some(option => option.label === existing?.day_focus)
   )
@@ -306,7 +314,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
       if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
-      if (dayFocus.trim()) morningPayload.day_focus = dayFocus.trim()
+      if (selectedFocus || dayFocus.trim()) morningPayload.day_focus = selectedFocus || dayFocus.trim()
       /*
        * Повтор утра не трогает вечернюю половину записи дня: эмоция,
        * уроки и закрытие дня переносятся из перезаписываемой записи
@@ -427,7 +435,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 onSubmit={finish}
                 onSkip={finish}
                 submitLoading={saving}
-                showAddAction
+                hideAddAction
                 formatting
               />
               {error ? (
@@ -452,9 +460,13 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                       type="button"
                       data-testid="checkin-day-focus-option"
                       data-value={label}
-                      aria-pressed={dayFocus === label}
-                      className={dayFocus === label ? 'is-selected' : ''}
-                      onClick={() => { platform.haptic('light'); setDayFocus(label) }}
+                      aria-pressed={selectedFocus === label}
+                      className={selectedFocus === label ? 'is-selected' : ''}
+                      onClick={() => {
+                        platform.haptic('light')
+                        setSelectedFocus(label)
+                        setDayFocus('')
+                      }}
                     >
                       <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
                       <span>{label}</span>
@@ -474,7 +486,10 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 <input
                   type="text"
                   value={dayFocus}
-                  onChange={e => setDayFocus(e.target.value.slice(0, DAY_FOCUS_MAX))}
+                  onChange={e => {
+                    setDayFocus(e.target.value.slice(0, DAY_FOCUS_MAX))
+                    setSelectedFocus(null)
+                  }}
                   maxLength={DAY_FOCUS_MAX}
                   placeholder="Или напиши свой фокус…"
                   aria-label="Главный фокус дня"
@@ -512,11 +527,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
               ? !values[allScales[step].key]
               : false
           }
-          onSkip={
-            (step < allScales.length && !allScales[step]?.required) || step === dayFocusStep
-              ? () => goToStep(current => Math.min(doneStep, current + 1))
-              : null
-          }
+          onSkip={() => goToStep(current => Math.min(doneStep, current + 1))}
         />
       ) : null}
       {step === doneStep ? (

@@ -535,15 +535,23 @@ test('локальный UX smoke по основному маршруту', asy
       const answer = page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') })
       await expect(answer).toBeVisible()
       await expect(answer).toBeEnabled()
+      await assertClickable(page.getByTestId('checkin-skip'))
       await answer.click()
       await assertClickable(page.getByRole('button', { name: 'Далее' }))
       await page.getByRole('button', { name: 'Далее' }).click()
     }
 
-    // Главный фокус дня (необязательный текстовый шаг)
+    // Главный фокус дня: девять плиток, один выбор, отдельный собственный ввод.
+    const focusTiles = page.getByTestId('checkin-day-focus-option')
+    await expect(focusTiles).toHaveCount(9)
+    await focusTiles.first().click()
+    await expect(focusTiles.first()).toHaveAttribute('aria-pressed', 'true')
     const dayFocusInput = page.locator('[data-testid="checkin-day-focus-input"]')
-    await expect(dayFocusInput).toBeVisible()
+    await expect(dayFocusInput).toHaveValue('')
+    await page.getByTestId('checkin-day-focus-show-all').click()
+    await expect(focusTiles).toHaveCount(10)
     await dayFocusInput.fill('Фокус дня')
+    await expect(page.locator('[data-testid="checkin-day-focus-option"][aria-pressed="true"]')).toHaveCount(0)
     await assertClickable(page.getByRole('button', { name: 'Далее' }))
     await page.getByRole('button', { name: 'Далее' }).click()
 
@@ -559,6 +567,7 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(editor).toBeVisible()
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
+        await expect(page.getByRole('button', { name: 'Дополнительные действия' })).toHaveCount(0)
         await assertClickable(page.locator('[data-testid="checkin-skip"]'))
         await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
           'aria-label',
