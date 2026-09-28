@@ -21,7 +21,7 @@
 }
 
 .mx-streak-celebration__petal {
-  fill: rgb(var(--c-card3));
+  fill: #2a2a2a;
 }
 .mx-streak-celebration__petal.is-lit {
   fill: rgb(var(--c-text));
@@ -31,7 +31,7 @@
 }
 
 @keyframes mx-streak-petal-on {
-  from { fill: rgb(var(--c-card3)); }
+  from { fill: #2a2a2a; }
   to { fill: rgb(var(--c-text)); }
 }
 
@@ -42,6 +42,7 @@
 .mx-streak-celebration__text {
   display: flex;
   flex-direction: column;
+  max-width: 300px;
   margin: 64px 0 0;
   color: rgb(var(--c-text) / 0.85);
   font-size: 26px;
