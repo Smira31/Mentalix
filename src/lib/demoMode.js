@@ -256,6 +256,23 @@ export function previewStreakCelebrationDays() {
   return Number.isSafeInteger(requested) && requested > 0 ? requested : 3
 }
 
+/*
+ * Прямые превью-ссылки на страницу значков:
+ *   ?demo=1&action=badges      — «Значки | Статистика»
+ *   ?demo=1&action=all_badges  — «все значки.»
+ * Вне демо-режима возвращает null.
+ */
+export const DEMO_SERIES_ACTIONS = new Set(['badges', 'all_badges'])
+
+export function previewSeriesAction() {
+  if (typeof window === 'undefined') return null
+  if (!isPreviewDemoMode()) return null
+
+  const requested = new URLSearchParams(window.location.search).get('action')
+
+  return DEMO_SERIES_ACTIONS.has(requested) ? requested : null
+}
+
 function previewTodayState() {
   if (typeof window === 'undefined') return null
 
