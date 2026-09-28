@@ -1041,6 +1041,10 @@
   margin-bottom: auto;
 }
 
+.mx-demo-checkin__body .mx-step-slide__panel > .mx-checkin-question--scale {
+  transform: translateY(10vh);
+}
+
 /* Утренние шкалы: одна и та же степень заливки для всех вопросов. */
 .mx-demo-checkin .mx-checkin-scale--filled .mx-checkin-scale__inner {
   background: linear-gradient(
@@ -1120,6 +1124,12 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 1.2;
+}
+
+.mx-demo-checkin .mx-demo-checkin__focus-grid button span {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .mx-demo-checkin .mx-demo-checkin__focus-grid button.is-selected {
