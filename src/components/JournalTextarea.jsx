@@ -180,6 +180,7 @@ export default function JournalTextarea({
   writingCanvas = false,
   guidedFlow = false,
   showAddAction = false,
+  hideAddAction = false,
 }) {
   const editorRef = useRef(null)
   const emittedValueRef = useRef(null)
@@ -379,7 +380,7 @@ export default function JournalTextarea({
             style={keyboardDockStyle}
           >
             <div className="flex shrink-0 items-center gap-1.5">
-              {(showAddAction || floatingToolbar) && (
+              {(showAddAction || floatingToolbar) && !hideAddAction && (
                 <button
                   type="button"
                   aria-label={

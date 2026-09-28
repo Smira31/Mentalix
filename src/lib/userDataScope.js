@@ -1,6 +1,7 @@
 const USER_DATA_PREFIXES = [
   'mentalix:today:snapshot:',
   'mentalix:trends:snapshot:',
+  'mentalix:streak:snapshot:',
   'mx-series-snapshot:',
   'mx-series-preferences:',
   'mx-journal-',

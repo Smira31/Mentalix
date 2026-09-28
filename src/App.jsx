@@ -1,8 +1,11 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 
 import { ChevronDown, Ellipsis, X } from 'lucide-react'
 
 import ErrorBoundary from './components/ErrorBoundary'
+import ScreenErrorBoundary from './components/ScreenErrorBoundary'
+
+import { lazyWithRetry } from './lib/lazyWithRetry'
 
 import { platform, platformName } from './platform'
 import { paintChrome, lockVerticalSwipes, useSettingsButton } from './platform/telegram.hooks'
@@ -65,23 +68,32 @@ const ONBOARDED_KEY = 'mx-onboarded-v2'
 // Первый экран (Today) и Splash остаются в стартовом bundle.
 // Авторизация, онбординг и блокировка загружаются только когда нужны —
 // большинство пользователей их не видит при запуске.
-const WebAuthScreen = lazy(() => import('./screens/WebAuthScreen'))
-const Onboarding = lazy(() => import('./screens/Onboarding'))
-const AppLock = lazy(() => import('./screens/AppLock'))
+/*
+ * lazyWithRetry (src/lib/lazyWithRetry.js): у ленивого импорта есть
+ * срок и один повтор, при окончательной ошибке чанка — одна
+ * перезагрузка страницы, и только затем ошибка уходит в границу.
+ * Это лечит «чёрный экран» под-экранов в Telegram WebView: зависший
+ * или исчезнувший после деплоя чанк больше не оставляет пустой
+ * shell без кнопок.
+ */
+const WebAuthScreen = lazyWithRetry(() => import('./screens/WebAuthScreen'))
+const Onboarding = lazyWithRetry(() => import('./screens/Onboarding'))
+const AppLock = lazyWithRetry(() => import('./screens/AppLock'))
 
-const Practices = lazy(() => import('./screens/Practices'))
-const Analytics = lazy(() => import('./screens/Analytics'))
-const MentalixChat = lazy(() => import('./screens/Mentalix'))
+const Practices = lazyWithRetry(() => import('./screens/Practices'))
+const Analytics = lazyWithRetry(() => import('./screens/Analytics'))
+const MentalixChat = lazyWithRetry(() => import('./screens/Mentalix'))
 // Профиль и его под-экраны («подписка.», «поддержать проект.», опрос) лежат
 // в одном чанке. Грузим его заранее, когда «Сегодня» уже показан, — иначе
 // первый тап по кнопке профиля ждёт загрузку кода.
 const loadSettings = () => import('./screens/Settings')
-const Settings = lazy(loadSettings)
-const Library = lazy(() => import('./screens/Library'))
-const History = lazy(() => import('./screens/History'))
+const Settings = lazyWithRetry(loadSettings)
+const Library = lazyWithRetry(() => import('./screens/Library'))
+const History = lazyWithRetry(() => import('./screens/History'))
+
 
 // Код панели попадает в сеть только после проверки демо и отсутствия Telegram.
-const DemoPanel = lazy(() => import('./components/DemoPanel'))
+const DemoPanel = lazyWithRetry(() => import('./components/DemoPanel'))
 
 /* ============================================================
    SPLASH
@@ -981,6 +993,16 @@ function App() {
     scrollAppToTop()
   }, [scrollAppToTop])
 
+  /*
+   * Выход из ошибки экрана в ScreenErrorBoundary: снимает оверлей
+   * (например, Settings) и возвращает на «Сегодня». resetKey границы
+   * меняется вместе с вкладкой/оверлеем, поэтому ошибка не застревает.
+   */
+  const goHome = useCallback(() => {
+    setOverlay(null)
+    goToday()
+  }, [goToday])
+
   const openPractice = useCallback(
     sub => {
       platform.haptic('light')
@@ -1324,20 +1346,21 @@ function App() {
               tab === 'mentor' && !overlay ? undefined : { paddingBottom: contentBottomPadding }
             }
           >
-            <Suspense fallback={<ScreenLoading />}>
-              {!user && (
-                <p
-                  className="
+            <ScreenErrorBoundary resetKey={overlay || tab} onHome={goHome}>
+              <Suspense fallback={<ScreenLoading />}>
+                {!user && (
+                  <p
+                    className="
               text-muted
               text-[13px]
               px-6
               text-center
               pt-8
             "
-                >
-                  Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
-                </p>
-              )}
+                  >
+                    Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя
+                  </p>
+                )}
 
               {/* Settings */}
 
@@ -1468,8 +1491,9 @@ function App() {
                     />
                   )}
                 </>
-              )}
-            </Suspense>
+                )}
+              </Suspense>
+            </ScreenErrorBoundary>
           </div>
         </div>
 
