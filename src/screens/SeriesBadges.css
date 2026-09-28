@@ -48,8 +48,11 @@
 
 /* В демо-режиме полноэкранная страница стартует от верхнего края,
    где висит демо-бейдж (z-index 9999). Сдвигаем вкладки ниже бейджа,
-   чтобы зона нажатия не перекрывалась. */
-[data-mentalix-demo-frame='true'] .mx-path-header {
+   чтобы зона нажатия не перекрывалась.
+   mx-real-phone-demo — на <html> в мобильном демо-режиме;
+   data-mentalix-demo-frame — в десктоп-демо-фрейме. */
+[data-mentalix-demo-frame='true'] .mx-path-header,
+.mx-real-phone-demo .mx-path-header {
   padding-top: 44px;
 }
 
