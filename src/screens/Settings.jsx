@@ -25,7 +25,6 @@ import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
-import { PAYMENTS_ENABLED } from '../config/payments'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
@@ -1089,13 +1088,11 @@ export default function Settings({
               onClick={() => openSub('data')}
               testId="profile-row-data"
             />
-            {PAYMENTS_ENABLED && (
-              <ProfileRow
-                title="Подписка"
-                value={tierLabel}
-                onClick={() => setScreen('subscription')}
-              />
-            )}
+            <ProfileRow
+              title="Подписка"
+              value={tierLabel}
+              onClick={() => setScreen('subscription')}
+            />
           </ProfileCard>
         </ProfileGroup>
 
