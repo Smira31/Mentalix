@@ -55,12 +55,12 @@ test('Evening: ноль валиден; при loading, ошибке или malf
 })
 
 test('Evening: completion copy, feedback, Scout и surprise остаются прежними', () => {
-  assert.match(completion, /isEvening \? 'Чек-ин завершён' : 'Готово\.'/)
-  assert.match(completion, /Было полезно\?/)
+  assert.match(completion, /<CheckInCompletion\s+evening=\{isEvening\}/)
+  assert.match(completion, /onFeedback=\{label =>/)
   assert.match(completion, /sendCheckinFeedback\(/)
   assert.match(completion, /data-testid="surprise-insight"/)
   assert.match(core, /maybeBuildSurprise\(user\)/)
   assert.match(core, /'checkin-open-scout'/)
-  assert.match(core, /\{ text: 'Вернуться в Сегодня', run: onDone \}/)
+  assert.match(core, /\{ text: 'Сохранить и выйти', run: onDone \}/)
   assert.match(core, /testId: isEvening \? 'checkin-back-to-today' : 'checkin-complete'/)
 })

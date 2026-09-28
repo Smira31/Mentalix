@@ -155,28 +155,25 @@ async function getSource() {
   return checkinSource
 }
 
-test('экран завершения вечера содержит «Чек-ин завершён» и «Было полезно?»', async () => {
+test('оба завершения используют общий экран оценки', async () => {
   const src = await getSource()
   const core = src.slice(
     src.indexOf('function CheckInCore'),
     src.indexOf('function CheckIn({')
   )
-  assert.match(core, /Чек-ин завершён/)
-  assert.match(core, /Было полезно\?/)
-  assert.match(core, /data-testid="checkin-feedback-option"/)
+  const component = await readFile(new URL('../../src/components/CheckInCompletion.jsx', import.meta.url), 'utf8')
+  assert.match(core, /<CheckInCompletion/)
+  assert.match(component, /Было полезно сегодня\?/)
+  assert.match(component, /data-testid="checkin-feedback-option"/)
+  assert.match(component, /selected === option\.value \? null : option\.value/)
+  assert.match(component, /aria-pressed=\{selected === option\.value\}/)
 })
 
-test('утренний поток не вызывает sendCheckinFeedback — вопрос об оценке убран', async () => {
+test('утренний поток отправляет оценку по id сохранённой записи', async () => {
   const src = await getSource()
-  const morningFlow = src.slice(
-    src.indexOf('function MorningCheckInFlow'),
-    src.indexOf('// ── Чек-ин и вечерний')
-  )
-
-  // Утренний поток больше не отправляет оценку практики
-  assert.doesNotMatch(morningFlow, /sendCheckinFeedback/, 'утренний поток не использует sendCheckinFeedback')
-  assert.doesNotMatch(morningFlow, /Было полезно\?/, 'утренний поток не спрашивает «Было полезно?»')
-  assert.doesNotMatch(morningFlow, /checkin-feedback-option/, 'утренний поток не рендерит кнопки оценки')
+  const morningFlow = src.slice(src.indexOf('function MorningCheckInFlow'), src.indexOf('// ── Чек-ин и вечерний'))
+  assert.match(morningFlow, /setSavedMorningId\(savedMorning\?\.id \?\? null\)/)
+  assert.match(morningFlow, /sendCheckinFeedback\(api\.checkin\.feedback, savedMorningId, label\)/)
 })
 
 test('вечерний поток: экран завершения вызывает sendCheckinFeedback по клику на кнопку', async () => {

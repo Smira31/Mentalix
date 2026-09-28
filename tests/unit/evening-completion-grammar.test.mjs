@@ -38,7 +38,7 @@ function getMorningFlow(src) {
 test('1. вечерний completion: заголовок = «Чек-ин завершён»', async () => {
   const src = await getSource()
   const core = getCore(src)
-  assert.match(core, /Чек-ин завершён/, 'вечерний completion должен содержать «Чек-ин завершён»')
+  assert.match(core, /<CheckInCompletion\s+evening=\{isEvening\}/, 'вечерний completion использует общий экран')
 })
 
 test('2. вечерний completion: primary CTA = «Вернуться в Сегодня»', async () => {
@@ -86,15 +86,15 @@ test('4. вечерний completion: streak fetch failure не блокируе
 test('5. morning completion не изменился: заголовок «Чек-ин завершён»', async () => {
   const src = await getSource()
   const morning = getMorningFlow(src)
-  assert.match(morning, /Чек-ин завершён/, 'morning completion содержит «Чек-ин завершён»')
+  assert.match(morning, /<CheckInCompletion\s+evening=\{false\}/, 'morning completion использует общий экран')
   assert.match(morning, /checkin-back-to-today/, 'morning CTA testId = checkin-back-to-today')
 })
 
 test('6. evening feedback «Было полезно?» продолжает работать', async () => {
   const src = await getSource()
   const core = getCore(src)
-  assert.match(core, /Было полезно\?/, 'feedback «Было полезно?» присутствует')
-  assert.match(core, /data-testid="checkin-feedback-option"/, 'feedback options имеют testId')
+  assert.match(core, /onFeedback=\{label =>/, 'feedback подключён')
+  assert.match(await readFile(new URL('../../src/components/CheckInCompletion.jsx', import.meta.url), 'utf8'), /data-testid="checkin-feedback-option"/, 'feedback options имеют testId')
   assert.match(core, /sendCheckinFeedback/, 'sendCheckinFeedback вызывается')
 })
 
