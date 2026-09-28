@@ -850,6 +850,7 @@
   color: rgb(var(--c-muted, 133 133 133));
 }
 
+/* H4: строки-карточки и галочки с нормальным контрастом */
 .mx-progress-filter-sheet__row {
   display: flex;
   align-items: center;
@@ -858,7 +859,7 @@
   min-height: 52px;
   margin: 0 16px 8px;
   padding: 0 16px 0 17px;
-  border: 0;
+  border: 1px solid rgba(243, 243, 243, 0.08);
   border-radius: 16px;
   background: rgb(var(--c-card2, 17 17 17));
   color: rgb(var(--c-text, 243 243 243));
@@ -879,11 +880,11 @@
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 999px;
-  border: 1.5px solid rgb(var(--c-border, 41 41 41));
-  font-size: 13px;
+  border: 2px solid rgba(243, 243, 243, 0.25);
+  font-size: 14px;
   font-weight: 700;
   color: rgb(var(--c-bg, 5 4 3));
 }
