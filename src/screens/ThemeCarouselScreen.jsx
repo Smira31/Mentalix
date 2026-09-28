@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom'
 import { ArrowRight } from 'lucide-react'
 
 import { api } from '../lib/api'
+import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
+import { peekThemesData, fetchThemesData, invalidateThemesData } from '../lib/themesDataCache'
 import { platform } from '../platform'
 import { useBackButton } from '../platform/telegram.hooks'
 import { RoundBackButton } from '../components/NestedScreenHeader'
@@ -31,8 +33,8 @@ import './ThemeCarouselScreen.css'
  * visualViewport, отступ под контролы Telegram.
  */
 export default function ThemeCarouselScreen({ user, themeId, onBack }) {
-  const [data, setData] = useState(null)
-  const [themes, setThemes] = useState([])
+  const [data, setData] = useState(() => peekThemeDetail(user?.id, themeId))
+  const [themes, setThemes] = useState(() => (user ? peekThemesData(user.id) || [] : []))
   const [activeId, setActiveId] = useState(themeId)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [writing, setWriting] = useState(false)
@@ -53,12 +55,13 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   useEffect(() => {
     if (!user) return
     let alive = true
-    api.themes
-      .list(user.id)
+    fetchThemesData(user.id)
       .then(list => {
         if (alive) setThemes(Array.isArray(list) ? list : [])
       })
-      .catch(console.error)
+      .catch(() => {
+        if (alive) setThemes([])
+      })
     return () => {
       alive = false
     }
@@ -67,10 +70,9 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   useEffect(() => {
     if (!user || !activeId) return
     let alive = true
-    api.themes
-      .get(activeId, user.id)
+    fetchThemeDetail(user.id, activeId)
       .then(fresh => {
-        if (alive) setData(fresh)
+        if (alive && fresh) setData(fresh)
       })
       .catch(console.error)
     return () => {
@@ -80,16 +82,17 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
 
   function refreshData() {
     if (!user || !activeId) return
-    api.themes.get(activeId, user.id).then(setData).catch(console.error)
-    api.themes
-      .list(user.id)
+    invalidateThemeDetail(user.id, activeId)
+    fetchThemeDetail(user.id, activeId, { force: true }).then(d => { if (d) setData(d) }).catch(console.error)
+    invalidateThemesData(user.id)
+    fetchThemesData(user.id, { force: true })
       .then(list => setThemes(Array.isArray(list) ? list : []))
       .catch(console.error)
   }
 
   function openTheme(id) {
     platform.haptic('light')
-    setData(null)
+    setData(peekThemeDetail(user?.id, id))
     setQuestionIndex(0)
     setActiveId(id)
   }
