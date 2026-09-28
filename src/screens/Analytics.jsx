@@ -9,6 +9,8 @@ import {
 import { sanitizeTrendsData } from '../lib/trendsDataSanitizer'
 import { loadIndependentSources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { api } from '../lib/api'
+import { platform } from '../platform'
+import { useBackButton } from '../platform/telegram.hooks'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 import ProgressHistory from './progress/ProgressHistory'
@@ -24,6 +26,8 @@ import {
   formatPeriodRange,
   periodName,
 } from './progress/progressAnalyticsPeriods'
+import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
+import { Eye } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
@@ -216,13 +220,17 @@ function CardShell({ title, subtitle, children, testId }) {
             …
           </button>
           {menuOpen && (
-            <button
-              type="button"
-              className="mx-progress-card__hide"
-              onClick={() => actions.hide(actions.id)}
+            <ProgressGlassMenu
+              role="menu"
+              aria-label={`Действия: ${title}`}
+              style={{ position: 'absolute', top: '44px', right: '12px' }}
             >
-              <span aria-hidden="true">👁</span> Скрыть график
-            </button>
+              <ProgressGlassMenuItem
+                icon={Eye}
+                label="Скрыть график"
+                onClick={() => actions.hide(actions.id)}
+              />
+            </ProgressGlassMenu>
           )}
         </>
       )}
@@ -292,7 +300,7 @@ function NeedDataPlaque({ daysWithRecords, onRemind }) {
   return (
     <section className="mx-progress-need-data" aria-labelledby="progress-need-data-title">
       <h2 id="progress-need-data-title" className="mx-progress-need-data__title">
-        Нужны записи ещё за {formatDays(remaining)}, чтобы показать выводы
+        Нужны данные ещё за {formatDays(remaining)}, чтобы показать выводы
       </h2>
       <div className="mx-progress-need-data__days" aria-hidden="true">
         {cells.map((isDone, i) => (
@@ -485,7 +493,12 @@ function InfluencesCard({ direction, influences }) {
         subtitle="Из твоих отметок"
         testId={`progress-conclusions-${direction}`}
       >
-        <CardEmpty hint={`Пока мало данных — отметь настроение ещё ${formatDays(remaining)}`} />
+        <div className="mx-progress-card__empty">
+          <span className="mx-progress-card__empty-title">Пока нет данных</span>
+          <span className="mx-progress-card__empty-hint">
+            Отметь настроение ещё {formatDays(remaining)} — здесь появятся выводы
+          </span>
+        </div>
       </CardShell>
     )
   }
@@ -654,6 +667,11 @@ function FullCalendar({ poolCheckins, onBack }) {
 
 function CustomizeLayer({ preferences, onToggle, onClose }) {
   const sections = [...new Set(ANALYTICS_CARDS.map(c => c.section))]
+
+  useBackButton(() => {
+    platform.haptic('light')
+    onClose()
+  })
 
   return (
     <div className="mx-progress-customize" data-testid="progress-customize">
@@ -955,8 +973,8 @@ export default function Analytics({
   }
 
   // Нижний отступ: пилюля (50) + панель (53 + 8 offset) + 16 = 127.
-  // При свёрнутой навигации пилюля скрыта, панель схлопнута (58) — отступ меньше (A6).
-  const bottomSpacerHeight = navCollapsed ? 58 + 8 + 16 : 50 + 53 + 8 + 16
+  // При скрытой навигации (P1: уехала целиком) пилюля тоже скрыта — отступ 16.
+  const bottomSpacerHeight = navCollapsed ? 16 : 50 + 53 + 8 + 16
 
   return (
     <div
@@ -1004,30 +1022,22 @@ export default function Analytics({
           </button>
         )}
         {activeTab === 'analytics' && periodMenuOpen && (
-          <div
+          <ProgressGlassMenu
             id="progress-period-menu"
-            className="mx-progress-period-menu"
             role="menu"
             aria-label="Период аналитики"
+            style={{ position: 'absolute', right: 0, top: '56px' }}
           >
             {ANALYTICS_GRANULARITIES.map(g => (
-              <button
+              <ProgressGlassMenuItem
                 key={g.id}
-                type="button"
-                className="mx-progress-period-menu__item"
+                label={g.label}
                 role="menuitemradio"
-                aria-checked={granularity === g.id}
+                selected={granularity === g.id}
                 onClick={() => selectGranularity(g.id)}
-              >
-                <span>{g.label}</span>
-                {granularity === g.id && (
-                  <span className="mx-progress-period-menu__check" aria-hidden="true">
-                    ✓
-                  </span>
-                )}
-              </button>
+              />
             ))}
-          </div>
+          </ProgressGlassMenu>
         )}
       </div>
 
