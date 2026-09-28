@@ -198,6 +198,16 @@ export function isRecoveryDemoRequested() {
 }
 
 /*
+ * Превью-ссылка на «твой профиль.»: ?demo=1&action=profile.
+ * Вне демо-режима возвращает false.
+ */
+export function isProfileDemoRequested() {
+  return (
+    isPreviewDemoMode() && new URLSearchParams(window.location.search).get('action') === 'profile'
+  )
+}
+
+/*
  * Прямые превью-ссылки на экраны завершения чек-ина — чтобы владелец
  * проверял финальные экраны без прохождения всего потока:
  *   ?demo=1&action=complete_morning
@@ -258,7 +268,11 @@ function previewTodayState() {
 }
 
 export function demoReviewNow(reviewHour, real = now()) {
-  if (!isPreviewDemoMode() || new URLSearchParams(window.location.search).get('review_open') !== '1') return real
+  if (
+    !isPreviewDemoMode() ||
+    new URLSearchParams(window.location.search).get('review_open') !== '1'
+  )
+    return real
   const date = new Date(real)
   date.setHours(Math.min(23, Math.max(Number(reviewHour) || DEFAULT_REVIEW_HOUR, 19) + 1), 30, 0, 0)
   return date
@@ -303,7 +317,11 @@ function seedState(todayState = null) {
 
   // Чекин на сегодня — зависит от состояния.
   let checkin = null
-  if (todayState === 'dayInProgress' || todayState === 'reviewPending' || todayState === 'morning_done') {
+  if (
+    todayState === 'dayInProgress' ||
+    todayState === 'reviewPending' ||
+    todayState === 'morning_done'
+  ) {
     checkin = {
       id: 900501,
       date: todayStr,
@@ -316,7 +334,11 @@ function seedState(todayState = null) {
       emotion: 'ровно',
       review_completed_at: null,
     }
-  } else if (todayState === 'dayClosed' || todayState === 'bothDone' || todayState === 'day_closed') {
+  } else if (
+    todayState === 'dayClosed' ||
+    todayState === 'bothDone' ||
+    todayState === 'day_closed'
+  ) {
     checkin = {
       id: 900501,
       date: todayStr,
@@ -481,7 +503,11 @@ function seedState(todayState = null) {
       id: DEMO_USER.id,
       first_name: DEMO_USER.first_name,
       email: DEMO_USER.email,
-      created_at: empty ? today.toISOString() : scenario === 'Неделя' ? offsetDate(today, -6) : offsetDate(today, -2),
+      created_at: empty
+        ? today.toISOString()
+        : scenario === 'Неделя'
+          ? offsetDate(today, -6)
+          : offsetDate(today, -2),
       reminder_enabled: false,
       reminder_hour: 9,
       days_active: empty ? 0 : scenario === 'Неделя' ? 6 : 3,
