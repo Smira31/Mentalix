@@ -212,6 +212,8 @@ test.describe('MXL-246 Journal responsive contract (tablet/desktop)', () => {
 
       await page.goto('/')
       await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+      // Карусель темы недели: CTA «Начать запись» открывает ThemeScreen
+      await page.getByTestId('theme-carousel-cta').click()
       const dayEditor = page.getByRole('textbox', { name: 'Мысль по теме недели' })
       await expect(dayEditor).toBeVisible()
       await assertNoHorizontalOverflow(page)

@@ -564,6 +564,8 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+    // Карусель темы недели: CTA «Начать запись» открывает ThemeScreen
+    await page.getByTestId('theme-carousel-cta').click()
     await captureScreen({
       page,
       viewport,
@@ -606,6 +608,8 @@ test('локальный UX smoke по основному маршруту', asy
     await page.getByRole('button', { name: 'Сохранить мысль' }).click()
     const reflectionPayload = (await reflectionRequest).postDataJSON()
     expect(reflectionPayload.text).toBe('**Важное**')
+    // «Назад» из ThemeScreen → карусель, ещё «Назад» → Сегодня
+    await page.getByRole('button', { name: 'Назад' }).click()
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Шаги' }).click()

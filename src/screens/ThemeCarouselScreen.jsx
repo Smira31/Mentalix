@@ -77,6 +77,25 @@ export default function ThemeCarouselScreen({ user, themeId, onBack }) {
   const safeIndex = Math.min(questionIndex, Math.max(0, questions.length - 1))
   const currentQuestion = questions[safeIndex]
 
+  // При загрузке данных прокручиваем карусель к текущему дню —
+  // чтобы человек продолжил с того места, где остановился, а не
+  // с первого (возможно уже отвеченного) вопроса.
+  useEffect(() => {
+    if (!data || !trackRef.current) return
+    const days = Array.isArray(data.days) ? data.days.slice(0, 7) : []
+    if (!days.length) return
+    const currentIdx = days.findIndex(d => d.day === data.current_day)
+    if (currentIdx <= 0) return
+    const track = trackRef.current
+    const cards = [...track.querySelectorAll('.mx-theme-carousel-q')]
+    const card = cards[currentIdx]
+    if (card) {
+      track.scrollTo({
+        left: card.offsetLeft - track.clientWidth / 2 + card.offsetWidth / 2,
+      })
+    }
+  }, [data])
+
   function handleScroll() {
     const track = trackRef.current
     if (!track || !track.clientWidth) return
