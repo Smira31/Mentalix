@@ -5,6 +5,7 @@ import { useSynced } from '../lib/store'
 import { buildServerSeriesViewModel } from '../lib/series'
 import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
 import { getNearestMilestones } from '../lib/milestones'
+import { daysSinceRegistration } from '../lib/badgeCatalog'
 import MilestoneBars from '../components/MilestoneBars'
 import {
   ProfileBody,
@@ -110,10 +111,11 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
   const bestStreak = canonical?.bestStreak
   const birthdayFormatted = formatBirthday(birthdayRaw)
   const daysToBirthday = daysUntilNextBirthday(birthdayRaw)
-  const milestones = getMilestones(stats)
+  const daysInSystem = daysSinceRegistration(stats?.created_at || user?.created_at)
+  const milestones = getMilestones(stats && { ...stats, days_active: daysInSystem ?? 0 })
   const nearestMilestones = legacy
     ? getNearestMilestones({
-        badges: serverSeriesBadges(legacy.badges, canonical),
+        badges: serverSeriesBadges(legacy.badges, canonical, daysInSystem),
         streak: currentStreak,
       })
     : []
@@ -141,7 +143,7 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
             subtitle={
               stats ? (
                 <span data-testid="profile-about-stats">
-                  {stats.days_active || 0} дней в системе · {stats.total_checkins || 0} чек-инов
+                  {daysInSystem ?? '—'} дней в системе · {stats.total_checkins || 0} чек-инов
                 </span>
               ) : null
             }
@@ -190,7 +192,7 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
       {stats && (
         <ProfileGroup label="Статистика">
           <ProfileCard>
-            <ProfileRow title="Дней в системе" value={stats.days_active || 0} />
+            <ProfileRow title="Дней в системе" value={daysInSystem ?? '—'} />
             <ProfileRow title="Всего чек-инов" value={stats.total_checkins || 0} />
             {bestStreak != null && (
               <ProfileRow

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { platform, platformName } from '../platform'
 import { useAutoDismissOnScroll } from '../lib/useAutoDismissOnScroll'
 import { api } from '../lib/api'
@@ -752,20 +752,19 @@ export default function Today({
   // SERIES & BADGES
   // ============================================================
 
-  if (seriesOpen) {
-    return (
-      <SubScreenBoundary resetKey="series" onExit={onCloseSeries}>
-        <SeriesBadges
-          user={user}
-          onBack={onCloseSeries}
-          onOpenPractice={practice => {
-            onCloseSeries?.()
-            onOpenPractice?.(practice)
-          }}
-        />
-      </SubScreenBoundary>
-    )
-  }
+  const seriesSheet = seriesOpen ? (
+    <Suspense fallback={null}>
+      <SeriesBadges
+        user={user}
+        onBack={onCloseSeries}
+        onOpenPractice={practice => {
+          onCloseSeries?.()
+          if (practice === 'checkin') changeSub('checkin')
+          else onOpenPractice?.(practice)
+        }}
+      />
+    </Suspense>
+  ) : null
 
   // ============================================================
   // ЧЕК-ИН / АНАЛИЗ ДНЯ
@@ -976,6 +975,7 @@ export default function Today({
     return (
       <div className="mx-screen-shell">
         <h1 className="sr-only">Сегодня</h1>
+      {seriesSheet}
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
           onOpenDemoPanel={onOpenDemoPanel}
@@ -992,6 +992,7 @@ export default function Today({
     return (
       <div className="mx-screen-shell">
         <h1 className="sr-only">Сегодня</h1>
+      {seriesSheet}
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
           onOpenDemoPanel={onOpenDemoPanel}
@@ -1190,6 +1191,7 @@ export default function Today({
   return (
     <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
+      {seriesSheet}
       {recovery && recoveryStage !== 'offer' && (
         <SubScreenBoundary resetKey={recoveryStage} onExit={dismissRecovery}>
           <StreakRecovery

@@ -118,6 +118,7 @@ export const DEMO_USER = {
   web_user_id: 'preview-demo-user',
   first_name: 'Preview Demo',
   email: 'preview@example.invalid',
+  created_at: new Date(Date.now() - 6 * 86400000).toISOString(),
   linked: false,
   demo: true,
 }
@@ -451,6 +452,7 @@ function seedState(todayState = null) {
       id: DEMO_USER.id,
       first_name: DEMO_USER.first_name,
       email: DEMO_USER.email,
+      created_at: empty ? today.toISOString() : scenario === 'Неделя' ? offsetDate(today, -6) : offsetDate(today, -2),
       reminder_enabled: false,
       reminder_hour: 9,
       days_active: empty ? 0 : scenario === 'Неделя' ? 6 : 3,
