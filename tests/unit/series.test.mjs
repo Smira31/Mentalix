@@ -1,18 +1,19 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 
 import {
-  buildSeriesViewModel,
-  currentCheckinStreak,
-  longestCheckinStreak,
-  collectActivityDays,
+  buildServerSeriesViewModel,
+  splitCheckinsForComparison,
+  withTodayCheckin,
   seriesLogicalDateKey,
 } from '../../src/lib/series.js'
+import { readCanonicalStreakStats, serverSeriesBadges } from '../../src/lib/canonicalStreak.js'
+
+const seriesSource = await readFile(new URL('../../src/lib/series.js', import.meta.url), 'utf8')
 
 /**
  * Локальный YYYY-MM-DD относительно сегодняшнего дня.
- * Тесты серии зависят от «вчера/сегодня» — жёстко зашитые даты
- * ломаются при смене календарного дня.
  */
 function dayKey(offset = 0) {
   const d = new Date()
@@ -21,28 +22,44 @@ function dayKey(offset = 0) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-// Логическая дата с отсечкой 5:00 — как localDayKey в series.js.
-// dayKey() этой отсечки не имеет, поэтому до 5 утра UTC расходится
-// с logicalDateKey / collectActivityDays, которые используют localDayKey.
-function logicalDayKey(offset = 0) {
-  const d = new Date()
-  if (d.getHours() < 5) d.setDate(d.getDate() - 1)
-  d.setDate(d.getDate() + offset)
-  const pad = v => String(v).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+function checkinDay(offset) {
+  const key = dayKey(offset)
+  return { date: key, review_completed_at: `${key}T08:00:00Z` }
 }
 
-// Понедельник относительно текущего дня: стабильные проверки границ пн–вс.
-const mondayOffset = -((new Date().getDay() + 6) % 7)
-function weekday(weekOffset, dayOffset) {
-  return dayKey(mondayOffset + weekOffset * 7 + dayOffset)
+function softStats({ currentStreak = 0, bestStreak = 0, activeDays = 0, ...flags } = {}) {
+  return {
+    currentStreak,
+    bestStreak,
+    activeDays,
+    isActiveToday: false,
+    freezeUsedThisWeek: false,
+    recoverable: false,
+    ...flags,
+  }
 }
-function checkin(date) {
-  return { date }
-}
-function noon(date) {
-  return new Date(`${date}T12:00:00`)
-}
+
+/*
+ * МЯГКАЯ СЕРИЯ — ЕДИНЫЙ ИСТОЧНИК: GET /api/streak
+ *
+ * Любая завершённая активность за день (чек-ин, журнал, ритуал, аскеза,
+ * «Настроение», направленная запись) засчитывается в серию; один пропуск
+ * в календарную неделю не рвёт серию (заморозка); «Верни серию» доступна
+ * за вчера. Расчёт живёт на сервере; фронтенд не восстанавливает серию
+ * из истории чек-инов.
+ */
+
+test('в series.js больше нет локального расчёта серии по истории', () => {
+  // Клиент не может пересчитать мягкую серию: календарная граница дня,
+  // заморозка недели и учёт «любой активности» — серверные правила.
+  assert.doesNotMatch(seriesSource, /currentCheckinStreak/)
+  assert.doesNotMatch(seriesSource, /longestCheckinStreak/)
+  assert.doesNotMatch(seriesSource, /collectActivityDays/)
+  assert.doesNotMatch(seriesSource, /streakRuns/)
+  assert.doesNotMatch(seriesSource, /\bbuildSeriesViewModel\(/)
+})
+
+// ── Логическая дата: отсечка 05:00 остаётся клиентской утилитой ──
 
 test('seriesLogicalDateKey maps 02:00 to yesterday and 05:00 to today', () => {
   const today = dayKey()
@@ -51,299 +68,181 @@ test('seriesLogicalDateKey maps 02:00 to yesterday and 05:00 to today', () => {
   assert.equal(seriesLogicalDateKey(new Date(`${today}T19:00:00`)), today)
 })
 
-test('currentCheckinStreak counts the completed tail in chronological order', () => {
-  const checkins = [
-    { date: dayKey(-2), review_completed_at: `${dayKey(-2)}T20:00:00Z` },
-    { date: dayKey(0), review_completed_at: `${dayKey(0)}T20:00:00Z` },
-    { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
-  ]
+// ── withTodayCheckin: якорь сегодняшнего чек-ина для сравнения значков ──
 
-  assert.equal(currentCheckinStreak(checkins), 3)
+test('withTodayCheckin добавляет сегодняшний чек-ин к истории без дублей', () => {
+  // Фиксированный полдень: фолбэк-дата без отсечки 05:00 не зависит от времени прогона.
+  const now = new Date(`${dayKey(0)}T12:00:00`)
+  const today = { id: 7 }
+  const list = withTodayCheckin([], today, now)
+  assert.equal(list.length, 1)
+  assert.equal(list[0].date, dayKey(0))
+
+  const history = [{ date: dayKey(-1) }]
+  const merged = withTodayCheckin(history, { date: dayKey(0) }, now)
+  assert.equal(merged.length, 2)
+  assert.equal(merged[1].date, dayKey(0))
+
+  // Сегодняшний чек-ин не дублируется, если он уже в истории.
+  const deduped = withTodayCheckin([{ date: dayKey(0) }], { date: dayKey(0) }, now)
+  assert.equal(deduped.length, 1)
 })
 
-test('currentCheckinStreak counts morning-only check-ins (date without review_completed_at)', () => {
-  const checkins = [
-    { date: dayKey(-3), review_completed_at: `${dayKey(-3)}T20:00:00Z` },
-    { date: dayKey(-2), review_completed_at: null },
-    { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
-  ]
-
-  assert.equal(currentCheckinStreak(checkins), 3)
+test('withTodayCheckin без сегодняшнего чек-ина не меняет историю', () => {
+  const history = [{ date: dayKey(-1) }]
+  assert.equal(withTodayCheckin(history, null, new Date()), history)
+  assert.deepEqual(withTodayCheckin(history, null, new Date()), history)
 })
 
-test('currentCheckinStreak ignores records without a date or completion marker', () => {
-  const checkins = [checkin(weekday(0, 0)), { review_completed_at: null }, checkin(weekday(0, 3))]
-  assert.equal(currentCheckinStreak(checkins, { now: noon(weekday(0, 3)) }), 1)
-})
+// ── Серверный контракт мягкой серии ──
 
-test('buildSeriesViewModel keeps badges derived from existing stats and practice lists', () => {
-  const model = buildSeriesViewModel({
-    stats: { total_checkins: 5, days_active: 7, best_streak: 4 },
-    checkins: [{ date: dayKey(0), review_completed_at: `${dayKey(0)}T20:00:00Z` }],
-    rituals: [{ streak: 7 }],
-    ascezas: [{ streak: 2 }],
+test('readCanonicalStreakStats пропускает мягкие флаги сервера без пересчёта', () => {
+  const stats = readCanonicalStreakStats({
+    current_streak: 6,
+    longest_streak: 9,
+    total_active_days: 12,
+    is_active_today: true,
+    freeze_used_this_week: true,
+    recoverable: false,
   })
-
-  assert.equal(model.currentStreak, 1)
-  assert.equal(model.bestStreak, 1)
-  assert.equal(model.totalCheckins, 1)
-  assert.equal(model.activeDays, 1)
-  assert.equal(model.badges.length, 9)
-  assert.equal(model.badges.find(badge => badge.id === 'voice-heard').done, false)
-  assert.equal(model.badges.find(badge => badge.id === 'ritual-holds').done, true)
+  assert.deepEqual(stats, softStats({
+    currentStreak: 6,
+    bestStreak: 9,
+    activeDays: 12,
+    isActiveToday: true,
+    freezeUsedThisWeek: true,
+  }))
 })
 
-test('freeze does not unlock 2/3/5-day badges for a missed day', () => {
-  const dates = [0, 2, 3, 4, 5].map(day => weekday(-1, day))
-  for (const count of [1, 2, 4, 5]) {
-    const model = buildSeriesViewModel({ checkins: dates.slice(0, count).map(checkin) })
-    assert.equal(model.bestStreak, count)
-    for (const goal of [2, 3, 5]) {
-      const badge = model.badges.find(
-        item => item.id === `streak-${{ 2: 'two', 3: 'three', 5: 'five' }[goal]}`
-      )
-      assert.equal(badge.done, count >= goal)
-      assert.equal(badge.progress, Math.min(count, goal))
-    }
+test('readCanonicalStreakStats: нулевая серия — валидное значение, не «нет данных»', () => {
+  const stats = readCanonicalStreakStats({
+    current_streak: 0,
+    longest_streak: 0,
+    total_active_days: 0,
+  })
+  assert.notEqual(stats, null)
+  assert.equal(stats.currentStreak, 0)
+  assert.equal(stats.isActiveToday, false)
+  assert.equal(stats.freezeUsedThisWeek, false)
+  assert.equal(stats.recoverable, false)
+})
+
+test('readCanonicalStreakStats не принимает некорректные ответы', () => {
+  assert.equal(readCanonicalStreakStats(null), null)
+  assert.equal(readCanonicalStreakStats({}), null)
+  // Отрицательные и нецелые числа серии — не подменяются расчётом по истории.
+  assert.equal(readCanonicalStreakStats({ current_streak: -1, longest_streak: 3, total_active_days: 3 }), null)
+  assert.equal(readCanonicalStreakStats({ current_streak: 2.5, longest_streak: 3, total_active_days: 3 }), null)
+  assert.equal(readCanonicalStreakStats({ current_streak: 2, longest_streak: '5', total_active_days: 3 }), null)
+  assert.equal(readCanonicalStreakStats({ current_streak: 2, longest_streak: 5, total_active_days: -1 }), null)
+})
+
+// ── Значки серии из серверной статистики ──
+
+const STREAK_IDS = ['streak-two', 'streak-three', 'streak-five']
+
+test('serverSeriesBadges открывает значки серии по серверному bestStreak', () => {
+  // Как в SeriesBadges/Profile: модель значков строится без серии,
+  // затем серверная статистика доопределяет серийные значки.
+  const badges = serverSeriesBadges(
+    buildServerSeriesViewModel({ checkins: [checkinDay(0)] }).badges,
+    softStats({ bestStreak: 3 })
+  )
+  assert.equal(badges.find(b => b.id === 'streak-two').done, true)
+  assert.equal(badges.find(b => b.id === 'streak-three').done, true)
+  assert.equal(badges.find(b => b.id === 'streak-five').done, false)
+  assert.equal(badges.find(b => b.id === 'streak-five').progress, 3)
+})
+
+test('serverSeriesBadges: «Неделя/Месяц пути» — по серверным activeDays, не по bestStreak', () => {
+  const badges = serverSeriesBadges(
+    buildServerSeriesViewModel({ checkins: [checkinDay(0)] }).badges,
+    softStats({ bestStreak: 30, activeDays: 6 })
+  )
+  assert.equal(badges.find(b => b.id === 'week-on-path').done, false)
+  assert.equal(badges.find(b => b.id === 'week-on-path').progress, 6)
+  assert.equal(badges.find(b => b.id === 'streak-five').done, true)
+})
+
+test('serverSeriesBadges: без серверной статистики серийные значки закрыты', () => {
+  const badges = serverSeriesBadges(
+    buildServerSeriesViewModel({ checkins: [checkinDay(0)] }).badges,
+    null
+  )
+  for (const id of [...STREAK_IDS, 'week-on-path', 'month-on-path']) {
+    assert.equal(badges.find(b => b.id === id).done, false, `${id} закрыт без серверных данных`)
   }
 })
 
-test('buildSeriesViewModel is safe for empty API responses', () => {
-  const model = buildSeriesViewModel({})
+// ── View-model без клиентского восстановления серии ──
 
-  assert.equal(model.currentStreak, 0)
+test('buildServerSeriesViewModel берёт числа серии только из canonicalStats', () => {
+  const history = [-4, -3, -2, -1, 0].map(checkinDay)
+  // История содержит 5 дней подряд — но клиент не выводит из неё серию.
+  const model = buildServerSeriesViewModel({ checkins: history })
+  assert.equal(model.currentStreak, null)
+  assert.equal(model.bestStreak, null)
+  assert.equal(model.activeDays, null)
+
+  const serverModel = buildServerSeriesViewModel({
+    stats: { total_checkins: 5 },
+    checkins: history,
+    canonicalStats: softStats({ currentStreak: 5, bestStreak: 5, activeDays: 6 }),
+  })
+  assert.equal(serverModel.currentStreak, 5)
+  assert.equal(serverModel.bestStreak, 5)
+  assert.equal(serverModel.activeDays, 6)
+  assert.equal(serverModel.totalCheckins, 5)
+  for (const id of STREAK_IDS) {
+    assert.equal(serverModel.badges.find(b => b.id === id).done, true)
+  }
+})
+
+test('buildServerSeriesViewModel: разорванная серия хранится серверным bestStreak', () => {
+  // Прошлая серия 5 дней, сейчас серия 1: сервер хранит максимум,
+  // клиент не пересчитывает значки из истории.
+  const model = buildServerSeriesViewModel({
+    canonicalStats: softStats({ currentStreak: 1, bestStreak: 5, activeDays: 8 }),
+  })
+  assert.equal(model.currentStreak, 1)
+  for (const id of STREAK_IDS) {
+    assert.equal(model.badges.find(b => b.id === id).done, true)
+  }
+})
+
+test('buildServerSeriesViewModel is safe for empty API responses', () => {
+  const model = buildServerSeriesViewModel({})
+  assert.equal(model.currentStreak, null)
+  assert.equal(model.totalCheckins, 0)
   assert.equal(model.badges.length, 9)
   assert.equal(model.badges.every(badge => badge.done === false), true)
 })
 
-test('currentCheckinStreak stops after two missed days in one week', () => {
-  const checkins = [checkin(weekday(0, 0)), checkin(weekday(0, 3))]
-  assert.equal(currentCheckinStreak(checkins, { now: noon(weekday(0, 3)) }), 1)
-})
-
-test('currentCheckinStreak treats midnight as the next user calendar day', () => {
-  const checkins = [
-    { review_completed_at: `${dayKey(-1)}T23:59:00Z` },
-    { review_completed_at: `${dayKey(0)}T05:01:00Z` },
-  ]
-
-  assert.equal(currentCheckinStreak(checkins, { timezone: 'UTC' }), 2)
-})
-
-test('currentCheckinStreak groups timestamps by the user timezone', () => {
-  const checkins = [
-    { review_completed_at: `${dayKey(-1)}T20:30:00Z` },
-    { review_completed_at: `${dayKey(0)}T03:30:00Z` },
-  ]
-
-  assert.equal(currentCheckinStreak(checkins, { timezone: 'Europe/Moscow' }), 2)
-  assert.equal(currentCheckinStreak(checkins, { timezone: 'America/New_York' }), 1)
-})
-
-test('currentCheckinStreak keeps one missed calendar day without counting it', () => {
-  const checkins = [checkin(weekday(0, 0)), checkin(weekday(0, 2))]
-  assert.equal(currentCheckinStreak(checkins, { now: noon(weekday(0, 2)) }), 2)
-  assert.equal(longestCheckinStreak(checkins), 2)
-})
-
-test('two missed days in the same week reset the current series even without a new check-in', () => {
-  const days = [checkin(weekday(0, 0)), checkin(weekday(0, 2))]
-  assert.equal(currentCheckinStreak(days, { now: noon(weekday(0, 4)) }), 0)
-  assert.equal(longestCheckinStreak(days), 2)
-})
-
-test('one missed day in each adjacent week keeps the series', () => {
-  const days = [checkin(weekday(-1, 4)), checkin(weekday(-1, 6)), checkin(weekday(0, 1))]
-  assert.equal(currentCheckinStreak(days, { now: noon(weekday(0, 1)) }), 3)
-  assert.equal(longestCheckinStreak(days), 3)
-})
-
-test('Sunday and Monday misses use separate weekly allowances', () => {
-  const days = [checkin(weekday(-1, 5)), checkin(weekday(0, 1))]
-  assert.equal(currentCheckinStreak(days, { now: noon(weekday(0, 1)) }), 2)
-  assert.equal(longestCheckinStreak(days), 2)
-})
-
-test('00:00–04:59 belongs to yesterday and does not spend a freeze', () => {
-  const monday = weekday(0, 0)
-  const tuesday = weekday(0, 1)
-  const checkins = [
-    { review_completed_at: `${monday}T22:00:00Z` },
-    { review_completed_at: `${tuesday}T02:30:00Z` },
-  ]
-  assert.equal(currentCheckinStreak(checkins, { timezone: 'UTC', now: new Date(`${tuesday}T04:59:00Z`) }), 1)
-  assert.equal(currentCheckinStreak(checkins, { timezone: 'UTC', now: new Date(`${tuesday}T05:00:00Z`) }), 1)
-  assert.equal(longestCheckinStreak(checkins, { timezone: 'UTC' }), 1)
-})
-
-test('first completed check-in starts at one and an empty history stays at zero', () => {
-  assert.equal(currentCheckinStreak([checkin(dayKey(0))]), 1)
-  assert.equal(currentCheckinStreak([]), 0)
-})
-
-test('morning check-in without review_completed_at counts as a completed day', () => {
-  assert.equal(
-    currentCheckinStreak([{ date: dayKey(0), mood: 3, energy: 2 }]),
-    1
-  )
-})
-
-test('yesterday check-in keeps a one-day series before today is completed', () => {
-  assert.equal(
-    currentCheckinStreak([
-      { date: dayKey(-2), review_completed_at: `${dayKey(-2)}T08:00:00Z` },
-    ]),
-    1
-  )
-})
-
-test('streak counts up to yesterday when today is not yet completed', () => {
-  assert.equal(
-    currentCheckinStreak([
-      { date: dayKey(-2), review_completed_at: `${dayKey(-2)}T08:00:00Z` },
-    ]),
-    1
-  )
-
-  assert.equal(
-    currentCheckinStreak([
-      { date: dayKey(-2), review_completed_at: `${dayKey(-2)}T08:00:00Z` },
-      { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T08:00:00Z` },
-    ]),
-    2
-  )
-})
-
-test('series metrics use one completed check-in dataset instead of stale profile totals', () => {
-  const model = buildSeriesViewModel({
-    stats: { total_checkins: 4, days_active: 23, best_streak: 0 },
-    checkins: [{ date: dayKey(-2), review_completed_at: `${dayKey(-2)}T08:00:00Z` }],
+test('buildServerSeriesViewModel keeps practice badges from practice lists', () => {
+  const model = buildServerSeriesViewModel({
+    rituals: [{ streak: 7 }],
+    ascezas: [{ streak: 2 }],
   })
-  assert.equal(model.currentStreak, 1)
+  assert.equal(model.badges.find(b => b.id === 'ritual-holds').done, true)
+  assert.equal(model.badges.find(b => b.id === 'asceza-power').done, false)
+})
+
+test('buildServerSeriesViewModel: без серверского total_checkins считаются завершённые записи', () => {
+  const model = buildServerSeriesViewModel({
+    checkins: [checkinDay(0), { date: dayKey(-1) }, null],
+  })
+  // Число чек-инов — фолбэк по завершённым записям; серия при этом
+  // остаётся null и восстанавливается только сервером.
   assert.equal(model.totalCheckins, 1)
-  assert.equal(model.activeDays, 1)
-  assert.equal(model.bestStreak, 1)
+  assert.equal(model.currentStreak, null)
 })
 
-test('withTodayCheckin: утренний чек-ин за сегодня даёт серию 1, даже если истории ещё нет', async () => {
-  const { withTodayCheckin } = await import('../../src/lib/series.js')
-  const now = new Date()
-  assert.equal(currentCheckinStreak(withTodayCheckin([], { id: 7 }, now)), 1)
-  assert.equal(currentCheckinStreak(withTodayCheckin([], null, now)), 0)
-  const history = [{ date: dayKey(-1) }]
-  assert.equal(currentCheckinStreak(withTodayCheckin(history, { date: dayKey(0) }, now)), 2)
-  assert.equal(
-    currentCheckinStreak(withTodayCheckin([{ date: dayKey(0) }], { date: dayKey(0) }, now)),
-    1
-  )
-})
+// ── Сравнение значков для шторки «Новый значок» ──
 
-test('currentCheckinStreak учитывает утреннюю запись только с created_at', () => {
-  assert.equal(currentCheckinStreak([{ created_at: `${dayKey(0)}T06:00:00Z` }]), 1)
-})
-
-// ── Новое правило: день засчитывается по любой активности ──
-
-test('collectActivityDays: отметка ритуала сегодня добавляет сегодняшний день', () => {
-  const now = new Date()
-  const days = collectActivityDays({
-    rituals: [{ id: 1, today_level: 2 }],
-    ascezas: [],
-    moodPractices: [],
-    now,
-  })
-  assert.deepEqual(days, [seriesLogicalDateKey(now)])
-})
-
-test('collectActivityDays: отметка аскезы сегодня добавляет сегодняшний день', () => {
-  const now = new Date()
-  const days = collectActivityDays({
-    rituals: [],
-    ascezas: [{ id: 1, today_status: 'held' }],
-    moodPractices: [],
-    now,
-  })
-  assert.deepEqual(days, [seriesLogicalDateKey(now)])
-})
-
-test('collectActivityDays: записи «Настроение» добавляют свои даты', () => {
-  const days = collectActivityDays({
-    rituals: [],
-    ascezas: [],
-    moodPractices: [
-      { recorded_at: `${dayKey(-2)}T15:00:00Z` },
-      { recorded_at: `${dayKey(-1)}T10:00:00Z` },
-    ],
-  })
-  assert.deepEqual(days.sort(), [dayKey(-2), dayKey(-1)].sort())
-})
-
-test('collectActivityDays: без активности — пустой массив', () => {
-  assert.deepEqual(collectActivityDays({}), [])
-  assert.deepEqual(collectActivityDays({ rituals: [], ascezas: [], moodPractices: [] }), [])
-})
-
-test('mood practice засчитывает день в серию через activityDays', () => {
-  // Вчера — чек-ин, сегодня — только mood practice (без чек-ина)
-  const checkins = [{ date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` }]
-  const activityDays = [dayKey(0)]
-  assert.equal(currentCheckinStreak(checkins, { activityDays }), 2)
-})
-
-test('mood practice не засчитывается, если день уже есть в чек-инах (без дублирования)', () => {
-  const checkins = [
-    { date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` },
-    { date: dayKey(0), mood: 3, energy: 2 },
-  ]
-  const activityDays = [dayKey(0)] // та же дата — не дублируется
-  assert.equal(currentCheckinStreak(checkins, { activityDays }), 2)
-})
-
-test('buildSeriesViewModel учитывает moodPractices в серии', () => {
-  const model = buildSeriesViewModel({
-    checkins: [{ date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` }],
-    moodPractices: [{ recorded_at: `${dayKey(0)}T11:00:00Z` }],
-  })
-  assert.equal(model.currentStreak, 2)
-})
-
-test('buildSeriesViewModel: отметка ритуала сегодня продлевает серию', () => {
-  const model = buildSeriesViewModel({
-    checkins: [{ date: logicalDayKey(-1), review_completed_at: `${logicalDayKey(-1)}T20:00:00Z` }],
-    rituals: [{ id: 1, today_level: 2 }],
-  })
-  // Сегодня засчитано через ритуал — серия = 2
-  assert.equal(model.currentStreak, 2)
-})
-
-// ── practiceDays: дни с отметками практик из бэкенд-эндпоинта ──
-
-test('collectActivityDays: practiceDays добавляют прошедшие дни', () => {
-  const days = collectActivityDays({
-    rituals: [],
-    ascezas: [],
-    moodPractices: [],
-    practiceDays: [dayKey(-4), dayKey(-3)],
-  })
-  assert.deepEqual(days.sort(), [dayKey(-4), dayKey(-3)].sort())
-})
-
-test('practiceDays: прошлый день с практикой продлевает серию', () => {
-  const checkins = [{ date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` }]
-  const activityDays = collectActivityDays({ practiceDays: [dayKey(0)] })
-  assert.equal(currentCheckinStreak(checkins, { activityDays }), 2)
-})
-
-test('practiceDays: при пустом ответе (ошибка/404) серия не меняется', () => {
-  const checkins = [{ date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` }]
-  const activityDays = collectActivityDays({ practiceDays: [] })
-  assert.equal(currentCheckinStreak(checkins, { activityDays }), 1)
-})
-
-test('buildSeriesViewModel учитывает practiceDays в серии', () => {
-  const model = buildSeriesViewModel({
-    checkins: [{ date: dayKey(-1), review_completed_at: `${dayKey(-1)}T20:00:00Z` }],
-    practiceDays: [dayKey(0)],
-  })
-  assert.equal(model.currentStreak, 2)
+test('splitCheckinsForComparison делит историю на «до» и «после» сегодняшнего чек-ина', () => {
+  const history = [checkinDay(-2), checkinDay(-1), checkinDay(0)]
+  const { previous, next } = splitCheckinsForComparison(history, checkinDay(0))
+  assert.equal(previous.length, 2)
+  assert.equal(next.length, 3)
+  assert.equal(previous.some(c => c.date === dayKey(0)), false)
 })

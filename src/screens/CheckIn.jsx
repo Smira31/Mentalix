@@ -5,7 +5,11 @@ import { platform } from '../platform'
 import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
-import { ArrowRight, Check, Flame, Hand, ThumbsDown, ThumbsUp } from 'lucide-react'
+import {
+  ArrowRight, BookOpen, BriefcaseBusiness, Check, ClipboardList, Heart,
+  HeartPulse, House, Lightbulb, Palette, Sofa, ThumbsDown,
+  ThumbsUp, Users, Hand,
+} from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
 import WebActionBar from '../components/WebActionBar'
@@ -34,7 +38,7 @@ import { maybeBuildSurprise } from './mentalix/surpriseInsight'
 import { SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
 import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
-import { currentCheckinStreak, seriesLogicalDateKey } from '../lib/series'
+import { seriesLogicalDateKey } from '../lib/series'
 import { buildTomorrowTeaser } from '../lib/tomorrowTeaser'
 import { peekPracticesData } from '../lib/practicesDataCache'
 import { energyFillPercent } from '../lib/checkinScale'
@@ -69,6 +73,21 @@ const HEAVY_EMOTIONS = ['тревожно', 'подавлен', 'страшно'
 // по МСК (см. src/data/prompts.js) — не пересчитывается на каждый рендер.
 const MORNING_NOTE_PLACEHOLDER = pickByDay(MORNING_NOTE_PROMPTS)
 
+// day_focus остаётся строкой API: плитки лишь предлагают готовый текст,
+// поле ниже позволяет сохранить свой вариант, как и прежде.
+const DAY_FOCUS_OPTIONS = [
+  { label: 'Работа', Icon: BriefcaseBusiness },
+  { label: 'Забота о себе', Icon: Heart },
+  { label: 'Люди', Icon: Users },
+  { label: 'Хобби', Icon: Palette },
+  { label: 'Дела', Icon: ClipboardList },
+  { label: 'Учёба', Icon: BookOpen },
+  { label: 'Отдых', Icon: Sofa },
+  { label: 'Здоровье', Icon: HeartPulse },
+  { label: 'Семья', Icon: House },
+  { label: 'Продуктивность', Icon: Lightbulb },
+]
+
 /*
  * Короткие сцены (шкалы и эмоции) занимают доступную высоту и держат
  * смысловой центр в середине. Текстовые карточки с клавиатурой используют
@@ -89,76 +108,20 @@ const CHECKIN_SUCCESS_CLASS = 'w-full flex flex-col items-center text-center'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
-const WEEK_DAY_NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
-
-export function CheckInNextControls({
-  onNext,
-  disabled = false,
-  onSkip = null,
-  variant = 'scale',
-}) {
+export function CheckInNextControls({ onNext, disabled = false, onSkip = null, variant = 'scale' }) {
   return (
-    <div
-      className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
-    >
-      {onSkip ? (
-        <button
-          type="button"
-          className="mx-checkin-next-controls__skip mx-tap-target"
-          data-testid="checkin-skip"
-          onClick={onSkip}
-        >
+    <div className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}>
+      {onSkip && (
+        <button type="button" className="mx-checkin-next-controls__skip mx-tap-target" data-testid="checkin-skip" onClick={onSkip}>
           Пропустить
         </button>
-      ) : null}
-      <button
-        type="button"
-        className="mx-checkin-next-controls__next"
-        aria-label="Далее"
-        data-testid="checkin-next"
-        onClick={onNext}
-        disabled={disabled}
-      >
+      )}
+      <button type="button" className="mx-checkin-next-controls__next" aria-label="Далее" data-testid="checkin-next" onClick={onNext} disabled={disabled}>
         <span>Далее</span>
         <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
       </button>
     </div>
   )
-}
-
-function dayStart(date) {
-  const value = new Date(date)
-  value.setHours(0, 0, 0, 0)
-  return value
-}
-
-function buildStreakDays(streakHistory, streak) {
-  const today = dayStart(new Date())
-  const completedDates = new Set(
-    streakHistory
-      .filter(checkin => checkin?.review_completed_at && checkin?.date)
-      .map(checkin => String(checkin.date).slice(0, 10))
-  )
-  const startDate = new Date(today)
-  startDate.setDate(today.getDate() - Math.max(0, Number(streak) - 1))
-  const visibleStart = new Date(startDate)
-  visibleStart.setDate(startDate.getDate() - Math.max(0, 3 - Number(streak)))
-  const length = Math.max(1, Math.round((today - visibleStart) / 86400000) + 1)
-
-  return Array.from({ length }, (_, index) => {
-    const date = new Date(visibleStart)
-    date.setDate(visibleStart.getDate() + index)
-    const isoDate = date.toISOString().slice(0, 10)
-    const isToday = date.getTime() === today.getTime()
-
-    return {
-      isoDate,
-      isToday,
-      completed: completedDates.has(isoDate),
-      label: WEEK_DAY_NAMES[date.getDay() === 0 ? 6 : date.getDay() - 1],
-      dateLabel: date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
-    }
-  })
 }
 
 /* Иконки кнопок «Нет / Немного / Да» на экране завершения. */
@@ -242,11 +205,6 @@ export function CheckInQuestion({
 function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing = null }) {
   const [step, setStep] = useState(0)
   /*
-   * Шаги anxiety/focus убраны из утреннего флоу, и redo не переносит их
-   * из перезаписываемой записи: поля опускаются в PUT /api/checkin/today,
-   * бэкенд сохраняет прежние значения утра. Настроение и энергия
-   * в redo переспрашиваются заново.
-   *
    * sleep_quality и day_focus — необязательные поля (backend PR #103):
    * при повторном открытии (не redo) предзаполняются из существующей записи,
    * при redo стартуют пустыми. Пропущенные поля не отправляются (omitted),
@@ -261,6 +219,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   }))
   const [note, setNote] = useState('')
   const [dayFocus, setDayFocus] = useState(() => (redo ? '' : (existing?.day_focus ?? '')))
+  const [showAllFocus, setShowAllFocus] = useState(
+    () => !redo && DAY_FOCUS_OPTIONS.slice(9).some(option => option.label === existing?.day_focus)
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [streak, setStreak] = useState(0)
@@ -368,7 +329,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         if (historyResult.status === 'fulfilled') {
           const history = Array.isArray(historyResult.value) ? historyResult.value : []
           setStreakHistory(history)
-          setStreak(Math.max(1, currentCheckinStreak(history)))
         } else {
           console.error(historyResult.reason)
         }
@@ -422,13 +382,14 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
         <BackButton onClick={handleBack} label="Сегодня" />
       </header>
 
-      <main className={`mx-demo-checkin__body ${step === noteStep ? 'is-editor' : ''}`}>
+      <main className={`mx-demo-checkin__body ${step === noteStep || step === dayFocusStep ? 'is-editor' : ''}`}>
         <StepSlide stepKey={step} onAnimatingChange={handleAnimatingChange}>
           {scale && (
             <CheckInScaleQuestion
               scale={scale}
               value={values[scale.key]}
               onPick={level => pick(scale.key, level)}
+              filled
             />
           )}
 
@@ -451,12 +412,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 autoFocus
                 keepFocusOnSubmit
                 submitIcon="arrow"
-                submitLabel="Завершить"
+                submitLabel="Далее"
                 submitTestId="checkin-complete"
                 onSubmit={finish}
+                onSkip={finish}
                 submitLoading={saving}
-                onDeepen={() => {}}
-                deepenLabel="Пойти глубже"
                 showAddAction
                 formatting
               />
@@ -472,15 +432,41 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
             <CheckInQuestion
               title="Главный фокус дня"
               hint="Одна мысль, которой не хочешь потерять. Можно пропустить."
-              className="mx-demo-checkin__editor-scene"
+              className="mx-demo-checkin__editor-scene mx-demo-checkin__editor-scene--focus"
             >
               <div className="mx-demo-checkin__day-focus">
+                <div className="mx-demo-checkin__focus-grid" role="group" aria-label="Выбери главный фокус">
+                  {DAY_FOCUS_OPTIONS.slice(0, showAllFocus ? undefined : 9).map(({ label, Icon }) => (
+                    <button
+                      key={label}
+                      type="button"
+                      data-testid="checkin-day-focus-option"
+                      data-value={label}
+                      aria-pressed={dayFocus === label}
+                      className={dayFocus === label ? 'is-selected' : ''}
+                      onClick={() => { platform.haptic('light'); setDayFocus(label) }}
+                    >
+                      <Icon size={24} strokeWidth={1.5} aria-hidden="true" />
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+                {!showAllFocus && (
+                  <button
+                    type="button"
+                    className="mx-demo-checkin__show-all"
+                    data-testid="checkin-day-focus-show-all"
+                    onClick={() => setShowAllFocus(true)}
+                  >
+                    Показать все
+                  </button>
+                )}
                 <input
                   type="text"
                   value={dayFocus}
                   onChange={e => setDayFocus(e.target.value.slice(0, DAY_FOCUS_MAX))}
                   maxLength={DAY_FOCUS_MAX}
-                  placeholder="Например: закончить важный разговор"
+                  placeholder="Или напиши свой фокус…"
                   aria-label="Главный фокус дня"
                   data-testid="checkin-day-focus-input"
                   className="mx-demo-checkin__day-focus-input"
@@ -651,11 +637,11 @@ export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
 
 const DAY_FOCUS_MAX = 140
 
-export function CheckInScaleQuestion({ scale, value, onPick }) {
+export function CheckInScaleQuestion({ scale, value, onPick, filled = false }) {
   return (
     <CheckInQuestion title={scale.title} hint={scale.hint} className="mx-checkin-question--scale">
       <div
-        className="mx-checkin-scale"
+        className={`mx-checkin-scale${filled ? ' mx-checkin-scale--filled' : ''}`}
         role="radiogroup"
         aria-label={scale.title}
         data-testid="checkin-scale-row"
@@ -677,7 +663,7 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
               className={`mx-checkin-scale__option ${active ? 'is-selected' : ''}`}
             >
               <span className="mx-checkin-scale__circle">
-                {scale.faces ? (
+                {scale.faces && !filled ? (
                   <span className="mx-checkin-scale__inner mx-checkin-scale__inner--face">
                     <Face level={level} active={active} size={35} showFrame={false} />
                   </span>
@@ -685,11 +671,13 @@ export function CheckInScaleQuestion({ scale, value, onPick }) {
                   <span
                     className="mx-checkin-scale__inner"
                     style={
-                      scale.key === 'energy'
-                        ? {
-                            background: `linear-gradient(to top, #e6e6e6 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
-                          }
-                        : undefined
+                      filled
+                        ? { '--scale-fill': `${energyFillPercent(level)}%` }
+                        : scale.key === 'energy'
+                          ? {
+                              background: `linear-gradient(to top, #e6e6e6 ${energyFillPercent(level)}%, #111 ${energyFillPercent(level)}%)`,
+                            }
+                          : undefined
                     }
                   />
                 )}
@@ -1038,7 +1026,6 @@ function CheckInCore({
         try {
           const history = await api.checkin.history(user.id, 90)
           setStreakHistory(Array.isArray(history) ? history : [])
-          setStreak(Math.max(1, currentCheckinStreak(Array.isArray(history) ? history : [])))
         } catch (historyError) {
           console.error(historyError)
         }
@@ -1051,7 +1038,6 @@ function CheckInCore({
           api.checkin.history(user.id, 90).then(history => {
             const entries = Array.isArray(history) ? history : []
             setStreakHistory(entries)
-            setStreak(Math.max(1, currentCheckinStreak(entries)))
           }),
           api.streak(user.id).then(response => {
             const currentStreak = readCanonicalCurrentStreak(response)
@@ -1415,7 +1401,6 @@ function CheckInCore({
       ? !values[MORNING_SCALE_STEPS[step]?.key]
       : false
 
-  const streakDays = buildStreakDays(streakHistory, streak)
 
   if (isStreakStep) {
     return createPortal(
@@ -1436,32 +1421,6 @@ function CheckInCore({
                 внутренняя работа — это путь. ты только что сделал ещё один шаг.
               </p>
 
-              <div
-                className="mt-10 grid w-full max-w-sm gap-2"
-                style={{ gridTemplateColumns: `repeat(${streakDays.length}, minmax(0, 1fr))` }}
-                role="group"
-                aria-label="Дни текущей серии"
-              >
-                {streakDays.map(day => {
-                  const active = day.completed || day.isToday
-
-                  return (
-                    <div key={day.isoDate} className="flex flex-col items-center gap-2">
-                      <span
-                        className={`flex h-10 w-10 items-center justify-center rounded-full border ${
-                          active
-                            ? 'border-cream bg-cream text-emerald-deep'
-                            : 'border-cream/10 bg-emerald text-muted'
-                        }`}
-                        aria-label={`${day.label}: ${active ? 'пройдено' : 'пусто'}`}
-                      >
-                        {active ? <Flame size={17} strokeWidth={2.5} aria-hidden="true" /> : null}
-                      </span>
-                      <span className="text-[11px] text-muted">{day.label}</span>
-                    </div>
-                  )
-                })}
-              </div>
             </section>
 
             <button
@@ -1500,9 +1459,9 @@ function CheckInCore({
               <h2 className="mx-checkin-completion-title">
                 {isEvening ? 'Чек-ин завершён' : 'Готово.'}
               </h2>
-              {isEvening && (canonicalEveningStreak ?? streak) > 0 ? (
+              {isEvening && canonicalEveningStreak > 0 ? (
                 <p className="mx-type-body text-muted mt-4" data-testid="checkin-streak">
-                  {canonicalEveningStreak ?? streak}-дневная серия
+                  {canonicalEveningStreak}-дневная серия
                 </p>
               ) : null}
 

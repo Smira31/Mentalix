@@ -13,15 +13,22 @@ test('Profile exposes error copy and retry action', () => {
   assert.match(settings, /setProfileReloadToken\(token => token \+ 1\)/)
 })
 
-test('Profile fetches canonical streak and keeps legacy model for badges/fallback only', () => {
+test('Profile берёт серию с сервера, без восстановления из истории', () => {
   assert.match(settings, /api\.profile\.get\(user\.id\)/)
   assert.doesNotMatch(source, /api\.profile\.get\(user\.id\)/)
   assert.match(source, /api\.streak\(user\.id\)/)
   assert.match(source, /readCanonicalStreakStats\(payload\)/)
-  assert.match(source, /canonical\?\.currentStreak \?\? legacy\?\.currentStreak/)
-  assert.match(source, /canonical\?\.bestStreak \?\? legacy\?\.bestStreak/)
-  assert.match(source, /streak: currentStreak \?\? legacy\.currentStreak/)
-  assert.match(source, /buildSeriesViewModel/)
+  // Числа серии приходят только из canonical-ответа; fallback по истории удалён.
+  assert.match(source, /const currentStreak = canonical\?\.currentStreak/)
+  assert.match(source, /const bestStreak = canonical\?\.bestStreak/)
+  assert.doesNotMatch(source, /canonical\?\.currentStreak \?\? legacy/)
+  // Значки серии тоже пересчитываются серверной статистикой.
+  assert.match(source, /serverSeriesBadges\(legacy\.badges, canonical\)/)
+  assert.match(source, /buildServerSeriesViewModel/)
+  assert.doesNotMatch(source, /\bbuildSeriesViewModel\(/)
+  // Восстановление серии из неполной истории не возвращается.
+  assert.doesNotMatch(source, /api\.moodPractices\.list/)
+  assert.doesNotMatch(source, /api\.practiceDays\.list/)
   assert.doesNotMatch(source, /loadIndependentSources/)
   assert.doesNotMatch(source, /api\.themes\.list/)
   assert.doesNotMatch(source, /api\.analytics\.get/)

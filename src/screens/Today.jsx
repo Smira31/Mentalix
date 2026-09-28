@@ -29,9 +29,9 @@ import { useSynced } from '../lib/store'
 import { getDailyThought } from '../data/dailyThoughts'
 import { TODAY_CARDS_HIDDEN_KEY, parseHiddenCards } from '../lib/todayCardVisibility'
 import { TodayCompareControl } from '../components/TodayMotionExperiment'
-import { peekCachedStreak, rememberStreak, resolveDisplayedStreak } from '../lib/streakCache'
+import { readCanonicalStreakStats } from '../lib/canonicalStreak'
 import {
-  buildSeriesViewModel,
+  buildServerSeriesViewModel,
   splitCheckinsForComparison,
   detectNewlyUnlockedBadge,
 } from '../lib/series'
@@ -39,11 +39,9 @@ import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPre
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
 import { resolveContextualCheckin } from '../lib/contextualDeepLink'
 import { formatReviewTime, resolveTodayCardStates, primaryCardKind, DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
-import { collectActivityDays } from '../lib/series'
 import { now as clockNow } from '../lib/clock'
 import { demoScenario } from '../lib/demoMode'
 import { pickVisibleTodayHint } from '../lib/todayHints'
-import { isRecoveryDemoRequested } from '../lib/demoMode'
 
 /* ============================================================
    LAZY SUB-SCREENS
@@ -123,16 +121,12 @@ function ReferenceProfileMark() {
   )
 }
 
-function readCanonicalCurrentStreak(payload) {
-  const value = payload?.current_streak
-  return Number.isSafeInteger(value) && value >= 0 ? value : null
-}
-
 function TodayWorkspaceHeader({
   onOpenSettings,
   onOpenSeries,
   onOpenDemoPanel,
   streak = 0,
+  isActiveToday = false,
   onStreakClick,
 }) {
   const pressTimer = useRef(null)
@@ -156,7 +150,7 @@ function TodayWorkspaceHeader({
       <button
         type="button"
         data-testid="today-streak-chip"
-        className={`mx-demo-today-streak${streak === 0 ? ' mx-demo-today-streak--empty' : ''}`}
+        className={`mx-demo-today-streak${streak === 0 && !isActiveToday ? ' mx-demo-today-streak--empty' : ''}`}
         aria-label={streakLabel}
         onClick={onStreakClick || onOpenSeries}
       >
@@ -187,7 +181,7 @@ function TodayWorkspaceHeader({
   )
 }
 
-function WeekStrip({ checkin, history = [] }) {
+function WeekStrip({ streakStats }) {
   const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
   const now = clockNow()
   const monday = new Date(now)
@@ -198,21 +192,15 @@ function WeekStrip({ checkin, history = [] }) {
     return day
   })
 
+  // Сервер не передаёт дату заморозки — показываем её отдельным состоянием,
+  // не приписывая произвольному календарному дню.
+
   return (
     <div className="mx-today-week" role="group" aria-label="Календарь недели">
       <div className="mx-today-week__calendar">
         {days.map(day => {
           const isToday = day.toDateString() === now.toDateString()
-          const dateKey = day.toISOString().slice(0, 10)
-          const isCompleted = Boolean(
-            (isToday && checkin) ||
-            history.some(
-              item =>
-                item?.date &&
-                String(item.date).slice(0, 10) === dateKey &&
-                (item.review_completed_at || item.completed_at || item.status === 'completed')
-            )
-          )
+          const isCompleted = isToday && streakStats?.isActiveToday === true
           return (
             <div
               key={day.getTime()}
@@ -220,6 +208,7 @@ function WeekStrip({ checkin, history = [] }) {
               data-testid="today-week-day"
               data-today={isToday}
               data-completed={isCompleted}
+              aria-label={`${names[day.getDay() === 0 ? 6 : day.getDay() - 1]}: ${isCompleted ? 'активный день' : 'нет данных об активности'}`}
             >
               <span className="mx-type-weekday">
                 {names[day.getDay() === 0 ? 6 : day.getDay() - 1]}
@@ -229,6 +218,11 @@ function WeekStrip({ checkin, history = [] }) {
           )
         })}
       </div>
+      {streakStats?.freezeUsedThisWeek && (
+        <p className="mx-today-week__freeze-note" data-testid="streak-freeze-note" data-frozen="true">
+          Заморозка: 1 пропуск в неделю не рвёт серию
+        </p>
+      )}
     </div>
   )
 }
@@ -315,31 +309,33 @@ export default function Today({
     () => initialTodaySnapshot?.checkinHistory || []
   )
 
-  // Canonical source для числа в огоньке — GET /api/streak.
-  // Существующий frontend-расчёт и кэш сохраняем только как fallback,
-  // пока canonical ответ грузится или временно недоступен.
-  const [historyLoaded, setHistoryLoaded] = useState(() => Boolean(previewFixture))
-  const [cachedStreak] = useState(() => (user?.id ? peekCachedStreak(user.id) : null))
+  // Сервер владеет календарной границей и правилом заморозки.
   const [canonicalStreak, setCanonicalStreak] = useState(null)
   const [moodPractices, setMoodPractices] = useState([])
-  const [practiceDays, setPracticeDays] = useState([])
-  const activityDays = collectActivityDays({ rituals, ascezas, moodPractices, practiceDays })
-
-  const fallbackStreak = resolveDisplayedStreak({
-    historyLoaded,
-    history: checkinHistory,
-    checkin,
-    cachedStreak,
-    activityDays,
-  })
-  const canonicalStreakValue =
-    canonicalStreak?.userId === user?.id ? canonicalStreak.value : null
-  const streak = canonicalStreakValue ?? fallbackStreak
+  const canonical = canonicalStreak?.userId === user?.id ? canonicalStreak.value : null
+  const streak = canonical?.currentStreak ?? null
+  const streakRequest = useRef(0)
+  const refreshStreak = useCallback(() => {
+    if (!user?.id) return
+    const requestId = ++streakRequest.current
+    api.streak(user.id).then(payload => {
+      if (requestId !== streakRequest.current) return
+      setCanonicalStreak({ userId: user.id, value: readCanonicalStreakStats(payload) })
+    }).catch(() => {})
+  }, [user?.id])
 
   useEffect(() => {
-    if (previewFixture || !historyLoaded || !user?.id) return
-    rememberStreak(user.id, streak)
-  }, [previewFixture, historyLoaded, user?.id, streak])
+    const activitySaved = event => {
+      if (event.detail?.userId != null && String(event.detail.userId) !== String(user?.id)) return
+      setCanonicalStreak(previous => ({
+        userId: user.id,
+        value: { ...(previous?.userId === user.id ? previous.value : null), isActiveToday: true },
+      }))
+      refreshStreak()
+    }
+    window.addEventListener('mentalix:activity-saved', activitySaved)
+    return () => window.removeEventListener('mentalix:activity-saved', activitySaved)
+  }, [refreshStreak, user?.id])
   const [newBadge, setNewBadge] = useState(null)
   const returnFlowCompleted = useRef(false)
   useEffect(() => {
@@ -557,41 +553,37 @@ export default function Today({
       ])
 
       if (streakResult.status === 'fulfilled') {
-        const currentStreak = readCanonicalCurrentStreak(streakResult.value)
-        if (currentStreak != null) {
-          setCanonicalStreak({ userId: user.id, value: currentStreak })
-        }
+        setCanonicalStreak({ userId: user.id, value: readCanonicalStreakStats(streakResult.value) })
       }
 
       if (historyResult.status === 'rejected') throw historyResult.reason
 
       const safeHistory = Array.isArray(historyResult.value) ? historyResult.value : []
       setCheckinHistory(safeHistory)
-      setHistoryLoaded(true)
+      
       // Обе модели строятся из одной свежей истории: previous — без
       // сегодняшнего чек-ина, next — с ним. Ретро-значки (полученные
       // задним числом из исторических данных) открыты в обеих моделях
       // и не запускают шторку; шторка — только для значков, открытых
       // именно новым чек-ином.
       const { previous, next } = splitCheckinsForComparison(safeHistory, current)
-      const previousModel = buildSeriesViewModel({
+      const previousModel = buildServerSeriesViewModel({
         checkins: previous,
         rituals,
         ascezas,
-        moodPractices,
-        practiceDays,
       })
-      const nextModel = buildSeriesViewModel({
+      const nextModel = buildServerSeriesViewModel({
         checkins: next,
         rituals,
         ascezas,
-        moodPractices,
-        practiceDays,
       })
       const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
+      // Числа и пороги серии здесь не выводятся из истории чек-инов.
+      const serverBadge = unlocked?.id?.startsWith('streak-') || unlocked?.id === 'week-on-path' || unlocked?.id === 'month-on-path'
+        ? null : unlocked
 
       invalidateTodayData(user.id)
-      return { history: safeHistory, newBadge: unlocked }
+      return { history: safeHistory, newBadge: serverBadge }
     } catch (error) {
       console.error(error)
     }
@@ -609,16 +601,7 @@ export default function Today({
     // спит: первый запрос после сна отвечает до 50 с).
     api.health.check().catch(() => {})
 
-    api.streak(user.id)
-      .then(result => {
-        const currentStreak = readCanonicalCurrentStreak(result)
-        if (active && currentStreak != null) {
-          setCanonicalStreak({ userId: user.id, value: currentStreak })
-        }
-      })
-      .catch(() => {
-        // Existing history/cache path remains a non-blocking fallback.
-      })
+    refreshStreak()
 
     ;(async () => {
       try {
@@ -652,7 +635,7 @@ export default function Today({
           .then(history => {
             const safeHistory = Array.isArray(history) ? history : []
             setCheckinHistory(safeHistory)
-            setHistoryLoaded(true)
+            
           })
           .catch(error => {
             // Не глотаем молча: без истории огонёк серии в шапке
@@ -663,30 +646,12 @@ export default function Today({
               status: error?.status ?? null,
             })
 
-            setHistoryLoaded(true)
+            
           })
 
-        // Записи практики «Настроение» — нужны для серии (день засчитывается
-        // по любой активности) и для плейсхолдера иллюстраций.
-        api.moodPractices
-          .list(user.id)
-          .then(practices => {
-            if (active) setMoodPractices(Array.isArray(practices) ? practices : [])
-          })
-          .catch(() => {
-            if (active) setMoodPractices([])
-          })
-
-        // Дни с отметками практик (ритуалы/аскезы) за прошлые дни — для серии.
-        // Эндпоинт в бэкенде в разработке: при 404/ошибке вернёт [].
-        api.practiceDays
-          .list(user.id)
-          .then(days => {
-            if (active) setPracticeDays(Array.isArray(days) ? days : [])
-          })
-          .catch(() => {
-            if (active) setPracticeDays([])
-          })
+        api.moodPractices.list(user.id)
+          .then(items => { if (active) setMoodPractices(Array.isArray(items) ? items : []) })
+          .catch(() => {})
 
         setReviewHour(settingsData?.review_hour ?? DEFAULT_REVIEW_HOUR)
       } catch (error) {
@@ -700,7 +665,7 @@ export default function Today({
     return () => {
       active = false
     }
-  }, [user, sub, initialSub, initialTodaySnapshot, previewFixture, reloadToken])
+  }, [user, sub, initialSub, initialTodaySnapshot, previewFixture, reloadToken, refreshStreak])
 
   useEffect(() => {
     if (
@@ -710,7 +675,7 @@ export default function Today({
       !user?.id ||
       initialSub ||
       sub ||
-      (clockNow().getHours() < 5 && !isRecoveryDemoRequested()) ||
+      !canonical?.recoverable ||
       recoveryRequested.current === user.id
     )
       return
@@ -719,7 +684,7 @@ export default function Today({
     api.checkin
       .recovery(user.id)
       .then(result => {
-        if (!active || !result?.recoverable || !result.date) return
+        if (!active || !canonical?.recoverable || !result?.recoverable || !result.date) return
         try {
           if (
             localStorage.getItem(`mx-streak-recovery-dismissed:${user.id}:${result.date}`) === '1'
@@ -735,7 +700,7 @@ export default function Today({
     return () => {
       active = false
     }
-  }, [recoveryAllowed, loading, loadError, user, initialSub, sub, recoveryEvent])
+  }, [recoveryAllowed, loading, loadError, user, initialSub, sub, recoveryEvent, canonical?.recoverable])
 
   const hourNow = clockNow().getHours()
 
@@ -973,8 +938,8 @@ export default function Today({
     /*
      * Шапка остаётся на экране и во время загрузки дня: в Telegram
      * fullscreen верхнюю полосу занимает воркмарк MENTALIX, и без шапки
-     * здесь огонёк серии исчезал из виду. До ответа API streak берётся
-     * из кэша этого пользователя (streakCache.js), иначе огонь без числа.
+     * здесь огонёк серии исчезал из виду. Число серии приходит только
+     * из GET /api/streak; до ответа сервера огонь без числа.
      */
     return (
       <div className="mx-screen-shell">
@@ -984,6 +949,7 @@ export default function Today({
           onOpenDemoPanel={onOpenDemoPanel}
           onOpenSeries={onOpenSeries}
           streak={streak}
+          isActiveToday={canonical?.isActiveToday === true}
         />
         <p className="text-muted text-[13px] px-[var(--mx-screen-x)] pt-8">Загрузка...</p>
       </div>
@@ -999,6 +965,7 @@ export default function Today({
           onOpenDemoPanel={onOpenDemoPanel}
           onOpenSeries={onOpenSeries}
           streak={streak}
+          isActiveToday={canonical?.isActiveToday === true}
         />
         <div className="w-full max-w-md px-[var(--mx-screen-x)] pt-8">
           <EmptyState
@@ -1205,7 +1172,7 @@ export default function Today({
   return (
     <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
-      {recovery && (
+      {recovery && recoveryStage !== 'offer' && (
         <Suspense fallback={null}>
           <StreakRecovery
             recovery={recovery}
@@ -1227,6 +1194,7 @@ export default function Today({
         onOpenDemoPanel={onOpenDemoPanel}
         onOpenSeries={onOpenSeries}
         streak={streak}
+        isActiveToday={canonical?.isActiveToday === true}
         onStreakClick={() => {
           markSeriesTooltipSeen(user?.id)
           setShowSeriesTooltip(false)
@@ -1260,7 +1228,7 @@ export default function Today({
             ×
           </button>
           <p>
-            Это число — твоя <strong>серия</strong> чек-инов. Нажми, чтобы посмотреть значки.
+            Это число — твоя <strong>серия</strong> активных дней. Нажми, чтобы посмотреть значки.
           </p>
         </aside>
       )}
@@ -1269,7 +1237,20 @@ export default function Today({
           <NewBadgeSheet badge={newBadge} onClose={() => setNewBadge(null)} />
         </Suspense>
       )}
-      <WeekStrip checkin={checkin} history={checkinHistory} />
+      <WeekStrip streakStats={canonical} />
+      {recovery && recoveryStage === 'offer' && canonical?.recoverable && (
+        <button
+          type="button"
+          className="mx-today-recovery-banner"
+          data-testid="streak-recovery-banner"
+          onClick={() => {
+            recoveryEvent('streak_recovery_started', recovery.date)
+            changeSub('recoveryReview')
+          }}
+        >
+          Верни серию <span aria-hidden="true">→</span>
+        </button>
+      )}
 
       {TODAY_COMPARE_REQUESTED && (
         <TodayCompareControl mode={todayVariant} onChange={changeTodayVariant} />

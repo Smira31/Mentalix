@@ -974,7 +974,7 @@ test('MXL-PREVIEW-DEMO-001 ограничивает demo mode явным Vercel 
   assert.match(demo, /preview-demo-user/)
   assert.match(app, /useState\(\(\) => \(isPreviewDemoMode\(\) \? DEMO_USER : null\)\)/)
   assert.match(app, /Preview Demo Mode/)
-  assert.match(api, /if \(isPreviewDemoMode\(\)\) return demoRequest\(path, options\)/)
+  assert.match(api, /if \(isPreviewDemoMode\(\)\) \{\s*const result = await demoRequest\(path, options\)/)
 })
 
 test('MXL-WEB-LINKED-WRITE-001 guards every secondary frontend write path', () => {
