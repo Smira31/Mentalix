@@ -53,12 +53,12 @@ test('MORNING_OPTIONAL_SCALES экспортирована и содержит s
   assert.match(checkinSource, /export const MORNING_OPTIONAL_SCALES = \[SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP\]/)
 })
 
-test('утренний флоу содержит шаг day_focus с лимитом 140 символов', () => {
-  assert.match(morningFlow, /DAY_FOCUS_MAX/)
-  assert.match(checkinSource, /const DAY_FOCUS_MAX = 140/)
-  assert.match(morningFlow, /maxLength=\{DAY_FOCUS_MAX\}/)
-  assert.match(morningFlow, /data-testid="checkin-day-focus-input"/)
-  assert.match(morningFlow, /data-testid="checkin-day-focus-counter"/)
+test('шаг day_focus — только плитки, без собственного текста и счётчика', () => {
+  assert.doesNotMatch(checkinSource, /DAY_FOCUS_MAX/)
+  assert.doesNotMatch(morningFlow, /checkin-day-focus-input/)
+  assert.doesNotMatch(morningFlow, /checkin-day-focus-counter/)
+  assert.match(morningFlow, /hint="Выбери одно главное на сегодня\."/)
+  assert.match(morningFlow, /data-testid="checkin-day-focus-option"/)
 })
 
 // ── Omitted/null семантика ──
@@ -68,9 +68,9 @@ test('sleep_quality отправляется только если выбран 
   assert.doesNotMatch(morningFlow, /sleep_quality: values\.sleep_quality \|\| \d/)
 })
 
-test('day_focus отправляется только если заполнен (omitted/null-семантика)', () => {
-  assert.match(morningFlow, /if \(selectedFocus \|\| dayFocus\.trim\(\)\)\s*morningPayload\.day_focus = selectedFocus \|\| dayFocus\.trim\(\)/)
-  assert.doesNotMatch(morningFlow, /day_focus: dayFocus \|\|/)
+test('day_focus отправляется только если выбрана плитка (omitted/null-семантика)', () => {
+  assert.match(morningFlow, /if \(selectedFocus\) morningPayload\.day_focus = selectedFocus/)
+  assert.doesNotMatch(morningFlow, /day_focus: selectedFocus \|\|/)
 })
 
 // ── Повторное открытие ──
@@ -78,13 +78,12 @@ test('day_focus отправляется только если заполнен 
 test('при повторном открытии sleep_quality и day_focus предзаполняются из existing', () => {
   assert.match(morningFlow, /sleep_quality: redo \? null : \(existing\?\.sleep_quality \?\? null\)/)
   assert.match(morningFlow, /focus: redo \? null : \(existing\?\.focus \?\? null\)/)
-  assert.match(morningFlow, /existing\?\.day_focus \?\? ''/)
+  assert.match(morningFlow, /option\.label === existing\?\.day_focus/)
 })
 
 test('redo не предзаполняет sleep_quality, focus и day_focus', () => {
   assert.match(morningFlow, /sleep_quality: redo \? null : \(existing\?\.sleep_quality \?\? null\)/)
-  assert.match(morningFlow, /redo \|\| DAY_FOCUS_OPTIONS\.some/)
-  assert.match(morningFlow, /\? ''\s*: \(existing\?\.day_focus \?\? ''\)/)
+  assert.match(morningFlow, /!redo && DAY_FOCUS_OPTIONS\.some\(option => option\.label === existing\?\.day_focus\)/)
 })
 
 // ── Вечерний флоу не меняется ──
@@ -109,21 +108,23 @@ test('day_focus шаг находится перед note и перед done', (
   assert.match(morningFlow, /const doneStep = noteStep \+ 1/)
 })
 
-test('каждая утренняя шкала имеет кнопку «Пропустить», даже при обязательном ответе для «Далее»', () => {
-  assert.match(morningFlow, /onSkip=\{\(\) => goToStep\(current => Math\.min\(doneStep, current \+ 1\)\)\}/)
-  assert.match(morningFlow, /allScales\[step\]\?\.required/)
+test('утренние шаги: одна круглая «→» без «Пропустить»; на шкале она неактивна до выбора', () => {
+  assert.doesNotMatch(checkinSource, /Пропустить/)
+  assert.doesNotMatch(checkinSource, /checkin-skip/)
+  assert.doesNotMatch(morningFlow, /onSkip/)
+  assert.match(morningFlow, /disabled=\{scale \? !values\[scale\.key\] : false\}/)
 })
 
-test('плитка и собственный текст не дублируют друг друга', () => {
+test('плитка фокуса — один выбор, повторный тап снимает выбор', () => {
   assert.match(morningFlow, /aria-pressed=\{selectedFocus === label\}/)
-  // Повторный тап снимает выбор: toggle вместо прямого set
   assert.match(morningFlow, /setSelectedFocus\(prev => \(prev === label \? null : label\)\)/)
-  assert.match(morningFlow, /setDayFocus\(''\)/)
-  assert.match(morningFlow, /setSelectedFocus\(null\)/)
-  assert.doesNotMatch(morningFlow, /setDayFocus\(label\)/)
 })
 
 test('на шаге «Что на уме?» нет кнопки добавления вложения', () => {
   assert.match(morningFlow, /hideAddAction/)
   assert.doesNotMatch(morningFlow, /showAddAction/)
+})
+
+test('на шаге «Что на уме?» нет «Aa» и панели форматирования', () => {
+  assert.match(morningFlow, /formatting=\{false\}/)
 })
