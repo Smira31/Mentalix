@@ -330,17 +330,10 @@ async function assertBottomNavigationLabelsFit(page) {
 }
 
 async function assertSoonControls(page) {
-  const lilaCard = page
-    .locator('.mx-layered-catalog__rail-card')
-    .filter({ hasText: 'Разобраться со Следопытом' })
-  const motivationCard = page
-    .locator('.mx-layered-catalog__rail-card')
-    .filter({ hasText: 'Импульс к действию' })
-  const focusCard = page.locator('.mx-layered-catalog__rail-card').filter({ hasText: 'Фокус' })
-
-  await expect(lilaCard).toBeEnabled()
-  await expect(motivationCard).toBeDisabled()
-  await expect(focusCard).toBeDisabled()
+  await assertClickable(page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }))
+  // Новый Explore исключает недоступные практики из сетки, а не показывает disabled-карточки.
+  await expect(page.getByRole('button', { name: /Импульс к действию/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Фокус, скоро/ })).toHaveCount(0)
 }
 
 async function assertLibrarySoonControl(page) {
@@ -621,55 +614,50 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-        const journalEntry = page.locator('article.mx-layered-catalog__journal-hero button')
+        await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+        const journalEntry = page.getByRole('button', { name: 'Открыть журнал' })
         await assertClickable(journalEntry)
-        const collectionsHeading = page.locator('section[aria-label="Коллекции"] h2')
+        const collectionsHeading = page.getByRole('heading', { name: 'Коллекции' })
         await expect(collectionsHeading).toBeVisible()
         const journalBox = await journalEntry.boundingBox()
         const collectionsBox = await collectionsHeading.boundingBox()
         expect(journalBox?.y || 0).toBeLessThan(collectionsBox?.y || Number.POSITIVE_INFINITY)
-        await expect(
-          page
-            .locator('.mx-layered-catalog__collection')
-            .filter({ hasText: 'Психологические практики' })
-        ).toBeDisabled()
+        await expect(page.getByRole('button', { name: /Психологические практики/ })).toHaveCount(0)
         await assertSoonControls(page)
+        await assertClickable(page.getByRole('button', { name: 'Открыть Ритуалы' }))
+        await assertClickable(page.getByRole('button', { name: 'Открыть Аскезы' }))
         const productionCardTypography = await page.evaluate(() => {
-          const catalog = document.querySelector('.mx-production-catalog')
-          const rail = catalog?.querySelector('.mx-layered-catalog__rail')
-          const upcomingTitle = [
-            ...(rail?.querySelectorAll('.mx-layered-catalog__rail-card') || []),
-          ]
-            .find(card => card.textContent?.includes('Импульс к действию с Львом'))
-            ?.querySelector('strong')
-          const railCopy = rail?.querySelector('.mx-layered-catalog__rail-card small')
-          const collectionCopy = catalog?.querySelector('.mx-layered-catalog__collection small')
+          const catalog = document.querySelector('.mx-steps-explore')
+          const grid = catalog?.querySelector('.mx-steps-grid')
+          const practiceTitle = [...(grid?.querySelectorAll('.mx-steps-card__title') || [])]
+            .find(title => title.textContent?.includes('Разобраться со Следопытом'))
+          const practiceCopy = grid?.querySelector('.mx-steps-card__desc')
+          const collectionCopy = catalog?.querySelector('.mx-steps-collection small')
           const catalogRect = catalog?.getBoundingClientRect()
-          const railRect = rail?.getBoundingClientRect()
+          const gridRect = grid?.getBoundingClientRect()
           const fontSize = element =>
             element ? Number.parseFloat(getComputedStyle(element).fontSize) : 0
 
           return {
             catalogRight: catalogRect?.right ?? window.innerWidth + 1,
-            railRight: railRect?.right ?? window.innerWidth + 1,
-            titleClipped: upcomingTitle
-              ? upcomingTitle.scrollHeight > upcomingTitle.clientHeight + 1
+            gridRight: gridRect?.right ?? window.innerWidth + 1,
+            titleClipped: practiceTitle
+              ? practiceTitle.scrollHeight > practiceTitle.clientHeight + 1
               : true,
-            railCopySize: fontSize(railCopy),
+            practiceCopySize: fontSize(practiceCopy),
             collectionCopySize: fontSize(collectionCopy),
           }
         })
-        expect(productionCardTypography.railRight).toBeLessThanOrEqual(
+        expect(productionCardTypography.gridRight).toBeLessThanOrEqual(
           productionCardTypography.catalogRight + 1
         )
         expect(productionCardTypography.titleClipped).toBe(false)
-        expect(productionCardTypography.railCopySize).toBeGreaterThanOrEqual(12)
+        expect(productionCardTypography.practiceCopySize).toBeGreaterThanOrEqual(12)
         expect(productionCardTypography.collectionCopySize).toBeGreaterThanOrEqual(12)
       },
     })
 
-    await page.locator('article.mx-layered-catalog__journal-hero button').click()
+    await page.getByRole('button', { name: 'Открыть журнал' }).click()
     await captureScreen({
       page,
       viewport,
@@ -735,8 +723,8 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Вернуться в журнал' }).click()
-    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    await page.locator('article.mx-layered-catalog__journal-hero button').click()
+    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+    await page.getByRole('button', { name: 'Открыть журнал' }).click()
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Продолжить' }).click()
     await expect(
@@ -751,10 +739,13 @@ test('локальный UX smoke по основному маршруту', asy
     }
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
-    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+    await page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }).click()
+    await expect(page.getByRole('heading', { name: 'Когда неясно, с чего начать' })).toBeVisible()
+    await page.getByRole('button', { name: 'Назад' }).click()
+    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
 
-    await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Ритуалы' }).click()
+    await page.getByRole('button', { name: /Ритуалы.*Твои повторяемые опоры/ }).click()
     await page.getByRole('button', { name: 'Открыть ритуалы' }).click()
     await captureScreen({
       page,
@@ -773,9 +764,9 @@ test('локальный UX smoke по основному маршруту', asy
     await todayNavButton.click()
     await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Шаги' }).click()
-    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
 
-    await page.locator('.mx-layered-catalog__collection').filter({ hasText: 'Аскезы' }).click()
+    await page.getByRole('button', { name: /Аскезы.*Выбранные ограничения/ }).click()
     await page.getByRole('button', { name: 'Открыть аскезы' }).click()
     await captureScreen({
       page,
@@ -793,9 +784,9 @@ test('локальный UX smoke по основному маршруту', asy
     await todayNavButton.click()
     await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Шаги' }).click()
-    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
 
-    await expect(page.locator('[data-collection-key="psychological"]')).toBeDisabled()
+    await expect(page.getByRole('button', { name: /Психологические практики/ })).toHaveCount(0)
     await page.getByRole('button', { name: 'Библиотека' }).click()
     await captureScreen({
       page,
