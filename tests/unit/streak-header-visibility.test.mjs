@@ -50,9 +50,9 @@ test('streak flame is always rendered in the Today header', () => {
   }
 })
 
-test('the showStreak setting is removed from Settings and the series sheet', () => {
+test('the showStreak setting is removed from Settings and the series page', () => {
   assert.ok(!settingsSource.includes('Показывать серию'), 'тумблер удалён из Настроек')
-  assert.ok(!seriesBadgesSource.includes('Показывать серию'), 'тумблер удалён из шторки серии')
+  assert.ok(!seriesBadgesSource.includes('Показывать серию'), 'тумблер удалён со страницы серии')
   assert.ok(!settingsSource.includes('showStreak'), 'в Настройках нет showStreak')
 })
 
