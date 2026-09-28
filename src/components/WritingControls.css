@@ -80,14 +80,16 @@
 }
 
 /* Check-in §5.2: the floating dock has its own 45px control scale. */
-.journal-textarea__floating-actions .mx-keyboard-control {
+.journal-textarea__floating-actions .mx-keyboard-control,
+.mx-checkin-next-controls .mx-keyboard-control {
   border-color: rgb(var(--c-border)) !important;
   background: rgb(var(--c-card2)) !important;
 }
 
 .journal-textarea__floating-actions .mx-keyboard-plus,
 .journal-textarea__floating-actions .mx-keyboard-format,
-.journal-textarea__floating-actions .mx-keyboard-submit {
+.journal-textarea__floating-actions .mx-keyboard-submit,
+.mx-checkin-next-controls .mx-keyboard-submit {
   width: 45px !important;
   height: 45px !important;
   min-height: 45px !important;
@@ -104,7 +106,8 @@
   font-weight: 500;
 }
 
-.journal-textarea__floating-actions .mx-keyboard-submit {
+.journal-textarea__floating-actions .mx-keyboard-submit,
+.mx-checkin-next-controls .mx-keyboard-submit {
   background: #f2f2f2 !important;
   color: rgb(var(--c-bg)) !important;
   box-shadow: none;
