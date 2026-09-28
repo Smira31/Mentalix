@@ -46,6 +46,13 @@
   background: rgb(var(--c-bg, 5 4 3));
 }
 
+/* В демо-режиме полноэкранная страница стартует от верхнего края,
+   где висит демо-бейдж (z-index 9999). Сдвигаем вкладки ниже бейджа,
+   чтобы зона нажатия не перекрывалась. */
+[data-mentalix-demo-frame='true'] .mx-path-header {
+  padding-top: 44px;
+}
+
 .mx-path-tabs {
   display: grid;
   width: 177px;
