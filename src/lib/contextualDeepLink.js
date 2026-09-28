@@ -9,6 +9,11 @@ export function parseContextualDeepLink(search, startParam) {
   if (action === 'checkin') return { sub: 'contextualCheckin', returnFlow: null }
   if (action === 'evening' || action === 'breathing') return { sub: action, returnFlow: null }
   if (action === 'theme') return { sub: 'theme', returnFlow: null }
+  // Демо-превью экранов завершения (?demo=1&action=complete_morning|complete_evening):
+  // открывают тот же подэкран, что и соответствующий поток, а CheckIn сам
+  // переключается на финальный экран через previewDemoAction().
+  if (action === 'complete_morning') return { sub: 'checkin', returnFlow: null }
+  if (action === 'complete_evening') return { sub: 'evening', returnFlow: null }
   return { sub: null, returnFlow: null }
 }
 

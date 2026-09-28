@@ -15,17 +15,17 @@ test('PWA preview uses the morning set in the agreed order', () => {
   assert.match(checkinSource, /const doneStep = noteStep \+ 1/)
   assert.match(checkinSource, /<CheckInScaleQuestion\s+scale=\{scale\}/)
   assert.match(checkinSource, /<CheckInQuestion\s+title="Что на уме\?"/)
-  assert.match(checkinSource, /<h1>Чек-ин завершён<\/h1>/)
-  assert.doesNotMatch(
+  assert.match(checkinSource, /<CheckInCompletion[\s\S]*?evening=\{false\}/)
+  assert.match(
     checkinSource.slice(
       checkinSource.indexOf('function MorningCheckInFlow'),
       checkinSource.indexOf('// ── Чек-ин и вечерний')
     ),
-    /Было полезно\?/
+    /sendCheckinFeedback\(api\.checkin\.feedback, savedMorningId, label\)/
   )
   assert.match(
     checkinSource,
-    /\{ text: 'Вернуться в Сегодня', testId: 'checkin-back-to-today', onClick: onDone \}/
+    /\{ text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: onDone \}/
   )
 })
 

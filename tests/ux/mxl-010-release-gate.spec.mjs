@@ -241,12 +241,21 @@ test.describe('MXL-010 automated technical gate', () => {
     await textStep(page, 'Fixture morning note', 'checkin-complete')
 
     // Экран завершения
-    await expect(page.getByRole('heading', { name: 'Чек-ин завершён' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Ты прошёл Утренний чек-ин!' })).toBeVisible()
+    await page.setViewportSize({ width: 393, height: 667 })
+    const tiles = await page.getByTestId('checkin-feedback-option').last().boundingBox()
+    const exitButton = await page.getByTestId('checkin-back-to-today').boundingBox()
+    expect(tiles.y + tiles.height).toBeLessThan(exitButton.y)
+    await page.setViewportSize({ width: 390, height: 844 })
     expect(fixtures.savedCheckins).toHaveLength(1)
     expect(fixtures.savedCheckins[0].note).toContain('Fixture morning note')
     expect(fixtures.savedCheckins[0].sleep_quality).toBe(3)
     expect(fixtures.savedCheckins[0].day_focus).toBe('Продуктивность')
     expect(fixtures.sentFeedback).toEqual([])
+    await feedbackStep(page, 'no')
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)
+    await expect.poll(() => fixtures.sentFeedback.length).toBe(1)
+    expect(fixtures.sentFeedback[0]).toEqual({ value: 'no' })
 
     // ── Возврат и переход к вечернему разбору ──
     // После утреннего чек-ина fixture меняет review_hour на 0 (→ 19:00 в
@@ -276,22 +285,31 @@ test.describe('MXL-010 automated technical gate', () => {
     }
 
     // Экран завершения вечернего разбора
-    await expect(page.getByRole('heading', { name: 'Чек-ин завершён' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Ты завершил Разбор дня!' })).toBeVisible()
     expect(fixtures.savedCheckins).toHaveLength(2)
     expect(fixtures.savedCheckins[1].review_completed).toBe(true)
     await expect(page.getByTestId('checkin-streak')).toHaveText('4-дневная серия')
     expect(fixtures.streakRequests.slice(streakRequestsBeforeEvening)).toContain(
       String(TEST_USER.id)
     )
-    await expect(page.getByText('Было полезно?')).toBeVisible()
-    await expect(page.getByTestId('checkin-back-to-today')).toHaveText('Вернуться в Сегодня')
+    await expect(page.getByText('Было полезно сегодня?')).toBeVisible()
+    await expect(page.getByTestId('checkin-back-to-today')).toHaveText('Сохранить и выйти')
 
     // Ответ «Немного» уходит сразу: запись уже сохранена
     await feedbackStep(page, 'some')
     await expect
       .poll(() => fixtures.sentFeedback.length, { message: 'ответ разбора дошёл до бэкенда' })
-      .toBe(1)
-    expect(fixtures.sentFeedback[0]).toEqual({ value: 'some' })
+      .toBe(2)
+    expect(fixtures.sentFeedback[1]).toEqual({ value: 'some' })
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)
+    await feedbackStep(page, 'yes')
+    await expect.poll(() => fixtures.sentFeedback.length).toBe(3)
+    expect(fixtures.sentFeedback[2]).toEqual({ value: 'yes' })
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(1)
+    await expect(page.locator('[data-value="some"][data-testid="checkin-feedback-option"]')).toHaveAttribute('aria-pressed', 'false')
+    await feedbackStep(page, 'yes')
+    await expect(page.locator('[data-testid="checkin-feedback-option"][aria-pressed="true"]')).toHaveCount(0)
+
 
     // ── Хендофф к Следопыту ──
     const scoutBtn = page.locator('[data-testid="checkin-open-scout"]')

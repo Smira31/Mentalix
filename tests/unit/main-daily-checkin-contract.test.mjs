@@ -93,14 +93,26 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })
 
-test('completion screen uses the owner character art, not the Stoic bird', () => {
+test('completion screen uses original monochrome Stoic silhouette art (morning sun, evening moon); MoodPractice keeps its art', async () => {
+  const component = await readFile(new URL('../../src/components/CheckInCompletion.jsx', import.meta.url), 'utf8')
+  const morningArt = await readFile(new URL('../../src/components/CompletionArtMorning.jsx', import.meta.url), 'utf8')
+  const eveningArt = await readFile(new URL('../../src/components/CompletionArtEvening.jsx', import.meta.url), 'utf8')
+  // MoodPractice keeps its own character art — separate export, not touched.
   assert.match(checkinSource, /function CheckInCompletionArt\(\)/)
-  // CheckInCompletionArt используется в MoodPractice, CompletionArt — в вечернем потоке
-  assert.match(checkinSource, /<CompletionArt variant=\{isEvening \? 'evening' : 'morning'\} \/>/)
-  assert.match(checkinSource, /import cardMorningDone2x from '\.\.\/assets\/today\/card-morning-done@2x\.webp'/)
-  assert.match(checkinSource, /import cardEveningDone2x from '\.\.\/assets\/today\/card-evening-done@2x\.webp'/)
-  assert.match(checkinSource, /rgb\(var\(--c-(text|gold|muted|bg)\)\)/)
-  assert.doesNotMatch(checkinSource, /checkin-bird-reference\.png/)
+  assert.match(checkinSource, /<CheckInCompletion/)
+  // Завершение выбирает силуэт по ветке (утро/вечер).
+  assert.match(component, /CompletionArtMorning/)
+  assert.match(component, /CompletionArtEvening/)
+  assert.match(component, /evening \? <CompletionArtEvening \/> : <CompletionArtMorning \/>/)
+  // Плоский силуэт в стиле Stoic: один цвет --c-text, вырезы --c-bg, без контуров и градиентов.
+  assert.match(morningArt, /rgb\(var\(--c-text\)\)/)
+  assert.match(eveningArt, /rgb\(var\(--c-text\)\)/)
+  assert.match(eveningArt, /rgb\(var\(--c-bg\)\)/)
+  assert.doesNotMatch(morningArt, /stroke=|gradient/)
+  assert.doesNotMatch(eveningArt, /stroke=|gradient/)
+  // Цветка-лепестков больше нет; общие рисунки Stoic не переиспользуются.
+  assert.doesNotMatch(component, /CompletionFlower/)
+  assert.doesNotMatch(component, /checkin-bird-reference|cardMorningDone/)
 })
 
 test('morning streak screen uses the shared Telegram BackButton and sprout flower', () => {
