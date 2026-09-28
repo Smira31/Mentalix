@@ -69,7 +69,7 @@ test('sleep_quality отправляется только если выбран 
 })
 
 test('day_focus отправляется только если заполнен (omitted/null-семантика)', () => {
-  assert.match(morningFlow, /if \(selectedFocus \|\| dayFocus\.trim\(\)\) morningPayload\.day_focus = selectedFocus \|\| dayFocus\.trim\(\)/)
+  assert.match(morningFlow, /if \(selectedFocus \|\| dayFocus\.trim\(\)\)\s*morningPayload\.day_focus = selectedFocus \|\| dayFocus\.trim\(\)/)
   assert.doesNotMatch(morningFlow, /day_focus: dayFocus \|\|/)
 })
 

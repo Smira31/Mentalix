@@ -33,7 +33,7 @@ test('evening first text step has no pre-declaration question access', () => {
   )
   const compactStepDisabled = core.slice(
     core.indexOf('const compactStepDisabled'),
-    core.indexOf('if (isStreakStep)')
+    core.indexOf('if (isStreakStep')
   )
   const eveningQuestionDeclaration = core.indexOf('const eveningQuestion =')
   const firstEveningQuestionUse = core.indexOf('eveningQuestion', eveningQuestionDeclaration + 1)
@@ -115,14 +115,15 @@ test('completion screen uses original monochrome Stoic silhouette art (morning s
   assert.doesNotMatch(component, /checkin-bird-reference|cardMorningDone/)
 })
 
-test('morning streak screen uses the shared Telegram BackButton and sprout flower', () => {
+test('morning flow uses the shared Telegram BackButton; streak screen is StreakCelebration petals', () => {
   const morningFlow = checkinSource.slice(
     checkinSource.indexOf('function MorningCheckInFlow'),
     checkinSource.indexOf('// ── Чек-ин и вечерний')
   )
   assert.match(morningFlow, /<BackButton onClick=\{handleBack\} label="Сегодня" \/>/)
-  assert.match(checkinSource, /function StreakFlower\(\)/)
-  assert.match(checkinSource, /stroke="rgb\(var\(--c-gold\)\)"/)
+  // Росток заменён экраном серии с лепестками (один компонент, без второго экрана).
+  assert.doesNotMatch(checkinSource, /function StreakFlower\(\)/)
+  assert.match(morningFlow, /<StreakCelebration/)
 })
 
 test('восстановление сохраняет только вчерашний разбор через PUT и не меняет утренний redo', () => {
