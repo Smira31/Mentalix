@@ -36,6 +36,7 @@ import {
   isRealPhone,
   isDemoGuestMode,
   DEMO_GUEST_USER,
+  previewSeriesAction,
 } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
@@ -296,7 +297,7 @@ function App() {
 
   const [todayFlowOpen, setTodayFlowOpen] = useState(false)
 
-  const [todaySeriesOpen, setTodaySeriesOpen] = useState(false)
+  const [todaySeriesOpen, setTodaySeriesOpen] = useState(() => Boolean(previewSeriesAction()))
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
   const [libraryInputMode, setLibraryInputMode] = useState(false)
