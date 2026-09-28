@@ -212,6 +212,23 @@ export function previewDemoAction() {
   return DEMO_COMPLETION_ACTIONS.has(requested) ? requested : null
 }
 
+/*
+ * Превью экрана серии после чек-ина:
+ *   ?demo=1&action=streak_celebration            — серия 3 дня
+ *   ?demo=1&action=streak_celebration&streak_days=N — другое число дней
+ * Вне демо-режима возвращает null.
+ */
+export function previewStreakCelebrationDays() {
+  if (typeof window === 'undefined') return null
+  if (!isPreviewDemoMode()) return null
+
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('action') !== 'streak_celebration') return null
+
+  const requested = Number(params.get('streak_days'))
+  return Number.isSafeInteger(requested) && requested > 0 ? requested : 3
+}
+
 function previewTodayState() {
   if (typeof window === 'undefined') return null
 

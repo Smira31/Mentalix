@@ -40,8 +40,15 @@ import {
   readCheckinDraft,
   saveCheckinDraft,
 } from '../lib/checkinDraft'
-import { isPreviewDemoMode, previewDemoAction } from '../lib/demoMode'
-import { readCanonicalCurrentStreak } from '../lib/canonicalStreak'
+import {
+  isPreviewDemoMode,
+  previewDemoAction,
+  previewStreakCelebrationDays,
+} from '../lib/demoMode'
+import { readCanonicalCurrentStreak, readCanonicalStreakStats } from '../lib/canonicalStreak'
+import { buildStreakDays, shouldCelebrateStreak } from '../lib/streakCelebration'
+import { useStreakBaseline } from '../lib/useStreakBaseline'
+import StreakCelebration from '../components/StreakCelebration'
 import { logOnce } from '../lib/logOnce'
 import { maybeBuildSurprise } from './mentalix/surpriseInsight'
 import { SURPRISE_MESSAGE_KEY } from './mentalix/insightDigest'
@@ -150,24 +157,6 @@ export function CheckInNextControls({
   )
 }
 
-function StreakFlower() {
-  return (
-    <svg
-      width="112"
-      height="112"
-      viewBox="0 0 112 112"
-      fill="none"
-      aria-hidden="true"
-      className="mb-7"
-    >
-      <path d="M56 91V58" stroke="rgb(var(--c-gold))" strokeWidth="3" strokeLinecap="round" />
-      <path d="M56 70C42 71 34 63 36 52C47 51 56 58 56 70Z" fill="rgb(var(--c-gold))" />
-      <path d="M56 59C57 45 66 37 78 39C79 51 70 59 56 59Z" fill="rgb(var(--c-text))" />
-      <path d="M56 78C65 70 75 71 82 79C74 88 64 87 56 78Z" fill="rgb(var(--c-muted))" />
-    </svg>
-  )
-}
-
 /*
  * Персонаж владельца на экране завершения: утро — голова вправо, активный взгляд;
  * разбор дня — закрытые глаза. Кадры уже используются карточками «Сегодня»
@@ -255,6 +244,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   const [streak, setStreak] = useState(0)
   const [streakHistory, setStreakHistory] = useState([])
   const [savedMorningId, setSavedMorningId] = useState(null)
+  const [streakStats, setStreakStats] = useState(null)
+  const [celebrating, setCelebrating] = useState(false)
+  const streakBaseline = useStreakBaseline(user.id)
   const { style: viewportStyle } = useFullscreenSurface()
   const demoSurfaceStyle = {
     ...viewportStyle,
@@ -322,6 +314,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   }
 
   async function finish() {
+    streakBaseline.freeze()
     setSaving(true)
     setError('')
     try {
@@ -379,6 +372,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
           if (currentStreak != null) {
             setStreak(currentStreak)
           }
+          setStreakStats(readCanonicalStreakStats(streakResult.value))
         } else {
           console.error(streakResult.reason)
         }
@@ -394,9 +388,18 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
     }
   }
 
+  // «Сохранить и выйти»: экран серии — только если это завершение увеличило серию.
+  function exitCompletion() {
+    if (shouldCelebrateStreak(streakBaseline.wasActiveToday(), streakStats)) {
+      setCelebrating(true)
+      return
+    }
+    onDone()
+  }
+
   const action =
     step === doneStep
-      ? { text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: onDone }
+      ? { text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: exitCompletion }
       : step === dayFocusStep
         ? { text: 'Далее', onClick: () => goToStep(noteStep), disabled: false }
         : {
@@ -408,7 +411,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   useMainButton({
     text: action.text,
     onClick: action.onClick,
-    visible: step === doneStep,
+    visible: step === doneStep && !celebrating,
     enabled: !action.disabled,
     loading: saving,
   })
@@ -416,6 +419,21 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   useSecondaryButton({ text: '', onClick: () => {}, visible: false })
 
   const screenRef = useRef(null)
+
+  if (celebrating) {
+    return (
+      <StreakCelebration
+        streak={streakStats.currentStreak}
+        days={buildStreakDays({
+          streak: streakStats.currentStreak,
+          checkins: streakHistory,
+          freezeUsed: streakStats.freezeUsedThisWeek,
+          today: seriesLogicalDateKey(),
+        })}
+        onDone={onDone}
+      />
+    )
+  }
 
   return createPortal(
     <div ref={screenRef} className="mx-demo-checkin" style={demoSurfaceStyle}>
@@ -851,6 +869,8 @@ function CheckInCore({
 
   const [streak, setStreak] = useState(0)
   const [canonicalEveningStreak, setCanonicalEveningStreak] = useState(null)
+  const [eveningStreakStats, setEveningStreakStats] = useState(null)
+  const streakBaseline = useStreakBaseline(user.id)
 
   const [streakHistory, setStreakHistory] = useState([])
   const [surprise, setSurprise] = useState(null)
@@ -1008,6 +1028,7 @@ function CheckInCore({
   }
 
   async function submit({ afterSave } = {}) {
+    streakBaseline.freeze()
     setSaving(true)
     setError(false)
 
@@ -1093,6 +1114,7 @@ function CheckInCore({
           api.streak(user.id).then(response => {
             const currentStreak = readCanonicalCurrentStreak(response)
             if (currentStreak != null) setCanonicalEveningStreak(currentStreak)
+            setEveningStreakStats(readCanonicalStreakStats(response))
           }),
         ])
         if (historyResult.status === 'rejected') console.error(historyResult.reason)
@@ -1318,7 +1340,16 @@ function CheckInCore({
     })
   }, [isCompletion, user, previewDemoMode, isEvening])
 
-  const isStreakStep = !isEvening && step === streakStep
+  const isStreakStep = step === streakStep
+
+  // «Сохранить и выйти»: экран серии — только если это завершение увеличило серию.
+  function exitCompletion() {
+    if (shouldCelebrateStreak(streakBaseline.wasActiveToday(), eveningStreakStats)) {
+      setStep(streakStep)
+      return
+    }
+    onDone()
+  }
 
   const isFinal = isCompletion || isStreakStep
 
@@ -1356,7 +1387,7 @@ function CheckInCore({
     ? { text: 'Вернуться в Сегодня', run: onDone }
     : isCompletion
       ? isEvening
-        ? { text: 'Сохранить и выйти', run: onDone }
+        ? { text: 'Сохранить и выйти', run: exitCompletion }
         : { text: saving ? 'Сохраняю...' : 'Завершить', run: submit }
       : isEmotionStep
         ? {
@@ -1418,7 +1449,7 @@ function CheckInCore({
       platform.haptic('light')
       skipAction?.run()
     },
-    visible: Boolean(skipAction) && !saving && !isMorningNoteStep,
+    visible: Boolean(skipAction) && !saving && !isMorningNoteStep && !isStreakStep,
   })
 
   const webAction =
@@ -1452,38 +1483,18 @@ function CheckInCore({
       ? !values[MORNING_SCALE_STEPS[step]?.key]
       : false
 
-  if (isStreakStep) {
-    return createPortal(
-      <div ref={screenRef} className={FULLSCREEN_SHELL_CLASS} style={viewportStyle}>
-        <div
-          className={`${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center px-[var(--mx-screen-x)]`}
-        >
-          <BackButton onClick={handleBack} label="Сегодня" />
-        </div>
-        <div className={FULLSCREEN_SCROLL_CLASS}>
-          <div className={`${CHECKIN_CENTER_CLASS} justify-between`}>
-            <section className="w-full flex flex-col items-center text-center pt-8">
-              <StreakFlower />
-              <h1 className="font-display text-[30px] font-bold leading-tight text-cream">
-                {streak}-дневная серия.
-              </h1>
-              <p className="mt-3 max-w-xs text-[15px] leading-relaxed text-muted">
-                внутренняя работа — это путь. ты только что сделал ещё один шаг.
-              </p>
-            </section>
-
-            <button
-              type="button"
-              data-testid="checkin-back-to-today"
-              onClick={onDone}
-              className="min-h-12 w-full max-w-sm rounded-full border-0 bg-cream px-6 py-3 text-[14px] font-bold text-emerald-deep"
-            >
-              Вернуться в Сегодня
-            </button>
-          </div>
-        </div>
-      </div>,
-      getFullscreenPortalTarget()
+  if (isStreakStep && eveningStreakStats) {
+    return (
+      <StreakCelebration
+        streak={eveningStreakStats.currentStreak}
+        days={buildStreakDays({
+          streak: eveningStreakStats.currentStreak,
+          checkins: streakHistory,
+          freezeUsed: eveningStreakStats.freezeUsedThisWeek,
+          today: seriesLogicalDateKey(),
+        })}
+        onDone={onDone}
+      />
     )
   }
 
@@ -1896,6 +1907,16 @@ function CheckIn({
   redo = false,
 }) {
   const demoAction = previewDemoAction()
+  const demoStreakDays = previewStreakCelebrationDays()
+  if (demoStreakDays) {
+    return (
+      <StreakCelebration
+        streak={demoStreakDays}
+        days={buildStreakDays({ streak: demoStreakDays, today: seriesLogicalDateKey() })}
+        onDone={onDone}
+      />
+    )
+  }
   if (demoAction === 'complete_morning') {
     return <DemoCompletionScreen evening={false} onDone={onDone} />
   }

@@ -25,7 +25,7 @@ test('PWA preview uses the morning set in the agreed order', () => {
   )
   assert.match(
     checkinSource,
-    /\{ text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: onDone \}/
+    /\{ text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: exitCompletion \}/
   )
 })
 

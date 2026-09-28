@@ -37,7 +37,7 @@ test('Morning completion: после успешного чек-ина запра
   )
   assert.match(
     checkinSource,
-    /import \{ readCanonicalCurrentStreak \} from '\.\.\/lib\/canonicalStreak'/,
+    /import \{ readCanonicalCurrentStreak, readCanonicalStreakStats \} from '\.\.\/lib\/canonicalStreak'/,
     'хелпер canonical-контракта импортируется из общего модуля'
   )
 })
@@ -104,7 +104,7 @@ test('Morning completion contract не регрессирует', () => {
   assert.match(morningFlow, /дневная серия/)
   assert.match(
     morningFlow,
-    /\{ text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: onDone \}/,
+    /\{ text: 'Сохранить и выйти', testId: 'checkin-back-to-today', onClick: exitCompletion \}/,
     'CTA «Сохранить и выйти»'
   )
   assert.match(morningFlow, /sendCheckinFeedback\(api\.checkin\.feedback, savedMorningId, label\)/, 'утро отправляет оценку сохранённой записи')

@@ -1,0 +1,87 @@
+/* Экран серии после чек-ина — замеры Stoic «3-day streak.» для экрана 393 pt. */
+.mx-streak-celebration {
+  background: rgb(var(--c-bg));
+}
+
+.mx-streak-celebration__body {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left: 28px;
+  padding-right: 28px;
+  padding-bottom: 24px;
+  text-align: center;
+}
+
+.mx-streak-celebration__petals {
+  flex: none;
+  width: 66px;
+  height: 66px;
+}
+
+.mx-streak-celebration__petal {
+  fill: rgb(var(--c-card3));
+}
+.mx-streak-celebration__petal.is-lit {
+  fill: rgb(var(--c-text));
+}
+.mx-streak-celebration__petal.is-new {
+  animation: mx-streak-petal-on 400ms ease-out 400ms both;
+}
+
+@keyframes mx-streak-petal-on {
+  from { fill: rgb(var(--c-card3)); }
+  to { fill: rgb(var(--c-text)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mx-streak-celebration__petal.is-new { animation: none; }
+}
+
+.mx-streak-celebration__text {
+  display: flex;
+  flex-direction: column;
+  margin: 64px 0 0;
+  color: rgb(var(--c-text) / 0.85);
+  font-size: 26px;
+  line-height: 36px;
+  font-weight: 400;
+}
+.mx-streak-celebration__text strong { font-weight: 700; }
+
+.mx-streak-celebration__days {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 40px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.mx-streak-celebration__days li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.mx-streak-celebration__dot {
+  display: flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+}
+.mx-streak-celebration__days li[data-state='gap'] .mx-streak-celebration__dot {
+  background: rgb(var(--c-card3));
+}
+
+.mx-streak-celebration__day-label {
+  color: rgb(var(--c-muted));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+}
