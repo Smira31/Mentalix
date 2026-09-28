@@ -8,7 +8,7 @@ import { moodPracticeStart } from './checkin-helpers.mjs'
  *    видимый размер и раскладка не меняются, а нажатие у краёв квадрата
  *    43×43 вокруг центра кнопки должно попадать в саму кнопку. Проверяем
  *    это в демо-режиме (?demo=1): крестики подсказок на «Сегодня»,
- *    «Настроить твои практики», «Пропустить» в чек-ине, вкладки и
+ *    «Настроить твои практики», круглая «→» в чек-ине, вкладки и
  *    «Закрыть» в шторке серии.
  * 2) Вне Telegram у чек-ина и «Настроения» своя капсула «Назад»: её левый
  *    край стоит на 16 pt от края экрана (--mx-screen-x), на одной линии с
@@ -31,7 +31,7 @@ const TODAY_NEXT_HINT_TAP_TARGET = 'today-cards-hint-close'
 
 const SERIES_TAP_TARGETS = ['series-tab-badges', 'series-tab-stats', 'series-close']
 
-const CHECKIN_TAP_TARGETS = ['checkin-skip']
+const CHECKIN_TAP_TARGETS = ['checkin-next']
 
 /**
  * Сколько точек у краёв квадрата MIN_TAP_PT вокруг центра кнопки не
@@ -131,9 +131,8 @@ test.describe('Области нажатия и отступ «Назад»', ()
     await page.locator('[data-testid="series-close"]').click()
     await expect(page.locator('[data-testid="series-tab-badges"]')).toBeHidden()
 
-    // Чек-ин: «Пропустить» — доступен на необязательных шагах
-    // (sleep_quality, focus, day_focus). Шаг mood — обязательный,
-    // выбираем значение и переходим к sleep_quality.
+    // Чек-ин: «Пропустить» нет, одна круглая «→». Выбираем mood,
+    // переходим к sleep_quality и проверяем область нажатия «→».
     await page.locator('[data-testid="today-card-morning"]').click()
     await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
     await page.locator('[data-testid="checkin-scale-option"][data-level="3"]').click()

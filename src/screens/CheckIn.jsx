@@ -6,13 +6,11 @@ import { MotifArt } from '../components/Motif'
 import { api } from '../lib/api'
 import { logEngagementEvent } from '../lib/engagementEvents'
 import {
-  ArrowRight,
   BookOpen,
   BriefcaseBusiness,
   Check,
   ClipboardList,
   ChevronDown,
-  ChevronRight,
   ChevronUp,
   Hand,
   Heart,
@@ -34,6 +32,7 @@ import {
 } from 'lucide-react'
 import BackButton from '../components/BackButton'
 import JournalTextarea from '../components/JournalTextarea'
+import RoundSubmitButton from '../components/RoundSubmitButton'
 import WebActionBar from '../components/WebActionBar'
 import { pickByDay, MORNING_NOTE_PROMPTS, LESSON_PROMPTS } from '../data/prompts'
 import { useMainButton, useSecondaryButton } from '../platform/telegram.hooks'
@@ -138,37 +137,18 @@ const CHECKIN_INTERACTIVE_CLASS = 'w-full pt-7'
 
 const CHECKIN_HEADER_CLASS = `${FULLSCREEN_HEADER_SLOT_CLASS} flex items-center justify-between px-[var(--mx-screen-x)]`
 
-export function CheckInNextControls({
-  onNext,
-  disabled = false,
-  onSkip = null,
-  variant = 'scale',
-}) {
+// Одна круглая «→» справа внизу — та же кнопка, что в редакторе «Что на уме?».
+export function CheckInNextControls({ onNext, disabled = false, variant = 'scale' }) {
   return (
     <div
       className={`mx-checkin-next-controls${variant === 'emotion' ? ' mx-checkin-next-controls--emotion' : ''}`}
     >
-      {onSkip && (
-        <button
-          type="button"
-          className="mx-checkin-next-controls__skip mx-tap-target"
-          data-testid="checkin-skip"
-          onClick={onSkip}
-        >
-          Пропустить
-        </button>
-      )}
-      <button
-        type="button"
-        className="mx-checkin-next-controls__next"
-        aria-label="Далее"
-        data-testid="checkin-next"
+      <RoundSubmitButton
+        label="Далее"
+        testId="checkin-next"
         onClick={onNext}
         disabled={disabled}
-      >
-        <span>Далее</span>
-        <ArrowRight size={20} strokeWidth={2} aria-hidden="true" />
-      </button>
+      />
     </div>
   )
 }
@@ -255,11 +235,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       ? existing.day_focus
       : null
   )
-  const [dayFocus, setDayFocus] = useState(() =>
-    redo || DAY_FOCUS_OPTIONS.some(option => option.label === existing?.day_focus)
-      ? ''
-      : (existing?.day_focus ?? '')
-  )
   const [showAllFocus, setShowAllFocus] = useState(
     () => !redo && DAY_FOCUS_OPTIONS.slice(9).some(option => option.label === existing?.day_focus)
   )
@@ -278,15 +253,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
   }
   /*
    * Порядок утренних шкал: настроение → сон → энергия → концентрация.
-   * sleep_quality и focus — необязательные (required: false), их можно
-   * пропустить; mood и energy — обязательные.
+   * На каждой шкале «→» активна только после выбора кружка.
    */
-  const allScales = [
-    { ...SCALE_STEPS[0], required: true },
-    { ...SLEEP_QUALITY_STEP, required: false },
-    { ...SCALE_STEPS[1], required: true },
-    { ...MORNING_FOCUS_STEP, required: false },
-  ]
+  const allScales = [SCALE_STEPS[0], SLEEP_QUALITY_STEP, SCALE_STEPS[1], MORNING_FOCUS_STEP]
   const scale = step < allScales.length ? allScales[step] : null
   const dayFocusStep = allScales.length
   const noteStep = dayFocusStep + 1
@@ -352,8 +321,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
       if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
-      // prettier-ignore
-      if (selectedFocus || dayFocus.trim()) morningPayload.day_focus = selectedFocus || dayFocus.trim()
+      if (selectedFocus) morningPayload.day_focus = selectedFocus
       /*
        * Повтор утра не трогает вечернюю половину записи дня: эмоция,
        * уроки и закрытие дня переносятся из перезаписываемой записи
@@ -499,10 +467,9 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                 submitLabel="Далее"
                 submitTestId="checkin-complete"
                 onSubmit={finish}
-                onSkip={finish}
                 submitLoading={saving}
                 hideAddAction
-                formatting
+                formatting={false}
               />
               {error ? (
                 <p role="alert" className="mx-demo-checkin__error mt-4 text-center">
@@ -515,6 +482,7 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
           {step === dayFocusStep && (
             <CheckInQuestion
               title="Главный фокус на сегодня?"
+              hint="Выбери одно главное на сегодня."
               className="mx-demo-checkin__editor-scene mx-demo-checkin__editor-scene--focus"
             >
               <div className="mx-demo-checkin__day-focus">
@@ -535,7 +503,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                         onClick={() => {
                           platform.haptic('light')
                           setSelectedFocus(prev => (prev === label ? null : label))
-                          setDayFocus('')
                         }}
                       >
                         <Icon size={23} strokeWidth={0} fill="currentColor" aria-hidden="true" />
@@ -562,25 +529,6 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
                     </>
                   )}
                 </button>
-                <input
-                  type="text"
-                  value={dayFocus}
-                  onChange={e => {
-                    setDayFocus(e.target.value.slice(0, DAY_FOCUS_MAX))
-                    setSelectedFocus(null)
-                  }}
-                  maxLength={DAY_FOCUS_MAX}
-                  placeholder="Или напиши свой фокус…"
-                  aria-label="Главный фокус дня"
-                  data-testid="checkin-day-focus-input"
-                  className="mx-demo-checkin__day-focus-input"
-                />
-                <span
-                  className="mx-demo-checkin__day-focus-counter"
-                  data-testid="checkin-day-focus-counter"
-                >
-                  {dayFocus.length}/{DAY_FOCUS_MAX}
-                </span>
               </div>
             </CheckInQuestion>
           )}
@@ -599,35 +547,11 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
           )}
         </StepSlide>
       </main>
-      {step === dayFocusStep ? (
-        <div className="mx-checkin-next-controls mx-checkin-focus-controls">
-          <button
-            type="button"
-            className="mx-checkin-next-controls__skip mx-tap-target"
-            data-testid="checkin-skip"
-            onClick={() => goToStep(current => Math.min(doneStep, current + 1))}
-          >
-            Пропустить
-          </button>
-          <button
-            type="button"
-            className="mx-checkin-focus-next"
-            aria-label="Далее"
-            data-testid="checkin-next"
-            onClick={() => goToStep(noteStep)}
-          >
-            <ChevronRight size={22} strokeWidth={2.5} aria-hidden="true" />
-          </button>
-        </div>
-      ) : step < noteStep ? (
+      {step < noteStep ? (
+        // Шкалы: «→» активна после выбора кружка. Фокус дня: всегда активна.
         <CheckInNextControls
           onNext={() => goToStep(current => Math.min(doneStep, current + 1))}
-          disabled={
-            step < allScales.length && allScales[step]?.required
-              ? !values[allScales[step].key]
-              : false
-          }
-          onSkip={() => goToStep(current => Math.min(doneStep, current + 1))}
+          disabled={scale ? !values[scale.key] : false}
         />
       ) : null}
       {step === doneStep ? (
@@ -756,7 +680,6 @@ const MORNING_FOCUS_STEP = {
 
 export const MORNING_OPTIONAL_SCALES = [SLEEP_QUALITY_STEP, MORNING_FOCUS_STEP]
 
-const DAY_FOCUS_MAX = 140
 
 export function CheckInScaleQuestion({ scale, value, onPick, filled = false }) {
   return (
@@ -1906,7 +1829,6 @@ function CheckInCore({
         <CheckInNextControls
           onNext={compactStepAction}
           disabled={compactStepDisabled}
-          onSkip={isScaleStep ? () => goToStep(current => current + 1) : null}
           variant={isEmotionStep ? 'emotion' : 'scale'}
         />
       ) : null}

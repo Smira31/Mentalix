@@ -535,23 +535,28 @@ test('локальный UX smoke по основному маршруту', asy
       const answer = page.getByRole('radio', { name: new RegExp(`^3: ${option}$`, 'i') })
       await expect(answer).toBeVisible()
       await expect(answer).toBeEnabled()
-      await assertClickable(page.getByTestId('checkin-skip'))
+      await expect(page.getByTestId('checkin-skip')).toHaveCount(0)
+      await expect(page.getByTestId('checkin-next')).toBeDisabled()
       await answer.click()
       await assertClickable(page.getByRole('button', { name: 'Далее' }))
       await page.getByRole('button', { name: 'Далее' }).click()
     }
 
-    // Главный фокус дня: девять плиток, один выбор, отдельный собственный ввод.
+    // Главный фокус дня: девять плиток, один выбор, без собственного ввода.
+    // «→» активна и без выбора плитки.
     const focusTiles = page.getByTestId('checkin-day-focus-option')
     await expect(focusTiles).toHaveCount(9)
+    await expect(page.getByText('Выбери одно главное на сегодня.')).toBeVisible()
+    await expect(page.getByTestId('checkin-day-focus-input')).toHaveCount(0)
+    await expect(page.getByTestId('checkin-day-focus-counter')).toHaveCount(0)
+    await expect(page.getByTestId('checkin-skip')).toHaveCount(0)
+    await expect(page.getByTestId('checkin-next')).toBeEnabled()
     await focusTiles.first().click()
     await expect(focusTiles.first()).toHaveAttribute('aria-pressed', 'true')
-    const dayFocusInput = page.locator('[data-testid="checkin-day-focus-input"]')
-    await expect(dayFocusInput).toHaveValue('')
     await page.getByTestId('checkin-day-focus-show-all').click()
     await expect(focusTiles).toHaveCount(12)
-    await dayFocusInput.fill('Фокус дня')
-    await expect(page.locator('[data-testid="checkin-day-focus-option"][aria-pressed="true"]')).toHaveCount(0)
+    await focusTiles.nth(1).click()
+    await expect(page.locator('[data-testid="checkin-day-focus-option"][aria-pressed="true"]')).toHaveCount(1)
     await assertClickable(page.getByRole('button', { name: 'Далее' }))
     await page.getByRole('button', { name: 'Далее' }).click()
 
@@ -565,10 +570,12 @@ test('локальный UX smoke по основному маршруту', asy
       check: async () => {
         const editor = page.getByRole('textbox', { name: 'Что на уме' })
         await expect(editor).toBeVisible()
+        await expect(page.locator('[data-testid="checkin-complete"]')).toBeEnabled()
         await editor.pressSequentially('Спокойное утро')
-        await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
+        await expect(page.getByRole('button', { name: 'Показать форматирование' })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: 'Жирный текст' })).toHaveCount(0)
         await expect(page.getByRole('button', { name: 'Дополнительные действия' })).toHaveCount(0)
-        await assertClickable(page.locator('[data-testid="checkin-skip"]'))
+        await expect(page.locator('[data-testid="checkin-skip"]')).toHaveCount(0)
         await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
           'aria-label',
           'Далее'
