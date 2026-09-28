@@ -292,7 +292,7 @@ function NeedDataPlaque({ daysWithRecords, onRemind }) {
   return (
     <section className="mx-progress-need-data" aria-labelledby="progress-need-data-title">
       <h2 id="progress-need-data-title" className="mx-progress-need-data__title">
-        Нужны записи ещё за {formatDays(remaining)}, чтобы показать выводы
+        Нужны данные ещё за {formatDays(remaining)}, чтобы показать выводы
       </h2>
       <div className="mx-progress-need-data__days" aria-hidden="true">
         {cells.map((isDone, i) => (
