@@ -15,8 +15,6 @@ import './Today.css'
 
 import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
-import cardMorningDone2x from '../assets/today/card-morning-done@2x.webp'
-import cardMorningDone3x from '../assets/today/card-morning-done@3x.webp'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
 import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
 
@@ -1094,20 +1092,6 @@ export default function Today({
               </>
             )}
           </span>
-          <div className="mx-today-day-card__illustration" data-testid="today-card-illustration">
-            <div className="mx-today-day-card__illustration-slot">
-              <img
-                className="mx-today-day-card__art"
-                src={isMorning ? cardMorningDone2x : cardEveningDone2x}
-                srcSet={`${isMorning ? cardMorningDone2x : cardEveningDone2x} 2x, ${isMorning ? cardMorningDone3x : cardEveningDone3x} 3x`}
-                width={isMorning ? 200 : 200}
-                height={isMorning ? 212 : 230}
-                loading="lazy"
-                alt=""
-                draggable={false}
-              />
-            </div>
-          </div>
         </>
       ) : state === 'active' ? (
         <>
