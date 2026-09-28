@@ -18,6 +18,7 @@ import NestedScreenHeader, { RoundBackButton } from '../components/NestedScreenH
 import WebActionBar from '../components/WebActionBar'
 import { useMainButton, useBackButton } from '../platform/telegram.hooks'
 import { isLinkedWebWriteBlocked, LINKED_WEB_WRITE_NOTICE } from '../lib/webAuthLimits'
+import { previewPracticeAction } from '../lib/demoMode'
 import '../components/practices/SceneLayout.css'
 const EMPTY_DRAFT = {
   name: '',
@@ -164,6 +165,13 @@ export default function Rituals({ user, onBack }) {
       .finally(() => setLoading(false))
   }, [user])
 
+  useEffect(() => {
+    if (rituals.length === 0) return
+    if (previewPracticeAction() === 'ritual_detail') {
+      setSelected(rituals[0])
+    }
+  }, [rituals])
+
   async function logRitual(ritualId, level) {
     try {
       const updated = await api.rituals.log(ritualId, user.id, level)
@@ -276,7 +284,7 @@ export default function Rituals({ user, onBack }) {
       {!loading && (
         <button
           type="button"
-          className="cta-pill mx-type-flow-action mx-practice-list-screen__create"
+          className="mx-practice-list-screen__create"
           onClick={() => setShowCreate(true)}
         >
           + Новый ритуал

@@ -7,6 +7,7 @@ import { RoundBackButton } from './NestedScreenHeader'
 import DeleteConfirmationDialog from './DeleteConfirmationDialog'
 import SemanticGlyph, { semanticKindForAsceza, semanticKindForRitual } from './SemanticGlyph'
 import { isRitualDoneToday } from '../lib/practiceDoneToday'
+import { ProgressGlassMenu, ProgressGlassMenuItem } from './ProgressGlassMenu'
 import './PracticeDetail.css'
 
 function AccordionRow({ testId, label, children }) {
@@ -35,6 +36,7 @@ function AccordionRow({ testId, label, children }) {
 export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak, onDelete }) {
   const screenRef = useRef(null)
   const [confirming, setConfirming] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   useEdgeSwipeBack(screenRef, onBack)
   useBackButton(onBack)
   const isRitual = kind === 'ritual'
@@ -61,8 +63,11 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   const note = practice.note || practice.notes || practice.today_note
 
   async function toggle() {
-    if (done) return
     platform.haptic('success')
+    if (done) {
+      await onLog(practice.id, null)
+      return
+    }
     const level = isRitual
       ? practice.optimal_version
         ? 'optimal'
@@ -74,37 +79,54 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
   }
 
   return (
-    <div ref={screenRef} className="mx-practice-detail-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in">
+    <div
+      ref={screenRef}
+      className="mx-practice-detail-screen w-full max-w-md px-[var(--mx-screen-x)] animate-fade-in"
+    >
       <div className="mx-practice-detail-screen__header">
         <RoundBackButton onClick={onBack} />
-        <button
-          type="button"
-          className="mx-practice-detail__delete"
-          aria-label={`Удалить ${practice.name}`}
-          onClick={() => setConfirming(true)}
-        >
-          <Trash2 size={18} />
-        </button>
+        <div className="mx-practice-detail__menu-wrap">
+          <button
+            type="button"
+            className="mx-practice-detail__menu"
+            aria-label="Действия"
+            aria-expanded={menuOpen}
+            data-testid="practice-detail-menu"
+            onClick={() => setMenuOpen(value => !value)}
+          >
+            …
+          </button>
+          {menuOpen && (
+            <>
+              <button
+                type="button"
+                aria-label="Закрыть меню"
+                className="mx-practice-detail__menu-overlay"
+                onClick={() => setMenuOpen(false)}
+              />
+              <ProgressGlassMenu
+                role="menu"
+                aria-label="Действия"
+                style={{ position: 'absolute', top: '44px', right: 0 }}
+              >
+                <ProgressGlassMenuItem
+                  icon={Trash2}
+                  label="Удалить"
+                  danger
+                  testId="practice-detail-delete"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    setConfirming(true)
+                  }}
+                />
+              </ProgressGlassMenu>
+            </>
+          )}
+        </div>
       </div>
       <h1 className="font-display mx-type-page text-cream lowercase mb-5">
         {practice.name.toLowerCase()}.
       </h1>
-
-      <button
-        type="button"
-        className={`mx-practice-detail__toggle ${done ? 'is-done' : ''}`}
-        data-testid="practice-detail-toggle"
-        aria-pressed={done}
-        onClick={toggle}
-      >
-        <span className="mx-practice-detail__glyph">
-          <SemanticGlyph kind={glyphKind} className="w-full h-full" />
-        </span>
-        <span className="mx-practice-detail__name">{practice.name}</span>
-        <span className="mx-practice-detail__state">
-          {done ? 'отмечено сегодня' : 'отметить сегодня'}
-        </span>
-      </button>
 
       <div className="mx-practice-detail__accordions">
         <AccordionRow testId="practice-accordion-why" label="Зачем">
@@ -127,6 +149,16 @@ export default function PracticeDetail({ kind, practice, onBack, onLog, onBreak,
           Сорвался сегодня
         </button>
       )}
+
+      <button
+        type="button"
+        className="mx-practice-detail__mark"
+        data-testid="practice-detail-toggle"
+        aria-pressed={done}
+        onClick={toggle}
+      >
+        {done ? 'Отмечено сегодня ✓' : 'Отметить сегодня'}
+      </button>
 
       {confirming && (
         <DeleteConfirmationDialog
