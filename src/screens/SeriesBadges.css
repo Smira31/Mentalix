@@ -538,9 +538,62 @@
   min-width: 76px;
 }
 
+/* T4: skeleton-плейсхолдеры для мгновенной отрисовки шторки
+   значков до прихода данных с сервера. Мерцание — мягкий shimmer
+   по карточному фону, не отвлекает от контента. */
+@keyframes mx-skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.mx-path-skeleton-line,
+.mx-path-skeleton-circle,
+.mx-path-skeleton-row {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--c-card2, 17 17 17)) 25%,
+    rgb(var(--c-card-raised, 33 33 33)) 50%,
+    rgb(var(--c-card2, 17 17 17)) 75%
+  );
+  background-size: 200% 100%;
+  animation: mx-skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: 8px;
+}
+.mx-path-skeleton-line {
+  height: 16px;
+  margin: 0 auto;
+}
+.mx-path-skeleton-line--lg {
+  height: 22px;
+  width: 60%;
+}
+.mx-path-skeleton-circle {
+  width: 118px;
+  height: 118px;
+  margin: 16px auto;
+  border-radius: 50%;
+}
+.mx-path-skeleton-featured {
+  text-align: center;
+}
+.mx-path-skeleton-rows {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mx-path-skeleton-row {
+  height: 54px;
+  border-radius: 12px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mx-path-row-value,
   .mx-path-toggle::after {
     transition: none;
+  }
+  .mx-path-skeleton-line,
+  .mx-path-skeleton-circle,
+  .mx-path-skeleton-row {
+    animation: none;
   }
 }

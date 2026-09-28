@@ -296,7 +296,12 @@ function App() {
 
   const [todayFlowOpen, setTodayFlowOpen] = useState(false)
 
-  const [todaySeriesOpen, setTodaySeriesOpen] = useState(false)
+  // ?demo=1&action=all_badges — демо-превью экрана «Все значки».
+  const [todaySeriesOpen, setTodaySeriesOpen] = useState(
+    () =>
+      isPreviewDemoMode() &&
+      new URLSearchParams(window.location.search).get('action') === 'all_badges'
+  )
 
   const [practiceGameOpen, setPracticeGameOpen] = useState(false)
   const [libraryInputMode, setLibraryInputMode] = useState(false)
