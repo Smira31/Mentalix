@@ -814,9 +814,8 @@ function respond(path, options = {}) {
   if (pathname === '/profile/settings' && method === 'GET') {
     const eveningStates = new Set(['reviewPending', 'dayClosed', 'eveningPrimary', 'bothDone'])
     return json({
-      review_hour: eveningStates.has(previewTodayState())
-        ? 0
-        : (state.profile.review_hour ?? DEFAULT_REVIEW_HOUR),
+      // prettier-ignore
+      review_hour: eveningStates.has(previewTodayState()) ? 0 : (state.profile.review_hour ?? DEFAULT_REVIEW_HOUR),
       writing_goal_enabled: state.profile.writing_goal_enabled ?? false,
       writing_goal_weekly_count: state.profile.writing_goal_weekly_count ?? 3,
     })

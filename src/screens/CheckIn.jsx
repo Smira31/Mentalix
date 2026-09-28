@@ -335,8 +335,8 @@ function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing 
       if (values.anxiety != null) morningPayload.anxiety = values.anxiety
       if (values.focus != null) morningPayload.focus = values.focus
       if (values.sleep_quality != null) morningPayload.sleep_quality = values.sleep_quality
-      if (selectedFocus || dayFocus.trim())
-        morningPayload.day_focus = selectedFocus || dayFocus.trim()
+      // prettier-ignore
+      if (selectedFocus || dayFocus.trim()) morningPayload.day_focus = selectedFocus || dayFocus.trim()
       /*
        * Повтор утра не трогает вечернюю половину записи дня: эмоция,
        * уроки и закрытие дня переносятся из перезаписываемой записи
