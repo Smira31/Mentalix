@@ -36,10 +36,18 @@ test('экран ошибки восстановления существующ�
   assert.match(appSource, /SessionRestoreError onRetry=\{retryAuth\}/)
 })
 
-test('WebAuthScreen, Onboarding и AppLock загружаются lazy', () => {
-  assert.match(appSource, /const WebAuthScreen = lazy\(\(\) => import\('\.\/screens\/WebAuthScreen'\)\)/)
-  assert.match(appSource, /const Onboarding = lazy\(\(\) => import\('\.\/screens\/Onboarding'\)\)/)
-  assert.match(appSource, /const AppLock = lazy\(\(\) => import\('\.\/screens\/AppLock'\)\)/)
+test('WebAuthScreen, Onboarding и AppLock загружаются lazy с повтором', () => {
+  // lazyWithRetry: срок импорта, один повтор и перезагрузка при ошибке
+  // чанка — защита от «чёрного экрана» в Telegram WebView.
+  assert.match(
+    appSource,
+    /const WebAuthScreen = lazyWithRetry\(\(\) => import\('\.\/screens\/WebAuthScreen'\)\)/
+  )
+  assert.match(
+    appSource,
+    /const Onboarding = lazyWithRetry\(\(\) => import\('\.\/screens\/Onboarding'\)\)/
+  )
+  assert.match(appSource, /const AppLock = lazyWithRetry\(\(\) => import\('\.\/screens\/AppLock'\)\)/)
 })
 
 test('lazy-экраны обёрнуты в Suspense с fallback Splash', () => {

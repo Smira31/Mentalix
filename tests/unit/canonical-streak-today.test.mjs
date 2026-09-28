@@ -116,19 +116,20 @@ test('Today: сбой canonical streak не блокирует экран и н�
   )
   assert.match(
     refreshBlock,
-    /if \(streakResult\.status === 'fulfilled'\) \{\s*setCanonicalStreak\(\{ userId: user\.id, value: readCanonicalStreakStats\(streakResult\.value\) \}\)/
+    /if \(streakResult\.status === 'fulfilled'\) \{\s*const streakValue = readCanonicalStreakStats\(streakResult\.value\)\s*saveStreakSnapshot\(user\.id, streakValue\)\s*setCanonicalStreak\(\{ userId: user\.id, value: streakValue \}\)/
   )
 })
 
 test('Today: после обновления чек-ина canonical streak обновляется целиком', () => {
-  // В refreshCheckin валидный canonical ответ перезаписывает статистику для пользователя.
+  // В refreshCheckin валидный canonical ответ перезаписывает статистику
+  // для пользователя и обновляет персистентный снимок серии.
   const refreshBlock = todaySource.slice(
     todaySource.indexOf('async function refreshCheckin'),
     todaySource.indexOf('useEffect(() => {\n    if (previewFixture) return undefined')
   )
   assert.match(
     refreshBlock,
-    /setCanonicalStreak\(\{ userId: user\.id, value: readCanonicalStreakStats\(streakResult\.value\) \}\)/
+    /const streakValue = readCanonicalStreakStats\(streakResult\.value\)\s*saveStreakSnapshot\(user\.id, streakValue\)\s*setCanonicalStreak\(\{ userId: user\.id, value: streakValue \}\)/
   )
 })
 
