@@ -86,7 +86,7 @@ export async function dayFocusOptionStep(page, label) {
   await expect(showAll).toBeVisible()
   if (label === 'Продуктивность') {
     await showAll.click()
-    await expect(tiles).toHaveCount(10)
+    await expect(tiles).toHaveCount(12)
   }
   const tile = page.locator(`[data-testid="checkin-day-focus-option"][data-value="${label}"]`)
   await expect(tile).toBeVisible()
