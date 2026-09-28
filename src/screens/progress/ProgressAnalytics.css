@@ -761,27 +761,28 @@
   margin-bottom: 2px;
 }
 
+/* P6: гладкие iOS-переключатели — трек 51×31, бегунок 27 */
 .mx-progress-customize__toggle {
-  flex: 0 0 44px;
+  flex: 0 0 51px;
   display: grid;
   place-items: center;
 }
 
 .mx-progress-customize__toggle input {
   position: absolute;
-  width: 44px;
-  height: 26px;
+  width: 51px;
+  height: 31px;
   opacity: 0;
 }
 
 .mx-progress-customize__toggle span {
   display: block;
-  width: 44px;
-  height: 26px;
+  width: 51px;
+  height: 31px;
   border-radius: 999px;
   background: rgb(var(--c-card3, 46 46 46));
   position: relative;
-  transition: background 0.2s ease;
+  transition: background 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mx-progress-customize__toggle span::after {
@@ -789,11 +790,11 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 22px;
-  height: 22px;
+  width: 27px;
+  height: 27px;
   border-radius: 999px;
   background: rgb(var(--c-text, 243 243 243));
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mx-progress-customize__toggle input:checked + span {
@@ -801,7 +802,7 @@
 }
 
 .mx-progress-customize__toggle input:checked + span::after {
-  transform: translateX(18px);
+  transform: translateX(20px);
   background: rgb(var(--c-bg, 5 4 3));
 }
 

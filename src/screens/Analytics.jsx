@@ -9,6 +9,8 @@ import {
 import { sanitizeTrendsData } from '../lib/trendsDataSanitizer'
 import { loadIndependentSources, SOURCE_STATES } from '../lib/pathDataLoader'
 import { api } from '../lib/api'
+import { platform } from '../platform'
+import { useBackButton } from '../platform/telegram.hooks'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 import ProgressHistory from './progress/ProgressHistory'
@@ -668,6 +670,11 @@ function FullCalendar({ poolCheckins, onBack }) {
 
 function CustomizeLayer({ preferences, onToggle, onClose }) {
   const sections = [...new Set(ANALYTICS_CARDS.map(c => c.section))]
+
+  useBackButton(() => {
+    platform.haptic('light')
+    onClose()
+  })
 
   return (
     <div className="mx-progress-customize" data-testid="progress-customize">
