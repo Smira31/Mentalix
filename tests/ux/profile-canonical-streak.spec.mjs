@@ -1,10 +1,17 @@
 import { expect, test } from '@playwright/test'
 import { VIEWPORTS, json, openWeb } from './profile-helpers.mjs'
 
+// created_at — 76 дней назад, чтобы daysSinceRegistration вернул 77
+// (функция добавляет +1 к разнице в днях).
+const _regDate = new Date()
+_regDate.setDate(_regDate.getDate() - 76)
+const _created_at = `${_regDate.getFullYear()}-${String(_regDate.getMonth() + 1).padStart(2, '0')}-${String(_regDate.getDate()).padStart(2, '0')}`
+
 const profileStats = {
   days_active: 77,
   total_checkins: 42,
   current_streak: 13,
+  created_at: _created_at,
 }
 
 async function openAbout(browser, baseURL, response) {
