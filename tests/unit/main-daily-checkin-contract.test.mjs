@@ -93,13 +93,16 @@ test('morning flow keeps the visual viewport height when the keyboard opens', ()
   assert.match(checkinSource, /className="mx-demo-checkin__editor-scene"/)
 })
 
-test('completion screen uses an original monochrome flower; MoodPractice keeps its art', async () => {
+test('completion screen uses original monochrome Stoic silhouette art (morning sun, evening moon); MoodPractice keeps its art', async () => {
   const component = await readFile(new URL('../../src/components/CheckInCompletion.jsx', import.meta.url), 'utf8')
   assert.match(checkinSource, /function CheckInCompletionArt\(\)/)
   assert.match(checkinSource, /<CheckInCompletion/)
-  assert.match(component, /function CompletionFlower\(\)/)
+  assert.match(component, /CompletionArtMorning/)
+  assert.match(component, /CompletionArtEvening/)
+  assert.match(component, /evening \? <CompletionArtEvening \/> : <CompletionArtMorning \/>/)
   assert.match(component, /rgb\(var\(--c-text\)\)/)
   assert.match(component, /rgb\(var\(--c-bg\)\)/)
+  assert.doesNotMatch(component, /CompletionFlower/)
   assert.doesNotMatch(component, /checkin-bird-reference|cardMorningDone/)
 })
 
