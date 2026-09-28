@@ -891,23 +891,20 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
   /* ── Экран записи ── */
   if (selectedEntry) {
     return (
-      <>
-        {actionButtons}
-        <EntryScreen
-          entry={selectedEntry}
-          onBack={() => setSelectedEntry(null)}
-          onDelete={deleteSelectedCheckin}
-          deleting={deleting}
-          deleteError={deleteError}
-          canManageAiContext={canManageAiContext}
-          onContextChange={updateSelectedCheckinContext}
-          savingContext={savingContext}
-          contextError={contextError}
-          onDiscuss={discussSelectedCheckinWithAI}
-          onRedo={onRedo}
-          onRedoReview={onRedoReview}
-        />
-      </>
+      <EntryScreen
+        entry={selectedEntry}
+        onBack={() => setSelectedEntry(null)}
+        onDelete={deleteSelectedCheckin}
+        deleting={deleting}
+        deleteError={deleteError}
+        canManageAiContext={canManageAiContext}
+        onContextChange={updateSelectedCheckinContext}
+        savingContext={savingContext}
+        contextError={contextError}
+        onDiscuss={discussSelectedCheckinWithAI}
+        onRedo={onRedo}
+        onRedoReview={onRedoReview}
+      />
     )
   }
 
