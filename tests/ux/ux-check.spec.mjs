@@ -535,9 +535,9 @@ test('локальный UX smoke по основному маршруту', asy
         await expect(editor).toBeVisible()
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
-        await assertClickable(page.getByRole('button', { name: 'Пойти глубже' }))
-        await expect(page.getByRole('button', { name: 'Завершить' })).toHaveCount(1)
-        await assertClickable(page.getByRole('button', { name: 'Завершить' }))
+        await assertClickable(page.locator('[data-testid="checkin-skip"]'))
+        await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute('aria-label', 'Далее')
+        await assertClickable(page.locator('[data-testid="checkin-complete"]'))
       },
     })
     // После editor-шага общий BackButton использует label «Сегодня»;
