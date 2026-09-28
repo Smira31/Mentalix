@@ -16,7 +16,9 @@ function formSlice(source, name) {
 test('Rituals uses a two-column list without streak counters or restore controls', () => {
   assert.match(ritualsSource, /mx-practice-grid/)
   assert.match(ritualsSource, /data-testid="practice-tile"/)
-  assert.match(ritualsSource, /data-done=\{Boolean\(ritual\.today_level\)\}/)
+  // «Отмечено сегодня» — по фактическому уровню выполнения (min/optimal),
+  // а не по булеву присутствию поля: см. lib/practiceDoneToday.js.
+  assert.match(ritualsSource, /data-done=\{isRitualDoneToday\(ritual\.today_level\)\}/)
   assert.match(ritualsSource, /setSelected\(ritual\)/)
   assert.doesNotMatch(ritualsSource, /StreakBar|StreakRestoreSheet|restoreTarget|freezes/)
   assert.match(cssSource, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)/)

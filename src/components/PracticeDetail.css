@@ -1,5 +1,5 @@
 .mx-practice-list-screen {
-  padding-bottom: 2rem;
+  padding-bottom: calc(var(--mx-bottom-nav-space) + var(--cta-pill-height));
 }
 
 .mx-practice-list-screen__intro {
@@ -67,13 +67,13 @@
 }
 
 .mx-practice-list-screen__create {
-  display: block;
+  position: sticky;
+  /* Не даём пиле заезжать в зону fixed-панели вкладок на низких вьюпортах. */
+  bottom: var(--mx-bottom-nav-space);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 1.25rem auto 0;
-  padding: 0.5rem 0;
-  color: rgb(var(--c-muted));
-  font-size: 0.8125rem;
-  background: transparent;
-  border: 0;
 }
 
 .mx-practice-detail-screen {

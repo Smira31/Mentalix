@@ -443,7 +443,7 @@ export default function Ascezas({ user, onBack }) {
       {!loading && (
         <button
           type="button"
-          className="mx-practice-list-screen__create"
+          className="cta-pill mx-type-flow-action mx-practice-list-screen__create"
           onClick={() => setShowCreate(true)}
         >
           + Новая аскеза
