@@ -48,12 +48,7 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
   const demoMode = isPreviewDemoMode()
 
   return (
-    /*
-     * P1 (#876): при скролте вниз панель уезжает целиком (translateY),
-     * при скролте вверх — возвращается. Одинаково на всех вкладках.
-     * Класс mx-demo-bottom-nav--collapsed сохраняется для тестов и
-     * demo-режима (там CSS-override отменяет transform).
-     */
+    /* При скролле панель остаётся доступной как кнопка текущей вкладки. */
     <div
       className={`
         fixed
@@ -66,14 +61,12 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
         pointer-events-none
         mx-bottom-nav
         ${demoMode ? 'mx-demo-bottom-nav' : ''}
-        ${demoMode && collapsed ? 'mx-demo-bottom-nav--collapsed' : ''}
+        ${collapsed ? 'mx-demo-bottom-nav--collapsed' : ''}
       `}
       style={{
         left: 'max(var(--bottom-nav-edge), var(--app-safe-left))',
         right: 'max(var(--bottom-nav-edge), var(--app-safe-right))',
         bottom: 'calc(var(--app-safe-bottom) + var(--bottom-nav-offset))',
-        transform: collapsed ? 'translateY(150%)' : 'translateY(0)',
-        transition: `transform var(--mx-motion-slow) ${MOTION}`,
       }}
     >
       <div
@@ -103,10 +96,11 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
           borderColor: 'rgb(var(--c-nav-border))',
 
           boxShadow: 'var(--shadow-float)',
+          transition: `width var(--mx-motion-slow) ${MOTION}, height var(--mx-motion-slow) ${MOTION}, border-radius var(--mx-motion-slow) ${MOTION}`,
         }}
       >
         <nav
-          aria-hidden={false}
+          aria-hidden={collapsed}
           className="
             absolute
             inset-0
@@ -119,6 +113,12 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
 
             origin-left
           "
+          style={{
+            opacity: collapsed ? 0 : 1,
+            visibility: collapsed ? 'hidden' : 'visible',
+            pointerEvents: collapsed ? 'none' : 'auto',
+            transition: `opacity 180ms ${MOTION}, visibility 180ms ${MOTION}`,
+          }}
         >
           {TABS.map(item => {
             const active = tab === item.key
@@ -172,6 +172,25 @@ export default function BottomNavigation({ tab, collapsed, onCollapseChange, onT
             )
           })}
         </nav>
+        <button
+          type="button"
+          className="mx-bottom-nav__restore"
+          aria-label={`Открыть навигацию: ${TABS.find(item => item.key === tab)?.label || 'Сегодня'}`}
+          tabIndex={collapsed ? 0 : -1}
+          aria-hidden={!collapsed}
+          onClick={() => {
+            platform.haptic('light')
+            onCollapseChange(false)
+          }}
+          style={{
+            opacity: collapsed ? 1 : 0,
+            visibility: collapsed ? 'visible' : 'hidden',
+            pointerEvents: collapsed ? 'auto' : 'none',
+            transition: `opacity 180ms ${MOTION}, visibility 180ms ${MOTION}`,
+          }}
+        >
+          <TabIcon item={TABS.find(item => item.key === tab) || TABS[0]} size={22} />
+        </button>
       </div>
     </div>
   )

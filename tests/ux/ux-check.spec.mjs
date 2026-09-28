@@ -1423,6 +1423,52 @@ test('Evening Review проходится real touch tap на 390x844', async ({
   await context.close()
 })
 
+test('старый флаг настроения не блокирует Сегодня и отсутствует в настройках', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-mood-check-enabled', '1')
+  }, TEST_USER)
+  await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+  const page = await context.newPage()
+  await page.goto('/')
+  await expect(page.getByTestId('today-card-morning')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toHaveCount(0)
+  await page.getByTestId('today-profile-button').click()
+  await page.getByTestId('profile-row-checkins').click()
+  await expect(page.getByTestId('profile-row-mood-check')).toHaveCount(0)
+  await expect(page.getByTestId('profile-row-review-hour')).toBeVisible()
+  await context.close()
+})
+
+test('завершённые карточки сохраняют высоту без рисунка и линии', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' })
+  await context.addInitScript(user => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mentalix_web_user', JSON.stringify(user))
+    localStorage.setItem('mx-onboarded-v2', '1')
+  }, TEST_USER)
+  await context.route('**/api/**', route => {
+    if (new URL(route.request().url()).pathname === '/api/checkin/today') {
+      return route.fulfill(jsonResponse({ mood: 3, review_completed_at: new Date().toISOString() }))
+    }
+    return route.fulfill(fixtureFor(route.request()))
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  for (const kind of ['morning', 'evening']) {
+    const card = page.getByTestId(`today-card-${kind}`)
+    await expect(card).toHaveAttribute('data-state', 'done')
+    await expect(card.getByTestId('today-card-illustration')).toHaveCount(0)
+    await expect(card).toHaveCSS('height', '233px')
+  }
+  await context.close()
+})
+
 test('демо на реальном телефоне 440×956 — капсула активной вкладки, сворачивание навбара, production-размеры', async ({
   browser,
 }) => {
@@ -1491,6 +1537,13 @@ test('демо на реальном телефоне 440×956 — капсул�
     page.locator('.mx-bottom-nav.mx-demo-bottom-nav--collapsed'),
     'навбар должен свернуться после прокрутки вниз'
   ).toHaveCount(1, { timeout: 5_000 })
+  const restore = page.getByRole('button', { name: 'Открыть навигацию: Сегодня' })
+  await expect(restore).toBeVisible()
+  await expect(restore.locator('svg')).toBeVisible()
+  await expect(page.locator('.mx-bottom-nav nav')).toHaveAttribute('aria-hidden', 'true')
+  await restore.tap()
+  await expect(page.locator('.mx-bottom-nav nav')).toHaveAttribute('aria-hidden', 'false')
+  await expect(page.getByRole('button', { name: 'Шаги' })).toBeVisible()
 
   // 4. После прокрутки вверх навбар раскрывается
   await page.evaluate(() => {

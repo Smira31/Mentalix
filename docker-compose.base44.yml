@@ -1,6 +1,7 @@
 services:
   web:
     image: node:22-slim
+    restart: on-failure
     working_dir: /app
     ports:
       - "3000:5173"
