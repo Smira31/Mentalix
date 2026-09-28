@@ -23,6 +23,8 @@ import {
   formatPeriodRange,
   periodName,
 } from './progress/progressAnalyticsPeriods'
+import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
+import { Eye } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
@@ -216,13 +218,17 @@ function CardShell({ title, subtitle, children, testId }) {
             …
           </button>
           {menuOpen && (
-            <button
-              type="button"
-              className="mx-progress-card__hide"
-              onClick={() => actions.hide(actions.id)}
+            <ProgressGlassMenu
+              role="menu"
+              aria-label={`Действия: ${title}`}
+              style={{ position: 'absolute', top: '44px', right: '12px' }}
             >
-              <span aria-hidden="true">👁</span> Скрыть график
-            </button>
+              <ProgressGlassMenuItem
+                icon={Eye}
+                label="Скрыть график"
+                onClick={() => actions.hide(actions.id)}
+              />
+            </ProgressGlassMenu>
           )}
         </>
       )}
@@ -1012,30 +1018,22 @@ export default function Analytics({
           </button>
         )}
         {activeTab === 'analytics' && periodMenuOpen && (
-          <div
+          <ProgressGlassMenu
             id="progress-period-menu"
-            className="mx-progress-period-menu"
             role="menu"
             aria-label="Период аналитики"
+            style={{ position: 'absolute', right: 0, top: '56px' }}
           >
             {ANALYTICS_GRANULARITIES.map(g => (
-              <button
+              <ProgressGlassMenuItem
                 key={g.id}
-                type="button"
-                className="mx-progress-period-menu__item"
+                label={g.label}
                 role="menuitemradio"
-                aria-checked={granularity === g.id}
+                selected={granularity === g.id}
                 onClick={() => selectGranularity(g.id)}
-              >
-                <span>{g.label}</span>
-                {granularity === g.id && (
-                  <span className="mx-progress-period-menu__check" aria-hidden="true">
-                    ✓
-                  </span>
-                )}
-              </button>
+              />
             ))}
-          </div>
+          </ProgressGlassMenu>
         )}
       </div>
 

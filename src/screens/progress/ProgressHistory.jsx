@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Filter, MoreHorizontal, Search } from 'lucide-react'
+import { Filter, MoreHorizontal, RotateCcw, Search, Trash2 } from 'lucide-react'
 
 import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
@@ -25,6 +25,7 @@ import {
 } from './progressHistoryUtils'
 import HistoryFilterSheet from './HistoryFilterSheet'
 import HistorySearchSheet from './HistorySearchSheet'
+import { ProgressGlassMenu, ProgressGlassMenuItem } from '../../components/ProgressGlassMenu'
 import './ProgressScreen.css'
 
 const MOOD_WORDS = ['тяжко', 'так себе', 'нормально', 'хорошо', 'отлично']
@@ -148,51 +149,43 @@ function EntryScreen({
               <MoreHorizontal size={20} aria-hidden="true" />
             </button>
             {menuOpen && (
-              <div
+              <ProgressGlassMenu
                 role="menu"
-                className="mx-progress-entry__menu"
                 data-testid="progress-entry-menu"
+                style={{ position: 'absolute', right: 0, top: '100%' }}
               >
                 {canRedoMorning && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="mx-progress-entry__menu-item"
+                  <ProgressGlassMenuItem
+                    icon={RotateCcw}
+                    label="Пройти утро заново"
                     onClick={() => {
                       setMenuOpen(false)
                       setRedoConfirm('morning')
                     }}
-                  >
-                    Пройти утро заново
-                  </button>
+                  />
                 )}
                 {canRedoEvening && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="mx-progress-entry__menu-item"
+                  <ProgressGlassMenuItem
+                    icon={RotateCcw}
+                    label="Пройти разбор заново"
                     onClick={() => {
                       setMenuOpen(false)
                       setRedoConfirm('evening')
                     }}
-                  >
-                    Пройти разбор заново
-                  </button>
+                  />
                 )}
                 {canDelete && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className="mx-progress-entry__menu-item mx-progress-entry__menu-item--danger"
+                  <ProgressGlassMenuItem
+                    icon={Trash2}
+                    label="Удалить"
+                    danger
                     onClick={() => {
                       setMenuOpen(false)
                       setDeleteConfirm(true)
                     }}
-                  >
-                    Удалить
-                  </button>
+                  />
                 )}
-              </div>
+              </ProgressGlassMenu>
             )}
           </div>
         )}
@@ -811,32 +804,24 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
           </button>
         </div>
         {granularityMenuOpen && (
-          <div
+          <ProgressGlassMenu
             id="history-grouping-menu"
-            className="mx-progress-grouping-menu"
             role="menu"
             aria-label="Группировка истории"
             data-testid="history-grouping-menu"
+            style={{ position: 'absolute', right: 0, top: '108px' }}
           >
             {HISTORY_GRANULARITIES.map(g => (
-              <button
+              <ProgressGlassMenuItem
                 key={g.id}
-                type="button"
-                className="mx-progress-grouping-menu__item"
+                label={g.label}
                 role="menuitemradio"
-                aria-checked={granularity === g.id}
-                data-testid={`history-grouping-${g.id}`}
+                selected={granularity === g.id}
+                testId={`history-grouping-${g.id}`}
                 onClick={() => selectGranularity(g.id)}
-              >
-                {granularity === g.id && (
-                  <span className="mx-progress-grouping-menu__check" aria-hidden="true">
-                    ✓
-                  </span>
-                )}
-                <span>{g.label}</span>
-              </button>
+              />
             ))}
-          </div>
+          </ProgressGlassMenu>
         )}
       </>,
       portalTarget
