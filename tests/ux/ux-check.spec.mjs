@@ -52,6 +52,13 @@ const FIXTURES = {
       total_days: 7,
       reflected_days: 1,
     },
+    {
+      id: 702,
+      title: 'Границы и забота о себе',
+      subtitle: 'Неделя про «нет», которое бережёт «да».',
+      total_days: 7,
+      reflected_days: 0,
+    },
   ],
   theme: {
     id: 701,
@@ -86,6 +93,29 @@ const FIXTURES = {
   settings: { review_hour: 24 },
   pulse: { active_today: 12 },
   pinnedPractices: [],
+  theme2: {
+    id: 702,
+    title: 'Границы и забота о себе',
+    subtitle: 'Неделя про «нет», которое бережёт «да».',
+    current_day: 1,
+    free_days: 7,
+    days: [
+      {
+        day: 1,
+        text: 'Какое «нет» сегодня было трудным и почему?',
+        prompt: 'Запиши одно наблюдение без оценки.',
+        reflection: '',
+        locked: false,
+      },
+      ...Array.from({ length: 6 }, (_, index) => ({
+        day: index + 2,
+        text: 'Следующий вопрос недели.',
+        prompt: 'Что замечаешь?',
+        reflection: '',
+        locked: false,
+      })),
+    ],
+  },
   articles: [
     {
       id: 1,
@@ -151,6 +181,7 @@ function fixtureFor(request) {
   if (pathname === '/api/checkin/history') return jsonResponse(FIXTURES.history)
   if (pathname === '/api/themes') return jsonResponse(FIXTURES.themes)
   if (pathname === '/api/themes/701') return jsonResponse(FIXTURES.theme)
+  if (pathname === '/api/themes/702') return jsonResponse(FIXTURES.theme2)
   if (pathname === '/api/profile/settings') return jsonResponse(FIXTURES.settings)
   if (pathname === '/api/analytics/pulse') return jsonResponse(FIXTURES.pulse)
   if (pathname === '/api/analytics/influences') {
@@ -331,9 +362,9 @@ async function assertBottomNavigationLabelsFit(page) {
 
 async function assertSoonControls(page) {
   await assertClickable(page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }))
-  // Новый Explore исключает недоступные практики из сетки, а не показывает disabled-карточки.
-  await expect(page.getByRole('button', { name: /Импульс к действию/ })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: /Фокус, скоро/ })).toHaveCount(0)
+  // Каталог владельца показывает будущие практики как неактивные карточки.
+  await expect(page.getByRole('button', { name: /Импульс к действию/ })).toBeDisabled()
+  await expect(page.getByRole('button', { name: /Фокус, скоро/ })).toBeDisabled()
 }
 
 async function assertLibrarySoonControl(page) {
@@ -529,7 +560,10 @@ test('локальный UX smoke по основному маршруту', asy
         await editor.pressSequentially('Спокойное утро')
         await assertClickable(page.getByRole('button', { name: 'Показать форматирование' }))
         await assertClickable(page.locator('[data-testid="checkin-skip"]'))
-        await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute('aria-label', 'Далее')
+        await expect(page.locator('[data-testid="checkin-complete"]')).toHaveAttribute(
+          'aria-label',
+          'Далее'
+        )
         await assertClickable(page.locator('[data-testid="checkin-complete"]'))
       },
     })
@@ -557,6 +591,14 @@ test('локальный UX smoke по основному маршруту', asy
     await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible()
 
     await page.getByRole('button', { name: /о меньшем усилии/ }).click()
+    // Карусель темы недели: видимая карточка вопроса имеет высоту > 120px
+    // и виден текст вопроса.
+    const carouselCard = page.locator('.mx-theme-carousel-q').first()
+    await expect(carouselCard).toBeVisible()
+    const carouselCardBox = await carouselCard.boundingBox()
+    expect(carouselCardBox?.height || 0).toBeGreaterThan(120)
+    await expect(carouselCard.locator('.mx-theme-carousel-q__text')).toBeVisible()
+
     // Карусель темы недели: CTA «Начать запись» открывает ThemeScreen
     await page.getByTestId('theme-carousel-cta').click()
     await captureScreen({
@@ -603,6 +645,10 @@ test('локальный UX smoke по основному маршруту', asy
     expect(reflectionPayload.text).toBe('**Важное**')
     // «Назад» из ThemeScreen → карусель, ещё «Назад» → Сегодня
     await page.getByRole('button', { name: 'Назад' }).click()
+    // После открытия другой темы из «Другие темы» — есть хотя бы один вопрос
+    await page.getByRole('button', { name: /Границы и забота о себе/ }).first().click()
+    await expect(page.locator('.mx-theme-carousel-q').first()).toBeVisible()
+    await expect(page.locator('.mx-theme-carousel-q__text').first()).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
 
     await page.getByRole('button', { name: 'Шаги' }).click()
@@ -614,7 +660,7 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
         const journalEntry = page.getByRole('button', { name: 'Открыть журнал' })
         await assertClickable(journalEntry)
         const collectionsHeading = page.getByRole('heading', { name: 'Коллекции' })
@@ -622,25 +668,26 @@ test('локальный UX smoke по основному маршруту', asy
         const journalBox = await journalEntry.boundingBox()
         const collectionsBox = await collectionsHeading.boundingBox()
         expect(journalBox?.y || 0).toBeLessThan(collectionsBox?.y || Number.POSITIVE_INFINITY)
-        await expect(page.getByRole('button', { name: /Психологические практики/ })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: /Психологические практики/ })).toBeDisabled()
         await assertSoonControls(page)
         await assertClickable(page.getByRole('button', { name: 'Открыть Ритуалы' }))
         await assertClickable(page.getByRole('button', { name: 'Открыть Аскезы' }))
         const productionCardTypography = await page.evaluate(() => {
-          const catalog = document.querySelector('.mx-steps-explore')
-          const grid = catalog?.querySelector('.mx-steps-grid')
-          const practiceTitle = [...(grid?.querySelectorAll('.mx-steps-card__title') || [])]
-            .find(title => title.textContent?.includes('Разобраться со Следопытом'))
-          const practiceCopy = grid?.querySelector('.mx-steps-card__desc')
-          const collectionCopy = catalog?.querySelector('.mx-steps-collection small')
+          const catalog = document.querySelector('.mx-production-catalog')
+          const rail = catalog?.querySelector('.mx-layered-catalog__rail')
+          const practiceTitle = [...(rail?.querySelectorAll('strong') || [])].find(title =>
+            title.textContent?.includes('Разобраться со Следопытом')
+          )
+          const practiceCopy = rail?.querySelector('small')
+          const collectionCopy = catalog?.querySelector('.mx-layered-catalog__collection small')
           const catalogRect = catalog?.getBoundingClientRect()
-          const gridRect = grid?.getBoundingClientRect()
+          const railRect = rail?.getBoundingClientRect()
           const fontSize = element =>
             element ? Number.parseFloat(getComputedStyle(element).fontSize) : 0
 
           return {
             catalogRight: catalogRect?.right ?? window.innerWidth + 1,
-            gridRight: gridRect?.right ?? window.innerWidth + 1,
+            gridRight: railRect?.right ?? window.innerWidth + 1,
             titleClipped: practiceTitle
               ? practiceTitle.scrollHeight > practiceTitle.clientHeight + 1
               : true,
@@ -723,7 +770,7 @@ test('локальный UX smoke по основному маршруту', asy
       },
     })
     await page.getByRole('button', { name: 'Вернуться в журнал' }).click()
-    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
     await page.getByRole('button', { name: 'Открыть журнал' }).click()
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Продолжить' }).click()
@@ -739,13 +786,13 @@ test('локальный UX smoke по основному маршруту', asy
     }
     await expect(page.getByRole('heading', { name: 'Продолжи разбирать ситуацию' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
-    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
     await page.getByRole('button', { name: 'Открыть Разобраться со Следопытом' }).click()
     await expect(page.getByRole('heading', { name: 'Когда неясно, с чего начать' })).toBeVisible()
     await page.getByRole('button', { name: 'Назад' }).click()
-    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.getByRole('button', { name: /Ритуалы.*Твои повторяемые опоры/ }).click()
+    await page.getByRole('button', { name: 'Открыть Ритуалы' }).click()
     await page.getByRole('button', { name: 'Открыть ритуалы' }).click()
     await captureScreen({
       page,
@@ -764,9 +811,9 @@ test('локальный UX smoke по основному маршруту', asy
     await todayNavButton.click()
     await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Шаги' }).click()
-    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await page.getByRole('button', { name: /Аскезы.*Выбранные ограничения/ }).click()
+    await page.getByRole('button', { name: 'Открыть Аскезы' }).click()
     await page.getByRole('button', { name: 'Открыть аскезы' }).click()
     await captureScreen({
       page,
@@ -784,9 +831,9 @@ test('локальный UX smoke по основному маршруту', asy
     await todayNavButton.click()
     await expect(todayNavButton).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Шаги' }).click()
-    await expect(page.getByRole('heading', { name: 'шаги.' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'практики.' })).toBeVisible()
 
-    await expect(page.getByRole('button', { name: /Психологические практики/ })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /Психологические практики/ })).toBeDisabled()
     await page.getByRole('button', { name: 'Библиотека' }).click()
     await captureScreen({
       page,
@@ -1090,8 +1137,15 @@ test.skip('Legacy: History показывает user-scoped local Journal на m
   }
 })
 
-test('прямая web-ссылка автоматически создаёт гостя; email и Telegram доступны из Профиля', async ({ browser, baseURL }) => {
-  const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, serviceWorkers: 'block' })
+test('прямая web-ссылка автоматически создаёт гостя; email и Telegram доступны из Профиля', async ({
+  browser,
+  baseURL,
+}) => {
+  const context = await browser.newContext({
+    baseURL,
+    viewport: { width: 390, height: 844 },
+    serviceWorkers: 'block',
+  })
   await context.addInitScript(() => {
     localStorage.clear()
     sessionStorage.clear()
@@ -1104,9 +1158,19 @@ test('прямая web-ссылка автоматически создаёт г
     const path = new URL(route.request().url()).pathname
     if (path === '/api/auth/guest') {
       guestRequests += 1
-      return route.fulfill(jsonResponse({ ok: true, user: guest, merge_token: 'merge-guest', session_token: 'guest-session' }))
+      return route.fulfill(
+        jsonResponse({
+          ok: true,
+          user: guest,
+          merge_token: 'merge-guest',
+          session_token: 'guest-session',
+        })
+      )
     }
-    if (path === '/api/auth/email/verify') return route.fulfill(jsonResponse({ ok: true, user: TEST_USER, session_token: 'email-session' }))
+    if (path === '/api/auth/email/verify')
+      return route.fulfill(
+        jsonResponse({ ok: true, user: TEST_USER, session_token: 'email-session' })
+      )
     if (path === '/api/auth/guest/merge') {
       mergeRequests += 1
       expect(route.request().postDataJSON().merge_token).toBe('merge-guest')
@@ -1119,8 +1183,12 @@ test('прямая web-ссылка автоматически создаёт г
   await expect(page.getByTestId('today-profile-button')).toBeVisible()
   expect(guestRequests).toBe(1)
   await expect(page.getByRole('heading', { name: 'Вход по email' })).toHaveCount(0)
-  expect(await page.evaluate(() => localStorage.getItem('mentalix_session_token'))).toBe('guest-session')
-  expect(await page.evaluate(() => localStorage.getItem('mentalix_guest_merge_token'))).toBe('merge-guest')
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_session_token'))).toBe(
+    'guest-session'
+  )
+  expect(await page.evaluate(() => localStorage.getItem('mentalix_guest_merge_token'))).toBe(
+    'merge-guest'
+  )
 
   await page.getByTestId('today-profile-button').click()
   await page.getByTestId('profile-guest-login-link').click()
@@ -1138,14 +1206,27 @@ test('прямая web-ссылка автоматически создаёт г
   await context.close()
 })
 
-test('ошибка гостевого входа оставляет рабочий email и повтор гостевого входа', async ({ browser, baseURL }) => {
+test('ошибка гостевого входа оставляет рабочий email и повтор гостевого входа', async ({
+  browser,
+  baseURL,
+}) => {
   const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
-  await context.addInitScript(() => { localStorage.clear(); sessionStorage.clear() })
+  await context.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
   let attempts = 0
   await context.route('**/api/**', route => {
     if (new URL(route.request().url()).pathname === '/api/auth/guest') {
       attempts += 1
-      return route.fulfill(jsonResponse(attempts === 1 ? { error: 'unavailable' } : { ok: true, user: TEST_USER, merge_token: 'retry' }, attempts === 1 ? 503 : 200))
+      return route.fulfill(
+        jsonResponse(
+          attempts === 1
+            ? { error: 'unavailable' }
+            : { ok: true, user: TEST_USER, merge_token: 'retry' },
+          attempts === 1 ? 503 : 200
+        )
+      )
     }
     return route.fulfill(fixtureFor(route.request()))
   })
@@ -1161,7 +1242,10 @@ test('ошибка гостевого входа оставляет рабочи
 
 test('email-подтверждение не запускает автогостя', async ({ browser, baseURL }) => {
   const context = await browser.newContext({ baseURL, serviceWorkers: 'block' })
-  await context.addInitScript(() => { localStorage.clear(); sessionStorage.clear() })
+  await context.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
   let guestRequests = 0
   await context.route('**/api/**', route => {
     if (new URL(route.request().url()).pathname === '/api/auth/guest') guestRequests += 1
@@ -1191,7 +1275,9 @@ test('Telegram Mini App не создаёт web-гостя', async ({ browser, b
   })
   const page = await context.newPage()
   await page.goto('/')
-  await expect(page.getByText('Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя')).toBeVisible()
+  await expect(
+    page.getByText('Открой приложение через кнопку в боте, чтобы Менталикс увидел тебя')
+  ).toBeVisible()
   expect(guestRequests).toBe(0)
   await expect(page.getByRole('heading', { name: 'Вход по email' })).toHaveCount(0)
   await context.close()
@@ -1346,7 +1432,7 @@ test('демо на реальном телефоне 440×956 — капсул�
 
   // В демо-режиме API перехватывается демо-данными (demoRequest в demoMode.js).
   await context.route('**/api/**', route =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' }),
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
   )
 
   const page = await context.newPage()
