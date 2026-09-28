@@ -20,18 +20,8 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-bottom: calc(var(--app-safe-bottom, 0px) + 12px);
   background: rgb(var(--c-bg, 5 4 3));
   color: rgb(var(--c-text, 243 243 243));
-}
-.mx-path-all-back {
-  position: absolute;
-  left: 16px;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 30px;
-  line-height: 1;
 }
 
 .mx-path-header {
@@ -51,8 +41,8 @@
    чтобы зона нажатия не перекрывалась.
    mx-real-phone-demo — на <html> в мобильном демо-режиме;
    data-mentalix-demo-frame — в десктоп-демо-фрейме. */
-[data-mentalix-demo-frame='true'] .mx-path-header,
-.mx-real-phone-demo .mx-path-header {
+[data-mentalix-demo-frame='true'] .mx-path-surface:not(.mx-path-surface--tg-fullscreen) .mx-path-header,
+.mx-real-phone-demo .mx-path-surface:not(.mx-path-surface--tg-fullscreen) .mx-path-header {
   padding-top: 44px;
 }
 
@@ -106,15 +96,19 @@
   flex: 0 1 auto;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 20px var(--mx-screen-x, 16px) 12px;
+  padding: 20px var(--mx-screen-x, 16px) calc(var(--app-safe-bottom, 0px) + 16px);
   scrollbar-width: none;
 }
 .mx-path-scroll::-webkit-scrollbar { display: none; }
 .mx-path-surface--all .mx-path-scroll { flex: 1; }
 .mx-path-header > .mx-nested-screen-back { display: none; }
+/* «все значки.» вне Telegram: одна круглая «Назад» 43×43 слева. */
+.mx-path-surface--all .mx-path-header { justify-content: flex-start; }
+.mx-path-surface--all .mx-path-header > .mx-nested-screen-back { display: grid; }
 .mx-path-all-badges > h1 {
   margin: 12px 0 28px;
-  font-size: 28px;
+  font-size: 34px;
+  font-weight: 700;
   text-align: center;
 }
 .mx-path-all-group { margin-bottom: 32px; }
