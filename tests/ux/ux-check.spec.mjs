@@ -225,6 +225,19 @@ function sanitizeReason(error) {
     .slice(0, 240)
 }
 
+// Безобидные браузеро-специфичные console.error, которые не являются
+// ошибками приложения и не должны валить UX smoke. WebKit, в отличие от
+// Chromium, не поддерживает viewport-свойство interactive-widget и
+// логирует предупреждение — это шум, а не баг.
+const IGNORED_CONSOLE_ERRORS = [
+  'CloudStorage is not supported in version 6.0',
+  'Viewport argument key "interactive-widget" not recognized and ignored.',
+]
+
+function isIgnorableConsoleError(text) {
+  return IGNORED_CONSOLE_ERRORS.some(pattern => text.includes(pattern))
+}
+
 function overlap(a, b) {
   return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y
 }
@@ -489,10 +502,7 @@ test('локальный UX smoke по основному маршруту', asy
 
     page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
     page.on('console', message => {
-      if (
-        message.type() === 'error' &&
-        !message.text().includes('CloudStorage is not supported in version 6.0')
-      ) {
+      if (message.type() === 'error' && !isIgnorableConsoleError(message.text())) {
         runtimeErrors.push(`console.error: ${message.text()}`)
       }
     })
@@ -955,10 +965,7 @@ test('Mentor PersonaPicker сохраняет тематическую рамк�
     const runtimeErrors = []
     page.on('pageerror', error => runtimeErrors.push(`pageerror: ${error.message}`))
     page.on('console', message => {
-      if (
-        message.type() === 'error' &&
-        !message.text().includes('CloudStorage is not supported in version 6.0')
-      ) {
+      if (message.type() === 'error' && !isIgnorableConsoleError(message.text())) {
         runtimeErrors.push(`console.error: ${message.text()}`)
       }
     })
@@ -1135,10 +1142,7 @@ test.skip('Legacy: History показывает user-scoped local Journal на m
       }
     })
     page.on('console', message => {
-      if (
-        message.type() === 'error' &&
-        !message.text().includes('CloudStorage is not supported in version 6.0')
-      ) {
+      if (message.type() === 'error' && !isIgnorableConsoleError(message.text())) {
         runtimeErrors.push(`console.error: ${message.text()}`)
       }
     })
