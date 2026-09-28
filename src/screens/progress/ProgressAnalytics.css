@@ -139,7 +139,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* 62 px шаг = 54 круг + 8 зазор */
+  gap: 10px;
   margin-top: auto;
   margin-bottom: 24px;
 }
@@ -147,8 +147,8 @@
 .mx-progress-mood-card__face {
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
+  width: 46px;
+  height: 46px;
   border: 0;
   border-radius: 999px;
   background: rgb(var(--c-card3, 46 46 46));
@@ -162,65 +162,82 @@
 }
 
 .mx-progress-mood-card__face svg {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
 }
 
-/* ── Плашка «Нужно больше данных» ── */
+/* P2: лица настроения — светлые линии на тёмном круге */
+.mx-progress-redesign__mood-face circle:first-of-type {
+  fill: none;
+  stroke: rgba(243, 243, 243, 0.75);
+  stroke-width: 1.5;
+}
+
+.mx-progress-redesign__mood-eye {
+  fill: rgba(243, 243, 243, 0.75);
+}
+
+.mx-progress-redesign__mood-face path {
+  fill: none;
+  stroke: rgba(243, 243, 243, 0.75);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Плашка «Нужно больше данных» (P3: без серого фона, как у Stoic) ── */
 .mx-progress-need-data {
   margin-top: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 16px;
-  border-radius: 16px;
-  background: rgb(var(--c-card2, 17 17 17));
+  padding: 8px 16px 4px;
   text-align: center;
 }
 
 .mx-progress-need-data__title {
   margin: 0;
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.35;
-  color: rgb(var(--c-text, 243 243 243));
+  color: rgb(var(--c-muted, 133 133 133));
 }
 
 .mx-progress-need-data__days {
   display: flex;
-  gap: 8px;
-  margin-top: 16px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .mx-progress-need-data__day {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   border-radius: 999px;
   border: 1.5px solid rgb(var(--c-border, 41 41 41));
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
 .mx-progress-need-data__day--done {
   border: 0;
-  background: rgb(var(--c-line, 230 230 230));
+  background: rgba(243, 243, 243, 0.8);
   color: rgb(var(--c-bg, 5 4 3));
 }
 
 .mx-progress-need-data__remind {
-  margin-top: 18px;
-  min-height: 40px;
-  padding: 0 22px;
-  border: 0;
+  margin-top: 16px;
+  min-height: 36px;
+  padding: 0 20px;
+  border: 1px solid rgba(243, 243, 243, 0.15);
   border-radius: 999px;
-  background: rgb(var(--c-text, 243 243 243));
-  color: rgb(var(--c-bg, 5 4 3));
+  background: rgba(243, 243, 243, 0.08);
+  color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -744,27 +761,28 @@
   margin-bottom: 2px;
 }
 
+/* P6: гладкие iOS-переключатели — трек 51×31, бегунок 27 */
 .mx-progress-customize__toggle {
-  flex: 0 0 44px;
+  flex: 0 0 51px;
   display: grid;
   place-items: center;
 }
 
 .mx-progress-customize__toggle input {
   position: absolute;
-  width: 44px;
-  height: 26px;
+  width: 51px;
+  height: 31px;
   opacity: 0;
 }
 
 .mx-progress-customize__toggle span {
   display: block;
-  width: 44px;
-  height: 26px;
+  width: 51px;
+  height: 31px;
   border-radius: 999px;
   background: rgb(var(--c-card3, 46 46 46));
   position: relative;
-  transition: background 0.2s ease;
+  transition: background 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mx-progress-customize__toggle span::after {
@@ -772,11 +790,11 @@
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 22px;
-  height: 22px;
+  width: 27px;
+  height: 27px;
   border-radius: 999px;
   background: rgb(var(--c-text, 243 243 243));
-  transition: transform 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mx-progress-customize__toggle input:checked + span {
@@ -784,7 +802,7 @@
 }
 
 .mx-progress-customize__toggle input:checked + span::after {
-  transform: translateX(18px);
+  transform: translateX(20px);
   background: rgb(var(--c-bg, 5 4 3));
 }
 
@@ -799,7 +817,9 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+  transition:
+    transform var(--mx-motion-slow) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity var(--mx-motion-slow) ease;
 }
 
 .mx-progress-bottom-pill-wrapper--hidden {
@@ -916,10 +936,10 @@
 
 @media (max-width: 360px) {
   .mx-progress-mood-card__faces {
-    gap: 4px;
+    gap: 6px;
   }
   .mx-progress-mood-card__face {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
   }
 }
