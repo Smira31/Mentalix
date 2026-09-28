@@ -751,6 +751,12 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
 
   function handleSearchSelect(entry) {
     setSearchOpen(false)
+    setGranularityMenuOpen(false)
+    setSelectedEntry(entry)
+  }
+
+  function handleSelectEntry(entry) {
+    setGranularityMenuOpen(false)
     setSelectedEntry(entry)
   }
 
@@ -803,6 +809,13 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
             <Search size={20} aria-hidden="true" />
           </button>
         </div>
+        {granularityMenuOpen && (
+          <div
+            className="mx-progress-menu-overlay"
+            onClick={() => setGranularityMenuOpen(false)}
+            aria-hidden="true"
+          />
+        )}
         {granularityMenuOpen && (
           <ProgressGlassMenu
             id="history-grouping-menu"
@@ -907,7 +920,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
           label={selectedPeriod.label || selectedPeriod.title || ''}
           days={selectedPeriod.days}
           onBack={() => setSelectedPeriod(null)}
-          onSelectEntry={setSelectedEntry}
+          onSelectEntry={handleSelectEntry}
         />
       </>
     )
@@ -951,7 +964,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
       <div className="mx-progress-history" data-testid="progress-history-list">
         <h2 className="mx-progress-history__title">история.</h2>
 
-        {granularity === 'day' && <DayList days={filteredDays} onSelectEntry={setSelectedEntry} />}
+        {granularity === 'day' && <DayList days={filteredDays} onSelectEntry={handleSelectEntry} />}
 
         {granularity === 'week' &&
           groupDaysByWeek(filteredDays).map(group => (

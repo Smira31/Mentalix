@@ -630,6 +630,13 @@
   color: rgb(var(--c-text, 243 243 243));
 }
 
+/* H2: overlay для закрытия меню по тапу вне */
+.mx-progress-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+}
+
 /* ── Шаг 3: кнопки действий вкладки «История» (§5.5) ── */
 
 .mx-progress-history-actions {
