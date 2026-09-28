@@ -101,6 +101,8 @@ export const TODAY_PREVIEW_STATES = new Set([
   'dayInProgress',
   'reviewPending',
   'dayClosed',
+  'morning_done',
+  'day_closed',
   'morningPrimary',
   'eveningPrimary',
   'bothDone',
@@ -238,6 +240,13 @@ function previewTodayState() {
   return TODAY_PREVIEW_STATES.has(requested) ? requested : null
 }
 
+export function demoReviewNow(reviewHour, real = now()) {
+  if (!isPreviewDemoMode() || new URLSearchParams(window.location.search).get('review_open') !== '1') return real
+  const date = new Date(real)
+  date.setHours(Math.min(23, Math.max(Number(reviewHour) || DEFAULT_REVIEW_HOUR, 19) + 1), 30, 0, 0)
+  return date
+}
+
 function offsetDate(date, amount) {
   const value = new Date(date)
   value.setDate(value.getDate() + amount)
@@ -277,7 +286,7 @@ function seedState(todayState = null) {
 
   // Чекин на сегодня — зависит от состояния.
   let checkin = null
-  if (todayState === 'dayInProgress' || todayState === 'reviewPending') {
+  if (todayState === 'dayInProgress' || todayState === 'reviewPending' || todayState === 'morning_done') {
     checkin = {
       id: 900501,
       date: todayStr,
@@ -287,7 +296,7 @@ function seedState(todayState = null) {
       emotion: 'ровно',
       review_completed_at: null,
     }
-  } else if (todayState === 'dayClosed' || todayState === 'bothDone') {
+  } else if (todayState === 'dayClosed' || todayState === 'bothDone' || todayState === 'day_closed') {
     checkin = {
       id: 900501,
       date: todayStr,

@@ -122,7 +122,7 @@ test('утро заново не стирает вечерние поля (де�
   assert.equal(afterRedo.id, afterEvening.id, 'та же запись дня')
 })
 
-test('«Пройти утро заново» сразу сбрасывает утренние поля и не трогает вечер', async () => {
+test('повтор утра записывает ответы атомарно, не меняя вечер, серию и другие дни', async () => {
   freshDemoStorage()
   await morningFirstPass()
   const afterMorning = await today()
@@ -138,19 +138,33 @@ test('«Пройти утро заново» сразу сбрасывает у�
   )
   const afterEvening = await today()
 
-  // Сброс при подтверждении повтора: утро — явные null, вечер — как есть.
-  await send('/checkin/today', 'PUT', { user_id: USER_ID, ...morningResetPayload(afterEvening) })
+  const beforeHistory = await demoRequest('/checkin/history')
+  const beforeStreak = await demoRequest('/streak')
+  assert.equal((await today()).review_completed_at, afterEvening.review_completed_at)
 
-  const afterReset = await today()
-  assert.equal(afterReset.mood, null, 'настроение сброшено')
-  assert.equal(afterReset.energy, null, 'энергия сброшена')
-  assert.equal(afterReset.note, null, '«Что на уме?» сброшено')
-  assert.equal(afterReset.day_focus, null, 'фокус дня сброшен')
-  assert.equal(afterReset.sleep_quality, null, 'качество сна сброшено')
-  assert.equal(afterReset.emotion, 'спокойно', 'эмоция разбора осталась')
-  assert.equal(afterReset.lessons, 'Что получилось? Вечер', 'уроки разбора остались')
-  assert.ok(afterReset.review_completed_at, 'день остаётся закрытым')
-  assert.equal(afterReset.id, afterEvening.id, 'та же запись дня')
+  await send('/checkin/today', 'PUT', {
+    user_id: USER_ID,
+    ...morningResetPayload(afterEvening),
+    mood: 2,
+    energy: 4,
+    note: null,
+    focus: 3,
+  })
+
+  const afterRedo = await today()
+  assert.equal(afterRedo.mood, 2)
+  assert.equal(afterRedo.energy, 4)
+  assert.equal(afterRedo.note, null, 'пропущенная заметка сброшена')
+  assert.equal(afterRedo.focus, 3)
+  assert.equal(afterRedo.day_focus, null, 'пропущенный фокус дня сброшен')
+  assert.equal(afterRedo.sleep_quality, null, 'пропущенное качество сна сброшено')
+  assert.equal(afterRedo.emotion, 'спокойно')
+  assert.equal(afterRedo.lessons, 'Что получилось? Вечер')
+  assert.equal(afterRedo.review_completed_at, afterEvening.review_completed_at)
+  assert.equal(afterRedo.id, afterEvening.id)
+  const history = await demoRequest('/checkin/history')
+  assert.deepEqual(history.filter(item => item.id !== afterEvening.id), beforeHistory.filter(item => item.id !== afterEvening.id))
+  assert.deepEqual(await demoRequest('/streak'), beforeStreak)
 })
 
 test('без записи дня вечер отправляет ответы своих шкал', () => {
