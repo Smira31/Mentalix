@@ -21,7 +21,7 @@ test('canonical stats: current, longest and total active days are read together'
   assert.match(source, /readCanonicalStreakStats\(payload\)/)
   assert.match(source, /const \{ currentStreak, bestStreak, activeDays \} = canonicalStats/)
   assert.match(source, /\['Текущая серия', formatDays\(currentStreak\)\]/)
-  assert.match(source, /\['Всего завершённых дней', activeDays\]/)
+  assert.match(source, /\['Дней с активностью', activeDays\]/)
   assert.match(source, /\['Самая длинная серия', formatDays\(bestStreak\)\]/)
   assert.match(source, /<strong>\{activeDays\}<\/strong>/)
 })
@@ -53,7 +53,7 @@ test('canonical stats: invalid or partial payload falls back as a whole', () => 
   // Блок «Серия» показывается только по серверным данным.
   assert.match(source, /\{canonicalStats && <StatSection title="Серия"/)
   // Значки серии пересчитываются серверной статистикой, не историей.
-  assert.match(source, /serverSeriesBadges\(visibleModel\?\.badges, serverStats\)/)
+  assert.match(source, /serverSeriesBadges\(visibleModel\?\.badges, serverStats, registrationDays\)/)
 })
 
 test('serverSeriesBadges: значки серии берут пороги из серверной статистики', () => {
@@ -62,13 +62,14 @@ test('serverSeriesBadges: значки серии берут пороги из �
     { id: 'week-on-path', goal: 7, done: false, progress: 0 },
     { id: 'first-checkin', goal: 1, done: false, progress: 0 },
   ]
-  assert.deepEqual(serverSeriesBadges(badges, { bestStreak: 3, activeDays: 7 }), [
+  // Серия — из bestStreak, дни пути — из дней с регистрации.
+  assert.deepEqual(serverSeriesBadges(badges, { bestStreak: 3 }, 7), [
     { id: 'streak-three', goal: 3, done: true, progress: 3 },
     { id: 'week-on-path', goal: 7, done: true, progress: 7 },
     { id: 'first-checkin', goal: 1, done: false, progress: 0 },
   ])
   // Без статистики значки серии не считаются выполненными по истории.
-  const untouched = serverSeriesBadges(badges, null)
+  const untouched = serverSeriesBadges(badges, null, null)
   assert.equal(untouched[0].done, false)
   assert.equal(untouched[1].done, false)
 })
@@ -78,6 +79,7 @@ test('canonical network error and loading retain legacy stats without blocking b
   assert.match(source, /canonicalStats\?\.userId === user\.id \? canonicalStats\.value : null/)
   assert.match(source, /const next = buildServerSeriesViewModel\(\{ stats, checkins, rituals, ascezas \}\)/)
   assert.match(source, /badges: serverBadges/)
-  assert.match(source, /\['Дней с чек-ином', model\.activeDays\]/)
+  // «Дней с чек-ином» берётся из канонической серии, а не из view-model без неё.
+  assert.match(source, /\['Дней с чек-ином', activeDays \?\? model\.activeDays\]/)
   assert.doesNotMatch(source, /rememberSeriesSnapshot\(user\.id, canonicalStats\)/)
 })

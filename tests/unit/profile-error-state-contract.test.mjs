@@ -23,7 +23,7 @@ test('Profile берёт серию с сервера, без восстанов
   assert.match(source, /const bestStreak = canonical\?\.bestStreak/)
   assert.doesNotMatch(source, /canonical\?\.currentStreak \?\? legacy/)
   // Значки серии тоже пересчитываются серверной статистикой.
-  assert.match(source, /serverSeriesBadges\(legacy\.badges, canonical\)/)
+  assert.match(source, /serverSeriesBadges\(legacy\.badges, canonical, daysInSystem\)/)
   assert.match(source, /buildServerSeriesViewModel/)
   assert.doesNotMatch(source, /\bbuildSeriesViewModel\(/)
   // Восстановление серии из неполной истории не возвращается.
