@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { platform } from '../platform'
 import { api } from '../lib/api'
+import { peekThemeDetail, fetchThemeDetail, invalidateThemeDetail } from '../lib/themeDetailCache'
+import { peekThemesData, fetchThemesData } from '../lib/themesDataCache'
 import { Lock, Check, Sparkles } from 'lucide-react'
 import { RoundBackButton } from '../components/NestedScreenHeader'
 import JournalTextarea from '../components/JournalTextarea'
@@ -68,13 +70,24 @@ function Fact({ children }) {
 }
 
 export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
-  const [themes, setThemes] = useState([])
+  const [themes, setThemes] = useState(() => (user ? peekThemesData(user.id) || [] : []))
   const [activeId, setActiveId] = useState(themeId)
-  const [data, setData] = useState(null)
-  const [day, setDay] = useState(1)
+  const cachedDetail = peekThemeDetail(user?.id, themeId)
+  const [data, setData] = useState(cachedDetail)
+  const [day, setDay] = useState(
+    cachedDetail
+      ? Math.min(initialDay || cachedDetail.current_day || 1, cachedDetail.days.length)
+      : 1
+  )
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
-  const [view, setView] = useState(null)
+  const [view, setView] = useState(
+    cachedDetail
+      ? initialDay || cachedDetail.days.some(d => d.reflection)
+        ? 'day'
+        : 'intro'
+      : null
+  )
 
   const { style } = useFullscreenSurface()
 
@@ -103,7 +116,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   const [seenActiveId, setSeenActiveId] = useState(activeId)
   if (seenActiveId !== activeId) {
     setSeenActiveId(activeId)
-    setData(null)
+    setData(peekThemeDetail(user?.id, activeId))
   }
 
   const [seenTextKey, setSeenTextKey] = useState({ day: null, data: null })
@@ -116,8 +129,7 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
   useEffect(() => {
     if (!user) return
 
-    api.themes
-      .list(user.id)
+    fetchThemesData(user.id)
       .then(list => setThemes(Array.isArray(list) ? list : []))
       .catch(() => setThemes([]))
   }, [user])
@@ -127,10 +139,9 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
 
     let alive = true
 
-    api.themes
-      .get(activeId, user.id)
+    fetchThemeDetail(user.id, activeId)
       .then(fresh => {
-        if (!alive) return
+        if (!alive || !fresh) return
 
         setData(fresh)
         setDay(Math.min(initialDay || fresh.current_day || 1, fresh.days.length))
@@ -161,7 +172,8 @@ export default function ThemeScreen({ user, themeId, onBack, initialDay }) {
       await api.themes.reflect(activeId, user.id, day, text)
       platform.haptic('success')
 
-      const fresh = await api.themes.get(activeId, user.id)
+      invalidateThemeDetail(user.id, activeId)
+      const fresh = await fetchThemeDetail(user.id, activeId, { force: true })
 
       setData(fresh)
 
