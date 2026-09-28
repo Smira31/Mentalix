@@ -9,6 +9,8 @@ export function parseContextualDeepLink(search, startParam) {
   if (action === 'checkin') return { sub: 'contextualCheckin', returnFlow: null }
   if (action === 'evening' || action === 'breathing') return { sub: action, returnFlow: null }
   if (action === 'theme') return { sub: 'theme', returnFlow: null }
+  // Demo-only: ?demo=1&action=focus_step — открывает шаг «Главный фокус на сегодня?»
+  if (action === 'focus_step') return { sub: 'contextualCheckin', returnFlow: null }
   return { sub: null, returnFlow: null }
 }
 
