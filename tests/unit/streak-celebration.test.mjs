@@ -49,16 +49,28 @@ test('светлые лепестки — дни в текущем круге и
   assert.equal(litStreakPetals(10), 5)
 })
 
-test('кружки дней: максимум 7, сегодня — огонёк, прошлые — галочка', () => {
+test('кружки дней: ровно три (позавчера, вчера, сегодня), сегодня — огонёк, дни серии — галочка', () => {
   const today = dayKey(0)
   const three = buildStreakDays({ streak: 3, today })
   assert.deepEqual(
     three.map(day => day.state),
     ['done', 'done', 'today']
   )
-  assert.equal(three[2].key, today)
-  assert.equal(buildStreakDays({ streak: 12, today }).length, 7)
+  assert.deepEqual(three.map(day => day.key), [dayKey(-2), dayKey(-1), today])
+  assert.equal(buildStreakDays({ streak: 12, today }).length, 3)
   assert.deepEqual(buildStreakDays({ streak: 0, today }), [])
+})
+
+test('дни до начала серии — тёмный кружок без значка', () => {
+  const today = dayKey(0)
+  assert.deepEqual(
+    buildStreakDays({ streak: 1, today }).map(day => day.state),
+    ['gap', 'gap', 'today']
+  )
+  assert.deepEqual(
+    buildStreakDays({ streak: 2, today }).map(day => day.state),
+    ['gap', 'done', 'today']
+  )
 })
 
 test('пропуск мягкой серии — только при заморозке и одиночной дыре в истории', () => {
@@ -67,7 +79,7 @@ test('пропуск мягкой серии — только при замор�
   const withFreeze = buildStreakDays({ streak: 3, checkins, freezeUsed: true, today })
   assert.deepEqual(
     withFreeze.map(day => day.state),
-    ['done', 'done', 'gap', 'today']
+    ['done', 'gap', 'today']
   )
   const noFreeze = buildStreakDays({ streak: 3, checkins, freezeUsed: false, today })
   assert.ok(noFreeze.every(day => day.state !== 'gap'))
