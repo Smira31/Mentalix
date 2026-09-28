@@ -1,6 +1,4 @@
-import { ChevronLeft } from 'lucide-react'
-import { platform } from '../platform'
-import { useBackButton } from '../platform/telegram.hooks'
+import ScreenBack from './ScreenBack'
 
 /**
  * Единая шапка вложенного экрана — Stoic-образец (G5, G6).
@@ -18,25 +16,9 @@ export default function NestedScreenHeader({
   registerSystemBack = true,
   testId = 'back-button',
 }) {
-  useBackButton(() => {
-    platform.haptic('light')
-    onBack?.()
-  }, registerSystemBack)
-
   return (
     <div className="mx-nested-screen-header">
-      <button
-        type="button"
-        data-testid={testId}
-        aria-label="Назад"
-        onClick={() => {
-          platform.haptic('light')
-          onBack?.()
-        }}
-        className="mx-nested-screen-back"
-      >
-        <ChevronLeft size={20} aria-hidden="true" />
-      </button>
+      <ScreenBack onBack={onBack} testId={testId} registerSystemBack={registerSystemBack} />
       <h1 className="font-display mx-type-page text-cream lowercase">{title}</h1>
     </div>
   )
@@ -47,19 +29,6 @@ export default function NestedScreenHeader({
  * где заголовок уже есть (например, заголовок шага сессии),
  * а нужна только круглая кнопка вместо текстовой «‹ Назад».
  */
-export function RoundBackButton({ onClick, testId = 'back-button', label = 'Назад' }) {
-  return (
-    <button
-      type="button"
-      data-testid={testId}
-      aria-label={label}
-      onClick={() => {
-        platform.haptic('light')
-        onClick?.()
-      }}
-      className="mx-nested-screen-back"
-    >
-      <ChevronLeft size={20} aria-hidden="true" />
-    </button>
-  )
+export function RoundBackButton({ onClick, testId = 'back-button', registerSystemBack = false }) {
+  return <ScreenBack onBack={onClick} testId={testId} registerSystemBack={registerSystemBack} />
 }

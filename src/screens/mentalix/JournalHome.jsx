@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BookOpen, Compass, PenLine } from 'lucide-react'
 import JournalTextarea from '../../components/JournalTextarea'
+import ScreenBack from '../../components/ScreenBack'
 import { platform } from '../../platform'
 import { readJournalEntry, saveJournalPhase, todayKey } from '../../lib/journalStorage'
 import './JournalHome.css'
@@ -168,15 +169,7 @@ export default function JournalHome({ onOpenMentor, showIntro = false }) {
       </div>
 
       <div className="mx-journal-footer pt-4 pb-3" data-keyboard-safe-footer="true">
-        {phaseIndex > 0 && (
-          <button
-            type="button"
-            onClick={() => setPhaseIndex(index => index - 1)}
-            className="mx-type-meta text-faint active:text-gold"
-          >
-            Назад
-          </button>
-        )}
+        {phaseIndex > 0 && <ScreenBack onBack={() => setPhaseIndex(index => index - 1)} />}
       </div>
     </div>
   )

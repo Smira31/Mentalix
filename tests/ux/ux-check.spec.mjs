@@ -522,9 +522,9 @@ test('локальный UX smoke по основному маршруту', asy
       runtimeErrors,
       results,
       check: async () => {
-        // На первом morning Check-in шаге BackButton имеет label «Сегодня»;
-        // на остальных состояниях flow может сохраняться label «Назад».
-        await assertClickable(page.getByRole('button', { name: /^(Назад|Сегодня)$/ }))
+        await assertClickable(page.getByTestId('back-button'))
+        await expect(page.getByTestId('back-button')).toHaveCount(1)
+        await expect(page.getByText(/‹\s*Назад|К каталогу/)).toHaveCount(0)
         await expect(page.getByRole('heading', { name: 'Как ты сейчас?' })).toBeVisible()
       },
     })
@@ -567,9 +567,7 @@ test('локальный UX smoke по основному маршруту', asy
         await assertClickable(page.locator('[data-testid="checkin-complete"]'))
       },
     })
-    // После editor-шага общий BackButton использует label «Сегодня»;
-    // на остальных состояниях flow сохраняется label «Назад».
-    const checkinBackButton = page.getByRole('button', { name: /^(Назад|Сегодня)$/ })
+    const checkinBackButton = page.getByTestId('back-button')
     await expect(checkinBackButton).toBeVisible()
     await expect(checkinBackButton).toBeEnabled()
     await checkinBackButton.click()
@@ -848,6 +846,14 @@ test('локальный UX smoke по основному маршруту', asy
         await assertLibrarySoonControl(page)
       },
     })
+
+    // В браузере каталог программ имеет ровно одну круглую кнопку возврата.
+    await page.getByRole('button', { name: 'Смотреть' }).click()
+    await expect(page.getByRole('heading', { name: 'программы.' })).toBeVisible()
+    await expect(page.getByTestId('back-button')).toHaveCount(1)
+    await expect(page.getByText(/‹\s*Назад|К каталогу/)).toHaveCount(0)
+    await page.getByTestId('back-button').click()
+    await expect(page.getByRole('heading', { name: 'библиотека.' })).toBeVisible()
 
     await page.getByRole('button', { name: 'Прогресс' }).click()
     await captureScreen({

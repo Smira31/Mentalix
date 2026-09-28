@@ -4,10 +4,10 @@
 // Все размеры — DESIGN_SYSTEM.md §5.4 «Профиль и настройки».
 
 import { useEffect, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { platform, platformName } from '../../platform'
+import { ChevronRight, X } from 'lucide-react'
+import ScreenBack from '../../components/ScreenBack'
 import { useBackButton } from '../../platform/telegram.hooks'
-import { isPreviewDemoMode } from '../../lib/demoMode'
+import { isTelegramBackMode } from '../../lib/backButtonMode'
 
 import './ProfileUi.css'
 
@@ -46,16 +46,9 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
   const headerRef = useRef(null)
   const titleRef = useRef(null)
   const collapsed = useTitleCollapsed(headerRef, titleRef)
-  const showOwnButton = platformName !== 'telegram' && !isPreviewDemoMode()
-
-  useBackButton(() => {
-    platform.haptic('light')
-    onBack?.()
-  })
-
+  const showOwnButton = !isTelegramBackMode(typeof window === 'undefined' ? null : window.Telegram?.WebApp)
+  useBackButton(onBack, isRoot)
   const screenRef = useRef(null)
-
-  const ButtonIcon = isRoot ? X : ChevronLeft
 
   return (
     <div
@@ -64,19 +57,12 @@ export function ProfilePage({ title, isRoot = false, onBack, testId, children })
       data-testid={testId}
     >
       <div className="mx-profile-page__bar">
-        {showOwnButton && (
-          <button
-            type="button"
-            data-testid="profile-close-button"
-            className={`mx-profile-page__button mx-profile-page__button--${isRoot ? 'close' : 'back'}`}
-            aria-label={isRoot ? 'Закрыть профиль' : 'Назад'}
-            onClick={() => {
-              platform.haptic('light')
-              onBack?.()
-            }}
-          >
-            <ButtonIcon size={22} aria-hidden="true" />
+        {isRoot ? (showOwnButton &&
+          <button type="button" data-testid="profile-close-button" className="mx-profile-page__button mx-profile-page__button--close" aria-label="Закрыть профиль" onClick={onBack}>
+            <X size={22} aria-hidden="true" />
           </button>
+        ) : (
+          <ScreenBack onBack={onBack} testId="profile-close-button" className="mx-profile-page__button mx-profile-page__button--back" />
         )}
         <div
           ref={headerRef}

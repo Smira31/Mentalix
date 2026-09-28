@@ -150,19 +150,12 @@ function DemoTelegramChrome({ onBack }) {
 
   return (
     <div className="mx-demo-telegram-chrome" aria-label="Telegram preview controls">
-      <button
-        type="button"
-        aria-label={hasBack ? 'Назад' : 'Закрыть превью'}
-        className="mx-demo-telegram-chrome__close"
-        onClick={hasBack ? onBack : undefined}
-      >
-        {hasBack ? (
-          <ChevronDown size={18} strokeWidth={2.2} className="rotate-90" aria-hidden="true" />
-        ) : (
+      {!hasBack && (
+        <button type="button" aria-label="Закрыть превью" className="mx-demo-telegram-chrome__close">
           <X size={18} strokeWidth={2.2} aria-hidden="true" />
-        )}
-        {!hasBack && <span>Закрыть</span>}
-      </button>
+          <span>Закрыть</span>
+        </button>
+      )}
       {tabTitle && (
         <div
           className={`mx-demo-telegram-chrome__title${

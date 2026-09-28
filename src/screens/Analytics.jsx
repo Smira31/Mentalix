@@ -14,6 +14,7 @@ import { useBackButton } from '../platform/telegram.hooks'
 import '../components/ui-lab/ProgressRedesignExperiment.css'
 import './Analytics.css'
 import ProgressHistory from './progress/ProgressHistory'
+import ScreenBack from '../components/ScreenBack'
 import './progress/ProgressScreen.css'
 import './progress/ProgressAnalytics.css'
 import {
@@ -623,15 +624,7 @@ function FullCalendar({ poolCheckins, onBack }) {
 
   return (
     <div className="mx-progress-full-calendar" data-testid="progress-full-calendar">
-      <button
-        type="button"
-        className="mx-progress-entry__back"
-        aria-label="Назад"
-        data-testid="progress-full-calendar-back"
-        onClick={onBack}
-      >
-        ‹
-      </button>
+      <ScreenBack onBack={onBack} testId="progress-full-calendar-back" />
       <h2 className="mx-progress-full-calendar__title">календарь настроения.</h2>
       <p className="mx-progress-full-calendar__subtext">Одна точка — один день</p>
       <div className="mx-progress-full-calendar__grid">
