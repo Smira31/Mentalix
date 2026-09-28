@@ -10,11 +10,11 @@ export function readCanonicalCurrentStreak(payload) {
   return Number.isSafeInteger(value) && value >= 0 ? value : null
 }
 
-export function serverSeriesBadges(badges = [], stats) {
+export function serverSeriesBadges(badges = [], stats, registrationDays = null) {
   return badges.map(badge => {
     if (!['streak-two', 'streak-three', 'streak-five', 'week-on-path', 'month-on-path'].includes(badge.id)) return badge
-    const value = stats && (badge.id === 'week-on-path' || badge.id === 'month-on-path'
-      ? stats.activeDays : stats.bestStreak)
+    const value = badge.id === 'week-on-path' || badge.id === 'month-on-path'
+      ? registrationDays : stats?.bestStreak
     return { ...badge, done: value != null && value >= badge.goal, progress: Math.min(value ?? 0, badge.goal) }
   })
 }

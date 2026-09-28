@@ -741,20 +741,19 @@ export default function Today({
   // SERIES & BADGES
   // ============================================================
 
-  if (seriesOpen) {
-    return (
-      <Suspense fallback={null}>
-        <SeriesBadges
-          user={user}
-          onBack={onCloseSeries}
-          onOpenPractice={practice => {
-            onCloseSeries?.()
-            onOpenPractice?.(practice)
-          }}
-        />
-      </Suspense>
-    )
-  }
+  const seriesSheet = seriesOpen ? (
+    <Suspense fallback={null}>
+      <SeriesBadges
+        user={user}
+        onBack={onCloseSeries}
+        onOpenPractice={practice => {
+          onCloseSeries?.()
+          if (practice === 'checkin') changeSub('checkin')
+          else onOpenPractice?.(practice)
+        }}
+      />
+    </Suspense>
+  ) : null
 
   // ============================================================
   // ЧЕК-ИН / АНАЛИЗ ДНЯ
@@ -965,6 +964,7 @@ export default function Today({
     return (
       <div className="mx-screen-shell">
         <h1 className="sr-only">Сегодня</h1>
+      {seriesSheet}
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
           onOpenDemoPanel={onOpenDemoPanel}
@@ -981,6 +981,7 @@ export default function Today({
     return (
       <div className="mx-screen-shell">
         <h1 className="sr-only">Сегодня</h1>
+      {seriesSheet}
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
           onOpenDemoPanel={onOpenDemoPanel}
@@ -1179,6 +1180,7 @@ export default function Today({
   return (
     <div className={`mx-screen-shell${cardCompressing ? ' mx-screen-shell--compressing' : ''}`}>
       <h1 className="sr-only">Сегодня</h1>
+      {seriesSheet}
       {recovery && recoveryStage !== 'offer' && (
         <Suspense fallback={null}>
           <StreakRecovery
