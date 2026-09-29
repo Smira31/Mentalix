@@ -92,7 +92,10 @@ export default function WillingnessToPayTest({ user, onBack }) {
   const [step, setStep] = useState(
     saved?.step && TEST_STEPS.includes(saved.step) ? saved.step : 'concept'
   )
-  const [concept, setConcept] = useState(saved?.concept || '')
+  const [concept, setConcept] = useState(() =>
+    Array.isArray(saved?.concept) ? saved.concept : saved?.concept ? [saved.concept] : []
+  )
+  const [conceptChanged, setConceptChanged] = useState(false)
   const [intent, setIntent] = useState(saved?.intent || '')
   const [trust, setTrust] = useState(saved?.trust || '')
 
@@ -110,8 +113,10 @@ export default function WillingnessToPayTest({ user, onBack }) {
   }
 
   function chooseConcept(value) {
-    setConcept(value)
-    persist({ concept: value })
+    setConcept(current =>
+      current.includes(value) ? current.filter(item => item !== value) : [...current, value]
+    )
+    setConceptChanged(true)
   }
 
   function chooseIntent(value) {
@@ -124,7 +129,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
     persist({ step: 'complete' })
   }
 
-  const selectedConcept = CONCEPTS.find(item => item.id === concept)
+  const selectedConcepts = CONCEPTS.filter(item => concept.includes(item.id))
 
   if (step === 'complete') {
     return (
@@ -173,40 +178,38 @@ export default function WillingnessToPayTest({ user, onBack }) {
                 дополнительное продолжение было бы для тебя самым ценным?
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="mx-wtp-options">
               {CONCEPTS.map(item => (
-                <OptionButton
+                <button
+                  type="button"
                   key={item.id}
-                  selected={concept === item.id}
+                  className="mx-wtp-option"
+                  aria-pressed={concept.includes(item.id)}
                   onClick={() => chooseConcept(item.id)}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-[10px] font-label uppercase tracking-wider text-muted">
-                        {item.label}
-                      </div>
-                      <div className="mt-1 text-[15px] font-semibold text-cream">{item.title}</div>
-                      <p className="mt-1.5 text-[12px] leading-relaxed text-muted">
-                        {item.description}
-                      </p>
-                    </div>
-                    {concept === item.id && (
-                      <Check size={17} className="mt-0.5 shrink-0 text-muted" />
-                    )}
-                  </div>
-                </OptionButton>
+                  <span>{item.label}</span>
+                  <span className="mx-wtp-option__check" aria-hidden="true">
+                    {concept.includes(item.id) && <Check size={15} strokeWidth={2.5} />}
+                  </span>
+                </button>
               ))}
             </div>
+            {selectedConcepts.map(item => (
+              <div key={item.id} className="mx-wtp-description">
+                <p className="font-semibold text-cream">{item.title}</p>
+                <p className="mt-1 text-muted">{item.description}</p>
+              </div>
+            ))}
             <button
               type="button"
-              disabled={!concept}
+              disabled={!conceptChanged}
               onClick={() => {
                 setStep('intent')
-                persist({ step: 'intent' })
+                persist({ step: 'intent', concept })
               }}
-              className="mx-profile-primary"
+              className="mx-wtp-save"
             >
-              Продолжить
+              Сохранить
             </button>
           </section>
         )}
@@ -221,7 +224,7 @@ export default function WillingnessToPayTest({ user, onBack }) {
                 Хотелось бы попробовать?
               </h2>
               <p className="mt-3 text-[14px] leading-relaxed text-muted">
-                Ты выбрал: <span className="text-cream">{selectedConcept?.title}</span>. Здесь нет
+                Ты выбрал: <span className="text-cream">{selectedConcepts.map(item => item.title).join(', ')}</span>. Здесь нет
                 покупки — нам важно понять только твой уровень интереса.
               </p>
             </div>
