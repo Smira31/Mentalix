@@ -49,6 +49,7 @@ test('профиль: цель письма, липкая шапка и сист
     const goal = page.getByTestId('profile-row-writing-goal')
     await expect(goal).toContainText('Сколько записей в неделю ты хочешь делать. Влияет только на подсказки, серия не рвётся.')
     await expect(goal.locator('.mx-profile-row__value')).toHaveCSS('color', 'rgb(133, 133, 133)')
+    expect(await goal.locator('.mx-profile-row__value').evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true)
     await expect(goal.locator('.mx-profile-row__chevron')).toHaveCount(1)
     await goal.click()
     await expect(goal).toContainText('3')

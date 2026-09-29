@@ -249,6 +249,11 @@ button.mx-profile-row:active {
   text-align: right;
 }
 
+/* Длинная подсказка цели не должна сжимать значение справа до многоточия. */
+.mx-profile-row[data-testid='profile-row-writing-goal'] .mx-profile-row__value {
+  flex-shrink: 0;
+}
+
 /* Внутренние экраны: значение справа — серое, обычным начертанием. */
 .mx-profile-page--sub .mx-profile-row__value {
   color: rgb(var(--c-muted));
