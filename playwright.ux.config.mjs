@@ -10,6 +10,7 @@ export default defineConfig({
     'checkin-geometry.spec.mjs',
     'profile-p11.spec.mjs',
     'profile-stoic.spec.mjs',
+    'profile-wave2.spec.mjs',
     'profile-canonical-streak.spec.mjs',
     'demo-phone.spec.mjs',
     'demo-panel.spec.mjs',

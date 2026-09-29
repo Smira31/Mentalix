@@ -25,6 +25,7 @@ import { openSupportChat } from '../lib/support'
 import { THEMES } from '../lib/theme'
 import { isGuestUser } from '../lib/guestAuth'
 import { DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
+import { previewProfileAction } from '../lib/demoMode'
 import SubscriptionManager from './SubscriptionManager'
 import DonateScreen from './DonateScreen'
 import LinkWebAccount from './LinkWebAccount'
@@ -440,7 +441,9 @@ export default function Settings({
     setScreen('app-lock-setup')
   }
 
-  const [screen, setScreen] = useState(null) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
+  const [screen, setScreen] = useState(() =>
+    previewProfileAction() === 'profile_wtp' ? 'wtp-test' : null
+  ) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
   // null — тариф ещё не загружен: «подписка.» показывает скелетон.
   const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
@@ -448,9 +451,9 @@ export default function Settings({
     try {
       const initial = sessionStorage.getItem('mx-settings-initial-sub')
       sessionStorage.removeItem('mx-settings-initial-sub')
-      return initial || null
+      return initial || { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] || null
     } catch {
-      return null
+      return { profile_checkins: 'checkins', profile_about: 'about' }[previewProfileAction()] || null
     }
   }) // null | 'checkins' | 'about' | 'prefs' | 'appearance' | 'notifications' | 'data' | 'timezone'
 
@@ -584,18 +587,9 @@ export default function Settings({
           <ProfileCard>
             <ProfileRow
               title="Записей в неделю"
-              subtitle={
-                writingGoalOn
-                  ? `${writingGoalCount} в неделю — без штрафов за пропуск`
-                  : 'Выключено'
-              }
-              right={
-                <Toggle
-                  checked={writingGoalOn}
-                  label="Цель записей в неделю"
-                  onChange={saveWritingGoal}
-                />
-              }
+              subtitle="Сколько записей в неделю ты хочешь делать. Влияет только на подсказки, серия не рвётся."
+              value={writingGoalOn ? String(writingGoalCount) : 'Выкл.'}
+              onClick={() => saveWritingGoal(!writingGoalOn)}
               testId="profile-row-writing-goal"
             />
             {writingGoalOn && (

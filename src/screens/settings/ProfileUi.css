@@ -23,8 +23,8 @@
   --mx-profile-title-gap: 4px;
 }
 
-/* Липкая шапка нулевой высоты: не сдвигает заголовок, свёрнутая
-   полоса лежит поверх контента. */
+/* Липкая шапка нулевой высоты: не сдвигает крупный заголовок.
+   При сворачивании непрозрачная подложка отделяет её от контента. */
 .mx-profile-page__bar {
   position: sticky;
   top: 0;
@@ -63,7 +63,7 @@
   right: 0;
   left: 0;
   height: var(--mx-profile-bar-fade);
-  background: linear-gradient(rgb(var(--c-bg)), rgb(var(--c-bg) / 0));
+  background: rgb(var(--c-bg));
   content: '';
   z-index: -1;
 }
@@ -247,6 +247,11 @@ button.mx-profile-row:active {
   font-size: 17px;
   font-weight: 700;
   text-align: right;
+}
+
+/* Длинная подсказка цели не должна сжимать значение справа до многоточия. */
+.mx-profile-row[data-testid='profile-row-writing-goal'] .mx-profile-row__value {
+  flex-shrink: 0;
 }
 
 /* Внутренние экраны: значение справа — серое, обычным начертанием. */
@@ -529,6 +534,70 @@ button.mx-profile-row:active {
 
 .mx-profile-option[aria-pressed='true'] * {
   color: inherit;
+}
+
+/* PR3: выбор результата — строки как в фильтрах Прогресса, без карточек. */
+.mx-wtp-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mx-wtp-option {
+  display: flex;
+  width: 100%;
+  height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px 0 17px;
+  border-radius: 16px;
+  background: rgb(var(--c-card2));
+  color: rgb(var(--c-text));
+  font-size: 16px;
+  font-weight: 400;
+  text-align: left;
+}
+
+.mx-wtp-option__check {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1.5px solid rgb(var(--c-border));
+  border-radius: 50%;
+}
+
+.mx-wtp-option[aria-pressed='true'] .mx-wtp-option__check {
+  border: 0;
+  background: rgb(var(--c-white));
+  color: rgb(var(--c-bg));
+}
+
+.mx-wtp-description {
+  margin-top: 12px;
+  padding-inline: 17px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.mx-wtp-save {
+  display: flex;
+  width: 100%;
+  height: 50px;
+  margin-top: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.mx-wtp-save:disabled {
+  opacity: 0.4;
 }
 
 /* Прогресс опроса: пройденные шаги белые, остальные серые. */
