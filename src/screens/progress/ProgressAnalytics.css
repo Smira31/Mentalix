@@ -1,22 +1,50 @@
 /* ── Вкладка «Аналитика» (§5.5 DESIGN_SYSTEM.md, эталон Stoic 25.09.2026, 440 pt) ── */
 
-.mx-progress-segment-bar {
-  position: relative;
+/* Override global .mx-type-page letter-spacing for Progress screens (ШРИФТ) */
+.mx-progress-redesign {
+  letter-spacing: 0;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
-/* Пилюля периода справа в строке сегмента */
+.mx-progress-segment-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 0;
+  background: rgb(var(--c-bg, 5 4 3));
+}
+
+.mx-progress-segment-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.mx-progress-actions-row {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 8px 3px 0 0;
+}
+
+/* Пилюля периода в строке действий (справа) */
 .mx-progress-period-trigger {
-  position: absolute;
-  right: 0;
-  top: 8px;
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 44px;
+  height: 39px;
   padding: 0 14px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
   font-size: 14px;
@@ -31,49 +59,10 @@
 }
 
 .mx-progress-period-trigger__chevron {
-  font-size: 12px;
-  color: rgb(var(--c-muted, 133 133 133));
-}
-
-/* Выпадающее меню периода */
-.mx-progress-period-menu {
-  position: absolute;
-  right: 0;
-  top: 56px;
-  z-index: 30;
-  width: 250px;
-  border-radius: 16px;
-  background: rgb(var(--c-nav, 28 28 28));
-  padding: 6px;
-  box-shadow: var(--shadow-float, 0 8px 32px rgba(0, 0, 0, 0.35));
-  backdrop-filter: blur(12px);
-}
-
-.mx-progress-period-menu__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 44px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 12px;
-  background: transparent;
-  color: rgb(var(--c-text, 243 243 243));
-  font: inherit;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 400;
-  text-align: left;
-  cursor: pointer;
-}
-
-.mx-progress-period-menu__item:active {
-  background: rgb(var(--c-card2, 17 17 17));
-}
-
-.mx-progress-period-menu__check {
-  color: rgb(var(--c-text, 243 243 243));
-  font-size: 16px;
+  line-height: 1;
+  color: rgb(var(--c-muted, 133 133 133));
 }
 
 /* ── Шапка вкладки ── */
@@ -84,10 +73,10 @@
 .mx-progress-analytics__title {
   margin: 0;
   text-align: center;
-  font-size: 34px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
 }
 
@@ -95,13 +84,16 @@
   margin: 10px 0 0;
   text-align: center;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.35;
+  letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243) / 0.8);
 }
 
 .mx-progress-analytics__subtext-empty {
   margin-top: 4px;
+  font-size: 15px;
+  font-weight: 400;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
@@ -111,27 +103,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-height: 180px;
-  padding: 20px 16px 0;
+  min-height: 159px;
+  padding: 15px 16px 0;
   border: 1px solid rgb(var(--c-border, 41 41 41));
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgb(var(--c-bg, 5 4 3));
 }
 
 .mx-progress-mood-card__title {
   margin: 0;
   text-align: center;
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 700;
+  letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-mood-card__hint {
   margin: 6px 0 0;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.35;
+  letter-spacing: 0;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
@@ -139,7 +133,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 7px;
   margin-top: auto;
   margin-bottom: 24px;
 }
@@ -147,11 +141,11 @@
 .mx-progress-mood-card__face {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border: 0;
   border-radius: 999px;
-  background: rgb(var(--c-card3, 46 46 46));
+  background: rgb(var(--c-card2, 17 17 17));
   color: rgb(var(--c-text, 243 243 243));
   cursor: pointer;
   transition: transform 0.15s ease;
@@ -166,21 +160,20 @@
   height: 32px;
 }
 
-/* P2: лица настроения — светлые линии на тёмном круге */
+/* P2: лица настроения — только глаза и рот линией 2px --c-text, без контура лица */
 .mx-progress-redesign__mood-face circle:first-of-type {
   fill: none;
-  stroke: rgba(243, 243, 243, 0.75);
-  stroke-width: 1.5;
+  stroke: none;
 }
 
 .mx-progress-redesign__mood-eye {
-  fill: rgba(243, 243, 243, 0.75);
+  fill: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-redesign__mood-face path {
   fill: none;
-  stroke: rgba(243, 243, 243, 0.75);
-  stroke-width: 1.5;
+  stroke: rgb(var(--c-text, 243 243 243));
+  stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -229,15 +222,15 @@
 
 .mx-progress-need-data__remind {
   margin-top: 16px;
-  min-height: 36px;
-  padding: 0 20px;
-  border: 1px solid rgba(243, 243, 243, 0.15);
+  min-height: 44px;
+  padding: 0 24px;
+  border: 0;
   border-radius: 999px;
-  background: rgba(243, 243, 243, 0.08);
-  color: rgb(var(--c-text, 243 243 243));
+  background: rgb(var(--c-text, 243 243 243));
+  color: rgb(var(--c-bg, 5 4 3));
   font: inherit;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
@@ -248,26 +241,27 @@
 
 /* ── Подпись раздела (ОБЩЕЕ / ЭМОЦИИ / ПРАКТИКИ) ── */
 .mx-progress-section-label {
-  margin: 40px 0 16px;
+  margin: 48px 0 16px;
   text-align: center;
-  font-size: 11px;
+  font-family: 'Manrope', system-ui, sans-serif;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
 .mx-progress-section-label:first-child {
-  margin-top: 24px;
+  margin-top: 48px;
 }
 
 /* ── Карточка ── */
 .mx-progress-card {
   position: relative;
   margin-bottom: 8px;
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgb(var(--c-card2, 17 17 17));
-  padding: 16px;
+  padding: 15px;
 }
 
 .mx-progress-card__head {
@@ -277,22 +271,24 @@
 
 .mx-progress-card__title {
   margin: 0;
-  font-size: 17px;
+  font-size: 20px;
   font-weight: 700;
+  letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-card__subtitle {
   margin: 4px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 400;
+  letter-spacing: 0;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
 .mx-progress-card__menu {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 15px;
+  right: 18px;
   width: 32px;
   height: 32px;
   display: grid;
@@ -301,7 +297,7 @@
   border-radius: 999px;
   background: transparent;
   color: rgb(var(--c-muted, 133 133 133));
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
 }
 
@@ -349,6 +345,77 @@
 .mx-progress-card__empty-hint {
   margin-top: 4px;
   font-size: 11px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── «Твои практики»: пустое состояние — кольцо слева, текст справа (§5.5) ── */
+.mx-progress-practices__empty {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 90px;
+  padding: 8px 0;
+}
+
+.mx-progress-practices__empty-ring {
+  flex-shrink: 0;
+  width: 90px;
+  height: 90px;
+  border-radius: 999px;
+  border: 10px solid rgb(var(--c-card3, 46 46 46));
+}
+
+.mx-progress-practices__empty-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mx-progress-practices__empty-dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgb(var(--c-card3, 46 46 46));
+}
+
+.mx-progress-practices__empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: rgb(var(--c-text, 243 243 243));
+}
+
+.mx-progress-practices__empty-hint {
+  width: 100%;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+/* ── «Что поднимает/опускает»: пустое состояние — по левому краю, без кольца (§5.5) ── */
+.mx-progress-influences__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 0;
+  text-align: left;
+}
+
+.mx-progress-influences__empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-influences__empty-hint {
+  margin-top: 4px;
+  font-size: 15px;
   font-weight: 400;
   line-height: 1.35;
   color: rgb(var(--c-muted, 133 133 133));
@@ -445,16 +512,25 @@
 }
 
 .mx-progress-mood-calendar__dot {
-  width: 15px;
-  height: 15px;
+  width: 13px;
+  height: 13px;
   border-radius: 999px;
-  background: rgb(var(--c-card3, 46 46 46));
+  border: 1.5px solid rgb(var(--c-muted, 133 133 133));
+  background: transparent;
 }
 
 .mx-progress-mood-calendar__wd {
-  font-size: 11px;
-  font-weight: 600;
+  margin-top: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
   color: rgb(var(--c-muted, 133 133 133));
+}
+
+.mx-progress-mood-calendar__line {
+  height: 1px;
+  margin-top: 20px;
+  background: rgb(var(--c-border, 41 41 41));
 }
 
 .mx-progress-mood-calendar__month {
@@ -478,13 +554,14 @@
 
 .mx-progress-mood-calendar__all {
   align-self: flex-end;
-  margin-top: 8px;
+  margin-top: 16px;
   border: 0;
   background: transparent;
-  color: rgb(var(--c-muted, 133 133 133));
+  color: rgb(var(--c-text, 243 243 243));
   font: inherit;
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0;
   cursor: pointer;
 }
 
@@ -681,9 +758,11 @@
   margin: 16px auto 0;
   min-height: 44px;
   padding: 0 24px;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
   font-size: 15px;
@@ -714,13 +793,15 @@
   top: calc(var(--app-safe-top, 0px) + 56px + 8px);
   right: 20px;
   z-index: 101;
-  width: 44px;
-  height: 44px;
+  width: 39px;
+  height: 39px;
   display: grid;
   place-items: center;
-  border: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-text, 243 243 243));
   font: inherit;
   font-size: 18px;
@@ -729,10 +810,10 @@
 
 .mx-progress-customize__title {
   margin: 0;
-  font-size: 34px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
 }
 
@@ -753,10 +834,11 @@
   justify-content: space-between;
   min-height: 52px;
   padding: 0 16px;
-  border-radius: 16px;
+  border-radius: 14px;
   background: rgb(var(--c-card2, 17 17 17));
   color: rgb(var(--c-text, 243 243 243));
   font-size: 16px;
+  letter-spacing: 0;
   cursor: pointer;
   margin-bottom: 2px;
 }
@@ -810,46 +892,59 @@
   outline: 2px solid rgb(var(--c-text));
 }
 
-/* ── Нижняя плавающая пилюля периода ── */
+/* ── Нижняя плавающая пилюля периода (§5.5) ── */
 .mx-progress-bottom-pill-wrapper {
   position: fixed;
   bottom: calc(var(--app-safe-bottom, 0px) + var(--bottom-nav-offset, 8px) + var(--bottom-nav-height, 53px) + 8px);
-  left: 50%;
-  transform: translateX(-50%);
+  left: 18px;
+  right: 18px;
   z-index: 20;
   transition:
-    transform var(--mx-motion-slow) cubic-bezier(0.22, 1, 0.36, 1),
-    opacity var(--mx-motion-slow) ease;
+    bottom 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    left 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    right 200ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 200ms ease;
 }
 
 .mx-progress-bottom-pill-wrapper--hidden {
-  transform: translateX(-50%) translateY(120%);
+  transform: translateY(120%);
   opacity: 0;
   pointer-events: none;
 }
 
+/* Свернутая навигация: пилюля в одну линию с круглой кнопкой слева */
+.mx-progress-bottom-pill-wrapper--collapsed {
+  bottom: calc(var(--app-safe-bottom, 0px) + 19px);
+  left: 75px;
+  right: 25px;
+}
+
 .mx-progress-bottom-pill {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  min-width: 0;
-  height: 50px;
-  padding: 0 14px;
+  width: 100%;
+  height: 42px;
+  padding: 0 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
-  background: rgb(var(--c-card2, 17 17 17));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   box-shadow: var(--shadow-float-compact, 0 6px 26px rgba(0, 0, 0, 0.45));
 }
 
 .mx-progress-bottom-pill__arrow {
   display: grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: rgb(var(--c-muted, 133 133 133));
-  font-size: 16px;
+  color: rgb(var(--c-text, 243 243 243));
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -859,21 +954,27 @@
 }
 
 .mx-progress-bottom-pill__label {
+  flex: 1;
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  white-space: nowrap;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  text-align: center;
 }
 
 .mx-progress-bottom-pill__name {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0;
   color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-bottom-pill__range {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
   color: rgb(var(--c-muted, 133 133 133));
 }
 
@@ -889,10 +990,10 @@
 .mx-progress-full-calendar__title {
   margin: 0;
   text-align: center;
-  font-size: 34px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: rgb(var(--c-text, 243 243 243));
 }
 

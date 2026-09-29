@@ -4,7 +4,10 @@
   max-width: var(--bottom-nav-collapsed-size) !important;
   height: var(--bottom-nav-collapsed-size) !important;
   border-radius: 50% !important;
-  background: rgb(var(--c-nav) / 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--mx-glass-bg) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
 }
 
 .mx-bottom-nav__restore {
@@ -35,9 +38,11 @@
   width: calc(100vw - (2 * var(--bottom-nav-edge))) !important;
   max-width: 400px !important;
   height: var(--bottom-nav-height) !important;
-  border: 1px solid rgb(var(--c-nav-border)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: var(--mx-radius-pill) !important;
-  background: rgb(var(--c-nav)) !important;
+  background: var(--mx-glass-bg) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
   box-shadow: var(--shadow-float) !important;
 }
 
@@ -129,10 +134,11 @@
   height: 54px !important;
   border-radius: 0 !important;
   border: none !important;
-  border-top: 1px solid #1f1f1f !important;
-  background: #121212 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--mx-glass-bg) !important;
   box-shadow: none !important;
-  backdrop-filter: none !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
 }
 
 /* В демо-фрейме компактная кнопка сохраняет то же поведение. */
@@ -145,11 +151,12 @@
   width: var(--bottom-nav-collapsed-size) !important;
   max-width: var(--bottom-nav-collapsed-size) !important;
   height: var(--bottom-nav-collapsed-size) !important;
-  border: 1px solid rgb(var(--c-nav-border)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-radius: 50% !important;
-  background: rgb(var(--c-nav) / 0.82) !important;
+  background: var(--mx-glass-bg) !important;
   box-shadow: var(--shadow-float) !important;
-  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+  backdrop-filter: blur(20px) saturate(160%) !important;
 }
 
 /* Кнопки-вкладки на полноширинной полосе */

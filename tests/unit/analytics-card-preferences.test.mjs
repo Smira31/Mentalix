@@ -23,7 +23,7 @@ test('hidden card can be restored and custom order survives reloading', () => {
   const restored = { ...readCardPreferences(storage), hidden: [] }
   writeCardPreferences({ ...restored, order: moveCard(restored.order, 'up', -1) }, storage)
   assert(readCardPreferences(storage).order.filter(id => !readCardPreferences(storage).hidden.includes(id)).includes('up'))
-  assert.equal(readCardPreferences(storage).order.indexOf('up'), 1)
+  assert.equal(readCardPreferences(storage).order.indexOf('up'), 2)
   assert(memory.has(ANALYTICS_CARDS_KEY))
 })
 
@@ -36,7 +36,7 @@ test('unavailable storage and malformed preferences use default order', () => {
   assert.doesNotThrow(() => writeCardPreferences({ order: [], hidden: [] }, blocked))
   // Старые/неизвестные id (trend, unknown) игнорируются; известные сохраняются
   const normalized = normalizeCardPreferences({ order: ['trend', 'calendar', 'unknown'], hidden: ['unknown', 'trend'] })
-  assert.deepEqual(normalized.order.slice(0, 2), ['calendar', 'emotions'])
+  assert.deepEqual(normalized.order.slice(0, 2), ['calendar', 'practices'])
   assert.deepEqual(normalized.hidden, [])
 })
 

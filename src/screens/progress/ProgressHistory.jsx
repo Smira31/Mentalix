@@ -1,6 +1,27 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Filter, MoreHorizontal, RotateCcw, Search, Trash2 } from 'lucide-react'
+import { MoreHorizontal, RotateCcw, Search, Sparkles, Trash2 } from 'lucide-react'
+
+/** Иконка фильтра — три горизонтальные линии убывающей длины (как Stoic). */
+function FilterIcon({ size = 20, ...rest }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      aria-hidden="true"
+      {...rest}
+    >
+      <line x1="3" y1="6" x2="17" y2="6" />
+      <line x1="3" y1="10" x2="13" y2="10" />
+      <line x1="3" y1="14" x2="9" y2="14" />
+    </svg>
+  )
+}
 
 import { api } from '../../lib/api'
 import { platform, platformName } from '../../platform'
@@ -104,6 +125,11 @@ function EntryScreen({
   const [menuOpen, setMenuOpen] = useState(false)
   const [redoConfirm, setRedoConfirm] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [aiSheetOpen, setAiSheetOpen] = useState(false)
+
+  useBackButton(() => {
+    setAiSheetOpen(false)
+  }, aiSheetOpen)
 
   const isToday = entry.date === todayIso()
   const checkin = entry.checkin
@@ -114,16 +140,8 @@ function EntryScreen({
 
   return (
     <div className="mx-progress-entry animate-fade-in" data-testid="progress-entry-screen">
-      <ScreenBack onBack={onBack} />
-      <div className="mx-progress-entry__heading">
-        <div>
-          <div className="mx-progress-entry__date" data-testid="progress-entry-date">
-            {formatEntryDateCaps(entry.date, entry.time)}
-          </div>
-          <h2 className="mx-progress-entry__title" data-testid="progress-entry-title">
-            {entryScreenTitle(entry.type)}
-          </h2>
-        </div>
+      <div className="mx-progress-entry__top-row">
+        <ScreenBack onBack={onBack} className="mx-progress-entry__back" />
         {(canRedoMorning || canRedoEvening || canDelete) && (
           <div style={{ position: 'relative' }}>
             <button
@@ -136,56 +154,91 @@ function EntryScreen({
               <MoreHorizontal size={20} aria-hidden="true" />
             </button>
             {menuOpen && (
-              <ProgressGlassMenu
-                role="menu"
-                data-testid="progress-entry-menu"
-                style={{ position: 'absolute', right: 0, top: '100%' }}
-              >
-                {canRedoMorning && (
-                  <ProgressGlassMenuItem
-                    icon={RotateCcw}
-                    label="Пройти утро заново"
-                    onClick={() => {
-                      setMenuOpen(false)
-                      setRedoConfirm('morning')
-                    }}
-                  />
-                )}
-                {canRedoEvening && (
-                  <ProgressGlassMenuItem
-                    icon={RotateCcw}
-                    label="Пройти разбор заново"
-                    onClick={() => {
-                      setMenuOpen(false)
-                      setRedoConfirm('evening')
-                    }}
-                  />
-                )}
-                {canDelete && (
-                  <ProgressGlassMenuItem
-                    icon={Trash2}
-                    label="Удалить"
-                    danger
-                    onClick={() => {
-                      setMenuOpen(false)
-                      setDeleteConfirm(true)
-                    }}
-                  />
-                )}
-              </ProgressGlassMenu>
+              <>
+                <div
+                  className="mx-progress-menu-overlay"
+                  onClick={() => setMenuOpen(false)}
+                  aria-hidden="true"
+                />
+                <ProgressGlassMenu
+                  role="menu"
+                  data-testid="progress-entry-menu"
+                  style={{ position: 'absolute', right: 0, top: '100%' }}
+                >
+                  {checkin && (
+                    <ProgressGlassMenuItem
+                      icon={Sparkles}
+                      label="AI и эта запись"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        setAiSheetOpen(true)
+                      }}
+                    />
+                  )}
+                  {canRedoMorning && (
+                    <ProgressGlassMenuItem
+                      icon={RotateCcw}
+                      label="Пройти заново"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        setRedoConfirm('morning')
+                      }}
+                    />
+                  )}
+                  {canRedoEvening && (
+                    <ProgressGlassMenuItem
+                      icon={RotateCcw}
+                      label="Пройти заново"
+                      onClick={() => {
+                        setMenuOpen(false)
+                        setRedoConfirm('evening')
+                      }}
+                    />
+                  )}
+                  {canDelete && (
+                    <ProgressGlassMenuItem
+                      icon={Trash2}
+                      label="Удалить"
+                      danger
+                      onClick={() => {
+                        setMenuOpen(false)
+                        setDeleteConfirm(true)
+                      }}
+                    />
+                  )}
+                </ProgressGlassMenu>
+              </>
             )}
           </div>
         )}
+      </div>
+
+      <div>
+        <div className="mx-progress-entry__date" data-testid="progress-entry-date">
+          {formatEntryDateCaps(entry.date, entry.time)}
+        </div>
+        <h2 className="mx-progress-entry__title" data-testid="progress-entry-title">
+          {entryScreenTitle(entry.type)}
+        </h2>
       </div>
 
       <div className="mx-progress-entry__body">
         <EntryBody entry={entry} />
       </div>
 
-      {/* AI-контекст — только для чек-инов */}
-      {checkin && (
-        <div className="mx-progress-entry__ai-section">
-          <h3 className="mx-progress-entry__ai-title">Эта запись и AI</h3>
+      {/* AI-лист — открывается из меню «…» */}
+      {aiSheetOpen && checkin && (
+        <div className="mx-progress-ai-sheet" data-testid="progress-ai-sheet">
+          <button
+            type="button"
+            className="mx-progress-ai-sheet__close"
+            aria-label="Закрыть"
+            data-testid="progress-ai-sheet-close"
+            onClick={() => setAiSheetOpen(false)}
+          >
+            ✕
+          </button>
+          <h2 className="mx-progress-ai-sheet__title">AI и эта запись</h2>
           <p className="mx-progress-entry__ai-desc">
             AI получает запись только после этого выбора и только при включённом персональном
             контексте в «Наставнике». Неотмеченные записи ему не передаются.
@@ -225,23 +278,6 @@ function EntryScreen({
               Включи персональный контекст выше, чтобы обсудить эту запись с AI.
             </p>
           )}
-          <p className="mx-progress-entry__delete-hint">
-            Удаление необратимо: исчезнет только этот чек-ин и его личные теги. Активность ритуалов
-            за день сохранится.
-          </p>
-          <button
-            type="button"
-            onClick={() => setDeleteConfirm(true)}
-            disabled={deleting}
-            className="mx-progress-entry__delete-button"
-          >
-            {deleting ? 'Удаляем…' : 'Удалить эту запись'}
-          </button>
-          {deleteError && (
-            <p role="alert" className="mx-progress-entry__error">
-              {deleteError}
-            </p>
-          )}
         </div>
       )}
 
@@ -259,7 +295,7 @@ function EntryScreen({
               Удалить запись?
             </h2>
             <p id="delete-confirm-desc" className="mx-progress-entry__confirm-desc">
-              Это нельзя отменить.
+              Это действие необратимо: запись исчезнет навсегда.
             </p>
             <div className="mx-progress-entry__confirm-buttons">
               <button
@@ -458,6 +494,31 @@ function entryMoodChip(entry) {
   return null
 }
 
+function entryPreview(entry) {
+  const moodChip = entryMoodChip(entry)
+  if (moodChip) {
+    return (
+      <span className="mx-progress-history__row-chip" aria-hidden="true">
+        <span
+          className="mx-progress-history__row-chip-dot"
+          style={{ background: moodColor(moodChip.mood) }}
+        />
+        {moodChip.text}
+      </span>
+    )
+  }
+  if (entry.type === ENTRY_TYPES.JOURNAL && entry.journal?.phases?.length) {
+    const phase = entry.journal.phases[0]
+    return (
+      <div className="mx-progress-history__row-preview-text">
+        <span className="mx-progress-history__row-preview-q">{phase.label}</span>
+        <span className="mx-progress-history__row-preview-a">{phase.text}</span>
+      </div>
+    )
+  }
+  return null
+}
+
 function DayList({ days, onSelectEntry }) {
   return days.map(day => (
     <div className="mx-progress-history__group" key={day.date}>
@@ -468,7 +529,7 @@ function DayList({ days, onSelectEntry }) {
         </span>
       </div>
       {day.entries.map((entry, index) => {
-        const moodChip = entryMoodChip(entry)
+        const preview = entryPreview(entry)
         return (
           <button
             type="button"
@@ -477,19 +538,13 @@ function DayList({ days, onSelectEntry }) {
             data-testid="progress-history-row"
             onClick={() => onSelectEntry(entry)}
           >
-            <span className="mx-progress-history__row-left">
+            <div className="mx-progress-history__row-top">
               <span className="mx-progress-history__row-name">{entryListName(entry.type)}</span>
-              {moodChip && (
-                <span className="mx-progress-history__row-mood" aria-hidden="true">
-                  <span
-                    className="mx-progress-history__row-mood-dot"
-                    style={{ background: moodColor(moodChip.mood) }}
-                  />
-                  {moodChip.text}
-                </span>
-              )}
-            </span>
-            {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+              {entry.time && <span className="mx-progress-history__row-time">{entry.time}</span>}
+            </div>
+            {preview && (
+              <div className="mx-progress-history__row-preview">{preview}</div>
+            )}
           </button>
         )
       })}
@@ -560,7 +615,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
 
   // ── Портал кнопок в сегмент-бар ──
   useEffect(() => {
-    const el = document.querySelector('.mx-progress-segment-bar')
+    const el = document.querySelector('.mx-progress-actions-row')
     if (el) setPortalTarget(el)
   }, [])
 
@@ -765,7 +820,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
               setFilterOpen(true)
             }}
           >
-            <Filter size={20} aria-hidden="true" />
+            <FilterIcon size={20} />
           </button>
           <button
             type="button"
@@ -794,7 +849,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
             role="menu"
             aria-label="Группировка истории"
             data-testid="history-grouping-menu"
-            style={{ position: 'absolute', right: 0, top: '108px' }}
+            style={{ position: 'absolute', right: 0, top: '100%' }}
           >
             {HISTORY_GRANULARITIES.map(g => (
               <ProgressGlassMenuItem
