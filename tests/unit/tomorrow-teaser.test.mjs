@@ -34,7 +34,7 @@ test('(а) 4 чек-ина → завтра 5-й, значок «Голос ус
   assert.equal(teaser, 'Завтра — 5-й день подряд и новый значок')
 })
 
-test('(а) 6 уникальных дней → завтра 7-й, значок «Неделя пути»', () => {
+test('(а) 6 дней в системе → завтра 7-й, значок «Неделя пути»', () => {
   const checkins = [
     makeCheckin(-5),
     makeCheckin(-4),
@@ -43,13 +43,13 @@ test('(а) 6 уникальных дней → завтра 7-й, значок �
     makeCheckin(-1),
     makeCheckin(0),
   ]
-  const teaser = buildTomorrowTeaser({ streak: 6, checkins, isEvening: false })
+  const teaser = buildTomorrowTeaser({ streak: 6, checkins, isEvening: false, registrationDays: 6 })
   assert.equal(teaser, 'Завтра — 7-й день подряд и новый значок')
 })
 
-test('(а) 29 уникальных дней → завтра 30-й, значок «Месяц пути»', () => {
+test('(а) 29 дней в системе → завтра 30-й, значок «Месяц пути»', () => {
   const checkins = Array.from({ length: 29 }, (_, i) => makeCheckin(i - 28))
-  const teaser = buildTomorrowTeaser({ streak: 29, checkins, isEvening: false })
+  const teaser = buildTomorrowTeaser({ streak: 29, checkins, isEvening: false, registrationDays: 29 })
   assert.equal(teaser, 'Завтра — 30-й день подряд и новый значок')
 })
 

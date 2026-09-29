@@ -1,10 +1,13 @@
 // Вехи пути считаются из того же view-model, что и чип серии и статистика.
 
-export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas = [] } = {}) {
+export function buildBadges({ stats = {}, checkins = [], rituals = [], ascezas = [], registrationDays = null } = {}) {
   const bestRitual = Math.max(0, ...rituals.map(ritual => Number(ritual?.streak) || 0))
   const bestAsceza = Math.max(0, ...ascezas.map(asceza => Number(asceza?.streak) || 0))
   const checkinsCount = Math.max(checkins.length, Number(stats.total_checkins) || 0)
-  const days = Number(stats.days_active) || 0
+  // «Дни в системе» — календарные дни от даты регистрации (включая первый день),
+  // а не дни с активностью. daysSinceRegistration возвращает null при отсутствии
+  // даты регистрации — в этом случае прогресс значков пути равен 0.
+  const days = registrationDays ?? 0
   const bestStreak = Number(stats.best_streak) || 0
 
   return [

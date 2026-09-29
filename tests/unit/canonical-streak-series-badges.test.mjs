@@ -77,7 +77,7 @@ test('serverSeriesBadges: значки серии берут пороги из �
 test('canonical network error and loading retain legacy stats without blocking badges', () => {
   assert.match(source, /api\.streak\(user\.id\)[\s\S]*?\.catch\(\(\) => \{\s*if \(active\) setCanonicalStats\(\{ userId: user\.id, value: null \}\)/)
   assert.match(source, /canonicalStats\?\.userId === user\.id \? canonicalStats\.value : null/)
-  assert.match(source, /const next = buildServerSeriesViewModel\(\{ stats, checkins, rituals, ascezas \}\)/)
+  assert.match(source, /const next = buildServerSeriesViewModel\(\{ stats, checkins, rituals, ascezas, registrationDays/)
   assert.match(source, /badges: serverBadges/)
   // «Дней с чек-ином» берётся из канонической серии, а не из view-model без неё.
   assert.match(source, /\['Дней с чек-ином', activeDays \?\? model\.activeDays\]/)

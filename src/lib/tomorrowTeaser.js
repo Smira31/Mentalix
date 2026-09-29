@@ -55,6 +55,7 @@ export function buildTomorrowTeaser({
   rituals,
   ascezas,
   isEvening = false,
+  registrationDays = null,
 } = {}) {
   // ── (а) значок серии через 1 день ──
   const completed = checkins.filter(isCompletedCheckin)
@@ -64,6 +65,7 @@ export function buildTomorrowTeaser({
     checkins: completed,
     rituals: rituals || [],
     ascezas: ascezas || [],
+    registrationDays,
   })
   const upcoming = findUpcomingBadge(badges)
   if (upcoming && streak > 0) {
