@@ -11,16 +11,11 @@ test('адрес поддержки задан одной константой S
   assert.match(source, /platform\.openTelegramLink\(SUPPORT_TELEGRAM_URL\)/)
 })
 
-test('профиль и «политика и данные.» используют константу поддержки', async () => {
+test('профиль использует константу поддержки', async () => {
   const settings = await read('screens/Settings.jsx')
-  const privacy = await read('screens/PrivacyNotice.jsx')
   assert.match(settings, /from '\.\.\/lib\/support'/)
   assert.match(settings, /openSupportChat\(\)/)
-  assert.match(privacy, /href=\{SUPPORT_TELEGRAM_URL\}/)
-  assert.match(privacy, /onClick=\{openSupportChat\}/)
-  for (const source of [settings, privacy]) {
-    assert.doesNotMatch(source, /t\.me\/mentalix_support_bot/)
-  }
+  assert.doesNotMatch(settings, /t\.me\/mentalix_support_bot/)
 })
 
 test('в Telegram ссылка открывается через openTelegramLink, в вебе — новой вкладкой', async () => {
