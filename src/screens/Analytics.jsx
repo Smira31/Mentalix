@@ -1096,37 +1096,57 @@ export default function Analytics({
             <NeedDataPlaque daysWithRecords={daysWithRecords} onRemind={onOpenNotifications} />
           )}
 
-          {cardPreferences.order
-            .filter(
-              id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)
-            )
-            .map((id, index, visible) => {
-              const card = ANALYTICS_CARDS.find(item => item.id === id)
-              const previous = ANALYTICS_CARDS.find(item => item.id === visible[index - 1])
-              return (
-                <div key={id}>
-                  {card.section !== previous?.section && (
-                    <SectionLabel>{card.section}</SectionLabel>
-                  )}
-                  <CardActions.Provider
-                    value={{
-                      id,
-                      openId: openCardMenu,
-                      setOpenId: setOpenCardMenu,
-                      hide: toggleCard,
-                    }}
-                  >
-                    {cards[id]}
-                  </CardActions.Provider>
-                </div>
+          {cardPreferences.order.filter(
+            id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)
+          ).length === 0 ? (
+            <div className="mx-progress-card__empty" data-testid="progress-all-charts-hidden">
+              <div className="mx-progress-card__empty-ring" aria-hidden="true" />
+              <span className="mx-progress-card__empty-title">Все графики скрыты</span>
+              <span className="mx-progress-card__empty-hint">
+                Включи графики, чтобы снова видеть аналитику
+              </span>
+              <button
+                type="button"
+                className="mx-progress-need-data__remind"
+                data-testid="progress-customize-empty-trigger"
+                onClick={() => setView('customize')}
+              >
+                Настроить
+              </button>
+            </div>
+          ) : (
+            cardPreferences.order
+              .filter(
+                id => !cardPreferences.hidden.includes(id) && ANALYTICS_CARDS.some(c => c.id === id)
               )
-            })}
+              .map((id, index, visible) => {
+                const card = ANALYTICS_CARDS.find(item => item.id === id)
+                const previous = ANALYTICS_CARDS.find(item => item.id === visible[index - 1])
+                return (
+                  <div key={id}>
+                    {card.section !== previous?.section && (
+                      <SectionLabel>{card.section}</SectionLabel>
+                    )}
+                    <CardActions.Provider
+                      value={{
+                        id,
+                        openId: openCardMenu,
+                        setOpenId: setOpenCardMenu,
+                        hide: toggleCard,
+                      }}
+                    >
+                      {cards[id]}
+                    </CardActions.Provider>
+                  </div>
+                )
+              })
+          )}
 
           {/* Пилюля «Настроить» в потоке контента */}
           <button
             type="button"
             className="mx-progress-customize-pill"
-            data-testid="progress-customize-trigger"
+            data-testid="progress-customize-pill"
             onClick={() => setView('customize')}
           >
             ✎ Настроить
@@ -1147,6 +1167,7 @@ export default function Analytics({
           onNext={handleNext}
           canNext={offset > 0}
           hidden={navCollapsed}
+          onCustomize={() => setView('customize')}
         />
       )}
 

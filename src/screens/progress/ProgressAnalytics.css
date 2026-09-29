@@ -828,6 +828,26 @@
   pointer-events: none;
 }
 
+/* FAB-кнопка «Настроить» рядом с пилюлей периода */
+.mx-progress-customize-fab {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+  box-shadow: var(--shadow-float-compact, 0 6px 26px rgba(0, 0, 0, 0.45));
+  color: rgb(var(--c-text, 243 243 243));
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mx-progress-customize-fab:active {
+  transform: scale(0.92);
+}
+
 .mx-progress-bottom-pill {
   display: inline-flex;
   align-items: center;
