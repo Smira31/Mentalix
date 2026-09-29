@@ -4,6 +4,7 @@ import { platform } from '../platform'
 import { fetchPracticesData, peekPracticesData } from '../lib/practicesDataCache'
 import { fetchThemesData, peekThemesData } from '../lib/themesDataCache'
 import { buildPracticeViewModels } from '../lib/practiceCatalogRegistry'
+import { previewPracticeAction } from '../lib/demoMode'
 
 import PracticeCatalogV2 from '../components/PracticeCatalogV2'
 
@@ -41,7 +42,13 @@ function PracticesCatalogLoading() {
 }
 
 export default function Practices({ user, initialSub = null, onGameChange, onRegisterBack }) {
-  const [sub, setSub] = useState(initialSub)
+  const [sub, setSub] = useState(() => {
+    if (initialSub) return initialSub
+    const action = previewPracticeAction()
+    if (action === 'rituals_list' || action === 'ritual_detail') return 'rituals'
+    if (action === 'ascezas_list' || action === 'asceza_detail') return 'ascezas'
+    return null
+  })
   const [selectedCollectionKey, setSelectedCollectionKey] = useState(null)
 
   const returnToPracticeOrigin = () => setSub(null)

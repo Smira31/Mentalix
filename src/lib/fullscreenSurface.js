@@ -66,7 +66,7 @@ export const FULLSCREEN_HEADER_SLOT_CLASS = 'h-[52px] shrink-0'
  * ничего не обрезается.
  */
 export const FULLSCREEN_SCROLL_CLASS =
-  'w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
+  'mx-fullscreen-scroll w-full flex-1 min-h-0 flex flex-col overflow-y-auto overscroll-contain scroll-pb-6'
 
 export function getFullscreenPortalTarget() {
   if (typeof document === 'undefined') return null
