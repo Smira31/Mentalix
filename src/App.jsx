@@ -38,6 +38,7 @@ import {
   DEMO_GUEST_USER,
   previewSeriesAction,
   isProfileDemoRequested,
+  previewProfileAction,
 } from './lib/demoMode'
 import { installDemoPressFeedback } from './lib/demoPressFeedback'
 import { shouldRenderDemoTelegramChrome } from './lib/demoChrome'
@@ -279,7 +280,9 @@ function App() {
   }, [])
 
   // ?demo=1&action=profile — превью-ссылка прямо на «твой профиль.»
-  const [overlay, setOverlay] = useState(isProfileDemoRequested() ? 'settings' : null)
+  const [overlay, setOverlay] = useState(
+    isProfileDemoRequested() || previewProfileAction() ? 'settings' : null
+  )
 
   const [fullscreen, setFullscreen] = useState(false)
 

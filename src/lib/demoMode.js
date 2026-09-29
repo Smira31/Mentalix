@@ -207,6 +207,13 @@ export function isProfileDemoRequested() {
   )
 }
 
+/* Внутренние экраны профиля доступны владельцу по прямой демо-ссылке. */
+export function previewProfileAction() {
+  if (!isPreviewDemoMode()) return null
+  const action = new URLSearchParams(window.location.search).get('action')
+  return ['profile_checkins', 'profile_about', 'profile_wtp'].includes(action) ? action : null
+}
+
 /*
  * Прямые превью-ссылки на экраны завершения чек-ина — чтобы владелец
  * проверял финальные экраны без прохождения всего потока:
