@@ -10,29 +10,23 @@
 // aria-hidden: рядом есть текст, рисунок декоративный.
 
 export function PotentialLockArt() {
-  // Замок справа: корпус x 280–388, y 122 → ниже нижнего края (обрезан);
-  // дужка x 306–387, верх y 67, линия 5 pt, левый конец не доходит до корпуса.
-  // viewBox = локальные координаты замка (108×200), позиционирование в CSS.
+  // Замок справа внизу, обрезан нижним краем карточки.
+  // viewBox в абсолютных координатах карточки (440 pt), 128×172 pt.
   return (
     <svg
       className="mx-profile-banner__art mx-profile-banner__art--lock"
-      viewBox="0 0 108 200"
+      viewBox="280 55 128 172"
+      width="128"
+      height="172"
       aria-hidden="true"
       focusable="false"
     >
-      {/* Дужка открыта: правое плечо уходит в корпус, левое приподнято. */}
-      <path
-        d="M 107 55 V 25 C 107 10 90 0 66.5 0 C 43 0 26 10 26 25 V 38"
-        fill="none"
-        stroke="#3a3a3a"
-        strokeWidth="5"
-        strokeLinecap="round"
-      />
-      {/* Корпус — плоская заливка, уходит за нижний край (обрезан). */}
-      <rect x="0" y="55" width="108" height="145" rx="14" fill="#444444" />
-      {/* Скважина: тёмный круг + черта. */}
-      <circle cx="54" cy="75" r="8" fill="#141414" />
-      <rect x="51" y="79" width="6" height="20" rx="3" fill="#141414" />
+      <path d="M306 108 L312 86 C318 66 340 60 356 63 C373 67 385 80 384 100 L379 146" fill="none" stroke="#3a3a3a" strokeWidth="5" strokeLinecap="round" />
+      <g transform="translate(330 178) rotate(14) translate(-50 -45)">
+        <path d="M0 0 H100 V45 A50 50 0 0 1 0 45 Z" fill="#444" />
+        <circle cx="50" cy="42" r="8" fill="#161616" />
+        <line x1="50" y1="46" x2="50" y2="64" stroke="#161616" strokeWidth="5" strokeLinecap="round" />
+      </g>
     </svg>
   )
 }
@@ -62,35 +56,21 @@ export function SupportGiftArt() {
 }
 
 export function ProfileFeatherArt() {
-  // Перо маленькое, только в зоне x 290–408, y 0–80. Лист ≈ 70×34 pt,
-  // верх обрезан краем, кончик в (293, 42), наклон вверх-вправо.
-  // viewBox = локальные координаты зоны (118×80), позиционирование в CSS.
+  // Перо справа сверху, обрезано верхним краем карточки.
+  // viewBox в абсолютных координатах карточки (440 pt), 123×85 pt.
   return (
     <svg
       className="mx-profile-banner__art mx-profile-banner__art--feather"
-      viewBox="0 0 118 80"
+      viewBox="285 0 123 85"
+      width="123"
+      height="85"
       aria-hidden="true"
       focusable="false"
     >
-      {/* Лист пера — светло-серая заливка, верх обрезан краем карточки. */}
-      <path d="M 3 42 C 18 30 45 15 70 2 C 58 22 33 36 3 42 Z" fill="#D0D0D0" />
-      {/* Тёмные прожилки. */}
-      <path d="M 4 41 L 69 3" stroke="#141414" strokeWidth="2" fill="none" />
-      <path
-        d="M 25 32 L 18 24 M 40 24 L 33 16 M 55 16 L 48 8"
-        stroke="#141414"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      {/* От кончика — линия 2 pt #D0D0D0: вправо на y ≈ 56, петля около
-          x 70–83 / y 37–67, затем вниз-вправо за край на y ≈ 77. */}
-      <path
-        d="M 3 42 Q 28 54 55 56 C 64 57 68 40 73 48 C 78 56 76 66 74 62 C 80 70 95 74 118 77"
-        fill="none"
-        stroke="#D0D0D0"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+      <path d="M293 42 C312 54 340 58 358 50 C372 44 378 30 372 24 C364 18 355 30 358 44 C362 62 385 75 410 78" fill="none" stroke="#D0D0D0" strokeWidth="2" strokeLinecap="round" />
+      <path d="M293 42 C300 20 322 4 350 -4 L374 -4 C376 8 367 20 351 28 C331 38 311 42 293 42 Z" fill="#D0D0D0" />
+      <path d="M297 40 C316 30 336 18 362 2" fill="none" stroke="#202020" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M319 29 L315 19 M334 21 L331 11 M349 12 L347 3" fill="none" stroke="#202020" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   )
 }
