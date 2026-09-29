@@ -761,6 +761,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
             aria-label="Фильтры"
             onClick={() => {
               platform.haptic('light')
+              setGranularityMenuOpen(false)
               setFilterOpen(true)
             }}
           >
@@ -773,6 +774,7 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
             aria-label="Поиск"
             onClick={() => {
               platform.haptic('light')
+              setGranularityMenuOpen(false)
               setSearchOpen(true)
             }}
           >
@@ -895,28 +897,48 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
 
   /* ── Пустое состояние ── */
   if (filteredDays.length === 0) {
+    const hasFilter = filterTypes.size > 0
     return (
       <>
         {actionButtons}
         <div className="mx-progress-history">
           <h2 className="mx-progress-history__title">история.</h2>
           <div className="mx-progress-history__empty">
-            <div className="mx-progress-history__empty-title">
-              {days.length === 0 ? 'Здесь появятся твои записи' : 'Ничего не найдено'}
-            </div>
-            <div className="mx-progress-history__empty-subtitle">
-              {days.length === 0
-                ? 'Пройди чек-ин или отметь настроение — и здесь появится первая запись.'
-                : 'Измени фильтр, чтобы увидеть записи.'}
-            </div>
-            {days.length === 0 && onGoCheckin && (
-              <button
-                type="button"
-                className="mx-progress-history__empty-button"
-                onClick={onGoCheckin}
-              >
-                Пройти чек-ин
-              </button>
+            {days.length === 0 ? (
+              <>
+                <div className="mx-progress-history__empty-title">
+                  Здесь появятся твои записи
+                </div>
+                <div className="mx-progress-history__empty-subtitle">
+                  Пройди чек-ин или отметь настроение — и здесь появится первая запись.
+                </div>
+                {onGoCheckin && (
+                  <button
+                    type="button"
+                    className="mx-progress-history__empty-button"
+                    onClick={onGoCheckin}
+                  >
+                    Пройти чек-ин
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="mx-progress-history__empty-title">Нет записей по фильтру</div>
+                {hasFilter && (
+                  <button
+                    type="button"
+                    className="mx-progress-history__empty-button"
+                    data-testid="history-reset-filter"
+                    onClick={() => {
+                      platform.haptic('light')
+                      setFilterTypes(new Set())
+                    }}
+                  >
+                    Сбросить фильтр
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -940,7 +962,8 @@ export default function ProgressHistory({ user, onGoCheckin, onRedo, onRedoRevie
               {group.cards.map(card => (
                 <PeriodCard
                   key={card.startDate}
-                  title={`${card.rangeLabel} · Неделя`}
+                  rangeLabel={card.rangeLabel}
+                  title={`Неделя ${card.weekNumber}`}
                   testId="history-week-card"
                   onClick={() => openPeriod(card)}
                 />

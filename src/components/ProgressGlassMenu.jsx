@@ -39,13 +39,13 @@ export function ProgressGlassMenuItem({
       onClick={onClick}
       {...rest}
     >
-      {Icon && <Icon size={18} className="mx-progress-glass-menu__icon" aria-hidden="true" />}
-      <span className="mx-progress-glass-menu__label">{label}</span>
       {selected && (
         <span className="mx-progress-glass-menu__check" aria-hidden="true">
           ✓
         </span>
       )}
+      {Icon && <Icon size={18} className="mx-progress-glass-menu__icon" aria-hidden="true" />}
+      <span className="mx-progress-glass-menu__label">{label}</span>
     </button>
   )
 }
