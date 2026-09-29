@@ -211,7 +211,7 @@ export function isProfileDemoRequested() {
 export function previewProfileAction() {
   if (!isPreviewDemoMode()) return null
   const action = new URLSearchParams(window.location.search).get('action')
-  return ['profile_checkins', 'profile_about', 'profile_wtp'].includes(action) ? action : null
+  return ['profile_checkins', 'profile_about', 'profile_wtp', 'privacy'].includes(action) ? action : null
 }
 
 /*

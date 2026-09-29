@@ -61,6 +61,7 @@ const ThemeScreen = lazyWithRetry(() => import('./ThemeScreen'))
 const ThemeCarouselScreen = lazyWithRetry(() => import('./ThemeCarouselScreen'))
 const History = lazyWithRetry(() => import('./History'))
 const QuoteView = lazyWithRetry(() => import('./QuoteView'))
+const DailyThoughtScreen = lazyWithRetry(() => import('./DailyThoughtScreen'))
 const BreathingPractice = lazyWithRetry(() => import('./BreathingPractice'))
 const StreakRecovery = lazyWithRetry(() => import('./StreakRecovery'))
 const SeriesBadges = lazyWithRetry(() => import('./SeriesBadges'))
@@ -258,6 +259,7 @@ export default function Today({
   onOpenSettings,
   onOpenDemoPanel,
   onOpenSeries,
+  onGoMentor,
   seriesOpen = false,
   onCloseSeries,
   previewFixture = null,
@@ -919,6 +921,24 @@ export default function Today({
   }
 
   // ============================================================
+  // МЫСЛЬ ДНЯ — Stoic-экран (без загрузки, текст уже в карточке)
+  // ============================================================
+
+  if (sub === 'dailyThought') {
+    return (
+      <SubScreenBoundary resetKey="dailyThought" onExit={() => changeSub(null)}>
+        <Suspense fallback={null}>
+          <DailyThoughtScreen
+            thought={thoughtOfDay}
+            onClose={() => changeSub(null)}
+            onGoMentor={onGoMentor}
+          />
+        </Suspense>
+      </SubScreenBoundary>
+    )
+  }
+
+  // ============================================================
   // ПУТЬ / ИСТОРИЯ
   // ============================================================
 
@@ -1520,7 +1540,7 @@ export default function Today({
           onClick={() => {
             platform.haptic('light')
 
-            changeSub('quote')
+            changeSub('dailyThought')
           }}
           data-testid="today-quote-card"
           className="mx-today-affirmation-card w-full px-[var(--mx-screen-x)] py-6 mt-5 text-center animate-fade-in border-0 active:scale-[0.99] transition-transform"

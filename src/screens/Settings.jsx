@@ -441,9 +441,12 @@ export default function Settings({
     setScreen('app-lock-setup')
   }
 
-  const [screen, setScreen] = useState(() =>
-    previewProfileAction() === 'profile_wtp' ? 'wtp-test' : null
-  ) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
+  const [screen, setScreen] = useState(() => {
+    const action = previewProfileAction()
+    if (action === 'profile_wtp') return 'wtp-test'
+    if (action === 'privacy') return 'privacy-notice'
+    return null
+  }) // null | 'quotes' | 'subscription' | 'donate' | 'link-web' | 'privacy-notice' | 'app-lock-setup' | 'wtp-test'
   // null — тариф ещё не загружен: «подписка.» показывает скелетон.
   const [tier, setTier] = useState(null)
   // Под-экран профиля: null — корень «твой профиль.».
@@ -1106,7 +1109,7 @@ export default function Settings({
 
         <ProfileGroup label="Приложение">
           <ProfileCard>
-            <ProfileRow title="Конфиденциальность" onClick={() => setScreen('privacy-notice')} />
+            <ProfileRow title="Политика конфиденциальности" onClick={() => setScreen('privacy-notice')} />
           </ProfileCard>
         </ProfileGroup>
 
