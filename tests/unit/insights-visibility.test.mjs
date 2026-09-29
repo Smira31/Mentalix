@@ -23,8 +23,8 @@ test('Settings persists descriptive Insights visibility with owner settings cont
 
 test('opt-out explains that deterministic observations are hidden without deleting data', () => {
   assert.match(normalizedSettings, /Описательные наблюдения скрыты\. Сохранённые данные и обычные цифры не удалены\./)
-  // Новый дизайн: скрытие карточек сохраняет данные (кнопка «Скрыть график»)
-  assert.match(normalizedAnalytics, /Скрыть график/)
+  // Скрытие карточек сохраняет данные (действие «Скрыть этот график»).
+  assert.match(normalizedAnalytics, /label="Скрыть этот график"/)
   assert.match(analytics, /readCardPreferences/)
 })
 

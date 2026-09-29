@@ -759,6 +759,7 @@
   border-radius: 32px;
   background: rgb(var(--c-card) / 0.96);
   box-shadow: var(--shadow-float-compact);
+  -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
 }
 
