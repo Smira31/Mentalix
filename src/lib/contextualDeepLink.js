@@ -18,6 +18,8 @@ export function parseContextualDeepLink(search, startParam) {
   if (action === 'complete_evening') return { sub: 'evening', returnFlow: null }
   // Демо-превью экрана серии (?demo=1&action=streak_celebration[&streak_days=N]).
   if (action === 'streak_celebration') return { sub: 'checkin', returnFlow: null }
+  // Демо-превью экрана «Мысль дня» (?demo=1&action=daily_thought).
+  if (action === 'daily_thought') return { sub: 'dailyThought', returnFlow: null }
   return { sub: null, returnFlow: null }
 }
 

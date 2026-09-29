@@ -1,0 +1,69 @@
+/*
+ * Экран «Мысль дня» — Stoic-формат.
+ * Фон наследуется от FULLSCREEN_SHELL_CLASS (bg-emerald-deep = --c-bg).
+ */
+
+.mx-daily-thought {
+  background: rgb(var(--c-bg));
+}
+
+.mx-daily-thought__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgb(var(--c-muted));
+  margin-bottom: 24px;
+}
+
+.mx-daily-thought__text {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: rgb(var(--c-text));
+  text-align: center;
+  max-width: 420px;
+  padding: 0 20px;
+}
+
+.mx-daily-thought__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.mx-daily-thought__pill {
+  height: 50px;
+  width: 100%;
+  max-width: 340px;
+  border: 0;
+  border-radius: 9999px;
+  background: rgb(var(--c-text));
+  color: rgb(var(--c-bg));
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.mx-daily-thought__pill:active {
+  transform: scale(0.98);
+}
+
+.mx-daily-thought__secondary {
+  height: 44px;
+  width: 100%;
+  max-width: 340px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--c-muted));
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.mx-daily-thought__secondary:active {
+  color: rgb(var(--c-text));
+}
