@@ -102,6 +102,7 @@ export default function Profile({ user, stats, loading, error, retryProfile }) {
           checkins: Array.isArray(checkins) ? checkins : [],
           rituals: Array.isArray(rituals) ? rituals : [],
           ascezas: Array.isArray(ascezas) ? ascezas : [],
+          registrationDays: daysSinceRegistration(stats?.created_at || user?.created_at),
         })
         setSeriesModel({ userId: user.id, value: model })
       })

@@ -120,7 +120,7 @@ test('PR2: нет значков, нет темы, серия 0 — вех не�
 // ── Процент считается правильно ──
 
 test('процент значка: 5 из 7 → 71%', () => {
-  const badges = buildBadges({ stats: { days_active: 5, total_checkins: 5, best_streak: 5 } })
+  const badges = buildBadges({ stats: { days_active: 5, total_checkins: 5, best_streak: 5 }, registrationDays: 5 })
   const milestones = getNearestMilestones({ badges, streak: 5, theme: null })
   const weekMilestone = milestones.find(m => m.id === 'badge:week-on-path')
   assert.ok(weekMilestone)
@@ -142,6 +142,7 @@ test('все значки получены — значок не показыв�
     stats: { days_active: 100, total_checkins: 100, best_streak: 100 },
     rituals: [{ streak: 100 }],
     ascezas: [{ streak: 100 }],
+    registrationDays: 100,
   })
   const milestones = getNearestMilestones({ badges, streak: 5, theme: makeTheme({ currentDay: 3 }) })
   const badgeM = milestones.find(m => m.kind === 'badge')
