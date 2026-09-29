@@ -98,12 +98,12 @@ function normalizePinnedPractices(value) {
   return Array.isArray(value) ? value : []
 }
 
-export default function PinnedPractices({ user, onOpenPractice, rituals = [], ascezas = [] }) {
+export default function PinnedPractices({ user, onOpenPractice, rituals = [], ascezas = [], initialSheet = null }) {
   const [pinned, setPinned] = useState(() => normalizePinnedPractices(peekPinnedPractices(user.id)))
   const [loading, setLoading] = useState(() => !peekPinnedPractices(user.id))
   const [error, setError] = useState(false)
-  const [sheet, setSheet] = useState(null)
-  const [busyId, setBusyId] = useState(null)
+  const [sheet, setSheet] = useState(initialSheet)
+  const [busyKeys, setBusyKeys] = useState(() => new Set())
   const [undo, setUndo] = useState(null)
   const todayDone = useMemo(
     () => ({
@@ -158,48 +158,105 @@ export default function PinnedPractices({ user, onOpenPractice, rituals = [], as
   }, [loading, pinnedPractices.length])
 
   async function togglePinned(practice) {
-    if (busyId) return
+    const key = practice.key
 
-    if (pinnedIds.has(practice.key)) {
-      if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
-      const item = pinned.find(i => i.practice_id === practice.key)
-      const index = pinned.findIndex(i => i.practice_id === practice.key)
-      setPinned(items => items.filter(i => i.practice_id !== practice.key))
-      undoTimerRef.current = setTimeout(() => {
-        api.pinnedPractices.remove(user.id, practice.key).catch(() => setError(true))
-        invalidatePinnedPractices(user.id)
-        setUndo(null)
+    // Per-practice guard: ignore taps while this practice's request is in flight
+    if (busyKeys.has(key)) return
+
+    if (pinnedIds.has(key)) {
+      // ── REMOVE ──
+      if (undoTimerRef.current) {
+        clearTimeout(undoTimerRef.current)
         undoTimerRef.current = null
-      }, 4000)
-      setUndo({ item, index })
+      }
+      const item = pinned.find(i => i.practice_id === key)
+      const index = pinned.findIndex(i => i.practice_id === key)
+
+      // Optimistic removal
+      setPinned(items => items.filter(i => i.practice_id !== key))
+      setBusyKeys(prev => new Set(prev).add(key))
+
+      try {
+        await api.pinnedPractices.remove(user.id, key)
+        invalidatePinnedPractices(user.id)
+        // Show undo toast for 4s — API already succeeded, undo re-adds via API
+        setUndo({ item, index })
+        undoTimerRef.current = setTimeout(() => {
+          setUndo(null)
+          undoTimerRef.current = null
+        }, 4000)
+      } catch {
+        // Rollback: re-add the item at its original position
+        setPinned(items => {
+          const next = [...items]
+          next.splice(index, 0, item)
+          return next
+        })
+        setError(true)
+      } finally {
+        setBusyKeys(prev => {
+          const next = new Set(prev)
+          next.delete(key)
+          return next
+        })
+      }
       return
     }
 
-    setBusyId(practice.key)
+    // ── ADD ──
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current)
+      undoTimerRef.current = null
+      setUndo(null)
+    }
+
+    // Optimistic add with temp marker
+    const tempItem = { practice_id: key, _pending: true }
+    setPinned(items => [...items, tempItem])
+    setBusyKeys(prev => new Set(prev).add(key))
     setError(false)
+
     try {
-      const added = await api.pinnedPractices.add(user.id, practice.key)
-      setPinned(items => [...items, added])
+      const added = await api.pinnedPractices.add(user.id, key)
+      setPinned(items => items.map(i => (i._pending && i.practice_id === key ? added : i)))
       invalidatePinnedPractices(user.id)
     } catch {
+      // Rollback: remove the temp item
+      setPinned(items => items.filter(i => !(i._pending && i.practice_id === key)))
       setError(true)
     } finally {
-      setBusyId(null)
+      setBusyKeys(prev => {
+        const next = new Set(prev)
+        next.delete(key)
+        return next
+      })
     }
   }
 
-  function undoRemove() {
+  async function undoRemove() {
     if (!undo) return
     if (undoTimerRef.current) {
       clearTimeout(undoTimerRef.current)
       undoTimerRef.current = null
     }
+    const { item, index } = undo
+    setUndo(null)
+
+    // Optimistic re-add
     setPinned(items => {
       const next = [...items]
-      next.splice(undo.index, 0, undo.item)
+      next.splice(index, 0, item)
       return next
     })
-    setUndo(null)
+
+    try {
+      await api.pinnedPractices.add(user.id, item.practice_id)
+      invalidatePinnedPractices(user.id)
+    } catch {
+      // Rollback the undo — remove again
+      setPinned(items => items.filter(i => i.practice_id !== item.practice_id))
+      setError(true)
+    }
   }
 
   function openPractice(practice) {
