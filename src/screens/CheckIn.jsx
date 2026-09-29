@@ -210,10 +210,12 @@ export function CheckInQuestion({
 function MorningCheckInFlow({ user, onDone, onCompleted, redo = false, existing = null }) {
   const [step, setStep] = useState(() => {
     // Demo-only: ?demo=1&action=focus_step — сразу открывает шаг фокуса.
-    // allScales.length = 4 (mood, sleep_quality, energy, focus) → dayFocusStep = 4.
+    // ?demo=1&action=mind_step — сразу открывает шаг «Что на уме?».
+    // allScales.length = 4 (mood, sleep_quality, energy, focus) → dayFocusStep = 4, noteStep = 5.
     if (isPreviewDemoMode()) {
       const params = new URLSearchParams(window.location.search)
       if (params.get('action') === 'focus_step') return 4
+      if (params.get('action') === 'mind_step') return 5
     }
     return 0
   })

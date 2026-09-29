@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { devices, expect, test } from '@playwright/test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
@@ -1644,4 +1644,57 @@ test('Today при медленном API: «Сегодня» видно ≤2 с
   await expect(page.getByTestId('today-connecting')).toHaveCount(0)
 
   await context.close()
+})
+
+/*
+ * WebKit (iPhone 15 Pro, 393×852): регрессия «Что на уме?» — первый тап
+ * по кнопке «→» при открытой клавиатуре iOS не срабатывал (pointerdown
+ * забирал фокус у contentEditable, клавиатура закрывалась, кнопка смещалась,
+ * click не доходил). Фикс — onPointerDown preventDefault на RoundSubmitButton.
+ * Тест: ввести текст → один тап → переход на экран завершения.
+ */
+test('WebKit iPhone 15 Pro: «Что на уме?» — один тап по кнопке переходит дальше', async ({
+  playwright,
+}) => {
+  const browser = await playwright.webkit.launch()
+  const context = await browser.newContext({
+    baseURL: 'http://127.0.0.1:4173',
+    ...devices['iPhone 15 Pro'],
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+    serviceWorkers: 'block',
+  })
+  await context.route('**/api/**', route => route.fulfill(fixtureFor(route.request())))
+  const page = await context.newPage()
+
+  await page.addInitScript(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+    localStorage.setItem('mx-onboarded-v2', '1')
+    localStorage.setItem('mx-app-lock-enabled', '0')
+  })
+
+  await page.goto('/?demo=1&action=mind_step')
+  // ?demo=1&action=mind_step задаёт начальный шаг внутри MorningCheckInFlow,
+  // но оверлей чек-ина нужно открыть явно — кликом по карточке утра.
+  await expect(page.getByTestId('today-card-morning')).toBeVisible({ timeout: 15_000 })
+  await page.getByTestId('today-card-morning').tap()
+  await expect(page.getByRole('heading', { name: 'Что на уме?' })).toBeVisible({
+    timeout: 15_000,
+  })
+
+  const editor = page.getByRole('textbox', { name: 'Что на уме' })
+  await expect(editor).toBeVisible()
+  await editor.pressSequentially('Спокойное утро')
+
+  const submit = page.locator('[data-testid="checkin-complete"]')
+  await expect(submit).toBeVisible()
+  await expect(submit).toBeEnabled()
+  // Один тап — должен сразу перейти на экран завершения, без потери тапа.
+  await submit.tap()
+
+  await expect(page.getByTestId('checkin-back-to-today')).toBeVisible({ timeout: 10_000 })
+
+  await context.close()
+  await browser.close()
 })
