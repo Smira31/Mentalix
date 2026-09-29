@@ -53,7 +53,7 @@ export default defineConfig({
   },
   server: {
     host: true,
-    allowedHosts: ['.manus.computer'],
+    allowedHosts: ['.manus.computer', '.base44-preview.app'],
     port: 5173,
     proxy: {
       '/api': {
