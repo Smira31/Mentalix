@@ -8,6 +8,7 @@ import { fetchArticles, peekArticles, peekArticlesSnapshot } from '../lib/librar
 import { platform } from '../platform'
 import Articles from './Articles'
 import GuidedJournals from './GuidedJournals'
+import HeroJourneyMap from './HeroJourneyMap'
 import './Library.css'
 
 // The demo composition is now the production Library composition as well.
@@ -269,12 +270,33 @@ function CollectionCard({ title, description, kind, soon = false, onClick }) {
   )
 }
 
+function LibraryV2HeroJourneyLanding({ onOpen }) {
+  return (
+    <section
+      className="mx-library-v2__section-block"
+      aria-labelledby="library-v2-hero-journey-title"
+    >
+      <h2 className="mx-type-section" id="library-v2-hero-journey-title">
+        Путь героя
+      </h2>
+      <LibraryV2FeaturedBanner
+        title="Карта испытаний"
+        description="16 испытаний современного человека — короткий опрос и персональная карта. Не тест, а ориентир."
+        action="Пройти"
+        onOpen={onOpen}
+        art={<SemanticGlyph kind="path-corridor" animated={false} />}
+      />
+    </section>
+  )
+}
+
 function LibraryHome({
   onOpenArticles,
   onOpenJournals,
   onOpenArticle,
   onOpenV2Programs,
   onOpenV2Articles,
+  onOpenHeroJourney,
 }) {
   const [initialArticlesState] = useState(() => {
     const memoryArticles = peekArticles()
@@ -328,6 +350,7 @@ function LibraryHome({
 
       {LIBRARY_V2_ENABLED && (
         <section className="mx-library-v2__section" aria-label="Библиотека v2">
+          <LibraryV2HeroJourneyLanding onOpen={onOpenHeroJourney} />
           <LibraryV2ProgramLanding onOpen={onOpenV2Programs} />
           <LibraryV2ArticleLanding onOpen={onOpenV2Articles} />
           <LibraryV2JournalLanding onOpen={onOpenJournals} />
@@ -496,6 +519,10 @@ export default function Library({ user }) {
     )
   }
 
+  if (screen === 'hero-journey') {
+    return <HeroJourneyMap onBack={() => setScreen('home')} />
+  }
+
   if (screen === 'articles') {
     return (
       <div className="w-full max-w-md px-[var(--mx-screen-x)]">
@@ -532,6 +559,7 @@ export default function Library({ user }) {
           setLibraryV2Article(articleId ? ARTICLES.find(article => article.id === articleId) : null)
           setScreen('library-v2-articles')
         }}
+        onOpenHeroJourney={() => setScreen('hero-journey')}
       />
     </div>
   )

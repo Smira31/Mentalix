@@ -1,0 +1,378 @@
+/* ── Путь героя: Карта испытаний ── */
+
+.mx-hero-journey {
+  box-sizing: border-box;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mx-hero-journey__header {
+  box-sizing: border-box;
+}
+
+.mx-hero-journey__content {
+  box-sizing: border-box;
+  min-height: 0;
+  flex: 1;
+  padding-bottom: max(24px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+/* ── Intro ── */
+
+.mx-hero-journey__intro {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-top: 8px;
+}
+
+.mx-hero-journey__hero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0 24px;
+}
+
+.mx-hero-journey__glyph {
+  width: 120px;
+  height: 120px;
+}
+
+.mx-hero-journey__intro-copy {
+  flex: 1;
+}
+
+.mx-hero-journey__eyebrow {
+  font-family: var(--font-label, 'Manrope', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--c-gold));
+  margin-bottom: 12px;
+}
+
+.mx-hero-journey__intro-title {
+  font-size: var(--mx-type-hero-size);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  color: rgb(var(--c-text));
+}
+
+.mx-hero-journey__intro-description {
+  margin-top: 12px;
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  max-width: 34ch;
+}
+
+.mx-hero-journey__intro-actions {
+  padding-top: 24px;
+  padding-bottom: max(0px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+.mx-hero-journey__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  border-radius: var(--mx-radius-pill);
+  background: rgb(var(--c-line));
+  color: rgb(var(--c-bg));
+  font-size: var(--mx-type-flow-action-size);
+  font-weight: 600;
+  transition: transform 140ms ease;
+  cursor: pointer;
+}
+
+.mx-hero-journey__cta:active {
+  transform: scale(0.97);
+}
+
+.mx-hero-journey__cta:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Questions ── */
+
+.mx-hero-journey__question {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding-top: 8px;
+}
+
+.mx-hero-journey__progress {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 28px;
+}
+
+.mx-hero-journey__progress-dot {
+  flex: 1;
+  height: 3px;
+  border-radius: 999px;
+  background: rgb(var(--c-border));
+  transition: background 200ms ease;
+}
+
+.mx-hero-journey__progress-dot.is-active {
+  background: rgb(var(--c-gold));
+}
+
+.mx-hero-journey__question-title {
+  font-size: var(--mx-type-hero-size);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+  margin-bottom: 24px;
+}
+
+.mx-hero-journey__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+
+.mx-hero-journey__option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 18px;
+  border-radius: var(--mx-radius-control);
+  border: 1px solid rgb(var(--c-border));
+  background: rgb(var(--c-card));
+  color: rgb(var(--c-muted));
+  text-align: left;
+  transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+  cursor: pointer;
+}
+
+.mx-hero-journey__option:active {
+  transform: scale(0.98);
+}
+
+.mx-hero-journey__option:hover {
+  background: rgb(var(--c-card2));
+}
+
+.mx-hero-journey__option.is-active {
+  border-color: rgb(var(--c-gold));
+  background: rgb(var(--c-card3));
+  color: rgb(var(--c-text));
+}
+
+.mx-hero-journey__action-zone {
+  padding-top: 24px;
+  padding-bottom: max(0px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+/* ── Result ── */
+
+.mx-hero-journey__result {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}
+
+.mx-hero-journey__result-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0 16px;
+}
+
+.mx-hero-journey__result-art svg {
+  width: 80px;
+  height: 80px;
+}
+
+.mx-hero-journey__result-title {
+  font-size: var(--mx-type-hero-size);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: rgb(var(--c-text));
+  margin-top: 4px;
+}
+
+.mx-hero-journey__result-subtitle {
+  font-size: var(--mx-type-body-size);
+  color: rgb(var(--c-gold));
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.mx-hero-journey__result-description {
+  font-size: var(--mx-type-body-size);
+  line-height: 1.5;
+  color: rgb(var(--c-muted));
+  margin-top: 16px;
+}
+
+.mx-hero-journey__prompt-block,
+.mx-hero-journey__action-block,
+.mx-hero-journey__shadow-block {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-radius: var(--mx-radius-control);
+  background: rgb(var(--c-card));
+}
+
+.mx-hero-journey__shadow-block {
+  background: rgb(var(--c-card2));
+}
+
+.mx-hero-journey__prompt-label,
+.mx-hero-journey__action-label,
+.mx-hero-journey__shadow-label {
+  display: block;
+  font-family: var(--font-label, 'Manrope', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--c-faint));
+  margin-bottom: 8px;
+}
+
+.mx-hero-journey__prompt-label {
+  color: rgb(var(--c-gold));
+}
+
+.mx-hero-journey__shadow-label {
+  color: rgb(var(--c-muted));
+}
+
+.mx-hero-journey__prompt-text,
+.mx-hero-journey__action-text,
+.mx-hero-journey__shadow-text {
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+  color: rgb(var(--c-text));
+}
+
+.mx-hero-journey__shadow-text {
+  color: rgb(var(--c-muted));
+}
+
+.mx-hero-journey__result-actions {
+  margin-top: 28px;
+  padding-bottom: max(0px, var(--app-safe-bottom, env(safe-area-inset-bottom, 0px)));
+}
+
+/* ── All trials list ── */
+
+.mx-hero-journey__all {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+}
+
+.mx-hero-journey__all-title {
+  font-size: var(--mx-type-page-size);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  color: rgb(var(--c-text));
+  text-transform: lowercase;
+}
+
+.mx-hero-journey__all-subtitle {
+  font-size: var(--mx-type-body-size);
+  line-height: 1.45;
+  color: rgb(var(--c-muted));
+  margin-top: 10px;
+  margin-bottom: 24px;
+  max-width: 34ch;
+}
+
+.mx-hero-journey__trials-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mx-hero-journey__trial-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--mx-radius-card);
+  background: rgb(var(--c-card));
+  border: none;
+  text-align: left;
+  transition: transform 140ms ease, background 140ms ease;
+  cursor: pointer;
+}
+
+.mx-hero-journey__trial-row:active {
+  transform: scale(0.98);
+  background: rgb(var(--c-card2));
+}
+
+.mx-hero-journey__trial-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgb(var(--c-card2));
+  font-size: 13px;
+  font-weight: 600;
+  color: rgb(var(--c-muted));
+  flex-shrink: 0;
+}
+
+.mx-hero-journey__trial-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mx-hero-journey__trial-subtitle {
+  font-size: 12px;
+  line-height: 1.3;
+  color: rgb(var(--c-muted));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mx-hero-journey__trial-arrow {
+  color: rgb(var(--c-faint));
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+
+@media (max-height: 650px) {
+  .mx-hero-journey__hero {
+    padding: 16px 0 12px;
+  }
+
+  .mx-hero-journey__glyph {
+    width: 80px;
+    height: 80px;
+  }
+
+  .mx-hero-journey__intro-title,
+  .mx-hero-journey__question-title,
+  .mx-hero-journey__result-title {
+    font-size: var(--mx-type-section-size);
+  }
+}
