@@ -29,7 +29,8 @@ export function isPreviewDemoMode() {
     host === 'mentalix-owner-qa.pages.dev' ||
     host === 'mentalix-production.web.app' ||
     host.endsWith('.manus.computer') ||
-    host.endsWith('.trycloudflare.com')
+    host.endsWith('.trycloudflare.com') ||
+    host.endsWith('.base44-preview.app')
   const isPreviewRuntime =
     import.meta.env.DEV || import.meta.env.VERCEL_ENV === 'preview' || localPreviewEnabled
   const isQaProductionHost =
