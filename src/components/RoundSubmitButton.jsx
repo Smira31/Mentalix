@@ -18,6 +18,7 @@ export default function RoundSubmitButton({
       aria-label={label}
       title={label}
       data-testid={testId}
+      onMouseDown={event => event.preventDefault()}
       onClick={onClick}
       disabled={disabled}
       className="mx-keyboard-control mx-keyboard-submit mx-tap-target flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-full border border-[rgb(var(--c-border))] bg-[#F2F2F2] text-emerald-deep transition-transform active:scale-95 disabled:opacity-35"
