@@ -75,7 +75,7 @@ export function withTodayCheckin(history = [], today = null, now = clockNow()) {
 
 // View-model значков без клиентского восстановления серии из неполной истории.
 // Числа мягкой серии приходят исключительно из GET /api/streak.
-export function buildServerSeriesViewModel({ stats = {}, checkins = [], rituals = [], ascezas = [], canonicalStats = null } = {}) {
+export function buildServerSeriesViewModel({ stats = {}, checkins = [], rituals = [], ascezas = [], canonicalStats = null, registrationDays = null } = {}) {
   const completed = checkins.filter(isCompleted)
   return {
     currentStreak: canonicalStats?.currentStreak ?? null,
@@ -87,6 +87,7 @@ export function buildServerSeriesViewModel({ stats = {}, checkins = [], rituals 
       checkins: completed,
       rituals,
       ascezas,
+      registrationDays,
     }),
   }
 }

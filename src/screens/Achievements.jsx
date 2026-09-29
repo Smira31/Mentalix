@@ -5,6 +5,7 @@ import { readLocal, writeLocal } from '../lib/store'
 import { cloud } from '../platform/telegram.hooks'
 import { MotifArt } from '../components/Motif'
 import { buildBadges } from '../lib/badges'
+import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { loadIndependentSources, retrySources } from '../lib/pathDataLoader'
 
 const SEEN_KEY = 'mx-badges-seen'
@@ -65,7 +66,7 @@ export default function Achievements({ user }) {
     ).then(result => {
       setLoadResult(result)
       if (result.status !== 'success') return
-      const list = buildBadges(result.data)
+      const list = buildBadges({ ...result.data, registrationDays: daysSinceRegistration(result.data?.stats?.created_at) })
       setBadges(list)
       // Обязательные источники успешны: только теперь меняем seen-состояние.
       readSeenEverywhere().then(seen => {

@@ -500,7 +500,7 @@ export default function SeriesBadges({ user, onBack, onOpenPractice }) {
     ])
       .then(([stats, checkins, rituals, ascezas]) => {
         if (!active) return
-        const next = buildServerSeriesViewModel({ stats, checkins, rituals, ascezas })
+        const next = buildServerSeriesViewModel({ stats, checkins, rituals, ascezas, registrationDays: daysSinceRegistration(stats?.created_at) })
         setCheckinHistory({ userId: user.id, items: checkins })
         setCheckinTotal({ userId: user.id, count: stats?.total_checkins })
         setProfileStats({ userId: user.id, value: stats })

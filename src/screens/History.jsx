@@ -5,6 +5,7 @@ import { MotifArt } from '../components/Motif'
 import EmptyState from '../components/EmptyState'
 import MarkdownText from '../components/MarkdownText'
 import { buildBadges } from '../lib/badges'
+import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { readJournalHistory } from '../lib/journalHistory'
 import JourneySearch from './JourneySearch'
 import HistorySkeleton from '../components/HistorySkeleton'
@@ -654,7 +655,7 @@ export default function History({
       api.rituals.list(user.id).catch(() => []),
       api.ascezas.list(user.id).catch(() => []),
     ]).then(([stats, rituals, ascezas]) => {
-      setBadges(buildBadges({ stats, rituals, ascezas }).filter(b => b.done))
+      setBadges(buildBadges({ stats, rituals, ascezas, registrationDays: daysSinceRegistration(stats?.created_at) }).filter(b => b.done))
     })
   }, [user])
 

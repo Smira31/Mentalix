@@ -68,6 +68,7 @@ import { loadAlterEgos, loadAlterEgosSync } from '../lib/alterEgoStorage'
 
 import { seriesLogicalDateKey } from '../lib/series'
 import { buildTomorrowTeaser } from '../lib/tomorrowTeaser'
+import { daysSinceRegistration } from '../lib/badgeCatalog'
 import { peekPracticesData } from '../lib/practicesDataCache'
 import { energyFillPercent } from '../lib/checkinScale'
 import { MENTOR_HANDOFF_KEY } from './mentalix/personas'
@@ -1545,6 +1546,7 @@ function CheckInCore({
                   rituals: peekPracticesData(user.id)?.rituals,
                   ascezas: peekPracticesData(user.id)?.ascezas,
                   isEvening,
+                  registrationDays: daysSinceRegistration(user?.created_at),
                 })}
               </p>
             ) : null}
