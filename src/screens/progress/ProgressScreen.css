@@ -318,7 +318,59 @@
 /* ── Экран записи ── */
 
 .mx-progress-entry {
-  padding-top: 8px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  padding: calc(var(--app-safe-top, 0px) + 8px) 15px 20px;
+  background: rgb(var(--c-bg, 5 4 3));
+  overflow-y: auto;
+}
+
+.mx-progress-entry__top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 39px;
+  padding: 0 3px;
+  margin-bottom: 42px;
+}
+
+/* AI-лист — открывается из меню «…» */
+.mx-progress-ai-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  background: rgb(var(--c-bg, 5 4 3));
+  padding: calc(var(--app-safe-top, 0px) + 8px) 15px 20px;
+  overflow-y: auto;
+}
+
+.mx-progress-ai-sheet__close {
+  position: absolute;
+  top: calc(var(--app-safe-top, 0px) + 8px);
+  right: 18px;
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(var(--c-card2, 17 17 17));
+  color: rgb(var(--c-text, 243 243 243));
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.mx-progress-ai-sheet__title {
+  margin: 0 0 20px;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: rgb(var(--c-text, 243 243 243));
 }
 
 .mx-progress-entry__top-bar {
