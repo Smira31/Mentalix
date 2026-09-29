@@ -262,6 +262,22 @@ export function previewPracticeAction() {
   return DEMO_PRACTICE_ACTIONS.has(requested) ? requested : null
 }
 
+/*
+ * Прямая превью-ссылка на шторку «Твои практики» (настройка набора):
+ *   ?demo=1&action=practices_manage
+ * Действует только в демо-режиме; вне демо возвращает null.
+ */
+export const DEMO_PINNED_PRACTICES_ACTION = 'practices_manage'
+
+export function previewPinnedPracticesAction() {
+  if (typeof window === 'undefined') return null
+  if (!isPreviewDemoMode()) return null
+
+  const requested = new URLSearchParams(window.location.search).get('action')
+
+  return requested === DEMO_PINNED_PRACTICES_ACTION ? 'manage' : null
+}
+
 export function previewStreakCelebrationDays() {
   if (typeof window === 'undefined') return null
   if (!isPreviewDemoMode()) return null
