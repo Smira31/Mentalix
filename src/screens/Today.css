@@ -173,7 +173,6 @@
   padding: 0 11px 0 8px;
   border: 1px solid rgb(var(--c-border));
   border-radius: 999px;
-  background: rgb(var(--c-card));
   color: rgb(var(--c-text));
   font: inherit;
   cursor: pointer;
@@ -294,7 +293,6 @@
   padding-inline: 10px;
   border-color: #303030;
   border-radius: 16px;
-  background: #111;
 }
 
 .mx-demo-today-streak .mx-stoic-flame {
@@ -326,7 +324,6 @@
   padding: 0 11px 0 8px;
   border: 1px solid rgb(var(--c-gold) / 0.42);
   border-radius: 999px;
-  background: rgb(var(--c-card));
 }
 
 .mx-demo-today-streak svg {
@@ -362,8 +359,10 @@
   height: 2.5rem;
   flex: 0 0 auto;
   color: rgb(var(--c-muted));
-  background: rgb(var(--c-card2));
-  border: 0;
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
 }
 
@@ -965,7 +964,6 @@
   padding: 0 12px 0 10px;
   border: 1px solid rgb(var(--c-border));
   border-radius: 999px;
-  background: rgb(var(--c-card2));
   color: rgb(var(--c-text));
 }
 
@@ -1038,7 +1036,6 @@
   margin-inline: 5px;
   border-radius: 11px;
   border-color: #454545;
-  background: #111;
 }
 
 /* Header alignment pass: the streak belongs to the left edge, profile to the right. */
@@ -1084,7 +1081,6 @@
   transform: translateY(-50%);
   border: 1px solid rgb(var(--c-text) / 0.3);
   border-radius: 999px;
-  background: rgb(var(--c-card));
   color: rgb(var(--c-text));
 }
 
@@ -1633,7 +1629,6 @@
   gap: 6px;
   padding-inline: 8px;
   border: 1px solid rgb(var(--c-border));
-  background: rgb(var(--c-card2));
 }
 .mx-demo-today-streak svg {
   width: 16px;
@@ -1675,8 +1670,10 @@
   height: var(--mx-header-control);
   gap: 6px;
   padding: 0 14px 0 12px;
-  border: 1px solid rgb(var(--c-header-chip-border));
-  background: rgb(var(--c-header-chip));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   color: rgb(var(--c-header-muted));
 }
 
@@ -1731,9 +1728,11 @@
   height: var(--mx-header-control);
   padding: 0;
   place-items: center;
-  border: 1px solid rgb(var(--c-header-chip-border));
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
-  background: rgb(var(--c-profile-ring));
+  background: var(--mx-glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   cursor: pointer;
   transition: transform 160ms ease;
 }
