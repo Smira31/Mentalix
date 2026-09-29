@@ -27,7 +27,7 @@ import {
   periodName,
 } from './progress/progressAnalyticsPeriods'
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
-import { Eye } from 'lucide-react'
+import { BarChart3, Eye } from 'lucide-react'
 
 const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
@@ -227,7 +227,7 @@ function CardShell({ title, subtitle, children, testId }) {
             >
               <ProgressGlassMenuItem
                 icon={Eye}
-                label="Скрыть график"
+                label="Скрыть этот график"
                 onClick={() => actions.hide(actions.id)}
               />
             </ProgressGlassMenu>
@@ -714,13 +714,22 @@ function CustomizeLayer({ preferences, onToggle, onClose }) {
 
 /* ── Нижняя пилюля периода ── */
 
-function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, hidden }) {
+function BottomPeriodPill({ granularity, offset, onPrev, onNext, canNext, hidden, onCustomize }) {
   const window = getPeriodWindow(granularity, offset)
   return (
     <div
       className={`mx-progress-bottom-pill-wrapper${hidden ? ' mx-progress-bottom-pill-wrapper--hidden' : ''}`}
       data-testid="progress-bottom-pill"
     >
+      <button
+        type="button"
+        className="mx-progress-customize-fab"
+        aria-label="Настроить графики"
+        data-testid="progress-customize-trigger"
+        onClick={onCustomize}
+      >
+        <BarChart3 size={20} />
+      </button>
       <div className="mx-progress-bottom-pill">
         <button
           type="button"
