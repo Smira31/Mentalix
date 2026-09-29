@@ -7,6 +7,7 @@ import { isPreviewDemoMode, previewSeriesAction } from '../lib/demoMode'
 import { api } from '../lib/api'
 import { readCanonicalStreakStats, serverSeriesBadges } from '../lib/canonicalStreak'
 import { badgeGroups, daysSinceRegistration, upcomingBadges } from '../lib/badgeCatalog'
+import { featuredBadge, featuredBadgeCaption } from '../lib/featuredBadge'
 import { buildMvpBadges } from '../lib/badgesMvp'
 import { readJournalHistory } from '../lib/journalHistory'
 import { platform } from '../platform'
@@ -323,17 +324,17 @@ function formatDays(value) {
 
 function AwardsView({ badges, onOpenBadge, onShowAll }) {
   const upcoming = upcomingBadges(badges)
-  const next = upcoming[0]
+  const featured = featuredBadge(badges)
   return (
     <div className="mx-path-content">
       <section className="mx-path-featured-award">
         <strong className="mx-path-award-count">{badges.filter(badge => badge.done).length}.</strong>
         <span className="mx-path-featured-award-label">ЗНАЧКОВ ПОЛУЧЕНО</span>
         <div className="mx-path-featured-scene">
-          <RewardIcon variant={next?.id || 'first-step'} size={118} />
+          <RewardIcon variant={featured?.done ? featured.id : 'locked'} size={118} />
         </div>
-        <div className="mx-path-featured-title">{next?.title || 'Все значки получены'}</div>
-        <div className="mx-path-featured-copy">{next ? `${next.progress}/${next.goal} до получения` : 'Продолжай свой путь'}</div>
+        <div className="mx-path-featured-title">{featured?.title || 'Все значки получены'}</div>
+        <div className="mx-path-featured-copy">{featuredBadgeCaption(featured)}</div>
       </section>
       <button type="button" className="mx-path-see-all" onClick={onShowAll}>
         Все значки <span aria-hidden="true">›</span>
