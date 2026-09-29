@@ -347,7 +347,10 @@ export function groupDaysByWeek(days) {
 }
 
 function formatWeekRange(start, end) {
-  return `${start.getDate()}–${end.getDate()}`
+  if (start.getMonth() === end.getMonth()) {
+    return `${start.getDate()}–${end.getDate()} ${MONTHS_GENITIVE[end.getMonth()]}`
+  }
+  return `${start.getDate()} ${MONTHS_SHORT[start.getMonth()]} – ${end.getDate()} ${MONTHS_SHORT[end.getMonth()]}`
 }
 
 /**
@@ -424,7 +427,7 @@ export function groupDaysByYear(days) {
 
 export const FILTER_GROUPS = Object.freeze([
   {
-    label: 'Ежедневные',
+    label: 'Чек-ины',
     types: [
       { id: ENTRY_TYPES.MORNING, label: 'Утренний чек-ин' },
       { id: ENTRY_TYPES.EVENING, label: 'Вечерний разбор' },
