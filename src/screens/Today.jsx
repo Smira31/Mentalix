@@ -13,12 +13,10 @@ import { ChevronRight, ArrowUpRight, Lightbulb, X } from 'lucide-react'
 
 import './Today.css'
 
-import { DayArc } from '../components/Motif'
 import BackButton from '../components/BackButton'
 import cardEveningDone2x from '../assets/today/card-evening-done@2x.webp'
 import cardEveningDone3x from '../assets/today/card-evening-done@3x.webp'
 
-import SemanticGlyph from '../components/SemanticGlyph'
 import EmptyState from '../components/EmptyState'
 import StarterSetPicker from '../components/StarterSetPicker'
 import PinnedPractices from '../components/PinnedPractices'
@@ -39,7 +37,12 @@ import {
 import { markSeriesTooltipSeen, shouldShowSeriesTooltip } from '../lib/seriesPreferences'
 import { resolveCheckInMode } from '../lib/todayCheckinMode'
 import { resolveContextualCheckin } from '../lib/contextualDeepLink'
-import { formatReviewTime, resolveTodayCardStates, primaryCardKind, DEFAULT_REVIEW_HOUR } from '../lib/todayCardState'
+import {
+  formatReviewTime,
+  resolveTodayCardStates,
+  primaryCardKind,
+  DEFAULT_REVIEW_HOUR,
+} from '../lib/todayCardState'
 import { now as clockNow } from '../lib/clock'
 import { demoScenario, demoReviewNow } from '../lib/demoMode'
 import { pickVisibleTodayHint } from '../lib/todayHints'
@@ -222,7 +225,11 @@ function WeekStrip({ streakStats }) {
         })}
       </div>
       {streakStats?.freezeUsedThisWeek && (
-        <p className="mx-today-week__freeze-note" data-testid="streak-freeze-note" data-frozen="true">
+        <p
+          className="mx-today-week__freeze-note"
+          data-testid="streak-freeze-note"
+          data-frozen="true"
+        >
           Заморозка: 1 пропуск в неделю не рвёт серию
         </p>
       )}
@@ -265,8 +272,12 @@ export default function Today({
 
   const [ascezas, setAscezas] = useState(() => initialTodaySnapshot?.ascezas || [])
 
+  // На холодном старте без снимка рендер не ждёт ответа API: экран
+  // рисуется сразу с пустыми данными, данные заполняются по мере
+  // поступления. «Загрузка…» остаётся только для contextualCheckin
+  // (нужен checkin для выбора режима) и для явного retry.
   const [loading, setLoading] = useState(
-    () => !initialTodaySnapshot || (initialSub === 'contextualCheckin' && !previewFixture)
+    () => initialSub === 'contextualCheckin' && !previewFixture
   )
 
   const [loadError, setLoadError] = useState(false)
@@ -323,12 +334,15 @@ export default function Today({
   const refreshStreak = useCallback(() => {
     if (!user?.id) return
     const requestId = ++streakRequest.current
-    api.streak(user.id).then(payload => {
-      if (requestId !== streakRequest.current) return
-      const value = readCanonicalStreakStats(payload)
-      saveStreakSnapshot(user.id, value)
-      setCanonicalStreak({ userId: user.id, value })
-    }).catch(() => {})
+    api
+      .streak(user.id)
+      .then(payload => {
+        if (requestId !== streakRequest.current) return
+        const value = readCanonicalStreakStats(payload)
+        saveStreakSnapshot(user.id, value)
+        setCanonicalStreak({ userId: user.id, value })
+      })
+      .catch(() => {})
   }, [user?.id])
 
   useEffect(() => {
@@ -568,7 +582,7 @@ export default function Today({
 
       const safeHistory = Array.isArray(historyResult.value) ? historyResult.value : []
       setCheckinHistory(safeHistory)
-      
+
       // Обе модели строятся из одной свежей истории: previous — без
       // сегодняшнего чек-ина, next — с ним. Ретро-значки (полученные
       // задним числом из исторических данных) открыты в обеих моделях
@@ -587,8 +601,12 @@ export default function Today({
       })
       const unlocked = detectNewlyUnlockedBadge(previousModel, nextModel)
       // Числа и пороги серии здесь не выводятся из истории чек-инов.
-      const serverBadge = unlocked?.id?.startsWith('streak-') || unlocked?.id === 'week-on-path' || unlocked?.id === 'month-on-path'
-        ? null : unlocked
+      const serverBadge =
+        unlocked?.id?.startsWith('streak-') ||
+        unlocked?.id === 'week-on-path' ||
+        unlocked?.id === 'month-on-path'
+          ? null
+          : unlocked
 
       invalidateTodayData(user.id)
       return { history: safeHistory, newBadge: serverBadge }
@@ -648,7 +666,6 @@ export default function Today({
           .then(history => {
             const safeHistory = Array.isArray(history) ? history : []
             setCheckinHistory(safeHistory)
-            
           })
           .catch(error => {
             // Не глотаем молча: без истории огонёк серии в шапке
@@ -658,18 +675,22 @@ export default function Today({
               path: 'GET /api/checkin/history',
               status: error?.status ?? null,
             })
-
-            
           })
 
-        api.moodPractices.list(user.id)
-          .then(items => { if (active) setMoodPractices(Array.isArray(items) ? items : []) })
+        api.moodPractices
+          .list(user.id)
+          .then(items => {
+            if (active) setMoodPractices(Array.isArray(items) ? items : [])
+          })
           .catch(() => {})
 
         setReviewHour(settingsData?.review_hour ?? DEFAULT_REVIEW_HOUR)
       } catch (error) {
         console.error(error)
-        if (active) setLoadError(true)
+        // Экран ошибки — только при холодном старте без снимка:
+        // если данные уже есть (из снимка), сохраняем их, а не
+        // заменяем экраном «Сервер просыпается».
+        if (active && !initialTodaySnapshot) setLoadError(true)
       } finally {
         if (active) setLoading(false)
       }
@@ -713,7 +734,16 @@ export default function Today({
     return () => {
       active = false
     }
-  }, [recoveryAllowed, loading, loadError, user, initialSub, sub, recoveryEvent, canonical?.recoverable])
+  }, [
+    recoveryAllowed,
+    loading,
+    loadError,
+    user,
+    initialSub,
+    sub,
+    recoveryEvent,
+    canonical?.recoverable,
+  ])
 
   const hourNow = demoReviewNow(reviewHour).getHours()
 
@@ -956,7 +986,7 @@ export default function Today({
     return (
       <div className="mx-screen-shell">
         <h1 className="sr-only">Сегодня</h1>
-      {seriesSheet}
+        {seriesSheet}
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
           onOpenDemoPanel={onOpenDemoPanel}
@@ -973,7 +1003,7 @@ export default function Today({
     return (
       <div className="mx-screen-shell">
         <h1 className="sr-only">Сегодня</h1>
-      {seriesSheet}
+        {seriesSheet}
         <TodayWorkspaceHeader
           onOpenSettings={onOpenSettings}
           onOpenDemoPanel={onOpenDemoPanel}
