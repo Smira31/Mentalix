@@ -35,8 +35,8 @@ button.mx-profile-banner:active {
   pointer-events: none;
 }
 
-/* 1. «Потенциал» — 227 px, всё по центру, замок справа снизу под
-   текстом и кнопкой, обрезан нижним краем карточки. */
+/* 1. «Потенциал» — 227 px, замок целиком справа (не по центру),
+   обрезан нижним краем, под текстом и кнопкой. */
 .mx-profile-banner--potential {
   display: flex;
   height: 227px;
@@ -49,8 +49,10 @@ button.mx-profile-banner:active {
 
 .mx-profile-banner--potential .mx-profile-banner__art--lock {
   position: absolute;
-  right: 12px;
-  bottom: -26px;
+  right: 0;
+  bottom: 0;
+  width: 128px;
+  height: 172px;
   z-index: 0;
 }
 
@@ -146,8 +148,10 @@ button.mx-profile-banner:active {
 
 .mx-profile-banner--web .mx-profile-banner__art--feather {
   position: absolute;
-  top: -30px;
-  right: -45px;
+  top: 0;
+  right: 0;
+  width: 123px;
+  height: 85px;
   z-index: 0;
 }
 
@@ -158,10 +162,11 @@ button.mx-profile-banner:active {
   top: 16px;
   left: 16px;
   z-index: 1;
-  max-width: 55%;
+  max-width: calc(100% - 134px);
   font-size: 28px;
   font-weight: 400;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .mx-profile-banner--web .mx-profile-banner__title strong {
