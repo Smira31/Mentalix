@@ -29,7 +29,7 @@ import {
 import { ProgressGlassMenu, ProgressGlassMenuItem } from '../components/ProgressGlassMenu'
 import { Eye } from 'lucide-react'
 
-const CALENDAR_WEEKDAYS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
+const CALENDAR_WEEKDAYS = ['П', 'В', 'С', 'Ч', 'П', 'С', 'В']
 
 const MOOD_LABELS = ['Очень тяжело', 'Тяжело', 'Ровно', 'Хорошо', 'Отлично']
 
@@ -361,10 +361,10 @@ function MoodCalendarCard({ periodCheckins, granularity, window, onOpenFull }) {
               </div>
             ))}
           </div>
+          <div className="mx-progress-mood-calendar__line" aria-hidden="true" />
           <button type="button" className="mx-progress-mood-calendar__all" onClick={onOpenFull}>
             Все дни ›
           </button>
-          <div className="mx-progress-mood-calendar__line" aria-hidden="true" />
         </div>
       </CardShell>
     )
@@ -415,7 +415,16 @@ function EmotionsRing({ influences }) {
     const remaining = Math.max(1, 3 - daysWithData)
     return (
       <CardShell title="Главные эмоции" subtitle="За период" testId="progress-emotions">
-        <CardEmpty hint={`Пока мало данных — отметь настроение ещё ${formatDays(remaining)}`} />
+        <div className="mx-progress-practices__empty">
+          <div className="mx-progress-practices__empty-ring" aria-hidden="true" />
+          <div className="mx-progress-practices__empty-text">
+            <span className="mx-progress-practices__empty-dot" aria-hidden="true" />
+            <span className="mx-progress-practices__empty-title">Пока нет данных</span>
+            <span className="mx-progress-practices__empty-hint">
+              Отметь настроение ещё {formatDays(remaining)} — здесь появятся эмоции
+            </span>
+          </div>
+        </div>
       </CardShell>
     )
   }
@@ -982,9 +991,9 @@ export default function Analytics({
     practices: <PracticesCard analyticsData={safeData} isCurrentPeriod={isCurrentPeriod} />,
   }
 
-  // Нижний отступ: пилюля (50) + панель + 16.
-  // При свёрнутой навигации пилюля в одну линию с кнопкой — отступ 50 + 16.
-  const bottomSpacerHeight = navCollapsed ? 50 + 16 : 50 + 8 + 53 + 16
+  // Нижний отступ: пилюля (42) + панель + 16.
+  // При свёрнутой навигации пилюля в одну линию с кнопкой — отступ 42 + 16.
+  const bottomSpacerHeight = navCollapsed ? 42 + 16 : 42 + 8 + 53 + 16
 
   return (
     <div
@@ -1073,6 +1082,12 @@ export default function Analytics({
             <h1 className="mx-progress-analytics__title font-display">аналитика.</h1>
             <p className="mx-progress-analytics__subtext">
               Здесь видно, как меняется твоё настроение за неделю
+              {showNeedData && (
+                <span className="mx-progress-analytics__subtext-empty">
+                  <br />
+                  Но пока нет данных, чтобы показать
+                </span>
+              )}
             </p>
           </header>
 
